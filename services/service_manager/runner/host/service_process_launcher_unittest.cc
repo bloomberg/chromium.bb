@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -83,16 +84,16 @@ TEST(ServiceProcessLauncherTest, MAYBE_StartJoin) {
       .AddExtension(kServiceExtension);
 
   ServiceProcessLauncherDelegateImpl service_process_launcher_delegate;
-  ServiceProcessLauncher launcher(&service_process_launcher_delegate,
-                                  test_service_path);
+  base::Optional<ServiceProcessLauncher> launcher(
+      base::in_place, &service_process_launcher_delegate, test_service_path);
   base::RunLoop run_loop;
-  launcher.Start(
+  launcher->Start(
       Identity(), SANDBOX_TYPE_NO_SANDBOX,
       base::BindOnce(&ProcessReadyCallbackAdapter,
                      true /*expect_process_id_valid*/, run_loop.QuitClosure()));
   run_loop.Run();
 
-  launcher.Join();
+  launcher.reset();
   scoped_task_environment.RunUntilIdle();
 
   EXPECT_EQ(1u, service_process_launcher_delegate.get_and_clear_adjust_count());
@@ -112,16 +113,16 @@ TEST(ServiceProcessLauncherTest, FailToLaunchProcess) {
   base::FilePath test_service_path(FILE_PATH_LITERAL("rockot@_rules.service"));
 
   ServiceProcessLauncherDelegateImpl service_process_launcher_delegate;
-  ServiceProcessLauncher launcher(&service_process_launcher_delegate,
-                                  test_service_path);
+  base::Optional<ServiceProcessLauncher> launcher(
+      base::in_place, &service_process_launcher_delegate, test_service_path);
   base::RunLoop run_loop;
-  launcher.Start(Identity(), SANDBOX_TYPE_NO_SANDBOX,
-                 base::BindOnce(&ProcessReadyCallbackAdapter,
-                                false /*expect_process_id_valid*/,
-                                run_loop.QuitClosure()));
+  launcher->Start(Identity(), SANDBOX_TYPE_NO_SANDBOX,
+                  base::BindOnce(&ProcessReadyCallbackAdapter,
+                                 false /*expect_process_id_valid*/,
+                                 run_loop.QuitClosure()));
   run_loop.Run();
 
-  launcher.Join();
+  launcher.reset();
   scoped_task_environment.RunUntilIdle();
 }
 #endif  //  !defined(OS_POSIX) || defined(OS_MACOSX)

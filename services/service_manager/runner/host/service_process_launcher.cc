@@ -11,15 +11,21 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/run_loop.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/task_runner_util.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/public/cpp/standalone_service/switches.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
@@ -39,30 +45,57 @@
 
 namespace service_manager {
 
+// Thread-safe owner of state related to a service process. This facilitates
+// safely scheduling the launching and joining of a service process in the
+// background.
+class ServiceProcessLauncher::ProcessState
+    : public base::RefCountedThreadSafe<ProcessState> {
+ public:
+  ProcessState() { DETACH_FROM_SEQUENCE(sequence_checker_); }
+
+  base::ProcessId LaunchInBackground(
+      const Identity& target,
+      SandboxType sandbox_type,
+      std::unique_ptr<base::CommandLine> child_command_line,
+      mojo::PlatformChannel::HandlePassingInfo handle_passing_info,
+      mojo::PlatformChannel channel,
+      mojo::OutgoingInvitation invitation);
+
+  void StopInBackground();
+
+ private:
+  friend class base::RefCountedThreadSafe<ProcessState>;
+
+  ~ProcessState() = default;
+
+  base::Process child_process_;
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessState);
+};
+
 ServiceProcessLauncher::ServiceProcessLauncher(
     ServiceProcessLauncherDelegate* delegate,
     const base::FilePath& service_path)
     : delegate_(delegate),
-      service_path_(service_path),
-      start_child_process_event_(
-          base::WaitableEvent::ResetPolicy::AUTOMATIC,
-          base::WaitableEvent::InitialState::NOT_SIGNALED),
-      weak_factory_(this) {
-  if (service_path_.empty())
-    service_path_ = base::CommandLine::ForCurrentProcess()->GetProgram();
-}
+      service_path_(service_path.empty()
+                        ? base::CommandLine::ForCurrentProcess()->GetProgram()
+                        : service_path),
+      background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::USER_VISIBLE, base::WithBaseSyncPrimitives(),
+           base::MayBlock()})) {}
 
 ServiceProcessLauncher::~ServiceProcessLauncher() {
-  Join();
+  // We don't really need to wait for the process to be joined, as long as it
+  // eventually happens. Schedule a task to do it, and move on.
+  background_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ProcessState::StopInBackground, state_));
 }
 
 mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
                                                 SandboxType sandbox_type,
                                                 ProcessReadyCallback callback) {
-  DCHECK(!child_process_.IsValid());
-
-  sandbox_type_ = sandbox_type;
-  target_ = target;
+  DCHECK(!state_);
 
   const base::CommandLine& parent_command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -76,65 +109,48 @@ mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
   child_command_line->AppendSwitchASCII("u", target.user_id());
 #endif
 
-  if (!IsUnsandboxedSandboxType(sandbox_type_)) {
+  if (!IsUnsandboxedSandboxType(sandbox_type)) {
     child_command_line->AppendSwitchASCII(
         switches::kServiceSandboxType,
-        StringFromUtilitySandboxType(sandbox_type_));
+        StringFromUtilitySandboxType(sandbox_type));
   }
-  channel_.emplace();
-  channel_->PrepareToPassRemoteEndpoint(&handle_passing_info_,
-                                        child_command_line.get());
 
+  mojo::PlatformChannel::HandlePassingInfo handle_passing_info;
+  mojo::PlatformChannel channel;
+  channel.PrepareToPassRemoteEndpoint(&handle_passing_info,
+                                      child_command_line.get());
+  mojo::OutgoingInvitation invitation;
   mojom::ServicePtr client =
-      PassServiceRequestOnCommandLine(&invitation_, child_command_line.get());
+      PassServiceRequestOnCommandLine(&invitation, child_command_line.get());
 
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
-      base::BindOnce(&ServiceProcessLauncher::DoLaunch, base::Unretained(this),
-                     base::Passed(&child_command_line)),
-      base::BindOnce(&ServiceProcessLauncher::DidStart,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  if (delegate_) {
+    delegate_->AdjustCommandLineArgumentsForTarget(target,
+                                                   child_command_line.get());
+  }
+
+  state_ = base::WrapRefCounted(new ProcessState);
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ProcessState::LaunchInBackground, state_, target,
+                     sandbox_type, std::move(child_command_line),
+                     std::move(handle_passing_info), std::move(channel),
+                     std::move(invitation)),
+      std::move(callback));
 
   return client;
 }
 
-void ServiceProcessLauncher::Join() {
-  // TODO: This code runs on the IO thread where Wait() is not allowed. This
-  // needs to be fixed: https://crbug.com/844078.
-  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_sync;
-  if (channel_)
-    start_child_process_event_.Wait();
-  channel_.reset();
-  if (child_process_.IsValid()) {
-    int rv = -1;
-    LOG_IF(ERROR, !child_process_.WaitForExit(&rv))
-        << "Failed to wait for child process";
-    child_process_.Close();
-  }
-}
-
-void ServiceProcessLauncher::DidStart(ProcessReadyCallback callback) {
-  if (child_process_.IsValid()) {
-    std::move(callback).Run(child_process_.Pid());
-  } else {
-    LOG(ERROR) << "Failed to start child process";
-    channel_.reset();
-    std::move(callback).Run(base::kNullProcessId);
-  }
-}
-
-void ServiceProcessLauncher::DoLaunch(
-    std::unique_ptr<base::CommandLine> child_command_line) {
-  DCHECK(channel_);
-
-  if (delegate_) {
-    delegate_->AdjustCommandLineArgumentsForTarget(target_,
-                                                   child_command_line.get());
-  }
-
+base::ProcessId ServiceProcessLauncher::ProcessState::LaunchInBackground(
+    const Identity& target,
+    SandboxType sandbox_type,
+    std::unique_ptr<base::CommandLine> child_command_line,
+    mojo::PlatformChannel::HandlePassingInfo handle_passing_info,
+    mojo::PlatformChannel channel,
+    mojo::OutgoingInvitation invitation) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::LaunchOptions options;
 #if defined(OS_WIN)
-  options.handles_to_inherit = handle_passing_info_;
+  options.handles_to_inherit = handle_passing_info;
   options.stdin_handle = INVALID_HANDLE_VALUE;
   options.stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
   options.stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
@@ -160,19 +176,19 @@ void ServiceProcessLauncher::DoLaunch(
   }
 #elif defined(OS_FUCHSIA)
   // LaunchProcess will share stdin/out/err with the child process by default.
-  if (!IsUnsandboxedSandboxType(sandbox_type_))
+  if (!IsUnsandboxedSandboxType(sandbox_type))
     NOTIMPLEMENTED();
-  options.handles_to_transfer = std::move(handle_passing_info_);
+  options.handles_to_transfer = std::move(handle_passing_info);
 #elif defined(OS_POSIX)
-  handle_passing_info_.push_back(std::make_pair(STDIN_FILENO, STDIN_FILENO));
-  handle_passing_info_.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
-  handle_passing_info_.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
-  options.fds_to_remap = handle_passing_info_;
+  handle_passing_info.push_back(std::make_pair(STDIN_FILENO, STDIN_FILENO));
+  handle_passing_info.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
+  handle_passing_info.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
+  options.fds_to_remap = handle_passing_info;
 #endif
   DVLOG(2) << "Launching child with command line: "
            << child_command_line->GetCommandLineString();
 #if defined(OS_LINUX)
-  if (!IsUnsandboxedSandboxType(sandbox_type_)) {
+  if (!IsUnsandboxedSandboxType(sandbox_type)) {
     child_process_ =
         sandbox::NamespaceSandbox::LaunchProcess(*child_command_line, options);
     if (!child_process_.IsValid())
@@ -190,26 +206,40 @@ void ServiceProcessLauncher::DoLaunch(
 #endif
   }
 
-  channel_->RemoteProcessLaunchAttempted();
-
-  if (child_process_.IsValid()) {
-#if defined(OS_CHROMEOS)
-    // Always log instead of DVLOG because knowing which pid maps to which
-    // service is vital for interpreting crashes after-the-fact and Chrome OS
-    // devices generally run release builds, even in development.
-    VLOG(0)
-#else
-    DVLOG(0)
-#endif
-        << "Launched child process pid=" << child_process_.Pid()
-        << ", instance=" << target_.instance() << ", name=" << target_.name()
-        << ", user_id=" << target_.user_id();
-
-    mojo::OutgoingInvitation::Send(std::move(invitation_),
-                                   child_process_.Handle(),
-                                   channel_->TakeLocalEndpoint());
+  channel.RemoteProcessLaunchAttempted();
+  if (!child_process_.IsValid()) {
+    LOG(ERROR) << "Failed to start child process for service: "
+               << target.name();
+    return base::kNullProcessId;
   }
-  start_child_process_event_.Signal();
+
+#if defined(OS_CHROMEOS)
+  // Always log instead of DVLOG because knowing which pid maps to which
+  // service is vital for interpreting crashes after-the-fact and Chrome OS
+  // devices generally run release builds, even in development.
+  VLOG(0)
+#else
+  DVLOG(0)
+#endif
+      << "Launched child process pid=" << child_process_.Pid()
+      << ", instance=" << target.instance() << ", name=" << target.name()
+      << ", user_id=" << target.user_id();
+
+  mojo::OutgoingInvitation::Send(std::move(invitation), child_process_.Handle(),
+                                 channel.TakeLocalEndpoint());
+
+  return child_process_.Pid();
+}
+
+void ServiceProcessLauncher::ProcessState::StopInBackground() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!child_process_.IsValid())
+    return;
+
+  int rv = -1;
+  LOG_IF(ERROR, !child_process_.WaitForExit(&rv))
+      << "Failed to wait for child process";
+  child_process_.Close();
 }
 
 }  // namespace service_manager
