@@ -38,7 +38,7 @@ class TestInputDeviceClient : public ui::InputDeviceClient {
 }  // namespace
 
 AuraTestSuiteSetup::AuraTestSuiteSetup() {
-  DCHECK(!Env::GetInstanceDontCreate());
+  DCHECK(!Env::HasInstance());
 #if BUILDFLAG(ENABLE_MUS)
   const Env::Mode env_mode =
       features::IsAshInBrowserProcess() ? Env::Mode::LOCAL : Env::Mode::MUS;

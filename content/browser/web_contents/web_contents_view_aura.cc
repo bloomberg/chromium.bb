@@ -729,7 +729,7 @@ gfx::Rect WebContentsViewAura::GetViewBounds() const {
 }
 
 void WebContentsViewAura::CreateAuraWindow(aura::Window* context) {
-  DCHECK(aura::Env::GetInstanceDontCreate());
+  DCHECK(aura::Env::HasInstance());
   DCHECK(!window_);
   window_ = std::make_unique<aura::Window>(this);
   window_->set_owned_by_parent(false);

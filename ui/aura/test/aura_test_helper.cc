@@ -93,8 +93,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
                            ui::ContextFactoryPrivate* context_factory_private) {
   // If Env has been configured with MUS, but |mode_| is still |LOCAL|, switch
   // to MUS. This is used for tests suites that setup Env globally.
-  if (Env::GetInstanceDontCreate() &&
-      Env::GetInstanceDontCreate()->mode() == Env::Mode::MUS &&
+  if (Env::HasInstance() && Env::GetInstance()->mode() == Env::Mode::MUS &&
       mode_ == Mode::LOCAL) {
     test_window_tree_client_delegate_ =
         std::make_unique<TestWindowTreeClientDelegate>();
@@ -117,7 +116,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT)
     InitWindowTreeClient();
 
-  if (Env::GetInstanceDontCreate()) {
+  if (Env::HasInstance()) {
     // Some tests suites create Env globally rather than per test. In this case
     // make sure Env is configured with the right mode.
     env_mode_to_restore_ = Env::GetInstance()->mode();

@@ -298,7 +298,7 @@ class ServiceBinaryLauncherFactory
 bool ShouldEnableVizService() {
 #if defined(USE_AURA)
   // aura::Env can be null in tests.
-  return aura::Env::GetInstanceDontCreate() &&
+  return aura::Env::HasInstance() &&
          aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
 #else
   return false;

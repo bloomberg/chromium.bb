@@ -119,9 +119,8 @@ ArcImeService::ArcImeService(content::BrowserContext* context,
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
       is_personalized_learning_allowed_(false),
       has_composition_text_(false) {
-  aura::Env* env = aura::Env::GetInstanceDontCreate();
-  if (env)
-    env->AddObserver(this);
+  if (aura::Env::HasInstance())
+    aura::Env::GetInstance()->AddObserver(this);
   arc_window_delegate_->RegisterFocusObserver();
 }
 
@@ -133,9 +132,8 @@ ArcImeService::~ArcImeService() {
   if (focused_arc_window_)
     focused_arc_window_->RemoveObserver(this);
   arc_window_delegate_->UnregisterFocusObserver();
-  aura::Env* env = aura::Env::GetInstanceDontCreate();
-  if (env)
-    env->RemoveObserver(this);
+  if (aura::Env::HasInstance())
+    aura::Env::GetInstance()->RemoveObserver(this);
 
   // KeyboardController is destroyed before ArcImeService (except in tests),
   // so check whether there is a KeyboardController first before removing |this|

@@ -237,12 +237,10 @@ void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
 class SelectControlWaiter : public aura::WindowObserver,
                             public aura::EnvObserver {
  public:
-  SelectControlWaiter() {
-    aura::Env::GetInstanceDontCreate()->AddObserver(this);
-  }
+  SelectControlWaiter() { aura::Env::GetInstance()->AddObserver(this); }
 
   ~SelectControlWaiter() override {
-    aura::Env::GetInstanceDontCreate()->RemoveObserver(this);
+    aura::Env::GetInstance()->RemoveObserver(this);
   }
 
   void Wait(bool wait_for_widget_shown) {

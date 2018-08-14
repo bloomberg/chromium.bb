@@ -22,7 +22,7 @@ void RemoteViewHost::EmbedUsingToken(const base::UnguessableToken& embed_token,
                                      int embed_flags,
                                      EmbedCallback callback) {
   // Only works with mus.
-  DCHECK_EQ(aura::Env::Mode::MUS, aura::Env::GetInstanceDontCreate()->mode());
+  DCHECK_EQ(aura::Env::Mode::MUS, aura::Env::GetInstance()->mode());
 
   embed_token_ = embed_token;
   embed_flags_ = embed_flags;

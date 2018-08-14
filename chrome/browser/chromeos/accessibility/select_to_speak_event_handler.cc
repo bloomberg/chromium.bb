@@ -49,14 +49,15 @@ gfx::PointF GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
 const ui::KeyboardCode kSpeakSelectionKey = ui::VKEY_S;
 
 SelectToSpeakEventHandler::SelectToSpeakEventHandler() {
-  if (aura::Env::GetInstanceDontCreate())
-    aura::Env::GetInstanceDontCreate()->AddPreTargetHandler(
+  if (aura::Env::HasInstance()) {
+    aura::Env::GetInstance()->AddPreTargetHandler(
         this, ui::EventTarget::Priority::kAccessibility);
+  }
 }
 
 SelectToSpeakEventHandler::~SelectToSpeakEventHandler() {
-  if (aura::Env::GetInstanceDontCreate())
-    aura::Env::GetInstanceDontCreate()->RemovePreTargetHandler(this);
+  if (aura::Env::HasInstance())
+    aura::Env::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void SelectToSpeakEventHandler::SetSelectToSpeakStateSelecting(
