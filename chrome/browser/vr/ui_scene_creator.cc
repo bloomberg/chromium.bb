@@ -621,12 +621,13 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
                                 -(kControllerLength - kControllerWidth) / 2);
   touchpad_button->SetCornerRadii({kControllerWidth / 2, kControllerWidth / 2,
                                    kControllerWidth / 2, kControllerWidth / 2});
-  touchpad_button->AddBinding(VR_BIND_FUNC(
-      SkColor, Model, model,
-      model->controller.touchpad_button_state == UiInputManager::DOWN
-          ? model->color_scheme().controller_button_down
-          : model->color_scheme().controller_button,
-      Rect, touchpad_button.get(), SetColor));
+  touchpad_button->AddBinding(
+      VR_BIND_FUNC(SkColor, Model, model,
+                   model->controller.touchpad_button_state ==
+                           PlatformController::ButtonState::kDown
+                       ? model->color_scheme().controller_button_down
+                       : model->color_scheme().controller_button,
+                   Rect, touchpad_button.get(), SetColor));
   controller->AddChild(std::move(touchpad_button));
 
   auto app_button =
@@ -638,7 +639,8 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
   app_button->SetTranslate(0.0f, 0.0f, kControllerAppButtonZ);
   app_button->AddBinding(
       VR_BIND_FUNC(SkColor, Model, model,
-                   model->controller.app_button_state == UiInputManager::DOWN
+                   model->controller.app_button_state ==
+                           PlatformController::ButtonState::kDown
                        ? model->color_scheme().controller_button_down
                        : model->color_scheme().controller_button,
                    VectorIcon, app_button.get(), SetColor));
@@ -653,7 +655,8 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
   home_button->SetTranslate(0.0f, 0.0f, kControllerHomeButtonZ);
   home_button->AddBinding(
       VR_BIND_FUNC(SkColor, Model, model,
-                   model->controller.home_button_state == UiInputManager::DOWN
+                   model->controller.home_button_state ==
+                           PlatformController::ButtonState::kDown
                        ? model->color_scheme().controller_button_down
                        : model->color_scheme().controller_button,
                    VectorIcon, home_button.get(), SetColor));

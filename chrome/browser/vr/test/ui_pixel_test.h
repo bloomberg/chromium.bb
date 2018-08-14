@@ -30,7 +30,7 @@ class UiPixelTest : public testing::Test {
               const ToolbarState& toolbar_state);
   void DrawUi(const gfx::Vector3dF& laser_direction,
               const gfx::Point3F& laser_origin,
-              UiInputManager::ButtonState button_state,
+              PlatformController::ButtonState button_state,
               float controller_opacity,
               const gfx::Transform& controller_transform,
               const gfx::Transform& view_matrix,

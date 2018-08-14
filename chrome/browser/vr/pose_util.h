@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VR_POSE_UTIL_H_
 #define CHROME_BROWSER_VR_POSE_UTIL_H_
 
-#include "chrome/browser/vr/vr_base_export.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 namespace gfx {
@@ -15,10 +15,10 @@ class Transform;
 namespace vr {
 
 // Provides the direction the head is looking towards as a 3x1 unit vector.
-VR_BASE_EXPORT gfx::Vector3dF GetForwardVector(const gfx::Transform& head_pose);
+VR_EXPORT gfx::Vector3dF GetForwardVector(const gfx::Transform& head_pose);
 
 // Returns a vector heading upward from the viewer's head.
-VR_BASE_EXPORT gfx::Vector3dF GetUpVector(const gfx::Transform& head_pose);
+VR_EXPORT gfx::Vector3dF GetUpVector(const gfx::Transform& head_pose);
 
 }  // namespace vr
 

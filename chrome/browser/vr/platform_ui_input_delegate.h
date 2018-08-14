@@ -15,7 +15,7 @@
 #include "chrome/browser/vr/macros.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/text_edit_action.h"
-#include "chrome/browser/vr/vr_base_export.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -32,7 +32,7 @@ class PlatformInputHandler;
 
 // This class is responsible for processing all events and gestures for
 // PlatformUiElement.
-class VR_BASE_EXPORT PlatformUiInputDelegate {
+class VR_EXPORT PlatformUiInputDelegate {
  public:
   PlatformUiInputDelegate();
   explicit PlatformUiInputDelegate(PlatformInputHandler* input_handler);

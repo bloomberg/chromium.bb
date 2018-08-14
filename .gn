@@ -85,6 +85,7 @@ check_targets = [
   "//chrome/app/*",
   "//chrome/app_shim/*",
   "//chrome/browser/android/*",
+  "//chrome/browser/vr/*",
   "//chrome/browser/chromeos/*",
   "//chrome/browser/extensions/*",
   "//chrome/browser/resource_coordinator/*",

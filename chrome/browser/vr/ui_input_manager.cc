@@ -155,9 +155,10 @@ void UiInputManager::SendFlingCancel(InputEventList* input_event_list,
   fling_target_id_ = 0;
 }
 
-void UiInputManager::SendScrollEnd(InputEventList* input_event_list,
-                                   const gfx::PointF& target_point,
-                                   ButtonState button_state) {
+void UiInputManager::SendScrollEnd(
+    InputEventList* input_event_list,
+    const gfx::PointF& target_point,
+    PlatformController::ButtonState button_state) {
   if (!in_scroll_) {
     return;
   }
@@ -165,7 +166,7 @@ void UiInputManager::SendScrollEnd(InputEventList* input_event_list,
   UiElement* element = scene_->GetUiElementById(input_capture_element_id_);
 
   if (previous_button_state_ != button_state &&
-      button_state == ButtonState::DOWN) {
+      button_state == PlatformController::ButtonState::kDown) {
     DCHECK_GT(input_event_list->size(), 0LU);
     DCHECK_EQ(input_event_list->front()->type(), InputEvent::kScrollEnd);
   }
@@ -244,10 +245,10 @@ void UiInputManager::SendHoverMove(UiElement* target,
 }
 
 void UiInputManager::SendButtonUp(const gfx::PointF& target_point,
-                                  ButtonState button_state,
+                                  PlatformController::ButtonState button_state,
                                   base::TimeTicks timestamp) {
   if (!in_click_ || previous_button_state_ == button_state ||
-      button_state != ButtonState::UP) {
+      button_state != PlatformController::ButtonState::kUp) {
     return;
   }
   in_click_ = false;
@@ -264,12 +265,13 @@ void UiInputManager::SendButtonUp(const gfx::PointF& target_point,
   input_capture_element_id_ = 0;
 }
 
-void UiInputManager::SendButtonDown(UiElement* target,
-                                    const gfx::PointF& target_point,
-                                    ButtonState button_state,
-                                    base::TimeTicks timestamp) {
+void UiInputManager::SendButtonDown(
+    UiElement* target,
+    const gfx::PointF& target_point,
+    PlatformController::ButtonState button_state,
+    base::TimeTicks timestamp) {
   if (previous_button_state_ == button_state ||
-      button_state != ButtonState::DOWN) {
+      button_state != PlatformController::ButtonState::kDown) {
     return;
   }
   in_click_ = true;

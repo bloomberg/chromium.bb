@@ -62,7 +62,7 @@ void UiPixelTest::MakeUi(const UiInitialState& ui_initial_state,
 
 void UiPixelTest::DrawUi(const gfx::Vector3dF& laser_direction,
                          const gfx::Point3F& laser_origin,
-                         UiInputManager::ButtonState button_state,
+                         PlatformController::ButtonState button_state,
                          float controller_opacity,
                          const gfx::Transform& controller_transform,
                          const gfx::Transform& view_matrix,
@@ -73,8 +73,8 @@ void UiPixelTest::DrawUi(const gfx::Vector3dF& laser_direction,
   controller_model.opacity = controller_opacity;
   controller_model.laser_origin = laser_origin;
   controller_model.touchpad_button_state = button_state;
-  controller_model.app_button_state = UiInputManager::ButtonState::UP;
-  controller_model.home_button_state = UiInputManager::ButtonState::UP;
+  controller_model.app_button_state = PlatformController::ButtonState::kUp;
+  controller_model.home_button_state = PlatformController::ButtonState::kUp;
   RenderInfo render_info;
   render_info.head_pose = view_matrix;
   render_info.left_eye_model.view_matrix = view_matrix;

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_PLATFORM_CONTROLLER_H_
 
 #include "base/time/time.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace gfx {
 class PointF;
@@ -19,14 +20,19 @@ namespace vr {
 // different platform's controller, but the functionality must exist. I.e., the
 // concept of "the button you press to exit fullscreen / presentation" is
 // universal.
-class PlatformController {
+class VR_EXPORT PlatformController {
  public:
   enum ButtonType {
     kButtonHome,
     kButtonTypeFirst = kButtonHome,
     kButtonMenu,
     kButtonSelect,
-    kButtonTypeNumber
+    kButtonTypeNumber,
+  };
+
+  enum ButtonState {
+    kUp,
+    kDown,
   };
 
   enum Handedness {

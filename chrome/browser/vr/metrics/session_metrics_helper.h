@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/vr/mode.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
-#include "chrome/browser/vr/vr_base_export.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -147,8 +147,7 @@ class SessionTracker {
 // metrics that require state monitoring, such as durations, but also tracks
 // data we want attached to that, such as number of videos watched and how the
 // session was started.
-class VR_BASE_EXPORT SessionMetricsHelper
-    : public content::WebContentsObserver {
+class VR_EXPORT SessionMetricsHelper : public content::WebContentsObserver {
  public:
   // Returns the SessionMetricsHelper singleton if it has been created for the
   // WebContents.

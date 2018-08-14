@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VR_MODEL_RETICLE_MODEL_H_
 #define CHROME_BROWSER_VR_MODEL_RETICLE_MODEL_H_
 
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/geometry/point3_f.h"
 
 namespace vr {
@@ -18,7 +19,7 @@ enum CursorType {
 // controller's laser. It is computed by the UiInputManager and is used by the
 // input manager in the production of gestures as well as by the Reticle element
 // in the scene.
-struct ReticleModel {
+struct VR_EXPORT ReticleModel {
   gfx::Point3F target_point;
   gfx::PointF target_local_point;
   int target_element_id = 0;

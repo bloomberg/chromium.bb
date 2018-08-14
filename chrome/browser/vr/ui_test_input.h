@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_VR_UI_TEST_INPUT_H_
 
 #include "base/time/time.h"
-#include "chrome/browser/vr/elements/ui_element_name.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace vr {

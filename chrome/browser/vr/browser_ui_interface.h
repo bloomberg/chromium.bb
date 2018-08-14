@@ -8,6 +8,7 @@
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "components/security_state/core/security_state.h"
 
 namespace base {
@@ -21,7 +22,7 @@ struct OmniboxSuggestions;
 struct ToolbarState;
 
 // The browser communicates state changes to the VR UI via this interface.
-class BrowserUiInterface {
+class VR_EXPORT BrowserUiInterface {
  public:
   virtual ~BrowserUiInterface() {}
 

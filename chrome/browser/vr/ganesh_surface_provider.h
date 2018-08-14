@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_VR_GANESH_SURFACE_PROVIDER_H_
 
 #include "chrome/browser/vr/skia_surface_provider.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 class GrContext;
 
 namespace vr {
 
 // Creates a Skia surface for which drawing commands are executed on the GPU.
-class VR_EXPORT GaneshSurfaceProvider : public SkiaSurfaceProvider {
+class VR_UI_EXPORT GaneshSurfaceProvider : public SkiaSurfaceProvider {
  public:
   GaneshSurfaceProvider();
   ~GaneshSurfaceProvider() override;

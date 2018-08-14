@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VR_MODEL_WEB_VR_MODEL_H_
 #define CHROME_BROWSER_VR_MODEL_WEB_VR_MODEL_H_
 
+#include "chrome/browser/vr/vr_export.h"
+
 namespace vr {
 
 // As we wait for WebVR frames, we may pass through the following states.
@@ -25,7 +27,7 @@ enum WebVrState {
   kWebVrPresenting,
 };
 
-struct WebVrModel {
+struct VR_EXPORT WebVrModel {
   WebVrState state = kWebVrNoTimeoutPending;
   bool has_received_permissions = false;
   bool showing_hosted_ui = false;
