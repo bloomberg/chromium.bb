@@ -30,14 +30,27 @@
       for (var i = 0; i < 2; ++i)
         setTimeout(() => { throw "Primitive value"; }, 0);
     }
+
+    var delayedResolver;
+    var delayedPromise = new Promise(resolve => { delayedResolver = resolve; });
+
     //# sourceURL=console-repeat-count.js
   `);
+
+  // Same Command multiple times with no immediate result.
+  ConsoleTestRunner.evaluateInConsolePromise('await delayedPromise');
+  ConsoleTestRunner.evaluateInConsolePromise('await delayedPromise');
+  await ConsoleTestRunner.waitForConsoleMessagesPromise(2);
+
+  // Multiple Results with the same value.
+  await TestRunner.evaluateInPagePromise(`delayedResolver()`);
+  await ConsoleTestRunner.waitForConsoleMessagesPromise(4);
 
   await TestRunner.evaluateInPagePromise('dumpMessages()');
   await TestRunner.evaluateInPagePromise('throwPrimitiveValues()');
   await TestRunner.evaluateInPagePromise('throwObjects()');
-  ConsoleTestRunner.waitForConsoleMessages(7, () => {
-    ConsoleTestRunner.dumpConsoleMessages();
-    TestRunner.completeTest();
-  });
+
+  await ConsoleTestRunner.waitForConsoleMessagesPromise(11);
+  ConsoleTestRunner.dumpConsoleMessages();
+  TestRunner.completeTest();
 })();
