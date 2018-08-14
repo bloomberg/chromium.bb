@@ -98,12 +98,11 @@ interface ServiceWorker {
   // promise has settled. |developer_id| and |unique_id| are documented in
   // content::BackgroundFetchRegistrationId.
   DispatchBackgroundFetchAbortEvent(string developer_id,
-                                    string unique_id,
-                                    array<BackgroundFetchSettledFetch> fetches)
+                                    string unique_id)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);
   DispatchBackgroundFetchClickEvent(string developer_id,
-                                    BackgroundFetchState state)
+                                    string unique_id)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);
   DispatchBackgroundFetchFailEvent(string developer_id,
@@ -111,9 +110,10 @@ interface ServiceWorker {
                                    array<BackgroundFetchSettledFetch> fetches)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);
-  DispatchBackgroundFetchedEvent(string developer_id,
-                                 string unique_id,
-                                 array<BackgroundFetchSettledFetch> fetches)
+  DispatchBackgroundFetchSuccessEvent(
+      string developer_id,
+      string unique_id,
+      array<BackgroundFetchSettledFetch> fetches)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);
 

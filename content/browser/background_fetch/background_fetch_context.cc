@@ -365,14 +365,15 @@ void BackgroundFetchContext::DidMarkForDeletion(
     case BackgroundFetchReasonToAbort::CANCELLED_FROM_UI:
       CleanupRegistration(registration_id, {},
                           mojom::BackgroundFetchState::FAILED);
-      // TODO(rayankans): Send fetches to the event dispatcher.
-      event_dispatcher_.DispatchBackgroundFetchAbortEvent(
-          registration_id, {} /* settled_fetches */, base::DoNothing());
+      event_dispatcher_.DispatchBackgroundFetchAbortEvent(registration_id,
+                                                          base::DoNothing());
       return;
     case BackgroundFetchReasonToAbort::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
     case BackgroundFetchReasonToAbort::SERVICE_WORKER_UNAVAILABLE:
     case BackgroundFetchReasonToAbort::NONE:
       // This will send a BackgroundFetchFetched or BackgroundFetchFail event.
+      // TODO(crbug.com/699957): Get rid of this once matchAll() is implemented
+      // on BackgroundFetchRegistration.
       data_manager_->GetSettledFetchesForRegistration(
           registration_id,
           std::make_unique<BackgroundFetchRequestMatchParams>(),
@@ -397,11 +398,11 @@ void BackgroundFetchContext::DidGetSettledFetches(
     return;
   }
 
-  // The `backgroundfetched` event will be invoked when all requests in the
+  // The `backgroundfetchsuccess` event will be invoked when all requests in the
   // registration have completed successfully. In all other cases, the
   // `backgroundfetchfail` event will be invoked instead.
   if (background_fetch_succeeded) {
-    event_dispatcher_.DispatchBackgroundFetchedEvent(
+    event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
         registration_id, std::move(settled_fetches),
         base::BindOnce(
             &BackgroundFetchContext::CleanupRegistration,
@@ -435,12 +436,12 @@ void BackgroundFetchContext::CleanupRegistration(
 
   // If we had an active JobController, it is no longer necessary, as the
   // notification's UI can no longer be updated after the fetch is aborted, or
-  // after the waitUntil promise of the backgroundfetched/backgroundfetchfail
-  // event has been resolved. Store the information we want to persist after
-  // the controller is gone, in completed_fetches_.
+  // after the waitUntil promise of the
+  // backgroundfetchsuccess/backgroundfetchfail event has been resolved. Store
+  // the information we want to persist after the controller is gone, in
+  // completed_fetches_.
   if (preserve_info_to_dispatch_click_event) {
-    completed_fetches_[registration_id.unique_id()] = {registration_id,
-                                                       background_fetch_state};
+    completed_fetches_[registration_id.unique_id()] = registration_id;
   }
   job_controllers_.erase(registration_id.unique_id());
 
@@ -463,8 +464,7 @@ void BackgroundFetchContext::DispatchClickEvent(const std::string& unique_id) {
   if (iter != completed_fetches_.end()) {
     // The fetch has succeeded or failed. (not aborted/cancelled).
     event_dispatcher_.DispatchBackgroundFetchClickEvent(
-        iter->second.first /* registration_id */,
-        iter->second.second /* background_fetch_state */, base::DoNothing());
+        iter->second /* registration_id */, base::DoNothing());
     completed_fetches_.erase(iter);
     return;
   }
@@ -474,8 +474,7 @@ void BackgroundFetchContext::DispatchClickEvent(const std::string& unique_id) {
   if (controllers_iter == job_controllers_.end())
     return;
   event_dispatcher_.DispatchBackgroundFetchClickEvent(
-      controllers_iter->second->registration_id(),
-      mojom::BackgroundFetchState::PENDING, base::DoNothing());
+      controllers_iter->second->registration_id(), base::DoNothing());
 }
 
 void BackgroundFetchContext::LastObserverGarbageCollected(

@@ -18,4 +18,5 @@
     attribute EventHandler onprogress;
 
     [CallWith=ScriptState] Promise<boolean> abort();
+    // TODO(crbug.com/863016): Add match() and matchAll().
 };

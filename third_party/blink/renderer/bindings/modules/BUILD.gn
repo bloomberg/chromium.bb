@@ -19,9 +19,8 @@ group("bindings_modules_generated") {
 generate_event_interfaces("modules_bindings_generated_event_interfaces") {
   sources = [
     "//third_party/blink/renderer/modules/app_banner/before_install_prompt_event.idl",
-    "//third_party/blink/renderer/modules/background_fetch/background_fetch_click_event.idl",
     "//third_party/blink/renderer/modules/background_fetch/background_fetch_event.idl",
-    "//third_party/blink/renderer/modules/background_fetch/background_fetch_fail_event.idl",
+    "//third_party/blink/renderer/modules/background_fetch/background_fetch_update_ui_event.idl",
     "//third_party/blink/renderer/modules/background_sync/sync_event.idl",
     "//third_party/blink/renderer/modules/cookie_store/cookie_change_event.idl",
     "//third_party/blink/renderer/modules/cookie_store/extendable_cookie_change_event.idl",

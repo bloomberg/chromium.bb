@@ -44,8 +44,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchInvalidRegistration) {
       kExampleUniqueId);
 
   base::RunLoop run_loop;
-  event_dispatcher_.DispatchBackgroundFetchAbortEvent(
-      invalid_registration_id, {}, run_loop.QuitClosure());
+  event_dispatcher_.DispatchBackgroundFetchAbortEvent(invalid_registration_id,
+                                                      run_loop.QuitClosure());
 
   run_loop.Run();
 
@@ -71,8 +71,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchAbortEvent(
-        registration_id, fetches, run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchAbortEvent(registration_id,
+                                                        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -83,7 +83,6 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
   ASSERT_TRUE(embedded_worker_test_helper()->last_unique_id().has_value());
   EXPECT_EQ(kExampleUniqueId,
             embedded_worker_test_helper()->last_unique_id().value());
-  ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
@@ -97,8 +96,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchAbortEvent(
-        second_registration_id, fetches, run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchAbortEvent(second_registration_id,
+                                                        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -109,7 +108,6 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
   ASSERT_TRUE(embedded_worker_test_helper()->last_unique_id().has_value());
   EXPECT_EQ(kExampleUniqueId2,
             embedded_worker_test_helper()->last_unique_id().value());
-  ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
@@ -133,9 +131,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchClickEvent(
-        registration_id, mojom::BackgroundFetchState::PENDING,
-        run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchClickEvent(registration_id,
+                                                        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -144,9 +141,6 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
   EXPECT_EQ(kExampleDeveloperId,
             embedded_worker_test_helper()->last_developer_id().value());
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_state().has_value());
-  EXPECT_EQ(mojom::BackgroundFetchState::PENDING,
-            embedded_worker_test_helper()->last_state());
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.ClickEvent",
@@ -160,9 +154,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchClickEvent(
-        second_registration_id, mojom::BackgroundFetchState::SUCCEEDED,
-        run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchClickEvent(second_registration_id,
+                                                        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -170,10 +163,6 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
   ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
   EXPECT_EQ(kExampleDeveloperId2,
             embedded_worker_test_helper()->last_developer_id().value());
-
-  ASSERT_TRUE(embedded_worker_test_helper()->last_state().has_value());
-  EXPECT_EQ(mojom::BackgroundFetchState::SUCCEEDED,
-            embedded_worker_test_helper()->last_state());
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.ClickEvent",
@@ -253,7 +242,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
       blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected, 1);
 }
 
-TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
+TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
   int64_t service_worker_registration_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
@@ -267,8 +256,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchedEvent(registration_id, fetches,
-                                                     run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
+        registration_id, fetches, run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -286,7 +275,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
             embedded_worker_test_helper()->last_fetches()->size());
 
   histogram_tester_.ExpectUniqueSample(
-      "BackgroundFetch.EventDispatchResult.FetchedEvent",
+      "BackgroundFetch.EventDispatchResult.SuccessEvent",
       BackgroundFetchEventDispatcher::DISPATCH_RESULT_SUCCESS, 1);
 
   fetches.push_back(BackgroundFetchSettledFetch());
@@ -299,7 +288,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchedEvent(
+    event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
         second_registration_id, fetches, run_loop.QuitClosure());
 
     run_loop.Run();
@@ -318,13 +307,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchedEvent) {
             embedded_worker_test_helper()->last_fetches()->size());
 
   histogram_tester_.ExpectBucketCount(
-      "BackgroundFetch.EventDispatchResult.FetchedEvent",
+      "BackgroundFetch.EventDispatchResult.SuccessEvent",
       BackgroundFetchEventDispatcher::DISPATCH_RESULT_SUCCESS, 1);
   histogram_tester_.ExpectBucketCount(
-      "BackgroundFetch.EventDispatchResult.FetchedEvent",
+      "BackgroundFetch.EventDispatchResult.SuccessEvent",
       BackgroundFetchEventDispatcher::DISPATCH_RESULT_CANNOT_DISPATCH_EVENT, 1);
   histogram_tester_.ExpectUniqueSample(
-      "BackgroundFetch.EventDispatchFailure.Dispatch.FetchedEvent",
+      "BackgroundFetch.EventDispatchFailure.Dispatch.SuccessEvent",
       blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected, 1);
 }
 

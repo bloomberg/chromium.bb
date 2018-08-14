@@ -87,7 +87,7 @@ function StartSingleFileDownloadWithCorrectDownloadTotal() {
 
 // Listens for a postMessage from sw.js and sends the result to the test.
 navigator.serviceWorker.addEventListener('message', (event) => {
-  if (['backgroundfetched', 'backgroundfetchfail'].includes(event.data))
+  if (['backgroundfetchsuccess', 'backgroundfetchfail'].includes(event.data))
     sendResultToTest(event.data);
   else
     sendErrorToTest(Error('Unexpected message received: ' + event.data));

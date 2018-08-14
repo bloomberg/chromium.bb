@@ -54,14 +54,14 @@ PASS BackgroundFetchEvent interface object name
 PASS BackgroundFetchEvent interface: existence and properties of interface prototype object
 PASS BackgroundFetchEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS BackgroundFetchEvent interface: existence and properties of interface prototype object's @@unscopables property
-PASS BackgroundFetchEvent interface: attribute id
-PASS BackgroundFetchSettledEvent interface: existence and properties of interface object
-PASS BackgroundFetchSettledEvent interface object length
-PASS BackgroundFetchSettledEvent interface object name
-PASS BackgroundFetchSettledEvent interface: existence and properties of interface prototype object
-PASS BackgroundFetchSettledEvent interface: existence and properties of interface prototype object's "constructor" property
-PASS BackgroundFetchSettledEvent interface: existence and properties of interface prototype object's @@unscopables property
-PASS BackgroundFetchSettledEvent interface: attribute fetches
+FAIL BackgroundFetchEvent interface: attribute id assert_true: The prototype object must have a property "id" expected true got false
+FAIL BackgroundFetchSettledEvent interface: existence and properties of interface object assert_own_property: self does not have own property "BackgroundFetchSettledEvent" expected property "BackgroundFetchSettledEvent" missing
+FAIL BackgroundFetchSettledEvent interface object length assert_own_property: self does not have own property "BackgroundFetchSettledEvent" expected property "BackgroundFetchSettledEvent" missing
+FAIL BackgroundFetchSettledEvent interface object name assert_own_property: self does not have own property "BackgroundFetchSettledEvent" expected property "BackgroundFetchSettledEvent" missing
+FAIL BackgroundFetchSettledEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "BackgroundFetchSettledEvent" expected property "BackgroundFetchSettledEvent" missing
+FAIL BackgroundFetchSettledEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "BackgroundFetchSettledEvent" expected property "BackgroundFetchSettledEvent" missing
+FAIL BackgroundFetchSettledEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "BackgroundFetchSettledEvent" expected property "BackgroundFetchSettledEvent" missing
+FAIL BackgroundFetchSettledEvent interface: attribute fetches assert_own_property: self does not have own property "BackgroundFetchSettledEvent" expected property "BackgroundFetchSettledEvent" missing
 PASS BackgroundFetchSettledFetches interface: existence and properties of interface object
 PASS BackgroundFetchSettledFetches interface object length
 PASS BackgroundFetchSettledFetches interface object name
@@ -78,22 +78,22 @@ PASS BackgroundFetchSettledFetch interface: existence and properties of interfac
 PASS BackgroundFetchSettledFetch interface: existence and properties of interface prototype object's "constructor" property
 PASS BackgroundFetchSettledFetch interface: existence and properties of interface prototype object's @@unscopables property
 PASS BackgroundFetchSettledFetch interface: attribute response
-PASS BackgroundFetchUpdateEvent interface: existence and properties of interface object
-PASS BackgroundFetchUpdateEvent interface object length
-PASS BackgroundFetchUpdateEvent interface object name
-PASS BackgroundFetchUpdateEvent interface: existence and properties of interface prototype object
-PASS BackgroundFetchUpdateEvent interface: existence and properties of interface prototype object's "constructor" property
-PASS BackgroundFetchUpdateEvent interface: existence and properties of interface prototype object's @@unscopables property
-FAIL BackgroundFetchUpdateEvent interface: operation updateUI(DOMString) assert_equals: property has wrong .length expected 1 but got 0
-PASS BackgroundFetchClickEvent interface: existence and properties of interface object
-PASS BackgroundFetchClickEvent interface object length
-PASS BackgroundFetchClickEvent interface object name
-PASS BackgroundFetchClickEvent interface: existence and properties of interface prototype object
-PASS BackgroundFetchClickEvent interface: existence and properties of interface prototype object's "constructor" property
-PASS BackgroundFetchClickEvent interface: existence and properties of interface prototype object's @@unscopables property
-PASS BackgroundFetchClickEvent interface: attribute state
+FAIL BackgroundFetchUpdateEvent interface: existence and properties of interface object assert_own_property: self does not have own property "BackgroundFetchUpdateEvent" expected property "BackgroundFetchUpdateEvent" missing
+FAIL BackgroundFetchUpdateEvent interface object length assert_own_property: self does not have own property "BackgroundFetchUpdateEvent" expected property "BackgroundFetchUpdateEvent" missing
+FAIL BackgroundFetchUpdateEvent interface object name assert_own_property: self does not have own property "BackgroundFetchUpdateEvent" expected property "BackgroundFetchUpdateEvent" missing
+FAIL BackgroundFetchUpdateEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "BackgroundFetchUpdateEvent" expected property "BackgroundFetchUpdateEvent" missing
+FAIL BackgroundFetchUpdateEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "BackgroundFetchUpdateEvent" expected property "BackgroundFetchUpdateEvent" missing
+FAIL BackgroundFetchUpdateEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "BackgroundFetchUpdateEvent" expected property "BackgroundFetchUpdateEvent" missing
+FAIL BackgroundFetchUpdateEvent interface: operation updateUI(DOMString) assert_own_property: self does not have own property "BackgroundFetchUpdateEvent" expected property "BackgroundFetchUpdateEvent" missing
+FAIL BackgroundFetchClickEvent interface: existence and properties of interface object assert_own_property: self does not have own property "BackgroundFetchClickEvent" expected property "BackgroundFetchClickEvent" missing
+FAIL BackgroundFetchClickEvent interface object length assert_own_property: self does not have own property "BackgroundFetchClickEvent" expected property "BackgroundFetchClickEvent" missing
+FAIL BackgroundFetchClickEvent interface object name assert_own_property: self does not have own property "BackgroundFetchClickEvent" expected property "BackgroundFetchClickEvent" missing
+FAIL BackgroundFetchClickEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "BackgroundFetchClickEvent" expected property "BackgroundFetchClickEvent" missing
+FAIL BackgroundFetchClickEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "BackgroundFetchClickEvent" expected property "BackgroundFetchClickEvent" missing
+FAIL BackgroundFetchClickEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "BackgroundFetchClickEvent" expected property "BackgroundFetchClickEvent" missing
+FAIL BackgroundFetchClickEvent interface: attribute state assert_own_property: self does not have own property "BackgroundFetchClickEvent" expected property "BackgroundFetchClickEvent" missing
 PASS ServiceWorkerRegistration interface: attribute backgroundFetch
-PASS ServiceWorkerGlobalScope interface: attribute onbackgroundfetched
+PASS ServiceWorkerGlobalScope interface: attribute onbackgroundfetchsuccess
 PASS ServiceWorkerGlobalScope interface: attribute onbackgroundfetchfail
 PASS ServiceWorkerGlobalScope interface: attribute onbackgroundfetchabort
 PASS ServiceWorkerGlobalScope interface: attribute onbackgroundfetchclick

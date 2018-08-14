@@ -14,17 +14,9 @@ interface AbortSignal : EventTarget
     getter onabort
     method constructor
     setter onabort
-interface BackgroundFetchClickEvent : BackgroundFetchEvent
-    attribute @@toStringTag
-    getter state
-    method constructor
 interface BackgroundFetchEvent : ExtendableEvent
     attribute @@toStringTag
-    getter id
-    method constructor
-interface BackgroundFetchFailEvent : BackgroundFetchEvent
-    attribute @@toStringTag
-    getter fetches
+    getter registration
     method constructor
 interface BackgroundFetchFetch
     attribute @@toStringTag
@@ -52,10 +44,6 @@ interface BackgroundFetchRegistration : EventTarget
     method abort
     method constructor
     setter onprogress
-interface BackgroundFetchSettledEvent : BackgroundFetchEvent
-    attribute @@toStringTag
-    getter fetches
-    method constructor
 interface BackgroundFetchSettledFetch : BackgroundFetchFetch
     attribute @@toStringTag
     getter response
@@ -65,8 +53,9 @@ interface BackgroundFetchSettledFetches
     method constructor
     method match
     method values
-interface BackgroundFetchUpdateEvent : BackgroundFetchSettledEvent
+interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent
     attribute @@toStringTag
+    getter fetches
     method constructor
     method updateUI
 interface BarcodeDetector
@@ -3516,8 +3505,8 @@ interface WritableStream
     getter onactivate
     getter onbackgroundfetchabort
     getter onbackgroundfetchclick
-    getter onbackgroundfetched
     getter onbackgroundfetchfail
+    getter onbackgroundfetchsuccess
     getter oncanmakepayment
     getter oncookiechange
     getter onfetch
@@ -3537,8 +3526,8 @@ interface WritableStream
     setter onactivate
     setter onbackgroundfetchabort
     setter onbackgroundfetchclick
-    setter onbackgroundfetched
     setter onbackgroundfetchfail
+    setter onbackgroundfetchsuccess
     setter oncanmakepayment
     setter oncookiechange
     setter onfetch

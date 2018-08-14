@@ -111,12 +111,12 @@ void ServiceWorkerGlobalScopeClient::DidHandleBackgroundFetchFailEvent(
                                             event_dispatch_time);
 }
 
-void ServiceWorkerGlobalScopeClient::DidHandleBackgroundFetchedEvent(
+void ServiceWorkerGlobalScopeClient::DidHandleBackgroundFetchSuccessEvent(
     int event_id,
     mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
-  client_.DidHandleBackgroundFetchedEvent(event_id, status,
-                                          event_dispatch_time);
+  client_.DidHandleBackgroundFetchSuccessEvent(event_id, status,
+                                               event_dispatch_time);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleCookieChangeEvent(

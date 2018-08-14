@@ -72,18 +72,17 @@ class WebServiceWorkerContextProxy {
   virtual void DispatchBackgroundFetchAbortEvent(
       int event_id,
       const WebString& developer_id,
-      const WebString& unique_id,
-      const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
+      const WebString& unique_id) = 0;
   virtual void DispatchBackgroundFetchClickEvent(
       int event_id,
       const WebString& developer_id,
-      BackgroundFetchState status) = 0;
+      const WebString& unique_id) = 0;
   virtual void DispatchBackgroundFetchFailEvent(
       int event_id,
       const WebString& developer_id,
       const WebString& unique_id,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
-  virtual void DispatchBackgroundFetchedEvent(
+  virtual void DispatchBackgroundFetchSuccessEvent(
       int event_id,
       const WebString& developer_id,
       const WebString& unique_id,

@@ -14,7 +14,7 @@ class ServiceWorkerGlobalScopeBackgroundFetch {
   STATIC_ONLY(ServiceWorkerGlobalScopeBackgroundFetch);
 
  public:
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(backgroundfetched);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(backgroundfetchsuccess);
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(backgroundfetchfail);
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(backgroundfetchabort);
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(backgroundfetchclick);

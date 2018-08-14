@@ -42,7 +42,7 @@ class MODULES_EXPORT WaitUntilObserver final
     kBackgroundFetchAbort,
     kBackgroundFetchClick,
     kBackgroundFetchFail,
-    kBackgroundFetched
+    kBackgroundFetchSuccess
   };
 
   static WaitUntilObserver* Create(ExecutionContext*, EventType, int event_id);

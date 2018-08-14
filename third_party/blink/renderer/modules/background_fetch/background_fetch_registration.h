@@ -65,6 +65,8 @@ class BackgroundFetchRegistration final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
+  const String& unique_id() const { return unique_id_; }
+
   void Dispose();
 
   void Trace(blink::Visitor* visitor) override;
