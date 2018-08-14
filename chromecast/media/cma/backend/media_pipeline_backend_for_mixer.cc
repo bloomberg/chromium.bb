@@ -23,7 +23,7 @@
 #endif  // defined(OS_FUCHSIA)
 
 namespace {
-int64_t kSyncedPlaybackStartDelayUs = 200000;
+int64_t kSyncedPlaybackStartDelayUs = 0;
 }  // namespace
 
 namespace chromecast {
@@ -53,6 +53,7 @@ MediaPipelineBackendForMixer::CreateVideoDecoder() {
   if (video_decoder_)
     return nullptr;
   video_decoder_ = VideoDecoderForMixer::Create(params_);
+  video_decoder_->SetObserver(this);
   DCHECK(video_decoder_.get());
   if (audio_decoder_ && !av_sync_ && !IsIgnorePtsMode()) {
     av_sync_ = AvSync::Create(GetTaskRunner(), this);
@@ -73,24 +74,20 @@ bool MediaPipelineBackendForMixer::Initialize() {
 
 bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
   DCHECK_EQ(kStateInitialized, state_);
-  if (IsIgnorePtsMode()) {
-    start_playback_timestamp_us_ = INT64_MIN;
-  } else {
-    start_playback_timestamp_us_ =
-        MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
-  }
+
+  video_ready_to_play_ = !video_decoder_;
+  audio_ready_to_play_ = !audio_decoder_;
+  first_resume_processed_ = false;
+
   start_playback_pts_us_ = start_pts;
 
-  if (audio_decoder_ && !audio_decoder_->Start(start_playback_timestamp_us_))
+  if (audio_decoder_ &&
+      !audio_decoder_->Start(start_playback_pts_us_,
+                             av_sync_ ? false : true /* start_playback_asap */))
     return false;
-  if (video_decoder_ && !video_decoder_->Start(start_pts, true))
+
+  if (video_decoder_ && !video_decoder_->Start(start_playback_pts_us_, true))
     return false;
-  if (video_decoder_ &&
-      !video_decoder_->SetPts(start_playback_timestamp_us_, start_pts))
-    return false;
-  if (av_sync_) {
-    av_sync_->NotifyStart(start_playback_timestamp_us_, start_pts);
-  }
 
   state_ = kStatePlaying;
   return true;
@@ -112,6 +109,9 @@ void MediaPipelineBackendForMixer::Stop() {
 
 bool MediaPipelineBackendForMixer::Pause() {
   DCHECK_EQ(kStatePlaying, state_);
+  if (!first_resume_processed_) {
+    return true;
+  }
   if (audio_decoder_ && !audio_decoder_->Pause())
     return false;
   if (video_decoder_ && !video_decoder_->Pause())
@@ -125,14 +125,23 @@ bool MediaPipelineBackendForMixer::Pause() {
 }
 
 bool MediaPipelineBackendForMixer::Resume() {
+  if (!first_resume_processed_) {
+    DCHECK_EQ(kStatePlaying, state_);
+
+    LOG(INFO) << "First resume received.";
+    first_resume_processed_ = true;
+    TryStartPlayback();
+    return true;
+  }
+
   DCHECK_EQ(kStatePaused, state_);
+  if (av_sync_) {
+    av_sync_->NotifyResume();
+  }
   if (audio_decoder_ && !audio_decoder_->Resume())
     return false;
   if (video_decoder_ && !video_decoder_->Resume())
     return false;
-  if (av_sync_) {
-    av_sync_->NotifyResume();
-  }
 
   state_ = kStatePlaying;
   return true;
@@ -162,6 +171,10 @@ bool MediaPipelineBackendForMixer::SetPlaybackRate(float rate) {
 }
 
 int64_t MediaPipelineBackendForMixer::GetCurrentPts() {
+  int64_t timestamp = 0;
+  int64_t pts = 0;
+  if (video_decoder_ && video_decoder_->GetCurrentPts(&timestamp, &pts))
+    return pts;
   if (audio_decoder_)
     return audio_decoder_->GetCurrentPts();
   return std::numeric_limits<int64_t>::min();
@@ -210,6 +223,67 @@ bool MediaPipelineBackendForMixer::IsIgnorePtsMode() const {
              MediaPipelineDeviceParams::MediaSyncType::kModeIgnorePts ||
          params_.sync_type ==
              MediaPipelineDeviceParams::MediaSyncType::kModeIgnorePtsAndVSync;
+}
+
+void MediaPipelineBackendForMixer::VideoReadyToPlay() {
+  GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MediaPipelineBackendForMixer::OnVideoReadyToPlay,
+                     base::Unretained(this)));
+}
+
+void MediaPipelineBackendForMixer::OnVideoReadyToPlay() {
+  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(!video_ready_to_play_);
+
+  LOG(INFO) << "Video ready to play";
+
+  video_ready_to_play_ = true;
+
+  TryStartPlayback();
+}
+
+void MediaPipelineBackendForMixer::OnAudioReadyForPlayback() {
+  LOG(INFO) << "The audio is ready for playback.";
+  DCHECK(!audio_ready_to_play_);
+
+  audio_ready_to_play_ = true;
+
+  TryStartPlayback();
+}
+
+void MediaPipelineBackendForMixer::TryStartPlayback() {
+  DCHECK(state_ == kStatePlaying || state_ == kStatePaused);
+
+  if (av_sync_ && !(audio_ready_to_play_ && first_resume_processed_ &&
+                    video_ready_to_play_)) {
+    return;
+  }
+
+  if (IsIgnorePtsMode()) {
+    start_playback_timestamp_us_ = INT64_MIN;
+  } else {
+    start_playback_timestamp_us_ =
+        MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
+  }
+
+  LOG(INFO) << "Starting playback at=" << start_playback_timestamp_us_;
+
+  // Note that SetPts needs to be called even if the playback is not AV sync'd
+  // (for example we only have a video stream).
+  if (video_decoder_ && !IsIgnorePtsMode()) {
+    video_decoder_->SetPts(start_playback_timestamp_us_,
+                           start_playback_pts_us_);
+  }
+
+  if (audio_decoder_ && av_sync_) {
+    audio_decoder_->StartPlaybackAt(start_playback_timestamp_us_);
+  }
+
+  if (av_sync_) {
+    av_sync_->NotifyStart(start_playback_timestamp_us_, start_playback_pts_us_);
+  }
+  state_ = kStatePlaying;
 }
 
 }  // namespace media

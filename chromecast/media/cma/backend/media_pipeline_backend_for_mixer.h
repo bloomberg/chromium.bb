@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chromecast/media/cma/backend/video_decoder_for_mixer.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/volume_control.h"
@@ -26,7 +27,8 @@ class AudioDecoderForMixer;
 class VideoDecoderForMixer;
 
 // CMA Backend implementation for audio devices.
-class MediaPipelineBackendForMixer : public MediaPipelineBackend {
+class MediaPipelineBackendForMixer : public MediaPipelineBackend,
+                                     public VideoDecoderForMixer::Observer {
  public:
   explicit MediaPipelineBackendForMixer(
       const MediaPipelineDeviceParams& params);
@@ -43,6 +45,9 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   bool SetPlaybackRate(float rate) override;
   int64_t GetCurrentPts() override;
 
+  // VideoDecoderForMixer::Observer implementation:
+  void VideoReadyToPlay() override;
+
   bool Primary() const;
   std::string DeviceId() const;
   AudioContentType ContentType() const;
@@ -50,6 +55,7 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunner() const;
   VideoDecoderForMixer* video_decoder() const { return video_decoder_.get(); }
   AudioDecoderForMixer* audio_decoder() const { return audio_decoder_.get(); }
+  void OnAudioReadyForPlayback();
 
   // Gets current time on the same clock as the rendering delay timestamp.
   virtual int64_t MonotonicClockNow() const;
@@ -75,13 +81,21 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   };
   State state_;
 
+  void OnVideoReadyToPlay();
   bool IsIgnorePtsMode() const;
+  void TryStartPlayback();
 
   const MediaPipelineDeviceParams params_;
 
   std::unique_ptr<AvSync> av_sync_;
   int64_t start_playback_timestamp_us_ = INT64_MIN;
   int64_t start_playback_pts_us_ = INT64_MIN;
+
+  // The media pipeline doesn't start playback until these 3 conditions are
+  // met.
+  bool audio_ready_to_play_ = false;
+  bool video_ready_to_play_ = false;
+  bool first_resume_processed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendForMixer);
 };

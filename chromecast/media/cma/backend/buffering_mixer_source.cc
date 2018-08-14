@@ -16,10 +16,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/cma/backend/stream_mixer.h"
+#include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
+#include "media/base/decoder_buffer.h"
 
 #define POST_TASK_TO_CALLER_THREAD(task, ...)                               \
   shim_task_runner_->PostTask(                                              \
@@ -35,6 +37,7 @@ namespace {
 const int kNumOutputChannels = 2;
 const int64_t kInputQueueMs = 90;
 const int kFadeTimeMs = 5;
+const int kAudioReadyForPlaybackThresholdMs = kInputQueueMs / 2;
 
 // Special queue size and start threshold for "communications" streams to avoid
 // issues with voice calling.
@@ -86,7 +89,8 @@ int StartThreshold(const std::string& device_id, int sample_rate) {
 BufferingMixerSource::LockedMembers::Members::Members(
     BufferingMixerSource* source,
     int input_samples_per_second,
-    int num_channels)
+    int num_channels,
+    int64_t playback_start_timestamp)
     : state_(State::kUninitialized),
       paused_(false),
       mixer_error_(false),
@@ -97,7 +101,8 @@ BufferingMixerSource::LockedMembers::Members::Members(
              num_channels,
              MsToSamples(kFadeTimeMs, input_samples_per_second)),
       zero_fader_frames_(false),
-      started_(false) {}
+      started_(false),
+      playback_start_timestamp_(playback_start_timestamp) {}
 
 BufferingMixerSource::LockedMembers::Members::~Members() = default;
 
@@ -119,10 +124,15 @@ BufferingMixerSource::LockedMembers::AssertedLock::AssertedLock(
   locked_->member_lock_.AssertAcquired();
 }
 
-BufferingMixerSource::LockedMembers::LockedMembers(BufferingMixerSource* source,
-                                                   int input_samples_per_second,
-                                                   int num_channels)
-    : members_(source, input_samples_per_second, num_channels) {}
+BufferingMixerSource::LockedMembers::LockedMembers(
+    BufferingMixerSource* source,
+    int input_samples_per_second,
+    int num_channels,
+    int64_t playback_start_timestamp)
+    : members_(source,
+               input_samples_per_second,
+               num_channels,
+               playback_start_timestamp) {}
 
 BufferingMixerSource::LockedMembers::~LockedMembers() = default;
 
@@ -142,7 +152,8 @@ BufferingMixerSource::BufferingMixerSource(Delegate* delegate,
                                            const std::string& device_id,
                                            AudioContentType content_type,
                                            int playout_channel,
-                                           int64_t playback_start_timestamp)
+                                           int64_t playback_start_pts,
+                                           bool start_playback_asap)
     : delegate_(delegate),
       num_channels_(kNumOutputChannels),
       input_samples_per_second_(input_samples_per_second),
@@ -156,17 +167,33 @@ BufferingMixerSource::BufferingMixerSource(Delegate* delegate,
       max_queued_frames_(MaxQueuedFrames(device_id, input_samples_per_second)),
       start_threshold_frames_(
           StartThreshold(device_id, input_samples_per_second)),
-      playback_start_timestamp_(playback_start_timestamp),
-      locked_members_(this, input_samples_per_second, num_channels_),
+      playback_start_pts_(playback_start_pts),
+      locked_members_(this,
+                      input_samples_per_second,
+                      num_channels_,
+                      start_playback_asap ? INT64_MIN : INT64_MAX),
       weak_factory_(this) {
   LOG(INFO) << "Create " << device_id_ << " (" << this
-            << "), content type = " << AudioContentTypeToString(content_type_);
+            << "), content type = " << AudioContentTypeToString(content_type_)
+            << ", playback_start_pts=" << playback_start_pts;
   DCHECK(delegate_);
   DCHECK(mixer_);
   DCHECK_LE(start_threshold_frames_, max_queued_frames_);
   weak_this_ = weak_factory_.GetWeakPtr();
 
   mixer_->AddInput(this);
+}
+
+void BufferingMixerSource::StartPlaybackAt(int64_t playback_start_timestamp) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_ready_for_playback_fired_);
+  LOG(INFO) << __func__
+            << " playback_start_timestamp=" << playback_start_timestamp;
+
+  auto locked = locked_members_.Lock();
+  DCHECK(!locked->started_);
+  DCHECK(locked->playback_start_timestamp_ == INT64_MAX);
+  locked->playback_start_timestamp_ = playback_start_timestamp;
 }
 
 BufferingMixerSource::~BufferingMixerSource() {
@@ -217,9 +244,30 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
     LOG(INFO) << "End of stream for " << device_id_ << " (" << this << ")";
     locked->state_ = State::kGotEos;
   } else {
-    const int frames = data->data_size() / (num_channels_ * sizeof(float));
-    locked->queued_frames_ += frames;
-    locked->queue_.push_back(std::move(data));
+    // TODO(almasrymina): this drops 1 more buffer than necessary. What we
+    // should do here is only drop if the playback_start_pts_ is not found in
+    // the buffer, and use current_buffer_offset_ to effectively drop the
+    // partial buffer.
+    if (!locked->started_ && data->timestamp() < playback_start_pts_) {
+      DCHECK(locked->queue_.empty());
+      VLOG(4) << "Dropping buffer with ts=" << data->timestamp()
+              << ", playback_start_pts=" << playback_start_pts_
+              << " difference=" << playback_start_pts_ - data->timestamp();
+    } else {
+      LOG_IF(INFO, (!locked->started_ &&
+                    (data->timestamp() - playback_start_pts_) < 100000))
+          << "Queueing pts diff=" << data->timestamp() - playback_start_pts_
+          << " current buffered data=" << GetCurrentBufferedDataInUs() / 1000;
+
+      const int frames = DataToFrames(data->data_size());
+      locked->queued_frames_ += frames;
+      locked->queue_.push_back(std::move(data));
+
+      if (!locked->started_ && GetCurrentBufferedDataInUs() >=
+                                   kAudioReadyForPlaybackThresholdMs * 1000) {
+        POST_TASK_TO_CALLER_THREAD(PostAudioReadyForPlayback);
+      }
+    }
   }
 
   RenderingDelay delay;
@@ -271,6 +319,81 @@ void BufferingMixerSource::InitializeAudioPlayback(
   }
 }
 
+void BufferingMixerSource::CheckAndStartPlaybackIfNecessary(
+    int num_frames,
+    int64_t playback_absolute_timestamp) {
+  auto locked = locked_members_.AssertAcquired();
+
+  DCHECK(locked->state_ == State::kNormalPlayback && !locked->started_);
+
+  if (locked->queued_frames_ >= start_threshold_frames_ &&
+      locked->queued_frames_ >=
+          locked->fader_.FramesNeededFromSource(num_frames) &&
+      (locked->playback_start_timestamp_ == INT64_MIN ||
+       playback_absolute_timestamp +
+               SamplesToMicroseconds(num_frames, input_samples_per_second_) >=
+           locked->playback_start_timestamp_)) {
+    // - playback_start_timestamp_ == INT64_MIN indicates the playback should
+    // start ASAP.
+    // - playback start timestamp_ == INT64_MAX indicates playback is AV
+    // sync'd, but we don't have a timestamp to start playback at.
+    //
+    // We do not queue silence in either of those cases.
+    if (!locked->started_ && locked->playback_start_timestamp_ != INT64_MIN &&
+        locked->playback_start_timestamp_ != INT64_MAX) {
+      DCHECK(!locked->queue_.empty()) << "We were supposed to start playback "
+                                         "now but the queue is empty...";
+
+      // - We should start playing at PTS playback_start_pts_, but we will
+      // actually be starting at front()->timestamp().
+      //
+      // - We want the playback_start_pts_ sample to play out at
+      // playback_start_timestamp_.
+      //
+      // - Therefore, we should start playing the data that we have (that
+      // doesn't necessarily have the desired PTS) at:
+      //
+      // playback_start_timestamp_ +
+      // (front()->timestamp() - playback_start_pts_)
+      //
+      // so that the sample at playback_start_pts_ plays out at exactly (ie,
+      // the PTS of the first buffer we play might not match
+      // playback_start_pts_).
+      uint64_t pts_corrected_playback_start_timestamp =
+          locked->playback_start_timestamp_ +
+          (locked->queue_.front()->timestamp() - playback_start_pts_);
+
+      int64_t silence_duration =
+          pts_corrected_playback_start_timestamp - playback_absolute_timestamp;
+
+      if (silence_duration <= 0) {
+        DropAudio(::media::AudioTimestampHelper::TimeToFrames(
+            base::TimeDelta::FromMicroseconds(-silence_duration),
+            input_samples_per_second_));
+      } else {
+        // Queue silence.
+        LOG(INFO) << "Queueing silence padding buffer. Duration="
+                  << silence_duration;
+
+        scoped_refptr<DecoderBufferBase> padding(
+            new DecoderBufferAdapter(new ::media::DecoderBuffer(
+                ::media::AudioTimestampHelper::TimeToFrames(
+                    base::TimeDelta::FromMicroseconds(silence_duration),
+                    input_samples_per_second_) *
+                num_channels_ * sizeof(float))));
+
+        LOG(INFO) << "silence_duration=" << silence_duration
+                  << " padding->data_size()=" << padding->data_size();
+
+        locked->queued_frames_ += DataToFrames(padding->data_size());
+        locked->queue_.push_front(std::move(padding));
+      }
+    }
+
+    locked->started_ = true;
+  }
+}
+
 int BufferingMixerSource::FillAudioPlaybackFrames(
     int num_frames,
     RenderingDelay rendering_delay,
@@ -282,17 +405,6 @@ int BufferingMixerSource::FillAudioPlaybackFrames(
   int64_t playback_absolute_timestamp = rendering_delay.delay_microseconds +
                                         rendering_delay.timestamp_microseconds;
 
-  // Don't write to the mixer yet if it's not time to start playback yet.
-  //
-  // TODO(almasrymina): mixer behaviour has playback_absolute_timestamp go up
-  // in chunks of 10ms, so we're going to start playback at
-  // playback_start_timestamp_ accurate to +10ms. Improve this to be sample
-  // accurate by writing a partial silence buffer when it's time to start
-  // playback.
-  if (playback_absolute_timestamp < playback_start_timestamp_) {
-    return 0;
-  }
-
   int filled = 0;
   bool queued_more_data = false;
   bool signal_eos = false;
@@ -301,24 +413,25 @@ int BufferingMixerSource::FillAudioPlaybackFrames(
   {
     auto locked = locked_members_.Lock();
 
+    // Playback start check.
+    if (locked->state_ == State::kNormalPlayback && !locked->started_) {
+      CheckAndStartPlaybackIfNecessary(num_frames, playback_absolute_timestamp);
+    }
+
     // In normal playback, don't pass data to the fader if we can't satisfy the
     // full request. This will allow us to buffer up more data so we can fully
     // fade in.
-    if (locked->state_ == State::kNormalPlayback &&
-        (locked->queued_frames_ <
-             locked->fader_.FramesNeededFromSource(num_frames) ||
-         (!locked->started_ &&
-          locked->queued_frames_ < start_threshold_frames_))) {
-      LOG_IF(INFO, locked->started_)
+    if (locked->state_ == State::kNormalPlayback && locked->started_ &&
+        locked->queued_frames_ <
+            locked->fader_.FramesNeededFromSource(num_frames)) {
+      LOG_IF(INFO, locked->started_ && !locked->zero_fader_frames_)
           << "Stream underrun for " << device_id_ << " (" << this << ")";
       locked->zero_fader_frames_ = true;
-      locked->started_ = false;
     } else {
-      LOG_IF(INFO, !locked->started_)
-          << "Stream start or underrun recovered for " << device_id_ << " ("
-          << this << ")";
+      LOG_IF(INFO, locked->started_ && locked->zero_fader_frames_)
+          << "Stream underrun recovered for " << device_id_ << " (" << this
+          << ")";
       locked->zero_fader_frames_ = false;
-      locked->started_ = true;
     }
 
     filled = locked->fader_.FillFrames(num_frames, buffer);
@@ -361,6 +474,53 @@ int BufferingMixerSource::FillAudioPlaybackFrames(
   return filled;
 }
 
+bool BufferingMixerSource::CanDropFrames(int64_t frames_to_drop) {
+  int64_t duration_of_frames =
+      SamplesToMicroseconds(frames_to_drop, input_samples_per_second_);
+
+  return (GetCurrentBufferedDataInUs() - duration_of_frames) >=
+         kAudioReadyForPlaybackThresholdMs;
+}
+
+int64_t BufferingMixerSource::DataToFrames(int64_t size_in_bytes) {
+  return size_in_bytes / (num_channels_ * sizeof(float));
+}
+
+void BufferingMixerSource::DropAudio(int64_t frames_to_drop) {
+  auto locked = locked_members_.AssertAcquired();
+
+  LOG(INFO) << "Dropping audio duration="
+            << SamplesToMicroseconds(frames_to_drop, input_samples_per_second_);
+
+  DCHECK(!locked->queue_.empty());
+
+  int64_t first_buffer_frames =
+      DataToFrames(locked->queue_.front()->data_size());
+  while (frames_to_drop >= first_buffer_frames &&
+         CanDropFrames(first_buffer_frames)) {
+    locked->queued_frames_ -= first_buffer_frames;
+    frames_to_drop -= first_buffer_frames;
+
+    locked->queue_.pop_front();
+    DCHECK(!locked->queue_.empty());
+    first_buffer_frames = DataToFrames(locked->queue_.front()->data_size());
+  }
+
+  if (CanDropFrames(frames_to_drop)) {
+    locked->current_buffer_offset_ += frames_to_drop;
+    locked->queued_frames_ -= frames_to_drop;
+  } else {
+    LOG(WARNING) << "Starting audio with error="
+                 << SamplesToMicroseconds(frames_to_drop,
+                                          input_samples_per_second_);
+  }
+
+  DCHECK(!locked->queue_.empty());
+  DCHECK(locked->current_buffer_offset_ <=
+         DataToFrames(locked->queue_.front()->data_size()));
+  DCHECK(locked->queued_frames_ >= 0);
+}
+
 int BufferingMixerSource::FillFaderFrames(::media::AudioBus* dest,
                                           int frame_offset,
                                           int num_frames) {
@@ -368,7 +528,7 @@ int BufferingMixerSource::FillFaderFrames(::media::AudioBus* dest,
   DCHECK_EQ(num_channels_, dest->channels());
   auto locked = locked_members_.AssertAcquired();
 
-  if (locked->zero_fader_frames_ || locked->paused_ ||
+  if (locked->zero_fader_frames_ || !locked->started_ || locked->paused_ ||
       locked->state_ == State::kRemoved) {
     return 0;
   }
@@ -380,10 +540,15 @@ int BufferingMixerSource::FillFaderFrames(::media::AudioBus* dest,
     }
 
     DecoderBufferBase* buffer = locked->queue_.front().get();
-    const int buffer_frames =
-        buffer->data_size() / (num_channels_ * sizeof(float));
+    const int buffer_frames = DataToFrames(buffer->data_size());
     const int frames_to_copy =
         std::min(num_frames, buffer_frames - locked->current_buffer_offset_);
+    DCHECK(frames_to_copy >= 0 && frames_to_copy <= num_frames)
+        << " frames_to_copy=" << frames_to_copy << " num_frames=" << num_frames
+        << " buffer_frames=" << buffer_frames
+        << " locked->current_buffer_offset_=" << locked->current_buffer_offset_
+        << " buffer=" << buffer->data_size();
+
     const float* buffer_samples =
         reinterpret_cast<const float*>(buffer->data());
     for (int c = 0; c < num_channels_; ++c) {
@@ -416,6 +581,15 @@ void BufferingMixerSource::PostPcmCompletion(RenderingDelay delay) {
 void BufferingMixerSource::PostEos() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   delegate_->OnEos();
+}
+
+void BufferingMixerSource::PostAudioReadyForPlayback() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(delegate_);
+  if (!audio_ready_for_playback_fired_) {
+    audio_ready_for_playback_fired_ = true;
+    delegate_->OnAudioReadyForPlayback();
+  }
 }
 
 void BufferingMixerSource::OnAudioPlaybackError(MixerError error) {
@@ -458,6 +632,20 @@ void BufferingMixerSource::Remove() {
 
 void BufferingMixerSource::FinalizeAudioPlayback() {
   delete this;
+}
+
+int64_t BufferingMixerSource::GetCurrentBufferedDataInUs() {
+  auto locked = locked_members_.AssertAcquired();
+
+  int64_t buffered_data = 0;
+  for (auto buffer : locked->queue_) {
+    buffered_data += buffer->data_size();
+  }
+
+  int buffered_frames = DataToFrames(buffered_data);
+  buffered_frames -= locked->current_buffer_offset_;
+
+  return SamplesToMicroseconds(buffered_frames, input_samples_per_second_);
 }
 
 }  // namespace media

@@ -54,7 +54,7 @@ void MockAudioDecoderForMixer::PlayAudio() {
 
 void MockAudioDecoderForMixer::Initialize() {}
 
-bool MockAudioDecoderForMixer::Start(int64_t timestamp) {
+bool MockAudioDecoderForMixer::Start(int64_t pts, bool start_playback_asap) {
   next_push_buffer_pts_ = 0;
   current_audio_pts_ = 0;
   data_push_timer_.Start(

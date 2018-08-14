@@ -102,9 +102,16 @@ class AvSyncVideo : public AvSync {
   int64_t number_of_hard_corrections_ = 0;
   int64_t number_of_soft_corrections_ = 0;
   int64_t last_vpts_value_recorded_ = 0;
+
+  // Those are initialized to INT64_MIN as not to be confused with 0 timestamp
+  // and 0 pts.
   int64_t last_correction_timestamp_us = INT64_MIN;
-  int64_t playback_start_timestamp_us_ = INT64_MIN;
   int64_t playback_start_pts_us_ = INT64_MIN;
+
+  // This is initialized to INT64_MAX as AV sync will start upkeeping the AV
+  // sync after this timestamp is hit. It is initialized to max so that we
+  // don't upkeep AV sync.
+  int64_t playback_start_timestamp_us_ = INT64_MAX;
 
   bool first_audio_pts_received_ = false;
   bool first_video_pts_received_ = false;

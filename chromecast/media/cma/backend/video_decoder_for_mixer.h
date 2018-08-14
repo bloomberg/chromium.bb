@@ -24,6 +24,17 @@ namespace media {
 // and link in an implementation of VideoDecoderForMixer::Create.
 class VideoDecoderForMixer : public MediaPipelineBackend::VideoDecoder {
  public:
+  class Observer {
+   public:
+    // Notifies the observer that the video playback is ready to start. After
+    // this is called, SetPts may be reliably called to start playback at the
+    // desired time.
+    virtual void VideoReadyToPlay() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   static std::unique_ptr<VideoDecoderForMixer> Create(
       const MediaPipelineDeviceParams& params);
 
@@ -33,6 +44,9 @@ class VideoDecoderForMixer : public MediaPipelineBackend::VideoDecoder {
   // Start is called. Gives the implementation a chance to initialize any
   // resources.
   virtual bool Initialize() = 0;
+
+  // Sets the observer to be notified when the video is ready to play.
+  virtual void SetObserver(Observer* observer) = 0;
 
   // When called, playback is expected to start from |start_pts|.
   //
