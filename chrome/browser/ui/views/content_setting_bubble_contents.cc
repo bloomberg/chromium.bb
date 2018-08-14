@@ -11,7 +11,6 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/content_setting_domain_list_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
@@ -372,9 +371,6 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       manage_button_(nullptr),
       manage_checkbox_(nullptr),
       learn_more_button_(nullptr) {
-  // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::CONTENT_SETTING_CONTENTS);
 }

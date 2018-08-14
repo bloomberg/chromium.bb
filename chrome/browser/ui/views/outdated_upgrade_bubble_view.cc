@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
@@ -170,8 +169,5 @@ OutdatedUpgradeBubbleView::OutdatedUpgradeBubbleView(
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       auto_update_enabled_(auto_update_enabled),
       navigator_(navigator) {
-  // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::OUTDATED_UPGRADE);
 }
