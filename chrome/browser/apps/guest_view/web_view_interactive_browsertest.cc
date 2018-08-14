@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -52,6 +53,7 @@
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/base/ui_features.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
@@ -871,20 +873,27 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, Focus_AdvanceFocus) {
     // move the focus to the next focusable element.
     ExtensionTestMessageListener listener("button1-advance-focus", false);
     listener.set_failure_message("TEST_FAILED");
-    // TODO(fsamuel): A third Tab key press should not be necessary.
-    // The <webview> will take keyboard focus but it will not focus an initial
-    // element. The initial element is dependent upon tab direction which blink
-    // does not propagate to the plugin.
-    // See http://crbug.com/147644.
     content::SimulateKeyPress(embedder_web_contents, ui::DomKey::TAB,
                               ui::DomCode::TAB, ui::VKEY_TAB, false, false,
                               false, false);
     content::SimulateKeyPress(embedder_web_contents, ui::DomKey::TAB,
                               ui::DomCode::TAB, ui::VKEY_TAB, false, false,
                               false, false);
-    content::SimulateKeyPress(embedder_web_contents, ui::DomKey::TAB,
-                              ui::DomCode::TAB, ui::VKEY_TAB, false, false,
-                              false, false);
+
+#if defined(OS_MACOSX)
+    bool is_cocoa = true;
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+    is_cocoa = views_mode_controller::IsViewsBrowserCocoa();
+#endif  //  BUILDFLAG(MAC_VIEWS_BROWSER)
+    // TODO(mcnee): A third Tab key press should not be necessary, but we seem
+    // to need this on Mac when using Cocoa browser UI.
+    if (is_cocoa) {
+      content::SimulateKeyPress(embedder_web_contents, ui::DomKey::TAB,
+                                ui::DomCode::TAB, ui::VKEY_TAB, false, false,
+                                false, false);
+    }
+#endif  //  defined(OS_MACOSX)
+
     ASSERT_TRUE(listener.WaitUntilSatisfied());
   }
 }
