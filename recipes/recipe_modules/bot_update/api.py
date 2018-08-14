@@ -160,11 +160,11 @@ class BotUpdateApi(recipe_api.RecipeApi):
             self._parent_got_revision or
             self._revision or
             'HEAD')
-    if self.m.gclient.c and self.m.gclient.c.revisions:
+    if cfg.revisions:
       # Only update with non-empty values. Some recipe might otherwise
       # overwrite the HEAD default with an empty string.
       revisions.update(
-          (k, v) for k, v in self.m.gclient.c.revisions.iteritems() if v)
+          (k, v) for k, v in cfg.revisions.iteritems() if v)
     if cfg.solutions and root_solution_revision:
       revisions[cfg.solutions[0].name] = root_solution_revision
     # Allow for overrides required to bisect into rolls.
