@@ -71,7 +71,8 @@ action("remoting_me2me_host_archive") {
   ]
 
   _generated_files = rebase_path(inputs, root_build_dir)
-  _generated_files += [ rebase_path("//remoting/resources/chromoting.ico") ]
+  _generated_files +=
+      [ rebase_path("//remoting/resources/chromoting.ico", root_build_dir) ]
 
   # _generated_dst_files must contain the same files in the same order as
   # _generated_files, otherwise the Windows MSI will not be built correctly.
@@ -95,10 +96,12 @@ action("remoting_me2me_host_archive") {
            rebase_path("$root_gen_dir/remoting_installation", root_build_dir),
            rebase_path(_output, root_build_dir),
            "--source-file-roots",
-           rebase_path("//remoting/host/installer/win"),
+           rebase_path("//remoting/host/installer/win", root_build_dir),
            "--source-files",
-           rebase_path("//remoting/host/installer/win/chromoting.wxs"),
-           rebase_path("//remoting/host/installer/win/parameters.json"),
+           rebase_path("//remoting/host/installer/win/chromoting.wxs",
+                       root_build_dir),
+           rebase_path("//remoting/host/installer/win/parameters.json",
+                       root_build_dir),
 
            # Input files
            "--generated-files",
@@ -133,7 +136,7 @@ if (is_chrome_branded && !is_component_build && target_cpu == "x86") {
     ]
     args = [
       "--wix_path",
-      rebase_path("//third_party/wix"),
+      rebase_path("//third_party/wix", root_build_dir),
       "--intermediate_dir",
       rebase_path("$root_gen_dir/remoting_installation", root_build_dir),
       "--target_arch",

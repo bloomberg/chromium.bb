@@ -475,7 +475,8 @@ android_library("mockito_android_java") {
   include_java_resources = true
   additional_jar_files = [ [
         rebase_path(
-            "src/subprojects/android/src/main/resources/mockito-extensions/org.mockito.plugins.MockMaker"),
+            "src/subprojects/android/src/main/resources/mockito-extensions/org.mockito.plugins.MockMaker",
+            root_build_dir),
         "mockito-extensions/org.mockito.plugins.MockMaker",
       ] ]
 }

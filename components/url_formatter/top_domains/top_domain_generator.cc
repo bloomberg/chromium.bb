@@ -71,7 +71,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  base::FilePath input_path = base::FilePath::FromUTF8Unsafe(argv[1]);
+  base::FilePath input_path =
+      base::MakeAbsoluteFilePath(base::FilePath::FromUTF8Unsafe(argv[1]));
   if (!base::PathExists(input_path)) {
     LOG(ERROR) << "Input path doesn't exist: " << input_path;
     return 1;

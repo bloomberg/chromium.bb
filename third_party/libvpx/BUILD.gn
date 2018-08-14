@@ -274,7 +274,7 @@ if (current_cpu == "arm" && arm_assembly_sources != []) {
       "-i",
       "{{source}}",
       "-o",
-      rebase_path(gen_file),
+      rebase_path(gen_file, root_build_dir),
     ]
   }
 

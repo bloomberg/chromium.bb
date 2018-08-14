@@ -47,9 +47,7 @@ compiled_action("generate_top_domains_trie") {
     "$target_gen_dir/alexa_domains-trie-inc.cc",
   ]
   args =
-      # Make sure the inputs are system-absolute, as base::File cannot open
-      # files with ".." components.
-      rebase_path(inputs, "", "/") + rebase_path(outputs, root_build_dir)
+      rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
 }
 
 # TODO: Combine this and the previous one into a compiled_action_foreach target.
@@ -65,7 +63,5 @@ compiled_action("generate_top_domains_test_trie") {
     "$target_gen_dir/test_domains-trie-inc.cc",
   ]
   args =
-      # Make sure the inputs are system-absolute, as base::File cannot open
-      # files with ".." components.
-      rebase_path(inputs, "", "/") + rebase_path(outputs, root_build_dir)
+      rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
 }
