@@ -50,6 +50,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
 
  private:
   // FidoRequestHandlerBase:
+  base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr() final;
   void DispatchRequest(FidoAuthenticator* authenticator) final;
 
   void HandleResponse(

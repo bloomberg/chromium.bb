@@ -47,6 +47,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
 
  private:
   // FidoRequestHandlerBase:
+  base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr() final;
   void DispatchRequest(FidoAuthenticator* authenticator) override;
 
   void HandleResponse(

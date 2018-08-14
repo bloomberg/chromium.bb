@@ -16,6 +16,7 @@
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
 #include "device/fido/fido_device_authenticator.h"
 #include "device/fido/fido_discovery.h"
@@ -106,6 +107,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   }
 
  protected:
+  virtual base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr() = 0;
+
   // Subclasses implement this method to dispatch their request onto the given
   // FidoAuthenticator. The FidoAuthenticator is owned by this
   // FidoRequestHandler and stored in active_authenticators().
