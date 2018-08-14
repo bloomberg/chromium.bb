@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/event_listener_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/event_target_impl.h"
@@ -839,9 +840,8 @@ bool EventTarget::FireEventListeners(Event& event,
     bool passive_forced = registered_listener.PassiveForcedForDocumentTarget();
 
     probe::UserCallback probe(context, nullptr, event.type(), false, this);
-    probe::AsyncTask async_task(
-        context, V8AbstractEventListener::Cast(listener), "event",
-        IsInstrumentedForAsyncStack(event.type()));
+    probe::AsyncTask async_task(context, listener, "event",
+                                IsInstrumentedForAsyncStack(event.type()));
 
     // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
     // event listeners, even though that violates some versions of the DOM spec.

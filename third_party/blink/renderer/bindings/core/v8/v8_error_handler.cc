@@ -58,7 +58,7 @@ v8::Local<v8::Value> V8ErrorHandler::CallListenerFunction(
 
   v8::Local<v8::Context> context = script_state->GetContext();
   ExecutionContext* execution_context = ToExecutionContext(context);
-  v8::Local<v8::Object> listener = GetListenerObject(execution_context);
+  v8::Local<v8::Object> listener = GetListenerObjectInternal(execution_context);
   if (listener.IsEmpty() || !listener->IsFunction())
     return v8::Null(GetIsolate());
 

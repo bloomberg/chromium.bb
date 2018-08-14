@@ -110,10 +110,11 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
       EventListener* event_listener = listeners->at(k).Callback();
       if (event_listener->GetType() != EventListener::kJSEventListenerType)
         continue;
-      V8AbstractEventListener* v8_listener =
-          static_cast<V8AbstractEventListener*>(event_listener);
-      v8::Local<v8::Context> context =
-          ToV8Context(execution_context, v8_listener->World());
+      // TODO(yukiy): Use a child class of blink::EventListener that is for v8
+      // event listeners here if it is implemented in redesigning
+      // EventListener/EventHandler: https://crbug.com/872138 .
+      v8::Local<v8::Context> context = ToV8Context(
+          execution_context, *(event_listener->GetWorldForInspector()));
       // Optionally hide listeners from other contexts.
       if (!report_for_all_contexts && context != isolate->GetCurrentContext())
         continue;
@@ -121,7 +122,7 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
       // compiled, potentially unsuccessfully.  In that case, the function
       // returns the empty handle without an exception.
       v8::Local<v8::Object> handler =
-          v8_listener->GetListenerObject(execution_context);
+          event_listener->GetListenerObjectForInspector(execution_context);
       if (handler.IsEmpty())
         continue;
       bool use_capture = listeners->at(k).Capture();

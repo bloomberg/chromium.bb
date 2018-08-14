@@ -49,7 +49,7 @@ V8EventListenerOrEventHandler::V8EventListenerOrEventHandler(
 v8::Local<v8::Function> V8EventListenerOrEventHandler::GetListenerFunction(
     ScriptState* script_state) {
   v8::Local<v8::Object> listener =
-      GetListenerObject(ExecutionContext::From(script_state));
+      GetListenerObjectInternal(ExecutionContext::From(script_state));
 
   // Has the listener been disposed?
   if (listener.IsEmpty())

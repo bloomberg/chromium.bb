@@ -33,12 +33,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_lazy_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -46,7 +45,7 @@
 
 namespace blink {
 
-V8LazyEventListener* CreateAttributeEventListener(
+EventListener* CreateAttributeEventListener(
     Node* node,
     const QualifiedName& name,
     const AtomicString& value,
@@ -74,7 +73,7 @@ V8LazyEventListener* CreateAttributeEventListener(
                                      isolate);
 }
 
-V8LazyEventListener* CreateAttributeEventListener(
+EventListener* CreateAttributeEventListener(
     LocalFrame* frame,
     const QualifiedName& name,
     const AtomicString& value,

@@ -90,7 +90,8 @@ v8::Local<v8::Value> V8LazyEventListener::CallListenerFunction(
   DCHECK(!js_event.IsEmpty());
   ExecutionContext* execution_context =
       ToExecutionContext(script_state->GetContext());
-  v8::Local<v8::Object> listener_object = GetListenerObject(execution_context);
+  v8::Local<v8::Object> listener_object =
+      GetListenerObjectInternal(execution_context);
   if (listener_object.IsEmpty())
     return v8::Local<v8::Value>();
 
