@@ -72,16 +72,15 @@ def _PackageChecks(input_api, output_api):
     return []
 
 
-def _RunUnittests(input_api, output_api):
+def _RunToolsUnittests(input_api, output_api):
   return input_api.canned_checks.RunUnitTestsInDirectory(
-      input_api, output_api, '.', [ r'^.+_unittest\.py$'])
+      input_api, output_api, '.', [ r'^tools_unittest\.py$'])
 
 
 def _ChangeAffectsCronetForAndroid(change):
   """ Returns |true| if the change may affect Cronet for Android. """
 
-  for affected_file in change.AffectedFiles():
-    path = affected_file.LocalPath()
+  for path in change.LocalPaths():
     if not path.startswith(os.path.join('components', 'cronet', 'ios')):
       return True
   return False
@@ -90,9 +89,17 @@ def _ChangeAffectsCronetForAndroid(change):
 def _ChangeAffectsCronetForIos(change):
   """ Returns |true| if the change may affect Cronet for iOS. """
 
-  for affected_file in change.AffectedFiles():
-    path = affected_file.LocalPath()
+  for path in change.LocalPaths():
     if not path.startswith(os.path.join('components', 'cronet', 'android')):
+      return True
+  return False
+
+
+def _ChangeAffectsCronetTools(change):
+  """ Returns |true| if the change may affect Cronet tools. """
+
+  for path in change.LocalPaths():
+    if path.startswith(os.path.join('components', 'cronet', 'tools')):
       return True
   return False
 
@@ -101,12 +108,13 @@ def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_PyLintChecks(input_api, output_api))
   results.extend(_PackageChecks(input_api, output_api))
-  results.extend(_RunUnittests(input_api, output_api))
+  if _ChangeAffectsCronetTools(input_api.change):
+    results.extend(_RunToolsUnittests(input_api, output_api))
   return results
 
 
 def CheckChangeOnCommit(input_api, output_api):
-  return _RunUnittests(input_api, output_api)
+  return _RunToolsUnittests(input_api, output_api)
 
 
 def PostUploadHook(cl, change, output_api):
