@@ -9,6 +9,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -22,7 +23,7 @@ namespace content {
 
 namespace {
 
-std::string StartSituationToSuffix(
+const char* StartSituationToSuffix(
     ServiceWorkerMetrics::StartSituation situation) {
   // Don't change these returned strings. They are written (in hashed form) into
   // logs.
@@ -44,18 +45,28 @@ std::string StartSituationToSuffix(
 }
 
 // TODO(falken): Remove this when the associated UMA are removed.
-std::string StartSituationToDeprecatedSuffix(
+const char* StartSituationToDeprecatedSuffix(
     ServiceWorkerMetrics::StartSituation situation) {
   // Don't change this returned string. It is written (in hashed form) into
   // logs.
-  std::string suffix = StartSituationToSuffix(situation);
-  // Replace '.' separator with '_'.
-  DCHECK(suffix.length() > 1 && suffix[0] == '.');
-  suffix[0] = '_';
-  return suffix;
+  switch (situation) {
+    case ServiceWorkerMetrics::StartSituation::UNKNOWN:
+      NOTREACHED();
+      return "_Unknown";
+    case ServiceWorkerMetrics::StartSituation::DURING_STARTUP:
+      return "_DuringStartup";
+    case ServiceWorkerMetrics::StartSituation::NEW_PROCESS:
+      return "_NewProcess";
+    case ServiceWorkerMetrics::StartSituation::EXISTING_UNREADY_PROCESS:
+      return "_ExistingUnreadyProcess";
+    case ServiceWorkerMetrics::StartSituation::EXISTING_READY_PROCESS:
+      return "_ExistingReadyProcess";
+  }
+  NOTREACHED() << static_cast<int>(situation);
+  return "_Unknown";
 }
 
-std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
+const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
   // Don't change these returned strings. They are written (in hashed form) into
   // logs.
   switch (event_type) {
@@ -147,7 +158,7 @@ ServiceWorkerMetrics::WorkerPreparationType GetWorkerPreparationType(
   return Preparation::UNKNOWN;
 }
 
-std::string GetWorkerPreparationSuffix(
+const char* GetWorkerPreparationSuffix(
     ServiceWorkerMetrics::WorkerPreparationType status) {
   using Preparation = ServiceWorkerMetrics::WorkerPreparationType;
   switch (status) {
@@ -170,44 +181,6 @@ std::string GetWorkerPreparationSuffix(
   }
   NOTREACHED();
   return "_UNKNOWN";
-}
-
-// Use this for histograms with dynamically generated names, which
-// otherwise can't use the UMA_HISTOGRAM macro without code duplication.
-void RecordSuffixedTimeHistogram(const std::string& name,
-                                 const std::string& suffix,
-                                 base::TimeDelta sample) {
-  const std::string name_with_suffix = name + suffix;
-  // This unrolls UMA_HISTOGRAM_TIMES.
-  base::HistogramBase* histogram_pointer = base::Histogram::FactoryTimeGet(
-      name_with_suffix, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromSeconds(10), 50,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram_pointer->AddTime(sample);
-}
-
-// Use this for histograms with dynamically generated names, which
-// otherwise can't use the UMA_MEDIUM_HISTOGRAM macro without code duplication.
-void RecordSuffixedMediumTimeHistogram(const std::string& name,
-                                       const std::string& suffix,
-                                       base::TimeDelta sample) {
-  const std::string name_with_suffix = name + suffix;
-  // This unrolls UMA_HISTOGRAM_MEDIUM_TIMES.
-  base::HistogramBase* histogram_pointer = base::Histogram::FactoryTimeGet(
-      name_with_suffix, base::TimeDelta::FromMilliseconds(10),
-      base::TimeDelta::FromMinutes(3), 50,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram_pointer->AddTime(sample);
-}
-
-// Use this for histograms with dynamically generated names, which
-// otherwise can't use the UMA_HISTOGRAM macro without code duplication.
-void RecordHistogramEnum(const std::string& name, int value, int max_value) {
-  // This unrolls UMA_HISTOGRAM_ENUMERATION.
-  base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
-      name, 1, max_value, max_value + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram_pointer->Add(value);
 }
 
 void RecordURLMetricOnUI(const std::string& metric_name, const GURL& url) {
@@ -328,7 +301,7 @@ ServiceWorkerMetrics::Site ServiceWorkerMetrics::SiteFromURL(const GURL& url) {
     return ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
   }
 
-  const std::string host = url.host();
+  const base::StringPiece host = url.host_piece();
   if (host == "plus.google.com")
     return ServiceWorkerMetrics::Site::PLUS;
   if (host == "inbox.google.com")
@@ -425,11 +398,10 @@ void ServiceWorkerMetrics::RecordStartWorkerStatus(
   }
 
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status);
-  RecordHistogramEnum(
-      std::string("ServiceWorker.StartWorker.StatusByPurpose") +
-          EventTypeToSuffix(purpose),
-      static_cast<uint32_t>(status),
-      static_cast<uint32_t>(blink::ServiceWorkerStatusCode::kMaxValue));
+  base::UmaHistogramEnumeration(
+      base::StrCat({"ServiceWorker.StartWorker.StatusByPurpose",
+                    EventTypeToSuffix(purpose)}),
+      status);
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Purpose", purpose);
   if (status == blink::ServiceWorkerStatusCode::kErrorTimeout) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Timeout.StartPurpose",
@@ -450,13 +422,14 @@ void ServiceWorkerMetrics::RecordStartWorkerTime(base::TimeDelta time,
                                                  EventType purpose) {
   if (is_installed) {
     UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartWorker.Time", time);
-    RecordSuffixedMediumTimeHistogram(
-        "ServiceWorker.StartWorker.Time",
-        StartSituationToDeprecatedSuffix(start_situation), time);
-    RecordSuffixedMediumTimeHistogram(
-        "ServiceWorker.StartWorker.Time",
-        StartSituationToDeprecatedSuffix(start_situation) +
-            EventTypeToSuffix(purpose),
+    base::UmaHistogramMediumTimes(
+        base::StrCat({"ServiceWorker.StartWorker.Time",
+                      StartSituationToDeprecatedSuffix(start_situation)}),
+        time);
+    base::UmaHistogramMediumTimes(
+        base::StrCat({"ServiceWorker.StartWorker.Time",
+                      StartSituationToDeprecatedSuffix(start_situation),
+                      EventTypeToSuffix(purpose)}),
         time);
   } else {
     UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartNewWorker.Time", time);
@@ -477,12 +450,11 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
   std::string suffix =
       GetContentClient()->browser()->GetMetricSuffixForURL(url);
   if (!suffix.empty()) {
-    RecordHistogramEnum(
-        std::string(
-            "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type.") +
-            suffix,
-        static_cast<int>(preparation),
-        static_cast<int>(WorkerPreparationType::kMaxValue));
+    base::UmaHistogramEnumeration(
+        base::StrCat(
+            {"ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type.",
+             suffix}),
+        preparation);
   }
 
   if (did_navigation_preload) {
@@ -507,9 +479,10 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
       "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time", time);
 
   // Record the preparation time using the worker preparation suffix.
-  RecordSuffixedMediumTimeHistogram(
-      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time",
-      GetWorkerPreparationSuffix(preparation), time);
+  base::UmaHistogramMediumTimes(
+      base::StrCat({"ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time",
+                    GetWorkerPreparationSuffix(preparation)}),
+      time);
 
   // Record the preparation time using the navigation preload suffix.
   if (did_navigation_preload) {
@@ -555,9 +528,10 @@ void ServiceWorkerMetrics::RecordInstallEventStatus(
 
 void ServiceWorkerMetrics::RecordEventDispatchingDelay(EventType event_type,
                                                        base::TimeDelta time) {
-  const std::string name = "ServiceWorker.EventDispatchingDelay";
-  UMA_HISTOGRAM_TIMES(name, time);
-  RecordSuffixedTimeHistogram(name, EventTypeToSuffix(event_type), time);
+  static constexpr char kName[] = "ServiceWorker.EventDispatchingDelay";
+  UMA_HISTOGRAM_TIMES(kName, time);
+  base::UmaHistogramTimes(base::StrCat({kName, EventTypeToSuffix(event_type)}),
+                          time);
 }
 
 void ServiceWorkerMetrics::RecordEventTimeout(EventType event) {
@@ -734,9 +708,10 @@ void ServiceWorkerMetrics::RecordStartWorkerTiming(const StartTimes& times,
   // Total duration.
   UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartTiming.Duration",
                              times.local_end - times.local_start);
-  RecordSuffixedMediumTimeHistogram("ServiceWorker.StartTiming.Duration",
-                                    StartSituationToSuffix(situation),
-                                    times.local_end - times.local_start);
+  base::UmaHistogramMediumTimes(
+      base::StrCat({"ServiceWorker.StartTiming.Duration",
+                    StartSituationToSuffix(situation)}),
+      times.local_end - times.local_start);
 
   // SentStartWorker milestone.
   UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartTiming.StartToSentStartWorker",
@@ -928,9 +903,8 @@ void ServiceWorkerMetrics::RecordUninstalledScriptImport(const GURL& url) {
 
 void ServiceWorkerMetrics::RecordStartServiceWorkerForNavigationHintResult(
     StartServiceWorkerForNavigationHintResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "ServiceWorker.StartForNavigationHint.Result", result,
-      StartServiceWorkerForNavigationHintResult::NUM_TYPES);
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartForNavigationHint.Result",
+                            result);
 }
 
 void ServiceWorkerMetrics::RecordRegisteredOriginCount(size_t origin_count) {
