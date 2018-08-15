@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS scope selector works in shadowRoot.firstChild
+FAIL Selecting direct child of shadow root with :scope should work assert_equals: should get the direct child of shadowRoot expected Element node <div class="div" id="external_div">Shadow Element<div id=... but got null
+FAIL Selecting descendants of shadow root with :scope should work assert_equals: should get the first div descendant of shadowRoot expected Element node <div class="div" id="external_div">Shadow Element<div id=... but got null
+PASS querySelector() with ":scope" should return null, whether the context object is an element or a shadow root
+Harness: the test ran to completion.
+
