@@ -891,16 +891,16 @@ void ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Write(
 
 #if defined(OS_WIN)
   base::win::ScopedHandle h = const_cast<param_type&>(p).PassPlatformHandle();
-  HandleWin handle_win(h.Take());
+  HandleWin handle_win(h.Get());
   WriteParam(m, handle_win);
 #elif defined(OS_FUCHSIA)
   zx::handle h = const_cast<param_type&>(p).PassPlatformHandle();
-  HandleFuchsia handle_fuchsia(h.release());
+  HandleFuchsia handle_fuchsia(h.get());
   WriteParam(m, handle_fuchsia);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   base::mac::ScopedMachSendRight h =
       const_cast<param_type&>(p).PassPlatformHandle();
-  MachPortMac mach_port_mac(h.release());
+  MachPortMac mach_port_mac(h.get());
   WriteParam(m, mach_port_mac);
 #elif defined(OS_ANDROID)
   m->WriteAttachment(new internal::PlatformFileAttachment(
