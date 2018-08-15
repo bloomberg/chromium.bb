@@ -455,6 +455,7 @@ jumbo_component("views") {
     "cocoa/widget_owner_nswindow_adapter.mm",
     "controls/button/label_button_label.cc",
     "controls/button/label_button_label.h",
+    "controls/menu/menu_pre_target_handler.h",
   ]
 
   sources += get_target_outputs(":views_vector_icons")
@@ -588,7 +589,6 @@ jumbo_component("views") {
       "accessibility/ax_widget_obj_wrapper.h",
       "accessibility/ax_window_obj_wrapper.h",
       "bubble/tray_bubble_view.h",
-      "controls/menu/menu_pre_target_handler.h",
       "controls/native/native_view_host_aura.h",
       "corewm/cursor_height_provider_win.h",
       "corewm/tooltip.h",
@@ -622,7 +622,8 @@ jumbo_component("views") {
       "accessibility/ax_window_obj_wrapper.cc",
       "bubble/tray_bubble_view.cc",
       "controls/menu/display_change_listener_aura.cc",
-      "controls/menu/menu_pre_target_handler.cc",
+      "controls/menu/menu_pre_target_handler_aura.cc",
+      "controls/menu/menu_pre_target_handler_aura.h",
       "controls/native/native_view_host_aura.cc",
       "corewm/cursor_height_provider_win.cc",
       "corewm/tooltip_aura.cc",
@@ -722,6 +723,10 @@ jumbo_component("views") {
 
   if (is_mac) {
     sources -= [ "controls/views_text_services_context_menu.cc" ]
+    sources += [
+      "controls/menu/menu_pre_target_handler_mac.h",
+      "controls/menu/menu_pre_target_handler_mac.mm",
+    ]
     deps += [
       "//components/crash/core/common",
       "//ui/accelerated_widget_mac",
