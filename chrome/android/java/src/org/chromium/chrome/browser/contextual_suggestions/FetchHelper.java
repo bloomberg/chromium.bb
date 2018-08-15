@@ -296,45 +296,10 @@ class FetchHelper {
     private void maybeStartFetch(final Tab tab) {
         if (tab == null || tab != mCurrentTab) return;
 
+        assert !tab.isIncognito();
+
         // Skip additional requests for current tab, until clearState is called.
         if (mFetchRequestedForCurrentTab) return;
-
-        if (shouldFetchCanonicalUrl(tab)) {
-            mFetchRequestedForCurrentTab = true;
-            String url = tab.getUrl();
-            tab.getWebContents().getMainFrame().getCanonicalUrlForSharing(new Callback<String>() {
-                @Override
-                public void onResult(String result) {
-                    if (tab != mCurrentTab) {
-                        return;
-                    }
-
-                    // Reset mFetchRequestedForCurrentTab so that it remains false if
-                    // maybeStartFetchWithCanonicalURLResolved doesn't end up requesting
-                    // suggestions. If it does end up requesting suggestions,
-                    // mFetchRequestedForCurrentTab will be set back to true in the same
-                    // synchronous flow of execution, so there shouldn't be a race condition.
-                    mFetchRequestedForCurrentTab = false;
-
-                    TabFetchReadinessState tabFetchReadinessState = getTabFetchReadinessState(tab);
-                    if (tabFetchReadinessState != null && tabFetchReadinessState.isTrackingPage()
-                            && tabFetchReadinessState.isContextTheSame(url)) {
-                        tabFetchReadinessState.setCanonicalUrl(result);
-                        maybeStartFetchWithCanonicalURLResolved(
-                                tab, getUrlToFetchFor(tab.getUrl(), result));
-                    }
-                }
-            });
-            return;
-        } else {
-            maybeStartFetchWithCanonicalURLResolved(tab, tab.getUrl());
-        }
-    }
-
-    private void maybeStartFetchWithCanonicalURLResolved(Tab tab, String resolvedUrl) {
-        if (tab == null || tab != mCurrentTab) return;
-
-        assert !tab.isIncognito();
 
         TabFetchReadinessState tabFetchReadinessState = getTabFetchReadinessState(mCurrentTab);
 
@@ -354,43 +319,54 @@ class FetchHelper {
             return;
         }
 
-        long remainingFetchDelayMillis =
+        long currentDelayMillis =
                 SystemClock.uptimeMillis() - tabFetchReadinessState.getFetchTimeBaselineMillis();
-        long minimumFetchDelayMillis = getMinimumFetchDelayMillis();
-        if (!sDisableDelayForTesting && remainingFetchDelayMillis < minimumFetchDelayMillis) {
-            postDelayedFetch(
-                    resolvedUrl, mCurrentTab, minimumFetchDelayMillis - remainingFetchDelayMillis);
-            return;
-        }
+        long delayMillis = Math.max(0, getMinimumFetchDelayMillis() - currentDelayMillis);
+        final String url = tabFetchReadinessState.getUrl();
 
-        mFetchRequestedForCurrentTab = true;
-        mDelegate.requestSuggestions(resolvedUrl);
-    }
-
-    private void postDelayedFetch(final String url, final Tab tab, long delayMillis) {
-        if (tab == null) {
-            assert false;
+        if (sDisableDelayForTesting || delayMillis == 0) {
+            getCanonicalUrlThenFetch(tab, url);
             return;
         }
 
         mDelegate.reportFetchDelayed(tab.getWebContents());
-        ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+        ThreadUtils.postOnUiThreadDelayed(() -> getCanonicalUrlThenFetch(tab, url), delayMillis);
+    }
+
+    private void getCanonicalUrlThenFetch(final Tab tab, final String url) {
+        if (!shouldFetchCanonicalUrl(tab)) {
+            fetchSuggestions(tab, url);
+            return;
+        }
+
+        tab.getWebContents().getMainFrame().getCanonicalUrlForSharing(new Callback<String>() {
             @Override
-            public void run() {
-                // Make sure that the tab is currently selected.
+            public void onResult(String result) {
                 if (tab != mCurrentTab) return;
 
-                if (mFetchRequestedForCurrentTab) return;
-
-                if (!isObservingTab(tab)) return;
-
-                // URL in tab changed since the task was originally posted.
-                if (!getTabFetchReadinessState(tab).isContextTheSame(url)) return;
-
-                mFetchRequestedForCurrentTab = true;
-                mDelegate.requestSuggestions(url);
+                TabFetchReadinessState tabFetchReadinessState = getTabFetchReadinessState(tab);
+                if (tabFetchReadinessState != null && tabFetchReadinessState.isTrackingPage()
+                        && tabFetchReadinessState.isContextTheSame(url)) {
+                    tabFetchReadinessState.setCanonicalUrl(result);
+                    fetchSuggestions(tab, getUrlToFetchFor(tab.getUrl(), result));
+                }
             }
-        }, delayMillis);
+        });
+    }
+
+    private void fetchSuggestions(final Tab tab, final String url) {
+        // Make sure that the tab is currently selected.
+        if (tab != mCurrentTab) return;
+
+        if (mFetchRequestedForCurrentTab) return;
+
+        if (!isObservingTab(tab)) return;
+
+        // URL in tab changed since the task was originally posted.
+        if (!getTabFetchReadinessState(tab).isContextTheSame(url)) return;
+
+        mFetchRequestedForCurrentTab = true;
+        mDelegate.requestSuggestions(url);
     }
 
     private void clearState() {
