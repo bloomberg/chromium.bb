@@ -91,6 +91,21 @@ def _ArePaintOrCompositingDirectoriesModified(change):  # pylint: disable=C0103
     return False
 
 
+def __ArePropertyTreeGenerationExpectationsModified(change):  # pylint: disable=C0103
+    """Checks whether CL has changes to paint or compositing directories."""
+    interesting_paths = [
+        os.path.join('third_party', 'WebKit', 'LayoutTests', 'FlagExpectations',
+                     'enable-blink-gen-property-trees'),
+        os.path.join('third_party', 'WebKit', 'LayoutTests', 'flag-specific',
+                     'enable-blink-gen-property-trees'),
+    ]
+    for affected_file in change.AffectedFiles():
+        file_path = affected_file.LocalPath()
+        if any(x in file_path for x in interesting_paths):
+            return True
+    return False
+
+
 def _AreLayoutNGDirectoriesModified(change):  # pylint: disable=C0103
     """Checks whether CL has changes to a layout ng directory."""
     layout_ng_paths = [
@@ -128,6 +143,12 @@ def PostUploadHook(cl, change, output_api):  # pylint: disable=C0103
             'Automatically added linux_layout_tests_slimming_paint_v2 and '
             'linux_trusty_blink_rel to run on CQ due to changes in paint or '
             'compositing directories.'))
+    if __ArePropertyTreeGenerationExpectationsModified(change):
+        results.extend(output_api.EnsureCQIncludeTrybotsAreAdded(
+            cl,
+            ['luci.chromium.try:linux-blink-gen-property-trees'],
+            'Automatically added linux-blink-gen-property-trees and '
+            'run on CQ due to changes in expectations'))
     if _AreLayoutNGDirectoriesModified(change):
         results.extend(output_api.EnsureCQIncludeTrybotsAreAdded(
             cl,
