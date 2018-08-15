@@ -773,6 +773,9 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     self._chroot = os.path.join(self._buildroot, 'chroot')
     os.makedirs(os.path.join(self._buildroot, '.repo'))
 
+    self._dropfile = os.path.join(
+        self._buildroot, 'src', 'scripts', 'cbuildbot_package.list')
+
   def testGenerateStackTraces(self):
     """Test if we can generate stack traces for minidumps."""
     os.makedirs(os.path.join(self._chroot, 'tmp'))
@@ -785,10 +788,53 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
                                    test_results_dir, self.tempdir, True)
       self.assertCommandContains(['minidump_stackwalk'])
 
-  def testUprevAllPackages(self):
-    """Test if we get None in revisions.pfq indicating Full Builds."""
+  def testUprevPackagesMin(self):
+    """See if we can generate the minimal cros_mark_as_stable commandline."""
     commands.UprevPackages(self._buildroot, [self._board], self._overlays)
-    self.assertCommandContains(['--boards=%s' % self._board, 'commit'])
+    self.assertCommandContains([
+        'commit', '--all',
+        '--boards=%s' % self._board,
+        '--drop_file=%s' % self._dropfile,
+        '--buildroot', self._buildroot,
+        '--overlays', self._overlays[0],
+    ])
+
+  def testUprevPackagesMax(self):
+    """See if we can generate the max cros_mark_as_stable commandline."""
+    commands.UprevPackages(self._buildroot, [self._board],
+                           overlay_type=constants.PUBLIC_OVERLAYS,
+                           workspace='/workspace')
+    self.assertCommandContains([
+        'commit', '--all',
+        '--boards=%s' % self._board,
+        '--drop_file=%s' % self._dropfile,
+        '--buildroot', '/workspace',
+        '--overlay-type', 'public',
+    ])
+
+  def testUprevPushMin(self):
+    """See if we can generate the minimal cros_mark_as_stable commandline."""
+    commands.UprevPush(self._buildroot, self._overlays)
+    self.assertCommandContains([
+        'push',
+        '--buildroot', self._buildroot,
+        '--overlays', self._overlays[0],
+        '--dryrun',
+    ])
+
+  def testUprevPushMax(self):
+    """See if we can generate the max cros_mark_as_stable commandline."""
+    commands.UprevPush(self._buildroot,
+                       dryrun=False,
+                       staging_branch='stage-branch',
+                       overlay_type=constants.PUBLIC_OVERLAYS,
+                       workspace='/workspace')
+    self.assertCommandContains([
+        'push',
+        '--buildroot', '/workspace',
+        '--overlay-type', 'public',
+        '--staging_branch=%s' % 'stage-branch',
+    ])
 
   def testVerifyBinpkgMissing(self):
     """Test case where binpkg is missing."""

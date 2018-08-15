@@ -1797,22 +1797,33 @@ def CleanupChromeKeywordsFile(boards, buildroot):
       cros_build_lib.SudoRunCommand(['rm', '-f', keywords_file])
 
 
-def UprevPackages(buildroot, boards, overlays, workspace=None):
+def UprevPackages(buildroot, boards, overlays=None, overlay_type=None,
+                  workspace=None):
   """Uprevs non-browser chromium os packages that have changed.
 
   Args:
     buildroot: Root directory where build occurs.
     boards: List of boards to uprev.
     overlays: The overlays to check for ebuilds to uprev.
+    overlay_type: A value from constants.VALID_OVERLAYS.
     workspace: Alternative buildroot directory to uprev.
   """
+  assert not (overlays and overlay_type)
+
   drop_file = _PACKAGE_FILE % {'buildroot': buildroot}
-  cmd = ['cros_mark_as_stable', '--all',
-         '--boards=%s' % ':'.join(boards),
-         '--overlays=%s' % ':'.join(overlays),
-         '--drop_file=%s' % drop_file,
-         '--buildroot', workspace or buildroot,
-         'commit']
+  cmd = [
+      'cros_mark_as_stable', 'commit',
+      '--all',
+      '--boards=%s' % ':'.join(boards),
+      '--drop_file=%s' % drop_file,
+      '--buildroot', workspace or buildroot,
+  ]
+
+  if overlays:
+    cmd.extend(['--overlays', ':'.join(overlays)])
+
+  if overlay_type:
+    cmd.extend(['--overlay-type', overlay_type])
 
   RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
@@ -1823,7 +1834,8 @@ def RegenPortageCache(overlays):
   parallel.RunTasksInProcessPool(portage_util.RegenCache, task_inputs)
 
 
-def UprevPush(buildroot, overlays, dryrun, staging_branch=None, workspace=None):
+def UprevPush(buildroot, overlays=None, dryrun=True, staging_branch=None,
+              overlay_type=None, workspace=None):
   """Pushes uprev changes to the main line.
 
   Args:
@@ -1832,17 +1844,23 @@ def UprevPush(buildroot, overlays, dryrun, staging_branch=None, workspace=None):
     dryrun: If True, do not actually push.
     staging_branch: If not None, push uprev commits to this
                     staging_branch.
+    overlay_type: A value from constants.VALID_OVERLAYS.
     workspace: Alternative buildroot directory to uprev.
   """
-  cmd = ['cros_mark_as_stable',
-         '--overlays=%s' % ':'.join(overlays),
-         '--buildroot', workspace or buildroot,
-        ]
+  assert not (overlays and overlay_type)
+
+  cmd = [
+      'cros_mark_as_stable', 'push',
+      '--buildroot', workspace or buildroot,
+  ]
+  if overlays:
+    cmd.extend(['--overlays', ':'.join(overlays)])
+  if overlay_type:
+    cmd.extend(['--overlay-type', overlay_type])
   if staging_branch is not None:
     cmd.append('--staging_branch=%s' % staging_branch)
   if dryrun:
     cmd.append('--dryrun')
-  cmd.append('push')
   RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
