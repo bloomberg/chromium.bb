@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/containers/flat_map.h"
+#include "chromeos/services/multidevice_setup/feature_state_manager.h"
 #include "chromeos/services/multidevice_setup/host_status_provider.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -35,7 +37,8 @@ class SetupFlowCompletionRecorder;
 
 // Concrete MultiDeviceSetup implementation.
 class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
-                             public HostStatusProvider::Observer {
+                             public HostStatusProvider::Observer,
+                             public FeatureStateManager::Observer {
  public:
   class Factory {
    public:
@@ -65,11 +68,17 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
   void SetAccountStatusChangeDelegate(
       mojom::AccountStatusChangeDelegatePtr delegate) override;
   void AddHostStatusObserver(mojom::HostStatusObserverPtr observer) override;
+  void AddFeatureStateObserver(
+      mojom::FeatureStateObserverPtr observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void SetHostDevice(const std::string& host_device_id,
                      SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
   void GetHostStatus(GetHostStatusCallback callback) override;
+  void SetFeatureEnabledState(mojom::Feature feature,
+                              bool enabled,
+                              SetFeatureEnabledStateCallback callback) override;
+  void GetFeatureStates(GetFeatureStatesCallback callback) override;
   void RetrySetHostNow(RetrySetHostNowCallback callback) override;
   void TriggerEventForDebugging(
       mojom::EventTypeForDebugging type,
@@ -79,16 +88,22 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
   void OnHostStatusChange(const HostStatusProvider::HostStatusWithDevice&
                               host_status_with_device) override;
 
+  // FeatureStateManager::Observer:
+  void OnFeatureStatesChange(
+      const FeatureStateManager::FeatureStatesMap& feature_states_map) override;
+
   void FlushForTesting();
 
   std::unique_ptr<EligibleHostDevicesProvider> eligible_host_devices_provider_;
   std::unique_ptr<HostBackendDelegate> host_backend_delegate_;
   std::unique_ptr<HostVerifier> host_verifier_;
   std::unique_ptr<HostStatusProvider> host_status_provider_;
+  std::unique_ptr<FeatureStateManager> feature_state_manager_;
   std::unique_ptr<SetupFlowCompletionRecorder> setup_flow_completion_recorder_;
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
 
   mojo::InterfacePtrSet<mojom::HostStatusObserver> host_status_observers_;
+  mojo::InterfacePtrSet<mojom::FeatureStateObserver> feature_state_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupImpl);
 };

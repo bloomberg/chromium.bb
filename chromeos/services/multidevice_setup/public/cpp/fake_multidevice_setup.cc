@@ -4,6 +4,7 @@
 
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
 
+#include "base/containers/flat_map.h"
 #include "components/cryptauth/remote_device.h"
 
 namespace chromeos {
@@ -33,6 +34,18 @@ FakeMultiDeviceSetup::~FakeMultiDeviceSetup() {
     }
   }
 
+  for (auto& set_feature_enabled_args : set_feature_enabled_args_) {
+    if (std::get<2>(set_feature_enabled_args))
+      std::move(std::get<2>(set_feature_enabled_args)).Run(false /* success */);
+  }
+
+  for (auto& get_feature_states_arg : get_feature_states_args_) {
+    if (get_feature_states_arg) {
+      std::move(get_feature_states_arg)
+          .Run(base::flat_map<mojom::Feature, mojom::FeatureState>());
+    }
+  }
+
   for (auto& retry_set_host_now_arg : retry_set_host_now_args_) {
     if (retry_set_host_now_arg)
       std::move(retry_set_host_now_arg).Run(false /* success */);
@@ -56,7 +69,12 @@ void FakeMultiDeviceSetup::SetAccountStatusChangeDelegate(
 
 void FakeMultiDeviceSetup::AddHostStatusObserver(
     mojom::HostStatusObserverPtr observer) {
-  observers_.push_back(std::move(observer));
+  host_status_observers_.push_back(std::move(observer));
+}
+
+void FakeMultiDeviceSetup::AddFeatureStateObserver(
+    mojom::FeatureStateObserverPtr observer) {
+  feature_state_observers_.push_back(std::move(observer));
 }
 
 void FakeMultiDeviceSetup::GetEligibleHostDevices(
@@ -75,6 +93,17 @@ void FakeMultiDeviceSetup::RemoveHostDevice() {
 
 void FakeMultiDeviceSetup::GetHostStatus(GetHostStatusCallback callback) {
   get_host_args_.push_back(std::move(callback));
+}
+
+void FakeMultiDeviceSetup::SetFeatureEnabledState(
+    mojom::Feature feature,
+    bool enabled,
+    SetFeatureEnabledStateCallback callback) {
+  set_feature_enabled_args_.emplace_back(feature, enabled, std::move(callback));
+}
+
+void FakeMultiDeviceSetup::GetFeatureStates(GetFeatureStatesCallback callback) {
+  get_feature_states_args_.emplace_back(std::move(callback));
 }
 
 void FakeMultiDeviceSetup::RetrySetHostNow(RetrySetHostNowCallback callback) {

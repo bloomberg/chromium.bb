@@ -21,10 +21,22 @@ class FakeMojoService {
   }
 
   /** @override */
-  setAccountStatusChangeDelegate(delegate) {}
+  setAccountStatusChangeDelegate(delegate) {
+    // Unimplemented; never called from setup flow.
+    assertNotReached();
+  }
 
   /** @override */
-  addHostStatusObserver(observer) {}
+  addHostStatusObserver(observer) {
+    // Unimplemented; never called from setup flow.
+    assertNotReached();
+  }
+
+  /** @override */
+  addFeatureStateObserver(observer) {
+    // Unimplemented; never called from setup flow.
+    assertNotReached();
+  }
 
   /** @override */
   getEligibleHostDevices() {
@@ -61,6 +73,20 @@ class FakeMojoService {
 
   /** @override */
   getHostStatus() {
+    return new Promise((resolve, reject) => {
+      reject('Unimplemented; never called from setup flow.');
+    });
+  }
+
+  /** @override */
+  setFeatureEnabledState() {
+    return new Promise((resolve, reject) => {
+      reject('Unimplemented; never called from setup flow.');
+    });
+  }
+
+  /** @override */
+  getFeatureStates() {
     return new Promise((resolve, reject) => {
       reject('Unimplemented; never called from setup flow.');
     });

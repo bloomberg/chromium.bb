@@ -195,6 +195,16 @@ TEST_F(MultiDeviceSetupServiceTest, CallFunctionsBeforeInitialization) {
   multidevice_setup_ptr()->GetHostStatus(base::DoNothing());
   multidevice_setup_ptr().FlushForTesting();
 
+  // SetFeatureEnabledState().
+  multidevice_setup_ptr()->SetFeatureEnabledState(
+      mojom::Feature::kBetterTogetherSuite, true /* enabled */,
+      base::DoNothing());
+  multidevice_setup_ptr().FlushForTesting();
+
+  // GetFeatureStates().
+  multidevice_setup_ptr()->GetFeatureStates(base::DoNothing());
+  multidevice_setup_ptr().FlushForTesting();
+
   // RetrySetHostNow().
   multidevice_setup_ptr()->RetrySetHostNow(base::DoNothing());
   multidevice_setup_ptr().FlushForTesting();
@@ -206,9 +216,11 @@ TEST_F(MultiDeviceSetupServiceTest, CallFunctionsBeforeInitialization) {
   // Finish initialization; all of the pending calls should have been forwarded.
   FinishInitialization();
   EXPECT_TRUE(fake_multidevice_setup()->delegate());
-  EXPECT_EQ(1u, fake_multidevice_setup()->observers().size());
+  EXPECT_EQ(1u, fake_multidevice_setup()->host_status_observers().size());
   EXPECT_EQ(1u, fake_multidevice_setup()->get_eligible_hosts_args().size());
   EXPECT_EQ(1u, fake_multidevice_setup()->get_host_args().size());
+  EXPECT_EQ(1u, fake_multidevice_setup()->set_feature_enabled_args().size());
+  EXPECT_EQ(1u, fake_multidevice_setup()->get_feature_states_args().size());
   EXPECT_EQ(1u, fake_multidevice_setup()->retry_set_host_now_args().size());
 }
 
@@ -267,7 +279,7 @@ TEST_F(MultiDeviceSetupServiceTest, FinishInitializationFirst) {
   multidevice_setup_ptr()->AddHostStatusObserver(
       fake_host_status_observer->GenerateInterfacePtr());
   multidevice_setup_ptr().FlushForTesting();
-  EXPECT_EQ(1u, fake_multidevice_setup()->observers().size());
+  EXPECT_EQ(1u, fake_multidevice_setup()->host_status_observers().size());
 
   // GetEligibleHostDevices().
   multidevice_setup_ptr()->GetEligibleHostDevices(base::DoNothing());
@@ -288,6 +300,18 @@ TEST_F(MultiDeviceSetupServiceTest, FinishInitializationFirst) {
   multidevice_setup_ptr()->GetHostStatus(base::DoNothing());
   multidevice_setup_ptr().FlushForTesting();
   EXPECT_EQ(1u, fake_multidevice_setup()->get_host_args().size());
+
+  // SetFeatureEnabledState().
+  multidevice_setup_ptr()->SetFeatureEnabledState(
+      mojom::Feature::kBetterTogetherSuite, true /* enabled */,
+      base::DoNothing());
+  multidevice_setup_ptr().FlushForTesting();
+  EXPECT_EQ(1u, fake_multidevice_setup()->set_feature_enabled_args().size());
+
+  // GetFeatureStates().
+  multidevice_setup_ptr()->GetFeatureStates(base::DoNothing());
+  multidevice_setup_ptr().FlushForTesting();
+  EXPECT_EQ(1u, fake_multidevice_setup()->get_feature_states_args().size());
 
   // RetrySetHostNow().
   multidevice_setup_ptr()->RetrySetHostNow(base::DoNothing());

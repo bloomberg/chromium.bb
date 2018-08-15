@@ -10,6 +10,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
+#include "chromeos/services/multidevice_setup/feature_state_manager_impl.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
@@ -71,6 +72,11 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
               host_backend_delegate_.get(),
               host_verifier_.get(),
               device_sync_client)),
+      feature_state_manager_(
+          FeatureStateManagerImpl::Factory::Get()->BuildInstance(
+              pref_service,
+              host_status_provider_.get(),
+              device_sync_client)),
       setup_flow_completion_recorder_(
           SetupFlowCompletionRecorderImpl::Factory::Get()->BuildInstance(
               pref_service,
@@ -82,10 +88,12 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
                               setup_flow_completion_recorder_.get(),
                               base::DefaultClock::GetInstance())) {
   host_status_provider_->AddObserver(this);
+  feature_state_manager_->AddObserver(this);
 }
 
 MultiDeviceSetupImpl::~MultiDeviceSetupImpl() {
   host_status_provider_->RemoveObserver(this);
+  feature_state_manager_->RemoveObserver(this);
 }
 
 void MultiDeviceSetupImpl::SetAccountStatusChangeDelegate(
@@ -96,6 +104,11 @@ void MultiDeviceSetupImpl::SetAccountStatusChangeDelegate(
 void MultiDeviceSetupImpl::AddHostStatusObserver(
     mojom::HostStatusObserverPtr observer) {
   host_status_observers_.AddPtr(std::move(observer));
+}
+
+void MultiDeviceSetupImpl::AddFeatureStateObserver(
+    mojom::FeatureStateObserverPtr observer) {
+  feature_state_observers_.AddPtr(std::move(observer));
 }
 
 void MultiDeviceSetupImpl::GetEligibleHostDevices(
@@ -147,6 +160,18 @@ void MultiDeviceSetupImpl::GetHostStatus(GetHostStatusCallback callback) {
 
   std::move(callback).Run(host_status_with_device.host_status(),
                           device_for_callback);
+}
+
+void MultiDeviceSetupImpl::SetFeatureEnabledState(
+    mojom::Feature feature,
+    bool enabled,
+    SetFeatureEnabledStateCallback callback) {
+  std::move(callback).Run(
+      feature_state_manager_->SetFeatureEnabledState(feature, enabled));
+}
+
+void MultiDeviceSetupImpl::GetFeatureStates(GetFeatureStatesCallback callback) {
+  std::move(callback).Run(feature_state_manager_->GetFeatureStates());
 }
 
 void MultiDeviceSetupImpl::RetrySetHostNow(RetrySetHostNowCallback callback) {
@@ -223,8 +248,17 @@ void MultiDeviceSetupImpl::OnHostStatusChange(
       });
 }
 
+void MultiDeviceSetupImpl::OnFeatureStatesChange(
+    const FeatureStateManager::FeatureStatesMap& feature_states_map) {
+  feature_state_observers_.ForAllPtrs(
+      [&feature_states_map](mojom::FeatureStateObserver* observer) {
+        observer->OnFeatureStatesChanged(feature_states_map);
+      });
+}
+
 void MultiDeviceSetupImpl::FlushForTesting() {
   host_status_observers_.FlushForTesting();
+  feature_state_observers_.FlushForTesting();
 }
 
 }  // namespace multidevice_setup
