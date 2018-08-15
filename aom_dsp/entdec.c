@@ -139,7 +139,7 @@ static int od_ec_dec_normalize(od_ec_dec *dec, od_ec_window dif, unsigned rng,
 
 /*Initializes the decoder.
   buf: The input buffer to use.
-  Return: 0 on success, or a negative value on error.*/
+  storage: The size in bytes of the input buffer.*/
 void od_ec_dec_init(od_ec_dec *dec, const unsigned char *buf,
                     uint32_t storage) {
   dec->buf = buf;
@@ -149,7 +149,6 @@ void od_ec_dec_init(od_ec_dec *dec, const unsigned char *buf,
   dec->dif = ((od_ec_window)1 << (OD_EC_WINDOW_SIZE - 1)) - 1;
   dec->rng = 0x8000;
   dec->cnt = -15;
-  dec->error = 0;
   od_ec_dec_refill(dec);
 }
 

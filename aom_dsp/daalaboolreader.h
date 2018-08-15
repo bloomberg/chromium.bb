@@ -101,10 +101,6 @@ static INLINE int aom_daala_read(daala_reader *r, int prob) {
   return bit;
 }
 
-static INLINE int aom_daala_reader_has_error(daala_reader *r) {
-  return r->ec.error;
-}
-
 static INLINE int daala_read_symbol(daala_reader *r, const aom_cdf_prob *cdf,
                                     int nsymbs) {
   int symb;

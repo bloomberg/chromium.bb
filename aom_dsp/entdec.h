@@ -53,8 +53,6 @@ struct od_ec_dec {
   uint16_t rng;
   /*The number of bits of data in the current value.*/
   int16_t cnt;
-  /*Nonzero if an error occurred.*/
-  int error;
 };
 
 /*See entdec.c for further documentation.*/

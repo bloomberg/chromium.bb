@@ -397,9 +397,6 @@ static void decode_mbmi_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Invalid block size.");
   }
-
-  int reader_corrupted_flag = aom_reader_has_error(r);
-  aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
 typedef struct PadBlock {
@@ -1657,9 +1654,6 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
   if (mbmi->skip) av1_reset_skip_context(xd, mi_row, mi_col, bsize, num_planes);
 
   decode_token_recon_block(pbi, td, mi_row, mi_col, r, bsize);
-
-  int reader_corrupted_flag = aom_reader_has_error(r);
-  aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
 static void set_offsets_for_pred_and_recon(AV1Decoder *const pbi,
