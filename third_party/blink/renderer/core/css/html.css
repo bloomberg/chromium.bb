@@ -555,12 +555,6 @@ input[type="image" i] {
     cursor: pointer;
 }
 
-input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
-    background-color: #FAFFBD !important;
-    background-image:none !important;
-    color: #000000 !important;
-}
-
 input[type="radio" i], input[type="checkbox" i] {
     margin: 3px 0.5ex;
     padding: initial;

@@ -90,6 +90,9 @@ extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
 extern const char kAutofillPrefilledFieldsName[];
 extern const char kAutofillPrefilledFieldsDescription[];
 
+extern const char kAutofillPreviewStyleExperimentName[];
+extern const char kAutofillPreviewStyleExperimentDescription[];
+
 extern const char kAutofillRationalizeRepeatedServerPredictionsName[];
 extern const char kAutofillRationalizeRepeatedServerPredictionsDescription[];
 

@@ -88,6 +88,11 @@ const char kAutofillPrefilledFieldsName[] = "Autofill Prefilled Fields";
 const char kAutofillPrefilledFieldsDescription[] =
     "Allows autofill to fill fields previously filled by the website";
 
+extern const char kAutofillPreviewStyleExperimentName[] =
+    "Autofill Preview Style Experiment";
+extern const char kAutofillPreviewStyleExperimentDescription[] =
+    "Allows experimentation with the Autofill field preview's style.";
+
 const char kAutofillRationalizeRepeatedServerPredictionsName[] =
     "Autofill Rationalization of Repeated Server Field Type Predictions";
 const char kAutofillRationalizeRepeatedServerPredictionsDescription[] =
