@@ -71,15 +71,21 @@ SwitchAccess.prototype = {
   },
 
   /**
-   * Move to the next/previous interesting node. If |doNext| is true, move to
-   * the next node. Otherwise, move to the previous node.
-   *
-   * @param {boolean} doNext
+   * Move to the next interesting node.
    * @override
    */
-  moveToNode: function(doNext) {
+  moveForward: function() {
     if (this.automationManager_)
-      this.automationManager_.moveToNode(doNext);
+      this.automationManager_.moveForward();
+  },
+
+  /**
+   * Move to the previous interesting node.
+   * @override
+   */
+  moveBackward: function() {
+    if (this.automationManager_)
+      this.automationManager_.moveBackward();
   },
 
   /**

@@ -11,12 +11,14 @@ function SwitchAccessInterface() {}
 
 SwitchAccessInterface.prototype = {
   /**
-   * Move to the next/previous interesting node. If |doNext| is true, move to
-   * the next node. Otherwise, move to the previous node.
-   *
-   * @param {boolean} doNext
+   * Move to the next interesting node.
    */
-  moveToNode: function(doNext) {},
+  moveForward: function() {},
+
+  /**
+   * Move to the previous interesting node.
+   */
+  moveBackward: function() {},
 
   /**
    * Perform the default action on the current node.
