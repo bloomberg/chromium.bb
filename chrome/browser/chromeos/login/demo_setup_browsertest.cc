@@ -8,6 +8,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/time/time_to_iso8601.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
@@ -240,6 +242,15 @@ class DemoSetupTest : public LoginManagerTest {
     EXPECT_TRUE(JSExecute("cr.ui.Oobe.handleAccelerator('demo_mode');"));
   }
 
+  // Simulates multi-tap gesture that consists of |tapCount| clicks on the OOBE
+  // outer-container.
+  void MultiTapOobeContainer(int tapsCount) {
+    const std::string query = base::StrCat(
+        {"for (var i = 0; i < ", base::NumberToString(tapsCount), "; ++i)",
+         "{ document.querySelector('#outer-container').click(); }"});
+    EXPECT_TRUE(JSExecute(query));
+  }
+
   void ClickOkOnConfirmationDialog() {
     EXPECT_TRUE(JSExecute("document.querySelector('.cr-dialog-ok').click();"));
   }
@@ -415,18 +426,27 @@ class DemoSetupTest : public LoginManagerTest {
     base::RunLoop().RunUntilIdle();
   }
 
- private:
-  void DisableConfirmationDialogAnimations() {
-    EXPECT_TRUE(
-        JSExecute("cr.ui.dialogs.BaseDialog.ANIMATE_STABLE_DURATION = 0;"));
-  }
-
   bool JSExecute(const std::string& script) {
     return content::ExecuteScript(web_contents(), script);
   }
 
   void JSExecuteAsync(const std::string& script) {
     content::ExecuteScriptAsync(web_contents(), script);
+  }
+
+  // Sets fake time in MultiTapDetector to remove dependency on real time in
+  // test environment.
+  void SetFakeTimeForMultiTapDetector(base::Time fake_time) {
+    const std::string query =
+        base::StrCat({"MultiTapDetector.FAKE_TIME_FOR_TESTS = new Date('",
+                      base::TimeToISO8601(fake_time), "');"});
+    EXPECT_TRUE(JSExecute(query));
+  }
+
+ private:
+  void DisableConfirmationDialogAnimations() {
+    EXPECT_TRUE(
+        JSExecute("cr.ui.dialogs.BaseDialog.ANIMATE_STABLE_DURATION = 0;"));
   }
 
   // TODO(agawronska): Maybe create a separate test fixture for offline setup.
@@ -458,6 +478,33 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndCancel) {
 
   JsConditionWaiter(js_checker(), kIsConfirmationDialogHiddenQuery).Wait();
   EXPECT_FALSE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, InvokeWithTaps) {
+  // Use fake time to avoid flakiness.
+  SetFakeTimeForMultiTapDetector(base::Time::UnixEpoch());
+  EXPECT_FALSE(IsConfirmationDialogShown());
+
+  MultiTapOobeContainer(10);
+  EXPECT_TRUE(IsConfirmationDialogShown());
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, DoNotInvokeWithNonConsecutiveTaps) {
+  // Use fake time to avoid flakiness.
+  const base::Time kFakeTime = base::Time::UnixEpoch();
+  SetFakeTimeForMultiTapDetector(kFakeTime);
+  EXPECT_FALSE(IsConfirmationDialogShown());
+
+  MultiTapOobeContainer(5);
+  EXPECT_FALSE(IsConfirmationDialogShown());
+
+  // Advance time to make interval in between taps longer than expected by
+  // multi-tap gesture detector.
+  SetFakeTimeForMultiTapDetector(kFakeTime +
+                                 base::TimeDelta::FromMilliseconds(500));
+
+  MultiTapOobeContainer(5);
+  EXPECT_FALSE(IsConfirmationDialogShown());
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {

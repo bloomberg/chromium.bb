@@ -10,6 +10,7 @@
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -179,6 +180,9 @@ void CoreOobeHandler::Initialize() {
 void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
   dict->SetKey("isInTabletMode",
                base::Value(TabletModeClient::Get()->tablet_mode_enabled()));
+  bool is_demo_mode_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableDemoMode);
+  dict->SetKey("isDemoModeEnabled", base::Value(is_demo_mode_enabled));
 }
 
 void CoreOobeHandler::RegisterMessages() {
