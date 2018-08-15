@@ -152,7 +152,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
 
 void NativeWidgetMac::OnWidgetInitDone() {
   OnSizeConstraintsChanged();
-  bridge()->OnWidgetInitDone();
+  bridge_host_->OnWidgetInitDone();
 }
 
 NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {
@@ -664,7 +664,7 @@ NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
 }
 
 BridgedNativeWidget* NativeWidgetMac::bridge() const {
-  return bridge_host_ ? bridge_host_->bridge() : nullptr;
+  return bridge_host_ ? bridge_host_->bridge_impl() : nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

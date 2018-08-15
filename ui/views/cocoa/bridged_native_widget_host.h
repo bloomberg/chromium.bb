@@ -56,6 +56,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHost {
                          bool* found_word,
                          gfx::DecoratedText* decorated_word,
                          gfx::Point* baseline_point) = 0;
+
+  // Called before the NSWindow is closed and destroyed.
+  virtual void OnWindowWillClose() = 0;
+
+  // Called after the NSWindow has been closed and destroyed.
+  virtual void OnWindowHasClosed() = 0;
 };
 
 }  // namespace views
