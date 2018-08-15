@@ -14,8 +14,6 @@ namespace previews {
 class PreviewsUIService;
 }  // namespace previews
 
-class UINetworkQualityEstimatorService;
-
 // The WebUI for chrome://interventions-internals.
 class InterventionsInternalsUI : public ui::MojoWebUIController {
  public:
@@ -28,10 +26,6 @@ class InterventionsInternalsUI : public ui::MojoWebUIController {
 
   // The PreviewsUIService associated with this UI.
   previews::PreviewsUIService* previews_ui_service_;
-
-  // The network quality estimator service for getting the estimate effective
-  // conntection type.
-  UINetworkQualityEstimatorService* ui_nqe_service_;
 
   std::unique_ptr<InterventionsInternalsPageHandler> page_handler_;
 
