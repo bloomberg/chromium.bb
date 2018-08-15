@@ -83,6 +83,10 @@ extern const char kPasswordProtectionLoginURLs[];
 // by enterprise policy and has no effect on users who are not managed by
 // enterprise policy.
 extern const char kPasswordProtectionWarningTrigger[];
+
+// Last time Chrome refreshes advanced protection status for sign-in users (in
+// microseconds);
+extern const char kAdvancedProtectionLastRefreshInUs[];
 }
 
 namespace safe_browsing {
