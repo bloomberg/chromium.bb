@@ -164,8 +164,8 @@ crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/pad-g
 crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 
 # Sheriff 2018/05/25
-crbug.com/846749 [ Linux Mac Debug ] http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
-crbug.com/846749 [ Linux Mac Debug ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
+crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
+crbug.com/846747 virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
 
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 
