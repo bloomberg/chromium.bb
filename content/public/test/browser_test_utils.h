@@ -270,6 +270,10 @@ void ResetTouchAction(RenderWidgetHost* host);
 void ResendGestureScrollUpdateToEmbedder(WebContents* guest_web_contents,
                                          const blink::WebInputEvent& event);
 
+// When a guest view is pre-processing a mouse/touch event, send a synthetic
+// tap gesture to its RenderWidgetHostView.
+void MaybeSendSyntheticTapGesture(WebContents* guest_web_contents);
+
 // Holds down modifier keys for the duration of its lifetime and releases them
 // upon destruction. This allows simulating multiple input events without
 // simulating modifier key releases in between.

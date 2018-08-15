@@ -397,6 +397,23 @@ class ChromeSitePerProcessPDFTest : public ChromeSitePerProcessTest {
   }
 
   void ResendGestureToEmbedder(const std::string& host_name) {
+    content::WebContents* guest_web_contents = SetupGuestWebContents(host_name);
+    blink::WebGestureEvent event(blink::WebInputEvent::kGestureScrollUpdate,
+                                 blink::WebInputEvent::kNoModifiers,
+                                 ui::EventTimeForNow(),
+                                 blink::kWebGestureDeviceTouchscreen);
+    // This should not crash.
+    content::ResendGestureScrollUpdateToEmbedder(guest_web_contents, event);
+  }
+
+  void SendSyntheticTapGesture(const std::string& host_name) {
+    content::WebContents* guest_web_contents = SetupGuestWebContents(host_name);
+    // This should not crash
+    MaybeSendSyntheticTapGesture(guest_web_contents);
+  }
+
+ private:
+  content::WebContents* SetupGuestWebContents(const std::string& host_name) {
     // Navigate to a page with an <iframe>.
     GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
     ui_test_utils::NavigateToURL(browser(), main_url);
@@ -420,15 +437,9 @@ class ChromeSitePerProcessPDFTest : public ChromeSitePerProcessTest {
     ResetTouchAction(
         guest_view::GuestViewBase::FromWebContents(guest_web_contents)
             ->GetOwnerRenderWidgetHost());
-    blink::WebGestureEvent event(blink::WebInputEvent::kGestureScrollUpdate,
-                                 blink::WebInputEvent::kNoModifiers,
-                                 ui::EventTimeForNow(),
-                                 blink::kWebGestureDeviceTouchscreen);
-    // This should not crash.
-    content::ResendGestureScrollUpdateToEmbedder(guest_web_contents, event);
+    return guest_web_contents;
   }
 
- private:
   guest_view::TestGuestViewManagerFactory factory_;
   guest_view::TestGuestViewManager* test_guest_view_manager_;
 
@@ -447,6 +458,19 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
                        ResendGestureToEmbedderNonOOPIF) {
   ResendGestureToEmbedder("a.com");
+}
+
+// Regression test for https://crbug.com/873211. MaybeSendSyntheticTapGesture
+// can be called with no touch action set in TouchActionFilter and results in
+// a crash.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
+                       SendSyntheticTapGestureOOPIF) {
+  SendSyntheticTapGesture("b.com");
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
+                       SendSyntheticTapGestureNonOOPIF) {
+  SendSyntheticTapGesture("a.com");
 }
 
 // This test verifies that when navigating an OOPIF to a page with <embed>-ed
