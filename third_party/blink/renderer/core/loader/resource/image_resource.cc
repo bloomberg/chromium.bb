@@ -669,8 +669,7 @@ bool ImageResource::IsAccessAllowed(
       ImageResourceInfo::kHasSingleSecurityOrigin)
     return false;
 
-  DCHECK(security_origin);
-  if (PassesAccessControlCheck(*security_origin))
+  if (IsSameOriginOrCORSSuccessful())
     return true;
 
   return security_origin->CanReadContent(GetResponse().Url());

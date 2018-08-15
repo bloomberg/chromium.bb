@@ -403,16 +403,6 @@ AtomicString Resource::HttpContentType() const {
   return GetResponse().HttpContentType();
 }
 
-bool Resource::PassesAccessControlCheck(
-    const SecurityOrigin& security_origin) const {
-  base::Optional<network::CORSErrorStatus> cors_status = CORS::CheckAccess(
-      GetResponse().Url(), GetResponse().HttpStatusCode(),
-      GetResponse().HttpHeaderFields(),
-      LastResourceRequest().GetFetchCredentialsMode(), security_origin);
-
-  return !cors_status;
-}
-
 bool Resource::MustRefetchDueToIntegrityMetadata(
     const FetchParameters& params) const {
   if (params.IntegrityMetadata().IsEmpty())

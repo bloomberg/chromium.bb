@@ -51,8 +51,7 @@ void WorkletModuleScriptFetcher::NotifyFinished(Resource* resource) {
     params.emplace(
         script_resource->GetResponse().Url(), script_resource->SourceText(),
         script_resource->GetResourceRequest().GetFetchCredentialsMode(),
-        script_resource->CalculateAccessControlStatus(
-            fetcher_->Context().GetSecurityOrigin()));
+        script_resource->CalculateAccessControlStatus());
   }
 
   // This will eventually notify |client| passed to

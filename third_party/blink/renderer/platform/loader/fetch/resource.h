@@ -215,8 +215,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void Finish(TimeTicks finish_time, base::SingleThreadTaskRunner*);
   void FinishForTest() { Finish(TimeTicks(), nullptr); }
 
-  bool PassesAccessControlCheck(const SecurityOrigin&) const;
-
   virtual scoped_refptr<const SharedBuffer> ResourceBuffer() const {
     return data_;
   }
