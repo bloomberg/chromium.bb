@@ -32,10 +32,12 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -46,6 +48,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
@@ -70,6 +73,8 @@ import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gsa.GSAState;
+import org.chromium.chrome.browser.incognito.IncognitoTabHost;
+import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
@@ -198,6 +203,9 @@ public class CustomTabActivity extends ChromeActivity {
         }
     };
 
+    @Nullable
+    private IncognitoTabHost mIncognitoTabHost;
+
     @Override
     protected Drawable getBackgroundDrawable() {
         int initialBackgroundColor = mIntentDataProvider.getInitialBackgroundColor();
@@ -260,6 +268,21 @@ public class CustomTabActivity extends ChromeActivity {
             loadUrlInTab(mMainTab, new LoadUrlParams(getUrlToLoad()),
                     IntentHandler.getTimestampFromIntent(getIntent()));
             mHasCreatedTabEarly = true;
+        }
+
+        if (mIntentDataProvider.isIncognito()) {
+            initializeIncognito();
+        }
+    }
+
+    private void initializeIncognito() {
+        mIncognitoTabHost = new IncognitoCustomTabHost();
+        IncognitoTabHostRegistry.getInstance().register(mIncognitoTabHost);
+
+        if (!CommandLine.getInstance().hasSwitch(
+                ChromeSwitches.ENABLE_INCOGNITO_SNAPSHOTS_IN_ANDROID_RECENTS)) {
+            // Disable taking screenshots and seeing snapshots in recents
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
     }
 
@@ -875,6 +898,9 @@ public class CustomTabActivity extends ChromeActivity {
         if (moduleComponentName != null) {
             mConnection.getModuleLoader(moduleComponentName).maybeUnloadModule();
         }
+        if (mIncognitoTabHost != null) {
+            IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);
+        }
     }
 
     @Override
@@ -960,7 +986,8 @@ public class CustomTabActivity extends ChromeActivity {
                 mIntentDataProvider.isOpenedByChrome(),
                 mIntentDataProvider.shouldShowShareMenuItem(),
                 mIntentDataProvider.shouldShowStarButton(),
-                mIntentDataProvider.shouldShowDownloadButton());
+                mIntentDataProvider.shouldShowDownloadButton(),
+                mIntentDataProvider.isIncognito());
     }
 
     @Override
@@ -1262,7 +1289,9 @@ public class CustomTabActivity extends ChromeActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(LaunchIntentDispatcher.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
 
-        boolean willChromeHandleIntent = getIntentDataProvider().isOpenedByChrome();
+        boolean willChromeHandleIntent =
+                getIntentDataProvider().isOpenedByChrome() || getIntentDataProvider().isIncognito();
+
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             willChromeHandleIntent |= ExternalNavigationDelegateImpl
@@ -1421,5 +1450,22 @@ public class CustomTabActivity extends ChromeActivity {
         String publisherUrlPackage = mConnection.getTrustedCdnPublisherUrlPackage();
         return publisherUrlPackage != null
                 && publisherUrlPackage.equals(mConnection.getClientPackageNameForSession(mSession));
+    }
+
+    private class IncognitoCustomTabHost implements IncognitoTabHost {
+
+        public IncognitoCustomTabHost() {
+            assert mIntentDataProvider.isIncognito();
+        }
+
+        @Override
+        public boolean hasIncognitoTabs() {
+            return !isFinishing();
+        }
+
+        @Override
+        public void closeAllIncognitoTabs() {
+            finishAndClose(false);
+        }
     }
 }

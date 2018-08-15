@@ -24,12 +24,14 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
@@ -136,6 +138,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private final boolean mIsTrustedWebActivity;
     @Nullable
     private final ComponentName mModuleComponentName;
+    private final boolean mIsIncognito;
 
     private int mToolbarColor;
     private int mBottomBarColor;
@@ -153,9 +156,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private PendingIntent.OnFinished mOnFinished;
 
     /** Whether this CustomTabActivity was explicitly started by another Chrome Activity. */
-    private boolean mIsOpenedByChrome;
-
-    private boolean mIsIncognito;
+    private final boolean mIsOpenedByChrome;
 
     /**
      * Add extras to customize menu items for opening payment request UI custom tab from Chrome.
@@ -181,6 +182,15 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     public CustomTabIntentDataProvider(Intent intent, Context context) {
         super(intent);
         if (intent == null) assert false;
+
+        mIsOpenedByChrome = IntentUtils.safeGetBooleanExtra(
+                intent, EXTRA_IS_OPENED_BY_CHROME, false);
+
+        final int requestedUiType =
+                IntentUtils.safeGetIntExtra(intent, EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT);
+        mUiType = verifiedUiType(requestedUiType);
+
+        mIsIncognito = resolveIncognito(intent);
 
         retrieveCustomButtons(intent, context);
         retrieveToolbarColor(intent, context);
@@ -218,17 +228,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
             }
         }
 
-        mIsOpenedByChrome =
-                IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OPENED_BY_CHROME, false);
-        mIsIncognito = IntentUtils.safeGetBooleanExtra(
-                intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
         mIsTrustedWebActivity = IntentUtils.safeGetBooleanExtra(
                 intent, TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false);
-
-        final int requestedUiType =
-                IntentUtils.safeGetIntExtra(intent, EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT);
-        mUiType = verifiedUiType(requestedUiType);
-
         mTitleVisibilityState = IntentUtils.safeGetIntExtra(
                 intent, CustomTabsIntent.EXTRA_TITLE_VISIBILITY_STATE, CustomTabsIntent.NO_TITLE);
         mShowShareItem = IntentUtils.safeGetBooleanExtra(intent,
@@ -258,6 +259,28 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         } else {
             mModuleComponentName = null;
         }
+    }
+
+    private boolean resolveIncognito(Intent intent) {
+        if (!IntentUtils.safeGetBooleanExtra(
+                intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false)) {
+            return false;
+        }
+
+        boolean isPaymentRequest = isTrustedIntent() && isOpenedByChrome() && isForPaymentRequest();
+
+        if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_INCOGNITO_CUSTOM_TABS)) {
+            // This switch picks either new or old behavior.
+            // The old behavior is to allow incognito custom tabs only for payment requests.
+            return isPaymentRequest;
+        }
+
+        boolean isFromPermittedSource = isVerifiedFirstPartyIntent() ||
+                CommandLine.getInstance().hasSwitch(
+                    ChromeSwitches.ALLOW_INCOGNITO_CUSTOM_TABS_FROM_THIRD_PARTY);
+
+        // The new behavior is to also allow incognito custom tabs in first-party apps.
+        return isPaymentRequest || isFromPermittedSource;
     }
 
     /**
@@ -308,8 +331,12 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * Processes the color passed from the client app and updates {@link #mToolbarColor}.
      */
     private void retrieveToolbarColor(Intent intent, Context context) {
-        int defaultColor = ColorUtils.getDefaultThemeColor(
-                context.getResources(), FeatureUtilities.isChromeModernDesignEnabled(), false);
+        int defaultColor = ColorUtils.getDefaultThemeColor(context.getResources(),
+                FeatureUtilities.isChromeModernDesignEnabled(), isIncognito());
+        if (isIncognito()) {
+            mToolbarColor = defaultColor;
+            return; // Don't allow toolbar color customization for incognito tabs.
+        }
         int color = IntentUtils.safeGetIntExtra(
                 intent, CustomTabsIntent.EXTRA_TOOLBAR_COLOR, defaultColor);
         mToolbarColor = removeTransparencyFromColor(color);
@@ -319,6 +346,10 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * Must be called after calling {@link #retrieveToolbarColor(Intent, Context)}.
      */
     private void retrieveBottomBarColor(Intent intent) {
+        if (isIncognito()) {
+            mBottomBarColor = mToolbarColor;
+            return;
+        }
         int defaultColor = mToolbarColor;
         int color = IntentUtils.safeGetIntExtra(
                 intent, CustomTabsIntent.EXTRA_SECONDARY_TOOLBAR_COLOR, defaultColor);
@@ -617,8 +648,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * @return Whether the custom Tab should be opened in incognito mode.
      */
     boolean isIncognito() {
-        // Only open custom tab in incognito mode for payment request.
-        return isTrustedIntent() && mIsOpenedByChrome && isForPaymentRequest() && mIsIncognito;
+        return mIsIncognito;
     }
 
     /**

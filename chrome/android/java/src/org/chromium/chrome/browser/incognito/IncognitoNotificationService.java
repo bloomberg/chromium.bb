@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.content_public.browser.BrowserStartupController;
 
@@ -63,7 +62,7 @@ public class IncognitoNotificationService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        closeIncognitoTabsInRunningTabbedActivities();
+        ThreadUtils.runOnUiThreadBlocking(IncognitoUtils::closeAllIncognitoTabs);
 
         boolean clearedIncognito = deleteIncognitoStateFilesInDirectory(
                 TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory());
@@ -72,7 +71,7 @@ public class IncognitoNotificationService extends IntentService {
         if (!clearedIncognito) return;
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            if (!TabWindowManager.getInstance().canDestroyIncognitoProfile()) {
+            if (IncognitoUtils.doIncognitoTabsExist()) {
                 assert false : "Not all incognito tabs closed as expected";
                 return;
             }
@@ -164,37 +163,6 @@ public class IncognitoNotificationService extends IntentService {
             }
         }
         return visibleTaskIds;
-    }
-
-    /**
-     * Iterate across the running activities and for any running tabbed mode activities close their
-     * incognito tabs.
-     *
-     * @see TabWindowManager#getIndexForWindow(Activity)
-     */
-    private void closeIncognitoTabsInRunningTabbedActivities() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            List<WeakReference<Activity>> runningActivities =
-                    ApplicationStatus.getRunningActivities();
-            for (int i = 0; i < runningActivities.size(); i++) {
-                Activity activity = runningActivities.get(i).get();
-                if (activity == null) continue;
-                if (!(activity instanceof ChromeTabbedActivity)) continue;
-
-                ChromeTabbedActivity tabbedActivity = (ChromeTabbedActivity) activity;
-                if (tabbedActivity.isActivityDestroyed()) continue;
-
-                // If the tabbed activity has not yet initialized, then finish the activity to avoid
-                // timing issues with clearing the incognito tab state in the background.
-                if (!tabbedActivity.areTabModelsInitialized()
-                        || !tabbedActivity.didFinishNativeInitialization()) {
-                    tabbedActivity.finish();
-                    continue;
-                }
-
-                tabbedActivity.getTabModelSelector().getModel(true).closeAllTabs(false, false);
-            }
-        });
     }
 
     /**

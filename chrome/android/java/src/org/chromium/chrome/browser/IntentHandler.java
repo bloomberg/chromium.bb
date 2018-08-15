@@ -927,7 +927,10 @@ public class IntentHandler {
     /**
      * @param intent An Intent to be checked.
      * @return Whether an intent originates from Chrome or a first-party app.
+     *
+     * @deprecated This method is not reliable, see https://crbug.com/832124
      */
+    @Deprecated
     public static boolean isIntentChromeOrFirstParty(Intent intent) {
         if (intent == null) return false;
 

@@ -14,7 +14,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.ShortcutManager;
 import android.graphics.Color;
 import android.os.Build;
@@ -83,7 +82,10 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
+import org.chromium.chrome.browser.incognito.IncognitoTabHost;
+import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.incognito.IncognitoTabSnapshotController;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.infobar.DataReductionPromoInfoBar;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
@@ -152,10 +154,8 @@ import org.chromium.ui.widget.Toast;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -283,6 +283,28 @@ public class ChromeTabbedActivity
 
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs;
+
+    private final IncognitoTabHost mIncognitoTabHost = new IncognitoTabHost() {
+
+        @Override
+        public boolean hasIncognitoTabs() {
+            return getTabModelSelector().getModel(true).getCount() > 0;
+        }
+
+        @Override
+        public void closeAllIncognitoTabs() {
+            if (isActivityDestroyed()) return;
+
+            // If the tabbed activity has not yet initialized, then finish the activity to avoid
+            // timing issues with clearing the incognito tab state in the background.
+            if (!areTabModelsInitialized() || !didFinishNativeInitialization()) {
+                finish();
+                return;
+            }
+
+            getTabModelSelector().getModel(true).closeAllTabs(false, false);
+        }
+    };
 
     private class TabbedAssistStatusHandler extends AssistStatusHandler {
         public TabbedAssistStatusHandler(Activity activity) {
@@ -563,7 +585,7 @@ public class ChromeTabbedActivity
 
             // Check for incognito tabs to handle the case where Chrome was swiped away in the
             // background.
-            if (TabWindowManager.getInstance().canDestroyIncognitoProfile()) {
+            if (!IncognitoUtils.doIncognitoTabsExist()) {
                 IncognitoNotificationManager.dismissIncognitoNotification();
             }
 
@@ -613,63 +635,11 @@ public class ChromeTabbedActivity
                 this, mTabModelSelectorImpl.getCurrentModel().isIncognito());
     }
 
-    /**
-     * Determine whether the incognito profile needs to be destroyed as part of startup.  This is
-     * only needed on L+ when it is possible to swipe away tasks from Android recents without
-     * killing the process.  When this occurs, the normal incognito profile shutdown does not
-     * happen, which can leave behind incognito cookies from an existing session.
-     */
-    @SuppressLint("NewApi")
-    private boolean shouldDestroyIncognitoProfile() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
-
-        Context context = ContextUtils.getApplicationContext();
-        ActivityManager manager =
-                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        PackageManager pm = context.getPackageManager();
-
-        Set<Integer> tabbedModeTaskIds = new HashSet<>();
-        for (AppTask task : manager.getAppTasks()) {
-            RecentTaskInfo info = DocumentUtils.getTaskInfoFromTask(task);
-            if (info == null) continue;
-            String className = DocumentUtils.getTaskClassName(task, pm);
-
-            if (isTabbedModeClassName(className)) {
-                tabbedModeTaskIds.add(info.id);
-            }
-        }
-
-        if (tabbedModeTaskIds.size() == 0) {
-            return Profile.getLastUsedProfile().hasOffTheRecordProfile();
-        }
-
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (int i = 0; i < activities.size(); i++) {
-            Activity activity = activities.get(i).get();
-            if (activity == null) continue;
-            tabbedModeTaskIds.remove(activity.getTaskId());
-        }
-
-        // If all tabbed mode tasks listed in Android recents are alive, check to see if
-        // any have incognito tabs exist.  If all are alive and no tabs exist, we should ensure that
-        // we delete the incognito profile if one is around still.
-        if (tabbedModeTaskIds.size() == 0) {
-            return TabWindowManager.getInstance().canDestroyIncognitoProfile()
-                    && Profile.getLastUsedProfile().hasOffTheRecordProfile();
-        }
-
-        // In this case, we have tabbed mode activities listed in recents that do not have an
-        // active running activity associated with them.  We can not accurately get an incognito
-        // tab count as we do not know if any incognito tabs are associated with the yet unrestored
-        // tabbed mode.  Thus we do not proactivitely destroy the incognito profile.
-        return false;
-    }
-
     @Override
     public void onResumeWithNative() {
         super.onResumeWithNative();
 
-        if (shouldDestroyIncognitoProfile()) {
+        if (IncognitoUtils.shouldDestroyIncognitoProfileOnStartup()) {
             Profile.getLastUsedProfile().getOffTheRecordProfile().destroyWhenAppropriate();
         } else {
             CookiesFetcher.restoreCookies();
@@ -1427,6 +1397,8 @@ public class ChromeTabbedActivity
                 && OmahaBase.isProbablyFreshInstall(this)) {
             getIntent().setData(null);
         }
+
+        IncognitoTabHostRegistry.getInstance().register(mIncognitoTabHost);
     }
 
     @Override
@@ -2036,6 +2008,7 @@ public class ChromeTabbedActivity
 
         if (mNavigationBarColorController != null) mNavigationBarColorController.destroy();
 
+        IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);
         super.onDestroyInternal();
     }
 
