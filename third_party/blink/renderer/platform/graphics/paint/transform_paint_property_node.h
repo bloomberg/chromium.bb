@@ -49,6 +49,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
     scoped_refptr<const ScrollPaintPropertyNode> scroll;
+    bool affected_by_outer_viewport_bounds_delta = false;
 
     bool operator==(const State& o) const {
       return matrix == o.matrix && origin == o.origin &&
@@ -57,7 +58,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
              rendering_context_id == o.rendering_context_id &&
              direct_compositing_reasons == o.direct_compositing_reasons &&
              compositor_element_id == o.compositor_element_id &&
-             scroll == o.scroll;
+             scroll == o.scroll &&
+             affected_by_outer_viewport_bounds_delta ==
+                 o.affected_by_outer_viewport_bounds_delta;
     }
   };
 
@@ -95,6 +98,13 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // The associated scroll node, or nullptr otherwise.
   const ScrollPaintPropertyNode* ScrollNode() const {
     return state_.scroll.get();
+  }
+
+  // If true, this node is translated by the viewport bounds delta, which is
+  // used to keep bottom-fixed elements appear fixed to the bottom of the
+  // screen in the presence of URL bar movement.
+  bool IsAffectedByOuterViewportBoundsDelta() const {
+    return state_.affected_by_outer_viewport_bounds_delta;
   }
 
   // If this is a scroll offset translation (i.e., has an associated scroll

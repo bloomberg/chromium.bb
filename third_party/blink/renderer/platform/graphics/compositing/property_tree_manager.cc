@@ -105,6 +105,10 @@ void PropertyTreeManager::SetupRootClipNode() {
   DCHECK_EQ(clip_node.id, kSecondaryRootNodeId);
 
   clip_node.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
+  // TODO(bokan): This needs to come from the Visual Viewport which will
+  // correctly account for the URL bar. In fact, the visual viewport property
+  // tree builder should probably be the one to create the property tree state
+  // and have this created in the same way as other layers.
   clip_node.clip = gfx::RectF(
       gfx::SizeF(root_layer_->layer_tree_host()->device_viewport_size()));
   clip_node.transform_id = kRealRootNodeId;
@@ -178,6 +182,11 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   compositor_node.flattens_inherited_transform =
       transform_node->FlattensInheritedTransform();
   compositor_node.sorting_context_id = transform_node->RenderingContextId();
+
+  if (transform_node->IsAffectedByOuterViewportBoundsDelta()) {
+    compositor_node.moved_by_outer_viewport_bounds_delta_y = true;
+    GetTransformTree().AddNodeAffectedByOuterViewportBoundsDelta(id);
+  }
 
   CompositorElementId compositor_element_id =
       transform_node->GetCompositorElementId();

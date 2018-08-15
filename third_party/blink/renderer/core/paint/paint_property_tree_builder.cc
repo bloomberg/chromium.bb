@@ -339,6 +339,11 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
                            paint_offset_translation->Y());
     state.flattens_inherited_transform =
         context_.current.should_flatten_inherited_transform;
+
+    state.affected_by_outer_viewport_bounds_delta =
+        object_.Style()->GetPosition() == EPosition::kFixed &&
+        !object_.Style()->Bottom().IsAuto();
+
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
       state.rendering_context_id = context_.current.rendering_context_id;
