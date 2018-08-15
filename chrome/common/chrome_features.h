@@ -230,6 +230,10 @@ extern const base::Feature kOomIntervention;
 extern const base::Feature kOneGoogleBarOnLocalNtp;
 #endif
 
+#if defined(OS_CHROMEOS)
+extern const base::Feature kOobeRecommendAppsScreen;
+#endif
+
 extern const base::Feature kUseNewAcceptLanguageHeader;
 
 extern const base::Feature kPermissionDelegation;

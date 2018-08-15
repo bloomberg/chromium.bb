@@ -3494,6 +3494,12 @@ extern const char kEnableZeroStateSuggestionsDescription[] =
     "Enable Zero State Suggestions feature in Launcher, which will show "
     "suggetions when launcher search box is active with an empty query";
 
+const char kEnableOobeRecommendAppsScreenName[] =
+    "Enable OOBE Recommend Apps Screen";
+const char kEnableOobeRecommendAppsScreenDescription[] =
+    "Enable the Recommend Apps Screen in OOBE which allows user to install apps"
+    "from other devices";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------

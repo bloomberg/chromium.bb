@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -84,6 +85,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_constants.h"
@@ -251,10 +253,9 @@ bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
   return true;
 }
 
-// Return true if the switch for recommend app screen is on.
+// Return true if the feature flag for recommend app screen is on.
 bool ShouldShowRecommendAppsScreen() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableOobeRecommendAppsScreen);
+  return base::FeatureList::IsEnabled(features::kOobeRecommendAppsScreen);
 }
 
 chromeos::LoginDisplayHost* GetLoginDisplayHost() {
@@ -1048,7 +1049,7 @@ void WizardController::OnArcTermsOfServiceAccepted() {
     return;
   }
 
-  // If the switch for recommend app screen is on, show it after the user
+  // If the feature flag for recommend app screen is on, show it after the user
   // finished with the PlayStore Terms of Service. Otherwise, advance to the
   // user image screen.
   if (ShouldShowRecommendAppsScreen()) {

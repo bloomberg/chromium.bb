@@ -430,6 +430,14 @@ const base::Feature kOneGoogleBarOnLocalNtp{"OneGoogleBarOnLocalNtp",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+// Enables the Recommend Apps screen in OOBE.
+// TODO(https://crbug.com/862774): Remove this after the feature is fully
+// launched.
+const base::Feature kOobeRecommendAppsScreen{"OobeRecommendAppsScreen",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 // Adds the base language code to the Language-Accept headers if at least one
 // corresponding language+region code is present in the user preferences.
 // For example: "en-US, fr-FR" --> "en-US, en, fr-FR, fr".
