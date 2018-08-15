@@ -1204,7 +1204,7 @@ void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
                                             GLint border,
                                             GLenum format,
                                             GLenum type,
-                                            HTMLCanvasElement* canvas,
+                                            CanvasRenderingContextHost* canvas,
                                             ExceptionState& exception_state) {
   if (isContextLost())
     return;
@@ -1469,7 +1469,7 @@ void WebGL2RenderingContextBase::texSubImage2D(
     GLsizei height,
     GLenum format,
     GLenum type,
-    HTMLCanvasElement* canvas,
+    CanvasRenderingContextHost* canvas,
     ExceptionState& exception_state) {
   if (isContextLost())
     return;
@@ -1811,7 +1811,7 @@ void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
                                             GLint border,
                                             GLenum format,
                                             GLenum type,
-                                            HTMLCanvasElement* canvas,
+                                            CanvasRenderingContextHost* canvas,
                                             ExceptionState& exception_state) {
   if (isContextLost())
     return;
