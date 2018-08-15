@@ -199,20 +199,19 @@ aura::WindowTreeHost* DesktopWindowTreeHostWin::AsWindowTreeHost() {
   return this;
 }
 
-void DesktopWindowTreeHostWin::ShowWindowWithState(
-    ui::WindowShowState show_state) {
+void DesktopWindowTreeHostWin::Show(ui::WindowShowState show_state,
+                                    const gfx::Rect& restore_bounds) {
   if (compositor())
     compositor()->SetVisible(true);
-  message_handler_->ShowWindowWithState(show_state);
-}
 
-void DesktopWindowTreeHostWin::ShowMaximizedWithBounds(
-    const gfx::Rect& restored_bounds) {
-  if (compositor())
-    compositor()->SetVisible(true);
-  gfx::Rect pixel_bounds =
-      display::win::ScreenWin::DIPToScreenRect(GetHWND(), restored_bounds);
-  message_handler_->ShowMaximizedWithBounds(pixel_bounds);
+  gfx::Rect pixel_restore_bounds;
+  if (show_state == ui::SHOW_STATE_MAXIMIZED) {
+    pixel_restore_bounds =
+        display::win::ScreenWin::DIPToScreenRect(GetHWND(), restore_bounds);
+  }
+  message_handler_->Show(show_state, pixel_restore_bounds);
+
+  content_window()->Show();
 }
 
 bool DesktopWindowTreeHostWin::IsVisible() const {
@@ -504,7 +503,7 @@ gfx::AcceleratedWidget DesktopWindowTreeHostWin::GetAcceleratedWidget() {
 }
 
 void DesktopWindowTreeHostWin::ShowImpl() {
-  message_handler_->Show();
+  Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
 }
 
 void DesktopWindowTreeHostWin::HideImpl() {

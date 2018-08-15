@@ -33,6 +33,8 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
+
 #include "ui/base/view_prop.h"
 #include "ui/base/win/window_event_target.h"
 #include "ui/views/win/hwnd_util.h"
@@ -122,6 +124,7 @@ TEST_F(DesktopNativeWidgetAuraTest, NativeViewNoActivate) {
                          ->GetFocusedWindow());
 }
 
+#if defined(OS_WIN)
 // Verifies that if the DesktopWindowTreeHost is already shown, the native view
 // still reports not visible as we haven't shown the content window.
 TEST_F(DesktopNativeWidgetAuraTest, WidgetNotVisibleOnlyWindowTreeHostShown) {
@@ -131,11 +134,11 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetNotVisibleOnlyWindowTreeHostShown) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.native_widget = new DesktopNativeWidgetAura(&widget);
   widget.Init(init_params);
-  DesktopNativeWidgetAura* desktop_native_widget_aura =
-      static_cast<DesktopNativeWidgetAura*>(widget.native_widget());
-  desktop_native_widget_aura->host()->Show();
+  ShowWindow(widget.GetNativeView()->GetHost()->GetAcceleratedWidget(),
+             SW_SHOWNORMAL);
   EXPECT_FALSE(widget.IsVisible());
 }
+#endif
 
 TEST_F(DesktopNativeWidgetAuraTest, DesktopAuraWindowShowFrameless) {
   Widget widget;

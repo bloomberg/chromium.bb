@@ -145,8 +145,11 @@ aura::WindowTreeHost* DesktopWindowTreeHostPlatform::AsWindowTreeHost() {
   return this;
 }
 
-void DesktopWindowTreeHostPlatform::ShowWindowWithState(
-    ui::WindowShowState show_state) {
+void DesktopWindowTreeHostPlatform::Show(ui::WindowShowState show_state,
+                                         const gfx::Rect& restore_bounds) {
+  if (show_state == ui::SHOW_STATE_MAXIMIZED && !restore_bounds.IsEmpty())
+    platform_window()->SetRestoredBoundsInPixels(ToPixelRect(restore_bounds));
+
   if (compositor()) {
     platform_window()->Show();
     compositor()->SetVisible(true);
@@ -182,12 +185,8 @@ void DesktopWindowTreeHostPlatform::ShowWindowWithState(
     native_widget_delegate_->SetInitialFocus(
         IsActive() ? show_state : ui::SHOW_STATE_INACTIVE);
   }
-}
 
-void DesktopWindowTreeHostPlatform::ShowMaximizedWithBounds(
-    const gfx::Rect& restored_bounds) {
-  platform_window()->SetRestoredBoundsInPixels(ToPixelRect(restored_bounds));
-  ShowWindowWithState(ui::SHOW_STATE_MAXIMIZED);
+  desktop_native_widget_aura_->content_window()->Show();
 }
 
 bool DesktopWindowTreeHostPlatform::IsVisible() const {

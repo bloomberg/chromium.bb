@@ -33,7 +33,7 @@ void AppWindowDesktopNativeWidgetAuraWin::Maximize() {
   // TODO(jackhou): Make this behavior the same as other platforms, i.e. calling
   // Maximize() does not also show the window.
   if (!tree_host_->IsVisible())
-    DesktopNativeWidgetAura::Show();
+    DesktopNativeWidgetAura::Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
   DesktopNativeWidgetAura::Maximize();
 }
 
@@ -43,6 +43,6 @@ void AppWindowDesktopNativeWidgetAuraWin::Minimize() {
   // TODO(jackhou): Make this behavior the same as other platforms, i.e. calling
   // Minimize() does not also show the window.
   if (!tree_host_->IsVisible())
-    DesktopNativeWidgetAura::Show();
+    DesktopNativeWidgetAura::Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
   DesktopNativeWidgetAura::Minimize();
 }

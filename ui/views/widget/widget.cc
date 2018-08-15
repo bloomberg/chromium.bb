@@ -615,19 +615,20 @@ void Widget::Show() {
     if (saved_show_state_ == ui::SHOW_STATE_MAXIMIZED &&
         !initial_restored_bounds_.IsEmpty() &&
         !IsFullscreen()) {
-      native_widget_->ShowMaximizedWithBounds(initial_restored_bounds_);
+      native_widget_->Show(ui::SHOW_STATE_MAXIMIZED, initial_restored_bounds_);
     } else {
-      native_widget_->ShowWithWindowState(
-          IsFullscreen() ? ui::SHOW_STATE_FULLSCREEN : saved_show_state_);
+      native_widget_->Show(
+          IsFullscreen() ? ui::SHOW_STATE_FULLSCREEN : saved_show_state_,
+          gfx::Rect());
     }
     // |saved_show_state_| only applies the first time the window is shown.
     // If we don't reset the value the window may be shown maximized every time
     // it is subsequently shown after being hidden.
     saved_show_state_ = ui::SHOW_STATE_NORMAL;
   } else {
-    CanActivate()
-        ? native_widget_->Show()
-        : native_widget_->ShowWithWindowState(ui::SHOW_STATE_INACTIVE);
+    native_widget_->Show(
+        CanActivate() ? ui::SHOW_STATE_NORMAL : ui::SHOW_STATE_INACTIVE,
+        gfx::Rect());
   }
 }
 
@@ -645,7 +646,7 @@ void Widget::ShowInactive() {
     SetBounds(initial_restored_bounds_);
     saved_show_state_ = ui::SHOW_STATE_NORMAL;
   }
-  native_widget_->ShowWithWindowState(ui::SHOW_STATE_INACTIVE);
+  native_widget_->Show(ui::SHOW_STATE_INACTIVE, gfx::Rect());
 }
 
 void Widget::Activate() {

@@ -75,8 +75,24 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   virtual aura::WindowTreeHost* AsWindowTreeHost() = 0;
 
-  virtual void ShowWindowWithState(ui::WindowShowState show_state) = 0;
-  virtual void ShowMaximizedWithBounds(const gfx::Rect& restored_bounds) = 0;
+  // There are two distinct ways for DesktopWindowTreeHosts's to be shown:
+  // 1. This function is called. As this function is specific to
+  //    DesktopWindowTreeHost, it is only called from DesktopNativeWidgetAura.
+  // 2. Calling Show() directly on the WindowTreeHost associated with this
+  //    DesktopWindowTreeHost. This is very rare. In general, calls go through
+  //    Widget, which ends up in (1).
+  //
+  // Implementations must deal with these two code paths. In general, this is
+  // done by having the WindowTreeHost subclass override ShowImpl() to call this
+  // function: Show(ui::SHOW_STATE_NORMAL, gfx::Rect()). A subtle
+  // ramification is the implementation of this function can *not* call
+  // WindowTreeHost::Show(), and the implementation of this must perform the
+  // same work as WindowTreeHost::Show(). This means setting the visibility of
+  // the compositor, window() and DesktopNativeWidgetAura::content_window()
+  // appropriately. Some subclasses set the visibility of window() in the
+  // constructor and assume it's always true.
+  virtual void Show(ui::WindowShowState show_state,
+                    const gfx::Rect& restore_bounds) = 0;
 
   virtual bool IsVisible() const = 0;
 

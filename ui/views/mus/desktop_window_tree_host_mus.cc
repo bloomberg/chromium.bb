@@ -496,17 +496,36 @@ aura::WindowTreeHost* DesktopWindowTreeHostMus::AsWindowTreeHost() {
   return this;
 }
 
-void DesktopWindowTreeHostMus::ShowWindowWithState(ui::WindowShowState state) {
-  if (state == ui::SHOW_STATE_MAXIMIZED || state == ui::SHOW_STATE_FULLSCREEN)
-    window()->SetProperty(aura::client::kShowStateKey, state);
+void DesktopWindowTreeHostMus::Show(ui::WindowShowState show_state,
+                                    const gfx::Rect& restore_bounds) {
+  native_widget_delegate_->OnNativeWidgetVisibilityChanging(true);
+
+  if (show_state == ui::SHOW_STATE_MAXIMIZED && !restore_bounds.IsEmpty()) {
+    window()->SetProperty(aura::client::kRestoreBoundsKey,
+                          new gfx::Rect(restore_bounds));
+  }
+  if (show_state == ui::SHOW_STATE_MAXIMIZED ||
+      show_state == ui::SHOW_STATE_FULLSCREEN) {
+    window()->SetProperty(aura::client::kShowStateKey, show_state);
+  }
+  // DesktopWindowTreeHostMus is unique in that it calls window()->Show() here.
+  // All other implementations call window()->Show() from the constructor. This
+  // is necessary as window()'s visibility is mirrored in the server, on other
+  // platforms it's the visibility of the AcceleratedWidget that matters and
+  // dictates what is actually drawn on screen.
   window()->Show();
   if (compositor())
     compositor()->SetVisible(true);
 
+  // |content_window_| is the Window that will be focused by way of Activate().
+  // Ensure |content_window_| is visible before the call to Activate(),
+  // otherwise focus goes to window().
+  content_window()->Show();
+
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(true);
 
   if (native_widget_delegate_->CanActivate()) {
-    if (state != ui::SHOW_STATE_INACTIVE)
+    if (show_state != ui::SHOW_STATE_INACTIVE)
       Activate();
 
     // SetInitialFocus() should be always be called, even for
@@ -516,15 +535,8 @@ void DesktopWindowTreeHostMus::ShowWindowWithState(ui::WindowShowState state) {
     // should pass SHOW_STATE_INACTIVE to SetInitialFocus() to stop the initial
     // focused view from getting focused. See crbug.com/515594 for example.
     native_widget_delegate_->SetInitialFocus(
-        IsActive() ? state : ui::SHOW_STATE_INACTIVE);
+        IsActive() ? show_state : ui::SHOW_STATE_INACTIVE);
   }
-}
-
-void DesktopWindowTreeHostMus::ShowMaximizedWithBounds(
-    const gfx::Rect& restored_bounds) {
-  window()->SetProperty(aura::client::kRestoreBoundsKey,
-                        new gfx::Rect(restored_bounds));
-  ShowWindowWithState(ui::SHOW_STATE_MAXIMIZED);
 }
 
 bool DesktopWindowTreeHostMus::IsVisible() const {
@@ -888,11 +900,7 @@ void DesktopWindowTreeHostMus::OnWindowPropertyChanged(aura::Window* window,
 }
 
 void DesktopWindowTreeHostMus::ShowImpl() {
-  native_widget_delegate_->OnNativeWidgetVisibilityChanging(true);
-  // Using ui::SHOW_STATE_NORMAL matches that of DesktopWindowTreeHostX11.
-  ShowWindowWithState(ui::SHOW_STATE_NORMAL);
-  WindowTreeHostMus::ShowImpl();
-  native_widget_delegate_->OnNativeWidgetVisibilityChanged(true);
+  Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
 }
 
 void DesktopWindowTreeHostMus::HideImpl() {
