@@ -19,8 +19,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/onc/onc_pref_names.h"
-#include "components/proxy_config/proxy_config_pref_names.h"
-#include "components/proxy_config/proxy_prefs.h"
 #include "components/rappor/rappor_pref_names.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/search_engines/search_engines_pref_names.h"
@@ -781,15 +779,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     // components/onc/onc_pref_names.h
     onc::prefs::kDeviceOpenNetworkConfiguration,
     onc::prefs::kOpenNetworkConfiguration,
-
-    // components/proxy_config/proxy_config_pref_names.h
-    // proxy_config::prefs::kProxy,
-    proxy_config::prefs::kUseSharedProxies,
-
-    // components/proxy_config/proxy_prefs.h
-    ProxyPrefs::kDirectProxyModeName, ProxyPrefs::kAutoDetectProxyModeName,
-    ProxyPrefs::kPacScriptProxyModeName, ProxyPrefs::kFixedServersProxyModeName,
-    ProxyPrefs::kSystemProxyModeName,
 
     // components/reading_list/core/reading_list_pref_names.h
     reading_list::prefs::kReadingListHasUnseenEntries,
