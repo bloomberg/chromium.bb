@@ -184,7 +184,12 @@ class BotUpdateApi(recipe_api.RecipeApi):
           fixed_revision = self._destination_branch(cfg, name)
         # If we're syncing to a ref, we want to make sure it exists before
         # trying to check it out.
-        if fixed_revision.startswith('refs/'):
+        if (fixed_revision.startswith('refs/') and
+            # TODO(crbug.com/874501): fetching additional refs is currently
+            # only supported for the root solution. We should investigate
+            # supporting it for other dependencies.
+            cfg.solutions and
+            cfg.solutions[0].name == name):
           # Handle the "ref:revision" syntax, e.g.
           # refs/branch-heads/4.2:deadbeef
           refs.append(fixed_revision.split(':')[0])
