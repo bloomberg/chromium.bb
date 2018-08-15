@@ -231,6 +231,22 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
   return hints;
 }
 
+// static
+const optimization_guide::proto::PageHint* PreviewsHints::FindPageHint(
+    const GURL& document_url,
+    const optimization_guide::proto::Hint& hint) {
+  std::string url = document_url.spec();
+  for (const auto& page_hint : hint.page_hints()) {
+    // TODO(dougarnett): Support wildcards. https://crbug.com/870039
+    if (!page_hint.page_pattern().empty() &&
+        url.find(page_hint.page_pattern()) != std::string::npos) {
+      // Return the first matching page hint.
+      return &page_hint;
+    }
+  }
+  return nullptr;
+}
+
 void PreviewsHints::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!initial_hints_.empty()) {
@@ -246,32 +262,58 @@ bool PreviewsHints::IsWhitelisted(const GURL& url,
                                   int* out_inflation_percent) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (!url.has_host())
+    return false;
+
+  // First check for being whitelisted at top level for host suffix.
   std::set<url_matcher::URLMatcherConditionSet::ID> matches =
       url_matcher_.MatchURL(url);
 
   // Only consider the first match in iteration order as it takes precedence
-  // if there are multiple matches.
+  // if there are multiple matches for the top-level whitelist.
   const auto& first_match = matches.begin();
-  if (first_match == matches.end()) {
-    return false;
-  }
-
-  const auto whitelist_iter = whitelist_.find(*first_match);
-  if (whitelist_iter == whitelist_.end()) {
-    return false;
-  }
-
-  const auto& whitelisted_optimizations = whitelist_iter->second;
-  for (auto optimization_iter = whitelisted_optimizations.begin();
-       optimization_iter != whitelisted_optimizations.end();
-       ++optimization_iter) {
-    if (optimization_iter->first == type) {
-      *out_inflation_percent = optimization_iter->second;
-      return true;
+  if (first_match != matches.end()) {
+    const auto whitelist_iter = whitelist_.find(*first_match);
+    if (whitelist_iter != whitelist_.end()) {
+      const auto& whitelisted_optimizations = whitelist_iter->second;
+      for (auto optimization_iter = whitelisted_optimizations.begin();
+           optimization_iter != whitelisted_optimizations.end();
+           ++optimization_iter) {
+        if (optimization_iter->first == type) {
+          *out_inflation_percent = optimization_iter->second;
+          // Whitelisted on top level whitelist.
+          return true;
+        }
+      }
     }
   }
 
-  // TODO(dougarnett): Check the hint cache for whitelisted optmizations too.
+  if (!hint_cache_)
+    return false;
+
+  // Now check HintCache for a loaded entry with a PageHint that matches |url|
+  // that whitelists the optimization.
+  std::string host = url.host();
+  if (!hint_cache_->IsHintLoaded(host)) {
+    // TODO(dougarnett): Add UMA histogram counts for both cases of HasHint().
+    return false;
+  }
+
+  const optimization_guide::proto::Hint* hint = hint_cache_->GetHint(host);
+  const optimization_guide::proto::PageHint* matched_page_hint =
+      FindPageHint(url, *hint);
+  if (!matched_page_hint) {
+    return false;
+  }
+
+  for (const auto& optimization :
+       matched_page_hint->whitelisted_optimizations()) {
+    if (ConvertProtoOptimizationTypeToPreviewsOptimizationType(
+            optimization.optimization_type()) == type) {
+      *out_inflation_percent = optimization.inflation_percent();
+      return true;
+    }
+  }
 
   return false;
 }

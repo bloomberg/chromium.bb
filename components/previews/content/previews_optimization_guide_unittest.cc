@@ -660,6 +660,19 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
             loaded_hints_document_gurl());
   EXPECT_EQ(1ul, loaded_hints_resource_patterns().size());
   EXPECT_EQ("news_cruft.js", loaded_hints_resource_patterns().front());
+
+  // Verify whitelisting from loaded page hints.
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      *CreateRequestWithURL(
+          GURL("https://www.somedomain.org/news/weather/raininginseattle")),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      *CreateRequestWithURL(
+          GURL("https://www.somedomain.org/football/seahawksrebuildingyear")),
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_FALSE(guide()->IsWhitelisted(
+      *CreateRequestWithURL(GURL("https://www.somedomain.org/unhinted")),
+      PreviewsType::RESOURCE_LOADING_HINTS));
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
@@ -674,6 +687,13 @@ TEST_F(PreviewsOptimizationGuideTest,
   EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
       *CreateRequestWithURL(GURL("https://www.somedomain.org")),
       base::DoNothing()));
+
+  RunUntilIdle();
+
+  EXPECT_FALSE(guide()->IsWhitelisted(
+      *CreateRequestWithURL(
+          GURL("https://www.somedomain.org/news/weather/raininginseattle")),
+      PreviewsType::RESOURCE_LOADING_HINTS));
 }
 
 TEST_F(PreviewsOptimizationGuideTest, RemoveObserverCalledAtDestruction) {
