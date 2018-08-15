@@ -45,6 +45,8 @@ blink_modules_sources("filesystem") {
     "file_system_callbacks.cc",
     "file_system_callbacks.h",
     "file_system_client.h",
+    "file_system_writer.cc",
+    "file_system_writer.h",
     "file_writer.cc",
     "file_writer.h",
     "file_writer_base.cc",
