@@ -1160,10 +1160,29 @@ TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, DefaultAllow_PrefOff) {
             GetSoundSettingString(CONTENT_SETTING_BLOCK));
 }
 
-// This test checks that the strings for the sound settings dropdown when
+// This test checks the strings for the sound settings dropdown when
 // the default sound setting is block. The three options should be
 // Block (default), Allow and Mute.
-TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, DefaultBlock) {
+TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, DefaultBlock_PrefOn) {
+  SetDefaultSoundContentSetting(CONTENT_SETTING_BLOCK);
+  SetAutoplayPrefValue(true);
+
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_MUTED_BY_DEFAULT),
+      GetDefaultSoundSettingString());
+
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_USER),
+      GetSoundSettingString(CONTENT_SETTING_ALLOW));
+
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_MUTED_BY_USER),
+            GetSoundSettingString(CONTENT_SETTING_BLOCK));
+}
+
+// This test checks the strings for the sound settings dropdown when
+// the default sound setting is block. The three options should be
+// Block (default), Allow and Mute.
+TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, DefaultBlock_PrefOff) {
   SetDefaultSoundContentSetting(CONTENT_SETTING_BLOCK);
   SetAutoplayPrefValue(false);
 
