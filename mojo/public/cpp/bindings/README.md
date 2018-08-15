@@ -24,7 +24,7 @@ link](/docs/mojo_guide.md).
 When a Mojom IDL file is processed by the bindings generator, C++ code is
 emitted in a series of `.h` and `.cc` files with names based on the input
 `.mojom` file. Suppose we create the following Mojom file at
-`//services/db/public/interfaces/db.mojom`:
+`//services/db/public/mojom/db.mojom`:
 
 ```
 module db.mojom;
@@ -39,12 +39,12 @@ interface Database {
 ```
 
 And a GN target to generate the bindings in
-`//services/db/public/interfaces/BUILD.gn`:
+`//services/db/public/mojom/BUILD.gn`:
 
 ```
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("mojom") {
   sources = [
     "db.mojom",
   ]
@@ -54,28 +54,28 @@ mojom("interfaces") {
 Ensure that any target that needs this interface depends on it, e.g. with a line like:
 
 ```
-   deps += [ '//services/db/public/interfaces' ]
+   deps += [ '//services/db/public/mojom' ]
 ```
 
 If we then build this target:
 
 ```
-ninja -C out/r services/db/public/interfaces
+ninja -C out/r services/db/public/mojom
 ```
 
 This will produce several generated source files, some of which are relevant to
 C++ bindings. Two of these files are:
 
 ```
-out/gen/services/db/public/interfaces/db.mojom.cc
-out/gen/services/db/public/interfaces/db.mojom.h
+out/gen/services/db/public/mojom/db.mojom.cc
+out/gen/services/db/public/mojom/db.mojom.h
 ```
 
 You can include the above generated header in your sources in order to use the
 definitions therein:
 
 ``` cpp
-#include "services/business/public/interfaces/factory.mojom.h"
+#include "services/business/public/mojom/factory.mojom.h"
 
 class TableImpl : public db::mojom::Table {
   // ...
@@ -1606,7 +1606,7 @@ for example if you've defined in `//sample/BUILD.gn`:
 ```
 import("mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("mojom") {
   sources = [
     "db.mojom",
   ]
@@ -1614,7 +1614,7 @@ mojom("interfaces") {
 ```
 
 Code in Blink which wishes to use the generated Blink-variant definitions must
-depend on `"//sample:interfaces_blink"`.
+depend on `"//sample:mojom_blink"`.
 
 ## Versioning Considerations
 
