@@ -27,6 +27,45 @@ namespace {
 base::LazyInstance<PluginList>::DestructorAtExit g_singleton =
     LAZY_INSTANCE_INITIALIZER;
 
+// Returns true if the plugin supports |mime_type|. |mime_type| should be all
+// lower case.
+bool SupportsType(const WebPluginInfo& plugin,
+                  const std::string& mime_type,
+                  bool allow_wildcard) {
+  // Webkit will ask for a plugin to handle empty mime types.
+  if (mime_type.empty())
+    return false;
+
+  for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
+    const WebPluginMimeType& mime_info = plugin.mime_types[i];
+    if (net::MatchesMimeType(mime_info.mime_type, mime_type)) {
+      if (!allow_wildcard && mime_info.mime_type == "*")
+        continue;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Returns true if the given plugin supports a given file extension.
+// |extension| should be all lower case. |actual_mime_type| will be set to the
+// MIME type if found. The MIME type which corresponds to the extension is
+// optionally returned back.
+bool SupportsExtension(const WebPluginInfo& plugin,
+                       const std::string& extension,
+                       std::string* actual_mime_type) {
+  for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
+    const WebPluginMimeType& mime_type = plugin.mime_types[i];
+    for (size_t j = 0; j < mime_type.file_extensions.size(); ++j) {
+      if (mime_type.file_extensions[j] == extension) {
+        *actual_mime_type = mime_type.mime_type;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 // static
@@ -254,40 +293,6 @@ void PluginList::GetPluginInfoArray(
       }
     }
   }
-}
-
-bool PluginList::SupportsType(const WebPluginInfo& plugin,
-                              const std::string& mime_type,
-                              bool allow_wildcard) {
-  // Webkit will ask for a plugin to handle empty mime types.
-  if (mime_type.empty())
-    return false;
-
-  for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
-    const WebPluginMimeType& mime_info = plugin.mime_types[i];
-    if (net::MatchesMimeType(mime_info.mime_type, mime_type)) {
-      if (!allow_wildcard && mime_info.mime_type == "*")
-        continue;
-      return true;
-    }
-  }
-  return false;
-}
-
-bool PluginList::SupportsExtension(const WebPluginInfo& plugin,
-                                   const std::string& extension,
-                                   std::string* actual_mime_type) {
-  for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
-    const WebPluginMimeType& mime_type = plugin.mime_types[i];
-    for (size_t j = 0; j < mime_type.file_extensions.size(); ++j) {
-      if (mime_type.file_extensions[j] == extension) {
-        if (actual_mime_type)
-          *actual_mime_type = mime_type.mime_type;
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 void PluginList::RemoveExtraPluginPathLocked(
