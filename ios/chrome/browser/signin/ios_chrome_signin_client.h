@@ -52,6 +52,7 @@ class IOSChromeSigninClient : public SigninClient,
   PrefService* GetPrefs() override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  network::mojom::CookieManager* GetCookieManager() override;
   void DoFinalInit() override;
   bool CanRevokeCredentials() override;
   std::string GetSigninScopedDeviceId() override;

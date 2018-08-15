@@ -57,6 +57,10 @@ TestSigninClient::GetURLLoaderFactory() {
   return shared_factory_;
 }
 
+network::mojom::CookieManager* TestSigninClient::GetCookieManager() {
+  return nullptr;
+}
+
 void TestSigninClient::SetURLRequestContext(
     net::URLRequestContextGetter* request_context) {
   request_context_ = request_context;

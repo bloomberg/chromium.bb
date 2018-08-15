@@ -87,8 +87,6 @@ static_library("browser") {
     "profile_oauth2_token_service.h",
     "signin_client.cc",
     "signin_client.h",
-    "signin_cookie_change_subscription.cc",
-    "signin_cookie_change_subscription.h",
     "signin_error_controller.cc",
     "signin_error_controller.h",
     "signin_header_helper.cc",

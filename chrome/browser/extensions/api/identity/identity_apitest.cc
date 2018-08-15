@@ -466,9 +466,6 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
         ProfileOAuth2TokenServiceFactory::GetInstance()->GetForProfile(
             profile()));
     ASSERT_TRUE(token_service_);
-    GaiaCookieManagerServiceFactory::GetInstance()
-        ->GetForProfile(profile())
-        ->Init();
 
 #if defined(OS_CHROMEOS)
     // On ChromeOS, ProfileOAuth2TokenService does not fire

@@ -17,7 +17,6 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "net/cookies/cookie_change_dispatcher.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -32,6 +31,10 @@ class URLRequestContextGetter;
 }
 namespace network {
 class SharedURLLoaderFactory;
+
+namespace mojom {
+class CookieManager;
+}
 }
 
 namespace network {
@@ -79,6 +82,9 @@ class SigninClient : public KeyedService {
   // associated with the client.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
+
+  // Returns the CookieManager for the client.
+  virtual network::mojom::CookieManager* GetCookieManager() = 0;
 
   // Returns a string containing the version info of the product in which the
   // Signin component is being used.
