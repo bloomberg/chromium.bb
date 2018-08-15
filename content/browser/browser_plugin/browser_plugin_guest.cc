@@ -436,6 +436,10 @@ void BrowserPluginGuest::ResendEventToEmbedder(
     ui::LatencyInfo latency_info =
         ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
             resent_gesture_event);
+    // The touch action may not be set for the embedder because the
+    // GestureScrollBegin is sent to the guest view. In this case, set the touch
+    // action of the embedder to Auto to prevent crash.
+    GetOwnerRenderWidgetHost()->input_router()->ForceSetTouchActionAuto();
     view->ProcessGestureEvent(resent_gesture_event, latency_info);
   } else if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
     blink::WebMouseWheelEvent resent_wheel_event;

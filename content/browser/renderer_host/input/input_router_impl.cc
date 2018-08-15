@@ -615,6 +615,10 @@ void InputRouterImpl::ForceSetTouchActionAuto() {
   touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
 }
 
+void InputRouterImpl::OnHasTouchEventHandlersForTest(bool has_handlers) {
+  touch_action_filter_.OnHasTouchEventHandlers(has_handlers);
+}
+
 void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
   TRACE_EVENT1("input", "InputRouterImpl::OnSetTouchAction", "action",
                touch_action);

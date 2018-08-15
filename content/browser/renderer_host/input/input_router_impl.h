@@ -110,6 +110,8 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override;
 
+  void OnHasTouchEventHandlersForTest(bool has_handlers);
+
  private:
   friend class InputRouterImplTest;
   friend class MockRenderWidgetHost;

@@ -84,11 +84,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       // two-finger scrolling but a "touch-action: pan-x pinch-zoom" region
       // doesn't.
       // TODO(mustaq): Add it to spec?
-      // TODO(https://crbug.com/870536): GSU can be generated from
-      // ResendEventToEmbedder(), make sure |scrolling_touch_action_| has value
-      // in this case.
-      if (!scrolling_touch_action_.has_value())
-        SetTouchAction(cc::kTouchActionAuto);
       if (IsYAxisActionDisallowed(scrolling_touch_action_.value())) {
         gesture_event->data.scroll_update.delta_y = 0;
         gesture_event->data.scroll_update.velocity_y = 0;

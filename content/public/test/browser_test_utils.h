@@ -262,6 +262,14 @@ void SimulateKeyPressWithoutChar(WebContents* web_contents,
                                  bool alt,
                                  bool command);
 
+// Reset touch action for the embedder of a BrowserPluginGuest.
+void ResetTouchAction(RenderWidgetHost* host);
+
+// In some cases when an event is send to guest view, it gets resent to the
+// embedder.
+void ResendGestureScrollUpdateToEmbedder(WebContents* guest_web_contents,
+                                         const blink::WebInputEvent& event);
+
 // Holds down modifier keys for the duration of its lifetime and releases them
 // upon destruction. This allows simulating multiple input events without
 // simulating modifier key releases in between.
