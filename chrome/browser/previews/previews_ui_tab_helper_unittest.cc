@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/previews/previews_infobar_tab_helper.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 
 #include <memory>
 #include <string>
@@ -15,7 +15,7 @@
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/previews/previews_infobar_tab_helper.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -44,17 +44,16 @@ namespace {
 const char kTestUrl[] = "http://www.test.com/";
 }
 
-class PreviewsInfoBarTabHelperUnitTest
-    : public ChromeRenderViewHostTestHarness {
+class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-// Insert an OfflinePageTabHelper before PreviewsInfoBarTabHelper.
+// Insert an OfflinePageTabHelper before PreviewsUITabHelper.
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
     offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents());
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
     MockInfoBarService::CreateForWebContents(web_contents());
-    PreviewsInfoBarTabHelper::CreateForWebContents(web_contents());
+    PreviewsUITabHelper::CreateForWebContents(web_contents());
     test_handle_ = content::NavigationHandle::CreateNavigationHandleForTesting(
         GURL(kTestUrl), main_rfh());
     content::RenderFrameHostTester::For(main_rfh())
@@ -151,63 +150,62 @@ class PreviewsInfoBarTabHelperUnitTest
   std::unique_ptr<content::NavigationHandle> test_handle_;
 };
 
-TEST_F(PreviewsInfoBarTabHelperUnitTest,
-       DidFinishNavigationCreatesLitePageInfoBar) {
-  PreviewsInfoBarTabHelper* infobar_tab_helper =
-      PreviewsInfoBarTabHelper::FromWebContents(web_contents());
-  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationCreatesLitePageInfoBar) {
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 
   SetCommittedPreviewsType(previews::PreviewsType::LITE_PAGE);
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
   EXPECT_EQ(1U, infobar_service()->infobar_count());
-  EXPECT_TRUE(infobar_tab_helper->displayed_preview_infobar());
+  EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 }
 
-TEST_F(PreviewsInfoBarTabHelperUnitTest,
+TEST_F(PreviewsUITabHelperUnitTest,
        DidFinishNavigationCreatesNoScriptPreviewsInfoBar) {
-  PreviewsInfoBarTabHelper* infobar_tab_helper =
-      PreviewsInfoBarTabHelper::FromWebContents(web_contents());
-  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 
   SetCommittedPreviewsType(previews::PreviewsType::NOSCRIPT);
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
   EXPECT_EQ(1U, infobar_service()->infobar_count());
-  EXPECT_TRUE(infobar_tab_helper->displayed_preview_infobar());
+  EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 }
 
-TEST_F(PreviewsInfoBarTabHelperUnitTest,
+TEST_F(PreviewsUITabHelperUnitTest,
        DidFinishNavigationDoesNotCreateLoFiPreviewsInfoBar) {
-  PreviewsInfoBarTabHelper* infobar_tab_helper =
-      PreviewsInfoBarTabHelper::FromWebContents(web_contents());
-  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 
   SetCommittedPreviewsType(previews::PreviewsType::LOFI);
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 }
 
-TEST_F(PreviewsInfoBarTabHelperUnitTest, TestPreviewsIDSet) {
-  PreviewsInfoBarTabHelper* infobar_tab_helper =
-      PreviewsInfoBarTabHelper::FromWebContents(web_contents());
+TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsIDSet) {
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents());
 
   SimulateCommit();
 
@@ -217,21 +215,21 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, TestPreviewsIDSet) {
   set_previews_user_data(std::move(previews_user_data));
 
   CallDidFinishNavigation();
-  EXPECT_TRUE(infobar_tab_helper->previews_user_data());
-  EXPECT_EQ(id, infobar_tab_helper->previews_user_data()->page_id());
+  EXPECT_TRUE(ui_tab_helper->previews_user_data());
+  EXPECT_EQ(id, ui_tab_helper->previews_user_data()->page_id());
 
   // Navigate to reset the displayed state.
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(infobar_tab_helper->previews_user_data());
+  EXPECT_FALSE(ui_tab_helper->previews_user_data());
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateOfflineInfoBar) {
-  PreviewsInfoBarTabHelper* infobar_tab_helper =
-      PreviewsInfoBarTabHelper::FromWebContents(web_contents());
-  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+TEST_F(PreviewsUITabHelperUnitTest, CreateOfflineInfoBar) {
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 
   content::WebContentsTester::For(web_contents())
       ->SetMainFrameMimeType("multipart/related");
@@ -266,7 +264,7 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateOfflineInfoBar) {
   CallDidFinishNavigation();
 
   EXPECT_EQ(1U, infobar_service()->infobar_count());
-  EXPECT_TRUE(infobar_tab_helper->displayed_preview_infobar());
+  EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
   content::WebContentsTester::For(web_contents())
@@ -301,6 +299,6 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateOfflineInfoBar) {
                 .find(host)
                 ->second->original_size());
 
-  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)

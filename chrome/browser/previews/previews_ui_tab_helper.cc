@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/previews/previews_infobar_tab_helper.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -51,19 +51,18 @@ void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
 
 }  // namespace
 
-PreviewsInfoBarTabHelper::~PreviewsInfoBarTabHelper() {}
+PreviewsUITabHelper::~PreviewsUITabHelper() {}
 
-PreviewsInfoBarTabHelper::PreviewsInfoBarTabHelper(
-    content::WebContents* web_contents)
+PreviewsUITabHelper::PreviewsUITabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      displayed_preview_infobar_(false),
+      displayed_preview_ui_(false),
       displayed_preview_timestamp_(false) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
-void PreviewsInfoBarTabHelper::DidFinishNavigation(
+void PreviewsUITabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // Only show the infobar if this is a full main frame navigation.
+  // Only show the ui if this is a full main frame navigation.
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
     return;
@@ -78,13 +77,13 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
 
   uint64_t page_id = (previews_user_data_) ? previews_user_data_->page_id() : 0;
 
-  // The infobar should only be told if the page was a reload if the previous
+  // The ui should only be told if the page was a reload if the previous
   // page displayed a timestamp.
   bool is_reload =
       displayed_preview_timestamp_
           ? navigation_handle->GetReloadType() != content::ReloadType::NONE
           : false;
-  displayed_preview_infobar_ = false;
+  displayed_preview_ui_ = false;
   displayed_preview_timestamp_ = false;
 
   // Retrieve PreviewsUIService* from |web_contents| if available.
@@ -139,7 +138,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
                        navigation_handle->GetRedirectChain()[0],
                        previews::PreviewsType::OFFLINE, page_id),
         previews_ui_service);
-    // Don't try to show other infobars if this is an offline preview.
+    // Don't try to show other UIs if this is an offline preview.
     return;
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)

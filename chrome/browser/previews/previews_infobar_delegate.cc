@@ -17,7 +17,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
-#include "chrome/browser/previews/previews_infobar_tab_helper.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/infobars/core/infobar.h"
@@ -117,20 +117,20 @@ void PreviewsInfoBarDelegate::Create(
     bool is_reload,
     OnDismissPreviewsInfobarCallback on_dismiss_callback,
     previews::PreviewsUIService* previews_ui_service) {
-  PreviewsInfoBarTabHelper* infobar_tab_helper =
-      PreviewsInfoBarTabHelper::FromWebContents(web_contents);
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents);
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
 
   // The WebContents may not have TabHelpers set. If TabHelpers are not set,
   // don't show Previews infobars.
-  if (!infobar_tab_helper || !infobar_service)
+  if (!ui_tab_helper || !infobar_service)
     return;
-  if (infobar_tab_helper->displayed_preview_infobar())
+  if (ui_tab_helper->displayed_preview_ui())
     return;
 
   std::unique_ptr<PreviewsInfoBarDelegate> delegate(new PreviewsInfoBarDelegate(
-      infobar_tab_helper, previews_type, previews_freshness, is_data_saver_user,
+      ui_tab_helper, previews_type, previews_freshness, is_data_saver_user,
       is_reload, std::move(on_dismiss_callback)));
 
 #if defined(OS_ANDROID)
@@ -142,8 +142,8 @@ void PreviewsInfoBarDelegate::Create(
 #endif
 
   infobar_service->AddInfoBar(std::move(infobar_ptr));
-  uint64_t page_id = (infobar_tab_helper->previews_user_data())
-                         ? infobar_tab_helper->previews_user_data()->page_id()
+  uint64_t page_id = (ui_tab_helper->previews_user_data())
+                         ? ui_tab_helper->previews_user_data()->page_id()
                          : 0;
 
   if (previews_ui_service) {
@@ -158,18 +158,18 @@ void PreviewsInfoBarDelegate::Create(
   }
 
   RecordPreviewsInfoBarAction(previews_type, INFOBAR_SHOWN);
-  infobar_tab_helper->set_displayed_preview_infobar(true);
+  ui_tab_helper->set_displayed_preview_ui(true);
 }
 
 PreviewsInfoBarDelegate::PreviewsInfoBarDelegate(
-    PreviewsInfoBarTabHelper* infobar_tab_helper,
+    PreviewsUITabHelper* ui_tab_helper,
     previews::PreviewsType previews_type,
     base::Time previews_freshness,
     bool is_data_saver_user,
     bool is_reload,
     OnDismissPreviewsInfobarCallback on_dismiss_callback)
     : ConfirmInfoBarDelegate(),
-      infobar_tab_helper_(infobar_tab_helper),
+      ui_tab_helper_(ui_tab_helper),
       previews_type_(previews_type),
       previews_freshness_(previews_freshness),
       is_reload_(is_reload),
@@ -285,8 +285,8 @@ base::string16 PreviewsInfoBarDelegate::GetTimestampText() const {
   if (staleness_in_minutes < min_staleness_in_minutes) {
     if (is_reload_) {
       RecordStaleness(TIMESTAMP_UPDATED_NOW_SHOWN);
-      if (infobar_tab_helper_)
-        infobar_tab_helper_->set_displayed_preview_timestamp(true);
+      if (ui_tab_helper_)
+        ui_tab_helper_->set_displayed_preview_timestamp(true);
       return l10n_util::GetStringUTF16(
           IDS_PREVIEWS_INFOBAR_TIMESTAMP_UPDATED_NOW);
     }
@@ -299,8 +299,8 @@ base::string16 PreviewsInfoBarDelegate::GetTimestampText() const {
   }
 
   RecordStaleness(TIMESTAMP_SHOWN);
-  if (infobar_tab_helper_)
-    infobar_tab_helper_->set_displayed_preview_timestamp(true);
+  if (ui_tab_helper_)
+    ui_tab_helper_->set_displayed_preview_timestamp(true);
 
   if (staleness_in_minutes < 60) {
     return l10n_util::GetStringFUTF16(

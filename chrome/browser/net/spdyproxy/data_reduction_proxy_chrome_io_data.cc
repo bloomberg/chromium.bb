@@ -10,9 +10,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
-#include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
@@ -67,12 +67,12 @@ void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
   previews::PreviewsUIService* previews_ui_service =
       previews_service ? previews_service->previews_ui_service() : nullptr;
 
-  PreviewsInfoBarTabHelper* infobar_tab_helper =
-      PreviewsInfoBarTabHelper::FromWebContents(web_contents);
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents);
 
   uint64_t page_id = 0;
-  if (infobar_tab_helper && infobar_tab_helper->previews_user_data()) {
-    page_id = infobar_tab_helper->previews_user_data()->page_id();
+  if (ui_tab_helper && ui_tab_helper->previews_user_data()) {
+    page_id = ui_tab_helper->previews_user_data()->page_id();
   }
 
   PreviewsInfoBarDelegate::Create(
