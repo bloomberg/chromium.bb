@@ -260,7 +260,7 @@ class AppListSyncableService : public syncer::SyncableService,
   // TODO(http://crbug.com/794724): Remove after M65 goes stable.
   void RemoveDriveAppItems();
 
-  // Returns a list of sync items sorted by item ordinal.
+  // Returns a list of top level sync items sorted by item ordinal.
   std::vector<SyncItem*> GetSortedTopLevelSyncItems() const;
 
   // Remove leading, trailing and duplicate "page break" items in sorted top
