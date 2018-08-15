@@ -2307,47 +2307,49 @@ TEST_F(WindowTreeClientTest, TwoWindowTreesRequestCapture) {
   std::unique_ptr<TopLevel> top_level1 = CreateWindowTreeHostForTopLevel();
   std::unique_ptr<TopLevel> top_level2 = CreateWindowTreeHostForTopLevel();
 
-  aura::Window* root_window1 = top_level1->host->window();
-  aura::Window* root_window2 = top_level2->host->window();
-  std::unique_ptr<CaptureRecorder> capture_recorder1(
-      std::make_unique<CaptureRecorder>(root_window1));
-  std::unique_ptr<CaptureRecorder> capture_recorder2(
-      std::make_unique<CaptureRecorder>(root_window2));
-  EXPECT_NE(client::GetCaptureClient(root_window1),
-            client::GetCaptureClient(root_window2));
+  aura::Window* root1 = top_level1->host->window();
+  aura::Window* root2 = top_level2->host->window();
+  auto capture_recorder1 = std::make_unique<CaptureRecorder>(root1);
+  auto capture_recorder2 = std::make_unique<CaptureRecorder>(root2);
+  EXPECT_NE(client::GetCaptureClient(root1), client::GetCaptureClient(root2));
 
   EXPECT_EQ(0, capture_recorder1->capture_changed_count());
   EXPECT_EQ(0, capture_recorder2->capture_changed_count());
-  // Give capture to root_window2 and ensure everyone is notified correctly.
-  root_window2->SetCapture();
+  // Give capture to root2 and ensure everyone is notified correctly.
+  root2->SetCapture();
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::CAPTURE, true));
   EXPECT_EQ(0, capture_recorder1->capture_changed_count());
   EXPECT_EQ(1, capture_recorder2->capture_changed_count());
-  EXPECT_EQ(root_window2->id(),
-            capture_recorder2->last_gained_capture_window_id());
+  EXPECT_EQ(root2->id(), capture_recorder2->last_gained_capture_window_id());
   EXPECT_EQ(0, capture_recorder2->last_lost_capture_window_id());
-  root_window2->ReleaseCapture();
+  root2->ReleaseCapture();
   capture_recorder1->reset_capture_captured_count();
   capture_recorder2->reset_capture_captured_count();
 
-  // Release capture of  shouldn't affect the capture of root_window1.
-  root_window2->SetCapture();
-  root_window1->SetCapture();
-  root_window2->ReleaseCapture();
+  // Releasing capture of root2 shouldn't affect root1 capture.
+  root2->SetCapture();
+  root1->SetCapture();
+  root2->ReleaseCapture();
   EXPECT_EQ(1, capture_recorder1->capture_changed_count());
   EXPECT_EQ(2, capture_recorder2->capture_changed_count());
-  EXPECT_EQ(root_window1->id(),
-            capture_recorder1->last_gained_capture_window_id());
+  EXPECT_EQ(root1->id(), capture_recorder1->last_gained_capture_window_id());
   EXPECT_EQ(0, capture_recorder1->last_lost_capture_window_id());
   EXPECT_EQ(0, capture_recorder2->last_gained_capture_window_id());
-  EXPECT_EQ(root_window2->id(),
-            capture_recorder2->last_lost_capture_window_id());
-
+  EXPECT_EQ(root2->id(), capture_recorder2->last_lost_capture_window_id());
   capture_recorder1->reset_capture_captured_count();
   capture_recorder2->reset_capture_captured_count();
-  capture_recorder1.reset();
+
+  // Destroying top_level2 shouldn't affect root1 capture; see crbug.com/873743.
+  auto* synchronizer = window_tree_client_impl()->capture_synchronizer();
+  EXPECT_EQ(WindowMus::Get(root1), synchronizer->capture_window());
+  synchronizer->DetachFromCaptureClient(top_level2->capture_client.get());
   capture_recorder2.reset();
+  top_level2->host.reset();
+  EXPECT_EQ(WindowMus::Get(root1), synchronizer->capture_window());
+  EXPECT_EQ(0, capture_recorder1->capture_changed_count());
+  EXPECT_EQ(root1->id(), capture_recorder1->last_gained_capture_window_id());
+  EXPECT_EQ(0, capture_recorder1->last_lost_capture_window_id());
 }
 
 TEST_F(WindowTreeClientTest, ModalTypeWindowFail) {

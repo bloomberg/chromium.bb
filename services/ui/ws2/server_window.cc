@@ -471,7 +471,7 @@ void ServerWindow::SetCaptureOwner(WindowTree* owner) {
   if (!IsTopLevel())
     return;
 
-  return static_cast<TopLevelEventHandler*>(event_handler_.get())
+  static_cast<TopLevelEventHandler*>(event_handler_.get())
       ->OnCaptureOwnerChanged();
 }
 

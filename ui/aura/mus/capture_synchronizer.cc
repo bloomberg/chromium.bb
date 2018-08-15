@@ -44,7 +44,11 @@ void CaptureSynchronizer::AttachToCaptureClient(
 
 void CaptureSynchronizer::DetachFromCaptureClient(
     client::CaptureClient* capture_client) {
-  SetCaptureWindow(nullptr);
+  if (capture_window_ &&
+      client::GetCaptureClient(capture_window_->GetWindow()->GetRootWindow()) ==
+          capture_client) {
+    SetCaptureWindow(nullptr);
+  }
   capture_client->RemoveObserver(this);
 }
 
