@@ -251,8 +251,13 @@ class ThirdPartyTest : public testing::Test {
 // configurations.
 //------------------------------------------------------------------------------
 
+#if defined(OS_WIN)
+#define MAYBE_Base DISABLED_Base
+#else
+#define MAYBE_Base Base
+#endif
 // Note: The test module used in this unittest has no export table.
-TEST_F(ThirdPartyTest, Base) {
+TEST_F(ThirdPartyTest, MAYBE_Base) {
   // 1. Spawn the test process with NO blacklist.  Expect successful
   // initialization.
   base::CommandLine cmd_line1 = base::CommandLine::FromString(kTestExeFilename);
