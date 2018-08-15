@@ -27,13 +27,19 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/javascript_test_observer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/common/constants.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ppapi/shared_impl/test_utils.h"
 #include "rlz/buildflags/buildflags.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -318,6 +324,21 @@ TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivate)
 TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate)
 
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
+
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocketPrivateCrash_Resolve) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      content::IsNetworkServiceRunningInProcess())
+    return;
+
+  network::mojom::NetworkServiceTestPtr network_service_test;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(content::mojom::kNetworkServiceName,
+                      &network_service_test);
+  network_service_test->CrashOnResolveHost("crash.com");
+
+  RunTestViaHTTP(STRIP_PREFIXES(TCPSocketPrivateCrash_Resolve));
+}
 
 // UDPSocket tests.
 

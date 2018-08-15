@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/ssl_context_helper.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/dns/host_resolver.h"
@@ -28,6 +29,7 @@
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/host/resource_message_filter.h"
 #include "ppapi/shared_impl/ppb_tcp_socket_shared.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/network/firewall_hole.h"
@@ -38,7 +40,6 @@ namespace net {
 class DrainableIOBuffer;
 class IOBuffer;
 class SSLClientSocket;
-class URLRequestContextGetter;
 }
 
 namespace ppapi {
@@ -56,7 +57,8 @@ class ContentBrowserPepperHostFactory;
 
 class CONTENT_EXPORT PepperTCPSocketMessageFilter
     : public ppapi::host::ResourceMessageFilter,
-      public BrowserPpapiHostImpl::InstanceObserver {
+      public BrowserPpapiHostImpl::InstanceObserver,
+      public network::mojom::ResolveHostClient {
  public:
   PepperTCPSocketMessageFilter(ContentBrowserPepperHostFactory* factory,
                                BrowserPpapiHostImpl* host,
@@ -91,6 +93,11 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   void OnThrottleStateChanged(bool is_throttled) override;
   void OnHostDestroyed() override;
 
+  // network::mojom::ResolveHostClient overrides.
+  void OnComplete(
+      int result,
+      const base::Optional<net::AddressList>& resolved_addresses) override;
+
   int32_t OnMsgBind(const ppapi::host::HostMessageContext* context,
                     const PP_NetAddress_Private& net_addr);
   int32_t OnMsgConnect(const ppapi::host::HostMessageContext* context,
@@ -119,19 +126,16 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
 
   void DoBind(const ppapi::host::ReplyMessageContext& context,
               const PP_NetAddress_Private& net_addr);
-  void DoConnect(
-      const ppapi::host::ReplyMessageContext& context,
-      const std::string& host,
-      uint16_t port,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+  void HostResolvingStarted(const ppapi::host::ReplyMessageContext& context);
   void DoConnectWithNetAddress(const ppapi::host::ReplyMessageContext& context,
                                const PP_NetAddress_Private& net_addr);
   void DoWrite(const ppapi::host::ReplyMessageContext& context);
   void DoListen(const ppapi::host::ReplyMessageContext& context,
                 int32_t backlog);
 
-  void OnResolveCompleted(const ppapi::host::ReplyMessageContext& context,
-                          int net_result);
+  void OnResolveCompleted(
+      int net_result,
+      const base::Optional<net::AddressList>& resolved_addresses);
   void StartConnect(const ppapi::host::ReplyMessageContext& context);
 
   void OnConnectCompleted(const ppapi::host::ReplyMessageContext& context,
@@ -198,6 +202,10 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   int render_process_id_;
   int render_frame_id_;
 
+  // A reference to |this| must always be taken while |binding_| is bound to
+  // ensure that if the error callback is called the object is alive.
+  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+
   // The following fields are used only on the IO thread.
   // Non-owning ptr.
   BrowserPpapiHostImpl* host_;
@@ -237,6 +245,7 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   net::AddressList address_list_;
   // Where we are in the above list.
   size_t address_index_;
+  ppapi::host::ReplyMessageContext host_resolve_context_;
 
   // Non-null unless an SSL connection is requested.
   std::unique_ptr<net::TCPSocket> socket_;

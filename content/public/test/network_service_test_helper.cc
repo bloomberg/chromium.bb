@@ -26,6 +26,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/host_resolver.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
@@ -38,6 +39,13 @@
 #endif
 
 namespace content {
+namespace {
+void CrashResolveHost(const std::string& host_to_crash,
+                      const std::string& host) {
+  if (host_to_crash == host)
+    base::Process::TerminateCurrentProcessImmediately(1);
+}
+}  // namespace
 
 class NetworkServiceTestHelper::NetworkServiceTestImpl
     : public network::mojom::NetworkServiceTest,
@@ -123,6 +131,11 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
 
     net::TransportSecurityState::SetShouldRequireCTForTesting(&ct);
     std::move(callback).Run();
+  }
+
+  void CrashOnResolveHost(const std::string& host) override {
+    network::HostResolver::SetResolveHostCallbackForTesting(
+        base::BindRepeating(CrashResolveHost, host));
   }
 
   void BindRequest(network::mojom::NetworkServiceTestRequest request) {

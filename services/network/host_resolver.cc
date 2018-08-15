@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/optional.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -15,6 +16,10 @@
 #include "services/network/resolve_host_request.h"
 
 namespace network {
+namespace {
+static base::LazyInstance<HostResolver::ResolveHostCallback>::Leaky
+    resolve_host_callback;
+}
 
 HostResolver::HostResolver(
     mojom::HostResolverRequest resolver_request,
@@ -43,6 +48,8 @@ HostResolver::~HostResolver() {
 void HostResolver::ResolveHost(const net::HostPortPair& host,
                                mojom::ResolveHostHandleRequest control_handle,
                                mojom::ResolveHostClientPtr response_client) {
+  if (resolve_host_callback.Get())
+    resolve_host_callback.Get().Run(host.host());
   auto request =
       std::make_unique<ResolveHostRequest>(internal_resolver_, host, net_log_);
 
@@ -61,6 +68,11 @@ void HostResolver::ResolveHost(const net::HostPortPair& host,
 
 size_t HostResolver::GetNumOutstandingRequestsForTesting() const {
   return requests_.size();
+}
+
+void HostResolver::SetResolveHostCallbackForTesting(
+    ResolveHostCallback callback) {
+  resolve_host_callback.Get() = std::move(callback);
 }
 
 void HostResolver::OnResolveHostComplete(ResolveHostRequest* request,

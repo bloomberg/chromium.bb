@@ -50,6 +50,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HostResolver
 
   size_t GetNumOutstandingRequestsForTesting() const;
 
+  // Sets a global callback when a ResolveHost call arrives.
+  using ResolveHostCallback =
+      base::RepeatingCallback<void(const std::string& host)>;
+  static void SetResolveHostCallbackForTesting(ResolveHostCallback callback);
+
  private:
   void OnResolveHostComplete(ResolveHostRequest* request, int error);
   void OnConnectionError();

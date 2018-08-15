@@ -55,4 +55,7 @@ interface NetworkServiceTest {
 
   [Sync]
   SetShouldRequireCT(ShouldRequireCT required) => ();
+
+  // Causes the next host resolve to the given hostname to crash the process.
+  CrashOnResolveHost(string host);
 };
