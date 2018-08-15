@@ -154,11 +154,13 @@ static int i915_add_combinations(struct driver *drv)
 	render_use_flags &= ~BO_USE_SW_WRITE_OFTEN;
 	render_use_flags &= ~BO_USE_SW_READ_OFTEN;
 	render_use_flags &= ~BO_USE_LINEAR;
+        render_use_flags &= ~BO_USE_PROTECTED;
 
 	texture_use_flags &= ~BO_USE_RENDERSCRIPT;
 	texture_use_flags &= ~BO_USE_SW_WRITE_OFTEN;
 	texture_use_flags &= ~BO_USE_SW_READ_OFTEN;
 	texture_use_flags &= ~BO_USE_LINEAR;
+        texture_use_flags &= ~BO_USE_PROTECTED;
 
 	metadata.tiling = I915_TILING_X;
 	metadata.priority = 2;
