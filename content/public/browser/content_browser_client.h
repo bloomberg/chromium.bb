@@ -257,6 +257,16 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual GURL GetEffectiveURL(BrowserContext* browser_context,
                                const GURL& url);
 
+  // Returns true if effective URLs should be compared when choosing a
+  // SiteInstance for a navigation to |destination_url|.
+  // |is_main_frame| is true if the navigation will take place in a main frame.
+  virtual bool ShouldCompareEffectiveURLsForSiteInstanceSelection(
+      BrowserContext* browser_context,
+      content::SiteInstance* candidate_site_instance,
+      bool is_main_frame,
+      const GURL& candidate_url,
+      const GURL& destination_url);
+
   // Returns whether gesture fling events should use the mobile-behavior gesture
   // curve for scrolling.
   virtual bool ShouldUseMobileFlingCurve() const;

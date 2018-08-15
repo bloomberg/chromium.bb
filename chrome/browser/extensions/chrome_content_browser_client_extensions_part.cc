@@ -268,6 +268,12 @@ const Extension* GetEnabledExtensionFromEffectiveURL(
   return registry->enabled_extensions().GetByID(effective_url.host());
 }
 
+bool HasEffectiveUrl(content::BrowserContext* browser_context,
+                     const GURL& url) {
+  return ChromeContentBrowserClientExtensionsPart::GetEffectiveURL(
+             Profile::FromBrowserContext(browser_context), url) != url;
+}
+
 }  // namespace
 
 ChromeContentBrowserClientExtensionsPart::
@@ -327,6 +333,35 @@ GURL ChromeContentBrowserClientExtensionsPart::GetEffectiveURL(
   // If the URL is part of an extension's web extent, convert it to an
   // extension URL.
   return extension->GetResourceURL(url.path());
+}
+
+// static
+bool ChromeContentBrowserClientExtensionsPart::
+    ShouldCompareEffectiveURLsForSiteInstanceSelection(
+        content::BrowserContext* browser_context,
+        content::SiteInstance* candidate_site_instance,
+        bool is_main_frame,
+        const GURL& candidate_url,
+        const GURL& destination_url) {
+  // Don't compare effective URLs for any subframe navigations, since we don't
+  // want to create OOPIFs based on that mechanism (e.g., for hosted apps). For
+  // main frames, don't compare effective URLs when transitioning from app to
+  // non-app URLs if there exists another app WebContents that might script
+  // this one.  These navigations should stay in the app process to not break
+  // scripting when a hosted app opens a same-site popup. See
+  // https://crbug.com/718516 and https://crbug.com/828720 and
+  // https://crbug.com/859062.
+  if (!is_main_frame)
+    return false;
+  size_t candidate_active_contents_count =
+      candidate_site_instance->GetRelatedActiveContentsCount();
+  bool src_has_effective_url = HasEffectiveUrl(browser_context, candidate_url);
+  bool dest_has_effective_url =
+      HasEffectiveUrl(browser_context, destination_url);
+  if (src_has_effective_url && !dest_has_effective_url &&
+      candidate_active_contents_count > 1u)
+    return false;
+  return true;
 }
 
 // static
