@@ -826,19 +826,19 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
   if (layout_object->IsText()) {
     LayoutText* layout_text = ToLayoutText(layout_object);
     layout_tree_node->setLayoutText(layout_text->GetText());
-    if (layout_text->HasTextBoxes()) {
+    Vector<LayoutText::TextBoxInfo> text_boxes = layout_text->GetTextBoxInfo();
+    if (!text_boxes.IsEmpty()) {
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::InlineTextBox>>
           inline_text_nodes =
               protocol::Array<protocol::DOMSnapshot::InlineTextBox>::create();
-      for (const InlineTextBox* text_box : layout_text->TextBoxes()) {
-        FloatRect local_coords_text_box_rect(text_box->FrameRect());
+      for (const LayoutText::TextBoxInfo& text_box : text_boxes) {
         FloatRect absolute_coords_text_box_rect =
-            layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
+            layout_object->LocalToAbsoluteQuad(FloatRect(text_box.local_rect))
                 .BoundingBox();
         inline_text_nodes->addItem(
             protocol::DOMSnapshot::InlineTextBox::create()
-                .setStartCharacterIndex(text_box->Start())
-                .setNumCharacters(text_box->Len())
+                .setStartCharacterIndex(text_box.dom_start_offset)
+                .setNumCharacters(text_box.dom_length)
                 .setBoundingBox(
                     BuildRectForFloatRect(absolute_coords_text_box_rect))
                 .build());

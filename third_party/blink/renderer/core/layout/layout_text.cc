@@ -238,6 +238,32 @@ void LayoutText::DeleteTextBoxes() {
   text_boxes_.DeleteLineBoxes();
 }
 
+Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
+  Vector<TextBoxInfo> results;
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    if (fragments.IsInLayoutNGInlineFormattingContext()) {
+      for (const NGPaintFragment* fragment : fragments) {
+        const NGPhysicalTextFragment& text_fragment =
+            ToNGPhysicalTextFragment(fragment->PhysicalFragment());
+        results.push_back(TextBoxInfo{
+            {fragment->InlineOffsetToContainerBox().ToLayoutPoint(),
+             text_fragment.Size().ToLayoutSize()},
+            // TODO(kojii): Compute DOM offset, not text content offset.
+            text_fragment.StartOffset(),
+            text_fragment.Length()});
+      }
+      return results;
+    }
+  }
+
+  for (const InlineTextBox* text_box : TextBoxes()) {
+    results.push_back(
+        TextBoxInfo{text_box->FrameRect(), text_box->Start(), text_box->Len()});
+  }
+  return results;
+}
+
 base::Optional<FloatPoint> LayoutText::GetUpperLeftCorner() const {
   DCHECK(!IsBR());
   if (HasLegacyTextBoxes()) {

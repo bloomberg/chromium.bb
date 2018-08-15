@@ -225,6 +225,14 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // All callers should call HasTextBoxes instead, and take NG into account.
   bool HasLegacyTextBoxes() const { return FirstTextBox(); }
 
+  // Compute the rect and offset of text boxes for this LayoutText.
+  struct TextBoxInfo {
+    LayoutRect local_rect;
+    unsigned dom_start_offset;
+    unsigned dom_length;
+  };
+  Vector<TextBoxInfo> GetTextBoxInfo() const;
+
   // Returns the Position in DOM that corresponds to the given offset in the
   // |text_| string.
   // TODO(layout-dev): Fix it when text-transform changes text length.
