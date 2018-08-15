@@ -26,8 +26,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
@@ -467,42 +465,6 @@ class ClientManager {
                            ContextUtils.getApplicationContext().getPackageManager())) {
             params.mLinkedOrigins.add(origin);
         }
-        return true;
-    }
-
-    /**
-     * Whether we can verify that the app has declared a
-     * {@link CustomTabsService#RELATION_HANDLE_ALL_URLS} with the given origin. This is the initial
-     * requirement for launch. We also need the web->app verification which will be checked after
-     * the Activity has launched async.
-     * @param session The session attempting to launch the TrustedWebActivity.
-     * @param url The url that will load on the TrustedWebActivity.
-     * @return Whether the client for the session passes the initial requirements to launch a
-     *         TrustedWebActivity in the given origin.
-     */
-    public synchronized boolean canSessionLaunchInTrustedWebActivity(
-            CustomTabsSessionToken session, Uri url) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) return false;
-        if (ChromeVersionInfo.isBetaBuild() || ChromeVersionInfo.isStableBuild()) return false;
-
-        SessionParams params = mSessionParams.get(session);
-        if (params == null) return false;
-        String packageName = params.getPackageName();
-        if (TextUtils.isEmpty(packageName)) return false;
-        Origin origin = new Origin(url);
-        boolean isAppAssociatedWithOrigin = params.mLinkedOrigins.contains(origin);
-        if (!isAppAssociatedWithOrigin) return false;
-
-        // Split path from the given Uri to get only the origin before web->native verification.
-        if (OriginVerifier.isValidOrigin(
-                    packageName, origin, CustomTabsService.RELATION_HANDLE_ALL_URLS)) {
-            return true;
-        }
-        // This is an optimization to start the verification early. The launching Activity should
-        // run and listen on this verification as well.
-        params.originVerifier =
-                new OriginVerifier(null, packageName, CustomTabsService.RELATION_HANDLE_ALL_URLS);
-        params.originVerifier.start(origin);
         return true;
     }
 

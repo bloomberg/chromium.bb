@@ -53,7 +53,7 @@ public class WebappDisclosureSnackbarController implements SnackbarManager.Snack
                     Snackbar.make(activity.getResources().getString(
                                           R.string.app_running_in_chrome_disclosure),
                                     this, Snackbar.TYPE_PERSISTENT,
-                                    Snackbar.UMA_WEBAPK_TWA_PRIVACY_DISCLOSURE)
+                                    Snackbar.UMA_WEBAPK_PRIVACY_DISCLOSURE)
                             .setAction(
                                     activity.getResources().getString(R.string.ok_got_it), storage)
                             .setSingleLine(false));

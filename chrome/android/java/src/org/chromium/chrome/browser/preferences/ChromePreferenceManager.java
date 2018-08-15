@@ -182,6 +182,8 @@ public class ChromePreferenceManager {
 
     private static final String VERIFIED_DIGITAL_ASSET_LINKS =
             "verified_digital_asset_links";
+    private static final String TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES =
+            "trusted_web_activity_disclosure_accepted_packages";
 
     /**
      * Whether VR assets component should be registered on startup.
@@ -458,6 +460,31 @@ public class ChromePreferenceManager {
      */
     public void setVerifiedDigitalAssetLinks(Set<String> links) {
         mSharedPreferences.edit().putStringSet(VERIFIED_DIGITAL_ASSET_LINKS, links).apply();
+    }
+
+    /** Do not modify the set returned by this method. */
+    private Set<String> getTrustedWebActivityDisclosureAcceptedPackages() {
+        return mSharedPreferences.getStringSet(
+                TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, Collections.emptySet());
+    }
+
+    /**
+     * Sets that the user has accepted the Trusted Web Activity "Running in Chrome" disclosure for
+     * TWAs launched by the given package.
+     */
+    public void setUserAcceptedTwaDisclosureForPackage(String packageName) {
+        Set<String> packages = new HashSet<>(getTrustedWebActivityDisclosureAcceptedPackages());
+        packages.add(packageName);
+        mSharedPreferences.edit().putStringSet(
+                TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packages).apply();
+    }
+
+    /**
+     * Checks whether the given package was previously passed to
+     * {@link #setUserAcceptedTwaDisclosureForPackage(String)}.
+     */
+    public boolean hasUserAcceptedTwaDisclosureForPackage(String packageName) {
+        return getTrustedWebActivityDisclosureAcceptedPackages().contains(packageName);
     }
 
     /**
