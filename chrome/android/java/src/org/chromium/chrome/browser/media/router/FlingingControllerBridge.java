@@ -13,8 +13,9 @@ import org.chromium.base.annotations.JNINamespace;
  * corresponding native code.
  */
 @JNINamespace("media_router")
-public class FlingingControllerBridge {
+public class FlingingControllerBridge implements MediaStatusObserver {
     private final FlingingController mFlingingController;
+    private long mNativeFlingingControllerBridge;
 
     public FlingingControllerBridge(FlingingController flingingController) {
         mFlingingController = flingingController;
@@ -44,4 +45,27 @@ public class FlingingControllerBridge {
     public void seek(long positionInMs) {
         mFlingingController.getMediaController().seek(positionInMs);
     }
+
+    // MediaStatusObserver implementation.
+    @Override
+    public void onMediaStatusUpdate(MediaStatusBridge status) {
+        if (mNativeFlingingControllerBridge != 0) {
+            nativeOnMediaStatusUpdated(mNativeFlingingControllerBridge, status);
+        }
+    }
+
+    @CalledByNative
+    public void addNativeFlingingController(long nativeFlingingControllerBridge) {
+        mNativeFlingingControllerBridge = nativeFlingingControllerBridge;
+        mFlingingController.setMediaStatusObserver(this);
+    }
+
+    @CalledByNative
+    public void clearNativeFlingingController() {
+        mFlingingController.clearMediaStatusObserver();
+        mNativeFlingingControllerBridge = 0;
+    }
+
+    private native void nativeOnMediaStatusUpdated(
+            long nativeFlingingControllerBridge, MediaStatusBridge status);
 }

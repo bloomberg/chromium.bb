@@ -58,11 +58,33 @@ media::MediaController* FlingingControllerBridge::GetMediaController() {
 
 void FlingingControllerBridge::AddMediaStatusObserver(
     media::MediaStatusObserver* observer) {
-  NOTREACHED();
+  DCHECK(!observer_);
+  observer_ = observer;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  DCHECK(env);
+
+  Java_FlingingControllerBridge_addNativeFlingingController(
+      env, j_flinging_controller_bridge_, reinterpret_cast<intptr_t>(this));
 }
+
 void FlingingControllerBridge::RemoveMediaStatusObserver(
     media::MediaStatusObserver* observer) {
-  NOTREACHED();
+  DCHECK_EQ(observer_, observer);
+  observer_ = nullptr;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  DCHECK(env);
+
+  Java_FlingingControllerBridge_clearNativeFlingingController(
+      env, j_flinging_controller_bridge_);
+}
+
+void FlingingControllerBridge::OnMediaStatusUpdated(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_bridge,
+    const base::android::JavaParamRef<jobject>& j_status) {
+  // TODO(tguilbert): convert j_status to media::MediaStatus.
 }
 
 base::TimeDelta FlingingControllerBridge::GetApproximateCurrentTime() {
