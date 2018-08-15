@@ -35,12 +35,12 @@ std::unique_ptr<BookmarkAppInstallationTask> InstallationTaskCreateWrapper(
 }  // namespace
 
 struct PendingBookmarkAppManager::Installation {
-  Installation(AppInfo info, InstallCallback callback)
+  Installation(AppInfo info, OnceInstallCallback callback)
       : info(std::move(info)), callback(std::move(callback)) {}
   ~Installation() = default;
 
   AppInfo info;
-  InstallCallback callback;
+  OnceInstallCallback callback;
 };
 
 PendingBookmarkAppManager::PendingBookmarkAppManager(Profile* profile)
@@ -51,15 +51,15 @@ PendingBookmarkAppManager::PendingBookmarkAppManager(Profile* profile)
 PendingBookmarkAppManager::~PendingBookmarkAppManager() = default;
 
 void PendingBookmarkAppManager::Install(AppInfo app_to_install,
-                                        InstallCallback callback) {
+                                        OnceInstallCallback callback) {
   // Check that we are not already installing the same app.
   if (current_installation_ && current_installation_->info == app_to_install) {
-    std::move(callback).Run(std::string());
+    std::move(callback).Run(app_to_install.url, std::string());
     return;
   }
   for (const auto& installation : installation_queue_) {
     if (installation->info == app_to_install) {
-      std::move(callback).Run(std::string());
+      std::move(callback).Run(app_to_install.url, std::string());
       return;
     }
   }
@@ -127,7 +127,7 @@ void PendingBookmarkAppManager::CurrentInstallationFinished(
 
   std::unique_ptr<Installation> installation;
   installation.swap(current_installation_);
-  std::move(installation->callback).Run(app_id);
+  std::move(installation->callback).Run(installation->info.url, app_id);
 }
 
 void PendingBookmarkAppManager::DidFinishLoad(

@@ -114,12 +114,16 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
                                                                      false);
   }
 
-  void InstallCallback(const std::string& app_id) {
+  void InstallCallback(const GURL& url, const std::string& app_id) {
+    install_callback_url_ = url;
     install_succeeded_ = !app_id.empty();
   }
 
  protected:
-  void ResetResults() { install_succeeded_ = base::nullopt; }
+  void ResetResults() {
+    install_succeeded_.reset();
+    install_callback_url_.reset();
+  }
 
   const PendingBookmarkAppManager::WebContentsFactory&
   test_web_contents_creator() {
@@ -142,9 +146,12 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   bool install_succeeded() { return install_succeeded_.value(); }
 
+  const GURL& install_callback_url() { return install_callback_url_.value(); }
+
  private:
   content::WebContentsTester* web_contents_tester_ = nullptr;
   base::Optional<bool> install_succeeded_;
+  base::Optional<GURL> install_callback_url_;
 
   PendingBookmarkAppManager::WebContentsFactory test_web_contents_creator_;
   PendingBookmarkAppManager::TaskFactory successful_installation_task_creator_;
@@ -167,6 +174,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_Succeeds) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
   EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, Install_SucceedsTwice) {
@@ -183,6 +191,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_SucceedsTwice) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
   EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
   ResetResults();
 
   pending_app_manager.Install(
@@ -194,6 +203,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_SucceedsTwice) {
   web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
   EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, Install_PendingSuccessfulTask) {
@@ -215,6 +225,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingSuccessfulTask) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
   EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
   ResetResults();
 
   // Finish the second install.
@@ -222,6 +233,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingSuccessfulTask) {
   web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
   EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, Install_PendingFailingTask) {
@@ -243,6 +255,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingFailingTask) {
   web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
   EXPECT_FALSE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
   ResetResults();
 
   // Finish the second install.
@@ -250,6 +263,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingFailingTask) {
   web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
   EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, Install_ReentrantCallback) {
@@ -260,8 +274,9 @@ TEST_F(PendingBookmarkAppManagerTest, Install_ReentrantCallback) {
   // Call install with a callback that tries to install another app.
   pending_app_manager.Install(
       GetFooAppInfo(),
-      base::BindLambdaForTesting([&](const std::string& app_id) {
-        InstallCallback(app_id);
+      base::BindLambdaForTesting([&](const GURL& provided_url,
+                                     const std::string& app_id) {
+        InstallCallback(provided_url, app_id);
         pending_app_manager.Install(
             GetBarAppInfo(),
             base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
@@ -272,12 +287,14 @@ TEST_F(PendingBookmarkAppManagerTest, Install_ReentrantCallback) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
   EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
   ResetResults();
 
   base::RunLoop().RunUntilIdle();
   web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
   EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, Install_FailsSameInstallPending) {
@@ -297,6 +314,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_FailsSameInstallPending) {
 
   // The second install should fail; the app is already getting installed.
   EXPECT_FALSE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
   ResetResults();
 
   // The original install should still be able to succeed.
@@ -304,6 +322,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_FailsSameInstallPending) {
   web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
   EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, Install_FailsLoadIncorrectURL) {
@@ -320,6 +339,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_FailsLoadIncorrectURL) {
   web_contents_tester()->NavigateAndCommit(GURL(kWrongUrl));
   web_contents_tester()->TestDidFinishLoad(GURL(kWrongUrl));
   EXPECT_FALSE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
 }
 
 }  // namespace extensions
