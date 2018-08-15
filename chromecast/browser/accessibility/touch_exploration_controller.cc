@@ -577,6 +577,8 @@ ui::EventRewriteStatus TouchExplorationController::InWaitForNoFingers(
 void TouchExplorationController::SendSimulatedClickOrTap() {
   // If we got an anchor point from ChromeVox, send a double-tap gesture
   // and let ChromeVox handle the click.
+  const gfx::Point location;
+  delegate_->HandleTap(location);
   if (anchor_point_state_ == ANCHOR_POINT_EXPLICITLY_SET) {
     delegate_->HandleAccessibilityGesture(ax::mojom::Gesture::kClick);
     return;
@@ -611,8 +613,6 @@ void TouchExplorationController::MaybeSendSimulatedTapInLiftActivationBounds(
       lift_activation_bounds_.Contains(location)) {
     accessibility_sound_player_->PlayTouchTypeEarcon();
     SendSimulatedTap();
-  } else {
-    delegate_->HandleTap(location);
   }
 }
 
