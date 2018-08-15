@@ -203,18 +203,17 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   static bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
                                               const GURL& url);
 
-  // Returns true if a process |host| can be locked to a site |site_url|.
-  // Returning true here also implies that |site_url| requires a dedicated
-  // process.  However, the converse does not hold: this might still return
-  // false for certain special cases where an origin lock can't be applied even
-  // when |site_url| requires a dedicated process (e.g., with
+  // Returns true if a process can be locked to a site |site_url|. Returning
+  // true here also implies that |site_url| requires a dedicated process.
+  // However, the converse does not hold: this might still return false for
+  // certain special cases where an origin lock can't be applied even when
+  // |site_url| requires a dedicated process (e.g., with
   // --site-per-process).  Examples of those cases include <webview> guests,
   // WebUI, single-process mode, or extensions where a process is currently
   // allowed to be reused for different extensions.  Most of these special
   // cases should eventually be removed, and this function should become
   // equivalent to DoesSiteRequireDedicatedProcess().
   static bool ShouldLockToOrigin(BrowserContext* browser_context,
-                                 RenderProcessHost* host,
                                  GURL site_url);
 
  private:
