@@ -33,6 +33,9 @@ declare_args() {
   # Compile for Undefined Behaviour Sanitizer's vptr checks.
   is_ubsan_vptr = false
 
+  # Compile with SafeStack shadow stack support.
+  is_safestack = false
+
   # Track where uninitialized memory originates from. From fastest to slowest:
   # 0 - no tracking, 1 - track only the initial allocation site, 2 - track the
   # chain of stores leading from allocation site to use site.
@@ -155,9 +158,9 @@ if (use_fuzzing_engine && sanitizer_coverage_flags == "") {
   sanitizer_coverage_flags = "trace-pc-guard,indirect-calls"
 }
 
-# Whether we are linking against a sanitizer runtime library. Among other
-# things, this changes the default symbol level and other settings in order to
-# prepare to create stack traces "live" using the sanitizer runtime.
+# Whether we are linking against a debugging sanitizer runtime library. Among
+# other things, this changes the default symbol level and other settings in
+# order to prepare to create stack traces "live" using the sanitizer runtime.
 using_sanitizer =
     is_asan || is_lsan || is_tsan || is_msan || is_ubsan || is_ubsan_null ||
     is_ubsan_vptr || is_ubsan_security || use_sanitizer_coverage || use_cfi_diag
@@ -167,6 +170,9 @@ assert(!using_sanitizer || is_clang,
 
 assert(!is_cfi || is_clang,
        "is_cfi requires setting is_clang = true in 'gn args'")
+
+assert(!is_safestack || is_clang,
+       "is_safestack requires setting is_clang = true in 'gn args'")
 
 prebuilt_instrumented_libraries_available =
     is_msan && (msan_track_origins == 0 || msan_track_origins == 2)
