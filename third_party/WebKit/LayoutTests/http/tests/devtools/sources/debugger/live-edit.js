@@ -116,8 +116,8 @@
                 () => SourcesTestRunner.dumpDebuggerPluginBreakpoints(
                     testSourceFrame))
             .then(
-                () => Bindings.breakpointManager._allBreakpoints().map(
-                    breakpoint => breakpoint.remove()))
+                () => Bindings.breakpointManager.allBreakpointLocations().map(
+                    breakpointLocation => breakpointLocation.breakpoint.remove()))
             .then(next);
       }
     },
