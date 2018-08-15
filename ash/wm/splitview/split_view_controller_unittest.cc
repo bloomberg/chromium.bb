@@ -2299,6 +2299,49 @@ TEST_F(SplitViewTabDraggingTest, OverviewExitAnimationTest) {
   EXPECT_FALSE(overview_observer->overview_animate_when_exiting());
 }
 
+// Tests that there is no top drag indicator if drag a window in portrait screen
+// orientation.
+TEST_F(SplitViewTabDraggingTest, DragIndicatorsInPortraitOrientationTest) {
+  UpdateDisplay("800x600");
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  ASSERT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kLandscapePrimary);
+
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  wm::GetWindowState(window.get())->Maximize();
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(window.get(), window.get());
+  ASSERT_TRUE(resizer.get());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  // Drag the window past the indicators threshold to show the indicators.
+  DragWindowTo(resizer.get(),
+               gfx::Point(200, GetIndicatorsThreshold(window.get())));
+  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kDragArea);
+  CompleteDrag(std::move(resizer));
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+
+  // Rotate the screen by 270 degree to portrait primary orientation.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitPrimary);
+  resizer = StartDrag(window.get(), window.get());
+  ASSERT_TRUE(resizer.get());
+  // Drag the window past the indicators threshold to show the indicators.
+  DragWindowTo(resizer.get(),
+               gfx::Point(200, GetIndicatorsThreshold(window.get())));
+  EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kDragAreaRight);
+  CompleteDrag(std::move(resizer));
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+}
+
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
   TestWindowDelegateWithWidget(bool can_activate)
