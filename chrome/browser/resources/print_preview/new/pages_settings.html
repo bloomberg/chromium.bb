@@ -46,7 +46,7 @@
                 on-click="onCustomRadioClick_">
             <input id="pageSettingsCustomInput" class="user-value" type="text"
                 checked="{{customSelected_::change}}" data-timeout-delay="500"
-                disabled$="[[getDisabled_(disabled)]]"
+                disabled$="[[getDisabled_(disabled)]]" spellcheck="false"
                 pattern="[[inputPattern_]]"
                 on-focus="onCustomInputFocus_" on-blur="onCustomInputBlur_"
                 placeholder="$i18n{examplePageRangeText}"
