@@ -114,15 +114,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void AsyncRemove(const cryptohome::AccountIdentifier& id,
-                   AsyncMethodCallback callback) override {
+  void RemoveEx(const cryptohome::AccountIdentifier& account,
+                DBusMethodCallback<cryptohome::BaseReply> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeAsyncRemove);
+                                 cryptohome::kCryptohomeRemoveEx);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(id.account_id());
+    writer.AppendProtoAsArrayOfBytes(account);
+
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
-        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 

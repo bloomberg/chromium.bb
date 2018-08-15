@@ -99,18 +99,6 @@ void TriggerResolveHash(const base::WeakPtr<AuthAttemptState>& attempt,
   resolver->Resolve();
 }
 
-// Records status and calls resolver->Resolve() while adding login time marker.
-void TriggerResolveWithLoginTimeMarker(
-    const std::string& marker_name,
-    const base::WeakPtr<AuthAttemptState>& attempt,
-    scoped_refptr<CryptohomeAuthenticator> resolver,
-    bool success,
-    cryptohome::MountError return_code) {
-  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(marker_name, false);
-  attempt->RecordCryptohomeStatus(return_code);
-  resolver->Resolve();
-}
-
 // Records an error in accessing the user's cryptohome with the given key and
 // calls resolver->Resolve() after adding a login time marker.
 void RecordKeyErrorAndResolve(const base::WeakPtr<AuthAttemptState>& attempt,
@@ -504,10 +492,14 @@ void Remove(const base::WeakPtr<AuthAttemptState>& attempt,
             scoped_refptr<CryptohomeAuthenticator> resolver) {
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeRemove-Start", false);
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      cryptohome::Identification(attempt->user_context.GetAccountId()),
-      base::Bind(&TriggerResolveWithLoginTimeMarker, "CryptohomeRemove-End",
-                 attempt, resolver));
+
+  cryptohome::AccountIdentifier account_id;
+  account_id.set_account_id(
+      cryptohome::Identification(attempt->user_context.GetAccountId()).id());
+
+  DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+      account_id, base::BindOnce(&OnBaseReplyMethod, attempt, resolver,
+                                 "CryptohomeRemove-End"));
 }
 
 void OnKeyChecked(const base::WeakPtr<AuthAttemptState>& attempt,

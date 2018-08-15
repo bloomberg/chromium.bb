@@ -33,11 +33,6 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
 
   virtual ~AsyncMethodCaller() {}
 
-  // Asks cryptohomed to asynchronously try to find the cryptohome for
-  // |user_id| and then nuke it.
-  virtual void AsyncRemove(const Identification& user_id,
-                           Callback callback) = 0;
-
   // Asks cryptohomed to asynchronously create an attestation enrollment
   // request.  On success the data sent to |callback| is a request to be sent
   // to the Privacy CA of type |pca_type|.

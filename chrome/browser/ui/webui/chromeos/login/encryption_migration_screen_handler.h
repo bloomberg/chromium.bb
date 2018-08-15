@@ -108,7 +108,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   void OnMountExistingVault(base::Optional<cryptohome::BaseReply> reply);
   // Removes cryptohome and shows the error screen after the removal finishes.
   void RemoveCryptohome();
-  void OnRemoveCryptohome(bool success, cryptohome::MountError return_code);
+  void OnRemoveCryptohome(base::Optional<cryptohome::BaseReply> reply);
 
   // Creates authorization request for MountEx method using |user_context_|.
   cryptohome::AuthorizationRequest CreateAuthorizationRequest();

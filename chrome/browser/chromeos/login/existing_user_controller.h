@@ -297,8 +297,7 @@ class ExistingUserController
 
   // Called when cryptohome wipe has finished.
   void WipePerformed(const UserContext& user_context,
-                     bool success,
-                     cryptohome::MountError return_code);
+                     base::Optional<cryptohome::BaseReply> reply);
 
   // Triggers online login for the given |account_id|.
   void ForceOnlineLoginForAccountId(const AccountId& account_id);

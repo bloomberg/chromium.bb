@@ -156,10 +156,10 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const cryptohome::MigrateKeyRequest& migrate_request,
       DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
-  // Calls AsyncRemove method.  |callback| is called after the method call
+  // Calls RemoveEx method.  |callback| is called after the method call
   // succeeds.
-  virtual void AsyncRemove(const cryptohome::AccountIdentifier& id,
-                           AsyncMethodCallback callback) = 0;
+  virtual void RemoveEx(const cryptohome::AccountIdentifier& account,
+                        DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Calls RenameCryptohome method. |callback| is called after the method
   // call succeeds.
