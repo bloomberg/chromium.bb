@@ -82,6 +82,11 @@ public interface ToolbarDataProvider {
     boolean isOfflinePage();
 
     /**
+     * @return Whether the page currently shown is a preview.
+     */
+    boolean isPreview();
+
+    /**
      * @param urlBarText The text currently displayed in the url bar.
      * @return Whether the Google 'G' should be shown in the location bar.
      */
@@ -110,6 +115,12 @@ public interface ToolbarDataProvider {
      */
     @ColorRes
     default int getVerboseStatusTextColor(Resources res, boolean useDarkColors) {
+        if (isPreview()) {
+            return ApiCompatibilityUtils.getColor(res,
+                    useDarkColors ? R.color.locationbar_status_preview_color
+                                  : R.color.locationbar_status_preview_color_light);
+        }
+
         if (isOfflinePage()) {
             return ApiCompatibilityUtils.getColor(res,
                     useDarkColors ? R.color.locationbar_status_offline_color
@@ -135,6 +146,9 @@ public interface ToolbarDataProvider {
      */
     @StringRes
     default int getVerboseStatusString() {
+        if (isPreview()) {
+            return R.string.location_bar_verbose_status_preview;
+        }
         if (isOfflinePage()) {
             return R.string.location_bar_verbose_status_offline;
         }

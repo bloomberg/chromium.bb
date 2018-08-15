@@ -89,6 +89,11 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
+    public boolean isPreview() {
+        return false;
+    }
+
+    @Override
     public boolean shouldShowVerboseStatus() {
         return false;
     }

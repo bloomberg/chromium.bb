@@ -324,6 +324,12 @@ public class ToolbarModel implements ToolbarDataProvider {
     }
 
     @Override
+    public boolean isPreview() {
+        // TODO(crbug.com/871839): Link this up with the native previews state.
+        return false;
+    }
+
+    @Override
     public boolean shouldShowGoogleG(String urlBarText) {
         LocaleManager localeManager = LocaleManager.getInstance();
         if (localeManager.hasCompletedSearchEnginePromo()
@@ -346,7 +352,7 @@ public class ToolbarModel implements ToolbarDataProvider {
         // Because is offline page is cleared a bit slower, we also ensure that connection security
         // level is NONE or HTTP_SHOW_WARNING (http://crbug.com/671453).
         int securityLevel = getSecurityLevel();
-        return isOfflinePage()
+        return (isOfflinePage() || isPreview())
                 && (securityLevel == ConnectionSecurityLevel.NONE
                            || securityLevel == ConnectionSecurityLevel.HTTP_SHOW_WARNING);
     }
@@ -365,7 +371,7 @@ public class ToolbarModel implements ToolbarDataProvider {
         if (shouldDisplaySearchTerms()) {
             return R.drawable.omnibox_search;
         }
-        return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage());
+        return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage(), isPreview());
     }
 
     @VisibleForTesting
@@ -388,8 +394,12 @@ public class ToolbarModel implements ToolbarDataProvider {
     @VisibleForTesting
     @DrawableRes
     static int getSecurityIconResource(
-            int securityLevel, boolean isSmallDevice, boolean isOfflinePage) {
-        if (isOfflinePage) {
+            int securityLevel, boolean isSmallDevice, boolean isOfflinePage, boolean isPreview) {
+        // Checking for a preview first because one possible preview type is showing an offline page
+        // on a slow connection. In this case, the previews UI takes precedence.
+        if (isPreview) {
+            return R.drawable.preview_pin_round;
+        } else if (isOfflinePage) {
             return R.drawable.offline_pin_round;
         }
 

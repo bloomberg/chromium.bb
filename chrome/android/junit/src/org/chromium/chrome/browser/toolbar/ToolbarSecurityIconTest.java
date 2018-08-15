@@ -27,6 +27,7 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
 public final class ToolbarSecurityIconTest {
     private static final boolean IS_SMALL_DEVICE = true;
     private static final boolean IS_OFFLINE_PAGE = true;
+    private static final boolean IS_PREVIEW = true;
     private static final int[] SECURITY_LEVELS = new int[] {ConnectionSecurityLevel.NONE,
             ConnectionSecurityLevel.HTTP_SHOW_WARNING, ConnectionSecurityLevel.DANGEROUS,
             ConnectionSecurityLevel.SECURE, ConnectionSecurityLevel.EV_SECURE};
@@ -74,55 +75,63 @@ public final class ToolbarSecurityIconTest {
             assertEquals("Wrong phone resource for security level " + securityLevel,
                     R.drawable.offline_pin_round,
                     ToolbarModel.getSecurityIconResource(
-                            securityLevel, IS_SMALL_DEVICE, IS_OFFLINE_PAGE));
+                            securityLevel, IS_SMALL_DEVICE, IS_OFFLINE_PAGE, !IS_PREVIEW));
             assertEquals("Wrong tablet resource for security level " + securityLevel,
                     R.drawable.offline_pin_round,
                     ToolbarModel.getSecurityIconResource(
-                            securityLevel, !IS_SMALL_DEVICE, IS_OFFLINE_PAGE));
+                            securityLevel, !IS_SMALL_DEVICE, IS_OFFLINE_PAGE, !IS_PREVIEW));
+            assertEquals("Wrong phone resource for security level " + securityLevel,
+                    R.drawable.preview_pin_round,
+                    ToolbarModel.getSecurityIconResource(
+                            securityLevel, IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, IS_PREVIEW));
+            assertEquals("Wrong tablet resource for security level " + securityLevel,
+                    R.drawable.preview_pin_round,
+                    ToolbarModel.getSecurityIconResource(
+                            securityLevel, !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, IS_PREVIEW));
         }
 
         assertEquals(0,
-                ToolbarModel.getSecurityIconResource(
-                        ConnectionSecurityLevel.NONE, IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
+                ToolbarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE, IS_SMALL_DEVICE,
+                        !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_info,
-                ToolbarModel.getSecurityIconResource(
-                        ConnectionSecurityLevel.NONE, !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
+                ToolbarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE, !IS_SMALL_DEVICE,
+                        !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_info,
                 ToolbarModel.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
-                        IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
+                        IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_info,
                 ToolbarModel.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
-                        !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
+                        !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_https_invalid,
-                ToolbarModel.getSecurityIconResource(
-                        ConnectionSecurityLevel.DANGEROUS, IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
+                ToolbarModel.getSecurityIconResource(ConnectionSecurityLevel.DANGEROUS,
+                        IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_https_invalid,
-                ToolbarModel.getSecurityIconResource(
-                        ConnectionSecurityLevel.DANGEROUS, !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
+                ToolbarModel.getSecurityIconResource(ConnectionSecurityLevel.DANGEROUS,
+                        !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_https_valid,
                 ToolbarModel.getSecurityIconResource(
                         ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT, IS_SMALL_DEVICE,
-                        !IS_OFFLINE_PAGE));
+                        !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_https_valid,
                 ToolbarModel.getSecurityIconResource(
                         ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT, !IS_SMALL_DEVICE,
-                        !IS_OFFLINE_PAGE));
+                        !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_https_valid,
-                ToolbarModel.getSecurityIconResource(
-                        ConnectionSecurityLevel.SECURE, IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
+                ToolbarModel.getSecurityIconResource(ConnectionSecurityLevel.SECURE,
+                        IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_https_valid,
-                ToolbarModel.getSecurityIconResource(
-                        ConnectionSecurityLevel.SECURE, !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
+                ToolbarModel.getSecurityIconResource(ConnectionSecurityLevel.SECURE,
+                        !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_https_valid,
-                ToolbarModel.getSecurityIconResource(
-                        ConnectionSecurityLevel.EV_SECURE, IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
+                ToolbarModel.getSecurityIconResource(ConnectionSecurityLevel.EV_SECURE,
+                        IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_https_valid,
-                ToolbarModel.getSecurityIconResource(
-                        ConnectionSecurityLevel.EV_SECURE, !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE));
+                ToolbarModel.getSecurityIconResource(ConnectionSecurityLevel.EV_SECURE,
+                        !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
     }
 }
