@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
@@ -40,54 +41,6 @@
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
-
-namespace {
-
-// A helper used to wait for an expected change to the tablet mode state.
-class TestTabletModeClientObserver : public TabletModeClientObserver {
- public:
-  explicit TestTabletModeClientObserver(bool target_state)
-      : target_state_(target_state) {
-    TabletModeClient::Get()->AddObserver(this);
-  }
-
-  ~TestTabletModeClientObserver() override {
-    TabletModeClient::Get()->RemoveObserver(this);
-  }
-
-  void OnTabletModeToggled(bool enabled) override {
-    if (enabled == target_state_)
-      run_loop_.Quit();
-  }
-
-  base::RunLoop* run_loop() { return &run_loop_; }
-
- private:
-  const bool target_state_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTabletModeClientObserver);
-};
-
-// Enables or disables the tablet mode and waits to until the change has made
-// its way back into Chrome (from Ash). Should only be called to toggle the
-// current mode.
-void SetAndWaitForTabletMode(bool enabled) {
-  ASSERT_NE(enabled, TabletModeClient::Get()->tablet_mode_enabled());
-
-  ash::mojom::ShellTestApiPtr shell_test_api;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-  shell_test_api->EnableTabletModeWindowManager(enabled);
-
-  TestTabletModeClientObserver observer(enabled);
-  observer.run_loop()->Run();
-
-  ASSERT_EQ(enabled, TabletModeClient::Get()->tablet_mode_enabled());
-}
-
-}  // namespace
 
 class ImmersiveModeControllerAshHostedAppBrowserTest
     : public extensions::ExtensionBrowserTest {
@@ -279,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   // Verify that after entering tablet mode, immersive mode is enabled, and the
   // the associated window's top inset is 0 (the top of the window is not
   // visible).
-  ASSERT_NO_FATAL_FAILURE(SetAndWaitForTabletMode(true));
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_TRUE(controller()->IsEnabled());
   EXPECT_EQ(0, aura_window->GetProperty(aura::client::kTopViewInset));
 
@@ -297,12 +250,12 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   // mode.
   ToggleFullscreen();
   EXPECT_TRUE(controller()->IsEnabled());
-  ASSERT_NO_FATAL_FAILURE(SetAndWaitForTabletMode(false));
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_TRUE(controller()->IsEnabled());
 
   // Verify that immersive mode remains if the browser was fullscreened when
   // entering tablet mode.
-  ASSERT_NO_FATAL_FAILURE(SetAndWaitForTabletMode(true));
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_TRUE(controller()->IsEnabled());
 
   // Verify that if the browser is not fullscreened, upon exiting tablet mode,
@@ -310,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   // greater than 0 (the top of the window is visible).
   ToggleFullscreen();
   EXPECT_TRUE(controller()->IsEnabled());
-  ASSERT_NO_FATAL_FAILURE(SetAndWaitForTabletMode(false));
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_FALSE(controller()->IsEnabled());
 
   // TODO(estade): make kTopviewInset work in OopAsh.
@@ -342,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   EXPECT_TRUE(frame_test_api.size_button()->visible());
 
   // Verify the size button is hidden in tablet mode.
-  SetAndWaitForTabletMode(true);
+  test::SetAndWaitForTabletMode(true);
   frame_test_api.EndAnimations();
 
   EXPECT_FALSE(frame_test_api.size_button()->visible());
@@ -351,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 
   // Verify the size button is visible in clamshell mode, and that it does not
   // cover the other two buttons.
-  SetAndWaitForTabletMode(false);
+  test::SetAndWaitForTabletMode(false);
   frame_test_api.EndAnimations();
 
   EXPECT_TRUE(frame_test_api.size_button()->visible());
@@ -368,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
                        FrameLayoutStartInTabletMode) {
   // Start in tablet mode
-  SetAndWaitForTabletMode(true);
+  test::SetAndWaitForTabletMode(true);
 
   BrowserNonClientFrameViewAsh* frame_view = nullptr;
   {
@@ -389,6 +342,6 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 
   // Verify the size button is visible in clamshell mode, and that it does not
   // cover the other two buttons.
-  SetAndWaitForTabletMode(false);
+  test::SetAndWaitForTabletMode(false);
   VerifyButtonsInImmersiveMode(frame_view);
 }
