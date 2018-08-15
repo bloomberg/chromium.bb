@@ -16,6 +16,9 @@
 #include "content/public/common/referrer.h"
 #include "crypto/sha2.h"
 #include "net/base/escape.h"
+#include "net/base/url_util.h"
+#include "net/http/http_status_code.h"
+#include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
 namespace {
@@ -24,6 +27,19 @@ bool IsPreviewsDomain(const GURL& url) {
   GURL previews_host = previews::params::GetLitePagePreviewsDomainURL();
   return url.DomainIs(previews_host.host()) &&
          url.EffectiveIntPort() == previews_host.EffectiveIntPort();
+}
+
+content::OpenURLParams MakeOpenURLParams(content::NavigationHandle* handle,
+                                         GURL url) {
+  content::OpenURLParams url_params(
+      url, handle->GetReferrer(), WindowOpenDisposition::CURRENT_TAB,
+      handle->GetPageTransition(), handle->IsRendererInitiated());
+  // TODO(crbug.com/864652): Add chrome-proxy headers if this is a Preview.
+  url_params.redirect_chain = handle->GetRedirectChain();
+  url_params.frame_tree_node_id = handle->GetFrameTreeNodeId();
+  url_params.user_gesture = handle->HasUserGesture();
+  url_params.started_from_context_menu = handle->WasStartedFromContextMenu();
+  return url_params;
 }
 
 }  // namespace
@@ -79,6 +95,24 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
   return true;
 }
 
+// static
+bool PreviewsLitePageNavigationThrottle::GetOriginalURL(
+    GURL url,
+    std::string* original_url) {
+  if (!url.is_valid())
+    return false;
+
+  if (!IsPreviewsDomain(url))
+    return false;
+
+  std::string original_url_query_param;
+  if (!net::GetValueForKeyInQuery(url, "u", &original_url_query_param))
+    return false;
+
+  *original_url = original_url_query_param;
+  return true;
+}
+
 GURL PreviewsLitePageNavigationThrottle::GetPreviewsURL() const {
   GURL original_url = navigation_handle()->GetURL();
   DCHECK(original_url.is_valid());
@@ -101,23 +135,8 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURL() const {
 }
 
 content::NavigationThrottle::ThrottleCheckResult
-PreviewsLitePageNavigationThrottle::MaybeNavigateToPreview() const {
-  if (!IsEligibleForPreview()) {
-    return content::NavigationThrottle::PROCEED;
-  }
-
-  content::OpenURLParams url_params(GetPreviewsURL(),
-                                    navigation_handle()->GetReferrer(),
-                                    WindowOpenDisposition::CURRENT_TAB,
-                                    navigation_handle()->GetPageTransition(),
-                                    navigation_handle()->IsRendererInitiated());
-  // TODO(crbug.com/864652): Add chrome-proxy headers.
-  url_params.redirect_chain = navigation_handle()->GetRedirectChain();
-  url_params.frame_tree_node_id = navigation_handle()->GetFrameTreeNodeId();
-  url_params.user_gesture = navigation_handle()->HasUserGesture();
-  url_params.started_from_context_menu =
-      navigation_handle()->WasStartedFromContextMenu();
-
+PreviewsLitePageNavigationThrottle::CreateNewNavigation(
+    content::OpenURLParams url_params) const {
   // The helper class and its weak pointer protect against the WebContents
   // dying in-between the PostTask and its execution, resulting in a use after
   // free bug. Since the helper is a WebContentsUserData, it will be
@@ -135,6 +154,26 @@ PreviewsLitePageNavigationThrottle::MaybeNavigateToPreview() const {
 }
 
 content::NavigationThrottle::ThrottleCheckResult
+PreviewsLitePageNavigationThrottle::TriggerPreview() const {
+  content::OpenURLParams url_params =
+      MakeOpenURLParams(navigation_handle(), GetPreviewsURL());
+  return CreateNewNavigation(url_params);
+}
+
+content::NavigationThrottle::ThrottleCheckResult
+PreviewsLitePageNavigationThrottle::MaybeNavigateToPreview() const {
+  const GURL url = navigation_handle()->GetURL();
+  if (!IsEligibleForPreview())
+    return content::NavigationThrottle::PROCEED;
+
+  // Make sure we're not trying to bypass this navigation.
+  if (manager_->CheckSingleBypass(url.spec()))
+    return content::NavigationThrottle::PROCEED;
+
+  return TriggerPreview();
+}
+
+content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::WillStartRequest() {
   return MaybeNavigateToPreview();
 }
@@ -146,12 +185,50 @@ PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::WillFailRequest() {
-  return content::NavigationThrottle::PROCEED;
+  std::string original_url;
+  if (!GetOriginalURL(navigation_handle()->GetURL(), &original_url))
+    return content::NavigationThrottle::PROCEED;
+
+  // The Preview was triggered but there was some irrecoverable issue (like
+  // there is no network connection). Load the original page and let it go
+  // through the normal process for whatever error it is.
+  manager_->AddSingleBypass(original_url);
+  content::OpenURLParams url_params =
+      MakeOpenURLParams(navigation_handle(), GURL(original_url));
+
+  return CreateNewNavigation(url_params);
 }
 
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::WillProcessResponse() {
-  return content::NavigationThrottle::PROCEED;
+  const net::HttpResponseHeaders* response_headers =
+      navigation_handle()->GetResponseHeaders();
+  if (!response_headers)
+    return content::NavigationThrottle::PROCEED;
+
+  std::string original_url;
+  if (!GetOriginalURL(navigation_handle()->GetURL(), &original_url)) {
+    // Return early if this request was not for a Preview.
+    return content::NavigationThrottle::PROCEED;
+  }
+
+  // After this point, the given response is known to be for a Preview.
+  // The Previews server will only send the following response codes: 200, 307,
+  // 404, and 503. 200 and 307 should proceed as normal, 404 and 503 request the
+  // client to load the original page instead because the server is not capable
+  // of generating a lite page. All other response codes are treated as a 404.
+
+  const int response_code = response_headers->response_code();
+
+  if (response_code == net::HTTP_OK ||
+      response_code == net::HTTP_TEMPORARY_REDIRECT)
+    return content::NavigationThrottle::PROCEED;
+
+  manager_->AddSingleBypass(original_url);
+  content::OpenURLParams url_params =
+      MakeOpenURLParams(navigation_handle(), GURL(original_url));
+
+  return CreateNewNavigation(url_params);
 }
 
 const char* PreviewsLitePageNavigationThrottle::GetNameForLogging() {

@@ -92,6 +92,9 @@ base::TimeDelta OfflinePreviewFreshnessDuration();
 // The host for Lite Page server previews.
 GURL GetLitePagePreviewsDomainURL();
 
+// The duration of a single bypass for Lite Page Server Previews.
+base::TimeDelta LitePagePreviewsSingleBypassDuration();
+
 // The threshold of EffectiveConnectionType above which preview |type| will be
 // triggered.
 net::EffectiveConnectionType GetECTThresholdForPreview(
