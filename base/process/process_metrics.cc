@@ -67,7 +67,9 @@ SystemMetrics SystemMetrics::Sample() {
 #if defined(OS_CHROMEOS)
   GetSwapInfo(&system_metrics.swap_info_);
 #endif
-
+#if defined(OS_WIN)
+  GetSystemPerformanceInfo(&system_metrics.performance_);
+#endif
   return system_metrics;
 }
 
@@ -84,6 +86,9 @@ std::unique_ptr<Value> SystemMetrics::ToValue() const {
 #endif
 #if defined(OS_CHROMEOS)
   res->Set("swapinfo", swap_info_.ToValue());
+#endif
+#if defined(OS_WIN)
+  res->Set("perfinfo", performance_.ToValue());
 #endif
 
   return std::move(res);
