@@ -275,6 +275,13 @@ cr.define('cr.ui.login', function() {
     oobe_configuration_: {},
 
     /**
+     * Detects multi-tap gesture that invokes demo mode setup in OOBE.
+     * @type {?MultiTapDetector}
+     * @private
+     */
+    demoModeStartListener_: null,
+
+    /**
      * Error message (bubble) was shown. This is checked in tests.
      */
     errorMessageWasShownForTesting_: false,
@@ -495,10 +502,7 @@ cr.define('cr.ui.login', function() {
       } else if (name == ACCELERATOR_BOOTSTRAPPING_SLAVE) {
         chrome.send('setOobeBootstrappingSlave');
       } else if (name == ACCELERATOR_DEMO_MODE) {
-        if (DEMO_MODE_SETUP_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) !=
-            -1) {
           this.showEnableDemoModeDialog_();
-        }
       } else if (name == ACCELERATOR_SEND_FEEDBACK) {
         chrome.send('sendFeedback');
       }
@@ -896,6 +900,14 @@ cr.define('cr.ui.login', function() {
       }
     },
 
+    /** Initializes demo mode start listener. */
+    initializeDemoModeMultiTapListener: function() {
+      if (this.displayType_ == DISPLAY_TYPE.OOBE) {
+        this.demoModeStartListener_ = new MultiTapDetector(
+          $('outer-container'), 10, this.showEnableDemoModeDialog_.bind(this));
+      }
+    },
+
     /**
      * Prepares screens to use in login display.
      */
@@ -991,7 +1003,17 @@ cr.define('cr.ui.login', function() {
      * Shows the enable demo mode dialog.
      * @private
      */
-    showEnableDemoModeDialog_: function(promptText, requisition) {
+    showEnableDemoModeDialog_: function() {
+      var isDemoModeEnabled = loadTimeData.getBoolean('isDemoModeEnabled');
+      if (!isDemoModeEnabled) {
+        console.warn('Cannot setup demo mode, because it is disabled.');
+        return;
+      }
+
+      var currentStepId = this.screens_[this.currentStep_];
+      if (!DEMO_MODE_SETUP_AVAILABLE_SCREEN_GROUP.includes(currentStepId))
+        return;
+
       if (!this.enableDemoModeDialog_) {
         this.enableDemoModeDialog_ =
             new cr.ui.dialogs.ConfirmDialog(document.body);
@@ -1000,12 +1022,13 @@ cr.define('cr.ui.login', function() {
         this.enableDemoModeDialog_.setCancelLabel(
             loadTimeData.getString('enableDemoModeDialogCancel'));
       }
+
       this.enableDemoModeDialog_.showWithTitle(
           loadTimeData.getString('enableDemoModeDialogTitle'),
           loadTimeData.getString('enableDemoModeDialogText'),
           function() {  // onOk
             chrome.send('setupDemoMode');
-          }, );
+          });
     },
 
     /**
@@ -1053,6 +1076,7 @@ cr.define('cr.ui.login', function() {
     }
 
     instance.initializeOOBEScreens();
+    instance.initializeDemoModeMultiTapListener();
 
     window.addEventListener('resize', instance.onWindowResize_.bind(instance));
   };

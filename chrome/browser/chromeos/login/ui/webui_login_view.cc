@@ -178,14 +178,8 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
       ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
       kAccelNameBootstrappingSlave;
 
-  const bool is_demo_mode_enabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableDemoMode);
-  if (is_demo_mode_enabled) {
-    accel_map_[ui::Accelerator(ui::VKEY_D,
-                               ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
-        kAccelNameDemoMode;
-  }
+  accel_map_[ui::Accelerator(
+      ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] = kAccelNameDemoMode;
 
   accel_map_[ui::Accelerator(ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)] =
       kAccelSendFeedback;
