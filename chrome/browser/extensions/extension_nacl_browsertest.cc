@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -13,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
@@ -115,22 +114,19 @@ class NaClExtensionTest : public extensions::ExtensionBrowserTest {
   }
 
   bool IsNaClPluginLoaded() {
-    base::FilePath path;
-    if (base::PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
-      // Make sure plugins are loaded off disk first.
-      {
-        base::RunLoop run_loop;
-        PluginService::GetInstance()->GetPlugins(base::BindLambdaForTesting(
-            [&](const std::vector<content::WebPluginInfo>&) {
-              run_loop.Quit();
-            }));
-        run_loop.Run();
-      }
-
-      content::WebPluginInfo info;
-      return PluginService::GetInstance()->GetPluginInfoByPath(path, &info);
+    // Make sure plugins are loaded off disk first.
+    {
+      base::RunLoop run_loop;
+      PluginService::GetInstance()->GetPlugins(base::BindLambdaForTesting(
+          [&](const std::vector<content::WebPluginInfo>&) {
+            run_loop.Quit();
+          }));
+      run_loop.Run();
     }
-    return false;
+
+    static const base::FilePath path(ChromeContentClient::kNaClPluginFileName);
+    content::WebPluginInfo info;
+    return PluginService::GetInstance()->GetPluginInfoByPath(path, &info);
   }
 
   void CheckPluginsCreated(const GURL& url, PluginType expected_to_succeed) {

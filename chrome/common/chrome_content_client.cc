@@ -206,27 +206,24 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   // enabled by default for the non-portable case.  This allows apps installed
   // from the Chrome Web Store to use NaCl even if the command line switch
   // isn't set.  For other uses of NaCl we check for the command line switch.
-  base::FilePath path;
-  if (base::PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
-    content::PepperPluginInfo nacl;
-    // The nacl plugin is now built into the Chromium binary.
-    nacl.is_internal = true;
-    nacl.path = path;
-    nacl.name = nacl::kNaClPluginName;
-    content::WebPluginMimeType nacl_mime_type(nacl::kNaClPluginMimeType,
-                                              nacl::kNaClPluginExtension,
-                                              nacl::kNaClPluginDescription);
-    nacl.mime_types.push_back(nacl_mime_type);
-    content::WebPluginMimeType pnacl_mime_type(nacl::kPnaclPluginMimeType,
-                                               nacl::kPnaclPluginExtension,
-                                               nacl::kPnaclPluginDescription);
-    nacl.mime_types.push_back(pnacl_mime_type);
-    nacl.internal_entry_points.get_interface = g_nacl_get_interface;
-    nacl.internal_entry_points.initialize_module = g_nacl_initialize_module;
-    nacl.internal_entry_points.shutdown_module = g_nacl_shutdown_module;
-    nacl.permissions = ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
-    plugins->push_back(nacl);
-  }
+  content::PepperPluginInfo nacl;
+  // The nacl plugin is now built into the Chromium binary.
+  nacl.is_internal = true;
+  nacl.path = base::FilePath(ChromeContentClient::kNaClPluginFileName);
+  nacl.name = nacl::kNaClPluginName;
+  content::WebPluginMimeType nacl_mime_type(nacl::kNaClPluginMimeType,
+                                            nacl::kNaClPluginExtension,
+                                            nacl::kNaClPluginDescription);
+  nacl.mime_types.push_back(nacl_mime_type);
+  content::WebPluginMimeType pnacl_mime_type(nacl::kPnaclPluginMimeType,
+                                             nacl::kPnaclPluginExtension,
+                                             nacl::kPnaclPluginDescription);
+  nacl.mime_types.push_back(pnacl_mime_type);
+  nacl.internal_entry_points.get_interface = g_nacl_get_interface;
+  nacl.internal_entry_points.initialize_module = g_nacl_initialize_module;
+  nacl.internal_entry_points.shutdown_module = g_nacl_shutdown_module;
+  nacl.permissions = ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
+  plugins->push_back(nacl);
 #endif  // BUILDFLAG(ENABLE_NACL)
 }
 

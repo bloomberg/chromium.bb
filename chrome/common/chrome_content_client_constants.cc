@@ -9,6 +9,11 @@ const base::FilePath::CharType ChromeContentClient::kNotPresent[] =
     "internal-not-yet-present";
 #endif
 
+#if BUILDFLAG(ENABLE_NACL)
+const base::FilePath::CharType ChromeContentClient::kNaClPluginFileName[] =
+    FILE_PATH_LITERAL("internal-nacl-plugin");
+#endif
+
 #if defined(GOOGLE_CHROME_BUILD)
 const char ChromeContentClient::kPDFExtensionPluginName[] = "Chrome PDF Viewer";
 const char ChromeContentClient::kPDFInternalPluginName[] = "Chrome PDF Plugin";
