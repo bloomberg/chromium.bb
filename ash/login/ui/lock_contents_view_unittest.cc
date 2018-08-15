@@ -1138,7 +1138,7 @@ TEST_F(LockContentsViewKeyboardUnitTest, SwitchPinAndVirtualKeyboard) {
       LockScreen::TestApi(LockScreen::Get()).contents_view();
   ASSERT_NE(nullptr, contents);
 
-  // Add user with enabled pin method of authentication.
+  // Add user who can use pin authentication.
   const std::string email = "user@domain.com";
   LoadUser(email);
   contents->OnPinEnabledForUserChanged(AccountId::FromUserEmail(email), true);
@@ -1205,6 +1205,44 @@ TEST_F(LockContentsViewKeyboardUnitTest, SwitchUserWhileKeyboardShown) {
   EXPECT_FALSE(LoginPasswordView::TestApi(secondary_user.password_view())
                    .textfield()
                    ->HasFocus());
+}
+
+TEST_F(LockContentsViewKeyboardUnitTest, PinSubmitWithVirtualKeyboardShown) {
+  ASSERT_NO_FATAL_FAILURE(ShowLockScreen());
+  LockContentsView* contents =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+
+  // Add user who can use pin authentication.
+  const std::string email = "user@domain.com";
+  LoadUser(email);
+  contents->OnPinEnabledForUserChanged(AccountId::FromUserEmail(email), true);
+  LoginBigUserView* big_view =
+      LockContentsView::TestApi(contents).primary_big_view();
+
+  // Require that AuthenticateUser is called with authenticated_by_pin set to
+  // true.
+  auto client = BindMockLoginScreenClient();
+  EXPECT_CALL(*client,
+              AuthenticateUser_(_, "1111", true /*authenticated_by_pin*/, _));
+
+  // Hide the PIN keyboard.
+  LoginPinView* pin_view =
+      LoginAuthUserView::TestApi(big_view->auth_user()).pin_view();
+  EXPECT_TRUE(pin_view->visible());
+  ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
+  EXPECT_FALSE(pin_view->visible());
+
+  // Submit a password.
+  LoginAuthUserView::TestApi(big_view->auth_user())
+      .password_view()
+      ->RequestFocus();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  base::RunLoop().RunUntilIdle();
 }
 
 // Verify that swapping works in two user layout between one regular auth user

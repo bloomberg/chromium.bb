@@ -1581,7 +1581,7 @@ void LockContentsView::UpdateAuthForAuthUser(LoginAuthUserView* opt_to_update,
       opt_to_hide->CaptureStateForAnimationPreLayout();
   }
 
-  // Update auth methods for |opt_to_update|. Disable auth on |opt_to_hide|.
+  // Update auth methods for |opt_to_update|.
   if (opt_to_update) {
     UserState* state = FindStateForUser(
         opt_to_update->current_user()->basic_user_info->account_id);
@@ -1606,10 +1606,14 @@ void LockContentsView::UpdateAuthForAuthUser(LoginAuthUserView* opt_to_update,
         to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
       }
     }
-    opt_to_update->SetAuthMethods(to_update_auth);
+    opt_to_update->SetAuthMethods(to_update_auth, state->show_pin);
   }
-  if (opt_to_hide)
-    opt_to_hide->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
+
+  // Disable auth on |opt_to_hide|.
+  if (opt_to_hide) {
+    opt_to_hide->SetAuthMethods(LoginAuthUserView::AUTH_NONE,
+                                false /*can_use_pin*/);
+  }
 
   Layout();
 
