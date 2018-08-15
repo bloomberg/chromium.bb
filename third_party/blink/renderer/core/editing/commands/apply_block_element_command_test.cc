@@ -145,4 +145,24 @@ TEST_F(ApplyBlockElementCommandTest, FormatBlockCrossingUserModifyBoundary) {
       GetSelectionTextFromBody());
 }
 
+// https://crbug.com/873084
+TEST_F(ApplyBlockElementCommandTest,
+       FormatBlockWithTableCrossingUserModifyBoundary) {
+  InsertStyleElement("*{-webkit-user-modify:read-write}");
+  Selection().SetSelection(
+      SetSelectionTextToBody("^<table></table>"
+                             "<kbd "
+                             "style=\"-webkit-user-modify:read-only\"><button><"
+                             "/button></kbd>|"),
+      SetSelectionOptions());
+  FormatBlockCommand* command =
+      FormatBlockCommand::Create(GetDocument(), HTMLNames::preTag);
+  // Shouldn't crash here.
+  EXPECT_FALSE(command->Apply());
+  EXPECT_EQ(
+      "<table>^</table>"
+      "<kbd style=\"-webkit-user-modify:read-only\"><button>|</button></kbd>",
+      GetSelectionTextFromBody());
+}
+
 }  // namespace blink

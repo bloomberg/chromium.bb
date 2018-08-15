@@ -451,6 +451,7 @@ VisibleSelection SelectionForParagraphIteration(
   // we'll want modify is the last one inside the table, not the table itself (a
   // table is itself a paragraph).
   if (Element* table = TableElementJustBefore(end_of_selection)) {
+    DCHECK(start_of_selection.IsNotNull()) << new_selection;
     if (start_of_selection.DeepEquivalent().AnchorNode()->IsDescendantOf(
             table)) {
       const VisiblePosition& new_end =
@@ -475,6 +476,7 @@ VisibleSelection SelectionForParagraphIteration(
   // want to modify is the first one inside the table, not the paragraph
   // containing the table itself.
   if (Element* table = TableElementJustAfter(start_of_selection)) {
+    DCHECK(end_of_selection.IsNotNull()) << new_selection;
     if (end_of_selection.DeepEquivalent().AnchorNode()->IsDescendantOf(table)) {
       const VisiblePosition new_start =
           NextPositionOf(start_of_selection, kCannotCrossEditingBoundary);
