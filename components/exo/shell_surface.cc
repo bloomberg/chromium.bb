@@ -236,6 +236,26 @@ void ShellSurface::OnPostWindowStateTypeChange(
   scoped_animations_disabled_.reset();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// ShellSurfaceBase overrides:
+
+void ShellSurface::OnPreWidgetCommit() {
+  if (!widget_ && enabled()) {
+    // Defer widget creation until surface contains some contents.
+    if (host_window()->bounds().IsEmpty()) {
+      Configure();
+      return;
+    }
+
+    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
+  }
+}
+
+void ShellSurface::OnPostWidgetCommit() {}
+
+////////////////////////////////////////////////////////////////////////////////
+// ShellSurface, private:
+
 void ShellSurface::AttemptToStartDrag(int component) {
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(widget_->GetNativeWindow());

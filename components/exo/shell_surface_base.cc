@@ -741,81 +741,11 @@ void ShellSurfaceBase::OnSurfaceCommit() {
 
   SurfaceTreeHost::OnSurfaceCommit();
 
-  if (enabled() && !widget_) {
-    // Defer widget creation until surface contains some contents.
-    if (host_window()->bounds().IsEmpty()) {
-      Configure();
-      return;
-    }
-
-    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
-  }
-
-  // Apply the accumulated pending origin offset to reflect acknowledged
-  // configure requests.
-  origin_offset_ += pending_origin_offset_;
-  pending_origin_offset_ = gfx::Vector2d();
-
-  // Update resize direction to reflect acknowledged configure requests.
-  resize_component_ = pending_resize_component_;
-
-  // Apply new window geometry.
-  geometry_ = pending_geometry_;
-
-  // Apply new minimum/maximium size.
-  bool size_constraint_changed = minimum_size_ != pending_minimum_size_ ||
-                                 maximum_size_ != pending_maximum_size_;
-  minimum_size_ = pending_minimum_size_;
-  maximum_size_ = pending_maximum_size_;
-
-  if (widget_) {
-    UpdateWidgetBounds();
-    UpdateShadow();
-
-    // System modal container is used by clients to implement overlay
-    // windows using a single ShellSurface instance.  If hit-test
-    // region is empty, then it is non interactive window and won't be
-    // activated.
-    if (container_ == ash::kShellWindowId_SystemModalContainer) {
-      // Prevent window from being activated when hit test region is empty.
-      bool activatable = activatable_ && HasHitTestRegion();
-      if (activatable != CanActivate()) {
-        set_can_activate(activatable);
-        // Activate or deactivate window if activation state changed.
-        if (activatable) {
-          // Automatically activate only if the window is modal.
-          // Non modal window should be activated by a user action.
-          // TODO(oshima): Non modal system window does not have an associated
-          // task ID, and as a result, it cannot be activated from client side.
-          // Fix this (b/65460424) and remove this if condition.
-          if (system_modal_)
-            wm::ActivateWindow(widget_->GetNativeWindow());
-        } else if (widget_->IsActive()) {
-          wm::DeactivateWindow(widget_->GetNativeWindow());
-        }
-      }
-    }
-
-    UpdateSurfaceBounds();
-
-    // Show widget if needed.
-    if (pending_show_widget_) {
-      DCHECK(!widget_->IsClosed());
-      DCHECK(!widget_->IsVisible());
-      pending_show_widget_ = false;
-      widget_->Show();
-      if (has_grab_)
-        StartCapture();
-
-      if (container_ == ash::kShellWindowId_SystemModalContainer)
-        UpdateSystemModal();
-    }
-  }
+  OnPreWidgetCommit();
+  CommitWidget();
+  OnPostWidgetCommit();
 
   SubmitCompositorFrame();
-
-  if (size_constraint_changed)
-    widget_->OnSizeConstraintsChanged();
 }
 
 bool ShellSurfaceBase::IsInputEnabled(Surface*) const {
@@ -1503,6 +1433,73 @@ void ShellSurfaceBase::StartCapture() {
   wm::CaptureController::Get()->AddObserver(this);
   // Just capture on the window.
   widget_->SetCapture(nullptr /* view */);
+}
+
+void ShellSurfaceBase::CommitWidget() {
+  // Apply the accumulated pending origin offset to reflect acknowledged
+  // configure requests.
+  origin_offset_ += pending_origin_offset_;
+  pending_origin_offset_ = gfx::Vector2d();
+
+  // Update resize direction to reflect acknowledged configure requests.
+  resize_component_ = pending_resize_component_;
+
+  // Apply new window geometry.
+  geometry_ = pending_geometry_;
+
+  // Apply new minimum/maximium size.
+  bool size_constraint_changed = minimum_size_ != pending_minimum_size_ ||
+                                 maximum_size_ != pending_maximum_size_;
+  minimum_size_ = pending_minimum_size_;
+  maximum_size_ = pending_maximum_size_;
+
+  if (!widget_)
+    return;
+
+  UpdateWidgetBounds();
+  UpdateShadow();
+
+  // System modal container is used by clients to implement overlay
+  // windows using a single ShellSurface instance.  If hit-test
+  // region is empty, then it is non interactive window and won't be
+  // activated.
+  if (container_ == ash::kShellWindowId_SystemModalContainer) {
+    // Prevent window from being activated when hit test region is empty.
+    bool activatable = activatable_ && HasHitTestRegion();
+    if (activatable != CanActivate()) {
+      set_can_activate(activatable);
+      // Activate or deactivate window if activation state changed.
+      if (activatable) {
+        // Automatically activate only if the window is modal.
+        // Non modal window should be activated by a user action.
+        // TODO(oshima): Non modal system window does not have an associated
+        // task ID, and as a result, it cannot be activated from client side.
+        // Fix this (b/65460424) and remove this if condition.
+        if (system_modal_)
+          wm::ActivateWindow(widget_->GetNativeWindow());
+      } else if (widget_->IsActive()) {
+        wm::DeactivateWindow(widget_->GetNativeWindow());
+      }
+    }
+  }
+
+  UpdateSurfaceBounds();
+
+  // Show widget if needed.
+  if (pending_show_widget_) {
+    DCHECK(!widget_->IsClosed());
+    DCHECK(!widget_->IsVisible());
+    pending_show_widget_ = false;
+    widget_->Show();
+    if (has_grab_)
+      StartCapture();
+
+    if (container_ == ash::kShellWindowId_SystemModalContainer)
+      UpdateSystemModal();
+  }
+
+  if (size_constraint_changed)
+    widget_->OnSizeConstraintsChanged();
 }
 
 }  // namespace exo

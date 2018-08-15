@@ -183,7 +183,6 @@ class ClientControlledShellSurface
   void SetOrientationLock(ash::OrientationLockType orientation_lock);
 
   // Overridden from SurfaceDelegate:
-  void OnSurfaceCommit() override;
   bool IsInputEnabled(Surface* surface) const override;
   void OnSetFrame(SurfaceFrameType type) override;
   void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override;
@@ -230,13 +229,15 @@ class ClientControlledShellSurface
   class ScopedSetBoundsLocally;
   class ScopedLockedToRoot;
 
-  // Overridden from ShellSurface:
+  // Overridden from ShellSurfaceBase:
   void SetWidgetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetShadowBounds() const override;
   void InitializeWindowState(ash::wm::WindowState* window_state) override;
   float GetScale() const override;
   gfx::Rect GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
+  void OnPreWidgetCommit() override;
+  void OnPostWidgetCommit() override;
 
   // Update frame status. This may create (or destroy) a wide frame
   // that spans the full work area width if the surface didn't cover
