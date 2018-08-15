@@ -32,6 +32,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter downloaded
 [Worker]     getter id
 [Worker]     getter onprogress
+[Worker]     getter state
 [Worker]     getter uploadTotal
 [Worker]     getter uploaded
 [Worker]     method abort

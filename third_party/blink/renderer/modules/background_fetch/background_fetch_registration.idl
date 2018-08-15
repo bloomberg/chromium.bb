@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // https://wicg.github.io/background-fetch/#background-fetch-registration
+enum BackgroundFetchState { "pending", "success", "failure" };
 
 [
     Exposed=(Window,Worker),
@@ -13,6 +14,7 @@
     readonly attribute unsigned long long uploaded;
     readonly attribute unsigned long long downloadTotal;
     readonly attribute unsigned long long downloaded;
+    readonly attribute BackgroundFetchState state;
     // TODO(crbug.com/699957): Implement the `activeFetches` attribute.
 
     attribute EventHandler onprogress;

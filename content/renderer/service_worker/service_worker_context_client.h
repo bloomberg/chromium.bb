@@ -32,6 +32,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/platform/modules/payments/payment_app.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
@@ -285,19 +286,23 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void DispatchBackgroundFetchAbortEvent(
       const std::string& developer_id,
       const std::string& unique_id,
+      blink::mojom::BackgroundFetchState state,
       DispatchBackgroundFetchAbortEventCallback callback) override;
   void DispatchBackgroundFetchClickEvent(
       const std::string& developer_id,
       const std::string& unique_id,
+      blink::mojom::BackgroundFetchState state,
       DispatchBackgroundFetchClickEventCallback callback) override;
   void DispatchBackgroundFetchFailEvent(
       const std::string& developer_id,
       const std::string& unique_id,
+      blink::mojom::BackgroundFetchState state,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchFailEventCallback callback) override;
   void DispatchBackgroundFetchSuccessEvent(
       const std::string& developer_id,
       const std::string& unique_id,
+      blink::mojom::BackgroundFetchState state,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchSuccessEventCallback callback) override;
   void DispatchExtendableMessageEvent(

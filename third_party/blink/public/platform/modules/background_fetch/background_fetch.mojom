@@ -18,6 +18,12 @@ enum BackgroundFetchError {
   SERVICE_WORKER_UNAVAILABLE
 };
 
+enum BackgroundFetchState {
+  PENDING,
+  FAILURE,
+  SUCCESS
+};
+
 // Represents the optional options a developer can provide when starting a new
 // Background Fetch fetch. Analogous to the following structure in the spec:
 // https://wicg.github.io/background-fetch/#background-fetch-manager

@@ -16,6 +16,7 @@
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace content {
 namespace {
@@ -44,8 +45,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchInvalidRegistration) {
       kExampleUniqueId);
 
   base::RunLoop run_loop;
-  event_dispatcher_.DispatchBackgroundFetchAbortEvent(invalid_registration_id,
-                                                      run_loop.QuitClosure());
+  event_dispatcher_.DispatchBackgroundFetchAbortEvent(
+      invalid_registration_id, blink::mojom::BackgroundFetchState::FAILURE,
+      run_loop.QuitClosure());
 
   run_loop.Run();
 
@@ -71,8 +73,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchAbortEvent(registration_id,
-                                                        run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchAbortEvent(
+        registration_id, blink::mojom::BackgroundFetchState::FAILURE,
+        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -96,8 +99,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchAbortEvent(second_registration_id,
-                                                        run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchAbortEvent(
+        second_registration_id, blink::mojom::BackgroundFetchState::FAILURE,
+        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -131,8 +135,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchClickEvent(registration_id,
-                                                        run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchClickEvent(
+        registration_id, blink::mojom::BackgroundFetchState::PENDING,
+        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -140,7 +145,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
   ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
   EXPECT_EQ(kExampleDeveloperId,
             embedded_worker_test_helper()->last_developer_id().value());
-
+  ASSERT_TRUE(embedded_worker_test_helper()->last_state().has_value());
+  EXPECT_EQ(blink::mojom::BackgroundFetchState::PENDING,
+            embedded_worker_test_helper()->last_state());
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.ClickEvent",
@@ -154,8 +161,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchClickEvent(second_registration_id,
-                                                        run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchClickEvent(
+        second_registration_id, blink::mojom::BackgroundFetchState::FAILURE,
+        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -163,6 +171,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
   ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
   EXPECT_EQ(kExampleDeveloperId2,
             embedded_worker_test_helper()->last_developer_id().value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_state().has_value());
+  EXPECT_EQ(blink::mojom::BackgroundFetchState::FAILURE,
+            embedded_worker_test_helper()->last_state());
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.ClickEvent",
@@ -189,8 +200,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
 
   {
     base::RunLoop run_loop;
-    event_dispatcher_.DispatchBackgroundFetchFailEvent(registration_id, fetches,
-                                                       run_loop.QuitClosure());
+    event_dispatcher_.DispatchBackgroundFetchFailEvent(
+        registration_id, blink::mojom::BackgroundFetchState::FAILURE, fetches,
+        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -218,7 +230,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
   {
     base::RunLoop run_loop;
     event_dispatcher_.DispatchBackgroundFetchFailEvent(
-        second_registration_id, fetches, run_loop.QuitClosure());
+        second_registration_id, blink::mojom::BackgroundFetchState::FAILURE,
+        fetches, run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -257,7 +270,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
   {
     base::RunLoop run_loop;
     event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
-        registration_id, fetches, run_loop.QuitClosure());
+        registration_id, blink::mojom::BackgroundFetchState::SUCCESS, fetches,
+        run_loop.QuitClosure());
 
     run_loop.Run();
   }
@@ -289,7 +303,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
   {
     base::RunLoop run_loop;
     event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
-        second_registration_id, fetches, run_loop.QuitClosure());
+        second_registration_id, blink::mojom::BackgroundFetchState::SUCCESS,
+        fetches, run_loop.QuitClosure());
 
     run_loop.Run();
   }

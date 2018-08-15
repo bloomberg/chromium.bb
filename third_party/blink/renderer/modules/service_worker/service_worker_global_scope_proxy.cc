@@ -118,7 +118,8 @@ void ServiceWorkerGlobalScopeProxy::SetRegistration(
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
     int event_id,
     const WebString& developer_id,
-    const WebString& unique_id) {
+    const WebString& unique_id,
+    blink::mojom::BackgroundFetchState state) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchAbort, event_id);
@@ -134,7 +135,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
   // object, or all information required to build one.
   BackgroundFetchRegistration* registration = new BackgroundFetchRegistration(
       developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */);
+      0 /* download_total */, 0 /* downloaded */, state);
   BackgroundFetchEventInit init;
   init.setRegistration(registration);
 
@@ -147,7 +148,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
     int event_id,
     const WebString& developer_id,
-    const WebString& unique_id) {
+    const WebString& unique_id,
+    blink::mojom::BackgroundFetchState state) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchClick, event_id);
@@ -156,7 +158,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
   // object, or all information required to build one.
   BackgroundFetchRegistration* registration = new BackgroundFetchRegistration(
       developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */);
+      0 /* download_total */, 0 /* downloaded */, state);
   BackgroundFetchEventInit init;
   init.setRegistration(registration);
 
@@ -170,6 +172,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
     int event_id,
     const WebString& developer_id,
     const WebString& unique_id,
+    blink::mojom::BackgroundFetchState state,
     const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
@@ -186,7 +189,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
   // object, or all information required to build one.
   BackgroundFetchRegistration* registration = new BackgroundFetchRegistration(
       developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */);
+      0 /* download_total */, 0 /* downloaded */, state);
   BackgroundFetchEventInit init;
   init.setRegistration(registration);
 
@@ -203,6 +206,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
     int event_id,
     const WebString& developer_id,
     const WebString& unique_id,
+    blink::mojom::BackgroundFetchState state,
     const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
@@ -220,7 +224,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
   // object, or all information required to build one.
   BackgroundFetchRegistration* registration = new BackgroundFetchRegistration(
       developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */);
+      0 /* download_total */, 0 /* downloaded */, state);
   BackgroundFetchEventInit init;
   init.setRegistration(registration);
 
