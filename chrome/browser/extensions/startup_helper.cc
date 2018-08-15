@@ -14,7 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/chrome_extensions_client.h"
+#include "chrome/common/initialize_extensions_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -35,7 +35,7 @@ void PrintPackExtensionMessage(const std::string& message) {
 }  // namespace
 
 StartupHelper::StartupHelper() : pack_job_succeeded_(false) {
-  ExtensionsClient::Set(ChromeExtensionsClient::GetInstance());
+  EnsureExtensionsClientInitialized();
 }
 
 void StartupHelper::OnPackSuccess(
