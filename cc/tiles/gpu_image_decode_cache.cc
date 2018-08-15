@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "build/build_config.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"
 #include "cc/paint/image_transfer_cache_entry.h"
@@ -130,12 +129,6 @@ gfx::Size CalculateSizeForMipLevel(const DrawImage& draw_image,
 // Determines whether a draw image requires mips.
 bool ShouldGenerateMips(const DrawImage& draw_image,
                         int upload_scale_mip_level) {
-#if defined(OS_WIN)
-  // TODO(ericrk): Temporarily disable to investigate memory regression on
-  // Windows. https://crbug.com/867468
-  return false;
-#endif  // defined(OS_WIN)
-
   // If filter quality is less than medium, don't generate mips.
   if (draw_image.filter_quality() < kMedium_SkFilterQuality)
     return false;
