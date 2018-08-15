@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
+import com.google.android.libraries.feed.api.stream.NonDismissibleHeader;
 import com.google.android.libraries.feed.api.stream.Stream;
 import com.google.android.libraries.feed.common.functional.Consumer;
 import com.google.android.libraries.feed.host.action.ActionApi;
@@ -213,7 +214,8 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
         mStream.getView().setBackgroundColor(Color.WHITE);
         mRootView.addView(mStream.getView());
 
-        mStream.setHeaderViews(Arrays.asList(mNewTabPageLayout, mSectionHeaderView));
+        mStream.setHeaderViews(Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
+                new NonDismissibleHeader(mSectionHeaderView)));
     }
 
     @Override
