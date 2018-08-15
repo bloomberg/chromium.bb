@@ -6,21 +6,47 @@ See https://crbug.com/869308
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <div id="host">
+  <div id="child1"></div>
+  <div id="child2"></div>
+  <div id="child3"></div>
 </div>
 <div id="host1">
 </div>
+</div>
+<div id="host2">
+</div>
+</div>
+<div id="host3">
+</div>
+
 
 <script>
 const host = document.querySelector('#host');
 const host1 = document.querySelector('#host1');
+const host2 = document.querySelector('#host2');
+const host3 = document.querySelector('#host3');
+const child1 = document.querySelector('#child1');
+const child2 = document.querySelector('#child2');
+const child3 = document.querySelector('#child3');
+const shadow_root = host.attachShadow({ mode: 'open', slotting: 'manual' });
+const slot1 = document.createElement('slot');
+shadow_root.appendChild(slot1);
 
 test(() => {
-  assert_not_equals(host.attachShadow({ mode: 'open', slotting: 'manual' }),
+  assert_not_equals(host1.attachShadow({ mode: 'open', slotting: 'manual' }),
                     null, 'slotting manual should work');
-  assert_not_equals(host1.attachShadow({ mode: 'open', slotting: 'auto' }),
+  assert_not_equals(host2.attachShadow({ mode: 'open', slotting: 'auto' }),
                     null, 'slotting auto should work');
   assert_throws(new TypeError(), () => {
-    host.attachShadow({ mode: 'open', slotting: 'exceptional' })},
+    host3.attachShadow({ mode: 'open', slotting: 'exceptional' })},
                 'others should throw exception');
 }, 'attachShadow can take slotting parameter');
+
+test(() => {
+  assert_array_equals(slot1.assignedElements(), []);
+  slot1.assign([child1]);
+  assert_array_equals(slot1.assignedNodes(), [child1]);
+  slot1.assign([child2,child3]);
+  assert_array_equals(slot1.assignedNodes(), [child2,child3]);
+}, 'assignedNodes can be used in manual slotting');
 </script>

@@ -919,6 +919,7 @@ html element select
 html element shadow
     property getDistributedNodes
 html element slot
+    property assign
     property assignedElements
     property assignedNodes
     property name
