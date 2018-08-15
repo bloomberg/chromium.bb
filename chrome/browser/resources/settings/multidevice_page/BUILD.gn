@@ -12,6 +12,7 @@ js_type_check("closure_compile") {
     ":multidevice_page",
     ":multidevice_page_container",
     ":multidevice_subpage",
+    ":multidevice_tether_item",
   ]
 }
 
@@ -64,6 +65,17 @@ js_library("multidevice_subpage") {
     ":multidevice_constants",
     "..:route",
     "../prefs:prefs_behavior",
+    "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
     "//ui/webui/resources/js:i18n_behavior",
   ]
+  externs_list = [ "$externs_path/networking_private.js" ]
+  extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
+}
+
+js_library("multidevice_tether_item") {
+  deps = [
+    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
+  ]
+  externs_list = [ "$externs_path/networking_private.js" ]
+  extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
 }

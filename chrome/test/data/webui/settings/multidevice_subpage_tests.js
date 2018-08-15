@@ -51,6 +51,9 @@ suite('Multidevice', function() {
       assertEquals(
           !!multideviceSubpage.$$('settings-multidevice-feature-item'),
           mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+      assertEquals(
+          !!multideviceSubpage.$$('settings-multidevice-tether-item'),
+          mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
     }
   });
 

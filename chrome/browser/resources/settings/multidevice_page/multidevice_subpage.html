@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -12,10 +13,16 @@
 <link rel="import" href="multidevice_constants.html">
 <link rel="import" href="multidevice_feature_item.html">
 <link rel="import" href="multidevice_feature_toggle.html">
+<link rel="import" href="multidevice_tether_item.html">
 
 <dom-module id="settings-multidevice-subpage">
   <template>
     <style include="settings-shared iron-flex">
+      settings-multidevice-feature-item,
+      settings-multidevice-tether-item {
+        --feature-item-row-padding: 0;
+      }
+
       settings-multidevice-feature-item:first-of-type {
         --feature-item-border-top-style: none;
       }
@@ -64,6 +71,9 @@
             </settings-multidevice-feature-toggle>
           </div>
         </settings-multidevice-feature-item>
+        <settings-multidevice-tether-item
+            label="$i18n{multideviceInstantTetheringItemTitle}">
+        </settings-multidevice-tether-item>
         <settings-multidevice-feature-item id="android-messages-item"
             icon-name="settings:sms-connect"
             feature-name="$i18n{multideviceAndroidMessagesItemTitle}"
