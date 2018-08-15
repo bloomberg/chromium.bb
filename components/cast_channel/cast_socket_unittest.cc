@@ -1026,7 +1026,7 @@ TEST_F(SslCastSocketTest, MAYBE_TestConnectEndToEndWithRealSSL) {
 
 // Sends message data through an actual non-mocked CastTransport object and
 // non-mocked SSLClientSocket, testing the components in integration.
-TEST_F(SslCastSocketTest, TestMessageEndToEndWithRealSSL) {
+TEST_F(SslCastSocketTest, DISABLED_TestMessageEndToEndWithRealSSL) {
   CreateSockets();
   ConnectSockets();
 
