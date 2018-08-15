@@ -116,6 +116,7 @@ customBackgrounds.CLASSES = {
   HAS_LINK: 'has-link',
   HIDE_MSG_BOX: 'message-box-hide',
   IMAGE_DIALOG: 'is-img-sel',
+  OPTION: 'bg-option',
   OPTION_DISABLED: 'bg-option-disabled',  // The menu option is disabled.
   PLUS_ICON: 'plus-icon',
   MOUSE_NAV: 'using-mouse-nav',
@@ -780,21 +781,26 @@ customBackgrounds.init = function() {
     editDialog.classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
     editBackgroundInteraction();
   };
+
+  // Find the first menu option that is not hidden or disabled.
+  let findFirstMenuOption = () => {
+    for (let i = 1; i < editDialog.children.length; i++) {
+      let option = editDialog.children[i];
+      if (option.classList.contains(customBackgrounds.CLASSES.OPTION)
+          && !option.hidden && !option.classList.contains(
+              customBackgrounds.CLASSES.OPTION_DISABLED)) {
+        option.focus();
+        return;
+      }
+    }
+  };
+
   $(customBackgrounds.IDS.EDIT_BG).onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
         event.keyCode === customBackgrounds.KEYCODES.SPACE) {
       editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
       editBackgroundInteraction();
-      // Find the first menu option that is not hidden or disabled.
-      for (let i = 1; i < editDialog.children.length; i++) {
-        let option = editDialog.children[i];
-        if (!option.hidden &&
-            !option.classList.contains(
-                customBackgrounds.CLASSES.OPTION_DISABLED)) {
-          option.focus();
-          return;
-        }
-      }
+      findFirstMenuOption();
     }
   };
 
@@ -815,6 +821,15 @@ customBackgrounds.init = function() {
   editDialog.onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ESC) {
       editDialogInteraction();
+    }
+    // When using tab in mouse navigation mode, select the first option available.
+    else if (editDialog.classList.contains(customBackgrounds.CLASSES.MOUSE_NAV)
+        && (event.keyCode === customBackgrounds.KEYCODES.TAB || event.keyCode
+            === customBackgrounds.KEYCODES.UP || event.keyCode
+            === customBackgrounds.KEYCODES.DOWN)) {
+      event.preventDefault();
+      findFirstMenuOption();
+      editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
     }
     // If keyboard navigation is attempted, remove mouse-only mode.
     else if (
