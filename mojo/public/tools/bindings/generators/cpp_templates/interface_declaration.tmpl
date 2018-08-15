@@ -57,10 +57,9 @@ class {{export_attribute}} {{interface.name}}
   virtual bool {{method.name}}({{interface_macros.declare_sync_method_params("", method)}});
 {%-     endif %}
 
-  using {{method.name}}Callback = {{interface_macros.declare_callback(method,
-      for_blink, use_once_callback)}};
+  using {{method.name}}Callback = {{interface_macros.declare_callback(method, for_blink)}};
 {%-   endif %}
-  virtual void {{method.name}}({{interface_macros.declare_request_params("", method, use_once_callback)}}) = 0;
+  virtual void {{method.name}}({{interface_macros.declare_request_params("", method)}}) = 0;
 {%- endfor %}
 };
 
@@ -69,7 +68,7 @@ class {{export_attribute}} {{interface.name}}InterceptorForTesting : public {{in
   virtual {{interface.name}}* GetForwardingInterface() = 0;
 
 {%- for method in interface.methods %}
-  void {{method.name}}({{interface_macros.declare_request_params("", method, use_once_callback)}}) override;
+  void {{method.name}}({{interface_macros.declare_request_params("", method)}}) override;
 {%- endfor %}
 };
 

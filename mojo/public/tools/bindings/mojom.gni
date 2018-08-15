@@ -196,14 +196,6 @@ if (enable_mojom_typemapping) {
 #       The value to use for visibility for the blink variant. If unset,
 #       |visibility| is used.
 #
-#   use_once_callback (optional)
-#       If set to true, generated classes will use base::OnceCallback instead of
-#       base::RepeatingCallback.
-#       Default value is true.
-#       TODO(dcheng):
-#           - Convert everything to use OnceCallback.
-#           - Remove support for the old mode.
-#
 #   cpp_only (optional)
 #       If set to true, only the C++ bindings targets will be generated.
 #
@@ -851,10 +843,6 @@ template("mojom") {
               invoker.export_header,
             ]
           }
-        }
-
-        if (!defined(invoker.use_once_callback) || invoker.use_once_callback) {
-          args += [ "--use_once_callback" ]
         }
 
         if (defined(invoker.support_lazy_serialization) &&

@@ -208,7 +208,6 @@ class MojomProcessor(object):
             module, args.output_dir, typemap=self._typemap.get(language, {}),
             variant=args.variant, bytecode_path=args.bytecode_path,
             for_blink=args.for_blink,
-            use_once_callback=args.use_once_callback,
             export_attribute=args.export_attribute,
             export_header=args.export_header,
             generate_non_variant_code=args.generate_non_variant_code,
@@ -337,9 +336,6 @@ def main():
   generate_parser.add_argument("--for_blink", action="store_true",
                                help="Use WTF types as generated types for mojo "
                                "string/array/map.")
-  generate_parser.add_argument(
-      "--use_once_callback", action="store_true",
-      help="Use base::OnceCallback instead of base::RepeatingCallback.")
   generate_parser.add_argument(
       "--export_attribute", default="",
       help="Optional attribute to specify on class declaration to export it "
