@@ -94,7 +94,8 @@ final class CronetBufferedOutputStream extends CronetOutputStream {
                     + mInitialContentLength + " bytes");
         }
         if (mConnected) {
-            throw new IllegalStateException("Cannot write after being connected.");
+            throw new IllegalStateException("Use setFixedLengthStreamingMode() or "
+                    + "setChunkedStreamingMode() for writing after connect");
         }
         if (mInitialContentLength != -1) {
             // If mInitialContentLength is known, the buffer should not grow.

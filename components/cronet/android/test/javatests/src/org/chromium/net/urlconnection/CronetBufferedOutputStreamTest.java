@@ -92,7 +92,9 @@ public class CronetBufferedOutputStreamTest {
             out.write(TestUtil.UPLOAD_DATA);
             fail();
         } catch (IllegalStateException e) {
-            assertEquals("Cannot write after being connected.", e.getMessage());
+            assertEquals("Use setFixedLengthStreamingMode() or "
+                            + "setChunkedStreamingMode() for writing after connect",
+                    e.getMessage());
         }
     }
 
