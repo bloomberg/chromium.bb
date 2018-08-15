@@ -75,16 +75,6 @@ void WebSecurityPolicy::AddOriginAccessWhitelistEntry(
       destination_host, allow_destination_subdomains);
 }
 
-void WebSecurityPolicy::RemoveOriginAccessWhitelistEntry(
-    const WebURL& source_origin,
-    const WebString& destination_protocol,
-    const WebString& destination_host,
-    bool allow_destination_subdomains) {
-  SecurityPolicy::RemoveOriginAccessWhitelistEntry(
-      *SecurityOrigin::Create(source_origin), destination_protocol,
-      destination_host, allow_destination_subdomains);
-}
-
 void WebSecurityPolicy::RemoveAllOriginAccessWhitelistEntriesForOrigin(
     const WebURL& source_origin) {
   SecurityPolicy::RemoveAllOriginAccessWhitelistEntriesForOrigin(
