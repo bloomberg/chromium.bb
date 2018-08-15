@@ -162,10 +162,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
 
-  void MaybeSendSyntheticTapGestureForTest(
-      const blink::WebFloatPoint& position,
-      const blink::WebFloatPoint& screenPosition) const;
-
  private:
   friend class RenderWidgetHostView;
 
