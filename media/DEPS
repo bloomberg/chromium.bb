@@ -25,6 +25,7 @@ include_rules = [
   "+third_party/widevine/cdm/widevine_cdm_common.h",
   "-ipc",
   "-media/blink",
+  "-media/webrtc",
 ]
 
 specific_include_rules = {
