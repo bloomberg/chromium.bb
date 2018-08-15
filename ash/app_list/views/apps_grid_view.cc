@@ -222,6 +222,35 @@ class ItemMoveAnimationDelegate : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(ItemMoveAnimationDelegate);
 };
 
+// This class observes the end of folder dropping animation.
+class FolderDroppingAnimationObserver : public TopIconAnimationObserver {
+ public:
+  FolderDroppingAnimationObserver(AppListModel* model,
+                                  const std::string& folder_item_id)
+      : model_(model), folder_item_id_(folder_item_id) {}
+
+  // TopIconAnimationObserver:
+  void OnTopIconAnimationsComplete(TopIconAnimationView* view) override {
+    AppListFolderItem* item =
+        static_cast<AppListFolderItem*>(model_->FindItem(folder_item_id_));
+
+    // The folder item may be deleted during the animation.
+    if (!item)
+      return;
+
+    // Update the folder icon.
+    item->NotifyOfDraggedItem(nullptr);
+
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  }
+
+ private:
+  AppListModel* model_;  // Not owned.
+  const std::string folder_item_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(FolderDroppingAnimationObserver);
+};
+
 // Returns true if the |item| is a folder item.
 bool IsFolderItem(AppListItem* item) {
   return (item->GetItemType() == AppListFolderItem::kItemType);
@@ -605,6 +634,13 @@ void AppsGridView::EndDrag(bool cancel) {
 
   // Coming here a drag and drop was in progress.
   bool landed_in_drag_and_drop_host = forward_events_to_drag_and_drop_host_;
+
+  // This is the folder view to drop an item into. Cache the |drag_view_|'s item
+  // and its bounds for later use in folder dropping animation.
+  AppListItemView* folder_item_view = nullptr;
+  AppListItem* drag_item = drag_view_->item();
+  const gfx::Rect drag_source_bounds(drag_view_->bounds());
+
   if (forward_events_to_drag_and_drop_host_) {
     DCHECK(!IsDraggingForReparentInRootLevelGridView());
     forward_events_to_drag_and_drop_host_ = false;
@@ -638,6 +674,8 @@ void AppsGridView::EndDrag(bool cancel) {
       if (EnableFolderDragDropUI() && drop_attempt_ == DROP_FOR_FOLDER &&
           IsValidIndex(folder_drop_target_)) {
         MoveItemToFolder(drag_view_, folder_drop_target_);
+        folder_item_view =
+            GetViewDisplayedAtSlotOnCurrentPage(folder_drop_target_.slot);
       } else if (IsValidReorderTargetIndex(reorder_drop_target_)) {
         MoveItemInModel(drag_view_, reorder_drop_target_);
       }
@@ -669,6 +707,12 @@ void AppsGridView::EndDrag(bool cancel) {
   AnimateToIdealBounds();
   if (!cancel && IsAppsGridGapEnabled())
     view_structure_.SaveToMetadata();
+
+  if (folder_item_view) {
+    // Run an animation to move dragged item to the folder.
+    StartFolderDroppingAnimation(folder_item_view, drag_item,
+                                 drag_source_bounds);
+  }
 
   StopPageFlipTimer();
 }
@@ -1491,7 +1535,7 @@ bool AppsGridView::IsDraggingForReparentInHiddenGridView() const {
 }
 
 gfx::Rect AppsGridView::GetTargetIconRectInFolder(
-    AppListItemView* drag_item_view,
+    AppListItem* drag_item,
     AppListItemView* folder_item_view) {
   const gfx::Rect view_ideal_bounds =
       view_model_.ideal_bounds(view_model_.GetIndexOfView(folder_item_view));
@@ -1500,7 +1544,7 @@ gfx::Rect AppsGridView::GetTargetIconRectInFolder(
           view_ideal_bounds, folder_item_view->GetIconImage().size());
   AppListFolderItem* folder_item =
       static_cast<AppListFolderItem*>(folder_item_view->item());
-  return folder_item->GetTargetIconRectInFolderForItem(drag_item_view->item(),
+  return folder_item->GetTargetIconRectInFolderForItem(drag_item,
                                                        icon_ideal_bounds);
 }
 
@@ -1695,6 +1739,13 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
 
   DCHECK(IsDraggingForReparentInRootLevelGridView());
   bool cancel_reparent = cancel_drag || drop_attempt_ == DROP_FOR_NONE;
+
+  // This is the folder view to drop an item into. Cache the |drag_view_|'s item
+  // and its bounds for later use in folder dropping animation.
+  AppListItemView* folder_item_view = nullptr;
+  AppListItem* drag_item = drag_view_->item();
+  const gfx::Rect drag_source_bounds(drag_view_->bounds());
+
   if (!events_forwarded_to_drag_drop_host && !cancel_reparent) {
     CalculateDropTarget();
     if (drop_attempt_ == DROP_FOR_REORDER &&
@@ -1704,6 +1755,10 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
                IsValidIndex(folder_drop_target_)) {
       cancel_reparent =
           !ReparentItemToAnotherFolder(drag_view_, folder_drop_target_);
+      if (!cancel_reparent) {
+        folder_item_view =
+            GetViewDisplayedAtSlotOnCurrentPage(folder_drop_target_.slot);
+      }
     } else {
       NOTREACHED();
     }
@@ -1711,9 +1766,7 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
   }
 
   SetAsFolderDroppingTarget(folder_drop_target_, false);
-  if (cancel_reparent) {
-    CancelFolderItemReparent(drag_view_);
-  } else {
+  if (!cancel_reparent) {
     // By setting |drag_view_| to NULL here, we prevent ClearDragState() from
     // cleaning up the newly created AppListItemView, effectively claiming
     // ownership of the newly created drag view.
@@ -1724,6 +1777,16 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
   AnimateToIdealBounds();
   if (IsAppsGridGapEnabled())
     view_structure_.SaveToMetadata();
+
+  if (cancel_reparent) {
+    // Run an animation to move dragged item back to its original folder.
+    StartFolderDroppingAnimation(activated_folder_item_view_, drag_item,
+                                 drag_source_bounds);
+  } else if (folder_item_view) {
+    // Run an animation to move dragged item to the new folder.
+    StartFolderDroppingAnimation(folder_item_view, drag_item,
+                                 drag_source_bounds);
+  }
 
   StopPageFlipTimer();
 }
@@ -2306,24 +2369,6 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
                  GetAppListItemViewIndexOffset() + target_model_index);
 }
 
-void AppsGridView::CancelFolderItemReparent(AppListItemView* drag_item_view) {
-  // The icon of the dragged item must target to its final ideal bounds after
-  // the animation completes.
-  CalculateIdealBounds();
-
-  gfx::Rect target_icon_rect =
-      GetTargetIconRectInFolder(drag_item_view, activated_folder_item_view_);
-
-  gfx::Rect drag_view_rect = drag_item_view->bounds();
-  TopIconAnimationView* icon_view = new TopIconAnimationView(
-      drag_item_view->item()->icon(),
-      base::UTF8ToUTF16(drag_item_view->item()->GetDisplayName()),
-      target_icon_rect, false, true); /* animate like closing folder */
-  AddChildView(icon_view);
-  icon_view->SetBoundsRect(drag_view_rect);
-  icon_view->TransformView();
-}
-
 void AppsGridView::CancelContextMenusOnCurrentPage() {
   GridIndex start_index(pagination_model_.selected_page(), 0);
   int start = GetModelIndexFromIndex(start_index);
@@ -2865,6 +2910,30 @@ int AppsGridView::GetItemsNumOfPage(int page) const {
 
   return item_list_->item_count() -
          (pagination_model_.total_pages() - 1) * TilesPerPage(0);
+}
+
+void AppsGridView::StartFolderDroppingAnimation(
+    AppListItemView* folder_item_view,
+    AppListItem* drag_item,
+    const gfx::Rect& source_bounds) {
+  // Calculate target bounds of dragged item.
+  gfx::Rect target_bounds =
+      GetTargetIconRectInFolder(drag_item, folder_item_view);
+
+  // Update folder icon.
+  AppListFolderItem* folder_item =
+      static_cast<AppListFolderItem*>(folder_item_view->item());
+  folder_item->NotifyOfDraggedItem(drag_item);
+
+  // Start animation.
+  TopIconAnimationView* animation_view = new TopIconAnimationView(
+      drag_item->icon(), base::UTF8ToUTF16(drag_item->GetDisplayName()),
+      target_bounds, false, true);
+  AddChildView(animation_view);
+  animation_view->SetBoundsRect(source_bounds);
+  animation_view->AddObserver(
+      new FolderDroppingAnimationObserver(model_, folder_item->id()));
+  animation_view->TransformView();
 }
 
 }  // namespace app_list
