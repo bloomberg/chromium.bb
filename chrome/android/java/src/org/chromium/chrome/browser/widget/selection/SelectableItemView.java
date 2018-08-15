@@ -53,9 +53,9 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mIconView = findViewById(R.id.icon_view);
-        mTitleView = findViewById(R.id.title);
-        mDescriptionView = findViewById(R.id.description);
+        mIconView = (TintedImageView) findViewById(R.id.icon_view);
+        mTitleView = (TextView) findViewById(R.id.title);
+        mDescriptionView = (TextView) findViewById(R.id.description);
 
         if (mIconView != null) {
             mIconView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);

@@ -35,6 +35,7 @@ by a child template that "extends" this file.
     {% endif %}
     <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH"/>
     <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission-sdk-23 android:name="android.permission.READ_CONTACTS"/>
     <uses-permission-sdk-23 android:name="android.permission.REORDER_TASKS"/>
     <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 

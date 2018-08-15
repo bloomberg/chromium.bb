@@ -3394,6 +3394,11 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         <ph name="BEGIN_LINK">&lt;link&gt;</ph>Get help<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
 
+      <!-- Contacts Picker strings -->
+      <message name="IDS_CONTACTS_PICKER_SELECT_CONTACTS" desc="The label at the top of the dialog that allows users to select contacts from their device and share the details with a web page.">
+        Select contacts
+      </message>
+
       <!-- Photo Picker strings -->
       <message name="IDS_DECODER_DESCRIPTION" desc="The title for the image decoder utility service.">
         Image decoder

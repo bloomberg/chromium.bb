@@ -246,9 +246,6 @@ public class SelectFileDialog
         // Use the new contacts picker, if available.
         if (shouldUseContactsPicker()
                 && UiUtils.showContactsPicker(activity, this, mAllowMultiple, mFileTypes)) {
-            // Since the dialog is not implemented, cancel the request so we can serve others.
-            // This will be removed once the select/cancel actions are implemented.
-            onFileNotSelected();
             return;
         }
 

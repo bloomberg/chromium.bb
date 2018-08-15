@@ -192,6 +192,9 @@
     <!-- Favicon colors -->
     <color name="default_favicon_background_color">#787878</color>
 
+    <!-- Contacts Picker colors -->
+    <color name="selectable_list_item_highlight_color">@color/default_primary_color</color>
+
     <!-- Photo Picker colors -->
     <color name="photo_picker_tile_bg_color">@color/google_grey_200</color>
     <color name="photo_picker_special_tile_bg_color">@color/google_grey_300</color>

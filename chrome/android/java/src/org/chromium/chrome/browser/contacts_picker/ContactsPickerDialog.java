@@ -17,6 +17,9 @@ import java.util.List;
  * &lt;input type=file accept=contacts &gt; form element.
  */
 public class ContactsPickerDialog extends AlertDialog {
+    // The category we're showing contacts for.
+    private PickerCategoryView mCategoryView;
+
     /**
      * The ContactsPickerDialog constructor.
      * @param context The context to use.
@@ -27,5 +30,10 @@ public class ContactsPickerDialog extends AlertDialog {
     public ContactsPickerDialog(Context context, ContactsPickerListener listener,
             boolean allowMultiple, List<String> mimeTypes) {
         super(context, R.style.FullscreenWhite);
+
+        // Initialize the main content view.
+        mCategoryView = new PickerCategoryView(context);
+        mCategoryView.initialize(this, listener, mimeTypes);
+        setView(mCategoryView);
     }
 }
