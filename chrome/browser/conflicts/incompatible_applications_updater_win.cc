@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
@@ -365,8 +366,10 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   // Then check if it can be tied to an installed application on the user's
   // computer.
   std::vector<InstalledApplications::ApplicationInfo> associated_applications;
-  if (!installed_applications_.GetInstalledApplications(
-          module_key.module_path, &associated_applications)) {
+  bool tied_to_app = installed_applications_.GetInstalledApplications(
+      module_key.module_path, &associated_applications);
+  UMA_HISTOGRAM_BOOLEAN("ThirdPartyModules.Uninstallable", tied_to_app);
+  if (!tied_to_app) {
     module_warning_decisions_[module_key.module_id] =
         ModuleWarningDecision::kNoTiedApplication;
     return;
