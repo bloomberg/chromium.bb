@@ -32,7 +32,6 @@
 #include "services/preferences/public/cpp/tracked/pref_names.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
 #include "components/feed/buildflags.h"
 #include "components/feed/core/pref_names.h"
 #endif  // defined(OS_ANDROID)
@@ -186,11 +185,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #if !defined(OS_ANDROID)
     kAnimationPolicyAllowed, kAnimationPolicyOnce, kAnimationPolicyNone,
 #endif  // !defined(OS_ANDROID)
-
-// chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h
-#if defined(OS_ANDROID)
-    contextual_suggestions::prefs::kContextualSuggestionsEnabled,
-#endif  // defined(OS_ANDROID)
 
     // chrome/common/pref_names.h
     prefs::kAbusiveExperienceInterventionEnforce,
