@@ -17,6 +17,11 @@ const char kAutofillCacheQueryResponsesDescription[] =
     "When enabled, autofill will cache the responses it receives from the "
     "crowd-sourced field type prediction server.";
 
+const char kAutofillEnableCompanyNameName[] =
+    "Enable Autofill Company Name field";
+const char kAutofillEnableCompanyNameDescription[] =
+    "When enabled, Company Name fields will be auto filled";
+
 const char kAutofillCreditCardUploadName[] =
     "Offers uploading Autofilled credit cards";
 const char kAutofillCreditCardUploadDescription[] =
