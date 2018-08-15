@@ -1720,7 +1720,7 @@ crbug.com/492664 [ Win ] external/wpt/css/css-writing-modes/bidi-plaintext-001.h
 
 crbug.com/280342 [ Mac Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 
-crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
+crbug.com/520736 [ Win7 Linux ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 crbug.com/520736 [ Win7 Mac ] virtual/video-surface-layer/media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
 crbug.com/865839 external/wpt/service-workers/service-worker/update-after-navigation-redirect.https.html [ Timeout ]
