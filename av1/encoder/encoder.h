@@ -409,7 +409,10 @@ typedef struct {
   double a;
   double b;
   double dist_mean;
-  int bracket_idx;
+  double ld_mean;
+  double sse_mean;
+  double sse_sse_mean;
+  double sse_ld_mean;
   int num;
   double dist_sum;
   double ld_sum;

@@ -597,7 +597,6 @@ void av1_inter_mode_data_init(TileDataEnc *tile_data) {
   for (int i = 0; i < BLOCK_SIZES_ALL; ++i) {
     InterModeRdModel *md = &tile_data->inter_mode_rd_models[i];
     md->ready = 0;
-    md->bracket_idx = 0;
     md->num = 0;
     md->dist_sum = 0;
     md->ld_sum = 0;
@@ -640,33 +639,53 @@ static int64_t get_est_rd(TileDataEnc *tile_data, BLOCK_SIZE bsize, int rdmult,
   return 0;
 }
 
-#define DATA_BRACKETS 7
-static const int data_num_threshold[DATA_BRACKETS] = {
-  200, 400, 800, 1600, 3200, 6400, INT32_MAX
-};
-
 void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult) {
   aom_clear_system_state();
   for (int bsize = 0; bsize < BLOCK_SIZES_ALL; ++bsize) {
     const int block_idx = inter_mode_data_block_idx(bsize);
     InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
     if (block_idx == -1) continue;
-    if (md->num < data_num_threshold[md->bracket_idx]) {
+    if ((md->ready == 0 && md->num < 200) || (md->ready == 1 && md->num < 64)) {
       continue;
+    } else {
+      if (md->ready == 0) {
+        md->dist_mean = md->dist_sum / md->num;
+        md->ld_mean = md->ld_sum / md->num;
+        md->sse_mean = md->sse_sum / md->num;
+        md->sse_sse_mean = md->sse_sse_sum / md->num;
+        md->sse_ld_mean = md->sse_ld_sum / md->num;
+      } else {
+        const double factor = 3;
+        md->dist_mean =
+            (md->dist_mean * factor + (md->dist_sum / md->num)) / (factor + 1);
+        md->ld_mean =
+            (md->ld_mean * factor + (md->ld_sum / md->num)) / (factor + 1);
+        md->sse_mean =
+            (md->sse_mean * factor + (md->sse_sum / md->num)) / (factor + 1);
+        md->sse_sse_mean =
+            (md->sse_sse_mean * factor + (md->sse_sse_sum / md->num)) /
+            (factor + 1);
+        md->sse_ld_mean =
+            (md->sse_ld_mean * factor + (md->sse_ld_sum / md->num)) /
+            (factor + 1);
+      }
+
+      const double my = md->ld_mean;
+      const double mx = md->sse_mean;
+      const double dx = sqrt(md->sse_sse_mean);
+      const double dxy = md->sse_ld_mean;
+
+      md->a = (dxy - mx * my) / (dx * dx - mx * mx);
+      md->b = my - md->a * mx;
+      md->ready = 1;
+
+      md->num = 0;
+      md->dist_sum = 0;
+      md->ld_sum = 0;
+      md->sse_sum = 0;
+      md->sse_sse_sum = 0;
+      md->sse_ld_sum = 0;
     }
-    const double dist_mean = md->dist_sum / md->num;
-    const double my = md->ld_sum / md->num;
-    const double mx = md->sse_sum / md->num;
-    const double dx = sqrt(md->sse_sse_sum / md->num);
-    const double dxy = md->sse_ld_sum / md->num;
-
-    md->dist_mean = dist_mean;
-    md->a = (dxy - mx * my) / (dx * dx - mx * mx);
-    md->b = my - md->a * mx;
-    ++md->bracket_idx;
-    md->ready = 1;
-    assert(md->bracket_idx < DATA_BRACKETS);
-
     (void)rdmult;
   }
 }
@@ -11563,6 +11582,12 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       if (!txfm_search(cpi, x, bsize, mi_row, mi_col, &rd_stats, &rd_stats_y,
                        &rd_stats_uv, mode_rate, search_state.best_rd)) {
         continue;
+      } else {
+        const int skip_ctx = av1_get_skip_context(xd);
+        inter_mode_data_push(tile_data, mbmi->sb_type, rd_stats.sse,
+                             rd_stats.dist,
+                             rd_stats_y.rate + rd_stats_uv.rate +
+                                 x->skip_cost[skip_ctx][mbmi->skip]);
       }
       rd_stats.rdcost = RDCOST(x->rdmult, rd_stats.rate, rd_stats.dist);
 

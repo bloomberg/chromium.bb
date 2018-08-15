@@ -128,7 +128,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
 void av1_inter_mode_data_init(struct TileDataEnc *tile_data);
-void av1_inter_mode_data_fit(struct TileDataEnc *tile_data, int rdmult);
+void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult);
 #endif
 
 #ifdef __cplusplus
