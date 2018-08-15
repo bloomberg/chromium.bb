@@ -77,41 +77,38 @@ function waitForDirectoryItemLost(windowId, name) {
 }
 
 /**
- * Tests copying a file to the same directory and waits until the file list
- * changes.
+ * Tests copying a file to the same volume path file list.
  *
- * @param {string} path Directory path to be tested, Downloads or Drive.
+ * @param {string} path The path to be tested, Downloads or Drive.
  */
 function keyboardCopy(path, callback) {
-  var filename = 'world.ogv';
-  var expectedFilesBefore =
-      TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
-          BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET).sort();
-  var expectedFilesAfter =
-      expectedFilesBefore.concat([['world (1).ogv', '59 KB', 'OGG video']]);
+  let fileListBefore;
+  let appId;
 
-  var appId;
   StepsRunner.run([
-    // Open Files app on |path|.
+    // Open Files app on |path| containing one file entry: world.
     function() {
-      setupAndWaitUntilReady(null, path, this.next);
+      setupAndWaitUntilReady(
+          null, path, this.next, [ENTRIES.world], [ENTRIES.world]);
     },
-    // Copy the file.
+    // Copy the file into the same file list.
     function(results) {
       appId = results.windowId;
-      var fileListBefore = results.fileList;
-      chrome.test.assertEq(expectedFilesBefore, fileListBefore);
-      remoteCall.callRemoteTestUtil('copyFile', appId, [filename], this.next);
+      fileListBefore = results.fileList;
+      remoteCall.callRemoteTestUtil(
+          'copyFile', appId, ['world.ogv'], this.next);
     },
-    // Wait for a file list change.
+    // Check: the copied file should appear in the file list.
     function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForFiles(
-          appId, expectedFilesAfter, {ignoreLastModifiedTime: true}).
-          then(this.next);
+      chrome.test.assertTrue(!!result, 'copyFile failed');
+      const expectedFilesAfter =
+          fileListBefore.concat([['world (1).ogv', '59 KB', 'OGG video']]);
+      remoteCall
+          .waitForFiles(
+              appId, expectedFilesAfter, {ignoreLastModifiedTime: true})
+          .then(this.next);
     },
-    // Verify the result.
-    function(fileList) {
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -121,7 +118,7 @@ function keyboardCopy(path, callback) {
  * Tests deleting an entry from the file list. The entry is also shown in the
  * directory tree, and should not be shown there when it is deleted.
  *
- * @param {string} path Directory path to be tested, Downloads or Drive.
+ * @param {string} path The path to be tested, Downloads or Drive.
  * @param {string} treeItem The directory tree item selector.
  */
 function keyboardDelete(path, treeItem) {
