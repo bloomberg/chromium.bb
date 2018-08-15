@@ -30,14 +30,6 @@ const CFStringRef kMessageLoopExclusiveRunLoopMode =
 
 namespace {
 
-// Mask that determines which modes to use.
-enum { kCommonModeMask = 0x1, kAllModesMask = 0xf };
-
-// Modes to use for MessagePumpNSApplication that are considered "safe".
-// Currently just common and exclusive modes. Ideally, messages would be pumped
-// in all modes, but that interacts badly with app modal dialogs (e.g. NSAlert).
-enum { kNSApplicationModalSafeModeMask = 0x3 };
-
 void NoOp(void* info) {
 }
 
@@ -156,6 +148,9 @@ class MessagePumpCFRunLoopBase::ScopedModeEnabler {
 
         // Process work when AppKit is highlighting an item on the main menubar.
         CFSTR("NSUnhighlightMenuRunLoopMode"),
+
+        // Process work when AppKit is animating the menu bar.
+        CFSTR("NSAnimationRunLoopMode"),
     };
     static_assert(arraysize(modes) == kNumModes, "mode size mismatch");
     static_assert((1 << kNumModes) - 1 == kAllModesMask,
@@ -762,16 +757,18 @@ void MessagePumpUIApplication::Attach(Delegate* delegate) {
 
 ScopedPumpMessagesInPrivateModes::ScopedPumpMessagesInPrivateModes() {
   DCHECK(g_app_pump);
-  DCHECK_EQ(kNSApplicationModalSafeModeMask, g_app_pump->GetModeMask());
+  DCHECK_EQ(MessagePumpCFRunLoopBase::kNSApplicationModalSafeModeMask,
+            g_app_pump->GetModeMask());
   // Pumping events in private runloop modes is known to interact badly with
   // app modal windows like NSAlert.
   if (![NSApp modalWindow])
-    g_app_pump->SetModeMask(kAllModesMask);
+    g_app_pump->SetModeMask(MessagePumpCFRunLoopBase::kAllModesMask);
 }
 
 ScopedPumpMessagesInPrivateModes::~ScopedPumpMessagesInPrivateModes() {
   DCHECK(g_app_pump);
-  g_app_pump->SetModeMask(kNSApplicationModalSafeModeMask);
+  g_app_pump->SetModeMask(
+      MessagePumpCFRunLoopBase::kNSApplicationModalSafeModeMask);
 }
 
 int ScopedPumpMessagesInPrivateModes::GetModeMaskForTest() {
