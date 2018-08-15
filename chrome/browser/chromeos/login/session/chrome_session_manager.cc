@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
+#include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -184,6 +185,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
   }
 
   UserSessionManager::GetInstance()->CheckEolStatus(user_profile);
+  tpm_firmware_update::ShowNotificationIfNeeded(user_profile);
 }
 
 }  // namespace

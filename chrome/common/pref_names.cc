@@ -874,6 +874,12 @@ const char kNetworkFileSharesAllowed[] = "network_file_shares.allowed";
 // session" mode which has lifted restrictions (true).
 const char kManagedSessionEnabled[] = "managed_session.enabled";
 
+// Boolean pref indicating whether the user has previously dismissed the
+// one-time notification indicating the need for a cleanup powerwash after TPM
+// firmware update that didn't flush the TPM SRK.
+extern const char kTPMFirmwareUpdateCleanupDismissed[] =
+    "tpm_firmware_update.cleanup_dismissed";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

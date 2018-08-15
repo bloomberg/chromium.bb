@@ -3766,6 +3766,14 @@
     Don't remind me again
   </message>
 
+  <!-- TPM Firmware Update Notification Strings -->
+  <message name="IDS_TPM_FIRMWARE_UPDATE_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that there is a pending TPM firmware update for the device.">
+    Security upgrade available
+  </message>
+  <message name="IDS_TPM_FIRMWARE_UPDATE_NOTIFICATION_MESSAGE" desc="Notification shown to inform the user that there is a pending TPM firmware update for the device.">
+    Reset your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> to upgrade your security.
+  </message>
+
   <!-- Obsolete versions Notification strings-->
   <message name="IDS_UPDATE_REQUIRED_LOGIN_SCREEN_MESSAGE" desc="The message on login screen to inform the user that policy prevents user sign in before OS version is is updated.">
     Your device is no longer compliant with the minimum client version specified by your admin. Please update to login.

@@ -1745,6 +1745,8 @@ source_set("chromeos") {
     "tether/tether_service_factory.h",
     "tpm_firmware_update.cc",
     "tpm_firmware_update.h",
+    "tpm_firmware_update_notification.cc",
+    "tpm_firmware_update_notification.h",
     "ui/echo_dialog_listener.h",
     "ui/echo_dialog_view.cc",
     "ui/echo_dialog_view.h",
