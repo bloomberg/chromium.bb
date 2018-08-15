@@ -69,6 +69,23 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
   if (overlay_container)
     excluded_layers.insert(overlay_container->layer());
 
+  aura::Window* always_on_top_container = ash::Shell::GetContainer(
+      root_window, kShellWindowId_AlwaysOnTopContainer);
+
+  // Ignore windows in always on top container. This will prevent assistant
+  // window from being snapshot.
+  // TODO(muyuanli): We can add Ash property to indicate specific windows to
+  //                 be excluded from snapshot (e.g. assistant window itself).
+  if (always_on_top_container)
+    excluded_layers.insert(always_on_top_container->layer());
+
+  aura::Window* app_list_container =
+      ash::Shell::GetContainer(root_window, kShellWindowId_AppListContainer);
+
+  // Ignore app list to prevent interfering with app list animations.
+  if (app_list_container)
+    excluded_layers.insert(app_list_container->layer());
+
   MruWindowTracker::WindowList windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList();
 
