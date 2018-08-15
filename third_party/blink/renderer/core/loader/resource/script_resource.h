@@ -71,7 +71,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   const MovableString& SourceText();
 
-  AccessControlStatus CalculateAccessControlStatus(const SecurityOrigin*) const;
+  AccessControlStatus CalculateAccessControlStatus() const;
 
   SingleCachedMetadataHandler* CacheHandler();
 

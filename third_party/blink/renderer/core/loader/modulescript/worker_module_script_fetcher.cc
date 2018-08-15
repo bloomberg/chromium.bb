@@ -99,8 +99,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
   ModuleScriptCreationParams params(
       script_resource->GetResponse().Url(), script_resource->SourceText(),
       script_resource->GetResourceRequest().GetFetchCredentialsMode(),
-      script_resource->CalculateAccessControlStatus(
-          global_scope_->EnsureFetcher()->Context().GetSecurityOrigin()));
+      script_resource->CalculateAccessControlStatus());
 
   // Step 13.7. "Asynchronously complete the perform the fetch steps with
   // response." [spec text]

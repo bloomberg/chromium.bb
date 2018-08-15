@@ -8,6 +8,11 @@ if ($cors_arg != 'false') {
   }
 }
 
+$max_age = $_GET['max-age'];
+if (!(empty($max_age))) {
+  header('Cache-Control: max-age=' . $max_age);
+}
+
 if (strtolower($_GET['credentials']) == 'true') {
   header('Access-Control-Allow-Credentials: true');
 }
