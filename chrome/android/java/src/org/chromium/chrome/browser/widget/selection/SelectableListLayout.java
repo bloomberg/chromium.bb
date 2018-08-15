@@ -156,8 +156,8 @@ public class SelectableListLayout<E>
             mRecyclerView = recyclerView;
 
             // Replace the inflated recycler view with the one supplied to this method.
-            FrameLayout contentView = findViewById(R.id.list_content);
-            RecyclerView existingView = contentView.findViewById(R.id.recycler_view);
+            FrameLayout contentView = (FrameLayout) findViewById(R.id.list_content);
+            RecyclerView existingView = (RecyclerView) contentView.findViewById(R.id.recycler_view);
             contentView.removeView(existingView);
             contentView.addView(mRecyclerView, 0);
         }
