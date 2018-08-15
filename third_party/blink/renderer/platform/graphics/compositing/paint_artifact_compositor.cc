@@ -547,14 +547,14 @@ void PaintArtifactCompositor::LayerizeGroup(
                                  : subgroup_layer.property_tree_state.Clip(),
           &current_group));
     }
-    // At this point pendingLayers.back() is the either a layer from a
+    // At this point pending_layers.back() is the either a layer from a
     // "decomposited" subgroup or a layer created from a chunk we just
     // processed. Now determine whether it could be merged into a previous
     // layer.
     const PendingLayer& new_layer = pending_layers.back();
     DCHECK(!new_layer.requires_own_layer);
     DCHECK_EQ(&current_group, new_layer.property_tree_state.Effect());
-    // This iterates pendingLayers[firstLayerInCurrentGroup:-1] in reverse.
+    // This iterates pending_layers[first_layer_in_current_group:-1] in reverse.
     for (size_t candidate_index = pending_layers.size() - 1;
          candidate_index-- > first_layer_in_current_group;) {
       PendingLayer& candidate_layer = pending_layers[candidate_index];
