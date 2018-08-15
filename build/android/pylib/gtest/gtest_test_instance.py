@@ -533,7 +533,9 @@ class GtestTestInstance(test_instance.TestInstance):
     disabled_filter_items = []
 
     if disabled_prefixes is None:
-      disabled_prefixes = ['FAILS_', 'PRE_', 'MANUAL_']
+      disabled_prefixes = ['FAILS_', 'PRE_']
+      if '--run-manual' not in self._flags:
+        disabled_prefixes += ['MANUAL_']
       if not self._run_disabled:
         disabled_prefixes += ['DISABLED_', 'FLAKY_']
 
