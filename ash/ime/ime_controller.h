@@ -5,6 +5,7 @@
 #ifndef ASH_IME_IME_CONTROLLER_H_
 #define ASH_IME_IME_CONTROLLER_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -19,6 +20,8 @@ class Accelerator;
 }
 
 namespace ash {
+
+class ModeIndicatorObserver;
 
 // Connects ash IME users (e.g. the system tray) to the IME implementation,
 // which might live in Chrome browser or in a separate mojo service.
@@ -96,6 +99,10 @@ class ASH_EXPORT ImeController : public mojom::ImeController {
                                         bool is_emoji_enabled,
                                         bool is_handwriting_enabled,
                                         bool is_voice_enabled) override;
+  // Show the mode indicator UI with the given text at the anchor bounds.
+  // The anchor bounds is in the universal screen coordinates in DIP.
+  void ShowModeIndicator(const gfx::Rect& anchor_bounds,
+                         const base::string16& ime_short_name) override;
 
   // Synchronously returns the cached caps lock state.
   bool IsCapsLockEnabled() const;
@@ -106,6 +113,10 @@ class ASH_EXPORT ImeController : public mojom::ImeController {
   }
 
   void FlushMojoForTesting();
+
+  ModeIndicatorObserver* mode_indicator_observer() const {
+    return mode_indicator_observer_.get();
+  }
 
  private:
   // Returns the IDs of the subset of input methods which are active and are
@@ -157,6 +168,8 @@ class ASH_EXPORT ImeController : public mojom::ImeController {
   bool is_voice_enabled_ = false;
 
   base::ObserverList<Observer> observers_;
+
+  std::unique_ptr<ModeIndicatorObserver> mode_indicator_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeController);
 };

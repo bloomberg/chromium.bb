@@ -4,6 +4,8 @@
 
 #include "ash/ime/ime_controller.h"
 
+#include "ash/ime/ime_mode_indicator_view.h"
+#include "ash/ime/mode_indicator_observer.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -11,7 +13,8 @@
 
 namespace ash {
 
-ImeController::ImeController() = default;
+ImeController::ImeController()
+    : mode_indicator_observer_(std::make_unique<ModeIndicatorObserver>()) {}
 
 ImeController::~ImeController() = default;
 
@@ -153,6 +156,15 @@ void ImeController::SetExtraInputOptionsEnabledState(
   is_emoji_enabled_ = is_emoji_enabled;
   is_handwriting_enabled_ = is_handwriting_enabled;
   is_voice_enabled_ = is_voice_enabled;
+}
+
+void ImeController::ShowModeIndicator(const gfx::Rect& anchor_bounds,
+                                      const base::string16& ime_short_name) {
+  ImeModeIndicatorView* mi_view =
+      new ImeModeIndicatorView(anchor_bounds, ime_short_name);
+  views::BubbleDialogDelegateView::CreateBubble(mi_view);
+  mode_indicator_observer_->AddModeIndicatorWidget(mi_view->GetWidget());
+  mi_view->ShowAndFadeOut();
 }
 
 void ImeController::SetCapsLockEnabled(bool caps_enabled) {

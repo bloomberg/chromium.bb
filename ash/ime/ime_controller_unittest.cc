@@ -6,18 +6,26 @@
 
 #include <vector>
 
+#include "ash/ime/mode_indicator_observer.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
+
+// 43 is the designed size of the inner contents.
+// This value corresponds with kMinSize defined in
+// mode_indicator_delegate_view.cc.
+const int kInnerSize = 43;
 
 // Refreshes the IME list with fake IMEs and fake menu items.
 void RefreshImesWithMenuItems(const std::string& current_ime_id,
@@ -294,6 +302,55 @@ TEST_F(ImeControllerTest, OnKeyboardLayoutNameChanged) {
   controller->OnKeyboardLayoutNameChanged("us(dvorak)");
   EXPECT_EQ("us(dvorak)", controller->keyboard_layout_name());
   EXPECT_EQ("us(dvorak)", observer.last_keyboard_layout_name());
+}
+
+TEST_F(ImeControllerTest, ShowModeIndicator) {
+  ImeController* controller = Shell::Get()->ime_controller();
+  base::string16 text = base::ASCIIToUTF16("US");
+
+  gfx::Rect cursor1_bounds(100, 100, 1, 20);
+  controller->ShowModeIndicator(cursor1_bounds, text);
+
+  views::Widget* widget1 =
+      controller->mode_indicator_observer()->active_widget();
+  EXPECT_TRUE(widget1);
+
+  // The widget bounds should be bigger than the inner size.
+  gfx::Rect bounds1 = widget1->GetWindowBoundsInScreen();
+  EXPECT_LE(kInnerSize, bounds1.width());
+  EXPECT_LE(kInnerSize, bounds1.height());
+
+  gfx::Rect cursor2_bounds(50, 200, 1, 20);
+  controller->ShowModeIndicator(cursor2_bounds, text);
+
+  views::Widget* widget2 =
+      controller->mode_indicator_observer()->active_widget();
+  EXPECT_TRUE(widget2);
+  EXPECT_NE(widget1, widget2);
+
+  // Check if the location of the mode indicator corresponds to the cursor
+  // bounds.
+  gfx::Rect bounds2 = widget2->GetWindowBoundsInScreen();
+  EXPECT_EQ(cursor1_bounds.x() - cursor2_bounds.x(), bounds1.x() - bounds2.x());
+  EXPECT_EQ(cursor1_bounds.y() - cursor2_bounds.y(), bounds1.y() - bounds2.y());
+  EXPECT_EQ(bounds1.width(), bounds2.width());
+  EXPECT_EQ(bounds1.height(), bounds2.height());
+
+  const gfx::Rect screen_bounds = display::Screen::GetScreen()
+                                      ->GetDisplayMatching(cursor1_bounds)
+                                      .work_area();
+  const gfx::Rect cursor3_bounds(100, screen_bounds.bottom() - 25, 1, 20);
+  controller->ShowModeIndicator(cursor3_bounds, text);
+
+  views::Widget* widget3 =
+      controller->mode_indicator_observer()->active_widget();
+  EXPECT_TRUE(widget3);
+  EXPECT_NE(widget2, widget3);
+
+  // Check if the location of the mode indicator is considered with the screen
+  // size.
+  gfx::Rect bounds3 = widget3->GetWindowBoundsInScreen();
+  EXPECT_LT(bounds3.bottom(), screen_bounds.bottom());
 }
 
 }  // namespace

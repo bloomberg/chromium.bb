@@ -5,7 +5,9 @@
 module ash.mojom;
 
 import "ash/public/interfaces/ime_info.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/ime/chromeos/public/interfaces/ime_keyset.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Interface for ash client (e.g. Chrome) to send input method info to ash.
 interface ImeController {
@@ -46,6 +48,12 @@ interface ImeController {
                                    bool is_emoji_enabled,
                                    bool is_handwriting_enabled,
                                    bool is_voice_enabled);
+
+  // Show the mode indicator view (e.g. a bubble with "DV" for Dvorak).
+  // The view fades out after a delay and close itself.
+  // The anchor bounds is in the universal screen coordinates in DIP.
+  ShowModeIndicator(gfx.mojom.Rect anchor_bounds,
+                    mojo_base.mojom.String16 ime_short_name);
 };
 
 // Interface for ash to send input method requests to its client (e.g. Chrome).

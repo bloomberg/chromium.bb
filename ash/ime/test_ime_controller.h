@@ -36,6 +36,8 @@ class ASH_EXPORT TestImeController : mojom::ImeController {
                                         bool is_emoji_enabled,
                                         bool is_handwriting_enabled,
                                         bool is_voice_enabled) override;
+  void ShowModeIndicator(const gfx::Rect& anchor_bounds,
+                         const base::string16& text) override;
 
   // The most recent values received via mojo.
   std::string current_ime_id_;
@@ -43,6 +45,7 @@ class ASH_EXPORT TestImeController : mojom::ImeController {
   std::vector<mojom::ImeMenuItemPtr> menu_items_;
   bool managed_by_policy_ = false;
   bool show_ime_menu_on_shelf_ = false;
+  bool show_mode_indicator_ = false;
   bool is_caps_lock_enabled_ = false;
   std::string keyboard_layout_name_;
   bool is_extra_input_options_enabled_ = false;

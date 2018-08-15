@@ -876,8 +876,6 @@ source_set("chromeos") {
     "input_method/input_method_persistence.h",
     "input_method/input_method_syncer.cc",
     "input_method/input_method_syncer.h",
-    "input_method/mode_indicator_controller.cc",
-    "input_method/mode_indicator_controller.h",
     "language_preferences.cc",
     "language_preferences.h",
     "launchable.cc",

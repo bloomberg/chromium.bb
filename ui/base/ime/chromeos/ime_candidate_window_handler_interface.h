@@ -39,6 +39,9 @@ class UI_BASE_IME_EXPORT IMECandidateWindowHandlerInterface {
   virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
                                const gfx::Rect& composition_head) = 0;
 
+  // Gets the cursor bounds that was set by |SetCursorBounds| method.
+  virtual gfx::Rect GetCursorBounds() const = 0;
+
   // Called when the text field's focus state is changed.
   // |is_focused| is true when the text field gains the focus.
   virtual void FocusStateChanged(bool is_focused) {}

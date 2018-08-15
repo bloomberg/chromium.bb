@@ -60,4 +60,9 @@ void TestImeController::SetExtraInputOptionsEnabledState(
   is_voice_enabled_ = is_voice_enabled;
 }
 
+void TestImeController::ShowModeIndicator(const gfx::Rect& anchor_bounds,
+                                          const base::string16& text) {
+  show_mode_indicator_ = true;
+}
+
 }  // namespace ash
