@@ -99,6 +99,28 @@ double PointerEvent::pageY() const {
              : page_location_.Y();
 }
 
+double PointerEvent::offsetX() {
+  if (!HasPosition())
+    return 0;
+  if (!has_cached_relative_position_)
+    ComputeRelativePosition();
+  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
+          pointer_type_ == "mouse")
+             ? std::round(offset_location_.X())
+             : offset_location_.X();
+}
+
+double PointerEvent::offsetY() {
+  if (!HasPosition())
+    return 0;
+  if (!has_cached_relative_position_)
+    ComputeRelativePosition();
+  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
+          pointer_type_ == "mouse")
+             ? std::round(offset_location_.Y())
+             : offset_location_.Y();
+}
+
 void PointerEvent::ReceivedTarget() {
   coalesced_events_targets_dirty_ = true;
   MouseEvent::ReceivedTarget();

@@ -48,6 +48,9 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   double pageX() const override;
   double pageY() const override;
 
+  double offsetX() override;
+  double offsetY() override;
+
   void ReceivedTarget() override;
 
   // Always return null for fromElement and toElement because these fields
