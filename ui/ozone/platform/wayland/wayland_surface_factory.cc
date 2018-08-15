@@ -15,10 +15,15 @@
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/platform/wayland/gl_surface_wayland.h"
-#include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
+
+#if defined(WAYLAND_GBM)
+#include "ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h"
+#include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
+#endif
 
 namespace ui {
 
@@ -28,7 +33,8 @@ static void DeleteSharedMemory(void* pixels, void* context) {
 
 class WaylandCanvasSurface : public SurfaceOzoneCanvas {
  public:
-  WaylandCanvasSurface(WaylandConnection* connection, WaylandWindow* window_);
+  WaylandCanvasSurface(WaylandConnectionProxy* connection,
+                       WaylandWindow* window_);
   ~WaylandCanvasSurface() override;
 
   // SurfaceOzoneCanvas
@@ -38,7 +44,7 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas {
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
 
  private:
-  WaylandConnection* connection_;
+  WaylandConnectionProxy* connection_;
   WaylandWindow* window_;
 
   gfx::Size size_;
@@ -49,7 +55,7 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas {
   DISALLOW_COPY_AND_ASSIGN(WaylandCanvasSurface);
 };
 
-WaylandCanvasSurface::WaylandCanvasSurface(WaylandConnection* connection,
+WaylandCanvasSurface::WaylandCanvasSurface(WaylandConnectionProxy* connection,
                                            WaylandWindow* window)
     : connection_(connection),
       window_(window),
@@ -128,12 +134,26 @@ namespace {
 
 class GLOzoneEGLWayland : public GLOzoneEGL {
  public:
-  explicit GLOzoneEGLWayland(WaylandConnection* connection)
-      : connection_(connection) {}
+  GLOzoneEGLWayland(WaylandConnectionProxy* connection,
+                    WaylandSurfaceFactory* surface_factory)
+      : connection_(connection), surface_factory_(surface_factory) {}
   ~GLOzoneEGLWayland() override {}
 
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
       gfx::AcceleratedWidget widget) override;
+
+  scoped_refptr<gl::GLSurface> CreateSurfacelessViewGLSurface(
+      gfx::AcceleratedWidget window) override {
+#if defined(WAYLAND_GBM)
+    // If there is a gbm device available, use surfaceless gl surface.
+    if (!connection_->gbm_device())
+      return nullptr;
+    return gl::InitializeGLSurface(
+        new GbmSurfacelessWayland(surface_factory_, window));
+#else
+    return nullptr;
+#endif
+  }
 
   scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
       const gfx::Size& size) override;
@@ -143,7 +163,8 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
   bool LoadGLES2Bindings(gl::GLImplementation impl) override;
 
  private:
-  WaylandConnection* connection_;
+  WaylandConnectionProxy* connection_ = nullptr;
+  WaylandSurfaceFactory* surface_factory_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLWayland);
 };
@@ -152,7 +173,8 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
     gfx::AcceleratedWidget widget) {
   DCHECK(connection_);
   WaylandWindow* window = connection_->GetWindow(widget);
-  DCHECK(window);
+  if (!window)
+    return nullptr;
   // The wl_egl_window needs to be created before the GLSurface so it can be
   // used in the GLSurface constructor.
   auto egl_window = CreateWaylandEglWindow(window);
@@ -172,7 +194,7 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateOffscreenGLSurface(
 }
 
 intptr_t GLOzoneEGLWayland::GetNativeDisplay() {
-  return reinterpret_cast<intptr_t>(connection_->display());
+  return connection_->Display();
 }
 
 bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
@@ -184,13 +206,35 @@ bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
 
 }  // namespace
 
-WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnection* connection)
+WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnectionProxy* connection)
     : connection_(connection) {
   if (connection_)
-    egl_implementation_ = std::make_unique<GLOzoneEGLWayland>(connection_);
+    egl_implementation_ =
+        std::make_unique<GLOzoneEGLWayland>(connection_, this);
 }
 
 WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
+
+void WaylandSurfaceFactory::RegisterSurface(gfx::AcceleratedWidget widget,
+                                            GbmSurfacelessWayland* surface) {
+  widget_to_surface_map_.insert(std::make_pair(widget, surface));
+}
+
+void WaylandSurfaceFactory::UnregisterSurface(gfx::AcceleratedWidget widget) {
+  widget_to_surface_map_.erase(widget);
+}
+
+GbmSurfacelessWayland* WaylandSurfaceFactory::GetSurface(
+    gfx::AcceleratedWidget widget) const {
+  auto it = widget_to_surface_map_.find(widget);
+  DCHECK(it != widget_to_surface_map_.end());
+  return it->second;
+}
+
+void WaylandSurfaceFactory::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
+                                               uint32_t buffer_id) {
+  connection_->ScheduleBufferSwap(widget, buffer_id);
+}
 
 std::unique_ptr<SurfaceOzoneCanvas>
 WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
@@ -227,8 +271,15 @@ scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  NOTIMPLEMENTED();
+#if defined(WAYLAND_GBM)
+  scoped_refptr<GbmPixmapWayland> pixmap =
+      base::MakeRefCounted<GbmPixmapWayland>(this, connection_);
+  if (!pixmap->InitializeBuffer(size, format, usage))
+    return nullptr;
+  return pixmap;
+#else
   return nullptr;
+#endif
 }
 
 scoped_refptr<gfx::NativePixmap>

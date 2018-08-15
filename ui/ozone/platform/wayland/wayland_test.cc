@@ -29,6 +29,7 @@ WaylandTest::WaylandTest() {
       std::make_unique<StubKeyboardLayoutEngine>());
 #endif
   connection_.reset(new WaylandConnection);
+  connection_proxy_.reset(new WaylandConnectionProxy(connection_.get()));
   window_ = std::make_unique<WaylandWindow>(&delegate_, connection_.get());
 }
 
