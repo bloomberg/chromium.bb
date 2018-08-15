@@ -343,18 +343,22 @@ void RequestCoordinator::GetQueuedRequestsCallback(
 
 void RequestCoordinator::StopOfflining(CancelCallback final_callback,
                                        Offliner::RequestStatus stop_status) {
+  // Wrapping the |final_callback| since it might be moved twice if offliner
+  // returns false when Cancel().
+  // TODO(https://crbug.com/874313): refactor so we can use |final_callback| as
+  // an OnceCallback.
+  auto callback = base::AdaptCallbackForRepeating(std::move(final_callback));
   if (offliner_ && state_ == RequestCoordinatorState::OFFLINING) {
     DCHECK_NE(active_request_id_, 0);
     if (offliner_->Cancel(base::BindOnce(
             &RequestCoordinator::HandleCancelUpdateStatusCallback,
-            weak_ptr_factory_.GetWeakPtr(), std::move(final_callback),
-            stop_status))) {
+            weak_ptr_factory_.GetWeakPtr(), callback, stop_status))) {
       return;
     }
   }
 
   UpdateStatusForCancel(stop_status);
-  std::move(final_callback).Run(active_request_id_);
+  callback.Run(active_request_id_);
 }
 
 void RequestCoordinator::GetRequestsForSchedulingCallback(
