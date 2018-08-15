@@ -1311,10 +1311,17 @@ class ShowDefinitionForWordObserver
   DISALLOW_COPY_AND_ASSIGN(ShowDefinitionForWordObserver);
 };
 
+#if defined(OS_MACOSX)
+#define MAYBE_LookUpStringForRangeRoutesToFocusedWidget \
+  DISABLED_LookUpStringForRangeRoutesToFocusedWidget
+#else
+#define MAYBE_LookUpStringForRangeRoutesToFocusedWidget \
+  LookUpStringForRangeRoutesToFocusedWidget
+#endif
 // This test verifies that requests for dictionary lookup based on selection
 // range are routed to the focused RenderWidgetHost.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       LookUpStringForRangeRoutesToFocusedWidget) {
+                       MAYBE_LookUpStringForRangeRoutesToFocusedWidget) {
   CreateIframePage("a(b)");
   std::vector<content::RenderFrameHost*> frames{GetFrame(IndexVector{}),
                                                 GetFrame(IndexVector{0})};
