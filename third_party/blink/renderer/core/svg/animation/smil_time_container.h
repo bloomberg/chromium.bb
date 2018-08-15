@@ -135,10 +135,11 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   TaskRunnerTimer<SMILTimeContainer> wakeup_timer_;
   TaskRunnerTimer<SMILTimeContainer> animation_policy_once_timer_;
 
-  using ElementAttributePair = std::pair<WeakMember<SVGElement>, QualifiedName>;
   using AnimationsLinkedHashSet = HeapLinkedHashSet<WeakMember<SVGSMILElement>>;
+  using AttributeAnimationsMap =
+      HeapHashMap<QualifiedName, AnimationsLinkedHashSet>;
   using GroupedAnimationsMap =
-      HeapHashMap<ElementAttributePair, Member<AnimationsLinkedHashSet>>;
+      HeapHashMap<WeakMember<SVGElement>, AttributeAnimationsMap>;
   GroupedAnimationsMap scheduled_animations_;
 
   Member<SVGSVGElement> owner_svg_element_;
