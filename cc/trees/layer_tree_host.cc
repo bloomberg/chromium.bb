@@ -738,30 +738,28 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   gfx::Transform identity_transform;
   LayerList update_layer_list;
 
-  {
-    base::AutoReset<bool> update_property_trees(&in_update_property_trees_,
-                                                true);
+  // The non-layer-list mode is used when blink provides cc with a layer tree
+  // and cc needs to compute property trees from that.
+  // In layer lists mode, blink sends cc property trees directly so they do not
+  // need to be built here. Layer lists mode is used by BlinkGenPropertyTrees
+  // and SlimmingPaintV2.
+  if (!IsUsingLayerLists()) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
                  "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
-    PropertyTrees* property_trees = &property_trees_;
-    if (!IsUsingLayerLists()) {
-      // In SPv2 the property trees should have been built by the
-      // client already.
-      PropertyTreeBuilder::BuildPropertyTrees(
-          root_layer, page_scale_layer, inner_viewport_scroll_layer(),
-          outer_viewport_scroll_layer(), overscroll_elasticity_layer(),
-          elastic_overscroll_, page_scale_factor_, device_scale_factor_,
-          gfx::Rect(device_viewport_size_), identity_transform, property_trees);
-      TRACE_EVENT_INSTANT1("cc",
-                           "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
-                           TRACE_EVENT_SCOPE_THREAD, "property_trees",
-                           property_trees->AsTracedValue());
+    PropertyTreeBuilder::BuildPropertyTrees(
+        root_layer, page_scale_layer, inner_viewport_scroll_layer(),
+        outer_viewport_scroll_layer(), overscroll_elasticity_layer(),
+        elastic_overscroll_, page_scale_factor_, device_scale_factor_,
+        gfx::Rect(device_viewport_size_), identity_transform, &property_trees_);
+    TRACE_EVENT_INSTANT1("cc", "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
+                         TRACE_EVENT_SCOPE_THREAD, "property_trees",
+                         property_trees_.AsTracedValue());
     } else {
       TRACE_EVENT_INSTANT1("cc",
                            "LayerTreeHost::UpdateLayers_ReceivedPropertyTrees",
                            TRACE_EVENT_SCOPE_THREAD, "property_trees",
-                           property_trees->AsTracedValue());
+                           property_trees_.AsTracedValue());
     }
 
 #if DCHECK_IS_ON()
@@ -779,8 +777,8 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     }
 #endif
 
-    draw_property_utils::UpdatePropertyTrees(this, property_trees);
-    draw_property_utils::FindLayersThatNeedUpdates(this, property_trees,
+    draw_property_utils::UpdatePropertyTrees(this, &property_trees_);
+    draw_property_utils::FindLayersThatNeedUpdates(this, &property_trees_,
                                                    &update_layer_list);
 
     // Dump property trees useful for debugging --blink-gen-property-trees
@@ -789,7 +787,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
       VLOG(3) << "CC Property Trees:";
       std::string out;
       base::JSONWriter::WriteWithOptions(
-          *property_trees->AsTracedValue()->ToBaseValue(),
+          *property_trees_.AsTracedValue()->ToBaseValue(),
           base::JSONWriter::OPTIONS_PRETTY_PRINT, &out);
       std::stringstream ss(out);
       while (!ss.eof()) {
@@ -798,7 +796,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
         VLOG(3) << line;
       }
     }
-  }
 
   bool painted_content_has_slow_paths = false;
   bool painted_content_has_non_aa_paint = false;
