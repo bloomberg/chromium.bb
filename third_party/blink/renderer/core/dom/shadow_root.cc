@@ -112,6 +112,10 @@ Node* ShadowRoot::Clone(Document&, CloneChildrenFlag) const {
   return nullptr;
 }
 
+void ShadowRoot::SetSlotting(ShadowRootSlotting slotting) {
+  slotting_ = static_cast<unsigned short>(slotting);
+}
+
 String ShadowRoot::InnerHTMLAsString() const {
   return CreateMarkup(this, kChildrenOnly);
 }

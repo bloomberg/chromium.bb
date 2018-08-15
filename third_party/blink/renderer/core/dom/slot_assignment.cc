@@ -241,7 +241,16 @@ void SlotAssignment::RecalcAssignment() {
 
     HTMLSlotElement* slot = nullptr;
     if (!is_user_agent) {
-      slot = FindSlotByName(child.SlotName());
+      if (owner_->IsManualSlotting()) {
+        for (auto candidate : Slots()) {
+          if (candidate->ContainsInAssignedNodesCandidates(child)) {
+            slot = candidate;
+            break;
+          }
+        }
+      } else {
+        slot = FindSlotByName(child.SlotName());
+      }
     } else {
       if (user_agent_custom_assign_slot && ShouldAssignToCustomSlot(child)) {
         slot = user_agent_custom_assign_slot;

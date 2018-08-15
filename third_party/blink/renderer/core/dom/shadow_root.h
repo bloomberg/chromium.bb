@@ -158,9 +158,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   void SetDelegatesFocus(bool flag) { delegates_focus_ = flag; }
   bool delegatesFocus() const { return delegates_focus_; }
 
-  void SetSlotting(ShadowRootSlotting slotting) {
-    slotting_ = static_cast<unsigned short>(slotting);
-  }
+  void SetSlotting(ShadowRootSlotting slotting);
   bool IsManualSlotting() {
     return slotting_ ==
            static_cast<unsigned short>(ShadowRootSlotting::kManual);

@@ -189,6 +189,18 @@ const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
   return elements;
 }
 
+void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
+  ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
+  assigned_nodes_candidates_.clear();
+  for (Member<Node> child : nodes) {
+    assigned_nodes_candidates_.insert(child);
+  }
+}
+
+bool HTMLSlotElement::ContainsInAssignedNodesCandidates(Node& host_child) {
+  return assigned_nodes_candidates_.Contains(&host_child);
+}
+
 const HeapVector<Member<Node>>& HTMLSlotElement::GetDistributedNodes() {
   DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   DCHECK(!NeedsDistributionRecalc());
@@ -691,6 +703,7 @@ void HTMLSlotElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(distributed_nodes_);
   visitor->Trace(old_distributed_nodes_);
   visitor->Trace(distributed_indices_);
+  visitor->Trace(assigned_nodes_candidates_);
   HTMLElement::Trace(visitor);
 }
 
