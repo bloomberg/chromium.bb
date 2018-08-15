@@ -12,7 +12,7 @@ ScopesLockManager::LockRange::LockRange(std::string begin, std::string end)
     : begin(std::move(begin)), end(std::move(end)) {}
 
 ScopesLockManager::ScopeLock::ScopeLock() = default;
-ScopesLockManager::ScopeLock::ScopeLock(ScopeLock&& other) {
+ScopesLockManager::ScopeLock::ScopeLock(ScopeLock&& other) noexcept {
   DCHECK(!this->is_locked_) << "Cannot move a lock onto an active lock.";
   this->is_locked_ = other.is_locked_;
   this->range_ = std::move(other.range_);
@@ -29,7 +29,7 @@ ScopesLockManager::ScopeLock::ScopeLock(LockRange range,
       closure_runner_(std::move(closure)) {}
 
 ScopesLockManager::ScopeLock& ScopesLockManager::ScopeLock::operator=(
-    ScopesLockManager::ScopeLock&& other) {
+    ScopesLockManager::ScopeLock&& other) noexcept {
   DCHECK(!this->is_locked_);
   this->is_locked_ = other.is_locked_;
   this->range_ = std::move(other.range_);
