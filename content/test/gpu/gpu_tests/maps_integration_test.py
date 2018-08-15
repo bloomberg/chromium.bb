@@ -71,24 +71,6 @@ class MapsIntegrationTest(
       json_contents = json.load(f)
     return json_contents
 
-  def _SpinWaitOnRAF(self, iterations, timeout=60):
-    self.tab.ExecuteJavaScript("""
-        window.__spinWaitOnRAFDone = false;
-        var iterationsLeft = {{ iterations }};
-
-        function spin() {
-          iterationsLeft--;
-          if (iterationsLeft == 0) {
-            window.__spinWaitOnRAFDone = true;
-            return;
-          }
-          window.requestAnimationFrame(spin);
-        }
-        window.requestAnimationFrame(spin);
-        """, iterations=iterations)
-    self.tab.WaitForJavaScriptCondition(
-        'window.__spinWaitOnRAFDone', timeout=timeout)
-
   def RunActualGpuTest(self, url, *args):
     tab = self.tab
     pixel_expectations_file = args[0]
@@ -98,10 +80,13 @@ class MapsIntegrationTest(
     action_runner.EvaluateJavaScript('window.startTest()')
     action_runner.WaitForJavaScriptCondition('window.testDone', timeout=320)
 
-    # TODO(kbr): This should not be necessary, but it's not clear if the test
-    # is failing on the bots in its absence. Remove once we can verify that
-    # it's safe to do so.
-    self._SpinWaitOnRAF(3)
+    # Wait for the page to process immediate work and load tiles.
+    action_runner.EvaluateJavaScript('''
+        window.testCompleted = false;
+        requestIdleCallback(
+            () => window.testCompleted = true,
+            { timeout : 10000 })''')
+    action_runner.WaitForJavaScriptCondition('window.testCompleted', timeout=30)
 
     if not tab.screenshot_supported:
       self.fail('Browser does not support screenshot capture')
