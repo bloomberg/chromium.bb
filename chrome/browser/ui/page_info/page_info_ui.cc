@@ -339,12 +339,12 @@ base::string16 PageInfoUI::PermissionActionToUIString(
 #if !defined(OS_ANDROID)
         if (type == CONTENT_SETTINGS_TYPE_SOUND &&
             base::FeatureList::IsEnabled(media::kAutoplaySoundSettings)) {
-          // If the block autoplay enabled preference is enabled then the
-          // sound default setting has to be ALLOW and we will return a custom
-          // string indicating that Chrome is controlling autoplay and sound
+          // If the block autoplay enabled preference is enabled and the
+          // sound default setting is ALLOW, we will return a custom string
+          // indicating that Chrome is controlling autoplay and sound
           // automatically.
-          if (profile->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled)) {
-            DCHECK_EQ(ContentSetting::CONTENT_SETTING_ALLOW, effective_setting);
+          if (profile->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled) &&
+              effective_setting == ContentSetting::CONTENT_SETTING_ALLOW) {
             return l10n_util::GetStringUTF16(
                 IDS_PAGE_INFO_BUTTON_TEXT_AUTOMATIC_BY_DEFAULT);
           }
