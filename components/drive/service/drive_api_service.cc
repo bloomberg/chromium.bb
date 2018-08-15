@@ -504,6 +504,7 @@ CancelCallback DriveAPIService::GetRemainingTeamDriveList(
       std::make_unique<TeamDriveListRequest>(sender_.get(), url_generator_,
                                              callback);
   request->set_page_token(page_token);
+  request->set_max_results(kMaxNumTeamDriveResourcePerRequest);
   request->set_fields(kTeamDrivesListFields);
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
