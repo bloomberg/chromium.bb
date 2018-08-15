@@ -251,7 +251,7 @@ class RedirectNotificationObserver : public NotificationObserver {
 
   NotificationSource source_;
   NotificationDetails details_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RedirectNotificationObserver);
 };
@@ -272,8 +272,7 @@ void RedirectNotificationObserver::Wait() {
     return;
 
   running_ = true;
-  message_loop_runner_ = new MessageLoopRunner;
-  message_loop_runner_->Run();
+  run_loop_.Run();
   EXPECT_TRUE(seen_);
 }
 
@@ -288,7 +287,7 @@ void RedirectNotificationObserver::Observe(
   if (!running_)
     return;
 
-  message_loop_runner_->Quit();
+  run_loop_.Quit();
   running_ = false;
 }
 
@@ -301,8 +300,7 @@ class RenderFrameHostCreatedObserver : public WebContentsObserver {
                                  int expected_frame_count)
       : WebContentsObserver(web_contents),
         expected_frame_count_(expected_frame_count),
-        frames_created_(0),
-        message_loop_runner_(new MessageLoopRunner) {}
+        frames_created_(0) {}
 
   ~RenderFrameHostCreatedObserver() override;
 
@@ -320,8 +318,8 @@ class RenderFrameHostCreatedObserver : public WebContentsObserver {
   // The number of RenderFrameHosts that have been created.
   int frames_created_;
 
-  // The MessageLoopRunner used to spin the message loop.
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  // The RunLoop used to spin the message loop.
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostCreatedObserver);
 };
@@ -330,14 +328,14 @@ RenderFrameHostCreatedObserver::~RenderFrameHostCreatedObserver() {
 }
 
 void RenderFrameHostCreatedObserver::Wait() {
-  message_loop_runner_->Run();
+  run_loop_.Run();
 }
 
 void RenderFrameHostCreatedObserver::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   frames_created_++;
   if (frames_created_ == expected_frame_count_) {
-    message_loop_runner_->Quit();
+    run_loop_.Quit();
   }
 }
 
@@ -7215,22 +7213,23 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Helper class to wait for a ShutdownRequest message to arrive.
 class ShutdownObserver : public RenderProcessHostObserver {
  public:
-  ShutdownObserver() : message_loop_runner_(new MessageLoopRunner) {}
+  ShutdownObserver() = default;
 
   void RenderProcessShutdownRequested(RenderProcessHost* host) override {
     has_received_shutdown_request_ = true;
-    message_loop_runner_->Quit();
+    run_loop_.Quit();
   }
 
-  void Wait() { message_loop_runner_->Run(); }
+  void Wait() { run_loop_.Run(); }
 
   bool has_received_shutdown_request() {
     return has_received_shutdown_request_;
   }
 
  private:
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
   bool has_received_shutdown_request_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ShutdownObserver);
 };
 
@@ -7753,8 +7752,7 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
  public:
   PendingWidgetMessageFilter()
       : BrowserMessageFilter(kMessageClasses, arraysize(kMessageClasses)),
-        routing_id_(MSG_ROUTING_NONE),
-        message_loop_runner_(new MessageLoopRunner) {}
+        routing_id_(MSG_ROUTING_NONE) {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
@@ -7766,9 +7764,7 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
     return handled;
   }
 
-  void Wait() {
-    message_loop_runner_->Run();
-  }
+  void Wait() { run_loop_.Run(); }
 
   int routing_id() { return routing_id_; }
 
@@ -7794,11 +7790,11 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
 
   void OnReceivedRoutingIDOnUI(int widget_routing_id) {
     routing_id_ = widget_routing_id;
-    message_loop_runner_->Quit();
+    run_loop_.Quit();
   }
 
   int routing_id_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingWidgetMessageFilter);
 };
@@ -9667,7 +9663,6 @@ class SetIsInertMessageFilter : public content::BrowserMessageFilter {
  public:
   SetIsInertMessageFilter()
       : content::BrowserMessageFilter(FrameMsgStart),
-        message_loop_runner_(new content::MessageLoopRunner),
         msg_received_(false) {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
@@ -9679,7 +9674,7 @@ class SetIsInertMessageFilter : public content::BrowserMessageFilter {
 
   bool is_inert() const { return is_inert_; }
 
-  void Wait() { message_loop_runner_->Run(); }
+  void Wait() { run_loop_.Run(); }
 
  private:
   ~SetIsInertMessageFilter() override {}
@@ -9694,10 +9689,10 @@ class SetIsInertMessageFilter : public content::BrowserMessageFilter {
     is_inert_ = is_inert;
     if (!msg_received_) {
       msg_received_ = true;
-      message_loop_runner_->Quit();
+      run_loop_.Quit();
     }
   }
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
   bool msg_received_;
   bool is_inert_;
   DISALLOW_COPY_AND_ASSIGN(SetIsInertMessageFilter);
@@ -12869,13 +12864,12 @@ namespace {
 // |web_contents|.
 class SameDocumentCommitObserver : public WebContentsObserver {
  public:
-  SameDocumentCommitObserver(WebContents* web_contents)
-      : WebContentsObserver(web_contents),
-        message_loop_runner_(new MessageLoopRunner) {
+  explicit SameDocumentCommitObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {
     EXPECT_TRUE(web_contents);
   }
 
-  void Wait() { message_loop_runner_->Run(); }
+  void Wait() { run_loop_.Run(); }
 
   const GURL& last_committed_url() { return last_committed_url_; }
 
@@ -12883,12 +12877,12 @@ class SameDocumentCommitObserver : public WebContentsObserver {
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {
     if (navigation_handle->IsSameDocument()) {
       last_committed_url_ = navigation_handle->GetURL();
-      message_loop_runner_->Quit();
+      run_loop_.Quit();
     }
   }
 
   GURL last_committed_url_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SameDocumentCommitObserver);
 };
@@ -13124,6 +13118,83 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   popup_root->ResetNavigationRequest(false, false);
   b_process_observer.Wait();
   EXPECT_TRUE(b_process_observer.did_exit_normally());
+}
+
+// This observer waits until WebContentsObserver::OnRendererUnresponsive
+// notification.
+class UnresponsiveRendererObserver : public WebContentsObserver {
+ public:
+  explicit UnresponsiveRendererObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  ~UnresponsiveRendererObserver() override {}
+
+  RenderProcessHost* Wait() {
+    if (!captured_render_process_host_)
+      run_loop_.Run();
+    return captured_render_process_host_;
+  }
+
+ private:
+  void OnRendererUnresponsive(RenderProcessHost* render_process_host) override {
+    captured_render_process_host_ = render_process_host;
+    run_loop_.Quit();
+  }
+
+  RenderProcessHost* captured_render_process_host_ = nullptr;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(UnresponsiveRendererObserver);
+};
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CommitTimeoutForHungRenderer) {
+  // Navigate first tab to a.com.
+  GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  RenderProcessHost* a_process =
+      shell()->web_contents()->GetMainFrame()->GetProcess();
+
+  // Use window.open to open b.com in a second tab.  Using a renderer-initiated
+  // navigation is important to leave a.com and b.com SiteInstances in the same
+  // BrowsingInstance (so the b.com -> a.com navigation in the next test step
+  // will reuse the process associated with the first a.com tab).
+  const char* kWindowOpenScript = R"(
+      var anchor = document.createElement("a");
+      anchor.href = "/cross-site/b.com/title2.html";
+      anchor.target = "_blank";
+      document.body.appendChild(anchor);
+      anchor.click(); )";
+  WebContentsAddedObserver new_window_observer;
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), kWindowOpenScript));
+  WebContents* new_window = new_window_observer.GetWebContents();
+  EXPECT_TRUE(WaitForLoadStop(new_window));
+  RenderProcessHost* b_process = new_window->GetMainFrame()->GetProcess();
+  EXPECT_NE(a_process, b_process);
+
+  // Hang the first tab's renderer.
+  const char* kHungScript = "setTimeout(function() { for (;;) {}; }, 0);";
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), kHungScript));
+
+  // Attempt to navigate the second tab to a.com.  This will attempt to reuse
+  // the hung process.
+  NavigationHandleImpl::SetCommitTimeoutForTesting(
+      base::TimeDelta::FromMilliseconds(100));
+  const char* kNavigationScript = R"(
+      var anchor = document.createElement("a");
+      anchor.href = "/cross-site/a.com/title3.html";
+      document.body.appendChild(anchor);
+      anchor.click(); )";
+  UnresponsiveRendererObserver unresponsive_renderer_observer(new_window);
+  EXPECT_TRUE(ExecuteScript(new_window, kNavigationScript));
+
+  // Verify that we will be notified about the unresponsive renderer.  Before
+  // changes in https://crrev.com/c/1089797, the test would hang here forever.
+  RenderProcessHost* hung_process = unresponsive_renderer_observer.Wait();
+  EXPECT_EQ(hung_process, a_process);
+
+  // Reset the timeout.
+  NavigationHandleImpl::SetCommitTimeoutForTesting(base::TimeDelta());
 }
 
 // Tests that an inner WebContents will reattach to its outer WebContents after
