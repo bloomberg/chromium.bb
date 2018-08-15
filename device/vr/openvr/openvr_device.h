@@ -59,7 +59,6 @@ class DEVICE_VR_EXPORT OpenVRDevice
   void OnPresentationEnded();
 
   std::unique_ptr<OpenVRRenderLoop> render_loop_;
-  mojom::VRDisplayInfoPtr display_info_;
   std::unique_ptr<OpenVRWrapper> openvr_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

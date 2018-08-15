@@ -77,6 +77,7 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
   void ReturnNonImmersiveSession(
       mojom::XRRuntime::RequestSessionCallback callback);
 
+  mojom::VRDisplayInfoPtr display_info_;
   std::vector<std::unique_ptr<VRDisplayImpl>> magic_window_sessions_;
 
  private:
@@ -86,8 +87,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
       mojom::XRFrameDataProvider::GetFrameDataCallback callback);
 
   mojom::XRRuntimeEventListenerPtr listener_;
-
-  mojom::VRDisplayInfoPtr display_info_;
 
   bool presenting_ = false;
 

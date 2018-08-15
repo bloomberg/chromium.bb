@@ -32,26 +32,17 @@ const char kNoDevicesMessage[] = "No devices found.";
 XR::XR(LocalFrame& frame, int64_t ukm_source_id)
     : ContextLifecycleObserver(frame.GetDocument()),
       FocusChangedObserver(frame.GetPage()),
-      devices_synced_(false),
       ukm_source_id_(ukm_source_id),
       binding_(this) {
   frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
   service_.set_connection_error_handler(
       WTF::Bind(&XR::Dispose, WrapWeakPersistent(this)));
-
-  device::mojom::blink::VRServiceClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-
-  // Setting the client kicks off a request for the details of any connected
-  // XRDevices.
-  service_->SetClient(std::move(client),
-                      WTF::Bind(&XR::OnDevicesSynced, WrapPersistent(this)));
 }
 
 void XR::FocusedFrameChanged() {
-  // Tell devices that focus changed.
-  for (const auto& device : devices_)
-    device->OnFrameFocusChanged();
+  // Tell device that focus changed.
+  if (device_)
+    device_->OnFrameFocusChanged();
 }
 
 bool XR::IsFrameFocused() {
@@ -99,60 +90,58 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // If we've previously synced the XRDevices or no longer have a valid service
-  // connection just use the current list. In the case of the service being
-  // disconnected this will be an empty array.
-  if (!service_ || devices_synced_) {
-    // TODO (offenwanger): When we have a prioritized order of devices, or some
-    // other method of getting the prefered device, insert that here. For now,
-    // just get the first device out of the list, if there is one.
-    if (devices_.size() == 0) {
-      resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                            kNoDevicesMessage));
-    } else {
-      resolver->Resolve(devices_[0]);
-    }
-
+  // If we no longer have a valid service connection reject the request.
+  if (!service_) {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
+                                          kNoDevicesMessage));
     return promise;
   }
 
-  // Otherwise wait for the full list of devices to be populated and resolve
-  // when onDevicesSynced is called.
+  // If we already have a device, use that.
+  if (device_) {
+    resolver->Resolve(device_);
+    return promise;
+  }
+
+  // Otherwise wait for device request callback.
   pending_devices_resolver_ = resolver;
+
+  // If we're waiting for sync, then request device is already underway.
+  if (pending_sync_) {
+    return promise;
+  }
+
+  service_->RequestDevice(
+      WTF::Bind(&XR::OnRequestDeviceReturned, WrapPersistent(this)));
+  pending_sync_ = true;
 
   return promise;
 }
 
-// Each time a new XRDevice is connected we'll recieve a XRDisplayPtr for it
-// here. Upon calling SetClient in the constructor we should receive one call
-// for each XRDevice that was already connected at the time.
-void XR::OnDisplayConnected(
-    device::mojom::blink::XRDevicePtr device,
-    device::mojom::blink::VRDisplayClientRequest client_request,
-    device::mojom::blink::VRDisplayInfoPtr display_info) {
-  XRDevice* xr_device =
-      new XRDevice(this, std::move(device), std::move(client_request),
-                   std::move(display_info));
-
-  devices_.push_back(xr_device);
-
+// This will call when the XRDevice and its capabilities has potentially
+// changed. For example, if a new physical device was connected to the system,
+// the XRDevice might now be able to support immersive sessions, where it
+// couldn't before.
+void XR::OnDeviceChanged() {
   DispatchEvent(*blink::Event::Create(EventTypeNames::devicechange));
 }
 
-// Called when the XRService has called OnDevicesConnected for all active
-// XRDevices.
-void XR::OnDevicesSynced() {
-  devices_synced_ = true;
+void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
+  pending_sync_ = false;
+  if (device) {
+    device_ = new XRDevice(this, std::move(device));
+  }
   ResolveRequestDevice();
 }
 
 // Called when details for every connected XRDevice has been received.
 void XR::ResolveRequestDevice() {
   if (pending_devices_resolver_) {
-    if (devices_.size() == 0) {
+    if (!device_) {
       pending_devices_resolver_->Reject(DOMException::Create(
           DOMExceptionCode::kNotFoundError, kNoDevicesMessage));
     } else {
+      // Log metrics
       if (!did_log_returned_device_ || !did_log_supports_immersive_) {
         Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;
         if (doc) {
@@ -160,22 +149,58 @@ void XR::ResolveRequestDevice() {
           ukm_builder.SetReturnedDevice(1);
           did_log_returned_device_ = true;
 
-          // We only expose a single device to WebXR, so report that device's
-          // capabilities.
-          if (devices_[0]->SupportsImmersive()) {
-            ukm_builder.SetReturnedPresentationCapableDevice(1);
-            did_log_supports_immersive_ = true;
-          }
-
           ukm_builder.Record(doc->UkmRecorder());
+
+          device::mojom::blink::XRSessionOptionsPtr session_options =
+              device::mojom::blink::XRSessionOptions::New();
+          session_options->immersive = true;
+
+          // TODO(http://crbug.com/872086) This shouldn't need to be called.
+          // This information should be logged on the browser side.
+          device_->xrDevicePtr()->SupportsSession(
+              std::move(session_options),
+              WTF::Bind(&XR::ReportImmersiveSupported, WrapPersistent(this)));
         }
       }
-      pending_devices_resolver_->Resolve(devices_[0]);
+
+      // Return the device.
+      pending_devices_resolver_->Resolve(device_);
     }
 
     pending_devices_resolver_ = nullptr;
   }
 }
+
+void XR::ReportImmersiveSupported(bool supported) {
+  Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;
+  if (doc && !did_log_supports_immersive_ && supported) {
+    ukm::builders::XR_WebXR ukm_builder(ukm_source_id_);
+    ukm_builder.SetReturnedPresentationCapableDevice(1);
+    ukm_builder.Record(doc->UkmRecorder());
+    did_log_supports_immersive_ = true;
+  }
+}
+
+void XR::AddedEventListener(const AtomicString& event_type,
+                            RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type,
+                                                registered_listener);
+
+  // If we don't have device and there is no sync pending, then request the
+  // device to ensure devices have been enumerated and register as a listener
+  // for changes.
+  if (event_type == EventTypeNames::devicechange && !device_ &&
+      !pending_sync_) {
+    device::mojom::blink::VRServiceClientPtr client;
+    binding_.Bind(mojo::MakeRequest(&client));
+
+    service_->RequestDevice(
+        WTF::Bind(&XR::OnRequestDeviceReturned, WrapPersistent(this)));
+    service_->SetClient(std::move(client));
+
+    pending_sync_ = true;
+  }
+};
 
 void XR::ContextDestroyed(ExecutionContext*) {
   Dispose();
@@ -187,11 +212,9 @@ void XR::Dispose() {
   service_.reset();
   binding_.Close();
 
-  // Shutdown all devices' message pipe
-  for (const auto& device : devices_)
-    device->Dispose();
-
-  devices_.clear();
+  // Shutdown device's message pipe.
+  if (device_)
+    device_->Dispose();
 
   // Ensure that any outstanding requestDevice promises are resolved. They will
   // receive a null result.
@@ -199,7 +222,7 @@ void XR::Dispose() {
 }
 
 void XR::Trace(blink::Visitor* visitor) {
-  visitor->Trace(devices_);
+  visitor->Trace(device_);
   visitor->Trace(pending_devices_resolver_);
   ContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);

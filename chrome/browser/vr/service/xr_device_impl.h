@@ -32,7 +32,7 @@ class BrowserXRRuntime;
 class XRDeviceImpl : public device::mojom::XRDevice {
  public:
   XRDeviceImpl(content::RenderFrameHost* render_frame_host,
-               device::mojom::VRServiceClient* service_client);
+               device::mojom::XRDeviceRequest device_request);
   ~XRDeviceImpl() override;
 
   // device::mojom::XRDevice
@@ -43,8 +43,13 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   void SupportsSession(device::mojom::XRSessionOptionsPtr options,
                        SupportsSessionCallback callback) override;
   void ExitPresent() override;
+  // device::mojom::XRDevice WebVR compatibility functions
+  void GetImmersiveVRDisplayInfo(
+      device::mojom::XRDevice::GetImmersiveVRDisplayInfoCallback callback)
+      override;
 
-  void SetListeningForActivate(bool listening);
+  void SetListeningForActivate(device::mojom::VRDisplayClientPtr client);
+
   void SetInFocusedFrame(bool in_focused_frame);
 
   // Notifications when devices are added/removed.
@@ -59,7 +64,7 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   void OnActivate(device::mojom::VRDisplayEventReason reason,
                   base::OnceCallback<void(bool)> on_handled);
   void OnDeactivate(device::mojom::VRDisplayEventReason reason);
-  bool ListeningForActivate() { return listening_for_activate_; }
+  bool ListeningForActivate() { return !!client_; }
   bool InFocusedFrame() { return in_focused_frame_; }
 
   base::WeakPtr<XRDeviceImpl> GetWeakPtr() {
@@ -71,10 +76,13 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   bool IsAnotherHostPresenting();
 
   bool InternalSupportsSession(device::mojom::XRSessionOptions* options);
-  void OnMagicWindowSessionCreated(
+  void OnNonImmersiveSessionCreated(
       device::mojom::XRDevice::RequestSessionCallback callback,
       device::mojom::XRSessionPtr session,
       device::mojom::XRSessionControllerPtr controller);
+  void OnSessionCreated(
+      device::mojom::XRDevice::RequestSessionCallback callback,
+      device::mojom::XRSessionPtr session);
 
   // TODO(https://crbug.com/837538): Instead, check before returning this
   // object.
@@ -83,10 +91,11 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo();
 
   bool in_focused_frame_ = false;
-  bool listening_for_activate_ = false;
 
   content::RenderFrameHost* render_frame_host_;
   mojo::Binding<device::mojom::XRDevice> binding_;
+  mojo::InterfacePtrSet<device::mojom::XRSessionClient> session_clients_;
+  // This is required for WebVR 1.1 backwards compatibility.
   device::mojom::VRDisplayClientPtr client_;
 
   mojo::InterfacePtrSet<device::mojom::XRSessionController>

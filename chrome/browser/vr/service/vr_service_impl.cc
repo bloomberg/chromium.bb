@@ -25,8 +25,8 @@ VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
           content::WebContents::FromRenderFrameHost(render_frame_host)),
       render_frame_host_(render_frame_host) {
   DCHECK(render_frame_host_);
-  // TODO(crbug/701027): make sure that client_ is never null by initializing it
-  // in the constructor.
+
+  XRRuntimeManager::GetInstance()->AddService(this);
 }
 
 // Constructor for testing.
@@ -53,25 +53,44 @@ void VRServiceImpl::Create(content::RenderFrameHost* render_frame_host,
       mojo::MakeStrongBinding(std::move(vr_service_impl), std::move(request)));
 }
 
-void VRServiceImpl::SetClient(device::mojom::VRServiceClientPtr service_client,
-                              SetClientCallback callback) {
-  DCHECK(!client_.get());
-  client_ = std::move(service_client);
-  set_client_callback_ = std::move(callback);
-
-  // Once a client has been connected AddService will force any VRDisplays to
-  // send ConnectDevice to it so that it's populated with the currently active
-  // displays. Thereafter it will stay up to date by virtue of listening for new
-  // connected events.
-  XRRuntimeManager::GetInstance()->AddService(this);
+void VRServiceImpl::InitializationComplete() {
+  // device_ is returned after all providers have initialized. This means that
+  // we can correctly answer SupportsSession, and can provide correct display
+  // capabilities.
+  initialization_complete_ = true;
+  MaybeReturnDevice();
 }
 
-void VRServiceImpl::InitializationComplete() {
-  // device_ is added after all providers have initialized.  This means that we
-  // can correctly answer SupportsSession, and can provide correct display
-  // capabilities.
-  device_ = std::make_unique<XRDeviceImpl>(render_frame_host_, client_.get());
-  base::ResetAndReturn(&set_client_callback_).Run();
+void VRServiceImpl::RequestDevice(RequestDeviceCallback callback) {
+  if (request_device_callback_) {
+    // There should only be one pending VRService::RequestDevice at a time.
+    // If request device is called multiple times on the renderer side, the
+    // requests should be queued there and returned when this single call
+    // returns.
+    mojo::ReportBadMessage(
+        "Request device called before previous call completed.");
+  }
+
+  request_device_callback_ = std::move(callback);
+  MaybeReturnDevice();
+}
+
+void VRServiceImpl::SetClient(device::mojom::VRServiceClientPtr client) {
+  client_ = std::move(client);
+}
+
+void VRServiceImpl::MaybeReturnDevice() {
+  if (request_device_callback_ && initialization_complete_) {
+    // If we are requesting a new device, destroy the old one and create a new
+    // one. We assume that the renderer will use the old device until it has
+    // been destroyed, so it is safe to destroy it on the browser side.
+    device::mojom::XRDevicePtr device;
+    if (XRRuntimeManager::GetInstance()->HasAnyRuntime()) {
+      device_ = std::make_unique<XRDeviceImpl>(render_frame_host_,
+                                               mojo::MakeRequest(&device));
+    }
+    base::ResetAndReturn(&request_device_callback_).Run(std::move(device));
+  }
 }
 
 void VRServiceImpl::ConnectRuntime(BrowserXRRuntime* runtime) {
@@ -82,17 +101,26 @@ void VRServiceImpl::ConnectRuntime(BrowserXRRuntime* runtime) {
   if (device_) {
     device_->OnRuntimeAvailable(runtime);
   }
+
+  if (client_) {
+    client_->OnDeviceChanged();
+  }
 }
 
 void VRServiceImpl::RemoveRuntime(BrowserXRRuntime* runtime) {
   if (device_) {
     device_->OnRuntimeRemoved(runtime);
   }
+
+  if (client_) {
+    client_->OnDeviceChanged();
+  }
 }
 
-void VRServiceImpl::SetListeningForActivate(bool listening) {
+void VRServiceImpl::SetListeningForActivate(
+    device::mojom::VRDisplayClientPtr client) {
   if (device_)
-    device_->SetListeningForActivate(listening);
+    device_->SetListeningForActivate(std::move(client));
 }
 
 void VRServiceImpl::OnWebContentsFocused(content::RenderWidgetHost* host) {

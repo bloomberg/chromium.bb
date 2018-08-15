@@ -79,7 +79,7 @@ MockDevice.prototype.setStageTransform = function(value) {
     this.displayInfo_.stageParameters = null;
   }
 
-  this.displayClient_.onChanged(this.displayInfo_);
+  this.sessionClient_.onChanged(this.displayInfo_);
 };
 
 MockDevice.prototype.getSubmitFrameCount = function() {

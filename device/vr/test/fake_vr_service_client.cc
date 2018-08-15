@@ -12,18 +12,6 @@ FakeVRServiceClient::FakeVRServiceClient(mojom::VRServiceClientRequest request)
 
 FakeVRServiceClient::~FakeVRServiceClient() {}
 
-void FakeVRServiceClient::OnDisplayConnected(
-    mojom::XRDevicePtr device,
-    mojom::VRDisplayClientRequest request,
-    mojom::VRDisplayInfoPtr displayInfo) {
-  displays_.push_back(std::move(displayInfo));
-  auto display_client =
-      std::make_unique<FakeVRDisplayImplClient>(std::move(request));
-  display_client->SetServiceClient(this);
-
-  display_clients_.push_back(std::move(display_client));
-}
-
 void FakeVRServiceClient::SetLastDeviceId(mojom::XRDeviceId id) {
   last_device_id_ = id;
 }

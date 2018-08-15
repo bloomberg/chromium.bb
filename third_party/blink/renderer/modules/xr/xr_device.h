@@ -22,30 +22,15 @@ class XR;
 class XRFrameProvider;
 class XRSession;
 
-class XRDevice final : public ScriptWrappable,
-                       public device::mojom::blink::VRDisplayClient {
+class XRDevice final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRDevice(XR*,
-           device::mojom::blink::XRDevicePtr,
-           device::mojom::blink::VRDisplayClientRequest,
-           device::mojom::blink::VRDisplayInfoPtr);
+  XRDevice(XR*, device::mojom::blink::XRDevicePtr);
   XR* xr() const { return xr_; }
-
-  bool external() const { return is_external_; }
 
   ScriptPromise supportsSession(ScriptState*, const XRSessionCreationOptions&);
   ScriptPromise requestSession(ScriptState*, const XRSessionCreationOptions&);
-
-  // XRDisplayClient
-  void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
-  void OnExitPresent() override;
-  void OnBlur() override;
-  void OnFocus() override;
-  void OnActivate(device::mojom::blink::VRDisplayEventReason,
-                  OnActivateCallback on_handled) override;
-  void OnDeactivate(device::mojom::blink::VRDisplayEventReason) override;
 
   XRFrameProvider* frameProvider();
 
@@ -62,29 +47,15 @@ class XRDevice final : public ScriptWrappable,
   xrEnviromentProviderPtr() const {
     return enviroment_provider_;
   }
-  const device::mojom::blink::VRDisplayInfoPtr& xrDisplayInfoPtr() const {
-    return display_info_;
-  }
-  // Incremented every time display_info_ is changed, so that other objects that
-  // depend on it can know when they need to update.
-  unsigned int xrDisplayInfoPtrId() const { return display_info_id_; }
 
   void OnFrameFocusChanged();
-  // The device may report focus to us - for example if another application is
-  // using the headset, or some browsing UI is shown, we may not have device
-  // focus.
-  bool HasDeviceFocus() { return has_device_focus_; }
-  bool HasDeviceAndFrameFocus() { return IsFrameFocused() && HasDeviceFocus(); }
-
-  bool SupportsImmersive() { return supports_immersive_; }
+  bool HasFrameFocus() { return IsFrameFocused(); }
 
   int64_t GetSourceId() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr);
-
   const char* checkSessionSupport(const XRSessionCreationOptions&) const;
 
   void OnRequestSessionReturned(ScriptPromiseResolver* resolver,
@@ -105,10 +76,6 @@ class XRDevice final : public ScriptWrappable,
   Member<XR> xr_;
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;
-  bool is_external_ = false;
-  bool supports_immersive_ = false;
-  bool supports_ar_ = false;
-  bool has_device_focus_ = true;
 
   // Indicates whether we've already logged a request for an immersive session.
   bool did_log_request_immersive_session_ = false;
@@ -116,10 +83,6 @@ class XRDevice final : public ScriptWrappable,
   device::mojom::blink::XRFrameDataProviderPtr magic_window_provider_;
   device::mojom::blink::XREnviromentIntegrationProviderPtr enviroment_provider_;
   device::mojom::blink::XRDevicePtr device_ptr_;
-  device::mojom::blink::VRDisplayInfoPtr display_info_;
-  unsigned int display_info_id_ = 0;
-
-  mojo::Binding<device::mojom::blink::VRDisplayClient> display_client_binding_;
 };
 
 }  // namespace blink

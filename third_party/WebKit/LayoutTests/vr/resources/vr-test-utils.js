@@ -1,5 +1,12 @@
 'use strict';
 
+MockVRService.prototype.setListeningForActivate = function(client) {
+  for (let i = 0; i < this.devices_.length; i++) {
+    this.devices_[i].displayClient_ = client;
+  }
+};
+
+
 MockDevice.prototype.setPose = function(pose) {
   if (pose == null) {
     this.pose_ = null;
@@ -25,6 +32,10 @@ MockDevice.prototype.setPose = function(pose) {
 
 MockDevice.prototype.forceActivate = function(reason) {
   this.displayClient_.onActivate(reason);
+};
+
+MockDevice.prototype.getImmersiveVRDisplayInfo = function() {
+  return Promise.resolve({info: this.displayInfo_});
 };
 
 function vr_test(func, vrDisplays, name, properties) {
@@ -147,4 +158,4 @@ function fakeVRDisplays(){
     }
     // TODO(bsheedy) add more displays like Rift/Vive
   };
-}
+};

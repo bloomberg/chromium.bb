@@ -31,9 +31,9 @@ void XRFrameOfReference::UpdateStageBounds(XRStageBounds* bounds) {
 
 void XRFrameOfReference::UpdateStageTransform() {
   const device::mojom::blink::VRDisplayInfoPtr& display_info =
-      session()->device()->xrDisplayInfoPtr();
+      session()->GetVRDisplayInfo();
 
-  if (display_info->stageParameters) {
+  if (display_info && display_info->stageParameters) {
     // Use the transform given by xrDisplayInfo's stageParamters if available.
     const WTF::Vector<float>& m =
         display_info->stageParameters->standingTransform;
@@ -52,7 +52,7 @@ void XRFrameOfReference::UpdateStageTransform() {
     pose_transform_.reset();
   }
 
-  display_info_id_ = session()->device()->xrDisplayInfoPtrId();
+  display_info_id_ = session()->DisplayInfoPtrId();
 }
 
 // Enables emulated height when using a stage frame of reference, which should
@@ -97,7 +97,7 @@ std::unique_ptr<TransformationMatrix> XRFrameOfReference::TransformBasePose(
     case kTypeStage:
       // Check first to see if the xrDisplayInfo has updated since the last
       // call. If so, update the pose transform.
-      if (display_info_id_ != session()->device()->xrDisplayInfoPtrId())
+      if (display_info_id_ != session()->DisplayInfoPtrId())
         UpdateStageTransform();
 
       // If the stage has a transform apply it to the base pose and return that,

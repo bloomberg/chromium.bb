@@ -18,7 +18,6 @@ vr_test( (t) => {
     let display = displays[0];
 
     t.step( () => {
-      console.log(display.getEyeParameters);
       assert_equals(display.getEyeParameters("left"), null);
       assert_equals(display.getEyeParameters("right"), null);
     }, "Eye parameters are null");

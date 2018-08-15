@@ -35,8 +35,13 @@ vr_test( (t, deviceController) => {
       });
     }
     window.addEventListener("vrdisplayactivate", onDisplayActivate, false);
-    deviceController.forceActivate(2 /*Display mounted, although any int 0-3 is valid*/);
 
+    // Timeout here is required because addEventListener sends a call to mojo to
+    // register the listener on the backend, which doesn't go through until the
+    // javascript pauses.
+    setTimeout(() => {
+      deviceController.forceActivate(2 /*Display mounted, although any int 0-3 is valid*/);
+    }, 100);
   }, (err) => {
     t.step( () => {
       assert_unreached(err);

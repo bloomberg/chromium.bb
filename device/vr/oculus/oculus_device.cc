@@ -178,6 +178,8 @@ void OculusDevice::OnRequestSessionResult(
       base::BindOnce(&OculusDevice::OnPresentingControllerMojoConnectionError,
                      base::Unretained(this)));
 
+  session->display_info = display_info_.Clone();
+
   std::move(callback).Run(std::move(session), std::move(session_controller));
 }
 

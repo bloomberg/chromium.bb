@@ -34,9 +34,8 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   void GetDisplays(ScriptPromiseResolver*);
   void SetListeningForActivate(bool);
 
-  void OnDisplayConnected(device::mojom::blink::XRDevicePtr,
-                          device::mojom::blink::VRDisplayClientRequest,
-                          device::mojom::blink::VRDisplayInfoPtr) override;
+  // VRServiceClient override.
+  void OnDeviceChanged() override;
 
   void FocusChanged();
 
@@ -46,6 +45,14 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   void OnDisplaysSynced();
   void OnGetDisplays();
 
+  // Initial callback for requesting the device when VR boots up.
+  void OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr);
+  // Callback for subsequent request device calls.
+  void OnNewDeviceReturned(device::mojom::blink::XRDevicePtr);
+
+  void OnImmersiveDisplayInfoReturned(
+      device::mojom::blink::VRDisplayInfoPtr info);
+
   // ContextLifecycleObserver.
   void ContextDestroyed(ExecutionContext*) override;
   void Dispose();
@@ -53,12 +60,14 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   void LogGetDisplayResult();
 
   Member<NavigatorVR> navigator_vr_;
-  VRDisplayVector displays_;
+  Member<VRDisplay> display_;
 
   bool display_synced_;
 
   bool has_presentation_capable_display_ = false;
   bool has_display_ = false;
+  bool pending_listening_for_activate_ = false;
+  bool listening_for_activate_ = false;
 
   Deque<std::unique_ptr<VRGetDevicesCallback>> pending_get_devices_callbacks_;
   device::mojom::blink::VRServicePtr service_;

@@ -152,6 +152,11 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
   return nullptr;
 }
 
+bool XRRuntimeManager::HasAnyRuntime() {
+  device::mojom::XRSessionOptions options = device::mojom::XRSessionOptions();
+  return GetRuntimeForOptions(&options) != nullptr;
+}
+
 bool XRRuntimeManager::HasInstance() {
   return g_xr_runtime_manager != nullptr;
 }
