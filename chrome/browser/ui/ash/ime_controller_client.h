@@ -85,6 +85,8 @@ class ImeControllerClient
   // Sends information about current and available IMEs to ash.
   void RefreshIme();
 
+  void ShowModeIndicator();
+
   chromeos::input_method::InputMethodManager* const input_method_manager_;
 
   // Binds this object to the mojo interface.

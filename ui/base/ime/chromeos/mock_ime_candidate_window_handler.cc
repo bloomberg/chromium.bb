@@ -34,6 +34,10 @@ void MockIMECandidateWindowHandler::SetCursorBounds(
   ++set_cursor_bounds_call_count_;
 }
 
+gfx::Rect MockIMECandidateWindowHandler::GetCursorBounds() const {
+  return gfx::Rect(1, 1, 1, 1);
+}
+
 void MockIMECandidateWindowHandler::Reset() {
   set_cursor_bounds_call_count_ = 0;
   update_lookup_table_call_count_ = 0;

@@ -1,14 +1,14 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_IME_MODE_INDICATOR_VIEW_H_
-#define UI_CHROMEOS_IME_MODE_INDICATOR_VIEW_H_
+#ifndef ASH_IME_IME_MODE_INDICATOR_VIEW_H_
+#define ASH_IME_IME_MODE_INDICATOR_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
-#include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget.h"
@@ -17,26 +17,16 @@ namespace views {
 class Label;
 }  // namespace views
 
-namespace ui {
-namespace ime {
+namespace ash {
 
 // A small bubble that shows the short name of the current IME (e.g. "DV" for
 // Dvorak) after switching IMEs with an accelerator (e.g. Ctrl-Space).
-class UI_CHROMEOS_EXPORT ModeIndicatorView
-    : public views::BubbleDialogDelegateView {
+class ASH_EXPORT ImeModeIndicatorView : public views::BubbleDialogDelegateView {
  public:
-  class Delegate {
-   public:
-    virtual ~Delegate() = default;
-
-    // Configures the InitParams to place the bubble in the right container.
-    virtual void InitWidgetContainer(views::Widget::InitParams* params) = 0;
-  };
-
-  ModeIndicatorView(Delegate* delegate,
-                    const gfx::Rect& cursor_bounds,
-                    const base::string16& label);
-  ~ModeIndicatorView() override;
+  // The cursor bounds is in the universal screen coordinates in DIP.
+  ImeModeIndicatorView(const gfx::Rect& cursor_bounds,
+                       const base::string16& label);
+  ~ImeModeIndicatorView() override;
 
   // Show the mode indicator then hide with fading animation.
   void ShowAndFadeOut();
@@ -55,15 +45,13 @@ class UI_CHROMEOS_EXPORT ModeIndicatorView
       views::Widget* widget) override;
 
  private:
-  Delegate* delegate_;
   gfx::Rect cursor_bounds_;
   views::Label* label_view_;
   base::OneShotTimer timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ModeIndicatorView);
+  DISALLOW_COPY_AND_ASSIGN(ImeModeIndicatorView);
 };
 
-}  // namespace ime
-}  // namespace ui
+}  // namespace ash
 
-#endif  // UI_CHROMEOS_IME_MODE_INDICATOR_VIEW_H_
+#endif  // ASH_IME_IME_MODE_INDICATOR_VIEW_H_

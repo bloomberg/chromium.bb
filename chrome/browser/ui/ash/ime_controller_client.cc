@@ -16,6 +16,7 @@
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/ime_bridge.h"
 
 using chromeos::input_method::InputMethodDescriptor;
 using chromeos::input_method::InputMethodManager;
@@ -124,6 +125,36 @@ void ImeControllerClient::InputMethodChanged(InputMethodManager* manager,
                                              Profile* profile,
                                              bool show_message) {
   RefreshIme();
+  if (show_message)
+    ShowModeIndicator();
+}
+
+void ImeControllerClient::ShowModeIndicator() {
+  // Get the short name of the changed input method (e.g. US, JA, etc.)
+  const InputMethodDescriptor descriptor =
+      input_method_manager_->GetActiveIMEState()->GetCurrentInputMethod();
+  const base::string16 short_name =
+      input_method_manager_->GetInputMethodUtil()->GetInputMethodShortName(
+          descriptor);
+
+  chromeos::IMECandidateWindowHandlerInterface* cw_handler =
+      ui::IMEBridge::Get()->GetCandidateWindowHandler();
+  if (!cw_handler)
+    return;
+
+  gfx::Rect anchor_bounds = cw_handler->GetCursorBounds();
+  if (anchor_bounds == gfx::Rect()) {
+    // TODO(shuchen): Show the mode indicator in the right bottom of the
+    // display when the launch bar is hidden and the focus is out.  To
+    // implement it, we should consider to use message center or system
+    // notification.  Note, launch bar can be vertical and can be placed
+    // right/left side of display.
+    return;
+  }
+
+  // Mojo call to Ash to show the mode indicator view with the given anchor
+  // bounds and short name.
+  ime_controller_ptr_->ShowModeIndicator(anchor_bounds, short_name);
 }
 
 // chromeos::input_method::InputMethodManager::ImeMenuObserver:
