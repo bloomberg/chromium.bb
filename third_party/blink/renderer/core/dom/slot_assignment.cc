@@ -83,7 +83,7 @@ void SlotAssignment::DidAddSlotInternal(HTMLSlotElement& slot) {
   DCHECK(!old_active || old_active != slot);
 
   // This might invalidate the slot_map's cache.
-  slot_map_->Add(slot_name, &slot);
+  slot_map_->Add(slot_name, slot);
 
   // This also ensures that TreeOrderedMap has a cache for the first element.
   HTMLSlotElement* new_active = FindSlotByName(slot_name);
@@ -130,7 +130,7 @@ void SlotAssignment::DidRemoveSlotInternal(
   HTMLSlotElement* old_active =
       GetCachedFirstSlotWithoutAccessingNodeTree(slot_name);
   DCHECK(old_active);
-  slot_map_->Remove(slot_name, &slot);
+  slot_map_->Remove(slot_name, slot);
   // This also ensures that TreeOrderedMap has a cache for the first element.
   HTMLSlotElement* new_active = FindSlotByName(slot_name);
   DCHECK(!new_active || new_active != slot);

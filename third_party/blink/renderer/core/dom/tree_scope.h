@@ -76,8 +76,8 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
       const AtomicString&) const;
   bool HasElementWithId(const AtomicString& id) const;
   bool ContainsMultipleElementsWithId(const AtomicString& id) const;
-  void AddElementById(const AtomicString& element_id, Element*);
-  void RemoveElementById(const AtomicString& element_id, Element*);
+  void AddElementById(const AtomicString& element_id, Element&);
+  void RemoveElementById(const AtomicString& element_id, Element&);
 
   Document& GetDocument() const {
     DCHECK(document_);
@@ -86,8 +86,8 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
 
   Node* AncestorInThisScope(Node*) const;
 
-  void AddImageMap(HTMLMapElement*);
-  void RemoveImageMap(HTMLMapElement*);
+  void AddImageMap(HTMLMapElement&);
+  void RemoveImageMap(HTMLMapElement&);
   HTMLMapElement* GetImageMap(const String& url) const;
 
   Element* ElementFromPoint(double x, double y) const;

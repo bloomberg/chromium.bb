@@ -87,13 +87,13 @@ void HTMLMapElement::ParseAttribute(const AttributeModificationParams& params) {
         return;
     }
     if (isConnected())
-      GetTreeScope().RemoveImageMap(this);
+      GetTreeScope().RemoveImageMap(*this);
     String map_name = params.new_value;
     if (map_name[0] == '#')
       map_name = map_name.Substring(1);
     name_ = AtomicString(map_name);
     if (isConnected())
-      GetTreeScope().AddImageMap(this);
+      GetTreeScope().AddImageMap(*this);
 
     return;
   }
@@ -108,13 +108,13 @@ HTMLCollection* HTMLMapElement::areas() {
 Node::InsertionNotificationRequest HTMLMapElement::InsertedInto(
     ContainerNode* insertion_point) {
   if (insertion_point->isConnected())
-    GetTreeScope().AddImageMap(this);
+    GetTreeScope().AddImageMap(*this);
   return HTMLElement::InsertedInto(insertion_point);
 }
 
 void HTMLMapElement::RemovedFrom(ContainerNode* insertion_point) {
   if (insertion_point->isConnected())
-    GetTreeScope().RemoveImageMap(this);
+    GetTreeScope().RemoveImageMap(*this);
   HTMLElement::RemovedFrom(insertion_point);
 }
 

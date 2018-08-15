@@ -137,7 +137,7 @@ const HeapVector<Member<Element>>& TreeScope::GetAllElementsById(
 }
 
 void TreeScope::AddElementById(const AtomicString& element_id,
-                               Element* element) {
+                               Element& element) {
   if (!elements_by_id_)
     elements_by_id_ = TreeOrderedMap::Create();
   elements_by_id_->Add(element_id, element);
@@ -145,7 +145,7 @@ void TreeScope::AddElementById(const AtomicString& element_id,
 }
 
 void TreeScope::RemoveElementById(const AtomicString& element_id,
-                                  Element* element) {
+                                  Element& element) {
   if (!elements_by_id_)
     return;
   elements_by_id_->Remove(element_id, element);
@@ -165,8 +165,8 @@ Node* TreeScope::AncestorInThisScope(Node* node) const {
   return nullptr;
 }
 
-void TreeScope::AddImageMap(HTMLMapElement* image_map) {
-  const AtomicString& name = image_map->GetName();
+void TreeScope::AddImageMap(HTMLMapElement& image_map) {
+  const AtomicString& name = image_map.GetName();
   if (!name)
     return;
   if (!image_maps_by_name_)
@@ -174,10 +174,10 @@ void TreeScope::AddImageMap(HTMLMapElement* image_map) {
   image_maps_by_name_->Add(name, image_map);
 }
 
-void TreeScope::RemoveImageMap(HTMLMapElement* image_map) {
+void TreeScope::RemoveImageMap(HTMLMapElement& image_map) {
   if (!image_maps_by_name_)
     return;
-  const AtomicString& name = image_map->GetName();
+  const AtomicString& name = image_map.GetName();
   if (!name)
     return;
   image_maps_by_name_->Remove(name, image_map);

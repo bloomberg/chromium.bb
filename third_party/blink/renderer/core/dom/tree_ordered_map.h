@@ -50,8 +50,8 @@ class TreeOrderedMap : public GarbageCollected<TreeOrderedMap> {
  public:
   static TreeOrderedMap* Create();
 
-  void Add(const AtomicString&, Element*);
-  void Remove(const AtomicString&, Element*);
+  void Add(const AtomicString&, Element&);
+  void Remove(const AtomicString&, Element&);
 
   bool Contains(const AtomicString&) const;
   bool ContainsMultiple(const AtomicString&) const;
@@ -98,7 +98,7 @@ class TreeOrderedMap : public GarbageCollected<TreeOrderedMap> {
 
   class MapEntry : public GarbageCollected<MapEntry> {
    public:
-    explicit MapEntry(Element* first_element)
+    explicit MapEntry(Element& first_element)
         : element(first_element), count(1) {}
 
     void Trace(blink::Visitor*);
