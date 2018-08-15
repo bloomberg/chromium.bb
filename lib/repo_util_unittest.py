@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import mock
 import os
 
 from chromite.lib import cros_build_lib
@@ -127,44 +126,48 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
     os.makedirs(self.subdir)
     self.repo = repo_util.Repository(self.root)
 
-  def MockRun(self):
-    self.repo._Run = mock.MagicMock()
-    return self.repo._Run
+  def AssertRepoCalled(self, repo_args, **kwargs):
+    kwargs.setdefault('cwd', self.root)
+    self.assertCommandCalled([RepoCmdPath(self.root)] + repo_args, **kwargs)
+
+  def testAssertRepoCalled(self):
+    self.repo._Run(['subcmd', 'arg1'])
+    with self.assertRaises(AssertionError):
+      self.AssertRepoCalled(['subcmd', 'arg2'])
+    with self.assertRaises(AssertionError):
+      self.AssertRepoCalled(['subcmd'])
+    with self.assertRaises(AssertionError):
+      self.AssertRepoCalled(['subcmd', 'arg1'], cwd='other_dir')
+    self.AssertRepoCalled(['subcmd', 'arg1'])
 
   def testRun(self):
     self.repo._Run(['subcmd', 'arg'])
-    self.assertCommandCalled([RepoCmdPath(self.root), 'subcmd', 'arg'],
-                             cwd=self.root)
+    self.AssertRepoCalled(['subcmd', 'arg'])
 
   def testRunSubDirCwd(self):
     self.repo._Run(['subcmd'], cwd=self.subdir)
-    self.assertCommandCalled([RepoCmdPath(self.root), 'subcmd'],
-                             cwd=self.subdir)
+    self.AssertRepoCalled(['subcmd'], cwd=self.subdir)
 
   def testRunBadCwd(self):
     with self.assertRaises(repo_util.NotInRepoError):
       self.repo._Run(['subcmd'], cwd=self.tempdir)
 
   def testSyncSimple(self):
-    run = self.MockRun()
     self.repo.Sync()
-    run.assert_called_with(['sync'], cwd=None)
+    self.AssertRepoCalled(['sync'])
 
   def testSyncComplex(self):
-    run = self.MockRun()
     self.repo.Sync(
         projects=['p1', 'p2'], jobs=9, cwd=self.subdir)
-    run.assert_called_with(
+    self.AssertRepoCalled(
         ['sync', 'p1', 'p2', '--jobs', '9'], cwd=self.subdir)
 
   def testStartBranchSimple(self):
-    run = self.MockRun()
     self.repo.StartBranch('my-branch')
-    run.assert_called_with(['start', 'my-branch', '--all'], cwd=None)
+    self.AssertRepoCalled(['start', 'my-branch', '--all'])
 
   def testStartBranchComplex(self):
-    run = self.MockRun()
     self.repo.StartBranch(
         'my-branch', projects=['foo', 'bar'], cwd=self.subdir)
-    run.assert_called_with(
+    self.AssertRepoCalled(
         ['start', 'my-branch', 'foo', 'bar'], cwd=self.subdir)
