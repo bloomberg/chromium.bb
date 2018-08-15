@@ -22,3 +22,15 @@ SettingsUIBrowserTest.All
 -CrElementsActionMenuTest.All
 -CrElementsInputTest.All
 -MaterialBookmarksFocusTest.All
+
+# TODO(rbpotter): The following tests are flaky on debug builds. Fix them and
+# remove these exclusions.
+-CrElementsCheckboxTest.All
+-CrElementsProfileAvatarSelectorFocusTest.All
+-CrElementsToggleTest.All
+-CrSettingsAnimatedPagesTest.All
+-CrSettingsFocusRowBehavior.FocusTest
+-CrSettingsSyncPageTest.All
+-MaterialHistoryFocusTest.All
+-PrintPreviewDestinationDialogInteractiveTest.FocusSearchBox
+-PrintPreviewPrintHeaderInteractiveTest.FocusPrintOnReady

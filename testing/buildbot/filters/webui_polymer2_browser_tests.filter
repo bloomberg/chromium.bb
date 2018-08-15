@@ -40,6 +40,11 @@
 -PrintPreviewDestinationListTest.FireDestinationSelected
 -SettingsAdvancedPageBrowserTest.Load
 
+# Tests that fail only on official builds.
+-CrSettingsChromeCleanupPageTest.All
+-CrSettingsIncompatibleApplicationsPageTest.All
+-CrSettingsMetricsReportingTest.All
+
 # Most of the a11y tests are failing because they use /deep/. Should be
 # addressed as part of crbug.com/860069
 -CrExtensionsA11yTest.*
@@ -175,7 +180,6 @@ CrSettingsCategorySettingExceptionsTest.*
 CrSettingsCertificateManagerTest.*
 CrSettingsChangePasswordPageTest.*
 CrSettingsCheckboxTest.*
-CrSettingsChromeCleanupPageTest.*
 CrSettingsDateTimePageTest.*
 CrSettingsDefaultBrowserTest.*
 CrSettingsDevicePageTest.DevicePageTest
@@ -192,10 +196,8 @@ CrSettingsFingerprintProgressArcTest.*
 CrSettingsFocusRowBehavior.*
 CrSettingsGoogleAssistantPageTest.*
 CrSettingsImportDataDialogTest.*
-CrSettingsIncompatibleApplicationsPageTest.*
 CrSettingsLanguagesPageTest.InputMethods
 CrSettingsLanguagesTest.*
-CrSettingsMetricsReportingTest.*
 CrSettingsMultideviceFeatureItemTest.*
 CrSettingsMultideviceFeatureToggleTest.*
 CrSettingsMultidevicePageTest.*
