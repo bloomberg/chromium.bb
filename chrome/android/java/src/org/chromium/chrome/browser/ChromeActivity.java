@@ -1372,10 +1372,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         maybeRemoveWindowBackground();
         DownloadManagerService.getDownloadManagerService().onActivityLaunched();
 
+        VrModuleProvider.getDelegate().onNativeLibraryAvailable();
         if (getSavedInstanceState() == null && getIntent() != null) {
             VrModuleProvider.getDelegate().onNewIntentWithNative(this, getIntent());
         }
-        VrModuleProvider.getDelegate().onNativeLibraryAvailable();
         super.finishNativeInitialization();
 
         ViewGroup coordinator = findViewById(R.id.coordinator);
