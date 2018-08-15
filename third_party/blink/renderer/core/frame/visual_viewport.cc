@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
@@ -56,6 +57,9 @@
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
@@ -84,8 +88,11 @@ ScrollPaintPropertyNode* VisualViewport::GetScrollNode() const {
 }
 
 void VisualViewport::UpdatePaintPropertyNodes(
-    scoped_refptr<const TransformPaintPropertyNode> transform_parent,
-    scoped_refptr<const ScrollPaintPropertyNode> scroll_parent) {
+    PaintPropertyTreeBuilderFragmentContext& context) {
+  auto* transform_parent = context.current.transform;
+  auto* scroll_parent = context.current.scroll;
+  auto* effect_parent = context.current_effect;
+
   DCHECK(transform_parent);
   DCHECK(scroll_parent);
 
@@ -154,6 +161,49 @@ void VisualViewport::UpdatePaintPropertyNodes(
       translation_transform_node_->Update(*scale_transform_node_,
                                           std::move(state));
     }
+  }
+
+  if (overlay_scrollbar_horizontal_) {
+    EffectPaintPropertyNode::State state;
+    state.local_transform_space = transform_parent;
+    state.direct_compositing_reasons =
+        CompositingReason::kActiveOpacityAnimation;
+    state.compositor_element_id =
+        GetScrollbarElementId(ScrollbarOrientation::kHorizontalScrollbar);
+    if (!horizontal_scrollbar_effect_node_) {
+      horizontal_scrollbar_effect_node_ =
+          EffectPaintPropertyNode::Create(*effect_parent, std::move(state));
+    } else {
+      horizontal_scrollbar_effect_node_->Update(*effect_parent,
+                                                std::move(state));
+    }
+
+    overlay_scrollbar_horizontal_->SetLayerState(
+        PropertyTreeState(transform_parent, context.current.clip,
+                          horizontal_scrollbar_effect_node_.get()),
+        IntPoint(overlay_scrollbar_horizontal_->GetPosition().X(),
+                 overlay_scrollbar_horizontal_->GetPosition().Y()));
+  }
+
+  if (overlay_scrollbar_vertical_) {
+    EffectPaintPropertyNode::State state;
+    state.local_transform_space = transform_parent;
+    state.direct_compositing_reasons =
+        CompositingReason::kActiveOpacityAnimation;
+    state.compositor_element_id =
+        GetScrollbarElementId(ScrollbarOrientation::kVerticalScrollbar);
+    if (!vertical_scrollbar_effect_node_) {
+      vertical_scrollbar_effect_node_ =
+          EffectPaintPropertyNode::Create(*effect_parent, std::move(state));
+    } else {
+      vertical_scrollbar_effect_node_->Update(*effect_parent, std::move(state));
+    }
+
+    overlay_scrollbar_vertical_->SetLayerState(
+        PropertyTreeState(transform_parent, context.current.clip,
+                          vertical_scrollbar_effect_node_.get()),
+        IntPoint(overlay_scrollbar_vertical_->GetPosition().X(),
+                 overlay_scrollbar_vertical_->GetPosition().Y()));
   }
 
   if (inner_viewport_scroll_layer_) {
@@ -507,27 +557,6 @@ void VisualViewport::InitializeScrollbars() {
 
   if (VisualViewportSuppliesScrollbars() &&
       !GetPage().GetSettings().GetHideScrollbars()) {
-    if (!overlay_scrollbar_horizontal_->Parent()) {
-      inner_viewport_container_layer_->AddChild(
-          overlay_scrollbar_horizontal_.get());
-      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-        // TODO(pdr): The viewport overlay scrollbars do not have the correct
-        // paint properties. See: https://crbug.com/836910
-        overlay_scrollbar_horizontal_->SetLayerState(
-            PropertyTreeState(PropertyTreeState::Root()), IntPoint());
-      }
-    }
-    if (!overlay_scrollbar_vertical_->Parent()) {
-      inner_viewport_container_layer_->AddChild(
-          overlay_scrollbar_vertical_.get());
-      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-        // TODO(pdr): The viewport overlay scrollbars do not have the correct
-        // paint properties. See: https://crbug.com/836910
-        overlay_scrollbar_vertical_->SetLayerState(
-            PropertyTreeState(PropertyTreeState::Root()), IntPoint());
-      }
-    }
-
     SetupScrollbar(kHorizontalScrollbar);
     SetupScrollbar(kVerticalScrollbar);
   } else {
@@ -551,7 +580,11 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
   std::unique_ptr<ScrollingCoordinator::ScrollbarLayerGroup>&
       scrollbar_layer_group = is_horizontal ? scrollbar_layer_group_horizontal_
                                             : scrollbar_layer_group_vertical_;
-
+  if (!scrollbar_graphics_layer->Parent()) {
+    inner_viewport_container_layer_->AddChild(scrollbar_graphics_layer);
+    scrollbar_graphics_layer->SetLayerState(
+        PropertyTreeState(PropertyTreeState::Root()), IntPoint());
+  }
   ScrollbarThemeOverlay& theme = ScrollbarThemeOverlay::MobileTheme();
   int thumb_thickness = clampTo<int>(
       std::floor(GetPage().GetChromeClient().WindowToViewportScalar(

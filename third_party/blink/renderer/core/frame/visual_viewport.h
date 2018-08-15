@@ -54,8 +54,10 @@ class IntRect;
 class IntSize;
 class LocalFrame;
 class Page;
+class EffectPaintPropertyNode;
 class ScrollPaintPropertyNode;
 class TransformPaintPropertyNode;
+struct PaintPropertyTreeBuilderFragmentContext;
 
 // Represents the visual viewport the user is currently seeing the page through.
 // This class corresponds to the InnerViewport on the compositor. It is a
@@ -261,8 +263,7 @@ class CORE_EXPORT VisualViewport final
   // container, page scale layer, inner viewport scroll layer) to reference
   // these nodes.
   void UpdatePaintPropertyNodes(
-      scoped_refptr<const TransformPaintPropertyNode> transform_parent,
-      scoped_refptr<const ScrollPaintPropertyNode> scroll_parent);
+      PaintPropertyTreeBuilderFragmentContext& context);
 
  private:
   explicit VisualViewport(Page&);
@@ -331,6 +332,8 @@ class CORE_EXPORT VisualViewport final
   scoped_refptr<TransformPaintPropertyNode> scale_transform_node_;
   scoped_refptr<TransformPaintPropertyNode> translation_transform_node_;
   scoped_refptr<ScrollPaintPropertyNode> scroll_node_;
+  scoped_refptr<EffectPaintPropertyNode> horizontal_scrollbar_effect_node_;
+  scoped_refptr<EffectPaintPropertyNode> vertical_scrollbar_effect_node_;
 
   // Offset of the visual viewport from the main frame's origin, in CSS pixels.
   ScrollOffset offset_;
