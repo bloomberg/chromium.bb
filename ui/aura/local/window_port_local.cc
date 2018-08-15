@@ -67,8 +67,7 @@ WindowPortLocal::WindowPortLocal(Window* window)
 
 WindowPortLocal::~WindowPortLocal() {
   if (frame_sink_id_.is_valid()) {
-    auto* context_factory_private =
-        aura::Env::GetInstance()->context_factory_private();
+    auto* context_factory_private = window_->env()->context_factory_private();
     auto* host_frame_sink_manager =
         context_factory_private->GetHostFrameSinkManager();
     host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
