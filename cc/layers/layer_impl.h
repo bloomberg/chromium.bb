@@ -273,6 +273,8 @@ class CC_EXPORT LayerImpl {
   // Viewport bounds delta are only used for viewport layers and account for
   // changes in the viewport layers from browser controls and page scale
   // factors. These deltas are only set on the active tree.
+  // TODO(bokan): These methods should be unneeded now that LTHI sets these
+  // directly on the property trees.
   void SetViewportBoundsDelta(const gfx::Vector2dF& bounds_delta);
   gfx::Vector2dF ViewportBoundsDelta() const;
 
@@ -530,6 +532,8 @@ class CC_EXPORT LayerImpl {
   bool hit_testable_without_draws_content_ : 1;
   bool is_resized_by_browser_controls_ : 1;
 
+  // TODO(bokan): This can likely be removed after blink-gen-property-trees
+  // is shipped. https://crbug.com/836884.
   static_assert(LAST_VIEWPORT_LAYER_TYPE < (1u << 3),
                 "enough bits for ViewportLayerType (viewport_layer_type_)");
   uint8_t viewport_layer_type_ : 3;  // ViewportLayerType

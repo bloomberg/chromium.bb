@@ -65,6 +65,7 @@
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/raster_tile_priority_queue.h"
 #include "cc/tiles/software_image_decode_cache.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/debug_rect_history.h"
 #include "cc/trees/draw_property_utils.h"
@@ -2449,15 +2450,7 @@ void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
 }
 
 void LayerTreeHostImpl::UpdateViewportContainerSizes() {
-  // TODO(bokan): Make URL-bar bounds deltas work with Blink-generated property
-  // trees. https://crbug.com/850135.
   if (!InnerViewportScrollNode())
-    return;
-
-  LayerImpl* inner_container = active_tree_->InnerViewportContainerLayer();
-  LayerImpl* outer_container = active_tree_->OuterViewportContainerLayer();
-
-  if (!inner_container)
     return;
 
   ViewportAnchor anchor(InnerViewportScrollNode(), OuterViewportScrollLayer(),
@@ -2481,19 +2474,56 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
   // Adjust the viewport layers by shrinking/expanding the container to account
   // for changes in the size (e.g. browser controls) since the last resize from
   // Blink.
-  gfx::Vector2dF amount_to_expand(0.f, delta_from_top_controls);
-  inner_container->SetViewportBoundsDelta(amount_to_expand);
+  auto* property_trees = active_tree_->property_trees();
+  gfx::Vector2dF inner_bounds_delta(0.f, delta_from_top_controls);
+  if (property_trees->inner_viewport_container_bounds_delta() ==
+      inner_bounds_delta)
+    return;
 
-  if (outer_container && !outer_container->BoundsForScrolling().IsEmpty()) {
-    // Adjust the outer viewport container as well, since adjusting only the
-    // inner may cause its bounds to exceed those of the outer, causing scroll
-    // clamping.
-    gfx::Vector2dF amount_to_expand_scaled = gfx::ScaleVector2d(
-        amount_to_expand, 1.f / active_tree_->min_page_scale_factor());
-    outer_container->SetViewportBoundsDelta(amount_to_expand_scaled);
-    InnerViewportScrollLayer()->SetViewportBoundsDelta(amount_to_expand_scaled);
+  property_trees->SetInnerViewportContainerBoundsDelta(inner_bounds_delta);
 
+  ClipNode* inner_clip_node = property_trees->clip_tree.Node(
+      InnerViewportScrollLayer()->clip_tree_index());
+  inner_clip_node->clip.set_height(
+      InnerViewportScrollNode()->container_bounds.height() +
+      inner_bounds_delta.y());
+
+  // Adjust the outer viewport container as well, since adjusting only the
+  // inner may cause its bounds to exceed those of the outer, causing scroll
+  // clamping.
+  if (OuterViewportScrollNode()) {
+    gfx::Vector2dF outer_bounds_delta = gfx::ScaleVector2d(
+        inner_bounds_delta, 1.f / active_tree_->min_page_scale_factor());
+
+    property_trees->SetOuterViewportContainerBoundsDelta(outer_bounds_delta);
+    property_trees->SetInnerViewportScrollBoundsDelta(outer_bounds_delta);
+
+    ClipNode* outer_clip_node = property_trees->clip_tree.Node(
+        OuterViewportScrollLayer()->clip_tree_index());
+    outer_clip_node->clip.set_height(
+        OuterViewportScrollNode()->container_bounds.height() +
+        outer_bounds_delta.y());
     anchor.ResetViewportToAnchoredPosition();
+  }
+
+  property_trees->clip_tree.set_needs_update(true);
+  property_trees->full_tree_damaged = true;
+  active_tree_->set_needs_update_draw_properties();
+
+  // Viewport scrollbar positions are determined using the viewport bounds
+  // delta.
+  active_tree_->SetScrollbarGeometriesNeedUpdate();
+  active_tree_->set_needs_update_draw_properties();
+
+  // For pre-BlinkGenPropertyTrees mode, we need to ensure the layers are
+  // appropriately updated.
+  if (!settings().use_layer_lists) {
+    if (OuterViewportContainerLayer())
+      OuterViewportContainerLayer()->NoteLayerPropertyChanged();
+    if (InnerViewportScrollLayer())
+      InnerViewportScrollLayer()->NoteLayerPropertyChanged();
+    if (OuterViewportScrollLayer())
+      OuterViewportScrollLayer()->NoteLayerPropertyChanged();
   }
 }
 
@@ -2778,6 +2808,16 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   }
 
   UpdateViewportContainerSizes();
+
+  if (InnerViewportScrollNode()) {
+    active_tree_->property_trees()->scroll_tree.ClampScrollToMaxScrollOffset(
+        InnerViewportScrollNode(), active_tree_.get());
+  }
+  if (OuterViewportScrollNode()) {
+    active_tree_->property_trees()->scroll_tree.ClampScrollToMaxScrollOffset(
+        OuterViewportScrollNode(), active_tree_.get());
+  }
+
   active_tree_->DidBecomeActive();
   client_->RenewTreePriority();
 
