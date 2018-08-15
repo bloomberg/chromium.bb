@@ -3922,6 +3922,7 @@ crbug.com/873435 [ Mac ] fast/events/middleClickAutoscroll-in-iframe.html [ Time
 crbug.com/869726 [ Mac ] fast/events/touch/touch-latched-scroll-node-removed.html [ Pass Failure ]
 crbug.com/869726 [ Mac ] fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
 crbug.com/874444 [ Linux ] external/wpt/fullscreen/api/element-request-fullscreen-two-elements-manual.html [ Pass Failure ]
+crbug.com/874500 [ Mac ] media/media-ended.html [ Pass Timeout ]
 
 crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
