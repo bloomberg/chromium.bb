@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/webrtc_logging/browser/log_list.h"
+#include "components/webrtc_logging/browser/text_log_list.h"
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -20,7 +20,7 @@ const char kWebRtcLogListFilename[] = "Log List";
 }  // namespace
 
 // static
-UploadList* LogList::CreateWebRtcLogList(
+UploadList* TextLogList::CreateWebRtcLogList(
     content::BrowserContext* browser_context) {
   base::FilePath log_list_path = GetWebRtcLogListFileForDirectory(
       GetWebRtcLogDirectoryForBrowserContextPath(browser_context->GetPath()));
@@ -28,14 +28,14 @@ UploadList* LogList::CreateWebRtcLogList(
 }
 
 // static
-base::FilePath LogList::GetWebRtcLogDirectoryForBrowserContextPath(
+base::FilePath TextLogList::GetWebRtcLogDirectoryForBrowserContextPath(
     const base::FilePath& browser_context_path) {
   DCHECK(!browser_context_path.empty());
   return browser_context_path.AppendASCII(kWebRtcLogDirectory);
 }
 
 // static
-base::FilePath LogList::GetWebRtcLogListFileForDirectory(
+base::FilePath TextLogList::GetWebRtcLogListFileForDirectory(
     const base::FilePath& dir) {
   DCHECK(!dir.empty());
   return dir.AppendASCII(kWebRtcLogListFilename);

@@ -13,7 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
-#include "components/webrtc_logging/browser/log_list.h"
+#include "components/webrtc_logging/browser/text_log_list.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -42,7 +42,7 @@ base::FilePath GetAudioDebugRecordingsPrefixPath(
 base::FilePath GetLogDirectoryAndEnsureExists(
     content::BrowserContext* browser_context) {
   base::FilePath log_dir_path =
-      webrtc_logging::LogList::GetWebRtcLogDirectoryForBrowserContextPath(
+      webrtc_logging::TextLogList::GetWebRtcLogDirectoryForBrowserContextPath(
           browser_context->GetPath());
   base::File::Error error;
   if (!base::CreateDirectoryAndGetError(log_dir_path, &error)) {
