@@ -23,6 +23,9 @@ id<GREYMatcher> TabGridCloseAllButton();
 // in the tab grid.
 id<GREYMatcher> TabGridUndoCloseAllButton();
 
+// Returns the GREYMatcher for the cell that opens History in Recent Tabs.
+id<GREYMatcher> TabGridSelectShowHistoryCell();
+
 // Returns the GREYMatcher for the regular tabs empty state view.
 id<GREYMatcher> TabGridRegularTabsEmptyStateView();
 
