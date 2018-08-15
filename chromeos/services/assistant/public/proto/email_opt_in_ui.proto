@@ -18,6 +18,10 @@ message EmailOptInUi {
   // A paragraph telling the user what they get from email updates.
   optional string description = 3;
 
+  // Supplementary text that is only required in some locales which tells
+  // users how to opt out.
+  optional string legal_text = 4;
+
   // Whether the switch should default to enabled. This affects the opt-in
   // state if the user does not override it.
   optional bool default_enabled = 5;

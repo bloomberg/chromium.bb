@@ -107,6 +107,11 @@ Polymer({
       var description = document.createElement('div');
       description.className = 'zippy-description';
       description.textContent = data['description'];
+      if (data['legalText']) {
+        var legalText = document.createElement('p');
+        legalText.textContent = data['legalText'];
+        description.appendChild(legalText);
+      }
       zippy.appendChild(description);
 
       Polymer.dom(this.$['insertion-point']).appendChild(zippy);

@@ -142,6 +142,7 @@ base::Value CreateGetMoreData(bool email_optin_needed,
     data.SetKey("defaultEnabled",
                 base::Value(email_optin_ui.default_enabled()));
     data.SetKey("iconUri", base::Value(email_optin_ui.icon_uri()));
+    data.SetKey("legalText", base::Value(email_optin_ui.legal_text()));
     get_more_data.GetList().push_back(std::move(data));
   }
 
