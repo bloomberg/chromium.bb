@@ -86,19 +86,4 @@ void ApplyCommonFontStyles(int context,
                            int* size_delta,
                            gfx::Font::Weight* weight);
 
-// TypographyProvider that provides pre-Harmony fonts in Chrome.
-class LegacyTypographyProvider : public views::DefaultTypographyProvider {
- public:
-  LegacyTypographyProvider() = default;
-
-  // DefaultTypographyProvider:
-  const gfx::FontList& GetFont(int context, int style) const override;
-  SkColor GetColor(const views::View& view,
-                   int context,
-                   int style) const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LegacyTypographyProvider);
-};
-
 #endif  // CHROME_BROWSER_UI_VIEWS_HARMONY_CHROME_TYPOGRAPHY_H_

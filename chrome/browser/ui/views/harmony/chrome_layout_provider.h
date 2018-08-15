@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/views/harmony/harmony_typography_provider.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/layout/grid_layout.h"
@@ -73,6 +74,7 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   // views::LayoutProvider:
   gfx::Insets GetInsetsMetric(int metric) const override;
   int GetDistanceMetric(int metric) const override;
+  int GetSnappedDialogWidth(int min_width) const override;
   const views::TypographyProvider& GetTypographyProvider() const override;
 
   // Returns the alignment used for control labels in a GridLayout; for example,
@@ -92,6 +94,8 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   virtual bool ShouldShowWindowIcon() const;
 
  private:
+  const HarmonyTypographyProvider typography_provider_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeLayoutProvider);
 };
 

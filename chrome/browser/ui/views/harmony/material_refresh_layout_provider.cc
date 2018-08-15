@@ -14,7 +14,7 @@ int MaterialRefreshLayoutProvider::GetDistanceMetric(int metric) const {
     case views::DistanceMetric::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING:
       return 6;
   }
-  return HarmonyLayoutProvider::GetDistanceMetric(metric);
+  return ChromeLayoutProvider::GetDistanceMetric(metric);
 }
 
 gfx::Insets MaterialRefreshLayoutProvider::GetInsetsMetric(int metric) const {
@@ -26,7 +26,7 @@ gfx::Insets MaterialRefreshLayoutProvider::GetInsetsMetric(int metric) const {
         return gfx::Insets(8, 10);
       return gfx::Insets(5, 6);
   }
-  return HarmonyLayoutProvider::GetInsetsMetric(metric);
+  return ChromeLayoutProvider::GetInsetsMetric(metric);
 }
 
 int MaterialRefreshLayoutProvider::GetCornerRadiusMetric(
