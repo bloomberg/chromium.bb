@@ -9,10 +9,12 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -22,6 +24,7 @@
 #include "components/optimization_guide/test_component_creator.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
@@ -193,9 +196,9 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 };
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
-// See crbug.com/782322 for detail.
-// Also occasional flakes on win7 (crbug.com/789542).
-// Also occasional flakes on Linux Xenial (crbug.com/869781).
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+// Also occasional flakes on Linux Xenial (https://crbug.com/869781).
 #if defined(OS_ANDROID)
 #define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
@@ -231,7 +234,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
   EXPECT_FALSE(noscript_css_requested());
 }
 
-// Flaky in all platforms except Android. See crbug.com/803626 for detail.
+// Flaky in all platforms except Android. See https://crbug.com/803626 for
+// detail.
 #if defined(OS_ANDROID)
 #define MAYBE_NoScriptPreviewsEnabledButNoTransformDirective \
   NoScriptPreviewsEnabledButNoTransformDirective
@@ -303,9 +307,9 @@ class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
 };
 
 // Previews InfoBar (which this test triggers) does not work on Mac.
-// See crbug.com/782322 for detail.
-// Also occasional flakes on win7 (crbug.com/789948) and Ubuntu 16.04
-// (crbug.com/831838)
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789948) and Ubuntu 16.04
+// (https://crbug.com/831838)
 #if defined(OS_ANDROID)
 #define MAYBE_NoScriptPreviewsEnabledByWhitelist \
   NoScriptPreviewsEnabledByWhitelist
@@ -348,8 +352,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
   EXPECT_FALSE(noscript_css_requested());
 }
 
-static const std::string kTestPreviewsServer = "https://litepages.test.com/";
-
 // This test class enables LitePageServerPreviews.
 class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
  public:
@@ -358,16 +360,23 @@ class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
   ~PreviewsLitePageServerBrowserTest() override {}
 
   void SetUp() override {
+    // Set up previews server with resource handler.
+    previews_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    previews_server_->RegisterRequestHandler(base::BindRepeating(
+        &PreviewsLitePageServerBrowserTest::HandleResourceRequest,
+        base::Unretained(this)));
+    ASSERT_TRUE(previews_server_->Start());
+
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     {
       // The trial and group names are dummy values.
       scoped_refptr<base::FieldTrial> trial =
           base::FieldTrialList::CreateFieldTrial("TrialName1", "GroupName1");
       std::map<std::string, std::string> feature_parameters = {
-          {"previews_host", kTestPreviewsServer}};
-      ASSERT_TRUE(base::FieldTrialParamAssociator::GetInstance()
-                      ->AssociateFieldTrialParams("TrialName1", "GroupName1",
-                                                  feature_parameters));
+          {"previews_host", previews_server().spec()}};
+      base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+          "TrialName1", "GroupName1", feature_parameters);
 
       feature_list->RegisterFieldTrialOverride(
           previews::features::kLitePageServerPreviews.name,
@@ -386,25 +395,98 @@ class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
     PreviewsBrowserTest::SetUp();
   }
 
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    PreviewsBrowserTest::SetUpCommandLine(cmd);
+    // Resolve all localhost subdomains to plain localhost so that Chrome's Test
+    // DNS resolver doesn't get upset.
+    cmd->AppendSwitchASCII(
+        "host-rules", "MAP *.localhost 127.0.0.1, MAP *.127.0.0.1 127.0.0.1");
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> HandleResourceRequest(
+      const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> response(
+        new net::test_server::BasicHttpResponse);
+    std::string original_url;
+
+    // Ignore anything that's not a previews request with an unused status.
+    if (!PreviewsLitePageNavigationThrottle::GetOriginalURL(request.GetURL(),
+                                                            &original_url)) {
+      response->set_code(net::HttpStatusCode::HTTP_BAD_REQUEST);
+      return response;
+    }
+
+    std::string query_param;
+    int return_code = 0;
+    if (net::GetValueForKeyInQuery(GURL(original_url), "resp", &query_param))
+      base::StringToInt(query_param, &return_code);
+
+    switch (return_code) {
+      case 200:
+        response->set_code(net::HTTP_OK);
+        break;
+      case 307:
+        response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+        response->AddCustomHeader("Location", https_lite_page_url(200).spec());
+        break;
+      case 404:
+        response->set_code(net::HTTP_NOT_FOUND);
+        break;
+      case 503:
+        response->set_code(net::HTTP_SERVICE_UNAVAILABLE);
+        break;
+      default:
+        response->set_code(net::HTTP_BAD_REQUEST);
+        response->set_code(net::HTTP_OK);
+        break;
+    }
+    return std::move(response);
+  }
+
+  GURL previews_server() { return previews_server_->base_url(); }
+
+  GURL http_lite_page_url(int return_code) {
+    std::string query = "resp=" + base::IntToString(return_code);
+    GURL::Replacements replacements;
+    replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
+    return http_url().ReplaceComponents(replacements);
+  }
+
+  GURL https_lite_page_url(int return_code) {
+    std::string query = "resp=" + base::IntToString(return_code);
+    GURL::Replacements replacements;
+    replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
+    return https_url().ReplaceComponents(replacements);
+  }
+
   GURL NavigatedURL() {
     return browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
   }
 
   void VerifyPreviewLoaded() {
-    EXPECT_TRUE(NavigatedURL().DomainIs(GURL(kTestPreviewsServer).host()));
+    const GURL navigated_url = NavigatedURL();
+    const GURL previews_host = previews_server();
+    EXPECT_TRUE(navigated_url.DomainIs(previews_host.host()) &&
+                navigated_url.EffectiveIntPort() ==
+                    previews_host.EffectiveIntPort());
   }
 
   void VerifyPreviewNotLoaded() {
-    EXPECT_FALSE(NavigatedURL().DomainIs(GURL(kTestPreviewsServer).host()));
+    const GURL navigated_url = NavigatedURL();
+    const GURL previews_host = previews_server();
+    EXPECT_FALSE(navigated_url.DomainIs(previews_host.host()) &&
+                 navigated_url.EffectiveIntPort() ==
+                     previews_host.EffectiveIntPort());
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<net::EmbeddedTestServer> previews_server_;
 };
 
 // Previews InfoBar (which these tests trigger) does not work on Mac.
-// See crbug.com/782322 for detail.
-// Also occasional flakes on win7 (crbug.com/789542).
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
 #if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_LitePagePreviewsTriggering LitePagePreviewsTriggering
 #else
@@ -414,15 +496,11 @@ class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
                        MAYBE_LitePagePreviewsTriggering) {
   // Verify the preview is not triggered on HTTP pageloads.
-  ui_test_utils::NavigateToURL(browser(), http_url());
+  ui_test_utils::NavigateToURL(browser(), http_lite_page_url(200));
   VerifyPreviewNotLoaded();
 
   // Verify the preview is triggered on HTTPS pageloads.
-  ui_test_utils::NavigateToURL(browser(), https_url());
-  VerifyPreviewLoaded();
-
-  // Verify the preview is triggered when an HTTP page redirects to HTTPS.
-  ui_test_utils::NavigateToURL(browser(), redirect_url());
+  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(200));
   VerifyPreviewLoaded();
 
   // Verify the preview is not triggered for POST navigations.
@@ -438,14 +516,52 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   VerifyPreviewNotLoaded();
 
   // Verify the preview is not triggered when navigating to the previews server.
-  ui_test_utils::NavigateToURL(browser(), GURL(kTestPreviewsServer));
-  EXPECT_EQ(NavigatedURL(), GURL(kTestPreviewsServer));
+  ui_test_utils::NavigateToURL(browser(), previews_server());
+  EXPECT_EQ(NavigatedURL(), previews_server());
 
   // Verify a subframe navigation does not trigger a preview.
   const int starting_https_url_count = https_url_count();
   ui_test_utils::NavigateToURL(browser(), subframe_url());
   ExecuteScript("window.open(\"" + https_url().spec() + "\", \"subframe\")");
   EXPECT_EQ(https_url_count(), starting_https_url_count + 1);
+}
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsRedirect LitePagePreviewsRedirect
+#else
+#define MAYBE_LitePagePreviewsRedirect DISABLED_LitePagePreviewsRedirect
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+                       MAYBE_LitePagePreviewsRedirect) {
+  // Verify the preview is triggered when an HTTP page redirects to HTTPS.
+  ui_test_utils::NavigateToURL(browser(), redirect_url());
+  VerifyPreviewLoaded();
+
+  // Verify the preview is triggered when an HTTPS page redirects to HTTPS.
+  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(307));
+  VerifyPreviewLoaded();
+}
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsResponse LitePagePreviewsResponse
+#else
+#define MAYBE_LitePagePreviewsResponse DISABLED_LitePagePreviewsResponse
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+                       MAYBE_LitePagePreviewsResponse) {
+  // Verify the preview is not triggered when the server responds with 404.
+  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(404));
+  VerifyPreviewNotLoaded();
+
+  // Verify the preview is not triggered when the server responds with 503.
+  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(503));
+  VerifyPreviewNotLoaded();
 }
 
 class PreviewsLitePageServerDataSaverBrowserTest
@@ -462,9 +578,17 @@ class PreviewsLitePageServerDataSaverBrowserTest
   }
 };
 
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsDSTriggering LitePagePreviewsDSTriggering
+#else
+#define MAYBE_LitePagePreviewsDSTriggering DISABLED_LitePagePreviewsDSTriggering
+#endif
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerDataSaverBrowserTest,
-                       MAYBE_LitePagePreviewsTriggering) {
+                       MAYBE_LitePagePreviewsDSTriggering) {
   // Verify the preview is not triggered on HTTPS pageloads without DataSaver.
-  ui_test_utils::NavigateToURL(browser(), https_url());
+  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(200));
   VerifyPreviewNotLoaded();
 }

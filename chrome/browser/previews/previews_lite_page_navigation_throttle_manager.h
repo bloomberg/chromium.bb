@@ -21,6 +21,13 @@ class PreviewsLitePageNavigationThrottleManager {
   // Returns true if a Preview should not be triggered because the server is
   // unavailable.
   virtual bool IsServerUnavailable(base::TimeTicks now) = 0;
+
+  // Informs the manager that the given URL should be bypassed one time.
+  virtual void AddSingleBypass(std::string url) = 0;
+
+  // Queries the manager if the given URL should be bypassed one time, returning
+  // true if yes.
+  virtual bool CheckSingleBypass(std::string url) = 0;
 };
 
 #endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_NAVIGATION_THROTTLE_MANAGER_H_

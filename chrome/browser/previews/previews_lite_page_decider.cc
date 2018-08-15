@@ -5,6 +5,7 @@
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/time/default_tick_clock.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
@@ -17,7 +18,8 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
 
-PreviewsLitePageDecider::PreviewsLitePageDecider() = default;
+PreviewsLitePageDecider::PreviewsLitePageDecider()
+    : clock_(base::DefaultTickClock::GetInstance()) {}
 
 PreviewsLitePageDecider::~PreviewsLitePageDecider() = default;
 
@@ -54,6 +56,10 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
   return nullptr;
 }
 
+void PreviewsLitePageDecider::SetClockForTesting(const base::TickClock* clock) {
+  clock_ = clock;
+}
+
 bool PreviewsLitePageDecider::IsDataSaverEnabled(
     content::NavigationHandle* handle) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -83,4 +89,35 @@ bool PreviewsLitePageDecider::IsServerUnavailable(base::TimeTicks now) {
   if (!server_loadshedding)
     retry_at_.reset();
   return server_loadshedding;
+}
+
+void PreviewsLitePageDecider::AddSingleBypass(std::string url) {
+  // Garbage collect any old entries while looking for the one for |url|.
+  auto entry = single_bypass_.end();
+  for (auto iter = single_bypass_.begin(); iter != single_bypass_.end();
+       /* no increment */) {
+    if (iter->second < clock_->NowTicks()) {
+      iter = single_bypass_.erase(iter);
+      continue;
+    }
+    if (iter->first == url)
+      entry = iter;
+    ++iter;
+  }
+
+  // Update the entry for |url|.
+  const base::TimeTicks ttl =
+      clock_->NowTicks() + base::TimeDelta::FromMinutes(5);
+  if (entry == single_bypass_.end()) {
+    single_bypass_.emplace(url, ttl);
+    return;
+  }
+  entry->second = ttl;
+}
+
+bool PreviewsLitePageDecider::CheckSingleBypass(std::string url) {
+  auto entry = single_bypass_.find(url);
+  if (entry == single_bypass_.end())
+    return false;
+  return entry->second >= clock_->NowTicks();
 }

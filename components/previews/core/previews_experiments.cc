@@ -129,6 +129,12 @@ base::TimeDelta OfflinePreviewFreshnessDuration() {
                          "offline_preview_freshness_duration_in_days", 7));
 }
 
+base::TimeDelta LitePagePreviewsSingleBypassDuration() {
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      features::kLitePageServerPreviews, "single_bypass_duration_in_seconds",
+      60 * 5));
+}
+
 GURL GetLitePagePreviewsDomainURL() {
   std::string variable_host_str = GetFieldTrialParamValueByFeature(
       features::kLitePageServerPreviews, "previews_host");

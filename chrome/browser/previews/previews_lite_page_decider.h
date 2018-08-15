@@ -5,13 +5,14 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_DECIDER_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_DECIDER_H_
 
-#include <map>
 #include <memory>
+#include <unordered_map>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
 
@@ -35,19 +36,32 @@ class PreviewsLitePageDecider
   static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(
       content::NavigationHandle* handle);
 
+  // Sets the internal clock for testing.
+  void SetClockForTesting(const base::TickClock* clock);
+
  protected:
   // Virtual for testing.
   virtual bool IsDataSaverEnabled(content::NavigationHandle* handle) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageDeciderTest, TestServerUnavailable);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageDeciderTest, TestSingleBypass);
 
   // PreviewsLitePageNavigationThrottleManager:
   void SetServerUnavailableUntil(base::TimeTicks retry_at) override;
   bool IsServerUnavailable(base::TimeTicks now) override;
+  void AddSingleBypass(std::string url) override;
+  bool CheckSingleBypass(std::string url) override;
 
   // The time after which it is ok to send the server more preview requests.
   base::Optional<base::TimeTicks> retry_at_;
+
+  // A map that tracks the time at which a URL will stop being bypassed.
+  std::unordered_map<std::string, base::TimeTicks> single_bypass_;
+
+  // The clock used for getting the current time ticks. Use |SetClockForTesting|
+  // in tests.
+  const base::TickClock* clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

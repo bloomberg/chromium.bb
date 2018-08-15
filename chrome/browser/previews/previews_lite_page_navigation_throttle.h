@@ -10,6 +10,10 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 
+namespace content {
+struct OpenURLParams;
+}
+
 // This class does the actual decision making about when to serve a Lite Page
 // Server Preview, and the legwork to trigger the Preview navigation. When a
 // Preview is triggered, it will cancel the incoming navigation and PostTask a
@@ -21,6 +25,10 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
       PreviewsLitePageNavigationThrottleManager* manager);
 
   ~PreviewsLitePageNavigationThrottle() override;
+
+  // Attempts to extract the original URL from the given Previews URL. Returns
+  // false if |url| is not a valid Preview URL.
+  static bool GetOriginalURL(GURL url, std::string* original_url);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageNavigationThrottleTest,
@@ -43,6 +51,19 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
   // return PROCEED if the preview is not triggered.
   content::NavigationThrottle::ThrottleCheckResult MaybeNavigateToPreview()
       const;
+
+  // Can be called by any of the content::NavigationThrottle implementation
+  // methods to create a new navigation with the give |content::OpenURLParams|.
+  // Returns the |content::NavigationThrottle::ThrottleCheckResult| for the
+  // implemented method to return.
+  content::NavigationThrottle::ThrottleCheckResult CreateNewNavigation(
+      content::OpenURLParams url_params) const;
+
+  // Can be called by any of the content::NavigationThrottle implementation
+  // methods to trigger the preview. Returns the
+  // |content::NavigationThrottle::ThrottleCheckResult| for the implemented
+  // method to return.
+  content::NavigationThrottle::ThrottleCheckResult TriggerPreview() const;
 
   // content::NavigationThrottle implementation:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
