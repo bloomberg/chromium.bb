@@ -11,7 +11,9 @@
 #include "ash/assistant/util/animation_util.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -23,6 +25,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -46,6 +49,12 @@ constexpr base::TimeDelta kAnimationFadeOutDuration =
 constexpr base::TimeDelta kAnimationTransformInDuration =
     base::TimeDelta::FromMilliseconds(333);
 constexpr int kAnimationTranslationDip = 30;
+
+bool IsTabletMode() {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
+}
 
 }  // namespace
 
@@ -364,6 +373,11 @@ bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
 
   if (key_event.type() != ui::EventType::ET_KEY_PRESSED)
     return false;
+
+  // In tablet mode the virtual keyboard should not be sticky, so we hide it
+  // when committing a query.
+  if (IsTabletMode())
+    textfield_->GetFocusManager()->ClearFocus();
 
   const base::StringPiece16& trimmed_text =
       base::TrimWhitespace(textfield_->text(), base::TrimPositions::TRIM_ALL);
