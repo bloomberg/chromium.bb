@@ -6,6 +6,7 @@ Tests that execution contexts are reported for frames that were blocked due to m
             auxData : {
                 frameId : <string>
                 isDefault : true
+                type : default
             }
             id : <number>
             name : 
@@ -21,6 +22,7 @@ Tests that execution contexts are reported for frames that were blocked due to m
             auxData : {
                 frameId : <string>
                 isDefault : true
+                type : default
             }
             id : <number>
             name : 
