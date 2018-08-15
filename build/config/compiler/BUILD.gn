@@ -381,7 +381,10 @@ config("compiler") {
       "-Wl,-z,now",
       "-Wl,-z,relro",
     ]
-    if (!using_sanitizer) {
+
+    # Compiler instrumentation can introduce dependencies in DSOs to symbols in
+    # the executable they are loaded into, so they are unresolved at link-time.
+    if (!using_sanitizer && !is_safestack) {
       ldflags += [
         "-Wl,-z,defs",
         "-Wl,--as-needed",

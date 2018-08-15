@@ -197,6 +197,9 @@ config("default_sanitizer_ldflags") {
     if (is_ubsan_vptr) {
       ldflags += [ "-fsanitize=vptr" ]
     }
+    if (is_safestack) {
+      ldflags += [ "-fsanitize=safe-stack" ]
+    }
 
     if (use_sanitizer_coverage) {
       if (use_libfuzzer) {
@@ -421,6 +424,12 @@ config("msan_flags") {
   }
 }
 
+config("safestack_flags") {
+  if (is_safestack) {
+    cflags = [ "-fsanitize=safe-stack" ]
+  }
+}
+
 config("tsan_flags") {
   if (is_tsan) {
     assert(is_linux, "tsan only supported on linux x86_64")
@@ -536,6 +545,7 @@ all_sanitizer_configs = [
   ":cfi_flags",
   ":lsan_flags",
   ":msan_flags",
+  ":safestack_flags",
   ":tsan_flags",
   ":ubsan_flags",
   ":ubsan_no_recover",
