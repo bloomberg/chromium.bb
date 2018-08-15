@@ -719,6 +719,11 @@
     "args": ["--enable-features=MojoBlobURLs"]
   },
   {
+    "prefix": "lazyload-image",
+    "base": "http/tests/lazyload",
+    "args": ["--enable-features=LazyImageLoading"]
+  },
+  {
     "prefix": "origin-policy",
     "base": "external/wpt/origin-policy",
     "args": ["--enable-features=OriginPolicy"]

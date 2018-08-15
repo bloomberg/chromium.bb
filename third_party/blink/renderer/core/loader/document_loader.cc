@@ -217,8 +217,10 @@ Resource* DocumentLoader::StartPreload(Resource::Type type,
   DCHECK(!client || type == Resource::kCSSStyleSheet);
   switch (type) {
     case Resource::kImage:
-      if (frame_)
+      if (frame_) {
         frame_->MaybeAllowImagePlaceholder(params);
+        frame_->MaybeAllowLazyLoadingImage(params);
+      }
       resource = ImageResource::Fetch(params, Fetcher());
       break;
     case Resource::kScript:

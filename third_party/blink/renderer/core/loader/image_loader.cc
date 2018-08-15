@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/lazy_load_image_observer.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
@@ -145,7 +146,8 @@ ImageLoader::ImageLoader(Element* element)
     : element_(element),
       image_complete_(true),
       loading_image_document_(false),
-      suppress_error_events_(false) {
+      suppress_error_events_(false),
+      lazy_image_load_state_(LazyImageLoadState::kNone) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageLoader " << this;
 }
 
@@ -355,8 +357,14 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
   if (!new_image_content) {
     image_resource_for_image_document_ = nullptr;
     image_complete_ = true;
+    if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
+      LazyLoadImageObserver::StopMonitoring(GetElement());
+      lazy_image_load_state_ = LazyImageLoadState::kFullImage;
+    }
   } else {
     image_complete_ = false;
+    if (lazy_image_load_state_ == LazyImageLoadState::kDeferred)
+      LazyLoadImageObserver::StartMonitoring(GetElement());
   }
   delay_until_image_notify_finished_ = nullptr;
 }
@@ -432,8 +440,16 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
     ConfigureRequest(params, bypass_behavior, *element_,
                      document.GetFrame()->GetClientHintsPreferences());
 
-    if (update_behavior != kUpdateForcedReload && document.GetFrame())
-      document.GetFrame()->MaybeAllowImagePlaceholder(params);
+    if (update_behavior != kUpdateForcedReload &&
+        lazy_image_load_state_ == LazyImageLoadState::kNone) {
+      const auto* frame = document.GetFrame();
+      frame->MaybeAllowImagePlaceholder(params);
+      auto* html_image = ToHTMLImageElementOrNull(GetElement());
+      if (html_image && html_image->ElementCreatedByParser() &&
+          frame->MaybeAllowLazyLoadingImage(params)) {
+        lazy_image_load_state_ = LazyImageLoadState::kDeferred;
+      }
+    }
 
     new_image_content = ImageResourceContent::Fetch(params, document.Fetcher());
 
@@ -551,6 +567,10 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
     image_content_ = nullptr;
     image_resource_for_image_document_ = nullptr;
     delay_until_image_notify_finished_ = nullptr;
+    if (lazy_image_load_state_ != LazyImageLoadState::kNone) {
+      LazyLoadImageObserver::StopMonitoring(GetElement());
+      lazy_image_load_state_ = LazyImageLoadState::kNone;
+    }
   }
 
   // Don't load images for inactive documents. We don't want to slow down the
@@ -626,6 +646,23 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
     CHECK(image_complete_);
   else
     CHECK(!image_complete_);
+
+  if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
+    // LazyImages: if a placeholder is loaded, suppress load events and do not
+    // consider the image as loaded, except for unblocking document load events.
+    // The final image load (including load events) occurs when the
+    // non-placeholder image loading (triggered by LoadDeferredImage()) is
+    // finished.
+    if (image_content_ && image_content_->GetImage()->IsPlaceholderImage()) {
+      delay_until_image_notify_finished_ = nullptr;
+      return;
+    }
+    // A placeholder was requested, but the result was an error or a full image.
+    // In these cases, consider this as the final image and suppress further
+    // reloading and proceed to the image load completion process below.
+    LazyLoadImageObserver::StopMonitoring(GetElement());
+    lazy_image_load_state_ = LazyImageLoadState::kFullImage;
+  }
 
   image_complete_ = true;
   delay_until_image_notify_finished_ = nullptr;
@@ -781,6 +818,14 @@ ScriptPromise ImageLoader::Decode(ScriptState* script_state,
       WTF::Bind(&DecodeRequest::ProcessForTask, WrapWeakPersistent(request)));
   decode_requests_.push_back(request);
   return request->promise();
+}
+
+void ImageLoader::LoadDeferredImage(ReferrerPolicy referrer_policy) {
+  if (lazy_image_load_state_ != LazyImageLoadState::kDeferred)
+    return;
+  DCHECK(!image_complete_);
+  lazy_image_load_state_ = LazyImageLoadState::kFullImage;
+  UpdateFromElement(kUpdateNormal, referrer_policy);
 }
 
 void ImageLoader::ElementDidMoveToNewDocument() {

@@ -136,6 +136,7 @@ class IntersectionObserverController;
 class LayoutPoint;
 class ReattachLegacyLayoutObjectList;
 class LayoutView;
+class LazyLoadImageObserver;
 class LiveNodeListBase;
 class LocalDOMWindow;
 class Locale;
@@ -1451,6 +1452,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool IsVerticalScrollEnforced() const { return is_vertical_scroll_enforced_; }
 
+  LazyLoadImageObserver& EnsureLazyLoadImageObserver();
+
   // TODO(binji): See http://crbug.com/798572. This implementation shares the
   // same agent cluster ID for any one document. The proper implementation of
   // this function must follow the rules described here:
@@ -1889,6 +1892,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // This is set through feature policy 'vertical-scroll'.
   bool is_vertical_scroll_enforced_ = false;
+
+  Member<LazyLoadImageObserver> lazy_load_image_observer_;
 
   // https://tc39.github.io/ecma262/#sec-agent-clusters
   const base::UnguessableToken agent_cluster_id_;

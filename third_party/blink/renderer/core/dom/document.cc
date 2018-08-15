@@ -183,6 +183,7 @@
 #include "third_party/blink/renderer/core/html/html_unknown_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
+#include "third_party/blink/renderer/core/html/lazy_load_image_observer.h"
 #include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
@@ -7421,6 +7422,7 @@ void Document::Trace(blink::Visitor* visitor) {
   visitor->Trace(policy_);
   visitor->Trace(slot_assignment_engine_);
   visitor->Trace(viewport_data_);
+  visitor->Trace(lazy_load_image_observer_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -7481,6 +7483,12 @@ bool Document::IsSlotAssignmentOrLegacyDistributionDirty() {
     return true;
   }
   return false;
+}
+
+LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
+  if (!lazy_load_image_observer_)
+    lazy_load_image_observer_ = new LazyLoadImageObserver(*this);
+  return *lazy_load_image_observer_;
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;
