@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 #include "media/base/flinging_controller.h"
 #include "media/base/media_resource.h"
+#include "media/base/media_status_observer.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
 #include "url/gurl.h"
@@ -23,7 +24,8 @@ class RenderFrameHost;
 // playback commands. In this case, the media we are controlling should be an
 // already existing RemotingCastSession, which should have been initiated by a
 // blink::RemotePlayback object, using the PresentationService.
-class CONTENT_EXPORT FlingingRenderer : public media::Renderer {
+class CONTENT_EXPORT FlingingRenderer : public media::Renderer,
+                                        media::MediaStatusObserver {
  public:
   // Helper method to create a FlingingRenderer from an already existing
   // presentation ID.
@@ -46,6 +48,9 @@ class CONTENT_EXPORT FlingingRenderer : public media::Renderer {
   void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;
   base::TimeDelta GetMediaTime() override;
+
+  // media::MediaStatusObserver implementation.
+  void OnMediaStatusUpdated(const media::MediaStatus& status) override;
 
  private:
   friend class FlingingRendererTest;

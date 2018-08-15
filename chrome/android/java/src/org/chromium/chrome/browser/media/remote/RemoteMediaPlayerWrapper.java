@@ -16,6 +16,8 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.CastSessionUtil;
 import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.MediaController;
+import org.chromium.chrome.browser.media.router.MediaStatusBridge;
+import org.chromium.chrome.browser.media.router.MediaStatusObserver;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 
@@ -34,6 +36,7 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
     private GoogleApiClient mApiClient;
     private RemoteMediaPlayer mMediaPlayer;
     private MediaNotificationInfo.Builder mNotificationBuilder;
+    private MediaStatusObserver mMediaStatusObserver;
 
     public RemoteMediaPlayerWrapper(GoogleApiClient apiClient,
             MediaNotificationInfo.Builder notificationBuilder, CastDevice castDevice) {
@@ -62,6 +65,10 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
     public void onStatusUpdated() {
         MediaStatus mediaStatus = mMediaPlayer.getMediaStatus();
         if (mediaStatus == null) return;
+
+        if (mMediaStatusObserver != null) {
+            mMediaStatusObserver.onMediaStatusUpdate(new MediaStatusBridge(mediaStatus));
+        }
 
         int playerState = mediaStatus.getPlayerState();
         if (playerState == MediaStatus.PLAYER_STATE_PAUSED
@@ -219,5 +226,17 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
     @Override
     public long getApproximateCurrentTime() {
         return mMediaPlayer.getApproximateStreamPosition();
+    }
+
+    @Override
+    public void setMediaStatusObserver(MediaStatusObserver observer) {
+        assert mMediaStatusObserver == null;
+        mMediaStatusObserver = observer;
+    }
+
+    @Override
+    public void clearMediaStatusObserver() {
+        assert mMediaStatusObserver != null;
+        mMediaStatusObserver = null;
     }
 }

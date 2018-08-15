@@ -33,9 +33,20 @@ class FlingingControllerBridge : public media::FlingingController,
   void SetVolume(float volume) override;
   void Seek(base::TimeDelta time) override;
 
+  // Called by the Java side on status updates.
+  void OnMediaStatusUpdated(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_bridge,
+      const base::android::JavaParamRef<jobject>& j_status);
+
  private:
   // Java MediaControllerBridge instance.
   base::android::ScopedJavaGlobalRef<jobject> j_flinging_controller_bridge_;
+
+  // Observer to be notified of media status changes from the Java side.
+  // NOTE: We don't manage a collection of observers because FlingingRenderer is
+  // the only observer that subscribes to |this|, with a 1:1 relationship.
+  media::MediaStatusObserver* observer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FlingingControllerBridge);
 };

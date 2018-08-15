@@ -16,9 +16,13 @@ namespace content {
 
 FlingingRenderer::FlingingRenderer(
     std::unique_ptr<media::FlingingController> controller)
-    : controller_(std::move(controller)) {}
+    : controller_(std::move(controller)) {
+  controller_->AddMediaStatusObserver(this);
+}
 
-FlingingRenderer::~FlingingRenderer() = default;
+FlingingRenderer::~FlingingRenderer() {
+  controller_->RemoveMediaStatusObserver(this);
+};
 
 // static
 std::unique_ptr<FlingingRenderer> FlingingRenderer::Create(
@@ -96,6 +100,10 @@ void FlingingRenderer::SetVolume(float volume) {
 base::TimeDelta FlingingRenderer::GetMediaTime() {
   // TODO(https://crbug.com/830871): return correct media time.
   return base::TimeDelta();
+}
+
+void FlingingRenderer::OnMediaStatusUpdated(const media::MediaStatus& status) {
+  // TODO(tguilbert): propagate important changes to RendererClient.
 }
 
 }  // namespace content

@@ -4,6 +4,7 @@
 
 #include "content/browser/media/flinging_renderer.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "media/base/media_controller.h"
@@ -44,14 +45,18 @@ class FlingingRendererTest : public testing::Test {
   FlingingRendererTest()
       : media_controller_(new StrictMock<MockMediaController>()),
         flinging_controller_(
-            new StrictMock<MockFlingingController>(media_controller_.get())),
-        renderer_(
-            std::unique_ptr<media::FlingingController>(flinging_controller_)) {}
+            new StrictMock<MockFlingingController>(media_controller_.get())) {
+    EXPECT_CALL(*flinging_controller_, AddMediaStatusObserver(_));
+    EXPECT_CALL(*flinging_controller_, RemoveMediaStatusObserver(_));
+
+    renderer_ = base::WrapUnique(new FlingingRenderer(
+        std::unique_ptr<media::FlingingController>(flinging_controller_)));
+  }
 
  protected:
   std::unique_ptr<MockMediaController> media_controller_;
   StrictMock<MockFlingingController>* flinging_controller_;
-  FlingingRenderer renderer_;
+  std::unique_ptr<FlingingRenderer> renderer_;
 };
 
 TEST_F(FlingingRendererTest, StartPlayingFromTime) {
@@ -59,28 +64,28 @@ TEST_F(FlingingRendererTest, StartPlayingFromTime) {
   EXPECT_CALL(*media_controller_, Play());
   EXPECT_CALL(*media_controller_, Seek(seek_time));
 
-  renderer_.StartPlayingFrom(seek_time);
+  renderer_->StartPlayingFrom(seek_time);
 }
 
 TEST_F(FlingingRendererTest, StartPlayingFromBeginning) {
   EXPECT_CALL(*media_controller_, Play());
   EXPECT_CALL(*media_controller_, Seek(base::TimeDelta()));
 
-  renderer_.StartPlayingFrom(base::TimeDelta());
+  renderer_->StartPlayingFrom(base::TimeDelta());
 }
 
 TEST_F(FlingingRendererTest, SetPlaybackRate) {
   double playback_rate = 1.0;
   EXPECT_CALL(*media_controller_, Play());
 
-  renderer_.SetPlaybackRate(playback_rate);
+  renderer_->SetPlaybackRate(playback_rate);
 }
 
 TEST_F(FlingingRendererTest, SetPlaybackRateToZero) {
   double playback_rate = 0.0;
   EXPECT_CALL(*media_controller_, Pause());
 
-  renderer_.SetPlaybackRate(playback_rate);
+  renderer_->SetPlaybackRate(playback_rate);
 }
 
 // Setting the volume to a positive value should not change the mute state.
@@ -89,7 +94,7 @@ TEST_F(FlingingRendererTest, SetVolume) {
   EXPECT_CALL(*media_controller_, SetVolume(volume));
   EXPECT_CALL(*media_controller_, SetMute(_)).Times(0);
 
-  renderer_.SetVolume(volume);
+  renderer_->SetVolume(volume);
 }
 
 // Setting the volume to 0 should not set the mute state.
@@ -98,7 +103,7 @@ TEST_F(FlingingRendererTest, SetVolumeToZero) {
   EXPECT_CALL(*media_controller_, SetVolume(volume));
   EXPECT_CALL(*media_controller_, SetMute(_)).Times(0);
 
-  renderer_.SetVolume(volume);
+  renderer_->SetVolume(volume);
 }
 
 }  // namespace content

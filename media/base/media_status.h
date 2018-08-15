@@ -6,6 +6,7 @@
 #define MEDIA_BASE_MEDIA_STATUS_H_
 
 #include "base/time/time.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
@@ -13,7 +14,7 @@ namespace media {
 // interface. This is a copy of the media_router.mojom.MediaStatus interface,
 // without the cast specific portions.
 // TODO(https://crbug.com/820277): Deduplicate media_router::MediaStatus.
-struct MediaStatus {
+struct MEDIA_EXPORT MediaStatus {
  public:
   enum class PlayState { PLAYING, PAUSED, BUFFERING };
 
