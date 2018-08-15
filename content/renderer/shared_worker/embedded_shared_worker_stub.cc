@@ -391,8 +391,11 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
       loader_factories_->Clone();
 
+  // TODO(crbug.com/853085): plumb RendererPreferenceWatcher from the browser.
   auto worker_fetch_context = std::make_unique<WebWorkerFetchContextImpl>(
-      std::move(renderer_preferences_), std::move(worker_client_request),
+      std::move(renderer_preferences_),
+      nullptr /* preference_watcher_request */,
+      std::move(worker_client_request),
       std::move(worker_client_registry_ptr_info),
       std::move(container_host_ptr_info), loader_factories_->Clone(),
       std::move(fallback_factory),

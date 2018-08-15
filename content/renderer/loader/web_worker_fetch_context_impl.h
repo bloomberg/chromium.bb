@@ -11,9 +11,11 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -41,7 +43,8 @@ class WebSocketHandshakeThrottleProvider;
 // service workers, ServiceWorkerFetchContextImpl class is used instead.
 class CONTENT_EXPORT WebWorkerFetchContextImpl
     : public blink::WebWorkerFetchContext,
-      public mojom::ServiceWorkerWorkerClient {
+      public mojom::ServiceWorkerWorkerClient,
+      public mojom::RendererPreferenceWatcher {
  public:
   // |service_worker_client_request| is bound to |this| to receive
   // OnControllerChanged() notifications.
@@ -63,6 +66,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // chrome-extension://).
   WebWorkerFetchContextImpl(
       RendererPreferences renderer_preferences,
+      mojom::RendererPreferenceWatcherRequest watcher_request,
       mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
       mojom::ServiceWorkerWorkerClientRegistryPtrInfo
           service_worker_worker_client_registry_info,
@@ -139,6 +143,9 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // controlled by a service worker.
   void ResetServiceWorkerURLLoaderFactory();
 
+  // Implements mojom::RendererPreferenceWatcher.
+  void NotifyUpdate(const RendererPreferences& new_prefs) override;
+
   mojo::Binding<mojom::ServiceWorkerWorkerClient> binding_;
   mojom::ServiceWorkerWorkerClientRegistryPtr
       service_worker_worker_client_registry_;
@@ -207,9 +214,16 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   GURL origin_url_;
   int appcache_host_id_ = blink::WebApplicationCacheHost::kAppCacheNoHostId;
 
-  // TODO(crbug.com/862854): Propagate preference changes from the browser
-  // process.
   RendererPreferences renderer_preferences_;
+
+  // |watcher_binding_| and |child_preference_watchers_| are for keeping track
+  // of updates in the renderer preferences.
+  mojo::Binding<mojom::RendererPreferenceWatcher> preference_watcher_binding_;
+  // Kept while staring up the worker thread. Valid until
+  // InitializeOnWorkerThread().
+  mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
+  mojo::InterfacePtrSet<mojom::RendererPreferenceWatcher>
+      child_preference_watchers_;
 
   // This is owned by ThreadedMessagingProxyBase on the main thread.
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;

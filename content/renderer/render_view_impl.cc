@@ -1682,6 +1682,11 @@ void RenderViewImpl::DidCommitProvisionalHistoryLoad() {
   history_navigation_virtual_time_pauser_.UnpauseVirtualTime();
 }
 
+void RenderViewImpl::RegisterRendererPreferenceWatcherForWorker(
+    mojom::RendererPreferenceWatcherPtr watcher) {
+  renderer_preference_watchers_.AddPtr(std::move(watcher));
+}
+
 int RenderViewImpl::HistoryBackListCount() {
   return history_list_offset_ < 0 ? 0 : history_list_offset_;
 }
@@ -1878,6 +1883,11 @@ void RenderViewImpl::OnSetRendererPrefs(
   std::string old_accept_languages = renderer_preferences_.accept_languages;
 
   renderer_preferences_ = renderer_prefs;
+
+  renderer_preference_watchers_.ForAllPtrs(
+      [&renderer_prefs](mojom::RendererPreferenceWatcher* watcher) {
+        watcher->NotifyUpdate(renderer_prefs);
+      });
 
   UpdateFontRenderingFromRendererPrefs();
   UpdateThemePrefs();
