@@ -9,9 +9,6 @@ fun:*Allocate*Backing*
 # WTF::ThreadSpecific
 fun:*ThreadSpecific*
 
-# Mesa contains several bad casts.
-src:*third_party/mesa*
-
 # LLVM's allocator
 src:*llvm/Support/Allocator.h
 

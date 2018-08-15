@@ -32,7 +32,7 @@ Usage:
 
 1. remove_bundled_libraries.py <preserved-directories>
 
-   For example: remove_bundled_libraries.py third_party/mesa
+   For example: remove_bundled_libraries.py third_party/zlib
 
    The script scans sources looking for third_party directories.
    Everything that is not explicitly preserved is removed (except for
