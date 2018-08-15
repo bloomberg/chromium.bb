@@ -4,33 +4,22 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/gamepad-helpers.js"></script>
 <script>
-// We will convert all |buttons| and |axes| to string to avoid reused buffer
-// problem. https://crbug.com/855760
-function buttonsToStr(buttons) {
-  return buttons.map(button => "[" + button.pressed + "," + button.touched + "," + button.value + "]")
-         .join();
-}
-function axesToStr(axes) {
-  return axes.toString();
+
+// TODO(crbug.com/146285): Allow more than 4 connected gamepads.
+var MAX_GAMEPADS = 4;
+
+function disconnectGamepads() {
+    // Simulate disconnecting all gamepads.
+    for (let i = 0; i < MAX_GAMEPADS; ++i) {
+        gamepadController.disconnect(i);
+    }
 }
 
-promise_test(async () => {
-    // Start all disconnected
-    gamepadController.disconnect(0);
-    gamepadController.disconnect(1);
-    gamepadController.disconnect(2);
-    gamepadController.disconnect(3);
-    assert_equals(navigator.getGamepads().length, 4, 'navigator.getGamepads().length');
-    assert_equals(navigator.getGamepads().item(0), null, 'navigator.getGamepads().item(0)');
-    assert_equals(navigator.getGamepads().item(1), null, 'navigator.getGamepads().item(1)');
-    assert_equals(navigator.getGamepads().item(2), null, 'navigator.getGamepads().item(2)');
-    assert_equals(navigator.getGamepads().item(3), null, 'navigator.getGamepads().item(3)');
-    assert_equals(navigator.getGamepads()[0], null, 'navigator.getGamepads()[0]');
-    assert_equals(navigator.getGamepads()[1], null, 'navigator.getGamepads()[1]');
-    assert_equals(navigator.getGamepads()[2], null, 'navigator.getGamepads()[2]');
-    assert_equals(navigator.getGamepads()[3], null, 'navigator.getGamepads()[3]');
-
-    // connect again, and check standard access
+function connectOneGamepad() {
+    // Simulate a connected gamepad at index 0 with:
+    // * id 'MockStick 3000'
+    // * two buttons (values 1.0/pressed, 0.0/unpressed)
+    // * two axes (values 0.5, -1.0)
     gamepadController.connect(0);
     gamepadController.setId(0, "MockStick 3000");
     gamepadController.setButtonCount(0, 2);
@@ -40,51 +29,172 @@ promise_test(async () => {
     gamepadController.setAxisData(0, 0, .5);
     gamepadController.setAxisData(0, 1, -1.0);
     gamepadController.dispatchConnected(0);
+}
 
-    await ongamepadconnected();
-    assert_equals(navigator.getGamepads()[0].id, 'MockStick 3000', 'navigator.getGamepads()[0].id');
-    assert_equals(navigator.getGamepads()[0].buttons.length, 2, 'navigator.getGamepads()[0].buttons.length');
-    assert_equals(navigator.getGamepads()[0].buttons[0].value, 1.0, 'navigator.getGamepads()[0].buttons[0].value');
-    assert_true(navigator.getGamepads()[0].buttons[0].pressed, 'navigator.getGamepads()[0].buttons[0].pressed');
-    assert_equals(navigator.getGamepads()[0].buttons[1].value, 0.0, 'navigator.getGamepads()[0].buttons[1].value');
-    assert_false(navigator.getGamepads()[0].buttons[1].pressed, 'navigator.getGamepads()[0].buttons[1].pressed');
-    assert_equals(navigator.getGamepads()[0].axes.length, 2, 'navigator.getGamepads()[0].axes.length');
-    assert_equals(navigator.getGamepads()[0].axes[0], 0.5, 'navigator.getGamepads()[0].axes[0]');
-    assert_equals(navigator.getGamepads()[0].axes[1], -1.0, 'navigator.getGamepads()[0].axes[1]');
+function testGamepadStateAllDisconnected() {
+    // To pass this test, the getGamepads array should have only null elements.
+    let pads = navigator.getGamepads();
+    // According to the spec, the length of the array returned by getGamepads
+    // must be one greater than the maximum index of Gamepad objects in the
+    // array. It does not specify the size when there are no objects in the
+    // array. The current behavior in Chrome is to return an array with length
+    // equal to the maximum number of connected gamepads, and to fill all unused
+    // slots with null.
+    assert_equals(pads.length, MAX_GAMEPADS, 'pads.length');
+    for (let i = 0; i < pads.length; ++i) {
+        // TODO(crbug.com/865642): Remove deprecated Gamepad.item method.
+        assert_equals(pads.item(i), null);
+        assert_equals(pads[i], null);
+    }
+}
 
-    // Check that accessing the |axes| and |buttons| attributes fetches the
-    // same objects until their values change.
-    assert_equals(navigator.getGamepads()[0].axes, navigator.getGamepads()[0].axes, 'navigator.getGamepads()[0].axes');
-    assert_equals(navigator.getGamepads()[0].buttons, navigator.getGamepads()[0].buttons, 'navigator.getGamepads()[0].buttons');
-    let oldAxesStr = axesToStr(navigator.getGamepads()[0].axes);
-    let oldButtonsStr = buttonsToStr(navigator.getGamepads()[0].buttons);
+function testGamepadStateOneConnected() {
+    // To pass this test, Gamepad 0 should have the values set in
+    // setUpOneGamepad.
+    let gamepad = navigator.getGamepads()[0];
+    assert_equals(gamepad.id, 'MockStick 3000');
+    assert_equals(gamepad.buttons.length, 2);
+    assert_equals(gamepad.buttons[0].value, 1.0);
+    assert_true(gamepad.buttons[0].pressed);
+    assert_equals(gamepad.buttons[1].value, 0.0);
+    assert_false(gamepad.buttons[1].pressed);
+    assert_equals(gamepad.axes.length, 2);
+    assert_equals(gamepad.axes[0], 0.5);
+    assert_equals(gamepad.axes[1], -1.0);
+}
 
-    // Updates with the same values are skipped.
-    gamepadController.setAxisCount(0, 2);
-    gamepadController.setButtonCount(0, 2);
-    assert_equals(axesToStr(navigator.getGamepads()[0].axes), oldAxesStr, 'navigator.getGamepads()[0].axes');
-    assert_equals(buttonsToStr(navigator.getGamepads()[0].buttons), oldButtonsStr, 'navigator.getGamepads()[0].buttons');
-    gamepadController.setAxisData(0, 0, .5);
-    gamepadController.setButtonData(0, 1, 0);
-    assert_equals(axesToStr(navigator.getGamepads()[0].axes), oldAxesStr, 'navigator.getGamepads()[0].axes');
-    assert_equals(buttonsToStr(navigator.getGamepads()[0].buttons), oldButtonsStr, 'navigator.getGamepads()[0].buttons');
+function testNoChangeReturnsSameObjects() {
+    // Check that accessing gamepad state fetches the same objects until their
+    // values change.
+    assert_equals(navigator.getGamepads(),
+                  navigator.getGamepads(), 'gamepad arrays differ');
+    assert_equals(navigator.getGamepads()[0],
+                  navigator.getGamepads()[0], 'gamepad objects differ');
+    assert_equals(navigator.getGamepads()[0].axes,
+                  navigator.getGamepads()[0].axes, 'axes arrays differ');
+    assert_equals(navigator.getGamepads()[0].buttons,
+                  navigator.getGamepads()[0].buttons, 'gamepad buttons differ');
+}
 
-    // Updates with different values are not skipped.
-    gamepadController.setAxisData(0, 0, .6);
-    assert_not_equals(axesToStr(navigator.getGamepads()[0].axes), oldAxesStr, 'navigator.getGamepads()[0].axes');
-    assert_equals(buttonsToStr(navigator.getGamepads()[0].buttons), oldButtonsStr, 'navigator.getGamepads()[0].buttons');
-    oldAxesStr = axesToStr(navigator.getGamepads()[0].axes);
+function testSameValueUpdateReturnsSameObjects() {
+    // Test that updates with the same value do not cause a new gamepad object
+    // to be returned.
+    let gamepadBefore = navigator.getGamepads()[0];
+    gamepadController.setAxisCount(0, gamepadBefore.axes.length);
+    gamepadController.setButtonCount(0, gamepadBefore.buttons.length);
+    let gamepadAfter = navigator.getGamepads()[0];
+    assert_equals(
+        gamepadBefore, gamepadAfter,
+        "expected same gamepad after same-value setAxisCount/setButtonCount");
+    assert_equals(
+        gamepadBefore.timestamp, gamepadAfter.timestamp,
+        "expected same timestamp after same-value setAxisCount/setButtonCount");
+    assert_equals(
+        gamepadBefore.axes, gamepadAfter.axes,
+        "expected same axes after same-value setAxisCount/setButtonCount");
+    assert_equals(
+        gamepadBefore.buttons, gamepadAfter.buttons,
+        "expected same buttons after same-value setAxisCount/setButtonCount");
 
-    gamepadController.setButtonData(0, 0, .2);
-    assert_equals(axesToStr(navigator.getGamepads()[0].axes), oldAxesStr, 'navigator.getGamepads()[0].axes');
-    assert_not_equals(buttonsToStr(navigator.getGamepads()[0].buttons), oldButtonsStr, 'navigator.getGamepads()[0].buttons');
-    oldButtonsStr = buttonsToStr(navigator.getGamepads()[0].buttons);
+    gamepadBefore = navigator.getGamepads()[0];
+    gamepadController.setAxisData(0, 0, gamepadBefore.axes[0]);
+    gamepadController.setButtonData(0, 1, gamepadBefore.buttons[1].value);
+    gamepadAfter = navigator.getGamepads()[0];
+    assert_equals(
+        gamepadBefore, gamepadAfter,
+        "expected same gamepad after same-value setAxisData/setButtonData");
+    assert_equals(
+        gamepadBefore.timestamp, gamepadAfter.timestamp,
+        "expected same timestamp after same-value setAxisData/setButtonData");
+    assert_equals(
+        gamepadBefore.axes, gamepadAfter.axes,
+        "expected same axes after same-value setAxisData/setButtonData");
+    assert_equals(
+        gamepadBefore.buttons, gamepadAfter.buttons,
+        "expected same buttons after same-value setAxisData/setButtonData");
+}
 
-    gamepadController.setAxisData(0, 0, .9);
-    gamepadController.setButtonData(0, 0, .3);
-    assert_not_equals(axesToStr(navigator.getGamepads()[0].axes), oldAxesStr, 'navigator.getGamepads()[0].axes');
-    assert_not_equals(buttonsToStr(navigator.getGamepads()[0].buttons), oldButtonsStr, 'navigator.getGamepads()[0].buttons');
+function testDifferentValueUpdateReturnsNewObjects() {
+    // Test that changing an axis value causes a new gamepad object to be
+    // returned.
+    // TODO(crbug.com/855760): Check that the buttons array is preserved.
+    gamepadBefore = navigator.getGamepads()[0];
+    gamepadController.setAxisData(0, 0, gamepadBefore.axes[0] + 0.1);
+    gamepadAfter = navigator.getGamepads()[0];
+    assert_not_equals(gamepadBefore, gamepadAfter,
+                      "expected new gamepad after new-value setAxisData");
+    assert_not_equals(gamepadBefore.timestamp,
+                      gamepadAfter.timestamp,
+                      "expected new timestamp after new-value setAxisData");
+    assert_not_equals(gamepadBefore.axes, gamepadAfter.axes,
+                      "expected new axes after new-value setAxisData");
 
+    // Test that changing a button value causes a new gamepad object to be
+    // returned.
+    // TODO(crbug.com/855760): Check that the axes array is preserved.
+    gamepadBefore = navigator.getGamepads()[0];
+    gamepadController.setButtonData(0, 0, gamepad.buttons[0].value + 0.1);
+    gamepadAfter = navigator.getGamepads()[0];
+    assert_not_equals(gamepadBefore, gamepadAfter,
+                      "expected new gamepad after new-value setButtonData");
+    assert_not_equals(gamepadBefore.timestamp,
+                      gamepadAfter.timestamp,
+                      "expected new timestamp after new-value setButtonData");
+    assert_not_equals(gamepadBefore.buttons, gamepadAfter.buttons,
+                      "expected new buttons after new-value setButtonData");
+
+    // Test that changing a button value and an axis value causes a new gamepad
+    // object to be returned.
+    gamepadBefore = navigator.getGamepads()[0];
+    gamepadController.setAxisData(0, 0, gamepad.axes[0] - 0.1);
+    gamepadController.setButtonData(0, 0, gamepad.buttons[0].value - 0.1);
+    gamepadAfter = navigator.getGamepads()[0];
+    assert_not_equals(
+        gamepadBefore, gamepadAfter,
+        "expected new gamepad after new-value setAxisData/setButtonData");
+    assert_not_equals(
+        gamepadBefore.timestamp, gamepadAfter.timestamp,
+        "expected new timestamp after new-value setAxisData/setButtonData");
+    assert_not_equals(
+        gamepadBefore.axes, gamepadAfter.axes,
+        "expected new axes after new-value setAxisData/setButtonData");
+    assert_not_equals(
+        gamepadBefore.buttons, gamepadAfter.buttons,
+        "expected new buttons after new-value setAxisData/setButtonData");
+}
+
+promise_test(async () => {
+    // First disconnect all gamepads.
+    disconnectGamepads();
+    testGamepadStateAllDisconnected();
+
+    // Simulate a gamepad connection and verify the state changes as expected.
+    let connectPromise = ongamepadconnected();
+    connectOneGamepad();
+    await connectPromise;
+    testGamepadStateOneConnected();
+
+    // Chrome has different internal behavior depending on whether a gamepad
+    // event listener is registered. Exercise both paths to verify that the
+    // state changes are handled correctly in either case.
+    let disconnectListener = (e) => {};
+
+    window.addEventListener('gamepaddisconnected', disconnectListener);
+    testNoChangeReturnsSameObjects();
+    testSameValueUpdateReturnsSameObjects();
+    // TODO(crbug.com/855760): With a listener registered, Chrome will only
+    // create a new object if there was a gamepad disconnection. Otherwise,
+    // the previous gamepad object is overwritten with the new data. Re-enable
+    // this test once Chrome correctly creates a new gamepad object.
+    //testDifferentValueUpdateReturnsNewObjects();
+
+    window.removeEventListener('gamepaddisconnected', disconnectListener);
+    testNoChangeReturnsSameObjects();
+    testSameValueUpdateReturnsSameObjects();
+    // TODO(crbug.com/855760): With no listener registered, Chrome always reuses
+    // the gamepad object. Re-enable this test once Chrome correctly creates a
+    // new gamepad object.
+    //testDifferentValueUpdateReturnsNewObjects();
 }, "Typical polling access to gamepads contents.");
 
 </script>
