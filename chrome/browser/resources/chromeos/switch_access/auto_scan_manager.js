@@ -54,7 +54,7 @@ AutoScanManager.prototype = {
    */
   start_: function() {
     this.intervalID_ = window.setInterval(
-        this.switchAccess_.moveToNode.bind(this.switchAccess_, true),
+        this.switchAccess_.moveForward.bind(this.switchAccess_),
         this.scanTime_);
   },
 

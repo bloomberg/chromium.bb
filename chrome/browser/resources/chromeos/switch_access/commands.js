@@ -65,11 +65,11 @@ Commands.prototype = {
     return {
       'next': {
         'defaultKeyCode': 49, /* '1' key */
-        'binding': this.switchAccess_.moveToNode.bind(this.switchAccess_, true)
+        'binding': this.switchAccess_.moveForward.bind(this.switchAccess_)
       },
       'previous': {
         'defaultKeyCode': 50, /* '2' key */
-        'binding': this.switchAccess_.moveToNode.bind(this.switchAccess_, false)
+        'binding': this.switchAccess_.moveBackward.bind(this.switchAccess_)
       },
       'select': {
         'defaultKeyCode': 51, /* '3' key */
