@@ -1641,10 +1641,10 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         No Open Tabs
       </message>
       <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_EMPTY_STATE_BODY" desc="Text body shown in the Incognito Tabs page when the grid is empty, explaining that the user can open a new tab. [iOS only]">
-        Open a tab to browse the web privately.
+        To browse the web privately, add a new tab.
       </message>
       <message name="IDS_IOS_TAB_GRID_REGULAR_TABS_EMPTY_STATE_BODY" desc="Text body shown in the Regular Tabs page (as opposed to the Incognito Tabs page) when the grid is empty, explaining that the user can open a new tab. [iOS only]">
-        Open a tab to browse the web.
+        To browse the web, add a new tab.
       </message>
       <message name="IDS_IOS_TAB_GRID_CREATE_NEW_INCOGNITO_TAB" desc="The accessibility label for the button that creates new incognito tabs. [iOS only]">
         Create new incognito tab.
