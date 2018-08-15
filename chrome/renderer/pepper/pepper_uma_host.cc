@@ -51,7 +51,7 @@ const char* const kWhitelistedHistogramPrefixes[] = {
     "3FEA4650221C5E6C39CF5C5C9F464FF74EAB6CE1",  // see http://crbug.com/521189
 };
 
-const char* const kWhitelistedPluginBaseNames[] = {
+const base::FilePath::CharType* const kWhitelistedPluginBaseNames[] = {
     ChromeContentClient::kPDFPluginPath,
 };
 
@@ -121,10 +121,8 @@ bool PepperUMAHost::IsHistogramAllowed(const std::string& histogram) {
     return true;
   }
 
-  if (base::ContainsKey(allowed_plugin_base_names_,
-                        plugin_base_name_.MaybeAsASCII())) {
+  if (base::ContainsKey(allowed_plugin_base_names_, plugin_base_name_.value()))
     return true;
-  }
 
   LOG(ERROR) << "Host or histogram name is not allowed to use the UMA API.";
   return false;

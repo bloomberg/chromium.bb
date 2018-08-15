@@ -188,8 +188,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   pdf_info.is_out_of_process = true;
   pdf_info.name = ChromeContentClient::kPDFInternalPluginName;
   pdf_info.description = kPDFPluginDescription;
-  pdf_info.path = base::FilePath::FromUTF8Unsafe(
-      ChromeContentClient::kPDFPluginPath);
+  pdf_info.path = base::FilePath(ChromeContentClient::kPDFPluginPath);
   content::WebPluginMimeType pdf_mime_type(
       kPDFPluginOutOfProcessMimeType,
       kPDFPluginExtension,
@@ -518,9 +517,9 @@ void ChromeContentClient::AddPepperPlugins(
     // nothing that guarantees the component update will give us the
     // FLAPPER_VERSION_STRING version of Flash, but using this version seems
     // better than any other hardcoded alternative.
-    plugins->push_back(CreatePepperFlashInfo(
-        base::FilePath::FromUTF8Unsafe(ChromeContentClient::kNotPresent),
-        FLAPPER_VERSION_STRING, false));
+    plugins->push_back(
+        CreatePepperFlashInfo(base::FilePath(ChromeContentClient::kNotPresent),
+                              FLAPPER_VERSION_STRING, false));
 #endif  // defined(GOOGLE_CHROME_BUILD) && defined(FLAPPER_AVAILABLE)
   }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)

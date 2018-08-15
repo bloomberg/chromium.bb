@@ -84,8 +84,7 @@ bool IsPepperPluginEnabled(Profile* profile,
 bool IsPdfPluginEnabled(Profile* profile) {
   DCHECK(profile);
 
-  base::FilePath plugin_path = base::FilePath::FromUTF8Unsafe(
-      ChromeContentClient::kPDFPluginPath);
+  static const base::FilePath plugin_path(ChromeContentClient::kPDFPluginPath);
   return IsPepperPluginEnabled(profile, plugin_path);
 }
 
