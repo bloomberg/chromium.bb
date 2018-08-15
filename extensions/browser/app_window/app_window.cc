@@ -351,8 +351,13 @@ bool AppWindow::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type) {
-  DCHECK_EQ(AppWindow::web_contents(),
-            content::WebContents::FromRenderFrameHost(render_frame_host));
+  DCHECK(AppWindow::web_contents() ==
+             content::WebContents::FromRenderFrameHost(render_frame_host) ||
+         (content::WebContents::FromRenderFrameHost(render_frame_host)
+              ->GetOuterWebContents() &&
+          AppWindow::web_contents() ==
+              content::WebContents::FromRenderFrameHost(render_frame_host)
+                  ->GetOuterWebContents()));
   return helper_->CheckMediaAccessPermission(render_frame_host, security_origin,
                                              type);
 }
