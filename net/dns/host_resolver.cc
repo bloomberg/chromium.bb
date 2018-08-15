@@ -160,6 +160,53 @@ std::unique_ptr<HostResolverImpl> HostResolver::CreateDefaultResolverImpl(
   return CreateSystemResolverImpl(Options(), net_log);
 }
 
+// static
+AddressFamily HostResolver::DnsQueryTypeToAddressFamily(
+    DnsQueryType dns_query_type) {
+  switch (dns_query_type) {
+    case DnsQueryType::UNSPECIFIED:
+      return ADDRESS_FAMILY_UNSPECIFIED;
+    case DnsQueryType::A:
+      return ADDRESS_FAMILY_IPV4;
+    case DnsQueryType::AAAA:
+      return ADDRESS_FAMILY_IPV6;
+    default:
+      // |dns_query_type| should be an address type (A or AAAA) or UNSPECIFIED.
+      NOTREACHED();
+      return ADDRESS_FAMILY_UNSPECIFIED;
+  }
+}
+
+// static
+HostResolver::DnsQueryType HostResolver::AddressFamilyToDnsQueryType(
+    AddressFamily address_family) {
+  switch (address_family) {
+    case ADDRESS_FAMILY_UNSPECIFIED:
+      return DnsQueryType::UNSPECIFIED;
+    case ADDRESS_FAMILY_IPV4:
+      return DnsQueryType::A;
+    case ADDRESS_FAMILY_IPV6:
+      return DnsQueryType::AAAA;
+    default:
+      NOTREACHED();
+      return DnsQueryType::UNSPECIFIED;
+  }
+}
+
+// static
+HostResolver::ResolveHostParameters
+HostResolver::RequestInfoToResolveHostParameters(
+    const HostResolver::RequestInfo& request_info,
+    RequestPriority priority) {
+  ResolveHostParameters parameters;
+
+  parameters.dns_query_type =
+      AddressFamilyToDnsQueryType(request_info.address_family());
+  parameters.initial_priority = priority;
+
+  return parameters;
+}
+
 HostResolver::HostResolver() = default;
 
 }  // namespace net

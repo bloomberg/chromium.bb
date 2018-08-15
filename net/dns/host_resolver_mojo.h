@@ -38,7 +38,9 @@ class HostResolverMojo : public HostResolver {
   // HostResolver overrides.
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
-      const NetLogWithSource& net_log) override;
+      const NetLogWithSource& net_log,
+      const base::Optional<ResolveHostParameters>& optional_parameters)
+      override;
   // Note: |Resolve()| currently ignores |priority|.
   int Resolve(const RequestInfo& info,
               RequestPriority priority,

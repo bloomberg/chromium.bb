@@ -137,7 +137,9 @@ class NET_EXPORT HostResolverImpl
   // HostResolver methods:
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
-      const NetLogWithSource& net_log) override;
+      const NetLogWithSource& net_log,
+      const base::Optional<ResolveHostParameters>& optional_parameters)
+      override;
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
@@ -228,7 +230,7 @@ class NET_EXPORT HostResolverImpl
   // If |allow_stale| is false, then stale cache entries will not be returned,
   // and |stale_info| must be null.
   int ResolveLocally(const HostPortPair& host,
-                     AddressFamily requested_address_family,
+                     DnsQueryType requested_address_family,
                      HostResolverFlags flags,
                      bool allow_cache,
                      bool allow_stale,
@@ -283,7 +285,7 @@ class NET_EXPORT HostResolverImpl
   // "effective" address family by inheriting the resolver's default address
   // family when the request leaves it unspecified.
   Key GetEffectiveKeyForRequest(const std::string& hostname,
-                                AddressFamily requested_address_family,
+                                DnsQueryType dns_query_type,
                                 HostResolverFlags flags,
                                 const IPAddress* ip_address,
                                 const NetLogWithSource& net_log);

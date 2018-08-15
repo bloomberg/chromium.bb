@@ -36,15 +36,17 @@ MappedHostResolver::MappedHostResolver(std::unique_ptr<HostResolver> impl)
 MappedHostResolver::~MappedHostResolver() = default;
 
 std::unique_ptr<HostResolver::ResolveHostRequest>
-MappedHostResolver::CreateRequest(const HostPortPair& host,
-                                  const NetLogWithSource& source_net_log) {
+MappedHostResolver::CreateRequest(
+    const HostPortPair& host,
+    const NetLogWithSource& source_net_log,
+    const base::Optional<ResolveHostParameters>& optional_parameters) {
   HostPortPair rewritten = host;
   rules_.RewriteHost(&rewritten);
 
   if (rewritten.host() == "~NOTFOUND")
     return std::make_unique<AlwaysErrorRequestImpl>(ERR_NAME_NOT_RESOLVED);
 
-  return impl_->CreateRequest(rewritten, source_net_log);
+  return impl_->CreateRequest(rewritten, source_net_log, optional_parameters);
 }
 
 int MappedHostResolver::Resolve(const RequestInfo& original_info,

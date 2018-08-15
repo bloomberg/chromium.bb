@@ -746,13 +746,38 @@ TEST_F(HostResolverImplTest, AsynchronousLookup_ResolveHost) {
   proc_->SignalMultiple(1u);
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("just.testing", 80), NetLogWithSource()));
+      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt));
 
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected("192.168.1.42", 80)));
 
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
+}
+
+TEST_F(HostResolverImplTest, DnsQueryType) {
+  proc_->AddRule("host", ADDRESS_FAMILY_IPV4, "192.168.1.20");
+  proc_->AddRule("host", ADDRESS_FAMILY_IPV6, "::5");
+
+  HostResolver::ResolveHostParameters parameters;
+
+  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  ResolveHostResponseHelper v4_response(resolver_->CreateRequest(
+      HostPortPair("host", 80), NetLogWithSource(), parameters));
+
+  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  ResolveHostResponseHelper v6_response(resolver_->CreateRequest(
+      HostPortPair("host", 80), NetLogWithSource(), parameters));
+
+  proc_->SignalMultiple(2u);
+
+  EXPECT_THAT(v4_response.result_error(), IsOk());
+  EXPECT_THAT(v4_response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("192.168.1.20", 80)));
+
+  EXPECT_THAT(v6_response.result_error(), IsOk());
+  EXPECT_THAT(v6_response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("::5", 80)));
 }
 
 TEST_F(HostResolverImplTest, LocalhostIPV4IPV6Lookup) {
@@ -776,6 +801,53 @@ TEST_F(HostResolverImplTest, LocalhostIPV4IPV6Lookup) {
   Request* req5 = CreateRequest("localhost", 80, MEDIUM, ADDRESS_FAMILY_IPV6);
   EXPECT_THAT(req5->Resolve(), IsOk());
   EXPECT_TRUE(req5->HasOneAddress("::1", 80));
+}
+
+TEST_F(HostResolverImplTest, LocalhostIPV4IPV6Lookup_ResolveHost) {
+  HostResolver::ResolveHostParameters parameters;
+
+  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  ResolveHostResponseHelper v6_v4_response(resolver_->CreateRequest(
+      HostPortPair("localhost6", 80), NetLogWithSource(), parameters));
+  EXPECT_THAT(v6_v4_response.result_error(), IsOk());
+  EXPECT_THAT(v6_v4_response.request()->GetAddressResults().value().endpoints(),
+              testing::IsEmpty());
+
+  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  ResolveHostResponseHelper v6_v6_response(resolver_->CreateRequest(
+      HostPortPair("localhost6", 80), NetLogWithSource(), parameters));
+  EXPECT_THAT(v6_v6_response.result_error(), IsOk());
+  EXPECT_THAT(v6_v6_response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("::1", 80)));
+
+  ResolveHostResponseHelper v6_unsp_response(resolver_->CreateRequest(
+      HostPortPair("localhost6", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(v6_unsp_response.result_error(), IsOk());
+  EXPECT_THAT(
+      v6_unsp_response.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(CreateExpected("::1", 80)));
+
+  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  ResolveHostResponseHelper v4_v4_response(resolver_->CreateRequest(
+      HostPortPair("localhost", 80), NetLogWithSource(), parameters));
+  EXPECT_THAT(v4_v4_response.result_error(), IsOk());
+  EXPECT_THAT(v4_v4_response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("127.0.0.1", 80)));
+
+  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  ResolveHostResponseHelper v4_v6_response(resolver_->CreateRequest(
+      HostPortPair("localhost", 80), NetLogWithSource(), parameters));
+  EXPECT_THAT(v4_v6_response.result_error(), IsOk());
+  EXPECT_THAT(v4_v6_response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("::1", 80)));
+
+  ResolveHostResponseHelper v4_unsp_response(resolver_->CreateRequest(
+      HostPortPair("localhost", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(v4_unsp_response.result_error(), IsOk());
+  EXPECT_THAT(
+      v4_unsp_response.request()->GetAddressResults().value().endpoints(),
+      testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
+                                    CreateExpected("::1", 80)));
 }
 
 TEST_F(HostResolverImplTest, ResolveIPLiteralWithHostResolverSystemOnly) {
@@ -810,7 +882,7 @@ TEST_F(HostResolverImplTest, EmptyListMeansNameNotResolved_ResolveHost) {
   proc_->SignalMultiple(1u);
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("just.testing", 80), NetLogWithSource()));
+      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt));
 
   EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(response.request()->GetAddressResults());
@@ -839,7 +911,7 @@ TEST_F(HostResolverImplTest, FailedAsynchronousLookup_ResolveHost) {
   proc_->SignalMultiple(1u);
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("just.testing", 80), NetLogWithSource()));
+      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(response.request()->GetAddressResults());
 
@@ -876,7 +948,7 @@ TEST_F(HostResolverImplTest, AbortedAsynchronousLookup) {
 
 TEST_F(HostResolverImplTest, AbortedAsynchronousLookup_ResolveHost) {
   ResolveHostResponseHelper response0(resolver_->CreateRequest(
-      HostPortPair("just.testing", 80), NetLogWithSource()));
+      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt));
   ASSERT_FALSE(response0.complete());
   ASSERT_TRUE(proc_->WaitFor(1u));
 
@@ -888,7 +960,7 @@ TEST_F(HostResolverImplTest, AbortedAsynchronousLookup_ResolveHost) {
   // To ensure there was no spurious callback, complete with a new resolver.
   CreateResolver();
   ResolveHostResponseHelper response1(resolver_->CreateRequest(
-      HostPortPair("just.testing", 80), NetLogWithSource()));
+      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt));
 
   proc_->SignalMultiple(2u);
 
@@ -921,7 +993,7 @@ TEST_F(HostResolverImplTest, MAYBE_NumericIPv4Address) {
 #endif
 TEST_F(HostResolverImplTest, MAYBE_NumericIPv4Address_ResolveHost) {
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("127.1.2.3", 5555), NetLogWithSource()));
+      HostPortPair("127.1.2.3", 5555), NetLogWithSource(), base::nullopt));
 
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
@@ -954,7 +1026,7 @@ TEST_F(HostResolverImplTest, MAYBE_NumericIPv6Address_ResolveHost) {
   // Resolve a plain IPv6 address.  Don't worry about [brackets], because
   // the caller should have removed them.
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("2001:db8::1", 5555), NetLogWithSource()));
+      HostPortPair("2001:db8::1", 5555), NetLogWithSource(), base::nullopt));
 
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
@@ -980,7 +1052,7 @@ TEST_F(HostResolverImplTest, MAYBE_EmptyHost) {
 #endif
 TEST_F(HostResolverImplTest, MAYBE_EmptyHost_ResolveHost) {
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair(std::string(), 5555), NetLogWithSource()));
+      HostPortPair(std::string(), 5555), NetLogWithSource(), base::nullopt));
 
   EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(response.request()->GetAddressResults());
@@ -1013,8 +1085,9 @@ TEST_F(HostResolverImplTest, MAYBE_EmptyDotsHost) {
 #endif
 TEST_F(HostResolverImplTest, MAYBE_EmptyDotsHost_ResolveHost) {
   for (int i = 0; i < 16; ++i) {
-    ResolveHostResponseHelper response(resolver_->CreateRequest(
-        HostPortPair(std::string(i, '.'), 5555), NetLogWithSource()));
+    ResolveHostResponseHelper response(
+        resolver_->CreateRequest(HostPortPair(std::string(i, '.'), 5555),
+                                 NetLogWithSource(), base::nullopt));
 
     EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
     EXPECT_FALSE(response.request()->GetAddressResults());
@@ -1043,8 +1116,9 @@ TEST_F(HostResolverImplTest, MAYBE_LongHost) {
 #define MAYBE_LongHost_ResolveHost LongHost_ResolveHost
 #endif
 TEST_F(HostResolverImplTest, MAYBE_LongHost_ResolveHost) {
-  ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair(std::string(4097, 'a'), 5555), NetLogWithSource()));
+  ResolveHostResponseHelper response(
+      resolver_->CreateRequest(HostPortPair(std::string(4097, 'a'), 5555),
+                               NetLogWithSource(), base::nullopt));
 
   EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(response.request()->GetAddressResults());
@@ -1070,16 +1144,21 @@ TEST_F(HostResolverImplTest, DeDupeRequests_ResolveHost) {
   // Start 5 requests, duplicating hosts "a" and "b". Since the resolver_proc is
   // blocked, these should all pile up until we signal it.
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("a", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("b", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("b", 81), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("a", 82), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("b", 83), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("a", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("b", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("b", 81), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("a", 82), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("b", 83), NetLogWithSource(), base::nullopt)));
 
   for (auto& response : responses) {
     ASSERT_FALSE(response->complete());
@@ -1112,16 +1191,21 @@ TEST_F(HostResolverImplTest, CancelMultipleRequests) {
 
 TEST_F(HostResolverImplTest, CancelMultipleRequests_ResolveHost) {
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("a", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("b", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("b", 81), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("a", 82), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("b", 83), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("a", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("b", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("b", 81), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("a", 82), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("b", 83), NetLogWithSource(), base::nullopt)));
 
   for (auto& response : responses) {
     ASSERT_FALSE(response->complete());
@@ -1180,12 +1264,12 @@ TEST_F(HostResolverImplTest, CanceledRequestsReleaseJobSlots_ResolveHost) {
 
     responses.emplace_back(
         std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-            HostPortPair(hostname, 80), NetLogWithSource())));
+            HostPortPair(hostname, 80), NetLogWithSource(), base::nullopt)));
     ASSERT_FALSE(responses.back()->complete());
 
     responses.emplace_back(
         std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-            HostPortPair(hostname, 81), NetLogWithSource())));
+            HostPortPair(hostname, 81), NetLogWithSource(), base::nullopt)));
     ASSERT_FALSE(responses.back()->complete());
   }
 
@@ -1253,20 +1337,23 @@ TEST_F(HostResolverImplTest, CancelWithinCallback_ResolveHost) {
       });
 
   ResolveHostResponseHelper cancelling_response(
-      resolver_->CreateRequest(HostPortPair("a", 80), NetLogWithSource()),
+      resolver_->CreateRequest(HostPortPair("a", 80), NetLogWithSource(),
+                               base::nullopt),
       std::move(custom_callback));
 
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("a", 81), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("a", 82), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("a", 81), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("a", 82), NetLogWithSource(), base::nullopt)));
 
   proc_->SignalMultiple(2u);  // One for "a". One for "finalrequest".
 
   EXPECT_THAT(cancelling_response.result_error(), IsOk());
 
   ResolveHostResponseHelper final_response(resolver_->CreateRequest(
-      HostPortPair("finalrequest", 70), NetLogWithSource()));
+      HostPortPair("finalrequest", 70), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(final_response.result_error(), IsOk());
 
   for (auto& response : responses) {
@@ -1317,16 +1404,19 @@ TEST_F(HostResolverImplTest, DeleteWithinCallback_ResolveHost) {
       });
 
   ResolveHostResponseHelper deleting_response(
-      resolver_->CreateRequest(HostPortPair("a", 80), NetLogWithSource()),
+      resolver_->CreateRequest(HostPortPair("a", 80), NetLogWithSource(),
+                               base::nullopt),
       std::move(custom_callback));
 
   // Start additional requests to be cancelled as part of the first's deletion.
   // Assumes all requests for a job are handled in order so that the deleting
   // request will run first and cancel the rest.
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("a", 81), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("a", 82), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("a", 81), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("a", 82), NetLogWithSource(), base::nullopt)));
 
   proc_->SignalMultiple(3u);
 
@@ -1395,15 +1485,19 @@ TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback_ResolveHost) {
           });
 
   ResolveHostResponseHelper deleting_response(
-      resolver_->CreateRequest(HostPortPair("a", 80), NetLogWithSource()),
+      resolver_->CreateRequest(HostPortPair("a", 80), NetLogWithSource(),
+                               base::nullopt),
       std::move(custom_callback));
 
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("a", 81), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("b", 82), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("b", 83), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("a", 81), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("b", 82), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("b", 83), NetLogWithSource(), base::nullopt)));
 
   // Wait for all calls to queue up, trigger abort via IP address change, then
   // signal all the queued requests to let them all try to finish.
@@ -1455,12 +1549,13 @@ TEST_F(HostResolverImplTest, StartWithinCallback_ResolveHost) {
       [&](CompletionOnceCallback completion_callback, int error) {
         new_response = std::make_unique<ResolveHostResponseHelper>(
             resolver_->CreateRequest(HostPortPair("new", 70),
-                                     NetLogWithSource()));
+                                     NetLogWithSource(), base::nullopt));
         std::move(completion_callback).Run(error);
       });
 
   ResolveHostResponseHelper starting_response(
-      resolver_->CreateRequest(HostPortPair("a", 80), NetLogWithSource()),
+      resolver_->CreateRequest(HostPortPair("a", 80), NetLogWithSource(),
+                               base::nullopt),
       std::move(custom_callback));
 
   proc_->SignalMultiple(2u);  // One for "a". One for "new".
@@ -1538,20 +1633,20 @@ TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange) {
 TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange_ResolveHost) {
   proc_->SignalMultiple(2u);  // One before the flush, one after.
 
-  ResolveHostResponseHelper initial_response(
-      resolver_->CreateRequest(HostPortPair("host1", 70), NetLogWithSource()));
+  ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
+      HostPortPair("host1", 70), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(initial_response.result_error(), IsOk());
   EXPECT_EQ(1u, proc_->GetCaptureList().size());
 
-  ResolveHostResponseHelper cached_response(
-      resolver_->CreateRequest(HostPortPair("host1", 75), NetLogWithSource()));
+  ResolveHostResponseHelper cached_response(resolver_->CreateRequest(
+      HostPortPair("host1", 75), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(cached_response.result_error(), IsOk());
   EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No expected increase.
 
   // Verify initial DNS config read does not flush cache.
   NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests();
-  ResolveHostResponseHelper unflushed_response(
-      resolver_->CreateRequest(HostPortPair("host1", 75), NetLogWithSource()));
+  ResolveHostResponseHelper unflushed_response(resolver_->CreateRequest(
+      HostPortPair("host1", 75), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(unflushed_response.result_error(), IsOk());
   EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No expected increase.
 
@@ -1561,8 +1656,8 @@ TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange_ResolveHost) {
 
   // Resolve "host1" again -- this time it won't be served from cache, so it
   // will complete asynchronously.
-  ResolveHostResponseHelper flushed_response(
-      resolver_->CreateRequest(HostPortPair("host1", 80), NetLogWithSource()));
+  ResolveHostResponseHelper flushed_response(resolver_->CreateRequest(
+      HostPortPair("host1", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(flushed_response.result_error(), IsOk());
   EXPECT_EQ(2u, proc_->GetCaptureList().size());  // Expected increase.
 }
@@ -1584,8 +1679,8 @@ TEST_F(HostResolverImplTest, AbortOnIPAddressChanged) {
 
 // Test that IP address changes send ERR_NETWORK_CHANGED to pending requests.
 TEST_F(HostResolverImplTest, AbortOnIPAddressChanged_ResolveHost) {
-  ResolveHostResponseHelper response(
-      resolver_->CreateRequest(HostPortPair("host1", 70), NetLogWithSource()));
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host1", 70), NetLogWithSource(), base::nullopt));
 
   ASSERT_FALSE(response.complete());
   ASSERT_TRUE(proc_->WaitFor(1u));
@@ -1616,8 +1711,8 @@ TEST_F(HostResolverImplTest, DontAbortOnInitialDNSConfigRead) {
 
 // Test that initial DNS config read signals do not abort pending requests.
 TEST_F(HostResolverImplTest, DontAbortOnInitialDNSConfigRead_ResolveHost) {
-  ResolveHostResponseHelper response(
-      resolver_->CreateRequest(HostPortPair("host1", 70), NetLogWithSource()));
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host1", 70), NetLogWithSource(), base::nullopt));
 
   ASSERT_FALSE(response.complete());
   ASSERT_TRUE(proc_->WaitFor(1u));
@@ -1663,12 +1758,15 @@ TEST_F(HostResolverImplTest,
   CreateSerialResolver();
 
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("a", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("b", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("c", 80), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("a", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("b", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("c", 80), NetLogWithSource(), base::nullopt)));
 
   for (auto& response : responses) {
     ASSERT_FALSE(response->complete());
@@ -1748,24 +1846,28 @@ TEST_F(HostResolverImplTest,
           std::unique_ptr<ResolveHostResponseHelper>* next_response,
           CompletionOnceCallback completion_callback, int error) {
         *next_response = std::make_unique<ResolveHostResponseHelper>(
-            resolver_->CreateRequest(next_host, NetLogWithSource()));
+            resolver_->CreateRequest(next_host, NetLogWithSource(),
+                                     base::nullopt));
         std::move(completion_callback).Run(error);
       });
 
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> next_responses(3);
 
   ResolveHostResponseHelper response0(
-      resolver_->CreateRequest(HostPortPair("bbb", 80), NetLogWithSource()),
+      resolver_->CreateRequest(HostPortPair("bbb", 80), NetLogWithSource(),
+                               base::nullopt),
       base::BindOnce(custom_callback_template, HostPortPair("zzz", 80),
                      &next_responses[0]));
 
   ResolveHostResponseHelper response1(
-      resolver_->CreateRequest(HostPortPair("eee", 80), NetLogWithSource()),
+      resolver_->CreateRequest(HostPortPair("eee", 80), NetLogWithSource(),
+                               base::nullopt),
       base::BindOnce(custom_callback_template, HostPortPair("aaa", 80),
                      &next_responses[1]));
 
   ResolveHostResponseHelper response2(
-      resolver_->CreateRequest(HostPortPair("ccc", 80), NetLogWithSource()),
+      resolver_->CreateRequest(HostPortPair("ccc", 80), NetLogWithSource(),
+                               base::nullopt),
       base::BindOnce(custom_callback_template, HostPortPair("eee", 80),
                      &next_responses[2]));
 
@@ -1799,7 +1901,6 @@ TEST_F(HostResolverImplTest,
 
 // Tests that when the maximum threads is set to 1, requests are dequeued
 // in order of priority.
-// TODO(crbug.com/821021): Add ResolveHost test once priorities are supported.
 TEST_F(HostResolverImplTest, HigherPriorityRequestsStartedFirst) {
   CreateSerialResolver();
 
@@ -1842,8 +1943,78 @@ TEST_F(HostResolverImplTest, HigherPriorityRequestsStartedFirst) {
   EXPECT_EQ("req6", capture_list[6].hostname);
 }
 
+// Tests that when the maximum threads is set to 1, requests are dequeued
+// in order of priority.
+TEST_F(HostResolverImplTest, HigherPriorityRequestsStartedFirst_ResolveHost) {
+  CreateSerialResolver();
+
+  HostResolver::ResolveHostParameters low_priority;
+  low_priority.initial_priority = LOW;
+  HostResolver::ResolveHostParameters medium_priority;
+  medium_priority.initial_priority = MEDIUM;
+  HostResolver::ResolveHostParameters highest_priority;
+  highest_priority.initial_priority = HIGHEST;
+
+  // Note that at this point the MockHostResolverProc is blocked, so any
+  // requests we make will not complete.
+
+  std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req0", 80), NetLogWithSource(), low_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req1", 80), NetLogWithSource(), medium_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req2", 80), NetLogWithSource(), medium_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req3", 80), NetLogWithSource(), low_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req4", 80), NetLogWithSource(), highest_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req5", 80), NetLogWithSource(), low_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req6", 80), NetLogWithSource(), low_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req5", 80), NetLogWithSource(), highest_priority)));
+
+  for (const auto& response : responses) {
+    ASSERT_FALSE(response->complete());
+  }
+
+  // Unblock the resolver thread so the requests can run.
+  proc_->SignalMultiple(responses.size());  // More than needed.
+
+  // Wait for all the requests to complete successfully.
+  for (auto& response : responses) {
+    EXPECT_THAT(response->result_error(), IsOk());
+  }
+
+  // Since we have restricted to a single concurrent thread in the jobpool,
+  // the requests should complete in order of priority (with the exception
+  // of the first request, which gets started right away, since there is
+  // nothing outstanding).
+  MockHostResolverProc::CaptureList capture_list = proc_->GetCaptureList();
+  ASSERT_EQ(7u, capture_list.size());
+
+  EXPECT_EQ("req0", capture_list[0].hostname);
+  EXPECT_EQ("req4", capture_list[1].hostname);
+  EXPECT_EQ("req5", capture_list[2].hostname);
+  EXPECT_EQ("req1", capture_list[3].hostname);
+  EXPECT_EQ("req2", capture_list[4].hostname);
+  EXPECT_EQ("req3", capture_list[5].hostname);
+  EXPECT_EQ("req6", capture_list[6].hostname);
+}
+
 // Test that changing a job's priority affects the dequeueing order.
-// TODO(crbug.com/821021): Add ResolveHost test once priorities are supported.
+// TODO(crbug.com/821021): Add ResolveHost test once changing priorities is
+// supported.
 TEST_F(HostResolverImplTest, ChangePriority) {
   CreateSerialResolver();
 
@@ -1922,25 +2093,40 @@ TEST_F(HostResolverImplTest, CancelPendingRequest) {
 }
 
 // Try cancelling a job which has not started yet.
-// TODO(crbug.com/821021): Add tests for priorities once supported.
 TEST_F(HostResolverImplTest, CancelPendingRequest_ResolveHost) {
   CreateSerialResolver();
 
+  HostResolver::ResolveHostParameters lowest_priority;
+  lowest_priority.initial_priority = LOWEST;
+  HostResolver::ResolveHostParameters low_priority;
+  low_priority.initial_priority = LOW;
+  HostResolver::ResolveHostParameters medium_priority;
+  medium_priority.initial_priority = MEDIUM;
+  HostResolver::ResolveHostParameters highest_priority;
+  highest_priority.initial_priority = HIGHEST;
+
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req0", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req1", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req2", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req3", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req4", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req5", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req6", 80), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req0", 80), NetLogWithSource(), lowest_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req1", 80), NetLogWithSource(), highest_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req2", 80), NetLogWithSource(), medium_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req3", 80), NetLogWithSource(), low_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req4", 80), NetLogWithSource(), highest_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req5", 80), NetLogWithSource(), lowest_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req6", 80), NetLogWithSource(), medium_priority)));
 
   // Cancel some requests
   responses[1]->CancelRequest();
@@ -1971,8 +2157,8 @@ TEST_F(HostResolverImplTest, CancelPendingRequest_ResolveHost) {
 
   EXPECT_EQ("req0", capture_list[0].hostname);
   EXPECT_EQ("req2", capture_list[1].hostname);
-  EXPECT_EQ("req3", capture_list[2].hostname);
-  EXPECT_EQ("req6", capture_list[3].hostname);
+  EXPECT_EQ("req6", capture_list[2].hostname);
+  EXPECT_EQ("req3", capture_list[3].hostname);
 }
 
 // Test that when too many requests are enqueued, old ones start to be aborted.
@@ -2043,8 +2229,6 @@ TEST_F(HostResolverImplTest, QueueOverflow) {
 }
 
 // Test that when too many requests are enqueued, old ones start to be aborted.
-// TODO(crbug.com/821021): Once ResolveHost supports priorities, test that the
-// queue evictions happen by priority.
 TEST_F(HostResolverImplTest, QueueOverflow_ResolveHost) {
   CreateSerialResolver();
 
@@ -2052,45 +2236,62 @@ TEST_F(HostResolverImplTest, QueueOverflow_ResolveHost) {
   const size_t kMaxPendingJobs = 3u;
   resolver_->SetMaxQueuedJobsForTesting(kMaxPendingJobs);
 
+  HostResolver::ResolveHostParameters lowest_priority;
+  lowest_priority.initial_priority = LOWEST;
+  HostResolver::ResolveHostParameters low_priority;
+  low_priority.initial_priority = LOW;
+  HostResolver::ResolveHostParameters medium_priority;
+  medium_priority.initial_priority = MEDIUM;
+  HostResolver::ResolveHostParameters highest_priority;
+  highest_priority.initial_priority = HIGHEST;
+
   // Note that at this point the MockHostResolverProc is blocked, so any
   // requests we make will not complete.
 
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req0", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req1", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req2", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req3", 80), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req0", 80), NetLogWithSource(), lowest_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req1", 80), NetLogWithSource(), highest_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req2", 80), NetLogWithSource(), medium_priority)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req3", 80), NetLogWithSource(), medium_priority)));
 
   // At this point, there are 3 enqueued jobs (and one "running" job).
   // Insertion of subsequent requests will cause evictions.
 
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req4", 80), NetLogWithSource())));
-  EXPECT_THAT(responses[1]->result_error(),
-              IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
-  EXPECT_FALSE(responses[1]->request()->GetAddressResults());
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req4", 80), NetLogWithSource(), low_priority)));
+  EXPECT_THAT(responses[4]->result_error(),
+              IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));  // Evicts self.
+  EXPECT_FALSE(responses[4]->request()->GetAddressResults());
 
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req5", 80), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req5", 80), NetLogWithSource(), medium_priority)));
   EXPECT_THAT(responses[2]->result_error(),
               IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
   EXPECT_FALSE(responses[2]->request()->GetAddressResults());
 
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req6", 80), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req6", 80), NetLogWithSource(), highest_priority)));
   EXPECT_THAT(responses[3]->result_error(),
               IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
   EXPECT_FALSE(responses[3]->request()->GetAddressResults());
 
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("req7", 80), NetLogWithSource())));
-  EXPECT_THAT(responses[4]->result_error(),
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("req7", 80), NetLogWithSource(), medium_priority)));
+  EXPECT_THAT(responses[5]->result_error(),
               IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
-  EXPECT_FALSE(responses[4]->request()->GetAddressResults());
+  EXPECT_FALSE(responses[5]->request()->GetAddressResults());
 
   // Unblock the resolver thread so the requests can run.
   proc_->SignalMultiple(4u);
@@ -2098,8 +2299,8 @@ TEST_F(HostResolverImplTest, QueueOverflow_ResolveHost) {
   // The rest should succeed.
   EXPECT_THAT(responses[0]->result_error(), IsOk());
   EXPECT_TRUE(responses[0]->request()->GetAddressResults());
-  EXPECT_THAT(responses[5]->result_error(), IsOk());
-  EXPECT_TRUE(responses[5]->request()->GetAddressResults());
+  EXPECT_THAT(responses[1]->result_error(), IsOk());
+  EXPECT_TRUE(responses[1]->request()->GetAddressResults());
   EXPECT_THAT(responses[6]->result_error(), IsOk());
   EXPECT_TRUE(responses[6]->request()->GetAddressResults());
   EXPECT_THAT(responses[7]->result_error(), IsOk());
@@ -2111,7 +2312,7 @@ TEST_F(HostResolverImplTest, QueueOverflow_ResolveHost) {
   ASSERT_EQ(4u, capture_list.size());
 
   EXPECT_EQ("req0", capture_list[0].hostname);
-  EXPECT_EQ("req5", capture_list[1].hostname);
+  EXPECT_EQ("req1", capture_list[1].hostname);
   EXPECT_EQ("req6", capture_list[2].hostname);
   EXPECT_EQ("req7", capture_list[3].hostname);
 
@@ -2131,11 +2332,11 @@ TEST_F(HostResolverImplTest, QueueOverflow_ResolveHost_SelfEvict) {
   // Note that at this point the MockHostResolverProc is blocked, so any
   // requests we make will not complete.
 
-  ResolveHostResponseHelper run_response(
-      resolver_->CreateRequest(HostPortPair("run", 80), NetLogWithSource()));
+  ResolveHostResponseHelper run_response(resolver_->CreateRequest(
+      HostPortPair("run", 80), NetLogWithSource(), base::nullopt));
 
-  ResolveHostResponseHelper evict_response(
-      resolver_->CreateRequest(HostPortPair("req1", 80), NetLogWithSource()));
+  ResolveHostResponseHelper evict_response(resolver_->CreateRequest(
+      HostPortPair("req1", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(evict_response.result_error(),
               IsError(ERR_HOST_RESOLVER_QUEUE_TOO_LARGE));
   EXPECT_FALSE(evict_response.request()->GetAddressResults());
@@ -2148,8 +2349,6 @@ TEST_F(HostResolverImplTest, QueueOverflow_ResolveHost_SelfEvict) {
 
 // Make sure that the address family parameter is respected when raw IPs are
 // passed in.
-// TODO(crbug.com/821021): Make an equivalent ResolveHost test once specifying
-// A or AAAA is implemented.
 TEST_F(HostResolverImplTest, AddressFamilyWithRawIPs) {
   Request* request =
       CreateRequest("127.0.0.1", 80,  MEDIUM, ADDRESS_FAMILY_IPV4);
@@ -2173,6 +2372,50 @@ TEST_F(HostResolverImplTest, AddressFamilyWithRawIPs) {
   request = CreateRequest("::1", 80,  MEDIUM, ADDRESS_FAMILY_UNSPECIFIED);
   EXPECT_THAT(request->Resolve(), IsOk());
   EXPECT_TRUE(request->HasOneAddress("::1", 80));
+}
+
+// Make sure that the dns query type parameter is respected when raw IPs are
+// passed in.
+TEST_F(HostResolverImplTest, AddressFamilyWithRawIPs_ResolveHost) {
+  HostResolver::ResolveHostParameters v4_parameters;
+  v4_parameters.dns_query_type = HostResolver::DnsQueryType::A;
+
+  HostResolver::ResolveHostParameters v6_parameters;
+  v6_parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+
+  ResolveHostResponseHelper v4_v4_request(resolver_->CreateRequest(
+      HostPortPair("127.0.0.1", 80), NetLogWithSource(), v4_parameters));
+  EXPECT_THAT(v4_v4_request.result_error(), IsOk());
+  EXPECT_THAT(v4_v4_request.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("127.0.0.1", 80)));
+
+  ResolveHostResponseHelper v4_v6_request(resolver_->CreateRequest(
+      HostPortPair("127.0.0.1", 80), NetLogWithSource(), v6_parameters));
+  EXPECT_THAT(v4_v6_request.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+
+  ResolveHostResponseHelper v4_unsp_request(resolver_->CreateRequest(
+      HostPortPair("127.0.0.1", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(v4_unsp_request.result_error(), IsOk());
+  EXPECT_THAT(
+      v4_unsp_request.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(CreateExpected("127.0.0.1", 80)));
+
+  ResolveHostResponseHelper v6_v4_request(resolver_->CreateRequest(
+      HostPortPair("::1", 80), NetLogWithSource(), v4_parameters));
+  EXPECT_THAT(v6_v4_request.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+
+  ResolveHostResponseHelper v6_v6_request(resolver_->CreateRequest(
+      HostPortPair("::1", 80), NetLogWithSource(), v6_parameters));
+  EXPECT_THAT(v6_v6_request.result_error(), IsOk());
+  EXPECT_THAT(v6_v6_request.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("::1", 80)));
+
+  ResolveHostResponseHelper v6_unsp_request(resolver_->CreateRequest(
+      HostPortPair("::1", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(v6_unsp_request.result_error(), IsOk());
+  EXPECT_THAT(
+      v6_unsp_request.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(CreateExpected("::1", 80)));
 }
 
 TEST_F(HostResolverImplTest, ResolveFromCache) {
@@ -2400,8 +2643,8 @@ TEST_F(HostResolverImplTest, MultipleAttempts_ResolveHost) {
       base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
 
   // Resolve "host1".
-  ResolveHostResponseHelper response(
-      resolver_->CreateRequest(HostPortPair("host1", 70), NetLogWithSource()));
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host1", 70), NetLogWithSource(), base::nullopt));
   EXPECT_FALSE(response.complete());
 
   resolver_proc->WaitForNAttemptsToBeBlocked(1);
@@ -2496,8 +2739,8 @@ TEST_F(HostResolverImplTest, NameCollisionIcann_ResolveHost) {
   proc_->AddRuleForAllFamilies("not_reserved3", "10.0.53.53");
   proc_->SignalMultiple(6u);
 
-  ResolveHostResponseHelper single_response(
-      resolver_->CreateRequest(HostPortPair("single", 80), NetLogWithSource()));
+  ResolveHostResponseHelper single_response(resolver_->CreateRequest(
+      HostPortPair("single", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(single_response.result_error(),
               IsError(ERR_ICANN_NAME_COLLISION));
   EXPECT_FALSE(single_response.request()->GetAddressResults());
@@ -2509,33 +2752,33 @@ TEST_F(HostResolverImplTest, NameCollisionIcann_ResolveHost) {
   EXPECT_THAT(cache_request->ResolveFromCache(), IsError(ERR_DNS_CACHE_MISS));
 
   ResolveHostResponseHelper multiple_response(resolver_->CreateRequest(
-      HostPortPair("multiple", 80), NetLogWithSource()));
+      HostPortPair("multiple", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(multiple_response.result_error(),
               IsError(ERR_ICANN_NAME_COLLISION));
 
   // Resolving an IP literal of 127.0.53.53 however is allowed.
   ResolveHostResponseHelper literal_response(resolver_->CreateRequest(
-      HostPortPair("127.0.53.53", 80), NetLogWithSource()));
+      HostPortPair("127.0.53.53", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(literal_response.result_error(), IsOk());
 
   // Moreover the address should not be recognized when embedded in an IPv6
   // address.
   ResolveHostResponseHelper ipv6_response(resolver_->CreateRequest(
-      HostPortPair("127.0.53.53", 80), NetLogWithSource()));
+      HostPortPair("127.0.53.53", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(ipv6_response.result_error(), IsOk());
 
   // Try some other IPs which are similar, but NOT an exact match on
   // 127.0.53.53.
   ResolveHostResponseHelper similar_response1(resolver_->CreateRequest(
-      HostPortPair("not_reserved1", 80), NetLogWithSource()));
+      HostPortPair("not_reserved1", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(similar_response1.result_error(), IsOk());
 
   ResolveHostResponseHelper similar_response2(resolver_->CreateRequest(
-      HostPortPair("not_reserved2", 80), NetLogWithSource()));
+      HostPortPair("not_reserved2", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(similar_response2.result_error(), IsOk());
 
   ResolveHostResponseHelper similar_response3(resolver_->CreateRequest(
-      HostPortPair("not_reserved3", 80), NetLogWithSource()));
+      HostPortPair("not_reserved3", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(similar_response3.result_error(), IsOk());
 }
 
@@ -2813,21 +3056,21 @@ TEST_F(HostResolverImplDnsTest, LocalhostLookup_ResolveHost) {
   proc_->AddRuleForAllFamilies("localhost.", "192.168.1.42");
 
   ResolveHostResponseHelper response0(resolver_->CreateRequest(
-      HostPortPair("foo.localhost", 80), NetLogWithSource()));
+      HostPortPair("foo.localhost", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response0.result_error(), IsOk());
   EXPECT_THAT(response0.request()->GetAddressResults().value().endpoints(),
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
                                             CreateExpected("::1", 80)));
 
   ResolveHostResponseHelper response1(resolver_->CreateRequest(
-      HostPortPair("localhost", 80), NetLogWithSource()));
+      HostPortPair("localhost", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response1.result_error(), IsOk());
   EXPECT_THAT(response1.request()->GetAddressResults().value().endpoints(),
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
                                             CreateExpected("::1", 80)));
 
   ResolveHostResponseHelper response2(resolver_->CreateRequest(
-      HostPortPair("localhost.", 80), NetLogWithSource()));
+      HostPortPair("localhost.", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response2.result_error(), IsOk());
   EXPECT_THAT(response2.request()->GetAddressResults().value().endpoints(),
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
@@ -2874,14 +3117,14 @@ TEST_F(HostResolverImplDnsTest, LocalhostLookupWithHosts_ResolveHost) {
   ChangeDnsConfig(config);
 
   ResolveHostResponseHelper response0(resolver_->CreateRequest(
-      HostPortPair("localhost", 80), NetLogWithSource()));
+      HostPortPair("localhost", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response0.result_error(), IsOk());
   EXPECT_THAT(response0.request()->GetAddressResults().value().endpoints(),
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
                                             CreateExpected("::1", 80)));
 
   ResolveHostResponseHelper response1(resolver_->CreateRequest(
-      HostPortPair("foo.localhost", 80), NetLogWithSource()));
+      HostPortPair("foo.localhost", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response1.result_error(), IsOk());
   EXPECT_THAT(response1.request()->GetAddressResults().value().endpoints(),
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
@@ -2943,7 +3186,7 @@ TEST_F(HostResolverImplDnsTest, DnsTask_ResolveHost) {
 
   // Initially there is no config, so client should not be invoked.
   ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
-      HostPortPair("ok_fail", 80), NetLogWithSource()));
+      HostPortPair("ok_fail", 80), NetLogWithSource(), base::nullopt));
   EXPECT_FALSE(initial_response.complete());
 
   proc_->SignalMultiple(1u);
@@ -2953,11 +3196,11 @@ TEST_F(HostResolverImplDnsTest, DnsTask_ResolveHost) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
   ResolveHostResponseHelper response0(resolver_->CreateRequest(
-      HostPortPair("ok_fail", 80), NetLogWithSource()));
+      HostPortPair("ok_fail", 80), NetLogWithSource(), base::nullopt));
   ResolveHostResponseHelper response1(resolver_->CreateRequest(
-      HostPortPair("nx_fail", 80), NetLogWithSource()));
+      HostPortPair("nx_fail", 80), NetLogWithSource(), base::nullopt));
   ResolveHostResponseHelper response2(resolver_->CreateRequest(
-      HostPortPair("nx_succeed", 80), NetLogWithSource()));
+      HostPortPair("nx_succeed", 80), NetLogWithSource(), base::nullopt));
 
   proc_->SignalMultiple(4u);
 
@@ -3038,9 +3281,9 @@ TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask_ResolveHost) {
   ChangeDnsConfig(DnsConfig());
   // Initially there is no config, so client should not be invoked.
   ResolveHostResponseHelper initial_response0(resolver_->CreateRequest(
-      HostPortPair("ok_fail", 80), NetLogWithSource()));
+      HostPortPair("ok_fail", 80), NetLogWithSource(), base::nullopt));
   ResolveHostResponseHelper initial_response1(resolver_->CreateRequest(
-      HostPortPair("nx_succeed", 80), NetLogWithSource()));
+      HostPortPair("nx_succeed", 80), NetLogWithSource(), base::nullopt));
   proc_->SignalMultiple(2u);
 
   EXPECT_THAT(initial_response0.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
@@ -3052,9 +3295,9 @@ TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask_ResolveHost) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
   ResolveHostResponseHelper abort_response0(resolver_->CreateRequest(
-      HostPortPair("ok_abort", 80), NetLogWithSource()));
+      HostPortPair("ok_abort", 80), NetLogWithSource(), base::nullopt));
   ResolveHostResponseHelper abort_response1(resolver_->CreateRequest(
-      HostPortPair("nx_abort", 80), NetLogWithSource()));
+      HostPortPair("nx_abort", 80), NetLogWithSource(), base::nullopt));
 
   // Simulate the case when the preference or policy has disabled the DNS
   // client causing AbortDnsTasks.
@@ -3065,9 +3308,9 @@ TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask_ResolveHost) {
   // First request is resolved by MockDnsClient, others should fail due to
   // disabled fallback to ProcTask.
   ResolveHostResponseHelper response0(resolver_->CreateRequest(
-      HostPortPair("ok_fail", 80), NetLogWithSource()));
+      HostPortPair("ok_fail", 80), NetLogWithSource(), base::nullopt));
   ResolveHostResponseHelper response1(resolver_->CreateRequest(
-      HostPortPair("nx_fail", 80), NetLogWithSource()));
+      HostPortPair("nx_fail", 80), NetLogWithSource(), base::nullopt));
   proc_->SignalMultiple(6u);
 
   // Aborted due to Network Change.
@@ -3112,7 +3355,7 @@ TEST_F(HostResolverImplDnsTest, OnDnsTaskFailureAbortedJob) {
 TEST_F(HostResolverImplDnsTest, OnDnsTaskFailureAbortedJob_ResolveHost) {
   ChangeDnsConfig(CreateValidDnsConfig());
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("nx_abort", 80), NetLogWithSource()));
+      HostPortPair("nx_abort", 80), NetLogWithSource(), base::nullopt));
   // Abort all jobs here.
   CreateResolver();
   proc_->SignalMultiple(1u);
@@ -3125,7 +3368,7 @@ TEST_F(HostResolverImplDnsTest, OnDnsTaskFailureAbortedJob_ResolveHost) {
   set_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
   ResolveHostResponseHelper no_fallback_response(resolver_->CreateRequest(
-      HostPortPair("nx_abort", 80), NetLogWithSource()));
+      HostPortPair("nx_abort", 80), NetLogWithSource(), base::nullopt));
   // Abort all jobs here.
   CreateResolver();
   proc_->SignalMultiple(2u);
@@ -3169,14 +3412,18 @@ TEST_F(HostResolverImplDnsTest, DnsTaskUnspec_ResolveHost) {
   // All other hostnames will fail in proc_.
 
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("ok", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("4ok", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("6ok", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("4nx", 80), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("ok", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("4ok", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("6ok", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("4nx", 80), NetLogWithSource(), base::nullopt)));
 
   proc_->SignalMultiple(4u);
 
@@ -3229,7 +3476,7 @@ TEST_F(HostResolverImplDnsTest, NameCollisionIcann_ResolveHost) {
   // When the resolver returns an A record with 127.0.53.53 it should be
   // mapped to a special error.
   ResolveHostResponseHelper response_ipv4(resolver_->CreateRequest(
-      HostPortPair("4collision", 80), NetLogWithSource()));
+      HostPortPair("4collision", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response_ipv4.result_error(), IsError(ERR_ICANN_NAME_COLLISION));
   EXPECT_FALSE(response_ipv4.request()->GetAddressResults());
 
@@ -3237,7 +3484,7 @@ TEST_F(HostResolverImplDnsTest, NameCollisionIcann_ResolveHost) {
   // work just like any other IP. (Despite having the same suffix, it is not
   // considered special)
   ResolveHostResponseHelper response_ipv6(resolver_->CreateRequest(
-      HostPortPair("6collision", 80), NetLogWithSource()));
+      HostPortPair("6collision", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response_ipv6.result_error(), IsOk());
   EXPECT_THAT(response_ipv6.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected("::127.0.53.53", 80)));
@@ -3297,7 +3544,6 @@ TEST_F(HostResolverImplDnsTest, ServeFromHosts) {
   EXPECT_TRUE(req6->HasOneAddress("127.0.0.1", 80));
 }
 
-// TODO(crbug.com/821021): Add resolves specifying address family once suported.
 TEST_F(HostResolverImplDnsTest, ServeFromHosts_ResolveHost) {
   // Initially, use empty HOSTS file.
   DnsConfig config = CreateValidDnsConfig();
@@ -3308,7 +3554,7 @@ TEST_F(HostResolverImplDnsTest, ServeFromHosts_ResolveHost) {
   proc_->SignalMultiple(1u);  // For the first request which misses.
 
   ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
-      HostPortPair("nx_ipv4", 80), NetLogWithSource()));
+      HostPortPair("nx_ipv4", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(initial_response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
 
   IPAddress local_ipv4 = IPAddress::IPv4Localhost();
@@ -3325,27 +3571,50 @@ TEST_F(HostResolverImplDnsTest, ServeFromHosts_ResolveHost) {
   ChangeDnsConfig(config);
 
   ResolveHostResponseHelper response_ipv4(resolver_->CreateRequest(
-      HostPortPair("nx_ipv4", 80), NetLogWithSource()));
+      HostPortPair("nx_ipv4", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response_ipv4.result_error(), IsOk());
   EXPECT_THAT(response_ipv4.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected("127.0.0.1", 80)));
 
   ResolveHostResponseHelper response_ipv6(resolver_->CreateRequest(
-      HostPortPair("nx_ipv6", 80), NetLogWithSource()));
+      HostPortPair("nx_ipv6", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response_ipv6.result_error(), IsOk());
   EXPECT_THAT(response_ipv6.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected("::1", 80)));
 
   ResolveHostResponseHelper response_both(resolver_->CreateRequest(
-      HostPortPair("nx_both", 80), NetLogWithSource()));
+      HostPortPair("nx_both", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response_both.result_error(), IsOk());
   EXPECT_THAT(response_both.request()->GetAddressResults().value().endpoints(),
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
                                             CreateExpected("::1", 80)));
 
+  // Requests with specified DNS query type.
+  HostResolver::ResolveHostParameters parameters;
+
+  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  ResolveHostResponseHelper response_specified_ipv4(resolver_->CreateRequest(
+      HostPortPair("nx_ipv4", 80), NetLogWithSource(), parameters));
+  EXPECT_THAT(response_specified_ipv4.result_error(), IsOk());
+  EXPECT_THAT(response_specified_ipv4.request()
+                  ->GetAddressResults()
+                  .value()
+                  .endpoints(),
+              testing::ElementsAre(CreateExpected("127.0.0.1", 80)));
+
+  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  ResolveHostResponseHelper response_specified_ipv6(resolver_->CreateRequest(
+      HostPortPair("nx_ipv6", 80), NetLogWithSource(), parameters));
+  EXPECT_THAT(response_specified_ipv6.result_error(), IsOk());
+  EXPECT_THAT(response_specified_ipv6.request()
+                  ->GetAddressResults()
+                  .value()
+                  .endpoints(),
+              testing::ElementsAre(CreateExpected("::1", 80)));
+
   // Request with upper case.
   ResolveHostResponseHelper response_upper(resolver_->CreateRequest(
-      HostPortPair("nx_IPV4", 80), NetLogWithSource()));
+      HostPortPair("nx_IPV4", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response_upper.result_error(), IsOk());
   EXPECT_THAT(response_upper.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected("127.0.0.1", 80)));
@@ -3401,9 +3670,9 @@ TEST_F(HostResolverImplDnsTest, CacheHostsLookupOnConfigChange_ResolveHost) {
   proc_->SignalMultiple(1u);  // For the first request which fails.
 
   ResolveHostResponseHelper failure_response(resolver_->CreateRequest(
-      HostPortPair("nx_ipv4", 80), NetLogWithSource()));
+      HostPortPair("nx_ipv4", 80), NetLogWithSource(), base::nullopt));
   ResolveHostResponseHelper queued_response(resolver_->CreateRequest(
-      HostPortPair("nx_ipv6", 80), NetLogWithSource()));
+      HostPortPair("nx_ipv6", 80), NetLogWithSource(), base::nullopt));
 
   DnsHosts hosts;
   hosts[DnsHostsKey("nx_ipv4", ADDRESS_FAMILY_IPV4)] =
@@ -3462,18 +3731,19 @@ TEST_F(HostResolverImplDnsTest, BypassDnsTask_ResolveHost) {
 
   responses.emplace_back(
       std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("ok.local", 80), NetLogWithSource())));
+          HostPortPair("ok.local", 80), NetLogWithSource(), base::nullopt)));
   responses.emplace_back(
       std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("ok.local.", 80), NetLogWithSource())));
+          HostPortPair("ok.local.", 80), NetLogWithSource(), base::nullopt)));
   responses.emplace_back(
       std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("oklocal", 80), NetLogWithSource())));
+          HostPortPair("oklocal", 80), NetLogWithSource(), base::nullopt)));
   responses.emplace_back(
       std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("oklocal.", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("ok", 80), NetLogWithSource())));
+          HostPortPair("oklocal.", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("ok", 80), NetLogWithSource(), base::nullopt)));
 
   proc_->SignalMultiple(5u);
 
@@ -3552,8 +3822,8 @@ TEST_F(HostResolverImplDnsTest,
                                std::string());  // Default to failures.
 
   // Check that DnsTask works.
-  ResolveHostResponseHelper initial_response(
-      resolver_->CreateRequest(HostPortPair("ok_1", 80), NetLogWithSource()));
+  ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
+      HostPortPair("ok_1", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(initial_response.result_error(), IsOk());
 
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
@@ -3564,7 +3834,7 @@ TEST_F(HostResolverImplDnsTest,
     proc_->AddRuleForAllFamilies(hostname, "192.168.1.101");
     responses.emplace_back(
         std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-            HostPortPair(hostname, 80), NetLogWithSource())));
+            HostPortPair(hostname, 80), NetLogWithSource(), base::nullopt)));
   }
 
   proc_->SignalMultiple(responses.size());
@@ -3575,15 +3845,15 @@ TEST_F(HostResolverImplDnsTest,
   ASSERT_FALSE(proc_->HasBlockedRequests());
 
   // DnsTask should be disabled by now.
-  ResolveHostResponseHelper fail_response(
-      resolver_->CreateRequest(HostPortPair("ok_2", 80), NetLogWithSource()));
+  ResolveHostResponseHelper fail_response(resolver_->CreateRequest(
+      HostPortPair("ok_2", 80), NetLogWithSource(), base::nullopt));
   proc_->SignalMultiple(1u);
   EXPECT_THAT(fail_response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
 
   // Check that it is re-enabled after DNS change.
   ChangeDnsConfig(CreateValidDnsConfig());
-  ResolveHostResponseHelper reenabled_response(
-      resolver_->CreateRequest(HostPortPair("ok_3", 80), NetLogWithSource()));
+  ResolveHostResponseHelper reenabled_response(resolver_->CreateRequest(
+      HostPortPair("ok_3", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(reenabled_response.result_error(), IsOk());
 }
 
@@ -3628,7 +3898,7 @@ TEST_F(HostResolverImplDnsTest,
                                         : base::StringPrintf("ok_%u", i);
     responses.emplace_back(
         std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-            HostPortPair(hostname, 80), NetLogWithSource())));
+            HostPortPair(hostname, 80), NetLogWithSource(), base::nullopt)));
   }
 
   proc_->SignalMultiple(40u);
@@ -3641,7 +3911,7 @@ TEST_F(HostResolverImplDnsTest,
 
   // DnsTask should still be enabled.
   ResolveHostResponseHelper final_response(resolver_->CreateRequest(
-      HostPortPair("ok_last", 80), NetLogWithSource()));
+      HostPortPair("ok_last", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(final_response.result_error(), IsOk());
 }
 
@@ -3724,7 +3994,7 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost_ResolveHost) {
   // Try without DnsClient.
   resolver_->SetDnsClient(nullptr);
   ResolveHostResponseHelper system_response(resolver_->CreateRequest(
-      HostPortPair("localhost", 80), NetLogWithSource()));
+      HostPortPair("localhost", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(system_response.result_error(), IsOk());
   EXPECT_THAT(
       system_response.request()->GetAddressResults().value().endpoints(),
@@ -3735,7 +4005,7 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost_ResolveHost) {
   resolver_->SetDnsClient(std::unique_ptr<DnsClient>(
       new MockDnsClient(CreateValidDnsConfig(), dns_rules_)));
   ResolveHostResponseHelper builtin_response(resolver_->CreateRequest(
-      HostPortPair("localhost", 80), NetLogWithSource()));
+      HostPortPair("localhost", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(builtin_response.result_error(), IsOk());
   EXPECT_THAT(
       builtin_response.request()->GetAddressResults().value().endpoints(),
@@ -3748,7 +4018,7 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost_ResolveHost) {
   config.use_local_ipv6 = false;
   ChangeDnsConfig(config);
   ResolveHostResponseHelper ipv6_disabled_response(resolver_->CreateRequest(
-      HostPortPair("localhost", 80), NetLogWithSource()));
+      HostPortPair("localhost", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(ipv6_disabled_response.result_error(), IsOk());
   EXPECT_THAT(
       ipv6_disabled_response.request()->GetAddressResults().value().endpoints(),
@@ -3777,8 +4047,8 @@ TEST_F(HostResolverImplDnsTest, CancelWithOneTransactionActive_ResolveHost) {
   config.use_local_ipv6 = false;
   ChangeDnsConfig(config);
 
-  ResolveHostResponseHelper response(
-      resolver_->CreateRequest(HostPortPair("ok", 80), NetLogWithSource()));
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
   ASSERT_FALSE(response.complete());
   ASSERT_EQ(1u, num_running_dispatcher_jobs());
 
@@ -3807,8 +4077,8 @@ TEST_F(HostResolverImplDnsTest,
   CreateSerialResolver();
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  ResolveHostResponseHelper response(
-      resolver_->CreateRequest(HostPortPair("ok", 80), NetLogWithSource()));
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
   EXPECT_EQ(1u, num_running_dispatcher_jobs());
 
   response.CancelRequest();
@@ -3833,8 +4103,8 @@ TEST_F(HostResolverImplDnsTest, CancelWithTwoTransactionsActive) {
 TEST_F(HostResolverImplDnsTest, CancelWithTwoTransactionsActive_ResolveHost) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  ResolveHostResponseHelper response(
-      resolver_->CreateRequest(HostPortPair("ok", 80), NetLogWithSource()));
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
   EXPECT_EQ(2u, num_running_dispatcher_jobs());
 
   response.CancelRequest();
@@ -3882,7 +4152,7 @@ TEST_F(HostResolverImplDnsTest, DeleteWithActiveTransactions_ResolveHost) {
     std::string hostname = base::StringPrintf("ok%i", i);
     responses.emplace_back(
         std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-            HostPortPair(hostname, 80), NetLogWithSource())));
+            HostPortPair(hostname, 80), NetLogWithSource(), base::nullopt)));
   }
   EXPECT_EQ(10u, num_running_dispatcher_jobs());
 
@@ -3915,7 +4185,7 @@ TEST_F(HostResolverImplDnsTest, CancelWithIPv6TransactionActive_ResolveHost) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("6slow_ok", 80), NetLogWithSource()));
+      HostPortPair("6slow_ok", 80), NetLogWithSource(), base::nullopt));
   EXPECT_EQ(2u, num_running_dispatcher_jobs());
 
   // The IPv4 request should complete, the IPv6 request is still pending.
@@ -3951,7 +4221,7 @@ TEST_F(HostResolverImplDnsTest, CancelWithIPv4TransactionPending_ResolveHost) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("4slow_ok", 80), NetLogWithSource()));
+      HostPortPair("4slow_ok", 80), NetLogWithSource(), base::nullopt));
   EXPECT_EQ(2u, num_running_dispatcher_jobs());
 
   // The IPv6 request should complete, the IPv4 request is still pending.
@@ -4011,16 +4281,16 @@ TEST_F(HostResolverImplDnsTest, AAAACompletesFirst_ResolveHost) {
   std::vector<std::unique_ptr<ResolveHostResponseHelper>> responses;
   responses.emplace_back(
       std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("4slow_ok", 80), NetLogWithSource())));
+          HostPortPair("4slow_ok", 80), NetLogWithSource(), base::nullopt)));
   responses.emplace_back(
       std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("4slow_4ok", 80), NetLogWithSource())));
-  responses.emplace_back(
-      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("4slow_4timeout", 80), NetLogWithSource())));
-  responses.emplace_back(
-      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("4slow_6timeout", 80), NetLogWithSource())));
+          HostPortPair("4slow_4ok", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
+      resolver_->CreateRequest(HostPortPair("4slow_4timeout", 80),
+                               NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
+      resolver_->CreateRequest(HostPortPair("4slow_6timeout", 80),
+                               NetLogWithSource(), base::nullopt)));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(responses[0]->complete());
@@ -4067,8 +4337,8 @@ TEST_F(HostResolverImplDnsTest, SerialResolver_ResolveHost) {
   set_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  ResolveHostResponseHelper response(
-      resolver_->CreateRequest(HostPortPair("ok", 80), NetLogWithSource()));
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
   EXPECT_FALSE(response.complete());
   EXPECT_EQ(1u, num_running_dispatcher_jobs());
 
@@ -4119,11 +4389,11 @@ TEST_F(HostResolverImplDnsTest, AAAAStartsAfterOtherJobFinishes_ResolveHost) {
   set_fallback_to_proctask(false);
   ChangeDnsConfig(CreateValidDnsConfig());
 
-  ResolveHostResponseHelper response0(
-      resolver_->CreateRequest(HostPortPair("ok", 80), NetLogWithSource()));
+  ResolveHostResponseHelper response0(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
   EXPECT_EQ(2u, num_running_dispatcher_jobs());
   ResolveHostResponseHelper response1(resolver_->CreateRequest(
-      HostPortPair("4slow_ok", 80), NetLogWithSource()));
+      HostPortPair("4slow_ok", 80), NetLogWithSource(), base::nullopt));
   EXPECT_EQ(3u, num_running_dispatcher_jobs());
 
   // Request 0's transactions should complete, starting Request 1's second
@@ -4167,7 +4437,7 @@ TEST_F(HostResolverImplDnsTest, IPv4EmptyFallback_ResolveHost) {
   proc_->SignalMultiple(1u);
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("empty_fallback", 80), NetLogWithSource()));
+      HostPortPair("empty_fallback", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected("192.168.0.1", 80)));
@@ -4194,7 +4464,7 @@ TEST_F(HostResolverImplDnsTest, UnspecEmptyFallback_ResolveHost) {
   proc_->SignalMultiple(1u);
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("empty_fallback", 80), NetLogWithSource()));
+      HostPortPair("empty_fallback", 80), NetLogWithSource(), base::nullopt));
 
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
@@ -4258,13 +4528,14 @@ TEST_F(HostResolverImplDnsTest,
   // First active job gets two slots.
   responses.emplace_back(
       std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("slow_nx1", 80), NetLogWithSource())));
+          HostPortPair("slow_nx1", 80), NetLogWithSource(), base::nullopt)));
   // Next job gets one slot, and waits on another.
   responses.emplace_back(
       std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("slow_nx2", 80), NetLogWithSource())));
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("ok", 80), NetLogWithSource())));
+          HostPortPair("slow_nx2", 80), NetLogWithSource(), base::nullopt)));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("ok", 80), NetLogWithSource(), base::nullopt)));
 
   EXPECT_EQ(3u, num_running_dispatcher_jobs());
   for (auto& response : responses) {
@@ -4309,8 +4580,8 @@ TEST_F(HostResolverImplDnsTest, DontAbortOnInitialDNSConfigRead) {
 TEST_F(HostResolverImplDnsTest, DontAbortOnInitialDNSConfigRead_ResolveHost) {
   // DnsClient is enabled, but there's no DnsConfig, so the request should start
   // using ProcTask.
-  ResolveHostResponseHelper response(
-      resolver_->CreateRequest(HostPortPair("host1", 70), NetLogWithSource()));
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host1", 70), NetLogWithSource(), base::nullopt));
   EXPECT_FALSE(response.complete());
 
   EXPECT_TRUE(proc_->WaitFor(1u));
@@ -4395,7 +4666,7 @@ TEST_F(HostResolverImplDnsTest,
       proc_->AddRuleForAllFamilies(host, "192.168.0.1");
       failure_responses.emplace_back(
           std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-              HostPortPair(host, 80), NetLogWithSource())));
+              HostPortPair(host, 80), NetLogWithSource(), base::nullopt)));
       EXPECT_FALSE(failure_responses[i]->complete());
     }
 
@@ -4403,15 +4674,15 @@ TEST_F(HostResolverImplDnsTest,
     // so should end up using ProcTasks.
     proc_->AddRuleForAllFamilies("slow_ok1", "192.168.0.2");
     ResolveHostResponseHelper response0(resolver_->CreateRequest(
-        HostPortPair("slow_ok1", 80), NetLogWithSource()));
+        HostPortPair("slow_ok1", 80), NetLogWithSource(), base::nullopt));
     EXPECT_FALSE(response0.complete());
     proc_->AddRuleForAllFamilies("slow_ok2", "192.168.0.3");
     ResolveHostResponseHelper response1(resolver_->CreateRequest(
-        HostPortPair("slow_ok2", 80), NetLogWithSource()));
+        HostPortPair("slow_ok2", 80), NetLogWithSource(), base::nullopt));
     EXPECT_FALSE(response1.complete());
     proc_->AddRuleForAllFamilies("slow_ok3", "192.168.0.4");
     ResolveHostResponseHelper response2(resolver_->CreateRequest(
-        HostPortPair("slow_ok3", 80), NetLogWithSource()));
+        HostPortPair("slow_ok3", 80), NetLogWithSource(), base::nullopt));
     EXPECT_FALSE(response2.complete());
 
     proc_->SignalMultiple(maximum_dns_failures() + 3);
@@ -4498,16 +4769,17 @@ TEST_F(HostResolverImplDnsTest,
   // First active job gets two slots.
   responses.emplace_back(
       std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("slow_ok1", 80), NetLogWithSource())));
+          HostPortPair("slow_ok1", 80), NetLogWithSource(), base::nullopt)));
   EXPECT_FALSE(responses[0]->complete());
   // Next job gets one slot, and waits on another.
   responses.emplace_back(
       std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
-          HostPortPair("slow_ok2", 80), NetLogWithSource())));
+          HostPortPair("slow_ok2", 80), NetLogWithSource(), base::nullopt)));
   EXPECT_FALSE(responses[1]->complete());
   // Next one is queued.
-  responses.emplace_back(std::make_unique<ResolveHostResponseHelper>(
-      resolver_->CreateRequest(HostPortPair("ok", 80), NetLogWithSource())));
+  responses.emplace_back(
+      std::make_unique<ResolveHostResponseHelper>(resolver_->CreateRequest(
+          HostPortPair("ok", 80), NetLogWithSource(), base::nullopt)));
   EXPECT_FALSE(responses[2]->complete());
 
   EXPECT_EQ(3u, num_running_dispatcher_jobs());
@@ -4635,18 +4907,31 @@ TEST_F(HostResolverImplDnsTest, NoIPv6OnWifi_ResolveHost) {
 
   proc_->AddRule("h1", ADDRESS_FAMILY_UNSPECIFIED, "::3");
   proc_->AddRule("h1", ADDRESS_FAMILY_IPV4, "1.0.0.1");
+  proc_->AddRule("h1", ADDRESS_FAMILY_IPV6, "::2");
 
-  // TODO(crbug.com/821021): Add more requests with different A vs AAAA
-  // specified once supported.
-  ResolveHostResponseHelper response(
-      resolver_->CreateRequest(HostPortPair("h1", 80), NetLogWithSource()));
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("h1", 80), NetLogWithSource(), base::nullopt));
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  ResolveHostResponseHelper v4_response(resolver_->CreateRequest(
+      HostPortPair("h1", 80), NetLogWithSource(), parameters));
+  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  ResolveHostResponseHelper v6_response(resolver_->CreateRequest(
+      HostPortPair("h1", 80), NetLogWithSource(), parameters));
 
-  proc_->SignalMultiple(1u);
+  proc_->SignalMultiple(3u);
 
   // Should revert to only IPV4 request.
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected("1.0.0.1", 80)));
+
+  EXPECT_THAT(v4_response.result_error(), IsOk());
+  EXPECT_THAT(v4_response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("1.0.0.1", 80)));
+  EXPECT_THAT(v6_response.result_error(), IsOk());
+  EXPECT_THAT(v6_response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("::2", 80)));
 
   // Now repeat the test on non-wifi to check that IPv6 is used as normal
   // after the network changes.
@@ -4654,18 +4939,31 @@ TEST_F(HostResolverImplDnsTest, NoIPv6OnWifi_ResolveHost) {
       NetworkChangeNotifier::CONNECTION_4G);
   base::RunLoop().RunUntilIdle();  // Wait for NetworkChangeNotifier.
 
-  // TODO(crbug.com/821021): Add more requests with different A vs AAAA
-  // specified once supported.
-  ResolveHostResponseHelper no_wifi_response(
-      resolver_->CreateRequest(HostPortPair("h1", 80), NetLogWithSource()));
+  ResolveHostResponseHelper no_wifi_response(resolver_->CreateRequest(
+      HostPortPair("h1", 80), NetLogWithSource(), base::nullopt));
+  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  ResolveHostResponseHelper no_wifi_v4_response(resolver_->CreateRequest(
+      HostPortPair("h1", 80), NetLogWithSource(), parameters));
+  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  ResolveHostResponseHelper no_wifi_v6_response(resolver_->CreateRequest(
+      HostPortPair("h1", 80), NetLogWithSource(), parameters));
 
-  proc_->SignalMultiple(1u);
+  proc_->SignalMultiple(3u);
 
   // IPV6 should be available.
   EXPECT_THAT(no_wifi_response.result_error(), IsOk());
   EXPECT_THAT(
       no_wifi_response.request()->GetAddressResults().value().endpoints(),
       testing::ElementsAre(CreateExpected("::3", 80)));
+
+  EXPECT_THAT(no_wifi_v4_response.result_error(), IsOk());
+  EXPECT_THAT(
+      no_wifi_v4_response.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(CreateExpected("1.0.0.1", 80)));
+  EXPECT_THAT(no_wifi_v6_response.result_error(), IsOk());
+  EXPECT_THAT(
+      no_wifi_v6_response.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(CreateExpected("::2", 80)));
 }
 
 TEST_F(HostResolverImplDnsTest, NotFoundTTL) {
@@ -4705,8 +5003,8 @@ TEST_F(HostResolverImplDnsTest, NotFoundTTL_ResolveHost) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
   // NODATA
-  ResolveHostResponseHelper no_data_response(
-      resolver_->CreateRequest(HostPortPair("empty", 80), NetLogWithSource()));
+  ResolveHostResponseHelper no_data_response(resolver_->CreateRequest(
+      HostPortPair("empty", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(no_data_response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(no_data_response.request()->GetAddressResults());
   HostCache::Key key("empty", ADDRESS_FAMILY_UNSPECIFIED, 0);
@@ -4719,7 +5017,7 @@ TEST_F(HostResolverImplDnsTest, NotFoundTTL_ResolveHost) {
 
   // NXDOMAIN
   ResolveHostResponseHelper no_domain_response(resolver_->CreateRequest(
-      HostPortPair("nodomain", 80), NetLogWithSource()));
+      HostPortPair("nodomain", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(no_domain_response.result_error(),
               IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(no_domain_response.request()->GetAddressResults());
