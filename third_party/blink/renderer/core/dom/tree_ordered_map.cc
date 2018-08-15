@@ -76,9 +76,8 @@ inline bool KeyMatchesSlotName(const AtomicString& key,
          ToHTMLSlotElement(element).GetName() == key;
 }
 
-void TreeOrderedMap::Add(const AtomicString& key, Element* element) {
+void TreeOrderedMap::Add(const AtomicString& key, Element& element) {
   DCHECK(key);
-  DCHECK(element);
 
   Map::AddResult add_result = map_.insert(key, new MapEntry(element));
   if (add_result.is_new_entry)
@@ -91,9 +90,8 @@ void TreeOrderedMap::Add(const AtomicString& key, Element* element) {
   entry->ordered_list.clear();
 }
 
-void TreeOrderedMap::Remove(const AtomicString& key, Element* element) {
+void TreeOrderedMap::Remove(const AtomicString& key, Element& element) {
   DCHECK(key);
-  DCHECK(element);
 
   Map::iterator it = map_.find(key);
   if (it == map_.end())

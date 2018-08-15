@@ -4452,9 +4452,9 @@ inline void Element::UpdateId(TreeScope& scope,
   DCHECK_NE(old_id, new_id);
 
   if (!old_id.IsEmpty())
-    scope.RemoveElementById(old_id, this);
+    scope.RemoveElementById(old_id, *this);
   if (!new_id.IsEmpty())
-    scope.AddElementById(new_id, this);
+    scope.AddElementById(new_id, *this);
 
   NamedItemType type = GetNamedItemType();
   if (type == NamedItemType::kNameOrId ||
