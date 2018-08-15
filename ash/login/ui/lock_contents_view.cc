@@ -435,23 +435,21 @@ void LockContentsView::FocusNextUser() {
     return;
   }
 
-  if (!users_list_) {
-    return;
-  }
+  if (users_list_) {
+    for (int i = 0; i < users_list_->user_count(); ++i) {
+      LoginUserView* user_view = users_list_->user_view_at(i);
+      if (!login_views_utils::HasFocusInAnyChildView(user_view))
+        continue;
 
-  for (int i = 0; i < users_list_->user_count(); ++i) {
-    LoginUserView* user_view = users_list_->user_view_at(i);
-    if (!login_views_utils::HasFocusInAnyChildView(user_view))
-      continue;
+      if (i == users_list_->user_count() - 1) {
+        SwapActiveAuthBetweenPrimaryAndSecondary(true /*is_primary*/);
+        primary_big_view_->RequestFocus();
+        return;
+      }
 
-    if (i == users_list_->user_count() - 1) {
-      SwapActiveAuthBetweenPrimaryAndSecondary(true /*is_primary*/);
-      primary_big_view_->RequestFocus();
+      user_view->GetNextFocusableView()->RequestFocus();
       return;
     }
-
-    user_view->GetNextFocusableView()->RequestFocus();
-    return;
   }
 }
 
@@ -473,23 +471,21 @@ void LockContentsView::FocusPreviousUser() {
     return;
   }
 
-  if (!users_list_) {
-    return;
-  }
+  if (users_list_) {
+    for (int i = 0; i < users_list_->user_count(); ++i) {
+      LoginUserView* user_view = users_list_->user_view_at(i);
+      if (!login_views_utils::HasFocusInAnyChildView(user_view))
+        continue;
 
-  for (int i = 0; i < users_list_->user_count(); ++i) {
-    LoginUserView* user_view = users_list_->user_view_at(i);
-    if (!login_views_utils::HasFocusInAnyChildView(user_view))
-      continue;
+      if (i == 0) {
+        SwapActiveAuthBetweenPrimaryAndSecondary(true /*is_primary*/);
+        primary_big_view_->RequestFocus();
+        return;
+      }
 
-    if (i == 0) {
-      SwapActiveAuthBetweenPrimaryAndSecondary(true /*is_primary*/);
-      primary_big_view_->RequestFocus();
+      user_view->GetPreviousFocusableView()->RequestFocus();
       return;
     }
-
-    user_view->GetPreviousFocusableView()->RequestFocus();
-    return;
   }
 }
 
