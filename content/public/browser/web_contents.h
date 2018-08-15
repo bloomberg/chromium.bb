@@ -72,6 +72,7 @@ class InterfaceProvider;
 namespace content {
 
 class BrowserContext;
+class BrowserPluginGuest;
 class BrowserPluginGuestDelegate;
 class InterstitialPage;
 class RenderFrameHost;
@@ -922,6 +923,10 @@ class WebContents : public PageNavigator,
   // renderer. This should be eventually merged into and accounted for in the
   // user activation work.
   virtual bool HasRecentInteractiveInputEvent() const = 0;
+
+  // Returns guest browser plugin object, or NULL if this WebContents is not a
+  // guest.
+  virtual BrowserPluginGuest* GetBrowserPluginGuest() const = 0;
 
  private:
   // This interface should only be implemented inside content.

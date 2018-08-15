@@ -176,10 +176,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // TODO(creis): Remove this now that we can get to it via FrameTreeNode.
   RenderFrameHostManager* GetRenderManagerForTesting();
 
-  // Returns guest browser plugin object, or NULL if this WebContents is not a
-  // guest.
-  BrowserPluginGuest* GetBrowserPluginGuest() const;
-
   // Sets a BrowserPluginGuest object for this WebContents. If this WebContents
   // has a BrowserPluginGuest then that implies that it is being hosted by
   // a BrowserPlugin object in an embedder renderer process.
@@ -456,6 +452,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsShowingContextMenu() const override;
   void SetShowingContextMenu(bool showing) override;
   void PausePageScheduledTasks(bool paused) override;
+  BrowserPluginGuest* GetBrowserPluginGuest() const override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
