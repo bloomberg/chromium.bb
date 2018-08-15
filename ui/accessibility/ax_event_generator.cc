@@ -221,8 +221,12 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
 
   switch (attr) {
     case ax::mojom::IntAttribute::kActivedescendantId:
-      AddEvent(node, Event::ACTIVE_DESCENDANT_CHANGED);
-      active_descendant_changed_.push_back(node);
+      // Don't fire on invisible containers, as it confuses some screen readers,
+      // such as NVDA.
+      if (!node->data().HasState(ax::mojom::State::kInvisible)) {
+        AddEvent(node, Event::ACTIVE_DESCENDANT_CHANGED);
+        active_descendant_changed_.push_back(node);
+      }
       break;
     case ax::mojom::IntAttribute::kCheckedState:
       AddEvent(node, Event::CHECKED_STATE_CHANGED);

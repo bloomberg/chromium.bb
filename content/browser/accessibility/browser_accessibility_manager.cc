@@ -500,11 +500,16 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
 
   if (focus->GetRole() == ax::mojom::Role::kPopUpButton) {
     BrowserAccessibility* child = focus->InternalGetChild(0);
-    if (child && child->GetRole() == ax::mojom::Role::kMenuListPopup) {
+    if (child && child->GetRole() == ax::mojom::Role::kMenuListPopup &&
+        !child->GetData().HasState(ax::mojom::State::kInvisible)) {
       // The active descendant is found on the menu list popup, i.e. on the
       // actual list and not on the button that opens it.
       // If there is no active descendant, focus should stay on the button so
       // that Windows screen readers would enable their virtual cursor.
+      // Do not expose an activedescendant in a hidden/collapsed list, as
+      // screen readers expect the focus event to go to the button itself.
+      // Note that the AX hierarchy in this case is strange -- the active
+      // option is the only visible option, and is inside an invisible list.
       if (child->GetIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
                                  &active_descendant_id)) {
         active_descendant = child->manager()->GetFromID(active_descendant_id);
@@ -512,7 +517,8 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
     }
   }
 
-  if (active_descendant)
+  if (active_descendant &&
+      !active_descendant->GetData().HasState(ax::mojom::State::kInvisible))
     return active_descendant;
 
   return focus;
