@@ -691,11 +691,6 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       ShowPageInfoDialog(browser_->tab_strip_model()->GetActiveWebContents(),
                          bubble_anchor_util::kAppMenuButton);
       break;
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-    case IDC_TOGGLE_CONFIRM_TO_QUIT_OPTION:
-      ToggleConfirmToQuitOption(browser_);
-      break;
-#endif
 
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
@@ -890,8 +885,6 @@ void BrowserCommandController::InitCommandState() {
                                         !profile()->IsOffTheRecord());
   command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA,
                                         !guest_session);
-  command_updater_.UpdateCommandEnabled(IDC_TOGGLE_CONFIRM_TO_QUIT_OPTION,
-                                        true);
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_TAKE_SCREENSHOT, true);
 #else

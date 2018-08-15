@@ -2333,10 +2333,11 @@ jumbo_split_static_library("ui") {
       sources += [
         "input_method/input_method_engine.cc",
         "input_method/input_method_engine.h",
-        "views/confirm_quit_bubble.cc",
-        "views/confirm_quit_bubble.h",
-        "views/confirm_quit_bubble_controller.cc",
-        "views/confirm_quit_bubble_controller.h",
+        "views/quit_instruction_bubble.cc",
+        "views/quit_instruction_bubble.h",
+        "views/quit_instruction_bubble_base.h",
+        "views/quit_instruction_bubble_controller.cc",
+        "views/quit_instruction_bubble_controller.h",
       ]
     }
   }
