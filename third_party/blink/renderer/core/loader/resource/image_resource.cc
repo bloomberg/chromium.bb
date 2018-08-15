@@ -573,8 +573,6 @@ void ImageResource::ReloadIfLoFiOrPlaceholderImage(
   DCHECK(!is_scheduling_reload_);
   is_scheduling_reload_ = true;
 
-  SetCachePolicyBypassingCache();
-
   // The reloaded image should not use any previews transformations.
   WebURLRequest::PreviewsState previews_state_for_reload =
       WebURLRequest::kPreviewsNoTransform;
