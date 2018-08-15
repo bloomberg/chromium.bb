@@ -84,7 +84,7 @@ function update_readme {
   local IFS=$'\n'
   # Split git log output '<date>\n<commit hash>' on the newline to produce 2
   # array entries.
-  local vals=($(git --no-pager log -1 --format="%cd%n%H" \
+  local vals=($(git -C "${SRC}" --no-pager log -1 --format="%cd%n%H" \
     --date=format:"%A %B %d %Y"))
   sed -E -i.bak \
     -e "s/^(Date:)[[:space:]]+.*$/\1 ${vals[0]}/" \
@@ -175,9 +175,9 @@ reset_dirs linux/arm64
 gen_config_files linux/arm64 "${toolchain}/arm64-linux-gcc.cmake ${all_platforms}"
 )
 
-cd "${SRC}"
 update_readme
 
-git cl format &> /dev/null || echo "ERROR: Run 'git cl format' manually."
+git cl format > /dev/null \
+  || echo "ERROR: 'git cl format' failed. Please run 'git cl format' manually."
 
 clean
