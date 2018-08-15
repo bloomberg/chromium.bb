@@ -5,19 +5,11 @@
 #ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_BROWSER_CONTEXT_KEYED_SERVICE_FACTORIES_H_
 #define CHROME_BROWSER_APPS_PLATFORM_APPS_BROWSER_CONTEXT_KEYED_SERVICE_FACTORIES_H_
 
-namespace content {
-class BrowserContext;
-}
-
 namespace chrome_apps {
 
 // Ensures the existence of any BrowserContextKeyedServiceFactory provided by
 // the Chrome apps code.
 void EnsureBrowserContextKeyedServiceFactoriesBuilt();
-
-// Notifies the relevant BrowserContextKeyedServices for the browser context
-// that the application is being terminated.
-void NotifyApplicationTerminating(content::BrowserContext* browser_context);
 
 }  // namespace chrome_apps
 

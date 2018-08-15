@@ -14,6 +14,8 @@ source_set("platform_apps") {
     "app_load_service.h",
     "app_load_service_factory.cc",
     "app_load_service_factory.h",
+    "app_termination_observer.cc",
+    "app_termination_observer.h",
     "app_window_registry_util.cc",
     "app_window_registry_util.h",
     "browser_context_keyed_service_factories.cc",
