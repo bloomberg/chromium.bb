@@ -40,11 +40,10 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
 
   void UnregisterResourceContext(const void* context);
 
-  // Overrides the plugin lookup mechanism for a given tab and object URL to use
-  // a specific plugin.
+  // Overrides the plugin lookup mechanism for a given tab to use a specific
+  // plugin.
   void OverridePluginForFrame(int render_process_id,
                               int render_frame_id,
-                              const GURL& url,
                               const content::WebPluginInfo& plugin);
 
   // Authorizes a given plugin for a given process.
@@ -79,12 +78,8 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   struct ContextInfo;
 
   struct OverriddenPlugin {
-    OverriddenPlugin();
-    ~OverriddenPlugin();
-
-    int render_frame_id;
-    GURL url;  // If empty, the override applies to all urls in render_frame.
-    content::WebPluginInfo plugin;
+    const int render_frame_id;
+    const content::WebPluginInfo plugin;
   };
 
   struct ProcessDetails {
