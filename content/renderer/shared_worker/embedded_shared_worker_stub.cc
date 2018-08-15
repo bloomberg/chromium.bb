@@ -198,6 +198,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
     const RendererPreferences& renderer_preferences,
+    mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
@@ -213,6 +214,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       name_(info->name),
       url_(info->url),
       renderer_preferences_(renderer_preferences),
+      preference_watcher_request_(std::move(preference_watcher_request)),
       appcache_host_id_(appcache_host_id) {
   // The ID of the precreated AppCacheHost can be valid only when the
   // NetworkService is enabled.
@@ -391,10 +393,8 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
       loader_factories_->Clone();
 
-  // TODO(crbug.com/853085): plumb RendererPreferenceWatcher from the browser.
   auto worker_fetch_context = std::make_unique<WebWorkerFetchContextImpl>(
-      std::move(renderer_preferences_),
-      nullptr /* preference_watcher_request */,
+      std::move(renderer_preferences_), std::move(preference_watcher_request_),
       std::move(worker_client_request),
       std::move(worker_client_registry_ptr_info),
       std::move(container_host_ptr_info), loader_factories_->Clone(),

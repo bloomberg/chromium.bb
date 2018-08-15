@@ -23,6 +23,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
@@ -147,6 +148,14 @@ void SharedWorkerHost::Start(
       RenderProcessHost::FromID(process_id_)->GetBrowserContext(),
       &renderer_preferences);
 
+  // Create a RendererPreferenceWatcher to observe updates in the preferences.
+  mojom::RendererPreferenceWatcherPtr watcher_ptr;
+  mojom::RendererPreferenceWatcherRequest preference_watcher_request =
+      mojo::MakeRequest(&watcher_ptr);
+  GetContentClient()->browser()->RegisterRendererPreferenceWatcherForWorkers(
+      RenderProcessHost::FromID(process_id_)->GetBrowserContext(),
+      std::move(watcher_ptr));
+
   // Set up content settings interface.
   blink::mojom::WorkerContentSettingsProxyPtr content_settings;
   content_settings_ = std::make_unique<SharedWorkerContentSettingsProxyImpl>(
@@ -182,8 +191,8 @@ void SharedWorkerHost::Start(
   factory_ = std::move(factory);
   factory_->CreateSharedWorker(
       std::move(info), pause_on_start, devtools_worker_token,
-      renderer_preferences, std::move(content_settings),
-      std::move(service_worker_provider_info),
+      renderer_preferences, std::move(preference_watcher_request),
+      std::move(content_settings), std::move(service_worker_provider_info),
       appcache_handle_ ? appcache_handle_->appcache_host_id()
                        : kAppCacheNoHostId,
       std::move(script_loader_factory), std::move(factory_bundle),

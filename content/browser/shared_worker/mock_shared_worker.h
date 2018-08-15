@@ -68,6 +68,7 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
       const RendererPreferences& renderer_preferences,
+      mojom::RendererPreferenceWatcherRequest preference_watcher_request,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
