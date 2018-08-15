@@ -11,8 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "content/browser/font_unique_name_lookup/font_table_matcher.h"
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
 
 #include <functional>
 #include <memory>
@@ -89,11 +89,11 @@ TEST_F(FontUniqueNameLookupTest, TestBuildLookup) {
   ASSERT_TRUE(font_unique_name_lookup_->UpdateTable());
   base::ReadOnlySharedMemoryMapping mapping =
       font_unique_name_lookup_->GetUniqueNameTableAsSharedMemoryRegion().Map();
-  FontTableMatcher matcher(mapping);
+  blink::FontTableMatcher matcher(mapping);
   ASSERT_GT(matcher.AvailableFonts(), 0u);
   ASSERT_TRUE(font_unique_name_lookup_->PersistToFile());
   ASSERT_TRUE(font_unique_name_lookup_->LoadFromFile());
-  FontTableMatcher matcher_after_load(
+  blink::FontTableMatcher matcher_after_load(
       font_unique_name_lookup_->GetUniqueNameTableAsSharedMemoryRegion().Map());
   ASSERT_GT(matcher_after_load.AvailableFonts(), 0u);
 }
@@ -107,7 +107,7 @@ TEST_F(FontUniqueNameLookupTest, TestHandleFailedRead) {
   ASSERT_TRUE(font_unique_name_lookup_->IsValid());
   base::ReadOnlySharedMemoryMapping mapping =
       font_unique_name_lookup_->GetUniqueNameTableAsSharedMemoryRegion().Map();
-  FontTableMatcher matcher(mapping);
+  blink::FontTableMatcher matcher(mapping);
   ASSERT_GT(matcher.AvailableFonts(), 0u);
   ASSERT_TRUE(font_unique_name_lookup_->PersistToFile());
   ASSERT_TRUE(font_unique_name_lookup_->LoadFromFile());
@@ -124,7 +124,7 @@ TEST_F(FontUniqueNameLookupTest, TestHandleFailedRead) {
 
 TEST_F(FontUniqueNameLookupTest, TestMatchPostScriptName) {
   ASSERT_TRUE(font_unique_name_lookup_->UpdateTable());
-  FontTableMatcher matcher(
+  blink::FontTableMatcher matcher(
       font_unique_name_lookup_->GetUniqueNameTableAsSharedMemoryRegion().Map());
   ASSERT_GT(matcher.AvailableFonts(), 0u);
   auto match_result = matcher.MatchName(kRobotoCondensedBoldItalicNames[1]);
@@ -145,7 +145,7 @@ TEST_F(FontUniqueNameLookupTest, TestMatchPostScriptNameTtc) {
     return;
   }
   ASSERT_TRUE(font_unique_name_lookup_->UpdateTable());
-  FontTableMatcher matcher(
+  blink::FontTableMatcher matcher(
       font_unique_name_lookup_->GetUniqueNameTableAsSharedMemoryRegion().Map());
   std::vector<std::string> ttc_postscript_names = {
       "NotoSansCJKjp-Regular",     "NotoSansCJKkr-Regular",
@@ -167,7 +167,7 @@ TEST_F(FontUniqueNameLookupTest, TestMatchPostScriptNameTtc) {
 
 TEST_F(FontUniqueNameLookupTest, TestMatchFullFontName) {
   ASSERT_TRUE(font_unique_name_lookup_->UpdateTable());
-  FontTableMatcher matcher(
+  blink::FontTableMatcher matcher(
       font_unique_name_lookup_->GetUniqueNameTableAsSharedMemoryRegion().Map());
   auto match_result = matcher.MatchName(kRobotoCondensedBoldItalicNames[0]);
   ASSERT_TRUE(match_result);
@@ -286,7 +286,7 @@ class FaultInjectingFontUniqueNameLookupTest : public ::testing::Test {
 TEST_F(FaultInjectingFontUniqueNameLookupTest, TestZeroedTableContents) {
   font_file_corruptor_.ZeroAfterTableIndex();
   ASSERT_TRUE(font_unique_name_lookup_->UpdateTable());
-  FontTableMatcher matcher_after_update(
+  blink::FontTableMatcher matcher_after_update(
       font_unique_name_lookup_->GetUniqueNameTableAsSharedMemoryRegion().Map());
   ASSERT_EQ(matcher_after_update.AvailableFonts(), 0u);
 }
@@ -294,7 +294,7 @@ TEST_F(FaultInjectingFontUniqueNameLookupTest, TestZeroedTableContents) {
 TEST_F(FaultInjectingFontUniqueNameLookupTest, TestZeroedTableIndex) {
   font_file_corruptor_.ZeroOutTableRecords();
   ASSERT_TRUE(font_unique_name_lookup_->UpdateTable());
-  FontTableMatcher matcher_after_update(
+  blink::FontTableMatcher matcher_after_update(
       font_unique_name_lookup_->GetUniqueNameTableAsSharedMemoryRegion().Map());
   ASSERT_EQ(matcher_after_update.AvailableFonts(), 0u);
 }
@@ -316,7 +316,7 @@ class FontUniqueNameLookupUpdateTest : public ::testing::Test {
 
 TEST_F(FontUniqueNameLookupUpdateTest, CompareSets) {
   ASSERT_TRUE(font_unique_name_lookup_->UpdateTable());
-  FontTableMatcher matcher_initial(
+  blink::FontTableMatcher matcher_initial(
       font_unique_name_lookup_->GetUniqueNameTableAsSharedMemoryRegion().Map());
   ASSERT_GT(matcher_initial.AvailableFonts(), 0u);
   font_unique_name_lookup_->SetFontFilePathsForTesting(
@@ -325,7 +325,7 @@ TEST_F(FontUniqueNameLookupUpdateTest, CompareSets) {
   // to in the test's SetUp method to trigger re-indexing.
   font_unique_name_lookup_->SetAndroidBuildFingerprintForTesting("B");
   font_unique_name_lookup_->UpdateTableIfNeeded();
-  FontTableMatcher matcher_second_half(
+  blink::FontTableMatcher matcher_second_half(
       font_unique_name_lookup_->GetUniqueNameTableAsSharedMemoryRegion().Map());
   ASSERT_GT(matcher_initial.AvailableFonts(), 0u);
   ASSERT_TRUE(matcher_initial.FontListIsDisjointFrom(matcher_second_half));

@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FONT_UNIQUE_NAME_LOOKUP_FONT_TABLE_MATCHER_H_
-#define CONTENT_BROWSER_FONT_UNIQUE_NAME_LOOKUP_FONT_TABLE_MATCHER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FONT_UNIQUE_NAME_LOOKUP_FONT_TABLE_MATCHER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_FONT_UNIQUE_NAME_LOOKUP_FONT_TABLE_MATCHER_H_
 
 #include "base/memory/read_only_shared_memory_region.h"
-#include "content/browser/font_unique_name_lookup/font_unique_name_table.pb.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
-namespace content {
+namespace blink {
 
 // Parses a protobuf received in memory_mapping to build a font lookup
 // structure. Allows case-insensitively matching full font names or postscript
-// font names aginst the parsed table by calling MatchName. Used in Blink for
+// font names against the parsed table by calling MatchName. Used in Blink for
 // looking up
 // @font-face { src: local(<font_name>) } CSS font face src references.
-class CONTENT_EXPORT FontTableMatcher {
+class BLINK_COMMON_EXPORT FontTableMatcher {
  public:
   // Constructs a FontTableMatcher from a ReadOnlySharedMemoryMapping returned
   // by FontUniqueNameLookup.  Internally parses the Protobuf structure in
@@ -58,6 +58,6 @@ class CONTENT_EXPORT FontTableMatcher {
   FontUniqueNameTable font_table_;
 };
 
-}  // namespace content
+}  // namespace blink
 
 #endif  // CONTENT_BROWSER_FONT_UNIQUE_NAME_LOOKUP_FONT_TABLE_MATCHER_H_

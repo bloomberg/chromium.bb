@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/font_unique_name_lookup/icu_fold_case_util.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace blink {
 
 TEST(IcuFoldCaseUtilTest, FoldingExamples) {
   ASSERT_EQ(IcuFoldCase("Roboto Condensed Bold Italic"),
@@ -18,4 +18,4 @@ TEST(IcuFoldCaseUtilTest, FoldingExamples) {
             IcuFoldCase("скорбь сходит щедрот"));
 }
 
-}  // namespace content
+}  // namespace blink

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/font_unique_name_lookup/icu_fold_case_util.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
 
-namespace content {
+namespace blink {
 
 std::string IcuFoldCase(const std::string& name_request) {
   icu_62::UnicodeString name_request_unicode =
@@ -15,4 +16,4 @@ std::string IcuFoldCase(const std::string& name_request) {
   return name_request_lower;
 }
 
-}  // namespace content
+}  // namespace blink

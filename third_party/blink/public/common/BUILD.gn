@@ -6,6 +6,7 @@ import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//testing/test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 # Public common API headers, mojom and libraries that can be linked and
 # referenced both by browser-side and renderer-side components.
@@ -82,5 +83,21 @@ source_set("headers") {
   # iOS doesn't use and must not depend on //media
   if (!is_ios) {
     deps += [ "//media" ]
+  }
+
+  if (is_android) {
+    sources += [
+      "font_unique_name_lookup/font_table_matcher.h",
+      "font_unique_name_lookup/icu_fold_case_util.h",
+    ]
+    deps += [ ":font_unique_name_table_proto" ]
+  }
+}
+
+if (is_android) {
+  proto_library("font_unique_name_table_proto") {
+    sources = [
+      "font_unique_name_lookup/font_unique_name_table.proto",
+    ]
   }
 }
