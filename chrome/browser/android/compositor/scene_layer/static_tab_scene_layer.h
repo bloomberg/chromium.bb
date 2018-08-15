@@ -19,10 +19,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 
-namespace cc {
-class Layer;
-}
-
 namespace android {
 
 class ContentLayer;
@@ -53,7 +49,6 @@ class StaticTabSceneLayer : public SceneLayer {
 
  private:
   scoped_refptr<android::ContentLayer> content_layer_;
-  scoped_refptr<cc::Layer> content_scene_layer_;
 
   int last_set_tab_id_;
   int background_color_;
