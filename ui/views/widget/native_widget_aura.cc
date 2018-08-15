@@ -547,30 +547,20 @@ void NativeWidgetAura::CloseNow() {
   delete window_;
 }
 
-void NativeWidgetAura::Show() {
-  ShowWithWindowState(ui::SHOW_STATE_NORMAL);
-}
-
-void NativeWidgetAura::Hide() {
-  if (window_)
-    window_->Hide();
-}
-
-void NativeWidgetAura::ShowMaximizedWithBounds(
-    const gfx::Rect& restored_bounds) {
-  SetRestoreBounds(window_, restored_bounds);
-  ShowWithWindowState(ui::SHOW_STATE_MAXIMIZED);
-}
-
-void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
+void NativeWidgetAura::Show(ui::WindowShowState show_state,
+                            const gfx::Rect& restore_bounds) {
   if (!window_)
     return;
 
-  if (state == ui::SHOW_STATE_MAXIMIZED || state == ui::SHOW_STATE_FULLSCREEN)
-    window_->SetProperty(aura::client::kShowStateKey, state);
+  if (show_state == ui::SHOW_STATE_MAXIMIZED && !restore_bounds.IsEmpty())
+    SetRestoreBounds(window_, restore_bounds);
+  if (show_state == ui::SHOW_STATE_MAXIMIZED ||
+      show_state == ui::SHOW_STATE_FULLSCREEN) {
+    window_->SetProperty(aura::client::kShowStateKey, show_state);
+  }
   window_->Show();
   if (delegate_->CanActivate()) {
-    if (state != ui::SHOW_STATE_INACTIVE)
+    if (show_state != ui::SHOW_STATE_INACTIVE)
       Activate();
     // SetInitialFocus() should be always be called, even for
     // SHOW_STATE_INACTIVE. If the window has to stay inactive, the method will
@@ -578,13 +568,18 @@ void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
     // Activate() might fail if the window is non-activatable. In this case, we
     // should pass SHOW_STATE_INACTIVE to SetInitialFocus() to stop the initial
     // focused view from getting focused. See crbug.com/515594 for example.
-    SetInitialFocus(IsActive() ? state : ui::SHOW_STATE_INACTIVE);
+    SetInitialFocus(IsActive() ? show_state : ui::SHOW_STATE_INACTIVE);
   }
 
   // On desktop aura, a window is activated first even when it is shown as
   // minimized. Do the same for consistency.
-  if (state == ui::SHOW_STATE_MINIMIZED)
+  if (show_state == ui::SHOW_STATE_MINIMIZED)
     Minimize();
+}
+
+void NativeWidgetAura::Hide() {
+  if (window_)
+    window_->Hide();
 }
 
 bool NativeWidgetAura::IsVisible() const {

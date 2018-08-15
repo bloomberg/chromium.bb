@@ -183,12 +183,9 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void SetShape(std::unique_ptr<Widget::ShapeRects> shape) = 0;
   virtual void Close() = 0;
   virtual void CloseNow() = 0;
-  virtual void Show() = 0;
+  virtual void Show(ui::WindowShowState show_state,
+                    const gfx::Rect& restore_bounds) = 0;
   virtual void Hide() = 0;
-  // Invoked if the initial show should maximize the window. |restored_bounds|
-  // is the bounds of the window when not maximized.
-  virtual void ShowMaximizedWithBounds(const gfx::Rect& restored_bounds) = 0;
-  virtual void ShowWithWindowState(ui::WindowShowState show_state) = 0;
   virtual bool IsVisible() const = 0;
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;

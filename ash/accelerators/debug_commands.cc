@@ -57,6 +57,7 @@ void HandlePrintViewHierarchy() {
 
 void PrintWindowHierarchy(ui::ws2::WindowService* window_service,
                           const aura::Window* active_window,
+                          const aura::Window* focused_window,
                           aura::Window* window,
                           int indent,
                           std::ostringstream* out) {
@@ -69,6 +70,7 @@ void PrintWindowHierarchy(ui::ws2::WindowService* window_service,
   *out << indent_str << name << " (" << window << ")"
        << " type=" << window->type()
        << ((window == active_window) ? " [active]" : "")
+       << ((window == focused_window) ? " [focused]" : "")
        << (window->IsVisible() ? " visible" : "") << " "
        << window->bounds().ToString();
   if (window->GetProperty(::wm::kSnapChildrenToPixelBoundary))
@@ -79,19 +81,23 @@ void PrintWindowHierarchy(ui::ws2::WindowService* window_service,
     *out << " remote_id=" << window_service->GetIdForDebugging(window);
   *out << '\n';
 
-  for (aura::Window* child : window->children())
-    PrintWindowHierarchy(window_service, active_window, child, indent + 3, out);
+  for (aura::Window* child : window->children()) {
+    PrintWindowHierarchy(window_service, active_window, focused_window, child,
+                         indent + 3, out);
+  }
 }
 
 void HandlePrintWindowHierarchy() {
   aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* focused_window = wm::GetFocusedWindow();
   aura::Window::Windows roots = Shell::Get()->GetAllRootWindows();
   ui::ws2::WindowService* window_service =
       Shell::Get()->window_service_owner()->window_service();
   for (size_t i = 0; i < roots.size(); ++i) {
     std::ostringstream out;
     out << "RootWindow " << i << ":\n";
-    PrintWindowHierarchy(window_service, active_window, roots[i], 0, &out);
+    PrintWindowHierarchy(window_service, active_window, focused_window,
+                         roots[i], 0, &out);
     // Error so logs can be collected from end-users.
     LOG(ERROR) << out.str();
   }

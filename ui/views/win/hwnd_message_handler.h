@@ -107,9 +107,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   void StackAbove(HWND other_hwnd);
   void StackAtTop();
 
-  void Show();
-  void ShowWindowWithState(ui::WindowShowState show_state);
-  void ShowMaximizedWithBounds(const gfx::Rect& bounds);
+  // Shows the window. If |show_state| is maximized, |pixel_restore_bounds| is
+  // the bounds to restore the window to when going back to normal.
+  void Show(ui::WindowShowState show_state,
+            const gfx::Rect& pixel_restore_bounds);
   void Hide();
 
   void Maximize();

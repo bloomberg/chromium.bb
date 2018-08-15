@@ -514,16 +514,23 @@ aura::WindowTreeHost* DesktopWindowTreeHostX11::AsWindowTreeHost() {
   return this;
 }
 
-void DesktopWindowTreeHostX11::ShowWindowWithState(
-    ui::WindowShowState show_state) {
+void DesktopWindowTreeHostX11::Show(ui::WindowShowState show_state,
+                                    const gfx::Rect& restore_bounds) {
   if (compositor())
     SetVisible(true);
+
   if (!IsVisible() || !window_mapped_in_server_)
     MapWindow(show_state);
 
   switch (show_state) {
     case ui::SHOW_STATE_MAXIMIZED:
       Maximize();
+      if (!restore_bounds.IsEmpty()) {
+        // Enforce |restored_bounds_in_pixels_| since calling Maximize() could
+        // have reset it.
+        restored_bounds_in_pixels_ = ToPixelRect(restore_bounds);
+      }
+
       break;
     case ui::SHOW_STATE_MINIMIZED:
       Minimize();
@@ -536,14 +543,8 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
   }
 
   native_widget_delegate_->AsWidget()->SetInitialFocus(show_state);
-}
 
-void DesktopWindowTreeHostX11::ShowMaximizedWithBounds(
-    const gfx::Rect& restored_bounds) {
-  ShowWindowWithState(ui::SHOW_STATE_MAXIMIZED);
-  // Enforce |restored_bounds_in_pixels_| since calling Maximize() could have
-  // reset it.
-  restored_bounds_in_pixels_ = ToPixelRect(restored_bounds);
+  content_window()->Show();
 }
 
 bool DesktopWindowTreeHostX11::IsVisible() const {
@@ -826,7 +827,7 @@ void DesktopWindowTreeHostX11::Maximize() {
   SetWMSpecState(true, gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
                  gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
   if (IsMinimized())
-    ShowWindowWithState(ui::SHOW_STATE_NORMAL);
+    Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
 }
 
 void DesktopWindowTreeHostX11::Minimize() {
@@ -839,7 +840,7 @@ void DesktopWindowTreeHostX11::Restore() {
   SetWMSpecState(false, gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
                  gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
   if (IsMinimized())
-    ShowWindowWithState(ui::SHOW_STATE_NORMAL);
+    Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
 }
 
 bool DesktopWindowTreeHostX11::IsMaximized() const {
@@ -1190,7 +1191,7 @@ gfx::AcceleratedWidget DesktopWindowTreeHostX11::GetAcceleratedWidget() {
 }
 
 void DesktopWindowTreeHostX11::ShowImpl() {
-  ShowWindowWithState(ui::SHOW_STATE_NORMAL);
+  Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
 }
 
 void DesktopWindowTreeHostX11::HideImpl() {

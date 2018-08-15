@@ -747,11 +747,11 @@ void DesktopNativeWidgetAura::CloseNow() {
     desktop_window_tree_host_->CloseNow();
 }
 
-void DesktopNativeWidgetAura::Show() {
+void DesktopNativeWidgetAura::Show(ui::WindowShowState show_state,
+                                   const gfx::Rect& restore_bounds) {
   if (!content_window_)
     return;
-  desktop_window_tree_host_->AsWindowTreeHost()->Show();
-  content_window_->Show();
+  desktop_window_tree_host_->Show(show_state, restore_bounds);
 }
 
 void DesktopNativeWidgetAura::Hide() {
@@ -759,23 +759,6 @@ void DesktopNativeWidgetAura::Hide() {
     return;
   desktop_window_tree_host_->AsWindowTreeHost()->Hide();
   content_window_->Hide();
-}
-
-void DesktopNativeWidgetAura::ShowMaximizedWithBounds(
-      const gfx::Rect& restored_bounds) {
-  // IsVisible() should check the same objects here for visibility.
-  if (!content_window_)
-    return;
-  desktop_window_tree_host_->ShowMaximizedWithBounds(restored_bounds);
-  content_window_->Show();
-}
-
-void DesktopNativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
-  // IsVisible() should check the same objects here for visibility.
-  if (!content_window_)
-    return;
-  desktop_window_tree_host_->ShowWindowWithState(state);
-  content_window_->Show();
 }
 
 bool DesktopNativeWidgetAura::IsVisible() const {

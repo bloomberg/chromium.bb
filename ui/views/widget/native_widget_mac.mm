@@ -431,27 +431,12 @@ void NativeWidgetMac::CloseNow() {
   // Note: |this| is deleted here when ownership_ == NATIVE_WIDGET_OWNS_WIDGET.
 }
 
-void NativeWidgetMac::Show() {
-  ShowWithWindowState(ui::SHOW_STATE_NORMAL);
-}
-
-void NativeWidgetMac::Hide() {
+void NativeWidgetMac::Show(ui::WindowShowState show_state,
+                           const gfx::Rect& restore_bounds) {
   if (!bridge())
     return;
 
-  bridge()->SetVisibilityState(BridgedNativeWidget::HIDE_WINDOW);
-}
-
-void NativeWidgetMac::ShowMaximizedWithBounds(
-    const gfx::Rect& restored_bounds) {
-  NOTIMPLEMENTED();
-}
-
-void NativeWidgetMac::ShowWithWindowState(ui::WindowShowState state) {
-  if (!bridge())
-    return;
-
-  switch (state) {
+  switch (show_state) {
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_NORMAL:
     case ui::SHOW_STATE_INACTIVE:
@@ -466,13 +451,20 @@ void NativeWidgetMac::ShowWithWindowState(ui::WindowShowState state) {
       break;
   }
   bridge()->SetVisibilityState(
-      state == ui::SHOW_STATE_INACTIVE
+      show_state == ui::SHOW_STATE_INACTIVE
           ? BridgedNativeWidget::SHOW_INACTIVE
           : BridgedNativeWidget::SHOW_AND_ACTIVATE_WINDOW);
 
   // Ignore the SetInitialFocus() result. BridgedContentView should get
   // firstResponder status regardless.
-  delegate_->SetInitialFocus(state);
+  delegate_->SetInitialFocus(show_state);
+}
+
+void NativeWidgetMac::Hide() {
+  if (!bridge())
+    return;
+
+  bridge()->SetVisibilityState(BridgedNativeWidget::HIDE_WINDOW);
 }
 
 bool NativeWidgetMac::IsVisible() const {
