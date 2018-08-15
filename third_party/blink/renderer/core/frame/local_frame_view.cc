@@ -1887,6 +1887,9 @@ void LocalFrameView::ScrollAndFocusFragmentAnchor() {
   if (!anchor_node)
     return;
 
+  if (!frame_->GetDocument()->IsRenderingReady())
+    return;
+
   if (anchor_node->GetLayoutObject()) {
     LayoutRect rect;
     if (anchor_node != frame_->GetDocument()) {
