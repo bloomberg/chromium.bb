@@ -2173,7 +2173,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   ])
   _pi_no_hwtest_experimental_boards = frozenset([
       'eve-arcnext',
-      'nocturne',
   ])
   _pi_hwtest_boards = frozenset([
       'caroline-arcnext',
@@ -2427,6 +2426,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'daisy_spring',
       'edgar',
       'elm',
+      'eve',
       'falco',
       'fizz',
       'gale',
@@ -2445,6 +2445,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'monroe',
       'moblab-generic-vm',
       'nami',
+      'nocturne',
       'nyan_big',
       'nyan_kitty',
       'oak',
@@ -2508,7 +2509,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'capri', # contact:ghines@
       'capri-zfpga', # contact:victoryang@
       'cobblepot', # contact:jkoleszar@
-      'eve', # contact: michaelpg@ (crbug.com/872351)
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
       'fizz-accelerator', # contact:perley@
       'gonzo', # contact:icoolidge@
@@ -2517,7 +2517,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lasilla-ground', # contact:jemele@
       'lasilla-sky', # contact:jemele@
       'macchiato-ground', # contact:jemele@
-      'nocturne',
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
       'whirlwind', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
