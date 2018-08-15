@@ -39,8 +39,9 @@ class AccessibilityIpcErrorBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityIpcErrorBrowserTest);
 };
 
+// http://crbug.com/870661
 IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
-                       ResetBrowserAccessibilityManager) {
+                       DISABLED_ResetBrowserAccessibilityManager) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"
@@ -130,14 +131,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   EXPECT_EQ(ax::mojom::Role::kButton, button->data().role);
 }
 
-#if defined(OS_ANDROID)
-// http://crbug.com/542704
-#define MAYBE_MultipleBadAccessibilityIPCsKillsRenderer DISABLED_MultipleBadAccessibilityIPCsKillsRenderer
-#else
-#define MAYBE_MultipleBadAccessibilityIPCsKillsRenderer MultipleBadAccessibilityIPCsKillsRenderer
-#endif
+// http://crbug.com/870661
 IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
-                       MAYBE_MultipleBadAccessibilityIPCsKillsRenderer) {
+                       DISABLED_MultipleBadAccessibilityIPCsKillsRenderer) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"
