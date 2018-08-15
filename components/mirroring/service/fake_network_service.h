@@ -31,6 +31,10 @@ class MockUdpSocket final : public network::mojom::UDPSocket {
             network::mojom::UDPSocketOptionsPtr options,
             BindCallback callback) override {}
   void SetBroadcast(bool broadcast, SetBroadcastCallback callback) override {}
+  void SetSendBufferSize(int32_t send_buffer_size,
+                         SetSendBufferSizeCallback callback) override {}
+  void SetReceiveBufferSize(int32_t receive_buffer_size,
+                            SetReceiveBufferSizeCallback callback) override {}
   void JoinGroup(const net::IPAddress& group_address,
                  JoinGroupCallback callback) override {}
   void LeaveGroup(const net::IPAddress& group_address,

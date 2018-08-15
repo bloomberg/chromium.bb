@@ -87,6 +87,16 @@ interface UDPSocket {
   // addresses. Returns a net error code. Should only be called after Bind().
   SetBroadcast(bool broadcast) => (int32 result);
 
+  // Sets the OS send buffer size (in bytes) for the socket. Overwrites any
+  // previously set value. Returns a net error code.
+  // See |UDPSocketOptions::send_buffer_size| for more information.
+  SetSendBufferSize(int32 send_buffer_size) => (int32 result);
+
+  // Sets the OS receive buffer size (in bytes) for the socket. Overwrites any
+  // previously set value. Returns a net error code.
+  // See |UDPSocketOptions::receive_buffer_size| for more information.
+  SetReceiveBufferSize(int32 receive_buffer_size) => (int32 result);
+
   // Joins a multicast group. |group_address| is the group address to join,
   // could be either an IPv4 or IPv6 address. Returns a net error code.
   // See RFC 1112 for details on multicast.
