@@ -527,7 +527,7 @@ class ChromiteTestStage(generic_stages.BuilderStage):
         os.path.join(self._build_root, 'chromite'))
 
     cmd = [
-        os.path.join(buildroot_chromite, 'cbuildbot', 'run_tests'),
+        os.path.join(buildroot_chromite, 'run_tests'),
         # TODO(crbug.com/682381): When tests can pass, add '--network',
     ]
     # TODO: Remove enter_chroot=True when we have virtualenv support.

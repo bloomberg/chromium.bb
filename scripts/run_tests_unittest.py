@@ -10,9 +10,9 @@ from __future__ import print_function
 import mock
 import os
 
-from chromite.cbuildbot import run_tests
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.scripts import run_tests
 
 
 class RunTestsTest(cros_test_lib.MockTestCase):

@@ -42,10 +42,10 @@ $ cros lint <filename>
 ```
 
 ### Unit Tests
-Every Python file in Chromite is accompanied by a corresponding `filename_unittest.py` file. More on unit tests here. Once written, the unit tests can be run using `cbuildbot/run_tests` command in the Chromite directory. To test a specific file (say `lib/triage_lib.py`), use
+Every Python file in Chromite is accompanied by a corresponding `filename_unittest.py` file. More on unit tests here. Once written, the unit tests can be run using `./run_tests` command in the Chromite directory. To test a specific file (say `lib/triage_lib.py`), use
 
 ```shell
-~/trunk/chromite $ cbuildbot/run_tests lib/triage_lib_unittest
+~/trunk/chromite $ ./run_tests lib/triage_lib_unittest
 ```
 
 Run_tests without any argument runs all unit tests in Chromite. These unit tests are run in tryjobs, preCQ and CQ as well.
