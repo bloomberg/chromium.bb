@@ -10,12 +10,12 @@
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -38,7 +38,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_constants.h"
-#include "chromeos/chromeos_switches.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
@@ -180,9 +179,8 @@ void CoreOobeHandler::Initialize() {
 void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
   dict->SetKey("isInTabletMode",
                base::Value(TabletModeClient::Get()->tablet_mode_enabled()));
-  bool is_demo_mode_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDemoMode);
-  dict->SetKey("isDemoModeEnabled", base::Value(is_demo_mode_enabled));
+  dict->SetKey("isDemoModeEnabled",
+               base::Value(DemoSetupController::IsDemoModeAllowed()));
 }
 
 void CoreOobeHandler::RegisterMessages() {

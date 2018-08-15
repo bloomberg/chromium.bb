@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/login/localized_values_builder.h"
@@ -102,12 +100,8 @@ void NetworkScreenHandler::DeclareLocalizedValues(
 
 void NetworkScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* dict) {
-  const auto* const command_line = base::CommandLine::ForCurrentProcess();
-  // Offline demo mode can be only enabled when demo mode feature is enabled.
-  const bool is_offline_demo_mode_enabled =
-      command_line->HasSwitch(switches::kEnableDemoMode) &&
-      command_line->HasSwitch(switches::kEnableOfflineDemoMode);
-  dict->SetBoolean("offlineDemoModeEnabled", is_offline_demo_mode_enabled);
+  dict->SetBoolean("offlineDemoModeEnabled",
+                   DemoSetupController::IsOfflineDemoModeAllowed());
 }
 
 void NetworkScreenHandler::Initialize() {
