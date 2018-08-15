@@ -22,6 +22,7 @@
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/mock_timer.h"
+#include "build/build_config.h"
 #include "components/cast_channel/cast_auth_util.h"
 #include "components/cast_channel/cast_framer.h"
 #include "components/cast_channel/cast_message_util.h"
@@ -977,9 +978,16 @@ TEST_F(MockCastSocketTest, TestOpenChannelClosedSocket) {
                                   base::Unretained(&handler_)));
 }
 
+// https://crbug.com/874491, flaky on Win
+#if defined(OS_WIN)
+#define MAYBE_TestConnectEndToEndWithRealSSL \
+  DISABLED_TestConnectEndToEndWithRealSSL
+#else
+#define MAYBE_TestConnectEndToEndWithRealSSL TestConnectEndToEndWithRealSSL
+#endif
 // Tests connecting through an actual non-mocked CastTransport object and
 // non-mocked SSLClientSocket, testing the components in integration.
-TEST_F(SslCastSocketTest, TestConnectEndToEndWithRealSSL) {
+TEST_F(SslCastSocketTest, MAYBE_TestConnectEndToEndWithRealSSL) {
   CreateSockets();
   ConnectSockets();
 
