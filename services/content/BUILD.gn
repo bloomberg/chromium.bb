@@ -38,12 +38,16 @@ source_set("impl") {
     "//services/content/public/mojom",
   ]
 
-  if (enable_aura_content_view_embedding) {
+  if (enable_navigable_contents_view_aura) {
     deps += [
       "//ui/aura",
+      "//ui/base",
       "//ui/views",
-      "//ui/views/mus/remote_view:remote_view_provider",
     ]
+
+    if (enable_remote_navigable_contents_view) {
+      deps += [ "//ui/views/mus/remote_view:remote_view_provider" ]
+    }
   }
 }
 

@@ -7,7 +7,23 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/ui.gni")
 
 declare_args() {
-  # Determines whether or not Aura-based view embedding should be supported by
-  # the Content Service.
-  enable_aura_content_view_embedding = use_aura && !is_fuchsia && !is_chromecast
+  # Determines whether or not the Content Service should support a
+  # NavigableContentsView based on the Aura framework. For platforms which
+  # only support Aura-based UI, setting this to |false| means that
+  # NavigableContentsView will have no actual UI presence.
+  enable_navigable_contents_view_aura =
+      use_aura && !is_fuchsia && !is_chromecast
+
+  # Determines whether or not the Content Service should support remote
+  # (i.e., out-of-process) clients embedding NavigableContentsViews within their
+  # UI. If this is false, only clients in the same process as the Content
+  # Service may use NavigableContentsView.
+  #
+  # Currently only supported on Chrome OS, where
+  # |enable_navigable_contents_view_aura| is implied and the UI service
+  # (i.e. Mus) is available.
+  enable_remote_navigable_contents_view = is_chromeos
 }
+
+assert(!enable_remote_navigable_contents_view ||
+       enable_navigable_contents_view_aura)

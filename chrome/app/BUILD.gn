@@ -428,7 +428,8 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
   if (enable_extensions || is_android) {
     packaged_services += [ "//chrome/services/media_gallery_util:manifest" ]
   }
-  if (enable_simple_browser_service) {
+  if (enable_simple_browser_service_in_process ||
+      enable_simple_browser_service_out_of_process) {
     packaged_services += [ "//services/content/simple_browser:manifest" ]
   }
   if (is_win) {

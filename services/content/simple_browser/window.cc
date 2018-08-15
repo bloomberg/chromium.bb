@@ -9,6 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "services/content/public/cpp/navigable_contents.h"
+#include "services/content/public/cpp/navigable_contents_view.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -38,9 +39,9 @@ class SimpleBrowserUI : public views::WidgetDelegateView,
                               MakeRequest(&navigable_contents_factory_));
     navigable_contents_ = std::make_unique<content::NavigableContents>(
         navigable_contents_factory_.get());
-    content_view_ = navigable_contents_->GetView();
-    content_view_->SetBorder(views::CreateSolidBorder(2, SK_ColorGREEN));
-    AddChildView(content_view_);
+    navigable_contents_view_ = navigable_contents_->GetView();
+
+    AddChildView(navigable_contents_view_->view());
   }
 
   ~SimpleBrowserUI() override = default;
@@ -59,7 +60,7 @@ class SimpleBrowserUI : public views::WidgetDelegateView,
 
     gfx::Rect content_view_bounds = GetLocalBounds();
     content_view_bounds.Inset(5, 25, 5, 5);
-    content_view_->SetBoundsRect(content_view_bounds);
+    navigable_contents_view_->view()->SetBoundsRect(content_view_bounds);
   }
 
   gfx::Size CalculatePreferredSize() const override {
@@ -84,9 +85,9 @@ class SimpleBrowserUI : public views::WidgetDelegateView,
 
   content::mojom::NavigableContentsFactoryPtr navigable_contents_factory_;
   std::unique_ptr<content::NavigableContents> navigable_contents_;
+  content::NavigableContentsView* navigable_contents_view_ = nullptr;
 
   views::Textfield* location_bar_;
-  views::View* content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleBrowserUI);
 };

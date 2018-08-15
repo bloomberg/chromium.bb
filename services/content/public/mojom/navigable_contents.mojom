@@ -19,7 +19,16 @@ interface NavigableContents {
   // maintained by the Content Service. Responds with a |embed_token| which can
   // be given to Mus in order to authorize embedding of that visual
   // representation within the client application's own window tree.
-  CreateView() => (mojo_base.mojom.UnguessableToken embed_token);
+  //
+  // |in_service_process| must be true iff the client calling this method is
+  // running in the same process as the Content Service. This can be known in
+  // the client by calling
+  // |NavigableContentsView::IsClientRunningInServiceProcess()|.
+  //
+  // TODO(https://crbug.com/874143): Remove the |in_service_process| flag once
+  // we have more widely available UI Service support.
+  CreateView(bool in_service_process)
+      => (mojo_base.mojom.UnguessableToken embed_token);
 };
 
 // A client interface used by the Content Service to push contents-scoped events

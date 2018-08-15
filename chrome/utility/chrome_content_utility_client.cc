@@ -96,9 +96,9 @@
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
-#include "services/content/simple_browser/public/mojom/constants.mojom.h"
-#include "services/content/simple_browser/simple_browser_service.h"
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
+#include "services/content/simple_browser/public/mojom/constants.mojom.h"  // nogncheck
+#include "services/content/simple_browser/simple_browser_service.h"  // nogncheck
 #endif
 
 namespace {
@@ -296,12 +296,14 @@ void ChromeContentUtilityClient::RegisterServices(
   mash_service_factory_->RegisterOutOfProcessServices(services);
 #endif
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
   {
     service_manager::EmbeddedServiceInfo service_info;
     service_info.factory =
         base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
-          return std::make_unique<simple_browser::SimpleBrowserService>();
+          return std::make_unique<simple_browser::SimpleBrowserService>(
+              simple_browser::SimpleBrowserService::UIInitializationMode::
+                  kInitializeUI);
         });
     services->emplace(simple_browser::mojom::kServiceName, service_info);
   }

@@ -308,7 +308,8 @@
 #include "ui/aura/env.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS) || \
+    BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
 #include "services/content/simple_browser/public/mojom/constants.mojom.h"
 #endif
 
@@ -2020,13 +2021,15 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                       base::TimeTicks::Now() - start_time_step3);
 #endif  // !defined(OS_ANDROID)
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
-  const char kLaunchSimpleBrowserSwitch[] = "launch-simple-browser";
-  if (parsed_command_line().HasSwitch(kLaunchSimpleBrowserSwitch)) {
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS) || \
+    BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
+  if (parsed_command_line().HasSwitch(switches::kLaunchSimpleBrowserSwitch) ||
+      parsed_command_line().HasSwitch(
+          switches::kLaunchInProcessSimpleBrowserSwitch)) {
     content::BrowserContext::GetConnectorFor(profile_)->StartService(
         service_manager::Identity(simple_browser::mojom::kServiceName));
   }
-#endif  // BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
+#endif
 
   return result_code_;
 }

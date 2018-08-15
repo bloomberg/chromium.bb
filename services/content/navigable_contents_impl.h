@@ -6,6 +6,7 @@
 #define SERVICES_CONTENT_NAVIGABLE_CONTENTS_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/content/public/cpp/buildflags.h"
@@ -14,6 +15,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace views {
+class NativeViewHost;
 class RemoteViewProvider;
 }
 
@@ -21,6 +23,7 @@ namespace content {
 
 class Service;
 class NavigableContentsDelegate;
+class NavigableContentsView;
 
 // This is the state which backs an individual NavigableContents owned by some
 // client of the Content Service. In terms of the classical Content API, this is
@@ -36,10 +39,17 @@ class NavigableContentsImpl : public mojom::NavigableContents {
  private:
   // mojom::NavigableContents:
   void Navigate(const GURL& url) override;
-  void CreateView(CreateViewCallback callback) override;
+  void CreateView(bool in_service_process,
+                  CreateViewCallback callback) override;
 
+#if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
   void OnEmbedTokenReceived(CreateViewCallback callback,
                             const base::UnguessableToken& token);
+#endif
+
+  // Used (indirectly) by the client library when run in the same process as the
+  // service. See the |CreateView()| implementation for details.
+  void EmbedInProcessClientView(NavigableContentsView* view);
 
   Service* const service_;
 
@@ -48,9 +58,18 @@ class NavigableContentsImpl : public mojom::NavigableContents {
   std::unique_ptr<NavigableContentsDelegate> delegate_;
   gfx::NativeView native_content_view_;
 
-#if BUILDFLAG(ENABLE_AURA_CONTENT_VIEW_EMBEDDING)
+#if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
   std::unique_ptr<views::RemoteViewProvider> remote_view_provider_;
 #endif
+
+#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+  // Used to support local view embedding in cases where remote embedding is
+  // not supported and the client controlling this NavigableContents is running
+  // within the same process as the Content Service.
+  std::unique_ptr<views::NativeViewHost> local_view_host_;
+#endif
+
+  base::WeakPtrFactory<NavigableContentsImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigableContentsImpl);
 };
