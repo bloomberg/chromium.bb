@@ -426,7 +426,9 @@ public final class FetchHelperTest {
         FetchHelper helper = createFetchHelper();
 
         getTabObserver().onPageLoadFinished(mTab);
+        verify(mFrameHost, times(0)).getCanonicalUrlForSharing(any());
         runUntilFetchPossible();
+        verify(mFrameHost, times(1)).getCanonicalUrlForSharing(any());
         verify(mDelegate, times(1)).requestSuggestions(DIFFERENT_URL);
     }
 
