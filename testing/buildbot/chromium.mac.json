@@ -2997,6 +2997,7 @@
       {
         "alternate_swarming_dimensions": [
           {
+            "gpu": "8086:0a2e",
             "os": "Mac-10.12.6"
           }
         ],
