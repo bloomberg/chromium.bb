@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_HARMONY_MATERIAL_REFRESH_LAYOUT_PROVIDER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/views/harmony/harmony_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 
-class MaterialRefreshLayoutProvider : public HarmonyLayoutProvider {
+class MaterialRefreshLayoutProvider : public ChromeLayoutProvider {
  public:
   MaterialRefreshLayoutProvider() = default;
   ~MaterialRefreshLayoutProvider() override = default;

@@ -2891,8 +2891,6 @@ jumbo_split_static_library("ui") {
       "views/harmony/chrome_layout_provider.h",
       "views/harmony/chrome_typography.cc",
       "views/harmony/chrome_typography.h",
-      "views/harmony/harmony_layout_provider.cc",
-      "views/harmony/harmony_layout_provider.h",
       "views/harmony/harmony_typography_provider.cc",
       "views/harmony/harmony_typography_provider.h",
       "views/harmony/material_refresh_layout_provider.cc",
