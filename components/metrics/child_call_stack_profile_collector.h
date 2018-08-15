@@ -56,8 +56,7 @@ class ChildCallStackProfileCollector {
   // completed profile to this object. The callback should be immediately passed
   // to the CallStackProfileBuilder, and should not be reused between
   // CallStackProfileBuilders. This function may be called on any thread.
-  CallStackProfileBuilder::CompletedCallback GetProfilerCallback(
-      base::TimeTicks profile_start_time);
+  CallStackProfileBuilder::CompletedCallback GetProfilerCallback();
 
   // Sets the CallStackProfileCollector interface from |parent_collector|. This
   // function MUST be invoked exactly once, regardless of whether

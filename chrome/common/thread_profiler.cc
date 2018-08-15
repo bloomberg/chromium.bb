@@ -235,13 +235,12 @@ ThreadProfiler::GetReceiverCallback() {
   //       metrics::SampledProfile profile);
   //
   // and this function should bind base::TimeTicks::Now() to those functions.
-  base::TimeTicks profile_start_time = base::TimeTicks::Now();
   if (GetProcess() == CallStackProfileParams::BROWSER_PROCESS) {
     return metrics::CallStackProfileMetricsProvider::
         GetProfilerCallbackForBrowserProcess();
   }
   return g_child_call_stack_profile_collector.Get()
-      .ChildCallStackProfileCollector::GetProfilerCallback(profile_start_time);
+      .ChildCallStackProfileCollector::GetProfilerCallback();
 }
 
 // static
