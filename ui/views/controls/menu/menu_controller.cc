@@ -31,6 +31,7 @@
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_host_root_view.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_pre_target_handler.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/drag_utils.h"
@@ -55,7 +56,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/views/controls/menu/menu_pre_target_handler.h"
 #endif
 
 using base::TimeDelta;
@@ -461,12 +461,9 @@ void MenuController::Run(Widget* parent,
     if (owner_)
       owner_->AddObserver(this);
 
-#if defined(USE_AURA)
     // Only create a MenuPreTargetHandler for non-nested menus. Nested menus
     // will use the existing one.
-    menu_pre_target_handler_ =
-        std::make_unique<MenuPreTargetHandler>(this, owner_);
-#endif
+    menu_pre_target_handler_ = MenuPreTargetHandler::Create(this, owner_);
   }
 
 #if defined(OS_MACOSX)

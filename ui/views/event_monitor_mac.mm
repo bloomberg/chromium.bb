@@ -48,8 +48,13 @@ EventMonitorMac::EventMonitorMac(ui::EventHandler* event_handler,
 
     if (!target_window || [event window] == target_window) {
       std::unique_ptr<ui::Event> ui_event = ui::EventFromNative(event);
-      if (ui_event)
+      if (ui_event) {
         event_handler->OnEvent(ui_event.get());
+        // If an event is handled, swallow it by returning nil so the event
+        // never proceeds to the normal event handling machinery.
+        if (ui_event->handled())
+          return nil;
+      }
     }
     return event;
   };

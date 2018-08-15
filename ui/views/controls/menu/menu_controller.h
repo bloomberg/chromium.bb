@@ -39,14 +39,11 @@ namespace views {
 class MenuButton;
 class MenuHostRootView;
 class MenuItemView;
+class MenuPreTargetHandler;
 class MouseEvent;
 class SubmenuView;
 class View;
 class ViewTracker;
-
-#if defined(USE_AURA)
-class MenuPreTargetHandler;
-#endif
 
 namespace internal {
 class MenuControllerDelegate;
@@ -731,9 +728,7 @@ class VIEWS_EXPORT MenuController
   std::unique_ptr<MenuCocoaWatcherMac> menu_cocoa_watcher_;
 #endif
 
-#if defined(USE_AURA)
   std::unique_ptr<MenuPreTargetHandler> menu_pre_target_handler_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };

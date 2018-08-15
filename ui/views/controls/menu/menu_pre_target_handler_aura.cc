@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/controls/menu/menu_pre_target_handler.h"
+#include "ui/views/controls/menu/menu_pre_target_handler_aura.h"
 
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -20,8 +20,8 @@ aura::Window* GetOwnerRootWindow(views::Widget* owner) {
 
 }  // namespace
 
-MenuPreTargetHandler::MenuPreTargetHandler(MenuController* controller,
-                                           Widget* owner)
+MenuPreTargetHandlerAura::MenuPreTargetHandlerAura(MenuController* controller,
+                                                   Widget* owner)
     : controller_(controller), root_(GetOwnerRootWindow(owner)) {
   aura::Env::GetInstance()->AddPreTargetHandler(
       this, ui::EventTarget::Priority::kSystem);
@@ -31,12 +31,12 @@ MenuPreTargetHandler::MenuPreTargetHandler(MenuController* controller,
   }
 }
 
-MenuPreTargetHandler::~MenuPreTargetHandler() {
+MenuPreTargetHandlerAura::~MenuPreTargetHandlerAura() {
   aura::Env::GetInstance()->RemovePreTargetHandler(this);
   Cleanup();
 }
 
-void MenuPreTargetHandler::OnWindowActivated(
+void MenuPreTargetHandlerAura::OnWindowActivated(
     wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
@@ -44,19 +44,19 @@ void MenuPreTargetHandler::OnWindowActivated(
     controller_->CancelAll();
 }
 
-void MenuPreTargetHandler::OnWindowDestroying(aura::Window* window) {
+void MenuPreTargetHandlerAura::OnWindowDestroying(aura::Window* window) {
   Cleanup();
 }
 
-void MenuPreTargetHandler::OnCancelMode(ui::CancelModeEvent* event) {
+void MenuPreTargetHandlerAura::OnCancelMode(ui::CancelModeEvent* event) {
   controller_->CancelAll();
 }
 
-void MenuPreTargetHandler::OnKeyEvent(ui::KeyEvent* event) {
+void MenuPreTargetHandlerAura::OnKeyEvent(ui::KeyEvent* event) {
   controller_->OnWillDispatchKeyEvent(event);
 }
 
-void MenuPreTargetHandler::Cleanup() {
+void MenuPreTargetHandlerAura::Cleanup() {
   if (!root_)
     return;
   // The ActivationClient may have been destroyed by the time we get here.
@@ -65,6 +65,13 @@ void MenuPreTargetHandler::Cleanup() {
     client->RemoveObserver(this);
   root_->RemoveObserver(this);
   root_ = nullptr;
+}
+
+// static
+std::unique_ptr<MenuPreTargetHandler> MenuPreTargetHandler::Create(
+    MenuController* controller,
+    Widget* owner) {
+  return std::make_unique<MenuPreTargetHandlerAura>(controller, owner);
 }
 
 }  // namespace views
