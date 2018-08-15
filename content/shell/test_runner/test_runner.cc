@@ -216,10 +216,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void QueueLoadingScript(const std::string& script);
   void QueueNonLoadingScript(const std::string& script);
   void QueueReload();
-  void RemoveOriginAccessWhitelistEntry(const std::string& source_origin,
-                                        const std::string& destination_protocol,
-                                        const std::string& destination_host,
-                                        bool allow_destination_subdomains);
   void RemoveSpellCheckResolvedCallback();
   void RemoveWebPageOverlay();
   void ResetTestHelperControllers();
@@ -514,8 +510,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("queueNonLoadingScript",
                  &TestRunnerBindings::QueueNonLoadingScript)
       .SetMethod("queueReload", &TestRunnerBindings::QueueReload)
-      .SetMethod("removeOriginAccessWhitelistEntry",
-                 &TestRunnerBindings::RemoveOriginAccessWhitelistEntry)
       .SetMethod("removeSpellCheckResolvedCallback",
                  &TestRunnerBindings::RemoveSpellCheckResolvedCallback)
       .SetMethod("removeWebPageOverlay",
@@ -856,18 +850,6 @@ void TestRunnerBindings::AddOriginAccessWhitelistEntry(
     runner_->AddOriginAccessWhitelistEntry(source_origin, destination_protocol,
                                            destination_host,
                                            allow_destination_subdomains);
-  }
-}
-
-void TestRunnerBindings::RemoveOriginAccessWhitelistEntry(
-    const std::string& source_origin,
-    const std::string& destination_protocol,
-    const std::string& destination_host,
-    bool allow_destination_subdomains) {
-  if (runner_) {
-    runner_->RemoveOriginAccessWhitelistEntry(
-        source_origin, destination_protocol, destination_host,
-        allow_destination_subdomains);
   }
 }
 
@@ -2105,20 +2087,6 @@ void TestRunner::AddOriginAccessWhitelistEntry(
     return;
 
   WebSecurityPolicy::AddOriginAccessWhitelistEntry(
-      url, WebString::FromUTF8(destination_protocol),
-      WebString::FromUTF8(destination_host), allow_destination_subdomains);
-}
-
-void TestRunner::RemoveOriginAccessWhitelistEntry(
-    const std::string& source_origin,
-    const std::string& destination_protocol,
-    const std::string& destination_host,
-    bool allow_destination_subdomains) {
-  WebURL url((GURL(source_origin)));
-  if (!url.IsValid())
-    return;
-
-  WebSecurityPolicy::RemoveOriginAccessWhitelistEntry(
       url, WebString::FromUTF8(destination_protocol),
       WebString::FromUTF8(destination_host), allow_destination_subdomains);
 }
