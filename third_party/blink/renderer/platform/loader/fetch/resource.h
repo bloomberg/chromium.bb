@@ -436,7 +436,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     return clients_;
   }
 
-  void SetCachePolicyBypassingCache();
   void SetPreviewsState(WebURLRequest::PreviewsState);
   void ClearRangeRequestHeader();
 
