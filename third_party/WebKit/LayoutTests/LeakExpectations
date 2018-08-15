@@ -79,6 +79,9 @@ crbug.com/836278 [ Linux ] virtual/threaded/external/wpt/offscreen-canvas/conver
 # Test flaking on Linux Trusty Leak
 crbug.com/862029 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Leak ]
 
+# Sheriff 2018-08-15
+crbug.com/874442 [ Linux ] svg/animations/mpath-remove-from-dependents-on-delete-crash.html [ Pass Crash ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
