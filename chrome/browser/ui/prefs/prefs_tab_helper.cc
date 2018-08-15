@@ -12,7 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -22,19 +21,15 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/font_pref_change_notifier_factory.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/prefs/pref_watcher.h"
 #include "chrome/common/pref_font_webkit_names.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
 #include "chrome/grit/platform_locale_settings.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/overlay_user_pref_store.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/strings/grit/components_locale_settings.h"
@@ -63,36 +58,6 @@ using content::WebContents;
 using content::WebPreferences;
 
 namespace {
-
-// The list of prefs we want to observe.
-const char* const kWebPrefsToObserve[] = {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  prefs::kAnimationPolicy,
-#endif
-  prefs::kDataSaverEnabled,
-  prefs::kDefaultCharset,
-  prefs::kDisable3DAPIs,
-  prefs::kEnableHyperlinkAuditing,
-  prefs::kWebKitAllowRunningInsecureContent,
-  prefs::kWebKitDefaultFixedFontSize,
-  prefs::kWebKitDefaultFontSize,
-  prefs::kWebKitDomPasteEnabled,
-#if defined(OS_ANDROID)
-  prefs::kWebKitFontScaleFactor,
-  prefs::kWebKitForceEnableZoom,
-  prefs::kWebKitPasswordEchoEnabled,
-#endif
-  prefs::kWebKitJavascriptEnabled,
-  prefs::kWebKitLoadsImagesAutomatically,
-  prefs::kWebKitMinimumFontSize,
-  prefs::kWebKitMinimumLogicalFontSize,
-  prefs::kWebKitPluginsEnabled,
-  prefs::kWebkitTabsToLinks,
-  prefs::kWebKitTextAreasAreResizable,
-  prefs::kWebKitWebSecurityEnabled,
-};
-
-const int kWebPrefsToObserveLength = arraysize(kWebPrefsToObserve);
 
 #if !defined(OS_ANDROID)
 // Registers a preference under the path |pref_name| for each script used for
@@ -314,109 +279,6 @@ void RegisterLocalizedFontPref(user_prefs::PrefRegistrySyncable* registry,
 #endif
 
 }  // namespace
-
-// Watching all these settings per tab is slow when a user has a lot of tabs and
-// and they use session restore. So watch them once per profile.
-// http://crbug.com/452693
-class PrefWatcher : public KeyedService {
- public:
-  explicit PrefWatcher(Profile* profile) : profile_(profile) {
-    pref_change_registrar_.Init(profile_->GetPrefs());
-
-    base::Closure renderer_callback = base::Bind(
-        &PrefWatcher::UpdateRendererPreferences, base::Unretained(this));
-    pref_change_registrar_.Add(prefs::kAcceptLanguages, renderer_callback);
-    pref_change_registrar_.Add(prefs::kEnableDoNotTrack, renderer_callback);
-    pref_change_registrar_.Add(prefs::kEnableReferrers, renderer_callback);
-    pref_change_registrar_.Add(prefs::kEnableEncryptedMedia, renderer_callback);
-    pref_change_registrar_.Add(prefs::kWebRTCMultipleRoutesEnabled,
-                               renderer_callback);
-    pref_change_registrar_.Add(prefs::kWebRTCNonProxiedUdpEnabled,
-                               renderer_callback);
-    pref_change_registrar_.Add(prefs::kWebRTCIPHandlingPolicy,
-                               renderer_callback);
-    pref_change_registrar_.Add(prefs::kWebRTCUDPPortRange, renderer_callback);
-
-#if !defined(OS_MACOSX)
-    pref_change_registrar_.Add(prefs::kFullscreenAllowed, renderer_callback);
-#endif
-
-    PrefChangeRegistrar::NamedChangeCallback webkit_callback = base::Bind(
-        &PrefWatcher::OnWebPrefChanged, base::Unretained(this));
-    for (int i = 0; i < kWebPrefsToObserveLength; ++i) {
-      const char* pref_name = kWebPrefsToObserve[i];
-      pref_change_registrar_.Add(pref_name, webkit_callback);
-    }
-  }
-
-  static PrefWatcher* Get(Profile* profile);
-
-  void RegisterHelper(PrefsTabHelper* helper) {
-    helpers_.insert(helper);
-  }
-
-  void UnregisterHelper(PrefsTabHelper* helper) {
-    helpers_.erase(helper);
-  }
-
- private:
-  // KeyedService overrides:
-  void Shutdown() override {
-    pref_change_registrar_.RemoveAll();
-  }
-
-  void UpdateRendererPreferences() {
-    for (auto* helper : helpers_)
-      helper->UpdateRendererPreferences();
-  }
-
-  void OnWebPrefChanged(const std::string& pref_name) {
-    for (auto* helper : helpers_)
-      helper->OnWebPrefChanged(pref_name);
-  }
-
-  Profile* profile_;
-  PrefChangeRegistrar pref_change_registrar_;
-  std::set<PrefsTabHelper*> helpers_;
-};
-
-class PrefWatcherFactory : public BrowserContextKeyedServiceFactory {
- public:
-  static PrefWatcher* GetForProfile(Profile* profile) {
-    return static_cast<PrefWatcher*>(
-        GetInstance()->GetServiceForBrowserContext(profile, true));
-  }
-
-  static PrefWatcherFactory* GetInstance() {
-    return base::Singleton<PrefWatcherFactory>::get();
-  }
-
- private:
-  friend struct base::DefaultSingletonTraits<PrefWatcherFactory>;
-
-  PrefWatcherFactory() : BrowserContextKeyedServiceFactory(
-      "PrefWatcher",
-      BrowserContextDependencyManager::GetInstance()) {
-  }
-
-  ~PrefWatcherFactory() override {}
-
-  // BrowserContextKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* browser_context) const override {
-    return new PrefWatcher(Profile::FromBrowserContext(browser_context));
-  }
-
-  content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const override {
-    return chrome::GetBrowserContextOwnInstanceInIncognito(context);
-  }
-};
-
-// static
-PrefWatcher* PrefWatcher::Get(Profile* profile) {
-  return PrefWatcherFactory::GetForProfile(profile);
-}
 
 PrefsTabHelper::PrefsTabHelper(WebContents* contents)
     : web_contents_(contents),

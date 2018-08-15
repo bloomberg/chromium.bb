@@ -12,6 +12,7 @@
 #include "cc/input/touch_action.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webplugininfo_param_traits.h"
 #include "ipc/ipc_message_macros.h"
@@ -285,6 +286,62 @@ IPC_STRUCT_TRAITS_BEGIN(ui::AXEvent)
   IPC_STRUCT_TRAITS_MEMBER(id)
   IPC_STRUCT_TRAITS_MEMBER(event_from)
   IPC_STRUCT_TRAITS_MEMBER(action_request_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::Hinting,
+                          gfx::FontRenderParams::HINTING_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::SubpixelRendering,
+                          gfx::FontRenderParams::SUBPIXEL_RENDERING_MAX)
+
+IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
+  IPC_STRUCT_TRAITS_MEMBER(can_accept_load_drops)
+  IPC_STRUCT_TRAITS_MEMBER(should_antialias_text)
+  IPC_STRUCT_TRAITS_MEMBER(hinting)
+  IPC_STRUCT_TRAITS_MEMBER(use_autohinter)
+  IPC_STRUCT_TRAITS_MEMBER(use_bitmaps)
+  IPC_STRUCT_TRAITS_MEMBER(subpixel_rendering)
+  IPC_STRUCT_TRAITS_MEMBER(use_subpixel_positioning)
+  IPC_STRUCT_TRAITS_MEMBER(focus_ring_color)
+  IPC_STRUCT_TRAITS_MEMBER(thumb_active_color)
+  IPC_STRUCT_TRAITS_MEMBER(thumb_inactive_color)
+  IPC_STRUCT_TRAITS_MEMBER(track_color)
+  IPC_STRUCT_TRAITS_MEMBER(active_selection_bg_color)
+  IPC_STRUCT_TRAITS_MEMBER(active_selection_fg_color)
+  IPC_STRUCT_TRAITS_MEMBER(inactive_selection_bg_color)
+  IPC_STRUCT_TRAITS_MEMBER(inactive_selection_fg_color)
+  IPC_STRUCT_TRAITS_MEMBER(browser_handles_all_top_level_requests)
+  IPC_STRUCT_TRAITS_MEMBER(caret_blink_interval)
+  IPC_STRUCT_TRAITS_MEMBER(use_custom_colors)
+  IPC_STRUCT_TRAITS_MEMBER(enable_referrers)
+  IPC_STRUCT_TRAITS_MEMBER(enable_do_not_track)
+  IPC_STRUCT_TRAITS_MEMBER(enable_encrypted_media)
+  IPC_STRUCT_TRAITS_MEMBER(webrtc_ip_handling_policy)
+  IPC_STRUCT_TRAITS_MEMBER(webrtc_udp_min_port)
+  IPC_STRUCT_TRAITS_MEMBER(webrtc_udp_max_port)
+  IPC_STRUCT_TRAITS_MEMBER(user_agent_override)
+  IPC_STRUCT_TRAITS_MEMBER(accept_languages)
+  IPC_STRUCT_TRAITS_MEMBER(disable_client_blocked_error_page)
+  IPC_STRUCT_TRAITS_MEMBER(plugin_fullscreen_allowed)
+  IPC_STRUCT_TRAITS_MEMBER(network_contry_iso)
+#if defined(OS_LINUX)
+  IPC_STRUCT_TRAITS_MEMBER(system_font_family_name)
+#endif
+#if defined(OS_WIN)
+  IPC_STRUCT_TRAITS_MEMBER(caption_font_family_name)
+  IPC_STRUCT_TRAITS_MEMBER(caption_font_height)
+  IPC_STRUCT_TRAITS_MEMBER(small_caption_font_family_name)
+  IPC_STRUCT_TRAITS_MEMBER(small_caption_font_height)
+  IPC_STRUCT_TRAITS_MEMBER(menu_font_family_name)
+  IPC_STRUCT_TRAITS_MEMBER(menu_font_height)
+  IPC_STRUCT_TRAITS_MEMBER(status_font_family_name)
+  IPC_STRUCT_TRAITS_MEMBER(status_font_height)
+  IPC_STRUCT_TRAITS_MEMBER(message_font_family_name)
+  IPC_STRUCT_TRAITS_MEMBER(message_font_height)
+  IPC_STRUCT_TRAITS_MEMBER(vertical_scroll_bar_width_in_dips)
+  IPC_STRUCT_TRAITS_MEMBER(horizontal_scroll_bar_height_in_dips)
+  IPC_STRUCT_TRAITS_MEMBER(arrow_bitmap_height_vertical_scroll_bar_in_dips)
+  IPC_STRUCT_TRAITS_MEMBER(arrow_bitmap_width_horizontal_scroll_bar_in_dips)
+#endif
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_

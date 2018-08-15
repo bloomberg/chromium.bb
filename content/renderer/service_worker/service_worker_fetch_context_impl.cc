@@ -28,7 +28,8 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     int service_worker_provider_id,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
-        websocket_handshake_throttle_provider)
+        websocket_handshake_throttle_provider,
+    mojom::RendererPreferenceWatcherRequest preference_watcher_request)
     : renderer_preferences_(std::move(renderer_preferences)),
       worker_script_url_(worker_script_url),
       url_loader_factory_info_(std::move(url_loader_factory_info)),
@@ -36,7 +37,9 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
       service_worker_provider_id_(service_worker_provider_id),
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
-          std::move(websocket_handshake_throttle_provider)) {}
+          std::move(websocket_handshake_throttle_provider)),
+      preference_watcher_binding_(this),
+      preference_watcher_request_(std::move(preference_watcher_request)) {}
 
 ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
 
@@ -50,6 +53,7 @@ void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread() {
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
   resource_dispatcher_->set_terminate_sync_load_event(
       terminate_sync_load_event_);
+  preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
 
   url_loader_factory_ = network::SharedURLLoaderFactory::Create(
       std::move(url_loader_factory_info_));
@@ -126,6 +130,11 @@ ServiceWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle() {
     return nullptr;
   return websocket_handshake_throttle_provider_->CreateThrottle(
       MSG_ROUTING_NONE);
+}
+
+void ServiceWorkerFetchContextImpl::NotifyUpdate(
+    const RendererPreferences& new_prefs) {
+  renderer_preferences_ = new_prefs;
 }
 
 }  // namespace content

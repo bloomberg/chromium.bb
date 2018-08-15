@@ -5,6 +5,7 @@
 typemaps = [
   "//content/public/common/load_timing_info.typemap",
   "//content/public/common/referrer.typemap",
+  "//content/public/common/renderer_preferences.typemap",
   "//content/public/common/resource_type.typemap",
   "//content/public/common/webplugininfo.typemap",
 ]
