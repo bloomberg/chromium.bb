@@ -51,13 +51,13 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.net.HttpUtil;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -737,13 +737,14 @@ public class IntentHandler {
         Bundle bundleExtraHeaders = IntentUtils.safeGetBundleExtra(intent, Browser.EXTRA_HEADERS);
         if (bundleExtraHeaders == null) return null;
         StringBuilder extraHeaders = new StringBuilder();
-        Iterator<String> keys = bundleExtraHeaders.keySet().iterator();
-        while (keys.hasNext()) {
-            String key = keys.next();
+        for (String key : bundleExtraHeaders.keySet()) {
             String value = bundleExtraHeaders.getString(key);
-            if ("referer".equals(key.toLowerCase(Locale.US))) continue;
+
             // Strip the custom header that can only be added by ourselves.
             if ("x-chrome-intent-type".equals(key.toLowerCase(Locale.US))) continue;
+
+            if (!HttpUtil.isAllowedHeader(key, value)) continue;
+
             if (extraHeaders.length() != 0) extraHeaders.append("\n");
             extraHeaders.append(key);
             extraHeaders.append(": ");
