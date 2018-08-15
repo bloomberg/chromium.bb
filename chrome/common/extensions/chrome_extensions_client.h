@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
@@ -57,9 +56,6 @@ class ChromeExtensionsClient : public ExtensionsClient {
   bool ExtensionAPIEnabledInExtensionServiceWorkers() const override;
   std::string GetUserAgent() const override;
 
-  // Get the LazyInstance for ChromeExtensionsClient.
-  static ChromeExtensionsClient* GetInstance();
-
  private:
   const ChromeAPIPermissions chrome_api_permissions_;
   const ExtensionsAPIPermissions extensions_api_permissions_;
@@ -73,8 +69,6 @@ class ChromeExtensionsClient : public ExtensionsClient {
 
   GURL webstore_base_url_;
   GURL webstore_update_url_;
-
-  friend struct base::LazyInstanceTraitsBase<ChromeExtensionsClient>;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsClient);
 };
