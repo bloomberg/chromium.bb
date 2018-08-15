@@ -63,11 +63,15 @@ bool ArchivePatchHelper::Uncompress(base::FilePath* last_uncompressed_file) {
 }
 
 bool ArchivePatchHelper::ApplyPatch() {
+  // TODO(ckitagawa): Swap ordering back to Zucchini first once we ship
+  // Zucchini based patches by default.
+  if (CourgetteEnsemblePatch() || BinaryPatch())
+    return true;
 #if BUILDFLAG(ZUCCHINI)
   if (ZucchiniEnsemblePatch())
     return true;
 #endif  // BUILDFLAG(ZUCCHINI)
-  return CourgetteEnsemblePatch() || BinaryPatch();
+  return false;
 }
 
 bool ArchivePatchHelper::CourgetteEnsemblePatch() {
@@ -109,6 +113,9 @@ bool ArchivePatchHelper::ZucchiniEnsemblePatch() {
              << " to file " << patch_source_.value() << " and generating file "
              << target_.value()
              << " using Zucchini. err=" << static_cast<uint32_t>(result);
+
+  // Ensure a partial output is not left behind.
+  base::DeleteFile(target_, false);
 
   return false;
 }
