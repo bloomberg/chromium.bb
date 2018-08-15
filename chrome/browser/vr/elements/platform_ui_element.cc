@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/elements/content_element.h"
+#include "chrome/browser/vr/elements/platform_ui_element.h"
 
 #include "chrome/browser/vr/platform_ui_input_delegate.h"
 #include "chrome/browser/vr/ui_element_renderer.h"

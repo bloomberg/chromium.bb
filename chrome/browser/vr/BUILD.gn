@@ -214,6 +214,9 @@ component("vr_ui") {
 
 component("vr_common") {
   sources = [
+    "base_compositor_delegate.cc",
+    "base_compositor_delegate.h",
+    "compositor_delegate.h",
     "controller_delegate.h",
     "controller_delegate_for_testing.cc",
     "controller_delegate_for_testing.h",
@@ -221,8 +224,6 @@ component("vr_common") {
     "fps_meter.h",
     "gesture_detector.cc",
     "gesture_detector.h",
-    "graphics_delegate.cc",
-    "graphics_delegate.h",
     "render_loop.cc",
     "render_loop.h",
     "render_loop_browser_interface.h",

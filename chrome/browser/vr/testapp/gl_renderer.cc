@@ -4,9 +4,12 @@
 
 #include "chrome/browser/vr/testapp/gl_renderer.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/vr/graphics_delegate.h"
+#include "chrome/browser/vr/base_compositor_delegate.h"
 #include "chrome/browser/vr/testapp/vr_test_context.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -37,12 +40,13 @@ GlRenderer::GlRenderer(const scoped_refptr<gl::GLSurface>& surface,
 GlRenderer::~GlRenderer() {}
 
 bool GlRenderer::Initialize() {
-  auto graphics_delegate = std::make_unique<GraphicsDelegate>(surface_);
-  if (!graphics_delegate->Initialize()) {
+  std::unique_ptr<CompositorDelegate> compositor_delegate =
+      std::make_unique<BaseCompositorDelegate>();
+  if (!compositor_delegate->Initialize(surface_)) {
     return false;
   }
 
-  vr_->OnGlInitialized(std::move(graphics_delegate));
+  vr_->OnGlInitialized(std::move(compositor_delegate));
 
   PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
   return true;

@@ -17,8 +17,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr/android_vsync_helper.h"
-#include "chrome/browser/android/vr/vr_controller.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
+#include "chrome/browser/vr/base_compositor_delegate.h"
 #include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/render_info.h"
@@ -97,6 +97,7 @@ struct Viewport {
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
 class VrShellGl : public RenderLoop,
+                  public BaseCompositorDelegate,
                   public device::mojom::XRPresentationProvider,
                   public device::mojom::XRFrameDataProvider {
  public:
@@ -110,8 +111,8 @@ class VrShellGl : public RenderLoop,
             bool low_density);
   ~VrShellGl() override;
 
-  void Initialize(base::WaitableEvent* gl_surface_created_event,
-                  base::OnceCallback<gfx::AcceleratedWidget()> callback);
+  void Init(base::WaitableEvent* gl_surface_created_event,
+            base::OnceCallback<gfx::AcceleratedWidget()> callback);
 
   void OnTriggerEvent(bool pressed);
   void OnExitPresent();
@@ -399,8 +400,6 @@ class VrShellGl : public RenderLoop,
       webvr_delayed_gvr_submit_;
 
   std::vector<gvr::BufferSpec> specs_;
-
-  gfx::Transform last_used_head_pose_;
 
   ControllerModel controller_model_;
 

@@ -88,10 +88,9 @@ void VrGLThread::Init() {
 
   weak_browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
   task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VrShellGl::Initialize, vr_shell_gl_->GetWeakPtr(),
-                     base::Unretained(gl_surface_created_event_),
-                     base::Passed(std::move(surface_callback_))));
+      FROM_HERE, base::BindOnce(&VrShellGl::Init, vr_shell_gl_->GetWeakPtr(),
+                                base::Unretained(gl_surface_created_event_),
+                                base::Passed(std::move(surface_callback_))));
 }
 
 void VrGLThread::CleanUp() {

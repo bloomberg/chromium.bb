@@ -30,7 +30,6 @@
 #include "chrome/browser/android/vr/vr_shell.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/gl_texture_location.h"
-#include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/camera_model.h"
@@ -193,7 +192,7 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser,
                      bool start_in_web_vr_mode,
                      bool pause_content,
                      bool low_density)
-    : RenderLoop(std::move(ui), browser, kWebVRSlidingAverageSize),
+    : RenderLoop(std::move(ui), browser, this, kWebVRSlidingAverageSize),
       webvr_vsync_align_(
           base::FeatureList::IsEnabled(features::kWebVrVsyncAlign)),
       low_density_(low_density),
@@ -223,9 +222,8 @@ VrShellGl::~VrShellGl() {
   webxr_.EndPresentation();
 }
 
-void VrShellGl::Initialize(
-    base::WaitableEvent* gl_surface_created_event,
-    base::OnceCallback<gfx::AcceleratedWidget()> callback) {
+void VrShellGl::Init(base::WaitableEvent* gl_surface_created_event,
+                     base::OnceCallback<gfx::AcceleratedWidget()> callback) {
   if (surfaceless_rendering_) {
     InitializeGl(nullptr);
   } else {
@@ -254,9 +252,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     return;
   }
 
-  graphics_delegate_ = std::make_unique<GraphicsDelegate>(surface_);
-
-  if (!graphics_delegate_->Initialize()) {
+  if (!BaseCompositorDelegate::Initialize(surface_)) {
     ForceExitVr();
     return;
   }
@@ -1228,7 +1224,6 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
 void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
                                       base::TimeTicks current_time) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawIntoAcquiredFrame", "frame", frame_index);
-  last_used_head_pose_ = render_info_.head_pose;
 
   bool is_webxr_frame = frame_index >= 0;
   DCHECK(!is_webxr_frame || webxr_.HaveProcessingFrame());

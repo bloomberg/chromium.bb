@@ -14,7 +14,7 @@
 
 namespace vr {
 
-class GraphicsDelegate;
+class CompositorDelegate;
 
 class GlTestEnvironment {
  public:
@@ -25,7 +25,7 @@ class GlTestEnvironment {
 
  private:
   scoped_refptr<gl::GLSurface> surface_;
-  std::unique_ptr<GraphicsDelegate> graphics_delegate_;
+  std::unique_ptr<CompositorDelegate> compositor_delegate_;
   GLuint vao_ = 0;
   GLuint frame_buffer_ = 0;
 };

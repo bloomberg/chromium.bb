@@ -21,7 +21,7 @@ class TimeTicks;
 namespace vr {
 
 enum class VrUiTestActivityResult;
-class GraphicsDelegate;
+class CompositorDelegate;
 class RenderLoopBrowserInterface;
 class UiInterface;
 struct ControllerTestInput;
@@ -40,6 +40,7 @@ class VR_EXPORT RenderLoop {
 
   explicit RenderLoop(std::unique_ptr<UiInterface> ui,
                       RenderLoopBrowserInterface* browser,
+                      CompositorDelegate* compositor_delegate,
                       size_t sliding_time_size);
   virtual ~RenderLoop();
 
@@ -73,7 +74,6 @@ class VR_EXPORT RenderLoop {
   }
 
   std::unique_ptr<UiInterface> ui_;
-  std::unique_ptr<GraphicsDelegate> graphics_delegate_;
 
  private:
   base::TimeDelta ProcessControllerInput(const RenderInfo& render_info,
@@ -85,6 +85,7 @@ class VR_EXPORT RenderLoop {
 
   RenderLoopBrowserInterface* browser_;
 
+  CompositorDelegate* compositor_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_for_testing_;
   bool using_controller_delegate_for_testing_ = false;

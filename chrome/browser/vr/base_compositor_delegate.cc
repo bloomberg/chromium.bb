@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/graphics_delegate.h"
+#include "chrome/browser/vr/base_compositor_delegate.h"
+
+#include <utility>
 
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
@@ -11,15 +13,16 @@
 
 namespace vr {
 
-GraphicsDelegate::GraphicsDelegate(const scoped_refptr<gl::GLSurface>& surface)
-    : surface_(surface) {}
+BaseCompositorDelegate::BaseCompositorDelegate() {}
 
-GraphicsDelegate::~GraphicsDelegate() {
-  if (curr_context_id_ != NONE)
+BaseCompositorDelegate::~BaseCompositorDelegate() {
+  if (curr_context_id_ != kNone)
     contexts_[curr_context_id_]->ReleaseCurrent(surface_.get());
 }
 
-bool GraphicsDelegate::Initialize() {
+bool BaseCompositorDelegate::Initialize(
+    const scoped_refptr<gl::GLSurface>& surface) {
+  surface_ = surface;
   share_group_ = base::MakeRefCounted<gl::GLShareGroup>();
   for (auto& context : contexts_) {
     context = gl::init::CreateGLContext(share_group_.get(), surface_.get(),
@@ -29,19 +32,19 @@ bool GraphicsDelegate::Initialize() {
       return false;
     }
   }
-  return MakeMainContextCurrent();
+  return MakeContextCurrent(kMainContext);
 }
 
-bool GraphicsDelegate::MakeMainContextCurrent() {
-  return MakeContextCurrent(MAIN_CONTEXT);
+bool BaseCompositorDelegate::RunInSkiaContext(SkiaContextCallback callback) {
+  DCHECK_EQ(curr_context_id_, kMainContext);
+  if (!MakeContextCurrent(kSkiaContext))
+    return false;
+  std::move(callback).Run();
+  return MakeContextCurrent(kMainContext);
 }
 
-bool GraphicsDelegate::MakeSkiaContextCurrent() {
-  return MakeContextCurrent(SKIA_CONTEXT);
-}
-
-bool GraphicsDelegate::MakeContextCurrent(ContextId context_id) {
-  DCHECK(context_id > NONE && context_id < NUM_CONTEXTS);
+bool BaseCompositorDelegate::MakeContextCurrent(ContextId context_id) {
+  DCHECK(context_id > kNone && context_id < kNumContexts);
   if (curr_context_id_ == context_id)
     return true;
   auto& context = contexts_[context_id];
@@ -49,6 +52,7 @@ bool GraphicsDelegate::MakeContextCurrent(ContextId context_id) {
     LOG(ERROR) << "gl::GLContext::MakeCurrent() failed";
     return false;
   }
+  curr_context_id_ = context_id;
   return true;
 }
 

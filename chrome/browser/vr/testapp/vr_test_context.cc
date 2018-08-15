@@ -5,6 +5,8 @@
 #include "chrome/browser/vr/testapp/vr_test_context.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/i18n/icu_util.h"
 #include "base/numerics/ranges.h"
@@ -13,8 +15,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/vr/assets_load_status.h"
+#include "chrome/browser/vr/compositor_delegate.h"
 #include "chrome/browser/vr/gl_texture_location.h"
-#include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
@@ -171,9 +173,8 @@ void VrTestContext::DrawFrame() {
 
   UpdateController(render_info, current_time);
 
-  graphics_delegate_->MakeSkiaContextCurrent();
-  ui_->UpdateSceneTextures();
-  graphics_delegate_->MakeMainContextCurrent();
+  compositor_delegate_->RunInSkiaContext(
+      base::BindOnce(&UiInterface::UpdateSceneTextures, base::Unretained(ui_)));
 
   auto load_progress = (current_time - page_load_start_).InMilliseconds() /
                        kPageLoadTimeMilliseconds;
@@ -455,8 +456,8 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
 }
 
 void VrTestContext::OnGlInitialized(
-    std::unique_ptr<GraphicsDelegate> graphics_delegate) {
-  graphics_delegate_ = std::move(graphics_delegate);
+    std::unique_ptr<CompositorDelegate> compositor_delegate) {
+  compositor_delegate_ = std::move(compositor_delegate);
   unsigned int content_texture_id = CreateTexture(0xFF000080);
   unsigned int ui_texture_id = CreateTexture(0xFF008000);
 
