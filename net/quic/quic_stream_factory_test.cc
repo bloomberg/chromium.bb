@@ -259,6 +259,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
             quic::kInitialIdleTimeoutSecs),
         migrate_sessions_on_network_change_v2_(false),
         migrate_sessions_early_v2_(false),
+        retry_on_alternate_network_before_handshake_(false),
         go_away_on_path_degrading_(false),
         allow_server_migration_(false),
         race_cert_verification_(false),
@@ -283,6 +284,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         max_time_before_crypto_handshake_seconds_,
         max_idle_time_before_crypto_handshake_seconds_,
         migrate_sessions_on_network_change_v2_, migrate_sessions_early_v2_,
+        retry_on_alternate_network_before_handshake_,
         go_away_on_path_degrading_,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnWriteError,
@@ -304,6 +306,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
     mock_ncn->SetConnectedNetworksList(connected_networks);
     migrate_sessions_on_network_change_v2_ = true;
     migrate_sessions_early_v2_ = true;
+    retry_on_alternate_network_before_handshake_ = true;
     socket_factory_.reset(new TestConnectionMigrationSocketFactory);
     Initialize();
   }
@@ -812,6 +815,8 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   void TestMigrationOnWriteErrorWithMultipleNotifications(
       IoMode write_error_mode,
       bool disconnect_before_connect);
+  void TestNewConnectionOnAlternateNetworkBeforeHandshake(
+      quic::QuicErrorCode error);
 
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   MockHostResolver host_resolver_;
@@ -855,6 +860,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   int max_idle_time_before_crypto_handshake_seconds_;
   bool migrate_sessions_on_network_change_v2_;
   bool migrate_sessions_early_v2_;
+  bool retry_on_alternate_network_before_handshake_;
   bool go_away_on_path_degrading_;
   bool allow_server_migration_;
   bool race_cert_verification_;
@@ -4705,8 +4711,135 @@ TEST_P(QuicStreamFactoryTest,
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
 
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, NewConnectionBeforeHandshakeAfterIdleTimeout) {
+  TestNewConnectionOnAlternateNetworkBeforeHandshake(
+      quic::QUIC_NETWORK_IDLE_TIMEOUT);
+}
+
+TEST_P(QuicStreamFactoryTest, NewConnectionAfterHandshakeTimeout) {
+  TestNewConnectionOnAlternateNetworkBeforeHandshake(
+      quic::QUIC_HANDSHAKE_TIMEOUT);
+}
+
+void QuicStreamFactoryTestBase::
+    TestNewConnectionOnAlternateNetworkBeforeHandshake(
+        quic::QuicErrorCode quic_error) {
+  DCHECK(quic_error == quic::QUIC_NETWORK_IDLE_TIMEOUT ||
+         quic_error == quic::QUIC_HANDSHAKE_TIMEOUT);
+  InitializeConnectionMigrationV2Test(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+
+  // Using a testing task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+
+  // Use cold start mode to send crypto message for handshake.
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
+
+  // Socket data for connection on the default network.
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ASYNC, client_maker_.MakeDummyCHLOPacket(1));
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Socket data for connection on the alternate network.
+  MockQuicData socket_data2;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data2.AddWrite(SYNCHRONOUS, client_maker_.MakeDummyCHLOPacket(1));
+  socket_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  // Change the encryption level after handshake is confirmed.
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  socket_data2.AddWrite(
+      ASYNC, ConstructInitialSettingsPacket(2, &header_stream_offset));
+  socket_data2.AddWrite(
+      ASYNC, ConstructGetRequestPacket(3, GetNthClientInitiatedStreamId(0),
+                                       true, true, &header_stream_offset));
+  socket_data2.AddRead(
+      ASYNC, ConstructOkResponsePacket(1, GetNthClientInitiatedStreamId(0),
+                                       false, false));
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddWrite(SYNCHRONOUS,
+                        client_maker_.MakeAckAndRstPacket(
+                            4, false, GetNthClientInitiatedStreamId(0),
+                            quic::QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data2.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, version_, privacy_mode_,
+                            DEFAULT_PRIORITY, SocketTag(),
+                            /*cert_verify_flags=*/0, url_, net_log_,
+                            &net_error_details_, callback_.callback()));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Ensure that session is alive but not active.
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
+  QuicChromiumClientSession* session = GetPendingSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+
+  quic::QuicString error_details;
+  if (quic_error == quic::QUIC_NETWORK_IDLE_TIMEOUT) {
+    error_details = "No recent network activity.";
+  } else {
+    error_details = "Handshake timeout expired.";
+  }
+  session->connection()->CloseConnection(
+      quic_error, error_details, quic::ConnectionCloseBehavior::SILENT_CLOSE);
+
+  // A task will be posted to clean up the session in the factory.
+  EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
+  task_runner->FastForwardUntilNoTasksRemain();
+
+  // Verify a new session is created on the alternate network.
+  EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  QuicChromiumClientSession* session2 = GetPendingSession(host_port_pair_);
+  EXPECT_NE(session, session2);
+
+  // Confirm the handshake on the alternate network.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      quic::QuicSession::HANDSHAKE_CONFIRMED);
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  // Resume the data now so that data can be sent and read.
+  socket_data2.Resume();
+
+  // Create the stream.
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+  // Send the request.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+  // Run the message loop to finish asynchronous mock write.
+  base::RunLoop().RunUntilIdle();
+  // Read the response.
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  stream.reset();
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 // Test that connection will be closed with PACKET_WRITE_ERROR if a write error
