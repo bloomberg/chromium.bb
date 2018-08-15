@@ -186,10 +186,6 @@ void RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
   UMA_HISTOGRAM_COUNTS_1000("ResourceCoordinator.Measurement.TotalProcesses",
                             batch->measurements.size());
 
-  // TODO(siggi): Because memory dump requests may be combined with earlier,
-  //     in-progress requests, this is an upper bound for the start time.
-  //     It would be more accurate to get the start time from the memory dump
-  //     and use the minimum of the two here.
   batch->batch_started_time = collection_start_time;
   batch->batch_ended_time = base::TimeTicks::Now();
 
