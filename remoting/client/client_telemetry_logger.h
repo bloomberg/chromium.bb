@@ -55,8 +55,6 @@ class ClientTelemetryLogger {
     return current_session_state_event_;
   }
 
-  base::WeakPtr<ClientTelemetryLogger> GetWeakPtr();
-
   static ChromotingEvent::SessionState TranslateState(
       protocol::ConnectionToHost::State current_state,
       protocol::ConnectionToHost::State previous_state);
@@ -116,7 +114,6 @@ class ClientTelemetryLogger {
 
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<ClientTelemetryLogger> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(ClientTelemetryLogger);
 };
 

@@ -15,6 +15,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/timer/timer.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
@@ -69,28 +70,8 @@ void NormalizeClientResolution(protocol::ClientResolution* resolution) {
   resolution->set_dips_height(resolution->dips_height() * scale);
 }
 
-void GetFeedbackDataOnNetworkThread(
-    ChromotingClientRuntime* runtime,
-    base::WeakPtr<ClientTelemetryLogger> logger,
-    ChromotingSession::GetFeedbackDataCallback callback,
-    scoped_refptr<base::SingleThreadTaskRunner> response_thread) {
-  DCHECK(runtime->network_task_runner()->BelongsToCurrentThread());
-  auto data = std::make_unique<FeedbackData>();
-  if (logger) {
-    data->FillWithChromotingEvent(logger->current_session_state_event());
-  }
-  if (response_thread->BelongsToCurrentThread()) {
-    std::move(callback).Run(std::move(data));
-  } else {
-    response_thread->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), base::Passed(&data)));
-  }
-}
-
 struct SessionContext {
-  ChromotingClientRuntime* runtime;
   base::WeakPtr<ChromotingSession::Delegate> delegate;
-  base::WeakPtr<ClientTelemetryLogger> logger;
   std::unique_ptr<protocol::AudioStub> audio_player;
   std::unique_ptr<base::WeakPtrFactory<protocol::AudioStub>>
       audio_player_weak_factory;
@@ -105,7 +86,9 @@ struct SessionContext {
 class ChromotingSession::Core : public ClientUserInterface,
                                 public protocol::ClipboardStub {
  public:
-  explicit Core(std::unique_ptr<SessionContext> session_context);
+  Core(ChromotingClientRuntime* runtime,
+       std::unique_ptr<ClientTelemetryLogger> logger,
+       std::unique_ptr<SessionContext> session_context);
   ~Core() override;
 
   void RequestPairing(const std::string& device_name);
@@ -120,6 +103,9 @@ class ChromotingSession::Core : public ClientUserInterface,
   void SendClientResolution(int dips_width, int dips_height, int scale);
   void EnableVideoChannel(bool enable);
   void SendClientMessage(const std::string& type, const std::string& data);
+
+  // This function is still valid after Invalidate() is called.
+  std::unique_ptr<FeedbackData> GetFeedbackData();
 
   // Logs the disconnect event and invalidates the instance.
   void Disconnect();
@@ -170,18 +156,17 @@ class ChromotingSession::Core : public ClientUserInterface,
       const std::string& shared_secret);
 
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner() {
-    DCHECK(runtime_);
     return runtime_->ui_task_runner();
   }
 
   scoped_refptr<AutoThreadTaskRunner> network_task_runner() {
-    DCHECK(runtime_);
     return runtime_->network_task_runner();
   }
 
-  // Storing |runtime_| out of |session_context_| so that we can still use the
-  // task runners after |session_context_| is destroyed.
+  // |runtime_| and |logger_| are stored separately from |session_context_| so
+  // that they won't be destroyed after the core is invalidated.
   ChromotingClientRuntime* const runtime_;
+  std::unique_ptr<ClientTelemetryLogger> logger_;
 
   std::unique_ptr<SessionContext> session_context_;
 
@@ -211,11 +196,17 @@ class ChromotingSession::Core : public ClientUserInterface,
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-ChromotingSession::Core::Core(std::unique_ptr<SessionContext> session_context)
-    : runtime_(session_context->runtime),
+ChromotingSession::Core::Core(ChromotingClientRuntime* runtime,
+                              std::unique_ptr<ClientTelemetryLogger> logger,
+                              std::unique_ptr<SessionContext> session_context)
+    : runtime_(runtime),
+      logger_(std::move(logger)),
       session_context_(std::move(session_context)),
       weak_factory_(this) {
   DCHECK(ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(runtime_);
+  DCHECK(logger_);
+  DCHECK(session_context_);
 
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
@@ -317,6 +308,14 @@ void ChromotingSession::Core::SendClientMessage(const std::string& type,
   client_->host_stub()->DeliverClientMessage(extension_message);
 }
 
+std::unique_ptr<FeedbackData> ChromotingSession::Core::GetFeedbackData() {
+  DCHECK(network_task_runner()->BelongsToCurrentThread());
+
+  auto data = std::make_unique<FeedbackData>();
+  data->FillWithChromotingEvent(logger_->current_session_state_event());
+  return data;
+}
+
 void ChromotingSession::Core::Disconnect() {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
 
@@ -330,8 +329,8 @@ void ChromotingSession::Core::Disconnect() {
     } else {
       session_state_to_log = ChromotingEvent::SessionState::CONNECTION_CANCELED;
     }
-    session_context_->logger->LogSessionStateChange(
-        session_state_to_log, ChromotingEvent::ConnectionError::NONE);
+    logger_->LogSessionStateChange(session_state_to_log,
+                                   ChromotingEvent::ConnectionError::NONE);
     session_state_ = protocol::ConnectionToHost::CLOSED;
 
     Invalidate();
@@ -357,7 +356,7 @@ void ChromotingSession::Core::OnConnectionState(
     perf_stats_logging_timer_.Stop();
   }
 
-  session_context_->logger->LogSessionStateChange(
+  logger_->LogSessionStateChange(
       ClientTelemetryLogger::TranslateState(state, session_state_),
       ClientTelemetryLogger::TranslateError(error));
 
@@ -385,7 +384,7 @@ void ChromotingSession::Core::OnRouteChanged(
                         protocol::TransportRoute::GetTypeString(route.type) +
                         " connection.";
   VLOG(1) << "Route: " << message;
-  session_context_->logger->SetTransportRoute(route);
+  logger_->SetTransportRoute(route);
 }
 
 void ChromotingSession::Core::SetCapabilities(const std::string& capabilities) {
@@ -462,7 +461,7 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
 
   session_context_->video_renderer->Initialize(*client_context_,
                                                perf_tracker_.get());
-  session_context_->logger->SetHostInfo(
+  logger_->SetHostInfo(
       session_context_->info.host_version,
       ChromotingEvent::ParseOsFromString(session_context_->info.host_os),
       session_context_->info.host_os_version);
@@ -510,8 +509,7 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
 #endif  // defined(ENABLE_WEBRTC_REMOTING_CLIENT)
   if (session_context_->info.pairing_id.length() &&
       session_context_->info.pairing_secret.length()) {
-    session_context_->logger->SetAuthMethod(
-        ChromotingEvent::AuthMethod::PINLESS);
+    logger_->SetAuthMethod(ChromotingEvent::AuthMethod::PINLESS);
   }
 
   protocol::ClientAuthenticationConfig client_auth_config;
@@ -532,7 +530,7 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
 void ChromotingSession::Core::LogPerfStats() {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
 
-  session_context_->logger->LogStatistics(*perf_tracker_);
+  logger_->LogStatistics(*perf_tracker_);
 }
 
 void ChromotingSession::Core::FetchSecret(
@@ -564,7 +562,7 @@ void ChromotingSession::Core::HandleOnSecretFetched(
     const std::string secret) {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
 
-  session_context_->logger->SetAuthMethod(ChromotingEvent::AuthMethod::PIN);
+  logger_->SetAuthMethod(ChromotingEvent::AuthMethod::PIN);
 
   callback.Run(secret);
 }
@@ -604,8 +602,7 @@ void ChromotingSession::Core::HandleOnThirdPartyTokenFetched(
     const std::string& shared_secret) {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
 
-  session_context_->logger->SetAuthMethod(
-      ChromotingEvent::AuthMethod::THIRD_PARTY);
+  logger_->SetAuthMethod(ChromotingEvent::AuthMethod::THIRD_PARTY);
 
   callback.Run(token, shared_secret);
 }
@@ -622,19 +619,12 @@ ChromotingSession::ChromotingSession(
   DCHECK(delegate);
   DCHECK(cursor_shape_stub);
   DCHECK(video_renderer);
-  // Don't DCHECK audio_player since it will bind audio_player to the ui thread.
-
+  DCHECK(audio_player);
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-
-  logger_ = std::make_unique<ClientTelemetryLogger>(
-      runtime_->log_writer(), ChromotingEvent::Mode::ME2ME,
-      info.session_entry_point);
 
   // logger is set when connection is started.
   auto session_context = std::make_unique<SessionContext>();
-  session_context->runtime = runtime_;
   session_context->delegate = delegate;
-  session_context->logger = logger_->GetWeakPtr();
   session_context->audio_player = std::move(audio_player);
   session_context->audio_player_weak_factory =
       std::make_unique<base::WeakPtrFactory<protocol::AudioStub>>(
@@ -643,24 +633,30 @@ ChromotingSession::ChromotingSession(
   session_context->video_renderer = std::move(video_renderer);
   session_context->info = info;
 
-  core_ = std::make_unique<Core>(std::move(session_context));
+  auto logger = std::make_unique<ClientTelemetryLogger>(
+      runtime_->log_writer(), ChromotingEvent::Mode::ME2ME,
+      info.session_entry_point);
+
+  core_ = std::make_unique<Core>(runtime_, std::move(logger),
+                                 std::move(session_context));
 }
 
 ChromotingSession::~ChromotingSession() {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
 
   runtime_->network_task_runner()->DeleteSoon(FROM_HERE, core_.release());
-  runtime_->network_task_runner()->DeleteSoon(FROM_HERE, logger_.release());
 }
 
 void ChromotingSession::GetFeedbackData(
     GetFeedbackDataCallback callback) const {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
 
-  runtime_->network_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&GetFeedbackDataOnNetworkThread, runtime_,
-                                logger_->GetWeakPtr(), base::Passed(&callback),
-                                runtime_->ui_task_runner()));
+  // Bind to base::Unretained(core) instead of the WeakPtr so that we can still
+  // get the feedback data after the session is remotely disconnected.
+  base::PostTaskAndReplyWithResult(
+      runtime_->network_task_runner().get(), FROM_HERE,
+      base::BindOnce(&Core::GetFeedbackData, base::Unretained(core_.get())),
+      std::move(callback));
 }
 
 void ChromotingSession::RequestPairing(const std::string& device_name) {
