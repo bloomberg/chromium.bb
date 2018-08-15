@@ -47,7 +47,7 @@ running process to another, the Platform API also provides
 `NamedPlatformChannel`, which abstracts a named system resource that can
 facilitate communication similarly to `PlatformChannel`.
 
-A `NamedPlatformChannel` upon construction will begin listening on
+A `NamedPlatformChannel` upon construction will begin listening on a
 platform-specific primitive (a named pipe server on Windows, a domain socket
 server on POSIX, *etc.*). The globally reachable name of the server (*e.g.* the
 socket path) can be specified at construction time via

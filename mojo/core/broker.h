@@ -37,7 +37,7 @@ class Broker {
   // Handle to the broker process, used for synchronous IPCs.
   PlatformHandle sync_channel_;
 
-  // Channel endpoint connected to the inviter process. Recieved in the first
+  // Channel endpoint connected to the inviter process. Received in the
   // first message over |sync_channel_|.
   PlatformChannelEndpoint inviter_endpoint_;
 

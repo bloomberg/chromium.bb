@@ -707,7 +707,7 @@ void NodeChannel::OnChannelError(Channel::Error error) {
   }
 
   // |OnChannelError()| may cause |this| to be destroyed, but still need access
-  // to the name name after that destruction. So may a copy of
+  // to the name after that destruction. So make a copy of
   // |remote_node_name_| so it can be used if |this| becomes destroyed.
   ports::NodeName node_name = remote_node_name_;
   delegate_->OnChannelError(node_name, this);

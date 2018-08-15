@@ -55,7 +55,7 @@ comprised of the following pieces:
   interface requests, all driven by the Service Manager.
 
 The Service Manager is responsible for starting new service instances on-demand,
-and a given service many have any number of concurrently running instances. The
+and a given service may have any number of concurrently running instances. The
 Service Manager disambiguates service instances by their unique **identity**. A
 service's identity is represented by the 3-tuple of its **service name**, **user
 ID**, and **instance qualifier**:
