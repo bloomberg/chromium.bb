@@ -13,6 +13,7 @@ import com.google.android.libraries.feed.host.config.DebugBehavior;
 import com.google.android.libraries.feed.host.network.NetworkClient;
 import com.google.android.libraries.feed.hostimpl.logging.LoggingApiImpl;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -58,7 +59,8 @@ public class FeedProcessScopeFactory {
                 new FeedProcessScope
                         .Builder(configHostApi, Executors.newSingleThreadExecutor(),
                                 new LoggingApiImpl(), new FeedNetworkBridge(profile),
-                                schedulerBridge, lifecycleListener, DebugBehavior.SILENT)
+                                schedulerBridge, lifecycleListener, DebugBehavior.SILENT,
+                                ContextUtils.getApplicationContext())
                         .build();
         schedulerBridge.initializeFeedDependencies(
                 sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
@@ -91,7 +93,8 @@ public class FeedProcessScopeFactory {
         sFeedProcessScope = new FeedProcessScope
                                     .Builder(configHostApi, Executors.newSingleThreadExecutor(),
                                             new LoggingApiImpl(), networkClient, sFeedScheduler,
-                                            lifecycleListener, DebugBehavior.SILENT)
+                                            lifecycleListener, DebugBehavior.SILENT,
+                                            ContextUtils.getApplicationContext())
                                     .build();
     }
 
