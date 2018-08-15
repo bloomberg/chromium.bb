@@ -150,6 +150,9 @@ ChromeCleanerRunner::ChromeCleanerRunner(
 
 ChromeCleanerRunner::ProcessStatus
 ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread() {
+  TRACE_EVENT0("safe_browsing",
+               "ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread");
+
   mojo::OutgoingInvitation invitation;
   std::string pipe_name = base::NumberToString(base::RandUint64());
   mojo::ScopedMessagePipeHandle request_pipe =
