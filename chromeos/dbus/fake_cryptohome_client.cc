@@ -97,10 +97,10 @@ void FakeCryptohomeClient::MigrateKeyEx(
   ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
-void FakeCryptohomeClient::AsyncRemove(
-    const cryptohome::AccountIdentifier& cryptohome_id,
-    AsyncMethodCallback callback) {
-  ReturnAsyncMethodResult(std::move(callback));
+void FakeCryptohomeClient::RemoveEx(
+    const cryptohome::AccountIdentifier& account,
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::RenameCryptohome(

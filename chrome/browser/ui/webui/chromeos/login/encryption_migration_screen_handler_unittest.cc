@@ -299,10 +299,6 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationFails) {
 
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_CALL(
-      *mock_async_method_caller_,
-      AsyncRemove(cryptohome::Identification(user_context_.GetAccountId()),
-                  _ /* callback */));
   encryption_migration_screen_handler_->testing_tick_clock()->Advance(
       base::TimeDelta::FromMinutes(1));
   fake_cryptohome_client_->NotifyDircryptoMigrationProgress(

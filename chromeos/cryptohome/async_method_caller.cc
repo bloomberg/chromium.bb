@@ -35,15 +35,6 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
     DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
   }
 
-  void AsyncRemove(const Identification& cryptohome_id,
-                   Callback callback) override {
-    DBusThreadManager::Get()->GetCryptohomeClient()->AsyncRemove(
-        CreateAccountIdentifierFromIdentification(cryptohome_id),
-        base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback,
-                       "Couldn't initiate async removal of cryptohome."));
-  }
-
   void AsyncTpmAttestationCreateEnrollRequest(
       chromeos::attestation::PrivacyCAType pca_type,
       const DataCallback& callback) override {

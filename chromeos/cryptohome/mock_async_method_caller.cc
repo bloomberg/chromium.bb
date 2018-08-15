@@ -26,9 +26,6 @@ MockAsyncMethodCaller::~MockAsyncMethodCaller() = default;
 void MockAsyncMethodCaller::SetUp(bool success, MountError return_code) {
   success_ = success;
   return_code_ = return_code;
-  ON_CALL(*this, AsyncRemove(_, _))
-      .WillByDefault(
-          WithArgs<1>(Invoke(this, &MockAsyncMethodCaller::DoCallback)));
   ON_CALL(*this, AsyncTpmAttestationCreateEnrollRequest(_, _))
       .WillByDefault(
           WithArgs<1>(Invoke(this,

@@ -62,6 +62,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -1129,12 +1130,18 @@ void ExistingUserController::OnPolicyFetchResult(
                          EncryptionMigrationMode::ASK_USER));
       break;
 
-    case apu::EcryptfsMigrationAction::kWipe:
-      cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-          cryptohome::Identification(user_context.GetAccountId()),
-          base::Bind(&ExistingUserController::WipePerformed,
-                     weak_factory_.GetWeakPtr(), user_context));
+    case apu::EcryptfsMigrationAction::kWipe: {
+      cryptohome::AccountIdentifier account_identifier;
+      account_identifier.set_account_id(
+          cryptohome::Identification(user_context.GetAccountId()).id());
+
+      DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+          account_identifier,
+          base::BindOnce(&ExistingUserController::WipePerformed,
+                         weak_factory_.GetWeakPtr(), user_context));
+
       break;
+    }
 
     case apu::EcryptfsMigrationAction::kMinimalMigrate:
       // Reset the profile ever initialized flag, so that user policy manager
@@ -1167,13 +1174,15 @@ void ExistingUserController::OnPolicyFetchResult(
   }
 }
 
-void ExistingUserController::WipePerformed(const UserContext& user_context,
-                                           bool success,
-                                           cryptohome::MountError return_code) {
-  if (!success) {
+void ExistingUserController::WipePerformed(
+    const UserContext& user_context,
+    base::Optional<cryptohome::BaseReply> reply) {
+  const cryptohome::MountError error = BaseReplyToMountError(reply);
+  if (error != cryptohome::MOUNT_ERROR_NONE) {
     LOG(ERROR) << "Removal of cryptohome for "
                << user_context.GetAccountId().Serialize()
-               << " failed, return code: " << return_code;
+               << " failed, return code: "
+               << BaseReplyToMountError(reply.value());
   }
 
   // Let the user authenticate online because we lose the OAuth token by

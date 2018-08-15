@@ -41,8 +41,8 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const cryptohome::AuthorizationRequest& auth_request,
       const cryptohome::MigrateKeyRequest& migrate_request,
       DBusMethodCallback<cryptohome::BaseReply> callback) override;
-  void AsyncRemove(const cryptohome::AccountIdentifier& cryptohome_id,
-                   AsyncMethodCallback callback) override;
+  void RemoveEx(const cryptohome::AccountIdentifier& account,
+                DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void RenameCryptohome(
       const cryptohome::AccountIdentifier& cryptohome_id_from,
       const cryptohome::AccountIdentifier& cryptohome_id_to,

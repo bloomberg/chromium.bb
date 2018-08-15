@@ -642,23 +642,30 @@ void EncryptionMigrationScreenHandler::RemoveCryptohome() {
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
       user_context_.GetAccountId(),
       user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      cryptohome::Identification(user_context_.GetAccountId()),
-      base::Bind(&EncryptionMigrationScreenHandler::OnRemoveCryptohome,
-                 weak_ptr_factory_.GetWeakPtr()));
+
+  const cryptohome::Identification cryptohome_id(user_context_.GetAccountId());
+
+  cryptohome::AccountIdentifier account_id_proto;
+  account_id_proto.set_account_id(cryptohome_id.id());
+
+  DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+      account_id_proto,
+      base::BindOnce(&EncryptionMigrationScreenHandler::OnRemoveCryptohome,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EncryptionMigrationScreenHandler::OnRemoveCryptohome(
-    bool success,
-    cryptohome::MountError return_code) {
-  LOG_IF(ERROR, !success) << "Removing cryptohome failed. return code: "
-                          << return_code;
-  if (success)
+    base::Optional<cryptohome::BaseReply> reply) {
+  cryptohome::MountError error = BaseReplyToMountError(reply);
+  if (error == cryptohome::MOUNT_ERROR_NONE) {
     RecordRemoveCryptohomeResultSuccess(IsResumingIncompleteMigration(),
                                         IsArcKiosk());
-  else
+  } else {
+    LOG(ERROR) << "Removing cryptohome failed. return code: "
+               << reply.value().error();
     RecordRemoveCryptohomeResultFailure(IsResumingIncompleteMigration(),
                                         IsArcKiosk());
+  }
 
   UpdateUIState(UIState::MIGRATION_FAILED);
 }

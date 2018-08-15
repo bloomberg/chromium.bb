@@ -70,6 +70,9 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_util.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/timezone/timezone_resolver.h"
@@ -126,12 +129,11 @@ std::string FullyCanonicalize(const std::string& email) {
 
 // Callback that is called after user removal is complete.
 void OnRemoveUserComplete(const AccountId& account_id,
-                          bool success,
-                          cryptohome::MountError return_code) {
-  // Log the error, but there's not much we can do.
-  if (!success) {
+                          base::Optional<cryptohome::BaseReply> reply) {
+  cryptohome::MountError error = BaseReplyToMountError(reply);
+  if (error != cryptohome::MOUNT_ERROR_NONE) {
     LOG(ERROR) << "Removal of cryptohome for " << account_id.Serialize()
-               << " failed, return code: " << return_code;
+               << " failed, return code: " << error;
   }
 }
 
@@ -1400,9 +1402,11 @@ bool ChromeUserManagerImpl::IsFirstExecAfterBoot() const {
 
 void ChromeUserManagerImpl::AsyncRemoveCryptohome(
     const AccountId& account_id) const {
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      cryptohome::Identification(account_id),
-      base::Bind(&OnRemoveUserComplete, account_id));
+  cryptohome::AccountIdentifier account_id_proto;
+  account_id_proto.set_account_id(cryptohome::Identification(account_id).id());
+
+  DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+      account_id_proto, base::BindOnce(&OnRemoveUserComplete, account_id));
 }
 
 bool ChromeUserManagerImpl::IsGuestAccountId(

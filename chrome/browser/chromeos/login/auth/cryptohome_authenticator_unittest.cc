@@ -154,6 +154,10 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
     mount_guest_should_succeed_ = should_succeed;
   }
 
+  void set_remove_ex_should_succeed(bool should_succeed) {
+    remove_ex_should_succeed_ = should_succeed;
+  }
+
   void MountEx(const cryptohome::AccountIdentifier& cryptohome_id,
                const cryptohome::AuthorizationRequest& auth,
                const cryptohome::MountRequest& request,
@@ -213,12 +217,25 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
         FROM_HERE, base::BindOnce(std::move(callback), reply));
   }
 
+  // Calls RemoveEx method.  |callback| is called after the method call
+  // succeeds.
+  void RemoveEx(const cryptohome::AccountIdentifier& account,
+                DBusMethodCallback<cryptohome::BaseReply> callback) override {
+    cryptohome::BaseReply reply;
+    if (!remove_ex_should_succeed_)
+      reply.set_error(cryptohome::CRYPTOHOME_ERROR_REMOVE_FAILED);
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), reply));
+  }
+
  private:
   cryptohome::AccountIdentifier expected_id_;
   std::string expected_authorization_secret_;
   bool is_create_attempt_expected_ = false;
   bool migrate_key_should_succeed_ = false;
   bool mount_guest_should_succeed_ = false;
+  bool remove_ex_should_succeed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestCryptohomeClient);
 };
@@ -654,20 +671,13 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataResync) {
   ExpectLoginSuccess(expected_user_context);
   FailOnLoginFailure();
 
-  // Set up mock async method caller to respond successfully to a cryptohome
-  // remove attempt.
-  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(
-      *mock_caller_,
-      AsyncRemove(cryptohome::Identification(user_context_.GetAccountId()), _))
-      .Times(1)
-      .RetiresOnSaturation();
-
   // Set up mock homedir methods to respond successfully to a cryptohome create
   // attempt.
   ExpectGetKeyDataExCall(std::unique_ptr<int64_t>(),
                          std::unique_ptr<std::string>());
   ExpectMountExCall(true /* expect_create_attempt */);
+  fake_cryptohome_client_->set_remove_ex_should_succeed(
+      true /* should_succeed */);
 
   state_->PresetOnlineLoginStatus(AuthFailure::AuthFailureNone());
   SetAttemptState(auth_.get(), state_.release());
@@ -680,13 +690,8 @@ TEST_F(CryptohomeAuthenticatorTest, DriveResyncFail) {
   FailOnLoginSuccess();
   ExpectLoginFailure(AuthFailure(AuthFailure::DATA_REMOVAL_FAILED));
 
-  // Set up mock async method caller to fail a cryptohome remove attempt.
-  mock_caller_->SetUp(false, cryptohome::MOUNT_ERROR_FATAL);
-  EXPECT_CALL(
-      *mock_caller_,
-      AsyncRemove(cryptohome::Identification(user_context_.GetAccountId()), _))
-      .Times(1)
-      .RetiresOnSaturation();
+  fake_cryptohome_client_->set_remove_ex_should_succeed(
+      false /* should_succeed */);
 
   SetAttemptState(auth_.get(), state_.release());
 

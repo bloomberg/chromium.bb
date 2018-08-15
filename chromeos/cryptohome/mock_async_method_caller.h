@@ -28,8 +28,6 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
 
   void SetUp(bool success, MountError return_code);
 
-  MOCK_METHOD2(AsyncRemove,
-               void(const Identification& user_id, Callback callback));
   MOCK_METHOD2(AsyncTpmAttestationCreateEnrollRequest,
                void(chromeos::attestation::PrivacyCAType pca_type,
                     const DataCallback& callback));
