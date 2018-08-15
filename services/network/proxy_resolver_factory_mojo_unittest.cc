@@ -489,7 +489,9 @@ class MockHostResolver : public net::HostResolver {
   // net::HostResolver overrides.
   std::unique_ptr<HostResolver::ResolveHostRequest> CreateRequest(
       const net::HostPortPair& host,
-      const net::NetLogWithSource& source_net_log) override {
+      const net::NetLogWithSource& source_net_log,
+      const base::Optional<ResolveHostParameters>& optional_parameters)
+      override {
     // TODO(crbug.com/821021): Implement.
     NOTIMPLEMENTED();
     return nullptr;

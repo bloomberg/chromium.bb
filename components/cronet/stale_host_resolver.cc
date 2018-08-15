@@ -382,8 +382,10 @@ StaleHostResolver::StaleHostResolver(
 StaleHostResolver::~StaleHostResolver() {}
 
 std::unique_ptr<net::HostResolver::ResolveHostRequest>
-StaleHostResolver::CreateRequest(const net::HostPortPair& host,
-                                 const net::NetLogWithSource& net_log) {
+StaleHostResolver::CreateRequest(
+    const net::HostPortPair& host,
+    const net::NetLogWithSource& net_log,
+    const base::Optional<ResolveHostParameters>& optional_parameters) {
   // TODO(crbug.com/821021): Implement.
   NOTIMPLEMENTED();
   return nullptr;

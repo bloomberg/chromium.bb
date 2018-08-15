@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
@@ -113,6 +114,9 @@ class NET_EXPORT HostResolver {
 
   // The parameters for doing a Resolve(). A hostname and port are
   // required; the rest are optional (and have reasonable defaults).
+  //
+  // TODO(crbug.com/821021): Delete this class once all usage has been
+  // converted to the new CreateRequest() API.
   class NET_EXPORT RequestInfo {
    public:
     explicit RequestInfo(const HostPortPair& host_port_pair);
@@ -171,6 +175,29 @@ class NET_EXPORT HostResolver {
     bool is_my_ip_address_;
   };
 
+  // DNS query type for a ResolveHostRequest.
+  // See:
+  // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
+  //
+  // TODO(crbug.com/846423): Add support for non-address types.
+  enum class DnsQueryType {
+    UNSPECIFIED,
+    A,
+    AAAA,
+  };
+
+  // Parameter-grouping struct for additional optional parameters for
+  // CreateRequest() calls. All fields are optional and have a reasonable
+  // default.
+  struct ResolveHostParameters {
+    // Requested DNS query type. If UNSPECIFIED, resolver will pick A or AAAA
+    // (or both) based on IPv4/IPv6 settings.
+    DnsQueryType dns_query_type = DnsQueryType::UNSPECIFIED;
+
+    // The initial net priority for the host resolution request.
+    RequestPriority initial_priority = RequestPriority::DEFAULT_PRIORITY;
+  };
+
   // Set Options.max_concurrent_resolves to this to select a default level
   // of concurrency.
   static const size_t kDefaultParallelism = 0;
@@ -186,6 +213,9 @@ class NET_EXPORT HostResolver {
   // Creates a request to resolve the given hostname (or IP address literal).
   // Profiling information for the request is saved to |net_log| if non-NULL.
   //
+  // Additional parameters may be set using |optional_parameters|. Reasonable
+  // defaults will be used if passed |base::nullopt|.
+  //
   // This method is intended as a direct replacement for the old Resolve()
   // method, but it may not yet cover all the capabilities of the old method.
   //
@@ -193,7 +223,8 @@ class NET_EXPORT HostResolver {
   // capabilities of Resolve() and M/DnsClient functionality.
   virtual std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
-      const NetLogWithSource& net_log) = 0;
+      const NetLogWithSource& net_log,
+      const base::Optional<ResolveHostParameters>& optional_parameters) = 0;
 
   // DEPRECATION NOTE: This method is being replaced by CreateRequest(). New
   // callers should prefer CreateRequest() if it works for their needs.
@@ -299,6 +330,18 @@ class NET_EXPORT HostResolver {
   // StaleHostResolver in cronet.
   static std::unique_ptr<HostResolverImpl> CreateDefaultResolverImpl(
       NetLog* net_log);
+
+  static AddressFamily DnsQueryTypeToAddressFamily(DnsQueryType query_type);
+
+  // Helpers for converting old Resolve() API parameters to new CreateRequest()
+  // parameters.
+  //
+  // TODO(crbug.com/821021): Delete these methods once all usage has been
+  // converted to the new CreateRequest() API.
+  static DnsQueryType AddressFamilyToDnsQueryType(AddressFamily address_family);
+  static ResolveHostParameters RequestInfoToResolveHostParameters(
+      const RequestInfo& request_info,
+      RequestPriority priority);
 
  protected:
   HostResolver();

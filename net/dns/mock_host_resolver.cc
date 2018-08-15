@@ -61,28 +61,27 @@ class MockHostResolverBase::RequestImpl
     : public HostResolver::ResolveHostRequest {
  public:
   RequestImpl(const HostPortPair& request_host,
+              const base::Optional<ResolveHostParameters>& optional_parameters,
               base::WeakPtr<MockHostResolverBase> resolver)
       : RequestImpl(request_host,
-                    ADDRESS_FAMILY_UNSPECIFIED,
+                    optional_parameters,
                     0 /* host_resolver_flags */,
                     true /* allow_cached_response */,
                     false /* is_speculative */,
-                    RequestPriority::DEFAULT_PRIORITY,
                     resolver) {}
 
   RequestImpl(const HostPortPair& request_host,
-              AddressFamily address_family,
+              const base::Optional<ResolveHostParameters>& optional_parameters,
               HostResolverFlags host_resolver_flags,
               bool allow_cached_response,
               bool is_speculative,
-              RequestPriority priority,
               base::WeakPtr<MockHostResolverBase> resolver)
       : request_host_(request_host),
-        address_family_(address_family),
         host_resolver_flags_(host_resolver_flags),
         allow_cached_response_(allow_cached_response),
         is_speculative_(is_speculative),
-        priority_(priority),
+        parameters_(optional_parameters ? optional_parameters.value()
+                                        : ResolveHostParameters()),
         id_(0),
         resolver_(resolver),
         complete_(false) {}
@@ -145,15 +144,13 @@ class MockHostResolverBase::RequestImpl
 
   const HostPortPair& request_host() const { return request_host_; }
 
-  AddressFamily address_family() const { return address_family_; }
-
   int host_resolver_flags() const { return host_resolver_flags_; }
 
   bool allow_cached_response() const { return allow_cached_response_; }
 
   bool is_speculative() const { return is_speculative_; }
 
-  RequestPriority priority() const { return priority_; }
+  const ResolveHostParameters& parameters() const { return parameters_; }
 
   size_t id() { return id_; }
 
@@ -168,11 +165,10 @@ class MockHostResolverBase::RequestImpl
 
  private:
   const HostPortPair request_host_;
-  AddressFamily address_family_;
   int host_resolver_flags_;
   bool allow_cached_response_;
   bool is_speculative_;
-  RequestPriority priority_;
+  const ResolveHostParameters parameters_;
 
   base::Optional<AddressList> address_results_;
 
@@ -249,9 +245,11 @@ MockHostResolverBase::~MockHostResolverBase() {
 }
 
 std::unique_ptr<HostResolver::ResolveHostRequest>
-MockHostResolverBase::CreateRequest(const HostPortPair& host,
-                                    const NetLogWithSource& source_net_log) {
-  return std::make_unique<RequestImpl>(host, AsWeakPtr());
+MockHostResolverBase::CreateRequest(
+    const HostPortPair& host,
+    const NetLogWithSource& source_net_log,
+    const base::Optional<ResolveHostParameters>& optional_parameters) {
+  return std::make_unique<RequestImpl>(host, optional_parameters, AsWeakPtr());
 }
 
 int MockHostResolverBase::Resolve(const RequestInfo& info,
@@ -264,9 +262,9 @@ int MockHostResolverBase::Resolve(const RequestInfo& info,
   DCHECK(out_request);
 
   auto request = std::make_unique<RequestImpl>(
-      info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
-      info.allow_cached_response(), info.is_speculative(), priority,
-      AsWeakPtr());
+      info.host_port_pair(), RequestInfoToResolveHostParameters(info, priority),
+      info.host_resolver_flags(), info.allow_cached_response(),
+      info.is_speculative(), AsWeakPtr());
   auto wrapped_request =
       std::make_unique<LegacyRequestImpl>(std::move(request));
 
@@ -357,11 +355,12 @@ MockHostResolverBase::MockHostResolverBase(bool use_caching)
 int MockHostResolverBase::Resolve(RequestImpl* request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  last_request_priority_ = request->priority();
+  last_request_priority_ = request->parameters().initial_priority;
   num_resolve_++;
   AddressList addresses;
   int rv = ResolveFromIPLiteralOrCache(
-      request->request_host(), request->address_family(),
+      request->request_host(),
+      DnsQueryTypeToAddressFamily(request->parameters().dns_query_type),
       request->host_resolver_flags(), request->allow_cached_response(),
       &addresses);
   if (rv == OK)
@@ -375,8 +374,10 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
     return ERR_NAME_NOT_RESOLVED;
 
   if (synchronous_mode_) {
-    int rv = ResolveProc(request->request_host(), request->address_family(),
-                         request->host_resolver_flags(), &addresses);
+    int rv = ResolveProc(
+        request->request_host(),
+        DnsQueryTypeToAddressFamily(request->parameters().dns_query_type),
+        request->host_resolver_flags(), &addresses);
     if (rv == OK)
       request->set_address_results(addresses);
     return rv;
@@ -464,8 +465,10 @@ void MockHostResolverBase::ResolveNow(size_t id) {
   requests_.erase(it);
 
   AddressList addresses;
-  int error = ResolveProc(req->request_host(), req->address_family(),
-                          req->host_resolver_flags(), &addresses);
+  int error =
+      ResolveProc(req->request_host(),
+                  DnsQueryTypeToAddressFamily(req->parameters().dns_query_type),
+                  req->host_resolver_flags(), &addresses);
   if (error == OK)
     req->set_address_results(addresses);
   req->OnAsyncCompleted(id, error);
@@ -750,8 +753,10 @@ HangingHostResolver::HangingHostResolver() = default;
 HangingHostResolver::~HangingHostResolver() = default;
 
 std::unique_ptr<HostResolver::ResolveHostRequest>
-HangingHostResolver::CreateRequest(const HostPortPair& host,
-                                   const NetLogWithSource& source_net_log) {
+HangingHostResolver::CreateRequest(
+    const HostPortPair& host,
+    const NetLogWithSource& source_net_log,
+    const base::Optional<ResolveHostParameters>& optional_parameters) {
   return std::make_unique<RequestImpl>(weak_ptr_factory_.GetWeakPtr(),
                                        false /* started */);
 }

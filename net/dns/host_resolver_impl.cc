@@ -617,35 +617,34 @@ class HostResolverImpl::RequestImpl
  public:
   RequestImpl(const NetLogWithSource& source_net_log,
               const HostPortPair& request_host,
+              const base::Optional<ResolveHostParameters>& optional_parameters,
               bool is_speculative,
-              RequestPriority priority,
               base::WeakPtr<HostResolverImpl> resolver)
       : RequestImpl(source_net_log,
                     request_host,
-                    ADDRESS_FAMILY_UNSPECIFIED,
+                    optional_parameters,
                     0 /* host_resolver_flags */,
                     true /* allow_cached_response */,
                     is_speculative,
-                    priority,
                     resolver) {}
 
   // Overload for use by the legacy Resolve() API. Has more advanced parameters
   // not yet supported by the CreateRequest() API.
   RequestImpl(const NetLogWithSource& source_net_log,
               const HostPortPair& request_host,
-              AddressFamily address_family,
+              const base::Optional<ResolveHostParameters>& optional_parameters,
               HostResolverFlags host_resolver_flags,
               bool allow_cached_response,
               bool is_speculative,
-              RequestPriority priority,
               base::WeakPtr<HostResolverImpl> resolver)
       : source_net_log_(source_net_log),
         request_host_(request_host),
-        address_family_(address_family),
         host_resolver_flags_(host_resolver_flags),
         allow_cached_response_(allow_cached_response),
         is_speculative_(is_speculative),
-        priority_(priority),
+        parameters_(optional_parameters ? optional_parameters.value()
+                                        : ResolveHostParameters()),
+        priority_(parameters_.initial_priority),
         job_(nullptr),
         resolver_(resolver),
         complete_(false) {}
@@ -730,13 +729,13 @@ class HostResolverImpl::RequestImpl
 
   const HostPortPair& request_host() const { return request_host_; }
 
-  AddressFamily address_family() const { return address_family_; }
-
   HostResolverFlags host_resolver_flags() const { return host_resolver_flags_; }
 
   bool allow_cached_response() const { return allow_cached_response_; }
 
   bool is_speculative() const { return is_speculative_; }
+
+  const ResolveHostParameters& parameters() const { return parameters_; }
 
   RequestPriority priority() const { return priority_; }
   void set_priority(RequestPriority priority) { priority_ = priority; }
@@ -757,10 +756,10 @@ class HostResolverImpl::RequestImpl
   const NetLogWithSource source_net_log_;
 
   const HostPortPair request_host_;
-  const AddressFamily address_family_;
   const HostResolverFlags host_resolver_flags_;
   const bool allow_cached_response_;
   const bool is_speculative_;
+  const ResolveHostParameters parameters_;
 
   RequestPriority priority_;
 
@@ -2141,11 +2140,13 @@ void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
 }
 
 std::unique_ptr<HostResolver::ResolveHostRequest>
-HostResolverImpl::CreateRequest(const HostPortPair& host,
-                                const NetLogWithSource& net_log) {
-  return std::make_unique<RequestImpl>(
-      net_log, host, false /* is_speculative */,
-      RequestPriority::DEFAULT_PRIORITY, weak_ptr_factory_.GetWeakPtr());
+HostResolverImpl::CreateRequest(
+    const HostPortPair& host,
+    const NetLogWithSource& net_log,
+    const base::Optional<ResolveHostParameters>& optional_parameters) {
+  return std::make_unique<RequestImpl>(net_log, host, optional_parameters,
+                                       false /* is_speculative */,
+                                       weak_ptr_factory_.GetWeakPtr());
 }
 
 int HostResolverImpl::Resolve(const RequestInfo& info,
@@ -2160,9 +2161,10 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   DCHECK(out_req);
 
   auto request = std::make_unique<RequestImpl>(
-      source_net_log, info.host_port_pair(), info.address_family(),
+      source_net_log, info.host_port_pair(),
+      RequestInfoToResolveHostParameters(info, priority),
       info.host_resolver_flags(), info.allow_cached_response(),
-      info.is_speculative(), priority, weak_ptr_factory_.GetWeakPtr());
+      info.is_speculative(), weak_ptr_factory_.GetWeakPtr());
   auto wrapped_request =
       std::make_unique<LegacyRequestImpl>(std::move(request));
 
@@ -2190,9 +2192,10 @@ int HostResolverImpl::ResolveFromCache(const RequestInfo& info,
 
   Key key;
   int rv = ResolveLocally(
-      info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
-      info.allow_cached_response(), false /* allow_stale */,
-      nullptr /* stale_info */, source_net_log, addresses, &key);
+      info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
+      info.host_resolver_flags(), info.allow_cached_response(),
+      false /* allow_stale */, nullptr /* stale_info */, source_net_log,
+      addresses, &key);
 
   LogFinishRequest(source_net_log, rv);
   return rv;
@@ -2211,10 +2214,10 @@ int HostResolverImpl::ResolveStaleFromCache(
   LogStartRequest(source_net_log, info);
 
   Key key;
-  int rv = ResolveLocally(info.host_port_pair(), info.address_family(),
-                          info.host_resolver_flags(),
-                          info.allow_cached_response(), true /* allow_stale */,
-                          stale_info, source_net_log, addresses, &key);
+  int rv = ResolveLocally(
+      info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
+      info.host_resolver_flags(), info.allow_cached_response(),
+      true /* allow_stale */, stale_info, source_net_log, addresses, &key);
   LogFinishRequest(source_net_log, rv);
   return rv;
 }
@@ -2349,11 +2352,11 @@ int HostResolverImpl::Resolve(RequestImpl* request) {
 
   AddressList addresses;
   Key key;
-  int rv = ResolveLocally(request->request_host(), request->address_family(),
-                          request->host_resolver_flags(),
-                          request->allow_cached_response(),
-                          false /* allow_stale */, nullptr /* stale_info */,
-                          request->source_net_log(), &addresses, &key);
+  int rv = ResolveLocally(
+      request->request_host(), request->parameters().dns_query_type,
+      request->host_resolver_flags(), request->allow_cached_response(),
+      false /* allow_stale */, nullptr /* stale_info */,
+      request->source_net_log(), &addresses, &key);
   if (rv == OK) {
     request->set_address_results(
         EnsurePortOnAddressList(addresses, request->request_host().port()));
@@ -2373,7 +2376,7 @@ int HostResolverImpl::Resolve(RequestImpl* request) {
 }
 
 int HostResolverImpl::ResolveLocally(const HostPortPair& host,
-                                     AddressFamily requested_address_family,
+                                     DnsQueryType dns_query_type,
                                      HostResolverFlags flags,
                                      bool allow_cache,
                                      bool allow_stale,
@@ -2393,7 +2396,7 @@ int HostResolverImpl::ResolveLocally(const HostPortPair& host,
 
   // Build a key that identifies the request in the cache and in the
   // outstanding jobs map.
-  *key = GetEffectiveKeyForRequest(host.host(), requested_address_family, flags,
+  *key = GetEffectiveKeyForRequest(host.host(), dns_query_type, flags,
                                    ip_address_ptr, source_net_log);
 
   DCHECK(allow_stale == !!stale_info);
@@ -2620,12 +2623,14 @@ std::unique_ptr<HostResolverImpl::Job> HostResolverImpl::RemoveJob(Job* job) {
 
 HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
     const std::string& hostname,
-    AddressFamily requested_address_family,
+    DnsQueryType dns_query_type,
     HostResolverFlags flags,
     const IPAddress* ip_address,
     const NetLogWithSource& net_log) {
   HostResolverFlags effective_flags = flags | additional_resolver_flags_;
-  AddressFamily effective_address_family = requested_address_family;
+
+  AddressFamily effective_address_family =
+      DnsQueryTypeToAddressFamily(dns_query_type);
 
   if (effective_address_family == ADDRESS_FAMILY_UNSPECIFIED &&
       // When resolving IPv4 literals, there's no need to probe for IPv6.

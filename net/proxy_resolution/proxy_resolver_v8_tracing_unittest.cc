@@ -695,7 +695,9 @@ class BlockableHostResolver : public HostResolver {
 
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
-      const NetLogWithSource& net_log) override {
+      const NetLogWithSource& net_log,
+      const base::Optional<ResolveHostParameters>& optional_parameters)
+      override {
     NOTIMPLEMENTED();
     return nullptr;
   }

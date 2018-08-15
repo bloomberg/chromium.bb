@@ -64,7 +64,9 @@ class StaleHostResolver : public net::HostResolver {
 
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const net::HostPortPair& host,
-      const net::NetLogWithSource& net_log) override;
+      const net::NetLogWithSource& net_log,
+      const base::Optional<ResolveHostParameters>& optional_parameters)
+      override;
 
   // Resolves as a regular HostResolver, but if stale data is available and
   // usable (according to the options passed to the constructor), and fresh data
