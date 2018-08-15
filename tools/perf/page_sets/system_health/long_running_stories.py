@@ -97,6 +97,9 @@ class LongRunningGmailDesktopForegroundStory(_LongRunningGmailDesktopBase):
 class LongRunningGmailMobileBackgroundStory(_LongRunningGmailMobileBase):
   BACKGROUND = True
   NAME = 'long_running:tools:gmail-background'
+  # This runs a gmail story in a background tab, and tabs aren't supported
+  # on WebView.
+  WEBVIEW_NOT_SUPPORTED = True
 
 
 class LongRunningGmailDesktopBackgroundStory(_LongRunningGmailDesktopBase):
