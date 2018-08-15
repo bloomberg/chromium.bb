@@ -21,7 +21,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "components/version_info/version_info.h"
 #include "components/webrtc_logging/browser/log_cleanup.h"
-#include "components/webrtc_logging/browser/text_log_list.h"
+#include "components/webrtc_logging/browser/log_list.h"
 #include "components/webrtc_logging/common/partial_circular_buffer.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -132,7 +132,7 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
     WriteCompressedLogToFile(compressed_log, log_file_path);
 
     base::FilePath log_list_path =
-        webrtc_logging::TextLogList::GetWebRtcLogListFileForDirectory(
+        webrtc_logging::LogList::GetWebRtcLogListFileForDirectory(
             upload_done_data.log_path);
     AddLocallyStoredLogInfoToUploadListFile(log_list_path, local_log_id);
   }
@@ -238,7 +238,7 @@ void WebRtcLogUploader::LoggingStoppedDoStore(
   webrtc_logging::DeleteOldWebRtcLogFiles(log_paths.log_path);
 
   base::FilePath log_list_path =
-      webrtc_logging::TextLogList::GetWebRtcLogListFileForDirectory(
+      webrtc_logging::LogList::GetWebRtcLogListFileForDirectory(
           log_paths.log_path);
 
   // Store the native log with a ".gz" extension.
@@ -315,7 +315,7 @@ void WebRtcLogUploader::OnSimpleLoaderComplete(
   if (!upload_done_data.log_path.empty()) {
     // TODO(jiayl): Add the RTP dump records to chrome://webrtc-logs.
     base::FilePath log_list_path =
-        webrtc_logging::TextLogList::GetWebRtcLogListFileForDirectory(
+        webrtc_logging::LogList::GetWebRtcLogListFileForDirectory(
             upload_done_data.log_path);
     background_task_runner_->PostTask(
         FROM_HERE,

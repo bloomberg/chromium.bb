@@ -6,8 +6,8 @@ source_set("browser") {
   sources = [
     "log_cleanup.cc",
     "log_cleanup.h",
-    "text_log_list.cc",
-    "text_log_list.h",
+    "log_list.cc",
+    "log_list.h",
   ]
 
   deps = [
