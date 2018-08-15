@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_selection_test.h"
 
+#include "third_party/blink/renderer/core/dom/character_data.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
@@ -144,7 +146,9 @@ class AXSelectionSerializer final {
 // Deserializes an HTML snippet with or without selection markers to an
 // accessibility tree. A '^' could be present at the selection anchor offset and
 // a '|' at the focus offset. If multiple markers are present, the deserializer
-// will DCHECK. If there are no markers, no selection will be made.
+// will DCHECK. If there are no markers, no selection will be made. We don't
+// allow '^' and '|' markers to appear in anything other than the contents of an
+// HTML node, e.g. they are not permitted in aria-labels.
 class AXSelectionDeserializer final {
   STACK_ALLOCATED();
 
@@ -156,11 +160,12 @@ class AXSelectionDeserializer final {
   // Creates an accessibility tree rooted at the given HTML element from the
   // provided HTML snippet, selects the part of the tree indicated by the
   // selection markers in the snippet if present, and returns the tree's root.
-  AXObject* Deserialize(const std::string& html_snippet, HTMLElement& element) {
+  const AXSelection Deserialize(const std::string& html_snippet,
+                                HTMLElement& element) {
     element.SetInnerHTMLFromString(String::FromUTF8(html_snippet.c_str()));
     AXObject* root = ax_object_cache_->GetOrCreate(&element);
     if (!root)
-      return nullptr;
+      return AXSelection::Builder().Build();
 
     FindSelectionMarkers(*root);
     if (base_ && extent_) {
@@ -168,32 +173,55 @@ class AXSelectionDeserializer final {
       AXSelection ax_selection =
           builder.SetBase(base_).SetExtent(extent_).Build();
       ax_selection.Select();
+      return ax_selection;
     }
 
-    return root;
+    return AXSelection::Builder().Build();
   }
 
  private:
   void HandleCharacterData(const AXObject& text_object) {
+    CharacterData* const node = ToCharacterData(text_object.GetNode());
     int base_offset = -1;
     int extent_offset = -1;
-    String name = text_object.ComputedName();
-    for (unsigned i = 0; i < name.length(); ++i) {
-      const UChar character = name[i];
+    StringBuilder builder;
+    for (unsigned i = 0; i < node->length(); ++i) {
+      const UChar character = node->data()[i];
       if (character == '^') {
-        DCHECK_EQ(base_offset, -1) << text_object;
+        DCHECK_EQ(base_offset, -1) << "Only one '^' is allowed " << text_object;
         base_offset = static_cast<int>(i);
         continue;
       }
       if (character == '|') {
-        DCHECK_EQ(extent_offset, -1) << text_object;
+        DCHECK_EQ(extent_offset, -1)
+            << "Only one '|' is allowed " << text_object;
         extent_offset = static_cast<int>(i);
         continue;
       }
+      builder.Append(character);
     }
 
+    LOG(ERROR) << "Nektar\n" << base_offset << extent_offset;
     if (base_offset == -1 && extent_offset == -1)
       return;
+
+    // Remove the markers, otherwise they would be duplicated if the AX
+    // selection is re-serialized.
+    node->setData(builder.ToString());
+
+    if (node->length() == 0) {
+      // Since the text object contains only selection markers, this indicates
+      // that this is a request for a non-text selection.
+      if (base_offset >= 0)
+        base_ = AXPosition::CreatePositionBeforeObject(text_object);
+      if (extent_offset >= 0)
+        extent_ = AXPosition::CreatePositionBeforeObject(text_object);
+
+      ContainerNode* const parent_node = node->parentNode();
+      DCHECK(parent_node);
+      parent_node->removeChild(node);
+      return;
+    }
 
     if (base_offset >= 0)
       base_ = AXPosition::CreatePositionInTextObject(text_object, base_offset);
@@ -245,16 +273,16 @@ std::string AccessibilitySelectionTest::GetSelectionText(
   return AXSelectionSerializer(selection).Serialize(subtree);
 }
 
-AXObject* AccessibilitySelectionTest::SetSelectionText(
+const AXSelection AccessibilitySelectionTest::SetSelectionText(
     const std::string& selection_text) const {
   HTMLElement* body = GetDocument().body();
   if (!body)
-    return nullptr;
+    return AXSelection::Builder().Build();
   return AXSelectionDeserializer(GetAXObjectCache())
       .Deserialize(selection_text, *body);
 }
 
-AXObject* AccessibilitySelectionTest::SetSelectionText(
+const AXSelection AccessibilitySelectionTest::SetSelectionText(
     const std::string& selection_text,
     HTMLElement& element) const {
   return AXSelectionDeserializer(GetAXObjectCache())
