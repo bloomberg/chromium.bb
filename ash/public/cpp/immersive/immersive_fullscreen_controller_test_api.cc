@@ -7,7 +7,9 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -32,7 +34,10 @@ void ImmersiveFullscreenControllerTestApi::SetupForTest() {
       bottommost_in_screen = bounds_in_screen[i].bottom();
   }
   gfx::Point cursor_pos(0, bottommost_in_screen + 10);
-  aura::Env::GetInstance()->SetLastMouseLocation(cursor_pos);
+  immersive_fullscreen_controller_->widget()
+      ->GetNativeView()
+      ->env()
+      ->SetLastMouseLocation(cursor_pos);
   immersive_fullscreen_controller_->UpdateLocatedEventRevealedLock();
 }
 
