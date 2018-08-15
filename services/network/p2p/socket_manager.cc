@@ -250,8 +250,8 @@ void P2PSocketManager::CreateSocket(P2PSocketType type,
     return;
   }
   std::unique_ptr<P2PSocket> socket(
-      P2PSocket::Create(nullptr /*this*/, std::move(client), std::move(request),
-                        type, url_request_context_->net_log(),
+      P2PSocket::Create(this, std::move(client), std::move(request), type,
+                        url_request_context_->net_log(),
                         proxy_resolving_socket_factory_.get(), &throttler_));
 
   if (!socket)
