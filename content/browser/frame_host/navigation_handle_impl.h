@@ -18,6 +18,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
@@ -377,6 +379,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return GetDeferringThrottle();
   }
 
+  // Sets the READY_TO_COMMIT -> DID_COMMIT timeout.  Resets the timeout to the
+  // default value if |timeout| is zero.
+  static void SetCommitTimeoutForTesting(const base::TimeDelta& timeout);
+
  private:
   friend class NavigationHandleImplTest;
 
@@ -440,6 +446,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // nullptr;
   NavigationThrottle* GetDeferringThrottle() const;
 
+  // Called if READY_TO_COMMIT -> COMMIT state transition takes an unusually
+  // long time.
+  void OnCommitTimeout();
+
+  void RestartCommitTimeout();
+
   // See NavigationHandle for a description of those member variables.
   GURL url_;
   scoped_refptr<SiteInstance> starting_site_instance_;
@@ -494,6 +506,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The time this naviagtion was ready to commit.
   base::TimeTicks ready_to_commit_time_;
+
+  // Timer for detecting an unexpectedly long time to commit a navigation.
+  base::OneShotTimer commit_timeout_timer_;
 
   // The unique id of the corresponding NavigationEntry.
   int pending_nav_entry_id_;
