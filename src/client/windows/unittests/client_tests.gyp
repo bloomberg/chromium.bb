@@ -68,6 +68,7 @@
       'sources': [
         '<(DEPTH)/common/string_conversion.cc',
         '<(DEPTH)/processor/basic_code_modules.cc',
+        '<(DEPTH)/processor/convert_old_arm64_context.cc',
         '<(DEPTH)/processor/dump_context.cc',
         '<(DEPTH)/processor/dump_object.cc',
         '<(DEPTH)/processor/logging.cc',
