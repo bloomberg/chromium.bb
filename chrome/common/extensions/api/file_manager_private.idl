@@ -44,7 +44,6 @@ enum MountCompletedStatus {
   error_unknown_filesystem,
   error_unsupported_filesystem,
   error_invalid_archive,
-  error_authentication,
   error_path_unmounted
 };
 
