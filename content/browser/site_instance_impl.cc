@@ -540,11 +540,10 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
 
 // static
 bool SiteInstanceImpl::ShouldLockToOrigin(BrowserContext* browser_context,
-                                          RenderProcessHost* host,
                                           GURL site_url) {
   // Don't lock to origin in --single-process mode, since this mode puts
   // cross-site pages into the same process.
-  if (host->run_renderer_in_process())
+  if (RenderProcessHost::run_renderer_in_process())
     return false;
 
   if (!DoesSiteRequireDedicatedProcess(browser_context, site_url))
@@ -607,7 +606,7 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   auto lock_state = policy->CheckOriginLock(process_->GetID(), site_);
-  if (ShouldLockToOrigin(GetBrowserContext(), process_, site_)) {
+  if (ShouldLockToOrigin(GetBrowserContext(), site_)) {
     // Sanity check that this won't try to assign an origin lock to a <webview>
     // process, which can't be locked.
     CHECK(!process_->IsForGuestsOnly());
