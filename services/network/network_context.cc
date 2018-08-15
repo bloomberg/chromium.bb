@@ -138,6 +138,11 @@ class WrappedTestingCertVerifier : public net::CertVerifier {
     return g_cert_verifier_for_testing->Verify(
         params, crl_set, verify_result, std::move(callback), out_req, net_log);
   }
+  void SetConfig(const Config& config) override {
+    if (!g_cert_verifier_for_testing)
+      return;
+    g_cert_verifier_for_testing->SetConfig(config);
+  }
 };
 
 // Predicate function to determine if the given |domain| matches the
@@ -1010,9 +1015,12 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     builder->EnableHttpCache(cache_params);
   }
 
-  builder->set_ssl_config_service(std::make_unique<SSLConfigServiceMojo>(
-      std::move(params_->initial_ssl_config),
-      std::move(params_->ssl_config_client_request)));
+  std::unique_ptr<SSLConfigServiceMojo> ssl_config_service =
+      std::make_unique<SSLConfigServiceMojo>(
+          std::move(params_->initial_ssl_config),
+          std::move(params_->ssl_config_client_request));
+  SSLConfigServiceMojo* ssl_config_service_raw = ssl_config_service.get();
+  builder->set_ssl_config_service(std::move(ssl_config_service));
 
   if (!params_->initial_proxy_config &&
       !params_->proxy_config_client_request.is_pending()) {
@@ -1145,6 +1153,12 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder->Build());
+
+  // Subscribe the CertVerifier to configuration changes that are exposed via
+  // the mojom::SSLConfig, but which are not part of the
+  // net::SSLConfig[Service] interfaces.
+  ssl_config_service_raw->SetCertVerifierForConfiguring(
+      result.url_request_context->cert_verifier());
 
   // Attach some things to the URLRequestContextBuilder's
   // TransportSecurityState.  Since no requests have been made yet, safe to do

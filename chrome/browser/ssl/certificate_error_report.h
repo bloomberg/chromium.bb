@@ -11,6 +11,7 @@
 #include "chrome/browser/ssl/cert_logger.pb.h"
 #include "components/version_info/version_info.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/cert_verifier.h"
 
 namespace base {
 class Time;
@@ -62,7 +63,7 @@ class CertificateErrorReport {
   // TODO(mattm): remove this when the trial is done. (https://crbug.com/649026)
   CertificateErrorReport(const std::string& hostname,
                          const net::X509Certificate& unverified_cert,
-                         int verify_flags,
+                         const net::CertVerifier::Config& config,
                          const net::CertVerifyResult& primary_result,
                          const net::CertVerifyResult& trial_result);
 

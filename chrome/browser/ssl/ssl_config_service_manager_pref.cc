@@ -24,6 +24,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_config_service.h"
 #include "url/url_canon.h"
@@ -228,14 +229,18 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
 // static
 void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   net::SSLConfig default_config;
+  net::CertVerifier::Config default_verifier_config;
   registry->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
-                                default_config.rev_checking_enabled);
+                                default_verifier_config.enable_rev_checking);
   registry->RegisterBooleanPref(
       prefs::kCertRevocationCheckingRequiredLocalAnchors,
-      default_config.rev_checking_required_local_anchors);
-  registry->RegisterBooleanPref(prefs::kCertEnableSha1LocalAnchors, false);
-  registry->RegisterBooleanPref(prefs::kCertEnableSymantecLegacyInfrastructure,
-                                default_config.symantec_enforcement_disabled);
+      default_verifier_config.require_rev_checking_local_anchors);
+  registry->RegisterBooleanPref(
+      prefs::kCertEnableSha1LocalAnchors,
+      default_verifier_config.enable_sha1_local_anchors);
+  registry->RegisterBooleanPref(
+      prefs::kCertEnableSymantecLegacyInfrastructure,
+      default_verifier_config.disable_symantec_enforcement);
   registry->RegisterStringPref(prefs::kSSLVersionMin, std::string());
   registry->RegisterStringPref(prefs::kSSLVersionMax, std::string());
   registry->RegisterStringPref(prefs::kTLS13Variant, std::string());

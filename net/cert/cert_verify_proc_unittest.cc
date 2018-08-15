@@ -1208,7 +1208,7 @@ TEST_P(CertVerifyProcInternalTest, GoogleDigiNotarTest) {
   ASSERT_TRUE(cert_chain);
 
   CertVerifyResult verify_result;
-  int flags = CertVerifier::VERIFY_REV_CHECKING_ENABLED;
+  int flags = CertVerifyProc::VERIFY_REV_CHECKING_ENABLED;
   int error = Verify(cert_chain.get(), "mail.google.com", flags, NULL,
                      CertificateList(), &verify_result);
   EXPECT_NE(OK, error);
@@ -2002,7 +2002,7 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
     CertVerifyResult test_result_3;
     error =
         verify_proc->Verify(cert.get(), "127.0.0.1", std::string(),
-                            CertVerifier::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT,
+                            CertVerifyProc::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT,
                             nullptr, CertificateList(), &test_result_3);
     EXPECT_THAT(error, IsOk());
     EXPECT_FALSE(test_result_3.cert_status & CERT_STATUS_SYMANTEC_LEGACY);
@@ -2062,7 +2062,7 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
     CertVerifyResult test_result_3;
     error =
         verify_proc->Verify(cert.get(), "127.0.0.1", std::string(),
-                            CertVerifier::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT,
+                            CertVerifyProc::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT,
                             nullptr, CertificateList(), &test_result_3);
     EXPECT_THAT(error, IsOk());
     EXPECT_FALSE(test_result_3.cert_status & CERT_STATUS_SYMANTEC_LEGACY);
@@ -3221,7 +3221,7 @@ TEST(CertVerifyProcTest, RejectsPrivateSHA1UnlessFlag) {
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_SHA1_SIGNATURE_PRESENT);
 
   // ... unless VERIFY_ENABLE_SHA1_LOCAL_ANCHORS was supplied.
-  flags = CertVerifier::VERIFY_ENABLE_SHA1_LOCAL_ANCHORS;
+  flags = CertVerifyProc::VERIFY_ENABLE_SHA1_LOCAL_ANCHORS;
   verify_result.Reset();
   error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(), flags,
                               nullptr /* crl_set */, CertificateList(),

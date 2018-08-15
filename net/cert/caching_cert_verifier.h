@@ -49,6 +49,7 @@ class NET_EXPORT CachingCertVerifier : public CertVerifier,
              CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
              const NetLogWithSource& net_log) override;
+  void SetConfig(const Config& config) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CachingCertVerifierTest, CacheHit);
@@ -93,18 +94,21 @@ class NET_EXPORT CachingCertVerifier : public CertVerifier,
                                               CacheExpirationFunctor>;
 
   // Handles completion of the request matching |params|, which started at
-  // |start_time|, completing. |verify_result| and |result| are added to the
-  // cache, and then |callback| (the original caller's callback) is invoked.
-  void OnRequestFinished(const RequestParams& params,
+  // |start_time| and with config |config_id|, completing. |verify_result| and
+  // |result| are added to the cache, and then |callback| (the original caller's
+  // callback) is invoked.
+  void OnRequestFinished(uint32_t config_id,
+                         const RequestParams& params,
                          base::Time start_time,
                          CompletionOnceCallback callback,
                          CertVerifyResult* verify_result,
                          int error);
 
   // Adds |verify_result| and |error| to the cache for |params|, whose
-  // verification attempt began at |start_time|. See the implementation
-  // for more details about the necessity of |start_time|.
-  void AddResultToCache(const RequestParams& params,
+  // verification attempt began at |start_time| with config |config_id|. See the
+  // implementation for more details about the necessity of |start_time|.
+  void AddResultToCache(uint32_t config_id,
+                        const RequestParams& params,
                         base::Time start_time,
                         const CertVerifyResult& verify_result,
                         int error);
@@ -120,6 +124,7 @@ class NET_EXPORT CachingCertVerifier : public CertVerifier,
 
   std::unique_ptr<CertVerifier> verifier_;
 
+  uint32_t config_id_;
   CertVerificationCache cache_;
 
   uint64_t requests_;

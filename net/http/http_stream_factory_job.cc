@@ -863,9 +863,9 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
 
   if (proxy_info_.is_https() || proxy_info_.is_quic()) {
     InitSSLConfig(&proxy_ssl_config_, /*is_proxy=*/true);
-    // Disable revocation checking for HTTPS proxies since the revocation
-    // requests are probably going to need to go through the proxy too.
-    proxy_ssl_config_.rev_checking_enabled = false;
+    // Disable network fetches for HTTPS proxies, since the network requests
+    // are probably going to need to go through the proxy too.
+    proxy_ssl_config_.disable_cert_verification_network_fetches = true;
   }
   if (using_ssl_) {
     InitSSLConfig(&server_ssl_config_, /*is_proxy=*/false);
