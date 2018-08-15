@@ -82,7 +82,8 @@ IN_PROC_BROWSER_TEST_F(BrowserShutdownBrowserTest,
 #endif  // !defined(OS_CHROMEOS)
 
 // EventGenerator doesn't work on Mac. See https://crbug.com/814675
-#if defined(OS_MACOSX)
+// Flaking on Windows. See https://crbug.com/874370
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_ShutdownConfirmation DISABLED_ShutdownConfirmation
 #else
 #define MAYBE_ShutdownConfirmation ShutdownConfirmation
