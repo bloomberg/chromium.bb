@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
@@ -455,7 +456,13 @@ TEST_F(FlingControllerTest, DISABLED_GestureFlingWithNegativeTimeDelta) {
   EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
 }
 
-TEST_F(FlingControllerTest, ControllerBoostsTouchpadFling) {
+#if defined(OS_LINUX)
+#define MAYBE_ControllerBoostsTouchpadFling \
+  DISABLED_ControllerBoostsTouchpadFling
+#else
+#define MAYBE_ControllerBoostsTouchpadFling ControllerBoostsTouchpadFling
+#endif
+TEST_F(FlingControllerTest, MAYBE_ControllerBoostsTouchpadFling) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
