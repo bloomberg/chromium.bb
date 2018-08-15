@@ -2312,6 +2312,53 @@ TEST_F(WallpaperControllerTest, AddFirstWallpaperAnimationEndCallback) {
   EXPECT_TRUE(is_third_callback_run);
 }
 
+TEST_F(WallpaperControllerTest, ShowOneShotWallpaper) {
+  gfx::ImageSkia custom_wallpaper = CreateImage(640, 480, kWallpaperColor);
+  WallpaperLayout layout = WALLPAPER_LAYOUT_CENTER;
+  SimulateUserLogin(kUser1);
+  // First, set a custom wallpaper for |kUser1|. Verify the wallpaper is shown
+  // successfully and the user wallpaper info is updated.
+  controller_->SetCustomWallpaper(InitializeUser(account_id_1),
+                                  wallpaper_files_id_1, file_name_1, layout,
+                                  custom_wallpaper, false /*preview_mode=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+  EXPECT_EQ(WallpaperType::CUSTOMIZED, controller_->GetWallpaperType());
+  const WallpaperInfo expected_wallpaper_info(
+      base::FilePath(wallpaper_files_id_1).Append(file_name_1).value(), layout,
+      WallpaperType::CUSTOMIZED, base::Time::Now().LocalMidnight());
+  WallpaperInfo wallpaper_info;
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
+                                                false /*is_ephemeral=*/));
+  EXPECT_EQ(expected_wallpaper_info, wallpaper_info);
+
+  // Show a one-shot wallpaper. Verify it is shown successfully.
+  ClearWallpaperCount();
+  constexpr SkColor kOneShotWallpaperColor = SK_ColorWHITE;
+  gfx::ImageSkia one_shot_wallpaper =
+      CreateImage(640, 480, kOneShotWallpaperColor);
+  controller_->ShowOneShotWallpaper(one_shot_wallpaper);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(kOneShotWallpaperColor, GetWallpaperColor());
+  EXPECT_EQ(WallpaperType::ONE_SHOT, controller_->GetWallpaperType());
+  EXPECT_FALSE(controller_->IsBlurAllowed());
+  EXPECT_FALSE(controller_->ShouldApplyDimming());
+
+  // Verify the user wallpaper info is unaffected, and the one-shot wallpaper
+  // can be replaced by the user wallpaper.
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
+                                                false /*is_ephemeral=*/));
+  EXPECT_EQ(expected_wallpaper_info, wallpaper_info);
+  ClearWallpaperCount();
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+  EXPECT_EQ(WallpaperType::CUSTOMIZED, controller_->GetWallpaperType());
+}
+
 // A test wallpaper controller client class.
 class TestWallpaperControllerClient : public mojom::WallpaperControllerClient {
  public:

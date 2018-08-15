@@ -126,6 +126,11 @@ void TestWallpaperController::ShowSigninWallpaper() {
   NOTIMPLEMENTED();
 }
 
+void TestWallpaperController::ShowOneShotWallpaper(
+    const gfx::ImageSkia& image) {
+  NOTIMPLEMENTED();
+}
+
 void TestWallpaperController::RemoveUserWallpaper(
     ash::mojom::WallpaperUserInfoPtr user_info,
     const std::string& wallpaper_files_id) {

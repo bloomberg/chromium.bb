@@ -234,11 +234,11 @@ bool ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
   return written_bytes == data->size();
 }
 
-// Creates a 1x1 solid color image to be used as the backup default wallpaper.
-gfx::ImageSkia CreateSolidColorWallpaper() {
+// Creates a 1x1 solid color image.
+gfx::ImageSkia CreateSolidColorWallpaper(SkColor color) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(1, 1);
-  bitmap.eraseColor(kDefaultWallpaperColor);
+  bitmap.eraseColor(color);
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
 
@@ -728,12 +728,13 @@ void WallpaperController::UpdateWallpaperBlur(bool blur) {
 
 bool WallpaperController::ShouldApplyDimming() const {
   return Shell::Get()->session_controller()->IsUserSessionBlocked() &&
+         !IsOneShotWallpaper() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kAshDisableLoginDimAndBlur);
 }
 
 bool WallpaperController::IsBlurAllowed() const {
-  return !IsDevicePolicyWallpaper() &&
+  return !IsDevicePolicyWallpaper() && !IsOneShotWallpaper() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kAshDisableLoginDimAndBlur);
 }
@@ -955,7 +956,8 @@ void WallpaperController::SetOnlineWallpaperFromData(
                      weak_factory_.GetWeakPtr(), params, /*save_file=*/true,
                      std::move(callback));
   if (bypass_decode_for_testing_) {
-    std::move(decoded_callback).Run(CreateSolidColorWallpaper());
+    std::move(decoded_callback)
+        .Run(CreateSolidColorWallpaper(kDefaultWallpaperColor));
     return;
   }
   // Use default codec because 1) online wallpapers may have various formats,
@@ -1020,7 +1022,7 @@ void WallpaperController::SetPolicyWallpaper(
       POLICY, WALLPAPER_LAYOUT_CENTER_CROPPED, show_wallpaper);
 
   if (bypass_decode_for_testing_) {
-    std::move(callback).Run(CreateSolidColorWallpaper());
+    std::move(callback).Run(CreateSolidColorWallpaper(kDefaultWallpaperColor));
     return;
   }
   // The default codec cannot be used here because the image data is provided by
@@ -1209,6 +1211,13 @@ void WallpaperController::ShowSigninWallpaper() {
     SetDefaultWallpaperImpl(EmptyAccountId(), user_manager::USER_TYPE_REGULAR,
                             /*show_wallpaper=*/true);
   }
+}
+
+void WallpaperController::ShowOneShotWallpaper(const gfx::ImageSkia& image) {
+  const WallpaperInfo info = {
+      std::string(), WallpaperLayout::WALLPAPER_LAYOUT_STRETCH,
+      WallpaperType::ONE_SHOT, base::Time::Now().LocalMidnight()};
+  ShowWallpaperImage(image, info, /*preview_mode=*/false);
 }
 
 void WallpaperController::RemoveUserWallpaper(
@@ -1625,7 +1634,7 @@ void WallpaperController::ReadAndDecodeWallpaper(
     const base::FilePath& file_path) {
   decode_requests_for_testing_.push_back(file_path);
   if (bypass_decode_for_testing_) {
-    std::move(callback).Run(CreateSolidColorWallpaper());
+    std::move(callback).Run(CreateSolidColorWallpaper(kDefaultWallpaperColor));
     return;
   }
   std::string* data = new std::string;
@@ -1783,7 +1792,8 @@ void WallpaperController::OnDefaultWallpaperDecoded(
     const gfx::ImageSkia& image) {
   if (image.isNull()) {
     // Create a solid color wallpaper if the default wallpaper decoding fails.
-    cached_default_wallpaper_.image = CreateSolidColorWallpaper();
+    cached_default_wallpaper_.image =
+        CreateSolidColorWallpaper(kDefaultWallpaperColor);
     cached_default_wallpaper_.file_path.clear();
   } else {
     cached_default_wallpaper_.image = image;
@@ -2004,6 +2014,11 @@ bool WallpaperController::MoveToUnlockedContainer() {
 bool WallpaperController::IsDevicePolicyWallpaper() const {
   return current_wallpaper_ &&
          current_wallpaper_->wallpaper_info().type == WallpaperType::DEVICE;
+}
+
+bool WallpaperController::IsOneShotWallpaper() const {
+  return current_wallpaper_ &&
+         current_wallpaper_->wallpaper_info().type == WallpaperType::ONE_SHOT;
 }
 
 bool WallpaperController::ShouldSetDevicePolicyWallpaper() const {

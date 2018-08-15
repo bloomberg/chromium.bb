@@ -109,10 +109,14 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   // Binds this object to its mojo interface and sets it as the ash client.
   void BindAndSetClient();
 
-  // Updates the wallpaper of a registered device after device policy is
-  // trusted, outside an user session. Note that before device is enrolled, it
-  // proceeds with untrusted setting.
-  void UpdateRegisteredDeviceWallpaper();
+  // Shows the wallpaper of the first user in |UserManager::GetUsers|, or a
+  // default signin wallpaper if there's no user. This ensures the wallpaper is
+  // shown right after boot, regardless of when the login screen is available.
+  //
+  // TODO(wzang|784495): Consider deprecating this method after views-based
+  // login is enabled. It should be fast enough to request the first wallpaper
+  // so that there's no visible delay.
+  void ShowWallpaperOnLoginScreen();
 
   // ash::mojom::WallpaperControllerClient:
   void OpenWallpaperPicker() override;
