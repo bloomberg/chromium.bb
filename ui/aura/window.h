@@ -553,6 +553,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void OnLayerTransformed(const gfx::Transform& old_transform,
                           ui::PropertyChangeReason reason) override;
   void OnLayerOpacityChanged(ui::PropertyChangeReason reason) override;
+  void OnLayerAlphaShapeChanged() override;
 
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;

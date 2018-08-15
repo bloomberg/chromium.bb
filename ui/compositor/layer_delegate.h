@@ -40,6 +40,9 @@ class COMPOSITOR_EXPORT LayerDelegate {
                                   PropertyChangeReason reason);
   virtual void OnLayerOpacityChanged(PropertyChangeReason reason);
 
+  // Invoked when the alpha shape is set.
+  virtual void OnLayerAlphaShapeChanged();
+
  protected:
   virtual ~LayerDelegate() {}
 };

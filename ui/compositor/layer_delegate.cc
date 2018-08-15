@@ -14,4 +14,6 @@ void LayerDelegate::OnLayerTransformed(const gfx::Transform& old_transform,
 
 void LayerDelegate::OnLayerOpacityChanged(PropertyChangeReason reason) {}
 
+void LayerDelegate::OnLayerAlphaShapeChanged() {}
+
 }  // namespace ui

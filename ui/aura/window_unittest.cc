@@ -1795,7 +1795,7 @@ class WindowObserverTest : public WindowTest,
         ui::PropertyChangeReason::NOT_FROM_ANIMATION;
   };
 
-  struct LayerRecreatedInfo {
+  struct CountAndWindow {
     int count = 0;
     Window* window = nullptr;
   };
@@ -1815,6 +1815,8 @@ class WindowObserverTest : public WindowTest,
     return window_opacity_info_;
   }
 
+  const CountAndWindow& alpha_shape_info() const { return alpha_shape_info_; }
+
   const WindowTargetTransformChangingInfo&
   window_target_transform_changing_info() const {
     return window_target_transform_changing_info_;
@@ -1824,7 +1826,7 @@ class WindowObserverTest : public WindowTest,
     return window_transformed_info_;
   }
 
-  const LayerRecreatedInfo& layer_recreated_info() const {
+  const CountAndWindow& layer_recreated_info() const {
     return layer_recreated_info_;
   }
 
@@ -1900,6 +1902,11 @@ class WindowObserverTest : public WindowTest,
     window_opacity_info_.reason = reason;
   }
 
+  void OnWindowAlphaShapeSet(Window* window) override {
+    ++alpha_shape_info_.count;
+    alpha_shape_info_.window = window;
+  }
+
   void OnWindowTargetTransformChanging(
       Window* window,
       const gfx::Transform& new_transform) override {
@@ -1931,7 +1938,8 @@ class WindowObserverTest : public WindowTest,
   WindowOpacityInfo window_opacity_info_;
   WindowTargetTransformChangingInfo window_target_transform_changing_info_;
   WindowTransformedInfo window_transformed_info_;
-  LayerRecreatedInfo layer_recreated_info_;
+  CountAndWindow alpha_shape_info_;
+  CountAndWindow layer_recreated_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserverTest);
 };
@@ -2144,6 +2152,22 @@ TEST_P(WindowObserverTest, WindowOpacityChangedAnimation) {
   EXPECT_EQ(window.get(), window_opacity_info().window);
   EXPECT_EQ(ui::PropertyChangeReason::FROM_ANIMATION,
             window_opacity_info().reason);
+}
+
+// Verify that WindowObserver::OnWindowAlphaShapeSet() is notified when an alpha
+// shape is set for a window.
+TEST_P(WindowObserverTest, WindowAlphaShapeChanged) {
+  std::unique_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
+  window->AddObserver(this);
+
+  auto shape = std::make_unique<ui::Layer::ShapeRects>();
+  shape->emplace_back(0, 0, 10, 20);
+
+  EXPECT_EQ(0, alpha_shape_info().count);
+  EXPECT_EQ(nullptr, alpha_shape_info().window);
+  window->layer()->SetAlphaShape(std::move(shape));
+  EXPECT_EQ(1, alpha_shape_info().count);
+  EXPECT_EQ(window.get(), alpha_shape_info().window);
 }
 
 // Verify that WindowObserver::OnWindow(TargetTransformChanging|Transformed)()

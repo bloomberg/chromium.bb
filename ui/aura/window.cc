@@ -1197,6 +1197,12 @@ void Window::OnLayerOpacityChanged(ui::PropertyChangeReason reason) {
     observer.OnWindowOpacitySet(this, reason);
 }
 
+void Window::OnLayerAlphaShapeChanged() {
+  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  for (WindowObserver& observer : observers_)
+    observer.OnWindowAlphaShapeSet(this);
+}
+
 void Window::OnLayerTransformed(const gfx::Transform& old_transform,
                                 ui::PropertyChangeReason reason) {
   port_->OnDidChangeTransform(old_transform, layer()->transform());
