@@ -404,8 +404,7 @@ def _handle_perf_results(
           build_properties, output_json_file, service_account_file))
 
     # Kick off the uploads in mutliple processes
-    cpus = mp.cpu_count()
-    pool = mp.Pool(cpus)
+    pool = mp.Pool()
     try:
       async_result = pool.map_async(
           _upload_individual_benchmark, invocations)

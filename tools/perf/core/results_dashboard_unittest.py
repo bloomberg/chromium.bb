@@ -4,6 +4,7 @@
 import unittest
 
 import mock
+from mock import call
 
 from core import results_dashboard
 
@@ -23,14 +24,19 @@ class ResultsDashboardTest(unittest.TestCase):
       del token_generator_callback  # unused
       raise results_dashboard.SendResultsRetryException('Should retry')
 
-    with mock.patch('core.results_dashboard._SendHistogramJson',
-                    side_effect=raise_retry_exception) as m:
-      upload_result = results_dashboard.SendResults(
-          self.perf_data, self.dashboard_url, send_as_histograms=True,
-          service_account_file=self.fake_service,
-          token_generator_callback=self.dummy_token_generator, num_retries=5)
-      self.assertFalse(upload_result)
-      self.assertEqual(m.call_count, 5)
+    with mock.patch('core.results_dashboard.time.sleep') as sleep_mock:
+      with mock.patch('core.results_dashboard._SendHistogramJson',
+                      side_effect=raise_retry_exception) as m:
+        upload_result = results_dashboard.SendResults(
+            self.perf_data, 'dummy_benchmark',
+            self.dashboard_url, send_as_histograms=True,
+            service_account_file=self.fake_service,
+            token_generator_callback=self.dummy_token_generator, num_retries=5)
+        self.assertFalse(upload_result)
+        self.assertEqual(m.call_count, 5)
+        self.assertEqual(
+            sleep_mock.mock_calls,
+            [call(30), call(60), call(120), call(240), call(480)])
 
   def testNoRetryForSendResultFatalException(self):
 
@@ -40,25 +46,31 @@ class ResultsDashboardTest(unittest.TestCase):
       del token_generator_callback  # unused
       raise results_dashboard.SendResultsFatalException('Do not retry')
 
-    with mock.patch('core.results_dashboard._SendHistogramJson',
-                    side_effect=raise_retry_exception) as m:
-      upload_result =  results_dashboard.SendResults(
-          self.perf_data, self.dashboard_url, send_as_histograms=True,
-          service_account_file=self.fake_service,
-          token_generator_callback=self.dummy_token_generator,
-          num_retries=5)
-      self.assertFalse(upload_result)
-      self.assertEqual(m.call_count, 1)
+    with mock.patch('core.results_dashboard.time.sleep') as sleep_mock:
+      with mock.patch('core.results_dashboard._SendHistogramJson',
+                      side_effect=raise_retry_exception) as m:
+        upload_result =  results_dashboard.SendResults(
+            self.perf_data, 'dummy_benchmark',
+            self.dashboard_url, send_as_histograms=True,
+            service_account_file=self.fake_service,
+            token_generator_callback=self.dummy_token_generator,
+            num_retries=5)
+        self.assertFalse(upload_result)
+        self.assertEqual(m.call_count, 1)
+        self.assertFalse(sleep_mock.mock_calls)
 
   def testNoRetryForSuccessfulSendResult(self):
-    with mock.patch('core.results_dashboard._SendHistogramJson') as m:
-      upload_result = results_dashboard.SendResults(
-          self.perf_data, self.dashboard_url, send_as_histograms=True,
-          service_account_file=self.fake_service,
-          token_generator_callback=self.dummy_token_generator,
-          num_retries=5)
-      self.assertTrue(upload_result)
-      self.assertEqual(m.call_count, 1)
+    with mock.patch('core.results_dashboard.time.sleep') as sleep_mock:
+      with mock.patch('core.results_dashboard._SendHistogramJson') as m:
+        upload_result = results_dashboard.SendResults(
+            self.perf_data, 'dummy_benchmark',
+            self.dashboard_url, send_as_histograms=True,
+            service_account_file=self.fake_service,
+            token_generator_callback=self.dummy_token_generator,
+            num_retries=5)
+        self.assertTrue(upload_result)
+        self.assertEqual(m.call_count, 1)
+        self.assertFalse(sleep_mock.mock_calls)
 
   def testNoRetryAfterSucessfulSendResult(self):
     counter = [0]
@@ -70,12 +82,16 @@ class ResultsDashboardTest(unittest.TestCase):
       if counter[0] <= 2:
         raise results_dashboard.SendResultsRetryException('Please retry')
 
-    with mock.patch('core.results_dashboard._SendHistogramJson',
-                    side_effect=raise_retry_exception_first_two_times) as m:
-      upload_result = results_dashboard.SendResults(
-          self.perf_data, self.dashboard_url, send_as_histograms=True,
-          service_account_file=self.fake_service,
-          token_generator_callback=self.dummy_token_generator,
-          num_retries=5)
-      self.assertTrue(upload_result)
-      self.assertEqual(m.call_count, 3)
+    with mock.patch('core.results_dashboard.time.sleep') as sleep_mock:
+      with mock.patch('core.results_dashboard._SendHistogramJson',
+                      side_effect=raise_retry_exception_first_two_times) as m:
+        upload_result = results_dashboard.SendResults(
+            self.perf_data, 'dummy_benchmark',
+            self.dashboard_url, send_as_histograms=True,
+            service_account_file=self.fake_service,
+            token_generator_callback=self.dummy_token_generator,
+            num_retries=5)
+        self.assertTrue(upload_result)
+        self.assertEqual(m.call_count, 3)
+        self.assertEqual(
+            sleep_mock.mock_calls, [call(30), call(60)])

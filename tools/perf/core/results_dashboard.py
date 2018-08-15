@@ -63,15 +63,18 @@ def LuciAuthTokenGeneratorCallback(
         (p.stdout.read(), p.stderr.read()))
 
 
-def SendResults(data, url, send_as_histograms=False, service_account_file=None,
+def SendResults(data, data_label, url, send_as_histograms=False,
+                service_account_file=None,
                 token_generator_callback=LuciAuthTokenGeneratorCallback,
-                num_retries=3):
+                num_retries=4):
   """Sends results to the Chrome Performance Dashboard.
 
   This function tries to send the given data to the dashboard.
 
   Args:
     data: The data to try to send. Must be JSON-serializable.
+    data_label: string name of the data to be uploaded. This is only used for
+    logging purpose.
     url: Performance Dashboard URL (including schema).
     send_as_histograms: True if result is to be sent to /add_histograms.
     service_account_file: string; path to service account file which is used
@@ -99,10 +102,15 @@ def SendResults(data, url, send_as_histograms=False, service_account_file=None,
 
   dashboard_data_str = json.dumps(data)
 
+  # When perf dashboard is overloaded, it takes sometimes to spin up new
+  # instance. So sleep before retrying again. (
+  # For more details, see crbug.com/867379.
+  wait_before_next_retry_in_seconds = 30
+
   for i in xrange(1, num_retries + 1):
     try:
-      print 'Sending %s result to dashboard (attempt %i out of %i).' % (
-          data_type, i, num_retries)
+      print 'Sending %s result of %s to dashboard (attempt %i out of %i).' % (
+          data_type, data_label, i, num_retries)
       if send_as_histograms:
         _SendHistogramJson(url, dashboard_data_str,
                            service_account_file, token_generator_callback)
@@ -114,6 +122,8 @@ def SendResults(data, url, send_as_histograms=False, service_account_file=None,
     except SendResultsRetryException as e:
       error = 'Error while uploading %s data: %s' % (data_type, str(e))
       errors.append(error)
+      time.sleep(wait_before_next_retry_in_seconds)
+      wait_before_next_retry_in_seconds *= 2
     except SendResultsFatalException as e:
       error = 'Fatal error while uploading %s data: %s' % (data_type, str(e))
       errors.append(error)
