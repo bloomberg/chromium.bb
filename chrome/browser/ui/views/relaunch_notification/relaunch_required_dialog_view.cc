@@ -23,13 +23,12 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/non_client_view.h"
 
 // static
 views::Widget* RelaunchRequiredDialogView::Show(
@@ -271,14 +270,8 @@ void RelaunchRequiredDialogView::ScheduleNextTitleRefresh() {
 }
 
 void RelaunchRequiredDialogView::OnTitleRefresh() {
-  GetBubbleFrameView()->UpdateWindowTitle();
+  GetWidget()->UpdateWindowTitle();
+
   if (!last_refresh_)
     ScheduleNextTitleRefresh();
-}
-
-views::BubbleFrameView* RelaunchRequiredDialogView::GetBubbleFrameView() {
-  const views::NonClientView* view =
-      GetWidget() ? GetWidget()->non_client_view() : nullptr;
-  return view ? static_cast<views::BubbleFrameView*>(view->frame_view())
-              : nullptr;
 }

@@ -13,7 +13,6 @@
 
 class Browser;
 namespace views {
-class BubbleFrameView;
 class Label;
 class Widget;
 }  // namespace views
@@ -75,10 +74,6 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
 
   // Invoked when the timer fires to refresh the title text.
   void OnTitleRefresh();
-
-  // Returns the containing widget's NonClientView's FrameView as a
-  // BubbleFrameView.
-  views::BubbleFrameView* GetBubbleFrameView();
 
   // The time at which Chrome will be forcefully relaunched.
   base::TimeTicks relaunch_deadline_;
