@@ -38,6 +38,9 @@ class PLATFORM_EXPORT CallbackFunctionBase
     return callback_relevant_script_state_;
   }
 
+  // Returns true if the ES function has a [[Construct]] internal method.
+  bool IsConstructor() const { return CallbackFunction()->IsConstructor(); }
+
  protected:
   explicit CallbackFunctionBase(v8::Local<v8::Function>);
 

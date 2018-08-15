@@ -109,6 +109,86 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Invoke(ScriptWrappa
   }
 }
 
+v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Construct(const Vector<ScriptValue>& arguments) {
+  // This function implements "construct" algorithm defined in
+  // "3.10. Invoking callback functions".
+  // https://heycam.github.io/webidl/#construct-a-callback-function
+
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+                                  IncumbentScriptState())) {
+    // Wrapper-tracing for the callback function makes the function object and
+    // its creation context alive. Thus it's safe to use the creation context
+    // of the callback function here.
+    v8::HandleScope handle_scope(GetIsolate());
+    CHECK(!CallbackFunction().IsEmpty());
+    v8::Context::Scope context_scope(CallbackFunction()->CreationContext());
+    V8ThrowException::ThrowError(
+        GetIsolate(),
+        ExceptionMessages::FailedToExecute(
+            "construct",
+            "AnyCallbackFunctionVariadicAnyArgs",
+            "The provided callback is no longer runnable."));
+    return v8::Nothing<ScriptValue>();
+  }
+
+  // step 7. Prepare to run script with relevant settings.
+  ScriptState::Scope callback_relevant_context_scope(
+      CallbackRelevantScriptState());
+  // step 8. Prepare to run a callback with stored settings.
+  v8::Context::BackupIncumbentScope backup_incumbent_scope(
+      IncumbentScriptState()->GetContext());
+
+  // step 3. If ! IsConstructor(F) is false, throw a TypeError exception.
+  //
+  // Note that step 7. and 8. are side effect free (except for a very rare
+  // exception due to no incumbent realm), so it's okay to put step 3. after
+  // step 7. and 8.
+  if (!CallbackFunction()->IsConstructor()) {
+    V8ThrowException::ThrowTypeError(
+        GetIsolate(),
+        ExceptionMessages::FailedToExecute(
+            "construct",
+            "AnyCallbackFunctionVariadicAnyArgs",
+            "The provided callback is not a constructor."));
+    return v8::Nothing<ScriptValue>();
+  }
+
+  // step 9. Let esArgs be the result of converting args to an ECMAScript
+  //   arguments list. If this throws an exception, set completion to the
+  //   completion value representing the thrown exception and jump to the step
+  //   labeled return.
+  v8::Local<v8::Object> argument_creation_context =
+      CallbackRelevantScriptState()->GetContext()->Global();
+  ALLOW_UNUSED_LOCAL(argument_creation_context);
+  const int argc = 0 + arguments.size();
+  v8::Local<v8::Value> argv[argc];
+  for (wtf_size_t i = 0; i < arguments.size(); ++i) {
+    argv[0 + i] = ToV8(arguments[i], argument_creation_context, GetIsolate());
+  }
+
+  // step 10. Let callResult be Construct(F, esArgs).
+  v8::Local<v8::Value> call_result;
+  if (!V8ScriptRunner::CallAsConstructor(
+          GetIsolate(),
+          CallbackFunction(),
+          ExecutionContext::From(CallbackRelevantScriptState()),
+          argc,
+          argv).ToLocal(&call_result)) {
+    // step 11. If callResult is an abrupt completion, set completion to
+    //   callResult and jump to the step labeled return.
+    return v8::Nothing<ScriptValue>();
+  }
+
+  // step 12. Set completion to the result of converting callResult.[[Value]] to
+  //   an IDL value of the same type as the operation's return type.
+  ExceptionState exceptionState(GetIsolate(),
+                                ExceptionState::kExecutionContext,
+                                "AnyCallbackFunctionVariadicAnyArgs",
+                                "construct");
+  ScriptValue native_result = ScriptValue(ScriptState::Current(GetIsolate()), call_result);
+  return v8::Just<ScriptValue>(native_result);
+}
+
 v8::Maybe<ScriptValue> V8PersistentCallbackFunction<V8AnyCallbackFunctionVariadicAnyArgs>::Invoke(ScriptWrappable* callback_this_value, const Vector<ScriptValue>& arguments) {
   return Proxy()->Invoke(
       callback_this_value, arguments);

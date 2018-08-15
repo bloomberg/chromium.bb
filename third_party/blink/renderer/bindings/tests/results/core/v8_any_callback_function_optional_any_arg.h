@@ -34,6 +34,10 @@ class CORE_EXPORT V8AnyCallbackFunctionOptionalAnyArg final : public CallbackFun
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
   v8::Maybe<ScriptValue> Invoke(ScriptWrappable* callback_this_value, ScriptValue optionalAnyArg) WARN_UNUSED_RESULT;
 
+  // Performs "construct".
+  // https://heycam.github.io/webidl/#construct-a-callback-function
+  v8::Maybe<ScriptValue> Construct(ScriptValue optionalAnyArg) WARN_UNUSED_RESULT;
+
  private:
   explicit V8AnyCallbackFunctionOptionalAnyArg(v8::Local<v8::Function> callback_function)
       : CallbackFunctionBase(callback_function) {}
