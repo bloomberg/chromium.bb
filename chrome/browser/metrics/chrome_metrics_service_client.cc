@@ -152,6 +152,10 @@
 #include "chrome/browser/metrics/upgrade_metrics_provider.h"
 #endif  //  !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/metrics/power_metrics_provider_mac.h"
+#endif
+
 namespace {
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
@@ -716,6 +720,11 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<UpgradeMetricsProvider>());
 #endif  //! defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<PowerMetricsProvider>());
+#endif
 }
 
 void ChromeMetricsServiceClient::RegisterUKMProviders() {
