@@ -7,72 +7,64 @@ package org.chromium.chromecast.shell;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.IBinder;
 import android.widget.Toast;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.chromecast.base.Controller;
+import org.chromium.chromecast.base.Function;
+import org.chromium.chromecast.base.Observable;
+import org.chromium.chromecast.base.Observers;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content_public.browser.WebContents;
 
 /**
  * Service for "displaying" a WebContents in CastShell.
  * <p>
- * Typically, this class is controlled by CastContentWindowAndroid, which will
- * bind to this service.
+ * Typically, this class is controlled by CastContentWindowAndroid, which will bind to this
+ * service via CastWebContentsComponent.
  */
-@JNINamespace("chromecast::shell")
 public class CastWebContentsService extends Service {
     private static final String TAG = "cr_CastWebService";
     private static final boolean DEBUG = true;
     private static final int CAST_NOTIFICATION_ID = 100;
 
-    private final Controller<WebContents> mWebContentsState = new Controller<>();
-    private String mInstanceId;
-    private CastAudioManager mAudioManager;
+    private final Controller<Intent> mIntentState = new Controller<>();
+    private final Observable<WebContents> mWebContentsState =
+            mIntentState.map(CastWebContentsIntentUtils::getWebContents);
+    // Allows tests to inject a mock MediaSessionImpl to test audio focus logic.
+    private Function<WebContents, MediaSessionImpl> mMediaSessionGetter =
+            MediaSessionImpl::fromWebContents;
 
     {
         // React to web contents by presenting them in a headless view.
         mWebContentsState.watch(CastWebContentsView.withoutLayout(this));
         mWebContentsState.watch(x -> {
-            if (DEBUG) Log.d(TAG, "show web contents");
             // TODO(thoren): Notification.Builder(Context) is deprecated in O. Use the
             // (Context, String) constructor when CastWebContentsService starts supporting O.
             Notification notification = new Notification.Builder(this).build();
             startForeground(CAST_NOTIFICATION_ID, notification);
-            return () -> {
-                if (DEBUG) Log.d(TAG, "detach web contents");
-                stopForeground(true /*removeNotification*/);
-                // Inform CastContentWindowAndroid we're detaching.
-                CastWebContentsComponent.onComponentClosed(mInstanceId);
-            };
+            return () -> stopForeground(true /*removeNotification*/);
         });
-    }
+        mWebContentsState.map(this ::getMediaSessionImpl)
+                .watch(Observers.onEnter(MediaSessionImpl::requestSystemAudioFocus));
+        // Inform CastContentWindowAndroid we're detaching.
+        Observable<String> instanceIdState = mIntentState.map(Intent::getData).map(Uri::getPath);
+        instanceIdState.watch(Observers.onExit(CastWebContentsComponent::onComponentClosed));
 
-    protected void handleIntent(Intent intent) {
-        intent.setExtrasClassLoader(WebContents.class.getClassLoader());
-        mInstanceId = intent.getData().getPath();
-
-        WebContents webContents = CastWebContentsIntentUtils.getWebContents(intent);
-        if (webContents == null) {
-            Log.e(TAG, "Received null WebContents in intent.");
-            return;
+        if (DEBUG) {
+            mWebContentsState.watch(x -> {
+                Log.d(TAG, "show web contents");
+                return () -> Log.d(TAG, "detach web contents");
+            });
         }
-
-        MediaSessionImpl.fromWebContents(webContents).requestSystemAudioFocus();
-        mWebContentsState.set(webContents);
-    }
-
-    @Override
-    public boolean onUnbind(Intent intent) {
-        if (DEBUG) Log.d(TAG, "onUnbind");
-        mWebContentsState.reset();
-        return super.onUnbind(intent);
     }
 
     @Override
     public void onCreate() {
+        super.onCreate();
         if (DEBUG) Log.d(TAG, "onCreate");
         if (!CastBrowserHelper.initializeBrowser(getApplicationContext())) {
             Toast.makeText(this, R.string.browser_process_initialization_failed, Toast.LENGTH_SHORT)
@@ -84,7 +76,29 @@ public class CastWebContentsService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         if (DEBUG) Log.d(TAG, "onBind");
-        handleIntent(intent);
+        intent.setExtrasClassLoader(WebContents.class.getClassLoader());
+        mIntentState.set(intent);
         return null;
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        if (DEBUG) Log.d(TAG, "onUnbind");
+        mIntentState.reset();
+        return false;
+    }
+
+    private MediaSessionImpl getMediaSessionImpl(WebContents webContents) {
+        return mMediaSessionGetter.apply(webContents);
+    }
+
+    @RemovableInRelease
+    Observable<WebContents> observeWebContentsStateForTesting() {
+        return mWebContentsState;
+    }
+
+    @RemovableInRelease
+    void setMediaSessionImplGetterForTesting(Function<WebContents, MediaSessionImpl> getter) {
+        mMediaSessionGetter = getter;
     }
 }
