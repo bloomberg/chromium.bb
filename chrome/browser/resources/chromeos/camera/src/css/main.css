@@ -292,11 +292,9 @@ body.record-mode #take-picture {
 }
 
 .buttons #toggle-device {
-  background-image: -webkit-image-set(
-      url(../images/camera_button_toggle.png) 1x,
-      url(../images/2x/camera_button_toggle.png) 2x);
-  height: 32px;
-  width: 32px;
+  background-image: url(../images/camera_button_toggle_device.svg);
+  width: 48px;
+  height: 48px;
 }
 
 .buttons #switch-recordvideo {
@@ -353,6 +351,10 @@ body.record-mode #switch-recordvideo {
 
 .bottom-stripe.right-stripe {
   -webkit-transform: translate(50%, 50%);
+}
+
+.bottom-stripe.left-stripe {
+  -webkit-transform: translate(-50%, 50%);
 }
 
 .left-stripe.buttons {
