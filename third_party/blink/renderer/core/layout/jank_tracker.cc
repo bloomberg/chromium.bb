@@ -17,6 +17,7 @@ namespace blink {
 
 static constexpr TimeDelta kTimerDelay = TimeDelta::FromSeconds(3);
 static const float kRegionGranularitySteps = 60.0;
+static const float kMovementThreshold = 3.0;  // CSS pixels.
 
 static FloatPoint LogicalStart(const FloatRect& rect,
                                const LayoutObject& object) {
@@ -41,6 +42,21 @@ static float RegionGranularityScale(const IntRect& viewport) {
          std::min(viewport.Height(), viewport.Width());
 }
 
+static bool EqualWithinMovementThreshold(const FloatPoint& a,
+                                         const FloatPoint& b,
+                                         const LayoutObject& object) {
+  float threshold_physical_px =
+      kMovementThreshold * object.StyleRef().EffectiveZoom();
+  return fabs(a.X() - b.X()) < threshold_physical_px &&
+         fabs(a.Y() - b.Y()) < threshold_physical_px;
+}
+
+static bool SmallerThanRegionGranularity(const LayoutRect& rect,
+                                         float granularity_scale) {
+  return rect.Width().ToFloat() * granularity_scale < 0.5 ||
+         rect.Height().ToFloat() * granularity_scale < 0.5;
+}
+
 JankTracker::JankTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       score_(0.0),
@@ -60,8 +76,16 @@ void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
   if (old_visual_rect.IsEmpty() || new_visual_rect.IsEmpty())
     return;
 
-  if (LogicalStart(FloatRect(old_visual_rect), object) ==
-      LogicalStart(FloatRect(new_visual_rect), object))
+  if (EqualWithinMovementThreshold(
+          LogicalStart(FloatRect(old_visual_rect), object),
+          LogicalStart(FloatRect(new_visual_rect), object), object))
+    return;
+
+  IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
+  float scale = RegionGranularityScale(viewport);
+
+  if (SmallerThanRegionGranularity(old_visual_rect, scale) &&
+      SmallerThanRegionGranularity(new_visual_rect, scale))
     return;
 
   const auto* local_transform = painting_layer.GetLayoutObject()
@@ -87,7 +111,6 @@ void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
   // a better idea of how to aggregate multiple scores for a page.
   // See review thread of http://crrev.com/c/1046155 for more details.
 
-  IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
   if (!old_visual_rect_abs.Intersects(viewport) &&
       !new_visual_rect_abs.Intersects(viewport))
     return;
@@ -106,7 +129,6 @@ void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
   IntRect visible_new_visual_rect = RoundedIntRect(new_visual_rect_abs);
   visible_new_visual_rect.Intersect(viewport);
 
-  float scale = RegionGranularityScale(viewport);
   visible_old_visual_rect.Scale(scale);
   visible_new_visual_rect.Scale(scale);
 

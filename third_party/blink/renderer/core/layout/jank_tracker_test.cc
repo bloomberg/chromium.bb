@@ -79,4 +79,31 @@ TEST_F(JankTrackerTest, RtlDistance) {
   EXPECT_FLOAT_EQ(20.0, GetJankTracker().MaxDistance());
 }
 
+TEST_F(JankTrackerTest, SmallMovementIgnored) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #j { position: relative; width: 300px; height: 100px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+  GetDocument().getElementById("j")->setAttribute(HTMLNames::styleAttr,
+                                                  AtomicString("top: 2px"));
+  GetFrameView().UpdateAllLifecyclePhases();
+  EXPECT_EQ(0.0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, SmallMovementIgnoredWithZoom) {
+  GetDocument().GetFrame()->SetPageZoomFactor(2);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #j { position: relative; width: 300px; height: 100px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+  GetDocument().getElementById("j")->setAttribute(HTMLNames::styleAttr,
+                                                  AtomicString("top: 2px"));
+  GetFrameView().UpdateAllLifecyclePhases();
+  EXPECT_EQ(0.0, GetJankTracker().Score());
+}
+
 }  // namespace blink
