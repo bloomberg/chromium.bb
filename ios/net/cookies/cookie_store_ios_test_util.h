@@ -15,6 +15,7 @@
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
+#include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -35,7 +36,8 @@ class TestPersistentCookieStore
 
  private:
   // net::CookieMonster::PersistentCookieStore implementation:
-  void Load(const LoadedCallback& loaded_callback) override;
+  void Load(const LoadedCallback& loaded_callback,
+            const NetLogWithSource& net_log) override;
   void LoadCookiesForKey(const std::string& key,
                          const LoadedCallback& loaded_callback) override;
   void AddCookie(const net::CanonicalCookie& cc) override;

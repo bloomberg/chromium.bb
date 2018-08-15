@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "net/cookies/cookie_change_dispatcher.h"
+#include "net/log/net_log_with_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class GURL;
@@ -151,7 +152,8 @@ class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
   FlushablePersistentStore();
 
   // CookieMonster::PersistentCookieStore implementation:
-  void Load(const LoadedCallback& loaded_callback) override;
+  void Load(const LoadedCallback& loaded_callback,
+            const NetLogWithSource& net_log) override;
   void LoadCookiesForKey(const std::string& key,
                          const LoadedCallback& loaded_callback) override;
   void AddCookie(const CanonicalCookie&) override;

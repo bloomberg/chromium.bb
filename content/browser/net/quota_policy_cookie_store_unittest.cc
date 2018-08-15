@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cookies/cookie_util.h"
+#include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -50,7 +51,8 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
   void Load(CanonicalCookieVector* cookies) {
     EXPECT_FALSE(loaded_event_.IsSignaled());
     store_->Load(base::Bind(&QuotaPolicyCookieStoreTest::OnLoaded,
-                            base::Unretained(this)));
+                            base::Unretained(this)),
+                 net::NetLogWithSource());
     loaded_event_.Wait();
     cookies->swap(cookies_);
   }

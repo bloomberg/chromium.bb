@@ -52,9 +52,12 @@ void SessionCleanupCookieStore::DeleteSessionCookies(
   persistent_store_->DeleteAllInList(session_only_cookies);
 }
 
-void SessionCleanupCookieStore::Load(const LoadedCallback& loaded_callback) {
-  persistent_store_->Load(base::BindRepeating(
-      &SessionCleanupCookieStore::OnLoad, this, loaded_callback));
+void SessionCleanupCookieStore::Load(const LoadedCallback& loaded_callback,
+                                     const net::NetLogWithSource& net_log) {
+  persistent_store_->Load(
+      base::BindRepeating(&SessionCleanupCookieStore::OnLoad, this,
+                          loaded_callback),
+      net_log);
 }
 
 void SessionCleanupCookieStore::LoadCookiesForKey(

@@ -30,6 +30,9 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
+#include "net/log/net_log_capture_mode.h"
+#include "net/log/test_net_log.h"
+#include "net/log/test_net_log_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
@@ -111,7 +114,8 @@ class SQLitePersistentCookieStoreTest : public TestWithScopedTaskEnvironment {
   void Load(CanonicalCookieVector* cookies) {
     EXPECT_FALSE(loaded_event_.IsSignaled());
     store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                            base::Unretained(this)));
+                            base::Unretained(this)),
+                 net_log_.bound());
     loaded_event_.Wait();
     cookies->swap(cookies_);
   }
@@ -211,6 +215,7 @@ class SQLitePersistentCookieStoreTest : public TestWithScopedTaskEnvironment {
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
   std::unique_ptr<CookieCryptor> cookie_crypto_delegate_;
+  BoundTestNetLog net_log_;
 };
 
 TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
@@ -317,7 +322,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
       FROM_HERE, base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                             base::Unretained(this)));
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)));
+                          base::Unretained(this)),
+               NetLogWithSource());
   t += base::TimeDelta::FromMicroseconds(10);
   AddCookieWithExpiration("A", "B", "c.com", "/", t, base::Time());
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -345,7 +351,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
       temp_dir_.GetPath().Append(kCookieFilename), client_task_runner_,
       background_task_runner_, true, nullptr);
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)));
+                          base::Unretained(this)),
+               NetLogWithSource());
   loaded_event_.Wait();
   ASSERT_EQ(4u, cookies_.size());
   cookies_.clear();
@@ -379,9 +386,12 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   background_task_runner_->PostTask(
       FROM_HERE, base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                             base::Unretained(this)));
+  BoundTestNetLog net_log;
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)));
+                          base::Unretained(this)),
+               net_log.bound());
   base::RunLoop run_loop;
+  net_log.SetCaptureMode(NetLogCaptureMode::Default());
   store_->LoadCookiesForKey(
       "aaa.com", base::Bind(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
                             base::Unretained(this), run_loop.QuitClosure()));
@@ -426,6 +436,33 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   ASSERT_EQ(cookies_loaded.find("foo.bar") != cookies_loaded.end(), true);
   ASSERT_EQ(cookies_loaded.find("www.bbb.com") != cookies_loaded.end(), true);
   cookies_.clear();
+
+  store_ = nullptr;
+  TestNetLogEntry::List entries;
+  net_log.GetEntries(&entries);
+  size_t pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::COOKIE_PERSISTENT_STORE_LOAD,
+      NetLogEventPhase::BEGIN);
+  pos = ExpectLogContainsSomewhere(
+      entries, pos, NetLogEventType::COOKIE_PERSISTENT_STORE_LOAD,
+      NetLogEventPhase::END);
+  pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::COOKIE_PERSISTENT_STORE_LOAD,
+      NetLogEventPhase::BEGIN);
+  pos = ExpectLogContainsSomewhere(
+      entries, pos, NetLogEventType::COOKIE_PERSISTENT_STORE_KEY_LOAD_STARTED,
+      NetLogEventPhase::NONE);
+  std::string key;
+  EXPECT_FALSE(entries[pos].GetStringValue("key", &key));
+  pos = ExpectLogContainsSomewhere(
+      entries, pos, NetLogEventType::COOKIE_PERSISTENT_STORE_KEY_LOAD_COMPLETED,
+      NetLogEventPhase::NONE);
+  pos = ExpectLogContainsSomewhere(
+      entries, pos, NetLogEventType::COOKIE_PERSISTENT_STORE_LOAD,
+      NetLogEventPhase::END);
+  ExpectLogContainsSomewhere(entries, pos,
+                             NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED,
+                             NetLogEventPhase::NONE);
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, TestBeforeFlushCallback) {
