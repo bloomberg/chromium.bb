@@ -51,7 +51,7 @@ const base::Feature kSystemKeyboardLock{"SystemKeyboardLock",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTouchableAppContextMenu = {
-    "EnableTouchableAppContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableTouchableAppContextMenu", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsTouchableAppContextMenuEnabled() {
   return base::FeatureList::IsEnabled(kTouchableAppContextMenu) ||
