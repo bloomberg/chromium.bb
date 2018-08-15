@@ -6,12 +6,26 @@ from core import perf_benchmark
 
 import page_sets
 
+from telemetry import story
 from telemetry import benchmark
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
-class _Top25RuntimeStats(perf_benchmark.PerfBenchmark):
+@benchmark.Info(emails=['cbruni@chromium.org'])
+class V8Top25RuntimeStats(perf_benchmark.PerfBenchmark):
+  """Runtime Stats benchmark for a 25 top V8 web pages.
+
+  Designed to represent a mix between top websites and a set of pages that
+  have unique V8 characteristics.
+  """
+
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
+
+  @classmethod
+  def Name(cls):
+    return 'v8.runtime_stats.top_25'
+
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
       '--enable-blink-features=BlinkRuntimeCallStats')
@@ -48,19 +62,6 @@ class _Top25RuntimeStats(perf_benchmark.PerfBenchmark):
         overhead_level=cat_filter)
     tbm_options.SetTimelineBasedMetrics(['runtimeStatsMetric'])
     return tbm_options
-
-
-@benchmark.Info(emails=['cbruni@chromium.org'])
-class V8Top25RuntimeStats(_Top25RuntimeStats):
-  """Runtime Stats benchmark for a 25 top V8 web pages.
-
-  Designed to represent a mix between top websites and a set of pages that
-  have unique V8 characteristics.
-  """
-
-  @classmethod
-  def Name(cls):
-    return 'v8.runtime_stats.top_25'
 
   def CreateStorySet(self, options):
     return page_sets.V8Top25StorySet()
