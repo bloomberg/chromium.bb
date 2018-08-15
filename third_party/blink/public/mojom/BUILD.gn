@@ -26,6 +26,7 @@ mojom("mojom_platform") {
     "fetch/fetch_api_response.mojom",
     "file/file_utilities.mojom",
     "filesystem/file_system.mojom",
+    "filesystem/file_writer.mojom",
     "frame/find_in_page.mojom",
     "leak_detector/leak_detector.mojom",
     "loader/navigation_predictor.mojom",

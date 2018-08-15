@@ -5,6 +5,7 @@
 typemaps = [
   "//gpu/ipc/common/mailbox_holder_for_blink.typemap",
   "//gpu/ipc/common/sync_token.typemap",
+  "//mojo/public/cpp/base/file_error.typemap",
   "//services/viz/public/cpp/compositing/begin_frame_args_for_blink.typemap",
   "//services/viz/public/cpp/compositing/compositor_frame_for_blink.typemap",
   "//services/viz/public/cpp/compositing/frame_sink_id.typemap",

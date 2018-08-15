@@ -138,6 +138,7 @@ modules_idl_files =
           "filesystem/file_entry.idl",
           "filesystem/file_entry_sync.idl",
           "filesystem/file_system_callback.idl",
+          "filesystem/file_system_writer.idl",
           "filesystem/file_writer.idl",
           "filesystem/file_writer_callback.idl",
           "filesystem/file_writer_sync.idl",

@@ -1346,6 +1346,9 @@
       status: "experimental",
     },
     {
+      name: "WritableFiles",
+    },
+    {
       name: "XSLT",
       status: "stable",
     },

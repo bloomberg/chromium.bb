@@ -32,6 +32,8 @@ _CONFIG = [
             # //base constructs that are allowed everywhere
             'base::AdoptRef',
             'base::AutoReset',
+            'base::File',
+            'base::FilePath',
             'base::GetUniqueIdForProcess',
             'base::Location',
             'base::MakeRefCounted',
