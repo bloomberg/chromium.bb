@@ -24,10 +24,7 @@ XRRay::~XRRay() {}
 DOMFloat32Array* XRRay::transformMatrix() const {
   if (!transform_matrix_)
     return nullptr;
-  // TODO(https://crbug.com/845296): rename
-  // transformationMatrixToFloat32Array() to
-  // TransformationMatrixToDOMFloat32Array().
-  return transformationMatrixToFloat32Array(*transform_matrix_);
+  return transformationMatrixToDOMFloat32Array(*transform_matrix_);
 }
 
 void XRRay::Trace(blink::Visitor* visitor) {

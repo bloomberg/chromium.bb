@@ -6,7 +6,7 @@
 
 namespace blink {
 
-DOMFloat32Array* transformationMatrixToFloat32Array(
+DOMFloat32Array* transformationMatrixToDOMFloat32Array(
     const TransformationMatrix& matrix) {
   float array[] = {
       static_cast<float>(matrix.M11()), static_cast<float>(matrix.M12()),

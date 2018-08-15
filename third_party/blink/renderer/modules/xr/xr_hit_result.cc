@@ -16,10 +16,7 @@ XRHitResult::~XRHitResult() {}
 DOMFloat32Array* XRHitResult::hitMatrix() const {
   if (!hit_transform_)
     return nullptr;
-  // TODO(https://crbug.com/845296): rename
-  // transformationMatrixToFloat32Array() to
-  // TransformationMatrixToDOMFloat32Array().
-  return transformationMatrixToFloat32Array(*hit_transform_);
+  return transformationMatrixToDOMFloat32Array(*hit_transform_);
 }
 
 }  // namespace blink

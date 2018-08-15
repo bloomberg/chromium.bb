@@ -20,7 +20,7 @@ XRInputPose::~XRInputPose() {}
 DOMFloat32Array* XRInputPose::gripMatrix() const {
   if (!grip_matrix_)
     return nullptr;
-  return transformationMatrixToFloat32Array(*grip_matrix_);
+  return transformationMatrixToDOMFloat32Array(*grip_matrix_);
 }
 
 void XRInputPose::Trace(blink::Visitor* visitor) {

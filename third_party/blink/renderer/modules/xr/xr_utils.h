@@ -10,7 +10,7 @@
 
 namespace blink {
 
-DOMFloat32Array* transformationMatrixToFloat32Array(
+DOMFloat32Array* transformationMatrixToDOMFloat32Array(
     const TransformationMatrix&);
 
 }  // namespace blink
