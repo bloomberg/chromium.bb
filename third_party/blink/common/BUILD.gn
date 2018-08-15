@@ -66,6 +66,15 @@ jumbo_source_set("common") {
   if (!is_ios) {
     deps += [ "//media" ]
   }
+
+  if (is_android) {
+    sources += [
+      "font_unique_name_lookup/font_table_matcher.cc",
+      "font_unique_name_lookup/icu_fold_case_util.cc",
+    ]
+
+    deps += [ "//third_party/icu" ]
+  }
 }
 
 test("blink_common_unittests") {
@@ -98,13 +107,6 @@ jumbo_source_set("common_unittests_sources") {
     "test/run_all_unittests.cc",
   ]
 
-  if (!is_android) {
-    # TODO(crbug.com/845384): Enable these tests also on Android. Currently
-    # they are excluded as they require V8 environment but V8 snapshot is
-    # not available in the current minimum test setting.
-    sources += [ "message_port/string_message_codec_unittest.cc" ]
-  }
-
   deps = [
     "//base",
     "//base/test:test_support",
@@ -115,4 +117,18 @@ jumbo_source_set("common_unittests_sources") {
     "//v8",
     "//v8:v8_libplatform",
   ]
+
+  if (!is_android) {
+    # TODO(crbug.com/845384): Enable these tests also on Android. Currently
+    # they are excluded as they require V8 environment but V8 snapshot is
+    # not available in the current minimum test setting.
+    sources += [ "message_port/string_message_codec_unittest.cc" ]
+  } else {
+    # is_android
+    sources += [
+      "font_unique_name_lookup/font_table_matcher_unittest.cc",
+      "font_unique_name_lookup/icu_fold_case_util_unittest.cc",
+    ]
+    deps += [ ":common" ]
+  }
 }

@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package content;
+package blink;
 
 message FontUniqueNameTable {
   // The Android build fingerprint for which this font list is stored.

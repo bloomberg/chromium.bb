@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/font_unique_name_lookup/font_table_matcher.h"
-#include "content/browser/font_unique_name_lookup/icu_fold_case_util.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 
 namespace {
 const char kTestFilePath1[] = "tmp/test/font1.ttf";
 const char kDummyAndroidBuildFingerPrint[] = "A";
 
 void PopulateFontUniqueNameEntry(
-    content::FontUniqueNameTable_FontUniqueNameEntry* entry,
+    blink::FontUniqueNameTable_FontUniqueNameEntry* entry,
     const std::string& path,
     int32_t ttc_index,
     const std::string& full_name,
     const std::string& postscript_name) {
   entry->set_file_path(path);
   entry->set_ttc_index(ttc_index);
-  entry->set_full_name(content::IcuFoldCase(full_name));
-  entry->set_postscript_name(content::IcuFoldCase(postscript_name));
+  entry->set_full_name(blink::IcuFoldCase(full_name));
+  entry->set_postscript_name(blink::IcuFoldCase(postscript_name));
 }
 
 }  // namespace
 
-namespace content {
+namespace blink {
 
 class FontTableMatcherTest : public ::testing::Test {
  protected:
@@ -69,4 +69,4 @@ TEST_F(FontTableMatcherTest, NoSubStringMatching) {
   ASSERT_FALSE(result.has_value());
 }
 
-}  // namespace content
+}  // namespace blink

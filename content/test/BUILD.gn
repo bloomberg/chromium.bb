@@ -2023,9 +2023,7 @@ test("content_unittests") {
       "../browser/android/overscroll_controller_android_unittest.cc",
       "../browser/android/scoped_surface_request_manager_unittest.cc",
       "../browser/android/url_request_content_job_unittest.cc",
-      "../browser/font_unique_name_lookup/font_table_matcher_unittest.cc",
       "../browser/font_unique_name_lookup/font_unique_name_lookup_unittest.cc",
-      "../browser/font_unique_name_lookup/icu_fold_case_util_unittest.cc",
       "../browser/media/capture/screen_capture_device_android_unittest.cc",
       "../renderer/java/gin_java_bridge_value_converter_unittest.cc",
       "../renderer/media/android/stream_texture_wrapper_impl_unittest.cc",
@@ -2039,10 +2037,11 @@ test("content_unittests") {
     deps += [
       "//base:base_java_unittest_support",
       "//build/config/freetype",
-      "//content/browser/font_unique_name_lookup:font_unique_name_table_proto",
       "//content/public/android:content_java",
       "//media/capture/content/android",
       "//media/capture/content/android:screen_capture_java",
+      "//third_party/blink/public/common",
+      "//third_party/blink/public/common:font_unique_name_table_proto",
       "//ui/android:android",
     ]
 

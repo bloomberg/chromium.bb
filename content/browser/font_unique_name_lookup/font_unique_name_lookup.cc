@@ -12,8 +12,8 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/font_unique_name_lookup/font_unique_name_table.pb.h"
-#include "content/browser/font_unique_name_lookup/icu_fold_case_util.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 
 #include <set>
 #include <vector>
@@ -134,7 +134,7 @@ bool FontUniqueNameLookup::IsValid() {
 }
 
 bool FontUniqueNameLookup::UpdateTableIfNeeded() {
-  FontUniqueNameTable font_table;
+  blink::FontUniqueNameTable font_table;
   bool update_needed =
       !proto_storage_.IsValid() || !proto_storage_.mapping.size() ||
       !font_table.ParseFromArray(proto_storage_.mapping.memory(),
@@ -148,7 +148,7 @@ bool FontUniqueNameLookup::UpdateTableIfNeeded() {
 bool FontUniqueNameLookup::UpdateTable() {
   std::vector<std::string> font_files_to_index = GetFontFilePaths();
 
-  FontUniqueNameTable font_table;
+  blink::FontUniqueNameTable font_table;
   font_table.set_stored_for_android_build_fp(GetAndroidBuildFingerprint());
   for (const auto& font_file : font_files_to_index) {
     int32_t number_of_faces = NumberOfFacesInFontFile(font_file);
@@ -195,7 +195,7 @@ bool FontUniqueNameLookup::LoadFromFile() {
     return false;
   }
 
-  FontUniqueNameTable font_table;
+  blink::FontUniqueNameTable font_table;
   if (!font_table.ParseFromArray(proto_storage_.mapping.memory(),
                                  proto_storage_.mapping.size())) {
     proto_storage_ = base::MappedReadOnlyRegion();
@@ -230,7 +230,7 @@ base::FilePath FontUniqueNameLookup::TableCacheFilePath() {
 }
 
 bool FontUniqueNameLookup::IndexFile(
-    FontUniqueNameTable_FontUniqueNameEntry* font_entry,
+    blink::FontUniqueNameTable_FontUniqueNameEntry* font_entry,
     const std::string& font_file_path,
     uint32_t ttc_index) {
   ScopedFtFace face(ft_library_, font_file_path.c_str(), ttc_index);
@@ -296,10 +296,10 @@ bool FontUniqueNameLookup::IndexFile(
 
     switch (sfnt_name.name_id) {
       case TT_NAME_ID_PS_NAME:
-        font_entry->set_postscript_name(IcuFoldCase(sfnt_name_string));
+        font_entry->set_postscript_name(blink::IcuFoldCase(sfnt_name_string));
         break;
       case TT_NAME_ID_FULL_NAME:
-        font_entry->set_full_name(IcuFoldCase(sfnt_name_string));
+        font_entry->set_full_name(blink::IcuFoldCase(sfnt_name_string));
         break;
       default:
         break;

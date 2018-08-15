@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/font_unique_name_lookup/font_table_matcher.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/font_unique_name_lookup/icu_fold_case_util.h"
+#include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 
 #include <algorithm>
 
-namespace content {
+namespace blink {
 
 FontTableMatcher::FontTableMatcher(
     const base::ReadOnlySharedMemoryMapping& mapping) {
@@ -67,4 +67,4 @@ bool FontTableMatcher::FontListIsDisjointFrom(
   return intersection_result.empty();
 }
 
-}  // namespace content
+}  // namespace blink
