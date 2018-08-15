@@ -79,6 +79,8 @@ static_library("test_support") {
     "fake_eligible_host_devices_provider.h",
     "fake_feature_state_manager.cc",
     "fake_feature_state_manager.h",
+    "fake_feature_state_observer.cc",
+    "fake_feature_state_observer.h",
     "fake_host_backend_delegate.cc",
     "fake_host_backend_delegate.h",
     "fake_host_status_observer.cc",

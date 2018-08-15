@@ -14,11 +14,14 @@
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate_notifier.h"
 #include "chromeos/services/multidevice_setup/fake_eligible_host_devices_provider.h"
+#include "chromeos/services/multidevice_setup/fake_feature_state_manager.h"
+#include "chromeos/services/multidevice_setup/fake_feature_state_observer.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_observer.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_verifier.h"
 #include "chromeos/services/multidevice_setup/fake_setup_flow_completion_recorder.h"
+#include "chromeos/services/multidevice_setup/feature_state_manager_impl.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
@@ -223,6 +226,47 @@ class FakeHostStatusProviderFactory : public HostStatusProviderImpl::Factory {
   DISALLOW_COPY_AND_ASSIGN(FakeHostStatusProviderFactory);
 };
 
+class FakeFeatureStateManagerFactory : public FeatureStateManagerImpl::Factory {
+ public:
+  FakeFeatureStateManagerFactory(
+      sync_preferences::TestingPrefServiceSyncable*
+          expected_testing_pref_service,
+      FakeHostStatusProviderFactory* fake_host_status_provider_factory,
+      device_sync::FakeDeviceSyncClient* expected_device_sync_client)
+      : expected_testing_pref_service_(expected_testing_pref_service),
+        fake_host_status_provider_factory_(fake_host_status_provider_factory),
+        expected_device_sync_client_(expected_device_sync_client) {}
+
+  ~FakeFeatureStateManagerFactory() override = default;
+
+  FakeFeatureStateManager* instance() { return instance_; }
+
+ private:
+  // FeatureStateManagerImpl::Factory:
+  std::unique_ptr<FeatureStateManager> BuildInstance(
+      PrefService* pref_service,
+      HostStatusProvider* host_status_provider,
+      device_sync::DeviceSyncClient* device_sync_client) override {
+    EXPECT_FALSE(instance_);
+    EXPECT_EQ(expected_testing_pref_service_, pref_service);
+    EXPECT_EQ(fake_host_status_provider_factory_->instance(),
+              host_status_provider);
+    EXPECT_EQ(expected_device_sync_client_, device_sync_client);
+
+    auto instance = std::make_unique<FakeFeatureStateManager>();
+    instance_ = instance.get();
+    return instance;
+  }
+
+  sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
+  FakeHostStatusProviderFactory* fake_host_status_provider_factory_;
+  device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
+
+  FakeFeatureStateManager* instance_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeFeatureStateManagerFactory);
+};
+
 class FakeSetupFlowCompletionRecorderFactory
     : public SetupFlowCompletionRecorderImpl::Factory {
  public:
@@ -345,6 +389,13 @@ class MultiDeviceSetupImplTest : public testing::Test {
     HostStatusProviderImpl::Factory::SetFactoryForTesting(
         fake_host_status_provider_factory_.get());
 
+    fake_feature_state_manager_factory_ =
+        std::make_unique<FakeFeatureStateManagerFactory>(
+            test_pref_service_.get(), fake_host_status_provider_factory_.get(),
+            fake_device_sync_client_.get());
+    FeatureStateManagerImpl::Factory::SetFactoryForTesting(
+        fake_feature_state_manager_factory_.get());
+
     fake_setup_flow_completion_recorder_factory_ =
         std::make_unique<FakeSetupFlowCompletionRecorderFactory>(
             test_pref_service_.get());
@@ -368,6 +419,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
     HostBackendDelegateImpl::Factory::SetFactoryForTesting(nullptr);
     HostVerifierImpl::Factory::SetFactoryForTesting(nullptr);
     HostStatusProviderImpl::Factory::SetFactoryForTesting(nullptr);
+    FeatureStateManagerImpl::Factory::SetFactoryForTesting(nullptr);
     SetupFlowCompletionRecorderImpl::Factory::SetFactoryForTesting(nullptr);
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
         nullptr);
@@ -426,6 +478,34 @@ class MultiDeviceSetupImplTest : public testing::Test {
     last_host_status_.reset();
 
     return host_status_update;
+  }
+
+  bool CallSetFeatureEnabledState(mojom::Feature feature, bool enabled) {
+    base::RunLoop run_loop;
+    multidevice_setup_->SetFeatureEnabledState(
+        feature, enabled,
+        base::BindOnce(&MultiDeviceSetupImplTest::OnSetFeatureEnabled,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    bool success = *last_set_host_success_;
+    last_set_host_success_.reset();
+
+    return success;
+  }
+
+  base::flat_map<mojom::Feature, mojom::FeatureState> CallGetFeatureStates() {
+    base::RunLoop run_loop;
+    multidevice_setup_->GetFeatureStates(
+        base::BindOnce(&MultiDeviceSetupImplTest::OnGetFeatureStates,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    base::flat_map<mojom::Feature, mojom::FeatureState> feature_states_map =
+        *last_get_feature_states_result_;
+    last_get_feature_states_result_.reset();
+
+    return feature_states_map;
   }
 
   bool CallRetrySetHostNow() {
@@ -503,6 +583,10 @@ class MultiDeviceSetupImplTest : public testing::Test {
     return fake_host_status_provider_factory_->instance();
   }
 
+  FakeFeatureStateManager* fake_feature_state_manager() {
+    return fake_feature_state_manager_factory_->instance();
+  }
+
   FakeSetupFlowCompletionRecorder* fake_setup_flow_completion_recorder() {
     return fake_setup_flow_completion_recorder_factory_->instance();
   }
@@ -542,6 +626,21 @@ class MultiDeviceSetupImplTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
+  void OnSetFeatureEnabled(base::OnceClosure quit_closure, bool success) {
+    EXPECT_FALSE(last_set_host_success_);
+    last_set_host_success_ = success;
+    std::move(quit_closure).Run();
+  }
+
+  void OnGetFeatureStates(
+      base::OnceClosure quit_closure,
+      const base::flat_map<mojom::Feature, mojom::FeatureState>&
+          feature_states_map) {
+    EXPECT_FALSE(last_get_feature_states_result_);
+    last_get_feature_states_result_ = feature_states_map;
+    std::move(quit_closure).Run();
+  }
+
   void OnHostRetried(base::OnceClosure quit_closure, bool success) {
     EXPECT_FALSE(last_retry_success_);
     last_retry_success_ = success;
@@ -571,6 +670,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
   std::unique_ptr<FakeHostVerifierFactory> fake_host_verifier_factory_;
   std::unique_ptr<FakeHostStatusProviderFactory>
       fake_host_status_provider_factory_;
+  std::unique_ptr<FakeFeatureStateManagerFactory>
+      fake_feature_state_manager_factory_;
   std::unique_ptr<FakeSetupFlowCompletionRecorderFactory>
       fake_setup_flow_completion_recorder_factory_;
   std::unique_ptr<FakeAccountStatusChangeDelegateNotifierFactory>
@@ -585,6 +686,9 @@ class MultiDeviceSetupImplTest : public testing::Test {
   base::Optional<
       std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>>
       last_host_status_;
+  base::Optional<bool> last_set_feature_enabled_state_success_;
+  base::Optional<base::flat_map<mojom::Feature, mojom::FeatureState>>
+      last_get_feature_states_result_;
   base::Optional<bool> last_retry_success_;
 
   std::unique_ptr<mojom::MultiDeviceSetup> multidevice_setup_;
@@ -619,6 +723,38 @@ TEST_F(MultiDeviceSetupImplTest, AccountStatusChangeDelegate) {
       mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded));
   EXPECT_EQ(1u, fake_account_status_change_delegate()
                     ->num_existing_user_chromebook_added_events_handled());
+}
+
+TEST_F(MultiDeviceSetupImplTest, FeatureStateChanges) {
+  auto observer = std::make_unique<FakeFeatureStateObserver>();
+  multidevice_setup()->AddFeatureStateObserver(
+      observer->GenerateInterfacePtr());
+
+  EXPECT_EQ(mojom::FeatureState::kUnavailableNoVerifiedHost,
+            CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
+
+  fake_feature_state_manager()->SetFeatureState(
+      mojom::Feature::kBetterTogetherSuite,
+      mojom::FeatureState::kNotSupportedByChromebook);
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kNotSupportedByChromebook,
+            CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
+  EXPECT_EQ(1u, observer->feature_state_updates().size());
+
+  fake_feature_state_manager()->SetFeatureState(
+      mojom::Feature::kBetterTogetherSuite,
+      mojom::FeatureState::kEnabledByUser);
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kEnabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
+  EXPECT_EQ(2u, observer->feature_state_updates().size());
+
+  EXPECT_TRUE(CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
+                                         false /* enabled */));
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
+  EXPECT_EQ(3u, observer->feature_state_updates().size());
 }
 
 TEST_F(MultiDeviceSetupImplTest, ComprehensiveHostTest) {

@@ -80,7 +80,17 @@ void MultiDeviceSetupInitializer::AddHostStatusObserver(
     return;
   }
 
-  pending_observers_.push_back(std::move(observer));
+  pending_host_status_observers_.push_back(std::move(observer));
+}
+
+void MultiDeviceSetupInitializer::AddFeatureStateObserver(
+    mojom::FeatureStateObserverPtr observer) {
+  if (multidevice_setup_impl_) {
+    multidevice_setup_impl_->AddFeatureStateObserver(std::move(observer));
+    return;
+  }
+
+  pending_feature_state_observers_.push_back(std::move(observer));
 }
 
 void MultiDeviceSetupInitializer::GetEligibleHostDevices(
@@ -139,6 +149,30 @@ void MultiDeviceSetupInitializer::GetHostStatus(
   pending_get_host_args_.push_back(std::move(callback));
 }
 
+void MultiDeviceSetupInitializer::SetFeatureEnabledState(
+    mojom::Feature feature,
+    bool enabled,
+    SetFeatureEnabledStateCallback callback) {
+  if (multidevice_setup_impl_) {
+    multidevice_setup_impl_->SetFeatureEnabledState(feature, enabled,
+                                                    std::move(callback));
+    return;
+  }
+
+  pending_set_feature_enabled_args_.emplace_back(feature, enabled,
+                                                 std::move(callback));
+}
+
+void MultiDeviceSetupInitializer::GetFeatureStates(
+    GetFeatureStatesCallback callback) {
+  if (multidevice_setup_impl_) {
+    multidevice_setup_impl_->GetFeatureStates(std::move(callback));
+    return;
+  }
+
+  pending_get_feature_states_args_.emplace_back(std::move(callback));
+}
+
 void MultiDeviceSetupInitializer::RetrySetHostNow(
     RetrySetHostNowCallback callback) {
   if (multidevice_setup_impl_) {
@@ -178,9 +212,13 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
         std::move(pending_delegate_));
   }
 
-  for (auto& observer : pending_observers_)
+  for (auto& observer : pending_host_status_observers_)
     multidevice_setup_impl_->AddHostStatusObserver(std::move(observer));
-  pending_observers_.clear();
+  pending_host_status_observers_.clear();
+
+  for (auto& observer : pending_feature_state_observers_)
+    multidevice_setup_impl_->AddFeatureStateObserver(std::move(observer));
+  pending_feature_state_observers_.clear();
 
   if (pending_set_host_args_) {
     DCHECK(!pending_should_remove_host_device_);
@@ -193,6 +231,20 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
   if (pending_should_remove_host_device_)
     multidevice_setup_impl_->RemoveHostDevice();
   pending_should_remove_host_device_ = false;
+
+  for (auto& set_feature_enabled_args : pending_set_feature_enabled_args_) {
+    multidevice_setup_impl_->SetFeatureEnabledState(
+        std::get<0>(set_feature_enabled_args),
+        std::get<1>(set_feature_enabled_args),
+        std::move(std::get<2>(set_feature_enabled_args)));
+  }
+  pending_set_feature_enabled_args_.clear();
+
+  for (auto& get_feature_states_callback : pending_get_feature_states_args_) {
+    multidevice_setup_impl_->GetFeatureStates(
+        std::move(get_feature_states_callback));
+  }
+  pending_get_feature_states_args_.clear();
 
   for (auto& retry_callback : pending_retry_set_host_args_)
     multidevice_setup_impl_->RetrySetHostNow(std::move(retry_callback));

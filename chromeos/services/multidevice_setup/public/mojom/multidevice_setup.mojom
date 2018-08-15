@@ -103,6 +103,11 @@ interface HostStatusObserver {
                       chromeos.device_sync.mojom.RemoteDevice? host_device);
 };
 
+interface FeatureStateObserver {
+  // Invoked when one or more features have changed state.
+  OnFeatureStatesChanged(map<Feature, FeatureState> feature_states_map);
+};
+
 // Provides an API to the MultiDevice Setup flow. Designed to be exposed
 // primarily to the MultiDevice setup flow at chrome://multidevice-setup (normal
 // usage) as well as the ProximityAuth debug WebUI page at
@@ -116,6 +121,10 @@ interface MultiDeviceSetup {
   // Adds an observer of host status changes. To stop observing, disconnect the
   // HostStatusObserverPtr passed here.
   AddHostStatusObserver(HostStatusObserver observer);
+
+  // Adds an observer of feature state changes. To stop observing, disconnect
+  // the FeatureStateObserverPtr passed here.
+  AddFeatureStateObserver(FeatureStateObserver observer);
 
   // Provides a list of all eligible host devices (i.e., those which can be
   // passed to SetHostDevice()).
@@ -141,6 +150,14 @@ interface MultiDeviceSetup {
   // HostStatus::kEligibleHostExistsButNoHostSet, |host_device| is null.
   GetHostStatus() => (HostStatus host_status,
                       chromeos.device_sync.mojom.RemoteDevice? host_device);
+
+  // Attempts to enable or disable |feature|. This function succeeds only if
+  // |feature|'s current state is FeatureState::kEnabledByUser or
+  // FeatureState::kDisabledByUser.
+  SetFeatureEnabledState(Feature feature, bool enabled) => (bool success);
+
+  // Provides the states of all Features.
+  GetFeatureStates() => (map<Feature, FeatureState> feature_states_map);
 
   // Retries the most recent SetHostDevice() call.
   //

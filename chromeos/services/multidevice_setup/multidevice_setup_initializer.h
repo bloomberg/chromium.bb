@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_INITIALIZER_H_
 #define CHROMEOS_SERVICES_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_INITIALIZER_H_
 
+#include <tuple>
+#include <utility>
 #include <vector>
 
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
@@ -55,11 +57,17 @@ class MultiDeviceSetupInitializer
   void SetAccountStatusChangeDelegate(
       mojom::AccountStatusChangeDelegatePtr delegate) override;
   void AddHostStatusObserver(mojom::HostStatusObserverPtr observer) override;
+  void AddFeatureStateObserver(
+      mojom::FeatureStateObserverPtr observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void SetHostDevice(const std::string& host_device_id,
                      SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
   void GetHostStatus(GetHostStatusCallback callback) override;
+  void SetFeatureEnabledState(mojom::Feature feature,
+                              bool enabled,
+                              SetFeatureEnabledStateCallback callback) override;
+  void GetFeatureStates(GetFeatureStatesCallback callback) override;
   void RetrySetHostNow(RetrySetHostNowCallback callback) override;
   void TriggerEventForDebugging(
       mojom::EventTypeForDebugging type,
@@ -80,9 +88,13 @@ class MultiDeviceSetupInitializer
   // parameters are cached here. Once asynchronous initialization is complete,
   // the parameters are passed to |multidevice_setup_impl_|.
   mojom::AccountStatusChangeDelegatePtr pending_delegate_;
-  std::vector<mojom::HostStatusObserverPtr> pending_observers_;
+  std::vector<mojom::HostStatusObserverPtr> pending_host_status_observers_;
+  std::vector<mojom::FeatureStateObserverPtr> pending_feature_state_observers_;
   std::vector<GetEligibleHostDevicesCallback> pending_get_eligible_hosts_args_;
   std::vector<GetHostStatusCallback> pending_get_host_args_;
+  std::vector<std::tuple<mojom::Feature, bool, SetFeatureEnabledStateCallback>>
+      pending_set_feature_enabled_args_;
+  std::vector<GetFeatureStatesCallback> pending_get_feature_states_args_;
   std::vector<RetrySetHostNowCallback> pending_retry_set_host_args_;
 
   // Special case: for SetHostDevice() and RemoveHostDevice(), only keep track
