@@ -190,6 +190,8 @@ const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
 }
 
 void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
+  ContainingShadowRoot()->GetSlotAssignment().InsertSlotInChildSlotMap(*this,
+                                                                       nodes);
   ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
   assigned_nodes_candidates_.clear();
   for (Member<Node> child : nodes) {

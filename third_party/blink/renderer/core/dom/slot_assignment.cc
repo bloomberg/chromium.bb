@@ -242,12 +242,7 @@ void SlotAssignment::RecalcAssignment() {
     HTMLSlotElement* slot = nullptr;
     if (!is_user_agent) {
       if (owner_->IsManualSlotting()) {
-        for (auto candidate : Slots()) {
-          if (candidate->ContainsInAssignedNodesCandidates(child)) {
-            slot = candidate;
-            break;
-          }
-        }
+        slot = FindLastAssignedSlot(const_cast<Node&>(child));
       } else {
         slot = FindSlotByName(child.SlotName());
       }
@@ -344,7 +339,9 @@ HTMLSlotElement* SlotAssignment::FindSlot(const Node& node) const {
     return nullptr;
   if (owner_->IsUserAgent())
     return FindSlotInUserAgentShadow(node);
-  return FindSlotByName(node.SlotName());
+  return owner_->IsManualSlotting()
+             ? FindLastAssignedSlot(const_cast<Node&>(node))
+             : FindSlotByName(node.SlotName());
 }
 
 HTMLSlotElement* SlotAssignment::FindSlotByName(
@@ -361,6 +358,28 @@ HTMLSlotElement* SlotAssignment::FindSlotInUserAgentShadow(
   HTMLSlotElement* user_agent_default_slot =
       FindSlotByName(HTMLSlotElement::UserAgentDefaultSlotName());
   return user_agent_default_slot;
+}
+
+HTMLSlotElement* SlotAssignment::FindLastAssignedSlot(Node& node) const {
+  auto it = child_assigned_slot_history_.find(&node);
+  if (it == child_assigned_slot_history_.end())
+    return nullptr;
+  return it.Get()->value.back();
+}
+
+void SlotAssignment::InsertSlotInChildSlotMap(
+    HTMLSlotElement& slot,
+    const HeapVector<Member<Node>>& nodes) {
+  for (Member<Node> child : nodes) {
+    auto it = child_assigned_slot_history_.find(child);
+    if (it == child_assigned_slot_history_.end()) {
+      HeapVector<Member<HTMLSlotElement>> tmp;
+      tmp.push_back(slot);
+      child_assigned_slot_history_.Set(child, tmp);
+    } else {
+      it.Get()->value.push_back(slot);
+    }
+  }
 }
 
 void SlotAssignment::CollectSlots() {
@@ -389,6 +408,7 @@ void SlotAssignment::Trace(blink::Visitor* visitor) {
   visitor->Trace(slots_);
   visitor->Trace(slot_map_);
   visitor->Trace(owner_);
+  visitor->Trace(child_assigned_slot_history_);
 }
 
 }  // namespace blink
