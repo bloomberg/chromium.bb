@@ -104,7 +104,7 @@ letter \xFDF2 6-123-125         Arabic Ligature Allah Isolated Form  ,LH
 #-----------------------------
 
 # Arabic numerals
-digit \x0660 345                0
+digit \x0660 245                0
 digit \x0661 1                  1
 digit \x0662 12                 2
 digit \x0663 14                 3
@@ -116,7 +116,7 @@ digit \x0668 125                8
 digit \x0669 24                 9
 
 # Extended Arabic Numerals
-digit \x06F0 345                0
+digit \x06F0 245                0
 digit \x06F1 1                  1
 digit \x06F2 12                 2
 digit \x06F3 14                 3
