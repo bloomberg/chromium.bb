@@ -38,6 +38,8 @@ class UDPSocketTestHelper {
                  const std::vector<uint8_t>& input);
   int SendSync(const std::vector<uint8_t>& input);
   int SetBroadcastSync(bool broadcast);
+  int SetSendBufferSizeSync(int send_buffer_size);
+  int SetReceiveBufferSizeSync(int receive_buffer_size);
   int JoinGroupSync(const net::IPAddress& group_address);
   int LeaveGroupSync(const net::IPAddress& group_address);
 

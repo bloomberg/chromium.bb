@@ -62,6 +62,14 @@ class SocketWrapperTestImpl : public UDPSocket::SocketWrapper {
     NOTREACHED();
     return net::ERR_NOT_IMPLEMENTED;
   }
+  int SetSendBufferSize(int send_buffer_size) override {
+    NOTREACHED();
+    return net::ERR_NOT_IMPLEMENTED;
+  }
+  int SetReceiveBufferSize(int receive_buffer_size) override {
+    NOTREACHED();
+    return net::ERR_NOT_IMPLEMENTED;
+  }
   int JoinGroup(const net::IPAddress& group_address) override {
     NOTREACHED();
     return net::ERR_NOT_IMPLEMENTED;
@@ -279,9 +287,15 @@ TEST_F(UDPSocketTest, TestUnexpectedSequences) {
 
   // Now these Setters should not work before Bind().
   EXPECT_EQ(net::ERR_UNEXPECTED, helper.SetBroadcastSync(true));
+  EXPECT_EQ(net::ERR_UNEXPECTED, helper.SetSendBufferSizeSync(4096));
+  EXPECT_EQ(net::ERR_UNEXPECTED, helper.SetReceiveBufferSizeSync(4096));
 
   // Now Bind() the socket.
   ASSERT_EQ(net::OK, helper.BindSync(local_addr, nullptr, &local_addr));
+
+  // Setting the buffer size should now succeed.
+  EXPECT_EQ(net::OK, helper.SetSendBufferSizeSync(4096));
+  EXPECT_EQ(net::OK, helper.SetReceiveBufferSizeSync(4096));
 
   // Calling Connect() after Bind() should fail because they can't be both used.
   ASSERT_EQ(net::ERR_SOCKET_IS_CONNECTED,

@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
+#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "net/base/io_buffer.h"
@@ -24,6 +25,13 @@ const uint32_t kMaxReadSize = 64 * 1024;
 // The limit on data length for a UDP packet is 65,507 for IPv4 and 65,535 for
 // IPv6.
 const uint32_t kMaxPacketSize = kMaxReadSize - 1;
+
+int ClampBufferSize(int requested_buffer_size) {
+  constexpr int kMinBufferSize = 0;
+  constexpr int kMaxBufferSize = 128 * 1024;
+  return base::ClampToRange(requested_buffer_size, kMinBufferSize,
+                            kMaxBufferSize);
+}
 
 class SocketWrapperImpl : public UDPSocket::SocketWrapper {
  public:
@@ -74,6 +82,12 @@ class SocketWrapperImpl : public UDPSocket::SocketWrapper {
   int SetBroadcast(bool broadcast) override {
     return socket_.SetBroadcast(broadcast);
   }
+  int SetSendBufferSize(int send_buffer_size) override {
+    return socket_.SetSendBufferSize(ClampBufferSize(send_buffer_size));
+  }
+  int SetReceiveBufferSize(int receive_buffer_size) override {
+    return socket_.SetReceiveBufferSize(ClampBufferSize(receive_buffer_size));
+  }
   int JoinGroup(const net::IPAddress& group_address) override {
     return socket_.JoinGroup(group_address);
   }
@@ -113,11 +127,11 @@ class SocketWrapperImpl : public UDPSocket::SocketWrapper {
     }
     if (result == net::OK && options->receive_buffer_size != 0) {
       result = socket_.SetReceiveBufferSize(
-          base::saturated_cast<int32_t>(options->receive_buffer_size));
+          ClampBufferSize(options->receive_buffer_size));
     }
     if (result == net::OK && options->send_buffer_size != 0) {
-      result = socket_.SetSendBufferSize(
-          base::saturated_cast<int32_t>(options->send_buffer_size));
+      result =
+          socket_.SetSendBufferSize(ClampBufferSize(options->send_buffer_size));
     }
     return result;
   }
@@ -190,6 +204,26 @@ void UDPSocket::SetBroadcast(bool broadcast, SetBroadcastCallback callback) {
     return;
   }
   int net_result = wrapped_socket_->SetBroadcast(broadcast);
+  std::move(callback).Run(net_result);
+}
+
+void UDPSocket::SetSendBufferSize(int32_t send_buffer_size,
+                                  SetSendBufferSizeCallback callback) {
+  if (!is_bound_) {
+    std::move(callback).Run(net::ERR_UNEXPECTED);
+    return;
+  }
+  int net_result = wrapped_socket_->SetSendBufferSize(send_buffer_size);
+  std::move(callback).Run(net_result);
+}
+
+void UDPSocket::SetReceiveBufferSize(int32_t receive_buffer_size,
+                                     SetSendBufferSizeCallback callback) {
+  if (!is_bound_) {
+    std::move(callback).Run(net::ERR_UNEXPECTED);
+    return;
+  }
+  int net_result = wrapped_socket_->SetReceiveBufferSize(receive_buffer_size);
   std::move(callback).Run(net_result);
 }
 
