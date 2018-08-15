@@ -239,6 +239,11 @@ void AssistantController::OpenUrl(const GURL& url) {
   NotifyUrlOpened(url);
 }
 
+void AssistantController::ShutDown() {
+  // Controllers can be added to handle this event as needed.
+  assistant_ui_controller_->ShutDown();
+}
+
 void AssistantController::NotifyConstructed() {
   for (AssistantControllerObserver& observer : observers_)
     observer.OnAssistantControllerConstructed();

@@ -4,6 +4,7 @@
 
 #include "ash/assistant/ui/assistant_container_view.h"
 
+#include <iostream>
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
@@ -14,6 +15,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -28,10 +30,12 @@ namespace ash {
 
 namespace {
 
+constexpr int kClamshellMarginBottomDip = 8;  // Margin in clamshell mode.
+constexpr int kTabletMarginTopDip = 24;       // Margin in tablet mode.
+
 // Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 constexpr int kCornerRadiusDip = 20;
-constexpr int kMarginDip = 8;
 
 // Animation.
 constexpr int kResizeAnimationDurationMs = 250;
@@ -245,13 +249,21 @@ void AssistantContainerView::SetAnchor(aura::Window* root_window) {
   display::Display display = display::Screen::GetScreen()->GetDisplayMatching(
       root_window->GetBoundsInScreen());
 
+  bool tablet_mode = Shell::Get()
+                         ->tablet_mode_controller()
+                         ->IsTabletModeWindowManagerEnabled();
+
   // Anchor to the bottom center of the work area.
   gfx::Rect work_area = display.work_area();
-  gfx::Rect anchor = gfx::Rect(work_area.x(), work_area.bottom() - kMarginDip,
-                               work_area.width(), 0);
+  gfx::Rect anchor =
+      gfx::Rect(work_area.x(),
+                tablet_mode ? kTabletMarginTopDip
+                            : work_area.bottom() - kClamshellMarginBottomDip,
+                work_area.width(), 0);
 
   SetAnchorRect(anchor);
-  set_arrow(views::BubbleBorder::Arrow::BOTTOM_CENTER);
+  set_arrow(tablet_mode ? views::BubbleBorder::Arrow::TOP_CENTER
+                        : views::BubbleBorder::Arrow::BOTTOM_CENTER);
 }
 
 void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
@@ -297,11 +309,22 @@ void AssistantContainerView::AnimationProgressed(
   // Use our interpolated size.
   bounds.set_size(gfx::Size(size.width(), size.height()));
 
-  // Maintain our original |bottom| and |center_x| positions.
+  if (!Shell::Get()
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled()) {
+    // Maintain our original |bottom| positions in clamshell mode. In tablet
+    // mode, they should grow downwards, which is the default behavior.
+    bounds.set_y(bottom - bounds.height());
+  }
+  // Maintain |center_x| position.
   bounds.set_x(center_x - (bounds.width() / 2));
-  bounds.set_y(bottom - bounds.height());
 
   GetWidget()->SetBounds(bounds);
+}
+
+void AssistantContainerView::OnTabletModeChanged() {
+  DCHECK(GetWidget());
+  SetAnchor(GetWidget()->GetNativeWindow()->GetRootWindow());
 }
 
 void AssistantContainerView::OnDisplayMetricsChanged(

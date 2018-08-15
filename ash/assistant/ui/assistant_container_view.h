@@ -58,6 +58,8 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
+  void OnTabletModeChanged();
+
  private:
   // Sets anchor rect to |root_window|. If it's null,
   // result of GetRootWindowForNewWindows() will be used.
