@@ -49,20 +49,16 @@ if (enable_java_templates) {
     jar_path = "${android_sdk}/optional/android.test.runner.jar"
   }
 
-  template("support_lib_alias") {
-    java_group(target_name) {
-      forward_variables_from(invoker, [ "testonly" ])
-      deps = [
-        "$android_support_library_package:$target_name",
-      ]
-    }
-  }
-  support_lib_alias("android_support_chromium_java") {
+  android_library("android_support_chromium_java") {
     testonly = true
+    java_files = [ "//third_party/android_tools/sdk/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java" ]
   }
-  support_lib_alias("android_gcm_java") {
+  android_java_prebuilt("android_gcm_java") {
+    jar_path = "//third_party/android_tools/sdk/extras/google/gcm/gcm-client/dist/gcm.jar"
   }
-  support_lib_alias("emma_device_java") {
+  android_java_prebuilt("emma_device_java") {
+    jar_path = "//third_party/android_tools/sdk/tools/lib/emma_device.jar"
+    include_java_resources = true
   }
 
   template("android_deps_alias") {
