@@ -382,7 +382,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void UnregisterLayer(Layer* layer);
   Layer* LayerById(int id) const;
 
-  bool in_update_property_trees() const { return in_update_property_trees_; }
   bool PaintContent(const LayerList& update_layer_list,
                     bool* content_has_slow_paths,
                     bool* content_has_non_aa_paint);
@@ -701,7 +700,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   std::unordered_map<ElementId, Layer*, ElementIdHash> element_layers_map_;
 
   bool in_paint_layer_contents_ = false;
-  bool in_update_property_trees_ = false;
 
   // This is true if atleast one layer in the layer tree has a copy request. We
   // use this bool to decide whether we need to compute subtree has copy request
