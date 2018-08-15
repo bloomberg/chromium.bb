@@ -71,14 +71,6 @@ IOSSSLErrorHandler::IOSSSLErrorHandler(web::WebState* web_state,
       weak_factory_(this) {}
 
 void IOSSSLErrorHandler::StartHandlingError() {
-  if (!base::FeatureList::IsEnabled(kCaptivePortalFeature)) {
-    IOSSSLErrorHandler::RecordCaptivePortalState(web_state_);
-
-    // Display an SSL interstitial.
-    ShowSSLInterstitial();
-    return;
-  }
-
   CaptivePortalDetectorTabHelper* tab_helper =
       CaptivePortalDetectorTabHelper::FromWebState(web_state_);
   // TODO(crbug.com/760873): replace test with DCHECK when this method is only
@@ -149,24 +141,6 @@ void IOSSSLErrorHandler::ShowCaptivePortalInterstitial(
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".
   RemoveFromWebState(web_state_);
-}
-
-// static
-void IOSSSLErrorHandler::RecordCaptivePortalState(web::WebState* web_state) {
-  CaptivePortalDetectorTabHelper* tab_helper =
-      CaptivePortalDetectorTabHelper::FromWebState(web_state);
-
-  // TODO(crbug.com/760873): replace test with DCHECK when this method is only
-  // called on WebStates attached to tabs.
-  if (!tab_helper) {
-    return;
-  }
-  tab_helper->detector()->DetectCaptivePortal(
-      GURL(CaptivePortalDetector::kDefaultURL),
-      base::BindRepeating(^(const CaptivePortalDetector::Results& results) {
-        IOSSSLErrorHandler::LogCaptivePortalResult(results.result);
-      }),
-      NO_TRAFFIC_ANNOTATION_YET);
 }
 
 // static
