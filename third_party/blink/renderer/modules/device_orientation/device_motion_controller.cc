@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_motion_dispatcher.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_pump.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_controller.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -78,21 +78,33 @@ void DeviceMotionController::DidAddEventListener(
 }
 
 bool DeviceMotionController::HasLastData() {
-  return DeviceMotionDispatcher::Instance().LatestDeviceMotionData();
+  return motion_event_pump_
+             ? motion_event_pump_->LatestDeviceMotionData() != nullptr
+             : false;
 }
 
 void DeviceMotionController::RegisterWithDispatcher() {
-  DeviceMotionDispatcher::Instance().AddController(this);
+  if (!motion_event_pump_) {
+    LocalFrame* frame = GetDocument().GetFrame();
+    if (!frame)
+      return;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        frame->GetTaskRunner(TaskType::kSensor);
+    motion_event_pump_ = new DeviceMotionEventPump(task_runner);
+  }
+  motion_event_pump_->AddController(this);
 }
 
 void DeviceMotionController::UnregisterWithDispatcher() {
-  DeviceMotionDispatcher::Instance().RemoveController(this);
+  if (motion_event_pump_)
+    motion_event_pump_->RemoveController(this);
 }
 
 Event* DeviceMotionController::LastEvent() const {
   return DeviceMotionEvent::Create(
       EventTypeNames::devicemotion,
-      DeviceMotionDispatcher::Instance().LatestDeviceMotionData());
+      motion_event_pump_ ? motion_event_pump_->LatestDeviceMotionData()
+                         : nullptr);
 }
 
 bool DeviceMotionController::IsNullEvent(Event* event) const {
@@ -106,6 +118,7 @@ const AtomicString& DeviceMotionController::EventTypeName() const {
 
 void DeviceMotionController::Trace(blink::Visitor* visitor) {
   DeviceSingleWindowEventController::Trace(visitor);
+  visitor->Trace(motion_event_pump_);
   Supplement<Document>::Trace(visitor);
 }
 

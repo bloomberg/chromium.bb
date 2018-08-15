@@ -33,11 +33,6 @@ sensor_test(async sensorProvider => {
 
   // At this point only the first event listener is active.
   setMockMotionData(sensorProvider, motionData2);
-  let childFrame = document.createElement('iframe');
-  document.body.appendChild(childFrame);
-  // Expect the cached event because Device Motion was already active
-  // when third listener was added.
-  await waitForMotion(motionData1, childFrame.contentWindow);
   window.removeEventListener('devicemotion', firstListener);
 
   return waitForMotion(motionData2);

@@ -4919,7 +4919,6 @@ crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-ov
 crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/recorded-keydown-event.html [ Timeout Pass ]
 
 # Sheriff 2018-08-10
-crbug.com/873078 [ Win7 ] device_orientation/motion/detached-frame.html [ Failure Pass ]
 crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click.html [ Timeout Pass ]
 
 # Sheriff 2018-08-13
