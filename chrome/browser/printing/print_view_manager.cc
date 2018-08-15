@@ -40,15 +40,14 @@ void EnableInternalPDFPluginForContents(int render_process_id,
   // Always enable the internal PDF plugin for the print preview page.
   static const base::FilePath pdf_plugin_path(
       ChromeContentClient::kPDFPluginPath);
-
-  content::WebPluginInfo pdf_plugin;
-  if (!content::PluginService::GetInstance()->GetPluginInfoByPath(
-      pdf_plugin_path, &pdf_plugin)) {
+  auto* plugin_service = content::PluginService::GetInstance();
+  const content::PepperPluginInfo* info =
+      plugin_service->GetRegisteredPpapiPluginInfo(pdf_plugin_path);
+  if (!info)
     return;
-  }
 
   ChromePluginServiceFilter::GetInstance()->OverridePluginForFrame(
-      render_process_id, render_frame_id, GURL(), pdf_plugin);
+      render_process_id, render_frame_id, GURL(), info->ToWebPluginInfo());
 }
 
 }  // namespace
