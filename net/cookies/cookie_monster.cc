@@ -864,7 +864,8 @@ void CookieMonster::FetchAllCookies() {
   // We bind in the current time so that we can report the wall-clock time for
   // loading cookies.
   store_->Load(base::Bind(&CookieMonster::OnLoaded,
-                          weak_ptr_factory_.GetWeakPtr(), TimeTicks::Now()));
+                          weak_ptr_factory_.GetWeakPtr(), TimeTicks::Now()),
+               net_log_);
 }
 
 void CookieMonster::OnLoaded(

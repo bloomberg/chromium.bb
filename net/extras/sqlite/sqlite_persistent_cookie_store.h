@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/log/net_log_with_source.h"
 
 namespace base {
 class FilePath;
@@ -48,7 +49,8 @@ class SQLitePersistentCookieStore
   void DeleteAllInList(const std::list<CookieOrigin>& cookies);
 
   // CookieMonster::PersistentCookieStore:
-  void Load(const LoadedCallback& loaded_callback) override;
+  void Load(const LoadedCallback& loaded_callback,
+            const NetLogWithSource& net_log) override;
   void LoadCookiesForKey(const std::string& key,
                          const LoadedCallback& callback) override;
   void AddCookie(const CanonicalCookie& cc) override;
@@ -60,10 +62,17 @@ class SQLitePersistentCookieStore
 
  private:
   ~SQLitePersistentCookieStore() override;
+  void CompleteLoad(const LoadedCallback& callback,
+                    std::vector<std::unique_ptr<CanonicalCookie>> cookie_list);
+  void CompleteKeyedLoad(
+      const std::string& key,
+      const LoadedCallback& callback,
+      std::vector<std::unique_ptr<CanonicalCookie>> cookie_list);
 
   class Backend;
 
   const scoped_refptr<Backend> backend_;
+  NetLogWithSource net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(SQLitePersistentCookieStore);
 };

@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
+#include "net/log/net_log_with_source.h"
 
 namespace net {
 class CanonicalCookie;
@@ -43,7 +44,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SessionCleanupCookieStore
       const scoped_refptr<net::SQLitePersistentCookieStore>& cookie_store);
 
   // net::CookieMonster::PersistentCookieStore:
-  void Load(const LoadedCallback& loaded_callback) override;
+  void Load(const LoadedCallback& loaded_callback,
+            const net::NetLogWithSource& net_log) override;
   void LoadCookiesForKey(const std::string& key,
                          const LoadedCallback& callback) override;
   void AddCookie(const net::CanonicalCookie& cc) override;

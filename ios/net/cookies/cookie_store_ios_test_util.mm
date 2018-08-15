@@ -68,7 +68,8 @@ bool TestPersistentCookieStore::flushed() {
 #pragma mark -
 #pragma mark Private methods
 
-void TestPersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
+void TestPersistentCookieStore::Load(const LoadedCallback& loaded_callback,
+                                     const NetLogWithSource& /* net_log */) {
   loaded_callback_ = loaded_callback;
 }
 

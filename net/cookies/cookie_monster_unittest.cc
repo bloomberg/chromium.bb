@@ -40,6 +40,7 @@
 #include "net/cookies/cookie_store_unittest.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
+#include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/ssl/channel_id_service.h"
@@ -61,7 +62,9 @@ namespace {
 class NewMockPersistentCookieStore
     : public CookieMonster::PersistentCookieStore {
  public:
-  MOCK_METHOD1(Load, void(const LoadedCallback& loaded_callback));
+  MOCK_METHOD2(Load,
+               void(const LoadedCallback& loaded_callback,
+                    const NetLogWithSource& net_log));
   MOCK_METHOD2(LoadCookiesForKey,
                void(const std::string& key,
                     const LoadedCallback& loaded_callback));
@@ -1004,7 +1007,7 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
     // Make sure the |load_run_loop_| is not reused.
     CHECK(!expect_load_called_);
     expect_load_called_ = true;
-    EXPECT_CALL(*persistent_store_.get(), Load(testing::_))
+    EXPECT_CALL(*persistent_store_.get(), Load(testing::_, testing::_))
         .WillOnce(testing::DoAll(testing::SaveArg<0>(&loaded_callback_),
                                  QuitRunLoop(&load_run_loop_)));
   }

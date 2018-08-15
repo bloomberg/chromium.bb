@@ -20,6 +20,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
+#include "net/log/net_log_with_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 #include "url/gurl.h"
@@ -66,7 +67,8 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
 
   void Load() {
     store_->Load(base::Bind(&SQLitePersistentCookieStorePerfTest::OnLoaded,
-                            base::Unretained(this)));
+                            base::Unretained(this)),
+                 NetLogWithSource());
     loaded_event_.Wait();
   }
 

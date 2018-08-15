@@ -3134,3 +3134,26 @@ EVENT_TYPE(COOKIE_STORE_COOKIE_REJECTED_HTTPONLY)
 //    "persistence" : <Session persistence setting for the store>
 //  }
 EVENT_TYPE(COOKIE_STORE_SESSION_PERSISTENCE)
+
+// Event emitted when the persistent database load is started and completed.
+//  {
+//  }
+EVENT_TYPE(COOKIE_PERSISTENT_STORE_LOAD)
+
+// Event emitted when load for a particular key is started.
+//  {
+//    "key": <Key to be loaded>
+//  }
+EVENT_TYPE(COOKIE_PERSISTENT_STORE_KEY_LOAD_STARTED)
+
+// Event emitted when load for a particular key is completed.
+//  {
+//    "key": <Key to be loaded>
+//  }
+EVENT_TYPE(COOKIE_PERSISTENT_STORE_KEY_LOAD_COMPLETED)
+
+// Event emitted when a persistent store has been closed.
+//  {
+//    "type": <Classname of persistent cookie store>
+//  }
+EVENT_TYPE(COOKIE_PERSISTENT_STORE_CLOSED)
