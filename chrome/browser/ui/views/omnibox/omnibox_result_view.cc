@@ -176,10 +176,10 @@ void OmniboxResultView::Invalidate() {
     suggestion_view_->description()->SetText(match_.description,
                                              match_.description_class);
 
-    // Normally, OmniboxTextView caches its appearance, but in high contrast
-    // selected-ness changes the text colors, so the styling of the text part of
-    // the results needs to be recomputed.
-    if (high_contrast) {
+    // Normally, OmniboxTextView caches its appearance, but in high contrast and
+    // on Windows in the pre-Refresh UI, selected-ness changes the text colors,
+    // so the styling of the text part of the results needs to be recomputed.
+    if (high_contrast || !ui::MaterialDesignController::IsRefreshUi()) {
       suggestion_view_->content()->ReapplyStyling();
       suggestion_view_->description()->ReapplyStyling();
     }
