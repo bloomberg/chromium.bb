@@ -88,25 +88,32 @@ bool WebNavigationEventRouter::ShouldTrackBrowser(Browser* browser) {
   return profile_->IsSameProfile(browser->profile());
 }
 
-void WebNavigationEventRouter::TabReplacedAt(
+void WebNavigationEventRouter::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
-    content::WebContents* old_contents,
-    content::WebContents* new_contents,
-    int index) {
-  WebNavigationTabObserver* tab_observer =
-      WebNavigationTabObserver::Get(old_contents);
-  if (!tab_observer) {
-    // If you hit this DCHECK(), please add reproduction steps to
-    // http://crbug.com/109464.
-    DCHECK(GetViewType(old_contents) != VIEW_TYPE_TAB_CONTENTS);
-    return;
-  }
-  if (!FrameNavigationState::IsValidUrl(old_contents->GetURL()) ||
-      !FrameNavigationState::IsValidUrl(new_contents->GetURL()))
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() != TabStripModelChange::kReplaced)
     return;
 
-  web_navigation_api_helpers::DispatchOnTabReplaced(old_contents, profile_,
-                                                    new_contents);
+  for (const auto& delta : change.deltas()) {
+    content::WebContents* old_contents = delta.replace.old_contents;
+    content::WebContents* new_contents = delta.replace.new_contents;
+
+    WebNavigationTabObserver* tab_observer =
+        WebNavigationTabObserver::Get(old_contents);
+    if (!tab_observer) {
+      // If you hit this DCHECK(), please add reproduction steps to
+      // http://crbug.com/109464.
+      DCHECK(GetViewType(old_contents) != VIEW_TYPE_TAB_CONTENTS);
+      continue;
+    }
+    if (!FrameNavigationState::IsValidUrl(old_contents->GetURL()) ||
+        !FrameNavigationState::IsValidUrl(new_contents->GetURL()))
+      continue;
+
+    web_navigation_api_helpers::DispatchOnTabReplaced(old_contents, profile_,
+                                                      new_contents);
+  }
 }
 
 void WebNavigationEventRouter::Observe(

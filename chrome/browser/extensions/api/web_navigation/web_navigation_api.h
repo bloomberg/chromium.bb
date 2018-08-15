@@ -148,10 +148,10 @@ class WebNavigationEventRouter : public TabStripModelObserver,
   bool ShouldTrackBrowser(Browser* browser) override;
 
   // TabStripModelObserver implementation.
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* old_contents,
-                     content::WebContents* new_contents,
-                     int index) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,
