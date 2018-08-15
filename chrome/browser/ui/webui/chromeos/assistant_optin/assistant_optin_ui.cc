@@ -29,8 +29,8 @@ namespace {
 
 bool is_active = false;
 
-constexpr int kAssistantOptInDialogWidth = 576;
-constexpr int kAssistantOptInDialogHeight = 480;
+constexpr int kAssistantOptInDialogWidth = 768;
+constexpr int kAssistantOptInDialogHeight = 640;
 
 }  // namespace
 

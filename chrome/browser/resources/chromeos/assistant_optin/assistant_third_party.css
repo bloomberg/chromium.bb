@@ -3,11 +3,11 @@
  * found in the LICENSE file. */
 
 .title {
-  padding: 32px 0 24px 0;
+  font-size: 27px;
+  padding-bottom: 48px;
 }
 
-#footer {
-  color: rgba(0, 0, 0, .54);
-  font-size: 11px;
-  padding-top: 4px;
+#footer-text {
+  font-size: 13px;
+  padding-top: 16px;
 }

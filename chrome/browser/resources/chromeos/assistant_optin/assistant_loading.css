@@ -12,12 +12,7 @@
 
 #loading-container,
 #error-container {
-  height: 372px;
-  overflow: hidden;
-  padding: 48px 48px 0 48px;
-  position: absolute;
   visibility: hidden;
-  width: 480px;
 }
 
 .loading-animation #loading-container,
@@ -29,19 +24,10 @@
   pointer-events: none;
 }
 
-.title {
-  padding: 32px 0 18px 0;
-}
-
-.sub-title {
-  padding-bottom: 8px;
-}
-
 #loading-message {
   color: rgba(0, 0, 0, .54);
-  font-size: 12px;
-  line: 17px;
-  padding: 168px 0 0 0;
+  font-size: 13px;
+  padding: 210px 0 0 0;
 }
 
 paper-progress {
@@ -49,7 +35,7 @@ paper-progress {
   --paper-progress-container-color: #CEE0FC;
   --paper-progress-secondary-color: rgb(66, 133, 244);
   display: block;
-  height: 3px;
-  padding: 4px 0 0 0;
+  height: 4px;
+  padding: 12px 0 0 0;
   width: 100%;
 }

@@ -69,6 +69,7 @@ Polymer({
    */
   reloadContent: function(data) {
     this.$['title-text'].textContent = data['getMoreTitle'];
+    this.$['intro-text'].textContent = data['getMoreIntro'];
     this.$['next-button-text'].textContent = data['getMoreContinueButton'];
 
     this.consentStringLoaded_ = true;
@@ -89,7 +90,7 @@ Polymer({
           'icon-src',
           'data:text/html;charset=utf-8,' +
               encodeURIComponent(zippy.getWrappedIcon(data['iconUri'])));
-      zippy.setAttribute('no-zippy', true);
+      zippy.setAttribute('toggle-style', true);
       zippy.id = 'zippy' + i;
       var title = document.createElement('div');
       title.className = 'zippy-title';

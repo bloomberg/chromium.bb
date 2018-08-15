@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
@@ -13,8 +14,10 @@
 #include "components/arc/arc_prefs.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 namespace chromeos {
 
@@ -76,6 +79,8 @@ base::Value CreateZippyData(const SettingZippyList& zippy_list) {
                   base::Value(setting_zippy.additional_info_paragraph(0)));
     }
     data.SetKey("iconUri", base::Value(setting_zippy.icon_uri()));
+    data.SetKey("popupLink", base::Value(l10n_util::GetStringUTF16(
+                                 IDS_ASSISTANT_ACTIVITY_CONTROL_POPUP_LINK)));
     zippy_data.GetList().push_back(std::move(data));
   }
   return zippy_data;
@@ -160,8 +165,17 @@ base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
 
   // Add activity controll string constants.
   if (activity_control_needed) {
+    scoped_refptr<base::RefCountedMemory> image =
+        chromeos::UserImageSource::GetUserImage(
+            user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
+    std::string icon_url = webui::GetPngDataUrl(image->front(), image->size());
+    dictionary.SetKey("valuePropUserImage", base::Value(icon_url));
+
     dictionary.SetKey("valuePropIdentity",
                       base::Value(activity_control_ui.identity()));
+    dictionary.SetKey(
+        "valuePropTitle",
+        base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_VALUE_PROP_TITLE)));
     if (activity_control_ui.intro_text_paragraph_size()) {
       dictionary.SetKey(
           "valuePropIntro",
@@ -213,6 +227,8 @@ base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
   // Add get more screen string constants.
   dictionary.SetKey("getMoreTitle", base::Value(l10n_util::GetStringUTF16(
                                         IDS_ASSISTANT_GET_MORE_SCREEN_TITLE)));
+  dictionary.SetKey("getMoreIntro", base::Value(l10n_util::GetStringUTF16(
+                                        IDS_ASSISTANT_GET_MORE_SCREEN_INTRO)));
   dictionary.SetKey(
       "getMoreContinueButton",
       base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON)));

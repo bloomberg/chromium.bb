@@ -2,19 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.title {
-  padding: 32px 0 18px 0;
-}
-
-.content {
+.message {
   color: rgba(0, 0, 0, .8);
-  font-size: 11px;
+  font-size: 13px;
   padding-top: 6px;
 }
 
-.extra-content {
-  color: rgba(0, 0, 0, .54);
-  font-size: 10px;
+.content {
   padding-top: 6px;
 }
 
@@ -26,6 +20,6 @@
 
 #confirm-reject-img {
   display: block;
-  height: 100px;
+  height: 150px;
   margin: auto;
 }

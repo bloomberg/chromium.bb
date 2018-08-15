@@ -2,24 +2,44 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#main-container {
-  height: 372px;
+a {
+  color: var(--google-blue-500);
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.container {
+  height: 496px;
   overflow: hidden;
-  padding: 48px 48px 0 48px;
+  padding: 60px 64px 0 64px;
   position: absolute;
-  width: 480px;
+  width: 640px;
+}
+
+.line {
+  background-color: rgba(0, 0, 0, .14);
+  height: 1px;
+  margin: 8px 0 8px 0;
 }
 
 .title {
-  font-size: 18px;
+  font: 28px 'Google Sans', sans-serif;
+  font-weight: 500;
+  padding: 32px 0 16px 0;
 }
 
 .sub-title {
-  font-size: 12px;
+  font: 13px Roboto, sans-serif;
+  font-weight: 400;
+}
+
+.content {
+  color: rgba(0, 0, 0, .54);
+  font-size: 13px;
 }
 
 #logo {
-  height: 24px;
+  height: 32px;
   margin: 0;
 }
 

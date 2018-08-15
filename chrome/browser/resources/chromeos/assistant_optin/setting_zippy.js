@@ -16,7 +16,17 @@ Polymer({
       value: false,
     },
 
-    noZippy: {
+    expandStyle: {
+      type: Boolean,
+      value: false,
+    },
+
+    toggleStyle: {
+      type: Boolean,
+      value: false,
+    },
+
+    popupStyle: {
       type: Boolean,
       value: false,
     },

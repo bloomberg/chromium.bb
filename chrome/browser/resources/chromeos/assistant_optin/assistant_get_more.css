@@ -2,8 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.title {
-  padding: 32px 0 24px 0;
+#intro-text {
+  padding-bottom: 48px;
 }
 
 p {
