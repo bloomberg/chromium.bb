@@ -5,12 +5,18 @@
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+const char kFindActionName[] = "Find";
+const char kFindNextActionName[] = "FindNext";
+const char kFindPreviousActionName[] = "FindPrevious";
 
 DEFINE_WEB_STATE_USER_DATA_KEY(FindTabHelper);
 
@@ -23,6 +29,7 @@ FindTabHelper::~FindTabHelper() {}
 
 void FindTabHelper::StartFinding(NSString* search_term,
                                  FindInPageCompletionBlock completion) {
+  base::RecordAction(base::UserMetricsAction(kFindActionName));
   [controller_ findStringInPage:search_term
               completionHandler:^{
                 FindInPageModel* model = controller_.findInPageModel;
@@ -35,11 +42,13 @@ void FindTabHelper::ContinueFinding(FindDirection direction,
   FindInPageModel* model = controller_.findInPageModel;
 
   if (direction == FORWARD) {
+    base::RecordAction(base::UserMetricsAction(kFindNextActionName));
     [controller_ findNextStringInPageWithCompletionHandler:^{
       completion(model);
     }];
 
   } else if (direction == REVERSE) {
+    base::RecordAction(base::UserMetricsAction(kFindPreviousActionName));
     [controller_ findPreviousStringInPageWithCompletionHandler:^{
       completion(model);
     }];

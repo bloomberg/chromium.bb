@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/metrics/user_action_tester.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -59,6 +60,8 @@ class FindTabHelperTest : public ChromeWebTest {
     LoadHtml(html);
   }
 
+  base::UserActionTester user_action_tester_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FindTabHelperTest);
 };
@@ -81,21 +84,25 @@ TEST_F(FindTabHelperTest, FindInPage) {
   };
 
   // Search for "Test string" and verify that there are five matches.
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(kFindActionName));
   helper->StartFinding(@"Test string", ^(FindInPageModel* model) {
     EXPECT_EQ(5U, model.matches);
     EXPECT_EQ(1U, model.currentIndex);
     completion_handler_block_was_called = YES;
   });
   base::test::ios::WaitUntilCondition(wait_block);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kFindActionName));
 
   // Search forward in the page for additional matches and verify that
   // |currentIndex| is updated.
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(kFindNextActionName));
   helper->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
     EXPECT_EQ(5U, model.matches);
     EXPECT_EQ(2U, model.currentIndex);
     completion_handler_block_was_called = YES;
   });
   base::test::ios::WaitUntilCondition(wait_block);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kFindNextActionName));
 
   helper->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
     EXPECT_EQ(5U, model.matches);
@@ -103,15 +110,18 @@ TEST_F(FindTabHelperTest, FindInPage) {
     completion_handler_block_was_called = YES;
   });
   base::test::ios::WaitUntilCondition(wait_block);
+  EXPECT_EQ(2, user_action_tester_.GetActionCount(kFindNextActionName));
 
   // Search backwards in the page for previous matches and verify that
   // |currentIndex| is updated.
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(kFindPreviousActionName));
   helper->ContinueFinding(FindTabHelper::REVERSE, ^(FindInPageModel* model) {
     EXPECT_EQ(5U, model.matches);
     EXPECT_EQ(2U, model.currentIndex);
     completion_handler_block_was_called = YES;
   });
   base::test::ios::WaitUntilCondition(wait_block);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kFindPreviousActionName));
 
   // Stop finding and verify that the completion block was called properly.
   helper->StopFinding(^{
@@ -138,30 +148,36 @@ TEST_F(FindTabHelperTest, ContinueFindingWrapsAround) {
   };
 
   // Search for "Test string".
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(kFindActionName));
   helper->StartFinding(@"Test string", ^(FindInPageModel* model) {
     EXPECT_EQ(2U, model.matches);
     EXPECT_EQ(1U, model.currentIndex);
     completion_handler_block_was_called = YES;
   });
   base::test::ios::WaitUntilCondition(wait_block);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kFindActionName));
 
   // Search backwards in the page and verify that |currentIndex| wraps around to
   // the last match.
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(kFindPreviousActionName));
   helper->ContinueFinding(FindTabHelper::REVERSE, ^(FindInPageModel* model) {
     EXPECT_EQ(2U, model.matches);
     EXPECT_EQ(2U, model.currentIndex);
     completion_handler_block_was_called = YES;
   });
   base::test::ios::WaitUntilCondition(wait_block);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kFindPreviousActionName));
 
   // Search forward in the page and verify that |currentIndex| wraps around to
   // the first match.
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(kFindNextActionName));
   helper->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
     EXPECT_EQ(2U, model.matches);
     EXPECT_EQ(1U, model.currentIndex);
     completion_handler_block_was_called = YES;
   });
   base::test::ios::WaitUntilCondition(wait_block);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kFindNextActionName));
 }
 
 // Tests that the FindInPageModel returned by GetFindResults() is updated to
@@ -183,10 +199,12 @@ TEST_F(FindTabHelperTest, GetFindResults) {
   };
 
   // Search for "Test string".
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(kFindActionName));
   helper->StartFinding(@"Test string", ^(FindInPageModel* model) {
     completion_handler_block_was_called = YES;
   });
   base::test::ios::WaitUntilCondition(wait_block);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kFindActionName));
   {
     FindInPageModel* model = helper->GetFindResult();
     EXPECT_EQ(2U, model.matches);
@@ -195,10 +213,12 @@ TEST_F(FindTabHelperTest, GetFindResults) {
 
   // Search forward in the page and verify that |currentIndex| wraps around to
   // the first match.
+  ASSERT_EQ(0, user_action_tester_.GetActionCount(kFindNextActionName));
   helper->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
     completion_handler_block_was_called = YES;
   });
   base::test::ios::WaitUntilCondition(wait_block);
+  EXPECT_EQ(1, user_action_tester_.GetActionCount(kFindNextActionName));
   {
     FindInPageModel* model = helper->GetFindResult();
     EXPECT_EQ(2U, model.matches);
