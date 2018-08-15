@@ -188,7 +188,8 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
 
 class MockMoveGestureTarget : public MockSyntheticGestureTarget {
  public:
-  MockMoveGestureTarget() : total_abs_move_distance_length_(0) {}
+  MockMoveGestureTarget()
+      : total_abs_move_distance_length_(0), precise_scrolling_deltas_(false) {}
   ~MockMoveGestureTarget() override {}
 
   gfx::Vector2dF start_to_end_distance() const {
@@ -197,10 +198,12 @@ class MockMoveGestureTarget : public MockSyntheticGestureTarget {
   float total_abs_move_distance_length() const {
     return total_abs_move_distance_length_;
   }
+  bool precise_scrolling_deltas() const { return precise_scrolling_deltas_; }
 
  protected:
   gfx::Vector2dF start_to_end_distance_;
   float total_abs_move_distance_length_;
+  bool precise_scrolling_deltas_;
 };
 
 class MockScrollMouseTarget : public MockMoveGestureTarget {
@@ -215,6 +218,7 @@ class MockScrollMouseTarget : public MockMoveGestureTarget {
     gfx::Vector2dF delta(mouse_wheel_event.delta_x, mouse_wheel_event.delta_y);
     start_to_end_distance_ += delta;
     total_abs_move_distance_length_ += delta.Length();
+    precise_scrolling_deltas_ = mouse_wheel_event.has_precise_scrolling_deltas;
   }
 };
 
@@ -1184,6 +1188,28 @@ TEST_F(SyntheticGestureControllerTest, MultiScrollGestureMouseHorizontal) {
                   scroll_target->total_abs_move_distance_length());
   EXPECT_FLOAT_EQ((params.distances[0] + params.distances[1]).x(),
                   scroll_target->start_to_end_distance().x());
+}
+
+TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMousePreciseScroll) {
+  CreateControllerAndTarget<MockScrollMouseTarget>();
+
+  SyntheticSmoothMoveGestureParams params;
+  params.input_type = SyntheticSmoothMoveGestureParams::MOUSE_WHEEL_INPUT;
+  params.start_point.SetPoint(39, 86);
+  params.distances.push_back(gfx::Vector2d(0, -132));
+  params.precise_scrolling_deltas = true;
+
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
+      new SyntheticSmoothMoveGesture(params));
+  QueueSyntheticGesture(std::move(gesture));
+  FlushInputUntilComplete();
+
+  MockMoveGestureTarget* scroll_target =
+      static_cast<MockMoveGestureTarget*>(target_);
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(params.precise_scrolling_deltas,
+            scroll_target->precise_scrolling_deltas());
 }
 
 void CheckIsWithinRangeMulti(float scroll_distance,

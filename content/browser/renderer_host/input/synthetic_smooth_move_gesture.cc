@@ -30,7 +30,8 @@ const int kDefaultSpeedInPixelsPerSec = 800;
 SyntheticSmoothMoveGestureParams::SyntheticSmoothMoveGestureParams()
     : speed_in_pixels_s(kDefaultSpeedInPixelsPerSec),
       prevent_fling(true),
-      add_slop(true) {}
+      add_slop(true),
+      precise_scrolling_deltas(false) {}
 
 SyntheticSmoothMoveGestureParams::SyntheticSmoothMoveGestureParams(
     const SyntheticSmoothMoveGestureParams& other) = default;
@@ -258,8 +259,8 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelEvent(
     const blink::WebMouseWheelEvent::Phase phase,
     const base::TimeTicks& timestamp) const {
   blink::WebMouseWheelEvent mouse_wheel_event =
-      SyntheticWebMouseWheelEventBuilder::Build(0, 0, delta.x(), delta.y(), 0,
-                                                false);
+      SyntheticWebMouseWheelEventBuilder::Build(
+          0, 0, delta.x(), delta.y(), 0, params_.precise_scrolling_deltas);
 
   mouse_wheel_event.SetPositionInWidget(
       current_move_segment_start_position_.x(),

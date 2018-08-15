@@ -287,7 +287,8 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
                        float speed_in_pixels_s,
                        bool prevent_fling,
                        float start_x,
-                       float start_y) {
+                       float start_y,
+                       bool precise_scrolling_deltas) {
   gfx::Rect rect = context->render_view_impl()->GetWidget()->ViewRect();
   rect -= rect.OffsetFromOrigin();
   if (!rect.Contains(start_x, start_y)) {
@@ -324,6 +325,7 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
 
   gesture_params.speed_in_pixels_s = speed_in_pixels_s;
   gesture_params.prevent_fling = prevent_fling;
+  gesture_params.precise_scrolling_deltas = precise_scrolling_deltas;
 
   gesture_params.anchor.SetPoint(start_x, start_y);
 
@@ -641,21 +643,25 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   int gesture_source_type = SyntheticGestureParams::DEFAULT_INPUT;
   std::string direction = "down";
   float speed_in_pixels_s = 800;
+  bool precise_scrolling_deltas = true;
 
   if (!GetOptionalArg(args, &pixels_to_scroll) ||
-      !GetOptionalArg(args, &callback) ||
-      !GetOptionalArg(args, &start_x) ||
+      !GetOptionalArg(args, &callback) || !GetOptionalArg(args, &start_x) ||
       !GetOptionalArg(args, &start_y) ||
       !GetOptionalArg(args, &gesture_source_type) ||
       !GetOptionalArg(args, &direction) ||
-      !GetOptionalArg(args, &speed_in_pixels_s)) {
+      !GetOptionalArg(args, &speed_in_pixels_s) ||
+      !GetOptionalArg(args, &precise_scrolling_deltas)) {
     return false;
   }
 
+  DCHECK(gesture_source_type != SyntheticGestureParams::TOUCH_INPUT ||
+         precise_scrolling_deltas);
   EnsureRemoteInterface();
   return BeginSmoothScroll(&context, args, input_injector_, pixels_to_scroll,
                            callback, gesture_source_type, direction,
-                           speed_in_pixels_s, true, start_x, start_y);
+                           speed_in_pixels_s, true, start_x, start_y,
+                           precise_scrolling_deltas);
 }
 
 bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
@@ -714,7 +720,7 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
   return BeginSmoothScroll(
       &context, args, input_injector_, -pixels_to_scroll, callback,
       1,  // TOUCH_INPUT
-      direction, speed_in_pixels_s, false, start_x, start_y);
+      direction, speed_in_pixels_s, false, start_x, start_y, true);
 }
 
 bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
