@@ -294,18 +294,15 @@ void PaintPath(Canvas* canvas,
         SkScalar arc_sweep_flag = arg(4);
         SkScalar x = arg(5);
         SkScalar y = arg(6);
+        SkPath::ArcSize arc_size =
+            large_arc_flag ? SkPath::kLarge_ArcSize : SkPath::kSmall_ArcSize;
+        SkPath::Direction direction =
+            arc_sweep_flag ? SkPath::kCW_Direction : SkPath::kCCW_Direction;
 
-        auto path_fn =
-            command_type == ARC_TO
-                ? static_cast<void (SkPath::*)(
-                      SkScalar, SkScalar, SkScalar, SkPath::ArcSize,
-                      SkPath::Direction, SkScalar, SkScalar)>(&SkPath::arcTo)
-                : &SkPath::rArcTo;
-        (path.*path_fn)(
-            rx, ry, angle,
-            large_arc_flag ? SkPath::kLarge_ArcSize : SkPath::kSmall_ArcSize,
-            arc_sweep_flag ? SkPath::kCW_Direction : SkPath::kCCW_Direction, x,
-            y);
+        if (command_type == ARC_TO)
+          path.arcTo(rx, ry, angle, arc_size, direction, x, y);
+        else
+          path.rArcTo(rx, ry, angle, arc_size, direction, x, y);
         break;
       }
 
