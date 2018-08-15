@@ -4,7 +4,6 @@
 
 #include <algorithm>
 
-#include "base/debug/crash_logging.h"
 #include "base/i18n/break_iterator.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -210,18 +209,8 @@ void PdfAccessibilityTree::Finish() {
   for (const auto& node : nodes_)
     update.nodes.push_back(*node);
 
-  if (!tree_.Unserialize(update)) {
-    static auto* ax_tree_error = base::debug::AllocateCrashKeyString(
-        "ax_tree_error", base::debug::CrashKeySize::Size32);
-    static auto* ax_tree_update = base::debug::AllocateCrashKeyString(
-        "ax_tree_update", base::debug::CrashKeySize::Size64);
-    // Temporarily log some additional crash keys so we can try to
-    // figure out why we're getting bad accessibility trees here.
-    // http://crbug.com/770886
-    base::debug::SetCrashKeyString(ax_tree_error, tree_.error());
-    base::debug::SetCrashKeyString(ax_tree_update, update.ToString());
+  if (!tree_.Unserialize(update))
     LOG(FATAL) << tree_.error();
-  }
 
   UpdateAXTreeDataFromSelection();
 
