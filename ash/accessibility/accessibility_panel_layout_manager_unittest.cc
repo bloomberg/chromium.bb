@@ -17,8 +17,7 @@ namespace ash {
 namespace {
 
 // Shorten the name for better line wrapping.
-constexpr int kDefaultPanelHeight =
-    AccessibilityPanelLayoutManager::kDefaultPanelHeight;
+constexpr int kPanelHeight = AccessibilityPanelLayoutManager::kPanelHeight;
 
 AccessibilityPanelLayoutManager* GetLayoutManager() {
   aura::Window* container =
@@ -75,6 +74,27 @@ TEST_F(AccessibilityPanelLayoutManagerTest, Shutdown) {
   // Ash should not crash if the window is still open at shutdown.
 }
 
+TEST_F(AccessibilityPanelLayoutManagerTest, InitialBounds) {
+  display::Screen* screen = display::Screen::GetScreen();
+  gfx::Rect initial_work_area = screen->GetPrimaryDisplay().work_area();
+
+  // Simulate Chrome creating the ChromeVox window, but don't show it yet.
+  std::unique_ptr<views::Widget> widget = CreateChromeVoxPanel();
+
+  // The layout manager has not adjusted the work area yet.
+  EXPECT_EQ(screen->GetPrimaryDisplay().work_area(), initial_work_area);
+
+  // Showing the panel causes the layout manager to adjust the panel bounds and
+  // the display work area.
+  widget->Show();
+  gfx::Rect expected_bounds(0, 0, screen->GetPrimaryDisplay().bounds().width(),
+                            kPanelHeight);
+  EXPECT_EQ(widget->GetNativeWindow()->bounds(), expected_bounds);
+  gfx::Rect expected_work_area = initial_work_area;
+  expected_work_area.Inset(0, kPanelHeight, 0, 0);
+  EXPECT_EQ(screen->GetPrimaryDisplay().work_area(), expected_work_area);
+}
+
 TEST_F(AccessibilityPanelLayoutManagerTest, PanelFullscreen) {
   AccessibilityPanelLayoutManager* layout_manager = GetLayoutManager();
   display::Screen* screen = display::Screen::GetScreen();
@@ -82,56 +102,38 @@ TEST_F(AccessibilityPanelLayoutManagerTest, PanelFullscreen) {
   std::unique_ptr<views::Widget> widget = CreateChromeVoxPanel();
   widget->Show();
 
-  layout_manager->SetPanelBounds(gfx::Rect(0, 0, 0, kDefaultPanelHeight),
-                                 mojom::AccessibilityPanelState::FULL_WIDTH);
-
   gfx::Rect expected_work_area = screen->GetPrimaryDisplay().work_area();
 
   // When the panel is fullscreen it fills the display and does not change the
   // work area.
-  layout_manager->SetPanelBounds(gfx::Rect(),
-                                 mojom::AccessibilityPanelState::FULLSCREEN);
+  layout_manager->SetPanelFullscreen(true);
   EXPECT_EQ(widget->GetNativeWindow()->bounds(),
             screen->GetPrimaryDisplay().bounds());
   EXPECT_EQ(screen->GetPrimaryDisplay().work_area(), expected_work_area);
 
   // Restoring the panel to default size restores the bounds and does not change
   // the work area.
-  layout_manager->SetPanelBounds(gfx::Rect(0, 0, 0, kDefaultPanelHeight),
-                                 mojom::AccessibilityPanelState::FULL_WIDTH);
+  layout_manager->SetPanelFullscreen(false);
   gfx::Rect expected_bounds(0, 0, screen->GetPrimaryDisplay().bounds().width(),
-                            kDefaultPanelHeight);
+                            kPanelHeight);
   EXPECT_EQ(widget->GetNativeWindow()->bounds(), expected_bounds);
   EXPECT_EQ(screen->GetPrimaryDisplay().work_area(), expected_work_area);
-}
-
-TEST_F(AccessibilityPanelLayoutManagerTest, SetBounds) {
-  std::unique_ptr<views::Widget> widget = CreateChromeVoxPanel();
-  widget->Show();
-
-  gfx::Rect bounds(0, 0, 100, 100);
-  GetLayoutManager()->SetPanelBounds(bounds,
-                                     mojom::AccessibilityPanelState::BOUNDED);
-  EXPECT_EQ(widget->GetNativeWindow()->bounds(), bounds);
 }
 
 TEST_F(AccessibilityPanelLayoutManagerTest, DisplayBoundsChange) {
   std::unique_ptr<views::Widget> widget = CreateChromeVoxPanel();
   widget->Show();
-  GetLayoutManager()->SetPanelBounds(
-      gfx::Rect(0, 0, 0, kDefaultPanelHeight),
-      mojom::AccessibilityPanelState::FULL_WIDTH);
 
   // When the display resolution changes the panel still sits at the top of the
   // screen.
   UpdateDisplay("1234,567");
   display::Screen* screen = display::Screen::GetScreen();
   gfx::Rect expected_bounds(0, 0, screen->GetPrimaryDisplay().bounds().width(),
-                            kDefaultPanelHeight);
+                            kPanelHeight);
   EXPECT_EQ(widget->GetNativeWindow()->bounds(), expected_bounds);
 
   gfx::Rect expected_work_area = screen->GetPrimaryDisplay().bounds();
-  expected_work_area.Inset(0, kDefaultPanelHeight, 0, kShelfSize);
+  expected_work_area.Inset(0, kPanelHeight, 0, kShelfSize);
   EXPECT_EQ(screen->GetPrimaryDisplay().work_area(), expected_work_area);
 }
 

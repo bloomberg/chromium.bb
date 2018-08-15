@@ -36,17 +36,6 @@ enum AccessibilityAlert {
   WINDOW_OVERVIEW_MODE_ENTERED
 };
 
-enum AccessibilityPanelState {
-  // Window bounds are set explicitly.
-  BOUNDED,
-
-  // Width of panel matches screen width, y_coord and height are set by bounds.
-  FULL_WIDTH,
-
-  // Panel occupies the full screen. Bounds are ignored.
-  FULLSCREEN
-};
-
 enum SelectToSpeakState {
   // Select to Speak is not actively selecting text or speaking.
   kSelectToSpeakStateInactive,
@@ -81,14 +70,9 @@ interface AccessibilityController {
   // Setting off-screen or empty bounds suppresses the highlight.
   SetCaretBounds(gfx.mojom.Rect bounds_in_screen);
 
-  // Sets whether the accessibility panel should always be visible, regardless
-  // of whether the window is fullscreen.
-  SetAccessibilityPanelAlwaysVisible(bool always_visible);
-
-  // Sets the bounds for the accessibility panel. Overrides current
-  // configuration (i.e. fullscreen, full-width).
-  SetAccessibilityPanelBounds(gfx.mojom.Rect bounds,
-                              AccessibilityPanelState state);
+  // Sets whether the accessibility panel is filling the entire screen (e.g. to
+  // show the expanded UI for the ChromeVox spoken feedback extension).
+  SetAccessibilityPanelFullscreen(bool fullscreen);
 
   // Sets the current Select-to-Speak state. This should be used by the Select-
   // to-Speak extension to inform ash of its updated state.
