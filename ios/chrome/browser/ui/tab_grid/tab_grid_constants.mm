@@ -24,6 +24,7 @@ NSString* const kTabGridIncognitoTabsEmptyStateIdentifier =
     @"TabGridIncognitoTabsEmptyStateIdentifier";
 NSString* const kTabGridRegularTabsEmptyStateIdentifier =
     @"TabGridRegularTabsEmptyStateIdentifier";
+NSString* const kTabGridScrollViewIdentifier = @"kTabGridScrollViewIdentifier";
 
 // The color of the text buttons in the toolbars.
 const int kTabGridToolbarTextButtonColor = 0xFFFFFF;

@@ -542,6 +542,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.view addSubview:scrollView];
   self.scrollContentView = contentView;
   self.scrollView = scrollView;
+  self.scrollView.accessibilityIdentifier = kTabGridScrollViewIdentifier;
   NSArray* constraints = @[
     [contentView.topAnchor constraintEqualToAnchor:scrollView.topAnchor],
     [contentView.bottomAnchor constraintEqualToAnchor:scrollView.bottomAnchor],

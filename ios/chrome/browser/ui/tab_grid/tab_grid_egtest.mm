@@ -2,19 +2,60 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/stringprintf.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/web/public/test/http_server/http_server.h"
+#import "ios/web/public/test/http_server/http_server_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface TabGridTestCase : ChromeTestCase
+namespace {
+char kURL1[] = "http://firstURL";
+char kURL2[] = "http://secondURL";
+char kURL3[] = "http://thirdURL";
+char kTitle1[] = "Page 1";
+char kTitle2[] = "Page 2";
+char kResponse1[] = "Test Page 1 content";
+char kResponse2[] = "Test Page 2 content";
+char kResponse3[] = "Test Page 3 content";
+}  // namespace
+
+@interface TabGridTestCase : ChromeTestCase {
+  GURL _URL1;
+  GURL _URL2;
+  GURL _URL3;
+}
 @end
 
 @implementation TabGridTestCase
+
+// Set up called once for the class.
++ (void)setUp {
+  [super setUp];
+  std::map<GURL, std::string> responses;
+  const char kPageFormat[] = "<head><title>%s</title></head><body>%s</body>";
+  responses[web::test::HttpServer::MakeUrl(kURL1)] =
+      base::StringPrintf(kPageFormat, kTitle1, kResponse1);
+  responses[web::test::HttpServer::MakeUrl(kURL2)] =
+      base::StringPrintf(kPageFormat, kTitle2, kResponse2);
+  // Page 3 does not have <title> tag, so URL will be its title.
+  responses[web::test::HttpServer::MakeUrl(kURL3)] = kResponse3;
+  web::test::SetUpSimpleHttpServer(responses);
+}
+
+- (void)setUp {
+  [super setUp];
+  _URL1 = web::test::HttpServer::MakeUrl(kURL1);
+  _URL2 = web::test::HttpServer::MakeUrl(kURL2);
+  _URL3 = web::test::HttpServer::MakeUrl(kURL3);
+}
 
 // Tests entering and leaving the tab grid.
 - (void)testEnteringAndLeavingTabGrid {
@@ -96,6 +137,39 @@
       assertWithMatcher:grey_nil()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+- (void)loadTestURLs {
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponse1];
+
+  [ChromeEarlGrey loadURL:_URL2];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponse2];
+
+  [ChromeEarlGrey loadURL:_URL3];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponse3];
+}
+
+// Test that Clear Browsing Data can be successfully done from tab grid.
+- (void)testClearBrowsingData {
+  // Load history
+  [self loadTestURLs];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+  // Swipe over to Recent Tabs
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kTabGridScrollViewIdentifier)]
+      performAction:[GREYActions
+                        actionForSwipeFastInDirection:kGREYDirectionLeft]];
+
+  // Tap on "Show History"
+  // Undo is available after close all action.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridSelectShowHistoryCell()]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI openAndClearBrowsingDataFromHistory];
+  [ChromeEarlGreyUI assertHistoryHasNoEntries];
 }
 
 @end

@@ -133,6 +133,7 @@ source_set("egtest_support") {
     "//base/test:test_support",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/ntp/recent_tabs",
     "//ios/chrome/browser/ui/tools_menu/public",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
@@ -150,7 +151,9 @@ source_set("eg_tests") {
 
   deps = [
     ":egtest_support",
+    "//ios/chrome/browser/ui/tab_grid:tab_grid_ui",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/web/public/test/http_server",
   ]
   libs = [ "XCTest.framework" ]
 }
