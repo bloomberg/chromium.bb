@@ -74,6 +74,14 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
     return nullptr;
   }
 
+  if (options.name() != "") {
+    // TODO(asamidoi): Implement 'name' option (https://crbug.com/721219)
+    context->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kInfoMessageLevel,
+        "'name' param in WorkerOptions is not implemented yet. See "
+        "https://crbug.com/721219 for details."));
+  }
+
   // TODO(nhiroki): Remove this flag check once module loading for
   // DedicatedWorker is enabled by default (https://crbug.com/680046).
   if (options.type() == "module" &&
