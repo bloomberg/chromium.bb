@@ -25,10 +25,8 @@ URLRequestContextBuilder to do this.
 
 Chrome has a number of different URLRequestContexts, as there is often a need to
 keep cookies, caches, and socket pools separate for different types of requests.
-Here are the ones that the network team owns:
+Here are the main ones used by Chrome browser:
 
-* The proxy URLRequestContext, owned by the IOThread and used to get PAC
-scripts while avoiding re-entrancy.
 * The system URLRequestContext, also owned by the IOThread, used for requests
 that aren't associated with a profile.
 * Each profile, including incognito profiles, has a number of URLRequestContexts
@@ -39,7 +37,8 @@ that are created as needed:
     like the HostResolver.
     * Each non-incognito profile also has a media request context, which uses a
     different on-disk cache than the main request context. This prevents a
-    single huge media file from evicting everything else in the cache.
+    single huge media file from evicting everything else in the cache. (See also
+    crbug.com/789657)
     * On desktop platforms, each profile has a request context for extensions.
     * Each profile has two contexts for each isolated app (One for media, one
     for everything else).
