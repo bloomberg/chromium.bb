@@ -46,6 +46,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
   // https://w3c.github.io/webauthn/#createCredential
   void EraseAttestationStatement();
 
+  // Returns true if the attestation is a "self" attestation, i.e. is just the
+  // private key signing itself to show that it is fresh and the AAGUID is zero.
+  bool IsSelfAttestation();
+
   // Returns true if the attestation certificate is known to be inappropriately
   // identifying. Some tokens return unique attestation certificates even when
   // the bit to request that is not set. (Normal attestation certificates are

@@ -26,6 +26,10 @@ bool NoneAttestationStatement::
   return false;
 }
 
+bool NoneAttestationStatement::IsSelfAttestation() {
+  return false;
+}
+
 cbor::CBORValue::MapValue NoneAttestationStatement::GetAsCBORMap() const {
   return cbor::CBORValue::MapValue();
 }

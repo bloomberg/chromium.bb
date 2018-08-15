@@ -27,6 +27,8 @@
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_frame_host.h"
 #include "device/base/features.h"
+#include "device/fido/attested_credential_data.h"
+#include "device/fido/authenticator_data.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/mock_fido_device.h"
@@ -1127,6 +1129,13 @@ enum class AttestationConsent {
   DENIED,
 };
 
+enum class AttestationType {
+  ANY,
+  NONE,
+  U2F,
+  SELF,
+};
+
 class TestAuthenticatorRequestDelegate
     : public AuthenticatorRequestClientDelegate {
  public:
@@ -1217,7 +1226,7 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
     IndividualAttestation individual_attestation;
     AttestationConsent attestation_consent;
     AuthenticatorStatus expected_status;
-    const char* expected_attestation_format;
+    AttestationType expected_attestation;
     const char* expected_certificate_substring;
   };
 
@@ -1263,7 +1272,7 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
       ASSERT_EQ(test.expected_status, callback_receiver.status());
 
       if (test.expected_status != AuthenticatorStatus::SUCCESS) {
-        ASSERT_STREQ("", test.expected_attestation_format);
+        ASSERT_EQ(AttestationType::ANY, test.expected_attestation);
         continue;
       }
 
@@ -1272,11 +1281,56 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
       ASSERT_TRUE(attestation_value);
       ASSERT_TRUE(attestation_value->is_map());
       const auto& attestation = attestation_value->GetMap();
-      ExpectMapHasKeyWithStringValue(attestation, "fmt",
-                                     test.expected_attestation_format);
-      if (strlen(test.expected_certificate_substring) > 0) {
-        ExpectCertificateContainingSubstring(
-            attestation, test.expected_certificate_substring);
+
+      switch (test.expected_attestation) {
+        case AttestationType::ANY:
+          ASSERT_STREQ("", test.expected_certificate_substring);
+          break;
+
+        case AttestationType::NONE:
+          ASSERT_STREQ("", test.expected_certificate_substring);
+          ExpectMapHasKeyWithStringValue(attestation, "fmt", "none");
+          break;
+
+        case AttestationType::U2F:
+          ExpectMapHasKeyWithStringValue(attestation, "fmt", "fido-u2f");
+          if (strlen(test.expected_certificate_substring) > 0) {
+            ExpectCertificateContainingSubstring(
+                attestation, test.expected_certificate_substring);
+          }
+          break;
+
+        case AttestationType::SELF:
+          ASSERT_STREQ("", test.expected_certificate_substring);
+          ExpectMapHasKeyWithStringValue(attestation, "fmt", "packed");
+
+          // A self-attestation should not include an X.509 chain nor ECDAA key.
+          const auto attestation_statement_it =
+              attestation.find(CBORValue("attStmt"));
+          ASSERT_TRUE(attestation_statement_it != attestation.end());
+          ASSERT_TRUE(attestation_statement_it->second.is_map());
+          const auto& attestation_statement =
+              attestation_statement_it->second.GetMap();
+
+          ASSERT_TRUE(attestation_statement.find(CBORValue("x5c")) ==
+                      attestation_statement.end());
+          ASSERT_TRUE(attestation_statement.find(CBORValue("ecdaaKeyId")) ==
+                      attestation_statement.end());
+
+          // The AAGUID should be all zero.
+          const auto auth_data_it = attestation.find(CBORValue("authData"));
+          ASSERT_TRUE(auth_data_it != attestation.end());
+          ASSERT_TRUE(auth_data_it->second.is_bytestring());
+          const std::vector<uint8_t>& auth_data =
+              auth_data_it->second.GetBytestring();
+          base::Optional<device::AuthenticatorData> parsed_auth_data =
+              device::AuthenticatorData::DecodeAuthenticatorData(auth_data);
+          ASSERT_TRUE(parsed_auth_data);
+          const base::Optional<device::AttestedCredentialData>& cred_data(
+              parsed_auth_data->attested_data());
+          ASSERT_TRUE(cred_data);
+          EXPECT_TRUE(cred_data->IsAaguidZero());
+          break;
       }
     }
   }
@@ -1353,72 +1407,78 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       {
           AttestationConveyancePreference::NONE,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::SUCCESS, "none", "",
+          AuthenticatorStatus::SUCCESS, AttestationType::NONE, "",
       },
       {
           AttestationConveyancePreference::NONE,
           IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::SUCCESS, "none", "",
+          AuthenticatorStatus::SUCCESS, AttestationType::NONE, "",
       },
       {
           AttestationConveyancePreference::INDIRECT,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
       },
       {
           AttestationConveyancePreference::INDIRECT,
           IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
       },
       {
           AttestationConveyancePreference::INDIRECT,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, "fido-u2f", kStandardCommonName,
+          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          kStandardCommonName,
       },
       {
           AttestationConveyancePreference::INDIRECT,
           IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, "fido-u2f", kStandardCommonName,
+          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          kStandardCommonName,
       },
       {
           AttestationConveyancePreference::DIRECT,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
       },
       {
           AttestationConveyancePreference::DIRECT,
           IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
       },
       {
           AttestationConveyancePreference::DIRECT,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, "fido-u2f", kStandardCommonName,
+          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          kStandardCommonName,
       },
       {
           AttestationConveyancePreference::DIRECT,
           IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, "fido-u2f", kStandardCommonName,
+          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          kStandardCommonName,
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, "fido-u2f", kStandardCommonName,
+          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          kStandardCommonName,
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, "fido-u2f", kIndividualCommonName,
+          AuthenticatorStatus::SUCCESS, AttestationType::U2F,
+          kIndividualCommonName,
       },
   };
 
@@ -1441,7 +1501,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
       {
           AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
-          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
       },
       {
           AttestationConveyancePreference::DIRECT,
@@ -1450,7 +1510,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           // If individual attestation was not requested then the attestation
           // certificate will be removed, even if consent is given, because
           // the consent isn't to be tracked.
-          "none", "",
+          AttestationType::NONE, "",
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
@@ -1459,13 +1519,13 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           // If individual attestation was not requested then the attestation
           // certificate will be removed, even if consent is given, because
           // the consent isn't to be tracked.
-          "none", "",
+          AttestationType::NONE, "",
       },
 
       {
           AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, "fido-u2f", kCommonName,
+          AuthenticatorStatus::SUCCESS, AttestationType::U2F, kCommonName,
       },
   };
 
@@ -1473,6 +1533,59 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   virtual_device_.mutable_state()->individual_attestation_cert_common_name =
       kCommonName;
   NavigateAndCommit(GURL("https://example.com"));
+
+  RunTestCases(kTests);
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest, Ctap2SelfAttestation) {
+  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap);
+  virtual_device_.mutable_state()->self_attestation = true;
+  NavigateAndCommit(GURL("https://example.com"));
+
+  const std::vector<TestCase> kTests = {
+      {
+          // If no attestation is requested, we'll return the self attestation
+          // rather than erasing it.
+          AttestationConveyancePreference::NONE,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::SUCCESS, AttestationType::SELF, "",
+      },
+      {
+          // If attestation is requested, but denied, we'll still fail the
+          // request.
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, AttestationType::ANY, "",
+      },
+      {
+          // If attestation is requested and granted, the self attestation
+          // will be returned.
+          AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS, AttestationType::SELF, "",
+      },
+  };
+
+  RunTestCases(kTests);
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest,
+       Ctap2SelfAttestationNonZeroAaguid) {
+  virtual_device_.SetSupportedProtocol(device::ProtocolVersion::kCtap);
+  virtual_device_.mutable_state()->self_attestation = true;
+  virtual_device_.mutable_state()->non_zero_aaguid_with_self_attestation = true;
+  NavigateAndCommit(GURL("https://example.com"));
+
+  const std::vector<TestCase> kTests = {
+      {
+          // Since the virtual device is configured to set a non-zero AAGUID
+          // the self-attestation should still be replaced with a "none"
+          // attestation.
+          AttestationConveyancePreference::NONE,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::SUCCESS, AttestationType::NONE, "",
+      },
+  };
 
   RunTestCases(kTests);
 }

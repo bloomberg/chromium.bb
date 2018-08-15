@@ -135,6 +135,10 @@ cbor::CBORValue::MapValue FidoAttestationStatement::GetAsCBORMap() const {
   return attestation_statement_map;
 }
 
+bool FidoAttestationStatement::IsSelfAttestation() {
+  return false;
+}
+
 bool FidoAttestationStatement::
     IsAttestationCertificateInappropriatelyIdentifying() {
   // An attestation certificate is considered inappropriately identifying if it
@@ -180,6 +184,10 @@ cbor::CBORValue::MapValue PackedAttestationStatement::GetAsCBORMap() const {
         cbor::CBORValue(std::move(certificate_array));
   }
   return attestation_statement_map;
+}
+
+bool PackedAttestationStatement::IsSelfAttestation() {
+  return x509_certificates_.empty();
 }
 
 bool PackedAttestationStatement::

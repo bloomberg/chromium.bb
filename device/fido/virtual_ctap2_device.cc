@@ -109,17 +109,19 @@ std::vector<uint8_t> ConstructSignatureBuffer(
 }
 
 std::vector<uint8_t> ConstructMakeCredentialResponse(
-    base::span<const uint8_t> attestation_certificate,
+    const base::Optional<std::vector<uint8_t>> attestation_certificate,
     base::span<const uint8_t> signature,
     AuthenticatorData authenticator_data) {
   cbor::CBORValue::MapValue attestation_map;
   attestation_map.emplace("alg", -7);
   attestation_map.emplace("sig", fido_parsing_utils::Materialize(signature));
 
-  cbor::CBORValue::ArrayValue certificate_chain;
-  certificate_chain.emplace_back(
-      fido_parsing_utils::Materialize(attestation_certificate));
-  attestation_map.emplace("x5c", std::move(certificate_chain));
+  if (attestation_certificate) {
+    cbor::CBORValue::ArrayValue certificate_chain;
+    certificate_chain.emplace_back(std::move(*attestation_certificate));
+    attestation_map.emplace("x5c", std::move(certificate_chain));
+  }
+
   AuthenticatorMakeCredentialResponse make_credential_response(
       AttestationObject(
           std::move(authenticator_data),
@@ -253,9 +255,16 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   std::vector<uint8_t> key_handle(hash.begin(), hash.end());
   std::array<uint8_t, 2> sha256_length = {0, crypto::kSHA256Length};
 
+  std::array<uint8_t, 16> kZeroAaguid = {0, 0, 0, 0, 0, 0, 0, 0,
+                                         0, 0, 0, 0, 0, 0, 0, 0};
+  base::span<const uint8_t, 16> aaguid(kDeviceAaguid);
+  if (mutable_state()->self_attestation &&
+      !mutable_state()->non_zero_aaguid_with_self_attestation) {
+    aaguid = kZeroAaguid;
+  }
+
   AttestedCredentialData attested_credential_data(
-      kDeviceAaguid, sha256_length, key_handle,
-      ConstructECPublicKey(public_key));
+      aaguid, sha256_length, key_handle, ConstructECPublicKey(public_key));
 
   auto authenticator_data = ConstructAuthenticatorData(
       rp_id_hash, 01ul, std::move(attested_credential_data));
@@ -271,14 +280,17 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   status = Sign(attestation_private_key.get(), std::move(sign_buffer), &sig);
   DCHECK(status);
 
-  auto attestation_cert = GenerateAttestationCertificate(
-      false /* individual_attestation_requested */);
-  if (!attestation_cert) {
-    DLOG(ERROR) << "Failed to generate attestation certificate.";
-    return CtapDeviceResponseCode::kCtap2ErrOther;
+  base::Optional<std::vector<uint8_t>> attestation_cert;
+  if (!mutable_state()->self_attestation) {
+    attestation_cert = GenerateAttestationCertificate(
+        false /* individual_attestation_requested */);
+    if (!attestation_cert) {
+      DLOG(ERROR) << "Failed to generate attestation certificate.";
+      return CtapDeviceResponseCode::kCtap2ErrOther;
+    }
   }
 
-  *response = ConstructMakeCredentialResponse(std::move(*attestation_cert), sig,
+  *response = ConstructMakeCredentialResponse(std::move(attestation_cert), sig,
                                               std::move(authenticator_data));
 
   StoreNewKey(rp_id_hash, key_handle, std::move(private_key));

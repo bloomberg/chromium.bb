@@ -39,17 +39,18 @@ void AttestationObject::EraseAttestationStatement() {
 #if DCHECK_IS_ON()
   if (!authenticator_data_.attested_data())
     return;
-
-  std::vector<uint8_t> auth_data = authenticator_data_.SerializeToByteArray();
-  // See diagram at https://w3c.github.io/webauthn/#sctn-attestation
-  constexpr size_t kAaguidOffset =
-      32 /* RP ID hash */ + 1 /* flags */ + 4 /* signature counter */;
-  constexpr size_t kAaguidSize = 16;
-  DCHECK_GE(auth_data.size(), kAaguidOffset + kAaguidSize);
-  DCHECK(std::all_of(auth_data.data() + kAaguidOffset,
-                     auth_data.data() + kAaguidOffset + kAaguidSize,
-                     [](uint8_t v) { return v == 0; }));
+  DCHECK(authenticator_data_.attested_data()->IsAaguidZero());
 #endif
+}
+
+bool AttestationObject::IsSelfAttestation() {
+  if (!attestation_statement_->IsSelfAttestation()) {
+    return false;
+  }
+  // Self-attestation also requires that the AAGUID be zero. See
+  // https://www.w3.org/TR/webauthn/#createCredential.
+  return !authenticator_data_.attested_data() ||
+         authenticator_data_.attested_data()->IsAaguidZero();
 }
 
 bool AttestationObject::IsAttestationCertificateInappropriatelyIdentifying() {

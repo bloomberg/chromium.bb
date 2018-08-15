@@ -58,7 +58,7 @@ ScopedVirtualFidoDevice::~ScopedVirtualFidoDevice() = default;
 
 void ScopedVirtualFidoDevice::SetSupportedProtocol(
     ProtocolVersion supported_protocol) {
-  supported_protocol_ = ProtocolVersion::kCtap;
+  supported_protocol_ = supported_protocol;
 }
 
 VirtualFidoDevice::State* ScopedVirtualFidoDevice::mutable_state() {
