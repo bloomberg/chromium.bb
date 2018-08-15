@@ -67,6 +67,7 @@
 #include "services/network/cookie_manager.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/expect_ct_reporter.h"
+#include "services/network/host_resolver.h"
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
 #include "services/network/mojo_net_log.h"
@@ -527,7 +528,12 @@ void NetworkContext::DestroyURLLoaderFactory(
 }
 
 size_t NetworkContext::GetNumOutstandingResolveHostRequestsForTesting() const {
-  return resolve_host_requests_.size();
+  size_t sum = 0;
+  if (internal_host_resolver_)
+    sum += internal_host_resolver_->GetNumOutstandingRequestsForTesting();
+  for (const auto& host_resolver : host_resolvers_)
+    sum += host_resolver->GetNumOutstandingRequestsForTesting();
+  return sum;
 }
 
 void NetworkContext::ClearNetworkingHistorySince(
@@ -810,21 +816,21 @@ void NetworkContext::CreateNetLogExporter(
 void NetworkContext::ResolveHost(const net::HostPortPair& host,
                                  mojom::ResolveHostHandleRequest control_handle,
                                  mojom::ResolveHostClientPtr response_client) {
-  auto request = std::make_unique<ResolveHostRequest>(
-      url_request_context_->host_resolver(), host, network_service_->net_log());
+  if (!internal_host_resolver_) {
+    internal_host_resolver_ = std::make_unique<HostResolver>(
+        url_request_context_->host_resolver(), network_service_->net_log());
+  }
 
-  int rv =
-      request->Start(std::move(control_handle), std::move(response_client),
-                     base::BindOnce(&NetworkContext::OnResolveHostComplete,
-                                    base::Unretained(this), request.get()));
-  if (rv != net::ERR_IO_PENDING)
-    return;
+  internal_host_resolver_->ResolveHost(host, std::move(control_handle),
+                                       std::move(response_client));
+}
 
-  // Store the request with the context so it can be cancelled on context
-  // shutdown.
-  bool insertion_result =
-      resolve_host_requests_.insert(std::move(request)).second;
-  DCHECK(insertion_result);
+void NetworkContext::CreateHostResolver(mojom::HostResolverRequest request) {
+  host_resolvers_.emplace(std::make_unique<HostResolver>(
+      std::move(request),
+      base::BindOnce(&NetworkContext::OnHostResolverShutdown,
+                     base::Unretained(this)),
+      url_request_context_->host_resolver(), network_service_->net_log()));
 }
 
 void NetworkContext::AddHSTSForTesting(const std::string& host,
@@ -1262,13 +1268,10 @@ void NetworkContext::OnHttpCacheCleared(ClearHttpCacheCallback callback,
   std::move(callback).Run();
 }
 
-void NetworkContext::OnResolveHostComplete(ResolveHostRequest* request,
-                                           int error) {
-  DCHECK_NE(net::ERR_IO_PENDING, error);
-
-  auto found_request = resolve_host_requests_.find(request);
-  DCHECK(found_request != resolve_host_requests_.end());
-  resolve_host_requests_.erase(found_request);
+void NetworkContext::OnHostResolverShutdown(HostResolver* resolver) {
+  auto found_resolver = host_resolvers_.find(resolver);
+  DCHECK(found_resolver != host_resolvers_.end());
+  host_resolvers_.erase(found_resolver);
 }
 
 void NetworkContext::OnHttpCacheSizeComputed(

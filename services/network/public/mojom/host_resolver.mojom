@@ -5,6 +5,7 @@
 module network.mojom;
 
 import "net/interfaces/address_list.mojom";
+import "services/network/public/mojom/network_param.mojom";
 
 // Control handle used to control outstanding NetworkContext::ResolveHost
 // requests. Handle is optional for all requests, and may be closed at any time
@@ -30,5 +31,27 @@ interface ResolveHostClient {
   OnComplete(int32 result, net.interfaces.AddressList? resolved_addresses);
 };
 
-// TODO(crbug.com/821021): Create a separate HostResolver interface, so host
-// resolution can be done without direct access to NetworkContext.
+// Interface that can be passed to code/processes without direct access to
+// NetworkContext to make ResolveHost requests. If destroyed, all outstanding
+// ResolveHost requests from the destroyed interface will be cancelled.
+interface HostResolver {
+  // Resolves the given hostname (or IP address literal). Results are a network
+  // error code, and on success (network error code OK), an AddressList. All
+  // results are sent via the passed |response_client|.
+  //
+  // Results in ERR_NAME_NOT_RESOLVED if hostname is invalid, or if it is an
+  // incompatible IP literal (e.g. IPv6 is disabled and it is an IPv6 literal).
+  //
+  // If passed an optional |control_handle|, the outstanding request can be
+  // controlled, eg cancelled, via the handle.
+  //
+  // All outstanding requests are cancelled if the HostResolver or parent
+  // NetworkContext are destroyed. Such requests will receive ERR_FAILED via
+  // |response_client|.
+  //
+  // TODO(crbug.com/821021): Implement more complex functionality to meet full
+  // capabilities of Resolve() and DnsClient/MDnsClient functionality.
+  ResolveHost(HostPortPair host,
+              ResolveHostHandle&? control_handle,
+              ResolveHostClient response_client);
+};

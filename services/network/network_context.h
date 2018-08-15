@@ -56,10 +56,10 @@ class TreeStateTracker;
 namespace network {
 class CookieManager;
 class ExpectCTReporter;
+class HostResolver;
 class NetworkService;
 class P2PSocketManager;
 class ProxyLookupRequest;
-class ResolveHostRequest;
 class ResourceScheduler;
 class ResourceSchedulerClient;
 class URLRequestContextBuilderMojo;
@@ -210,6 +210,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostHandleRequest control_handle,
                    mojom::ResolveHostClientPtr response_client) override;
+  void CreateHostResolver(mojom::HostResolverRequest request) override;
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,
@@ -255,7 +256,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnHttpCacheCleared(ClearHttpCacheCallback callback,
                           HttpCacheDataRemover* remover);
 
-  void OnResolveHostComplete(ResolveHostRequest* request, int error);
+  void OnHostResolverShutdown(HostResolver* resolver);
 
   // Invoked when the computation for ComputeHttpCacheSize() has been completed,
   // to report result to user via |callback| and clean things up.
@@ -344,8 +345,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       require_ct_delegate_;
   std::unique_ptr<certificate_transparency::TreeStateTracker> ct_tree_tracker_;
 
-  std::set<std::unique_ptr<ResolveHostRequest>, base::UniquePtrComparator>
-      resolve_host_requests_;
+  // Created on-demand. Null if unused.
+  std::unique_ptr<HostResolver> internal_host_resolver_;
+  std::set<std::unique_ptr<HostResolver>, base::UniquePtrComparator>
+      host_resolvers_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

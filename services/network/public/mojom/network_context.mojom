@@ -545,28 +545,30 @@ interface NetworkContext {
   // used on URLLoaders.
   ResetURLLoaderFactories();
 
-  // Resolves the given hostname (or IP address literal). All results are sent
-  // via the passed |response_client|. Results are a network error code, and on
-  // success (network error code OK), an AddressList.
-  //
-  // Results in ERR_NAME_NOT_RESOLVED if hostname is invalid, or if it is an
-  // incompatible IP literal (e.g. IPv6 is disabled and it is an IPv6 literal).
-  //
-  // If passed an optional |control_handle|, the outstanding request can be
-  // controlled, eg cancelled, via the handle.
+  // Resolves the given hostname (or IP address literal). See documentation at
+  // HostResolver::ResolveHost.
   //
   // All outstanding requests are cancelled if the NetworkContext is destroyed.
   // Such requests will receive ERR_FAILED via |response_client|.
   //
-  // TODO(crbug.com/821021): Implement more complex functionality to meet full
-  // capabilities of Resolve() and DnsClient/MDnsClient functionality.
-  //
-  // TODO(crbug.com/821021): Create (or move) a version of this API in some sort
-  // of separate (and possibly restrictable) HostResolver mojo interface that
-  // can be shared with processes without access to NetworkContext.
+  // TODO(crbug.com/821021): Consider deleting this if most/all usage goes
+  // through CreateHostResolver, but most likely most usage except proxy
+  // resolver will directly use this method.
   ResolveHost(HostPortPair host,
               ResolveHostHandle&? control_handle,
               ResolveHostClient response_client);
+
+  // Creates a HostResolver interface that can be passed to code/processes
+  // without direct access to NetworkContext to make ResolveHost requests.
+  //
+  // If this NetworkContext is destroyed, all outstanding requests from child
+  // HostResolvers will be cancelled. Such requests will receive ERR_FAILED via
+  // |response_client|.
+  //
+  // TODO(crbug.com/821021): If necessary as usage and functionality is added to
+  // the contained ResolveHost method, consider adding the ability for this to
+  // be a restricted resolver with some functionality disabled (eg maybe MDNS).
+  CreateHostResolver(HostResolver& host_resolver);
 
   [Sync]
   // Adds explicitly-specified data as if it was processed from an
