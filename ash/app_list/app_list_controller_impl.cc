@@ -568,6 +568,9 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
 
   if (client_)
     client_->OpenSearchResult(result_id, event_flags);
+
+  if (IsHomeLauncherEnabledInTabletMode() && presenter_.IsVisible())
+    presenter_.GetView()->ResetToInitialState();
 }
 
 void AppListControllerImpl::InvokeSearchResultAction(
@@ -614,6 +617,9 @@ void AppListControllerImpl::ActivateItem(const std::string& id,
                                          int event_flags) {
   if (client_)
     client_->ActivateItem(id, event_flags);
+
+  if (IsHomeLauncherEnabledInTabletMode() && presenter_.IsVisible())
+    presenter_.GetView()->ResetToInitialState();
 }
 
 void AppListControllerImpl::GetContextMenuModel(
