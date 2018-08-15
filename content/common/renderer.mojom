@@ -6,6 +6,7 @@ module content.mojom;
 
 import "content/common/native_types.mojom";
 import "content/common/service_worker/embedded_worker.mojom";
+import "content/public/common/renderer_preferences.mojom";
 import "ipc/constants.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";

@@ -76,7 +76,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(params->service_worker_request),
       std::move(params->controller_request), std::move(params->instance_host),
       std::move(params->provider_info), std::move(temporal_self_),
-      std::move(start_timing),
+      std::move(start_timing), std::move(params->preference_watcher_request),
       RenderThreadImpl::current()
           ->GetWebMainThreadScheduler()
           ->DefaultTaskRunner());

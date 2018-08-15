@@ -128,6 +128,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/login/login_handler.h"
+#include "chrome/browser/ui/prefs/pref_watcher.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
@@ -4650,6 +4651,13 @@ bool ChromeContentBrowserClient::IsSafeRedirectTarget(
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return true;
+}
+
+void ChromeContentBrowserClient::RegisterRendererPreferenceWatcherForWorkers(
+    content::BrowserContext* browser_context,
+    content::mojom::RendererPreferenceWatcherPtr watcher) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  PrefWatcher::Get(profile)->RegisterWatcherForWorkers(std::move(watcher));
 }
 
 // Static; handles rewriting Web UI URLs.

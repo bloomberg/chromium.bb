@@ -98,6 +98,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
       mojom::EmbeddedWorkerStartTimingPtr start_timing,
+      mojom::RendererPreferenceWatcherRequest preference_watcher_request,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~ServiceWorkerContextClient() override;
 
@@ -414,6 +415,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   const bool is_starting_installed_worker_;
 
   RendererPreferences renderer_preferences_;
+  // Passed on creation of ServiceWorkerFetchContext.
+  mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;

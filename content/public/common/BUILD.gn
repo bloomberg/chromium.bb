@@ -333,6 +333,9 @@ source_set("feature_h264_with_openh264_ffmpeg") {
 }
 
 mojom("interfaces") {
+  # We don't want Blink variants of these bindings to be generated.
+  disable_variants = true
+
   # Must depend on //content/public/common/ instead, for component build.
   visibility = [
     ":common_sources",
@@ -353,6 +356,8 @@ mojom("interfaces") {
     "fullscreen_video_element.mojom",
     "load_timing_info.mojom",
     "push_messaging_status.mojom",
+    "renderer_preference_watcher.mojom",
+    "renderer_preferences.mojom",
     "resource_load_info.mojom",
     "resource_usage_reporter.mojom",
     "transferrable_url_loader.mojom",
@@ -367,6 +372,7 @@ mojom("interfaces") {
   public_deps = [
     ":resource_type_bindings",
     "//services/network/public/mojom",
+    "//third_party/blink/public:mojo_bindings",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
