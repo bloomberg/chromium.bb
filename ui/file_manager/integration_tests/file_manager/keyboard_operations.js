@@ -115,17 +115,53 @@ function keyboardCopy(path, callback) {
 }
 
 /**
- * Tests deleting an entry from the file list. The entry is also shown in the
- * directory tree, and should not be shown there when it is deleted.
+ * Tests deleting file entry from the file list.
+ *
+ * @param {string} path The path to be tested, Downloads or Drive.
+ */
+function keyboardDelete(path) {
+  let appId;
+
+  StepsRunner.run([
+    // Open Files app on |path| containing one file entry: hello.
+    function() {
+      setupAndWaitUntilReady(
+          null, path, this.next, [ENTRIES.hello], [ENTRIES.hello]);
+    },
+    // Delete the file from the file list.
+    function(results) {
+      appId = results.windowId;
+      remoteCall.callRemoteTestUtil(
+          'deleteFile', appId, ['hello.txt'], this.next);
+    },
+    // Run the delete entry confirmation dialog.
+    function(result) {
+      chrome.test.assertTrue(result, 'deleteFile failed');
+      waitAndAcceptDialog(appId).then(this.next);
+    },
+    // Check: the file list should now be empty.
+    function() {
+      remoteCall.waitForFiles(appId, []).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+}
+
+/**
+ * Tests deleting an directory entry from the file list. The directory entry is
+ * also shown in the Files app directory tree, and should not be shown there
+ * when the directory entry is deleted.
  *
  * @param {string} path The path to be tested, Downloads or Drive.
  * @param {string} treeItem The directory tree item selector.
  */
-function keyboardDelete(path, treeItem) {
+function keyboardDeleteDirectory(path, treeItem) {
   let appId;
 
   StepsRunner.run([
-    // Open Files app on |path| containing one file entry: photos.
+    // Open Files app on |path| containing one directory entry: photos.
     function() {
       setupAndWaitUntilReady(
           null, path, this.next, [ENTRIES.photos], [ENTRIES.photos]);
@@ -135,15 +171,15 @@ function keyboardDelete(path, treeItem) {
       appId = results.windowId;
       expandRoot(appId, treeItem).then(this.next);
     },
-    // Check: the file should be shown in the directory tree.
+    // Check: the directory entry should be shown in the directory tree.
     function() {
       waitForDirectoryItem(appId, 'photos').then(this.next);
     },
-    // Delete the file from the file list.
+    // Delete the directory entry from the file list.
     function() {
       remoteCall.callRemoteTestUtil('deleteFile', appId, ['photos'], this.next);
     },
-    // Run the file delete confirmation dialog.
+    // Run the delete entry confirmation dialog.
     function(result) {
       chrome.test.assertTrue(result, 'deleteFile failed');
       waitAndAcceptDialog(appId).then(this.next);
@@ -152,7 +188,7 @@ function keyboardDelete(path, treeItem) {
     function() {
       remoteCall.waitForFiles(appId, []).then(this.next);
     },
-    // Check: the file should not be shown in the directory tree.
+    // Check: the directory entry should not be shown in the directory tree.
     function() {
       waitForDirectoryItemLost(appId, 'photos').then(this.next);
     },
@@ -300,11 +336,19 @@ testcase.keyboardCopyDrive = function() {
 };
 
 testcase.keyboardDeleteDownloads = function() {
-  keyboardDelete(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS);
+  keyboardDelete(RootPath.DOWNLOADS);
 };
 
 testcase.keyboardDeleteDrive = function() {
-  keyboardDelete(RootPath.DRIVE, TREEITEM_DRIVE);
+  keyboardDelete(RootPath.DRIVE);
+};
+
+testcase.keyboardDeleteFolderDownloads = function() {
+  keyboardDeleteDirectory(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS);
+};
+
+testcase.keyboardDeleteFolderDrive = function() {
+  keyboardDeleteDirectory(RootPath.DRIVE, TREEITEM_DRIVE);
 };
 
 testcase.renameFileDownloads = function() {
