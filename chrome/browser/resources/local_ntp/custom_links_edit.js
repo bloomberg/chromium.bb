@@ -337,10 +337,10 @@ function init() {
   });
   $(IDS.DELETE).addEventListener('click', deleteLink);
   $(IDS.CANCEL).addEventListener('click', closeDialog);
-  $(IDS.DONE).addEventListener('click', finishEditLink);
   $(IDS.FORM).addEventListener('submit', (event) => {
     // Prevent the form from submitting and modifying the URL.
     event.preventDefault();
+    finishEditLink();
   });
   let finishEditOrClose = (event) => {
     if (event.keyCode === KEYCODES.ENTER) {
