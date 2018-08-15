@@ -450,17 +450,6 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
     bundle.events.push_back(event);
 
-    // Whenever there's a change to an inline node, it's important to
-    // invalidate the whole surrounding block so that we have the full
-    // information about the line layout.
-    auto block = obj;
-    while (!block.IsDetached() && (block.ComputedStyleDisplay() != "block" ||
-                                   block.AccessibilityIsIgnored())) {
-      block = block.ParentObject();
-    }
-    if (!block.IsDetached() && !block.Equals(obj))
-      serializer_.InvalidateSubtree(block);
-
     // Whenever there's a change within a table, invalidate the
     // whole table so that row and cell indexes are recomputed.
     ax::mojom::Role role = AXRoleFromBlink(obj.Role());
