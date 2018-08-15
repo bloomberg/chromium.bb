@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/webrtc_logging/browser/log_cleanup.h"
-#include "components/webrtc_logging/browser/log_list.h"
+#include "components/webrtc_logging/browser/text_log_list.h"
 #include "content/public/browser/browser_thread.h"
 
 // static
@@ -28,7 +28,7 @@ void WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles() {
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(
             &webrtc_logging::DeleteOldWebRtcLogFiles,
-            webrtc_logging::LogList::GetWebRtcLogDirectoryForBrowserContextPath(
-                entry->GetPath())));
+            webrtc_logging::TextLogList::
+                GetWebRtcLogDirectoryForBrowserContextPath(entry->GetPath())));
   }
 }

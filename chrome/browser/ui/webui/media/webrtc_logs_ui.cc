@@ -27,7 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/upload_list/upload_list.h"
 #include "components/version_info/version_info.h"
-#include "components/webrtc_logging/browser/log_list.h"
+#include "components/webrtc_logging/browser/text_log_list.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -106,10 +106,10 @@ class WebRtcLogsDOMHandler final : public WebUIMessageHandler {
 
 WebRtcLogsDOMHandler::WebRtcLogsDOMHandler(Profile* profile)
     : log_dir_(
-          webrtc_logging::LogList::GetWebRtcLogDirectoryForBrowserContextPath(
-              profile->GetPath())),
+          webrtc_logging::TextLogList::
+              GetWebRtcLogDirectoryForBrowserContextPath(profile->GetPath())),
       weak_ptr_factory_(this) {
-  upload_list_ = webrtc_logging::LogList::CreateWebRtcLogList(profile);
+  upload_list_ = webrtc_logging::TextLogList::CreateWebRtcLogList(profile);
 }
 
 WebRtcLogsDOMHandler::~WebRtcLogsDOMHandler() {

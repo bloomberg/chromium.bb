@@ -240,20 +240,15 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+// Same test as CallWithAudioDebugRecordings, but does two parallel calls.
+// TODO(crbug.com/874378): Fix an re-enable test.
+// List of issues filed before this test was disabled for all platforms:
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 // Renderer crashes under Android: https://crbug.com/820934.
 // Failures on Android M. https://crbug.com/535728.
 // Flaky on Linux: https://crbug.com/871182
-#define MAYBE_TwoCallsWithAudioDebugRecordings \
-  DISABLED_TwoCallsWithAudioDebugRecordings
-#else
-#define MAYBE_TwoCallsWithAudioDebugRecordings TwoCallsWithAudioDebugRecordings
-#endif
-
-// Same test as CallWithAudioDebugRecordings, but does two parallel calls.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
-                       MAYBE_TwoCallsWithAudioDebugRecordings) {
+                       DISABLED_TwoCallsWithAudioDebugRecordings) {
   if (!HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;
