@@ -529,7 +529,8 @@ void BrowserChildProcessHostImpl::CreateMetricsAllocator() {
       break;
 
     case PROCESS_TYPE_GPU:
-      memory_size = 64 << 10;  // 64 KiB
+      // This needs to be larger for the display-compositor in the gpu process.
+      memory_size = 256 << 10;  // 256 KiB
       metrics_name = "GpuMetrics";
       break;
 
