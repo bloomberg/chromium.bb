@@ -507,11 +507,6 @@
   {
     'name': 'chromium.clang',
     'machines': {
-      'CFI Linux (icall)': {
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_and_gl_gtests',
-        },
-      },
       'CFI Linux ToT': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',

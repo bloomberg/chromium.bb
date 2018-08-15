@@ -99,7 +99,6 @@
     'chromium.clang': {
       'CFI Linux CF': 'cfi_full_cfi_icall_cfi_diag_recover_release_static',
       'CFI Linux ToT': 'clang_tot_cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on',
-      'CFI Linux (icall)': 'cfi_full_diag_icall_release_static_dcheck_always_on',
       'CrWinAsan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release_tot',
       'CrWinAsan(dll)': 'asan_clang_shared_v8_heap_minimal_symbols_release_tot',
       'CrWinAsanCov': 'asan_clang_edge_fuzzer_static_v8_heap_minimal_symbols_release_tot',
@@ -146,7 +145,6 @@
 
       'CFI Linux CF': 'cfi_full_cfi_icall_cfi_diag_recover_release_static',
       'CFI Linux ToT': 'clang_tot_cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on',
-      'CFI Linux (icall)': 'cfi_full_diag_icall_release_static_dcheck_always_on',
       'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk',
       'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
 
@@ -1016,10 +1014,6 @@
 
     'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_goma': [
       'cfi_full', 'cfi_icall', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'goma',
-    ],
-
-    'cfi_full_diag_icall_release_static_dcheck_always_on': [
-      'cfi_full', 'cfi_diag', 'cfi_icall', 'clang_tot', 'thin_lto', 'release', 'static', 'dcheck_always_on',
     ],
 
     'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot': [

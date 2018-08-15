@@ -513,7 +513,6 @@
   'gl_tests': {
     'remove_from': [
       # chromium.clang
-      'CFI Linux (icall)',
       'CFI Linux ToT',
       # chromium.gpu.fyi
       'Android FYI Release (Nexus 5X)',
@@ -603,22 +602,6 @@
     ],
     'modifications': {
       # chromium.clang
-      'CFI Linux (icall)': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'Chrome-GPU',
-            },
-          ],
-        },
-        'use_xvfb': False,
-      },
       'CFI Linux ToT': {
         'args': [
           '--use-gpu-in-tests',
