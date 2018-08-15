@@ -47,7 +47,7 @@ void EnableInternalPDFPluginForContents(int render_process_id,
     return;
 
   ChromePluginServiceFilter::GetInstance()->OverridePluginForFrame(
-      render_process_id, render_frame_id, GURL(), info->ToWebPluginInfo());
+      render_process_id, render_frame_id, info->ToWebPluginInfo());
 }
 
 }  // namespace
