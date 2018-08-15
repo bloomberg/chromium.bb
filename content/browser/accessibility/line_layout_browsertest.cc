@@ -58,8 +58,10 @@ class AccessibilityLineLayoutBrowserTest : public ContentBrowserTest {
   }
 };
 
+// http://crbug.com/868830 - the patch that enabled this test to pass
+// caused a performance regression.
 IN_PROC_BROWSER_TEST_F(AccessibilityLineLayoutBrowserTest,
-                       WholeBlockIsUpdated) {
+                       DISABLED_WholeBlockIsUpdated) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
