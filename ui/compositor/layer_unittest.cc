@@ -316,6 +316,7 @@ class TestLayerDelegate : public LayerDelegate {
   MOCK_METHOD2(OnLayerTransformed,
                void(const gfx::Transform&, PropertyChangeReason));
   MOCK_METHOD1(OnLayerOpacityChanged, void(PropertyChangeReason));
+  MOCK_METHOD0(OnLayerAlphaShapeChanged, void());
 
   void reset() {
     color_index_ = 0;
@@ -2636,6 +2637,26 @@ TEST(LayerDelegateTest, OnLayerOpacityChangedAnimation) {
   test_controller.Step(
       element_raw->duration() +
       (element_raw->effective_start_time() - animator->last_step_time()));
+  testing::Mock::VerifyAndClear(&delegate);
+}
+
+// Verify that LayerDelegate::OnLayerAlphaShapeChanged() is called when the
+// alpha shape of a layer is set.
+TEST(LayerDelegateTest, OnLayerAlphaShapeChanged) {
+  auto layer = std::make_unique<Layer>(LAYER_TEXTURED);
+  testing::StrictMock<TestLayerDelegate> delegate;
+  layer->set_delegate(&delegate);
+
+  // Set an alpha shape for the layer. Expect the delegate to be notified.
+  auto shape = std::make_unique<Layer::ShapeRects>();
+  shape->emplace_back(0, 0, 10, 20);
+  EXPECT_CALL(delegate, OnLayerAlphaShapeChanged());
+  layer->SetAlphaShape(std::move(shape));
+  testing::Mock::VerifyAndClear(&delegate);
+
+  // Clear the alpha shape for the layer. Expect the delegate to be notified.
+  EXPECT_CALL(delegate, OnLayerAlphaShapeChanged());
+  layer->SetAlphaShape(nullptr);
   testing::Mock::VerifyAndClear(&delegate);
 }
 

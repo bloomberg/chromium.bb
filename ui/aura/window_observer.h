@@ -91,17 +91,6 @@ class AURA_EXPORT WindowObserver {
                                      const gfx::Rect& new_bounds,
                                      ui::PropertyChangeReason reason) {}
 
-  // Invoked when the opacity of the |window|'s layer is set (even if it didn't
-  // change). |reason| indicates whether the opacity was set directly or by an
-  // animation. This won't necessarily be called at every step of an animation.
-  // However, it will always be called before the first frame of the animation
-  // is rendered and when the animation ends. The client can determine whether
-  // the animation is ending by calling
-  // window->layer()->GetAnimator()->IsAnimatingProperty(
-  // ui::LayerAnimationElement::OPACITY).
-  virtual void OnWindowOpacitySet(Window* window,
-                                  ui::PropertyChangeReason reason) {}
-
   // Invoked before Window::SetTransform() sets the transform of a window.
   virtual void OnWindowTargetTransformChanging(
       Window* window,
@@ -117,6 +106,20 @@ class AURA_EXPORT WindowObserver {
   // ui::LayerAnimationElement::TRANSFORM).
   virtual void OnWindowTransformed(Window* window,
                                    ui::PropertyChangeReason reason) {}
+
+  // Invoked when the opacity of the |window|'s layer is set (even if it didn't
+  // change). |reason| indicates whether the opacity was set directly or by an
+  // animation. This won't necessarily be called at every step of an animation.
+  // However, it will always be called before the first frame of the animation
+  // is rendered and when the animation ends. The client can determine whether
+  // the animation is ending by calling
+  // window->layer()->GetAnimator()->IsAnimatingProperty(
+  // ui::LayerAnimationElement::OPACITY).
+  virtual void OnWindowOpacitySet(Window* window,
+                                  ui::PropertyChangeReason reason) {}
+
+  // Invoked when the alpha shape of the |window|'s layer is set.
+  virtual void OnWindowAlphaShapeSet(Window* window) {}
 
   // Invoked when |window|'s position among its siblings in the stacking order
   // has changed.
