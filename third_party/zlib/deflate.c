@@ -51,8 +51,16 @@
 #include <assert.h>
 #include "deflate.h"
 #include "x86.h"
+
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
 #include "contrib/optimizations/slide_hash_neon.h"
+#endif
+/* We need crypto extension crc32 to implement optimized hash in
+ * insert_string.
+ */
+#if defined(CRC32_ARMV8_CRC32)
+#include "arm_features.h"
+#include "crc32_simd.h"
 #endif
 
 const char deflate_copyright[] =
@@ -207,11 +215,15 @@ local INLINE Pos insert_string_c(deflate_state *const s, const Pos str)
 
 local INLINE Pos insert_string(deflate_state *const s, const Pos str)
 {
+#if defined(CRC32_ARMV8_CRC32)
+    if (arm_cpu_enable_crc32)
+        return insert_string_arm(s, str);
+#endif
     if (x86_cpu_enable_simd)
         return insert_string_sse(s, str);
+
     return insert_string_c(s, str);
 }
-
 
 /* ===========================================================================
  * Initialize the hash table (avoiding 64K overflow for 16 bit systems).
