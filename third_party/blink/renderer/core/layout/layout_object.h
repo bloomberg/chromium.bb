@@ -1384,7 +1384,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   virtual void AbsoluteRects(Vector<IntRect>&, const LayoutPoint&) const {}
 
-  FloatRect AbsoluteBoundingBoxFloatRect() const;
+  FloatRect AbsoluteBoundingBoxFloatRect(MapCoordinatesFlags = 0) const;
   // This returns an IntRect enclosing this object. If this object has an
   // integral size and the position has fractional values, the resultant
   // IntRect can be larger than the integral size.
