@@ -31,6 +31,19 @@ namespace metrics {
 class CallStackProfileBuilder
     : public base::StackSamplingProfiler::ProfileBuilder {
  public:
+  // The callback type used to collect a SampledProfile protocol buffer message.
+  // The passed SampledProfile is move-only. Other threads, including the UI
+  // thread, may block on callback completion so this should run as quickly as
+  // possible.
+  //
+  // IMPORTANT NOTE: The callback is invoked on a thread the profiler
+  // constructs, rather than on the thread used to construct the profiler, and
+  // thus the callback must be callable on any thread. For threads with message
+  // loops that create CallStackProfileBuilders, posting a task to the message
+  // loop with the moved (i.e. std::move) profile is the thread-safe callback
+  // implementation.
+  using CompletedCallback = base::RepeatingCallback<void(SampledProfile)>;
+
   // Frame represents an individual sampled stack frame with module information.
   struct Frame {
     Frame(uintptr_t instruction_pointer, size_t module_index);
@@ -83,19 +96,6 @@ class CallStackProfileBuilder
 
     MILESTONES_MAX_VALUE
   };
-
-  // The callback type used to collect a metrics.SampledProfile protocol
-  // message. The passed SampledProfile is move-only. Other threads, including
-  // the UI thread, may block on callback completion so this should run as
-  // quickly as possible.
-  //
-  // IMPORTANT NOTE: The callback is invoked on a thread the profiler
-  // constructs, rather than on the thread used to construct the profiler, and
-  // thus the callback must be callable on any thread. For threads with message
-  // loops that create CallStackProfileBuilders, posting a task to the message
-  // loop with the moved (i.e. std::move) profile is the thread-safe callback
-  // implementation.
-  using CompletedCallback = base::RepeatingCallback<void(SampledProfile)>;
 
   CallStackProfileBuilder(const CompletedCallback& callback,
                           const CallStackProfileParams& profile_params);
