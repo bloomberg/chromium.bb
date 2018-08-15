@@ -113,6 +113,10 @@ paper-button:focus:not(:active) {
   width: 100%;
 }
 
+.text-content {
+  background-color: white;
+}
+
 #toolbar {
   align-items: center;
   background-color: rgb(40, 42, 45);
