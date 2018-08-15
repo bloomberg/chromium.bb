@@ -475,6 +475,37 @@ BASE_EXPORT bool ParseZramStat(StringPiece stat_data, SwapInfo* swap_info);
 BASE_EXPORT bool GetSwapInfo(SwapInfo* swap_info);
 #endif  // defined(OS_CHROMEOS)
 
+struct BASE_EXPORT SystemPerformanceInfo {
+  SystemPerformanceInfo();
+  SystemPerformanceInfo(const SystemPerformanceInfo& other);
+
+  // Serializes the platform specific fields to value.
+  std::unique_ptr<Value> ToValue() const;
+
+  // Total idle time of all processes in the system (units of 100 ns).
+  uint64_t idle_time = 0;
+  // Number of bytes read.
+  uint64_t read_transfer_count = 0;
+  // Number of bytes written.
+  uint64_t write_transfer_count = 0;
+  // Number of bytes transferred (e.g. DeviceIoControlFile)
+  uint64_t other_transfer_count = 0;
+  // The amount of read operations.
+  uint64_t read_operation_count = 0;
+  // The amount of write operations.
+  uint64_t write_operation_count = 0;
+  // The amount of other operations.
+  uint64_t other_operation_count = 0;
+  // The number of pages written to the system's pagefiles.
+  uint64_t pagefile_pages_written = 0;
+  // The number of write operations performed on the system's pagefiles.
+  uint64_t pagefile_pages_write_ios = 0;
+};
+
+// Retrieves performance counters from the operating system.
+// Fills in the provided |info| structure. Returns true on success.
+BASE_EXPORT bool GetSystemPerformanceInfo(SystemPerformanceInfo* info);
+
 // Collects and holds performance metrics for system memory and disk.
 // Provides functionality to retrieve the data on various platforms and
 // to serialize the stored data.
@@ -498,6 +529,9 @@ class SystemMetrics {
 #endif
 #if defined(OS_CHROMEOS)
   SwapInfo swap_info_;
+#endif
+#if defined(OS_WIN)
+  SystemPerformanceInfo performance_;
 #endif
 };
 

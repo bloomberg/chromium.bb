@@ -25,11 +25,96 @@ namespace {
 // System pagesize. This value remains constant on x86/64 architectures.
 const int PAGESIZE_KB = 4;
 
-typedef NTSTATUS(WINAPI* NTQUERYSYSTEMINFORMATION)(
-    SYSTEM_INFORMATION_CLASS SystemInformationClass,
-    PVOID SystemInformation,
-    ULONG SystemInformationLength,
-    PULONG ReturnLength);
+// ntstatus.h conflicts with windows.h so define this locally.
+#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+
+// Definition of this struct is taken from the book:
+// Windows NT/200, Native API reference, Gary Nebbett
+struct SYSTEM_PERFORMANCE_INFORMATION {
+  // Total idle time of all processes in the system (units of 100 ns).
+  LARGE_INTEGER IdleTime;
+  // Number of bytes read (by all call to ZwReadFile).
+  LARGE_INTEGER ReadTransferCount;
+  // Number of bytes written (by all call to ZwWriteFile).
+  LARGE_INTEGER WriteTransferCount;
+  // Number of bytes transferred (e.g. DeviceIoControlFile)
+  LARGE_INTEGER OtherTransferCount;
+  // The amount of read operations.
+  ULONG ReadOperationCount;
+  // The amount of write operations.
+  ULONG WriteOperationCount;
+  // The amount of other operations.
+  ULONG OtherOperationCount;
+  ULONG AvailablePages;
+  ULONG TotalCommittedPages;
+  ULONG TotalCommitLimit;
+  ULONG PeakCommitment;
+  ULONG PageFaults;
+  ULONG WriteCopyFaults;
+  ULONG TransitionFaults;
+  ULONG CacheTransitionFaults;
+  ULONG DemandZeroFaults;
+  ULONG PagesRead;
+  ULONG PageReadIos;
+  ULONG CacheReads;
+  ULONG CacheIos;
+  // The number of pages written to the system's pagefiles.
+  ULONG PagefilePagesWritten;
+  // The number of write operations performed on the system's pagefiles.
+  ULONG PagefilePageWriteIos;
+  ULONG MappedFilePagesWritten;
+  ULONG MappedFilePageWriteIos;
+  ULONG PagedPoolUsage;
+  ULONG NonPagedPoolUsage;
+  ULONG PagedPoolAllocs;
+  ULONG PagedPoolFrees;
+  ULONG NonPagedPoolAllocs;
+  ULONG NonPagedPoolFrees;
+  ULONG TotalFreeSystemPtes;
+  ULONG SystemCodePage;
+  ULONG TotalSystemDriverPages;
+  ULONG TotalSystemCodePages;
+  ULONG SmallNonPagedLookasideListAllocateHits;
+  ULONG SmallPagedLookasideListAllocateHits;
+  ULONG Reserved3;
+  ULONG MmSystemCachePage;
+  ULONG PagedPoolPage;
+  ULONG SystemDriverPage;
+  ULONG FastReadNoWait;
+  ULONG FastReadWait;
+  ULONG FastReadResourceMiss;
+  ULONG FastReadNotPossible;
+  ULONG FastMdlReadNoWait;
+  ULONG FastMdlReadWait;
+  ULONG FastMdlReadResourceMiss;
+  ULONG FastMdlReadNotPossible;
+  ULONG MapDataNoWait;
+  ULONG MapDataWait;
+  ULONG MapDataNoWaitMiss;
+  ULONG MapDataWaitMiss;
+  ULONG PinMappedDataCount;
+  ULONG PinReadNoWait;
+  ULONG PinReadWait;
+  ULONG PinReadNoWaitMiss;
+  ULONG PinReadWaitMiss;
+  ULONG CopyReadNoWait;
+  ULONG CopyReadWait;
+  ULONG CopyReadNoWaitMiss;
+  ULONG CopyReadWaitMiss;
+  ULONG MdlReadNoWait;
+  ULONG MdlReadWait;
+  ULONG MdlReadNoWaitMiss;
+  ULONG MdlReadWaitMiss;
+  ULONG ReadAheadIos;
+  ULONG LazyWriteIos;
+  ULONG LazyWritePages;
+  ULONG DataFlushes;
+  ULONG DataPages;
+  ULONG ContextSwitches;
+  ULONG FirstLevelTbFills;
+  ULONG SecondLevelTbFills;
+  ULONG SystemCalls;
+};
 
 }  // namespace
 
@@ -202,6 +287,66 @@ size_t ProcessMetrics::GetMallocUsage() {
   // Unsupported as getting malloc usage on Windows requires iterating through
   // the heap which is slow and crashes.
   return 0;
+}
+
+SystemPerformanceInfo::SystemPerformanceInfo() = default;
+SystemPerformanceInfo::SystemPerformanceInfo(
+    const SystemPerformanceInfo& other) = default;
+
+std::unique_ptr<Value> SystemPerformanceInfo::ToValue() const {
+  std::unique_ptr<DictionaryValue> result(new DictionaryValue());
+
+  // Write out uint64_t variables as doubles.
+  // Note: this may discard some precision, but for JS there's no other option.
+  result->SetDouble("idle_time", static_cast<double>(idle_time));
+  result->SetDouble("read_transfer_count",
+                    static_cast<double>(read_transfer_count));
+  result->SetDouble("write_transfer_count",
+                    static_cast<double>(write_transfer_count));
+  result->SetDouble("other_transfer_count",
+                    static_cast<double>(other_transfer_count));
+  result->SetDouble("read_operation_count",
+                    static_cast<double>(read_operation_count));
+  result->SetDouble("write_operation_count",
+                    static_cast<double>(write_operation_count));
+  result->SetDouble("other_operation_count",
+                    static_cast<double>(other_operation_count));
+  result->SetDouble("pagefile_pages_written",
+                    static_cast<double>(pagefile_pages_written));
+  result->SetDouble("pagefile_pages_write_ios",
+                    static_cast<double>(pagefile_pages_write_ios));
+
+  return result;
+}
+
+// Retrieves performance counters from the operating system.
+// Fills in the provided |info| structure. Returns true on success.
+BASE_EXPORT bool GetSystemPerformanceInfo(SystemPerformanceInfo* info) {
+  static const auto query_system_information_ptr =
+      reinterpret_cast<decltype(&::NtQuerySystemInformation)>(GetProcAddress(
+          GetModuleHandle(L"ntdll.dll"), "NtQuerySystemInformation"));
+  if (!query_system_information_ptr)
+    return false;
+
+  SYSTEM_PERFORMANCE_INFORMATION counters = {};
+  const NTSTATUS status = query_system_information_ptr(
+      ::SystemPerformanceInformation, &counters,
+      sizeof(SYSTEM_PERFORMANCE_INFORMATION), nullptr);
+
+  if (status != STATUS_SUCCESS)
+    return false;
+
+  info->idle_time = counters.IdleTime.QuadPart;
+  info->read_transfer_count = counters.ReadTransferCount.QuadPart;
+  info->write_transfer_count = counters.WriteTransferCount.QuadPart;
+  info->other_transfer_count = counters.OtherTransferCount.QuadPart;
+  info->read_operation_count = counters.ReadOperationCount;
+  info->write_operation_count = counters.WriteOperationCount;
+  info->other_operation_count = counters.OtherOperationCount;
+  info->pagefile_pages_written = counters.PagefilePagesWritten;
+  info->pagefile_pages_write_ios = counters.PagefilePageWriteIos;
+
+  return true;
 }
 
 }  // namespace base
