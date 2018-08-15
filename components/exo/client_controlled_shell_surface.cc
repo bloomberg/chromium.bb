@@ -577,73 +577,9 @@ void ClientControlledShellSurface::OnDragFinished(bool canceled,
   if (drag_finished_callback_)
     drag_finished_callback_.Run(location.x(), location.y(), canceled);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceDelegate overrides:
-
-void ClientControlledShellSurface::OnSurfaceCommit() {
-  if (!widget_) {
-    // Modify the |origin_| to the |pending_geometry_| to place the window
-    // on the intended display. See b/77472684 for the details.
-    if (!pending_geometry_.IsEmpty())
-      origin_ = pending_geometry_.origin();
-    CreateShellSurfaceWidget(ash::ToWindowShowState(pending_window_state_));
-  }
-
-  ash::wm::WindowState* window_state = GetWindowState();
-  if (window_state->GetStateType() != pending_window_state_) {
-    if (!IsPinned(window_state)) {
-      ash::wm::ClientControlledState::BoundsChangeAnimationType animation_type =
-          ash::wm::ClientControlledState::kAnimationNone;
-      switch (pending_window_state_) {
-        case ash::mojom::WindowStateType::NORMAL:
-          if (widget_->IsMaximized() || widget_->IsFullscreen()) {
-            animation_type =
-                ash::wm::ClientControlledState::kAnimationCrossFade;
-          }
-          break;
-
-        case ash::mojom::WindowStateType::MAXIMIZED:
-        case ash::mojom::WindowStateType::FULLSCREEN:
-          animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
-          break;
-
-        default:
-          break;
-      }
-      client_controlled_state_->EnterNextState(
-          window_state, pending_window_state_, animation_type);
-    } else {
-      VLOG(1) << "State change was requested while it is pinned";
-    }
-  }
-
-  ShellSurfaceBase::OnSurfaceCommit();
-  UpdateFrame();
-  UpdateBackdrop();
-
-  if (geometry_changed_callback_)
-    geometry_changed_callback_.Run(GetVisibleBounds());
-
-  // Apply new top inset height.
-  if (pending_top_inset_height_ != top_inset_height_) {
-    widget_->GetNativeWindow()->SetProperty(aura::client::kTopViewInset,
-                                            pending_top_inset_height_);
-    top_inset_height_ = pending_top_inset_height_;
-  }
-
-  // Update surface scale.
-  if (pending_scale_ != scale_) {
-    gfx::Transform transform;
-    DCHECK_NE(pending_scale_, 0.0);
-    transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
-    host_window()->SetTransform(transform);
-    scale_ = pending_scale_;
-  }
-
-  orientation_ = pending_orientation_;
-  if (expected_orientation_ == orientation_)
-    orientation_compositor_lock_.reset();
-}
 
 bool ClientControlledShellSurface::IsInputEnabled(Surface* surface) const {
   // Client-driven dragging/resizing relies on implicit grab, which ensures that
@@ -795,7 +731,7 @@ void ClientControlledShellSurface::CompositorLockTimedOut() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellSurface overrides:
+// ShellSurfaceBase overrides:
 
 void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   if (((!client_controlled_move_resize_ && !GetWindowState()->is_dragged()) ||
@@ -910,6 +846,75 @@ gfx::Rect ClientControlledShellSurface::GetWidgetBounds() const {
 gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
   DCHECK(resize_component_ == HTCAPTION);
   return gfx::Point();
+}
+
+void ClientControlledShellSurface::OnPreWidgetCommit() {
+  if (!widget_) {
+    // Modify the |origin_| to the |pending_geometry_| to place the window on
+    // the intended display. See b/77472684 for details.
+    if (!pending_geometry_.IsEmpty())
+      origin_ = pending_geometry_.origin();
+    CreateShellSurfaceWidget(ash::ToWindowShowState(pending_window_state_));
+  }
+
+  ash::wm::WindowState* window_state = GetWindowState();
+  if (window_state->GetStateType() == pending_window_state_)
+    return;
+
+  if (IsPinned(window_state)) {
+    VLOG(1) << "State change was requested while pinned";
+    return;
+  }
+
+  auto animation_type = ash::wm::ClientControlledState::kAnimationNone;
+  switch (pending_window_state_) {
+    case ash::mojom::WindowStateType::NORMAL:
+      if (widget_->IsMaximized() || widget_->IsFullscreen()) {
+        animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
+      }
+      break;
+
+    case ash::mojom::WindowStateType::MAXIMIZED:
+    case ash::mojom::WindowStateType::FULLSCREEN:
+      animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
+      break;
+
+    default:
+      break;
+  }
+
+  client_controlled_state_->EnterNextState(window_state, pending_window_state_,
+                                           animation_type);
+}
+
+void ClientControlledShellSurface::OnPostWidgetCommit() {
+  DCHECK(widget_);
+
+  UpdateFrame();
+  UpdateBackdrop();
+
+  if (geometry_changed_callback_)
+    geometry_changed_callback_.Run(GetVisibleBounds());
+
+  // Apply new top inset height.
+  if (pending_top_inset_height_ != top_inset_height_) {
+    widget_->GetNativeWindow()->SetProperty(aura::client::kTopViewInset,
+                                            pending_top_inset_height_);
+    top_inset_height_ = pending_top_inset_height_;
+  }
+
+  // Update surface scale.
+  if (pending_scale_ != scale_) {
+    gfx::Transform transform;
+    DCHECK_NE(pending_scale_, 0.0);
+    transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
+    host_window()->SetTransform(transform);
+    scale_ = pending_scale_;
+  }
+
+  orientation_ = pending_orientation_;
+  if (expected_orientation_ == orientation_)
+    orientation_compositor_lock_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

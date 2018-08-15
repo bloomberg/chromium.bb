@@ -72,6 +72,10 @@ class ShellSurface : public ShellSurfaceBase,
  private:
   class ScopedAnimationsDisabled;
 
+  // Overridden from ShellSurfaceBase:
+  void OnPreWidgetCommit() override;
+  void OnPostWidgetCommit() override;
+
   void AttemptToStartDrag(int component);
 
   void EndDrag();

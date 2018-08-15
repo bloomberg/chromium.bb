@@ -345,6 +345,11 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   virtual gfx::Rect GetWidgetBounds() const;
   virtual gfx::Point GetSurfaceOrigin() const;
 
+  virtual void OnPreWidgetCommit() = 0;
+  virtual void OnPostWidgetCommit() = 0;
+
+  void CommitWidget();
+
   bool activatable_ = true;
   bool can_minimize_ = true;
   bool has_frame_colors_ = false;
