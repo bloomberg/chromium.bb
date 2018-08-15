@@ -9,11 +9,14 @@
 #include <deque>
 #include <map>
 #include <queue>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "chromecast/device/bluetooth/le/remote_characteristic.h"
 #include "chromecast/device/bluetooth/le/remote_descriptor.h"
 #include "chromecast/device/bluetooth/le/remote_device.h"
@@ -27,6 +30,11 @@ class RemoteDescriptorImpl;
 
 class RemoteDeviceImpl : public RemoteDevice {
  public:
+  // If commands take longer than this amount of time, we will disconnect the
+  // device.
+  static constexpr base::TimeDelta kCommandTimeout =
+      base::TimeDelta::FromSeconds(30);
+
   // RemoteDevice implementation
   void Connect(StatusCallback cb) override;
   bool ConnectSync() override;
@@ -106,10 +114,13 @@ class RemoteDeviceImpl : public RemoteDevice {
 
   // Add an operation to the queue. Certain operations can only be executed
   // serially.
-  void EnqueueOperation(base::OnceClosure op);
+  void EnqueueOperation(const std::string& name, base::OnceClosure op);
 
   // Notify that the currently queued operation has completed.
   void NotifyQueueOperationComplete();
+
+  // Run the next queued operation.
+  void RunNextOperation();
 
   void RequestMtuImpl(int mtu);
   void ReadCharacteristicImpl(
@@ -126,6 +137,8 @@ class RemoteDeviceImpl : public RemoteDevice {
                            bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
                            std::vector<uint8_t> value);
   void ClearServices();
+
+  void OnCommandTimeout(const std::string& command_name);
 
   const base::WeakPtr<GattClientManagerImpl> gatt_client_manager_;
   const bluetooth_v2_shlib::Addr addr_;
@@ -152,7 +165,12 @@ class RemoteDeviceImpl : public RemoteDevice {
   std::map<uint16_t, scoped_refptr<RemoteCharacteristicImpl>>
       handle_to_characteristic_;
 
-  std::deque<base::OnceClosure> command_queue_;
+  // Timer for commands on |command_queue_|. If any command times out, we will
+  // force disconnect of this device.
+  base::OneShotTimer command_timeout_timer_;
+
+  // Queue of operation name and the operation itself.
+  std::deque<std::pair<std::string, base::OnceClosure>> command_queue_;
   std::queue<StatusCallback> mtu_callbacks_;
   std::map<uint16_t, std::queue<RemoteCharacteristic::ReadCallback>>
       handle_to_characteristic_read_cbs_;
