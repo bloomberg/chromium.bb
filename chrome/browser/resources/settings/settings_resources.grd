@@ -1354,6 +1354,12 @@
         <structure name="IDR_SETTINGS_MULTIDEVICE_SUBPAGE_JS"
                    file="multidevice_page/multidevice_subpage.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_TETHER_ITEM_HTML"
+                   file="multidevice_page/multidevice_tether_item.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_TETHER_ITEM_JS"
+                   file="multidevice_page/multidevice_tether_item.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_PROXY_SECTION_HTML"
                    file="internet_page/network_proxy_section.html"
                    type="chrome_html" />

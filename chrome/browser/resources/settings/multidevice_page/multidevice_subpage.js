@@ -12,13 +12,31 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-subpage',
 
-  behaviors: [I18nBehavior, PrefsBehavior],
+  behaviors: [I18nBehavior, PrefsBehavior, CrNetworkListenerBehavior],
 
   properties: {
     /** @type {?SettingsRoutes} */
     routes: {
       type: Object,
       value: settings.routes,
+    },
+
+    /** Overridden from NetworkListenerBehavior. */
+    networkingPrivate: {
+      type: Object,
+      value: chrome.networkingPrivate,
+    },
+
+    /** Overridden from NetworkListenerBehavior. */
+    networkListChangeSubscriberSelectors_: {
+      type: Array,
+      value: () => ['settings-multidevice-tether-item'],
+    },
+
+    /** Overridden from NetworkListenerBehavior. */
+    networksChangeSubscriberSelectors_: {
+      type: Array,
+      value: () => ['settings-multidevice-tether-item'],
     },
 
     /** @type {MultiDevicePageContentData} */
@@ -42,6 +60,16 @@ Polymer({
   handleAndroidMessagesButtonClick_: function() {
     this.androidMessagesRequiresSetup_ = false;
     this.setPrefValue('multidevice.sms_connect_enabled', true);
+  },
+
+  listeners: {
+    'show-networks': 'onShowNetworks_',
+  },
+
+  onShowNetworks_: function() {
+    settings.navigateTo(
+        settings.routes.INTERNET_NETWORKS,
+        new URLSearchParams('type=' + CrOnc.Type.TETHER));
   },
 
   /**

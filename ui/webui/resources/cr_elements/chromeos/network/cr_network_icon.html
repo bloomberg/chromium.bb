@@ -138,7 +138,8 @@
         100% { background: url(cellular_4.svg); }
       }
     </style>
-    <div id="icon" class$="[[getIconClass_(networkState, isListItem)]]">
+    <div id="icon"
+        class$="[[getIconClass_(networkState, deviceState, isListItem)]]">
     </div>
     <iron-icon id="technology" hidden="[[!showTechnology_(networkState)]]"
         icon="[[getTechnology_(networkState)]]">

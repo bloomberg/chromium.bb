@@ -20,10 +20,14 @@ Polymer({
     networkState: Object,
 
     /**
-     * If set, the device state for the network type.
-     * @type {!CrOnc.DeviceStateProperties|undefined}
+     * If set, the device state for the network type. Otherwise it defaults to
+     * null rather than undefined so that it does not block computed bindings.
+     * @type {?CrOnc.DeviceStateProperties}
      */
-    deviceState: Object,
+    deviceState: {
+      type: Object,
+      value: null,
+    },
 
     /**
      * If true, the icon is part of a list of networks and may be displayed
