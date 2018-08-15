@@ -415,12 +415,17 @@ void CoreOobeHandler::HandleToggleResetScreen() {
     // purpose of installing a TPM firmware update.
     tpm_firmware_update::GetAvailableUpdateModes(
         base::BindOnce([](const std::set<tpm_firmware_update::Mode>& modes) {
-          if (modes.count(tpm_firmware_update::Mode::kPowerwash) > 0) {
+          using tpm_firmware_update::Mode;
+          for (Mode mode : {Mode::kPowerwash, Mode::kCleanup}) {
+            if (modes.count(mode) == 0)
+              continue;
+
             // Force the TPM firmware update option to be enabled.
             g_browser_process->local_state()->SetInteger(
                 prefs::kFactoryResetTPMFirmwareUpdateMode,
-                static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
+                static_cast<int>(mode));
             LaunchResetScreen();
+            return;
           }
         }),
         base::TimeDelta());

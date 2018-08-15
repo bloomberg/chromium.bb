@@ -43,7 +43,8 @@ class TPMFirmwareUpdateModesTest : public testing::Test {
  public:
   enum class Availability {
     kPending,
-    kUnavailble,
+    kUnavailable,
+    kUnavailableROCAVulnerable,
     kAvailable,
   };
 
@@ -55,9 +56,16 @@ class TPMFirmwareUpdateModesTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath update_location_path =
         temp_dir_.GetPath().AppendASCII("tpm_firmware_update_location");
-    path_override_ = std::make_unique<base::ScopedPathOverride>(
+    path_override_location_ = std::make_unique<base::ScopedPathOverride>(
         chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION,
         update_location_path, update_location_path.IsAbsolute(), false);
+    base::FilePath srk_vulnerable_roca_path = temp_dir_.GetPath().AppendASCII(
+        "tpm_firmware_update_srk_vulnerable_roca");
+    path_override_srk_vulnerable_roca_ =
+        std::make_unique<base::ScopedPathOverride>(
+            chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_SRK_VULNERABLE_ROCA,
+            srk_vulnerable_roca_path, srk_vulnerable_roca_path.IsAbsolute(),
+            false);
     SetUpdateAvailability(Availability::kAvailable);
     callback_ = base::BindOnce(&TPMFirmwareUpdateModesTest::RecordResponse,
                                base::Unretained(this));
@@ -69,6 +77,22 @@ class TPMFirmwareUpdateModesTest : public testing::Test {
   }
 
   void SetUpdateAvailability(Availability availability) {
+    base::FilePath srk_vulnerable_roca_path;
+    ASSERT_TRUE(base::PathService::Get(
+        chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_SRK_VULNERABLE_ROCA,
+        &srk_vulnerable_roca_path));
+    switch (availability) {
+      case Availability::kPending:
+      case Availability::kUnavailable:
+        base::DeleteFile(srk_vulnerable_roca_path, false);
+        break;
+      case Availability::kAvailable:
+      case Availability::kUnavailableROCAVulnerable:
+        ASSERT_TRUE(base::ImportantFileWriter::WriteFileAtomically(
+            srk_vulnerable_roca_path, ""));
+        break;
+    }
+
     base::FilePath update_location_path;
     ASSERT_TRUE(base::PathService::Get(
         chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION,
@@ -77,7 +101,8 @@ class TPMFirmwareUpdateModesTest : public testing::Test {
       case Availability::kPending:
         base::DeleteFile(update_location_path, false);
         break;
-      case Availability::kUnavailble:
+      case Availability::kUnavailable:
+      case Availability::kUnavailableROCAVulnerable:
         ASSERT_TRUE(base::ImportantFileWriter::WriteFileAtomically(
             update_location_path, ""));
         break;
@@ -91,7 +116,8 @@ class TPMFirmwareUpdateModesTest : public testing::Test {
 
   std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
   base::ScopedTempDir temp_dir_;
-  std::unique_ptr<base::ScopedPathOverride> path_override_;
+  std::unique_ptr<base::ScopedPathOverride> path_override_location_;
+  std::unique_ptr<base::ScopedPathOverride> path_override_srk_vulnerable_roca_;
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   ScopedCrosSettingsTestHelper cros_settings_test_helper_;
@@ -161,6 +187,22 @@ TEST_F(TPMFirmwareUpdateModesTest, AvailableAfterWaiting) {
   scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(callback_received_);
+}
+
+TEST_F(TPMFirmwareUpdateModesTest, NoUpdateVulnerableSRK) {
+  SetUpdateAvailability(Availability::kUnavailableROCAVulnerable);
+  GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_received_);
+  EXPECT_EQ(std::set<Mode>{Mode::kCleanup}, callback_modes_);
+}
+
+TEST_F(TPMFirmwareUpdateModesTest, NoUpdateNonVulnerableSRK) {
+  SetUpdateAvailability(Availability::kUnavailable);
+  GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_received_);
+  EXPECT_EQ(std::set<Mode>(), callback_modes_);
 }
 
 TEST_F(TPMFirmwareUpdateModesTest, Timeout) {
@@ -249,6 +291,15 @@ TEST_F(TPMFirmwareUpdateModesEnterpriseTest,
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_EQ(std::set<Mode>({Mode::kPreserveDeviceState}), callback_modes_);
+}
+
+TEST_F(TPMFirmwareUpdateModesEnterpriseTest, VulnerableSRK) {
+  SetUpdateAvailability(Availability::kUnavailableROCAVulnerable);
+  SetPolicy({Mode::kPreserveDeviceState});
+  GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_received_);
+  EXPECT_EQ(std::set<Mode>({Mode::kCleanup}), callback_modes_);
 }
 
 }  // namespace tpm_firmware_update

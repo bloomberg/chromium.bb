@@ -136,9 +136,13 @@ enum {
   DIR_CHILD_USERS_DEFAULT_APPS,    // Directory where installer places .crx
                                    // files to be installed when child user
                                    // session starts.
-  FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION,  // File containing the location
-                                                // of the updated TPM firmware
-                                                // binary in the file system.
+
+  // File containing the location of the updated TPM firmware binary in the file
+  // system.
+  FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION,
+
+  // Flag file indicating SRK ROCA vulnerability status.
+  FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_SRK_VULNERABLE_ROCA,
 #endif  // defined(OS_CHROMEOS)
   PATH_END
 };

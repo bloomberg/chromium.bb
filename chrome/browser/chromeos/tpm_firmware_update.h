@@ -32,6 +32,9 @@ enum class Mode : int {
   kPowerwash = 1,
   // Device-state preserving update flow. Destroys all user data.
   kPreserveDeviceState = 2,
+  // Force clear TPM after successful update, useful to flush out vulnerable
+  // SRK that might be left behind.
+  kCleanup = 3,
 };
 
 // Settings dictionary key constants.
