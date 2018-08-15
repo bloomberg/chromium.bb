@@ -4,15 +4,12 @@
 
 #include "chrome/browser/prefs/pref_metrics_service.h"
 
-#include <stddef.h>
+#include <string>
 
-#include "base/bind.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,20 +18,14 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
-#include "components/sync_preferences/pref_service_syncable.h"
-#include "components/sync_preferences/synced_pref_change_registrar.h"
 #include "content/public/browser/browser_url_handler.h"
-#include "crypto/hmac.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/gurl.h"
 
 namespace {
-
-const int kSessionStartupPrefValueMax = SessionStartupPref::kPrefValueMax;
 
 #if !defined(OS_ANDROID)
 // Record a sample for the Settings.NewTabPage rappor metric.
@@ -57,25 +48,8 @@ void SampleNewTabPageURL(Profile* profile) {
 PrefMetricsService::PrefMetricsService(Profile* profile)
     : profile_(profile),
       prefs_(profile_->GetPrefs()),
-      local_state_(g_browser_process->local_state()),
       weak_factory_(this) {
   RecordLaunchPrefs();
-
-  sync_preferences::PrefServiceSyncable* prefs =
-      PrefServiceSyncableFromProfile(profile_);
-  synced_pref_change_registrar_.reset(
-      new sync_preferences::SyncedPrefChangeRegistrar(prefs));
-
-  RegisterSyncedPrefObservers();
-}
-
-// For unit testing only.
-PrefMetricsService::PrefMetricsService(Profile* profile,
-                                       PrefService* local_state)
-    : profile_(profile),
-      prefs_(profile->GetPrefs()),
-      local_state_(local_state),
-      weak_factory_(this) {
 }
 
 PrefMetricsService::~PrefMetricsService() {
@@ -132,8 +106,9 @@ void PrefMetricsService::RecordLaunchPrefs() {
   // applicable.  Also, startup pages are not supported on Android
 #if !defined(OS_ANDROID)
   int restore_on_startup = prefs_->GetInteger(prefs::kRestoreOnStartup);
-  UMA_HISTOGRAM_ENUMERATION("Settings.StartupPageLoadSettings",
-                            restore_on_startup, kSessionStartupPrefValueMax);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Settings.StartupPageLoadSettings", restore_on_startup,
+      static_cast<int>(SessionStartupPref::kPrefValueMax));
   if (restore_on_startup == SessionStartupPref::kPrefValueURLs) {
     const base::ListValue* url_list =
         prefs_->GetList(prefs::kURLsToRestoreOnStartup);
@@ -175,70 +150,6 @@ void PrefMetricsService::RecordLaunchPrefs() {
     }
   }
 #endif
-}
-
-void PrefMetricsService::RegisterSyncedPrefObservers() {
-  LogHistogramValueCallback booleanHandler = base::Bind(
-      &PrefMetricsService::LogBooleanPrefChange, base::Unretained(this));
-
-  AddPrefObserver(prefs::kShowHomeButton, "ShowHomeButton", booleanHandler);
-  AddPrefObserver(prefs::kHomePageIsNewTabPage, "HomePageIsNewTabPage",
-                  booleanHandler);
-
-  AddPrefObserver(prefs::kRestoreOnStartup, "StartupPageLoadSettings",
-                  base::Bind(&PrefMetricsService::LogIntegerPrefChange,
-                             base::Unretained(this),
-                             kSessionStartupPrefValueMax));
-}
-
-void PrefMetricsService::AddPrefObserver(
-    const std::string& path,
-    const std::string& histogram_name_prefix,
-    const LogHistogramValueCallback& callback) {
-  synced_pref_change_registrar_->Add(path.c_str(),
-      base::Bind(&PrefMetricsService::OnPrefChanged,
-                 base::Unretained(this),
-                 histogram_name_prefix, callback));
-}
-
-void PrefMetricsService::OnPrefChanged(
-    const std::string& histogram_name_prefix,
-    const LogHistogramValueCallback& callback,
-    const std::string& path,
-    bool from_sync) {
-  sync_preferences::PrefServiceSyncable* prefs =
-      PrefServiceSyncableFromProfile(profile_);
-  const PrefService::Preference* pref = prefs->FindPreference(path);
-  DCHECK(pref);
-  std::string source_name(
-      from_sync ? ".PulledFromSync" : ".PushedToSync");
-  std::string histogram_name("Settings." + histogram_name_prefix + source_name);
-  callback.Run(histogram_name, pref->GetValue());
-}
-
-void PrefMetricsService::LogBooleanPrefChange(const std::string& histogram_name,
-                                              const base::Value* value) {
-  bool boolean_value = false;
-  if (!value->GetAsBoolean(&boolean_value))
-    return;
-  base::HistogramBase* histogram = base::BooleanHistogram::FactoryGet(
-      histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(boolean_value);
-}
-
-void PrefMetricsService::LogIntegerPrefChange(int boundary_value,
-                                              const std::string& histogram_name,
-                                              const base::Value* value) {
-  int integer_value = 0;
-  if (!value->GetAsInteger(&integer_value))
-    return;
-  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
-      histogram_name,
-      1,
-      boundary_value,
-      boundary_value + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(integer_value);
 }
 
 // static
