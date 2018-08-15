@@ -59,8 +59,6 @@ In the same way that when constructing a Summation Diagnostic we account for eve
 
 Some diagnostic metrics correlate with the higher level metric, but aren’t related in any precise way. For example, the top level FMP metric measures wall clock time. We could add a CPU time equivalent as a diagnostic metric, which is likely to have lower noise. In cases like this, we expect there to exist some monotonic function which approximately maps from the top level metric to the diagnostic metric, but this relationship could be quite rough.
 
-Slicing diagnostics are implemented in telemetry via [Related Histogram Maps](https://cs.chromium.org/chromium/src/third_party/catapult/tracing/tracing/value/diagnostics/related_histogram_map.html?q=RelatedHistogramMap&sq=package:chromium&l=16).
-
 ## Composing Diagnostics
 
 Many metrics will have multiple sets of diagnostics. For example, this set of FMP diagnostics involves Slicing, Summation, and Proxy Diagnostics.
