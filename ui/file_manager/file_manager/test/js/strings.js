@@ -58,6 +58,7 @@ loadTimeData.data = new Proxy(
           'devices/goodies.html?utm_source=filesapp&utm_medium=banner&' +
           'utm_campaign=gsg',
       IMAGE_FILE_TYPE: '$1 image',
+      INSTALL_LINUX_PACKAGE_INSTALL_BUTTON: 'Install',
       INSTALL_NEW_EXTENSION_LABEL: 'Install new service',
       LINUX_FILES_ROOT_LABEL: 'Linux files',
       MANY_ENTRIES_SELECTED: '$1 items selected',
