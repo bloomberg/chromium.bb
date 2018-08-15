@@ -173,7 +173,6 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
 
 MouseEvent::MouseEvent()
     : position_type_(PositionType::kPosition),
-      has_cached_relative_position_(false),
       button_(0),
       buttons_(0),
       related_target_(nullptr),
@@ -527,6 +526,7 @@ int MouseEvent::layerX() {
 
   // TODO(mustaq): Remove the PointerEvent specific code when mouse has
   // fractional coordinates. See crbug.com/655786.
+
   return IsPointerEvent() ? layer_location_.X()
                           : static_cast<int>(layer_location_.X());
 }
@@ -537,24 +537,29 @@ int MouseEvent::layerY() {
 
   // TODO(mustaq): Remove the PointerEvent specific code when mouse has
   // fractional coordinates. See crbug.com/655786.
+
   return IsPointerEvent() ? layer_location_.Y()
                           : static_cast<int>(layer_location_.Y());
 }
 
-int MouseEvent::offsetX() {
+double MouseEvent::offsetX() {
   if (!HasPosition())
     return 0;
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
-  return std::round(offset_location_.X());
+  return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
+             ? offset_location_.X()
+             : std::round(offset_location_.X());
 }
 
-int MouseEvent::offsetY() {
+double MouseEvent::offsetY() {
   if (!HasPosition())
     return 0;
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
-  return std::round(offset_location_.Y());
+  return (RuntimeEnabledFeatures::FractionalMouseEventEnabled())
+             ? offset_location_.Y()
+             : std::round(offset_location_.Y());
 }
 
 }  // namespace blink

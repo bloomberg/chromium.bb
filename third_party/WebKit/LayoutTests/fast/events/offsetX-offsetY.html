@@ -137,7 +137,7 @@
           event.offsetY == event.expectedOffsetY)
         result = 'PASS: event hit ' + element.id + ' at offset (' + event.offsetX + ', ' + event.offsetY + ')';
       else
-        result = 'FAIL: event at (' + event.clientX + ', ' + event.clientY + ') expected to hit ' + event.expectedElement + ' at (' + event.expectedOffsetX + ', ' + event.expectedOffsetY + ') but hit ' + element.id + ' at (' + event.offsetX + ', ' + event.offsetY + ')';
+        result = 'FAIL: event expected to hit ' + event.expectedElement + ' at (' + event.expectedOffsetX + ', ' + event.expectedOffsetY + ') but hit ' + element.id + ' at (' + event.offsetX + ', ' + event.offsetY + ')';
 
       log(result);
     }
