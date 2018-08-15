@@ -2130,6 +2130,9 @@ extern const char kEnableContinueReadingDescription[];
 extern const char kEnableZeroStateSuggestionsName[];
 extern const char kEnableZeroStateSuggestionsDescription[];
 
+extern const char kEnableOobeRecommendAppsScreenName[];
+extern const char kEnableOobeRecommendAppsScreenDescription[];
+
 #endif  // #if defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------

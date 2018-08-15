@@ -3877,6 +3877,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kNewWallpaperPicker)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_CHROMEOS)
+    {"enable-oobe-recommend-apps-screen",
+     flag_descriptions::kEnableOobeRecommendAppsScreenName,
+     flag_descriptions::kEnableOobeRecommendAppsScreenDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kOobeRecommendAppsScreen)},
+#endif  // OS_CHROMEOS
+
 #if defined(OS_ANDROID)
     {"enable-query-in-omnibox", flag_descriptions::kQueryInOmniboxName,
      flag_descriptions::kQueryInOmniboxDescription, kOsAndroid,

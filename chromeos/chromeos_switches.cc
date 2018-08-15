@@ -345,10 +345,6 @@ const char kEnableNetworkPortalNotification[] =
 // and it requires |kEnableDemoMode| flag to be enabled to take effect.
 const char kEnableOfflineDemoMode[] = "enable-offline-demo-mode";
 
-// Enables Recommend Apps screen in OOBE.
-const char kEnableOobeRecommendAppsScreen[] =
-    "enable-oobe-recommend-apps-screen";
-
 // Enables suggestions while typing on a physical keyboard.
 const char kEnablePhysicalKeyboardAutocorrect[] =
     "enable-physical-keyboard-autocorrect";
