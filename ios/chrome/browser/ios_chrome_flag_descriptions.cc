@@ -116,11 +116,6 @@ const char kBrowserTaskScheduler[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";
 
-const char kCaptivePortalName[] = "Captive Portal";
-const char kCaptivePortalDescription[] =
-    "When enabled, the Captive Portal landing page will be displayed if it is "
-    "detected that the user is connected to a Captive Portal network.";
-
 const char kCaptivePortalMetricsName[] = "Captive Portal Metrics";
 const char kCaptivePortalMetricsDescription[] =
     "When enabled, some network issues will trigger a test to check if a "

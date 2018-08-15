@@ -92,10 +92,6 @@ extern const char kBrowserContainerFullscreenDescription[];
 extern const char kBrowserTaskScheduler[];
 extern const char kBrowserTaskSchedulerDescription[];
 
-// Title and description for the flag to enable Captive Portal Login.
-extern const char kCaptivePortalName[];
-extern const char kCaptivePortalDescription[];
-
 // Title and description for the flag to enable Captive Portal metrics logging.
 extern const char kCaptivePortalMetricsName[];
 extern const char kCaptivePortalMetricsDescription[];

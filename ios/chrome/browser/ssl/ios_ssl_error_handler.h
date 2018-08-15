@@ -66,9 +66,6 @@ class IOSSSLErrorHandler : public web::WebStateUserData<IOSSSLErrorHandler> {
   // Displays a Captive Portal interstitial. The |landing_url| is the web page
   // which allows the user to complete their connection to the network.
   void ShowCaptivePortalInterstitial(const GURL& landing_url);
-  // Detects the current Captive Portal state and records the result with
-  // |LogCaptivePortalResult|.
-  static void RecordCaptivePortalState(web::WebState* web_state);
   // Records a metric to classify if SSL errors are due to a Captive Portal
   // state.
   static void LogCaptivePortalResult(

@@ -7,9 +7,6 @@
 
 #include "base/feature_list.h"
 
-// Used to control the state of the Captive Portal Login feature.
-extern const base::Feature kCaptivePortalFeature;
-
 // Used to control the state of logging Captive Portal Metrics.
 extern const base::Feature kCaptivePortalMetrics;
 
