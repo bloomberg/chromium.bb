@@ -1811,9 +1811,8 @@ def UprevPackages(buildroot, boards, overlays, workspace=None):
          '--boards=%s' % ':'.join(boards),
          '--overlays=%s' % ':'.join(overlays),
          '--drop_file=%s' % drop_file,
+         '--buildroot', workspace or buildroot,
          'commit']
-  if workspace:
-    cmd.extend(['--srcroot', os.path.join(workspace, 'src')])
 
   RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
@@ -1836,10 +1835,9 @@ def UprevPush(buildroot, overlays, dryrun, staging_branch=None, workspace=None):
     workspace: Alternative buildroot directory to uprev.
   """
   cmd = ['cros_mark_as_stable',
-         '--overlays=%s' % ':'.join(overlays)
+         '--overlays=%s' % ':'.join(overlays),
+         '--buildroot', workspace or buildroot,
         ]
-  if workspace:
-    cmd.extend(['--srcroot', os.path.join(workspace, 'src')])
   if staging_branch is not None:
     cmd.append('--staging_branch=%s' % staging_branch)
   if dryrun:
