@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_HARMONY_CHROME_LAYOUT_PROVIDER_H_
-#define CHROME_BROWSER_UI_VIEWS_HARMONY_CHROME_LAYOUT_PROVIDER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CHROME_LAYOUT_PROVIDER_H_
+#define CHROME_BROWSER_UI_VIEWS_CHROME_LAYOUT_PROVIDER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/views/harmony/harmony_typography_provider.h"
+#include "chrome/browser/ui/views/chrome_typography_provider.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/layout/grid_layout.h"
@@ -94,9 +94,9 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   virtual bool ShouldShowWindowIcon() const;
 
  private:
-  const HarmonyTypographyProvider typography_provider_;
+  const ChromeTypographyProvider typography_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLayoutProvider);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_HARMONY_CHROME_LAYOUT_PROVIDER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CHROME_LAYOUT_PROVIDER_H_

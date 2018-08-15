@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_HARMONY_HARMONY_TYPOGRAPHY_PROVIDER_H_
-#define CHROME_BROWSER_UI_VIEWS_HARMONY_HARMONY_TYPOGRAPHY_PROVIDER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CHROME_TYPOGRAPHY_PROVIDER_H_
+#define CHROME_BROWSER_UI_VIEWS_CHROME_TYPOGRAPHY_PROVIDER_H_
 
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/views/style/typography_provider.h"
 
 // TypographyProvider implementing the Harmony spec.
-class HarmonyTypographyProvider : public views::TypographyProvider {
+class ChromeTypographyProvider : public views::TypographyProvider {
  public:
-  HarmonyTypographyProvider() = default;
+  ChromeTypographyProvider() = default;
 
 #if defined(OS_WIN)
   // Returns the expected platform font height for the current system
@@ -29,7 +29,7 @@ class HarmonyTypographyProvider : public views::TypographyProvider {
   int GetLineHeight(int context, int style) const override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(HarmonyTypographyProvider);
+  DISALLOW_COPY_AND_ASSIGN(ChromeTypographyProvider);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_HARMONY_HARMONY_TYPOGRAPHY_PROVIDER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CHROME_TYPOGRAPHY_PROVIDER_H_

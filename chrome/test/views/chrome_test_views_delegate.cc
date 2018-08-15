@@ -4,7 +4,7 @@
 
 #include "chrome/test/views/chrome_test_views_delegate.h"
 
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 
 ChromeTestViewsDelegate::ChromeTestViewsDelegate()
     : views::TestViewsDelegate() {

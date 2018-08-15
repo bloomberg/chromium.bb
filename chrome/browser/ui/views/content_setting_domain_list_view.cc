@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/content_setting_domain_list_view.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/views/harmony/bulleted_label_list_view.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/bulleted_label_list_view.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"

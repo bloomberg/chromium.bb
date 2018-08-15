@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/try_chrome_dialog_win/arrow_border.h"
 #include "chrome/browser/ui/views/try_chrome_dialog_win/button_layout.h"
 #include "chrome/browser/win/taskbar_icon_finder.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_HARMONY_CHROME_TYPOGRAPHY_H_
-#define CHROME_BROWSER_UI_VIEWS_HARMONY_CHROME_TYPOGRAPHY_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CHROME_TYPOGRAPHY_H_
+#define CHROME_BROWSER_UI_VIEWS_CHROME_TYPOGRAPHY_H_
 
 #include "base/macros.h"
 #include "ui/gfx/font.h"
@@ -86,4 +86,4 @@ void ApplyCommonFontStyles(int context,
                            int* size_delta,
                            gfx::Font::Weight* weight);
 
-#endif  // CHROME_BROWSER_UI_VIEWS_HARMONY_CHROME_TYPOGRAPHY_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CHROME_TYPOGRAPHY_H_

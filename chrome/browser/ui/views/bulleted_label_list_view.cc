@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/harmony/bulleted_label_list_view.h"
+#include "chrome/browser/ui/views/bulleted_label_list_view.h"
 
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
@@ -48,7 +48,6 @@ BulletedLabelListView::BulletedLabelListView()
 
 BulletedLabelListView::BulletedLabelListView(
     const std::vector<base::string16>& texts) {
-
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   views::ColumnSet* columns = layout->AddColumnSet(kColumnSetId);
