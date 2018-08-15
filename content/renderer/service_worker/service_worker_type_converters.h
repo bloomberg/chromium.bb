@@ -56,13 +56,6 @@ struct TypeConverter<blink::WebPaymentDetailsModifier,
       const payments::mojom::PaymentDetailsModifierPtr& input);
 };
 
-template <>
-struct TypeConverter<blink::WebServiceWorkerContextProxy::BackgroundFetchState,
-                     content::mojom::BackgroundFetchState> {
-  static blink::WebServiceWorkerContextProxy::BackgroundFetchState Convert(
-      content::mojom::BackgroundFetchState input);
-};
-
 }  // namespace
 
 #endif  // CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_TYPE_CONVERTERS_H_

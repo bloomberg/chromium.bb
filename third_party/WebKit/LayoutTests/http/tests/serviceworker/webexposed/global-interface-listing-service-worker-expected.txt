@@ -39,6 +39,7 @@ interface BackgroundFetchRegistration : EventTarget
     getter downloaded
     getter id
     getter onprogress
+    getter state
     getter uploadTotal
     getter uploaded
     method abort

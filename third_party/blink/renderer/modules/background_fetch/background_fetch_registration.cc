@@ -20,13 +20,15 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
     unsigned long long upload_total,
     unsigned long long uploaded,
     unsigned long long download_total,
-    unsigned long long downloaded)
+    unsigned long long downloaded,
+    blink::mojom::BackgroundFetchState state)
     : developer_id_(developer_id),
       unique_id_(unique_id),
       upload_total_(upload_total),
       uploaded_(uploaded),
       download_total_(download_total),
       downloaded_(downloaded),
+      state_(state),
       observer_binding_(this) {}
 
 BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
@@ -126,6 +128,18 @@ void BackgroundFetchRegistration::DidAbort(
       break;
   }
 
+  NOTREACHED();
+}
+
+const String BackgroundFetchRegistration::state() const {
+  switch (state_) {
+    case blink::mojom::BackgroundFetchState::SUCCESS:
+      return "success";
+    case blink::mojom::BackgroundFetchState::FAILURE:
+      return "failure";
+    case blink::mojom::BackgroundFetchState::PENDING:
+      return "pending";
+  }
   NOTREACHED();
 }
 

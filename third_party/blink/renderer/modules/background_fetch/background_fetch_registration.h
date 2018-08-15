@@ -34,7 +34,8 @@ class BackgroundFetchRegistration final
                               unsigned long long upload_total,
                               unsigned long long uploaded,
                               unsigned long long download_total,
-                              unsigned long long downloaded);
+                              unsigned long long downloaded,
+                              mojom::BackgroundFetchState state);
   ~BackgroundFetchRegistration() override;
 
   // Initializes the BackgroundFetchRegistration to be associated with the given
@@ -66,6 +67,7 @@ class BackgroundFetchRegistration final
   ExecutionContext* GetExecutionContext() const override;
 
   const String& unique_id() const { return unique_id_; }
+  const String state() const;
 
   void Dispose();
 
@@ -90,6 +92,7 @@ class BackgroundFetchRegistration final
   unsigned long long uploaded_;
   unsigned long long download_total_;
   unsigned long long downloaded_;
+  mojom::BackgroundFetchState state_;
 
   mojo::Binding<blink::mojom::blink::BackgroundFetchRegistrationObserver>
       observer_binding_;

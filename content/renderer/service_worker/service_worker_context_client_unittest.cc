@@ -26,6 +26,7 @@
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_settled_fetch.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
 #include "third_party/blink/public/platform/modules/payments/web_payment_request_event_data.h"
@@ -79,19 +80,22 @@ class MockWebServiceWorkerContextProxy
   void DispatchBackgroundFetchAbortEvent(
       int event_id,
       const blink::WebString& developer_id,
-      const blink::WebString& unique_id) override {
+      const blink::WebString& unique_id,
+      blink::mojom::BackgroundFetchState state) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchClickEvent(
       int event_id,
       const blink::WebString& developer_id,
-      const blink::WebString& unique_id) override {
+      const blink::WebString& unique_id,
+      blink::mojom::BackgroundFetchState state) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchFailEvent(
       int event_id,
       const blink::WebString& developer_id,
       const blink::WebString& unique_id,
+      blink::mojom::BackgroundFetchState state,
       const blink::WebVector<blink::WebBackgroundFetchSettledFetch>& fetches)
       override {
     NOTREACHED();
@@ -100,6 +104,7 @@ class MockWebServiceWorkerContextProxy
       int event_id,
       const blink::WebString& developer_id,
       const blink::WebString& unique_id,
+      blink::mojom::BackgroundFetchState state,
       const blink::WebVector<blink::WebBackgroundFetchSettledFetch>& fetches)
       override {
     NOTREACHED();

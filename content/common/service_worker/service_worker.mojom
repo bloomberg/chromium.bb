@@ -7,6 +7,7 @@ module content.mojom;
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
+import "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom";
 import "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom";
 import "third_party/blink/public/platform/modules/notifications/notification.mojom";
 import "third_party/blink/public/platform/modules/payments/payment_app.mojom";
@@ -26,12 +27,6 @@ import "url/mojom/url.mojom";
 struct BackgroundFetchSettledFetch {
   blink.mojom.FetchAPIRequest request;
   blink.mojom.FetchAPIResponse? response;
-};
-
-enum BackgroundFetchState {
-  PENDING,
-  SUCCEEDED,
-  FAILED
 };
 
 struct ExtendableMessageEvent {
@@ -98,21 +93,25 @@ interface ServiceWorker {
   // promise has settled. |developer_id| and |unique_id| are documented in
   // content::BackgroundFetchRegistrationId.
   DispatchBackgroundFetchAbortEvent(string developer_id,
-                                    string unique_id)
+                                    string unique_id,
+                                    blink.mojom.BackgroundFetchState state)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);
   DispatchBackgroundFetchClickEvent(string developer_id,
-                                    string unique_id)
+                                    string unique_id,
+                                    blink.mojom.BackgroundFetchState state)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);
   DispatchBackgroundFetchFailEvent(string developer_id,
                                    string unique_id,
+                                   blink.mojom.BackgroundFetchState state,
                                    array<BackgroundFetchSettledFetch> fetches)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);
   DispatchBackgroundFetchSuccessEvent(
       string developer_id,
       string unique_id,
+      blink.mojom.BackgroundFetchState state,
       array<BackgroundFetchSettledFetch> fetches)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo_base.mojom.Time dispatch_event_time);

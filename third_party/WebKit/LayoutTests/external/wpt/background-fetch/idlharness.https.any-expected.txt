@@ -22,7 +22,7 @@ PASS BackgroundFetchRegistration interface: attribute uploadTotal
 PASS BackgroundFetchRegistration interface: attribute uploaded
 PASS BackgroundFetchRegistration interface: attribute downloadTotal
 PASS BackgroundFetchRegistration interface: attribute downloaded
-FAIL BackgroundFetchRegistration interface: attribute state assert_true: The prototype object must have a property "state" expected true got false
+PASS BackgroundFetchRegistration interface: attribute state
 FAIL BackgroundFetchRegistration interface: attribute failureReason assert_true: The prototype object must have a property "failureReason" expected true got false
 PASS BackgroundFetchRegistration interface: attribute onprogress
 PASS BackgroundFetchRegistration interface: operation abort()

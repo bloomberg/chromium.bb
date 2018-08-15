@@ -126,23 +126,4 @@ TypeConverter<blink::WebPaymentDetailsModifier,
   return output;
 }
 
-blink::WebServiceWorkerContextProxy::BackgroundFetchState
-TypeConverter<blink::WebServiceWorkerContextProxy::BackgroundFetchState,
-              content::mojom::BackgroundFetchState>::
-    Convert(content::mojom::BackgroundFetchState input) {
-  switch (input) {
-    case content::mojom::BackgroundFetchState::PENDING:
-      return blink::WebServiceWorkerContextProxy::BackgroundFetchState::
-          kPending;
-    case content::mojom::BackgroundFetchState::SUCCEEDED:
-      return blink::WebServiceWorkerContextProxy::BackgroundFetchState::
-          kSucceeded;
-    case content::mojom::BackgroundFetchState::FAILED:
-      return blink::WebServiceWorkerContextProxy::BackgroundFetchState::kFailed;
-  }
-
-  NOTREACHED();
-  return blink::WebServiceWorkerContextProxy::BackgroundFetchState::kPending;
-}
-
 }  // namespace mojo

@@ -219,7 +219,7 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchRegistrationId& registration_id,
       const std::vector<std::unique_ptr<storage::BlobDataHandle>>&
           blob_data_handles,
-      mojom::BackgroundFetchState background_fetch_state,
+      blink::mojom::BackgroundFetchState background_fetch_state,
       bool preserve_info_to_dispatch_click_event = false);
 
   // Called when the last JavaScript BackgroundFetchRegistration object has been
@@ -254,12 +254,14 @@ class CONTENT_EXPORT BackgroundFetchContext
   std::map<std::string, std::unique_ptr<BackgroundFetchJobController>>
       job_controllers_;
 
-  // Map from |unique_id|s to |registration_id|s. An entry in here means the
-  // fetch has completed. This information is needed after the fetch has
-  // completed to dispatch the backgroundfetchclick event.
+  // Map from |unique_id|s to {|registration_id|s, BackgroundFetchState}.
+  // An entry in here means the fetch has completed. This information is needed
+  // after the fetch has completed to dispatch the backgroundfetchclick event.
   // TODO(crbug.com/857122): Clean this up when the UI is no longer showing.
-  std::map<std::string, BackgroundFetchRegistrationId> completed_fetches_;
-
+  std::map<std::string,
+           std::pair<BackgroundFetchRegistrationId,
+                     blink::mojom::BackgroundFetchState>>
+      completed_fetches_;
   // Map from BackgroundFetchRegistrationIds to FetchCallbacks for active
   // fetches. Must be destroyed before |data_manager_| and
   // |registration_notifier_|. Since FetchCallback is a OnceCallback, please

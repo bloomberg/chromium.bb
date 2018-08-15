@@ -1585,6 +1585,7 @@ void ServiceWorkerContextClient::DispatchActivateEvent(
 void ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent(
     const std::string& developer_id,
     const std::string& unique_id,
+    blink::mojom::BackgroundFetchState state,
     DispatchBackgroundFetchAbortEventCallback callback) {
   int request_id = context_->timeout_timer->StartEvent(
       CreateAbortCallback(&context_->background_fetch_abort_event_callbacks));
@@ -1599,12 +1600,13 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent(
 
   proxy_->DispatchBackgroundFetchAbortEvent(
       request_id, blink::WebString::FromUTF8(developer_id),
-      blink::WebString::FromUTF8(unique_id));
+      blink::WebString::FromUTF8(unique_id), state);
 }
 
 void ServiceWorkerContextClient::DispatchBackgroundFetchClickEvent(
     const std::string& developer_id,
     const std::string& unique_id,
+    blink::mojom::BackgroundFetchState state,
     DispatchBackgroundFetchClickEventCallback callback) {
   int request_id = context_->timeout_timer->StartEvent(
       CreateAbortCallback(&context_->background_fetch_click_event_callbacks));
@@ -1619,12 +1621,13 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchClickEvent(
 
   proxy_->DispatchBackgroundFetchClickEvent(
       request_id, blink::WebString::FromUTF8(developer_id),
-      blink::WebString::FromUTF8(unique_id));
+      blink::WebString::FromUTF8(unique_id), state);
 }
 
 void ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent(
     const std::string& developer_id,
     const std::string& unique_id,
+    blink::mojom::BackgroundFetchState state,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     DispatchBackgroundFetchFailEventCallback callback) {
   int request_id = context_->timeout_timer->StartEvent(
@@ -1648,12 +1651,13 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent(
 
   proxy_->DispatchBackgroundFetchFailEvent(
       request_id, blink::WebString::FromUTF8(developer_id),
-      blink::WebString::FromUTF8(unique_id), web_fetches);
+      blink::WebString::FromUTF8(unique_id), state, web_fetches);
 }
 
 void ServiceWorkerContextClient::DispatchBackgroundFetchSuccessEvent(
     const std::string& developer_id,
     const std::string& unique_id,
+    blink::mojom::BackgroundFetchState state,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     DispatchBackgroundFetchSuccessEventCallback callback) {
   int request_id = context_->timeout_timer->StartEvent(
@@ -1677,7 +1681,7 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchSuccessEvent(
 
   proxy_->DispatchBackgroundFetchSuccessEvent(
       request_id, blink::WebString::FromUTF8(developer_id),
-      blink::WebString::FromUTF8(unique_id), web_fetches);
+      blink::WebString::FromUTF8(unique_id), state, web_fetches);
 }
 
 void ServiceWorkerContextClient::InitializeGlobalScope(

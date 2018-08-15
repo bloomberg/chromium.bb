@@ -75,6 +75,7 @@ BackgroundFetchEventDispatcher::~BackgroundFetchEventDispatcher() {
 
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchAbortEvent(
     const BackgroundFetchRegistrationId& registration_id,
+    blink::mojom::BackgroundFetchState state,
     base::OnceClosure finished_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LoadServiceWorkerRegistrationForDispatch(
@@ -82,22 +83,24 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchAbortEvent(
       std::move(finished_closure),
       base::Bind(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchAbortEvent,
-          registration_id.developer_id(), registration_id.unique_id()));
+          registration_id.developer_id(), registration_id.unique_id(), state));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchAbortEvent(
     const std::string& developer_id,
     const std::string& unique_id,
+    blink::mojom::BackgroundFetchState state,
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
     int request_id) {
   DCHECK(service_worker_version);
   service_worker_version->endpoint()->DispatchBackgroundFetchAbortEvent(
-      developer_id, unique_id,
+      developer_id, unique_id, state,
       service_worker_version->CreateSimpleEventCallback(request_id));
 }
 
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchClickEvent(
     const BackgroundFetchRegistrationId& registration_id,
+    blink::mojom::BackgroundFetchState state,
     base::OnceClosure finished_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LoadServiceWorkerRegistrationForDispatch(
@@ -105,21 +108,23 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchClickEvent(
       std::move(finished_closure),
       base::Bind(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchClickEvent,
-          registration_id));
+          registration_id, state));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchClickEvent(
     const BackgroundFetchRegistrationId& registration_id,
+    blink::mojom::BackgroundFetchState state,
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
     int request_id) {
   DCHECK(service_worker_version);
   service_worker_version->endpoint()->DispatchBackgroundFetchClickEvent(
-      registration_id.developer_id(), registration_id.unique_id(),
+      registration_id.developer_id(), registration_id.unique_id(), state,
       service_worker_version->CreateSimpleEventCallback(request_id));
 }
 
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchFailEvent(
     const BackgroundFetchRegistrationId& registration_id,
+    blink::mojom::BackgroundFetchState state,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     base::OnceClosure finished_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -128,24 +133,26 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchFailEvent(
       std::move(finished_closure),
       base::Bind(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent,
-          registration_id.developer_id(), registration_id.unique_id(),
+          registration_id.developer_id(), registration_id.unique_id(), state,
           fetches));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent(
     const std::string& developer_id,
     const std::string& unique_id,
+    blink::mojom::BackgroundFetchState state,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
     int request_id) {
   DCHECK(service_worker_version);
   service_worker_version->endpoint()->DispatchBackgroundFetchFailEvent(
-      developer_id, unique_id, fetches,
+      developer_id, unique_id, state, fetches,
       service_worker_version->CreateSimpleEventCallback(request_id));
 }
 
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchSuccessEvent(
     const BackgroundFetchRegistrationId& registration_id,
+    blink::mojom::BackgroundFetchState state,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     base::OnceClosure finished_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -156,18 +163,19 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchSuccessEvent(
       base::Bind(&BackgroundFetchEventDispatcher::
                      DoDispatchBackgroundFetchSuccessEvent,
                  registration_id.developer_id(), registration_id.unique_id(),
-                 fetches));
+                 state, fetches));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchSuccessEvent(
     const std::string& developer_id,
     const std::string& unique_id,
+    blink::mojom::BackgroundFetchState state,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
     int request_id) {
   DCHECK(service_worker_version);
   service_worker_version->endpoint()->DispatchBackgroundFetchSuccessEvent(
-      developer_id, unique_id, fetches,
+      developer_id, unique_id, state, fetches,
       service_worker_version->CreateSimpleEventCallback(request_id));
 }
 
