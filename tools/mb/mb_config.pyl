@@ -915,7 +915,7 @@
     ],
 
     'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release': [
-      'asan', 'fuzzer', 'static', 'v8_heap', 'minimal_symbols', 'release',
+      'asan', 'fuzzer', 'static', 'v8_heap', 'minimal_symbols', 'release_bot',
     ],
 
     'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release_tot': [
