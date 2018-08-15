@@ -78,6 +78,10 @@ void UpdateSyncItemFromSync(const sync_pb::AppListSpecifics& specifics,
 bool UpdateSyncItemFromAppItem(const ChromeAppListItem* app_item,
                                AppListSyncableService::SyncItem* sync_item) {
   DCHECK_EQ(sync_item->item_id, app_item->id());
+
+  // Page breaker should not be added in a folder.
+  DCHECK(!app_item->is_page_break() || app_item->folder_id().empty());
+
   bool changed = false;
   if (sync_item->parent_id != app_item->folder_id()) {
     sync_item->parent_id = app_item->folder_id();
@@ -1201,10 +1205,21 @@ void AppListSyncableService::PruneRedundantPageBreakItems() {
     }
   }
 
-  // Remove the trailing "page break" itme if it exists.
+  // Remove the trailing "page break" item if it exists.
   if (!top_level_sync_items.empty() &&
       IsPageBreakItem(*top_level_sync_items.back())) {
     DeleteSyncItem(top_level_sync_items.back()->item_id);
+  }
+
+  // Remove all the "page break" items that are in folder. No such item should
+  // exist in folder. It should be safe to remove them if it do occur.
+  for (auto iter = sync_items_.begin(); iter != sync_items_.end();) {
+    const auto* sync_item = (iter++)->second.get();
+    if (IsTopLevelAppItem(*sync_item) || !IsPageBreakItem(*sync_item))
+      continue;
+
+    LOG(ERROR) << "Delete a page break item in folder: " << sync_item->item_id;
+    DeleteSyncItem(sync_item->item_id);
   }
 }
 
