@@ -28,7 +28,6 @@
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #include "ui/views/cocoa/cocoa_mouse_capture.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
-#import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -129,9 +128,10 @@ int NativeWidgetMac::SheetPositionY() {
 void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   name_ = params.name;
-  base::scoped_nsobject<NSWindow> window([CreateNSWindow(params) retain]);
-  [window setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
-  bridge()->Init(window, params);
+  base::scoped_nsobject<NativeWidgetMacNSWindow> window(
+      [CreateNSWindow(params) retain]);
+  bridge()->SetWindow(window);
+  bridge()->Init(params);
 
   // Only set always-on-top here if it is true since setting it may affect how
   // the window is treated by Expose.

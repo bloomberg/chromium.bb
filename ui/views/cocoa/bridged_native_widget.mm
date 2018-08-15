@@ -18,6 +18,7 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+#import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -30,6 +31,7 @@
 #import "ui/views/cocoa/cocoa_mouse_capture.h"
 #import "ui/views/cocoa/cocoa_window_move_loop.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
+#import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
@@ -247,15 +249,29 @@ BridgedNativeWidget::~BridgedNativeWidget() {
   SetRootView(nullptr);
 }
 
-void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
-                               const Widget::InitParams& params) {
+void BridgedNativeWidget::CreateWindow(uint64_t window_style_mask) {
+  DCHECK(!window_);
+  window_.reset([[NativeWidgetMacNSWindow alloc]
+      initWithContentRect:ui::kWindowSizeDeterminedLater
+                styleMask:window_style_mask
+                  backing:NSBackingStoreBuffered
+                    defer:NO]);
+  [window_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
+  [window_ setDelegate:window_delegate_];
+}
+
+void BridgedNativeWidget::SetWindow(
+    base::scoped_nsobject<NativeWidgetMacNSWindow> window) {
+  DCHECK(!window_);
+  window_ = std::move(window);
+  [window_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
+  [window_ setDelegate:window_delegate_];
+}
+
+void BridgedNativeWidget::Init(const Widget::InitParams& params) {
   widget_type_ = params.type;
   is_translucent_window_ =
       params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
-
-  DCHECK(!window_);
-  window_.swap(window);
-  [window_ setDelegate:window_delegate_];
 
   // Register for application hide notifications so that visibility can be
   // properly tracked. This is not done in the delegate so that the lifetime is
