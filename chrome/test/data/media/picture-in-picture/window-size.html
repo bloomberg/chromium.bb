@@ -60,6 +60,27 @@
     });
   }
 
+  function setControls(ids) {
+    try{
+      var controls = [];
+      Array.from(ids).forEach(id => {
+        controls.push({
+          id: id,
+          label: "label_" + id,
+          icons: [{
+            src: "icon.png",
+            sizes: "144x144",
+            type: "image/png",
+          }],
+        });
+      });
+      video.setPictureInPictureControls(controls);
+      return true;
+    } catch(error) {
+      return false;
+    }
+  }
+
   function secondPictureInPicture() {
     secondVideo.requestPictureInPicture();
   }

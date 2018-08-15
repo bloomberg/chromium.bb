@@ -12,6 +12,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace views {
+class ControlImageButton;
 class CloseImageButton;
 class ToggleImageButton;
 }  // namespace views
@@ -37,11 +38,11 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Rect GetBounds() const override;
   void UpdateVideoSize(const gfx::Size& natural_size) override;
   void SetPlaybackState(PlaybackState playback_state) override;
+  void SetPictureInPictureCustomControls(
+      const std::vector<blink::PictureInPictureControlInfo>& controls) override;
   ui::Layer* GetWindowBackgroundLayer() override;
   ui::Layer* GetVideoLayer() override;
   gfx::Rect GetVideoBounds() override;
-  void SetPictureInPictureCustomControls(
-      const std::vector<blink::PictureInPictureControlInfo>& controls) override;
 
   // views::Widget:
   gfx::Size GetMinimumSize() const override;
@@ -63,17 +64,18 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Gets the bounds of the controls.
   gfx::Rect GetCloseControlsBounds();
   gfx::Rect GetPlayPauseControlsBounds();
+  gfx::Rect GetFirstCustomControlsBounds();
+  gfx::Rect GetSecondCustomControlsBounds();
 
   // Send the message that a custom control on |this| has been clicked.
   void ClickCustomControl(const std::string& control_id);
 
   views::ToggleImageButton* play_pause_controls_view_for_testing() const;
+  views::View* controls_parent_view_for_testing() const;
 
  private:
-  // Gets the internal |ui::Layer| of the controls.
-  ui::Layer* GetControlsBackgroundLayer();
-  ui::Layer* GetCloseControlsLayer();
-  ui::Layer* GetPlayPauseControlsLayer();
+  // Possible positions for the custom controls added to the window.
+  enum class ControlPosition { kLeft, kRight };
 
   // Determine the intended bounds of |this|. This should be called when there
   // is reason for the bounds to change, such as switching primary displays or
@@ -94,9 +96,30 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Updates the bounds of the controls.
   void UpdateControlsBounds();
 
-  // Update the size of |play_pause_controls_view_| as the size of the window
-  // changes.
+  // Update the size the controls views use as the size of the window changes.
+  void UpdateButtonSize();
+
+  // Update the size of each controls view as the size of the window changes.
+  void UpdateCustomControlsSize(views::ControlImageButton*);
   void UpdatePlayPauseControlsSize();
+
+  void SetUpCustomControl(std::unique_ptr<views::ControlImageButton>&,
+                          const blink::PictureInPictureControlInfo&,
+                          ControlPosition);
+
+  // Returns whether there is exactly one custom control on the window.
+  bool OnlyOneCustomControlAdded();
+
+  // Calculate and set the bounds of the controls.
+  gfx::Rect CalculateControlsBounds(int x, const gfx::Size& size);
+  void UpdateControlsPositions();
+
+  // Sets the bounds of the custom controls.
+  void SetFirstCustomControlsBounds();
+  void SetSecondCustomControlsBounds();
+
+  ui::Layer* GetControlsBackgroundLayer();
+  ui::Layer* GetControlsParentLayer();
 
   // Toggles the play/pause control through the |controller_| and updates the
   // |play_pause_controls_view_| toggled state to reflect the current playing
@@ -127,8 +150,8 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Size min_size_;
   gfx::Size max_size_;
 
-  // Current size of |play_pause_controls_view_|.
-  gfx::Size play_pause_button_size_;
+  // Current sizes of the control views on the Picture-in-Picture window.
+  gfx::Size button_size_;
 
   // Current bounds of the Picture-in-Picture window.
   gfx::Rect window_bounds_;
@@ -143,9 +166,15 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Views to be shown.
   std::unique_ptr<views::View> window_background_view_;
   std::unique_ptr<views::View> video_view_;
+  // |controls_background_view_| will dim the screen when the mouse hovers over.
+  // |controls_parent_view_| will hold all controls and manage them except for
+  // |close_controls_view_|
   std::unique_ptr<views::View> controls_background_view_;
+  std::unique_ptr<views::View> controls_parent_view_;
   std::unique_ptr<views::CloseImageButton> close_controls_view_;
   std::unique_ptr<views::ToggleImageButton> play_pause_controls_view_;
+  std::unique_ptr<views::ControlImageButton> first_custom_controls_view_;
+  std::unique_ptr<views::ControlImageButton> second_custom_controls_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowViews);
 };

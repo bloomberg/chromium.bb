@@ -424,6 +424,126 @@ IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
                 .WaitAndGetTitle());
 }
 
+// Tests that when a custom control is clicked on a Picture-in-Picture window
+// with one custom control on it, the correct event is sent to the caller.
+IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
+                       PictureInPictureAddControlAndFireEvent) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  content::OverlayWindow* overlay_window =
+      window_controller()->GetWindowForTesting();
+  ASSERT_TRUE(overlay_window);
+  ASSERT_FALSE(overlay_window->IsVisible());
+
+  LoadTabAndEnterPictureInPicture(browser());
+
+  const std::string kControlId = "control_id";
+  EXPECT_EQ(true, content::EvalJs(
+                      active_web_contents,
+                      content::JsReplace("setControls([$1]);", kControlId)));
+
+  base::string16 expected_title = base::ASCIIToUTF16(kControlId);
+
+  static_cast<OverlayWindowViews*>(overlay_window)
+      ->ClickCustomControl(kControlId);
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+}
+
+// Tests that when the first custom control added to a Picture-in-Picture window
+// with two custom controls on it is clicked the corresponding event is sent to
+// the caller.
+IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
+                       PictureInPictureAddTwoControlsAndFireLeftEvent) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  content::OverlayWindow* overlay_window =
+      window_controller()->GetWindowForTesting();
+  ASSERT_TRUE(overlay_window);
+  ASSERT_FALSE(overlay_window->IsVisible());
+
+  LoadTabAndEnterPictureInPicture(browser());
+
+  const std::string kLeftControlId = "left-control";
+  const std::string kRightControlId = "right-control";
+  EXPECT_EQ(true, content::EvalJs(
+                      active_web_contents,
+                      content::JsReplace("setControls([$1, $2]);",
+                                         kLeftControlId, kRightControlId)));
+
+  base::string16 left_expected_title = base::ASCIIToUTF16(kLeftControlId);
+
+  static_cast<OverlayWindowViews*>(overlay_window)
+      ->ClickCustomControl(kLeftControlId);
+  EXPECT_EQ(left_expected_title,
+            content::TitleWatcher(active_web_contents, left_expected_title)
+                .WaitAndGetTitle());
+}
+
+// Tests that when the second custom control added to a Picture-in-Picture
+// window with two custom controls on it is clicked the corresponding event is
+// sent to the caller.
+IN_PROC_BROWSER_TEST_F(ControlPictureInPictureWindowControllerBrowserTest,
+                       PictureInPictureAddTwoControlsAndFireRightEvent) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  content::OverlayWindow* overlay_window =
+      window_controller()->GetWindowForTesting();
+  ASSERT_TRUE(overlay_window);
+  ASSERT_FALSE(overlay_window->IsVisible());
+
+  LoadTabAndEnterPictureInPicture(browser());
+
+  const std::string kLeftControlId = "left-control";
+  const std::string kRightControlId = "right-control";
+  EXPECT_EQ(true, content::EvalJs(
+                      active_web_contents,
+                      content::JsReplace("setControls([$1, $2]);",
+                                         kLeftControlId, kRightControlId)));
+
+  base::string16 right_expected_title = base::ASCIIToUTF16(kRightControlId);
+
+  static_cast<OverlayWindowViews*>(overlay_window)
+      ->ClickCustomControl(kRightControlId);
+  EXPECT_EQ(right_expected_title,
+            content::TitleWatcher(active_web_contents, right_expected_title)
+                .WaitAndGetTitle());
+}
+
 #endif  // !defined(OS_ANDROID)
 
 // Tests that when closing a Picture-in-Picture window, the video element is
@@ -702,9 +822,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
 
-  EXPECT_FALSE(overlay_window->play_pause_controls_view_for_testing()
-                   ->layer()
-                   ->visible());
+  EXPECT_FALSE(
+      overlay_window->controls_parent_view_for_testing()->layer()->visible());
 #endif
 }
 
