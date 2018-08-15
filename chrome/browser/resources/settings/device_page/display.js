@@ -170,12 +170,6 @@ Polymer({
     },
 
     /** @private */
-    showDisplayZoomSetting_: {
-      type: Boolean,
-      value: loadTimeData.getBoolean('enableDisplayZoomSetting'),
-    },
-
-    /** @private */
     nightLightScheduleSubLabel_: String,
 
     /** @private */
@@ -370,14 +364,12 @@ Polymer({
     const numModes = selectedDisplay.modes.length;
     this.modeValues_ = numModes == 0 ? [] : Array.from(Array(numModes).keys());
 
-    if (this.showDisplayZoomSetting_) {
-      // Note that the display zoom values has the same number of ticks for all
-      // displays, so the above problem doesn't apply here.
-      this.zoomValues_ = this.getZoomValues_(selectedDisplay);
-      this.set(
-          'selectedZoomPref_.value',
-          this.getSelectedDisplayZoom_(selectedDisplay));
-    }
+    // Note that the display zoom values has the same number of ticks for all
+    // displays, so the above problem doesn't apply here.
+    this.zoomValues_ = this.getZoomValues_(selectedDisplay);
+    this.set(
+        'selectedZoomPref_.value',
+        this.getSelectedDisplayZoom_(selectedDisplay));
 
     this.displayModeList_ = this.getDisplayModeOptionList_(selectedDisplay);
     // Set |selectedDisplay| first since only the resolution slider depends
@@ -401,8 +393,7 @@ Polymer({
    * @private
    */
   showDropDownResolutionSetting_: function(display) {
-    return !display.isInternal &&
-        loadTimeData.getBoolean('enableDisplayZoomSetting');
+    return !display.isInternal;
   },
 
   /**
@@ -600,7 +591,7 @@ Polymer({
    * @private
    */
   updateLogicalResolutionText_: function(zoomFactor) {
-    if (!this.showDisplayZoomSetting_ || !this.selectedDisplay.isInternal) {
+    if (!this.selectedDisplay.isInternal) {
       this.logicalResolutionText_ = '';
       return;
     }
@@ -718,11 +709,7 @@ Polymer({
    */
   onSelectedModeChange_: function(newModeIndex) {
     // We want to ignore all value changes to the pref due to the slider being
-    // dragged. Since this can only happen when the slider is present which is
-    // when display zoom is disabled, we can use this check.
-    // See http://crbug/845712 for more info.
-    if (!this.showDisplayZoomSetting_)
-      return;
+    // dragged. See http://crbug/845712 for more info.
     if (this.currentSelectedModeIndex_ == newModeIndex)
       return;
     this.onSelectedModeSliderChange_();

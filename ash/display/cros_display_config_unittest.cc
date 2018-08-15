@@ -198,25 +198,6 @@ class CrosDisplayConfigTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(CrosDisplayConfigTest);
 };
 
-// For tests involving ui scale we need to disable the display zoom feature.
-class CrosDisplayConfigTestWithUiScale : public CrosDisplayConfigTest {
- public:
-  CrosDisplayConfigTestWithUiScale() = default;
-  ~CrosDisplayConfigTestWithUiScale() override = default;
-
-  // CrosDisplayConfigTest
-  void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kEnableDisplayZoomSetting);
-    CrosDisplayConfigTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrosDisplayConfigTestWithUiScale);
-};
-
 }  // namespace
 
 TEST_F(CrosDisplayConfigTest, OnDisplayConfigChanged) {
@@ -371,39 +352,6 @@ TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListBasic) {
   EXPECT_TRUE(info_1.is_enabled);
   EXPECT_EQ(96, info_1.dpi_x);
   EXPECT_EQ(96, info_1.dpi_y);
-}
-
-TEST_F(CrosDisplayConfigTestWithUiScale, GetDisplayUnitInfoListModes) {
-  UpdateDisplay("1024x512,1024x512");
-  std::vector<mojom::DisplayUnitInfoPtr> result = GetDisplayUnitInfoList();
-  ASSERT_EQ(2u, result.size());
-
-  const mojom::DisplayUnitInfo& info_0 = *result[0];
-  EXPECT_EQ(3, info_0.selected_display_mode_index);
-  ASSERT_EQ(5u, info_0.available_display_modes.size());
-
-  const std::vector<mojom::DisplayModePtr>& modes =
-      info_0.available_display_modes;
-  // Test native/selected mode.
-  EXPECT_EQ("1024x512", modes[3]->size.ToString());
-  EXPECT_EQ("1024x512", modes[3]->size_in_native_pixels.ToString());
-  EXPECT_EQ(1.0, modes[3]->ui_scale);
-  EXPECT_EQ(1.0, modes[3]->device_scale_factor);
-  EXPECT_TRUE(modes[3]->is_native);
-  EXPECT_EQ("1024x512", modes[3]->size.ToString());
-
-  // Test sizes of other modes.
-  EXPECT_EQ("512x256", modes[0]->size.ToString());
-  EXPECT_EQ("1024x512", modes[0]->size_in_native_pixels.ToString());
-  EXPECT_EQ("640x320", modes[1]->size.ToString());
-  EXPECT_EQ("819x409", modes[2]->size.ToString());
-  EXPECT_EQ("1152x576", modes[4]->size.ToString());
-  EXPECT_EQ("1024x512", modes[4]->size_in_native_pixels.ToString());
-
-  // External display does not have any display modes.
-  const mojom::DisplayUnitInfo& info_1 = *result[1];
-  EXPECT_EQ(0, info_1.selected_display_mode_index);
-  ASSERT_EQ(0u, info_1.available_display_modes.size());
 }
 
 TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListZoomFactor) {
@@ -592,22 +540,23 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesDisplayZoomFactor) {
       display_manager()->GetDisplayInfo(display_id_list[1]).zoom_factor());
 }
 
-TEST_F(CrosDisplayConfigTestWithUiScale, SetDisplayMode) {
+TEST_F(CrosDisplayConfigTest, SetDisplayMode) {
   UpdateDisplay("1024x512,1024x512");
   std::vector<mojom::DisplayUnitInfoPtr> result = GetDisplayUnitInfoList();
   ASSERT_EQ(2u, result.size());
-  EXPECT_EQ(3, result[0]->selected_display_mode_index);
-  ASSERT_EQ(5u, result[0]->available_display_modes.size());
+  // Internal display has just one mode.
+  EXPECT_EQ(0, result[0]->selected_display_mode_index);
+  ASSERT_EQ(1u, result[0]->available_display_modes.size());
 
   auto properties = mojom::DisplayConfigProperties::New();
-  auto display_mode = result[0]->available_display_modes[2].Clone();
+  auto display_mode = result[0]->available_display_modes[0].Clone();
   properties->display_mode = std::move(display_mode);
   ASSERT_EQ(mojom::DisplayConfigResult::kSuccess,
             SetDisplayProperties(result[0]->id, std::move(properties)));
 
   result = GetDisplayUnitInfoList();
   ASSERT_EQ(2u, result.size());
-  EXPECT_EQ(2, result[0]->selected_display_mode_index);
+  EXPECT_EQ(0, result[0]->selected_display_mode_index);
 }
 
 TEST_F(CrosDisplayConfigTest, OverscanCalibration) {

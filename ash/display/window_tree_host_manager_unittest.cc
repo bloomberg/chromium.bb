@@ -690,63 +690,6 @@ TEST_F(WindowTreeHostManagerTest, BoundsUpdated) {
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
 }
 
-class WindowTreeHostManagerWithUiScaleTest : public WindowTreeHostManagerTest {
- public:
-  WindowTreeHostManagerWithUiScaleTest() = default;
-  ~WindowTreeHostManagerWithUiScaleTest() override = default;
-
-  // WindowTreeHostManagerTest
-  void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kEnableDisplayZoomSetting);
-    WindowTreeHostManagerTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostManagerWithUiScaleTest);
-};
-
-TEST_F(WindowTreeHostManagerWithUiScaleTest, BoundsUpdated) {
-  UpdateDisplay("400x500*2,300x300");
-
-  TestObserver observer;
-  // UI scale is eanbled only on internal display.
-  int64_t secondary_id = GetSecondaryDisplay().id();
-  int64_t primary_id = GetPrimaryDisplay().id();
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         secondary_id);
-  // Changing internal ID display changes the DisplayIdPair (it comes
-  // first), which also changes the primary display candidate.  Update
-  // the primary display manually to update the primary display to
-  // avoid getting the OnDisplayConfigurationChanged() call twice in
-  // SetDisplayUIScale. Note that this scenario will never happen on
-  // real devices.
-  Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(secondary_id);
-  EXPECT_EQ(1, observer.CountAndReset());
-
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetDisplayUIScale(secondary_id, 1.125f);
-  EXPECT_EQ(1, observer.CountAndReset());
-  EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
-  EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetDisplayUIScale(secondary_id, 1.125f);
-  EXPECT_EQ(0, observer.CountAndReset());
-  EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
-  EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetDisplayUIScale(primary_id, 1.125f);
-  EXPECT_EQ(0, observer.CountAndReset());
-  EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
-  EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetDisplayUIScale(primary_id, 1.125f);
-  EXPECT_EQ(0, observer.CountAndReset());
-  EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
-  EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-}
-
 TEST_F(WindowTreeHostManagerTest, FindNearestDisplay) {
   WindowTreeHostManager* window_tree_host_manager =
       Shell::Get()->window_tree_host_manager();
@@ -1343,41 +1286,6 @@ TEST_F(WindowTreeHostManagerTest, ScaleRootWindow) {
   Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_F(WindowTreeHostManagerWithUiScaleTest, ScaleRootWindow) {
-  TestEventHandler event_handler;
-  Shell::Get()->AddPreTargetHandler(&event_handler);
-
-  UpdateDisplay("600x400*2@1.5,500x300");
-
-  display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         display1.id());
-
-  display::Display display2 = display_manager()->GetSecondaryDisplay();
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
-  EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
-  EXPECT_EQ("450,0 500x300", display2.bounds().ToString());
-  EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
-  EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
-
-  ui::test::EventGenerator generator(root_windows[0]);
-  generator.MoveMouseToInHost(599, 200);
-  EXPECT_EQ("449,150", event_handler.GetLocationAndReset());
-
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetDisplayUIScale(display1.id(), 1.25f);
-  display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
-  display2 = display_manager()->GetSecondaryDisplay();
-  EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
-  EXPECT_EQ("0,0 375x250", root_windows[0]->bounds().ToString());
-  EXPECT_EQ("375,0 500x300", display2.bounds().ToString());
-  EXPECT_EQ(1.25f, GetStoredUIScale(display1.id()));
-  EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
-
-  Shell::Get()->RemovePreTargetHandler(&event_handler);
-}
-
 TEST_F(WindowTreeHostManagerTest, TouchScale) {
   TestEventHandler event_handler;
   Shell::Get()->AddPreTargetHandler(&event_handler);
@@ -1403,63 +1311,6 @@ TEST_F(WindowTreeHostManagerTest, TouchScale) {
             event_handler.scroll_x_offset_ordinal());
   EXPECT_EQ(event_handler.scroll_y_offset(),
             event_handler.scroll_y_offset_ordinal());
-
-  Shell::Get()->RemovePreTargetHandler(&event_handler);
-}
-
-TEST_F(WindowTreeHostManagerWithUiScaleTest, ConvertHostToRootCoords) {
-  TestEventHandler event_handler;
-  Shell::Get()->AddPreTargetHandler(&event_handler);
-
-  UpdateDisplay("600x400*2/r@1.5");
-
-  display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  EXPECT_EQ("0,0 300x450", display1.bounds().ToString());
-  EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());
-  EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
-
-  ui::test::EventGenerator generator(root_windows[0]);
-  generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("0,450", event_handler.GetLocationAndReset());
-  generator.MoveMouseToInHost(599, 0);
-  EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
-  generator.MoveMouseToInHost(599, 399);
-  EXPECT_EQ("299,0", event_handler.GetLocationAndReset());
-  generator.MoveMouseToInHost(0, 399);
-  EXPECT_EQ("299,450", event_handler.GetLocationAndReset());
-
-  UpdateDisplay("600x400*2/u@1.5");
-  display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
-  root_windows = Shell::GetAllRootWindows();
-  EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
-  EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
-  EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
-
-  generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("450,300", event_handler.GetLocationAndReset());
-  generator.MoveMouseToInHost(599, 0);
-  EXPECT_EQ("0,300", event_handler.GetLocationAndReset());
-  generator.MoveMouseToInHost(599, 399);
-  EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
-  generator.MoveMouseToInHost(0, 399);
-  EXPECT_EQ("450,0", event_handler.GetLocationAndReset());
-
-  UpdateDisplay("600x400*2/l@1.5");
-  display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
-  root_windows = Shell::GetAllRootWindows();
-  EXPECT_EQ("0,0 300x450", display1.bounds().ToString());
-  EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());
-  EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
-
-  generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("300,0", event_handler.GetLocationAndReset());
-  generator.MoveMouseToInHost(599, 0);
-  EXPECT_EQ("300,449", event_handler.GetLocationAndReset());
-  generator.MoveMouseToInHost(599, 399);
-  EXPECT_EQ("0,449", event_handler.GetLocationAndReset());
-  generator.MoveMouseToInHost(0, 399);
-  EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
 
   Shell::Get()->RemovePreTargetHandler(&event_handler);
 }

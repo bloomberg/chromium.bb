@@ -3100,53 +3100,26 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
 
     if (wl_resource_get_version(resource_) >=
         ZAURA_OUTPUT_SCALE_SINCE_VERSION) {
-      if (features::IsDisplayZoomSettingEnabled()) {
-        display::ManagedDisplayMode active_mode;
-        bool rv = display_manager->GetActiveModeForDisplayId(display.id(),
-                                                             &active_mode);
-        DCHECK(rv);
-        const int32_t current_output_scale =
-            std::round(display_info.zoom_factor() * 1000.f);
-        for (double zoom_factor : display::GetDisplayZoomFactors(active_mode)) {
-          int32_t output_scale = std::round(zoom_factor * 1000.0);
-          uint32_t flags = 0;
-          if (output_scale == 1000)
-            flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
-          if (current_output_scale == output_scale)
-            flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
+      display::ManagedDisplayMode active_mode;
+      bool rv = display_manager->GetActiveModeForDisplayId(display.id(),
+                                                           &active_mode);
+      DCHECK(rv);
+      const int32_t current_output_scale =
+          std::round(display_info.zoom_factor() * 1000.f);
+      for (double zoom_factor : display::GetDisplayZoomFactors(active_mode)) {
+        int32_t output_scale = std::round(zoom_factor * 1000.0);
+        uint32_t flags = 0;
+        if (output_scale == 1000)
+          flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
+        if (current_output_scale == output_scale)
+          flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
 
-          // TODO(malaykeshav): This can be removed in the future when client
-          // has been updated.
-          if (wl_resource_get_version(resource_) < 6)
-            output_scale = std::round(1000.0 / zoom_factor);
+        // TODO(malaykeshav): This can be removed in the future when client
+        // has been updated.
+        if (wl_resource_get_version(resource_) < 6)
+          output_scale = std::round(1000.0 / zoom_factor);
 
-          zaura_output_send_scale(resource_, flags, output_scale);
-        }
-      } else if (display_manager->GetDisplayIdForUIScaling() == display.id()) {
-        display::ManagedDisplayMode active_mode;
-        bool rv = display_manager->GetActiveModeForDisplayId(display.id(),
-                                                             &active_mode);
-        DCHECK(rv);
-        for (auto& mode : display_info.display_modes()) {
-          uint32_t flags = 0;
-          if (mode.is_default())
-            flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
-          if (active_mode.IsEquivalent(mode))
-            flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
-
-          int32_t output_scale = std::round(mode.ui_scale() * 1000.f);
-          // TODO(malaykeshav): This can be removed in the future when client
-          // has been updated.
-          if (wl_resource_get_version(resource_) >= 6)
-            output_scale = std::round(1000.f / mode.ui_scale());
-
-          zaura_output_send_scale(resource_, flags, output_scale);
-        }
-      } else {
-        zaura_output_send_scale(resource_,
-                                ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT |
-                                    ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED,
-                                ZAURA_OUTPUT_SCALE_FACTOR_1000);
+        zaura_output_send_scale(resource_, flags, output_scale);
       }
     }
 

@@ -689,21 +689,18 @@ void DisplayManager::RegisterDisplayProperty(
   // not break when display zoom is enabled.
   // NOTE - If the user tries to change the zoom level, they may not be able
   // to come back to this zoom level again.
-  if (features::IsDisplayZoomSettingEnabled()) {
-    // We store a negative ui_scale value when the display zoom mode is enabled.
-    // If |ui_scale| is negative, it means this is not the first boot with
-    // display zoom enabled, and hence we do not need to port the value for
-    // zoom scale from |ui_scale|.
-    if (ui_scale < 0) {
-      display_info_[display_id].set_zoom_factor(display_zoom_factor);
-    } else {
-      display_info_[display_id].set_zoom_factor(1.f / ui_scale);
-      display_info_[display_id].set_is_zoom_factor_from_ui_scale(true);
-    }
-    display_info_[display_id].set_configured_ui_scale(1.f);
-  } else if (0.5f <= ui_scale && ui_scale <= 2.0f) {
-    display_info_[display_id].set_configured_ui_scale(ui_scale);
+
+  // We store a negative ui_scale value until m71.
+  // If |ui_scale| is negative, it means this is not the first boot with
+  // display zoom enabled, and hence we do not need to port the value for
+  // zoom scale from |ui_scale|.
+  if (ui_scale < 0) {
+    display_info_[display_id].set_zoom_factor(display_zoom_factor);
+  } else {
+    display_info_[display_id].set_zoom_factor(1.f / ui_scale);
+    display_info_[display_id].set_is_zoom_factor_from_ui_scale(true);
   }
+  display_info_[display_id].set_configured_ui_scale(1.f);
 
   if (overscan_insets)
     display_info_[display_id].SetOverscanInsets(*overscan_insets);
@@ -2082,16 +2079,6 @@ void DisplayManager::InsertAndUpdateDisplayInfo(
   } else {
     display_info_[new_info.id()] = new_info;
     display_info_[new_info.id()].set_native(false);
-    // FHD with 1.25 DSF behaves differently from other configuration.
-    // It uses 1.25 DSF only when UI-Scale is set to 0.8.
-    // For new users, use the UI-scale to 0.8 so that it will use DSF=1.25
-    // internally.
-    if (Display::IsInternalDisplayId(new_info.id()) &&
-        new_info.bounds_in_native().height() == 1080 &&
-        new_info.device_scale_factor() == 1.25f &&
-        !features::IsDisplayZoomSettingEnabled()) {
-      display_info_[new_info.id()].set_configured_ui_scale(0.8f);
-    }
   }
   display_info_[new_info.id()].UpdateDisplaySize();
 }

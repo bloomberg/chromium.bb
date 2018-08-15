@@ -1924,9 +1924,6 @@ extern const char kEnableAppsGridGapFeatureDescription[];
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 
-extern const char kEnableDisplayZoomSettingName[];
-extern const char kEnableDisplayZoomSettingDescription[];
-
 extern const char kEnableDragAppsInTabletModeName[];
 extern const char kEnableDragAppsInTabletModeDescription[];
 

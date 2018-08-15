@@ -244,11 +244,7 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
       id, base::StringPrintf("Display-%d", static_cast<int>(id)), has_overscan);
   display_info.set_device_scale_factor(device_scale_factor);
   display_info.SetRotation(rotation, Display::RotationSource::ACTIVE);
-  if (features::IsDisplayZoomSettingEnabled()) {
-    display_info.set_zoom_factor(zoom_factor);
-  } else {
-    display_info.set_configured_ui_scale(zoom_factor);
-  }
+  display_info.set_zoom_factor(zoom_factor);
   display_info.SetBounds(bounds_in_native);
   display_info.SetManagedDisplayModes(display_modes);
 
@@ -374,20 +370,13 @@ float ManagedDisplayInfo::GetDensityRatio() const {
 }
 
 float ManagedDisplayInfo::GetEffectiveDeviceScaleFactor() const {
-  if (features::IsDisplayZoomSettingEnabled())
-    return device_scale_factor_ * zoom_factor_;
-  if (Display::IsInternalDisplayId(id_) && device_scale_factor_ == 1.25f)
-    return ((configured_ui_scale_ == 0.8f) ? 1.25f : 1.0f);
-  if (device_scale_factor_ == configured_ui_scale_)
-    return 1.f;
-  return device_scale_factor_;
+  return device_scale_factor_ * zoom_factor_;
 }
 
 float ManagedDisplayInfo::GetEffectiveUIScale() const {
   // When the display zoom setting is enabled, the configured UI scale should
   // also be 1.
-  DCHECK(!features::IsDisplayZoomSettingEnabled() ||
-         configured_ui_scale_ == 1.f);
+  DCHECK(configured_ui_scale_ == 1.f);
   if (Display::IsInternalDisplayId(id_) && device_scale_factor_ == 1.25f)
     return (configured_ui_scale_ == 0.8f) ? 1.0f : configured_ui_scale_;
   if (device_scale_factor_ == configured_ui_scale_)
