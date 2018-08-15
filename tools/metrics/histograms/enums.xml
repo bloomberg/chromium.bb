@@ -49600,6 +49600,7 @@ Full version information for the fingerprint enum values:
   <int value="5" label="Policy"/>
   <int value="6" label="Third party"/>
   <int value="7" label="Device policy"/>
+  <int value="8" label="One-shot"/>
 </enum>
 
 <enum name="WarmupStateOnLaunch">

@@ -10,7 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_util.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -440,7 +440,7 @@ void WallpaperControllerClient::OnDeviceWallpaperPolicyCleared() {
 }
 
 void WallpaperControllerClient::OnShowUserNamesOnLoginPolicyChanged() {
-  UpdateRegisteredDeviceWallpaper();
+  ShowWallpaperOnLoginScreen();
 }
 
 void WallpaperControllerClient::FlushForTesting() {
@@ -468,7 +468,7 @@ void WallpaperControllerClient::BindAndSetClient() {
       policy_handler_.IsDeviceWallpaperPolicyEnforced());
 }
 
-void WallpaperControllerClient::UpdateRegisteredDeviceWallpaper() {
+void WallpaperControllerClient::ShowWallpaperOnLoginScreen() {
   if (user_manager::UserManager::Get()->IsUserLoggedIn())
     return;
 
@@ -508,11 +508,6 @@ void WallpaperControllerClient::OpenWallpaperPicker() {
 }
 
 void WallpaperControllerClient::OnReadyToSetWallpaper() {
-  // TODO(wzang|784495): Consider deprecating this method after views-based
-  // login is enabled. It should be fast enough to request the first wallpaper
-  // so that there's no visible delay. In other scenarios such as restart after
-  // crash, user manager should request the wallpaper.
-
   // Apply device customization.
   namespace util = chromeos::customization_wallpaper_util;
   if (util::ShouldUseCustomizedDefaultWallpaper()) {
@@ -542,14 +537,18 @@ void WallpaperControllerClient::OnReadyToSetWallpaper() {
     return;
   }
 
-  // If the device is not registered yet (e.g. during OOBE), show the default
-  // signin wallpaper.
-  if (!chromeos::StartupUtils::IsDeviceRegistered()) {
-    ShowSigninWallpaper();
+  // Show a white wallpaper during OOBE.
+  if (session_manager::SessionManager::Get()->session_state() ==
+      session_manager::SessionState::OOBE) {
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(1, 1);
+    bitmap.eraseColor(SK_ColorWHITE);
+    wallpaper_controller_->ShowOneShotWallpaper(
+        gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
     return;
   }
 
-  UpdateRegisteredDeviceWallpaper();
+  ShowWallpaperOnLoginScreen();
 }
 
 void WallpaperControllerClient::OnFirstWallpaperAnimationFinished() {

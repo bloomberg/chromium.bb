@@ -254,6 +254,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
                                    WallpaperLayout layout) override;
   void ShowUserWallpaper(mojom::WallpaperUserInfoPtr user_info) override;
   void ShowSigninWallpaper() override;
+  void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
   void RemoveUserWallpaper(mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id) override;
   void RemovePolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
@@ -502,6 +503,9 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
 
   // Returns whether the current wallpaper is set by device policy.
   bool IsDevicePolicyWallpaper() const;
+
+  // Returns whether the current wallpaper has type of ONE_SHOT.
+  bool IsOneShotWallpaper() const;
 
   // Returns true if device wallpaper policy is in effect and we are at the
   // login screen right now.

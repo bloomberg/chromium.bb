@@ -57,7 +57,12 @@ enum WallpaperType {
   DEVICE = 7,        // Current wallpaper is the device policy controlled
                      // wallpaper. It shows on the login screen if the device
                      // is an enterprise managed device.
-  WALLPAPER_TYPE_COUNT = 8
+  ONE_SHOT = 8,      // Current wallpaper is shown one-time only, which doesn't
+                     // belong to a particular user and isn't saved to file. It
+                     // goes away when another wallpaper is shown or the browser
+                     // process exits. Note: the image will never be blurred or
+                     // dimmed.
+  WALLPAPER_TYPE_COUNT = 9
 };
 
 // The color profile type, ordered as the color profiles applied in

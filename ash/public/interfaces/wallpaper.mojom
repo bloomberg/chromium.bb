@@ -199,6 +199,12 @@ interface WallpaperController {
   // device policy wallpaper or the default wallpaper.
   ShowSigninWallpaper();
 
+  // Shows a one-shot wallpaper, which does not belong to any particular user
+  // and is not saved to file. Note: the wallpaper will never be dimmed or
+  // blurred because it's assumed that the caller wants to show the image as is
+  // when using this method.
+  ShowOneShotWallpaper(gfx.mojom.ImageSkia image);
+
   // Removes all of the user's saved wallpapers and related info.
   // |wallpaper_files_id|: The file id for user_info.account_id.
   RemoveUserWallpaper(WallpaperUserInfo user_info, string wallpaper_files_id);

@@ -85,6 +85,7 @@ class TestWallpaperController : ash::mojom::WallpaperController {
                                    ash::WallpaperLayout layout) override;
   void ShowUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info) override;
   void ShowSigninWallpaper() override;
+  void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
   void RemoveUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id) override;
   void RemovePolicyWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
