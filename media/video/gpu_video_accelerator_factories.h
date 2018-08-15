@@ -112,7 +112,8 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   // Pixel format of the hardware video frames created when GpuMemoryBuffers
   // video frames are enabled.
-  virtual OutputFormat VideoFrameOutputFormat(size_t bit_depth) = 0;
+  virtual OutputFormat VideoFrameOutputFormat(
+      VideoPixelFormat pixel_format) = 0;
 
   // Returns a GL Context that can be used on the task runner associated with
   // the same instance of GpuVideoAcceleratorFactories.

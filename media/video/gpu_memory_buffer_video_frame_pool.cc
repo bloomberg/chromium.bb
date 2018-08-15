@@ -555,11 +555,11 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     const scoped_refptr<VideoFrame>& video_frame,
     FrameReadyCB frame_ready_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  // Lazily initialize output_format_ since VideoFrameOutputFormat() has to be
+  // Lazily initialize |output_format_| since VideoFrameOutputFormat() has to be
   // called on the media_thread while this object might be instantiated on any.
+  const VideoPixelFormat pixel_format = video_frame->format();
   if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED) {
-    output_format_ =
-        gpu_factories_->VideoFrameOutputFormat(video_frame->BitDepth());
+    output_format_ = gpu_factories_->VideoFrameOutputFormat(pixel_format);
   }
 
   bool is_software_backed_video_frame = !video_frame->HasTextures();
@@ -570,7 +570,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
   bool passthrough = false;
   if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED)
     passthrough = true;
-  switch (video_frame->format()) {
+  switch (pixel_format) {
     // Supported cases.
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:
@@ -603,7 +603,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
       if (is_software_backed_video_frame) {
         UMA_HISTOGRAM_ENUMERATION(
             "Media.GpuMemoryBufferVideoFramePool.UnsupportedFormat",
-            video_frame->format(), PIXEL_FORMAT_MAX + 1);
+            pixel_format, PIXEL_FORMAT_MAX + 1);
       }
       passthrough = true;
   }
