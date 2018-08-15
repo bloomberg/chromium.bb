@@ -7,17 +7,33 @@
 
 namespace cc {
 namespace {
-const int kNumFramesToLock = 2;
+// Timeout images after 250ms, whether or not they've been used. This prevents
+// unbounded cache usage.
+const int64_t kTimeoutDurationMs = 250;
 }  // namespace
 
-DecodedImageTracker::DecodedImageTracker(ImageController* controller)
-    : image_controller_(controller) {
+DecodedImageTracker::ImageLock::ImageLock(
+    DecodedImageTracker* tracker,
+    ImageController::ImageDecodeRequestId request_id,
+    base::TimeTicks lock_time)
+    : tracker_(tracker), request_id_(request_id), lock_time_(lock_time) {}
+
+DecodedImageTracker::ImageLock::~ImageLock() {
+  tracker_->image_controller_->UnlockImageDecode(request_id_);
+}
+
+DecodedImageTracker::DecodedImageTracker(
+    ImageController* controller,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : image_controller_(controller),
+      task_runner_(std::move(task_runner)),
+      now_fn_(base::Bind(&base::TimeTicks::Now)),
+      weak_ptr_factory_(this) {
   DCHECK(image_controller_);
 }
 
 DecodedImageTracker::~DecodedImageTracker() {
-  for (auto& pair : locked_images_)
-    image_controller_->UnlockImageDecode(pair.first);
+  UnlockAllImages();
 }
 
 void DecodedImageTracker::QueueImageDecode(
@@ -35,38 +51,74 @@ void DecodedImageTracker::QueueImageDecode(
   DrawImage draw_image(image, image_bounds, kNone_SkFilterQuality,
                        SkMatrix::I(), frame_index, target_color_space);
   image_controller_->QueueImageDecode(
-      draw_image, base::Bind(&DecodedImageTracker::ImageDecodeFinished,
-                             base::Unretained(this), callback));
+      draw_image,
+      base::Bind(&DecodedImageTracker::ImageDecodeFinished,
+                 base::Unretained(this), callback, image.stable_id()));
 }
 
-void DecodedImageTracker::NotifyFrameFinished() {
-  // Go through the images and if the frame ref count goes to 0, unlock the
-  // image in the controller.
-  for (auto it = locked_images_.begin(); it != locked_images_.end();) {
-    auto id = it->first;
-    int& ref_count = it->second;
-    if (--ref_count != 0) {
-      ++it;
-      continue;
-    }
-    image_controller_->UnlockImageDecode(id);
-    it = locked_images_.erase(it);
-  }
+void DecodedImageTracker::UnlockAllImages() {
+  locked_images_.clear();
+}
+
+void DecodedImageTracker::OnImagesUsedInDraw(
+    const std::vector<DrawImage>& draw_images) {
+  for (const DrawImage& draw_image : draw_images)
+    locked_images_.erase(draw_image.paint_image().stable_id());
 }
 
 void DecodedImageTracker::ImageDecodeFinished(
     const base::Callback<void(bool)>& callback,
-    ImageController::ImageDecodeRequestId id,
+    PaintImage::Id image_id,
+    ImageController::ImageDecodeRequestId request_id,
     ImageController::ImageDecodeResult result) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "DecodedImageTracker::ImageDecodeFinished");
 
-  if (result == ImageController::ImageDecodeResult::SUCCESS)
-    locked_images_.push_back(std::make_pair(id, kNumFramesToLock));
+  if (result == ImageController::ImageDecodeResult::SUCCESS) {
+    // If this image already exists, just replace it with the new (latest)
+    // decode.
+    locked_images_.erase(image_id);
+    locked_images_.emplace(
+        image_id, std::make_unique<ImageLock>(this, request_id, now_fn_.Run()));
+    EnqueueTimeout();
+  }
   bool decode_succeeded =
       result == ImageController::ImageDecodeResult::SUCCESS ||
       result == ImageController::ImageDecodeResult::DECODE_NOT_REQUIRED;
   callback.Run(decode_succeeded);
+}
+
+void DecodedImageTracker::OnTimeoutImages() {
+  timeout_pending_ = false;
+  if (locked_images_.size() == 0)
+    return;
+
+  auto now = now_fn_.Run();
+  auto timeout = base::TimeDelta::FromMilliseconds(kTimeoutDurationMs);
+  for (auto it = locked_images_.begin(); it != locked_images_.end();) {
+    auto& image = it->second;
+    if (now - image->lock_time() < timeout) {
+      ++it;
+      continue;
+    }
+    it = locked_images_.erase(it);
+  }
+
+  EnqueueTimeout();
+}
+
+void DecodedImageTracker::EnqueueTimeout() {
+  if (timeout_pending_)
+    return;
+  if (locked_images_.size() == 0)
+    return;
+
+  timeout_pending_ = true;
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&DecodedImageTracker::OnTimeoutImages,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kTimeoutDurationMs));
 }
 
 }  // namespace cc
