@@ -32,6 +32,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/arc/arc_util.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -56,6 +57,8 @@ constexpr char kDefaultNetworkName[] = "eth1";
 
 constexpr base::TimeDelta kJsConditionCheckFrequency =
     base::TimeDelta::FromMilliseconds(10);
+
+constexpr int kInvokeDemoModeGestureTapsCount = 10;
 
 // How js query is executed.
 enum class JSExecution { kSync, kAsync };
@@ -169,6 +172,9 @@ class DemoSetupTest : public LoginManagerTest {
     LoginManagerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kEnableDemoMode);
     command_line->AppendSwitch(chromeos::switches::kEnableOfflineDemoMode);
+    command_line->AppendSwitchASCII(switches::kArcAvailability,
+                                    "officially-supported");
+    ASSERT_TRUE(arc::IsArcAvailable());
   }
 
   void SetUpOnMainThread() override {
@@ -238,8 +244,12 @@ class DemoSetupTest : public LoginManagerTest {
                   "Play Store Terms of Service');"));
   }
 
-  void InvokeDemoMode() {
+  void InvokeDemoModeWithAccelerator() {
     EXPECT_TRUE(JSExecute("cr.ui.Oobe.handleAccelerator('demo_mode');"));
+  }
+
+  void InvokeDemoModeWithTaps() {
+    MultiTapOobeContainer(kInvokeDemoModeGestureTapsCount);
   }
 
   // Simulates multi-tap gesture that consists of |tapCount| clicks on the OOBE
@@ -459,7 +469,7 @@ class DemoSetupTest : public LoginManagerTest {
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndProceed) {
   EXPECT_FALSE(IsConfirmationDialogShown());
 
-  InvokeDemoMode();
+  InvokeDemoModeWithAccelerator();
   EXPECT_TRUE(IsConfirmationDialogShown());
 
   ClickOkOnConfirmationDialog();
@@ -471,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndProceed) {
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndCancel) {
   EXPECT_FALSE(IsConfirmationDialogShown());
 
-  InvokeDemoMode();
+  InvokeDemoModeWithAccelerator();
   EXPECT_TRUE(IsConfirmationDialogShown());
 
   ClickCancelOnConfirmationDialog();
@@ -513,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
   SimulateNetworkConnected();
 
-  InvokeDemoMode();
+  InvokeDemoModeWithAccelerator();
   ClickOkOnConfirmationDialog();
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
@@ -563,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowError) {
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
   SimulateNetworkConnected();
 
-  InvokeDemoMode();
+  InvokeDemoModeWithAccelerator();
   ClickOkOnConfirmationDialog();
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
@@ -614,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
           DemoModeSetupResult::SUCCESS>);
   SimulateNetworkDisconnected();
 
-  InvokeDemoMode();
+  InvokeDemoModeWithAccelerator();
   ClickOkOnConfirmationDialog();
 
   // It needs to be done after demo setup controller was created (demo setup
@@ -658,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowError) {
       &MockDemoModeOfflineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
   SimulateNetworkDisconnected();
 
-  InvokeDemoMode();
+  InvokeDemoModeWithAccelerator();
   ClickOkOnConfirmationDialog();
 
   // It needs to be done after demo setup controller was created (demo setup
@@ -812,6 +822,40 @@ IN_PROC_BROWSER_TEST_F(DemoSetupOfflineDisabledTest,
                        NoOfflineSetupOptionOnNetworkList) {
   SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   EXPECT_FALSE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
+}
+
+class DemoSetupArcUnsupportedTest : public DemoSetupTest {
+ public:
+  DemoSetupArcUnsupportedTest() = default;
+  ~DemoSetupArcUnsupportedTest() override = default;
+
+  // DemoSetupTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    LoginManagerTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(chromeos::switches::kEnableDemoMode);
+    command_line->AppendSwitch(chromeos::switches::kEnableOfflineDemoMode);
+    command_line->AppendSwitchASCII(switches::kArcAvailability, "none");
+    ASSERT_FALSE(arc::IsArcAvailable());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DemoSetupArcUnsupportedTest);
+};
+
+IN_PROC_BROWSER_TEST_F(DemoSetupArcUnsupportedTest, DoNotStartWithAccelerator) {
+  EXPECT_FALSE(IsConfirmationDialogShown());
+
+  InvokeDemoModeWithAccelerator();
+
+  EXPECT_FALSE(IsConfirmationDialogShown());
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupArcUnsupportedTest, DoNotInvokeWithTaps) {
+  EXPECT_FALSE(IsConfirmationDialogShown());
+
+  InvokeDemoModeWithTaps();
+
+  EXPECT_FALSE(IsConfirmationDialogShown());
 }
 
 }  // namespace chromeos

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -18,6 +19,8 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace {
@@ -94,6 +97,22 @@ namespace chromeos {
 
 // static
 constexpr char DemoSetupController::kDemoModeDomain[];
+
+// static
+bool DemoSetupController::IsDemoModeAllowed() {
+  // Demo mode is only allowed on devices that support ARC++.
+  return arc::IsArcAvailable() &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableDemoMode);
+}
+
+// static
+bool DemoSetupController::IsOfflineDemoModeAllowed() {
+  // Offline demo mode can be only enabled when demo mode feature is enabled.
+  return IsDemoModeAllowed() &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableOfflineDemoMode);
+}
 
 // static
 bool DemoSetupController::IsOobeDemoSetupFlowInProgress() {
