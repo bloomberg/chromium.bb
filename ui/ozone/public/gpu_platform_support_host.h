@@ -30,8 +30,6 @@ class OZONE_BASE_EXPORT GpuPlatformSupportHost {
   using GpuHostBindInterfaceCallback =
       base::RepeatingCallback<void(const std::string&,
                                    mojo::ScopedMessagePipeHandle)>;
-  using GpuHostTerminateCallback =
-      base::OnceCallback<void(const std::string& message)>;
 
   GpuPlatformSupportHost();
   virtual ~GpuPlatformSupportHost();
@@ -57,8 +55,7 @@ class OZONE_BASE_EXPORT GpuPlatformSupportHost {
   virtual void OnGpuServiceLaunched(
       scoped_refptr<base::SingleThreadTaskRunner> host_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-      GpuHostBindInterfaceCallback binder,
-      GpuHostTerminateCallback terminate_callback) = 0;
+      GpuHostBindInterfaceCallback binder) = 0;
 };
 
 // create a stub implementation.

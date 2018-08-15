@@ -30,7 +30,6 @@ struct wl_touch;
 struct xdg_shell;
 struct xdg_surface;
 struct xdg_popup;
-struct zwp_linux_dmabuf_v1;
 struct zxdg_shell_v6;
 struct zxdg_surface_v6;
 struct zxdg_toplevel_v6;
@@ -172,12 +171,6 @@ template <>
 struct ObjectTraits<xdg_popup> {
   static const wl_interface* interface;
   static void (*deleter)(xdg_popup*);
-};
-
-template <>
-struct ObjectTraits<zwp_linux_dmabuf_v1> {
-  static const wl_interface* interface;
-  static void (*deleter)(zwp_linux_dmabuf_v1*);
 };
 
 template <>

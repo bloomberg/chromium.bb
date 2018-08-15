@@ -61,8 +61,7 @@ void DrmDeviceConnector::OnChannelDestroyed(int host_id) {
 void DrmDeviceConnector::OnGpuServiceLaunched(
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-    GpuHostBindInterfaceCallback binder,
-    GpuHostTerminateCallback terminate_callback) {
+    GpuHostBindInterfaceCallback binder) {
   // We need to preserve |binder| to let us bind interfaces later.
   binder_callback_ = std::move(binder);
   if (am_running_in_ws_mode()) {

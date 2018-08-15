@@ -14,7 +14,6 @@
           "service_manager.mojom.ServiceFactory",
           "ui.ozone.mojom.DeviceCursor",
           "ui.ozone.mojom.DrmDevice",
-          "ui.ozone.mojom.WaylandConnectionClient",
           "viz.mojom.CompositingModeReporter",
           "viz.mojom.VizMain"
         ],

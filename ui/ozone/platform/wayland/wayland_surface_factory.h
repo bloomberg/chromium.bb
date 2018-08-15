@@ -10,28 +10,16 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
-#include "base/posix/eintr_wrapper.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-
 namespace ui {
 
-class WaylandConnectionProxy;
-class GbmSurfacelessWayland;
+class WaylandConnection;
 
 class WaylandSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  explicit WaylandSurfaceFactory(WaylandConnectionProxy* connection);
+  explicit WaylandSurfaceFactory(WaylandConnection* connection);
   ~WaylandSurfaceFactory() override;
 
-  // These methods are used, when a dmabuf based approach is used.
-  void ScheduleBufferSwap(gfx::AcceleratedWidget widget, uint32_t buffer_id);
-  void RegisterSurface(gfx::AcceleratedWidget widget,
-                       GbmSurfacelessWayland* surface);
-  void UnregisterSurface(gfx::AcceleratedWidget widget);
-  GbmSurfacelessWayland* GetSurface(gfx::AcceleratedWidget widget) const;
-
-  // SurfaceFactoryOzone overrides:
+  // SurfaceFactoryOzone:
   std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
   GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
@@ -48,11 +36,8 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
       const gfx::NativePixmapHandle& handle) override;
 
  private:
-  WaylandConnectionProxy* connection_ = nullptr;
+  WaylandConnection* connection_;
   std::unique_ptr<GLOzone> egl_implementation_;
-
-  std::map<gfx::AcceleratedWidget, GbmSurfacelessWayland*>
-      widget_to_surface_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandSurfaceFactory);
 };
