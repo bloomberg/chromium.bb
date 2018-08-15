@@ -61,8 +61,7 @@ void VisualViewportPaintPropertyTreeBuilder::Update(
 
   PaintPropertyTreeBuilderFragmentContext& context = full_context.fragments[0];
 
-  visual_viewport.UpdatePaintPropertyNodes(context.current.transform,
-                                           context.current.scroll);
+  visual_viewport.UpdatePaintPropertyNodes(context);
 
   context.current.transform = visual_viewport.GetScrollTranslationNode();
   context.absolute_position.transform =

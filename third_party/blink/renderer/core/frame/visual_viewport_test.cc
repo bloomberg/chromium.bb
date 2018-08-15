@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/geometry/double_point.h"
@@ -2230,6 +2231,49 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
   }
 
   document->View()->SetTracksPaintInvalidations(false);
+}
+
+// Ensure we create effect node for scrollbar properly.
+TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
+  InitializeWithAndroidSettings();
+  WebView()->Resize(IntSize(400, 400));
+  NavigateTo("about:blank");
+  WebView()->UpdateAllLifecyclePhases();
+
+  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  auto* vertical_scrollbar = visual_viewport.LayerForVerticalScrollbar();
+  auto* horizontal_scrollbar = visual_viewport.LayerForHorizontalScrollbar();
+  ASSERT_TRUE(vertical_scrollbar);
+  ASSERT_TRUE(horizontal_scrollbar);
+
+  auto& vertical_scrollbar_state = vertical_scrollbar->GetPropertyTreeState();
+  auto& horizontal_scrollbar_state =
+      horizontal_scrollbar->GetPropertyTreeState();
+
+  ScrollbarThemeOverlay& theme = ScrollbarThemeOverlay::MobileTheme();
+  int scrollbar_thickness = clampTo<int>(std::floor(
+      GetFrame()->GetPage()->GetChromeClient().WindowToViewportScalar(
+          theme.ScrollbarThickness(kRegularScrollbar))));
+
+  EXPECT_TRUE(vertical_scrollbar_state.Effect());
+  EXPECT_EQ(vertical_scrollbar_state.Effect()->GetCompositorElementId(),
+            visual_viewport.GetScrollbarElementId(
+                ScrollbarOrientation::kVerticalScrollbar));
+  EXPECT_EQ(vertical_scrollbar->GetOffsetFromTransformNode(),
+            IntPoint(400 - scrollbar_thickness, 0));
+
+  EXPECT_TRUE(horizontal_scrollbar_state.Effect());
+  EXPECT_EQ(horizontal_scrollbar_state.Effect()->GetCompositorElementId(),
+            visual_viewport.GetScrollbarElementId(
+                ScrollbarOrientation::kHorizontalScrollbar));
+  EXPECT_EQ(horizontal_scrollbar->GetOffsetFromTransformNode(),
+            IntPoint(0, 400 - scrollbar_thickness));
+
+  EXPECT_EQ(vertical_scrollbar_state.Effect()->Parent(),
+            horizontal_scrollbar_state.Effect()->Parent());
 }
 
 // Make sure we don't crash when the visual viewport's height is 0. This can
