@@ -33,7 +33,7 @@ drm_private int handle_table_insert(struct handle_table *table, uint32_t key,
 {
 	if (key >= table->max_key) {
 		uint32_t alignment = sysconf(_SC_PAGESIZE) / sizeof(void*);
-		uint32_t max_key = ALIGN(key, alignment);
+		uint32_t max_key = ALIGN(key + 1, alignment);
 		void **values;
 
 		values = realloc(table->values, max_key * sizeof(void *));
