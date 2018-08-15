@@ -45,7 +45,7 @@ class RepositoryTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertTrue(os.path.samefile(repo.root, self.repo_root))
 
   def testInitNoRepoDir(self):
-    with self.assertRaisesRegexp(repo_util.Error, r'no \.repo dir'):
+    with self.assertRaises(repo_util.NotInRepoError):
       repo_util.Repository(self.empty_root)
 
   def testInitializeSimple(self):
@@ -110,7 +110,7 @@ class RepositoryTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(repo.root, self.repo_root)
 
   def testMustFindNothing(self):
-    with self.assertRaisesRegexp(repo_util.Error, 'no repo found'):
+    with self.assertRaises(repo_util.NotInRepoError):
       repo_util.Repository.MustFind(self.empty_root_subdir)
 
 
@@ -142,7 +142,7 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
                              cwd=self.subdir)
 
   def testRunBadCwd(self):
-    with self.assertRaisesRegexp(repo_util.Error, 'cannot run `repo` outside'):
+    with self.assertRaises(repo_util.NotInRepoError):
       self.repo._Run(['subcmd'], cwd=self.tempdir)
 
   def testSyncSimple(self):

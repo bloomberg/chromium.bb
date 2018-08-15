@@ -18,6 +18,10 @@ class Error(Exception):
   """An error related to repo."""
 
 
+class NotInRepoError(Error):
+  """A repo operation was attempted outside of a repo repository."""
+
+
 class Repository(object):
   """Repository represents an initialized repo repository."""
 
@@ -28,7 +32,7 @@ class Repository(object):
       root: Path to the root of a repo repository; must contain a .repo subdir.
 
     Raises:
-      Error: root didn't contain a .repo subdir.
+      NotInRepoError: root didn't contain a .repo subdir.
     """
     self.root = os.path.abspath(root)
     self._repo_dir = os.path.join(self.root, '.repo')
@@ -37,7 +41,7 @@ class Repository(object):
   def _ValidateRepoDir(self):
     """Validate that the repo dir exists."""
     if not os.path.isdir(self._repo_dir):
-      raise Error('no .repo dir in %r' % self.root)
+      raise NotInRepoError('no .repo dir in %r' % self.root)
 
   @classmethod
   def Initialize(cls, root, manifest_url, manifest_branch=None,
@@ -115,11 +119,11 @@ class Repository(object):
       path: The path where the search starts.
 
     Raises:
-      Error: if no Repository is found.
+      NotInRepoError: if no Repository is found.
     """
     repo = cls.Find(path)
     if repo is None:
-      raise Error('no repo found from %r', path)
+      raise NotInRepoError('no repo found from %r', path)
     return repo
 
   def _Run(self, repo_cmd, cwd=None):
@@ -134,7 +138,7 @@ class Repository(object):
       A CommandResult object.
 
     Raises:
-      Error: if cwd is not within the Repository root.
+      NotInRepoError: if cwd is not within the Repository root.
       RunCommandError: if the command failed.
     """
     # Use the checkout's copy of repo so that it doesn't have to be in PATH.
@@ -142,8 +146,8 @@ class Repository(object):
     if cwd is None:
       cwd = self.root
     elif git.FindRepoCheckoutRoot(cwd) != self.root:
-      raise Error('cannot run `repo` outside of Repository root '
-                  '(cwd=%r root=%r)' % (cwd, self.root))
+      raise NotInRepoError('cannot run `repo` outside of Repository root '
+                           '(cwd=%r root=%r)' % (cwd, self.root))
     return cros_build_lib.RunCommand(cmd, cwd=cwd)
 
   def Sync(self, projects=None, jobs=None, cwd=None):
@@ -155,7 +159,7 @@ class Repository(object):
       cwd: The path to run the command in. Defaults to Repository root.
 
     Raises:
-      Error: if cwd is not within the Repository root.
+      NotInRepoError: if cwd is not within the Repository root.
       RunCommandError: if the command failed.
     """
     args = _ListArg(projects)
@@ -173,7 +177,7 @@ class Repository(object):
       cwd: The path to run the command in. Defaults to Repository root.
 
     Raises:
-      Error: if cwd is not within the Repository root.
+      NotInRepoError: if cwd is not within the Repository root.
       RunCommandError: if `repo start` failed.
     """
     if projects is None:
