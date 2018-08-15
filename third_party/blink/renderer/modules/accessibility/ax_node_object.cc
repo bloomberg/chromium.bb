@@ -2395,6 +2395,10 @@ void AXNodeObject::ChildrenChanged() {
   if (!CanHaveChildren() || cached_is_descendant_of_leaf_node_)
     return;
 
+  // Calling CanHaveChildren(), above, can occasionally detach |this|.
+  if (IsDetached())
+    return;
+
   AXObjectCache().PostNotification(this, AXObjectCacheImpl::kAXChildrenChanged);
 
   // Go up the accessibility parent chain, but only if the element already
