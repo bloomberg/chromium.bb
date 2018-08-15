@@ -486,6 +486,8 @@ ChromeCleanerController* GetCleanerController() {
 // external that could be shut down beforehand.
 int LaunchAndWaitForExitOnBackgroundThread(
     const SwReporterInvocation& invocation) {
+  TRACE_EVENT0("safe_browsing",
+               "ReporterRunner::LaunchAndWaitForExitOnBackgroundThread");
   if (g_testing_delegate_)
     return g_testing_delegate_->LaunchReporter(invocation);
 
