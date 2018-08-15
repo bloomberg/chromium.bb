@@ -7,6 +7,9 @@
 namespace blink {
 namespace features {
 
+const base::Feature kAutofillPreviewStyleExperiment{
+    "AutofillPreviewStyleExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable eagerly setting up a CacheStorage interface pointer and
 // passing it to service workers on startup as an optimization.
 const base::Feature kEagerCacheStorageSetupForServiceWorkers{
@@ -47,6 +50,10 @@ const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
 // bug: https://crbug.com/822954.
 const base::Feature kStopNonTimersInBackground{
     "stop-non-timers-in-background", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
+
+const char kAutofillPreviewStyleExperimentColorParameterName[] = "color";
 
 }  // namespace features
 }  // namespace blink

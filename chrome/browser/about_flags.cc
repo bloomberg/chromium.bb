@@ -793,6 +793,49 @@ const FeatureEntry::Choice kForceColorProfileChoices[] = {
      "scrgb-linear"},
 };
 
+const FeatureEntry::FeatureParam kAutofillPreviewStyleBlackOnBlue050[] = {
+    {blink::features::kAutofillPreviewStyleExperimentBgColorParameterName,
+     "#E8F0F3"},
+    {blink::features::kAutofillPreviewStyleExperimentColorParameterName,
+     "#000000"},
+};
+const FeatureEntry::FeatureParam kAutofillPreviewStyleBlackOnBlue100[] = {
+    {blink::features::kAutofillPreviewStyleExperimentBgColorParameterName,
+     "#D2E3FC"},
+    {blink::features::kAutofillPreviewStyleExperimentColorParameterName,
+     "#000000"},
+};
+const FeatureEntry::FeatureParam kAutofillPreviewStyleBlue900OnBlue050[] = {
+    {blink::features::kAutofillPreviewStyleExperimentBgColorParameterName,
+     "#E8F0F3"},
+    {blink::features::kAutofillPreviewStyleExperimentColorParameterName,
+     "#174EA6"},
+};
+const FeatureEntry::FeatureParam kAutofillPreviewStyleBlackOnGreen050[] = {
+    {blink::features::kAutofillPreviewStyleExperimentBgColorParameterName,
+     "#E6F4EA"},
+    {blink::features::kAutofillPreviewStyleExperimentColorParameterName,
+     "#000000"},
+};
+const FeatureEntry::FeatureParam kAutofillPreviewStyleBlackOnYellow050[] = {
+    {blink::features::kAutofillPreviewStyleExperimentBgColorParameterName,
+     "#FEF7E0"},
+    {blink::features::kAutofillPreviewStyleExperimentColorParameterName,
+     "#000000"},
+};
+
+const FeatureEntry::FeatureVariation kAutofillPreviewStyleVariations[] = {
+    {"(Black on GoogleBlue050)", kAutofillPreviewStyleBlackOnBlue050,
+     base::size(kAutofillPreviewStyleBlackOnBlue050), nullptr},
+    {"(Black on GoogleBlue100)", kAutofillPreviewStyleBlackOnBlue100,
+     base::size(kAutofillPreviewStyleBlackOnBlue100), nullptr},
+    {"(GoogleBlue900 on GoogleBlue050)", kAutofillPreviewStyleBlue900OnBlue050,
+     base::size(kAutofillPreviewStyleBlue900OnBlue050), nullptr},
+    {"(Black on GoogleGreen050)", kAutofillPreviewStyleBlackOnGreen050,
+     base::size(kAutofillPreviewStyleBlackOnGreen050), nullptr},
+    {"(Black on GoogleYellow050)", kAutofillPreviewStyleBlackOnYellow050,
+     base::size(kAutofillPreviewStyleBlackOnYellow050), nullptr}};
+
 const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kAutoplayPolicyNoUserGestureRequired,
@@ -3865,6 +3908,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"autofill-dynamic-forms", flag_descriptions::kAutofillDynamicFormsName,
      flag_descriptions::kAutofillDynamicFormsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
+
+    {"autofill-preview-style",
+     flag_descriptions::kAutofillPreviewStyleExperimentName,
+     flag_descriptions::kAutofillPreviewStyleExperimentDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         blink::features::kAutofillPreviewStyleExperiment,
+         kAutofillPreviewStyleVariations,
+         "AutofillPreviewStyle")},
 
     {"autofill-prefilled-fields",
      flag_descriptions::kAutofillPrefilledFieldsName,
