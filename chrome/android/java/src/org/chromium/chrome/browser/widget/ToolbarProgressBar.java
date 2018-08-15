@@ -262,6 +262,13 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mIsAttachedToWindow = false;
+
+        if (mProgressThrottle != null) {
+            mProgressThrottle.setTimeListener(null);
+            mProgressThrottle.cancel();
+        }
+        mSmoothProgressAnimator.setTimeListener(null);
+        mSmoothProgressAnimator.cancel();
     }
 
     /**
