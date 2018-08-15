@@ -1276,6 +1276,20 @@ void LocalFrame::MaybeAllowImagePlaceholder(FetchParameters& params) const {
   }
 }
 
+bool LocalFrame::MaybeAllowLazyLoadingImage(FetchParameters& params) const {
+  if (!RuntimeEnabledFeatures::LazyImageLoadingEnabled())
+    return false;
+  if (params.GetPlaceholderImageRequestType() ==
+      FetchParameters::PlaceholderImageRequestType::kAllowPlaceholder) {
+    return false;
+  }
+  if (Owner() && !Owner()->ShouldLazyLoadChildren())
+    return false;
+
+  params.SetAllowImagePlaceholder();
+  return true;
+}
+
 WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {
   if (!url_loader_factory_)
     url_loader_factory_ = Client()->CreateURLLoaderFactory();

@@ -121,6 +121,8 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
 
   ScriptPromise Decode(ScriptState*, ExceptionState&);
 
+  void LoadDeferredImage(ReferrerPolicy);
+
  protected:
   void ImageChanged(ImageResourceContent*,
                     CanDeferInvalidation,
@@ -131,6 +133,21 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   class Task;
 
   enum class UpdateType { kAsync, kSync };
+
+  // LazyImages: Defer the image load until the image is near the viewport.
+  // https://docs.google.com/document/d/1jF1eSOhqTEt0L1WBCccGwH9chxLd9d1Ez0zo11obj14
+  // The state transition is better captured in the below doc.
+  // https://docs.google.com/document/d/1Ym0EOwyZJmaB5afnCVPu0SFb8EWLBj_facm2fK9kgC0/
+  enum class LazyImageLoadState {
+    kNone,      // LazyImages not active.
+    kDeferred,  // Placeholder is loading/loaded. Full image load not started.
+                // Once the placeholder is loaded, document load event is
+                // unblocked, but image load event is not fired yet.
+    kFullImage  // Full image is loading/loaded, due to element coming near the
+                // viewport or if a placeholder load actually fetched the full
+                // image. image_complete_ can differentiate if the fetch is
+                // complete or not. After the fetch, image load event is fired.
+  };
 
   // Called from the task or from updateFromElement to initiate the load.
   void DoUpdateFromElement(BypassMainWorldBehavior,
@@ -211,6 +228,8 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   bool image_complete_ : 1;
   bool loading_image_document_ : 1;
   bool suppress_error_events_ : 1;
+
+  LazyImageLoadState lazy_image_load_state_;
 
   // DecodeRequest represents a single request to the Decode() function. The
   // decode requests have one of the following states:

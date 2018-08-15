@@ -87,6 +87,9 @@ class CORE_EXPORT HTMLImageElement final
   ImageResource* CachedImageResourceForImageDocument() const {
     return GetImageLoader().ImageResourceForImageDocument();
   }
+  void LoadDeferredImage() {
+    GetImageLoader().LoadDeferredImage(referrer_policy_);
+  }
   void SetImageForTest(ImageResourceContent* content) {
     GetImageLoader().SetImageForTest(content);
   }
@@ -138,6 +141,8 @@ class CORE_EXPORT HTMLImageElement final
 
   FormAssociated* ToFormAssociatedOrNull() override { return this; };
   void AssociateWith(HTMLFormElement*) override;
+
+  bool ElementCreatedByParser() const { return element_created_by_parser_; }
 
  protected:
   // Controls how an image element appears in the layout. See:

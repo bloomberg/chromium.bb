@@ -295,6 +295,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // the embedder decides that Client Lo-Fi should be used for this request.
   void MaybeAllowImagePlaceholder(FetchParameters&) const;
 
+  // Convenience function to allow loading image placeholders for the request if
+  // lazyloading the image is possible. Returns if lazyloading the image is
+  // possible.
+  bool MaybeAllowLazyLoadingImage(FetchParameters&) const;
+
   // The returned value is a off-heap raw-ptr and should not be stored.
   WebURLLoaderFactory* GetURLLoaderFactory();
 
