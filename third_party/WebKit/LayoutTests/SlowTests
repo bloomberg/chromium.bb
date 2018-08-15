@@ -252,9 +252,9 @@ crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Slow ]
 # Slow on Win Debug in part due to incremental linking.
 crbug.com/647192 [ Win Debug ] fast/css3-text/css3-word-break/word-break-all-ascii.html [ Slow ]
 
-# Slow in Debug on all platforms.
-crbug.com/819641 [ Debug ] virtual/stable/webexposed/global-interface-listing.html [ Slow ]
-crbug.com/819641 [ Debug ] webexposed/global-interface-listing.html [ Slow ]
+# Slow on many platforms.
+crbug.com/866165 virtual/stable/webexposed/global-interface-listing.html [ Slow ]
+crbug.com/866165 webexposed/global-interface-listing.html [ Slow ]
 
 # SwiftShader slow tests
 crbug.com/726075 [ Win Linux Mac ] css3/filters/effect-reference-zoom-hw.html [ Slow ]
