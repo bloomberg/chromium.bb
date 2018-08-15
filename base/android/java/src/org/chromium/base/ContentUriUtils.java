@@ -221,10 +221,17 @@ public abstract class ContentUriUtils {
     @CalledByNative
     public static String maybeGetDisplayName(String uriString) {
         Uri uri = Uri.parse(uriString);
-        String displayName = getDisplayName(
-                uri, ContextUtils.getApplicationContext(), MediaStore.MediaColumns.DISPLAY_NAME);
 
-        return TextUtils.isEmpty(displayName) ? null : displayName;
+        try {
+            String displayName = getDisplayName(uri, ContextUtils.getApplicationContext(),
+                    MediaStore.MediaColumns.DISPLAY_NAME);
+            return TextUtils.isEmpty(displayName) ? null : displayName;
+        } catch (SecurityException e) {
+            Log.w(TAG, "Cannot open content uri: " + uriString, e);
+        }
+
+        // If we are unable to query the content URI, just return null.
+        return null;
     }
 
     /**
