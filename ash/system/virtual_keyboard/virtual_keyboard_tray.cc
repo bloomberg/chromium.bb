@@ -8,12 +8,14 @@
 
 #include "ash/keyboard/keyboard_ui.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
+#include "ash/system/tray/tray_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -29,13 +31,7 @@ VirtualKeyboardTray::VirtualKeyboardTray(Shelf* shelf)
     : TrayBackgroundView(shelf), icon_(new views::ImageView), shelf_(shelf) {
   SetInkDropMode(InkDropMode::ON);
 
-  gfx::ImageSkia image =
-      gfx::CreateVectorIcon(kShelfKeyboardIcon, kShelfIconColor);
-  icon_->SetImage(image);
-  const int vertical_padding = (kTrayItemSize - image.height()) / 2;
-  const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
-  icon_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(vertical_padding, horizontal_padding)));
+  UpdateIcon();
   tray_container()->AddChildView(icon_);
 
   // The Shell may not exist in some unit tests.
@@ -103,6 +99,11 @@ void VirtualKeyboardTray::OnKeyboardControllerCreated() {
   ObserveKeyboardController();
 }
 
+void VirtualKeyboardTray::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  UpdateIcon();
+}
+
 void VirtualKeyboardTray::ObserveKeyboardController() {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   if (keyboard_controller->enabled() && !keyboard_controller->HasObserver(this))
@@ -113,6 +114,17 @@ void VirtualKeyboardTray::UnobserveKeyboardController() {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   if (keyboard_controller->enabled())
     keyboard_controller->RemoveObserver(this);
+}
+
+void VirtualKeyboardTray::UpdateIcon() {
+  gfx::ImageSkia image = gfx::CreateVectorIcon(
+      kShelfKeyboardIcon,
+      TrayIconColor(Shell::Get()->session_controller()->GetSessionState()));
+  icon_->SetImage(image);
+  const int vertical_padding = (kTrayItemSize - image.height()) / 2;
+  const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
+  icon_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(vertical_padding, horizontal_padding)));
 }
 
 }  // namespace ash
