@@ -35,12 +35,19 @@ class PreviewsHints {
       const optimization_guide::proto::Configuration& config,
       const optimization_guide::ComponentInfo& info);
 
+  // Returns the matching PageHint for |document_url| if found in |hint|.
+  // TODO(dougarnett): Consider moving to some hint_util file.
+  static const optimization_guide::proto::PageHint* FindPageHint(
+      const GURL& document_url,
+      const optimization_guide::proto::Hint& hint);
+
   void Initialize();
 
   // Whether the URL is whitelisted for the given previews type. If so,
   // |out_inflation_percent| will be populated if meta data available for it.
-  // Note: this is top-level whitelist check which does not include checking
-  // within PageHints.
+  // This first checks the top-level whitelist and, if not whitelisted there,
+  // it will check the HintCache for having a loaded, matching PageHint that
+  // whitelists it.
   bool IsWhitelisted(const GURL& url,
                      PreviewsType type,
                      int* out_inflation_percent);
