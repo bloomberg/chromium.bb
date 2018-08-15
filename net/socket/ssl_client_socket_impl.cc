@@ -77,9 +77,6 @@ const int kSSLClientSocketNoPendingResult = 1;
 // Default size of the internal BoringSSL buffers.
 const int kDefaultOpenSSLBufferSize = 17 * 1024;
 
-const base::Feature kPostQuantumPadding{"PostQuantumPadding",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 std::unique_ptr<base::Value> NetLogPrivateKeyOperationCallback(
     uint16_t algorithm,
     NetLogCaptureMode mode) {
@@ -663,7 +660,6 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
       SSL_is_token_binding_negotiated(ssl_.get());
   ssl_info->token_binding_key_param = static_cast<net::TokenBindingParam>(
       SSL_get_negotiated_token_binding_param(ssl_.get()));
-  ssl_info->dummy_pq_padding_received = SSL_dummy_pq_padding_used(ssl_.get());
   ssl_info->pinning_failure_log = pinning_failure_log_;
   ssl_info->ocsp_result = server_cert_verify_result_.ocsp_result;
   ssl_info->is_fatal_cert_error = is_fatal_cert_error_;
@@ -919,12 +915,6 @@ int SSLClientSocketImpl::Init() {
     case kTLS13VariantDraft28:
       SSL_set_tls13_variant(ssl_.get(), tls13_draft28);
       break;
-  }
-
-  const int dummy_pq_padding_len = base::GetFieldTrialParamByFeatureAsInt(
-      kPostQuantumPadding, "length", 0 /* default value */);
-  if (dummy_pq_padding_len > 0 && dummy_pq_padding_len < 15000) {
-    SSL_set_dummy_pq_padding_size(ssl_.get(), dummy_pq_padding_len);
   }
 
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
