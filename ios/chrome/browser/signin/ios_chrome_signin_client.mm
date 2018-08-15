@@ -107,6 +107,10 @@ IOSChromeSigninClient::GetURLLoaderFactory() {
   return browser_state_->GetSharedURLLoaderFactory();
 }
 
+network::mojom::CookieManager* IOSChromeSigninClient::GetCookieManager() {
+  return browser_state_->GetCookieManager();
+}
+
 void IOSChromeSigninClient::DoFinalInit() {}
 
 bool IOSChromeSigninClient::CanRevokeCredentials() {

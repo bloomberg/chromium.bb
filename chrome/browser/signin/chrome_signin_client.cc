@@ -214,6 +214,11 @@ ChromeSigninClient::GetURLLoaderFactory() {
       ->GetURLLoaderFactoryForBrowserProcess();
 }
 
+network::mojom::CookieManager* ChromeSigninClient::GetCookieManager() {
+  return content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetCookieManagerForBrowserProcess();
+}
+
 std::string ChromeSigninClient::GetProductVersion() {
   return chrome::GetVersionString();
 }

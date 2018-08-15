@@ -16,6 +16,7 @@ IOSWebViewSigninClient::IOSWebViewSigninClient(
     PrefService* pref_service,
     net::URLRequestContextGetter* url_request_context,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    network::mojom::CookieManager* cookie_manager,
     SigninErrorController* signin_error_controller,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
     scoped_refptr<HostContentSettingsMap> host_content_settings_map,
@@ -25,6 +26,7 @@ IOSWebViewSigninClient::IOSWebViewSigninClient(
       pref_service_(pref_service),
       url_request_context_(url_request_context),
       url_loader_factory_(url_loader_factory),
+      cookie_manager_(cookie_manager),
       signin_error_controller_(signin_error_controller),
       cookie_settings_(cookie_settings),
       host_content_settings_map_(host_content_settings_map),
@@ -67,6 +69,10 @@ net::URLRequestContextGetter* IOSWebViewSigninClient::GetURLRequestContext() {
 scoped_refptr<network::SharedURLLoaderFactory>
 IOSWebViewSigninClient::GetURLLoaderFactory() {
   return url_loader_factory_;
+}
+
+network::mojom::CookieManager* IOSWebViewSigninClient::GetCookieManager() {
+  return cookie_manager_;
 }
 
 void IOSWebViewSigninClient::DoFinalInit() {}

@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_cookie_change_subscription.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -356,6 +355,7 @@ GaiaCookieManagerService::GaiaCookieManagerService(
       external_cc_result_fetcher_(this),
       fetcher_backoff_(&kBackoffPolicy),
       fetcher_retries_(0),
+      cookie_listener_binding_(this),
       source_(source),
       external_cc_result_fetched_(false),
       list_accounts_stale_(true),
@@ -373,23 +373,22 @@ GaiaCookieManagerService::~GaiaCookieManagerService() {
 }
 
 void GaiaCookieManagerService::Init() {
-  scoped_refptr<net::URLRequestContextGetter> context_getter =
-      signin_client_->GetURLRequestContext();
+  network::mojom::CookieManager* cookie_manager =
+      signin_client_->GetCookieManager();
 
-  // NOTE: |context_getter| can be nullptr when TestSigninClient is used in
+  // NOTE: |cookie_manager| can be nullptr when TestSigninClient is used in
   // testing contexts.
-  if (context_getter) {
-    cookie_change_subscription_ =
-        std::make_unique<SigninCookieChangeSubscription>(
-            context_getter, GaiaUrls::GetInstance()->google_url(),
-            kGaiaCookieName,
-            base::BindRepeating(&GaiaCookieManagerService::OnCookieChange,
-                                base::Unretained(this)));
+  if (cookie_manager) {
+    network::mojom::CookieChangeListenerPtr listener_ptr;
+    cookie_listener_binding_.Bind(mojo::MakeRequest(&listener_ptr));
+    cookie_manager->AddCookieChangeListener(
+        GaiaUrls::GetInstance()->google_url(), kGaiaCookieName,
+        std::move(listener_ptr));
   }
 }
 
 void GaiaCookieManagerService::Shutdown() {
-  cookie_change_subscription_.reset();
+  cookie_listener_binding_.Close();
 }
 
 void GaiaCookieManagerService::SetAccountsInCookie(
@@ -494,7 +493,7 @@ void GaiaCookieManagerService::ForceOnCookieChangeProcessing() {
           kGaiaCookieName, std::string(), "." + google_url.host(), "/",
           base::Time(), base::Time(), base::Time(), false, false,
           net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT));
-  OnCookieChange(*cookie, net::CookieChangeCause::UNKNOWN_DELETION);
+  OnCookieChange(*cookie, network::mojom::CookieChangeCause::UNKNOWN_DELETION);
 }
 
 void GaiaCookieManagerService::LogOutAllAccounts(const std::string& source) {
@@ -591,7 +590,7 @@ std::string GaiaCookieManagerService::GetDefaultSourceForRequest() {
 
 void GaiaCookieManagerService::OnCookieChange(
     const net::CanonicalCookie& cookie,
-    net::CookieChangeCause cause) {
+    network::mojom::CookieChangeCause cause) {
   DCHECK_EQ(kGaiaCookieName, cookie.Name());
   DCHECK(cookie.IsDomainMatch(GaiaUrls::GetInstance()->google_url().host()));
   list_accounts_stale_ = true;
@@ -604,25 +603,25 @@ void GaiaCookieManagerService::OnCookieChange(
     // Build gaia "source" based on cause to help track down channel id issues.
     std::string source(GetDefaultSourceForRequest());
     switch (cause) {
-      case net::CookieChangeCause::INSERTED:
+      case network::mojom::CookieChangeCause::INSERTED:
         source += "INSERTED";
         break;
-      case net::CookieChangeCause::EXPLICIT:
+      case network::mojom::CookieChangeCause::EXPLICIT:
         source += "EXPLICIT";
         break;
-      case net::CookieChangeCause::UNKNOWN_DELETION:
+      case network::mojom::CookieChangeCause::UNKNOWN_DELETION:
         source += "UNKNOWN_DELETION";
         break;
-      case net::CookieChangeCause::OVERWRITE:
+      case network::mojom::CookieChangeCause::OVERWRITE:
         source += "OVERWRITE";
         break;
-      case net::CookieChangeCause::EXPIRED:
+      case network::mojom::CookieChangeCause::EXPIRED:
         source += "EXPIRED";
         break;
-      case net::CookieChangeCause::EVICTED:
+      case network::mojom::CookieChangeCause::EVICTED:
         source += "EVICTED";
         break;
-      case net::CookieChangeCause::EXPIRED_OVERWRITE:
+      case network::mojom::CookieChangeCause::EXPIRED_OVERWRITE:
         source += "EXPIRED_OVERWRITE";
         break;
     }

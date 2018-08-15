@@ -19,13 +19,14 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/backoff_entry.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 class GaiaAuthFetcher;
 class GaiaCookieRequest;
 class GoogleServiceAuthError;
 class OAuth2TokenService;
-class SigninCookieChangeSubscription;
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -42,7 +43,8 @@ class SimpleURLLoader;
 // lifetime of this object, when the first call is made to AddAccountToCookie.
 class GaiaCookieManagerService : public KeyedService,
                                  public GaiaAuthConsumer,
-                                 public UbertokenConsumer {
+                                 public UbertokenConsumer,
+                                 public network::mojom::CookieChangeListener {
  public:
   enum GaiaCookieRequestType {
     ADD_ACCOUNT,
@@ -251,10 +253,6 @@ class GaiaCookieManagerService : public KeyedService,
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
  private:
-  net::URLRequestContextGetter* request_context() {
-    return signin_client_->GetURLRequestContext();
-  }
-
   // Returns the source value to use for GaiaFetcher requests.  This is
   // virtual to allow tests and fake classes to override.
   virtual std::string GetSourceForRequest(
@@ -264,10 +262,11 @@ class GaiaCookieManagerService : public KeyedService,
   // virtual to allow tests and fake classes to override.
   virtual std::string GetDefaultSourceForRequest();
 
-  // Called when a cookie changes. If the cookie relates to a GAIA APISID
-  // cookie, then we call ListAccounts and fire OnGaiaAccountsInCookieUpdated.
+  // Overridden from network::mojom::CookieChangeListner. If the cookie relates
+  // to a GAIA APISID cookie, then we call ListAccounts and fire
+  // OnGaiaAccountsInCookieUpdated.
   void OnCookieChange(const net::CanonicalCookie& cookie,
-                      net::CookieChangeCause cause);
+                      network::mojom::CookieChangeCause cause) override;
 
   // Overridden from UbertokenConsumer.
   void OnUbertokenSuccess(const std::string& token) override;
@@ -328,8 +327,8 @@ class GaiaCookieManagerService : public KeyedService,
   // The access token that can be used to prime the UberToken fetch.
   std::string access_token_;
 
-  // Subscription to be called whenever the GAIA cookies change.
-  std::unique_ptr<SigninCookieChangeSubscription> cookie_change_subscription_;
+  // Connection to the CookieManager that signals when the GAIA cookies change.
+  mojo::Binding<network::mojom::CookieChangeListener> cookie_listener_binding_;
 
   // A worklist for this class. Stores any pending requests that couldn't be
   // executed right away, since this class only permits one request to be

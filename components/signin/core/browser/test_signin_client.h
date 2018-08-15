@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "net/cookies/cookie_change_dispatcher.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -73,6 +72,9 @@ class TestSigninClient : public SigninClient {
   // based on what API the consumer is using, while transition away from
   // URLRequestContextGetter is going on.
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+
+  // Returns nullptr.
+  network::mojom::CookieManager* GetCookieManager() override;
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;

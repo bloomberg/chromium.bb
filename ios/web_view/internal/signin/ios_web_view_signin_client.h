@@ -25,6 +25,7 @@ class IOSWebViewSigninClient : public SigninClient,
       PrefService* pref_service,
       net::URLRequestContextGetter* url_request_context,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      network::mojom::CookieManager* cookie_manager,
       SigninErrorController* signin_error_controller,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
       scoped_refptr<HostContentSettingsMap> host_content_settings_map,
@@ -42,6 +43,7 @@ class IOSWebViewSigninClient : public SigninClient,
   PrefService* GetPrefs() override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  network::mojom::CookieManager* GetCookieManager() override;
   void DoFinalInit() override;
   bool CanRevokeCredentials() override;
   std::string GetSigninScopedDeviceId() override;
@@ -72,6 +74,7 @@ class IOSWebViewSigninClient : public SigninClient,
   // The URLRequestContext associated with this service.
   net::URLRequestContextGetter* url_request_context_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  network::mojom::CookieManager* cookie_manager_;
   // Used to check for errors related to signing in.
   SigninErrorController* signin_error_controller_;
   // Used to check if sign in cookies are allowed.
