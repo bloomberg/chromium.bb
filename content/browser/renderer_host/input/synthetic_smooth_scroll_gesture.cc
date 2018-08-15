@@ -48,6 +48,7 @@ bool SyntheticSmoothScrollGesture::InitializeMoveGesture(
     move_params.prevent_fling = params_.prevent_fling;
     move_params.input_type = GetInputSourceType(gesture_type);
     move_params.add_slop = true;
+    move_params.precise_scrolling_deltas = params_.precise_scrolling_deltas;
     move_gesture_.reset(new SyntheticSmoothMoveGesture(move_params));
     return true;
   }

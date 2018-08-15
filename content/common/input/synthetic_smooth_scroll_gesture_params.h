@@ -28,6 +28,7 @@ struct CONTENT_EXPORT SyntheticSmoothScrollGestureParams
   std::vector<gfx::Vector2dF> distances;  // Positive X/Y to scroll left/up.
   bool prevent_fling;  // Defaults to true.
   float speed_in_pixels_s;
+  bool precise_scrolling_deltas;
 
   static const SyntheticSmoothScrollGestureParams* Cast(
       const SyntheticGestureParams* gesture_params);

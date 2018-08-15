@@ -36,6 +36,7 @@ class CONTENT_EXPORT SyntheticSmoothMoveGestureParams {
   int speed_in_pixels_s;
   bool prevent_fling;
   bool add_slop;
+  bool precise_scrolling_deltas;
 };
 
 // This class is used as helper class for simulation of scroll and drag.

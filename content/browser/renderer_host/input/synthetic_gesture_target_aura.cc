@@ -81,9 +81,12 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
     return;
   }
   base::TimeTicks timestamp = web_wheel.TimeStamp();
+  int modifiers = web_wheel.has_precise_scrolling_deltas
+                      ? ui::EF_PRECISION_SCROLLING_DELTA
+                      : ui::EF_NONE;
   ui::MouseWheelEvent wheel_event(
       gfx::Vector2d(web_wheel.delta_x, web_wheel.delta_y), gfx::Point(),
-      gfx::Point(), timestamp, ui::EF_NONE, ui::EF_NONE);
+      gfx::Point(), timestamp, modifiers, ui::EF_NONE);
   gfx::PointF location(web_wheel.PositionInWidget().x * device_scale_factor_,
                        web_wheel.PositionInWidget().y * device_scale_factor_);
   wheel_event.set_location_f(location);
