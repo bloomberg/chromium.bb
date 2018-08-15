@@ -18,6 +18,10 @@ See https://crbug.com/869308
 </div>
 <div id="host3">
 </div>
+<div id="child4"></div>
+<div id="host4">
+  <div id="child5"></div>
+</div>
 
 
 <script>
@@ -28,11 +32,18 @@ const host3 = document.querySelector('#host3');
 const child1 = document.querySelector('#child1');
 const child2 = document.querySelector('#child2');
 const child3 = document.querySelector('#child3');
+const child4 = document.querySelector('#child4');
+const child5 = document.querySelector('#child5');
 const shadow_root = host.attachShadow({ mode: 'open', slotting: 'manual' });
+const shadow_root1 = host4.attachShadow({ mode: 'open' });
 const slot1 = document.createElement('slot');
 const slot2 = document.createElement('slot');
+const slot3 = document.createElement('slot');
+const slot4 = document.createElement('slot');
 shadow_root.appendChild(slot1);
 shadow_root.appendChild(slot2);
+shadow_root.appendChild(slot3);
+shadow_root1.appendChild(slot4);
 
 test(() => {
   assert_not_equals(host1.attachShadow({ mode: 'open', slotting: 'manual' }),
@@ -60,4 +71,20 @@ test(() => {
   slot1.assign([child2,child3]);
   assert_array_equals(slot1.assignedNodes(), [child2,child3]);
 }, 'assignedNodes can be used in manual slotting');
+
+test(() => {
+  slot3.assign([child4]);
+  assert_array_equals(slot3.assignedNodes(), []);
+}, 'Nodes that is not connected to host should not be assigned');
+
+test(() => {
+  assert_array_equals(slot4.assignedNodes(), [child5]);
+  assert_equals(child5.assignedSlot, slot4);
+
+  slot4.assign([]);
+  assert_array_equals(slot4.assignedNodes(), [child5]);
+  assert_equals(child5.assignedSlot, slot4);
+}, 'slotting API should not have any effect in auto mode');
+
+
 </script>
