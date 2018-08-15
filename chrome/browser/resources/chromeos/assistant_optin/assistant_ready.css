@@ -2,17 +2,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.title {
-  padding-top: 32px;
-}
-
-.sub-title {
-  padding-top: 12px;
-}
-
 #ready-img {
   display: block;
   height: 180px;
   margin: auto;
-  padding: 48px 0 0 32px;
+  padding: 72px 0 0 32px;
 }

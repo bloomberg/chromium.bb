@@ -42,14 +42,6 @@ Polymer({
     },
 
     /**
-     * Whether there are more consent contents to show.
-     */
-    moreContents: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * Whether user accept the activity control.
      */
     userAccepted: {
@@ -132,18 +124,6 @@ Polymer({
   },
 
   /**
-   * On-tap event handler for more button.
-   *
-   * @private
-   */
-  onMoreTap_: function() {
-    this.$['view-container'].hidden = true;
-    this.$['more-container'].hidden = false;
-    this.moreContents = false;
-    this.$['next-button'].focus();
-  },
-
-  /**
    * On-tap event handler for next button.
    *
    * @private
@@ -151,6 +131,27 @@ Polymer({
   onNextTap_: function() {
     this.userAccepted = true;
     chrome.send('AssistantValuePropScreen.userActed', ['next-pressed']);
+  },
+
+  /**
+   * Sets learn more content text and shows it as overlay dialog.
+   * @param {string} content HTML formatted text to show.
+   */
+  showLearnMoreOverlay: function(title, additionalInfo) {
+    this.$['overlay-title-text'].innerHTML =
+        this.sanitizer_.sanitizeHtml(title);
+    this.$['overlay-additional-info-text'].innerHTML =
+        this.sanitizer_.sanitizeHtml(additionalInfo);
+
+    var overlay = this.$['learn-more-overlay'];
+    overlay.hidden = false;
+  },
+
+  /**
+   * Hides overlay dialog.
+   */
+  hideOverlay: function() {
+    this.$['learn-more-overlay'].hidden = true;
   },
 
   /**
@@ -223,8 +224,10 @@ Polymer({
    * Reload the page with the given consent string text data.
    */
   reloadContent: function(data) {
+    this.$['user-image'].src = data['valuePropUserImage'];
+    this.$['title-text'].textContent = data['valuePropTitle'];
     this.$['intro-text'].textContent = data['valuePropIntro'];
-    this.$['identity'].textContent = data['valuePropIdentity'];
+    this.$['user-name'].textContent = data['valuePropIdentity'];
     this.$['next-button-text'].textContent = data['valuePropNextButton'];
     this.$['skip-button-text'].textContent = data['valuePropSkipButton'];
     this.$['footer-text'].innerHTML =
@@ -247,8 +250,8 @@ Polymer({
           'icon-src',
           'data:text/html;charset=utf-8,' +
               encodeURIComponent(zippy.getWrappedIcon(data['iconUri'])));
-      if (i == 0)
-        zippy.setAttribute('hide-line', true);
+      zippy.setAttribute('hide-line', true);
+      zippy.setAttribute('popup-style', true);
 
       var title = document.createElement('div');
       title.className = 'zippy-title';
@@ -260,21 +263,17 @@ Polymer({
       description.innerHTML = this.sanitizer_.sanitizeHtml(data['description']);
       zippy.appendChild(description);
 
-      var additional = document.createElement('div');
-      additional.className = 'zippy-additional';
-      additional.innerHTML =
-          this.sanitizer_.sanitizeHtml(data['additionalInfo']);
-      zippy.appendChild(additional);
+      var learnMoreLink = document.createElement('a');
+      learnMoreLink.className = 'learn-more-link';
+      learnMoreLink.textContent = data['popupLink'];
+      learnMoreLink.setAttribute('href', 'javascript:void(0)');
+      learnMoreLink.onclick = function(title, additionalInfo) {
+        this.showLearnMoreOverlay(title, additionalInfo);
+      }.bind(this, data['title'], data['additionalInfo']);
+      zippy.appendChild(learnMoreLink);
 
-      if (i == 0) {
-        this.$['insertion-point-0'].appendChild(zippy);
-      } else {
-        this.$['insertion-point-1'].appendChild(zippy);
-      }
+      this.$['insertion-point'].appendChild(zippy);
     }
-
-    if (zippy_data.length >= 2)
-      this.moreContents = true;
 
     this.settingZippyLoaded_ = true;
     if (this.webViewLoaded_ && this.consentStringLoaded_) {
@@ -289,11 +288,7 @@ Polymer({
     this.fire('loaded');
 
     this.buttonsDisabled = false;
-    if (this.moreContents) {
-      this.$['more-button'].focus();
-    } else {
-      this.$['next-button'].focus();
-    }
+    this.$['next-button'].focus();
   },
 
   /**
@@ -301,6 +296,11 @@ Polymer({
    */
   onShow: function() {
     var requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
+
+    this.$['overlay-close-top'].addEventListener(
+        'click', this.hideOverlay.bind(this));
+    this.$['overlay-close-bottom'].addEventListener(
+        'click', this.hideOverlay.bind(this));
     this.valuePropView_ = this.$['value-prop-view'];
     this.locale =
         loadTimeData.getString('locale').replace('-', '_').toLowerCase();

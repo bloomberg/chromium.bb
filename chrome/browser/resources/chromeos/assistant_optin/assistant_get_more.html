@@ -8,17 +8,19 @@
     <link rel="stylesheet" href="assistant_get_more.css">
     <link rel="stylesheet" href="assistant_shared_styles.css">
     <oobe-dialog id="get-more-dialog" role="dialog" has-buttons hide-shadow
-        no-footer-padding no-header android>
+        no-footer-padding no-header>
       <div slot="footer">
-        <div id="main-container">
+        <div class="container">
           <img id="logo" src="assistant_logo.png">
           <div class="title" id="title-text"></div>
+          <div class="sub-title" id="intro-text"></div>
+          <div class="line"></div>
           <div id="insertion-point"></div>
         </div>
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button id="next-button" inverse android on-tap="onNextTap_"
+        <oobe-text-button id="next-button" inverse on-tap="onNextTap_"
             disabled="[[buttonsDisabled]]" hidden="[[moreContents]]">
           <div id="next-button-text"></div>
         </oobe-text-button>

@@ -6,18 +6,16 @@
   padding-bottom: 14px;
 }
 
-.title {
-  font-size: 12px;
-}
-
 .content {
-  color: rgba(0, 0, 0, .54);
-  font-size: 11px;
   padding: 6px 0 6px 0;
 }
 
-.content[noZippy] {
+.content[toggleStyle] {
   padding-bottom: 0;
+}
+
+.content[popupStyle] {
+  padding-bottom: 24px;
 }
 
 .icon {
@@ -36,10 +34,4 @@
 
 .indent {
   padding: 6px 0 0 38px;
-}
-
-.line {
-  background-color: rgba(0, 0, 0, .14);
-  height: 1px;
-  margin: 8px 0 8px 0;
 }

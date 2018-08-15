@@ -7,25 +7,27 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <dom-module id="setting-zippy">
   <template>
-    <link rel="stylesheet" href="setting_zippy.css">
     <link rel="stylesheet" href="../login/oobe_flex_layout.css">
+    <link rel="stylesheet" href="setting_zippy.css">
+    <link rel="stylesheet" href="assistant_shared_styles.css">
     <div class="flex layout horizontal">
       <div class="icon">
         <webview class="icon-view" src="[[iconSrc]]"></webview>
       </div>
       <div>
-        <div class="title">
+        <div class="sub-title">
           <content select=".zippy-title"></content>
         </div>
-        <div class="content" noZippy$="[[noZippy]]">
-          <content select=".zippy-description"></content>
+        <div class="content" toggleStyle$="[[toggleStyle]]"
+            popupStyle$="[[popupStyle]]">
+          <content select=".zippy-description, .learn-more-link"></content>
         </div>
       </div>
       <div class="flex"></div>
-      <cr-expand-button expanded="{{expanded_}}" hidden="[[noZippy]]">
+      <cr-expand-button expanded="{{expanded_}}" hidden="[[!expandStyle]]">
       </cr-expand-button>
       <div class="toggle">
-        <content select=".zippy-toggle" hidden="[[!noZippy]]"></content>
+        <content select=".zippy-toggle" hidden="[[!toggleStyle]]"></content>
       </div>
     </div>
     <iron-collapse opened="[[expanded_]]">

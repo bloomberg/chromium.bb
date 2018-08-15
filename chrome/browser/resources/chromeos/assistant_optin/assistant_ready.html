@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="assistant_ready.css">
     <link rel="stylesheet" href="assistant_shared_styles.css">
     <oobe-dialog id="ready-dialog" role="dialog" has-buttons hide-shadow
-        no-footer-padding no-header android>
+        no-footer-padding no-header>
       <div slot="footer">
-        <div id="main-container">
+        <div class="container">
           <img id="logo" src="assistant_logo.png">
           <div class="title" i18n-content="assistantReadyTitle"></div>
           <div class="sub-title" i18n-content="assistantReadyMessage"></div>
@@ -19,7 +19,7 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
-        <oobe-text-button id="next-button" inverse android on-tap="onNextTap_"
+        <oobe-text-button id="next-button" inverse on-tap="onNextTap_"
             disabled="[[buttonsDisabled]]" hidden="[[moreContents]]">
           <div i18n-content="assistantReadyButton"></div>
         </oobe-text-button>
