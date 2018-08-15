@@ -142,6 +142,7 @@ def main(args):
 
     if not results_dashboard.SendResults(
         dashboard_json,
+        options.name,
         options.results_url,
         send_as_histograms=options.send_as_histograms,
         service_account_file=service_account_file):
