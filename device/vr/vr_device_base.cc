@@ -124,6 +124,9 @@ void VRDeviceBase::ReturnNonImmersiveSession(
   // TODO(offenwanger) Not all session will want the enviroment provider. This
   // should be refactored so it's only passed when it's requested.
   session->enviroment_provider = enviroment_provider.PassInterface();
+  if (display_info_) {
+    session->display_info = display_info_.Clone();
+  }
 
   std::move(callback).Run(std::move(session), std::move(controller));
 }

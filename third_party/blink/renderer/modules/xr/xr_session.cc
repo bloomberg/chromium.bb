@@ -89,15 +89,18 @@ class XRSession::XRSessionResizeObserverDelegate final
   Member<XRSession> session_;
 };
 
-XRSession::XRSession(XRDevice* device,
-                     bool immersive,
-                     bool environment_integration,
-                     XRPresentationContext* output_context,
-                     EnvironmentBlendMode environment_blend_mode)
+XRSession::XRSession(
+    XRDevice* device,
+    device::mojom::blink::XRSessionClientRequest client_request,
+    bool immersive,
+    bool environment_integration,
+    XRPresentationContext* output_context,
+    EnvironmentBlendMode environment_blend_mode)
     : device_(device),
       immersive_(immersive),
       environment_integration_(environment_integration),
       output_context_(output_context),
+      client_binding_(this, std::move(client_request)),
       callback_collection_(new XRFrameRequestCallbackCollection(
           device->xr()->GetExecutionContext())) {
   blurred_ = !HasAppropriateFocus();
@@ -198,7 +201,7 @@ ScriptPromise XRSession::requestFrameOfReference(
     if (!options.disableStageEmulation()) {
       frameOfRef = new XRFrameOfReference(this, XRFrameOfReference::kTypeStage);
       frameOfRef->UseEmulatedHeight(options.stageEmulationHeight());
-    } else if (device_->xrDisplayInfoPtr()->stageParameters) {
+    } else if (display_info_ && display_info_->stageParameters) {
       frameOfRef = new XRFrameOfReference(this, XRFrameOfReference::kTypeStage);
     } else {
       return ScriptPromise::RejectWithDOMException(
@@ -386,7 +389,7 @@ void XRSession::ForceEnd() {
 
 double XRSession::NativeFramebufferScale() const {
   if (immersive_) {
-    double scale = device_->xrDisplayInfoPtr()->webxr_default_framebuffer_scale;
+    double scale = display_info_->webxr_default_framebuffer_scale;
     DCHECK(scale);
 
     // Return the inverse of the default scale, since that's what we'll need to
@@ -401,12 +404,12 @@ DoubleSize XRSession::DefaultFramebufferSize() const {
     return OutputCanvasSize();
   }
 
-  double width = (device_->xrDisplayInfoPtr()->leftEye->renderWidth +
-                  device_->xrDisplayInfoPtr()->rightEye->renderWidth);
-  double height = std::max(device_->xrDisplayInfoPtr()->leftEye->renderHeight,
-                           device_->xrDisplayInfoPtr()->rightEye->renderHeight);
+  double width = (display_info_->leftEye->renderWidth +
+                  display_info_->rightEye->renderWidth);
+  double height = std::max(display_info_->leftEye->renderHeight,
+                           display_info_->rightEye->renderHeight);
 
-  double scale = device_->xrDisplayInfoPtr()->webxr_default_framebuffer_scale;
+  double scale = display_info_->webxr_default_framebuffer_scale;
   return DoubleSize(width * scale, height * scale);
 }
 
@@ -438,8 +441,8 @@ void XRSession::OnBlur() {
 // focused.  This prevents the in-headset experience from freezing on an
 // external display headset when the user clicks on another tab.
 bool XRSession::HasAppropriateFocus() {
-  return immersive_ ? device_->HasDeviceFocus()
-                    : device_->HasDeviceAndFrameFocus();
+  return immersive_ ? has_device_focus_
+                    : has_device_focus_ && device_->HasFrameFocus();
 }
 
 void XRSession::OnFocusChanged() {
@@ -724,6 +727,24 @@ XRInputSourceEvent* XRSession::CreateInputSourceEvent(
   return XRInputSourceEvent::Create(type, presentation_frame, input_source);
 }
 
+void XRSession::OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) {
+  DCHECK(display_info);
+  SetXRDisplayInfo(std::move(display_info));
+}
+
+void XRSession::OnExitPresent() {
+  if (immersive_) {
+    ForceEnd();
+  }
+}
+
+void XRSession::SetXRDisplayInfo(
+    device::mojom::blink::VRDisplayInfoPtr display_info) {
+  display_info_id_++;
+  display_info_ = std::move(display_info);
+  is_external_ = display_info_->capabilities->hasExternalDisplay;
+}
+
 const HeapVector<Member<XRView>>& XRSession::views() {
   // TODO(bajones): For now we assume that immersive sessions render a stereo
   // pair of views and non-immersive sessions render a single view. That doesn't
@@ -739,11 +760,11 @@ const HeapVector<Member<XRView>>& XRSession::views() {
       // In immersive mode the projection and view matrices must be aligned with
       // the device's physical optics.
       UpdateViewFromEyeParameters(views_[XRView::kEyeLeft],
-                                  device_->xrDisplayInfoPtr()->leftEye,
-                                  depth_near_, depth_far_);
+                                  display_info_->leftEye, depth_near_,
+                                  depth_far_);
       UpdateViewFromEyeParameters(views_[XRView::kEyeRight],
-                                  device_->xrDisplayInfoPtr()->rightEye,
-                                  depth_near_, depth_far_);
+                                  display_info_->rightEye, depth_near_,
+                                  depth_far_);
     } else {
       if (views_.IsEmpty()) {
         views_.push_back(new XRView(this, XRView::kEyeLeft));

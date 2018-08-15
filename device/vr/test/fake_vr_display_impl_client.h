@@ -12,16 +12,19 @@
 namespace device {
 class FakeVRServiceClient;
 
-class FakeVRDisplayImplClient : public mojom::VRDisplayClient {
+class FakeVRDisplayImplClient : public mojom::VRDisplayClient,
+                                public mojom::XRSessionClient {
  public:
   FakeVRDisplayImplClient(mojom::VRDisplayClientRequest request);
   ~FakeVRDisplayImplClient() override;
 
   void SetServiceClient(FakeVRServiceClient* service_client);
+  // mojom::XRSessionClient overrides
   void OnChanged(mojom::VRDisplayInfoPtr display) override;
   void OnExitPresent() override {}
   void OnBlur() override {}
   void OnFocus() override {}
+  // mojom::VRDisplayClient overrides
   void OnActivate(mojom::VRDisplayEventReason reason,
                   OnActivateCallback callback) override {}
   void OnDeactivate(mojom::VRDisplayEventReason reason) override {}

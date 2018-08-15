@@ -475,7 +475,7 @@ void VrShellGl::OnWebVRTokenSignaled(int16_t frame_index,
 
 bool VrShellGl::IsSubmitFrameExpected(int16_t frame_index) {
   // submit_client_ could be null when we exit presentation, if there were
-  // pending SubmitFrame messages queued.  VRDisplayClient::OnExitPresent
+  // pending SubmitFrame messages queued.  XRSessionClient::OnExitPresent
   // will clean up state in blink, so it doesn't wait for
   // OnSubmitFrameTransferred or OnSubmitFrameRendered. Similarly,
   // the animating frame state is cleared when exiting presentation,
@@ -680,6 +680,7 @@ void VrShellGl::ConnectPresentingService(
   auto session = device::mojom::XRSession::New();
   session->data_provider = frame_data_provider.PassInterface();
   session->submit_frame_sink = std::move(submit_frame_sink);
+  session->display_info = std::move(display_info);
 
   browser_->SendRequestPresentReply(std::move(session));
 }

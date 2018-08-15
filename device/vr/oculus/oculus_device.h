@@ -55,7 +55,6 @@ class DEVICE_VR_EXPORT OculusDevice
   void StopOvrSession();
 
   std::unique_ptr<OculusRenderLoop> render_loop_;
-  mojom::VRDisplayInfoPtr display_info_;
   ovrSession session_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

@@ -8,7 +8,7 @@ import "device/vr/public/mojom/vr_service.mojom";
 
 const string kVrIsolatedServiceName = "xr_device_service";
 
-// The XRSessionController lives in the vr device service, and corresponds to
+// The XRSessionController lives in the xr runtime service, and corresponds to
 // a set of the XRSession bindings.  The client is the browser process, which
 // will pause or stop sessions depending events/state such as focus or other
 // tabs requesting immersive sessions.
@@ -20,7 +20,7 @@ interface XRSessionController {
   SetFrameDataRestricted(bool restricted);
 };
 
-// The XRRuntimeEventListener lives in the vr device service, and allows the
+// The XRRuntimeEventListener lives in the xr runtime service, and allows the
 // browser to listen to state changes about a device.
 interface XRRuntimeEventListener {
   // A device has changed its display information.
@@ -110,7 +110,7 @@ struct XRGamepadData {
 // OpenVR and Oculus APIs can't run in the browser process, but the gamepad
 // polling happens there.  This interface allows gamepad polling to request
 // data from out-of-process gamepad providers, at the cost of some extra IPC
-// latency.  IsolatedXRGamepadProvider is currently implemented in the XRDevice
+// latency.  IsolatedXRGamepadProvider is currently implemented in the XRRuntime
 // process, and consumed by the gamepad polling thread in the browser process.
 // It will move to live in a separate XRInput process in the future.
 interface IsolatedXRGamepadProvider {
@@ -126,7 +126,7 @@ interface IsolatedXRGamepadProvider {
 // data.  IsolatedXRGamepadProviderFactory allows GamepadDataFetchers to acquire
 // new IsolatedXRGamepadProviders when needed.
 // IsolatedXRGamepadProvider is consumed in the browser process.  It is
-// currently implemented in the XRDevice process, but will move to a separate
+// currently implemented in the XRRuntime process, but will move to a separate
 // XRInput process.
 interface IsolatedXRGamepadProviderFactory {
   // Get the IsolatedXRGamepadProvider for a specific XR runtime API (Oculus, or

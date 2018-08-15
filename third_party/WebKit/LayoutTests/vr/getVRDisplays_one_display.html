@@ -15,7 +15,6 @@ vr_test( (t) => {
       assert_true(displays != null);
       assert_equals(displays.length, 1);
       let display = displays[0];
-      assert_equals(display.displayName, 'Google, Inc. Daydream View');
       assert_true(display.capabilities.canPresent);
       assert_approx_equals(display.depthNear, 0.01, FLOAT_EPSILON);
       assert_approx_equals(display.depthFar, 10000.0, FLOAT_EPSILON);

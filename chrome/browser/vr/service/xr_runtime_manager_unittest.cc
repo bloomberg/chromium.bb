@@ -47,7 +47,7 @@ class VRServiceImplForTesting : public VRServiceImpl {
 
 class XRRuntimeManagerTest : public testing::Test {
  public:
-  void onDisplaySynced() {}
+  static void onDeviceReturned(device::mojom::XRDevicePtr ptr) {}
 
  protected:
   XRRuntimeManagerTest() = default;
@@ -67,10 +67,10 @@ class XRRuntimeManagerTest : public testing::Test {
     device::mojom::VRServiceClientPtr proxy;
     device::FakeVRServiceClient client(mojo::MakeRequest(&proxy));
     auto service = base::WrapUnique(new VRServiceImplForTesting());
-    service->SetClient(
-        std::move(proxy),
-        base::BindRepeating(&XRRuntimeManagerTest::onDisplaySynced,
-                            base::Unretained(this)));
+    XRRuntimeManager::GetInstance()->AddService(service.get());
+    service->RequestDevice(
+        base::BindRepeating(&XRRuntimeManagerTest::onDeviceReturned));
+    service->SetClient(std::move(proxy));
     return service;
   }
 

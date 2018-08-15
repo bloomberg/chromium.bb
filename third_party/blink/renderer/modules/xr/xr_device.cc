@@ -23,9 +23,6 @@ namespace {
 const char kActiveImmersiveSession[] =
     "XRDevice already has an active, immersive session";
 
-const char kImmersiveNotSupported[] =
-    "XRDevice does not support the creation of immersive sessions.";
-
 const char kNoOutputContext[] =
     "Non-immersive sessions must be created with an outputContext.";
 
@@ -35,19 +32,10 @@ const char kRequestRequiresUserActivation[] =
 const char kSessionNotSupported[] =
     "The specified session configuration is not supported.";
 
-const char kRequestFailed[] = "Request for XRSession failed.";
-
 }  // namespace
 
-XRDevice::XRDevice(XR* xr,
-                   device::mojom::blink::XRDevicePtr device,
-                   device::mojom::blink::VRDisplayClientRequest client_request,
-                   device::mojom::blink::VRDisplayInfoPtr display_info)
-    : xr_(xr),
-      device_ptr_(std::move(device)),
-      display_client_binding_(this, std::move(client_request)) {
-  SetXRDisplayInfo(std::move(display_info));
-}
+XRDevice::XRDevice(XR* xr, device::mojom::blink::XRDevicePtr device)
+    : xr_(xr), device_ptr_(std::move(device)) {}
 
 const char* XRDevice::checkSessionSupport(
     const XRSessionCreationOptions& options) const {
@@ -57,14 +45,6 @@ const char* XRDevice::checkSessionSupport(
     if (!options.hasOutputContext()) {
       return kNoOutputContext;
     }
-  }
-
-  if (options.environmentIntegration() && !supports_ar_) {
-    return kSessionNotSupported;
-  }
-
-  if (options.immersive() && !supports_immersive_) {
-    return kSessionNotSupported;
   }
 
   return nullptr;
@@ -104,13 +84,10 @@ ScriptPromise XRDevice::supportsSession(
 
 void XRDevice::OnSupportsSessionReturned(ScriptPromiseResolver* resolver,
                                          bool supports_session) {
-  // kImmersiveNotSupported is currently the only reason that SupportsSession
-  // rejects on the browser side. That or there are no devices, but that should
-  // technically not be possible.
   supports_session
       ? resolver->Resolve()
       : resolver->Reject(DOMException::Create(
-            DOMExceptionCode::kNotSupportedError, kImmersiveNotSupported));
+            DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
 }
 
 int64_t XRDevice::GetSourceId() const {
@@ -198,9 +175,11 @@ void XRDevice::OnRequestSessionReturned(
     bool environment_integration,
     bool immersive,
     device::mojom::blink::XRSessionPtr session_ptr) {
+  // TODO(https://crbug.com/872316) Improve the error messaging to indicate why
+  // a request failed.
   if (!session_ptr) {
     DOMException* exception = DOMException::Create(
-        DOMExceptionCode::kNotAllowedError, kRequestFailed);
+        DOMExceptionCode::kNotSupportedError, kSessionNotSupported);
     resolver->Reject(exception);
     return;
   }
@@ -209,8 +188,13 @@ void XRDevice::OnRequestSessionReturned(
   if (environment_integration)
     blend_mode = XRSession::kBlendModeAlphaBlend;
 
-  XRSession* session = new XRSession(this, immersive, environment_integration,
-                                     output_context, blend_mode);
+  XRSession* session =
+      new XRSession(this, std::move(session_ptr->client_request), immersive,
+                    environment_integration, output_context, blend_mode);
+  // immersive sessions must supply display info.
+  DCHECK(!immersive || session_ptr->display_info);
+  if (session_ptr->display_info)
+    session->SetXRDisplayInfo(std::move(session_ptr->display_info));
   sessions_.insert(session);
 
   if (immersive) {
@@ -241,26 +225,6 @@ bool XRDevice::IsFrameFocused() {
   return xr_->IsFrameFocused();
 }
 
-// TODO: Forward these calls on to the sessions once they've been implemented.
-void XRDevice::OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) {
-  SetXRDisplayInfo(std::move(display_info));
-}
-void XRDevice::OnExitPresent() {}
-void XRDevice::OnBlur() {
-  // The device is reporting to us that it is blurred.  This could happen for a
-  // variety of reasons, such as browser UI, a different application using the
-  // headset, or another page entering an immersive session.
-  has_device_focus_ = false;
-  OnFocusChanged();
-}
-void XRDevice::OnFocus() {
-  has_device_focus_ = true;
-  OnFocusChanged();
-}
-void XRDevice::OnActivate(device::mojom::blink::VRDisplayEventReason,
-                          OnActivateCallback on_handled) {}
-void XRDevice::OnDeactivate(device::mojom::blink::VRDisplayEventReason) {}
-
 XRFrameProvider* XRDevice::frameProvider() {
   if (!frame_provider_) {
     frame_provider_ = new XRFrameProvider(this);
@@ -270,18 +234,8 @@ XRFrameProvider* XRDevice::frameProvider() {
 }
 
 void XRDevice::Dispose() {
-  display_client_binding_.Close();
   if (frame_provider_)
     frame_provider_->Dispose();
-}
-
-void XRDevice::SetXRDisplayInfo(
-    device::mojom::blink::VRDisplayInfoPtr display_info) {
-  display_info_id_++;
-  display_info_ = std::move(display_info);
-  is_external_ = display_info_->capabilities->hasExternalDisplay;
-  supports_immersive_ = (display_info_->capabilities->canPresent);
-  supports_ar_ = display_info_->capabilities->can_provide_pass_through_images;
 }
 
 void XRDevice::Trace(blink::Visitor* visitor) {

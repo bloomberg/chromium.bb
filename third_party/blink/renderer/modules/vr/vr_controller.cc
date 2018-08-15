@@ -28,9 +28,10 @@ VRController::VRController(NavigatorVR* navigator_vr)
 
   device::mojom::blink::VRServiceClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
-  service_->SetClient(
-      std::move(client),
-      WTF::Bind(&VRController::OnDisplaysSynced, WrapPersistent(this)));
+  service_->SetClient(std::move(client));
+
+  service_->RequestDevice(
+      WTF::Bind(&VRController::OnRequestDeviceReturned, WrapPersistent(this)));
 }
 
 VRController::~VRController() = default;
@@ -41,7 +42,10 @@ void VRController::GetDisplays(ScriptPromiseResolver* resolver) {
   // disconnected this will be an empty array.
   if (!service_ || display_synced_) {
     LogGetDisplayResult();
-    resolver->Resolve(displays_);
+    HeapVector<Member<VRDisplay>> displays;
+    if (display_)
+      displays.push_back(display_);
+    resolver->Resolve(displays);
     return;
   }
 
@@ -52,37 +56,94 @@ void VRController::GetDisplays(ScriptPromiseResolver* resolver) {
 }
 
 void VRController::SetListeningForActivate(bool listening) {
-  if (service_)
-    service_->SetListeningForActivate(listening);
+  if (!service_ || !display_) {
+    pending_listening_for_activate_ = listening;
+    return;
+  }
+
+  if (listening_for_activate_ && listening) {
+    // We're already listening so leave things as is.
+    return;
+  }
+
+  listening_for_activate_ = listening;
+
+  if (listening) {
+    service_->SetListeningForActivate(display_->GetDisplayClient());
+  } else {
+    service_->SetListeningForActivate(nullptr);
+  }
 }
 
-// Each time a new VRDisplay is connected we'll receive a VRDisplayPtr for it
-// here. Upon calling SetClient in the constructor we should receive one call
-// for each VRDisplay that was already connected at the time.
-void VRController::OnDisplayConnected(
-    device::mojom::blink::XRDevicePtr device,
-    device::mojom::blink::VRDisplayClientRequest request,
-    device::mojom::blink::VRDisplayInfoPtr display_info) {
-  VRDisplay* vr_display =
-      new VRDisplay(navigator_vr_, std::move(device), std::move(request));
-  vr_display->Update(display_info);
-  vr_display->OnConnected();
-  vr_display->FocusChanged();
+// Called when the XRDevice has been initialized.
+void VRController::OnRequestDeviceReturned(
+    device::mojom::blink::XRDevicePtr device) {
+  if (!device) {
+    // There are no devices connected to the system. We can't do any VR, at all.
+    OnGetDisplays();
+    return;
+  }
 
-  has_presentation_capable_display_ = display_info->capabilities->canPresent;
-  has_display_ = true;
+  device->GetImmersiveVRDisplayInfo(WTF::Bind(
+      &VRController::OnImmersiveDisplayInfoReturned, WrapPersistent(this)));
 
-  displays_.push_back(vr_display);
+  display_ = new VRDisplay(navigator_vr_, std::move(device));
+
+  if (pending_listening_for_activate_) {
+    SetListeningForActivate(pending_listening_for_activate_);
+    pending_listening_for_activate_ = false;
+  }
+}
+
+void VRController::OnNewDeviceReturned(
+    device::mojom::blink::XRDevicePtr device) {
+  if (device) {
+    display_->OnConnected();
+  }
+  OnRequestDeviceReturned(std::move(device));
+}
+
+void VRController::OnDeviceChanged() {
+  if (!display_ && !display_synced_) {
+    // We're already underway checking if there is a device.
+    return;
+  }
+
+  display_synced_ = false;
+
+  if (!display_) {
+    service_->RequestDevice(
+        WTF::Bind(&VRController::OnNewDeviceReturned, WrapPersistent(this)));
+  } else if (!display_->canPresent()) {
+    // If we can't present, see if that's changed.
+    display_->device()->GetImmersiveVRDisplayInfo(WTF::Bind(
+        &VRController::OnImmersiveDisplayInfoReturned, WrapPersistent(this)));
+  } else {
+    display_synced_ = true;
+  }
 }
 
 void VRController::FocusChanged() {
-  for (const auto& display : displays_)
-    display->FocusChanged();
+  if (display_)
+    display_->FocusChanged();
 }
 
-// Called when the VRService has called OnDisplayConnected for all active
-// VRDisplays.
-void VRController::OnDisplaysSynced() {
+void VRController::OnImmersiveDisplayInfoReturned(
+    device::mojom::blink::VRDisplayInfoPtr info) {
+  if (!display_) {
+    // We must have been disposed and are shutting down.
+    return;
+  }
+
+  has_presentation_capable_display_ = info ? true : false;
+
+  if (info) {
+    display_->OnChanged(std::move(info), true /* is_immersive */);
+    display_->OnConnected();
+    has_display_ = true;
+  }
+  display_->FocusChanged();
+
   display_synced_ = true;
   OnGetDisplays();
 }
@@ -102,9 +163,14 @@ void VRController::LogGetDisplayResult() {
 void VRController::OnGetDisplays() {
   while (!pending_get_devices_callbacks_.IsEmpty()) {
     LogGetDisplayResult();
+
+    HeapVector<Member<VRDisplay>> displays;
+    if (display_)
+      displays.push_back(display_);
+
     std::unique_ptr<VRGetDevicesCallback> callback =
         pending_get_devices_callbacks_.TakeFirst();
-    callback->OnSuccess(displays_);
+    callback->OnSuccess(displays);
   }
 }
 
@@ -119,10 +185,10 @@ void VRController::Dispose() {
   binding_.Close();
 
   // Shutdown all displays' message pipe
-  for (const auto& display : displays_)
-    display->Dispose();
-
-  displays_.clear();
+  if (display_) {
+    display_->Dispose();
+    display_ = nullptr;
+  }
 
   // Ensure that any outstanding getDisplays promises are resolved.
   OnGetDisplays();
@@ -130,7 +196,7 @@ void VRController::Dispose() {
 
 void VRController::Trace(blink::Visitor* visitor) {
   visitor->Trace(navigator_vr_);
-  visitor->Trace(displays_);
+  visitor->Trace(display_);
 
   ContextLifecycleObserver::Trace(visitor);
 }

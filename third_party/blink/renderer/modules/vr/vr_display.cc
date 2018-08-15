@@ -44,10 +44,10 @@ namespace blink {
 
 namespace {
 
-// Threshold for rejecting stored magic window poses as being too old.
-// If it's exceeded, defer magic window rAF callback execution until
+// Threshold for rejecting stored non-immersive poses as being too old.
+// If it's exceeded, defer non-immersive rAF callback execution until
 // a fresh pose is received.
-constexpr WTF::TimeDelta kMagicWindowPoseAgeThreshold =
+constexpr WTF::TimeDelta kNonImmersivePoseAgeThreshold =
     WTF::TimeDelta::FromMilliseconds(250);
 
 VREye StringToVREye(const String& which_eye) {
@@ -65,7 +65,7 @@ class VRDisplayFrameRequestCallback
       : vr_display_(vr_display) {}
   ~VRDisplayFrameRequestCallback() override = default;
   void Invoke(double high_res_time_ms) override {
-    if (Id() != vr_display_->PendingMagicWindowVSyncId())
+    if (Id() != vr_display_->PendingNonImmersiveVSyncId())
       return;
     TimeTicks monotonic_time;
     if (!vr_display_->GetDocument() || !vr_display_->GetDocument()->Loader()) {
@@ -79,7 +79,7 @@ class VRDisplayFrameRequestCallback
       monotonic_time = reference_monotonic_time +
                        TimeDelta::FromMillisecondsD(high_res_time_ms);
     }
-    vr_display_->OnMagicWindowVSync(monotonic_time);
+    vr_display_->OnNonImmersiveVSync(monotonic_time);
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -93,17 +93,45 @@ class VRDisplayFrameRequestCallback
 
 }  // namespace
 
+SessionClientBinding::SessionClientBinding(
+    VRDisplay* display,
+    bool is_immersive,
+    device::mojom::blink::XRSessionClientRequest request)
+    : display_(display),
+      is_immersive_(is_immersive),
+      client_binding_(this, std::move(request)){};
+
+SessionClientBinding::~SessionClientBinding() = default;
+
+void SessionClientBinding::Close() {
+  DCHECK(client_binding_);
+  client_binding_.Close();
+}
+void SessionClientBinding::OnChanged(
+    device::mojom::blink::VRDisplayInfoPtr ptr) {
+  display_->OnChanged(std::move(ptr), is_immersive_);
+};
+void SessionClientBinding::OnExitPresent() {
+  display_->OnExitPresent(is_immersive_);
+};
+void SessionClientBinding::OnBlur() {
+  display_->OnBlur(is_immersive_);
+};
+void SessionClientBinding::OnFocus() {
+  display_->OnFocus(is_immersive_);
+};
+
 VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
-                     device::mojom::blink::XRDevicePtr device,
-                     device::mojom::blink::VRDisplayClientRequest request)
+                     device::mojom::blink::XRDevicePtr device)
     : PausableObject(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
       capabilities_(new VRDisplayCapabilities()),
       device_ptr_(std::move(device)),
-      display_client_binding_(this, std::move(request)) {
+      display_client_binding_(this) {
   PauseIfNeeded();  // Initialize SuspendabaleObject.
 
-  // Request a non-exclusive session to provide magic window.
+  // Request a non-immersive session immediately as WebVR 1.1 expects to be able
+  // to get non-immersive poses as soon as the display is returned.
   device::mojom::blink::XRSessionOptionsPtr options =
       device::mojom::blink::XRSessionOptions::New();
   options->immersive = false;
@@ -112,7 +140,7 @@ VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
   // TODO(offenwanger): clean up the logging when refactors are complete.
   device_ptr_->RequestSession(
       std::move(options), true,
-      WTF::Bind(&VRDisplay::OnMagicWindowRequestReturned,
+      WTF::Bind(&VRDisplay::OnNonImmersiveSessionRequestReturned,
                 WrapPersistent(this)));
 }
 
@@ -225,7 +253,7 @@ void VRDisplay::RequestVSync() {
            << " start: pending_vrdisplay_raf_=" << pending_vrdisplay_raf_
            << " in_animation_frame_=" << in_animation_frame_
            << " did_submit_this_frame_=" << did_submit_this_frame_
-           << " pending_magic_window_vsync_=" << pending_magic_window_vsync_
+           << " pending_non_immersive_vsync_=" << pending_non_immersive_vsync_
            << " pending_presenting_vsync_=" << pending_presenting_vsync_;
   if (!pending_vrdisplay_raf_)
     return;
@@ -241,7 +269,7 @@ void VRDisplay::RequestVSync() {
     if (pending_presenting_vsync_)
       return;
 
-    pending_magic_window_vsync_ = false;
+    pending_non_immersive_vsync_ = false;
     pending_presenting_vsync_ = true;
     vr_presentation_data_provider_->GetFrameData(
         WTF::Bind(&VRDisplay::OnPresentingVSync, WrapWeakPersistent(this)));
@@ -249,23 +277,23 @@ void VRDisplay::RequestVSync() {
     DVLOG(2) << __FUNCTION__ << " done: pending_presenting_vsync_="
              << pending_presenting_vsync_;
   } else {
-    // Check if magic_window_provider_, if not then we are not fully
-    // initialized, or we do not support magic window, so don't request the
-    // vsync. If and when magic_window_provider_ is set it will run this code
+    // Check if non_immersive_provider_, if not then we are not fully
+    // initialized, or we do not support non-immersive, so don't request the
+    // vsync. If and when non_immersive_provider_ is set it will run this code
     // again.
-    if (!magic_window_provider_)
+    if (!non_immersive_provider_)
       return;
-    if (pending_magic_window_vsync_)
+    if (pending_non_immersive_vsync_)
       return;
-    magic_window_vsync_waiting_for_pose_.Reset();
-    magic_window_pose_request_time_ = WTF::CurrentTimeTicks();
-    magic_window_provider_->GetFrameData(WTF::Bind(
-        &VRDisplay::OnMagicWindowFrameData, WrapWeakPersistent(this)));
-    pending_magic_window_vsync_ = true;
-    pending_magic_window_vsync_id_ =
+    non_immersive_vsync_waiting_for_pose_.Reset();
+    non_immersive_pose_request_time_ = WTF::CurrentTimeTicks();
+    non_immersive_provider_->GetFrameData(WTF::Bind(
+        &VRDisplay::OnNonImmersiveFrameData, WrapWeakPersistent(this)));
+    pending_non_immersive_vsync_ = true;
+    pending_non_immersive_vsync_id_ =
         doc->RequestAnimationFrame(new VRDisplayFrameRequestCallback(this));
-    DVLOG(2) << __FUNCTION__ << " done: pending_magic_window_vsync_="
-             << pending_magic_window_vsync_;
+    DVLOG(2) << __FUNCTION__ << " done: pending_non_immersive_vsync_="
+             << pending_non_immersive_vsync_;
   }
 }
 
@@ -292,14 +320,20 @@ void VRDisplay::cancelAnimationFrame(int id) {
   scripted_animation_controller_->CancelCallback(id);
 }
 
-void VRDisplay::OnBlur() {
+void VRDisplay::OnBlur(bool is_immersive) {
+  // TODO(http://crbug.com/845283) When cleaning up the Blur events, determine
+  // whether we should react to blur events from both immersive and non-
+  // immersive sessions.
   DVLOG(1) << __FUNCTION__;
   display_blurred_ = true;
   navigator_vr_->EnqueueVREvent(
       VRDisplayEvent::Create(EventTypeNames::vrdisplayblur, this, ""));
 }
 
-void VRDisplay::OnFocus() {
+void VRDisplay::OnFocus(bool is_immersive) {
+  // TODO(http://crbug.com/845283) When cleaning up the Blur events, determine
+  // whether we should react to blur events from both immersive and non-
+  // immersive sessions.
   DVLOG(1) << __FUNCTION__;
   display_blurred_ = false;
   RequestVSync();
@@ -483,7 +517,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
 
     device_ptr_->RequestSession(
         std::move(options), in_display_activate_,
-        WTF::Bind(&VRDisplay::OnRequestSessionReturned, WrapPersistent(this)));
+        WTF::Bind(&VRDisplay::OnRequestImmersiveSessionReturned,
+                  WrapPersistent(this)));
     pending_present_request_ = true;
 
     // The old vr_presentation_provider_ won't be delivering any vsyncs anymore,
@@ -498,11 +533,12 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   return promise;
 }
 
-void VRDisplay::OnRequestSessionReturned(
+void VRDisplay::OnRequestImmersiveSessionReturned(
     device::mojom::blink::XRSessionPtr session) {
   pending_present_request_ = false;
   if (session) {
     DCHECK(session->submit_frame_sink);
+    vr_presentation_data_provider_.reset();
     vr_presentation_data_provider_.Bind(std::move(session->data_provider));
     // The presentation provider error handler can trigger if a device is
     // disconnected from the system. This can happen if, for example, an HMD is
@@ -522,6 +558,13 @@ void VRDisplay::OnRequestSessionReturned(
     frame_transport_->SetTransportOptions(
         std::move(session->submit_frame_sink->transport_options));
 
+    if (immersive_client_binding_)
+      immersive_client_binding_->Close();
+    immersive_client_binding_ = std::make_unique<SessionClientBinding>(
+        this, false, std::move(session->client_request));
+
+    Update(std::move(session->display_info));
+
     this->BeginPresent();
   } else {
     this->ForceExitPresent();
@@ -535,13 +578,15 @@ void VRDisplay::OnRequestSessionReturned(
   }
 }
 
-void VRDisplay::OnMagicWindowRequestReturned(
+void VRDisplay::OnNonImmersiveSessionRequestReturned(
     device::mojom::blink::XRSessionPtr session) {
   if (!session) {
     // System does not support any kind of session.
     return;
   }
-  magic_window_provider_.Bind(std::move(session->data_provider));
+  non_immersive_provider_.Bind(std::move(session->data_provider));
+  non_immersive_client_binding_ = std::make_unique<SessionClientBinding>(
+      this, false, std::move(session->client_request));
   RequestVSync();
 }
 
@@ -615,7 +660,7 @@ void VRDisplay::BeginPresent() {
   if (!FocusedOrPresenting() && display_blurred_) {
     // Presentation doesn't care about focus, so if we're blurred because of
     // focus, then unblur.
-    OnFocus();
+    OnFocus(true);
   }
   is_presenting_ = true;
   // Call RequestVSync to switch from the (internal) document rAF to the
@@ -797,6 +842,13 @@ Document* VRDisplay::GetDocument() {
   return navigator_vr_->GetDocument();
 }
 
+device::mojom::blink::VRDisplayClientPtr VRDisplay::GetDisplayClient() {
+  display_client_binding_.Close();
+  device::mojom::blink::VRDisplayClientPtr client;
+  display_client_binding_.Bind(mojo::MakeRequest(&client));
+  return client;
+}
+
 void VRDisplay::OnPresentChange() {
   if (frame_transport_)
     frame_transport_->PresentChange();
@@ -810,12 +862,22 @@ void VRDisplay::OnPresentChange() {
       VRDisplayEvent::Create(EventTypeNames::vrdisplaypresentchange, this, ""));
 }
 
-void VRDisplay::OnChanged(device::mojom::blink::VRDisplayInfoPtr display) {
-  Update(display);
+void VRDisplay::OnChanged(device::mojom::blink::VRDisplayInfoPtr display,
+                          bool is_immersive) {
+  // VrDisplayInfo is only used for immersive sessions, so unless this is
+  // from an immersive device, ignore it.
+  // We expect that non-immersive sessions don't use display info, and immersive
+  // sessions will not use display info until they are presenting, so it is fine
+  // for us not to start listening until then.
+  if (is_immersive) {
+    Update(display);
+  }
 }
 
-void VRDisplay::OnExitPresent() {
-  StopPresenting();
+void VRDisplay::OnExitPresent(bool is_immersive) {
+  if (is_immersive) {
+    StopPresenting();
+  }
 }
 
 void VRDisplay::OnConnected() {
@@ -957,7 +1019,7 @@ void VRDisplay::ProcessScheduledAnimations(TimeTicks timestamp) {
 
   // Sanity check: If pending_vrdisplay_raf_ is true and the vsync provider
   // is connected, we must now have a pending vsync.
-  DCHECK(!pending_vrdisplay_raf_ || pending_magic_window_vsync_ ||
+  DCHECK(!pending_vrdisplay_raf_ || pending_non_immersive_vsync_ ||
          pending_presenting_vsync_);
 }
 
@@ -973,7 +1035,7 @@ void VRDisplay::OnPresentingVSync(
     return;
   }
 
-  // All early exits that want this VSync converted to a magic window
+  // All early exits that want this VSync converted to a non-immersive
   // VSync must happen before this line. Once it's set to not pending,
   // an early exit woud break animation.
   pending_presenting_vsync_ = false;
@@ -999,24 +1061,24 @@ void VRDisplay::OnPresentingVSync(
                            TimeTicks() + frame_data->time_delta));
 }
 
-void VRDisplay::OnMagicWindowVSync(TimeTicks timestamp) {
+void VRDisplay::OnNonImmersiveVSync(TimeTicks timestamp) {
   DVLOG(2) << __FUNCTION__;
-  pending_magic_window_vsync_ = false;
-  pending_magic_window_vsync_id_ = -1;
+  pending_non_immersive_vsync_ = false;
+  pending_non_immersive_vsync_id_ = -1;
   if (is_presenting_)
     return;
   vr_frame_id_ = -1;
   WTF::TimeDelta pose_age =
-      WTF::CurrentTimeTicks() - magic_window_pose_received_time_;
-  if (pose_age >= kMagicWindowPoseAgeThreshold &&
-      magic_window_pose_request_time_ > magic_window_pose_received_time_) {
+      WTF::CurrentTimeTicks() - non_immersive_pose_received_time_;
+  if (pose_age >= kNonImmersivePoseAgeThreshold &&
+      non_immersive_pose_request_time_ > non_immersive_pose_received_time_) {
     // The VSync got triggered before ever receiving a pose, or the pose is
     // stale. Defer the animation until a pose arrives to avoid passing null
     // poses to the application, but only do this if we have an outstanding
     // unresolved GetPose request. For example, the pose might be stale after
-    // exiting VR Browser magic window mode due to a longish transition, but we
+    // exiting VR Browser non-immersive mode due to a longish transition, but we
     // need to use it anyway if it's from the current frame's GetPose.
-    magic_window_vsync_waiting_for_pose_ =
+    non_immersive_vsync_waiting_for_pose_ =
         WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
                   WrapWeakPersistent(this), timestamp);
   } else {
@@ -1024,9 +1086,9 @@ void VRDisplay::OnMagicWindowVSync(TimeTicks timestamp) {
   }
 }
 
-void VRDisplay::OnMagicWindowFrameData(
+void VRDisplay::OnNonImmersiveFrameData(
     device::mojom::blink::XRFrameDataPtr data) {
-  magic_window_pose_received_time_ = WTF::CurrentTimeTicks();
+  non_immersive_pose_received_time_ = WTF::CurrentTimeTicks();
   if (data) {
     if (!in_animation_frame_) {
       frame_pose_ = std::move(data->pose);
@@ -1034,16 +1096,16 @@ void VRDisplay::OnMagicWindowFrameData(
       pending_pose_ = std::move(data->pose);
     }
   }
-  if (magic_window_vsync_waiting_for_pose_) {
+  if (non_immersive_vsync_waiting_for_pose_) {
     // We have a vsync waiting for a pose, run it now.
-    std::move(magic_window_vsync_waiting_for_pose_).Run();
-    magic_window_vsync_waiting_for_pose_.Reset();
+    std::move(non_immersive_vsync_waiting_for_pose_).Run();
+    non_immersive_vsync_waiting_for_pose_.Reset();
   }
 }
 
 void VRDisplay::OnPresentationProviderConnectionError() {
   DVLOG(1) << __FUNCTION__ << ";;; is_presenting_=" << is_presenting_
-           << " pending_magic_window_vsync_=" << pending_magic_window_vsync_
+           << " pending_non_immersive_vsync_=" << pending_non_immersive_vsync_
            << " pending_presenting_vsync_=" << pending_presenting_vsync_;
   vr_presentation_provider_.reset();
   vr_presentation_data_provider_.reset();
@@ -1063,7 +1125,9 @@ ScriptedAnimationController& VRDisplay::EnsureScriptedAnimationController(
 }
 
 void VRDisplay::Dispose() {
-  display_client_binding_.Close();
+  if (non_immersive_client_binding_)
+    non_immersive_client_binding_->Close();
+  non_immersive_client_binding_ = nullptr;
   vr_presentation_provider_.reset();
 }
 
@@ -1093,9 +1157,13 @@ bool VRDisplay::HasPendingActivity() const {
 void VRDisplay::FocusChanged() {
   DVLOG(1) << __FUNCTION__;
   if (navigator_vr_->IsFocused()) {
-    OnFocus();
+    if (is_presenting_) {
+      OnFocus(true /* is_immmersive */);
+    } else {
+      OnFocus(false /* is_immmersive */);
+    }
   } else if (!is_presenting_) {
-    OnBlur();
+    OnBlur(false);
   }
 }
 

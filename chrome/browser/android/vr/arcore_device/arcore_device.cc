@@ -441,8 +441,6 @@ void ARCoreDevice::OnARCoreGlInitializationComplete(
         &ARCoreGl::Resume, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr()));
   }
 
-  auto session = mojom::XRSession::New();
-
   mojom::XRFrameDataProviderPtr data_provider;
   mojom::XREnviromentIntegrationProviderPtr enviroment_provider;
   mojom::XRSessionControllerPtr controller;
@@ -450,8 +448,10 @@ void ARCoreDevice::OnARCoreGlInitializationComplete(
       this, mojo::MakeRequest(&data_provider),
       mojo::MakeRequest(&enviroment_provider), mojo::MakeRequest(&controller)));
 
+  auto session = mojom::XRSession::New();
   session->data_provider = data_provider.PassInterface();
   session->enviroment_provider = enviroment_provider.PassInterface();
+  session->display_info = display_info_.Clone();
 
   std::move(callback).Run(std::move(session), std::move(controller));
 }

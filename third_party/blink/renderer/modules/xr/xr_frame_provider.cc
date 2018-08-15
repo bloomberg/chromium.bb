@@ -86,7 +86,7 @@ std::unique_ptr<TransformationMatrix> getPoseMatrix(
 }  // namespace
 
 XRFrameProvider::XRFrameProvider(XRDevice* device)
-    : device_(device), last_has_focus_(device->HasDeviceAndFrameFocus()) {
+    : device_(device), last_has_focus_(device->HasFrameFocus()) {
   frame_transport_ = new XRFrameTransport();
 }
 
@@ -119,7 +119,7 @@ void XRFrameProvider::BeginImmersiveSession(
 }
 
 void XRFrameProvider::OnFocusChanged() {
-  bool focus = device_->HasDeviceAndFrameFocus();
+  bool focus = device_->HasFrameFocus();
 
   // If we are gaining focus, schedule a frame for magic window.  This accounts
   // for skipping RAFs in ProcessScheduledFrame.  Only do this when there are
@@ -355,7 +355,7 @@ void XRFrameProvider::ProcessScheduledFrame(
   TRACE_EVENT2("gpu", "XRFrameProvider::ProcessScheduledFrame", "frame",
                frame_id_, "timestamp", high_res_now_ms);
 
-  if (!device_->HasDeviceAndFrameFocus() && !immersive_session_) {
+  if (!device_->HasFrameFocus() && !immersive_session_) {
     return;  // Not currently focused, so we won't expose poses (except to
              // immersive sessions).
   }
@@ -497,7 +497,7 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
 
   // TODO(bajones): Remove this when the Windows path has been updated to no
   // longer require a texture copy.
-  bool needs_copy = device_->external();
+  bool needs_copy = immersive_session_->External();
 
   frame_transport_->FrameSubmit(
       presentation_provider_.get(), webgl_context->ContextGL(), webgl_context,

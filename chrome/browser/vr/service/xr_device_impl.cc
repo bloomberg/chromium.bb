@@ -104,7 +104,7 @@ device::mojom::VRDisplayInfoPtr XRDeviceImpl::GetCurrentVRDisplayInfo() {
 }
 
 XRDeviceImpl::XRDeviceImpl(content::RenderFrameHost* render_frame_host,
-                           device::mojom::VRServiceClient* service_client)
+                           device::mojom::XRDeviceRequest request)
     :  // TODO(https://crbug.com/846392): render_frame_host can be null because
        // of a test, not because a XRDeviceImpl can be created without it.
       in_focused_frame_(
@@ -112,20 +112,10 @@ XRDeviceImpl::XRDeviceImpl(content::RenderFrameHost* render_frame_host,
       render_frame_host_(render_frame_host),
       binding_(this),
       weak_ptr_factory_(this) {
-  device::mojom::VRDisplayInfoPtr display_info = GetCurrentVRDisplayInfo();
-  if (!display_info) {
-    return;
-  }
-
-  // Tell blink that we are available.
-  device::mojom::XRDevicePtr device_ptr;
-  binding_.Bind(mojo::MakeRequest(&device_ptr));
-  service_client->OnDisplayConnected(std::move(device_ptr),
-                                     mojo::MakeRequest(&client_),
-                                     std::move(display_info));
+  binding_.Bind(std::move(request));
 }
 
-void XRDeviceImpl::OnMagicWindowSessionCreated(
+void XRDeviceImpl::OnNonImmersiveSessionCreated(
     device::mojom::XRDevice::RequestSessionCallback callback,
     device::mojom::XRSessionPtr session,
     device::mojom::XRSessionControllerPtr controller) {
@@ -138,6 +128,22 @@ void XRDeviceImpl::OnMagicWindowSessionCreated(
   controller->SetFrameDataRestricted(!in_focused_frame_);
 
   magic_window_controllers_.AddPtr(std::move(controller));
+
+  OnSessionCreated(std::move(callback), std::move(session));
+}
+
+void XRDeviceImpl::OnSessionCreated(
+    device::mojom::XRDevice::RequestSessionCallback callback,
+    device::mojom::XRSessionPtr session) {
+  if (!session) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  device::mojom::XRSessionClientPtr client;
+  session->client_request = mojo::MakeRequest(&client);
+
+  session_clients_.AddPtr(std::move(client));
 
   std::move(callback).Run(std::move(session));
 }
@@ -198,29 +204,27 @@ void XRDeviceImpl::RequestSession(
       ReportRequestPresent();
     }
 
+    base::OnceCallback<void(device::mojom::XRSessionPtr)> immersive_callback =
+        base::BindOnce(&XRDeviceImpl::OnSessionCreated,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback));
     runtime->RequestSession(this, std::move(runtime_options),
-                            std::move(callback));
+                            std::move(immersive_callback));
   } else {
     base::OnceCallback<void(device::mojom::XRSessionPtr,
                             device::mojom::XRSessionControllerPtr)>
-        magic_window_callback =
-            base::BindOnce(&XRDeviceImpl::OnMagicWindowSessionCreated,
+        non_immersive_callback =
+            base::BindOnce(&XRDeviceImpl::OnNonImmersiveSessionCreated,
                            weak_ptr_factory_.GetWeakPtr(), std::move(callback));
     runtime->GetRuntime()->RequestSession(std::move(runtime_options),
-                                          std::move(magic_window_callback));
+                                          std::move(non_immersive_callback));
   }
 }
 
 void XRDeviceImpl::SupportsSession(device::mojom::XRSessionOptionsPtr options,
                                    SupportsSessionCallback callback) {
-  std::move(callback).Run(InternalSupportsSession(options.get()));
-}
-
-bool XRDeviceImpl::InternalSupportsSession(
-    device::mojom::XRSessionOptions* options) {
-  // Return whether we can get a device that supports the specified options.
-  return XRRuntimeManager::GetInstance()->GetRuntimeForOptions(options) !=
-         nullptr;
+  bool supports = XRRuntimeManager::GetInstance()->GetRuntimeForOptions(
+                      options.get()) != nullptr;
+  std::move(callback).Run(supports);
 }
 
 void XRDeviceImpl::ReportRequestPresent() {
@@ -242,17 +246,29 @@ void XRDeviceImpl::ExitPresent() {
     immersive_runtime_->ExitPresent(this);
 }
 
-void XRDeviceImpl::SetListeningForActivate(bool listening) {
-  listening_for_activate_ = listening;
-  if (!immersive_runtime_) {
-    return;
+void XRDeviceImpl::SetListeningForActivate(
+    device::mojom::VRDisplayClientPtr client) {
+  client_ = std::move(client);
+  if (immersive_runtime_ && client) {
+    immersive_runtime_->UpdateListeningForActivate(this);
   }
-  immersive_runtime_->UpdateListeningForActivate(this);
+}
+
+void XRDeviceImpl::GetImmersiveVRDisplayInfo(
+    device::mojom::XRDevice::GetImmersiveVRDisplayInfoCallback callback) {
+  BrowserXRRuntime* immersive_runtime =
+      XRRuntimeManager::GetInstance()->GetImmersiveRuntime();
+  device::mojom::VRDisplayInfoPtr device_info =
+      immersive_runtime ? immersive_runtime->GetVRDisplayInfo() : nullptr;
+  std::move(callback).Run(std::move(device_info));
 }
 
 void XRDeviceImpl::SetInFocusedFrame(bool in_focused_frame) {
   in_focused_frame_ = in_focused_frame;
-  SetListeningForActivate(listening_for_activate_);  // No change, except focus.
+  if (ListeningForActivate() && immersive_runtime_) {
+    // No change, except focus.
+    immersive_runtime_->UpdateListeningForActivate(this);
+  }
 
   magic_window_controllers_.ForAllPtrs(
       [&in_focused_frame](device::mojom::XRSessionController* controller) {
@@ -262,8 +278,12 @@ void XRDeviceImpl::SetInFocusedFrame(bool in_focused_frame) {
 
 void XRDeviceImpl::OnChanged() {
   device::mojom::VRDisplayInfoPtr display_info = GetCurrentVRDisplayInfo();
-  if (display_info && client_)
-    client_->OnChanged(std::move(display_info));
+  if (display_info) {
+    session_clients_.ForAllPtrs(
+        [&display_info](device::mojom::XRSessionClient* client) {
+          client->OnChanged(display_info.Clone());
+        });
+  }
 }
 
 void XRDeviceImpl::OnRuntimeRemoved(BrowserXRRuntime* runtime) {
@@ -289,24 +309,33 @@ void XRDeviceImpl::OnRuntimeAvailable(BrowserXRRuntime* runtime) {
 }
 
 void XRDeviceImpl::OnExitPresent() {
-  client_->OnExitPresent();
+  session_clients_.ForAllPtrs(
+      [](device::mojom::XRSessionClient* client) { client->OnExitPresent(); });
 }
 
+// TODO(http://crbug.com/845283): We should store the state here and send blur
+// messages to sessions that start blurred.
 void XRDeviceImpl::OnBlur() {
-  client_->OnBlur();
+  session_clients_.ForAllPtrs(
+      [](device::mojom::XRSessionClient* client) { client->OnBlur(); });
 }
 
 void XRDeviceImpl::OnFocus() {
-  client_->OnFocus();
+  session_clients_.ForAllPtrs(
+      [](device::mojom::XRSessionClient* client) { client->OnFocus(); });
 }
 
 void XRDeviceImpl::OnActivate(device::mojom::VRDisplayEventReason reason,
                               base::OnceCallback<void(bool)> on_handled) {
-  client_->OnActivate(reason, std::move(on_handled));
+  if (client_) {
+    client_->OnActivate(reason, std::move(on_handled));
+  }
 }
 
 void XRDeviceImpl::OnDeactivate(device::mojom::VRDisplayEventReason reason) {
-  client_->OnDeactivate(reason);
+  if (client_) {
+    client_->OnDeactivate(reason);
+  }
 }
 
 bool XRDeviceImpl::IsSecureContextRequirementSatisfied() {

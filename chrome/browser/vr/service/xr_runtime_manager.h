@@ -43,9 +43,6 @@ class VR_EXPORT XRRuntimeManager {
 
   // Adds a listener for runtime manager events. XRRuntimeManager does not own
   // this object.
-  // Automatically connects all currently available VR devices by querying
-  // the device providers and, for each returned device, calling
-  // VRServiceImpl::ConnectDevice.
   void AddService(VRServiceImpl* service);
   void RemoveService(VRServiceImpl* service);
 
@@ -53,11 +50,15 @@ class VR_EXPORT XRRuntimeManager {
       device::mojom::XRSessionOptions* options);
   BrowserXRRuntime* GetImmersiveRuntime();
 
+  bool HasAnyRuntime();
+
  protected:
   using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;
 
-  // Used by tests to supply providers.
+  // Constructor also used by tests to supply an arbitrary list of providers, so
+  // make it protected rather than private.
   explicit XRRuntimeManager(ProviderList providers);
+
   // Used by tests to check on device state.
   // TODO: Use XRDeviceId as appropriate.
   device::mojom::XRRuntime* GetRuntimeForTest(unsigned int id);

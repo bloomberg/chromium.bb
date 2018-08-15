@@ -126,8 +126,7 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
       framebuffer_scale_(framebuffer_scale) {
   DCHECK(drawing_buffer_);
   // If the contents need mirroring, indicate that to the drawing buffer.
-  if (session->immersive() && session->outputContext() &&
-      session->device()->external()) {
+  if (session->immersive() && session->outputContext() && session->External()) {
     mirroring_ = true;
     drawing_buffer_->SetMirrorClient(this);
   }
@@ -188,7 +187,6 @@ void XRWebGLLayer::requestViewportScaling(double scale_factor) {
 
 double XRWebGLLayer::getNativeFramebufferScaleFactor(XRSession* session) {
   return session->NativeFramebufferScale();
-  ;
 }
 
 void XRWebGLLayer::UpdateViewports() {
