@@ -80,6 +80,15 @@ typedef NSAutoreleasePool AutoreleasePoolType;
 
 class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
  public:
+  // Mask that determines which modes to use. Exposed for tests.
+  enum { kCommonModeMask = 0x1, kAllModesMask = 0x1f };
+
+  // Modes to use for MessagePumpNSApplication that are considered "safe".
+  // Currently just common and exclusive modes. Ideally, messages would be
+  // pumped in all modes, but that interacts badly with app modal dialogs (e.g.
+  // NSAlert). Exposed for tests.
+  enum { kNSApplicationModalSafeModeMask = 0x13 };
+
   // MessagePump:
   void Run(Delegate* delegate) override;
   void ScheduleWork() override;
@@ -128,7 +137,7 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   class ScopedModeEnabler;
 
   // The maximum number of run loop modes that can be monitored.
-  static constexpr int kNumModes = 4;
+  static constexpr int kNumModes = 5;
 
   // Marking timers as invalid at the right time helps significantly reduce
   // power use (see the comment in RunDelayedWorkTimer()), however there is no
