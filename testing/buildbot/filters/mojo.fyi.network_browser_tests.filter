@@ -181,24 +181,6 @@
 # about an origin.
 -ReportingBrowserTest.TestReportingHeadersProcessed
 
-# FileWriter doesn't work when the network service is enabled, presumably due
-# to https://crbug.com/859594
--ExtensionStorageMonitorTest.DoubleInitialThreshold
--ExtensionStorageMonitorTest.ExceedInitialThreshold
--ExtensionStorageMonitorTest.ThrottleNotifications
--ExtensionStorageMonitorTest.UserDisabledNotifications
--FileSystemApiTest.FileSystemApiGetWritableWithWriteTest
--FileSystemApiTest.FileSystemApiOpenDirectoryWithWriteTest
--FileSystemApiTest.FileSystemApiOpenExistingFileWithWriteTest
--FileSystemApiTest.FileSystemApiOpenMultipleWritableExistingFilesTest
--FileSystemApiTest.FileSystemApiOpenWritableExistingFileWithWriteTest
--FileSystemApiTest.FileSystemApiRestoreDirectoryEntry
--FileSystemApiTest.FileSystemApiRestoreEntry
--FileSystemApiTest.FileSystemApiSaveExistingFileWithWriteTest
--FileSystemApiTest.FileSystemApiSaveNewFileWithWriteTest
--PlatformAppWithFileBrowserTest.LaunchNewFile
--SyncFileSystemApiTest.WriteFileThenGetUsage
-
 # https://crbug.com/862176
 # Requires checking Origin headers on requests made after extension unload.
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
