@@ -5,6 +5,7 @@
 #include "chromecast/graphics/accessibility/fullscreen_magnification_controller.h"
 
 #include "base/numerics/ranges.h"
+#include "chromecast/graphics/cast_gesture_handler.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -75,9 +76,11 @@ class FullscreenMagnificationController::GestureProviderClient
 };
 
 FullscreenMagnificationController::FullscreenMagnificationController(
-    aura::Window* root_window)
+    aura::Window* root_window,
+    CastGestureHandler* cast_gesture_handler)
     : root_window_(root_window),
-      magnification_scale_(kDefaultMagnificationScale) {
+      magnification_scale_(kDefaultMagnificationScale),
+      cast_gesture_handler_(cast_gesture_handler) {
   DCHECK(root_window);
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
 
@@ -341,6 +344,10 @@ bool FullscreenMagnificationController::ProcessGestures() {
                               (gesture_center.y() - magnification_origin_.y()));
 
       RedrawDIP(origin, scale);
+
+      // Invoke the tap gesture so we don't go idle in the UI while zooming.
+      cast_gesture_handler_->HandleTapGesture(
+          gfx::ToFlooredPoint(gesture_center));
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       original_magnification_origin_ = magnification_origin_;
 
@@ -371,6 +378,9 @@ bool FullscreenMagnificationController::ProcessGestures() {
         }
       }
       RedrawDIP(gfx::PointF(new_x, new_y), magnification_scale_);
+
+      // Invoke the tap gesture so we don't go idle in the UI whiole dragging.
+      cast_gesture_handler_->HandleTapGesture(gfx::Point(new_x, new_y));
     }
   }
 

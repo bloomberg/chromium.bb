@@ -23,11 +23,15 @@ class GestureProviderAura;
 
 namespace chromecast {
 
+class CastGestureHandler;
+
 class FullscreenMagnificationController : public MagnificationController,
                                           public ui::EventRewriter,
                                           public ui::GestureConsumer {
  public:
-  explicit FullscreenMagnificationController(aura::Window* root_window);
+  explicit FullscreenMagnificationController(
+      aura::Window* root_window,
+      CastGestureHandler* cast_gesture_handler);
   ~FullscreenMagnificationController() override;
 
   void SetEnabled(bool enabled) override;
@@ -95,6 +99,8 @@ class FullscreenMagnificationController : public MagnificationController,
   // events are cancelled, i.e. size of this map can be different from number of
   // touches on the screen. Key is pointer id.
   std::map<int32_t, std::unique_ptr<ui::TouchEvent>> press_event_map_;
+
+  CastGestureHandler* cast_gesture_handler_;
 };
 
 }  // namespace chromecast

@@ -28,12 +28,12 @@ AccessibilityManager::AccessibilityManager(
       std::make_unique<AccessibilityFocusRingController>(root_window);
   touch_exploration_manager_ = std::make_unique<TouchExplorationManager>(
       root_window, activation_client,
-      accessibility_focus_ring_controller_.get(),
-      &accessibility_sound_proxy_,
+      accessibility_focus_ring_controller_.get(), &accessibility_sound_proxy_,
       window_manager->GetGestureHandler());
   triple_tap_detector_ = std::make_unique<TripleTapDetector>(root_window, this);
   magnification_controller_ =
-      std::make_unique<FullscreenMagnificationController>(root_window);
+      std::make_unique<FullscreenMagnificationController>(
+          root_window, window_manager->GetGestureHandler());
 }
 
 AccessibilityManager::~AccessibilityManager() {}
@@ -87,8 +87,16 @@ aura::WindowTreeHost* AccessibilityManager::window_tree_host() const {
   return window_tree_host_;
 }
 
-void AccessibilityManager::SetMagnificationGestureEnabled(bool enabled) {
-  triple_tap_detector_->set_enabled(enabled);
+void AccessibilityManager::SetMagnificationGestureEnabled(
+    bool gesture_enabled) {
+  triple_tap_detector_->set_enabled(gesture_enabled);
+
+  // If the gesture is not enabled, make sure that magnification is turned off,
+  // in case we're already in magnification. Otherwise the user will be stuck in
+  // magnifier and unable to get out.
+  if (!gesture_enabled) {
+    magnification_controller_->SetEnabled(false);
+  }
 }
 
 bool AccessibilityManager::IsMagnificationGestureEnabled() const {
