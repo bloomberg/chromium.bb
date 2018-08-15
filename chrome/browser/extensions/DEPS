@@ -20,11 +20,6 @@ include_rules = [
   "-chrome/browser/apps/",
 ]
 specific_include_rules = {
-  "extension_system_impl\.cc": [
-    # TODO(https://crbug.com/873872): Remove this.
-    "+chrome/browser/apps/platform_apps/browser_context_keyed_service_factories.h",
-  ],
-
   ".*test(_chromeos)?\.(cc|h)$": [
     # For now, tests are allowed to depend on app_browsertest_util.h, since
     # that's where PlatformAppBrowserTest is defined. Ideally, we'd eventually

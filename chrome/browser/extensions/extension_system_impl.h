@@ -10,8 +10,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_cookie_notifier.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 
@@ -89,7 +87,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
   // Owns the Extension-related systems that have a single instance
   // shared between normal and incognito profiles.
-  class Shared : public KeyedService, public content::NotificationObserver {
+  class Shared : public KeyedService {
    public:
     explicit Shared(Profile* profile);
     ~Shared() override;
@@ -119,16 +117,10 @@ class ExtensionSystemImpl : public ExtensionSystem {
     ContentVerifier* content_verifier();
 
    private:
-    // content::NotificationObserver implementation.
-    void Observe(int type,
-                 const content::NotificationSource& source,
-                 const content::NotificationDetails& details) override;
-
     Profile* profile_;
 
     // The services that are shared between normal and incognito profiles.
 
-    content::NotificationRegistrar registrar_;
     std::unique_ptr<StateStore> state_store_;
     std::unique_ptr<StateStoreNotificationObserver>
         state_store_notification_observer_;
