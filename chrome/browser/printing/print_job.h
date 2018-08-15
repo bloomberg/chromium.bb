@@ -8,10 +8,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -148,9 +148,6 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   // eventual deadlock.
   void ControlledWorkerShutdown();
 
-  // Called at shutdown when running a nested run loop.
-  void Quit();
-
   void HoldUntilStopIsCalled();
 
 #if defined(OS_WIN)
@@ -209,8 +206,8 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   // thread.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // Used at shutdown so that we can quit a nested run loop.
-  base::WeakPtrFactory<PrintJob> quit_factory_;
+  // Holds the quit closure while running a nested RunLoop to flush tasks.
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintJob);
 };

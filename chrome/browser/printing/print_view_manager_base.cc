@@ -108,7 +108,6 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
     : PrintManager(web_contents),
       printing_rfh_(nullptr),
       printing_succeeded_(false),
-      inside_inner_message_loop_(false),
       queue_(g_browser_process->print_job_manager()->queue()),
       weak_ptr_factory_(this) {
   DCHECK(queue_);
@@ -503,9 +502,9 @@ bool PrintViewManagerBase::RenderAllMissingPagesNow() {
   // to actually spool the pages, only to have the renderer generate them. Run
   // a message loop until we get our signal that the print job is satisfied.
   // PrintJob will send a ALL_PAGES_REQUESTED after having received all the
-  // pages it needs. RunLoop::QuitCurrentWhenIdleDeprecated() will be called as
-  // soon as print_job_->document()->IsComplete() is true on either
-  // ALL_PAGES_REQUESTED or in DidPrintDocument(). The check is done in
+  // pages it needs. |quit_inner_loop_| will be called as soon as
+  // print_job_->document()->IsComplete() is true on either ALL_PAGES_REQUESTED
+  // or in DidPrintDocument(). The check is done in
   // ShouldQuitFromInnerMessageLoop().
   // BLOCKS until all the pages are received. (Need to enable recursive task)
   if (!RunInnerMessageLoop()) {
@@ -519,18 +518,16 @@ bool PrintViewManagerBase::RenderAllMissingPagesNow() {
 void PrintViewManagerBase::ShouldQuitFromInnerMessageLoop() {
   // Look at the reason.
   DCHECK(print_job_->document());
-  if (print_job_->document() &&
-      print_job_->document()->IsComplete() &&
-      inside_inner_message_loop_) {
+  if (print_job_->document() && print_job_->document()->IsComplete() &&
+      quit_inner_loop_) {
     // We are in a message loop created by RenderAllMissingPagesNow. Quit from
     // it.
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-    inside_inner_message_loop_ = false;
+    std::move(quit_inner_loop_).Run();
   }
 }
 
 bool PrintViewManagerBase::CreateNewPrintJob(PrinterQuery* query) {
-  DCHECK(!inside_inner_message_loop_);
+  DCHECK(!quit_inner_loop_);
   DCHECK(query);
 
   // Disconnect the current |print_job_|.
@@ -575,9 +572,9 @@ void PrintViewManagerBase::TerminatePrintJob(bool cancel) {
   if (cancel) {
     // We don't need the metafile data anymore because the printing is canceled.
     print_job_->Cancel();
-    inside_inner_message_loop_ = false;
+    quit_inner_loop_.Reset();
   } else {
-    DCHECK(!inside_inner_message_loop_);
+    DCHECK(!quit_inner_loop_);
     DCHECK(!print_job_->document() || print_job_->document()->IsComplete());
 
     // WebContents is either dying or navigating elsewhere. We need to render
@@ -626,7 +623,7 @@ bool PrintViewManagerBase::RunInnerMessageLoop() {
                    TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
                    run_loop.QuitWhenIdleClosure());
 
-  inside_inner_message_loop_ = true;
+  quit_inner_loop_ = run_loop.QuitClosure();
 
   // Need to enable recursive task.
   {
@@ -634,12 +631,9 @@ bool PrintViewManagerBase::RunInnerMessageLoop() {
     run_loop.Run();
   }
 
-  bool success = true;
-  if (inside_inner_message_loop_) {
-    // Ok we timed out. That's sad.
-    inside_inner_message_loop_ = false;
-    success = false;
-  }
+  // If the inner-loop quit closure is still set then we timed out.
+  bool success = !quit_inner_loop_;
+  quit_inner_loop_.Reset();
 
   return success;
 }
