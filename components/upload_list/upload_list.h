@@ -64,7 +64,6 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
     base::string16 file_size;
   };
 
-  // Creates a new upload list with the given callback delegate.
   UploadList();
 
   // Starts loading the upload list. OnUploadListAvailable will be called when
