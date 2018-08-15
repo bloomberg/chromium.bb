@@ -53,9 +53,7 @@
 
   function step7() {
     TestRunner.addResult('Debugger disabled');
-    var breakpoint = Bindings.breakpointManager.findBreakpoints(
-        testSourceFrame.uiSourceCode(), 3)[0];
-    breakpoint.remove();
+    SourcesTestRunner.removeBreakpoint(testSourceFrame, 3);
     TestRunner.addResult('Breakpoint removed');
     TestRunner.debuggerModel.addEventListener(
         SDK.DebuggerModel.Events.DebuggerWasEnabled, step8, this);
