@@ -90,7 +90,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   bool ShouldUseGpuMemoryBuffersForVideoFrames(
       bool for_media_stream) const override;
   unsigned ImageTextureTarget(gfx::BufferFormat format) override;
-  OutputFormat VideoFrameOutputFormat(size_t bit_depth) override;
+  OutputFormat VideoFrameOutputFormat(
+      media::VideoPixelFormat pixel_format) override;
 
   // Called on the media thread. Returns the GLES2Interface unless the
   // ContextProvider has been lost, in which case it returns null.

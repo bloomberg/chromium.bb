@@ -136,4 +136,44 @@ bool IsOpaque(VideoPixelFormat format) {
   return false;
 }
 
+size_t BitDepth(VideoPixelFormat format) {
+  switch (format) {
+    case PIXEL_FORMAT_UNKNOWN:
+      NOTREACHED();
+      FALLTHROUGH;
+    case PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I422:
+    case PIXEL_FORMAT_I420A:
+    case PIXEL_FORMAT_I444:
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_YUY2:
+    case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_RGB24:
+    case PIXEL_FORMAT_RGB32:
+    case PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_MT21:
+      return 8;
+    case PIXEL_FORMAT_YUV420P9:
+    case PIXEL_FORMAT_YUV422P9:
+    case PIXEL_FORMAT_YUV444P9:
+      return 9;
+    case PIXEL_FORMAT_YUV420P10:
+    case PIXEL_FORMAT_YUV422P10:
+    case PIXEL_FORMAT_YUV444P10:
+      return 10;
+    case PIXEL_FORMAT_YUV420P12:
+    case PIXEL_FORMAT_YUV422P12:
+    case PIXEL_FORMAT_YUV444P12:
+      return 12;
+    case PIXEL_FORMAT_Y16:
+      return 16;
+  }
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace media

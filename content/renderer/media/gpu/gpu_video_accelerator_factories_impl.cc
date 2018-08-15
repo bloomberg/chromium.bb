@@ -110,10 +110,8 @@ GpuVideoAcceleratorFactoriesImpl::~GpuVideoAcceleratorFactoriesImpl() {}
 void GpuVideoAcceleratorFactoriesImpl::BindContextToTaskRunner() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(context_provider_);
-  if (context_provider_->BindToCurrentThread() !=
-      gpu::ContextResult::kSuccess) {
+  if (context_provider_->BindToCurrentThread() != gpu::ContextResult::kSuccess)
     SetContextProviderLost();
-  }
 }
 
 bool GpuVideoAcceleratorFactoriesImpl::CheckContextLost() {
@@ -309,7 +307,8 @@ unsigned GpuVideoAcceleratorFactoriesImpl::ImageTextureTarget(
 }
 
 media::GpuVideoAcceleratorFactories::OutputFormat
-GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(size_t bit_depth) {
+GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
+    media::VideoPixelFormat pixel_format) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
@@ -319,10 +318,12 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(size_t bit_depth) {
   // any hardware acceleration here, so this was never an issue, but SwiftShader
   // revealed this issue. See https://crbug.com/859946
   if (gpu_channel_host_->gpu_info().gl_renderer.find("SwiftShader") !=
-      std::string::npos)
+      std::string::npos) {
     return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
+  }
 #endif
   auto capabilities = context_provider_->ContextCapabilities();
+  const size_t bit_depth = media::BitDepth(pixel_format);
   if (bit_depth > 8) {
     // If high bit depth rendering is enabled, bail here, otherwise try and use
     // XR30 storage, and if not and we support RG textures, use those, albeit at

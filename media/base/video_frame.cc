@@ -937,43 +937,7 @@ std::string VideoFrame::AsHumanReadableString() {
 }
 
 size_t VideoFrame::BitDepth() const {
-  switch (format()) {
-    case media::PIXEL_FORMAT_UNKNOWN:
-      NOTREACHED();
-      FALLTHROUGH;
-    case media::PIXEL_FORMAT_I420:
-    case media::PIXEL_FORMAT_YV12:
-    case media::PIXEL_FORMAT_I422:
-    case media::PIXEL_FORMAT_I420A:
-    case media::PIXEL_FORMAT_I444:
-    case media::PIXEL_FORMAT_NV12:
-    case media::PIXEL_FORMAT_NV21:
-    case media::PIXEL_FORMAT_UYVY:
-    case media::PIXEL_FORMAT_YUY2:
-    case media::PIXEL_FORMAT_ARGB:
-    case media::PIXEL_FORMAT_XRGB:
-    case media::PIXEL_FORMAT_RGB24:
-    case media::PIXEL_FORMAT_RGB32:
-    case media::PIXEL_FORMAT_MJPEG:
-    case media::PIXEL_FORMAT_MT21:
-      return 8;
-    case media::PIXEL_FORMAT_YUV420P9:
-    case media::PIXEL_FORMAT_YUV422P9:
-    case media::PIXEL_FORMAT_YUV444P9:
-      return 9;
-    case media::PIXEL_FORMAT_YUV420P10:
-    case media::PIXEL_FORMAT_YUV422P10:
-    case media::PIXEL_FORMAT_YUV444P10:
-      return 10;
-    case media::PIXEL_FORMAT_YUV420P12:
-    case media::PIXEL_FORMAT_YUV422P12:
-    case media::PIXEL_FORMAT_YUV444P12:
-      return 12;
-    case media::PIXEL_FORMAT_Y16:
-      return 16;
-  }
-  NOTREACHED();
-  return 0;
+  return ::media::BitDepth(format());
 }
 
 // static
