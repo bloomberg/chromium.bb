@@ -1,0 +1,20 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//media/media_options.gni")
+import("//third_party/webrtc/webrtc.gni")
+
+source_set("webrtc") {
+  sources = [
+    "audio_processor_controls.h",
+  ]
+  deps = [
+    "//base",
+    "//media",
+    "//third_party/webrtc/api:libjingle_peerconnection_api",
+    "//third_party/webrtc/modules/audio_processing",
+    "//third_party/webrtc/modules/audio_processing:audio_processing_statistics",
+    "//third_party/webrtc_overrides:init_webrtc",
+  ]
+}
