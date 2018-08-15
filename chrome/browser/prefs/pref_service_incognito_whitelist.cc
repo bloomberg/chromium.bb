@@ -17,7 +17,6 @@
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/network_time/network_time_pref_names.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -775,10 +774,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     // components/language/core/browser/pref_names.h
     language::prefs::kApplicationLocale, language::prefs::kUserLanguageProfile,
-
-    // components/network_time/network_time_pref_names.h
-    network_time::prefs::kNetworkTimeMapping,
-    network_time::prefs::kNetworkTimeQueriesEnabled,
 
     // components/omnibox/browser/omnibox_pref_names.h
     omnibox::kZeroSuggestCachedResults,
