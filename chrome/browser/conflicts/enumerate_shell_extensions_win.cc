@@ -8,7 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -39,7 +39,7 @@ void ReadShellExtensions(
     if (clsid.ReadValue(L"", &dll) != ERROR_SUCCESS)
       continue;
 
-    nb_shell_extensions++;
+    (*nb_shell_extensions)++;
     callback.Run(base::FilePath(dll));
   }
 }
@@ -99,8 +99,8 @@ void EnumerateShellExtensionPaths(
   ReadShellExtensions(HKEY_LOCAL_MACHINE, callback, &nb_shell_extensions);
   ReadShellExtensions(HKEY_CURRENT_USER, callback, &nb_shell_extensions);
 
-  base::UmaHistogramCounts100("ThirdPartyModules.ShellExtensionsCount",
-                              nb_shell_extensions);
+  UMA_HISTOGRAM_COUNTS_100("ThirdPartyModules.ShellExtensionsCount2",
+                           nb_shell_extensions);
 }
 
 }  // namespace internal
