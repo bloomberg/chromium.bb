@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_prefs.h"

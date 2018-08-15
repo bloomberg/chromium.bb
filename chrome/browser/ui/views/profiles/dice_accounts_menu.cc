@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

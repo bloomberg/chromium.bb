@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/ssl_private_key.h"

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/page_info/chosen_object_view.h"
 
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_view_observer.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "components/vector_icons/vector_icons.h"

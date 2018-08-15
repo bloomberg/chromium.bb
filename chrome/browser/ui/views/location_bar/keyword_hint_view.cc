@@ -14,7 +14,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"

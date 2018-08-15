@@ -13,7 +13,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"

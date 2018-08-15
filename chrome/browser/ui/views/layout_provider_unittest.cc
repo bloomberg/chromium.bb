@@ -5,9 +5,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
-#include "chrome/browser/ui/views/harmony/harmony_typography_provider.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/chrome_typography_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -151,8 +151,8 @@ TEST_F(LayoutProviderTest, DISABLED_RequestFontBySize) {
   // Harmony spec.
   constexpr int kHeadline = 20;
   constexpr int kTitle = kHarmonyTitleSize;  // Leading 22.
-  constexpr int kBody1 = 13;  // Leading 20.
-  constexpr int kBody2 = 12;  // Leading 20.
+  constexpr int kBody1 = 13;                 // Leading 20.
+  constexpr int kBody2 = 12;                 // Leading 20.
   constexpr int kButton = 12;
 
 #if defined(OS_WIN)
@@ -182,7 +182,7 @@ TEST_F(LayoutProviderTest, DISABLED_RequestFontBySize) {
 #if defined(OS_MACOSX)
   EXPECT_EQ(25, headline_font.GetHeight());
 #elif defined(OS_WIN)
-  EXPECT_EQ(HarmonyTypographyProvider::GetPlatformFontHeight(CONTEXT_HEADLINE),
+  EXPECT_EQ(ChromeTypographyProvider::GetPlatformFontHeight(CONTEXT_HEADLINE),
             headline_font.GetHeight());
 #else
   EXPECT_EQ(24, headline_font.GetHeight());
@@ -206,7 +206,7 @@ TEST_F(LayoutProviderTest, DISABLED_RequestFontBySize) {
   EXPECT_EQ(16, body1_font.GetHeight());  // Add 4.
 #elif defined(OS_WIN)
   EXPECT_EQ(
-      HarmonyTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_LARGE),
+      ChromeTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_LARGE),
       body1_font.GetHeight());
 #else  // Linux.
   EXPECT_EQ(17, body1_font.GetHeight());  // Add 3.
@@ -214,10 +214,10 @@ TEST_F(LayoutProviderTest, DISABLED_RequestFontBySize) {
 
   EXPECT_EQ(kBody2, body2_font.GetFontSize());
 
-  // Body2 font leading should be 20.
+// Body2 font leading should be 20.
 #if defined(OS_WIN)
   EXPECT_EQ(
-      HarmonyTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_SMALL),
+      ChromeTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_SMALL),
       body2_font.GetHeight());
 #else
   EXPECT_EQ(15, body2_font.GetHeight());  // Other platforms: Add 5.
@@ -225,10 +225,10 @@ TEST_F(LayoutProviderTest, DISABLED_RequestFontBySize) {
 
   EXPECT_EQ(kButton, button_font.GetFontSize());
 
-  // Button leading not specified (shouldn't be needed: no multiline buttons).
+// Button leading not specified (shouldn't be needed: no multiline buttons).
 #if defined(OS_WIN)
   EXPECT_EQ(
-      HarmonyTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_SMALL),
+      ChromeTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_SMALL),
       button_font.GetHeight());
 #else
   EXPECT_EQ(15, button_font.GetHeight());
@@ -343,7 +343,7 @@ TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
 
   // TODO(tapted): Pass in contexts to StyledLabel instead. Currently they are
   // stuck on style::CONTEXT_LABEL. That only matches the default line height in
-  // HarmonyTypographyProvider::GetLineHeight(), which is body text.
+  // ChromeTypographyProvider::GetLineHeight(), which is body text.
   EXPECT_EQ(kBodyLineHeight,
             views::style::GetLineHeight(views::style::CONTEXT_LABEL, kStyle));
   views::StyledLabel styled_label(base::ASCIIToUTF16("test"), nullptr);

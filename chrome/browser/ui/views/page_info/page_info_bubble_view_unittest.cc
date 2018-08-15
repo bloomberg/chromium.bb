@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_view.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"

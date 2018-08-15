@@ -11,8 +11,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/browser/ui/views/passwords/password_sign_in_promo_view.h"
 #include "chrome/grit/generated_resources.h"

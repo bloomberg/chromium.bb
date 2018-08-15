@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/harmony/harmony_typography_provider.h"
+#include "chrome/browser/ui/views/chrome_typography_provider.h"
 
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -85,7 +85,7 @@ SkColor GetHarmonyTextColorForNonStandardNativeTheme(
 
 #if defined(OS_WIN)
 // static
-int HarmonyTypographyProvider::GetPlatformFontHeight(int font_context) {
+int ChromeTypographyProvider::GetPlatformFontHeight(int font_context) {
   const bool direct_write_enabled =
       gfx::PlatformFontWin::IsDirectWriteEnabled();
   const bool windows_10 = base::win::GetVersion() >= base::win::VERSION_WIN10;
@@ -105,8 +105,8 @@ int HarmonyTypographyProvider::GetPlatformFontHeight(int font_context) {
 }
 #endif
 
-const gfx::FontList& HarmonyTypographyProvider::GetFont(int context,
-                                                        int style) const {
+const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
+                                                       int style) const {
   // "Target" font size constants from the Harmony spec.
   constexpr int kHeadlineSize = 20;
   constexpr int kTitleSize = 15;
@@ -159,9 +159,9 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int context,
       size_delta, gfx::Font::NORMAL, font_weight);
 }
 
-SkColor HarmonyTypographyProvider::GetColor(const views::View& view,
-                                            int context,
-                                            int style) const {
+SkColor ChromeTypographyProvider::GetColor(const views::View& view,
+                                           int context,
+                                           int style) const {
   const ui::NativeTheme* native_theme = view.GetNativeTheme();
   DCHECK(native_theme);
   if (ShouldIgnoreHarmonySpec(*native_theme)) {
@@ -207,7 +207,7 @@ SkColor HarmonyTypographyProvider::GetColor(const views::View& view,
   return gfx::kGoogleGrey900;
 }
 
-int HarmonyTypographyProvider::GetLineHeight(int context, int style) const {
+int ChromeTypographyProvider::GetLineHeight(int context, int style) const {
   // "Target" line height constants from the Harmony spec. A default OS
   // configuration should use these heights. However, if the user overrides OS
   // defaults, then GetLineHeight() should return the height that would add the
@@ -221,7 +221,7 @@ int HarmonyTypographyProvider::GetLineHeight(int context, int style) const {
   constexpr int kButtonAbsoluteHeight = 0;
 
 // The platform-specific heights (i.e. gfx::Font::GetHeight()) that result when
-// asking for the target size constants in HarmonyTypographyProvider::GetFont()
+// asking for the target size constants in ChromeTypographyProvider::GetFont()
 // in a default OS configuration.
 #if defined(OS_MACOSX)
   constexpr int kHeadlinePlatformHeight = 25;

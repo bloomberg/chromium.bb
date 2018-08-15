@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/login_view.h"
 
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
-#include "chrome/browser/ui/views/harmony/textfield_layout.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/textfield_layout.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/border.h"

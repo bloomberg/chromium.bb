@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/resource/resource_bundle.h"

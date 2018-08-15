@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/sheet_view_factory.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"

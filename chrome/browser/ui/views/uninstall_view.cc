@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/shell_util.h"

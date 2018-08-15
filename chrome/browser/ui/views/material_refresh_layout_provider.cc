@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/harmony/material_refresh_layout_provider.h"
+#include "chrome/browser/ui/views/material_refresh_layout_provider.h"
 
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/layout/layout_provider.h"

@@ -8,7 +8,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/signin/core/browser/account_info.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"

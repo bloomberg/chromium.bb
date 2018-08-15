@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_controller.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_footnote_delegate.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"

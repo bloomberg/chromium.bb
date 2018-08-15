@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/scoped_testing_local_state.h"

@@ -10,9 +10,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/strings/grit/components_strings.h"

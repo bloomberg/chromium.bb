@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/global_error/global_error.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/test/views/chrome_test_views_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
