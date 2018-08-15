@@ -110,6 +110,17 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   // Returns whether the request was successfully sent to the elevated host.
   bool DelegateToElevatedHost(std::unique_ptr<base::DictionaryValue> message);
 
+  // Creates a delegated signal strategy from the values stored in |message|.
+  // Returns nullptr on failure.
+  std::unique_ptr<SignalStrategy> CreateDelegatedSignalStrategy(
+      const base::DictionaryValue* message);
+
+  // Creates an XMPP signal strategy from the values stored in |message| along
+  // with |user_name|.  Returns nullptr on failure.
+  std::unique_ptr<SignalStrategy> CreateXmppSignalStrategy(
+      const std::string& user_name,
+      const base::DictionaryValue* message);
+
   // Used to determine whether to create and pass messages to an elevated host.
   bool needs_elevation_ = false;
 
