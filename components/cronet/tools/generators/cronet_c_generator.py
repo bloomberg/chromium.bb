@@ -307,7 +307,6 @@ class Generator(generator.Generator):
       "structs": self.module.structs,
       "support_lazy_serialization": self.support_lazy_serialization,
       "unions": self.module.unions,
-      "use_once_callback": self.use_once_callback,
       "variant": self.variant,
     }
 

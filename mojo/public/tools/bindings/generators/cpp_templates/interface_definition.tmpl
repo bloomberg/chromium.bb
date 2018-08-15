@@ -84,11 +84,7 @@ class {{class_name}}_{{method.name}}_ForwardToCallback
     : public mojo::MessageReceiver {
  public:
   {{class_name}}_{{method.name}}_ForwardToCallback(
-{%-     if use_once_callback %}
       {{class_name}}::{{method.name}}Callback callback
-{%-     else %}
-      const {{class_name}}::{{method.name}}Callback& callback
-{%-     endif %}
       ) : callback_(std::move(callback)) {
   }
   bool Accept(mojo::Message* message) override;
@@ -116,7 +112,7 @@ class {{class_name}}_{{method.name}}_ForwardToCallback
 {%-   if method|method_supports_lazy_serialization %}
 {{interface_macros.define_message_type(
     interface, message_typename, message_name, False, method, method.parameters,
-    params_struct, params_description, use_once_callback)}}
+    params_struct, params_description)}}
 {%-   endif %}
 
 {%-   if method.sync %}
@@ -160,7 +156,7 @@ bool {{proxy_name}}::{{method.name}}(
 {%-   endif %}
 
 void {{proxy_name}}::{{method.name}}(
-    {{interface_macros.declare_request_params("in_", method, use_once_callback)}}) {
+    {{interface_macros.declare_request_params("in_", method)}}) {
 #if BUILDFLAG(MOJO_TRACE_ENABLED)
   TRACE_EVENT0("mojom", "{{namespace_as_string}}::{{class_name}}::{{method.name}}");
 #endif
@@ -222,13 +218,8 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
     std::unique_ptr<{{class_name}}_{{method.name}}_ProxyToResponder> proxy(
         new {{class_name}}_{{method.name}}_ProxyToResponder(
             request_id, is_sync, std::move(responder)));
-{%- if use_once_callback %}
     return base::BindOnce(&{{class_name}}_{{method.name}}_ProxyToResponder::Run,
                           std::move(proxy));
-{%- else %}
-    return base::Bind(&{{class_name}}_{{method.name}}_ProxyToResponder::Run,
-                      base::Passed(&proxy));
-{%- endif %}
   }
 
   ~{{class_name}}_{{method.name}}_ProxyToResponder() {
@@ -279,8 +270,7 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
 {%-     if method|method_supports_lazy_serialization %}
 {{interface_macros.define_message_type(
     interface, response_message_typename, message_name, True, method,
-    method.response_parameters, response_params_struct, params_description,
-    use_once_callback)}}
+    method.response_parameters, response_params_struct, params_description)}}
 {%-     endif %}
 
 bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
@@ -604,7 +594,7 @@ bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
 
 {#--- Testing interceptor #}
 {%- for method in interface.methods %}
-void {{interface.name}}InterceptorForTesting::{{method.name}}({{interface_macros.declare_request_params("", method, use_once_callback)}}) {
+void {{interface.name}}InterceptorForTesting::{{method.name}}({{interface_macros.declare_request_params("", method)}}) {
   GetForwardingInterface()->{{method.name}}(
     {%- for param in method.parameters -%}
     std::move({{param.name}}){%- if not loop.last %}, {% endif %}
@@ -631,11 +621,7 @@ void {{interface.name}}AsyncWaiter::{{method.name}}(
 {%-   for param in method.parameters -%}
       std::move({{param.name}}),
 {%-   endfor %}
-{%-   if use_once_callback %}
       base::BindOnce(
-{%-   else %}
-      base::Bind(
-{%-   endif %}
           [](base::RunLoop* loop
 {%-   for param in method.response_parameters -%},
              {{param.kind|cpp_wrapper_call_type}}* out_{{param.name}}
