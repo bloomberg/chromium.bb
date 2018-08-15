@@ -202,6 +202,10 @@ extern const base::Feature kMacMaterialDesignDownloadShelf;
 extern const base::Feature kAcknowledgeNtpOverrideOnDeactivate;
 #endif
 
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+extern const base::Feature kWarnBeforeQuitting;
+#endif
+
 extern const base::Feature kMaterialDesignIncognitoNTP;
 
 extern const base::Feature kModalPermissionPrompts;

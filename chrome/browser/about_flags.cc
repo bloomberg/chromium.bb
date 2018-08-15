@@ -2508,6 +2508,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableInputImeApiDescription, kOsWin | kOsLinux,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableInputImeAPI,
                                switches::kDisableInputImeAPI)},
+#if !defined(OS_CHROMEOS)
+    {"warn-before-quitting", flag_descriptions::kWarnBeforeQuittingFlagName,
+     flag_descriptions::kWarnBeforeQuittingFlagDescription, kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kWarnBeforeQuitting)},
+#endif  // OS_CHROMEOS
 #endif  // OS_WIN || OS_LINUX
     {"enable-origin-trials", flag_descriptions::kOriginTrialsName,
      flag_descriptions::kOriginTrialsDescription, kOsAll,

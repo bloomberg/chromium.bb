@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/quit_instruction_bubble.h"
+#include "chrome/browser/ui/views/confirm_quit_bubble.h"
 
 #include <utility>
 
@@ -29,23 +29,22 @@ constexpr base::TimeDelta kSlideDuration =
 
 }  // namespace
 
-QuitInstructionBubble::QuitInstructionBubble()
+ConfirmQuitBubble::ConfirmQuitBubble()
     : animation_(std::make_unique<gfx::SlideAnimation>(this)) {
   animation_->SetSlideDuration(kSlideDuration.InMilliseconds());
 }
 
-QuitInstructionBubble::~QuitInstructionBubble() {}
+ConfirmQuitBubble::~ConfirmQuitBubble() {}
 
-void QuitInstructionBubble::Show() {
+void ConfirmQuitBubble::Show() {
   animation_->Show();
 }
 
-void QuitInstructionBubble::Hide() {
+void ConfirmQuitBubble::Hide() {
   animation_->Hide();
 }
 
-void QuitInstructionBubble::AnimationProgressed(
-    const gfx::Animation* animation) {
+void ConfirmQuitBubble::AnimationProgressed(const gfx::Animation* animation) {
   float opacity = static_cast<float>(animation->CurrentValueBetween(0.0, 1.0));
   if (opacity == 0) {
     popup_.reset();
@@ -69,10 +68,10 @@ void QuitInstructionBubble::AnimationProgressed(
       popup_->SetContentsView(view);
 
       view->UpdateContent(l10n_util::GetStringFUTF16(
-          IDS_QUIT_ACCELERATOR_TUTORIAL,
-          l10n_util::GetStringUTF16(IDS_APP_ALT_KEY),
-          ui::Accelerator(ui::VKEY_F, 0).GetShortcutText(),
-          ui::Accelerator(ui::VKEY_X, 0).GetShortcutText()));
+          IDS_CONFIRM_TO_QUIT_DESCRIPTION,
+          l10n_util::GetStringUTF16(IDS_APP_CTRL_KEY),
+          l10n_util::GetStringUTF16(IDS_APP_SHIFT_KEY),
+          ui::Accelerator(ui::VKEY_Q, 0).GetShortcutText()));
 
       popup_->CenterWindow(view->GetPreferredSize());
 
@@ -82,6 +81,6 @@ void QuitInstructionBubble::AnimationProgressed(
   }
 }
 
-void QuitInstructionBubble::AnimationEnded(const gfx::Animation* animation) {
+void ConfirmQuitBubble::AnimationEnded(const gfx::Animation* animation) {
   AnimationProgressed(animation);
 }

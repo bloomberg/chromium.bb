@@ -5212,8 +5212,12 @@ the Bookmarks menu.">
       </if>
 
       <if expr="is_win or (is_linux and not chromeos)">
-        <message name="IDS_QUIT_ACCELERATOR_TUTORIAL" desc="Instructions for how the user should quit using keyboard shortcuts.">
-          Press |<ph name="ACCELERATOR1">$1<ex>Ctrl</ex></ph>|+|<ph name="ACCELERATOR2">$2<ex>Shift</ex></ph>| followed by |<ph name="ACCELERATOR3">$3<ex>Q</ex></ph>| to exit
+        <!-- Confirm to quit panel -->
+        <message name="IDS_CONFIRM_TO_QUIT_DESCRIPTION" desc="Instructions for how the user should confirm quitting.">
+          Hold |<ph name="ACCELERATOR1">$1<ex>Ctrl</ex></ph>|+|<ph name="ACCELERATOR2">$2<ex>Shift</ex></ph>|+|<ph name="ACCELERATOR3">$3<ex>Q</ex></ph>| to exit
+        </message>
+        <message name="IDS_CONFIRM_TO_QUIT_OPTION" desc="The label of the checkbox preference that enables the confirm-to-quit feature.">
+          Warn before exiting (<ph name="KEY_EQUIVALENT">$1<ex>Ctrl+Shift+Q</ex></ph>)
         </message>
       </if>
 
