@@ -9,6 +9,7 @@ import "content/common/shared_worker/shared_worker.mojom";
 import "content/common/shared_worker/shared_worker_host.mojom";
 import "content/common/shared_worker/shared_worker_info.mojom";
 import "content/common/url_loader_factory_bundle.mojom";
+import "content/public/common/renderer_preference_watcher.mojom";
 import "content/public/common/renderer_preferences.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
@@ -33,6 +34,7 @@ interface SharedWorkerFactory {
       bool pause_on_start,
       mojo_base.mojom.UnguessableToken devtools_worker_token,
       RendererPreferences renderer_preferences,
+      RendererPreferenceWatcher& preference_watcher_request,
       blink.mojom.WorkerContentSettingsProxy content_settings,
 
       // S13nServiceWorker:
