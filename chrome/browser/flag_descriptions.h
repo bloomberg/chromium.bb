@@ -2133,6 +2133,13 @@ extern const char kEnableZeroStateSuggestionsDescription[];
 extern const char kEnableInputImeApiName[];
 extern const char kEnableInputImeApiDescription[];
 
+#if !defined(OS_CHROMEOS)
+
+extern const char kWarnBeforeQuittingFlagName[];
+extern const char kWarnBeforeQuittingFlagDescription[];
+
+#endif  // !defined(OS_CHROMEOS)
+
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 extern const char kExperimentalUiName[];

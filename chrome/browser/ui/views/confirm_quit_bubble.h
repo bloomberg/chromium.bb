@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_QUIT_INSTRUCTION_BUBBLE_H_
-#define CHROME_BROWSER_UI_VIEWS_QUIT_INSTRUCTION_BUBBLE_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CONFIRM_QUIT_BUBBLE_H_
+#define CHROME_BROWSER_UI_VIEWS_CONFIRM_QUIT_BUBBLE_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/views/quit_instruction_bubble_base.h"
+#include "chrome/browser/ui/views/confirm_quit_bubble_base.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
 namespace gfx {
@@ -20,13 +20,13 @@ namespace views {
 class Widget;
 }  // namespace views
 
-// Manages showing and hiding a notification bubble that gives instructions for
-// how to quit using keyboard shortcuts.
-class QuitInstructionBubble : public QuitInstructionBubbleBase,
-                              public gfx::AnimationDelegate {
+// Manages showing and hiding a notification bubble that gives instructions to
+// continue holding the quit accelerator to quit.
+class ConfirmQuitBubble : public ConfirmQuitBubbleBase,
+                          public gfx::AnimationDelegate {
  public:
-  QuitInstructionBubble();
-  ~QuitInstructionBubble() override;
+  ConfirmQuitBubble();
+  ~ConfirmQuitBubble() override;
 
   void Show() override;
   void Hide() override;
@@ -41,7 +41,7 @@ class QuitInstructionBubble : public QuitInstructionBubbleBase,
 
   std::unique_ptr<views::Widget> popup_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuitInstructionBubble);
+  DISALLOW_COPY_AND_ASSIGN(ConfirmQuitBubble);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_QUIT_INSTRUCTION_BUBBLE_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CONFIRM_QUIT_BUBBLE_H_
