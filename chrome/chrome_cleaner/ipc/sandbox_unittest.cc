@@ -162,7 +162,8 @@ MULTIPROCESS_TEST_MAIN(MockSandboxProcessMain) {
 
 }  // namespace
 
-TEST_F(SandboxTest, SpawnSandboxTarget) {
+// Flaky; see http://crbug.com/874387
+TEST_F(SandboxTest, DISABLED_SpawnSandboxTarget) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8) {
     // TODO(b/871924): This test is currently failing on win7. Fix and enable.
     return;
