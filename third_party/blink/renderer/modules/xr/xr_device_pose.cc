@@ -18,7 +18,7 @@ XRDevicePose::XRDevicePose(
 DOMFloat32Array* XRDevicePose::poseModelMatrix() const {
   if (!pose_model_matrix_)
     return nullptr;
-  return transformationMatrixToFloat32Array(*pose_model_matrix_);
+  return transformationMatrixToDOMFloat32Array(*pose_model_matrix_);
 }
 
 DOMFloat32Array* XRDevicePose::getViewMatrix(XRView* view) {
@@ -36,7 +36,7 @@ DOMFloat32Array* XRDevicePose::getViewMatrix(XRView* view) {
   view_matrix.PostTranslate3d(-view_offset.X(), -view_offset.Y(),
                               -view_offset.Z());
 
-  return transformationMatrixToFloat32Array(view_matrix);
+  return transformationMatrixToDOMFloat32Array(view_matrix);
 }
 
 void XRDevicePose::Trace(blink::Visitor* visitor) {
