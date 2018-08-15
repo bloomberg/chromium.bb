@@ -14,7 +14,7 @@
 #include "services/service_manager/public/cpp/service.h"
 
 #if defined(OS_LINUX)
-#include "components/services/font/public/cpp/font_loader.h"
+#include "components/services/font/public/cpp/font_loader.h"  // nogncheck
 #endif
 
 namespace views {
@@ -28,7 +28,18 @@ class Window;
 class COMPONENT_EXPORT(SIMPLE_BROWSER) SimpleBrowserService
     : public service_manager::Service {
  public:
-  SimpleBrowserService();
+  // Determines how a SimpleBrowserService instance is initialized.
+  enum class UIInitializationMode {
+    // The service is being run in an isolated process which has not yet
+    // initialized a UI framework.
+    kInitializeUI,
+
+    // The service is being run in a process which has already initialized a
+    // UI framework. No need to do that.
+    kUseEnvironmentUI,
+  };
+
+  explicit SimpleBrowserService(UIInitializationMode mode);
   ~SimpleBrowserService() override;
 
  private:
@@ -39,6 +50,7 @@ class COMPONENT_EXPORT(SIMPLE_BROWSER) SimpleBrowserService
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
 
+  const UIInitializationMode ui_initialization_mode_;
   std::unique_ptr<views::AuraInit> aura_init_;
   std::unique_ptr<Window> window_;
 

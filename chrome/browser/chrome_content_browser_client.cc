@@ -511,7 +511,12 @@
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
+#include "services/content/simple_browser/public/mojom/constants.mojom.h"
+#include "services/content/simple_browser/simple_browser_service.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
 #include "services/content/simple_browser/public/mojom/constants.mojom.h"
 #endif
 
@@ -3626,6 +3631,21 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 #if defined(OS_CHROMEOS)
   ash_service_registry::RegisterInProcessServices(services, connection);
 #endif
+
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLaunchInProcessSimpleBrowserSwitch)) {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory =
+        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
+          return std::make_unique<simple_browser::SimpleBrowserService>(
+              simple_browser::SimpleBrowserService::UIInitializationMode::
+                  kUseEnvironmentUI);
+        });
+    info.task_runner = base::SequencedTaskRunnerHandle::Get();
+    services->emplace(simple_browser::mojom::kServiceName, std::move(info));
+  }
+#endif
 }
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
@@ -3706,9 +3726,14 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
   ash_service_registry::RegisterOutOfProcessServices(services);
 #endif
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
-  (*services)[simple_browser::mojom::kServiceName] = base::BindRepeating(
-      []() -> base::string16 { return base::ASCIIToUTF16("Simple Browser"); });
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLaunchSimpleBrowserSwitch)) {
+    (*services)[simple_browser::mojom::kServiceName] =
+        base::BindRepeating([]() -> base::string16 {
+          return base::ASCIIToUTF16("Simple Browser");
+        });
+  }
 #endif
 }
 

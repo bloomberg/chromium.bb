@@ -7,13 +7,19 @@
 #include "base/bind.h"
 #include "services/content/navigable_contents_delegate.h"
 #include "services/content/public/cpp/buildflags.h"
+#include "services/content/public/cpp/navigable_contents_view.h"
 #include "services/content/service.h"
 #include "services/content/service_delegate.h"
 
-#if BUILDFLAG(ENABLE_AURA_CONTENT_VIEW_EMBEDDING)
-#include "ui/aura/window.h"                                 // nogncheck
+#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#include "ui/aura/window.h"                             // nogncheck
+#include "ui/views/controls/native/native_view_host.h"  // nogncheck
+
+#if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
+#include "ui/base/ui_base_features.h"                       // nogncheck
 #include "ui/views/mus/remote_view/remote_view_provider.h"  // nogncheck
 #endif
+#endif  // BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
 
 namespace content {
 
@@ -30,14 +36,6 @@ NavigableContentsImpl::NavigableContentsImpl(
       native_content_view_(delegate_->GetNativeView()) {
   binding_.set_connection_error_handler(base::BindRepeating(
       &Service::RemoveNavigableContents, base::Unretained(service_), this));
-
-#if BUILDFLAG(ENABLE_AURA_CONTENT_VIEW_EMBEDDING)
-  if (native_content_view_) {
-    DCHECK(!remote_view_provider_);
-    remote_view_provider_ =
-        std::make_unique<views::RemoteViewProvider>(native_content_view_);
-  }
-#endif
 }
 
 NavigableContentsImpl::~NavigableContentsImpl() = default;
@@ -50,28 +48,64 @@ void NavigableContentsImpl::Navigate(const GURL& url) {
   delegate_->Navigate(url);
 }
 
-void NavigableContentsImpl::CreateView(CreateViewCallback callback) {
-#if BUILDFLAG(ENABLE_AURA_CONTENT_VIEW_EMBEDDING)
-  if (remote_view_provider_) {
+void NavigableContentsImpl::CreateView(bool in_service_process,
+                                       CreateViewCallback callback) {
+  DCHECK(native_content_view_);
+
+#if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
+  if (!in_service_process) {
+    remote_view_provider_ =
+        std::make_unique<views::RemoteViewProvider>(native_content_view_);
     remote_view_provider_->GetEmbedToken(
         base::BindOnce(&NavigableContentsImpl::OnEmbedTokenReceived,
                        base::Unretained(this), std::move(callback)));
     return;
   }
+#else
+  if (!in_service_process) {
+    DLOG(ERROR) << "Remote NavigableContentsView clients are not supported on "
+                << "this platform.";
+    return;
+  }
 #endif
 
-  DLOG(ERROR) << "View embedding not yet supported on this platform.";
-  std::move(callback).Run(base::UnguessableToken::Create());
+  // Create and stash a new callback (indexed by token) which the in-process
+  // client library can use to establish an "embedding" of the contents' view.
+  auto token = base::UnguessableToken::Create();
+  NavigableContentsView::RegisterInProcessEmbedCallback(
+      token, base::BindOnce(&NavigableContentsImpl::EmbedInProcessClientView,
+                            weak_ptr_factory_.GetWeakPtr()));
+  std::move(callback).Run(token);
 }
 
+#if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
 void NavigableContentsImpl::OnEmbedTokenReceived(
     CreateViewCallback callback,
     const base::UnguessableToken& token) {
-#if BUILDFLAG(ENABLE_AURA_CONTENT_VIEW_EMBEDDING)
+#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
   if (native_content_view_)
     native_content_view_->Show();
-#endif
+#endif  // BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
   std::move(callback).Run(token);
+}
+#endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
+
+void NavigableContentsImpl::EmbedInProcessClientView(
+    NavigableContentsView* view) {
+  DCHECK(native_content_view_);
+#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+  DCHECK(!local_view_host_);
+  local_view_host_ = std::make_unique<views::NativeViewHost>();
+  local_view_host_->set_owned_by_client();
+  view->view()->AddChildView(local_view_host_.get());
+  view->view()->Layout();
+  local_view_host_->Attach(native_content_view_);
+#else
+  // TODO(https://crbug.com/855092): Support embedding of other native client
+  // views without Views + Aura.
+  NOTREACHED()
+      << "NavigableContents views are currently only supported on Aura.";
+#endif
 }
 
 }  // namespace content

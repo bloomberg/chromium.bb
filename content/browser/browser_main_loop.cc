@@ -129,6 +129,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/audio/public/cpp/audio_system_factory.h"
 #include "services/audio/public/mojom/constants.mojom.h"
+#include "services/content/public/cpp/navigable_contents_view.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -1608,6 +1609,10 @@ void BrowserMainLoop::InitializeMojo() {
 #endif  // defined(OS_MACOSX)
   GetContentClient()->OnServiceManagerConnected(
       ServiceManagerConnection::GetForProcess());
+
+  // Ensure that any NavigableContentsViews constructed in the browser process
+  // know they're running in the same process as the service.
+  content::NavigableContentsView::SetClientRunningInServiceProcess();
 
   tracing_controller_ = std::make_unique<content::TracingControllerImpl>();
   content::BackgroundTracingManagerImpl::GetInstance()

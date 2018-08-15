@@ -213,7 +213,7 @@ static_library("utility") {
     ]
   }
 
-  if (enable_simple_browser_service) {
+  if (enable_simple_browser_service_out_of_process) {
     deps += [
       "//services/content/simple_browser",
       "//services/content/simple_browser/public/mojom",

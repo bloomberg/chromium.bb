@@ -7,7 +7,8 @@ import("//services/content/public/features.gni")
 buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [
-    "ENABLE_AURA_CONTENT_VIEW_EMBEDDING=$enable_aura_content_view_embedding",
+    "ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA=$enable_navigable_contents_view_aura",
+    "ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW=$enable_remote_navigable_contents_view",
   ]
 }
 
@@ -16,10 +17,12 @@ component("cpp") {
 
   public = [
     "navigable_contents.h",
+    "navigable_contents_view.h",
   ]
 
   sources = [
     "navigable_contents.cc",
+    "navigable_contents_view.cc",
   ]
 
   defines = [ "IS_CONTENT_SERVICE_CPP_IMPL" ]
@@ -32,11 +35,17 @@ component("cpp") {
   ]
 
   deps = []
-  if (enable_aura_content_view_embedding) {
+  if (enable_navigable_contents_view_aura) {
     deps += [
-      "//services/ui/public/interfaces",
+      "//ui/base",
       "//ui/views",
-      "//ui/views/mus/remote_view:remote_view_host",
     ]
+
+    if (enable_remote_navigable_contents_view) {
+      deps += [
+        "//services/ui/public/interfaces",
+        "//ui/views/mus/remote_view:remote_view_host",
+      ]
+    }
   }
 }

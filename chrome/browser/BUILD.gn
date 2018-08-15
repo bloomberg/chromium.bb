@@ -4217,8 +4217,15 @@ jumbo_split_static_library("browser") {
     }
   }
 
-  if (enable_simple_browser_service) {
+  if (enable_simple_browser_service_out_of_process) {
     deps += [ "//services/content/simple_browser/public/mojom" ]
+  }
+
+  if (enable_simple_browser_service_in_process) {
+    deps += [
+      "//services/content/simple_browser",
+      "//services/content/simple_browser/public/mojom",
+    ]
   }
 
   if (enable_supervised_users) {
