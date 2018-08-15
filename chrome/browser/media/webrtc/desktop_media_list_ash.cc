@@ -52,8 +52,12 @@ void DesktopMediaListAsh::EnumerateWindowsForRoot(
   aura::Window* container = ash::Shell::GetContainer(root_window, container_id);
   if (!container)
     return;
-  for (aura::Window::Windows::const_iterator it = container->children().begin();
-       it != container->children().end(); ++it) {
+  // The |container| has all the top-level windows in reverse order, e.g. the
+  // most top-level window is at the end. So iterate children reversely to make
+  // sure |sources| is in the expected order.
+  for (aura::Window::Windows::const_reverse_iterator it =
+           container->children().rbegin();
+       it != container->children().rend(); ++it) {
     if (!(*it)->IsVisible() || !(*it)->CanFocus())
       continue;
     content::DesktopMediaID id = content::DesktopMediaID::RegisterAuraWindow(
