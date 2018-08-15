@@ -160,6 +160,7 @@ public class ContentViewScrollingTest {
         mActivityTestRule.launchContentShellWithUrl(LARGE_PAGE);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         mCoordinates = mActivityTestRule.getRenderCoordinates();
+        mActivityTestRule.reportAllFrameSubmissions(true);
         waitForViewportInitialization();
 
         Assert.assertEquals(0, mCoordinates.getScrollXPixInt());
