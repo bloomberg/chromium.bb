@@ -89,6 +89,8 @@ void ApplyBlockElementCommand::DoApply(EditingState* editing_state) {
     if (new_end.IsNotNull())
       builder.Extend(new_end);
     SetEndingSelection(SelectionForUndoStep::From(builder.Build()));
+    ABORT_EDITING_COMMAND_IF(EndingVisibleSelection().VisibleStart().IsNull());
+    ABORT_EDITING_COMMAND_IF(EndingVisibleSelection().VisibleEnd().IsNull());
   }
 
   VisibleSelection selection =
