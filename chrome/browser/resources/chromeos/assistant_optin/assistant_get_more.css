@@ -5,3 +5,7 @@
 .title {
   padding: 32px 0 24px 0;
 }
+
+p {
+  margin-block-end: 0;
+}
