@@ -38,6 +38,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
 
 namespace data_reduction_proxy {
 
@@ -297,7 +298,12 @@ DataReductionProxyIOData::CreateProxyDelegate() const {
 // Bug http://crbug/488190.
 void DataReductionProxyIOData::SetProxyPrefs(bool enabled, bool at_startup) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(url_request_context_getter_->GetURLRequestContext()->proxy_resolution_service());
+  // TODO(crbug.com/721403): DRP is disabled with network service enabled. When
+  // DRP is switched to mojo, we won't need URLRequestContext.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    DCHECK(url_request_context_getter_->GetURLRequestContext()
+               ->proxy_resolution_service());
+  }
   enabled_ = enabled;
   config_->SetProxyConfig(enabled, at_startup);
   if (config_client_) {
@@ -308,9 +314,14 @@ void DataReductionProxyIOData::SetProxyPrefs(bool enabled, bool at_startup) {
 
   // If Data Saver is disabled, reset data reduction proxy state.
   if (!enabled) {
-    net::ProxyResolutionService* proxy_resolution_service =
-        url_request_context_getter_->GetURLRequestContext()->proxy_resolution_service();
-    proxy_resolution_service->ClearBadProxiesCache();
+    // TODO(crbug.com/721403): Make DRP work with network service.
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      net::ProxyResolutionService* proxy_resolution_service =
+          url_request_context_getter_->GetURLRequestContext()
+              ->proxy_resolution_service();
+      proxy_resolution_service->ClearBadProxiesCache();
+    }
+
     bypass_stats_->ClearRequestCounts();
     bypass_stats_->NotifyUnavailabilityIfChanged();
   }

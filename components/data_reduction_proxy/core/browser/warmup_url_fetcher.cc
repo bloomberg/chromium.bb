@@ -21,6 +21,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/features.h"
 
 namespace data_reduction_proxy {
 
@@ -34,7 +35,11 @@ WarmupURLFetcher::WarmupURLFetcher(
       url_request_context_getter_(url_request_context_getter),
       callback_(callback),
       get_http_rtt_callback_(get_http_rtt_callback) {
-  DCHECK(url_request_context_getter_);
+  // TODO(crbug.com/721403): DRP is disabled with network service enabled. When
+  // DRP is switched to mojo, we won't need URLRequestContext.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    DCHECK(url_request_context_getter_);
+  }
 }
 
 WarmupURLFetcher::~WarmupURLFetcher() {}
