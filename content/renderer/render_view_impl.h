@@ -33,6 +33,7 @@
 #include "content/public/common/drop_data.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_view.h"
@@ -41,6 +42,7 @@
 #include "content/renderer/render_widget_owner_delegate.h"
 #include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -207,6 +209,10 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void SetFocusAndActivateForTesting(bool enable);
 
   void DidCommitProvisionalHistoryLoad();
+
+  // Registers a watcher to observe changes in the RendererPreferences.
+  void RegisterRendererPreferenceWatcherForWorker(
+      mojom::RendererPreferenceWatcherPtr watcher);
 
   // IPC::Listener implementation (via RenderWidget inheritance).
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -543,6 +549,10 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 
   WebPreferences webkit_preferences_;
   RendererPreferences renderer_preferences_;
+  // These are observing changes in |renderer_preferences_|. This is used for
+  // keeping WorkerFetchContext in sync.
+  mojo::InterfacePtrSet<mojom::RendererPreferenceWatcher>
+      renderer_preference_watchers_;
 
   // Whether content state (such as form state, scroll position and page
   // contents) should be sent to the browser immediately. This is normally

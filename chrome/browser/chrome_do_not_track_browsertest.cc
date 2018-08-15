@@ -69,7 +69,8 @@ IN_PROC_BROWSER_TEST_F(ChromeDoNotTrackTest, FetchFromWorker) {
 
   const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
   const GURL url = embedded_test_server()->GetURL(
-      std::string("/workers/fetch_from_worker.html"));
+      std::string("/workers/fetch_from_worker.html?"
+                  "script=fetch_from_worker.js"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   const std::string script = "fetch_from_worker('" + fetch_url.spec() + "');";
@@ -82,15 +83,44 @@ IN_PROC_BROWSER_TEST_F(ChromeDoNotTrackTest, FetchFromWorker) {
   ExpectPageTextEq("1");
 
   // Updating settings should be reflected immediately.
-  // Disabled due to crbug.com/853085.
-  //
-  // SetEnableDoNotTrack(false /* enabled */);
-  // ASSERT_TRUE(ExecJs(GetWebContents(), script));
-  // {
-  //   content::TitleWatcher watcher(GetWebContents(), title);
-  //   EXPECT_EQ(title, watcher.WaitAndGetTitle());
-  // }
-  // ExpectPageTextEq("None");
+  SetEnableDoNotTrack(false /* enabled */);
+  ASSERT_TRUE(ExecJs(GetWebContents(), script));
+  {
+    content::TitleWatcher watcher(GetWebContents(), title);
+    EXPECT_EQ(title, watcher.WaitAndGetTitle());
+  }
+  ExpectPageTextEq("None");
+}
+
+// Checks that the DNT header is preserved when fetching from a dedicated
+// worker created from a dedicated worker.
+IN_PROC_BROWSER_TEST_F(ChromeDoNotTrackTest, FetchFromNestedWorker) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  SetEnableDoNotTrack(true /* enabled */);
+
+  const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
+  const GURL url = embedded_test_server()->GetURL(
+      std::string("/workers/fetch_from_worker.html?"
+                  "script=fetch_from_nested_worker.js"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  const std::string script = "fetch_from_worker('" + fetch_url.spec() + "');";
+  ASSERT_TRUE(ExecJs(GetWebContents(), script));
+  const base::string16 title = base::ASCIIToUTF16("DONE");
+  {
+    content::TitleWatcher watcher(GetWebContents(), title);
+    EXPECT_EQ(title, watcher.WaitAndGetTitle());
+  }
+  ExpectPageTextEq("1");
+
+  // Updating settings should be reflected immediately.
+  SetEnableDoNotTrack(false /* enabled */);
+  ASSERT_TRUE(ExecJs(GetWebContents(), script));
+  {
+    content::TitleWatcher watcher(GetWebContents(), title);
+    EXPECT_EQ(title, watcher.WaitAndGetTitle());
+  }
+  ExpectPageTextEq("None");
 }
 
 // Checks that the DNT header is preserved when fetching from a shared worker.

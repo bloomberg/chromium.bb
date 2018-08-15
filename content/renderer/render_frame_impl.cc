@@ -3583,8 +3583,13 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       container_host_ptr_info = provider_context->CloneContainerHostPtrInfo();
   }
 
+  mojom::RendererPreferenceWatcherPtr watcher;
+  mojom::RendererPreferenceWatcherRequest watcher_request =
+      mojo::MakeRequest(&watcher);
+  render_view()->RegisterRendererPreferenceWatcherForWorker(std::move(watcher));
+
   auto worker_fetch_context = std::make_unique<WebWorkerFetchContextImpl>(
-      render_view_->renderer_preferences(),
+      render_view_->renderer_preferences(), std::move(watcher_request),
       std::move(service_worker_client_request),
       std::move(service_worker_worker_client_registry_ptr_info),
       std::move(container_host_ptr_info), GetLoaderFactoryBundle()->Clone(),

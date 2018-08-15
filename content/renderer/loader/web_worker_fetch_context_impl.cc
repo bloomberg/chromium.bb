@@ -148,6 +148,7 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
 
 WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
     RendererPreferences renderer_preferences,
+    mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
     mojom::ServiceWorkerWorkerClientRegistryPtrInfo
         service_worker_worker_client_registry_info,
@@ -169,6 +170,8 @@ WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
       fallback_factory_info_(std::move(fallback_factory_info)),
       thread_safe_sender_(thread_safe_sender),
       renderer_preferences_(std::move(renderer_preferences)),
+      preference_watcher_binding_(this),
+      preference_watcher_request_(std::move(preference_watcher_request)),
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)),
@@ -201,8 +204,10 @@ WebWorkerFetchContextImpl::CloneForNestedWorker() {
         mojo::MakeRequest(&host_ptr_info));
   }
 
+  mojom::RendererPreferenceWatcherPtr preference_watcher;
   auto new_context = std::make_unique<WebWorkerFetchContextImpl>(
-      renderer_preferences_, std::move(service_worker_client_request),
+      renderer_preferences_, mojo::MakeRequest(&preference_watcher),
+      std::move(service_worker_client_request),
       std::move(service_worker_worker_client_registry_ptr_info),
       std::move(host_ptr_info), loader_factory_->Clone(),
       fallback_factory_->Clone(),
@@ -218,12 +223,16 @@ WebWorkerFetchContextImpl::CloneForNestedWorker() {
   new_context->ancestor_frame_id_ = ancestor_frame_id_;
   new_context->frame_request_blocker_ = frame_request_blocker_;
   new_context->appcache_host_id_ = appcache_host_id_;
+
+  child_preference_watchers_.AddPtr(std::move(preference_watcher));
+
   return new_context;
 }
 
 void WebWorkerFetchContextImpl::InitializeOnWorkerThread() {
   DCHECK(!resource_dispatcher_);
   DCHECK(!binding_.is_bound());
+  DCHECK(!preference_watcher_binding_.is_bound());
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
   resource_dispatcher_->set_terminate_sync_load_event(
       terminate_sync_load_event_);
@@ -237,6 +246,9 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread() {
 
   service_worker_worker_client_registry_.Bind(
       std::move(service_worker_worker_client_registry_info_));
+
+  if (preference_watcher_request_.is_pending())
+    preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     service_worker_container_host_.Bind(
@@ -445,6 +457,15 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
           mojo::MakeRequest(&service_worker_url_loader_factory), task_runner));
   web_loader_factory_->SetServiceWorkerURLLoaderFactory(
       std::move(service_worker_url_loader_factory));
+}
+
+void WebWorkerFetchContextImpl::NotifyUpdate(
+    const RendererPreferences& new_prefs) {
+  renderer_preferences_ = new_prefs;
+  child_preference_watchers_.ForAllPtrs(
+      [&new_prefs](mojom::RendererPreferenceWatcher* watcher) {
+        watcher->NotifyUpdate(new_prefs);
+      });
 }
 
 }  // namespace content

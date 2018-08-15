@@ -1,5 +1,6 @@
 <script>
-const worker = new Worker('fetch_from_worker.js');
+const params = new URLSearchParams(location.search);
+const worker = new Worker(params.get('script'));
 worker.onmessage = e => {
   document.body.innerText += e.data;
   document.title = 'DONE';
