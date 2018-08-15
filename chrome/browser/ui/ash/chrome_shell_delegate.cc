@@ -94,7 +94,7 @@ bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
 }
 
 void ChromeShellDelegate::PreInit() {
-  // TODO: port to mash. http://crbug.com/678949.
+  // TODO: port to multi-process mash. http://crbug.com/705713.
   if (!features::IsAshInBrowserProcess())
     return;
 
