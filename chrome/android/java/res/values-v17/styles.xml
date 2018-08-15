@@ -138,13 +138,8 @@
         <item name="android:paddingBottom">@dimen/modal_dialog_control_padding_vertical</item>
     </style>
 
-    <!-- TODO(huayinz): Move this to pre-defined style once we have the disabled state defined  -->
-    <style name="TextAppearance.ModalDialogButton" parent="BlueButtonText2">
-        <item name="android:textColor">@color/blue_when_enabled</item>
-    </style>
-
     <style name="ModalDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
-        <item name="android:textAppearance">@style/TextAppearance.ModalDialogButton</item>
+        <item name="android:textAppearance">@style/BlueButtonText2</item>
     </style>
 
     <style name="SimpleDialog" parent="AlertDialogTheme">
