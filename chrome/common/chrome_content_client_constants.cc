@@ -6,7 +6,7 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 const base::FilePath::CharType ChromeContentClient::kNotPresent[] =
-    "internal-not-yet-present";
+    FILE_PATH_LITERAL("internal-not-yet-present");
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)
