@@ -28,6 +28,31 @@ typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 class NET_EXPORT CertVerifyProc
     : public base::RefCountedThreadSafe<CertVerifyProc> {
  public:
+  enum VerifyFlags {
+    // If set, enables online revocation checking via CRLs and OCSP for the
+    // certificate chain.
+    VERIFY_REV_CHECKING_ENABLED = 1 << 0,
+
+    // If set, this is equivalent to VERIFY_REV_CHECKING_ENABLED, in that it
+    // enables online revocation checking via CRLs or OCSP, but only
+    // for certificates issued by non-public trust anchors. Failure to check
+    // revocation is treated as a hard failure.
+    // Note: If VERIFY_CERT_IO_ENABLE is not also supplied, certificates
+    // that chain to local trust anchors will likely fail - for example, due to
+    // lacking fresh cached revocation issue (Windows) or because OCSP stapling
+    // can only provide information for the leaf, and not for any
+    // intermediates.
+    VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS = 1 << 1,
+
+    // If set, certificates with SHA-1 signatures will be allowed, but only if
+    // they are issued by non-public trust anchors.
+    VERIFY_ENABLE_SHA1_LOCAL_ANCHORS = 1 << 2,
+
+    // If set, disables the policy enforcement described at
+    // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
+    VERIFY_DISABLE_SYMANTEC_ENFORCEMENT = 1 << 3,
+  };
+
   // Creates and returns the default CertVerifyProc.
   static scoped_refptr<CertVerifyProc> CreateDefault();
 
@@ -48,9 +73,6 @@ class NET_EXPORT CertVerifyProc
   // revocation checking is performed (i.e. OCSP and downloading CRLs). CRLSet
   // based revocation checking is always enabled, regardless of this flag, if
   // |crl_set| is given.
-  //
-  // If VERIFY_EV_CERT is set in |flags| too, EV certificate verification is
-  // performed.
   //
   // |crl_set| points to an optional CRLSet structure which can be used to
   // avoid revocation checks over the network.

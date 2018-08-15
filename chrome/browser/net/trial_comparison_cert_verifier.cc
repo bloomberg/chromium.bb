@@ -44,9 +44,7 @@ static bool g_is_fake_official_build_for_cert_verifier_testing = false;
 
 namespace {
 
-bool CheckTrialEligibility(void* profile_id,
-                           base::TimeDelta primary_latency,
-                           bool is_first_job) {
+bool CheckTrialEligibility(void* profile_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // g_browser_process is valid until after all threads are stopped. So it must
@@ -59,29 +57,12 @@ bool CheckTrialEligibility(void* profile_id,
   // Only allow on non-incognito profiles which have SBER2 (Scout) opt-in set.
   // See design doc for more details:
   // https://docs.google.com/document/d/1AM1CD42bC6LHWjKg-Hkid_RLr2DH6OMzstH9-pGSi-g
-  bool allowed = !profile->IsOffTheRecord() && safe_browsing::IsScout(prefs) &&
-                 safe_browsing::IsExtendedReportingEnabled(prefs);
-
-  if (allowed) {
-    // Only record the TrialPrimary histograms for the same set of requests
-    // that TrialSecondary histograms will be recorded for, in order to get a
-    // direct comparison.
-    UMA_HISTOGRAM_CUSTOM_TIMES("Net.CertVerifier_Job_Latency_TrialPrimary",
-                               primary_latency,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromMinutes(10), 100);
-    if (is_first_job) {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Net.CertVerifier_First_Job_Latency_TrialPrimary", primary_latency,
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMinutes(10), 100);
-    }
-  }
-
-  return allowed;
+  return !profile->IsOffTheRecord() && safe_browsing::IsScout(prefs) &&
+         safe_browsing::IsExtendedReportingEnabled(prefs);
 }
 
 void SendTrialVerificationReport(void* profile_id,
+                                 const net::CertVerifier::Config& config,
                                  const net::CertVerifier::RequestParams& params,
                                  const net::CertVerifyResult& primary_result,
                                  const net::CertVerifyResult& trial_result) {
@@ -91,7 +72,7 @@ void SendTrialVerificationReport(void* profile_id,
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
 
   CertificateErrorReport report(params.hostname(), *params.certificate(),
-                                params.flags(), primary_result, trial_result);
+                                config, primary_result, trial_result);
 
   report.AddNetworkTimeInfo(g_browser_process->network_time_tracker());
   report.AddChromeChannel(chrome::GetChannel());
@@ -200,14 +181,17 @@ bool CertHasMultipleEVPoliciesAndOneMatchesRoot(
 
 class TrialComparisonCertVerifier::TrialVerificationJob {
  public:
-  TrialVerificationJob(const net::CertVerifier::RequestParams& params,
+  TrialVerificationJob(const net::CertVerifier::Config& config,
+                       const net::CertVerifier::RequestParams& params,
                        const net::NetLogWithSource& source_net_log,
                        scoped_refptr<net::CRLSet> crl_set,
                        TrialComparisonCertVerifier* cert_verifier,
                        int primary_error,
                        const net::CertVerifyResult& primary_result,
                        void* profile_id)
-      : params_(params),
+      : config_(config),
+        config_changed_(false),
+        params_(params),
         net_log_(net::NetLogWithSource::Make(
             source_net_log.net_log(),
             net::NetLogSourceType::TRIAL_CERT_VERIFIER_JOB)),
@@ -241,6 +225,8 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
       OnJobCompleted(rv);
   }
 
+  void OnConfigChanged() { config_changed_ = true; }
+
   void Finish(bool is_success, TrialComparisonResult result_code) {
     TrialComparisonCertVerifier* cert_verifier = cert_verifier_;
     cert_verifier_ = nullptr;
@@ -256,9 +242,9 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
         !base::GetFieldTrialParamByFeatureAsBool(
             features::kCertDualVerificationTrialFeature, "uma_only", false)) {
       content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
-          ->PostTask(FROM_HERE,
-                     base::BindOnce(&SendTrialVerificationReport, profile_id_,
-                                    params_, primary_result_, trial_result_));
+          ->PostTask(FROM_HERE, base::BindOnce(&SendTrialVerificationReport,
+                                               profile_id_, config_, params_,
+                                               primary_result_, trial_result_));
     }
 
     // |this| is deleted after RemoveJob returns.
@@ -304,22 +290,21 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
 
 #if defined(OS_MACOSX)
     if (primary_error_ == net::ERR_CERT_REVOKED &&
-        !(params_.flags() & net::CertVerifier::VERIFY_REV_CHECKING_ENABLED) &&
+        !config_.enable_rev_checking &&
         !(primary_result_.cert_status &
           net::CERT_STATUS_REV_CHECKING_ENABLED) &&
         !(trial_result_.cert_status &
           (net::CERT_STATUS_REVOKED | net::CERT_STATUS_REV_CHECKING_ENABLED))) {
+      if (config_changed_) {
+        FinishSuccess(kIgnoredConfigurationChanged);
+        return;
+      }
       // CertVerifyProcMac does some revocation checking even if we didn't want
       // it. Try verifying with the trial verifier with revocation checking
       // enabled, see if it then returns REVOKED.
 
-      RequestParams reverification_params(
-          params_.certificate(), params_.hostname(),
-          params_.flags() | net::CertVerifier::VERIFY_REV_CHECKING_ENABLED,
-          params_.ocsp_response(), params_.additional_trust_anchors());
-
-      int rv = cert_verifier_->trial_verifier()->Verify(
-          reverification_params, crl_set_.get(), &reverification_result_,
+      int rv = cert_verifier_->revocation_trial_verifier()->Verify(
+          params_, crl_set_.get(), &reverification_result_,
           base::BindOnce(
               &TrialVerificationJob::OnMacRevcheckingReverificationJobCompleted,
               base::Unretained(this)),
@@ -336,6 +321,10 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
 
     if (!chains_equal &&
         (trial_error_ == net::OK || primary_error_ != net::OK)) {
+      if (config_changed_) {
+        FinishSuccess(kIgnoredConfigurationChanged);
+        return;
+      }
       // Chains were different, reverify the trial_result_.verified_cert chain
       // using the platform verifier and compare results again.
       RequestParams reverification_params(
@@ -436,6 +425,8 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
   }
 
  private:
+  const net::CertVerifier::Config config_;
+  bool config_changed_;
   const net::CertVerifier::RequestParams params_;
   const net::NetLogWithSource net_log_;
   scoped_refptr<net::CRLSet> crl_set_;
@@ -483,7 +474,20 @@ TrialComparisonCertVerifier::TrialComparisonCertVerifier(
                   &TrialComparisonCertVerifier::OnTrialVerifierComplete,
                   base::Unretained(this)),
               false /* should_record_histograms */)),
-      weak_ptr_factory_(this) {}
+      revocation_trial_verifier_(
+          net::MultiThreadedCertVerifier::CreateForDualVerificationTrial(
+              trial_verify_proc,
+              // Unretained is safe since the callback won't be called after
+              // |trial_verifier_| is destroyed.
+              base::BindRepeating(
+                  &TrialComparisonCertVerifier::OnTrialVerifierComplete,
+                  base::Unretained(this)),
+              false /* should_record_histograms */)),
+      weak_ptr_factory_(this) {
+  net::CertVerifier::Config config;
+  config.enable_rev_checking = true;
+  revocation_trial_verifier_->SetConfig(config);
+}
 
 TrialComparisonCertVerifier::~TrialComparisonCertVerifier() = default;
 
@@ -502,6 +506,25 @@ int TrialComparisonCertVerifier::Verify(const RequestParams& params,
 
   return primary_verifier_->Verify(params, crl_set, verify_result,
                                    std::move(callback), out_req, net_log);
+}
+
+void TrialComparisonCertVerifier::SetConfig(const Config& config) {
+  config_ = config;
+  config_id_++;
+
+  primary_verifier_->SetConfig(config);
+  primary_reverifier_->SetConfig(config);
+  trial_verifier_->SetConfig(config);
+
+  // Always enable revocation checking for the revocation trial verifier.
+  net::CertVerifier::Config config_with_revocation = config;
+  config_with_revocation.enable_rev_checking = true;
+  revocation_trial_verifier_->SetConfig(config_with_revocation);
+
+  // Notify all in-process jobs that the underlying configuration has changed.
+  for (auto& job : jobs_) {
+    job->OnConfigChanged();
+  }
 }
 
 void TrialComparisonCertVerifier::OnPrimaryVerifierComplete(
@@ -526,12 +549,11 @@ void TrialComparisonCertVerifier::OnPrimaryVerifierComplete(
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
           .get(),
-      FROM_HERE,
-      base::BindOnce(CheckTrialEligibility, profile_id_, primary_latency,
-                     is_first_job),
+      FROM_HERE, base::BindOnce(CheckTrialEligibility, profile_id_),
       base::BindOnce(&TrialComparisonCertVerifier::MaybeDoTrialVerification,
                      weak_ptr_factory_.GetWeakPtr(), params, std::move(crl_set),
-                     net_log, primary_error, primary_result, profile_id_));
+                     net_log, primary_error, primary_result, primary_latency,
+                     is_first_job, config_id_, profile_id_));
 }
 
 void TrialComparisonCertVerifier::OnTrialVerifierComplete(
@@ -561,16 +583,35 @@ void TrialComparisonCertVerifier::MaybeDoTrialVerification(
     const net::NetLogWithSource& net_log,
     int primary_error,
     const net::CertVerifyResult& primary_result,
+    base::TimeDelta primary_latency,
+    bool is_first_job,
+    uint32_t config_id,
     void* profile_id,
     bool trial_allowed) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!trial_allowed)
+  // If the trial is not allowed, or the configuration has changed while
+  // determining if the trial is allowed, no need to continue.
+  if (!trial_allowed || config_id != config_id_)
     return;
+
+  // Only record the TrialPrimary histograms for the same set of requests
+  // that TrialSecondary histograms will be recorded for, in order to get a
+  // direct comparison.
+  UMA_HISTOGRAM_CUSTOM_TIMES("Net.CertVerifier_Job_Latency_TrialPrimary",
+                             primary_latency,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromMinutes(10), 100);
+  if (is_first_job) {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Net.CertVerifier_First_Job_Latency_TrialPrimary", primary_latency,
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(10),
+        100);
+  }
 
   std::unique_ptr<TrialVerificationJob> job =
       std::make_unique<TrialVerificationJob>(
-          params, net_log, std::move(crl_set), this, primary_error,
+          config_, params, net_log, std::move(crl_set), this, primary_error,
           primary_result, profile_id);
   TrialVerificationJob* job_ptr = job.get();
   jobs_.insert(std::move(job));

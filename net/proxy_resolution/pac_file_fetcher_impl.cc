@@ -171,7 +171,7 @@ int PacFileFetcherImpl::Fetch(
   // the proxy might be the only way to the outside world.  IGNORE_LIMITS is
   // used to avoid blocking proxy resolution on other network requests.
   cur_request_->SetLoadFlags(LOAD_BYPASS_PROXY | LOAD_DISABLE_CACHE |
-                             LOAD_DISABLE_CERT_REVOCATION_CHECKING |
+                             LOAD_DISABLE_CERT_NETWORK_FETCHES |
                              LOAD_IGNORE_LIMITS);
 
   // Save the caller's info for notification on completion.

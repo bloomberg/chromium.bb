@@ -38,6 +38,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/cache_type.h"
+#include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
@@ -175,31 +176,6 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
 
   return job_factory;
 }
-
-// For Android WebView, do not enforce policies that are not consistent with
-// the underlying OS validator.
-// This means not enforcing the Legacy Symantec PKI policies outlined in
-// https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
-// or disabling SHA-1 for locally-installed trust anchors.
-class AwSSLConfigService : public net::SSLConfigService {
- public:
-  AwSSLConfigService() {
-    default_config_.symantec_enforcement_disabled = true;
-    default_config_.sha1_local_anchors_enabled = true;
-  }
-
-  void GetSSLConfig(net::SSLConfig* config) override {
-    *config = default_config_;
-  }
-
-  bool CanShareConnectionWithClientCerts(
-      const std::string& hostname) const override {
-    return false;
-  }
-
- private:
-  net::SSLConfig default_config_;
-};
 
 }  // namespace
 
@@ -344,9 +320,18 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       CreateAuthHandlerFactory(host_resolver.get()));
   builder.set_host_resolver(std::move(host_resolver));
 
-  builder.set_ssl_config_service(std::make_unique<AwSSLConfigService>());
-
   url_request_context_ = builder.Build();
+
+  // For Android WebView, do not enforce policies that are not consistent with
+  // the underlying OS validator.
+  // This means not enforcing the Legacy Symantec PKI policies outlined in
+  // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
+  // or disabling SHA-1 for locally-installed trust anchors.
+  net::CertVerifier::Config config;
+  config.enable_sha1_local_anchors = true;
+  config.disable_symantec_enforcement = true;
+  url_request_context_->cert_verifier()->SetConfig(config);
+
 #if DCHECK_IS_ON()
   g_created_url_request_context_builder = true;
 #endif
