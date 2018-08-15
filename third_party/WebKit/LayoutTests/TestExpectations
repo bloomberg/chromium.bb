@@ -1728,7 +1728,7 @@ crbug.com/865839 external/wpt/service-workers/service-worker/update-after-naviga
 crbug.com/841922 [ Linux Win Mac ] virtual/video-surface-layer/media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 
 
-crbug.com/862716 [ Mac Linux Win ] css3/filters/effect-brightness-clamping-hw.html [ Failure Pass ]
+crbug.com/862716 [ Mac Linux Win ] css3/filters/effect-brightness-clamping-hw.html [ Failure Pass Timeout ]
 crbug.com/862806 [ Mac ] css3/filters/effect-drop-shadow-hw.html [ Failure Pass ]
 crbug.com/862826 [ Mac Linux ] external/wpt/html/syntax/parsing/template/creating-an-element-for-the-token/template-owner-document.html [ Failure Pass ]
 
