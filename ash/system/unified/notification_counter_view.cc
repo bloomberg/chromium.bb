@@ -5,6 +5,8 @@
 #include "ash/system/unified/notification_counter_view.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/i18n/number_formatting.h"
@@ -51,23 +53,25 @@ class NumberIconImageSource : public gfx::CanvasImageSource {
   }
 
   void Draw(gfx::Canvas* canvas) override {
+    SkColor tray_icon_color =
+        TrayIconColor(Shell::Get()->session_controller()->GetSessionState());
     // Paint the contents inside the circle background. The color doesn't matter
     // as it will be hollowed out by the XOR operation.
     if (count_ > kTrayNotificationMaxCount) {
       canvas->DrawImageInt(
           gfx::CreateVectorIcon(kSystemTrayNotificationCounterPlusIcon,
-                                size().width(), kTrayIconColor),
+                                size().width(), tray_icon_color),
           0, 0);
     } else {
       canvas->DrawStringRectWithFlags(
-          base::FormatNumber(count_), GetNumberIconFontList(), kTrayIconColor,
+          base::FormatNumber(count_), GetNumberIconFontList(), tray_icon_color,
           gfx::Rect(size()),
           gfx::Canvas::TEXT_ALIGN_CENTER | gfx::Canvas::NO_SUBPIXEL_RENDERING);
     }
     cc::PaintFlags flags;
     flags.setBlendMode(SkBlendMode::kXor);
     flags.setAntiAlias(true);
-    flags.setColor(kTrayIconColor);
+    flags.setColor(tray_icon_color);
     canvas->DrawCircle(gfx::RectF(gfx::SizeF(size())).CenterPoint(),
                        kTrayNotificationCircleIconRadius, flags);
   }
@@ -110,8 +114,9 @@ QuietModeView::QuietModeView() : TrayItemView(nullptr) {
   // implemented, so that icon resizing will not happen here.
   // DCHECK_EQ(kTrayIconSize,
   //     gfx::GetDefaultSizeOfVectorIcon(kSystemTrayDoNotDisturbIcon));
-  image_view()->SetImage(gfx::CreateVectorIcon(kSystemTrayDoNotDisturbIcon,
-                                               kTrayIconSize, kTrayIconColor));
+  image_view()->SetImage(gfx::CreateVectorIcon(
+      kSystemTrayDoNotDisturbIcon, kTrayIconSize,
+      TrayIconColor(Shell::Get()->session_controller()->GetSessionState())));
   Update();
 }
 
