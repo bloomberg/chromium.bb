@@ -257,20 +257,18 @@ void TeamDriveListLoader::OnReadDirectoryByPath(
   std::transform(remote_resources.begin(), remote_resources.end(),
                  std::back_inserter(team_drive_updates.all_team_drives),
                  [](const ResourceEntry& entry) -> TeamDrive {
-                   return {
-                       entry.resource_id(), entry.base_name(),
-                       drive::util::GetDriveTeamDrivesRootPath().AppendASCII(
-                           entry.base_name())};
+                   return {entry.resource_id(), entry.base_name(),
+                           drive::util::GetDriveTeamDrivesRootPath().Append(
+                               util::NormalizeFileName(entry.base_name()))};
                  });
 
   // Create a copy of the added team drives list to notify observers.
   std::transform(added_team_drives.begin(), added_team_drives.end(),
                  std::back_inserter(team_drive_updates.added_team_drives),
                  [](const ResourceEntry& entry) -> TeamDrive {
-                   return {
-                       entry.resource_id(), entry.base_name(),
-                       drive::util::GetDriveTeamDrivesRootPath().AppendASCII(
-                           entry.base_name())};
+                   return {entry.resource_id(), entry.base_name(),
+                           drive::util::GetDriveTeamDrivesRootPath().Append(
+                               util::NormalizeFileName(entry.base_name()))};
                  });
 
   // Create a copy of the removed team drives list to notify observers.
