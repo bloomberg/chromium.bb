@@ -97,9 +97,7 @@ class ChromotingSession : public ClientInputInjector {
   ~ChromotingSession() override;
 
   // Gets the current feedback data and returns it to the callback on the
-  // UI thread. If the session is never connected, then an empty feedback
-  // will be returned, otherwise feedback for current session (either still
-  // connected or already disconnected) will be returned.
+  // UI thread.
   void GetFeedbackData(GetFeedbackDataCallback callback) const;
 
   // Requests pairing between the host and client for PIN-less authentication.
@@ -141,13 +139,6 @@ class ChromotingSession : public ClientInputInjector {
   // Created when the session is connected, then used, and destroyed on the
   // network thread when the instance is destroyed.
   std::unique_ptr<Core> core_;
-
-  // TODO(yuweih): Looks like we should be able to move this into the Core and
-  // post a task to base::Unretained(core_) to get back the feedback.
-  // Created when the session is created, then used, and destroyed on the
-  // network thread when the instance is destroyed. This is stored out of
-  // |core_| to allow accessing logs after |core_| becomes invalid.
-  std::unique_ptr<ClientTelemetryLogger> logger_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingSession);
 };

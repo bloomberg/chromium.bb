@@ -35,10 +35,7 @@ ClientTelemetryLogger::ClientTelemetryLogger(
     ChromotingEventLogWriter* log_writer,
     ChromotingEvent::Mode mode,
     ChromotingEvent::SessionEntryPoint entry_point)
-    : mode_(mode),
-      entry_point_(entry_point),
-      log_writer_(log_writer),
-      weak_factory_(this) {
+    : mode_(mode), entry_point_(entry_point), log_writer_(log_writer) {
   thread_checker_.DetachFromThread();
 }
 
@@ -103,10 +100,6 @@ void ClientTelemetryLogger::LogStatistics(
 
   ChromotingEvent event = MakeStatsEvent(perf_tracker);
   log_writer_->Log(event);
-}
-
-base::WeakPtr<ClientTelemetryLogger> ClientTelemetryLogger::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 void ClientTelemetryLogger::PrintLogStatistics(
