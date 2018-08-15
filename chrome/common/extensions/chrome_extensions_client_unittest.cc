@@ -13,6 +13,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -78,6 +79,15 @@ TEST_F(ChromeExtensionsClientTest, CheckZeroLengthActionIconFiles) {
   EXPECT_FALSE(extension3.get());
   EXPECT_STREQ("Could not load icon 'icon.png' for page action.",
                error.c_str());
+}
+
+// Test that the ManifestHandlerRegistry handler map hasn't overflowed.
+// If this test fails, increase ManifestHandlerRegistry::kHandlerMax.
+TEST_F(ChromeExtensionsClientTest, CheckManifestHandlerRegistryForOverflow) {
+  ManifestHandlerRegistry* registry = ManifestHandlerRegistry::Get();
+  ASSERT_TRUE(registry);
+  ASSERT_LT(0u, registry->handlers_.size());
+  EXPECT_LE(registry->handlers_.size(), ManifestHandlerRegistry::kHandlerMax);
 }
 
 }  // namespace extensions

@@ -23,12 +23,6 @@ static base::LazyInstance<ManifestHandlerRegistry>::DestructorAtExit
     g_registry = LAZY_INSTANCE_INITIALIZER;
 static ManifestHandlerRegistry* g_registry_override = NULL;
 
-ManifestHandlerRegistry* GetRegistry() {
-  if (!g_registry_override)
-    return g_registry.Pointer();
-  return g_registry_override;
-}
-
 }  // namespace
 
 ManifestHandler::ManifestHandler() {
@@ -58,7 +52,7 @@ const std::vector<std::string> ManifestHandler::PrerequisiteKeys() const {
 void ManifestHandler::Register() {
   linked_ptr<ManifestHandler> this_linked(this);
 
-  ManifestHandlerRegistry* registry = GetRegistry();
+  ManifestHandlerRegistry* registry = ManifestHandlerRegistry::Get();
   for (const char* key : Keys())
     registry->RegisterManifestHandler(key, this_linked);
 }
@@ -74,18 +68,18 @@ ManifestPermission* ManifestHandler::CreateInitialRequiredPermission(
 
 // static
 void ManifestHandler::FinalizeRegistration() {
-  GetRegistry()->Finalize();
+  ManifestHandlerRegistry::Get()->Finalize();
 }
 
 // static
 bool ManifestHandler::IsRegistrationFinalized() {
-  return GetRegistry()->is_finalized_;
+  return ManifestHandlerRegistry::Get()->is_finalized_;
 }
 
 // static
 bool ManifestHandler::ParseExtension(Extension* extension,
                                      base::string16* error) {
-  return GetRegistry()->ParseExtension(extension, error);
+  return ManifestHandlerRegistry::Get()->ParseExtension(extension, error);
 }
 
 // static
@@ -93,19 +87,20 @@ bool ManifestHandler::ValidateExtension(const Extension* extension,
                                         std::string* error,
                                         std::vector<InstallWarning>* warnings) {
   base::AssertBlockingAllowed();
-  return GetRegistry()->ValidateExtension(extension, error, warnings);
+  return ManifestHandlerRegistry::Get()->ValidateExtension(extension, error,
+                                                           warnings);
 }
 
 // static
 ManifestPermission* ManifestHandler::CreatePermission(const std::string& name) {
-  return GetRegistry()->CreatePermission(name);
+  return ManifestHandlerRegistry::Get()->CreatePermission(name);
 }
 
 // static
 void ManifestHandler::AddExtensionInitialRequiredPermissions(
     const Extension* extension, ManifestPermissionSet* permission_set) {
-  return GetRegistry()->AddExtensionInitialRequiredPermissions(extension,
-                                                               permission_set);
+  return ManifestHandlerRegistry::Get()->AddExtensionInitialRequiredPermissions(
+      extension, permission_set);
 }
 
 // static
@@ -113,6 +108,9 @@ const std::vector<std::string> ManifestHandler::SingleKey(
     const std::string& key) {
   return std::vector<std::string>(1, key);
 }
+
+// static
+const size_t ManifestHandlerRegistry::kHandlerMax;
 
 ManifestHandlerRegistry::ManifestHandlerRegistry() : is_finalized_(false) {
 }
@@ -196,14 +194,29 @@ void ManifestHandlerRegistry::AddExtensionInitialRequiredPermissions(
 }
 
 // static
+ManifestHandlerRegistry* ManifestHandlerRegistry::Get() {
+  if (!g_registry_override)
+    return g_registry.Pointer();
+  return g_registry_override;
+}
+
+// static
 ManifestHandlerRegistry* ManifestHandlerRegistry::SetForTesting(
     ManifestHandlerRegistry* new_registry) {
-  ManifestHandlerRegistry* old_registry = GetRegistry();
+  ManifestHandlerRegistry* old_registry = ManifestHandlerRegistry::Get();
   if (new_registry != g_registry.Pointer())
     g_registry_override = new_registry;
   else
     g_registry_override = NULL;
   return old_registry;
+}
+
+// static
+void ManifestHandlerRegistry::ResetForTesting() {
+  ManifestHandlerRegistry* registry = Get();
+  registry->priority_map_.clear();
+  registry->handlers_.clear();
+  registry->is_finalized_ = false;
 }
 
 void ManifestHandlerRegistry::SortManifestHandlers() {
