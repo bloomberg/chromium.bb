@@ -18,6 +18,7 @@
 #include "cc/paint/paint_recorder.h"
 #include "cc/raster/raster_source.h"
 #include "cc/raster/scoped_gpu_raster.h"
+#include "cc/raster/scoped_grcontext_access.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
@@ -163,24 +164,6 @@ static void RasterizeSourceOOP(
 
   ri->DeleteTextures(1, &texture_id);
 }
-
-// The following class is needed to correctly reset GL state when rendering to
-// SkCanvases with a GrContext on a RasterInterface enabled context.
-class ScopedGrContextAccess {
- public:
-  explicit ScopedGrContextAccess(viz::RasterContextProvider* context_provider)
-      : context_provider_(context_provider) {
-    gpu::raster::RasterInterface* ri = context_provider_->RasterInterface();
-    ri->BeginGpuRaster();
-  }
-  ~ScopedGrContextAccess() {
-    gpu::raster::RasterInterface* ri = context_provider_->RasterInterface();
-    ri->EndGpuRaster();
-  }
-
- private:
-  viz::RasterContextProvider* context_provider_;
-};
 
 static void RasterizeSource(
     const RasterSource* raster_source,

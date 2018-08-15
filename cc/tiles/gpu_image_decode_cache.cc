@@ -19,6 +19,7 @@
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"
 #include "cc/paint/image_transfer_cache_entry.h"
+#include "cc/raster/scoped_grcontext_access.h"
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/mipmap_util.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
@@ -1111,7 +1112,11 @@ void GpuImageDecodeCache::UploadImageInTask(const DrawImage& draw_image) {
   if (context_->GetLock())
     context_lock.emplace(context_);
 
+  base::Optional<ScopedGrContextAccess> gr_context_access;
+  if (!use_transfer_cache_)
+    gr_context_access.emplace(context_);
   base::AutoLock lock(lock_);
+
   ImageData* image_data = GetImageDataForDrawImage(
       draw_image, InUseCacheKey::FromDrawImage(draw_image));
   DCHECK(image_data);
