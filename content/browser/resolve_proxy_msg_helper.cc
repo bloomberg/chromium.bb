@@ -125,7 +125,7 @@ ResolveProxyMsgHelper::PendingRequest::PendingRequest(const GURL& url,
     : url(url), reply_msg(reply_msg) {}
 
 ResolveProxyMsgHelper::PendingRequest::PendingRequest(
-    PendingRequest&& pending_request) = default;
+    PendingRequest&& pending_request) noexcept = default;
 
 ResolveProxyMsgHelper::PendingRequest::~PendingRequest() noexcept = default;
 
