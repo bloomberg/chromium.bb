@@ -10,11 +10,6 @@ source_set("audio") {
   sources = [
     "audio_playback_sink_ios.cc",
     "audio_playback_sink_ios.h",
-    "audio_player_ios.h",
-    "audio_player_ios.mm",
-    "audio_player_ios_wrapper.h",
-    "audio_stream_consumer_proxy.cc",
-    "audio_stream_consumer_proxy.h",
   ]
 
   deps = [
