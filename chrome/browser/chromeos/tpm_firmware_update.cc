@@ -31,7 +31,7 @@ namespace tpm_firmware_update {
 
 namespace {
 
-// Checks whether |kSettingsKeyAllowPowerwash| is set to true in |settings|.
+// Decodes a |settings| dictionary into a set of allowed update modes.
 std::set<Mode> GetModesFromSetting(const base::Value* settings) {
   std::set<Mode> modes;
   if (!settings)
@@ -87,7 +87,11 @@ std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
 // away all the gory threading details.
 class AvailabilityChecker {
  public:
-  using ResponseCallback = base::OnceCallback<void(bool)>;
+  struct Status {
+    bool update_available = false;
+    bool srk_vulnerable_roca = false;
+  };
+  using ResponseCallback = base::OnceCallback<void(const Status&)>;
 
   ~AvailabilityChecker() { Cancel(); }
 
@@ -126,9 +130,19 @@ class AvailabilityChecker {
     return update_location_file;
   }
 
-  static bool IsUpdateAvailable() {
+  static bool CheckAvailabilityStatus(Status* status) {
     int64_t size;
-    return base::GetFileSize(GetUpdateLocationFilePath(), &size) && size;
+    if (!base::GetFileSize(GetUpdateLocationFilePath(), &size)) {
+      // File doesn't exist or error - can't determine availability status.
+      return false;
+    }
+    status->update_available = size > 0;
+    base::FilePath srk_vulnerable_roca_file;
+    CHECK(base::PathService::Get(
+        chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_SRK_VULNERABLE_ROCA,
+        &srk_vulnerable_roca_file));
+    status->srk_vulnerable_roca = base::PathExists(srk_vulnerable_roca_file);
+    return true;
   }
 
   static void StartOnBackgroundThread(
@@ -144,18 +158,18 @@ class AvailabilityChecker {
       base::WeakPtr<AvailabilityChecker> checker,
       const base::FilePath& target,
       bool error) {
-    bool available = IsUpdateAvailable();
-    if (available || error) {
+    Status status;
+    if (CheckAvailabilityStatus(&status) || error) {
       origin_task_runner->PostTask(
           FROM_HERE,
-          base::BindOnce(&AvailabilityChecker::Resolve, checker, available));
+          base::BindOnce(&AvailabilityChecker::Resolve, checker, status));
     }
   }
 
-  void Resolve(bool available) {
+  void Resolve(const Status& status) {
     Cancel();
     if (callback_) {
-      std::move(callback_).Run(available);
+      std::move(callback_).Run(status);
     }
   }
 
@@ -173,10 +187,13 @@ class AvailabilityChecker {
     // this function terminates. Thus, the final check needs to run independent
     // of |this| and takes |callback_| ownership.
     if (callback_) {
-      base::PostTaskAndReplyWithResult(
-          background_task_runner_.get(), FROM_HERE,
-          base::BindOnce(&AvailabilityChecker::IsUpdateAvailable),
-          std::move(callback_));
+      base::PostTaskAndReplyWithResult(background_task_runner_.get(), FROM_HERE,
+                                       base::BindOnce([]() {
+                                         Status status;
+                                         CheckAvailabilityStatus(&status);
+                                         return status;
+                                       }),
+                                       std::move(callback_));
     }
   }
 
@@ -254,10 +271,25 @@ void GetAvailableUpdateModes(
       base::BindOnce(
           [](std::set<Mode> modes,
              base::OnceCallback<void(const std::set<Mode>&)> callback,
-             bool available) {
-            std::move(callback).Run(available ? modes : std::set<Mode>());
+             const AvailabilityChecker::Status& status) {
+            DCHECK_LT(0U, modes.size());
+            DCHECK_EQ(0U, modes.count(Mode::kCleanup));
+            if (status.update_available) {
+              std::move(callback).Run(modes);
+              return;
+            }
+
+            // If there is no update, but the SRK is vulnerable, allow cleanup
+            // to take place. Note that at least one allowed actual mode is
+            // allowed, which is taken to imply cleanup is also allowed.
+            if (status.srk_vulnerable_roca) {
+              std::move(callback).Run(std::set<Mode>({Mode::kCleanup}));
+              return;
+            }
+
+            std::move(callback).Run(std::set<Mode>());
           },
-          std::move(modes), callback),
+          std::move(modes), std::move(callback)),
       timeout);
 }
 

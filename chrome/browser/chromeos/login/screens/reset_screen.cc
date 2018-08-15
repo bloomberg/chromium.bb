@@ -75,6 +75,9 @@ void StartTPMFirmwareUpdate(
     case tpm_firmware_update::Mode::kPreserveDeviceState:
       mode_string = "preserve_stateful";
       break;
+    case tpm_firmware_update::Mode::kCleanup:
+      mode_string = "cleanup";
+      break;
   }
 
   if (mode_string.empty()) {
