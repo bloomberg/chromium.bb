@@ -359,6 +359,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("menulist-collapse.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsMenuListCollapseNext) {
+  RunEventTest(FILE_PATH_LITERAL("menulist-collapse-next.html"));
+}
+
 // https://crbug.com/719030
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        DISABLED_AccessibilityEventsMenuListExpand) {
