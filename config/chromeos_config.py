@@ -1839,7 +1839,8 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       prebuilts=False,
       cpe_export=False,
       vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                        test_suite='smoke')],
+                                        test_suite='smoke',
+                                        use_ctest=False)],
       vm_tests_override=None,
       description='Verifies compilation, building an image, and vm/unit tests '
                   'if supported.',
