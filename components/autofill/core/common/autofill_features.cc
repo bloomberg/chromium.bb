@@ -152,5 +152,8 @@ const base::Feature kAutomaticPasswordGeneration = {
 const base::Feature kSingleClickAutofill{"SingleClickAutofill",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAutofillEnableCompanyName{
+    "AutofillEnableCompanyName", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace autofill
