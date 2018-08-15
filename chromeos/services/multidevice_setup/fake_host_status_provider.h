@@ -24,10 +24,10 @@ class FakeHostStatusProvider : public HostStatusProvider {
       mojom::HostStatus host_status,
       const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
 
- private:
   // HostStatusProvider:
   HostStatusWithDevice GetHostWithStatus() const override;
 
+ private:
   mojom::HostStatus host_status_ = mojom::HostStatus::kNoEligibleHosts;
   base::Optional<cryptauth::RemoteDeviceRef> host_device_;
 
