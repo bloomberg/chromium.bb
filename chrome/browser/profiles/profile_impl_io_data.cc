@@ -82,6 +82,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -247,7 +248,11 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
   DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_)
       ->InitDataReductionProxySettings(
           io_data_->data_reduction_proxy_io_data(), profile_->GetPrefs(),
-          main_request_context_getter_.get(),
+          // TODO(crbug.com/721403) Switch DRP to mojo. For now it is disabled
+          // with network service.
+          base::FeatureList::IsEnabled(network::features::kNetworkService)
+              ? nullptr
+              : main_request_context_getter_.get(),
           content::BrowserContext::GetDefaultStoragePartition(profile_)
               ->GetURLLoaderFactoryForBrowserProcess(),
           std::move(store),

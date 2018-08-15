@@ -23,6 +23,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/features.h"
 
 namespace {
 
@@ -114,6 +115,10 @@ void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
+  // TODO(crbug.com/721403): Make DRP work with network service.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return false;
+
   if (spdy_proxy_auth_enabled_.GetPrefName().empty())
     return false;
   return spdy_proxy_auth_enabled_.GetValue() ||

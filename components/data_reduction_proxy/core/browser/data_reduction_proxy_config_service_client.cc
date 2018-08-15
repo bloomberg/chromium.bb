@@ -48,6 +48,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/features.h"
 
 #if defined(OS_ANDROID)
 #include "net/android/network_library.h"
@@ -221,7 +222,11 @@ DataReductionProxyConfigServiceClient::CalculateNextConfigRefreshTime(
 
 void DataReductionProxyConfigServiceClient::InitializeOnIOThread(
     net::URLRequestContextGetter* url_request_context_getter) {
-  DCHECK(url_request_context_getter);
+  // TODO(crbug.com/721403): DRP is disabled with network service enabled. When
+  // DRP is switched to mojo, we won't need URLRequestContext.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    DCHECK(url_request_context_getter);
+  }
 #if defined(OS_ANDROID)
   // It is okay to use Unretained here because |app_status_listener| would be
   // destroyed before |this|.
