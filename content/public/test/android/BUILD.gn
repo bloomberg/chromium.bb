@@ -53,6 +53,7 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content/browser/test/util/TestWebContentsObserver.java",
     "javatests/src/org/chromium/content/browser/test/util/TouchCommon.java",
     "javatests/src/org/chromium/content/browser/test/util/UiUtils.java",
+    "javatests/src/org/chromium/content/browser/test/util/WebContentsUtils.java",
   ]
 }
 
@@ -62,19 +63,29 @@ generate_jni("content_test_jni") {
   sources = [
     "javatests/src/org/chromium/content/browser/test/InterstitialPageDelegateAndroid.java",
     "javatests/src/org/chromium/content/browser/test/util/DOMUtils.java",
+    "javatests/src/org/chromium/content/browser/test/util/WebContentsUtils.java",
   ]
 }
 
 static_library("content_native_test_support") {
   testonly = true
+
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
   sources = [
     "dom_utils.cc",
     "interstitial_page_delegate_android.cc",
     "interstitial_page_delegate_android.h",
+    "web_contents_utils.cc",
   ]
   deps = [
     ":content_test_jni",
     "//base",
+    "//content/browser:for_content_tests",
     "//content/public/browser",
     "//device/gamepad",
     "//media/midi",

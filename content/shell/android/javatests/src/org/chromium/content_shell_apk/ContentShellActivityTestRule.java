@@ -28,6 +28,7 @@ import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content.browser.test.util.WebContentsUtils;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -182,6 +183,15 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
             Log.w(TAG, "Getting container view failed. Returning null", e);
             return null;
         }
+    }
+
+    /**
+     * Updates RenderCoordinates with all frame submissions, even those with no UI-visible change.
+     */
+    public void reportAllFrameSubmissions(boolean enabled) {
+        final WebContents webContents = getWebContents();
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { WebContentsUtils.reportAllFrameSubmissions(webContents, enabled); });
     }
 
     public JavascriptInjector getJavascriptInjector() {

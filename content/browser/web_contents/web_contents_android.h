@@ -253,9 +253,9 @@ class CONTENT_EXPORT WebContentsAndroid
                                 int bottom,
                                 int right);
 
- private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
+ private:
   void OnFinishGetContentBitmap(const base::android::JavaRef<jobject>& obj,
                                 const base::android::JavaRef<jobject>& callback,
                                 const std::string& path,
