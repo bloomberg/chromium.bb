@@ -5,5 +5,5 @@
 declare_args() {
   # Specify if the Zucchini patcher features should be included in setup.exe.
   # See //components/zucchini for more information.
-  use_zucchini = false
+  use_zucchini = true
 }
