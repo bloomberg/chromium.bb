@@ -3021,6 +3021,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_LOCATION_BAR_VERBOSE_STATUS_OFFLINE" desc="Verbose indication of offline status in the location bar. [CHAR-LIMIT=20]">
         Offline
       </message>
+      <message name="IDS_LOCATION_BAR_VERBOSE_STATUS_PREVIEW" desc="An indication in the location bar that the page the user is viewing has been modified in order to speed up the page load or decrease the amount of data used to load the page. [CHAR-LIMIT=10]">
+        Lite
+      </message>
 
       <!-- Voice search -->
       <message name="IDS_VOICE_SEARCH_ERROR" desc="Toast when the voice search activity couldn't be started. [CHAR-LIMIT=40]">
