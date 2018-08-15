@@ -1527,22 +1527,22 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
                                                  const GURL& dest_url) {
   BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().GetBrowserContext();
-  // Don't compare effective URLs for all subframe navigations, since we don't
-  // want to create OOPIFs based on that mechanism (e.g., for hosted apps). For
-  // main frames, don't compare effective URLs when transitioning from app to
-  // non-app URLs if there exists another app WebContents that might script
-  // this one.  These navigations should stay in the app process to not break
-  // scripting when a hosted app opens a same-site popup. See
-  // https://crbug.com/718516 and https://crbug.com/828720.
+
+  // Ask embedder whether effective URLs should be used when determining if
+  // |dest_url| should end up in |candidate|'s SiteInstance.
+  // This is used to keep same-site scripting working for hosted apps.
+  bool should_compare_effective_urls =
+      GetContentClient()
+          ->browser()
+          ->ShouldCompareEffectiveURLsForSiteInstanceSelection(
+              browser_context, candidate->GetSiteInstance(),
+              frame_tree_node_->IsMainFrame(),
+              candidate->GetSiteInstance()->original_url(), dest_url);
+
   bool src_has_effective_url = SiteInstanceImpl::HasEffectiveURL(
       browser_context, candidate->GetSiteInstance()->original_url());
   bool dest_has_effective_url =
       SiteInstanceImpl::HasEffectiveURL(browser_context, dest_url);
-  bool should_compare_effective_urls = true;
-  if (!frame_tree_node_->IsMainFrame() ||
-      (src_has_effective_url && !dest_has_effective_url &&
-       candidate->GetSiteInstance()->GetRelatedActiveContentsCount() > 1u))
-    should_compare_effective_urls = false;
 
   // If the process type is incorrect, reject the candidate even if |dest_url|
   // is same-site.  (The URL may have been installed as an app since

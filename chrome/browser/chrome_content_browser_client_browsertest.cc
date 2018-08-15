@@ -32,6 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -397,6 +398,74 @@ IN_PROC_BROWSER_TEST_F(PolicyHeaderServiceBrowserTest,
   auto iter = last_request_headers().find(policy::kChromePolicyHeader);
   ASSERT_NE(iter, last_request_headers().end());
   EXPECT_EQ(iter->second, kTestPolicyHeader);
+}
+
+// Helper class to test window creation from NTP.
+class OpenWindowFromNTPBrowserTest : public InProcessBrowserTest,
+                                     public InstantTestBase {
+ public:
+  OpenWindowFromNTPBrowserTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(https_test_server().InitializeAndListen());
+    https_test_server().StartAcceptingConnections();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OpenWindowFromNTPBrowserTest);
+};
+
+// Test checks that navigations from NTP tab to URLs with same host as NTP but
+// different path do not reuse NTP SiteInstance. See https://crbug.com/859062
+// for details.
+IN_PROC_BROWSER_TEST_F(OpenWindowFromNTPBrowserTest,
+                       TransferFromNTPCreateNewTab) {
+  GURL search_url =
+      https_test_server().GetURL("ntp.com", "/instant_extended.html");
+  GURL ntp_url =
+      https_test_server().GetURL("ntp.com", "/instant_extended_ntp.html");
+  InstantTestBase::Init(search_url, ntp_url, false);
+
+  SetupInstant(browser());
+
+  // Navigate to the NTP URL and verify that the resulting process is marked as
+  // an Instant process.
+  ui_test_utils::NavigateToURL(browser(), ntp_url);
+  content::WebContents* ntp_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      ntp_tab->GetMainFrame()->GetProcess()->GetID()));
+
+  // Execute script that creates new window from ntp tab with
+  // ntp.com/title1.html as target url. Host is same as remote-ntp host, yet
+  // path is different.
+  GURL generic_url(https_test_server().GetURL("ntp.com", "/title1.html"));
+  content::TestNavigationObserver opened_tab_observer(nullptr);
+  opened_tab_observer.StartWatchingNewWebContents();
+  EXPECT_TRUE(
+      ExecuteScript(ntp_tab, "window.open('" + generic_url.spec() + "');"));
+  opened_tab_observer.Wait();
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+
+  content::WebContents* opened_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Wait until newly opened tab is fully loaded.
+  EXPECT_TRUE(WaitForLoadStop(opened_tab));
+
+  EXPECT_NE(opened_tab, ntp_tab);
+  EXPECT_EQ(generic_url, opened_tab->GetLastCommittedURL());
+  // New created tab should not reside in an Instant process.
+  EXPECT_FALSE(instant_service->IsInstantProcess(
+      opened_tab->GetMainFrame()->GetProcess()->GetID()));
 }
 
 }  // namespace content

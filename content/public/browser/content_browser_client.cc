@@ -81,6 +81,15 @@ GURL ContentBrowserClient::GetEffectiveURL(BrowserContext* browser_context,
   return url;
 }
 
+bool ContentBrowserClient::ShouldCompareEffectiveURLsForSiteInstanceSelection(
+    BrowserContext* browser_context,
+    content::SiteInstance* candidate_site_instance,
+    bool is_main_frame,
+    const GURL& candidate_url,
+    const GURL& destination_url) {
+  return true;
+}
+
 bool ContentBrowserClient::ShouldUseMobileFlingCurve() const {
   return false;
 }
