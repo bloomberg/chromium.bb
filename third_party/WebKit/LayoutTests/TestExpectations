@@ -3924,6 +3924,7 @@ crbug.com/869726 [ Mac ] virtual/user-activation-v2/fast/events/touch/touch-latc
 crbug.com/869726 [ Mac ] fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
 crbug.com/874444 [ Linux ] external/wpt/fullscreen/api/element-request-fullscreen-two-elements-manual.html [ Pass Failure ]
 crbug.com/874500 [ Mac ] media/media-ended.html [ Pass Timeout ]
+crbug.com/874567 [ Mac ] svg/custom/getscreenctm-in-scrollable-div-area-nested.xhtml [ Pass Failure ]
 
 crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
