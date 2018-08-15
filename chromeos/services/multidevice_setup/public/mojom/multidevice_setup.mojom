@@ -42,6 +42,41 @@ enum HostStatus {
   kHostVerified
 };
 
+// Individual multi-device features types.
+enum Feature {
+  kBetterTogetherSuite,
+  kInstantTethering,
+  kMessages,
+  kSmartLock
+};
+
+enum FeatureState {
+  // Feature was disabled by a device policy (e.g., EDU or Enterprise).
+  kDisabledByPolicy,
+
+  // Feature was disabled by the user (i.e., via settings).
+  kDisabledByUser,
+
+  // Feature was enabled by the user (i.e., via settings).
+  kEnabledByUser,
+
+  // Feature is not supported by this Chromebook.
+  kNotSupportedByChromebook,
+
+  // Feature is not supported by the current host phone device.
+  kNotSupportedByPhone,
+
+  // The feature is unavailable because there is no verified multi-device host.
+  // To set a host, use SetHostDevice(); to verify a host, use
+  // RetrySetHostNow().
+  kUnavailableNoVerifiedHost,
+
+  // The feature is unavailable because there are insufficient security
+  // mechanisms in place (e.g., Smart Lock returns this value when the host
+  // phone device does not have a lock screen set).
+  kUnavailableInsufficientSecurity
+};
+
 interface AccountStatusChangeDelegate {
   // Callback which indicates that one or more MultiDevice host phones are
   // available for setup with the MultiDevice setup flow. This function is only
