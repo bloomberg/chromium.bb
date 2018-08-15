@@ -83,7 +83,7 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
   void ChildrenChanged(const ChildrenChange&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;
-  void WillRecalcStyle(StyleRecalcChange) override;
+  void DidRecalcStyle(StyleRecalcChange) override;
 
  private:
   bool IsV0InsertionPoint() const =

@@ -502,6 +502,7 @@ void HTMLSlotElement::DidRecalcStyle(StyleRecalcChange change) {
     return;
   for (auto& node : assigned_nodes_) {
     if (change == kReattach && node->IsElementNode()) {
+      DCHECK(node->ShouldCallRecalcStyle(kReattach));
       ToElement(node)->RecalcStyle(kReattach);
       continue;
     }

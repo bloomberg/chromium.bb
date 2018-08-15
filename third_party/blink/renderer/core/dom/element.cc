@@ -2271,7 +2271,16 @@ bool Element::ShouldCallRecalcStyleForChildren(StyleRecalcChange change) {
 void Element::RecalcStyle(StyleRecalcChange change) {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().Lifecycle().InDetach());
-  DCHECK(!ParentOrShadowHostNode()->NeedsStyleRecalc());
+  // If we are re-attaching in a Shadow DOM v0 tree, we recalc down to the
+  // distributed nodes to propagate kReattach down the flat tree (See
+  // V0InsertionPoint::DidRecalcStyle). That means we may have a shadow-
+  // including parent (V0InsertionPoint) with dirty recalc bit in the case where
+  // fallback content has been redistributed to a different insertion point.
+  // This will not happen for Shadow DOM v1 because we walk assigned nodes and
+  // slots themselves are assigned and part of the flat tree.
+  DCHECK(
+      !ParentOrShadowHostNode()->NeedsStyleRecalc() ||
+      (ParentOrShadowHostNode()->IsV0InsertionPoint() && change == kReattach));
   DCHECK(InActiveDocument());
 
   if (HasCustomStyleCallbacks())
@@ -2320,6 +2329,8 @@ void Element::RecalcStyle(StyleRecalcChange change) {
         change = kReattach;
       if (change == kReattach)
         SetNeedsReattachLayoutTree();
+      else if (GetStyleChangeType() == kSubtreeStyleChange)
+        change = kForce;
     }
 
     // Needed because the RebuildLayoutTree code needs to see what the
@@ -2388,7 +2399,6 @@ scoped_refptr<ComputedStyle> Element::PropagateInheritedProperties(
 
 StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   DCHECK(GetDocument().InStyleRecalc());
-  DCHECK(!ParentOrShadowHostNode()->NeedsStyleRecalc());
   DCHECK(change >= kIndependentInherit || NeedsStyleRecalc());
   DCHECK(ParentComputedStyle());
   DCHECK(!GetNonAttachedStyle());

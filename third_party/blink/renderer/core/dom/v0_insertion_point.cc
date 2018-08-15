@@ -138,18 +138,25 @@ void V0InsertionPoint::RebuildDistributedChildrenLayoutTrees(
   }
 }
 
-void V0InsertionPoint::WillRecalcStyle(StyleRecalcChange change) {
-  StyleChangeType style_change_type = kNoStyleChange;
-
-  if (change > kInherit || GetStyleChangeType() > kLocalStyleChange)
-    style_change_type = kSubtreeStyleChange;
-  else if (change > kNoInherit)
-    style_change_type = kLocalStyleChange;
-  else
+void V0InsertionPoint::DidRecalcStyle(StyleRecalcChange change) {
+  if (!HasDistribution() || DistributedNodeAt(0)->parentNode() == this) {
+    // We either do not have distributed children or the distributed children
+    // are the fallback children. Fallback children have already been
+    // recalculated in ContainerNode::RecalcDescendantStyles().
     return;
+  }
+
+  StyleChangeType style_change_type =
+      change == kForce ? kSubtreeStyleChange : kLocalStyleChange;
 
   for (size_t i = 0; i < distributed_nodes_.size(); ++i) {
-    distributed_nodes_.at(i)->SetNeedsStyleRecalc(
+    Node* node = distributed_nodes_.at(i);
+    if (change == kReattach && node->IsElementNode()) {
+      if (node->ShouldCallRecalcStyle(kReattach))
+        ToElement(node)->RecalcStyle(kReattach);
+      continue;
+    }
+    node->SetNeedsStyleRecalc(
         style_change_type,
         StyleChangeReasonForTracing::Create(
             StyleChangeReason::kPropagateInheritChangeToDistributedNodes));
