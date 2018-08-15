@@ -22,6 +22,10 @@ class _SystemHealthSharedState(shared_page_state.SharedPageState):
   """
 
   def CanRunOnBrowser(self, browser_info, story):
+    if (browser_info.browser_type.startswith('android-webview') and
+        story.WEBVIEW_NOT_SUPPORTED):
+      return False
+
     if story.TAGS and story_tags.WEBGL in story.TAGS:
       return browser_info.HasWebGLSupport()
     return True
@@ -56,6 +60,7 @@ class SystemHealthStory(page.Page):
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   TAGS = []
   PLATFORM_SPECIFIC = False
+  WEBVIEW_NOT_SUPPORTED = False
 
   def __init__(self, story_set, take_memory_measurement,
       extra_browser_args=None):
@@ -108,3 +113,4 @@ class SystemHealthStory(page.Page):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
     self._DidLoadDocument(action_runner)
     self._Measure(action_runner)
+

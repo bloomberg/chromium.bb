@@ -38,6 +38,8 @@ class SearchOmniboxStory(system_health_story.SystemHealthStory):
   URL = 'https://www.google.co.in'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.EMERGING_MARKET]
+  # WebView has no omnibox, so not supported.
+  WEBVIEW_NOT_SUPPORTED = True
 
   def _DidLoadDocument(self, action_runner):
     app_ui = action_runner.tab.browser.GetAppUi()
@@ -72,6 +74,8 @@ class MobileNewTabPageStory(system_health_story.SystemHealthStory):
 
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.EMERGING_MARKET]
+  # WebView has no tabs, so this story is not supported there.
+  WEBVIEW_NOT_SUPPORTED = True
 
   def _DidLoadDocument(self, action_runner):
     app_ui = action_runner.tab.browser.GetAppUi()
