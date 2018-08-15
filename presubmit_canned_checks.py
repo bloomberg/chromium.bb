@@ -892,8 +892,8 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
         output_fn('Missing %s for these files:\n    %s' %
                   (needed, '\n    '.join(sorted(missing_files))))]
     if input_api.tbr and affects_owners:
-      output_list.append(output_fn('Note that TBR does not apply to changes '
-                                   'that affect OWNERS files.'))
+      output_list.append(output_fn('The CL affects an OWNERS file, so TBR will '
+                                   'be ignored.'))
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
       owners_with_comments = []

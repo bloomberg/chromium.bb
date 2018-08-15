@@ -2763,7 +2763,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         expected_output=re.compile(
             'Missing LGTM from an OWNER for these files:\n'
             '    foo\n'
-            '.*TBR does not apply to changes that affect OWNERS files.',
+            '.*The CL affects an OWNERS file, so TBR will be ignored.',
             re.MULTILINE))
 
   def testCannedCheckOwners_WithoutOwnerLGTM(self):
