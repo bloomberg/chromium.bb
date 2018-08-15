@@ -359,7 +359,6 @@ crbug.com/591099 fast/block/positioning/positioned-child-inside-relative-positio
 crbug.com/591099 fast/borders/bidi-002.html [ Failure ]
 crbug.com/859497 fast/borders/bidi-009a.html [ Failure ]
 crbug.com/591099 fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
-crbug.com/591099 fast/box-shadow/box-shadow.html [ Failure ]
 crbug.com/591099 fast/box-sizing/replaced.html [ Failure ]
 crbug.com/591099 fast/css-generated-content/first-letter-next-sibling-crash.html [ Crash ]
 crbug.com/591099 fast/css-generated-content/float-first-letter-siblings-convert-to-inline.html [ Crash ]
