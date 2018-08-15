@@ -3230,7 +3230,8 @@ TEST_F(NetworkContextTest, PreconnectFour) {
   ASSERT_EQ(num_sockets, 4);
 }
 
-TEST_F(NetworkContextTest, PreconnectMax) {
+// Flaky; see http://crbug.com/874419
+TEST_F(NetworkContextTest, DISABLED_PreconnectMax) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
