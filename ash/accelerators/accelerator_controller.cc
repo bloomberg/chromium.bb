@@ -1309,7 +1309,7 @@ bool AcceleratorController::CanPerformAction(
     case SCALE_UI_DOWN:
     case SCALE_UI_RESET:
     case SCALE_UI_UP:
-      return accelerators::IsInternalDisplayZoomEnabled();
+      return true;
     case SHOW_STYLUS_TOOLS:
       return CanHandleShowStylusTools();
     case START_VOICE_INTERACTION:

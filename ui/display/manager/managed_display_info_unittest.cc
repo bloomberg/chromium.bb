@@ -13,43 +13,10 @@
 #endif
 
 namespace display {
-namespace {
 
-std::string GetModeSizeInDIP(const gfx::Size& size,
-                             float device_scale_factor,
-                             float ui_scale,
-                             bool is_internal) {
-  ManagedDisplayMode mode(size, 0.0 /* refresh_rate */, false /* interlaced */,
-                          false /* native */, ui_scale, device_scale_factor);
-  return mode.GetSizeInDIP(is_internal).ToString();
-}
+using DisplayInfoTest = testing::Test;
 
-}  // namespace
-
-class DisplayInfoTest : public testing::Test,
-                        public testing::WithParamInterface<bool> {
- public:
-  DisplayInfoTest() = default;
-  ~DisplayInfoTest() override = default;
-
-  void SetUp() override {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kEnableDisplayZoomSetting);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kEnableDisplayZoomSetting);
-    }
-    testing::Test::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayInfoTest);
-};
-
-TEST_P(DisplayInfoTest, CreateFromSpec) {
+TEST_F(DisplayInfoTest, CreateFromSpec) {
   ManagedDisplayInfo info =
       ManagedDisplayInfo::CreateFromSpecWithID("200x100", 10);
   EXPECT_EQ(10, info.id());
@@ -81,10 +48,7 @@ TEST_P(DisplayInfoTest, CreateFromSpec) {
   info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/l@1.5", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_native().ToString());
   EXPECT_EQ(Display::ROTATE_270, info.GetActiveRotation());
-  if (GetParam())
-    EXPECT_EQ(1.5f, info.zoom_factor());
-  else
-    EXPECT_EQ(1.5f, info.configured_ui_scale());
+  EXPECT_EQ(1.5f, info.zoom_factor());
 
   info = ManagedDisplayInfo::CreateFromSpecWithID(
       "200x200#300x200|200x200%59.9|100x100%60|150x100*2|150x150*1.25%30", 10);
@@ -116,44 +80,5 @@ TEST_P(DisplayInfoTest, CreateFromSpec) {
   EXPECT_FALSE(info.display_modes()[3].native());
   EXPECT_TRUE(info.display_modes()[4].native());
 }
-
-TEST_P(DisplayInfoTest, ManagedDisplayModeGetSizeInDIPNormal) {
-  gfx::Size size(1366, 768);
-  EXPECT_EQ("1536x864", GetModeSizeInDIP(size, 1.0f, 1.125f, true));
-  EXPECT_EQ("1366x768", GetModeSizeInDIP(size, 1.0f, 1.0f, true));
-  EXPECT_EQ("1092x614", GetModeSizeInDIP(size, 1.0f, 0.8f, true));
-  EXPECT_EQ("853x480", GetModeSizeInDIP(size, 1.0f, 0.625f, true));
-  EXPECT_EQ("683x384", GetModeSizeInDIP(size, 1.0f, 0.5f, true));
-}
-
-TEST_P(DisplayInfoTest, ManagedDisplayModeGetSizeInDIPHiDPI) {
-  gfx::Size size(2560, 1700);
-  EXPECT_EQ("2560x1700", GetModeSizeInDIP(size, 2.0f, 2.0f, true));
-  EXPECT_EQ("1920x1275", GetModeSizeInDIP(size, 2.0f, 1.5f, true));
-  EXPECT_EQ("1600x1062", GetModeSizeInDIP(size, 2.0f, 1.25f, true));
-  EXPECT_EQ("1440x956", GetModeSizeInDIP(size, 2.0f, 1.125f, true));
-  EXPECT_EQ("1280x850", GetModeSizeInDIP(size, 2.0f, 1.0f, true));
-  EXPECT_EQ("1024x680", GetModeSizeInDIP(size, 2.0f, 0.8f, true));
-  EXPECT_EQ("800x531", GetModeSizeInDIP(size, 2.0f, 0.625f, true));
-  EXPECT_EQ("640x425", GetModeSizeInDIP(size, 2.0f, 0.5f, true));
-}
-
-TEST_P(DisplayInfoTest, ManagedDisplayModeGetSizeInDIP125) {
-  gfx::Size size(1920, 1080);
-  EXPECT_EQ("2400x1350", GetModeSizeInDIP(size, 1.25f, 1.25f, true));
-  EXPECT_EQ("1920x1080", GetModeSizeInDIP(size, 1.25f, 1.0f, true));
-  EXPECT_EQ("1536x864", GetModeSizeInDIP(size, 1.25f, 0.8f, true));
-  EXPECT_EQ("1200x675", GetModeSizeInDIP(size, 1.25f, 0.625f, true));
-  EXPECT_EQ("960x540", GetModeSizeInDIP(size, 1.25f, 0.5f, true));
-}
-
-TEST_P(DisplayInfoTest, ManagedDisplayModeGetSizeForExternal4K) {
-  gfx::Size size(3840, 2160);
-  EXPECT_EQ("1920x1080", GetModeSizeInDIP(size, 2.0f, 1.0f, false));
-  EXPECT_EQ("3072x1728", GetModeSizeInDIP(size, 1.25f, 1.0f, false));
-  EXPECT_EQ("3840x2160", GetModeSizeInDIP(size, 1.0f, 1.0f, false));
-}
-
-INSTANTIATE_TEST_CASE_P(IsDisplayZoomEnabled, DisplayInfoTest, testing::Bool());
 
 }  // namespace display

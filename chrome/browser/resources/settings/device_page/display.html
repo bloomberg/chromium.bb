@@ -137,57 +137,39 @@
         </div>
       </template>
 
-      <!-- Slider for selecting resolution when display zoom is disabled -->
-      <template is="dom-if" if="[[!showDisplayZoomSetting_]]">
-        <div class="settings-box indented two-line">
-          <div class="start text-area layout vertical">
-            <div>$i18n{displayResolutionTitle}</div>
-            <div class="secondary self-start">
-              [[getResolutionText_(selectedDisplay, selectedModePref_.value)]]
-            </div>
-          </div>
-          <settings-slider disabled="[[!enableSetResolution_(selectedDisplay)]]"
-              tick-values="[[modeValues_]]" pref="{{selectedModePref_}}"
-              on-change="onSelectedModeSliderChange_">
-          </settings-slider>
-        </div>
-      </template>
-
       <!-- Display zoom selection slider -->
-      <template is="dom-if" if="[[showDisplayZoomSetting_]]">
-        <div class="settings-box indented two-line">
-          <div class="start text-area layout vertical">
-            <div>$i18n{displayZoomTitle}</div>
-            <div class="secondary self-start">$i18n{displayZoomSublabel}</div>
-            <div class="secondary self-start"
-                hidden$="[[!logicalResolutionText_]]">
-              [[logicalResolutionText_]]
-            </div>
+      <div class="settings-box indented two-line">
+        <div class="start text-area layout vertical">
+          <div>$i18n{displayZoomTitle}</div>
+          <div class="secondary self-start">$i18n{displayZoomSublabel}</div>
+          <div class="secondary self-start"
+              hidden$="[[!logicalResolutionText_]]">
+            [[logicalResolutionText_]]
           </div>
-          <display-size-slider id="displaySizeSlider"
-              ticks="[[zoomValues_]]" pref="{{selectedZoomPref_}}"
-              min-label="$i18n{displaySizeSliderMinLabel}"
-              max-label="$i18n{displaySizeSliderMaxLabel}"
-              on-immediate-value-changed="onDisplaySizeSliderDrag_">
-          </display-size-slider>
         </div>
+        <display-size-slider id="displaySizeSlider"
+            ticks="[[zoomValues_]]" pref="{{selectedZoomPref_}}"
+            min-label="$i18n{displaySizeSliderMinLabel}"
+            max-label="$i18n{displaySizeSliderMaxLabel}"
+            on-immediate-value-changed="onDisplaySizeSliderDrag_">
+        </display-size-slider>
+      </div>
 
-        <!-- Drop down select menu for resolution -->
-        <div class="settings-box indented two-line"
-            hidden$="[[!showDropDownResolutionSetting_(selectedDisplay)]]">
-          <div class="start text-area layout vertical">
-            <div>$i18n{displayResolutionTitle}</div>
-            <div class="secondary self-start">
-              $i18n{displayResolutionSublabel}
-            </div>
+      <!-- Drop down select menu for resolution -->
+      <div class="settings-box indented two-line"
+          hidden$="[[!showDropDownResolutionSetting_(selectedDisplay)]]">
+        <div class="start text-area layout vertical">
+          <div>$i18n{displayResolutionTitle}</div>
+          <div class="secondary self-start">
+            $i18n{displayResolutionSublabel}
           </div>
-          <settings-dropdown-menu id="displayModeSelector"
-              pref="{{selectedModePref_}}"
-              label="Display Mode Menu"
-              menu-options="[[displayModeList_]]">
-          </settings-dropdown-menu>
         </div>
-      </template>
+        <settings-dropdown-menu id="displayModeSelector"
+            pref="{{selectedModePref_}}"
+            label="Display Mode Menu"
+            menu-options="[[displayModeList_]]">
+        </settings-dropdown-menu>
+      </div>
       <template is="dom-if" if="[[!unifiedDesktopMode_]]" restamp>
         <div class="settings-box indented">
           <div id="displayOrientation" class="start text-area">

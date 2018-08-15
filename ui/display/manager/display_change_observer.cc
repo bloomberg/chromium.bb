@@ -49,13 +49,6 @@ const DeviceScaleFactorDPIThreshold kThresholdTableForInternal[] = {
     {0.0f, 1.0f},
 };
 
-// The minimum pixel width whose monitor can be called as '4K'.
-const int kMinimumWidthFor4K = 3840;
-
-// The list of device scale factors (in addition to 1.0f) which is
-// available in external large monitors.
-const float kAdditionalDeviceScaleFactorsFor4k[] = {1.25f, 2.0f};
-
 }  // namespace
 
 // static
@@ -121,21 +114,6 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
     // If the native mode was replaced re-add it.
     if (!it->second.native())
       display_mode_list.push_back(native_mode);
-  }
-
-  // If we are using display zoom mode, we no longer have to add additional
-  // display modes for ultra high resolution displays.
-  if (features::IsDisplayZoomSettingEnabled())
-    return display_mode_list;
-
-  if (native_mode.size().width() >= kMinimumWidthFor4K) {
-    for (size_t i = 0; i < arraysize(kAdditionalDeviceScaleFactorsFor4k); ++i) {
-      ManagedDisplayMode mode(native_mode.size(), native_mode.refresh_rate(),
-                              native_mode.is_interlaced(), false /* native */,
-                              native_mode.ui_scale(),
-                              kAdditionalDeviceScaleFactorsFor4k[i]);
-      display_mode_list.push_back(mode);
-    }
   }
 
   return display_mode_list;
@@ -286,21 +264,6 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
     if (display_manager_->GetSelectedModeForDisplayId(snapshot->display_id(),
                                                       &mode)) {
       device_scale_factor = mode.device_scale_factor();
-    } else {
-      // For monitors that are 40 inches and 4K or above, set
-      // |device_scale_factor| to 2x. For margin purposes, 100 is subtracted
-      // from the value of |k2xThreshouldSizeSquaredFor4KInMm|
-      const int k2xThreshouldSizeSquaredFor4KInMm =
-          (40 * 40 * kInchInMm * kInchInMm) - 100;
-      gfx::Vector2d size_in_vec(snapshot->physical_size().width(),
-                                snapshot->physical_size().height());
-      if (size_in_vec.LengthSquared() > k2xThreshouldSizeSquaredFor4KInMm &&
-          mode_info->size().width() >= kMinimumWidthFor4K &&
-          !features::IsDisplayZoomSettingEnabled()) {
-        // Make sure that additional device scale factors table has 2x.
-        DCHECK_EQ(2.0f, kAdditionalDeviceScaleFactorsFor4k[1]);
-        device_scale_factor = 2.0f;
-      }
     }
   }
 

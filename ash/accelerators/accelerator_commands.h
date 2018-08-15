@@ -12,9 +12,6 @@
 namespace ash {
 namespace accelerators {
 
-// True if the desktop zoom accelerator is enabled.
-ASH_EXPORT bool IsInternalDisplayZoomEnabled();
-
 // Change internal display zooming up or down.
 ASH_EXPORT bool ZoomDisplay(bool up);
 

@@ -3146,11 +3146,6 @@ const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Peeking Launcher and Tab Switcher.";
 
-const char kEnableDisplayZoomSettingName[] = "Enable display zoom settings";
-const char kEnableDisplayZoomSettingDescription[] =
-    "Allows the user to modify the display size or zoom via the chrome display "
-    "settings page.";
-
 const char kEnableDragAppsInTabletModeName[] =
     "Enable dragging apps in tablet mode";
 const char kEnableDragAppsInTabletModeDescription[] =

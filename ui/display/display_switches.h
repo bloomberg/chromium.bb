@@ -38,11 +38,6 @@ DISPLAY_EXPORT extern const base::Feature kHighDynamicRange;
 DISPLAY_EXPORT extern const base::Feature kUseMonitorColorSpace;
 #endif
 
-DISPLAY_EXPORT extern const base::Feature kEnableDisplayZoomSetting;
-
-// Returns true if experimental display zoom setting is enabled.
-DISPLAY_EXPORT bool IsDisplayZoomSettingEnabled();
-
 }  // namespace features
 
 #endif  // UI_DISPLAY_DISPLAY_SWITCHES_H_

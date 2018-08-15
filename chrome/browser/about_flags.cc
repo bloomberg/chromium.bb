@@ -3775,13 +3775,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsLinux | kOsWin | kOsMac | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kVizDisplayCompositor)},
 
-#if defined(OS_CHROMEOS)
-    {"enable-display-zoom-setting",
-     flag_descriptions::kEnableDisplayZoomSettingName,
-     flag_descriptions::kEnableDisplayZoomSettingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kEnableDisplayZoomSetting)},
-#endif  // defined(OS_CHROMEOS)
-
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
      flag_descriptions::kUnifiedConsentDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(unified_consent::kUnifiedConsent,
