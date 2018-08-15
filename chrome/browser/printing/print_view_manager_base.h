@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/scoped_refptr.h"
@@ -198,10 +199,10 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Indication of success of the print job.
   bool printing_succeeded_;
 
-  // Running an inner message loop inside RenderAllMissingPagesNow(). This means
-  // we are _blocking_ until all the necessary pages have been rendered or the
-  // print settings are being loaded.
-  bool inside_inner_message_loop_;
+  // Set while running an inner message loop inside RenderAllMissingPagesNow().
+  // This means we are _blocking_ until all the necessary pages have been
+  // rendered or the print settings are being loaded.
+  base::OnceClosure quit_inner_loop_;
 
   // Whether printing is enabled.
   BooleanPrefMember printing_enabled_;
