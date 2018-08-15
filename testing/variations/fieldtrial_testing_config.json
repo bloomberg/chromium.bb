@@ -3383,21 +3383,6 @@
             ]
         }
     ],
-    "ReaderForAccessibility": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AllowReaderForAccessibility"
-                    ]
-                }
-            ]
-        }
-    ],
     "ReaderModeUI": [
         {
             "platforms": [
