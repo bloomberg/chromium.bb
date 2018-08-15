@@ -4534,7 +4534,7 @@ crbug.com/829938 [ Linux ] css3/filters/blur-filter-page-scroll.html [ Pass Time
 crbug.com/818426 [ Linux ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/800745 [ Linux ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Pass Timeout ]
 
-crbug.com/832274 [ Linux ] fast/forms/search/search-appearance-basic.html [ Pass Failure ]
+crbug.com/832274 [ Linux Win ] fast/forms/search/search-appearance-basic.html [ Pass Failure ]
 
 crbug.com/840881 external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
 crbug.com/840881 virtual/outofblink-cors/external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
