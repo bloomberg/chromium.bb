@@ -103,6 +103,99 @@ bool BrokerProcess::Init(
   return false;
 }
 
+bool BrokerProcess::IsSyscallAllowed(int sysno) const {
+  switch (sysno) {
+    // In the event that there are no case statements defined, provide a
+    // "backstop" that returns false, so that one of the below return
+    // statements does not execute instead.
+    case 0:
+      return false;
+
+#if defined(__NR_access)
+    case __NR_access:
+#endif
+#if defined(__NR_faccessat)
+    case __NR_faccessat:
+#endif
+      return !fast_check_in_client_ ||
+             allowed_command_set_.test(COMMAND_ACCESS);
+
+#if defined(__NR_mkdir)
+    case __NR_mkdir:
+#endif
+#if defined(__NR_mkdirat)
+    case __NR_mkdirat:
+#endif
+      return !fast_check_in_client_ || allowed_command_set_.test(COMMAND_MKDIR);
+
+#if defined(__NR_open)
+    case __NR_open:
+#endif
+#if defined(__NR_openat)
+    case __NR_openat:
+#endif
+      return !fast_check_in_client_ || allowed_command_set_.test(COMMAND_OPEN);
+
+#if defined(__NR_readlink)
+    case __NR_readlink:
+#endif
+#if defined(__NR_readlinkat)
+    case __NR_readlinkat:
+#endif
+      return !fast_check_in_client_ ||
+             allowed_command_set_.test(COMMAND_READLINK);
+
+#if defined(__NR_rename)
+    case __NR_rename:
+#endif
+#if defined(__NR_renameat)
+    case __NR_renameat:
+#endif
+      return !fast_check_in_client_ ||
+             allowed_command_set_.test(COMMAND_RENAME);
+
+#if defined(__NR_rmdir)
+    case __NR_rmdir:
+#endif
+      return !fast_check_in_client_ || allowed_command_set_.test(COMMAND_RMDIR);
+
+#if defined(__NR_stat)
+    case __NR_stat:
+#endif
+#if defined(__NR_lstat)
+    case __NR_lstat:
+#endif
+#if defined(__NR_fstatat)
+    case __NR_fstatat:
+#endif
+#if defined(__NR_newfstatat)
+    case __NR_newfstatat:
+#endif
+      return !fast_check_in_client_ || allowed_command_set_.test(COMMAND_STAT);
+
+#if defined(__NR_stat64)
+    case __NR_stat64:
+#endif
+#if defined(__NR_lstat64)
+    case __NR_lstat64:
+#endif
+      return !fast_check_in_client_ ||
+             allowed_command_set_.test(COMMAND_STAT64);
+
+#if defined(__NR_unlink)
+    case __NR_unlink:
+#endif
+#if defined(__NR_unlinkat)
+    case __NR_unlinkat:
+#endif
+      return !fast_check_in_client_ ||
+             allowed_command_set_.test(COMMAND_UNLINK);
+
+    default:
+      return false;
+  }
+}
+
 void BrokerProcess::CloseChannel() {
   broker_client_.reset();
 }
