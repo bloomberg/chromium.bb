@@ -35,12 +35,12 @@ class AccessibilitySelectionTest : public AccessibilityTest {
 
   // Sets |selection_text| as inner HTML of the document body and returns the
   // root of the accessibility tree at body.
-  AXObject* SetSelectionText(const std::string& selection_text) const;
+  const AXSelection SetSelectionText(const std::string& selection_text) const;
 
   // Sets |selection_text| as inner HTML of |element| and returns the root of
   // the accessibility subtree at |element|.
-  AXObject* SetSelectionText(const std::string& selection_text,
-                             HTMLElement& element) const;
+  const AXSelection SetSelectionText(const std::string& selection_text,
+                                     HTMLElement& element) const;
 };
 
 }  // namespace blink

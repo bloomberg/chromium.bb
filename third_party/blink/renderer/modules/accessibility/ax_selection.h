@@ -31,6 +31,10 @@ class MODULES_EXPORT AXSelection final {
  public:
   class Builder;
 
+  static const AXSelection FromSelection(
+      const SelectionInDOMTree&,
+      const AXSelectionBehavior = AXSelectionBehavior::kExtendToValidDOMRange);
+
   AXSelection(const AXSelection&) = default;
   AXSelection& operator=(const AXSelection&) = default;
   ~AXSelection() = default;
