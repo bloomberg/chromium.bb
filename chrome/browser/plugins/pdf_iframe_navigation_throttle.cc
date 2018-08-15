@@ -4,6 +4,8 @@
 
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
@@ -42,8 +44,8 @@ PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   content::WebPluginInfo pdf_plugin_info;
-  base::FilePath pdf_plugin_path =
-      base::FilePath::FromUTF8Unsafe(ChromeContentClient::kPDFPluginPath);
+  static const base::FilePath pdf_plugin_path(
+      ChromeContentClient::kPDFPluginPath);
   content::PluginService::GetInstance()->GetPluginInfoByPath(pdf_plugin_path,
                                                              &pdf_plugin_info);
 

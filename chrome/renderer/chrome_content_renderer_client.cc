@@ -102,7 +102,6 @@
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/buildflags/buildflags.h"
-#include "extensions/common/constants.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
@@ -1390,8 +1389,7 @@ bool ChromeContentRendererClient::IsExternalPepperPlugin(
 
 bool ChromeContentRendererClient::IsOriginIsolatedPepperPlugin(
     const base::FilePath& plugin_path) {
-  return plugin_path ==
-         base::FilePath::FromUTF8Unsafe(ChromeContentClient::kPDFPluginPath);
+  return plugin_path.value() == ChromeContentClient::kPDFPluginPath;
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)

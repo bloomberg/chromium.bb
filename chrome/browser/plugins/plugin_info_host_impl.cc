@@ -366,12 +366,11 @@ bool PluginInfoHostImpl::Context::FindEnabledPlugin(
   PluginService::GetInstance()->GetPluginInfoArray(
       url, mime_type, allow_wildcard, &matching_plugins, &mime_types);
 #if defined(GOOGLE_CHROME_BUILD)
-  base::FilePath not_present =
-      base::FilePath::FromUTF8Unsafe(ChromeContentClient::kNotPresent);
   matching_plugins.erase(
       std::remove_if(matching_plugins.begin(), matching_plugins.end(),
-                     [&not_present](const WebPluginInfo& info) {
-                       return info.path == not_present;
+                     [&](const WebPluginInfo& info) {
+                       return info.path.value() ==
+                              ChromeContentClient::kNotPresent;
                      }),
       matching_plugins.end());
 #endif  // defined(GOOGLE_CHROME_BUILD)

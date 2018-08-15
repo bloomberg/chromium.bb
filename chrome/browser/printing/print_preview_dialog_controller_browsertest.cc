@@ -129,7 +129,7 @@ void PluginsLoadedCallback(
 }
 
 bool GetPdfPluginInfo(content::WebPluginInfo* info) {
-  base::FilePath pdf_plugin_path = base::FilePath::FromUTF8Unsafe(
+  static const base::FilePath pdf_plugin_path(
       ChromeContentClient::kPDFPluginPath);
   return content::PluginService::GetInstance()->GetPluginInfoByPath(
       pdf_plugin_path, info);

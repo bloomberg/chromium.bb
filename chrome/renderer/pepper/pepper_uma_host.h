@@ -74,7 +74,7 @@ class PepperUMAHost : public ppapi::host::ResourceHost {
   // Set of hashed histogram prefixes that can be used from this interface.
   std::set<std::string> allowed_histogram_prefixes_;
   // Set of plugin files names that are allowed to use this interface.
-  std::set<std::string> allowed_plugin_base_names_;
+  std::set<base::FilePath::StringType> allowed_plugin_base_names_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperUMAHost);
 };

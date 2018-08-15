@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -37,7 +38,7 @@ base::LazyInstance<std::map<content::RenderProcessHost*, base::Closure>>::Leaky
 void EnableInternalPDFPluginForContents(int render_process_id,
                                         int render_frame_id) {
   // Always enable the internal PDF plugin for the print preview page.
-  base::FilePath pdf_plugin_path = base::FilePath::FromUTF8Unsafe(
+  static const base::FilePath pdf_plugin_path(
       ChromeContentClient::kPDFPluginPath);
 
   content::WebPluginInfo pdf_plugin;

@@ -60,7 +60,7 @@ class PluginResponseInterceptorURLLoaderThrottleBrowserTest
   void CountPDFProcessesOnIOThread(int* result) {
     auto* service = content::PluginService::GetInstance();
     *result = service->CountPpapiPluginProcessesForProfile(
-        base::FilePath::FromUTF8Unsafe(ChromeContentClient::kPDFPluginPath),
+        base::FilePath(ChromeContentClient::kPDFPluginPath),
         browser()->profile()->GetPath());
   }
 };
