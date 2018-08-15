@@ -20,10 +20,28 @@ class ListValue;
 namespace safe_browsing {
 // Features list
 extern const base::Feature kAdSamplerTriggerFeature;
-extern const base::Feature kCheckByURLLoaderThrottle;
+
+// Controls the safe browsing protection for advanced protection program.
+extern const base::Feature kAdvancedProtectionStatusFeature;
 
 // Controls the billing interstitial UI.
 extern const base::Feature kBillingInterstitial;
+
+extern const base::Feature kCheckByURLLoaderThrottle;
+
+// Controls the Password Protection for Enterprise V1 feature;
+extern const base::Feature kEnterprisePasswordProtectionV1;
+
+// Forces the chrome://reset-password page to be shown for review or testing
+// purpose.
+extern const base::Feature kForceEnableResetPasswordWebUI;
+
+// Controls whether .rar files downloaded by the user are inspected for being
+// unsafe.
+extern const base::Feature kInspectDownloadedRarFiles;
+
+// Controls the daily quota for the suspicious site trigger.
+extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.
@@ -32,9 +50,6 @@ extern const base::Feature kBillingInterstitial;
 // "tag2" if they have attribute "foo" set. All tag names and attributes should
 // be lower case.
 extern const base::Feature kThreatDomDetailsTagAndAttributeFeature;
-
-// Controls the daily quota for the suspicious site trigger.
-extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 
 // Controls the daily quota for data collection triggers. It's a single param
 // containing a comma-separated list of pairs. The format of the param is
@@ -45,17 +60,6 @@ extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 // Having a single shared feature makes it impossible to run multiple trigger
 // trials simultaneously.
 extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
-
-// Controls whether .rar files downloaded by the user are inspected for being
-// unsafe.
-extern const base::Feature kInspectDownloadedRarFiles;
-
-// Controls the Password Protection for Enterprise V1 feature;
-extern const base::Feature kEnterprisePasswordProtectionV1;
-
-// Forces the chrome://reset-password page to be shown for review or testing
-// purpose.
-extern const base::Feature kForceEnableResetPasswordWebUI;
 
 base::ListValue GetFeatureStatusList();
 

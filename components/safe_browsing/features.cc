@@ -22,6 +22,9 @@ namespace safe_browsing {
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAdvancedProtectionStatusFeature{
+    "AdvancedProtectionStatus", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls the billing interstitial UI.
 const base::Feature kBillingInterstitial{"BillingInterstitial",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -36,24 +39,24 @@ const base::Feature kCheckByURLLoaderThrottle{
     "S13nSafeBrowsingCheckByURLLoaderThrottle",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kThreatDomDetailsTagAndAttributeFeature{
-    "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kSuspiciousSiteTriggerQuotaFeature{
-    "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kTriggerThrottlerDailyQuotaFeature{
-    "SafeBrowsingTriggerThrottlerDailyQuota",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kInspectDownloadedRarFiles{
-    "InspectDownloadedRarFiles", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kEnterprisePasswordProtectionV1{
     "EnterprisePasswordProtectionV1", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kForceEnableResetPasswordWebUI{
     "ForceEnableResetPasswordWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kInspectDownloadedRarFiles{
+    "InspectDownloadedRarFiles", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSuspiciousSiteTriggerQuotaFeature{
+    "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kThreatDomDetailsTagAndAttributeFeature{
+    "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTriggerThrottlerDailyQuotaFeature{
+    "SafeBrowsingTriggerThrottlerDailyQuota",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 // List of experimental features. Boolean value for each list member should be
@@ -65,6 +68,7 @@ constexpr struct {
   bool probabilistically_enabled;
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
+    {&kAdvancedProtectionStatusFeature, true},
     {&kBillingInterstitial, false},
     {&kCheckByURLLoaderThrottle, true},
     {&kForceEnableResetPasswordWebUI, true},
