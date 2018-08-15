@@ -140,6 +140,12 @@ void MainThreadDebugger::ContextCreated(ScriptState* script_state,
   StringBuilder aux_data_builder;
   aux_data_builder.Append("{\"isDefault\":");
   aux_data_builder.Append(world.IsMainWorld() ? "true" : "false");
+  if (world.IsMainWorld())
+    aux_data_builder.Append(",\"type\":\"default\"");
+  else if (world.IsIsolatedWorld())
+    aux_data_builder.Append(",\"type\":\"isolated\"");
+  else if (world.IsWorkerWorld())
+    aux_data_builder.Append(",\"type\":\"worker\"");
   aux_data_builder.Append(",\"frameId\":\"");
   aux_data_builder.Append(IdentifiersFactory::FrameId(frame));
   aux_data_builder.Append("\"}");

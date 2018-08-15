@@ -1,13 +1,15 @@
 (async function(testRunner) {
-  var {page, session, dp} = await testRunner.startBlank('Tests Page.createIsolatedWorld method.');
+  const {page, session, dp} = await testRunner.startBlank('Tests Page.createIsolatedWorld method.');
 
-  var reportedExecutionContextId;
+  let reportedExecutionContextId;
+  let isIsolatedWorld = false;
   dp.Runtime.onExecutionContextCreated(message => {
     if (message.params.context.auxData.frameId !== mainFrameId)
       return;
     if (message.params.context.auxData.isDefault === false &&
         message.params.context.name === 'Test world') {
       reportedExecutionContextId = message.params.context.id;
+      isIsolatedWorld = message.params.context.auxData.type === 'isolated';
     } else {
       testRunner.log('fail - main world created.');
       testRunner.log(JSON.stringify(message.params));
@@ -30,5 +32,9 @@
     testRunner.log('PASS - execution context id match.');
   else
     testRunner.log('fail - execution context id differ.');
+  if (isIsolatedWorld)
+    testRunner.log('PASS - reported as isolated world.');
+  else
+    testRunner.log('fail - reported as non-isolated world.');
   testRunner.completeTest();
 })
