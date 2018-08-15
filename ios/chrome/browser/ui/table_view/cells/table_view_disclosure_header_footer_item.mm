@@ -42,6 +42,8 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
           headerFooter);
   header.titleLabel.text = self.text;
   header.subtitleLabel.text = self.subtitleText;
+  header.isAccessibilityElement = YES;
+  header.accessibilityTraits |= UIAccessibilityTraitButton;
   DisclosureDirection direction =
       self.collapsed ? DisclosureDirectionUp : DisclosureDirectionDown;
   [header setInitialDirection:direction];
@@ -236,6 +238,13 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
           CGAffineTransformRotate(CGAffineTransformIdentity, angle);
     }
   }
+}
+
+#pragma mark - Accessibility
+
+- (NSString*)accessibilityLabel {
+  return [NSString stringWithFormat:@"%@, %@", self.titleLabel.text,
+                                    self.subtitleLabel.text];
 }
 
 @end
