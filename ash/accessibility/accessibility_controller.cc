@@ -225,6 +225,18 @@ void ShowAccessibilityNotification(A11yNotificationType type) {
   message_center->AddNotification(std::move(notification));
 }
 
+AccessibilityPanelLayoutManager* GetLayoutManager() {
+  // The accessibility panel is only shown on the primary display.
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  aura::Window* container =
+      Shell::GetContainer(root, kShellWindowId_AccessibilityPanelContainer);
+  // TODO(jamescook): Avoid this cast by moving ash::AccessibilityObserver
+  // ownership to this class and notifying it on accessibility panel fullscreen
+  // updates.
+  return static_cast<AccessibilityPanelLayoutManager*>(
+      container->layout_manager());
+}
+
 }  // namespace
 
 AccessibilityController::AccessibilityController(
@@ -703,17 +715,15 @@ void AccessibilityController::SetCaretBounds(
   accessibility_highlight_controller_->SetCaretBounds(bounds_in_screen);
 }
 
-void AccessibilityController::SetAccessibilityPanelFullscreen(bool fullscreen) {
-  // The accessibility panel is only shown on the primary display.
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  aura::Window* container =
-      Shell::GetContainer(root, kShellWindowId_AccessibilityPanelContainer);
-  // TODO(jamescook): Avoid this cast by moving ash::AccessibilityObserver
-  // ownership to this class and notifying it on ChromeVox fullscreen updates.
-  AccessibilityPanelLayoutManager* layout =
-      static_cast<AccessibilityPanelLayoutManager*>(
-          container->layout_manager());
-  layout->SetPanelFullscreen(fullscreen);
+void AccessibilityController::SetAccessibilityPanelAlwaysVisible(
+    bool always_visible) {
+  GetLayoutManager()->SetAlwaysVisible(always_visible);
+}
+
+void AccessibilityController::SetAccessibilityPanelBounds(
+    const gfx::Rect& bounds,
+    mojom::AccessibilityPanelState state) {
+  GetLayoutManager()->SetPanelBounds(bounds, state);
 }
 
 void AccessibilityController::OnSigninScreenPrefServiceInitialized(

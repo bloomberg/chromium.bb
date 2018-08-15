@@ -6,10 +6,12 @@
 #define ASH_ACCESSIBILITY_ACCESSIBILITY_PANEL_LAYOUT_MANAGER_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/display/display_observer.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
@@ -30,13 +32,15 @@ class ASH_EXPORT AccessibilityPanelLayoutManager
       public ash::ShellObserver {
  public:
   // Height of the panel in DIPs. Public for test.
-  static constexpr int kPanelHeight = 35;
+  static constexpr int kDefaultPanelHeight = 35;
 
   AccessibilityPanelLayoutManager();
   ~AccessibilityPanelLayoutManager() override;
 
-  // Sets whether the panel covers the entire display.
-  void SetPanelFullscreen(bool fullscreen);
+  // Controls the panel's visibility and location.
+  void SetAlwaysVisible(bool always_visible);
+  void SetPanelBounds(const gfx::Rect& bounds,
+                      mojom::AccessibilityPanelState state);
 
   // aura::LayoutManager:
   void OnWindowResized() override {}
@@ -75,8 +79,14 @@ class ASH_EXPORT AccessibilityPanelLayoutManager
   // The panel being managed (e.g. the ChromeVoxPanel's native aura window).
   aura::Window* panel_window_ = nullptr;
 
-  // Whether the panel itself is filling the display.
-  bool panel_fullscreen_ = false;
+  // Window bounds when not in fullscreen
+  gfx::Rect panel_bounds_ = gfx::Rect(0, 0, 0, 0);
+
+  // Determines whether panel is hidden when browser is in fullscreen.
+  bool always_visible_ = false;
+
+  // Determines how the panel_bounds_ are used when displaying the panel.
+  mojom::AccessibilityPanelState panel_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityPanelLayoutManager);
 };
