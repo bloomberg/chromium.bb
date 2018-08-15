@@ -186,6 +186,51 @@ TEST_F(TeamDriveListLoaderTest, OneTeamDrive) {
             util::GetDriveTeamDrivesRootPath().AppendASCII(kTeamDriveName1));
 }
 
+TEST_F(TeamDriveListLoaderTest, NotmalizedTeamDriveName) {
+  constexpr char kTeamDriveId1[] = "the1stTeamDriveId";
+  constexpr char kTeamDriveName1[] = "A / Strange / Team / Drive / Name";
+  constexpr char kTeamDriveNormalized1[] = "A _ Strange _ Team _ Drive _ Name";
+  drive_service_->AddTeamDrive(kTeamDriveId1, kTeamDriveName1);
+
+  FileError error = FILE_ERROR_FAILED;
+  team_drive_list_loader_->CheckForUpdates(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(1, drive_service_->team_drive_list_load_count());
+
+  EXPECT_EQ(1UL, team_drive_list_observer_->team_drives_list().size());
+  EXPECT_EQ(1UL, team_drive_list_observer_->added_team_drives().size());
+  EXPECT_TRUE(team_drive_list_observer_->removed_team_drives().empty());
+
+  ResourceEntryVector entries;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->ReadDirectoryByPath(
+                               util::GetDriveTeamDrivesRootPath(), &entries));
+  EXPECT_EQ(1UL, entries.size());
+
+  ResourceEntry entry;
+  EXPECT_EQ(
+      FILE_ERROR_OK,
+      metadata_->GetResourceEntryByPath(
+          util::GetDriveTeamDrivesRootPath().Append(kTeamDriveNormalized1),
+          &entry));
+
+  {
+    const base::FilePath& team_drive_path =
+        team_drive_list_observer_->team_drives_list().front().team_drive_path();
+    EXPECT_EQ(team_drive_path,
+              util::GetDriveTeamDrivesRootPath().Append(kTeamDriveNormalized1));
+  }
+  {
+    const base::FilePath& team_drive_path =
+        team_drive_list_observer_->added_team_drives()
+            .front()
+            .team_drive_path();
+    EXPECT_EQ(team_drive_path,
+              util::GetDriveTeamDrivesRootPath().Append(kTeamDriveNormalized1));
+  }
+}
+
 // Tests if there are multiple team drives on the server, we will add them all
 // to local metadata.
 TEST_F(TeamDriveListLoaderTest, MultipleTeamDrive) {
