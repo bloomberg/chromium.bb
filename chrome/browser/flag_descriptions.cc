@@ -2161,10 +2161,6 @@ const char kAccessibilityTabSwitcherName[] = "Accessibility Tab Switcher";
 const char kAccessibilityTabSwitcherDescription[] =
     "Enable the accessibility tab switcher for Android.";
 
-const char kAllowReaderForAccessibilityName[] = "Reader Mode for Accessibility";
-const char kAllowReaderForAccessibilityDescription[] =
-    "Allows Reader Mode on any articles, even if the page is mobile-friendly.";
-
 const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
 const char kAndroidAutofillAccessibilityDescription[] =
     "Enable accessibility for autofill popup.";

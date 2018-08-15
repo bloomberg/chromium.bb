@@ -11,7 +11,6 @@ import android.preference.PreferenceFragment;
 import android.widget.ListView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -33,7 +32,6 @@ public class AccessibilityPreferences extends PreferenceFragment
 
     private TextScalePreference mTextScalePref;
     private SeekBarLinkedCheckBoxPreference mForceEnableZoomPref;
-    private ChromeBaseCheckBoxPreference mReaderForAccessibilityPref;
     private ChromeBaseCheckBoxPreference mAccessibilityTabSwitcherPref;
 
     private FontSizePrefsObserver mFontSizePrefsObserver = new FontSizePrefsObserver() {
@@ -65,15 +63,11 @@ public class AccessibilityPreferences extends PreferenceFragment
         mForceEnableZoomPref.setOnPreferenceChangeListener(this);
         mForceEnableZoomPref.setLinkedSeekBarPreference(mTextScalePref);
 
-        mReaderForAccessibilityPref =
+        ChromeBaseCheckBoxPreference readerForAccessibilityPref =
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_READER_FOR_ACCESSIBILITY);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ALLOW_READER_FOR_ACCESSIBILITY)) {
-            mReaderForAccessibilityPref.setChecked(PrefServiceBridge.getInstance().getBoolean(
-                    Pref.READER_FOR_ACCESSIBILITY_ENABLED));
-            mReaderForAccessibilityPref.setOnPreferenceChangeListener(this);
-        } else {
-            getPreferenceScreen().removePreference(mReaderForAccessibilityPref);
-        }
+        readerForAccessibilityPref.setChecked(
+                PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY_ENABLED));
+        readerForAccessibilityPref.setOnPreferenceChangeListener(this);
 
         mAccessibilityTabSwitcherPref = (ChromeBaseCheckBoxPreference) findPreference(
                 ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER);

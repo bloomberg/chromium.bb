@@ -3603,13 +3603,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kOverflowIconsForMediaControls)},
 
 #if defined(OS_ANDROID)
-    {"allow-reader-for-accessibility",
-     flag_descriptions::kAllowReaderForAccessibilityName,
-     flag_descriptions::kAllowReaderForAccessibilityDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAllowReaderForAccessibility)},
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
     {"enable-downloads-foreground", flag_descriptions::kDownloadsForegroundName,
      flag_descriptions::kDownloadsForegroundDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kDownloadsForeground)},

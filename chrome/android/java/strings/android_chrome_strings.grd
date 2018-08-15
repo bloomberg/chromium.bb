@@ -3039,9 +3039,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_MENU_OPEN_IN_PRODUCT_DEFAULT" desc="Default title for menu item for opening link in browser. [CHAR-LIMIT=30]">
         Open in browser
       </message>
-      <message name="IDS_READER_VIEW_TEXT" desc='Message shown on the reader mode button bar, to invite the user to tap to open a reader mode. Reader mode extracts content and removes clutter from a web page and puts the result in a panel making it easier to read. This is used when "Reader Mode for Accessibility" is not available.'>
-        Make page mobile-friendly
-      </message>
       <message name="IDS_READER_VIEW_TEXT_ALT" desc='Message shown on the reader mode button bar, to invite the user to tap to open a reader mode. Reader mode extracts content and removes clutter from a web page and puts the result in a panel making it easier to read. This is used when "Reader Mode for Accessibility" is available.'>
         Show simplified view
       </message>
