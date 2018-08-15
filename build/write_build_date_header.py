@@ -7,7 +7,7 @@
 build_type impacts the timestamp generated:
 - default: the build date is set to the most recent first Sunday of a month at
   5:00am. The reason is that it is a time where invalidating the build cache
-  shouldn't have major reprecussions (due to lower load).
+  shouldn't have major repercussions (due to lower load).
 - official: the build date is set to the current date at 5:00am, or the day
   before if the current time is before 5:00am.
 Either way, it is guaranteed to be in the past and always in UTC.
@@ -21,6 +21,9 @@ import datetime
 import doctest
 import os
 import sys
+
+
+THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 def GetFirstSundayOfMonth(year, month):
@@ -80,7 +83,16 @@ def main():
       'build_type', help='The type of build', choices=('official', 'default'))
   args = argument_parser.parse_args()
 
-  now = datetime.datetime.utcnow()
+  # The mtime of the revision in build/util/LASTCHANGE is stored in a file
+  # next to it. Read it, to get a deterministic time close to "now".
+  # That date is then modified as described at the top of the file so that
+  # it changes less frequently than with every commit.
+  # This intentionally always uses build/util/LASTCHANGE's commit time even if
+  # use_dummy_lastchange is set.
+  lastchange_file = os.path.join(THIS_DIR, 'util', 'LASTCHANGE.committime')
+  last_commit_timestamp = int(open(lastchange_file).read())
+  now = datetime.datetime.utcfromtimestamp(last_commit_timestamp)
+
   if now.hour < 5:
     # The time is locked at 5:00 am in UTC to cause the build cache
     # invalidation to not happen exactly at midnight. Use the same calculation

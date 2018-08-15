@@ -15,9 +15,10 @@ import subprocess
 import sys
 
 class VersionInfo(object):
-  def __init__(self, revision_id, full_revision_string):
+  def __init__(self, revision_id, full_revision_string, timestamp):
     self.revision_id = revision_id
     self.revision = full_revision_string
+    self.timestamp = timestamp
 
 
 def RunGitCommand(directory, command):
@@ -58,14 +59,14 @@ def FetchGitRevision(directory, filter):
     A VersionInfo object or None on error.
   """
   hsh = ''
-  git_args = ['log', '-1', '--format=%H']
+  git_args = ['log', '-1', '--format=%H %ct']
   if filter is not None:
     git_args.append('--grep=' + filter)
   proc = RunGitCommand(directory, git_args)
   if proc:
     output = proc.communicate()[0].strip()
     if proc.returncode == 0 and output:
-      hsh = output
+      hsh, ct = output.split()
     else:
       logging.error('Git error: rc=%d, output=%r' %
                     (proc.returncode, output))
@@ -80,7 +81,7 @@ def FetchGitRevision(directory, filter):
         if line.startswith('Cr-Commit-Position:'):
           pos = line.rsplit()[-1].strip()
           break
-  return VersionInfo(hsh, '%s-%s' % (hsh, pos))
+  return VersionInfo(hsh, '%s-%s' % (hsh, pos), int(ct))
 
 
 def FetchVersionInfo(directory=None, filter=None):
@@ -90,7 +91,7 @@ def FetchVersionInfo(directory=None, filter=None):
   """
   version_info = FetchGitRevision(directory, filter)
   if not version_info:
-    version_info = VersionInfo('0', '0')
+    version_info = VersionInfo('0', '0', 0)
   return version_info
 
 
@@ -136,6 +137,7 @@ def WriteIfChanged(file_name, contents):
   """
   Writes the specified contents to the specified file_name
   iff the contents are different than the current contents.
+  Returns if new data was written.
   """
   try:
     old_contents = open(file_name, 'r').read()
@@ -143,9 +145,10 @@ def WriteIfChanged(file_name, contents):
     pass
   else:
     if contents == old_contents:
-      return
+      return False
     os.unlink(file_name)
   open(file_name, 'w').write(contents)
+  return True
 
 
 def main(argv=None):
@@ -211,7 +214,9 @@ def main(argv=None):
       sys.stdout.write(contents)
     else:
       if out_file:
-        WriteIfChanged(out_file, contents)
+        if WriteIfChanged(out_file, contents):
+          with open(out_file + '.committime', 'w') as timefile:
+            timefile.write(str(version_info.timestamp))
       if header:
         WriteIfChanged(header,
                        GetHeaderContents(header, opts.version_macro,
