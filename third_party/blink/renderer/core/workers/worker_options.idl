@@ -6,8 +6,7 @@
 dictionary WorkerOptions {
     WorkerType type = "classic";
     RequestCredentials credentials = "same-origin";
-    // TODO(nhiroki): Implement "name" option (https://crbug.com/721219)
-    // DOMString name = "";
+    DOMString name = "";
 };
 
 enum WorkerType { "classic", "module" };
