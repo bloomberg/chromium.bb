@@ -110,6 +110,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   bool goaway_sessions_on_ip_change = false;
   bool migrate_sessions_early_v2 = false;
   bool migrate_sessions_on_network_change_v2 = false;
+  bool retry_on_alternate_network_before_handshake = false;
   bool go_away_on_path_degrading = false;
 
   if (!close_sessions_on_ip_change) {
@@ -118,6 +119,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       migrate_sessions_on_network_change_v2 = data_provider.ConsumeBool();
       if (migrate_sessions_on_network_change_v2) {
         migrate_sessions_early_v2 = data_provider.ConsumeBool();
+        retry_on_alternate_network_before_handshake =
+            data_provider.ConsumeBool();
       }
     }
   }
@@ -139,6 +142,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           kIdleConnectionTimeoutSeconds, quic::kPingTimeoutSecs,
           quic::kMaxTimeForCryptoHandshakeSecs, quic::kInitialIdleTimeoutSecs,
           migrate_sessions_on_network_change_v2, migrate_sessions_early_v2,
+          retry_on_alternate_network_before_handshake,
           go_away_on_path_degrading,
           base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
           kMaxMigrationsToNonDefaultNetworkOnWriteError,

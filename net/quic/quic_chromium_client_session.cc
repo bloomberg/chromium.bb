@@ -1446,6 +1446,7 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     }
 
     NotifyRequestsOfConfirmation(OK);
+    // TODO(zhongyi): spin up the timer to migrate back to the default network.
   }
   quic::QuicSpdySession::OnCryptoHandshakeEvent(event);
 }
@@ -2658,7 +2659,7 @@ void QuicChromiumClientSession::NotifyFactoryOfSessionClosedLater() {
   going_away_ = true;
   DCHECK_EQ(0u, GetNumActiveStreams());
   DCHECK(!connection()->connected());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&QuicChromiumClientSession::NotifyFactoryOfSessionClosed,
                  weak_factory_.GetWeakPtr()));

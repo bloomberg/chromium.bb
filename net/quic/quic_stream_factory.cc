@@ -315,6 +315,7 @@ class QuicStreamFactory::Job {
       HostResolver* host_resolver,
       const QuicSessionAliasKey& key,
       bool was_alternative_service_recently_broken,
+      bool retry_on_alternate_network_before_handshake,
       RequestPriority priority,
       int cert_verify_flags,
       const NetLogWithSource& net_log);
@@ -385,6 +386,7 @@ class QuicStreamFactory::Job {
   const RequestPriority priority_;
   const int cert_verify_flags_;
   const bool was_alternative_service_recently_broken_;
+  const bool retry_on_alternate_network_before_handshake_;
   const NetLogWithSource net_log_;
   int num_sent_client_hellos_;
   QuicChromiumClientSession* session_;
@@ -407,6 +409,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             HostResolver* host_resolver,
                             const QuicSessionAliasKey& key,
                             bool was_alternative_service_recently_broken,
+                            bool retry_on_alternate_network_before_handshake,
                             RequestPriority priority,
                             int cert_verify_flags,
                             const NetLogWithSource& net_log)
@@ -419,6 +422,8 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       cert_verify_flags_(cert_verify_flags),
       was_alternative_service_recently_broken_(
           was_alternative_service_recently_broken),
+      retry_on_alternate_network_before_handshake_(
+          retry_on_alternate_network_before_handshake),
       net_log_(
           NetLogWithSource::Make(net_log.net_log(),
                                  NetLogSourceType::QUIC_STREAM_FACTORY_JOB)),
@@ -555,6 +560,8 @@ int QuicStreamFactory::Job::DoConnect() {
       key_, quic_version_, cert_verify_flags_, require_confirmation,
       address_list_, dns_resolution_start_time_, dns_resolution_end_time_,
       net_log_, &session_, &network_);
+  DVLOG(1) << "Created session on network: " << network_;
+
   if (rv != OK) {
     DCHECK(rv != ERR_IO_PENDING);
     DCHECK(!session_);
@@ -600,6 +607,24 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
 
   if (was_alternative_service_recently_broken_)
     UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ConnectAfterBroken", rv == OK);
+
+  if (retry_on_alternate_network_before_handshake_ && session_ &&
+      !session_->IsCryptoHandshakeConfirmed() &&
+      network_ == factory_->default_network()) {
+    if (session_->error() == quic::QUIC_NETWORK_IDLE_TIMEOUT ||
+        session_->error() == quic::QUIC_HANDSHAKE_TIMEOUT) {
+      // Retry the connection on an alternate network if crypto handshake failed
+      // with network idle time out or handshake time out.
+      DCHECK(network_ != NetworkChangeNotifier::kInvalidNetworkHandle);
+      network_ = factory_->FindAlternateNetwork(network_);
+      if (network_ != NetworkChangeNotifier::kInvalidNetworkHandle) {
+        DVLOG(1) << "Retry connection on alternate network";
+        session_ = nullptr;
+        io_state_ = STATE_CONNECT;
+        return OK;
+      }
+    }
+  }
 
   if (rv != OK)
     return rv;
@@ -737,6 +762,7 @@ QuicStreamFactory::QuicStreamFactory(
     int max_idle_time_before_crypto_handshake_seconds,
     bool migrate_sessions_on_network_change_v2,
     bool migrate_sessions_early_v2,
+    bool retry_on_alternate_network_before_handshake,
     bool go_away_on_path_degrading,
     base::TimeDelta max_time_on_non_default_network,
     int max_migrations_to_non_default_network_on_write_error,
@@ -792,6 +818,9 @@ QuicStreamFactory::QuicStreamFactory(
           NetworkChangeNotifier::AreNetworkHandlesSupported()),
       migrate_sessions_early_v2_(migrate_sessions_early_v2 &&
                                  migrate_sessions_on_network_change_v2_),
+      retry_on_alternate_network_before_handshake_(
+          retry_on_alternate_network_before_handshake &&
+          migrate_sessions_on_network_change_v2_),
       go_away_on_path_degrading_(go_away_on_path_degrading),
       default_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       max_time_on_non_default_network_(max_time_on_non_default_network),
@@ -834,7 +863,7 @@ QuicStreamFactory::QuicStreamFactory(
   if (has_aes_hardware_support)
     crypto_config_.PreferAesGcm();
 
-  if (migrate_sessions_early_v2)
+  if (migrate_sessions_early_v2 || retry_on_alternate_network_before_handshake)
     DCHECK(migrate_sessions_on_network_change_v2);
 
   // goaway_sessions_on_ip_change and close_sessions_on_ip_change should never
@@ -1049,6 +1078,7 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
   std::unique_ptr<Job> job =
       std::make_unique<Job>(this, quic_version, host_resolver_, key,
                             WasQuicRecentlyBroken(session_key.server_id()),
+                            retry_on_alternate_network_before_handshake_,
                             priority, cert_verify_flags, net_log);
   int rv = job->Run(
       base::BindRepeating(&QuicStreamFactory::OnJobComplete,
@@ -1462,13 +1492,13 @@ int QuicStreamFactory::CreateSession(
       CreateSocket(net_log.net_log(), net_log.source()));
 
   // Passing in kInvalidNetworkHandle binds socket to default network.
-  int rv = ConfigureSocket(socket.get(), addr,
-                           NetworkChangeNotifier::kInvalidNetworkHandle,
+  int rv = ConfigureSocket(socket.get(), addr, *network,
                            key.session_key().socket_tag());
   if (rv != OK)
     return rv;
 
-  if (migrate_sessions_on_network_change_v2_) {
+  if (migrate_sessions_on_network_change_v2_ &&
+      *network == NetworkChangeNotifier::kInvalidNetworkHandle) {
     *network = socket->GetBoundNetwork();
     if (default_network_ == NetworkChangeNotifier::kInvalidNetworkHandle) {
       // QuicStreamFactory may miss the default network signal before its

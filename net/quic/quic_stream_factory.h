@@ -242,6 +242,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int max_idle_time_before_crypto_handshake_seconds,
       bool migrate_sessions_on_network_change_v2,
       bool migrate_sessions_early_v2,
+      bool retry_on_alternate_network_before_handshake,
       bool go_away_on_path_degrading,
       base::TimeDelta max_time_on_non_default_network,
       int max_migrations_to_non_default_network_on_write_error,
@@ -378,6 +379,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   bool mark_quic_broken_when_network_blackholes() const {
     return mark_quic_broken_when_network_blackholes_;
+  }
+
+  NetworkChangeNotifier::NetworkHandle default_network() const {
+    return default_network_;
   }
 
   // Dumps memory allocation stats. |parent_dump_absolute_name| is the name
@@ -541,6 +546,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if early migration should be attempted after probing when the
   // connection experiences poor connectivity.
   const bool migrate_sessions_early_v2_;
+
+  // Set if a new connection may be kicked off on an alternate network when a
+  // connection fails on the default network before handshake is confirmed.
+  const bool retry_on_alternate_network_before_handshake_;
 
   // Set if client should mark the session as GOAWAY when the connection
   // experiences poor connectivity
