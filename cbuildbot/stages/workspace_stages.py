@@ -33,7 +33,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
 from chromite.lib import osutils
-from chromite.lib import portage_util
 
 
 class InvalidWorkspace(failures_lib.StepFailure):
@@ -158,19 +157,13 @@ class WorkspaceUprevAndPublishStage(WorkspaceStageBase):
 
   def PerformStage(self):
     """Perform the uprev and push."""
-    # Find uprevs to uprev.
-    logging.info('Uprevving.')
-    overlays = portage_util.FindOverlays(
-        self._run.config.overlays, buildroot=self._build_root)
-
-    commands.UprevPackages(self._orig_root, self._boards, overlays,
+    commands.UprevPackages(self._orig_root, self._boards,
+                           overlay_type=self._run.config.overlays,
                            workspace=self._build_root)
 
     logging.info('Pushing.')
-    push_overlays = portage_util.FindOverlays(
-        self._run.config.push_overlays, buildroot=self._build_root)
-
-    commands.UprevPush(self._orig_root, push_overlays,
+    commands.UprevPush(self._orig_root,
+                       overlay_type=self._run.config.push_overlays,
                        dryrun=self._run.options.debug,
                        workspace=self._build_root)
 
