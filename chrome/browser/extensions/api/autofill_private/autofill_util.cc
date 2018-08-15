@@ -132,7 +132,8 @@ autofill_private::CountryEntry CountryToCountryEntry(
 }
 
 autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
-    const autofill::CreditCard& credit_card) {
+    const autofill::CreditCard& credit_card,
+    const autofill::PersonalDataManager& personal_data) {
   autofill_private::CreditCardEntry card;
 
   // Add all credit card fields to the entry.
@@ -158,6 +159,11 @@ autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
       credit_card.record_type() == autofill::CreditCard::LOCAL_CARD));
   metadata->is_cached.reset(new bool(
       credit_card.record_type() == autofill::CreditCard::FULL_SERVER_CARD));
+  // IsValid() checks if both card number and expiration date are valid.
+  // IsServerCard() checks whether there is a duplicated server card in
+  // |personal_data|.
+  metadata->is_migratable.reset(new bool(
+      credit_card.IsValid() && !personal_data.IsServerCard(&credit_card)));
   card.metadata = std::move(metadata);
 
   return card;
@@ -210,7 +216,7 @@ CreditCardEntryList GenerateCreditCardList(
 
   CreditCardEntryList list;
   for (const autofill::CreditCard* card : cards)
-    list.push_back(CreditCardToCreditCardEntry(*card));
+    list.push_back(CreditCardToCreditCardEntry(*card, personal_data));
 
   return list;
 }

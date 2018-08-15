@@ -38,6 +38,10 @@ namespace autofillPrivate {
 
     // For credit cards, whether this is a full copy of the card
     boolean? isCached;
+
+    // For credit cards, whether this is migratable (both the card number and
+    // expiration date valid and does not have the duplicated server card).
+    boolean? isMigratable;
   };
 
   // An address entry which can be saved in the autofill section of the
@@ -209,7 +213,7 @@ namespace autofillPrivate {
     static void saveCreditCard(CreditCardEntry card);
 
     // Removes the entry (address or credit card) with the given ID.
-    // |guid|: ID of the entry to remove. 
+    // |guid|: ID of the entry to remove.
     static void removeEntry(DOMString guid);
 
     // Validates a newly-added phone number and invokes the callback with a list

@@ -36,7 +36,8 @@ chrome.autofillPrivate.AddressField = {
  *   summaryLabel: string,
  *   summarySublabel: (string|undefined),
  *   isLocal: (boolean|undefined),
- *   isCached: (boolean|undefined)
+ *   isCached: (boolean|undefined),
+ *   isMigratable: (boolean|undefined)
  * }}
  */
 chrome.autofillPrivate.AutofillMetadata;
