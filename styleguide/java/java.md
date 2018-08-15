@@ -58,6 +58,22 @@ try {
 }
 ```
 
+* Avoid adding messages to exceptions that do not aid in debugging.
+
+For example:
+```java
+try {
+  somethingThatThrowsIOException();
+} catch (IOException e) {
+  // Bad - message does not tell you more than the stack trace does:
+  throw new RuntimeException("Failed to parse a file.", e);
+  // Good - conveys that this block failed along with the "caused by" exception.
+  throw new RuntimeException(e);
+  // Good - adds useful information.
+  throw new RuntimeException(String.format("Failed to parse %s", fileName), e);
+}
+```
+
 ### Logging
 * Use `org.chromium.base.Log` instead of `android.util.Log`.
   * It provides `%s` support, and ensures log stripping works correctly.
