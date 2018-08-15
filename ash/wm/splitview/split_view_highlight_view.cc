@@ -4,7 +4,9 @@
 
 #include "ash/wm/splitview/split_view_highlight_view.h"
 
+#include "ash/shell.h"
 #include "ash/wm/overview/rounded_rect_view.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/view.h"
@@ -166,6 +168,45 @@ void SplitViewHighlightView::SetColor(SkColor color) {
   left_top_->SetBackgroundColor(color);
   right_bottom_->SetBackgroundColor(color);
   middle_->layer()->SetColor(color);
+}
+
+void SplitViewHighlightView::OnIndicatorTypeChanged(
+    IndicatorState indicator_state) {
+  if (indicator_state == IndicatorState::kNone) {
+    DoSplitviewOpacityAnimation(layer(),
+                                SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
+    return;
+  }
+
+  if (SplitViewDragIndicators::IsPreviewAreaState(indicator_state)) {
+    const bool is_preview_on_left_or_top =
+        SplitViewDragIndicators::IsPreviewAreaOnLeftTopOfScreen(
+            indicator_state);
+    const bool should_fade_in = is_right_or_bottom_ ? !is_preview_on_left_or_top
+                                                    : is_preview_on_left_or_top;
+    DoSplitviewOpacityAnimation(
+        layer(), should_fade_in ? SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN
+                                : SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
+    return;
+  }
+
+  // No need to update left/top highlight view for right indicator state and
+  // also no need to update right/bottom highlight view for left indicator
+  // state.
+  if ((!is_right_or_bottom_ &&
+       SplitViewDragIndicators::IsRightIndicatorState(indicator_state)) ||
+      (is_right_or_bottom_ &&
+       SplitViewDragIndicators::IsLeftIndicatorState(indicator_state))) {
+    return;
+  }
+  SetColor(SplitViewDragIndicators::IsCannotSnapState(indicator_state)
+               ? SK_ColorBLACK
+               : SK_ColorWHITE);
+  DoSplitviewOpacityAnimation(layer(),
+                              Shell::Get()->split_view_controller()->state() ==
+                                      SplitViewController::NO_SNAP
+                                  ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN
+                                  : SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
 }
 
 }  // namespace ash

@@ -6,6 +6,7 @@
 #define ASH_WM_SPLITVIEW_SPLIT_VIEW_HIGHLIGHT_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -29,6 +30,9 @@ class ASH_EXPORT SplitViewHighlightView : public views::View {
   void SetBounds(const gfx::Rect& bounds, bool landscape, bool animate);
 
   void SetColor(SkColor color);
+
+  // Called to update the opacity of the highlights view on |indicator_state|.
+  void OnIndicatorTypeChanged(IndicatorState indicator_state);
 
  private:
   friend class SplitViewHighlightViewTestApi;

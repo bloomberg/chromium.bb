@@ -82,11 +82,6 @@ gfx::Point GetBoundedPosition(const gfx::Point& location_in_screen,
                bounds_in_screen.y()));
 }
 
-// Transpose the given |rect|.
-void TransposeRect(gfx::Rect* rect) {
-  rect->SetRect(rect->y(), rect->x(), rect->height(), rect->width());
-}
-
 mojom::SplitViewState ToMojomSplitViewState(SplitViewController::State state) {
   switch (state) {
     case SplitViewController::NO_SNAP:

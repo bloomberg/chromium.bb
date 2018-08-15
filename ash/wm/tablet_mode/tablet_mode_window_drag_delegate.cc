@@ -320,7 +320,12 @@ IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
     return IndicatorState::kNone;
   }
 
-  return can_snap ? IndicatorState::kDragArea : IndicatorState::kCannotSnap;
+  // No top drag indicator if in portrait screen orientation.
+  if (split_view_controller_->IsCurrentScreenOrientationLandscape())
+    return can_snap ? IndicatorState::kDragArea : IndicatorState::kCannotSnap;
+
+  return can_snap ? IndicatorState::kDragAreaRight
+                  : IndicatorState::kCannotSnapRight;
 }
 
 void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(

@@ -7,6 +7,10 @@
 
 #include "ui/gfx/transform.h"
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace ui {
 class Layer;
 }  // namespace ui
@@ -65,6 +69,9 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer, SplitviewAnimationType type);
 void DoSplitviewTransformAnimation(ui::Layer* layer,
                                    SplitviewAnimationType type,
                                    const gfx::Transform& target_transform);
+
+// Transposes the given |rect|.
+void TransposeRect(gfx::Rect* rect);
 
 }  // namespace ash
 
