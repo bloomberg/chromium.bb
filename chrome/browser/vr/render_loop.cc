@@ -8,8 +8,8 @@
 
 #include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
+#include "chrome/browser/vr/compositor_delegate.h"
 #include "chrome/browser/vr/controller_delegate_for_testing.h"
-#include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/model/reticle_model.h"
@@ -22,9 +22,11 @@ namespace vr {
 
 RenderLoop::RenderLoop(std::unique_ptr<UiInterface> ui,
                        RenderLoopBrowserInterface* browser,
+                       CompositorDelegate* compositor_delegate,
                        size_t sliding_time_size)
     : ui_(std::move(ui)),
       browser_(browser),
+      compositor_delegate_(compositor_delegate),
       ui_processing_time_(sliding_time_size),
       ui_controller_update_time_(sliding_time_size) {}
 RenderLoop::~RenderLoop() = default;
@@ -53,7 +55,6 @@ void RenderLoop::UpdateUi(const RenderInfo& render_info,
                           base::TimeTicks current_time,
                           FrameType frame_type) {
   TRACE_EVENT0("gpu", __func__);
-  DCHECK(graphics_delegate_);
 
   // Update the render position of all UI elements.
   base::TimeTicks timing_start = base::TimeTicks::Now();
@@ -65,12 +66,8 @@ void RenderLoop::UpdateUi(const RenderInfo& render_info,
     controller_time = ProcessControllerInput(render_info, current_time);
 
   if (ui_->SceneHasDirtyTextures()) {
-    if (!graphics_delegate_->MakeSkiaContextCurrent()) {
-      ForceExitVr();
-      return;
-    }
-    ui_->UpdateSceneTextures();
-    if (!graphics_delegate_->MakeMainContextCurrent()) {
+    if (!compositor_delegate_->RunInSkiaContext(base::BindOnce(
+            &UiInterface::UpdateSceneTextures, base::Unretained(ui_.get())))) {
       ForceExitVr();
       return;
     }

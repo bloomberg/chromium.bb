@@ -5,11 +5,10 @@
 #ifndef CHROME_BROWSER_VR_TESTAPP_VR_TEST_CONTEXT_H_
 #define CHROME_BROWSER_VR_TESTAPP_VR_TEST_CONTEXT_H_
 
-#include "base/macros.h"
-
-#include <cstdint>
+#include <memory>
 #include <queue>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/model/controller_model.h"
@@ -24,7 +23,7 @@ class Event;
 
 namespace vr {
 
-class GraphicsDelegate;
+class CompositorDelegate;
 class TextInputDelegate;
 class TestKeyboardDelegate;
 class Ui;
@@ -37,7 +36,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   VrTestContext();
   ~VrTestContext() override;
 
-  void OnGlInitialized(std::unique_ptr<GraphicsDelegate> graphics_delegate);
+  void OnGlInitialized(std::unique_ptr<CompositorDelegate> compositor_delegate);
   // TODO(vollick): we should refactor VrShellGl's rendering logic and use it
   // directly. crbug.com/767282
   void DrawFrame();
@@ -121,7 +120,7 @@ class VrTestContext : public vr::UiBrowserInterface {
 
   std::unique_ptr<TextInputDelegate> text_input_delegate_;
   std::unique_ptr<TestKeyboardDelegate> keyboard_delegate_;
-  std::unique_ptr<GraphicsDelegate> graphics_delegate_;
+  std::unique_ptr<CompositorDelegate> compositor_delegate_;
 
   PlatformController::Handedness handedness_ = PlatformController::kRightHanded;
 
