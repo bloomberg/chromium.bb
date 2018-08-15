@@ -31,7 +31,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/browser/previews/previews_infobar_tab_helper.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -163,7 +163,7 @@ class PreviewsInfoBarDelegateUnitTest
   void SetUp() override {
     PageLoadMetricsObserverTestHarness::SetUp();
     MockInfoBarService::CreateForWebContents(web_contents());
-    PreviewsInfoBarTabHelper::CreateForWebContents(web_contents());
+    PreviewsUITabHelper::CreateForWebContents(web_contents());
     TestPreviewsWebContentsObserver::CreateForWebContents(web_contents());
 
     drp_test_context_ =
@@ -266,8 +266,8 @@ class PreviewsInfoBarDelegateUnitTest
                                1);
     // Dismiss the infobar.
     infobar_service()->RemoveAllInfoBars(false);
-    PreviewsInfoBarTabHelper::FromWebContents(web_contents())
-        ->set_displayed_preview_infobar(false);
+    PreviewsUITabHelper::FromWebContents(web_contents())
+        ->set_displayed_preview_ui(false);
   }
 
   void OnDismissPreviewsInfobar(bool user_opt_out) {

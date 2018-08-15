@@ -11,7 +11,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/previews/core/previews_experiments.h"
 
-class PreviewsInfoBarTabHelper;
+class PreviewsUITabHelper;
 
 namespace content {
 class WebContents;
@@ -81,7 +81,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   static const void* OptOutEventKey();
 
  private:
-  PreviewsInfoBarDelegate(PreviewsInfoBarTabHelper* infobar_tab_helper,
+  PreviewsInfoBarDelegate(PreviewsUITabHelper* ui_tab_helper,
                           previews::PreviewsType previews_type,
                           base::Time previews_freshness,
                           bool is_data_saver_user,
@@ -95,7 +95,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
-  PreviewsInfoBarTabHelper* infobar_tab_helper_;
+  PreviewsUITabHelper* ui_tab_helper_;
   previews::PreviewsType previews_type_;
   // The time at which the preview associated with this infobar was created. A
   // value of zero means that the creation time is unknown.
