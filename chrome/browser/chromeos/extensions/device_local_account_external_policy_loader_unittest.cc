@@ -233,7 +233,10 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListEmpty) {
 // Verifies that when a force-install list policy referencing an extension is
 // set and the cache is started, the loader downloads, caches and serves the
 // extension.
-TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
+// https://crbug.com/865453: Sometimes the last EXPECT fails because there are
+// some irrelevant tasks still pending.
+TEST_F(DeviceLocalAccountExternalPolicyLoaderTest,
+       DISABLED_ForceInstallListSet) {
   // Set a force-install list policy that contains an invalid entry (which
   // should be ignored) and a valid reference to an extension.
   SetForceInstallListPolicy();
