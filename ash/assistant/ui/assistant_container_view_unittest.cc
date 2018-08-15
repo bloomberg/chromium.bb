@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/chromeos_switches.h"
@@ -18,6 +19,9 @@
 namespace ash {
 
 namespace {
+
+constexpr int kClamshellMarginBottomDip = 8;  // Margin in clamshell mode.
+constexpr int kTabletMarginTopDip = 24;       // Margin in tablet mode.
 
 class AssistantContainerViewTest : public AshTestBase {
  public:
@@ -103,16 +107,41 @@ TEST_F(AssistantContainerViewTest, InitialAnchoring) {
               Shell::Get()->GetRootWindowForNewWindows()->GetBoundsInScreen())
           .work_area();
 
-  // We expect a bottom margin.
-  constexpr int bottom_margin = 8;
-
   // We expect the view to be horizontally centered and bottom aligned.
   gfx::Rect expected_bounds = gfx::Rect(expected_work_area);
   expected_bounds.ClampToCenteredSize(view->size());
   expected_bounds.set_y(expected_work_area.bottom() - view->height() -
-                        bottom_margin);
+                        kClamshellMarginBottomDip);
 
   ASSERT_EQ(expected_bounds, view->GetBoundsInScreen());
+}
+
+TEST_F(AssistantContainerViewTest, TabletModeAnchoring) {
+  // Guarantee short but non-zero duration for animations.
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  gfx::Rect expected_work_area =
+      display::Screen::GetScreen()
+          ->GetDisplayMatching(
+              Shell::Get()->GetRootWindowForNewWindows()->GetBoundsInScreen())
+          .work_area();
+
+  int clamshell_y = expected_work_area.bottom() - kClamshellMarginBottomDip;
+
+  ui_controller()->ShowUi(AssistantSource::kUnspecified);
+  AssistantContainerView* view = ui_controller()->GetViewForTest();
+
+  gfx::Rect bounds = view->GetBoundsInScreen();
+  ASSERT_EQ(bounds.bottom(), clamshell_y);
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  bounds = view->GetBoundsInScreen();
+  ASSERT_EQ(bounds.y(), kTabletMarginTopDip);
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  bounds = view->GetBoundsInScreen();
+  ASSERT_EQ(bounds.bottom(), clamshell_y);
 }
 
 }  // namespace ash

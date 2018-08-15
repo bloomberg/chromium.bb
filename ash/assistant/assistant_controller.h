@@ -122,6 +122,9 @@ class ASH_EXPORT AssistantController
   // TODO(dmblack): Support opening specific URLs in the Assistant container.
   void OpenUrl(const GURL& url);
 
+  // Called before dtor to deregister services and avoid life cycle issues.
+  void ShutDown();
+
   AssistantInteractionController* interaction_controller() {
     DCHECK(assistant_interaction_controller_);
     return assistant_interaction_controller_.get();

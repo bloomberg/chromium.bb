@@ -14,6 +14,7 @@
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/optional.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,6 +45,7 @@ AssistantUiController::AssistantUiController(
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
 AssistantUiController::~AssistantUiController() {
@@ -261,6 +263,20 @@ void AssistantUiController::ToggleUi(AssistantSource source) {
     HideUi(source);
   else
     ShowUi(source);
+}
+
+void AssistantUiController::OnTabletModeStarted() {
+  if (container_view_)
+    container_view_->OnTabletModeChanged();
+}
+
+void AssistantUiController::OnTabletModeEnded() {
+  if (container_view_)
+    container_view_->OnTabletModeChanged();
+}
+
+void AssistantUiController::ShutDown() {
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 }
 
 void AssistantUiController::UpdateUiMode(

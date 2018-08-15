@@ -790,6 +790,11 @@ Shell::~Shell() {
   // the former may use the latter before destruction.
   app_list_controller_.reset();
 
+  // Shutdown |assistant_controller_| to properly remove observer on
+  // |tablet_mode_controller_|.
+  if (chromeos::switches::IsAssistantEnabled())
+    assistant_controller_->ShutDown();
+
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
   tablet_mode_controller_.reset();
