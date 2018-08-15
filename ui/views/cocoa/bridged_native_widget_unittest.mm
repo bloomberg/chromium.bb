@@ -248,39 +248,6 @@ NSTextInputContext* g_fake_current_input_context = nullptr;
 
 @end
 
-// Class to override -[NSWindow toggleFullScreen:] to a no-op. This simulates
-// NSWindow's behavior when attempting to toggle fullscreen state again, when
-// the last attempt failed but Cocoa has not yet sent
-// windowDidFailToEnterFullScreen:.
-@interface BridgedNativeWidgetTestFullScreenWindow : NativeWidgetMacNSWindow {
- @private
-  int ignoredToggleFullScreenCount_;
-}
-@property(readonly, nonatomic) int ignoredToggleFullScreenCount;
-@end
-
-@implementation BridgedNativeWidgetTestFullScreenWindow
-
-@synthesize ignoredToggleFullScreenCount = ignoredToggleFullScreenCount_;
-
-- (void)performSelector:(SEL)aSelector
-             withObject:(id)anArgument
-             afterDelay:(NSTimeInterval)delay {
-  // This is used in simulations without a message loop. Don't start a message
-  // loop since that would expose the tests to system notifications and
-  // potential flakes. Instead, just pretend the message loop is flushed here.
-  if (aSelector == @selector(toggleFullScreen:))
-    [self toggleFullScreen:anArgument];
-  else
-    [super performSelector:aSelector withObject:anArgument afterDelay:delay];
-}
-
-- (void)toggleFullScreen:(id)sender {
-  ++ignoredToggleFullScreenCount_;
-}
-
-@end
-
 namespace views {
 namespace test {
 
@@ -295,6 +262,9 @@ class MockNativeWidgetMac : public NativeWidgetMac {
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override {
     ownership_ = params.ownership;
+
+    bridge()->CreateWindow(NSBorderlessWindowMask);
+    bridge()->Init(params);
 
     // Usually the bridge gets initialized here. It is skipped to run extra
     // checks in tests, and so that a second window isn't created.
@@ -358,8 +328,16 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   }
 
   void TearDown() override {
+    // ui::CocoaTest::TearDown will wait until all NSWindows are destroyed, so
+    // be sure to destroy the widget (which will destroy its NSWindow)
+    // beforehand.
+    widget_.reset();
     ui::test::MaterialDesignControllerTestAPI::Uninitialize();
     ui::CocoaTest::TearDown();
+  }
+
+  NSWindow* bridge_window() const {
+    return native_widget_mac_->bridge()->ns_window();
   }
 
  protected:
@@ -566,13 +544,7 @@ void BridgedNativeWidgetTest::SetUp() {
   BridgedNativeWidgetTestBase::SetUp();
 
   view_.reset(new views::internal::RootView(widget_.get()));
-  base::scoped_nsobject<NSWindow> window([test_window() retain]);
-
-  // BridgedNativeWidget expects to be initialized with a hidden (deferred)
-  // window.
-  [window orderOut:nil];
-  EXPECT_FALSE([window delegate]);
-  bridge()->Init(window, init_params_);
+  base::scoped_nsobject<NSWindow> window([bridge_window() retain]);
 
   // The delegate should exist before setting the root view.
   EXPECT_TRUE([window delegate]);
@@ -581,7 +553,7 @@ void BridgedNativeWidgetTest::SetUp() {
 
   // Pretend it has been shown via NativeWidgetMac::Show().
   [window orderFront:nil];
-  [test_window() makePretendKeyWindowAndSetFirstResponder:bridge()->ns_view()];
+  [window makeFirstResponder:bridge()->ns_view()];
 }
 
 void BridgedNativeWidgetTest::TearDown() {
@@ -741,8 +713,9 @@ void BridgedNativeWidgetTest::TestEditingCommands(NSArray* selectors) {
 // what TEST_VIEW usually does.
 TEST_F(BridgedNativeWidgetTest, BridgedNativeWidgetTest_TestViewAddRemove) {
   base::scoped_nsobject<BridgedContentView> view([bridge()->ns_view() retain]);
-  EXPECT_NSEQ([test_window() contentView], view);
-  EXPECT_NSEQ(test_window(), [view window]);
+  base::scoped_nsobject<NSWindow> window([bridge_window() retain]);
+  EXPECT_NSEQ([window contentView], view);
+  EXPECT_NSEQ(window, [view window]);
 
   // The superview of a contentView is an NSNextStepFrame.
   EXPECT_TRUE([view superview]);
@@ -754,13 +727,13 @@ TEST_F(BridgedNativeWidgetTest, BridgedNativeWidgetTest_TestViewAddRemove) {
 
   // Closing the window should tear down the C++ bridge, remove references to
   // any C++ objects in the ObjectiveC object, and remove it from the hierarchy.
-  [test_window() close];
+  [window close];
   EXPECT_FALSE([view hostedView]);
   EXPECT_FALSE([view superview]);
   EXPECT_FALSE([view window]);
   EXPECT_EQ(0u, [[view trackingAreas] count]);
-  EXPECT_FALSE([test_window() contentView]);
-  EXPECT_FALSE([test_window() delegate]);
+  EXPECT_FALSE([window contentView]);
+  EXPECT_FALSE([window delegate]);
 }
 
 TEST_F(BridgedNativeWidgetTest, BridgedNativeWidgetTest_TestViewDisplay) {
@@ -772,8 +745,8 @@ TEST_F(BridgedNativeWidgetTest, ViewSizeTracksWindow) {
   const int kTestNewWidth = 400;
   const int kTestNewHeight = 300;
 
-  // |test_window()| is borderless, so these should align.
-  NSSize window_size = [test_window() frame].size;
+  // |bridge_window()| is borderless, so these should align.
+  NSSize window_size = [bridge_window() frame].size;
   EXPECT_EQ(view_->width(), static_cast<int>(window_size.width));
   EXPECT_EQ(view_->height(), static_cast<int>(window_size.height));
 
@@ -781,8 +754,8 @@ TEST_F(BridgedNativeWidgetTest, ViewSizeTracksWindow) {
   EXPECT_NE(kTestNewWidth, view_->width());
   EXPECT_NE(kTestNewHeight, view_->height());
 
-  [test_window() setFrame:NSMakeRect(0, 0, kTestNewWidth, kTestNewHeight)
-                  display:NO];
+  [bridge_window() setFrame:NSMakeRect(0, 0, kTestNewWidth, kTestNewHeight)
+                    display:NO];
   EXPECT_EQ(kTestNewWidth, view_->width());
   EXPECT_EQ(kTestNewHeight, view_->height());
 }
@@ -798,13 +771,7 @@ class BridgedNativeWidgetInitTest : public BridgedNativeWidgetTestBase {
       : BridgedNativeWidgetTestBase(SkipInitialization()) {}
 
   // Prepares a new |window_| and |widget_| for a call to PerformInit().
-  void CreateNewWidgetToInit(NSUInteger style_mask) {
-    window_.reset(
-        [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
-                                    styleMask:style_mask
-                                      backing:NSBackingStoreBuffered
-                                        defer:NO]);
-    [window_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
+  void CreateNewWidgetToInit() {
     widget_.reset(new Widget);
     native_widget_mac_ = new MockNativeWidgetMac(widget_.get());
     init_params_.native_widget = native_widget_mac_;
@@ -812,11 +779,7 @@ class BridgedNativeWidgetInitTest : public BridgedNativeWidgetTestBase {
 
   void PerformInit() {
     widget_->Init(init_params_);
-    bridge()->Init(window_, init_params_);
   }
-
- protected:
-  base::scoped_nsobject<NSWindow> window_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetInitTest);
@@ -842,34 +805,32 @@ TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
   EXPECT_EQ(Widget::InitParams::OPAQUE_WINDOW, init_params_.opacity);
   EXPECT_EQ(Widget::InitParams::SHADOW_TYPE_DEFAULT, init_params_.shadow_type);
 
-  CreateNewWidgetToInit(NSBorderlessWindowMask);
-  EXPECT_FALSE([window_ hasShadow]);  // Default for NSBorderlessWindowMask.
+  CreateNewWidgetToInit();
+  EXPECT_FALSE(
+      [bridge_window() hasShadow]);  // Default for NSBorderlessWindowMask.
   PerformInit();
 
   // Borderless is 0, so isn't really a mask. Check that nothing is set.
-  EXPECT_EQ(NSBorderlessWindowMask, [window_ styleMask]);
-  EXPECT_TRUE([window_ hasShadow]);  // SHADOW_TYPE_DEFAULT means a shadow.
+  EXPECT_EQ(NSBorderlessWindowMask, [bridge_window() styleMask]);
+  EXPECT_TRUE(
+      [bridge_window() hasShadow]);  // SHADOW_TYPE_DEFAULT means a shadow.
 
-  CreateNewWidgetToInit(NSBorderlessWindowMask);
+  CreateNewWidgetToInit();
   init_params_.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
   PerformInit();
-  EXPECT_FALSE([window_ hasShadow]);  // Preserves lack of shadow.
+  EXPECT_FALSE([bridge_window() hasShadow]);  // Preserves lack of shadow.
 
   // Default for Widget::InitParams::TYPE_WINDOW.
-  NSUInteger kBorderedMask =
-      NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask |
-      NSResizableWindowMask | NSTexturedBackgroundWindowMask;
-  CreateNewWidgetToInit(kBorderedMask);
-  EXPECT_TRUE([window_ hasShadow]);  // Default for non-borderless.
+  CreateNewWidgetToInit();
   PerformInit();
-  EXPECT_FALSE([window_ hasShadow]);  // SHADOW_TYPE_NONE removes shadow.
+  EXPECT_FALSE(
+      [bridge_window() hasShadow]);  // SHADOW_TYPE_NONE removes shadow.
 
   init_params_.shadow_type = Widget::InitParams::SHADOW_TYPE_DEFAULT;
-  CreateNewWidgetToInit(kBorderedMask);
+  CreateNewWidgetToInit();
   PerformInit();
-  EXPECT_TRUE([window_ hasShadow]);  // Preserves shadow.
+  EXPECT_TRUE([bridge_window() hasShadow]);  // Preserves shadow.
 
-  window_.reset();
   widget_.reset();
 }
 
@@ -1581,18 +1542,10 @@ typedef BridgedNativeWidgetTestBase BridgedNativeWidgetSimulateFullscreenTest;
 // mashing Ctrl+Left/Right to keep OSX in a transition between Spaces to cause
 // the fullscreen transition to fail.
 TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
-  base::scoped_nsobject<NSWindow> owned_window(
-      [[BridgedNativeWidgetTestFullScreenWindow alloc]
-          initWithContentRect:NSMakeRect(50, 50, 400, 300)
-                    styleMask:NSBorderlessWindowMask
-                      backing:NSBackingStoreBuffered
-                        defer:NO]);
-  [owned_window setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
-  bridge()->Init(owned_window, init_params_);  // Transfers ownership.
-
-  BridgedNativeWidgetTestFullScreenWindow* window =
-      base::mac::ObjCCastStrict<BridgedNativeWidgetTestFullScreenWindow>(
+  NativeWidgetMacNSWindow* window =
+      base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(
           widget_->GetNativeWindow());
+  [window disableToggleFullScreenForTesting];
   widget_->Show();
 
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
@@ -1606,11 +1559,11 @@ TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
   // On a failure, Cocoa starts by sending an unexpected *exit* fullscreen, and
   // BridgedNativeWidget will think it's just a delayed transition and try to go
   // back into fullscreen but get ignored by Cocoa.
-  EXPECT_EQ(0, [window ignoredToggleFullScreenCount]);
+  EXPECT_EQ(0, [window toggleFullScreenCountForTesting]);
   EXPECT_TRUE(bridge()->target_fullscreen_state());
   [center postNotificationName:NSWindowDidExitFullScreenNotification
                         object:window];
-  EXPECT_EQ(1, [window ignoredToggleFullScreenCount]);
+  EXPECT_EQ(1, [window toggleFullScreenCountForTesting]);
   EXPECT_FALSE(bridge()->target_fullscreen_state());
 
   // Cocoa follows up with a failure message sent to the NSWindowDelegate (there
@@ -1639,7 +1592,7 @@ TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
   EXPECT_FALSE(bridge()->target_fullscreen_state());
   [center postNotificationName:NSWindowDidExitFullScreenNotification
                         object:window];
-  EXPECT_EQ(1, [window ignoredToggleFullScreenCount]);  // No change.
+  EXPECT_EQ(1, [window toggleFullScreenCountForTesting]);  // No change.
   EXPECT_FALSE(bridge()->target_fullscreen_state());
 
   widget_->CloseNow();

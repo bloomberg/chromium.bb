@@ -82,7 +82,18 @@
   base::scoped_nsobject<CommandDispatcher> commandDispatcher_;
   base::scoped_nsprotocol<id<UserInterfaceItemCommandHandler>> commandHandler_;
   id<WindowTouchBarDelegate> touchBarDelegate_;  // Weak.
+
+  BOOL toggleFullscreenDisabledForTesting_;
+
+  int invalidateShadowCountForTesting_;
+  int orderWindowCountForTesting_;
+  int toggleFullScreenCountForTesting_;
+  bool* deallocFlagForTesting_;
 }
+@synthesize invalidateShadowCountForTesting = invalidateShadowCountForTesting_;
+@synthesize orderWindowCountForTesting = orderWindowCountForTesting_;
+@synthesize toggleFullScreenCountForTesting = toggleFullScreenCountForTesting_;
+@synthesize deallocFlagForTesting = deallocFlagForTesting_;
 
 - (instancetype)initWithContentRect:(NSRect)contentRect
                           styleMask:(NSUInteger)windowStyle
@@ -98,8 +109,13 @@
 }
 
 // This override doesn't do anything, but keeping it helps diagnose lifetime
-// issues in crash stacktraces by inserting a symbol on NativeWidgetMacNSWindow.
+// issues in crash stacktraces by inserting a symbol on NativeWidgetMacNSWindow,
+// and adds hooks for tests.
 - (void)dealloc {
+  if (deallocFlagForTesting_) {
+    DCHECK(!*deallocFlagForTesting_);
+    *deallocFlagForTesting_ = true;
+  }
   [super dealloc];
 }
 
@@ -122,6 +138,10 @@
 
 - (void)setWindowTouchBarDelegate:(id<WindowTouchBarDelegate>)delegate {
   touchBarDelegate_ = delegate;
+}
+
+- (void)disableToggleFullScreenForTesting {
+  toggleFullscreenDisabledForTesting_ = YES;
 }
 
 // Private methods.
@@ -225,8 +245,34 @@
 // when ordering in a window for the first time.
 - (void)orderWindow:(NSWindowOrderingMode)orderingMode
          relativeTo:(NSInteger)otherWindowNumber {
+  ++orderWindowCountForTesting_;
   [super orderWindow:orderingMode relativeTo:otherWindowNumber];
   [[self viewsNSWindowDelegate] onWindowOrderChanged:nil];
+}
+
+- (void)invalidateShadow {
+  ++invalidateShadowCountForTesting_;
+  [super invalidateShadow];
+}
+
+- (void)performSelector:(SEL)aSelector
+             withObject:(id)anArgument
+             afterDelay:(NSTimeInterval)delay {
+  if (toggleFullscreenDisabledForTesting_ && aSelector == @selector
+                                                 (toggleFullScreen:)) {
+    // This is used in simulations without a message loop. Don't start a message
+    // loop since that would expose the tests to system notifications and
+    // potential flakes. Instead, just pretend the message loop is flushed here.
+    [self toggleFullScreen:anArgument];
+  } else {
+    [super performSelector:aSelector withObject:anArgument afterDelay:delay];
+  }
+}
+
+- (void)toggleFullScreen:(id)sender {
+  ++toggleFullScreenCountForTesting_;
+  if (!toggleFullscreenDisabledForTesting_)
+    [super toggleFullScreen:sender];
 }
 
 // NSResponder implementation.

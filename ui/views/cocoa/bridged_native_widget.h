@@ -18,6 +18,7 @@
 #include "ui/base/ime/text_input_client.h"
 #import "ui/views/cocoa/bridged_native_widget_owner.h"
 #import "ui/views/cocoa/cocoa_mouse_capture_delegate.h"
+#import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
@@ -68,9 +69,17 @@ class VIEWS_EXPORT BridgedNativeWidget
   BridgedNativeWidget(BridgedNativeWidgetHost* host, NativeWidgetMac* parent);
   ~BridgedNativeWidget() override;
 
-  // Initialize the bridge, "retains" ownership of |window|.
-  void Init(base::scoped_nsobject<NSWindow> window,
-            const Widget::InitParams& params);
+  // Create the NSWindow using the specified style mask.
+  void CreateWindow(uint64_t window_style_mask);
+  // Initialize the NSWindow by taking ownership of the specified object.
+  // Either CreateWindow or SetWindow maybe used to initialize the NSWindow,
+  // and the initialization may happen only once.
+  // TODO(ccameron): When a BridgedNativeWidget is allocated across a process
+  // boundary, it will not be possible to call SetWindow. Move the relevant
+  // sub-classes so that they can be allocated via CreateWindow.
+  void SetWindow(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
+  // Initialize the bridge (after the NSWindow has been created).
+  void Init(const Widget::InitParams& params);
 
   // Invoked at the end of Widget::Init().
   void OnWidgetInitDone();
@@ -167,7 +176,7 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   NativeWidgetMac* native_widget_mac() { return native_widget_mac_; }
   BridgedContentView* ns_view() { return bridged_view_; }
-  NSWindow* ns_window() { return window_; }
+  NativeWidgetMacNSWindow* ns_window() { return window_; }
 
   TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
 
@@ -274,7 +283,7 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   BridgedNativeWidgetHost* const host_;       // Weak. Owns this.
   NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |host_|.
-  base::scoped_nsobject<NSWindow> window_;
+  base::scoped_nsobject<NativeWidgetMacNSWindow> window_;
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
   base::scoped_nsobject<BridgedContentView> bridged_view_;
   base::scoped_nsobject<ModalShowAnimationWithLayer> show_animation_;
