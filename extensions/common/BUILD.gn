@@ -390,6 +390,7 @@ if (enable_extensions) {
       "features/simple_feature_unittest.cc",
       "file_util_unittest.cc",
       "image_util_unittest.cc",
+      "manifest_handler_perf_test.cc",
       "manifest_handler_unittest.cc",
       "manifest_handlers/content_capabilities_manifest_unittest.cc",
       "manifest_handlers/csp_info_unittest.cc",
