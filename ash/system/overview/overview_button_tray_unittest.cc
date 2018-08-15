@@ -77,11 +77,11 @@ class OverviewButtonTrayTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kUseFirstDisplayAsInternal);
 
+    AshTestBase::SetUp();
+
     ui::InputDeviceClientTestApi().SetKeyboardDevices({ui::InputDevice(
         3, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "keyboard")});
     base::RunLoop().RunUntilIdle();
-
-    AshTestBase::SetUp();
   }
 
   // Enters or exits tablet mode. Use these instead of

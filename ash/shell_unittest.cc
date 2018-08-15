@@ -34,9 +34,12 @@
 #include "components/prefs/testing_pref_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/mus/test_window_tree_client_delegate.h"
+#include "ui/aura/test/mus/test_window_tree_client_setup.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/test_event_handler.h"
@@ -586,6 +589,59 @@ class ShellTest2 : public AshTestBase {
 };
 
 TEST_F(ShellTest2, DontCrashWhenWindowDeleted) {
+  // DontCrashWhenWindowDeletedSingleProcess covers the SingleProcessMash case.
+  if (::features::IsSingleProcessMash())
+    return;
+
+  window_ = std::make_unique<aura::Window>(nullptr,
+                                           aura::client::WINDOW_TYPE_UNKNOWN);
+  window_->Init(ui::LAYER_NOT_DRAWN);
+}
+
+// This verifies WindowObservers are removed when a window is destroyed after
+// the Shell is destroyed. This scenario (aura::Windows being deleted after the
+// Shell) occurs if someone is holding a reference to an unparented Window, as
+// is the case with a RenderWidgetHostViewAura that isn't on screen. As long as
+// everything is ok, we won't crash. If there is a bug, window's destructor will
+// notify some deleted object (say VideoDetector or ActivationController) and
+// this will crash.
+class ShellTest3 : public AshTestBase {
+ public:
+  ShellTest3() = default;
+  ~ShellTest3() override = default;
+
+  void SetUp() override {
+    AshTestBase::SetUp();
+    if (!::features::IsSingleProcessMash())
+      return;
+    window_service_setup_ = std::make_unique<aura::TestWindowTreeClientSetup>();
+    window_service_setup_->InitWithoutEmbed(&test_window_tree_client_delegate_);
+    aura::Env::GetInstance()->SetWindowTreeClient(
+        window_service_setup_->window_tree_client());
+  }
+
+  void TearDown() override {
+    AshTestBase::TearDown();
+    if (!::features::IsSingleProcessMash())
+      return;
+    window_.reset();
+    window_service_setup_.reset();
+    aura::Env::GetInstance()->SetWindowTreeClient(nullptr);
+  }
+
+ protected:
+  std::unique_ptr<aura::Window> window_;
+
+ private:
+  aura::TestWindowTreeClientDelegate test_window_tree_client_delegate_;
+  std::unique_ptr<aura::TestWindowTreeClientSetup> window_service_setup_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellTest3);
+};
+
+TEST_F(ShellTest3, DontCrashWhenWindowDeletedSingleProcess) {
+  if (!::features::IsSingleProcessMash())
+    return;
   // This test explicitly uses aura::Env::GetInstance() rather than
   // Shell->aura_env() as the Window outlives the Shell. In order for a Window
   // to outlive Shell the Window must be created outside of Ash, which uses
