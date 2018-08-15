@@ -505,6 +505,9 @@ void Preferences::RegisterProfilePrefs(
 
   // By default showing Sync Consent is set to true. It can changed by policy.
   registry->RegisterBooleanPref(prefs::kEnableSyncConsent, true);
+
+  registry->RegisterBooleanPref(prefs::kTPMFirmwareUpdateCleanupDismissed,
+                                false);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {

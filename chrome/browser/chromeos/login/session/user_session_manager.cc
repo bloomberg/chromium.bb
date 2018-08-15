@@ -72,6 +72,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
+#include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_installer.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -2023,6 +2024,10 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // Check to see if this profile should show EndOfLife Notification and show
   // the message accordingly.
   CheckEolStatus(profile);
+
+  // Check to see if this profile should show TPM Firmware Update Notification
+  // and show the message accordingly.
+  tpm_firmware_update::ShowNotificationIfNeeded(profile);
 
   // Show the one-time notification and update the relevant pref about the
   // completion of the file system migration necessary for ARC, when needed.
