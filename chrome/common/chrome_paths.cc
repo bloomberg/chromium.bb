@@ -49,9 +49,6 @@ const base::FilePath::CharType kPepperFlashSystemBaseDirectory[] =
     FILE_PATH_LITERAL("Internet Plug-Ins/PepperFlashPlayer");
 #endif
 
-const base::FilePath::CharType kInternalNaClPluginFileName[] =
-    FILE_PATH_LITERAL("internal-nacl-plugin");
-
 #if defined(OS_LINUX)
 // The path to the external extension <id>.json files.
 // /usr/share seems like a good choice, see: http://www.pathname.com/fhs/
@@ -332,14 +329,6 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!base::PathService::Get(chrome::DIR_PEPPER_FLASH_PLUGIN, &cur))
         return false;
       cur = cur.Append(chrome::kPepperFlashPluginFilename);
-      break;
-    // TODO(teravest): Remove this case once the internal NaCl plugin is gone.
-    // We currently need a path here to look up whether the plugin is disabled
-    // and what its permissions are.
-    case chrome::FILE_NACL_PLUGIN:
-      if (!GetInternalPluginsDirectory(&cur))
-        return false;
-      cur = cur.Append(kInternalNaClPluginFileName);
       break;
     // PNaCl is currenly installable via the component updater or by being
     // simply built-in.  DIR_PNACL_BASE is used as the base directory for
