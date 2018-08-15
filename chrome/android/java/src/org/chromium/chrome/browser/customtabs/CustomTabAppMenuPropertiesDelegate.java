@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -33,6 +34,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     private final boolean mShowStar;
     private final boolean mShowDownload;
     private final boolean mIsOpenedByChrome;
+    private final boolean mIsIncognito;
 
     private final List<String> mMenuEntries;
     private final Map<MenuItem, Integer> mItemToIndexMap = new HashMap<MenuItem, Integer>();
@@ -44,7 +46,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
      */
     public CustomTabAppMenuPropertiesDelegate(final ChromeActivity activity,
             @CustomTabsUiType final int uiType, List<String> menuEntries, boolean isOpenedByChrome,
-            boolean showShare, boolean showStar, boolean showDownload) {
+            boolean showShare, boolean showStar, boolean showDownload, boolean isIncognito) {
         super(activity);
         mUiType = uiType;
         mMenuEntries = menuEntries;
@@ -52,6 +54,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
         mShowShare = showShare;
         mShowStar = showStar;
         mShowDownload = showDownload;
+        mIsIncognito = isIncognito;
     }
 
     @Override
@@ -149,8 +152,12 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
 
             MenuItem openInChromeItem = menu.findItem(R.id.open_in_browser_id);
             if (openInChromeItemVisible) {
-                openInChromeItem.setTitle(
-                        DefaultBrowserInfo.getTitleOpenInDefaultBrowser(mIsOpenedByChrome));
+                String title = mIsIncognito ?
+                        ContextUtils.getApplicationContext()
+                                .getString(R.string.menu_open_in_incognito_chrome) :
+                        DefaultBrowserInfo.getTitleOpenInDefaultBrowser(mIsOpenedByChrome);
+
+                openInChromeItem.setTitle(title);
             } else {
                 openInChromeItem.setVisible(false);
             }

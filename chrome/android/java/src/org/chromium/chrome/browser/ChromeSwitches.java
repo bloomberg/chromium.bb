@@ -195,6 +195,17 @@ public abstract class ChromeSwitches {
     public static final String FORCE_TRUSTED_WEB_ACTIVITY_DISCLOSURE =
             "force-trusted-web-activity-disclosure";
 
+    /**
+     * Allows first-party apps to launch incognito custom tabs.
+     */
+    public static final String ENABLE_INCOGNITO_CUSTOM_TABS = "enable-incognito-custom-tabs";
+
+    /**
+     * Allows third-party apps to launch incognito custom tabs.
+     */
+    public static final String ALLOW_INCOGNITO_CUSTOM_TABS_FROM_THIRD_PARTY =
+            "allow-incognito-custom-tabs-from-third-party";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }

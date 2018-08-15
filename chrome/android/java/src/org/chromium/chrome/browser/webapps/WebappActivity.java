@@ -588,7 +588,7 @@ public class WebappActivity extends SingleTabActivity {
                 CustomTabIntentDataProvider.CustomTabsUiType.MINIMAL_UI_WEBAPP,
                 new ArrayList<String>(), true /* is opened by Chrome */,
                 true /* should show share */, false /* should show star (bookmarking) */,
-                false /* should show download */);
+                false /* should show download */, false /* is incognito */);
     }
 
     @Override

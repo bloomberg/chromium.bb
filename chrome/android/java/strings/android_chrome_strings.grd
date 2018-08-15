@@ -3033,6 +3033,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_MENU_OPEN_IN_CHROME" desc="Context sensitive menu item for opening a link in Chrome. [CHAR-LIMIT=30]">
         Open in Chrome
       </message>
+      <message name="IDS_MENU_OPEN_IN_INCOGNITO_CHROME" desc="Context sensitive menu item for opening a link in Chrome in an Incognito tab. [CHAR-LIMIT=30]" translateable="false">
+        Open in Incognito Chrome
+      </message>
       <message name="IDS_MENU_OPEN_IN_PRODUCT" desc="App menu item for opening link in the browser. [CHAR-LIMIT=30]">
         Open in <ph name="PRODUCT_NAME">%1$s<ex>Chrome</ex></ph>
       </message>

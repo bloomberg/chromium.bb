@@ -10,8 +10,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
+import android.text.TextUtils;
 
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
@@ -36,6 +39,7 @@ public class BrowserSessionDataProvider {
 
     private final CustomTabsSessionToken mSession;
     private final boolean mIsTrustedIntent;
+    private final boolean mIsVerifiedFirstPartyIntent;
     private final Intent mKeepAliveServiceIntent;
     private Bundle mAnimationBundle;
 
@@ -46,6 +50,11 @@ public class BrowserSessionDataProvider {
         if (intent == null) assert false;
         mSession = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         mIsTrustedIntent = IntentHandler.isIntentChromeOrFirstParty(intent);
+
+        String packageNameFromSession =
+                CustomTabsConnection.getInstance().getClientPackageNameForSession(getSession());
+        mIsVerifiedFirstPartyIntent = !TextUtils.isEmpty(packageNameFromSession) &&
+                ExternalAuthUtils.getInstance().isGoogleSigned(packageNameFromSession);
 
         mAnimationBundle = IntentUtils.safeGetBundleExtra(
                 intent, CustomTabsIntent.EXTRA_EXIT_ANIMATION_BUNDLE);
@@ -104,8 +113,20 @@ public class BrowserSessionDataProvider {
 
     /**
      * Checks whether or not the Intent is from Chrome or other trusted first party.
+     *
+     * @deprecated This method is not reliable, see https://crbug.com/832124
      */
+    @Deprecated
     public boolean isTrustedIntent() {
         return mIsTrustedIntent;
+    }
+
+    /**
+     * Checks whether or not the Intent was received from first party app by analyzing
+     * the corresponding session.
+     * If the intent was launched without a session, returns false regardless of source of intent.
+     */
+    public boolean isVerifiedFirstPartyIntent() {
+        return mIsVerifiedFirstPartyIntent;
     }
 }
