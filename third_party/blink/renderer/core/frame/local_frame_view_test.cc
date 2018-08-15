@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -18,7 +19,9 @@
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
+using blink::test::RunPendingTasks;
 using testing::_;
 using testing::AnyNumber;
 
@@ -263,6 +266,65 @@ TEST_F(LocalFrameViewSimTest, CSSFragmentIdentifierEmptySelector) {
   main_resource.Complete("<div class='foobar' id='target'></div>");
 
   EXPECT_EQ(nullptr, GetDocument().CssTarget());
+}
+
+// Ensure the fragment navigation "scroll into view and focus" behavior doesn't
+// activate synchronously while rendering is blocked waiting on a stylesheet.
+// See https://crbug.com/851338.
+TEST_F(LocalFrameViewSimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest css_resource("https://example.com/sheet.css", "text/css");
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <link rel="stylesheet" type="text/css" href="sheet.css">
+      <a id="anchorlink" href="#bottom">Link to bottom of the page</a>
+      <div style="height: 1000px;"></div>
+      <input id="bottom">Bottom of the page</a>
+    )HTML");
+
+  ScrollableArea* viewport = GetDocument().View()->LayoutViewport();
+  ASSERT_EQ(ScrollOffset(), viewport->GetScrollOffset());
+
+  // We're still waiting on the stylesheet to load so the load event shouldn't
+  // yet dispatch and rendering is deferred.
+  ASSERT_FALSE(GetDocument().IsRenderingReady());
+  EXPECT_FALSE(GetDocument().IsLoadCompleted());
+
+  // Click on the anchor element. This will cause a synchronous same-document
+  //  navigation.
+  HTMLAnchorElement* anchor =
+      ToHTMLAnchorElement(GetDocument().getElementById("anchorlink"));
+  anchor->click();
+
+  // Even though the navigation is synchronous, the active element shouldn't be
+  // changed.
+  EXPECT_EQ(GetDocument().body(), GetDocument().ActiveElement())
+      << "Active element changed while rendering is blocked";
+  EXPECT_EQ(ScrollOffset(), viewport->GetScrollOffset())
+      << "Scroll offset changed while rendering is blocked";
+
+  // Force a layout.
+  anchor->style()->setProperty(&GetDocument(), "display", "block", String(),
+                               ASSERT_NO_EXCEPTION);
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  EXPECT_EQ(GetDocument().body(), GetDocument().ActiveElement())
+      << "Active element changed due to layout while rendering is blocked";
+  EXPECT_EQ(ScrollOffset(), viewport->GetScrollOffset())
+      << "Scroll offset changed due to layout while rendering is blocked";
+
+  // Complete the CSS stylesheet load so the document can finish loading. The
+  // fragment should be activated at that point.
+  css_resource.Complete("");
+  RunPendingTasks();
+  ASSERT_TRUE(GetDocument().IsLoadCompleted());
+  EXPECT_EQ(GetDocument().getElementById("bottom"),
+            GetDocument().ActiveElement())
+      << "Active element wasn't changed after load completed.";
+  EXPECT_NE(ScrollOffset(), viewport->GetScrollOffset())
+      << "Scroll offset wasn't changed after load completed.";
 }
 
 }  // namespace
