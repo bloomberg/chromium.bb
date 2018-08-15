@@ -35,11 +35,10 @@ ChildCallStackProfileCollector::ChildCallStackProfileCollector() {}
 ChildCallStackProfileCollector::~ChildCallStackProfileCollector() {}
 
 CallStackProfileBuilder::CompletedCallback
-ChildCallStackProfileCollector::GetProfilerCallback(
-    base::TimeTicks profile_start_time) {
+ChildCallStackProfileCollector::GetProfilerCallback() {
   return base::Bind(&ChildCallStackProfileCollector::Collect,
                     // This class has lazy instance lifetime.
-                    base::Unretained(this), profile_start_time);
+                    base::Unretained(this), base::TimeTicks::Now());
 }
 
 void ChildCallStackProfileCollector::SetParentProfileCollector(
