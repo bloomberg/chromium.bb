@@ -469,7 +469,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottomDp);
 
   // Update authentication UI.
-  SetAuthMethods(auth_methods_);
+  SetAuthMethods(auth_methods_, false /*can_use_pin*/);
   user_view_->UpdateForUser(user, false /*animate*/);
 
   observer_.Add(Shell::Get()->wallpaper_controller());
@@ -479,7 +479,9 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
 
 LoginAuthUserView::~LoginAuthUserView() = default;
 
-void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
+void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
+                                       bool can_use_pin) {
+  can_use_pin_ = can_use_pin;
   bool had_password = HasAuthMethod(AUTH_PASSWORD);
 
   auth_methods_ = static_cast<AuthMethods>(auth_methods);
@@ -490,6 +492,11 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
   bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
   bool auth_disabled = HasAuthMethod(AUTH_DISABLED);
   bool hide_auth = auth_disabled || force_online_sign_in;
+
+  // implication: if |has_pin| is true, then |can_use_pin| must also be true
+  DCHECK(!has_pin || can_use_pin);
+  // implication: if |can_use_pin| is false, then |has_pin| must also be false
+  DCHECK(can_use_pin || !has_pin);
 
   online_sign_in_message_->SetVisible(force_online_sign_in);
   disabled_auth_message_->SetVisible(auth_disabled);
@@ -720,8 +727,6 @@ void LoginAuthUserView::OnWallpaperBlurChanged() {
 }
 
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
-  bool authenticated_by_pin = (auth_methods_ & AUTH_PIN) != 0;
-
   // Pressing enter when the password field is empty and tap-to-unlock is
   // enabled should attempt unlock.
   if (HasAuthMethod(AUTH_TAP) && password.empty()) {
@@ -732,7 +737,7 @@ void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
   password_view_->SetReadOnly(true);
   Shell::Get()->login_screen_controller()->AuthenticateUser(
       current_user()->basic_user_info->account_id, base::UTF16ToUTF8(password),
-      authenticated_by_pin,
+      can_use_pin_,
       base::BindOnce(&LoginAuthUserView::OnAuthComplete,
                      weak_factory_.GetWeakPtr()));
 }
