@@ -111,10 +111,23 @@ public class ProfileSyncService {
         return sProfileSyncService;
     }
 
+    /**
+     * Overrides the initialization for tests. The tests should call resetForTests() at shutdown.
+     */
     @VisibleForTesting
     public static void overrideForTests(ProfileSyncService profileSyncService) {
         sProfileSyncService = profileSyncService;
         sInitialized = true;
+    }
+
+    /**
+     * Resets the ProfileSyncService instance. Calling get() next time will initialize with a new
+     * instance.
+     */
+    @VisibleForTesting
+    public static void resetForTests() {
+        sInitialized = false;
+        sProfileSyncService = null;
     }
 
     protected ProfileSyncService() {
