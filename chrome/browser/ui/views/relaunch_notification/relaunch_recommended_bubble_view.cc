@@ -223,6 +223,9 @@ void RelaunchRecommendedBubbleView::ScheduleNextTitleRefresh() {
 }
 
 void RelaunchRecommendedBubbleView::OnTitleRefresh() {
-  GetBubbleFrameView()->UpdateWindowTitle();
+  GetWidget()->UpdateWindowTitle();
+  // This might update the length of the window title (for N days). Resize the
+  // bubble to match the new preferred size.
+  SizeToContents();
   ScheduleNextTitleRefresh();
 }
