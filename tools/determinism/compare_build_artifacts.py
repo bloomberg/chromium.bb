@@ -7,6 +7,7 @@
 
 import ast
 import difflib
+import glob
 import json
 import optparse
 import os
@@ -45,6 +46,43 @@ def get_files_to_compare(build_dir, recursive=False):
     for f in (f for f in files if check(os.path.join(root, f))):
       ret_files.add(os.path.relpath(os.path.join(root, f), build_dir))
   return ret_files
+
+
+def get_files_to_compare_using_isolate(build_dir):
+  # First, find all .isolate files in build_dir.
+  isolates = glob.glob(os.path.join(build_dir, '*.isolate'))
+
+  # Then, extract their contents.
+  ret_files = set()
+
+  for isolate in isolates:
+    with open(isolate) as f:
+      isolate_contents = ast.literal_eval(f.read())
+      isolate_files = isolate_contents['variables']['files']
+      for isolate_file in isolate_files:
+        normalized_path = os.path.normpath(
+            os.path.join(build_dir, isolate_file))
+
+        # Ignore isolate files that are not in the build dir ... for now.
+        # If we ever move to comparing determinism of artifacts built from two
+        # repositories, we'll want to get rid of this check.
+        if os.path.commonprefix((normalized_path, build_dir)) != build_dir:
+          continue
+
+        # Theoretically, directories should end in '/' and files should not, but
+        # this doesn't hold true because some GN build files are incorrectly
+        # configured. We explicitly check whether the path is a directory or
+        # file.
+        if not os.path.isdir(normalized_path):
+          ret_files.add(normalized_path)
+          continue
+
+        for root, dirs, files in os.walk(normalized_path):
+          for inner_file in files:
+            ret_files.add(os.path.join(root, inner_file))
+
+  # Convert back to a relpath since that's what the caller is expecting.
+  return set(os.path.relpath(f, build_dir) for f in ret_files)
 
 
 def diff_dict(a, b):
@@ -203,7 +241,7 @@ def compare_deps(first_dir, second_dir, ninja_path, targets):
 
 
 def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
-                            json_output, recursive=False):
+                            json_output, recursive, use_isolate_files):
   """Compares the artifacts from two distinct builds."""
   if not os.path.isdir(first_dir):
     print >> sys.stderr, '%s isn\'t a valid directory.' % first_dir
@@ -219,9 +257,13 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
   with open(os.path.join(BASE_DIR, 'deterministic_build_whitelist.pyl')) as f:
     whitelist = frozenset(ast.literal_eval(f.read())[target_platform])
 
-  # The two directories.
-  first_list = get_files_to_compare(first_dir, recursive)
-  second_list = get_files_to_compare(second_dir, recursive)
+  if use_isolate_files:
+    first_list = get_files_to_compare_using_isolate(first_dir)
+    second_list = get_files_to_compare_using_isolate(second_dir)
+  else:
+    first_list = get_files_to_compare(first_dir, recursive)
+    second_list = get_files_to_compare(second_dir, recursive)
+
 
   equals = []
   expected_diffs = []
@@ -234,7 +276,9 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
     print >> sys.stderr, '\n'.join('  ' + i for i in missing_files)
     unexpected_diffs.extend(missing_files)
 
-  max_filepath_len = max(len(n) for n in all_files)
+  max_filepath_len = 0
+  if all_files:
+    max_filepath_len = max(len(n) for n in all_files)
   for f in all_files:
     first_file = os.path.join(first_dir, f)
     second_file = os.path.join(second_dir, f)
@@ -295,6 +339,11 @@ def main():
       '-s', '--second-build-dir', help='The second build directory.')
   parser.add_option('-r', '--recursive', action='store_true', default=False,
                     help='Indicates if the comparison should be recursive.')
+  parser.add_option(
+      '--use-isolate-files', action='store_true', default=False,
+      help='Use .isolate files in each directory to determine which artifacts '
+           'to compare.')
+
   parser.add_option('--json-output', help='JSON file to output differences')
   parser.add_option('--ninja-path', help='path to ninja command.',
                     default='ninja')
@@ -317,7 +366,8 @@ def main():
                                  options.ninja_path,
                                  options.target_platform,
                                  options.json_output,
-                                 options.recursive)
+                                 options.recursive,
+                                 options.use_isolate_files)
 
 
 if __name__ == '__main__':
