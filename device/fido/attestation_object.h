@@ -41,6 +41,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestationObject {
   // https://w3c.github.io/webauthn/#createCredential.
   void EraseAttestationStatement();
 
+  // Returns true if the attestation is a "self" attestation, i.e. is just the
+  // private key signing itself to show that it is fresh. See
+  // https://www.w3.org/TR/webauthn/#self-attestation. Note that self-
+  // attestation also requires at the AAGUID in the authenticator data be all
+  // zeros.
+  bool IsSelfAttestation();
+
   // Returns true if the attestation certificate is known to be inappropriately
   // identifying. Some tokens return unique attestation certificates even when
   // the bit to request that is not set. (Normal attestation certificates are

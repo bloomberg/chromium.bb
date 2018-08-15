@@ -31,6 +31,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAttestationStatement
 
   // AttestationStatement
   cbor::CBORValue::MapValue GetAsCBORMap() const override;
+  bool IsSelfAttestation() override;
   bool IsAttestationCertificateInappropriatelyIdentifying() override;
 
  private:
@@ -56,6 +57,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PackedAttestationStatement
 
   // AttestationStatement
   cbor::CBORValue::MapValue GetAsCBORMap() const override;
+  bool IsSelfAttestation() override;
   bool IsAttestationCertificateInappropriatelyIdentifying() override;
 
  private:

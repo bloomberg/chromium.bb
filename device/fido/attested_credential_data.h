@@ -38,6 +38,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestedCredentialData {
 
   const std::vector<uint8_t>& credential_id() const { return credential_id_; }
 
+  // Returns true iff the AAGUID is all zero bytes.
+  bool IsAaguidZero() const;
+
   // Invoked when sending "none" attestation statement to the relying party.
   // Replaces AAGUID with zero bytes.
   void DeleteAaguid();

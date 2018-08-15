@@ -78,6 +78,10 @@ void AuthenticatorMakeCredentialResponse::EraseAttestationStatement() {
   attestation_object_.EraseAttestationStatement();
 }
 
+bool AuthenticatorMakeCredentialResponse::IsSelfAttestation() {
+  return attestation_object_.IsSelfAttestation();
+}
+
 bool AuthenticatorMakeCredentialResponse::
     IsAttestationCertificateInappropriatelyIdentifying() {
   return attestation_object_

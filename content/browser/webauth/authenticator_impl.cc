@@ -687,7 +687,10 @@ void AuthenticatorImpl::OnRegisterResponse(
         return;
       }
 
-      response_data->EraseAttestationStatement();
+      if (!response_data->IsSelfAttestation()) {
+        response_data->EraseAttestationStatement();
+      }
+
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
           blink::mojom::AuthenticatorStatus::SUCCESS,

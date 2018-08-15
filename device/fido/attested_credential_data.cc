@@ -91,6 +91,11 @@ AttestedCredentialData& AttestedCredentialData::operator=(
 
 AttestedCredentialData::~AttestedCredentialData() = default;
 
+bool AttestedCredentialData::IsAaguidZero() const {
+  return std::all_of(aaguid_.begin(), aaguid_.end(),
+                     [](uint8_t v) { return v == 0; });
+}
+
 void AttestedCredentialData::DeleteAaguid() {
   std::fill(aaguid_.begin(), aaguid_.end(), 0);
 }
