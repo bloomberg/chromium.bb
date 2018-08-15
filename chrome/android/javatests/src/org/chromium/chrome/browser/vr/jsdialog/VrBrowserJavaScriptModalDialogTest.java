@@ -19,7 +19,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.jsdialog.JavascriptTabModalDialog;
@@ -32,14 +31,15 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Test JavaScript modal dialogs in VR.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
 public class VrBrowserJavaScriptModalDialogTest {
     @Rule
     public ChromeTabbedActivityVrTestRule mActivityTestRule = new ChromeTabbedActivityVrTestRule();
@@ -47,9 +47,6 @@ public class VrBrowserJavaScriptModalDialogTest {
     @Rule
     public RenderTestRule mRenderTestRule =
             new RenderTestRule("components/test/data/js_dialogs/render_tests");
-
-    private static final String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
-            "<html><title>Modal Dialog Test</title><p>Testcase.</p></title></html>");
 
     private ChromeTabbedActivity mActivity;
 
@@ -63,20 +60,43 @@ public class VrBrowserJavaScriptModalDialogTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @Feature({"Browser", "RenderTest"})
-    public void testAlertModalDialog()
-            throws InterruptedException, TimeoutException, ExecutionException, Throwable {
+    public void testAlertModalDialog() throws ExecutionException, IOException {
+        testModalDialogImpl("js_modal_view_vr_alert", "alert('Hello Android!')");
+    }
+
+    /**
+     * Verifies modal confirm-dialog appearance and that it looks as it is expected.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "RenderTest"})
+    public void testConfirmModalDialog() throws ExecutionException, IOException {
+        testModalDialogImpl("js_modal_view_vr_confirm", "confirm('Deny?')");
+    }
+
+    /**
+     * Verifies modal prompt-dialog appearance and that it looks as it is expected.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "RenderTest"})
+    public void testPromptModalDialog() throws ExecutionException, IOException {
+        testModalDialogImpl(
+                "js_modal_view_vr_prompt", "prompt('Is the tree closed?', 'Hopefully not')");
+    }
+
+    private void testModalDialogImpl(String name, String js)
+            throws ExecutionException, IOException {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
-        executeJavaScriptAndWaitForDialog("alert('Hello Android!')");
+        executeJavaScriptAndWaitForDialog(js);
 
         JavascriptTabModalDialog jsDialog = getCurrentDialog();
         Assert.assertNotNull("No dialog showing.", jsDialog);
 
         Assert.assertEquals(NativeUiUtils.getVrViewContainer().getChildCount(), 1);
-        mRenderTestRule.render(
-                NativeUiUtils.getVrViewContainer().getChildAt(0), "js_modal_view_vr");
+        mRenderTestRule.render(NativeUiUtils.getVrViewContainer().getChildAt(0), name);
     }
 
     /**
