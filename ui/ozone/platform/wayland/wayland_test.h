@@ -9,7 +9,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_features.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
@@ -44,7 +43,6 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   wl::MockSurface* surface_;
 
   MockPlatformWindowDelegate delegate_;
-  std::unique_ptr<WaylandConnectionProxy> connection_proxy_;
   std::unique_ptr<WaylandConnection> connection_;
   std::unique_ptr<WaylandWindow> window_;
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;

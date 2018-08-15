@@ -23352,15 +23352,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="active, was active"/>
 </enum>
 
-<enum name="GpuTerminationOrigin">
-  <summary>
-    Return status re-encoded values from GpuTerminationOrigin as defined in
-    content/browser/gpu/gpu_process_host.h enum GpuTerminationOrigin.
-  </summary>
-  <int value="0" label="Unknown Origin">UNKNOWN_ORIGIN</int>
-  <int value="1" label="Ozone Wayland Proxy">OZONE_WAYLAND_PROXY</int>
-</enum>
-
 <enum name="GpuTerminationStatus">
   <summary>
     Return status re-encoded values from GetTerminationStatus as defined in
