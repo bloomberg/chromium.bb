@@ -30,7 +30,9 @@ const child2 = document.querySelector('#child2');
 const child3 = document.querySelector('#child3');
 const shadow_root = host.attachShadow({ mode: 'open', slotting: 'manual' });
 const slot1 = document.createElement('slot');
+const slot2 = document.createElement('slot');
 shadow_root.appendChild(slot1);
+shadow_root.appendChild(slot2);
 
 test(() => {
   assert_not_equals(host1.attachShadow({ mode: 'open', slotting: 'manual' }),
@@ -44,8 +46,17 @@ test(() => {
 
 test(() => {
   assert_array_equals(slot1.assignedElements(), []);
+  assert_equals(child1.assignedSlot, null);
+
   slot1.assign([child1]);
+
   assert_array_equals(slot1.assignedNodes(), [child1]);
+  assert_equals(child1.assignedSlot, slot1);
+
+  slot2.assign([child1]);
+  assert_array_equals(slot1.assignedNodes(), []);
+  assert_equals(child1.assignedSlot, slot2);
+
   slot1.assign([child2,child3]);
   assert_array_equals(slot1.assignedNodes(), [child2,child3]);
 }, 'assignedNodes can be used in manual slotting');
