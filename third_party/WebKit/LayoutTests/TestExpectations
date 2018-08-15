@@ -3920,6 +3920,7 @@ crbug.com/873435 virtual/user-activation-v2/fast/events/middleClickAutoscroll-in
 # Sheriff failures 2018-08-15
 crbug.com/873435 [ Mac ] fast/events/middleClickAutoscroll-in-iframe.html [ Timeout Pass ]
 crbug.com/869726 [ Mac ] fast/events/touch/touch-latched-scroll-node-removed.html [ Pass Failure ]
+crbug.com/869726 [ Mac ] virtual/user-activation-v2/fast/events/touch/touch-latched-scroll-node-removed.html [ Pass Failure ]
 crbug.com/869726 [ Mac ] fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
 crbug.com/874444 [ Linux ] external/wpt/fullscreen/api/element-request-fullscreen-two-elements-manual.html [ Pass Failure ]
 crbug.com/874500 [ Mac ] media/media-ended.html [ Pass Timeout ]
