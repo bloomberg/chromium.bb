@@ -82,6 +82,8 @@ source_set("win") {
     "com_security.h",
     "default_audio_device_change_detector.cc",
     "default_audio_device_change_detector.h",
+    "evaluate_3d_display_mode.cc",
+    "evaluate_3d_display_mode.h",
     "evaluate_d3d.cc",
     "evaluate_d3d.h",
     "launch_process_with_token.cc",
