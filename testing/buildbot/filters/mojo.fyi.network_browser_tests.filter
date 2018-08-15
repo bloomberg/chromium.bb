@@ -82,7 +82,7 @@
 -ClientHintsBrowserTest.ClientHintsNoLifetimeCookiesNotAllowed/0
 -ClientHintsBrowserTest.ClientHintsNoLifetimeCookiesNotAllowed/1
 
-# http://crbug.com/816684 Track Page Load Metrics.
+# https://crbug.com/816684 Track Page Load Metrics.
 -PageLoadMetricsBrowserTest.LoadingMetricsFailed
 
 # https://crbug.com/810329 DnsProbe browsertests that rely on delaying requests:
@@ -94,7 +94,7 @@
 -DnsProbeBrowserTest.CorrectionsLoadStopped
 -DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 
-# https://bugs.chromium.org/p/chromium/issues/detail?id=789670
+# https://crbug.com/789670
 -DiceBrowserTest.Reauth
 -DiceBrowserTest.Signin
 -DiceBrowserTest.SignoutAllAccounts
@@ -107,7 +107,7 @@
 -DicePrepareMigrationBrowserTest.Signout
 -ChromeResourceDispatcherHostDelegateMirrorBrowserTest.MirrorRequestHeader
 
-# crbug.com/778793
+# https://crbug.com/778793
 # Started failing in r514649.
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabled
 # Added in r519342.
@@ -124,16 +124,16 @@
 # in PAC scripts.
 -ProxySettingsApiTest.ProxyEventsParseError
 
-# http://crbug.com/827582
+# https://crbug.com/827582
 # Editing response cookies through headers with webRequest is not supported with
 # the network service.
 -ExtensionWebRequestApiTest.WebRequestBlockingSetCookieHeader
 
-# http://crbug.com/870588
+# https://crbug.com/870588
 # Flaky on Win with network service.
 -ExtensionWebRequestApiTest.WebRequestTestOSDD
 
-# http://crbug.com/809583
+# https://crbug.com/809583
 # Switch Predictor from using ResourceThrottle and ResourceDispatcherHost to
 # using WebContentsObserver and NavigationHandle.
 -PredictorBrowserTest.CrossSiteNoReferrerNoPredictionAfterOneNavigation
