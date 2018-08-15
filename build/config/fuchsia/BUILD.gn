@@ -34,11 +34,11 @@ config("compiler") {
     # patches, we might want to make tools/clang/scripts/update.py build it
     # and bundle it with the clang package instead of using the library from
     # the SDK, https://crbug.com/724204
-    # Note: Intentionally 7.0.0 instead of $clang_version because the clang
+    # Note: Intentionally 8.0.0 instead of $clang_version because the clang
     # version of the toolchain_libs directory in the Fuchsia SDK can be
     # different from the version of Chromium's clang.
     "-resource-dir",
-    rebase_path(fuchsia_sdk, root_build_dir) + "/toolchain_libs/clang/7.0.0",
+    rebase_path(fuchsia_sdk, root_build_dir) + "/toolchain_libs/clang/8.0.0",
 
     # The stack defaults to 256k on Fuchsia (see
     # https://fuchsia.googlesource.com/zircon/+/master/system/private/zircon/stack.h#9),
