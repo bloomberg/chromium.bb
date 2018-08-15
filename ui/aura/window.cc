@@ -93,9 +93,6 @@ Window::Window(WindowDelegate* delegate,
 Window::~Window() {
   WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
 
-  // See comment in header as to why this is done.
-  std::unique_ptr<WindowPort> port = std::move(port_owner_);
-
   if (layer()->owner() == this)
     layer()->CompleteAllAnimations();
   layer()->SuppressPaint();
@@ -154,6 +151,11 @@ Window::~Window() {
   // acquired it.
   layer()->set_delegate(NULL);
   DestroyLayer();
+
+  // Delete the WindowPort now, in case it needs to reach back into the Window
+  // during destruction.
+  port_owner_.reset();
+  port_ = nullptr;
 }
 
 void Window::Init(ui::LayerType layer_type) {
