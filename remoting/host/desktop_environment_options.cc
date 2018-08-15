@@ -45,14 +45,11 @@ DesktopEnvironmentOptions::operator=(
 void DesktopEnvironmentOptions::Initialize() {
   desktop_capture_options_.set_detect_updated_region(true);
 #if defined (OS_WIN)
-  // Whether DirectX capturer can be enabled depends on various facts, include
-  // also how many applications are using related APIs. WebRTC/DesktopCapturer
-  // will take care of all the details. So the check here only ensures it won't
-  // crash the binary: GetD3DCapability() returns false only when the binary
-  // crashes.
-  if (GetD3DCapability()) {
-    desktop_capture_options_.set_allow_directx_capturer(true);
-  }
+  // Whether DirectX capturer can be enabled depends on various factors,
+  // including how many applications are using related APIs.
+  // WebRTC/DesktopCapturer will take care of those details. This check is used
+  // to ensure D3D APIs are safe to access in the current environment.
+  desktop_capture_options_.set_allow_directx_capturer(IsD3DAvailable());
 #endif
 }
 
