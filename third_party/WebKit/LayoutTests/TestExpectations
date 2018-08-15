@@ -1765,7 +1765,7 @@ crbug.com/761798 [ Mac ] inspector-protocol/emulation/device-emulation-desktop.j
 
 crbug.com/771233 [ Win10 ] http/tests/devtools/audits2/ [ Skip ]
 
-crbug.com/865477 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-commit-copyImage.html [ Failure ]
+crbug.com/865477 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Failure ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]

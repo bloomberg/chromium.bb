@@ -192,11 +192,9 @@ void CopyImageAtAndCapturePixels(
                                &sequence_number_before);
   web_frame->CopyImageAt(blink::WebPoint(x, y));
   uint64_t sequence_number_after = 0;
-  clipboard->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE,
-                               &sequence_number_after);
-  if (sequence_number_before == sequence_number_after) {
-    std::move(callback).Run(SkBitmap());
-    return;
+  while (sequence_number_before == sequence_number_after) {
+    clipboard->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE,
+                                 &sequence_number_after);
   }
 
   SkBitmap bitmap;
