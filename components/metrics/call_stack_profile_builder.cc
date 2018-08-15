@@ -4,10 +4,6 @@
 
 #include "components/metrics/call_stack_profile_builder.h"
 
-#include <stddef.h>
-
-#include <cstring>
-#include <map>
 #include <string>
 #include <utility>
 
@@ -16,8 +12,6 @@
 #include "base/logging.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/stl_util.h"
-
-using base::StackSamplingProfiler;
 
 namespace metrics {
 
@@ -80,10 +74,9 @@ uint64_t HashModuleFilename(const base::FilePath& filename) {
 
 // Transcode |sample| into |proto_sample|, using base addresses in |modules| to
 // compute module instruction pointer offsets.
-void CopySampleToProto(
-    const CallStackProfileBuilder::Sample& sample,
-    const std::vector<CallStackProfileBuilder::Module>& modules,
-    CallStackProfile::Sample* proto_sample) {
+void CopySampleToProto(const CallStackProfileBuilder::Sample& sample,
+                       const std::vector<base::ModuleCache::Module>& modules,
+                       CallStackProfile::Sample* proto_sample) {
   for (const auto& frame : sample.frames) {
     CallStackProfile::Entry* entry = proto_sample->add_entry();
     // A frame may not have a valid module. If so, we can't compute the
@@ -187,17 +180,6 @@ SampledProfile::TriggerEvent ToSampledProfileTriggerEvent(
 
 }  // namespace
 
-// CallStackProfileBuilder::Module --------------------------------------------
-
-CallStackProfileBuilder::Module::Module() : base_address(0u) {}
-
-CallStackProfileBuilder::Module::Module(uintptr_t base_address,
-                                        const std::string& id,
-                                        const base::FilePath& filename)
-    : base_address(base_address), id(id), filename(filename) {}
-
-CallStackProfileBuilder::Module::~Module() = default;
-
 // CallStackProfileBuilder::Frame ---------------------------------------------
 
 CallStackProfileBuilder::Frame::Frame(uintptr_t instruction_pointer,
@@ -240,8 +222,8 @@ void CallStackProfileBuilder::RecordAnnotations() {
 }
 
 void CallStackProfileBuilder::OnSampleCompleted(
-    std::vector<StackSamplingProfiler::Frame> frames) {
-  // Assemble sample_ first.
+    std::vector<base::StackSamplingProfiler::Frame> frames) {
+  // Assemble sample_ from |frames| first.
   for (const auto& frame : frames) {
     const base::ModuleCache::Module& module(frame.module);
     if (!module.is_valid) {
@@ -250,19 +232,18 @@ void CallStackProfileBuilder::OnSampleCompleted(
       continue;
     }
 
-    // Dedup modules.
+    // Dedup modules and cache them in modules_.
     auto loc = module_index_.find(module.base_address);
     if (loc == module_index_.end()) {
-      modules_.emplace_back(module.base_address, module.id, module.filename);
+      modules_.push_back(module);
       size_t index = modules_.size() - 1;
       loc = module_index_.insert(std::make_pair(module.base_address, index))
                 .first;
     }
-    // convert Frames to Frames.
     sample_.frames.emplace_back(frame.instruction_pointer, loc->second);
   }
 
-  // Write CallStackProfile::Sample protocol buffer message.
+  // Write CallStackProfile::Sample protocol buffer message based on sample_.
   int existing_sample_index = -1;
   auto location = sample_index_.find(sample_);
   if (location != sample_index_.end())
@@ -306,7 +287,7 @@ void CallStackProfileBuilder::OnProfileCompleted(
   module_index_.clear();
   sample_index_.clear();
 
-  // Assemble SampledProfile protocol buffer message and run the associated
+  // Assemble the SampledProfile protocol buffer message and run the associated
   // callback to pass it.
   SampledProfile sampled_profile;
   CallStackProfile* proto_profile =
