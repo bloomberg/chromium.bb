@@ -395,6 +395,10 @@ void AppListView::Dismiss() {
   GetWidget()->Deactivate();
 }
 
+void AppListView::ResetToInitialState() {
+  app_list_main_view_->contents_view()->Back();
+}
+
 void AppListView::SetAppListOverlayVisible(bool visible) {
   DCHECK(overlay_view_);
 
