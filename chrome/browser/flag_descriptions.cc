@@ -3503,14 +3503,6 @@ const char kEnableInputImeApiName[] = "Enable Input IME API";
 const char kEnableInputImeApiDescription[] =
     "Enable the use of chrome.input.ime API.";
 
-#if !defined(OS_CHROMEOS)
-
-const char kWarnBeforeQuittingFlagName[] = "Warn Before Quitting";
-const char kWarnBeforeQuittingFlagDescription[] =
-    "Confirm to quit by either holding the quit shortcut or pressing it twice.";
-
-#endif  // !defined(OS_CHROMEOS)
-
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

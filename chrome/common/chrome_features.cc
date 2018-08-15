@@ -369,11 +369,6 @@ const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
     "AcknowledgeNtpOverrideOnDeactivate", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-const base::Feature kWarnBeforeQuitting{"WarnBeforeQuitting",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // The material redesign of the Incognito NTP.
 const base::Feature kMaterialDesignIncognitoNTP{
   "MaterialDesignIncognitoNTP",

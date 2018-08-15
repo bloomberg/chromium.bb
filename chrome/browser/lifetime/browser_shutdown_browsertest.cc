@@ -105,9 +105,5 @@ IN_PROC_BROWSER_TEST_F(BrowserShutdownBrowserTest, MAYBE_ShutdownConfirmation) {
   generator.ReleaseKey(ui::VKEY_Q, modifiers);
   base::RunLoop().RunUntilIdle();
 
-#if defined(OS_CHROMEOS)
   EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
-#else
-  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
-#endif
 }
