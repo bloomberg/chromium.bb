@@ -50,7 +50,7 @@ public class PassphraseActivityTest {
     @After
     public void tearDown() throws Exception {
         // Clear ProfileSyncService in case it was mocked.
-        ProfileSyncService.overrideForTests(null);
+        ThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
     }
 
     /**

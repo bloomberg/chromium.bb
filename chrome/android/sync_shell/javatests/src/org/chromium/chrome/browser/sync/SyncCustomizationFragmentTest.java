@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -110,6 +111,11 @@ public class SyncCustomizationFragmentTest {
     @Before
     public void setUp() throws Exception {
         mPreferences = null;
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
     }
 
     @Test

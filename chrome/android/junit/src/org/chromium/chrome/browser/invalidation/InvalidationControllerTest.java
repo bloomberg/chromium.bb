@@ -142,6 +142,7 @@ public class InvalidationControllerTest {
     @After
     public void tearDown() {
         AccountManagerFacade.resetAccountManagerFacadeForTests();
+        ProfileSyncService.resetForTests();
     }
 
     /**

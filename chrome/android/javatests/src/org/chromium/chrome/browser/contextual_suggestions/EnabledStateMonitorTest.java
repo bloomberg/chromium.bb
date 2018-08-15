@@ -82,6 +82,8 @@ public class EnabledStateMonitorTest implements EnabledStateMonitor.Observer {
     public void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeSigninController.get().setSignedInAccountName(mOriginalSignedInAccountName);
+            // Clear ProfileSyncService in case it was mocked.
+            ProfileSyncService.resetForTests();
         });
     }
 

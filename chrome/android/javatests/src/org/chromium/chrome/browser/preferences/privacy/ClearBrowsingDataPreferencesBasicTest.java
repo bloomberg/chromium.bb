@@ -59,7 +59,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
 
     @After
     public void tearDown() throws Exception {
-        ProfileSyncService.overrideForTests(null);
+        ThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
     }
 
     private static class StubProfileSyncService extends ProfileSyncService {
