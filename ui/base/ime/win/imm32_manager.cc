@@ -92,21 +92,6 @@ void GetImeTextSpans(HIMC imm_context,
   }
 }
 
-// Checks if a given primary language ID is a RTL language.
-bool IsRTLPrimaryLangID(LANGID lang) {
-  switch (lang) {
-    case LANG_ARABIC:
-    case LANG_HEBREW:
-    case LANG_PERSIAN:
-    case LANG_SYRIAC:
-    case LANG_UIGHUR:
-    case LANG_URDU:
-      return true;
-    default:
-      return false;
-  }
-}
-
 }  // namespace
 
 namespace ui {
@@ -496,89 +481,6 @@ void IMM32Manager::SetTextInputMode(HWND window_handle,
 }
 
 // static
-bool IMM32Manager::IsRTLKeyboardLayoutInstalled() {
-  static enum {
-    RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED,
-    RTL_KEYBOARD_LAYOUT_INSTALLED,
-    RTL_KEYBOARD_LAYOUT_NOT_INSTALLED,
-    RTL_KEYBOARD_LAYOUT_ERROR,
-  } layout = RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED;
-
-  // Cache the result value.
-  if (layout != RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED)
-    return layout == RTL_KEYBOARD_LAYOUT_INSTALLED;
-
-  // Retrieve the number of layouts installed in this system.
-  int size = GetKeyboardLayoutList(0, NULL);
-  if (size <= 0) {
-    layout = RTL_KEYBOARD_LAYOUT_ERROR;
-    return false;
-  }
-
-  // Retrieve the keyboard layouts in an array and check if there is an RTL
-  // layout in it.
-  std::unique_ptr<HKL[]> layouts(new HKL[size]);
-  ::GetKeyboardLayoutList(size, layouts.get());
-  for (int i = 0; i < size; ++i) {
-    if (IsRTLPrimaryLangID(
-            PRIMARYLANGID(reinterpret_cast<uintptr_t>(layouts[i])))) {
-      layout = RTL_KEYBOARD_LAYOUT_INSTALLED;
-      return true;
-    }
-  }
-
-  layout = RTL_KEYBOARD_LAYOUT_NOT_INSTALLED;
-  return false;
-}
-
-bool IMM32Manager::IsCtrlShiftPressed(base::i18n::TextDirection* direction) {
-  uint8_t keystate[256];
-  if (!::GetKeyboardState(&keystate[0]))
-    return false;
-
-  // To check if a user is pressing only a control key and a right-shift key
-  // (or a left-shift key), we use the steps below:
-  // 1. Check if a user is pressing a control key and a right-shift key (or
-  //    a left-shift key).
-  // 2. If the condition 1 is true, we should check if there are any other
-  //    keys pressed at the same time.
-  //    To ignore the keys checked in 1, we set their status to 0 before
-  //    checking the key status.
-  const int kKeyDownMask = 0x80;
-  if ((keystate[VK_CONTROL] & kKeyDownMask) == 0)
-    return false;
-
-  if (keystate[VK_RSHIFT] & kKeyDownMask) {
-    keystate[VK_RSHIFT] = 0;
-    *direction = base::i18n::RIGHT_TO_LEFT;
-  } else if (keystate[VK_LSHIFT] & kKeyDownMask) {
-    keystate[VK_LSHIFT] = 0;
-    *direction = base::i18n::LEFT_TO_RIGHT;
-  } else {
-    return false;
-  }
-
-  // Scan the key status to find pressed keys. We should abandon changing the
-  // text direction when there are other pressed keys.
-  // This code is executed only when a user is pressing a control key and a
-  // right-shift key (or a left-shift key), i.e. we should ignore the status of
-  // the keys: VK_SHIFT, VK_CONTROL, VK_RCONTROL, and VK_LCONTROL.
-  // So, we reset their status to 0 and ignore them.
-  keystate[VK_SHIFT] = 0;
-  keystate[VK_CONTROL] = 0;
-  keystate[VK_RCONTROL] = 0;
-  keystate[VK_LCONTROL] = 0;
-  // Oddly, pressing F10 in another application seemingly breaks all subsequent
-  // calls to GetKeyboardState regarding the state of the F22 key. Perhaps this
-  // defect is limited to my keyboard driver, but ignoring F22 should be okay.
-  keystate[VK_F22] = 0;
-  for (int i = 0; i <= VK_PACKET; ++i) {
-    if (keystate[i] & kKeyDownMask)
-      return false;
-  }
-  return true;
-}
-
 void IMM32Manager::ConvertInputModeToImmFlags(TextInputMode input_mode,
                                               DWORD initial_conversion_mode,
                                               BOOL* open,

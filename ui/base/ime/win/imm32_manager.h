@@ -237,15 +237,6 @@ class UI_BASE_IME_EXPORT IMM32Manager {
 
   // Helper functions ----------------------------------------------------------
 
-  // Checks if there is any RTL keyboard layout installed in the system.
-  static bool IsRTLKeyboardLayoutInstalled();
-
-  // Checks if the user pressed both Ctrl and right or left Shift keys to
-  // requrest to change the text direction and layout alignment explicitly.
-  // Returns true if only a Ctrl key and a Shift key are down. The desired text
-  // direction will be stored in |*direction|.
-  static bool IsCtrlShiftPressed(base::i18n::TextDirection* direction);
-
   // Gets parameters for ::ImmSetOpenStatus and ::ImmSetConversionStatus from
   // |input_mode|.
   static void ConvertInputModeToImmFlags(TextInputMode input_mode,

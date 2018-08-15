@@ -23,25 +23,15 @@
 #include "ui/gfx/win/hwnd_util.h"
 
 namespace ui {
-namespace {
-
-ui::EventDispatchDetails DispatcherDestroyedDetails() {
-  ui::EventDispatchDetails dispatcher_details;
-  dispatcher_details.dispatcher_destroyed = true;
-  return dispatcher_details;
-}
-
-}  // namespace
 
 InputMethodWinImm32::InputMethodWinImm32(
     internal::InputMethodDelegate* delegate,
     HWND toplevel_window_handle)
     : InputMethodWinBase(delegate, toplevel_window_handle),
-      pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION),
+
       enabled_(false),
       is_candidate_popup_open_(false),
-      composing_window_handle_(NULL),
-      weak_ptr_factory_(this) {
+      composing_window_handle_(NULL) {
   imm32_manager_.SetInputLanguage();
 }
 
@@ -95,118 +85,6 @@ bool InputMethodWinImm32::OnUntranslatedIMEMessage(
   if (result)
     *result = original_result;
   return !!handled;
-}
-
-ui::EventDispatchDetails InputMethodWinImm32::DispatchKeyEvent(
-    ui::KeyEvent* event) {
-  MSG native_key_event = MSGFromKeyEvent(event);
-  if (native_key_event.message == WM_CHAR) {
-    auto ref = weak_ptr_factory_.GetWeakPtr();
-    BOOL handled = FALSE;
-    OnChar(native_key_event.hwnd, native_key_event.message,
-           native_key_event.wParam, native_key_event.lParam, native_key_event,
-           &handled);
-    if (!ref)
-      return DispatcherDestroyedDetails();
-    if (handled)
-      event->StopPropagation();
-    return ui::EventDispatchDetails();
-  }
-
-  std::vector<MSG> char_msgs;
-  // Combines the WM_KEY* and WM_CHAR messages in the event processing flow
-  // which is necessary to let Chrome IME extension to process the key event
-  // and perform corresponding IME actions.
-  // Chrome IME extension may wants to consume certain key events based on
-  // the character information of WM_CHAR messages. Holding WM_KEY* messages
-  // until WM_CHAR is processed by the IME extension is not feasible because
-  // there is no way to know wether there will or not be a WM_CHAR following
-  // the WM_KEY*.
-  // Chrome never handles dead chars so it is safe to remove/ignore
-  // WM_*DEADCHAR messages.
-  MSG msg;
-  while (::PeekMessage(&msg, native_key_event.hwnd, WM_CHAR, WM_DEADCHAR,
-                       PM_REMOVE)) {
-    if (msg.message == WM_CHAR)
-      char_msgs.push_back(msg);
-  }
-  while (::PeekMessage(&msg, native_key_event.hwnd, WM_SYSCHAR, WM_SYSDEADCHAR,
-                       PM_REMOVE)) {
-    if (msg.message == WM_SYSCHAR)
-      char_msgs.push_back(msg);
-  }
-
-  // Handles ctrl-shift key to change text direction and layout alignment.
-  if (ui::IMM32Manager::IsRTLKeyboardLayoutInstalled() &&
-      !IsTextInputTypeNone()) {
-    ui::KeyboardCode code = event->key_code();
-    if (event->type() == ui::ET_KEY_PRESSED) {
-      if (code == ui::VKEY_SHIFT) {
-        base::i18n::TextDirection dir;
-        if (ui::IMM32Manager::IsCtrlShiftPressed(&dir))
-          pending_requested_direction_ = dir;
-      } else if (code != ui::VKEY_CONTROL) {
-        pending_requested_direction_ = base::i18n::UNKNOWN_DIRECTION;
-      }
-    } else if (event->type() == ui::ET_KEY_RELEASED &&
-               (code == ui::VKEY_SHIFT || code == ui::VKEY_CONTROL) &&
-               pending_requested_direction_ != base::i18n::UNKNOWN_DIRECTION) {
-      GetTextInputClient()->ChangeTextDirectionAndLayoutAlignment(
-          pending_requested_direction_);
-      pending_requested_direction_ = base::i18n::UNKNOWN_DIRECTION;
-    }
-  }
-
-  // If only 1 WM_CHAR per the key event, set it as the character of it.
-  if (char_msgs.size() == 1 &&
-      !std::iswcntrl(static_cast<wint_t>(char_msgs[0].wParam)))
-    event->set_character(static_cast<base::char16>(char_msgs[0].wParam));
-
-  // Dispatches the key events to the Chrome IME extension which is listening to
-  // key events on the following two situations:
-  // 1) |char_msgs| is empty when the event is non-character key.
-  // 2) |char_msgs|.size() == 1 when the event is character key and the WM_CHAR
-  // messages have been combined in the event processing flow.
-  if (char_msgs.size() <= 1 && GetEngine() &&
-      GetEngine()->IsInterestedInKeyEvent()) {
-    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
-        base::BindOnce(&InputMethodWinImm32::ProcessKeyEventDone,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Owned(new ui::KeyEvent(*event)),
-                       base::Owned(new std::vector<MSG>(char_msgs)));
-    GetEngine()->ProcessKeyEvent(*event, std::move(callback));
-    return ui::EventDispatchDetails();
-  }
-
-  return ProcessUnhandledKeyEvent(event, &char_msgs);
-}
-
-void InputMethodWinImm32::ProcessKeyEventDone(ui::KeyEvent* event,
-                                              const std::vector<MSG>* char_msgs,
-                                              bool is_handled) {
-  if (is_handled)
-    return;
-  ProcessUnhandledKeyEvent(event, char_msgs);
-}
-
-ui::EventDispatchDetails InputMethodWinImm32::ProcessUnhandledKeyEvent(
-    ui::KeyEvent* event,
-    const std::vector<MSG>* char_msgs) {
-  DCHECK(event);
-  ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
-  if (details.dispatcher_destroyed || details.target_destroyed ||
-      event->stopped_propagation()) {
-    return details;
-  }
-
-  BOOL handled;
-  for (const auto& msg : (*char_msgs)) {
-    auto ref = weak_ptr_factory_.GetWeakPtr();
-    OnChar(msg.hwnd, msg.message, msg.wParam, msg.lParam, msg, &handled);
-    if (!ref)
-      return DispatcherDestroyedDetails();
-  }
-  return details;
 }
 
 void InputMethodWinImm32::OnTextInputTypeChanged(

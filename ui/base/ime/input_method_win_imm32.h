@@ -29,7 +29,6 @@ class UI_BASE_IME_EXPORT InputMethodWinImm32 : public InputMethodWinBase {
   // Overridden from InputMethod:
   bool OnUntranslatedIMEMessage(const MSG event,
                                 NativeEventResult* result) override;
-  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
@@ -80,23 +79,9 @@ class UI_BASE_IME_EXPORT InputMethodWinImm32 : public InputMethodWinBase {
   // Enables or disables the IME according to the current text input type.
   void UpdateIMEState();
 
-  // Callback function for IMEEngineHandlerInterface::ProcessKeyEvent.
-  void ProcessKeyEventDone(ui::KeyEvent* event,
-                           const std::vector<MSG>* char_msgs,
-                           bool is_handled);
-
-  ui::EventDispatchDetails ProcessUnhandledKeyEvent(
-      ui::KeyEvent* event,
-      const std::vector<MSG>* char_msgs);
-
   // Windows IMM32 wrapper.
   // (See "ui/base/ime/win/ime_input.h" for its details.)
   ui::IMM32Manager imm32_manager_;
-
-  // The new text direction and layout alignment requested by the user by
-  // pressing ctrl-shift. It'll be sent to the text input client when the key
-  // is released.
-  base::i18n::TextDirection pending_requested_direction_;
 
   // True when an IME should be allowed to process key events.
   bool enabled_;
@@ -107,9 +92,6 @@ class UI_BASE_IME_EXPORT InputMethodWinImm32 : public InputMethodWinBase {
   // Window handle where composition is on-going. NULL when there is no
   // composition.
   HWND composing_window_handle_;
-
-  // Used for making callbacks.
-  base::WeakPtrFactory<InputMethodWinImm32> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodWinImm32);
 };

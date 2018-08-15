@@ -26,6 +26,7 @@ class UI_BASE_IME_EXPORT InputMethodWinBase : public InputMethodBase {
  protected:
   void OnDidChangeFocusedClient(TextInputClient* focused_before,
                                 TextInputClient* focused) override;
+  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
 
   // Returns true if the Win32 native window bound to |client| is considered
   // to be ready for receiving keyboard input.
@@ -50,6 +51,15 @@ class UI_BASE_IME_EXPORT InputMethodWinBase : public InputMethodBase {
   LRESULT OnReconvertString(RECONVERTSTRING* reconv);
   LRESULT OnQueryCharPosition(IMECHARPOSITION* char_positon);
 
+  // Callback function for IMEEngineHandlerInterface::ProcessKeyEvent.
+  void ProcessKeyEventDone(ui::KeyEvent* event,
+                           const std::vector<MSG>* char_msgs,
+                           bool is_handled);
+
+  ui::EventDispatchDetails ProcessUnhandledKeyEvent(
+      ui::KeyEvent* event,
+      const std::vector<MSG>* char_msgs);
+
   // The toplevel window handle.
   const HWND toplevel_window_handle_;
 
@@ -58,6 +68,14 @@ class UI_BASE_IME_EXPORT InputMethodWinBase : public InputMethodBase {
   // workaround against https://crbug.com/319100
   // TODO(yukawa, IME): Figure out long-term solution.
   bool accept_carriage_return_ = false;
+
+  // The new text direction and layout alignment requested by the user by
+  // pressing ctrl-shift. It'll be sent to the text input client when the key
+  // is released.
+  base::i18n::TextDirection pending_requested_direction_;
+
+  // Used for making callbacks.
+  base::WeakPtrFactory<InputMethodWinBase> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodWinBase);
 };

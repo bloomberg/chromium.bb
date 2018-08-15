@@ -38,12 +38,6 @@ InputMethodWinTSF::InputMethodWinTSF(internal::InputMethodDelegate* delegate,
 
 InputMethodWinTSF::~InputMethodWinTSF() {}
 
-ui::EventDispatchDetails InputMethodWinTSF::DispatchKeyEvent(
-    ui::KeyEvent* event) {
-  // TODO(dtapuska): Handle WM_CHAR events.
-  return ui::EventDispatchDetails();
-}
-
 void InputMethodWinTSF::OnFocus() {
   tsf_event_router_->SetManager(
       ui::TSFBridge::GetInstance()->GetThreadManager().Get());

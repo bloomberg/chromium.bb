@@ -47,13 +47,124 @@ std::unique_ptr<InputMethodKeyboardController> CreateKeyboardController(
   return nullptr;
 }
 
+// Checks if a given primary language ID is a RTL language.
+bool IsRTLPrimaryLangID(LANGID lang) {
+  switch (lang) {
+    case LANG_ARABIC:
+    case LANG_HEBREW:
+    case LANG_PERSIAN:
+    case LANG_SYRIAC:
+    case LANG_UIGHUR:
+    case LANG_URDU:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// Checks if there is any RTL keyboard layout installed in the system.
+bool IsRTLKeyboardLayoutInstalled() {
+  static enum {
+    RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED,
+    RTL_KEYBOARD_LAYOUT_INSTALLED,
+    RTL_KEYBOARD_LAYOUT_NOT_INSTALLED,
+    RTL_KEYBOARD_LAYOUT_ERROR,
+  } layout = RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED;
+
+  // Cache the result value.
+  if (layout != RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED)
+    return layout == RTL_KEYBOARD_LAYOUT_INSTALLED;
+
+  // Retrieve the number of layouts installed in this system.
+  int size = GetKeyboardLayoutList(0, NULL);
+  if (size <= 0) {
+    layout = RTL_KEYBOARD_LAYOUT_ERROR;
+    return false;
+  }
+
+  // Retrieve the keyboard layouts in an array and check if there is an RTL
+  // layout in it.
+  std::unique_ptr<HKL[]> layouts(new HKL[size]);
+  ::GetKeyboardLayoutList(size, layouts.get());
+  for (int i = 0; i < size; ++i) {
+    if (IsRTLPrimaryLangID(
+            PRIMARYLANGID(reinterpret_cast<uintptr_t>(layouts[i])))) {
+      layout = RTL_KEYBOARD_LAYOUT_INSTALLED;
+      return true;
+    }
+  }
+
+  layout = RTL_KEYBOARD_LAYOUT_NOT_INSTALLED;
+  return false;
+}
+
+// Checks if the user pressed both Ctrl and right or left Shift keys to
+// request to change the text direction and layout alignment explicitly.
+// Returns true if only a Ctrl key and a Shift key are down. The desired text
+// direction will be stored in |*direction|.
+bool IsCtrlShiftPressed(base::i18n::TextDirection* direction) {
+  uint8_t keystate[256];
+  if (!::GetKeyboardState(&keystate[0]))
+    return false;
+
+  // To check if a user is pressing only a control key and a right-shift key
+  // (or a left-shift key), we use the steps below:
+  // 1. Check if a user is pressing a control key and a right-shift key (or
+  //    a left-shift key).
+  // 2. If the condition 1 is true, we should check if there are any other
+  //    keys pressed at the same time.
+  //    To ignore the keys checked in 1, we set their status to 0 before
+  //    checking the key status.
+  const int kKeyDownMask = 0x80;
+  if ((keystate[VK_CONTROL] & kKeyDownMask) == 0)
+    return false;
+
+  if (keystate[VK_RSHIFT] & kKeyDownMask) {
+    keystate[VK_RSHIFT] = 0;
+    *direction = base::i18n::RIGHT_TO_LEFT;
+  } else if (keystate[VK_LSHIFT] & kKeyDownMask) {
+    keystate[VK_LSHIFT] = 0;
+    *direction = base::i18n::LEFT_TO_RIGHT;
+  } else {
+    return false;
+  }
+
+  // Scan the key status to find pressed keys. We should abandon changing the
+  // text direction when there are other pressed keys.
+  // This code is executed only when a user is pressing a control key and a
+  // right-shift key (or a left-shift key), i.e. we should ignore the status of
+  // the keys: VK_SHIFT, VK_CONTROL, VK_RCONTROL, and VK_LCONTROL.
+  // So, we reset their status to 0 and ignore them.
+  keystate[VK_SHIFT] = 0;
+  keystate[VK_CONTROL] = 0;
+  keystate[VK_RCONTROL] = 0;
+  keystate[VK_LCONTROL] = 0;
+  // Oddly, pressing F10 in another application seemingly breaks all subsequent
+  // calls to GetKeyboardState regarding the state of the F22 key. Perhaps this
+  // defect is limited to my keyboard driver, but ignoring F22 should be okay.
+  keystate[VK_F22] = 0;
+  for (int i = 0; i <= VK_PACKET; ++i) {
+    if (keystate[i] & kKeyDownMask)
+      return false;
+  }
+  return true;
+}
+
+ui::EventDispatchDetails DispatcherDestroyedDetails() {
+  ui::EventDispatchDetails dispatcher_details;
+  dispatcher_details.dispatcher_destroyed = true;
+  return dispatcher_details;
+}
+
 }  // namespace
 
 InputMethodWinBase::InputMethodWinBase(internal::InputMethodDelegate* delegate,
                                        HWND toplevel_window_handle)
     : InputMethodBase(delegate,
                       CreateKeyboardController(toplevel_window_handle)),
-      toplevel_window_handle_(toplevel_window_handle) {}
+      toplevel_window_handle_(toplevel_window_handle),
+      pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION),
+      weak_ptr_factory_(this) {}
 
 InputMethodWinBase::~InputMethodWinBase() {}
 
@@ -62,6 +173,89 @@ void InputMethodWinBase::OnDidChangeFocusedClient(
     TextInputClient* focused) {
   if (focused_before != focused)
     accept_carriage_return_ = false;
+}
+
+ui::EventDispatchDetails InputMethodWinBase::DispatchKeyEvent(
+    ui::KeyEvent* event) {
+  MSG native_key_event = MSGFromKeyEvent(event);
+  if (native_key_event.message == WM_CHAR) {
+    auto ref = weak_ptr_factory_.GetWeakPtr();
+    BOOL handled = FALSE;
+    OnChar(native_key_event.hwnd, native_key_event.message,
+           native_key_event.wParam, native_key_event.lParam, native_key_event,
+           &handled);
+    if (!ref)
+      return DispatcherDestroyedDetails();
+    if (handled)
+      event->StopPropagation();
+    return ui::EventDispatchDetails();
+  }
+
+  std::vector<MSG> char_msgs;
+  // Combines the WM_KEY* and WM_CHAR messages in the event processing flow
+  // which is necessary to let Chrome IME extension to process the key event
+  // and perform corresponding IME actions.
+  // Chrome IME extension may wants to consume certain key events based on
+  // the character information of WM_CHAR messages. Holding WM_KEY* messages
+  // until WM_CHAR is processed by the IME extension is not feasible because
+  // there is no way to know whether there will or not be a WM_CHAR following
+  // the WM_KEY*.
+  // Chrome never handles dead chars so it is safe to remove/ignore
+  // WM_*DEADCHAR messages.
+  MSG msg;
+  while (::PeekMessage(&msg, native_key_event.hwnd, WM_CHAR, WM_DEADCHAR,
+                       PM_REMOVE)) {
+    if (msg.message == WM_CHAR)
+      char_msgs.push_back(msg);
+  }
+  while (::PeekMessage(&msg, native_key_event.hwnd, WM_SYSCHAR, WM_SYSDEADCHAR,
+                       PM_REMOVE)) {
+    if (msg.message == WM_SYSCHAR)
+      char_msgs.push_back(msg);
+  }
+
+  // Handles ctrl-shift key to change text direction and layout alignment.
+  if (IsRTLKeyboardLayoutInstalled() && !IsTextInputTypeNone()) {
+    ui::KeyboardCode code = event->key_code();
+    if (event->type() == ui::ET_KEY_PRESSED) {
+      if (code == ui::VKEY_SHIFT) {
+        base::i18n::TextDirection dir;
+        if (IsCtrlShiftPressed(&dir))
+          pending_requested_direction_ = dir;
+      } else if (code != ui::VKEY_CONTROL) {
+        pending_requested_direction_ = base::i18n::UNKNOWN_DIRECTION;
+      }
+    } else if (event->type() == ui::ET_KEY_RELEASED &&
+               (code == ui::VKEY_SHIFT || code == ui::VKEY_CONTROL) &&
+               pending_requested_direction_ != base::i18n::UNKNOWN_DIRECTION) {
+      GetTextInputClient()->ChangeTextDirectionAndLayoutAlignment(
+          pending_requested_direction_);
+      pending_requested_direction_ = base::i18n::UNKNOWN_DIRECTION;
+    }
+  }
+
+  // If only 1 WM_CHAR per the key event, set it as the character of it.
+  if (char_msgs.size() == 1 &&
+      !std::iswcntrl(static_cast<wint_t>(char_msgs[0].wParam)))
+    event->set_character(static_cast<base::char16>(char_msgs[0].wParam));
+
+  // Dispatches the key events to the Chrome IME extension which is listening to
+  // key events on the following two situations:
+  // 1) |char_msgs| is empty when the event is non-character key.
+  // 2) |char_msgs|.size() == 1 when the event is character key and the WM_CHAR
+  // messages have been combined in the event processing flow.
+  if (char_msgs.size() <= 1 && GetEngine() &&
+      GetEngine()->IsInterestedInKeyEvent()) {
+    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
+        base::BindOnce(&InputMethodWinBase::ProcessKeyEventDone,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Owned(new ui::KeyEvent(*event)),
+                       base::Owned(new std::vector<MSG>(char_msgs)));
+    GetEngine()->ProcessKeyEvent(*event, std::move(callback));
+    return ui::EventDispatchDetails();
+  }
+
+  return ProcessUnhandledKeyEvent(event, &char_msgs);
 }
 
 bool InputMethodWinBase::IsWindowFocused(const TextInputClient* client) const {
@@ -290,6 +484,34 @@ LRESULT InputMethodWinBase::OnQueryCharPosition(IMECHARPOSITION* char_positon) {
   char_positon->pt.y = rect.y();
   char_positon->cLineHeight = rect.height();
   return 1;  // returns non-zero value when succeeded.
+}
+
+void InputMethodWinBase::ProcessKeyEventDone(ui::KeyEvent* event,
+                                             const std::vector<MSG>* char_msgs,
+                                             bool is_handled) {
+  if (is_handled)
+    return;
+  ProcessUnhandledKeyEvent(event, char_msgs);
+}
+
+ui::EventDispatchDetails InputMethodWinBase::ProcessUnhandledKeyEvent(
+    ui::KeyEvent* event,
+    const std::vector<MSG>* char_msgs) {
+  DCHECK(event);
+  ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
+  if (details.dispatcher_destroyed || details.target_destroyed ||
+      event->stopped_propagation()) {
+    return details;
+  }
+
+  BOOL handled;
+  for (const auto& msg : (*char_msgs)) {
+    auto ref = weak_ptr_factory_.GetWeakPtr();
+    OnChar(msg.hwnd, msg.message, msg.wParam, msg.lParam, msg, &handled);
+    if (!ref)
+      return DispatcherDestroyedDetails();
+  }
+  return details;
 }
 
 }  // namespace ui
