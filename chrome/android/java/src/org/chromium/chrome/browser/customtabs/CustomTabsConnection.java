@@ -730,14 +730,6 @@ public class CustomTabsConnection {
         return null;
     }
 
-    /**
-     * See {@link ClientManager#canSessionLaunchInTrustedWebActivity(CustomTabsSessionToken, Uri)}
-     */
-    public boolean canSessionLaunchInTrustedWebActivity(
-            CustomTabsSessionToken session, Uri origin) {
-        return mClientManager.canSessionLaunchInTrustedWebActivity(session, origin);
-    }
-
     public int postMessage(CustomTabsSessionToken session, String message, Bundle extras) {
         int result;
         if (!mWarmupHasBeenCalled.get()) result = CustomTabsService.RESULT_FAILURE_DISALLOWED;

@@ -74,7 +74,8 @@ public class Snackbar {
     public static final int UMA_MISSING_FILES_NO_SD_CARD = 24;
     public static final int UMA_OFFLINE_INDICATOR = 25;
     public static final int UMA_FEED_NTP_STREAM = 26;
-    public static final int UMA_WEBAPK_TWA_PRIVACY_DISCLOSURE = 27;
+    public static final int UMA_WEBAPK_PRIVACY_DISCLOSURE = 27;
+    public static final int UMA_TWA_PRIVACY_DISCLOSURE = 28;
 
     private SnackbarController mController;
     private CharSequence mText;

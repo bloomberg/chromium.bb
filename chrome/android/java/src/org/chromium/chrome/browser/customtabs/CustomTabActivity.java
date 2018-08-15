@@ -67,12 +67,15 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
+import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -158,7 +161,7 @@ public class CustomTabActivity extends ChromeActivity {
     /** Adds and removes observers from tabs when needed. */
     private final TabObserverRegistrar mTabObserverRegistrar = new TabObserverRegistrar();
 
-    private final TrustedWebActivityUi mTrustedWebActivityUi = new TrustedWebActivityUi();
+    private @Nullable TrustedWebActivityUi mTrustedWebActivityUi;
 
     private String mSpeculatedUrl;
 
@@ -240,6 +243,11 @@ public class CustomTabActivity extends ChromeActivity {
         mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
 
         super.preInflationStartup();
+
+        if (mIntentDataProvider.isTrustedWebActivity()) {
+            mTrustedWebActivityUi = createTrustedWebActivityUi();
+        }
+
         mSession = mIntentDataProvider.getSession();
         supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
         mSpeculatedUrl = mConnection.getSpeculatedUrl(mSession);
@@ -253,6 +261,28 @@ public class CustomTabActivity extends ChromeActivity {
                     IntentHandler.getTimestampFromIntent(getIntent()));
             mHasCreatedTabEarly = true;
         }
+    }
+
+    private TrustedWebActivityUi createTrustedWebActivityUi() {
+        return new TrustedWebActivityUi(
+                new TrustedWebActivityUi.TrustedWebActivityUiDelegate() {
+                    @Override
+                    public BrowserStateBrowserControlsVisibilityDelegate
+                    getBrowserStateBrowserControlsVisibilityDelegate() {
+                        return getFullscreenManager().getBrowserVisibilityDelegate();
+                    }
+
+                    @Override
+                    public String getClientPackageName() {
+                        return mConnection != null
+                                ? mConnection.getClientPackageNameForSession(mSession) : null;
+                    }
+
+                    @Override
+                    public SnackbarManager getSnackbarManager() {
+                        return CustomTabActivity.this.getSnackbarManager();
+                    }
+                }, getResources());
     }
 
     /**
@@ -426,12 +456,16 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     private CustomTabDelegateFactory createCustomTabDelegateFactory() {
+        BrowserControlsVisibilityDelegate delegate =
+                getFullscreenManager().getBrowserVisibilityDelegate();
+        if (mTrustedWebActivityUi != null) {
+            delegate = new ComposedBrowserControlsVisibilityDelegate(delegate,
+                    mTrustedWebActivityUi.getBrowserControlsVisibilityDelegate()
+            );
+        }
+
         return new CustomTabDelegateFactory(mIntentDataProvider.shouldEnableUrlBarHiding(),
-                mIntentDataProvider.isOpenedByChrome(),
-                new ComposedBrowserControlsVisibilityDelegate(
-                        getFullscreenManager().getBrowserVisibilityDelegate(),
-                        mTrustedWebActivityUi.getBrowserControlsVisibilityDelegate()
-                ));
+                mIntentDataProvider.isOpenedByChrome(), delegate);
     }
 
     @Override
@@ -602,6 +636,10 @@ public class CustomTabActivity extends ChromeActivity {
             mAutofillAssistantUiController = new AssistantUiController(this);
         }
 
+        if (mTrustedWebActivityUi != null) {
+            mTrustedWebActivityUi.initialShowSnackbarIfNeeded();
+        }
+
         super.finishNativeInitialization();
     }
 
@@ -698,6 +736,9 @@ public class CustomTabActivity extends ChromeActivity {
 
         mTabObserverRegistrar.registerTabObserver(mTabObserver);
         mTabObserverRegistrar.registerTabObserver(mTabNavigationEventObserver);
+        if (mTrustedWebActivityUi != null) {
+            mTabObserverRegistrar.registerTabObserver(mTrustedWebActivityUi.getTabObserver());
+        }
         mTabObserverRegistrar.registerPageLoadMetricsObserver(
                 new PageLoadMetricsObserver(mConnection, mSession, tab));
         mTabObserverRegistrar.registerPageLoadMetricsObserver(

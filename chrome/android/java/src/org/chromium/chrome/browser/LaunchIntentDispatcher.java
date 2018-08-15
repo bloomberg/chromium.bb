@@ -17,8 +17,6 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.IntDef;
 import android.support.customtabs.CustomTabsIntent;
-import android.support.customtabs.CustomTabsSessionToken;
-import android.support.customtabs.TrustedWebUtils;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
@@ -29,7 +27,6 @@ import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
@@ -45,8 +42,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
-import org.chromium.chrome.browser.webapps.WebappActivity;
-import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.ui.widget.Toast;
 
@@ -210,11 +205,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // Check if we should launch a Custom Tab.
         if (mIsCustomTabIntent) {
-            if (!mIntent.getBooleanExtra(
-                        TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false)
-                    || !launchTrustedWebActivity()) {
                 launchCustomTabActivity();
-            }
 
             return Action.FINISH_ACTIVITY;
         }
@@ -358,27 +349,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
             mActivity.startActivity(launchIntent, null);
         }
-    }
-
-    private boolean launchTrustedWebActivity() {
-        CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(mIntent);
-        if (!CustomTabsConnection.getInstance().canSessionLaunchInTrustedWebActivity(
-                    session, Uri.parse(mIntent.getDataString()))) {
-            return false;
-        }
-
-        // TODO(yusufo): WebappInfo houses a lot of logic around preparing/easing out the initial
-        // launch via extras for icons, splashscreens, screen orientation etc. We need a way to
-        // plumb that information to Trusted Web Activities.
-        WebappInfo info = WebappInfo.create(mIntent, session);
-        if (info == null) return false;
-
-        WebappActivity.addWebappInfo(info.id(), info);
-        Intent launchIntent = WebappLauncherActivity.createWebappLaunchIntent(info, false);
-        launchIntent.putExtras(mIntent.getExtras());
-
-        mActivity.startActivity(launchIntent);
-        return true;
     }
 
     /**
