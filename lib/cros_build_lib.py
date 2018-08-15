@@ -948,6 +948,51 @@ def UncompressFile(infile, outfile):
     RunCommand(cmd, log_stdout_to_file=outfile)
 
 
+def MonitorDirectories(dir_paths, cwd=None, timeout=0):
+  """Uses lsof to monitor directories.
+
+  This helps debug CreateTarballErrors when contentious processes change
+  files being tarred.
+
+  Args:
+    dir_paths: The list of directories to track/monitor.
+    cwd: Current working directory.
+    timeout: (Optional) Runtime cutoff in seconds for finding culprit
+      processes. If processes are found earlier, function will exit. If
+      not specified, loop through once and exit.
+  """
+  timed_out = False
+  start_time = time.time()
+  while not timed_out:
+    try:
+      lsof_result = RunCommand(['lsof', '-n', '-d', '0-999', '-F', 'pn'],
+                               cwd=cwd, mute_output=True)
+    except Exception:
+      lsof_result = ''
+      logging.info('Exception running lsof.', exc_info=True)
+      timeout = 0
+
+    if lsof_result:
+      logging.info('Potential competing programs:')
+      current_pid = 0
+      for line in lsof_result.output.splitlines():
+        if line.startswith('p'):
+          current_pid = line[1:]
+        elif line.startswith('n') and current_pid:
+          current_path = line[1:]
+          for input_path in dir_paths:
+            if input_path in current_path:
+              timeout = 0
+              try:
+                ps_result = RunCommand(['ps', '-f', current_pid],
+                                       mute_output=True)
+                logging.info('%s', ps_result.output)
+              except Exception:
+                logging.info('Exception running ps.', exc_info=True)
+
+    timed_out = (time.time() > start_time + timeout)
+
+
 class CreateTarballError(RunCommandError):
   """Error while running tar.
 
@@ -1002,45 +1047,16 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
     if result.returncode == 0:
       return result
     if result.returncode != 1 or try_count > 0:
-      # Debug logic to find the competing program that is modifying the
-      # directory being compressed.
-      try:
-        lsof_result = RunCommand(['lsof', '-n', '-d', '0-999', '-F', 'pn'],
-                                 cwd=cwd, mute_output=True)
-      except Exception:
-        lsof_result = 0
-        logging.info('Exception running lsof.', exc_info=True)
-
-      if lsof_result:
-        logging.info('Potential competing programs:')
-        current_pid = 0
-        for line in lsof_result.output.splitlines():
-          if line.startswith('p'):
-            current_pid = line[1:]
-          elif line.startswith('n') and current_pid:
-            current_path = line[1:]
-            for input_path in input_abs_paths:
-              if input_path in current_path:
-                try:
-                  ps_result = RunCommand(['ps', '-f', current_pid],
-                                         mute_output=True)
-                  logging.info('%s', ps_result.output)
-                except Exception:
-                  logging.info('Exception running ps.', exc_info=True)
-
-        logging.info('Complete lsof output:\n%s', lsof_result.output)
-
+      # Since the build is abandoned at this point, we will take 5
+      # entire minutes to track down the competing process.
+      MonitorDirectories(input_abs_paths, cwd, 300)
       raise CreateTarballError('CreateTarball', result)
 
     assert result.returncode == 1 and try_count == 0
     logging.warning('CreateTarball: tar: source modification time changed ' +
                     '(see crbug.com/547055), retrying once')
     logging.PrintBuildbotStepWarnings()
-    try:
-      RunCommand(['lsof', '-n', '-d', '0-999', '-F', 'pn'],
-                 cwd=cwd, mute_output=False)
-    except Exception:
-      logging.info('Exception running lsof.', exc_info=True)
+    MonitorDirectories(input_abs_paths, cwd)
 
 
 def GetInput(prompt):

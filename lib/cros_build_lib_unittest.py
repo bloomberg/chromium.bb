@@ -1567,6 +1567,37 @@ EEC571FFB6E1)
                       '_ignored', 'PB')
 
 
+class DummyOutput(object):
+  """Object with a component called output."""
+  def __init__(self, output):
+    self.output = output
+
+
+class MonitorDirectoriesTests(cros_test_lib.MockTestCase):
+  """Tests the MonitorDirectories function."""
+
+  def setUp(self):
+    """Mock RunCommand."""
+    self.Results = []
+
+    def Result(*_args, **_kwargs):
+      """Creates objects with string object called output a la RunCommand."""
+      return self.Results.pop(0)
+
+    self.mockRun = self.PatchObject(cros_build_lib, 'RunCommand',
+                                    autospec=True,
+                                    side_effect=Result)
+
+  def testRegexFiltering(self):
+    """Test the filtering of dummy lsof output."""
+    self.Results = [DummyOutput("p1234\n"
+                                "f0\n"
+                                "n/usr/lib/target_folder/sth\n"),
+                    DummyOutput("")]
+    cros_build_lib.MonitorDirectories(["/usr/lib/"], cwd=os.getcwd())
+    self.assertEqual(self.mockRun.call_count, 2)
+
+
 class CreateTarballTests(cros_test_lib.TempDirTestCase):
   """Test the CreateTarball function."""
 
@@ -1618,9 +1649,17 @@ class FailedCreateTarballTests(cros_test_lib.MockTestCase):
       """Creates CommandResult objects for each tarResults value in turn."""
       return cros_build_lib.CommandResult(returncode=self.tarResults.pop(0))
 
+    def ReturnNone(*_args, **_kwargs):
+      """Return None mimicking MonitorDirectories."""
+      return None
+
     self.mockRun = self.PatchObject(cros_build_lib, 'RunCommand',
                                     autospec=True,
                                     side_effect=Result)
+
+    self.mockMonitor = self.PatchObject(cros_build_lib, 'MonitorDirectories',
+                                        autospec=True,
+                                        side_effect=ReturnNone)
 
   def testSuccess(self):
     """CreateTarball works the first time."""
@@ -1628,13 +1667,15 @@ class FailedCreateTarballTests(cros_test_lib.MockTestCase):
     cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
 
     self.assertEqual(self.mockRun.call_count, 1)
+    self.assertEqual(self.mockMonitor.call_count, 0)
 
   def testFailedOnceSoft(self):
     """Force a single retry for CreateTarball."""
-    self.tarResults = [1, 1, 0]
+    self.tarResults = [1, 0]
     cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
 
-    self.assertEqual(self.mockRun.call_count, 3)
+    self.assertEqual(self.mockRun.call_count, 2)
+    self.assertEqual(self.mockMonitor.call_count, 1)
 
   def testFailedOnceHard(self):
     """Test unrecoverable error."""
@@ -1642,14 +1683,16 @@ class FailedCreateTarballTests(cros_test_lib.MockTestCase):
     with self.assertRaises(cros_build_lib.RunCommandError) as cm:
       cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
 
-    self.assertEqual(self.mockRun.call_count, 2)
+    self.assertEqual(self.mockRun.call_count, 1)
     self.assertEqual(cm.exception.args[1].returncode, 2)
+    self.assertEqual(self.mockMonitor.call_count, 1)
 
   def testFailedTwiceSoft(self):
     """Exhaust retries for recoverable errors."""
-    self.tarResults = [1, 0, 1]
+    self.tarResults = [1, 1]
     with self.assertRaises(cros_build_lib.RunCommandError) as cm:
       cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
 
-    self.assertEqual(self.mockRun.call_count, 4)
+    self.assertEqual(self.mockRun.call_count, 2)
     self.assertEqual(cm.exception.args[1].returncode, 1)
+    self.assertEqual(self.mockMonitor.call_count, 2)
