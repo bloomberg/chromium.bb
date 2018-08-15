@@ -7,11 +7,23 @@
 
 from __future__ import print_function
 
+import collections
+import logging
 import os
+import re
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+
+
+# Match `repo` error: "error: project <name> not found"
+PROJECT_NOT_FOUND_RE = re.compile(r'^error: project (?P<name>[^ ]+) not found$',
+                                  re.MULTILINE)
+
+
+# ProjectInfo represents the information returned by `repo list`.
+ProjectInfo = collections.namedtuple('ProjectInfo', ('name', 'path'))
 
 
 class Error(Exception):
@@ -20,6 +32,10 @@ class Error(Exception):
 
 class NotInRepoError(Error):
   """A repo operation was attempted outside of a repo repository."""
+
+
+class ProjectNotFoundError(Error):
+  """A repo operation was attempted on a project that wasn't found."""
 
 
 class Repository(object):
@@ -126,13 +142,15 @@ class Repository(object):
       raise NotInRepoError('no repo found from %r', path)
     return repo
 
-  def _Run(self, repo_cmd, cwd=None):
+  def _Run(self, repo_cmd, cwd=None, capture_output=False):
     """RunCommand wrapper for `repo`.
 
     Args:
       repo_cmd: List of arguments to pass to `repo`.
       cwd: The path to run the command in. Defaults to Repository root.
         Must be within the root.
+      capture_output: Whether to capture the output, making it available in the
+        CommandResult object, or print it to stdout/err. Defaults to False.
 
     Returns:
       A CommandResult object.
@@ -148,7 +166,9 @@ class Repository(object):
     elif git.FindRepoCheckoutRoot(cwd) != self.root:
       raise NotInRepoError('cannot run `repo` outside of Repository root '
                            '(cwd=%r root=%r)' % (cwd, self.root))
-    return cros_build_lib.RunCommand(cmd, cwd=cwd)
+    return cros_build_lib.RunCommand(cmd, cwd=cwd,
+                                     capture_output=capture_output,
+                                     debug_level=logging.DEBUG)
 
   def Sync(self, projects=None, jobs=None, cwd=None):
     """Run `repo sync`.
@@ -185,6 +205,36 @@ class Repository(object):
     else:
       projects = _ListArg(projects)
     self._Run(['start', name] + projects, cwd=cwd)
+
+  def List(self, projects=None, cwd=None):
+    """Run `repo list` and returns a list of ProjectInfos for synced projects.
+
+    Note that this may produce a different list than parsing the manifest file
+    due to partial project syncing (e.g. `repo init -g minilayout`).
+
+    Args:
+      projects: A list of projects to return. Defaults to all projects.
+      cwd: The path to run the command in. Defaults to Repository root.
+
+    Raises:
+      ProjectNotFoundError: if a project in 'projects' was not found.
+      NotInRepoError: if cwd is not within the Repository root.
+      RunCommandError: if `repo list` otherwise failed.
+    """
+    projects = _ListArg(projects)
+    try:
+      result = self._Run(['list'] + projects, cwd=cwd, capture_output=True)
+    except cros_build_lib.RunCommandError, rce:
+      m = PROJECT_NOT_FOUND_RE.search(rce.result.error)
+      if m:
+        raise ProjectNotFoundError(m.group('name'))
+      raise rce
+
+    infos = []
+    for line in result.output.splitlines():
+      path, name = line.rsplit(' : ', 1)
+      infos.append(ProjectInfo(name=name, path=path))
+    return infos
 
 
 def _ListArg(arg):

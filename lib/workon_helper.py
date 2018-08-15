@@ -18,6 +18,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.lib import repo_util
 from chromite.lib import sysroot_lib
 
 
@@ -658,19 +659,8 @@ class WorkonHelper(object):
       projects = workon_vars.project if workon_vars else []
       ebuild_to_repos[ebuild] = projects
 
-    repository_to_source_path = {}
-    repo_list_result = cros_build_lib.RunCommand(
-        'repo list', shell=True, enter_chroot=True, capture_output=True,
-        print_cmd=False)
-
-    for line in repo_list_result.output.splitlines():
-      pieces = line.split(' : ')
-      if len(pieces) != 2:
-        logging.debug('Ignoring malformed repo list output line: "%s"', line)
-        continue
-
-      source_path, repository = pieces
-      repository_to_source_path[repository] = source_path
+    projects = repo_util.Repository(self._src_root).List()
+    repository_to_source_path = {p.name: p.path for p in projects}
 
     result = []
     for ebuild in ebuilds:

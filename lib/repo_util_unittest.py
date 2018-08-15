@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import logging
 import os
 
 from chromite.lib import cros_build_lib
@@ -128,7 +129,12 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def AssertRepoCalled(self, repo_args, **kwargs):
     kwargs.setdefault('cwd', self.root)
+    kwargs.setdefault('capture_output', False)
+    kwargs.setdefault('debug_level', logging.DEBUG)
     self.assertCommandCalled([RepoCmdPath(self.root)] + repo_args, **kwargs)
+
+  def AddRepoResult(self, repo_args, **kwargs):
+    self.rc.AddCmdResult([RepoCmdPath(self.root)] + repo_args, **kwargs)
 
   def testAssertRepoCalled(self):
     self.repo._Run(['subcmd', 'arg1'])
@@ -171,3 +177,24 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
         'my-branch', projects=['foo', 'bar'], cwd=self.subdir)
     self.AssertRepoCalled(
         ['start', 'my-branch', 'foo', 'bar'], cwd=self.subdir)
+
+  def testListSimple(self):
+    output = 'src/project : my/project\nsrc/ugly : path : other/project\n'
+    self.AddRepoResult(['list'], output=output)
+    projects = self.repo.List()
+    self.AssertRepoCalled(['list'], capture_output=True)
+    self.assertListEqual(projects, [
+        repo_util.ProjectInfo(name='my/project', path='src/project'),
+        repo_util.ProjectInfo(name='other/project', path='src/ugly : path'),
+    ])
+
+  def testListComplex(self):
+    self.repo.List(['project1', 'project2'], cwd=self.subdir)
+    self.AssertRepoCalled(['list', 'project1', 'project2'],
+                          cwd=self.subdir, capture_output=True)
+
+  def testListProjectNotFound(self):
+    self.AddRepoResult(['list', 'foobar'], returncode=1,
+                       error='error: project foobar not found')
+    with self.assertRaises(repo_util.ProjectNotFoundError):
+      self.repo.List(['foobar'])
