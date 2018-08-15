@@ -12,8 +12,6 @@ blink_modules_sources("device_orientation") {
     "device_motion_controller.h",
     "device_motion_data.cc",
     "device_motion_data.h",
-    "device_motion_dispatcher.cc",
-    "device_motion_dispatcher.h",
     "device_motion_event.cc",
     "device_motion_event.h",
     "device_motion_event_pump.cc",

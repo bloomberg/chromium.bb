@@ -20,11 +20,9 @@ constexpr double kDefaultPumpDelayMilliseconds =
 
 namespace blink {
 
-template class DeviceSensorEventPump<blink::WebDeviceMotionListener>;
-
 DeviceMotionEventPump::DeviceMotionEventPump(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : DeviceSensorEventPump<blink::WebDeviceMotionListener>(task_runner),
+    : DeviceSensorEventPump(task_runner),
       accelerometer_(this, device::mojom::blink::SensorType::ACCELEROMETER),
       linear_acceleration_sensor_(
           this,
@@ -35,6 +33,22 @@ DeviceMotionEventPump::~DeviceMotionEventPump() {
   StopIfObserving();
 }
 
+DeviceMotionData* DeviceMotionEventPump::LatestDeviceMotionData() {
+  return data_.Get();
+}
+
+void DeviceMotionEventPump::Trace(blink::Visitor* visitor) {
+  visitor->Trace(data_);
+  PlatformEventDispatcher::Trace(visitor);
+}
+
+void DeviceMotionEventPump::StartListening(LocalFrame* frame) {
+  // TODO(crbug.com/850619): ensure a valid frame is passed
+  if (!frame)
+    return;
+  Start(frame);
+}
+
 void DeviceMotionEventPump::SendStartMessage(LocalFrame* frame) {
   if (!sensor_provider_) {
     DCHECK(frame);
@@ -43,12 +57,17 @@ void DeviceMotionEventPump::SendStartMessage(LocalFrame* frame) {
         mojo::MakeRequest(&sensor_provider_));
     sensor_provider_.set_connection_error_handler(
         WTF::Bind(&DeviceSensorEventPump::HandleSensorProviderError,
-                  WTF::Unretained(this)));
+                  WrapPersistent(this)));
   }
 
   accelerometer_.Start(sensor_provider_.get());
   linear_acceleration_sensor_.Start(sensor_provider_.get());
   gyroscope_.Start(sensor_provider_.get());
+}
+
+void DeviceMotionEventPump::StopListening() {
+  Stop();
+  data_.Clear();
 }
 
 void DeviceMotionEventPump::SendStopMessage() {
@@ -63,13 +82,13 @@ void DeviceMotionEventPump::SendStopMessage() {
 }
 
 void DeviceMotionEventPump::FireEvent(TimerBase*) {
-  DCHECK(listener());
-
   DeviceMotionData* data = GetDataFromSharedMemory();
 
   // data is null if not all sensors are active
-  if (data)
-    listener()->DidChangeDeviceMotion(data);
+  if (data) {
+    data_ = data;
+    NotifyControllers();
+  }
 }
 
 bool DeviceMotionEventPump::SensorsReadyOrErrored() const {

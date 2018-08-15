@@ -9,8 +9,8 @@
 #include "base/run_loop.h"
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/device_orientation/web_device_motion_listener.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/core/frame/platform_event_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_pump.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -20,16 +20,24 @@ namespace blink {
 
 using device::FakeSensorProvider;
 
-class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
- public:
-  MockDeviceMotionListener()
-      : did_change_device_motion_(false), number_of_events_(0) {
-    data_ = DeviceMotionData::Create();
-  }
-  ~MockDeviceMotionListener() override {}
+class MockDeviceMotionController final
+    : public GarbageCollectedFinalized<MockDeviceMotionController>,
+      public PlatformEventController {
+  USING_GARBAGE_COLLECTED_MIXIN(MockDeviceMotionController);
 
-  void DidChangeDeviceMotion(DeviceMotionData* data) override {
-    data_ = data;
+ public:
+  explicit MockDeviceMotionController(DeviceMotionEventPump* motion_pump)
+      : PlatformEventController(nullptr),
+        did_change_device_motion_(false),
+        motion_pump_(motion_pump) {}
+  ~MockDeviceMotionController() override {}
+
+  void Trace(Visitor* visitor) override {
+    PlatformEventController::Trace(visitor);
+    visitor->Trace(motion_pump_);
+  }
+
+  void DidUpdateData() override {
     did_change_device_motion_ = true;
     ++number_of_events_;
   }
@@ -38,27 +46,26 @@ class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
 
   int number_of_events() const { return number_of_events_; }
 
-  const DeviceMotionData* data() const { return data_.Get(); }
+  void RegisterWithDispatcher() override { motion_pump_->AddController(this); }
+
+  bool HasLastData() override { return motion_pump_->LatestDeviceMotionData(); }
+
+  void UnregisterWithDispatcher() override {
+    motion_pump_->RemoveController(this);
+  }
+
+  const DeviceMotionData* data() {
+    return motion_pump_->LatestDeviceMotionData();
+  };
+
+  DeviceMotionEventPump* motion_pump() { return motion_pump_.Get(); }
 
  private:
   bool did_change_device_motion_;
   int number_of_events_;
-  Persistent<DeviceMotionData> data_;
+  Member<DeviceMotionEventPump> motion_pump_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDeviceMotionListener);
-};
-
-class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
- public:
-  explicit DeviceMotionEventPumpForTesting(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : DeviceMotionEventPump(task_runner) {}
-  ~DeviceMotionEventPumpForTesting() override {}
-
-  int pump_delay_microseconds() const { return kDefaultPumpDelayMicroseconds; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceMotionEventPumpForTesting);
+  DISALLOW_COPY_AND_ASSIGN(MockDeviceMotionController);
 };
 
 class DeviceMotionEventPumpTest : public testing::Test {
@@ -67,40 +74,43 @@ class DeviceMotionEventPumpTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    motion_pump_.reset(new DeviceMotionEventPumpForTesting(
-        base::ThreadTaskRunnerHandle::Get()));
     device::mojom::SensorProviderPtrInfo sensor_provider_ptr_info;
     sensor_provider_.Bind(mojo::MakeRequest(&sensor_provider_ptr_info));
-    motion_pump_->SetSensorProviderForTesting(
+    auto* motion_pump =
+        new DeviceMotionEventPump(base::ThreadTaskRunnerHandle::Get());
+    motion_pump->SetSensorProviderForTesting(
         device::mojom::blink::SensorProviderPtr(
             device::mojom::blink::SensorProviderPtrInfo(
                 sensor_provider_ptr_info.PassHandle(),
                 device::mojom::SensorProvider::Version_)));
 
-    listener_.reset(new MockDeviceMotionListener);
+    controller_ = new MockDeviceMotionController(motion_pump);
 
     ExpectAllThreeSensorsStateToBe(
         DeviceMotionEventPump::SensorState::NOT_INITIALIZED);
     EXPECT_EQ(DeviceMotionEventPump::PumpState::STOPPED,
-              motion_pump()->GetPumpStateForTesting());
+              controller_->motion_pump()->GetPumpStateForTesting());
   }
 
-  void FireEvent() { motion_pump_->FireEvent(nullptr); }
+  void FireEvent() { controller_->motion_pump()->FireEvent(nullptr); }
 
   void ExpectAccelerometerStateToBe(
       DeviceMotionEventPump::SensorState expected_sensor_state) {
-    EXPECT_EQ(expected_sensor_state, motion_pump_->accelerometer_.sensor_state);
+    EXPECT_EQ(expected_sensor_state,
+              controller_->motion_pump()->accelerometer_.sensor_state);
   }
 
   void ExpectLinearAccelerationSensorStateToBe(
       DeviceMotionEventPump::SensorState expected_sensor_state) {
-    EXPECT_EQ(expected_sensor_state,
-              motion_pump_->linear_acceleration_sensor_.sensor_state);
+    EXPECT_EQ(
+        expected_sensor_state,
+        controller_->motion_pump()->linear_acceleration_sensor_.sensor_state);
   }
 
   void ExpectGyroscopeStateToBe(
       DeviceMotionEventPump::SensorState expected_sensor_state) {
-    EXPECT_EQ(expected_sensor_state, motion_pump_->gyroscope_.sensor_state);
+    EXPECT_EQ(expected_sensor_state,
+              controller_->motion_pump()->gyroscope_.sensor_state);
   }
 
   void ExpectAllThreeSensorsStateToBe(
@@ -110,52 +120,50 @@ class DeviceMotionEventPumpTest : public testing::Test {
     ExpectGyroscopeStateToBe(expected_sensor_state);
   }
 
-  DeviceMotionEventPumpForTesting* motion_pump() { return motion_pump_.get(); }
-
-  MockDeviceMotionListener* listener() { return listener_.get(); }
+  MockDeviceMotionController* controller() { return controller_.Get(); }
 
   FakeSensorProvider* sensor_provider() { return &sensor_provider_; }
 
  private:
-  std::unique_ptr<DeviceMotionEventPumpForTesting> motion_pump_;
-  std::unique_ptr<MockDeviceMotionListener> listener_;
+  Persistent<MockDeviceMotionController> controller_;
+
   FakeSensorProvider sensor_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceMotionEventPumpTest);
 };
 
 TEST_F(DeviceMotionEventPumpTest, MultipleStartAndStopWithWait) {
-  motion_pump()->Start(nullptr, listener());
+  controller()->motion_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
   EXPECT_EQ(DeviceMotionEventPump::PumpState::RUNNING,
-            motion_pump()->GetPumpStateForTesting());
+            controller()->motion_pump()->GetPumpStateForTesting());
 
-  motion_pump()->Stop();
+  controller()->motion_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
   EXPECT_EQ(DeviceMotionEventPump::PumpState::STOPPED,
-            motion_pump()->GetPumpStateForTesting());
+            controller()->motion_pump()->GetPumpStateForTesting());
 
-  motion_pump()->Start(nullptr, listener());
+  controller()->motion_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
   EXPECT_EQ(DeviceMotionEventPump::PumpState::RUNNING,
-            motion_pump()->GetPumpStateForTesting());
+            controller()->motion_pump()->GetPumpStateForTesting());
 
-  motion_pump()->Stop();
+  controller()->motion_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
   EXPECT_EQ(DeviceMotionEventPump::PumpState::STOPPED,
-            motion_pump()->GetPumpStateForTesting());
+            controller()->motion_pump()->GetPumpStateForTesting());
 }
 
 TEST_F(DeviceMotionEventPumpTest, CallStop) {
-  motion_pump()->Stop();
+  controller()->motion_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(
@@ -163,26 +171,26 @@ TEST_F(DeviceMotionEventPumpTest, CallStop) {
 }
 
 TEST_F(DeviceMotionEventPumpTest, CallStartAndStop) {
-  motion_pump()->Start(nullptr, listener());
-  motion_pump()->Stop();
+  controller()->motion_pump()->Start(nullptr);
+  controller()->motion_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
 }
 
 TEST_F(DeviceMotionEventPumpTest, CallStartMultipleTimes) {
-  motion_pump()->Start(nullptr, listener());
-  motion_pump()->Start(nullptr, listener());
-  motion_pump()->Stop();
+  controller()->motion_pump()->Start(nullptr);
+  controller()->motion_pump()->Start(nullptr);
+  controller()->motion_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
 }
 
 TEST_F(DeviceMotionEventPumpTest, CallStopMultipleTimes) {
-  motion_pump()->Start(nullptr, listener());
-  motion_pump()->Stop();
-  motion_pump()->Stop();
+  controller()->motion_pump()->Start(nullptr);
+  controller()->motion_pump()->Stop();
+  controller()->motion_pump()->Stop();
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
@@ -190,20 +198,21 @@ TEST_F(DeviceMotionEventPumpTest, CallStopMultipleTimes) {
 
 // Test multiple DeviceSensorEventPump::Start() calls only bind sensor once.
 TEST_F(DeviceMotionEventPumpTest, SensorOnlyBindOnce) {
-  motion_pump()->Start(nullptr, listener());
-  motion_pump()->Stop();
-  motion_pump()->Start(nullptr, listener());
+  controller()->motion_pump()->Start(nullptr);
+  controller()->motion_pump()->Stop();
+  controller()->motion_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
 
-  motion_pump()->Stop();
+  controller()->motion_pump()->Stop();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
 }
 
 TEST_F(DeviceMotionEventPumpTest, AllSensorsAreActive) {
-  motion_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->motion_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
@@ -214,9 +223,8 @@ TEST_F(DeviceMotionEventPumpTest, AllSensorsAreActive) {
 
   FireEvent();
 
-  EXPECT_TRUE(listener()->did_change_device_motion());
-
-  const DeviceMotionData* received_data = listener()->data();
+  const DeviceMotionData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_motion());
 
   EXPECT_TRUE(received_data->GetAccelerationIncludingGravity()->CanProvideX());
   EXPECT_EQ(1, received_data->GetAccelerationIncludingGravity()->X());
@@ -239,7 +247,7 @@ TEST_F(DeviceMotionEventPumpTest, AllSensorsAreActive) {
   EXPECT_TRUE(received_data->GetRotationRate()->CanProvideGamma());
   EXPECT_EQ(gfx::RadToDeg(9.0), received_data->GetRotationRate()->Gamma());
 
-  motion_pump()->Stop();
+  controller()->motion_pump()->Stop();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
 }
@@ -247,7 +255,8 @@ TEST_F(DeviceMotionEventPumpTest, AllSensorsAreActive) {
 TEST_F(DeviceMotionEventPumpTest, TwoSensorsAreActive) {
   sensor_provider()->set_linear_acceleration_sensor_is_available(false);
 
-  motion_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->motion_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAccelerometerStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
@@ -260,8 +269,8 @@ TEST_F(DeviceMotionEventPumpTest, TwoSensorsAreActive) {
 
   FireEvent();
 
-  const DeviceMotionData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_motion());
+  const DeviceMotionData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_motion());
 
   EXPECT_TRUE(received_data->GetAccelerationIncludingGravity()->CanProvideX());
   EXPECT_EQ(1, received_data->GetAccelerationIncludingGravity()->X());
@@ -281,7 +290,7 @@ TEST_F(DeviceMotionEventPumpTest, TwoSensorsAreActive) {
   EXPECT_TRUE(received_data->GetRotationRate()->CanProvideGamma());
   EXPECT_EQ(gfx::RadToDeg(9.0), received_data->GetRotationRate()->Gamma());
 
-  motion_pump()->Stop();
+  controller()->motion_pump()->Stop();
 
   ExpectAccelerometerStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
   ExpectLinearAccelerationSensorStateToBe(
@@ -290,7 +299,8 @@ TEST_F(DeviceMotionEventPumpTest, TwoSensorsAreActive) {
 }
 
 TEST_F(DeviceMotionEventPumpTest, SomeSensorDataFieldsNotAvailable) {
-  motion_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->motion_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
@@ -301,8 +311,8 @@ TEST_F(DeviceMotionEventPumpTest, SomeSensorDataFieldsNotAvailable) {
 
   FireEvent();
 
-  const DeviceMotionData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_motion());
+  const DeviceMotionData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_motion());
 
   EXPECT_FALSE(received_data->GetAccelerationIncludingGravity()->CanProvideX());
   EXPECT_TRUE(received_data->GetAccelerationIncludingGravity()->CanProvideY());
@@ -322,7 +332,7 @@ TEST_F(DeviceMotionEventPumpTest, SomeSensorDataFieldsNotAvailable) {
   EXPECT_EQ(gfx::RadToDeg(8.0), received_data->GetRotationRate()->Beta());
   EXPECT_FALSE(received_data->GetRotationRate()->CanProvideGamma());
 
-  motion_pump()->Stop();
+  controller()->motion_pump()->Stop();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
 }
@@ -333,7 +343,8 @@ TEST_F(DeviceMotionEventPumpTest, FireAllNullEvent) {
   sensor_provider()->set_linear_acceleration_sensor_is_available(false);
   sensor_provider()->set_gyroscope_is_available(false);
 
-  motion_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->motion_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(
@@ -341,8 +352,8 @@ TEST_F(DeviceMotionEventPumpTest, FireAllNullEvent) {
 
   FireEvent();
 
-  const DeviceMotionData* received_data = listener()->data();
-  EXPECT_TRUE(listener()->did_change_device_motion());
+  const DeviceMotionData* received_data = controller()->data();
+  EXPECT_TRUE(controller()->did_change_device_motion());
 
   EXPECT_FALSE(received_data->GetAcceleration()->CanProvideX());
   EXPECT_FALSE(received_data->GetAcceleration()->CanProvideY());
@@ -356,7 +367,7 @@ TEST_F(DeviceMotionEventPumpTest, FireAllNullEvent) {
   EXPECT_FALSE(received_data->GetRotationRate()->CanProvideBeta());
   EXPECT_FALSE(received_data->GetRotationRate()->CanProvideGamma());
 
-  motion_pump()->Stop();
+  controller()->motion_pump()->Stop();
 
   ExpectAllThreeSensorsStateToBe(
       DeviceMotionEventPump::SensorState::NOT_INITIALIZED);
@@ -364,28 +375,29 @@ TEST_F(DeviceMotionEventPumpTest, FireAllNullEvent) {
 
 TEST_F(DeviceMotionEventPumpTest,
        NotFireEventWhenSensorReadingTimeStampIsZero) {
-  motion_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->motion_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
 
   FireEvent();
-  EXPECT_FALSE(listener()->did_change_device_motion());
+  EXPECT_FALSE(controller()->did_change_device_motion());
 
   sensor_provider()->UpdateAccelerometerData(1, 2, 3);
   FireEvent();
-  EXPECT_FALSE(listener()->did_change_device_motion());
+  EXPECT_FALSE(controller()->did_change_device_motion());
 
   sensor_provider()->UpdateLinearAccelerationSensorData(4, 5, 6);
   FireEvent();
-  EXPECT_FALSE(listener()->did_change_device_motion());
+  EXPECT_FALSE(controller()->did_change_device_motion());
 
   sensor_provider()->UpdateGyroscopeData(7, 8, 9);
   FireEvent();
   // Event is fired only after all the available sensors have data.
-  EXPECT_TRUE(listener()->did_change_device_motion());
+  EXPECT_TRUE(controller()->did_change_device_motion());
 
-  motion_pump()->Stop();
+  controller()->motion_pump()->Stop();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
 }
@@ -396,9 +408,10 @@ TEST_F(DeviceMotionEventPumpTest,
 TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
   // Confirm that the delay for pumping events is 60 Hz.
   EXPECT_GE(60, WTF::Time::kMicrosecondsPerSecond /
-                    motion_pump()->pump_delay_microseconds());
+                    DeviceMotionEventPump::kDefaultPumpDelayMicroseconds);
 
-  motion_pump()->Start(nullptr, listener());
+  controller()->RegisterWithDispatcher();
+  controller()->motion_pump()->Start(nullptr);
   base::RunLoop().RunUntilIdle();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::ACTIVE);
@@ -412,14 +425,14 @@ TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
       FROM_HERE, loop.QuitWhenIdleClosure(),
       WTF::TimeDelta::FromMilliseconds(100));
   loop.Run();
-  motion_pump()->Stop();
+  controller()->motion_pump()->Stop();
 
   ExpectAllThreeSensorsStateToBe(DeviceMotionEventPump::SensorState::SUSPENDED);
 
-  // Check that the blink::WebDeviceMotionListener does not receive excess
+  // Check that the PlatformEventController does not receive excess
   // events.
-  EXPECT_TRUE(listener()->did_change_device_motion());
-  EXPECT_GE(6, listener()->number_of_events());
+  EXPECT_TRUE(controller()->did_change_device_motion());
+  EXPECT_GE(6, controller()->number_of_events());
 }
 
 }  // namespace blink

@@ -12,6 +12,7 @@
 namespace blink {
 
 class Event;
+class DeviceMotionEventPump;
 
 class MODULES_EXPORT DeviceMotionController final
     : public DeviceSingleWindowEventController,
@@ -34,7 +35,7 @@ class MODULES_EXPORT DeviceMotionController final
  private:
   explicit DeviceMotionController(Document&);
 
-  // Inherited from DeviceEventControllerBase.
+  // Inherited from PlatformEventController.
   void RegisterWithDispatcher() override;
   void UnregisterWithDispatcher() override;
   bool HasLastData() override;
@@ -43,6 +44,8 @@ class MODULES_EXPORT DeviceMotionController final
   Event* LastEvent() const override;
   const AtomicString& EventTypeName() const override;
   bool IsNullEvent(Event*) const override;
+
+  Member<DeviceMotionEventPump> motion_event_pump_;
 };
 
 }  // namespace blink
