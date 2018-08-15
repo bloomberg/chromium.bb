@@ -16,7 +16,6 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
@@ -36,8 +35,6 @@
 #include "components/prefs/pref_service.h"
 #include "mash/public/mojom/launchable.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/interfaces/accessibility_manager.mojom.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_type.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -851,7 +848,7 @@ void AccessibilityController::UpdateAutoclickFromPref() {
 
   NotifyAccessibilityStatusChanged();
 
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
+  if (!features::IsAshInBrowserProcess()) {
     if (!connector_)  // Null in tests.
       return;
     mash::mojom::LaunchablePtr launchable;
@@ -872,7 +869,7 @@ void AccessibilityController::UpdateAutoclickDelayFromPref() {
     return;
   autoclick_delay_ = autoclick_delay;
 
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
+  if (!features::IsAshInBrowserProcess()) {
     if (!connector_)  // Null in tests.
       return;
     autoclick::mojom::AutoclickControllerPtr autoclick_controller;
@@ -956,17 +953,6 @@ void AccessibilityController::UpdateHighContrastFromPref() {
 
   NotifyAccessibilityStatusChanged();
 
-  // Under mash the UI service (window server) handles high contrast mode.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
-    if (!connector_)  // Null in tests.
-      return;
-    ui::mojom::AccessibilityManagerPtr accessibility_ptr;
-    connector_->BindInterface(ui::mojom::kServiceName, &accessibility_ptr);
-    accessibility_ptr->SetHighContrastMode(enabled);
-    return;
-  }
-
-  // Under classic ash high contrast mode is handled internally.
   Shell::Get()->high_contrast_controller()->SetEnabled(enabled);
   Shell::Get()->UpdateCursorCompositingEnabled();
 }
