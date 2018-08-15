@@ -1056,9 +1056,10 @@ LayoutBlock* LayoutObject::ContainingBlock(AncestorSkipInfo* skip_info) const {
   return ToLayoutBlock(object);
 }
 
-FloatRect LayoutObject::AbsoluteBoundingBoxFloatRect() const {
+FloatRect LayoutObject::AbsoluteBoundingBoxFloatRect(
+    MapCoordinatesFlags flags) const {
   Vector<FloatQuad> quads;
-  AbsoluteQuads(quads);
+  AbsoluteQuads(quads, flags);
 
   size_t n = quads.size();
   if (n == 0)
