@@ -68,7 +68,6 @@ body {
   font-size: small;
   margin: 0;
   min-height: 100%;
-  overflow-x: hidden;
 }
 
 body.inited {
