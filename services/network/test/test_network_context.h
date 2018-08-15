@@ -16,6 +16,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -107,6 +108,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostHandleRequest control_handle,
                    mojom::ResolveHostClientPtr response_client) override {}
+  void CreateHostResolver(mojom::HostResolverRequest request) override {}
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,

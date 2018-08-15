@@ -41,6 +41,7 @@
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/cache_type.h"
 #include "net/base/hash_value.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -80,6 +81,7 @@
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -2878,6 +2880,118 @@ TEST_F(NetworkContextTest, ResolveHost_CloseClient) {
   EXPECT_TRUE(control_handle_closed);
   EXPECT_EQ(0u,
             network_context->GetNumOutstandingResolveHostRequestsForTesting());
+}
+
+TEST_F(NetworkContextTest, CreateHostResolver) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  mojom::HostResolverPtr resolver;
+  network_context->CreateHostResolver(mojo::MakeRequest(&resolver));
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
+  resolver->ResolveHost(net::HostPortPair("localhost", 80), nullptr,
+                        std::move(response_client_ptr));
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  EXPECT_THAT(
+      response_client.result_addresses().value().endpoints(),
+      testing::UnorderedElementsAre(CreateExpectedEndPoint("127.0.0.1", 80),
+                                    CreateExpectedEndPoint("::1", 80)));
+  EXPECT_EQ(0u,
+            network_context->GetNumOutstandingResolveHostRequestsForTesting());
+}
+
+TEST_F(NetworkContextTest, CreateHostResolver_CloseResolver) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  // Override the HostResolver with a hanging one, so the test can ensure the
+  // request won't be completed before the cancellation arrives.
+  auto internal_resolver = std::make_unique<net::HangingHostResolver>();
+  network_context->url_request_context()->set_host_resolver(
+      internal_resolver.get());
+
+  mojom::HostResolverPtr resolver;
+  network_context->CreateHostResolver(mojo::MakeRequest(&resolver));
+
+  ASSERT_EQ(0, internal_resolver->num_cancellations());
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
+  mojom::ResolveHostHandlePtr control_handle;
+  resolver->ResolveHost(net::HostPortPair("localhost", 80),
+                        mojo::MakeRequest(&control_handle),
+                        std::move(response_client_ptr));
+  bool control_handle_closed = false;
+  auto connection_error_callback =
+      base::BindLambdaForTesting([&]() { control_handle_closed = true; });
+  control_handle.set_connection_error_handler(connection_error_callback);
+
+  resolver = nullptr;
+  run_loop.Run();
+
+  // On resolver destruction, should receive an ERR_FAILED result, and the
+  // internal resolver request should have been cancelled.
+  EXPECT_EQ(net::ERR_FAILED, response_client.result_error());
+  EXPECT_FALSE(response_client.result_addresses());
+  EXPECT_EQ(1, internal_resolver->num_cancellations());
+  EXPECT_TRUE(control_handle_closed);
+}
+
+TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  // Override the HostResolver with a hanging one, so the test can ensure the
+  // request won't be completed before the cancellation arrives.
+  auto internal_resolver = std::make_unique<net::HangingHostResolver>();
+  network_context->url_request_context()->set_host_resolver(
+      internal_resolver.get());
+
+  mojom::HostResolverPtr resolver;
+  network_context->CreateHostResolver(mojo::MakeRequest(&resolver));
+
+  ASSERT_EQ(0, internal_resolver->num_cancellations());
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
+  mojom::ResolveHostHandlePtr control_handle;
+  resolver->ResolveHost(net::HostPortPair("localhost", 80),
+                        mojo::MakeRequest(&control_handle),
+                        std::move(response_client_ptr));
+  // Run a bit to ensure the resolve request makes it to the resolver. Otherwise
+  // the resolver will be destroyed and close its pipe before it even knows
+  // about the request to send a failure.
+  scoped_task_environment_.RunUntilIdle();
+
+  bool control_handle_closed = false;
+  auto connection_error_callback =
+      base::BindLambdaForTesting([&]() { control_handle_closed = true; });
+  control_handle.set_connection_error_handler(connection_error_callback);
+  bool resolver_closed = false;
+  auto resolver_closed_callback =
+      base::BindLambdaForTesting([&]() { resolver_closed = true; });
+  resolver.set_connection_error_handler(resolver_closed_callback);
+
+  network_context = nullptr;
+  run_loop.Run();
+
+  // On context destruction, should receive an ERR_FAILED result, and the
+  // internal resolver request should have been cancelled.
+  EXPECT_EQ(net::ERR_FAILED, response_client.result_error());
+  EXPECT_FALSE(response_client.result_addresses());
+  EXPECT_EQ(1, internal_resolver->num_cancellations());
+  EXPECT_TRUE(control_handle_closed);
+  EXPECT_TRUE(resolver_closed);
 }
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledByDefault) {
