@@ -213,11 +213,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '714bf84e58abd9573488fc365707fb8f288ca73c',
+  'spv_tools_revision': 'ef678672fb04ee396c1c8de755f714f1c3d65267',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_headers_revision': 'ff684ffc6a35d2a58f0f63108877d0064ea33feb',
+  'spv_headers_revision': '2c512180ca03b5d4f56283efc85745775b45fdc4',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
