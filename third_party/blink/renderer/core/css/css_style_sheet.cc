@@ -92,11 +92,6 @@ const Document* CSSStyleSheet::SingleOwnerDocument(
 }
 
 CSSStyleSheet* CSSStyleSheet::Create(Document& document,
-                                     ExceptionState& exception_state) {
-  return CSSStyleSheet::Create(document, CSSStyleSheetInit(), exception_state);
-}
-
-CSSStyleSheet* CSSStyleSheet::Create(Document& document,
                                      const CSSStyleSheetInit& options,
                                      ExceptionState& exception_state) {
   if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled()) {
