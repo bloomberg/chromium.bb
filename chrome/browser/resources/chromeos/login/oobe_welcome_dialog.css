@@ -28,6 +28,11 @@
   user-select: none;
 }
 
+video {
+  height: 200px;
+  width: 449px;
+}
+
 #buttons {
   width: 100%;
 }

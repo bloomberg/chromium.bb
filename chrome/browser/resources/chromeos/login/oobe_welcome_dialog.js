@@ -58,6 +58,7 @@
   };
 
   const VIDEO_DEVICE = {
+    CHROMEBOX: 'chromebox',
     LAPTOP: 'laptop',
     TABLET: 'tablet',
     LAPTOP_G: 'laptop_G',
@@ -266,6 +267,7 @@
       timezoneButtonVisible: {
         type: Boolean,
         value: false,
+        observer: 'updateVideoMode_',
       },
 
       /**
@@ -274,7 +276,7 @@
       debuggingLinkVisible: Boolean,
 
       /**
-       * True when in tablet mode.
+       * True when in tablet mode (vs laptop).
        */
       isInTabletMode: {
         type: Boolean,
@@ -282,7 +284,7 @@
       },
 
       /**
-       * True when scree orientation is portrait.
+       * True when screen orientation is portrait (vs landscape).
        */
       isInPortraitMode: {
         type: Boolean,
@@ -291,6 +293,9 @@
     },
 
     getVideoDeviceType_: function() {
+      if (this.timezoneButtonVisible)
+        return VIDEO_DEVICE.CHROMEBOX;
+
       return this.isInTabletMode ? VIDEO_DEVICE.TABLET : VIDEO_DEVICE.LAPTOP;
     },
 
@@ -300,6 +305,11 @@
     },
 
     updateVideoMode_: function() {
+      // Depending on the order of events, this might be called before
+      // attached().
+      if (!this.welcomeVideoController_)
+        return;
+
       this.welcomeVideoController_.updateConfiguration(
           this.getVideoDeviceType_(), this.getVideoOrientationType_());
     },
