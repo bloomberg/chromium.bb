@@ -804,6 +804,7 @@ if (enable_vr || (enable_arcore && package_arcore)) {
 
       data = [
         "//chrome/android/shared_preference_files/test/",
+        "//components/test/data/js_dialogs/render_tests/",
         "//third_party/gvr-android-sdk/test-apks/",
       ]
     }
