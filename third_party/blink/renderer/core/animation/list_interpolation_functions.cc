@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
 
 #include <memory>
+#include "base/callback.h"
 #include "third_party/blink/renderer/core/animation/underlying_value_owner.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -132,7 +133,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
       InterpolationValue end(end_interpolable_list.Get(i % end_length)->Clone(),
                              end_non_interpolable_list.Get(i % end_length));
       PairwiseInterpolationValue result =
-          merge_single_item_conversions(std::move(start), std::move(end));
+          merge_single_item_conversions.Run(std::move(start), std::move(end));
       if (!result)
         return nullptr;
       result_start_interpolable_list->Set(
@@ -242,8 +243,8 @@ static bool NonInterpolableListsAreCompatible(
             ListInterpolationFunctions::LengthMatchingStrategy::
                 kLowestCommonMultiple ||
         (i < a.length() && i < b.length())) {
-      if (!non_interpolable_values_are_compatible(a.Get(i % a.length()),
-                                                  b.Get(i % b.length()))) {
+      if (!non_interpolable_values_are_compatible.Run(a.Get(i % a.length()),
+                                                      b.Get(i % b.length()))) {
         return false;
       }
     }
@@ -304,11 +305,11 @@ void ListInterpolationFunctions::Composite(
         ToNonInterpolableList(*underlying_value.non_interpolable_value);
 
     for (size_t i = 0; i < final_length; i++) {
-      composite_item(underlying_interpolable_list.GetMutable(i),
-                     underlying_non_interpolable_list.GetMutable(i),
-                     underlying_fraction,
-                     *interpolable_list.Get(i % value_length),
-                     non_interpolable_list.Get(i % value_length));
+      composite_item.Run(underlying_interpolable_list.GetMutable(i),
+                         underlying_non_interpolable_list.GetMutable(i),
+                         underlying_fraction,
+                         *interpolable_list.Get(i % value_length),
+                         non_interpolable_list.Get(i % value_length));
     }
   } else {
     DCHECK_EQ(length_matching_strategy, LengthMatchingStrategy::kPadToLargest);
@@ -322,10 +323,10 @@ void ListInterpolationFunctions::Composite(
         ToNonInterpolableList(*underlying_value.non_interpolable_value);
 
     for (size_t i = 0; i < value_length; i++) {
-      composite_item(underlying_interpolable_list.GetMutable(i),
-                     underlying_non_interpolable_list.GetMutable(i),
-                     underlying_fraction, *interpolable_list.Get(i),
-                     non_interpolable_list.Get(i));
+      composite_item.Run(underlying_interpolable_list.GetMutable(i),
+                         underlying_non_interpolable_list.GetMutable(i),
+                         underlying_fraction, *interpolable_list.Get(i),
+                         non_interpolable_list.Get(i));
     }
     for (size_t i = value_length; i < final_length; i++) {
       underlying_interpolable_list.GetMutable(i)->Scale(underlying_fraction);

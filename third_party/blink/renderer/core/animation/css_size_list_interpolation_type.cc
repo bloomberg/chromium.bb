@@ -157,7 +157,7 @@ PairwiseInterpolationValue CSSSizeListInterpolationType::MaybeMergeSingles(
   return ListInterpolationFunctions::MaybeMergeSingles(
       std::move(start), std::move(end),
       ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
-      SizeInterpolationFunctions::MaybeMergeSingles);
+      WTF::BindRepeating(SizeInterpolationFunctions::MaybeMergeSingles));
 }
 
 InterpolationValue
@@ -176,9 +176,9 @@ void CSSSizeListInterpolationType::Composite(
   ListInterpolationFunctions::Composite(
       underlying_value_owner, underlying_fraction, *this, value,
       ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
-
-      SizeInterpolationFunctions::NonInterpolableValuesAreCompatible,
-      SizeInterpolationFunctions::Composite);
+      WTF::BindRepeating(
+          SizeInterpolationFunctions::NonInterpolableValuesAreCompatible),
+      WTF::BindRepeating(SizeInterpolationFunctions::Composite));
 }
 
 void CSSSizeListInterpolationType::ApplyStandardPropertyValue(

@@ -26,8 +26,9 @@ class ListInterpolationFunctions {
   enum class LengthMatchingStrategy { kLowestCommonMultiple, kPadToLargest };
 
   using MergeSingleItemConversionsCallback =
-      PairwiseInterpolationValue (*)(InterpolationValue&& start,
-                                     InterpolationValue&& end);
+      base::RepeatingCallback<PairwiseInterpolationValue(InterpolationValue&&,
+                                                         InterpolationValue&&)>;
+
   static PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end,
@@ -41,12 +42,14 @@ class ListInterpolationFunctions {
                           EqualNonInterpolableValuesCallback);
 
   using NonInterpolableValuesAreCompatibleCallback =
-      bool (*)(const NonInterpolableValue*, const NonInterpolableValue*);
-  using CompositeItemCallback = void (*)(std::unique_ptr<InterpolableValue>&,
-                                         scoped_refptr<NonInterpolableValue>&,
-                                         double underlying_fraction,
-                                         const InterpolableValue&,
-                                         const NonInterpolableValue*);
+      base::RepeatingCallback<bool(const NonInterpolableValue*,
+                                   const NonInterpolableValue*)>;
+  using CompositeItemCallback =
+      base::RepeatingCallback<void(std::unique_ptr<InterpolableValue>&,
+                                   scoped_refptr<NonInterpolableValue>&,
+                                   double underlying_fraction,
+                                   const InterpolableValue&,
+                                   const NonInterpolableValue*)>;
   static void Composite(UnderlyingValueOwner&,
                         double underlying_fraction,
                         const InterpolationType&,

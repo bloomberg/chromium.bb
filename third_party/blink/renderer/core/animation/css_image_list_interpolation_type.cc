@@ -152,7 +152,8 @@ PairwiseInterpolationValue CSSImageListInterpolationType::MaybeMergeSingles(
   return ListInterpolationFunctions::MaybeMergeSingles(
       std::move(start), std::move(end),
       ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
-      CSSImageInterpolationType::StaticMergeSingleConversions);
+      WTF::BindRepeating(
+          CSSImageInterpolationType::StaticMergeSingleConversions));
 }
 
 InterpolationValue
