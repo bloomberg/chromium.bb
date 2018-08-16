@@ -18,7 +18,7 @@ void NetworkStatusListenerAndroid::NotifyNetworkChange(
     const base::android::JavaRef<jobject>& jobj,
     jint connectionType) {
   DCHECK(observer_);
-  using ConnectionType = net::NetworkChangeNotifier::ConnectionType;
+  using ConnectionType = network::mojom::ConnectionType;
   ConnectionType connection_type = static_cast<ConnectionType>(connectionType);
   observer_->OnNetworkChanged(connection_type);
 }
@@ -39,13 +39,12 @@ void NetworkStatusListenerAndroid::Stop() {
       base::android::AttachCurrentThread(), java_obj_);
 }
 
-net::NetworkChangeNotifier::ConnectionType
+network::mojom::ConnectionType
 NetworkStatusListenerAndroid::GetConnectionType() {
   int connection_type =
       Java_NetworkStatusListenerAndroid_getCurrentConnectionType(
           base::android::AttachCurrentThread(), java_obj_);
-  return static_cast<net::NetworkChangeNotifier::ConnectionType>(
-      connection_type);
+  return static_cast<network::mojom::ConnectionType>(connection_type);
 }
 
 }  // namespace download

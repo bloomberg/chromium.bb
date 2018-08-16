@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
 #include "components/download/internal/background_service/scheduler/network_status_listener.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,7 +18,7 @@ using testing::_;
 using testing::InSequence;
 using ConnectionTypeObserver =
     net::NetworkChangeNotifier::ConnectionTypeObserver;
-using ConnectionType = net::NetworkChangeNotifier::ConnectionType;
+using ConnectionType = network::mojom::ConnectionType;
 
 namespace download {
 namespace {
@@ -29,29 +30,6 @@ MATCHER_P(NetworkStatusEqual, value, "") {
 MATCHER_P(BatteryStatusEqual, value, "") {
   return arg.battery_status == value;
 }
-
-// NetworkChangeNotifier that can change network type in tests.
-class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
- public:
-  TestNetworkChangeNotifier()
-      : conn_type_(ConnectionType::CONNECTION_UNKNOWN) {}
-
-  // net::NetworkChangeNotifier implementation.
-  ConnectionType GetCurrentConnectionType() const override {
-    return conn_type_;
-  }
-
-  // Changes the network type.
-  void ChangeNetworkType(ConnectionType type) {
-    conn_type_ = type;
-    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(type);
-  }
-
- private:
-  ConnectionType conn_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeNotifier);
-};
 
 class MockObserver : public DeviceStatusListener::Observer {
  public:
@@ -79,18 +57,30 @@ class TestBatteryStatusListener : public BatteryStatusListener {
 class TestDeviceStatusListener : public DeviceStatusListener {
  public:
   explicit TestDeviceStatusListener(
-      std::unique_ptr<TestBatteryStatusListener> battery_listener)
+      std::unique_ptr<TestBatteryStatusListener> battery_listener,
+      network::NetworkConnectionTracker* network_connection_tracker)
       : DeviceStatusListener(base::TimeDelta(),
                              base::TimeDelta(),
-                             std::move(battery_listener)) {}
+                             std::move(battery_listener),
+                             network_connection_tracker),
+        network_connection_tracker_(network_connection_tracker) {}
 
   void BuildNetworkStatusListener() override {
-    network_listener_ = std::make_unique<NetworkStatusListenerImpl>();
+    network_listener_ = std::make_unique<NetworkStatusListenerImpl>(
+        network_connection_tracker_);
   }
+
+ private:
+  network::NetworkConnectionTracker* network_connection_tracker_;
+
+  friend class DeviceStatusListenerTest;
 };
 
 class DeviceStatusListenerTest : public testing::Test {
  public:
+  DeviceStatusListenerTest()
+      : network_connection_tracker_(true, ConnectionType::CONNECTION_UNKNOWN) {}
+
   void SetUp() override {
     auto power_source = std::make_unique<base::PowerMonitorTestSource>();
     power_source_ = power_source.get();
@@ -99,8 +89,8 @@ class DeviceStatusListenerTest : public testing::Test {
 
     auto battery_listener = std::make_unique<TestBatteryStatusListener>();
     test_battery_listener_ = battery_listener.get();
-    listener_ =
-        std::make_unique<TestDeviceStatusListener>(std::move(battery_listener));
+    listener_ = std::make_unique<TestDeviceStatusListener>(
+        std::move(battery_listener), &network_connection_tracker_);
   }
 
   void TearDown() override { listener_.reset(); }
@@ -122,15 +112,14 @@ class DeviceStatusListenerTest : public testing::Test {
   // Simulates a network change call, the event will be broadcasted
   // asynchronously.
   void ChangeNetworkType(ConnectionType type) {
-    test_network_notifier_.ChangeNetworkType(type);
+    network_connection_tracker_.SetConnectionType(type);
   }
 
   // Simulates a network change call, the event will be sent to client
   // immediately.
   void ChangeNetworkTypeImmediately(ConnectionType type) {
     DCHECK(listener_);
-    static_cast<NetworkStatusListener::Observer*>(listener_.get())
-        ->OnNetworkChanged(type);
+    listener_->OnNetworkChanged(type);
   }
 
   // Simulates a battery change call.
@@ -148,7 +137,7 @@ class DeviceStatusListenerTest : public testing::Test {
 
   // Needed for network change notifier and power monitor.
   base::MessageLoop message_loop_;
-  TestNetworkChangeNotifier test_network_notifier_;
+  network::TestNetworkConnectionTracker network_connection_tracker_;
   std::unique_ptr<base::PowerMonitor> power_monitor_;
   base::PowerMonitorTestSource* power_source_;
   TestBatteryStatusListener* test_battery_listener_;

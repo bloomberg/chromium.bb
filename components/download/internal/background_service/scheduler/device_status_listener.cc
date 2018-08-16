@@ -23,18 +23,18 @@ BatteryStatus ToBatteryStatus(bool on_battery_power) {
 }
 
 // Converts a ConnectionType to NetworkStatus.
-NetworkStatus ToNetworkStatus(net::NetworkChangeNotifier::ConnectionType type) {
+NetworkStatus ToNetworkStatus(network::mojom::ConnectionType type) {
   switch (type) {
-    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-    case net::NetworkChangeNotifier::CONNECTION_WIFI:
+    case network::mojom::ConnectionType::CONNECTION_ETHERNET:
+    case network::mojom::ConnectionType::CONNECTION_WIFI:
       return NetworkStatus::UNMETERED;
-    case net::NetworkChangeNotifier::CONNECTION_2G:
-    case net::NetworkChangeNotifier::CONNECTION_3G:
-    case net::NetworkChangeNotifier::CONNECTION_4G:
+    case network::mojom::ConnectionType::CONNECTION_2G:
+    case network::mojom::ConnectionType::CONNECTION_3G:
+    case network::mojom::ConnectionType::CONNECTION_4G:
       return NetworkStatus::METERED;
-    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-    case net::NetworkChangeNotifier::CONNECTION_NONE:
-    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+    case network::mojom::ConnectionType::CONNECTION_UNKNOWN:
+    case network::mojom::ConnectionType::CONNECTION_NONE:
+    case network::mojom::ConnectionType::CONNECTION_BLUETOOTH:
       return NetworkStatus::DISCONNECTED;
   }
   NOTREACHED();
@@ -97,13 +97,18 @@ void BatteryStatusListener::OnPowerStateChange(bool on_battery_power) {
 DeviceStatusListener::DeviceStatusListener(
     const base::TimeDelta& startup_delay,
     const base::TimeDelta& online_delay,
-    std::unique_ptr<BatteryStatusListener> battery_listener)
+    std::unique_ptr<BatteryStatusListener> battery_listener,
+    network::NetworkConnectionTracker* network_connection_tracker)
     : observer_(nullptr),
       listening_(false),
       is_valid_state_(false),
       startup_delay_(startup_delay),
       online_delay_(online_delay),
-      battery_listener_(std::move(battery_listener)) {}
+#if !defined(OS_ANDROID)
+      network_connection_tracker_(network_connection_tracker),
+#endif
+      battery_listener_(std::move(battery_listener)) {
+}
 
 DeviceStatusListener::~DeviceStatusListener() {
   Stop();
@@ -170,7 +175,7 @@ void DeviceStatusListener::Stop() {
 }
 
 void DeviceStatusListener::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+    network::mojom::ConnectionType type) {
   pending_network_status_ = ToNetworkStatus(type);
 
   if (pending_network_status_ == status_.network_status) {
@@ -221,7 +226,8 @@ void DeviceStatusListener::BuildNetworkStatusListener() {
 #if defined(OS_ANDROID)
   network_listener_ = std::make_unique<NetworkStatusListenerAndroid>();
 #else
-  network_listener_ = std::make_unique<NetworkStatusListenerImpl>();
+  network_listener_ =
+      std::make_unique<NetworkStatusListenerImpl>(network_connection_tracker_);
 #endif
 }
 

@@ -46,6 +46,7 @@ DownloadService* CreateDownloadServiceInternal(
     std::unique_ptr<Store> store,
     std::unique_ptr<TaskScheduler> task_scheduler,
     std::unique_ptr<FileMonitor> file_monitor,
+    network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& files_storage_dir) {
   auto client_set = std::make_unique<ClientSet>(std::move(clients));
   auto model = std::make_unique<ModelImpl>(std::move(store));
@@ -60,7 +61,7 @@ DownloadService* CreateDownloadServiceInternal(
 
   auto device_status_listener = std::make_unique<DeviceStatusListener>(
       config->network_startup_delay, config->network_change_delay,
-      std::move(battery_listener));
+      std::move(battery_listener), network_connection_tracker);
   NavigationMonitor* navigation_monitor =
       NavigationMonitorFactory::GetForBrowserContext(browser_context);
   auto scheduler = std::make_unique<SchedulerImpl>(
@@ -81,6 +82,7 @@ DownloadService* CreateDownloadServiceInternal(
 DownloadService* BuildDownloadService(
     content::BrowserContext* browser_context,
     std::unique_ptr<DownloadClientMap> clients,
+    network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     std::unique_ptr<TaskScheduler> task_scheduler) {
@@ -103,13 +105,14 @@ DownloadService* BuildDownloadService(
   return CreateDownloadServiceInternal(
       browser_context, std::move(clients), std::move(config), std::move(driver),
       std::move(store), std::move(task_scheduler), std::move(file_monitor),
-      files_storage_dir);
+      network_connection_tracker, files_storage_dir);
 }
 
 // Create download service for incognito mode without any database or file IO.
 DownloadService* BuildInMemoryDownloadService(
     content::BrowserContext* browser_context,
     std::unique_ptr<DownloadClientMap> clients,
+    network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
     BlobTaskProxy::BlobContextGetter blob_context_getter,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
@@ -134,7 +137,7 @@ DownloadService* BuildInMemoryDownloadService(
   return CreateDownloadServiceInternal(
       browser_context, std::move(clients), std::move(config), std::move(driver),
       std::move(store), std::move(task_scheduler), std::move(file_monitor),
-      files_storage_dir);
+      network_connection_tracker, files_storage_dir);
 }
 
 }  // namespace download

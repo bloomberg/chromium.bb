@@ -9,9 +9,10 @@
 
 #include "base/power_monitor/power_observer.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/download/internal/background_service/scheduler/device_status.h"
 #include "components/download/internal/background_service/scheduler/network_status_listener.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace download {
 
@@ -73,10 +74,11 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
     virtual void OnDeviceStatusChanged(const DeviceStatus& device_status) = 0;
   };
 
-  explicit DeviceStatusListener(
+  DeviceStatusListener(
       const base::TimeDelta& startup_delay,
       const base::TimeDelta& online_delay,
-      std::unique_ptr<BatteryStatusListener> battery_listener);
+      std::unique_ptr<BatteryStatusListener> battery_listener,
+      network::NetworkConnectionTracker* network_connection_tracker);
   ~DeviceStatusListener() override;
 
   bool is_valid_state() { return is_valid_state_; }
@@ -93,6 +95,9 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
  protected:
   // Creates the instance of |network_listener_|, visible for testing.
   virtual void BuildNetworkStatusListener();
+
+  // NetworkStatusListener::Observer implementation. Visible for testing.
+  void OnNetworkChanged(network::mojom::ConnectionType type) override;
 
   // Used to listen to network connectivity changes.
   std::unique_ptr<NetworkStatusListener> network_listener_;
@@ -111,10 +116,6 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
  private:
   // Start after a delay to wait for potential network stack setup.
   void StartAfterDelay();
-
-  // NetworkStatusListener::Observer implementation.
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // BatteryStatusListener::Observer implementation.
   void OnPowerStateChange(bool on_battery_power) override;
@@ -136,6 +137,11 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
 
   // Pending network status used to update the current network status.
   NetworkStatus pending_network_status_ = NetworkStatus::DISCONNECTED;
+
+#if !defined(OS_ANDROID)
+  // Used to listen for network connection changes.
+  network::NetworkConnectionTracker* network_connection_tracker_;
+#endif
 
   // Used to listen to battery status.
   std::unique_ptr<BatteryStatusListener> battery_listener_;
