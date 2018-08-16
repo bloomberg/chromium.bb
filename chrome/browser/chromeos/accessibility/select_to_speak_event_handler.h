@@ -52,6 +52,11 @@ class SelectToSpeakEventHandler : public ui::EventHandler {
   // Forwards a mouse event to the Select-to-Speak extension.
   void ForwardMouseEventToExtension(ui::MouseEvent* event);
 
+  // For touch and mouse events events, the Select-to-Speak tray needs to
+  // cancel all further event propagation so that dialogs and menus do not
+  // close and therefore can be read by the user.
+  void CancelEventIfOverSelectToSpeakTray(ui::LocatedEvent* event);
+
   enum State {
     // The search key is not down, no selection has been requested.
     // No other keys or mouse events are captured.
