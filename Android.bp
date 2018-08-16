@@ -26,7 +26,7 @@ cc_defaults {
     },
 }
 
-cc_library_static {
+cc_library {
     name: "libjsoncpp",
     defaults: ["libjsoncpp_defaults"],
     vendor_available: true,
