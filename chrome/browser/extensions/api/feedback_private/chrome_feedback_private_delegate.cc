@@ -77,6 +77,8 @@ ChromeFeedbackPrivateDelegate::GetStrings(
   SET_STRING("privacy-note", IDS_FEEDBACK_PRIVACY_NOTE);
   SET_STRING("performance-trace",
              IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX);
+  SET_STRING("bluetooth-logs-info", IDS_FEEDBACK_BLUETOOTH_LOGS_CHECKBOX);
+  SET_STRING("bluetooth-logs-message", IDS_FEEDBACK_BLUETOOTH_LOGS_MESSAGE);
   // Add the localized strings needed for the "system information" page.
   SET_STRING("sysinfoPageTitle", IDS_FEEDBACK_SYSINFO_PAGE_TITLE);
   SET_STRING("sysinfoPageDescription", IDS_ABOUT_SYS_DESC);

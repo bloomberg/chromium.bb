@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,9 +14,36 @@
 #include "chrome/common/chrome_switches.h"
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/signin/core/browser/signin_manager.h"
+#endif
+
 namespace feedback_private = extensions::api::feedback_private;
 
 namespace chrome {
+
+namespace {
+
+#if defined(OS_CHROMEOS)
+constexpr char kGoogleDotCom[] = "@google.com";
+
+// Returns if the feedback page is considered to be triggered from user
+// interaction.
+bool IsFromUserInteraction(FeedbackSource source) {
+  switch (source) {
+    case kFeedbackSourceArcApp:
+    case kFeedbackSourceAsh:
+    case kFeedbackSourceBrowserCommand:
+    case kFeedbackSourceMdSettingsAboutPage:
+    case kFeedbackSourceOldSettingsAboutPage:
+      return true;
+    default:
+      return false;
+  }
+}
+#endif
+}
 
 void ShowFeedbackPage(Browser* browser,
                       FeedbackSource source,
@@ -42,12 +70,25 @@ void ShowFeedbackPage(Browser* browser,
   extensions::FeedbackPrivateAPI* api =
       extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);
 
-  api->RequestFeedbackForFlow(
-      description_template, description_placeholder_text, category_tag,
-      extra_diagnostics, page_url,
+  feedback_private::FeedbackFlow flow =
       source == kFeedbackSourceSadTabPage
           ? feedback_private::FeedbackFlow::FEEDBACK_FLOW_SADTABCRASH
-          : feedback_private::FeedbackFlow::FEEDBACK_FLOW_REGULAR);
+          : feedback_private::FeedbackFlow::FEEDBACK_FLOW_REGULAR;
+
+#if defined(OS_CHROMEOS)
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  if (signin_manager &&
+      base::EndsWith(signin_manager->GetAuthenticatedAccountInfo().email,
+                     kGoogleDotCom, base::CompareCase::INSENSITIVE_ASCII) &&
+      IsFromUserInteraction(source)) {
+    flow = feedback_private::FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL;
+  }
+#endif
+
+  api->RequestFeedbackForFlow(description_template,
+                              description_placeholder_text, category_tag,
+                              extra_diagnostics, page_url, flow);
 }
 
 }  // namespace chrome

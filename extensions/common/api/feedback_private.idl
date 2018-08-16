@@ -31,7 +31,10 @@ namespace feedbackPrivate {
 
     // Flow when the feedback is requested from the sad tab ("Aw, Snap!") page
     // when the renderer crashes.
-    sadTabCrash
+    sadTabCrash,
+
+    // Flow for internal Google users.
+    googleInternal
   };
 
   dictionary FeedbackInfo {
@@ -82,6 +85,9 @@ namespace feedbackPrivate {
 
     // Whether to use the system-provided window frame or custom frame controls.
     boolean? useSystemWindowFrame;
+
+    // Whether or not to send bluetooth logs with this report.
+    boolean? sendBluetoothLogs;
   };
 
   // Status of the sending of a feedback report.
