@@ -366,4 +366,39 @@ TEST_F(AppListItemListTest, SetItemPosition) {
   EXPECT_TRUE(VerifyItemOrder4(2, 0, 3, 1));
 }
 
+// Test adding a page break item between two items with different position.
+TEST_F(AppListItemListTest, AddPageBreakItem) {
+  AppListItem* item_0 = CreateAndAddItem(GetItemId(0));
+  AppListItem* item_1 = CreateAndAddItem(GetItemId(1));
+  EXPECT_EQ(item_0, item_list_.item_at(0));
+  EXPECT_EQ(item_1, item_list_.item_at(1));
+  EXPECT_TRUE(item_0->position().LessThan(item_1->position()));
+
+  AppListItem* page_break_item = item_list_.AddPageBreakItemAfter(item_0);
+  EXPECT_EQ(item_0, item_list_.item_at(0));
+  EXPECT_EQ(page_break_item, item_list_.item_at(1));
+  EXPECT_EQ(item_1, item_list_.item_at(2));
+  EXPECT_TRUE(item_0->position().LessThan(page_break_item->position()));
+  EXPECT_TRUE(page_break_item->position().LessThan(item_1->position()));
+}
+
+// Test adding a page break item between two items with the same position.
+TEST_F(AppListItemListTest, AddPageBreakItemWithSamePosition) {
+  AppListItem* item_0 = CreateAndAddItem(GetItemId(0));
+  AppListItem* item_1 = CreateAndAddItem(GetItemId(1));
+  item_list_.SetItemPosition(item_list_.item_at(1),
+                             item_list_.item_at(0)->position());
+  EXPECT_EQ(item_0, item_list_.item_at(0));
+  EXPECT_EQ(item_1, item_list_.item_at(1));
+  EXPECT_TRUE(item_0->position().Equals(item_1->position()));
+
+  // Position of items should be fixed.
+  AppListItem* page_break_item = item_list_.AddPageBreakItemAfter(item_0);
+  EXPECT_EQ(item_0, item_list_.item_at(0));
+  EXPECT_EQ(page_break_item, item_list_.item_at(1));
+  EXPECT_EQ(item_1, item_list_.item_at(2));
+  EXPECT_TRUE(item_0->position().LessThan(page_break_item->position()));
+  EXPECT_TRUE(page_break_item->position().LessThan(item_1->position()));
+}
+
 }  // namespace app_list

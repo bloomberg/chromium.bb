@@ -129,11 +129,23 @@ AppListItem* AppListItemList::AddPageBreakItemAfter(
   size_t previous_index;
   CHECK(FindItemIndex(previous_item->id(), &previous_index));
   CHECK(!previous_item->IsInFolder());
-  syncer::StringOrdinal position =
-      previous_index == item_count() - 1
-          ? previous_item->position().CreateAfter()
-          : previous_item->position().CreateBetween(
-                item_at(previous_index + 1)->position());
+
+  const size_t next_index = previous_index + 1;
+  const AppListItem* next_item =
+      next_index < item_count() ? item_at(next_index) : nullptr;
+  syncer::StringOrdinal position;
+  if (!next_item) {
+    position = previous_item->position().CreateAfter();
+  } else {
+    // It is possible that items were added with the same ordinal. To
+    // successfully add the page break item we need to fix this. We do not try
+    // to fix this when an item is added in order to avoid possible edge cases
+    // with sync.
+    if (previous_item->position().Equals(next_item->position()))
+      FixItemPosition(next_index);
+    position = previous_item->position().CreateBetween(next_item->position());
+  }
+
   auto page_break_item = std::make_unique<AppListItem>(base::GenerateGUID());
   page_break_item->set_position(position);
   page_break_item->set_is_page_break(true);
