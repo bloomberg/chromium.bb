@@ -43,6 +43,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Conformance expectations
     # ========================
 
+    # Failing new test
+    self.Fail(
+        'conformance2/glsl3/const-struct-from-array-as-function-parameter.html',
+        bug=874620)
+
     # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2665
     self.Fail('conformance2/textures/misc/tex-subimage3d-canvas-bug.html',
               ['linux'], bug=859400)
