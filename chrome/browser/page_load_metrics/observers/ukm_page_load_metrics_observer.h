@@ -10,11 +10,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "components/ukm/ukm_source.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "ui/base/page_transition_types.h"
 
-namespace content {
-class WebContents;
+namespace network {
+class NetworkQualityTracker;
 }
 
 // If URL-Keyed-Metrics (UKM) is enabled in the system, this is used to
@@ -24,11 +23,10 @@ class UkmPageLoadMetricsObserver
  public:
   // Returns a UkmPageLoadMetricsObserver, or nullptr if it is not needed.
   static std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
-  CreateIfNeeded(content::WebContents* web_contents);
+  CreateIfNeeded();
 
   explicit UkmPageLoadMetricsObserver(
-      net::NetworkQualityEstimator::NetworkQualityProvider*
-          network_quality_provider);
+      network::NetworkQualityTracker* network_quality_tracker);
   ~UkmPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
@@ -71,8 +69,8 @@ class UkmPageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info,
       base::TimeTicks app_background_time);
 
-  net::NetworkQualityEstimator::NetworkQualityProvider* const
-      network_quality_provider_;
+  // Guaranteed to be non-null during the lifetime of |this|.
+  network::NetworkQualityTracker* network_quality_tracker_;
 
   // The number of body (not header) prefilter bytes consumed by requests for
   // the page.
