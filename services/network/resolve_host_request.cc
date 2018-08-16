@@ -15,15 +15,18 @@
 
 namespace network {
 
-ResolveHostRequest::ResolveHostRequest(net::HostResolver* resolver,
-                                       const net::HostPortPair& host,
-                                       net::NetLog* net_log) {
+ResolveHostRequest::ResolveHostRequest(
+    net::HostResolver* resolver,
+    const net::HostPortPair& host,
+    const base::Optional<net::HostResolver::ResolveHostParameters>&
+        optional_parameters,
+    net::NetLog* net_log) {
   DCHECK(resolver);
   DCHECK(net_log);
 
   internal_request_ = resolver->CreateRequest(
       host, net::NetLogWithSource::Make(net_log, net::NetLogSourceType::NONE),
-      base::nullopt);
+      optional_parameters);
 }
 
 ResolveHostRequest::~ResolveHostRequest() {

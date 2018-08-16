@@ -45,7 +45,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HostResolver
   ~HostResolver() override;
 
   void ResolveHost(const net::HostPortPair& host,
-                   mojom::ResolveHostHandleRequest control_handle,
+                   mojom::ResolveHostParametersPtr optional_parameters,
                    mojom::ResolveHostClientPtr response_client) override;
 
   size_t GetNumOutstandingRequestsForTesting() const;

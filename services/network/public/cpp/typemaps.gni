@@ -7,6 +7,7 @@ typemaps = [
   "//services/network/public/cpp/cors_error_status.typemap",
   "//services/network/public/cpp/digitally_signed.typemap",
   "//services/network/public/cpp/http_request_headers.typemap",
+  "//services/network/public/cpp/host_resolver.typemap",
   "//services/network/public/cpp/mutable_network_traffic_annotation_tag.typemap",
   "//services/network/public/cpp/mutable_partial_network_traffic_annotation_tag.typemap",
   "//services/network/public/cpp/network_param.typemap",

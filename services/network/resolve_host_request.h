@@ -26,9 +26,12 @@ namespace network {
 // lifetime and cancellation.
 class ResolveHostRequest : public mojom::ResolveHostHandle {
  public:
-  ResolveHostRequest(net::HostResolver* resolver,
-                     const net::HostPortPair& host,
-                     net::NetLog* net_log);
+  ResolveHostRequest(
+      net::HostResolver* resolver,
+      const net::HostPortPair& host,
+      const base::Optional<net::HostResolver::ResolveHostParameters>&
+          optional_parameters,
+      net::NetLog* net_log);
   ~ResolveHostRequest() override;
 
   int Start(mojom::ResolveHostHandleRequest control_handle_request,

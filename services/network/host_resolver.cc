@@ -21,6 +21,20 @@ static base::LazyInstance<HostResolver::ResolveHostCallback>::Leaky
     resolve_host_callback;
 }
 
+namespace {
+base::Optional<net::HostResolver::ResolveHostParameters>
+ConvertOptionalParameters(
+    const mojom::ResolveHostParametersPtr& mojo_parameters) {
+  if (!mojo_parameters)
+    return base::nullopt;
+
+  net::HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = mojo_parameters->dns_query_type;
+  parameters.initial_priority = mojo_parameters->initial_priority;
+  return parameters;
+}
+}  // namespace
+
 HostResolver::HostResolver(
     mojom::HostResolverRequest resolver_request,
     ConnectionShutdownCallback connection_shutdown_callback,
@@ -45,18 +59,25 @@ HostResolver::~HostResolver() {
     binding_.Close();
 }
 
-void HostResolver::ResolveHost(const net::HostPortPair& host,
-                               mojom::ResolveHostHandleRequest control_handle,
-                               mojom::ResolveHostClientPtr response_client) {
+void HostResolver::ResolveHost(
+    const net::HostPortPair& host,
+    mojom::ResolveHostParametersPtr optional_parameters,
+    mojom::ResolveHostClientPtr response_client) {
   if (resolve_host_callback.Get())
     resolve_host_callback.Get().Run(host.host());
-  auto request =
-      std::make_unique<ResolveHostRequest>(internal_resolver_, host, net_log_);
 
-  int rv =
-      request->Start(std::move(control_handle), std::move(response_client),
-                     base::BindOnce(&HostResolver::OnResolveHostComplete,
-                                    base::Unretained(this), request.get()));
+  auto request = std::make_unique<ResolveHostRequest>(
+      internal_resolver_, host, ConvertOptionalParameters(optional_parameters),
+      net_log_);
+
+  mojom::ResolveHostHandleRequest control_handle_request;
+  if (optional_parameters)
+    control_handle_request = std::move(optional_parameters->control_handle);
+
+  int rv = request->Start(
+      std::move(control_handle_request), std::move(response_client),
+      base::BindOnce(&HostResolver::OnResolveHostComplete,
+                     base::Unretained(this), request.get()));
   if (rv != net::ERR_IO_PENDING)
     return;
 
