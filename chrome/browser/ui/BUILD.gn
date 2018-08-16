@@ -3794,7 +3794,8 @@ jumbo_split_static_library("ui") {
   if (enable_extensions) {
     deps += [
       "//apps",
-      "//chrome/browser/apps/platform_apps",
+      "//chrome/browser/apps",
+      "//chrome/browser/apps/platform_apps",  # TODO(loyso): Remove this dep.
       "//chrome/browser/extensions",
       "//chrome/common/extensions/api",
       "//components/drive",

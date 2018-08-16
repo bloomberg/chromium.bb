@@ -22,13 +22,12 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/apps_launch.h"
 #include "chrome/browser/apps/platform_apps/install_chrome_app.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -43,8 +42,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/session_crashed_bubble.h"
 #include "chrome/browser/ui/startup/automation_infobar_delegate.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
@@ -55,8 +52,6 @@
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/rappor/public/rappor_utils.h"
@@ -65,11 +60,6 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
-#include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #include "google_apis/google_api_keys.h"
 #include "rlz/buildflags/buildflags.h"
 #include "ui/base/ui_features.h"
@@ -105,10 +95,6 @@
     !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/startup/supervised_users_deprecated_infobar_delegate.h"
 #endif
-
-using content::ChildProcessSecurityPolicy;
-using content::WebContents;
-using extensions::Extension;
 
 namespace {
 
@@ -286,55 +272,6 @@ std::vector<GURL> TabsToUrls(const StartupTabs& tabs) {
   return urls;
 }
 
-// Return true if the command line option --app-id is used.  Set
-// |out_extension| to the app to open, and |out_launch_container|
-// to the type of window into which the app should be open.
-bool GetAppLaunchContainer(
-    Profile* profile,
-    const std::string& app_id,
-    const Extension** out_extension,
-    extensions::LaunchContainer* out_launch_container) {
-
-  const Extension* extension = extensions::ExtensionRegistry::Get(
-      profile)->enabled_extensions().GetByID(app_id);
-  // The extension with id |app_id| may have been uninstalled.
-  if (!extension)
-    return false;
-
-  // Don't launch platform apps in incognito mode.
-  if (profile->IsOffTheRecord() && extension->is_platform_app())
-    return false;
-
-  // Look at preferences to find the right launch container. If no
-  // preference is set, launch as a window.
-  extensions::LaunchContainer launch_container = extensions::GetLaunchContainer(
-      extensions::ExtensionPrefs::Get(profile), extension);
-
-  if (!extensions::util::IsNewBookmarkAppsEnabled() &&
-      !extensions::HasPreferredLaunchContainer(
-          extensions::ExtensionPrefs::Get(profile), extension)) {
-    launch_container = extensions::LAUNCH_CONTAINER_WINDOW;
-  }
-
-  *out_extension = extension;
-  *out_launch_container = launch_container;
-  return true;
-}
-
-void RecordCmdLineAppHistogram(extensions::Manifest::Type app_type) {
-  extensions::RecordAppLaunchType(extension_misc::APP_LAUNCH_CMD_LINE_APP,
-                                  app_type);
-}
-
-// TODO(koz): Consolidate this function and remove the special casing.
-const Extension* GetPlatformApp(Profile* profile,
-                                const std::string& extension_id) {
-  const Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-          extension_id, extensions::ExtensionRegistry::EVERYTHING);
-  return extension && extension->is_platform_app() ? extension : NULL;
-}
-
 // Appends the contents of |from| to the end of |to|.
 void AppendTabs(const StartupTabs& from, StartupTabs* to) {
   if (!from.empty())
@@ -393,19 +330,11 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
 
   if (command_line_.HasSwitch(switches::kAppId)) {
     std::string app_id = command_line_.GetSwitchValueASCII(switches::kAppId);
-    const Extension* extension = GetPlatformApp(profile, app_id);
     // If |app_id| is a disabled or terminated platform app we handle it
     // specially here, otherwise it will be handled below.
-    if (extension) {
-      RecordCmdLineAppHistogram(extensions::Manifest::TYPE_PLATFORM_APP);
-      AppLaunchParams params(
-          profile, extension, extensions::LAUNCH_CONTAINER_NONE,
-          WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_COMMAND_LINE);
-      params.command_line = command_line_;
-      params.current_directory = cur_dir_;
-      ::OpenApplicationWithReenablePrompt(params);
+    if (apps::OpenApplicationWithReenablePrompt(profile, app_id, command_line_,
+                                                cur_dir_))
       return true;
-    }
   }
 
   // Open the required browser windows and tabs. First, see if
@@ -581,29 +510,8 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
   // TODO(skerner): Do something reasonable here. Pop up a warning panel?
   // Open an URL to the gallery page of the extension id?
   if (!app_id.empty()) {
-    extensions::LaunchContainer launch_container;
-    const Extension* extension;
-    if (!GetAppLaunchContainer(profile, app_id, &extension, &launch_container))
-      return false;
-
-    // TODO(skerner): Could pass in |extension| and |launch_container|,
-    // and avoid calling GetAppLaunchContainer() both here and in
-    // OpenApplicationTab().
-
-    if (launch_container == extensions::LAUNCH_CONTAINER_TAB)
-      return false;
-
-    RecordCmdLineAppHistogram(extension->GetType());
-
-    AppLaunchParams params(profile, extension, launch_container,
-                           WindowOpenDisposition::NEW_WINDOW,
-                           extensions::SOURCE_COMMAND_LINE);
-    params.command_line = command_line_;
-    params.current_directory = cur_dir_;
-    WebContents* tab_in_app_window = ::OpenApplication(params);
-
-    // Platform apps fire off a launch event which may or may not open a window.
-    return (tab_in_app_window != NULL || CanLaunchViaEvent(extension));
+    return apps::OpenApplicationWindow(profile, app_id, command_line_,
+                                       cur_dir_);
   }
 
   if (url_string.empty())
@@ -616,23 +524,11 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
 
   // Restrict allowed URLs for --app switch.
   if (!url.is_empty() && url.is_valid()) {
-    ChildProcessSecurityPolicy* policy =
-        ChildProcessSecurityPolicy::GetInstance();
+    content::ChildProcessSecurityPolicy* policy =
+        content::ChildProcessSecurityPolicy::GetInstance();
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(url::kFileScheme)) {
-      const extensions::Extension* extension =
-          extensions::ExtensionRegistry::Get(profile)
-              ->enabled_extensions().GetAppByURL(url);
-      if (extension) {
-        RecordCmdLineAppHistogram(extension->GetType());
-      } else {
-        extensions::RecordAppLaunchType(
-            extension_misc::APP_LAUNCH_CMD_LINE_APP_LEGACY,
-            extensions::Manifest::TYPE_HOSTED_APP);
-      }
-
-      WebContents* app_tab = ::OpenAppShortcutWindow(profile, url);
-      return (app_tab != NULL);
+      return apps::OpenAppShortcutWindow(profile, url);
     }
   }
   return false;
@@ -644,25 +540,10 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
   // function will open an app that should be in a tab, there is no need
   // to look at the app URL.  OpenApplicationWindow() will open app url
   // shortcuts.
-  if (!IsAppLaunch(NULL, &app_id) || app_id.empty())
+  if (!IsAppLaunch(nullptr, &app_id) || app_id.empty())
     return false;
 
-  extensions::LaunchContainer launch_container;
-  const Extension* extension;
-  if (!GetAppLaunchContainer(profile, app_id, &extension, &launch_container))
-    return false;
-
-  // If the user doesn't want to open a tab, fail.
-  if (launch_container != extensions::LAUNCH_CONTAINER_TAB)
-    return false;
-
-  RecordCmdLineAppHistogram(extension->GetType());
-
-  WebContents* app_tab = ::OpenApplication(
-      AppLaunchParams(profile, extension, extensions::LAUNCH_CONTAINER_TAB,
-                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                      extensions::SOURCE_COMMAND_LINE));
-  return (app_tab != NULL);
+  return apps::OpenApplicationTab(profile, app_id);
 }
 
 void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
