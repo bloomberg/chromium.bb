@@ -362,7 +362,7 @@ TileManager::TileManager(
       did_oom_on_last_assign_(false),
       image_controller_(origin_task_runner,
                         std::move(image_worker_task_runner)),
-      decoded_image_tracker_(&image_controller_, origin_task_runner),
+      decoded_image_tracker_(&image_controller_),
       checker_image_tracker_(&image_controller_,
                              this,
                              tile_manager_settings_.enable_checker_imaging,
@@ -1032,10 +1032,8 @@ void TileManager::ScheduleTasks(PrioritizedWorkToSchedule work_to_schedule) {
       prepare_tiles_count_, TilePriority::SOON,
       ImageDecodeCache::TaskType::kInRaster);
   std::vector<scoped_refptr<TileTask>> new_locked_image_tasks =
-      image_controller_.SetPredecodeImages(new_locked_images, tracing_info);
-  // Notify |decoded_image_tracker_| after |image_controller_| to ensure we've
-  // taken new refs on the images before releasing the predecode API refs.
-  decoded_image_tracker_.OnImagesUsedInDraw(new_locked_images);
+      image_controller_.SetPredecodeImages(std::move(new_locked_images),
+                                           tracing_info);
   work_to_schedule.extra_prepaint_images.clear();
 
   for (auto& task : new_locked_image_tasks) {
@@ -1157,9 +1155,6 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   bool has_at_raster_images = false;
   image_controller_.GetTasksForImagesAndRef(
       &sync_decoded_images, &decode_tasks, &has_at_raster_images, tracing_info);
-  // Notify |decoded_image_tracker_| after |image_controller_| to ensure we've
-  // taken new refs on the images before releasing the predecode API refs.
-  decoded_image_tracker_.OnImagesUsedInDraw(sync_decoded_images);
 
   const bool has_checker_images = !checkered_images.empty();
   tile->set_raster_task_scheduled_with_checker_images(has_checker_images);
