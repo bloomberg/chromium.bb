@@ -1,4 +1,4 @@
 {
-  "features": [ "persistent-storage", "root-ssl-certificates", "system-temp" ]
+  "features": [ "persistent-storage", "root-ssl-certificates", "system-temp",
+      "deprecated-all-services" ]
 }
-
