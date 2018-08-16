@@ -227,10 +227,12 @@ LayoutUnit GridTrackSizingAlgorithm::GridAreaBreadthForChild(
   const Vector<GridTrack>& all_tracks = Tracks(direction);
   const GridSpan& span = grid_.GridItemSpan(child, direction);
   LayoutUnit grid_area_breadth;
-  for (const auto& track_position : span) {
+  for (const auto& track_position : span)
     grid_area_breadth += all_tracks[track_position].BaseSize();
-    if (add_content_alignment_offset)
-      grid_area_breadth += layout_grid_->GridItemOffset(direction);
+
+  if (add_content_alignment_offset) {
+    grid_area_breadth +=
+        (span.IntegerSpan() - 1) * layout_grid_->GridItemOffset(direction);
   }
 
   grid_area_breadth +=
