@@ -152,12 +152,12 @@ ModelTypeSet SyncManagerImpl::InitialSyncEndedTypes() {
 ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
     ModelTypeSet types) {
   ModelTypeSet result;
-  for (ModelTypeSet::Iterator i = types.First(); i.Good(); i.Inc()) {
+  for (ModelType type : types) {
     sync_pb::DataTypeProgressMarker marker;
-    directory()->GetDownloadProgress(i.Get(), &marker);
+    directory()->GetDownloadProgress(type, &marker);
 
     if (marker.token().empty())
-      result.Put(i.Get());
+      result.Put(type);
   }
   return result;
 }
@@ -585,11 +585,10 @@ void SyncManagerImpl::HandleTransactionCompleteChangeEvent(
     return;
 
   // Call commit.
-  for (ModelTypeSet::Iterator it = models_with_changes.First(); it.Good();
-       it.Inc()) {
-    change_delegate_->OnChangesComplete(it.Get());
+  for (ModelType type : models_with_changes) {
+    change_delegate_->OnChangesComplete(type);
     change_observer_.Call(
-        FROM_HERE, &SyncManager::ChangeObserver::OnChangesComplete, it.Get());
+        FROM_HERE, &SyncManager::ChangeObserver::OnChangesComplete, type);
   }
 }
 
@@ -761,7 +760,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
 void SyncManagerImpl::RequestNudgeForDataTypes(
     const base::Location& nudge_location,
     ModelTypeSet types) {
-  debug_info_event_listener_.OnNudgeFromDatatype(types.First().Get());
+  debug_info_event_listener_.OnNudgeFromDatatype(*(types.begin()));
 
   scheduler_->ScheduleLocalNudge(types, nudge_location);
 }

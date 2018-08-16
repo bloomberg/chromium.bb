@@ -1411,13 +1411,14 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
     const syncer::ModelTypeSet current_types = GetPreferredDataTypes();
 
     syncer::ModelTypeSet type_set = syncer::UserSelectableTypes();
-    syncer::ModelTypeSet::Iterator it = type_set.First();
+    syncer::ModelTypeSet::Iterator it = type_set.begin();
 
-    DCHECK_EQ(arraysize(user_selectable_types), type_set.Size());
+    DCHECK_EQ(base::size(user_selectable_types), type_set.Size());
 
-    for (size_t i = 0; i < arraysize(user_selectable_types) && it.Good();
-         ++i, it.Inc()) {
-      const syncer::ModelType type = it.Get();
+    for (size_t i = 0;
+         i < base::size(user_selectable_types) && it != type_set.end();
+         ++i, ++it) {
+      const syncer::ModelType type = *it;
       if (chosen_types.Has(type) &&
           (!IsFirstSetupComplete() || !current_types.Has(type))) {
         // Selected type has changed - log it.
@@ -1671,10 +1672,7 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
   syncer::ModelSafeRoutingInfo routing_info;
   engine_->GetModelSafeRoutingInfo(&routing_info);
   const syncer::ModelTypeSet registered = GetRegisteredDataTypes();
-  for (syncer::ModelTypeSet::Iterator it = registered.First(); it.Good();
-       it.Inc()) {
-    syncer::ModelType type = it.Get();
-
+  for (syncer::ModelType type : registered) {
     auto type_status = std::make_unique<base::DictionaryValue>();
     type_status->SetString("name", ModelTypeToString(type));
     type_status->SetString("group_type",
@@ -1971,9 +1969,7 @@ void ProfileSyncService::GetAllNodes(
   scoped_refptr<GetAllNodesRequestHelper> helper =
       new GetAllNodesRequestHelper(all_types, callback);
 
-  for (syncer::ModelTypeSet::Iterator it = all_types.First(); it.Good();
-       it.Inc()) {
-    syncer::ModelType type = it.Get();
+  for (syncer::ModelType type : all_types) {
     const auto dtc_iter = data_type_controllers_.find(type);
     if (dtc_iter != data_type_controllers_.end()) {
       dtc_iter->second->GetAllNodes(base::BindRepeating(
@@ -2234,9 +2230,8 @@ void ProfileSyncService::ReportPreviousSessionMemoryWarningCount() {
 
 void ProfileSyncService::RecordMemoryUsageHistograms() {
   syncer::ModelTypeSet active_types = GetActiveDataTypes();
-  for (syncer::ModelTypeSet::Iterator type_it = active_types.First();
-       type_it.Good(); type_it.Inc()) {
-    auto dtc_it = data_type_controllers_.find(type_it.Get());
+  for (syncer::ModelType type : active_types) {
+    auto dtc_it = data_type_controllers_.find(type);
     if (dtc_it != data_type_controllers_.end())
       dtc_it->second->RecordMemoryUsageAndCountsHistograms();
   }

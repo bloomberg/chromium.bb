@@ -75,9 +75,8 @@ void DataTypeStatusTable::ResetCryptoErrors() {
 
 void DataTypeStatusTable::ResetPersistenceErrorsFrom(
     ModelTypeSet purged_types) {
-  for (ModelTypeSet::Iterator iter = purged_types.First(); iter.Good();
-       iter.Inc()) {
-    persistence_errors_.erase(iter.Get());
+  for (ModelType type : purged_types) {
+    persistence_errors_.erase(type);
   }
 }
 

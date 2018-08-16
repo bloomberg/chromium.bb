@@ -84,10 +84,9 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_, _))
         .WillByDefault(InvokeWithoutArgs([=]() {
           syncer::DataTypeController::TypeVector controllers;
-          for (syncer::ModelTypeSet::Iterator it = registered_types.First();
-               it.Good(); it.Inc()) {
+          for (syncer::ModelType type : registered_types) {
             controllers.push_back(
-                std::make_unique<syncer::FakeDataTypeController>(it.Get()));
+                std::make_unique<syncer::FakeDataTypeController>(type));
           }
           return controllers;
         }));
@@ -587,10 +586,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   // Clear the datatype preference fields (simulating bug 154940).
   pref_service()->ClearPref(syncer::prefs::kSyncKeepEverythingSynced);
   syncer::ModelTypeSet user_types = syncer::UserTypes();
-  for (syncer::ModelTypeSet::Iterator iter = user_types.First(); iter.Good();
-       iter.Inc()) {
-    pref_service()->ClearPref(
-        syncer::SyncPrefs::GetPrefNameForDataType(iter.Get()));
+  for (syncer::ModelType type : user_types) {
+    pref_service()->ClearPref(syncer::SyncPrefs::GetPrefNameForDataType(type));
   }
 
   CreateSyncService(ProfileSyncService::MANUAL_START);

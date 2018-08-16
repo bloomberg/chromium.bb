@@ -228,11 +228,10 @@ class SyncSchedulerImplTest : public testing::Test {
   ModelTypeSet GetThrottledTypes() {
     ModelTypeSet throttled_types;
     ModelTypeSet blocked_types = scheduler_->nudge_tracker_.GetBlockedTypes();
-    for (ModelTypeSet::Iterator type_it = blocked_types.First(); type_it.Good();
-         type_it.Inc()) {
-      if (scheduler_->nudge_tracker_.GetTypeBlockingMode(type_it.Get()) ==
+    for (ModelType type : blocked_types) {
+      if (scheduler_->nudge_tracker_.GetTypeBlockingMode(type) ==
           WaitInterval::THROTTLED) {
-        throttled_types.Put(type_it.Get());
+        throttled_types.Put(type);
       }
     }
     return throttled_types;
@@ -241,11 +240,10 @@ class SyncSchedulerImplTest : public testing::Test {
   ModelTypeSet GetBackedOffTypes() {
     ModelTypeSet backed_off_types;
     ModelTypeSet blocked_types = scheduler_->nudge_tracker_.GetBlockedTypes();
-    for (ModelTypeSet::Iterator type_it = blocked_types.First(); type_it.Good();
-         type_it.Inc()) {
-      if (scheduler_->nudge_tracker_.GetTypeBlockingMode(type_it.Get()) ==
+    for (ModelType type : blocked_types) {
+      if (scheduler_->nudge_tracker_.GetTypeBlockingMode(type) ==
           WaitInterval::EXPONENTIAL_BACKOFF) {
-        backed_off_types.Put(type_it.Get());
+        backed_off_types.Put(type);
       }
     }
     return backed_off_types;
@@ -631,7 +629,7 @@ TEST_F(SyncSchedulerImplTest, NudgeCoalescingWithDifferentTimings) {
   TimeDelta delay = TimeDelta::FromDays(1);
 
   std::map<ModelType, TimeDelta> delay_map;
-  delay_map[types1.First().Get()] = delay;
+  delay_map[*(types1.begin())] = delay;
   scheduler()->OnReceivedCustomNudgeDelays(delay_map);
   scheduler()->ScheduleLocalNudge(types1, FROM_HERE);
   scheduler()->ScheduleLocalNudge(types2, FROM_HERE);

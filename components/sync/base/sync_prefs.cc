@@ -115,9 +115,9 @@ void SyncPrefs::RegisterProfilePrefs(
   // forces a configuration to explicitly enable them. GetPreferredTypes() will
   // ensure that any new implicit types are enabled when their pref group is, or
   // via KeepEverythingSynced.
-  for (ModelTypeSet::Iterator it = user_types.First(); it.Good(); it.Inc()) {
-    RegisterDataTypePreferredPref(registry, it.Get(),
-                                  AlwaysPreferredUserTypes().Has(it.Get()));
+  for (ModelType type : user_types) {
+    RegisterDataTypePreferredPref(registry, type,
+                                  AlwaysPreferredUserTypes().Has(type));
   }
 
   registry->RegisterBooleanPref(prefs::kSyncManaged, false);
@@ -276,10 +276,9 @@ ModelTypeSet SyncPrefs::GetPreferredDataTypes(
   }
 
   ModelTypeSet preferred_types;
-  for (ModelTypeSet::Iterator it = registered_types.First(); it.Good();
-       it.Inc()) {
-    if (GetDataTypePreferred(it.Get())) {
-      preferred_types.Put(it.Get());
+  for (ModelType type : registered_types) {
+    if (GetDataTypePreferred(type)) {
+      preferred_types.Put(type);
     }
   }
   return ResolvePrefGroups(registered_types, preferred_types,
@@ -293,8 +292,8 @@ void SyncPrefs::SetPreferredDataTypes(ModelTypeSet registered_types,
   preferred_types = ResolvePrefGroups(registered_types, preferred_types,
                                       user_events_separate_pref_group);
   DCHECK(registered_types.HasAll(preferred_types));
-  for (ModelTypeSet::Iterator i = registered_types.First(); i.Good(); i.Inc()) {
-    SetDataTypePreferred(i.Get(), preferred_types.Has(i.Get()));
+  for (ModelType type : registered_types) {
+    SetDataTypePreferred(type, preferred_types.Has(type));
   }
 }
 
@@ -544,15 +543,15 @@ void SyncPrefs::GetInvalidationVersions(
   const base::DictionaryValue* invalidation_dictionary =
       pref_service_->GetDictionary(prefs::kSyncInvalidationVersions);
   ModelTypeSet protocol_types = ProtocolTypes();
-  for (auto iter = protocol_types.First(); iter.Good(); iter.Inc()) {
-    std::string key = ModelTypeToString(iter.Get());
+  for (ModelType type : protocol_types) {
+    std::string key = ModelTypeToString(type);
     std::string version_str;
     if (!invalidation_dictionary->GetString(key, &version_str))
       continue;
     int64_t version = 0;
     if (!base::StringToInt64(version_str, &version))
       continue;
-    (*invalidation_versions)[iter.Get()] = version;
+    (*invalidation_versions)[type] = version;
   }
 }
 

@@ -34,9 +34,7 @@ void ApplyControlDataUpdates(syncable::Directory* dir) {
   // TODO(sync): if at some point we support control datatypes with actual
   // hierarchies we'll need to revisit this logic.
   ModelTypeSet control_types = ControlTypes();
-  for (ModelTypeSet::Iterator iter = control_types.First(); iter.Good();
-       iter.Inc()) {
-    ModelType type = iter.Get();
+  for (ModelType type : control_types) {
     syncable::MutableEntry entry(&trans, syncable::GET_TYPE_ROOT, type);
     if (!entry.good())
       continue;

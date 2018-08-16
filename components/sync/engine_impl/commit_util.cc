@@ -62,10 +62,10 @@ void AddClientConfigParamsToMessage(ModelTypeSet enabled_types,
                                     bool cookie_jar_mismatch,
                                     sync_pb::CommitMessage* message) {
   sync_pb::ClientConfigParams* config_params = message->mutable_config_params();
-  for (ModelTypeSet::Iterator it = enabled_types.First(); it.Good(); it.Inc()) {
-    if (ProxyTypes().Has(it.Get()))
+  for (ModelType type : enabled_types) {
+    if (ProxyTypes().Has(type))
       continue;
-    int field_number = GetSpecificsFieldNumberFromModelType(it.Get());
+    int field_number = GetSpecificsFieldNumberFromModelType(type);
     config_params->mutable_enabled_type_ids()->Add(field_number);
   }
   config_params->set_tabs_datatype_enabled(enabled_types.Has(PROXY_TABS));

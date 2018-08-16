@@ -57,13 +57,13 @@ class GetUpdatesProcessorTest : public ::testing::Test {
   void InitFakeUpdateResponse(sync_pb::GetUpdatesResponse* response) {
     ModelTypeSet types = enabled_types();
 
-    for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
+    for (ModelType type : types) {
       sync_pb::DataTypeProgressMarker* marker =
           response->add_new_progress_marker();
-      marker->set_data_type_id(GetSpecificsFieldNumberFromModelType(it.Get()));
+      marker->set_data_type_id(GetSpecificsFieldNumberFromModelType(type));
       marker->set_token("foobarbaz");
       sync_pb::DataTypeContext* context = response->add_context_mutations();
-      context->set_data_type_id(GetSpecificsFieldNumberFromModelType(it.Get()));
+      context->set_data_type_id(GetSpecificsFieldNumberFromModelType(type));
       context->set_version(1);
       context->set_context("context");
     }
