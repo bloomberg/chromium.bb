@@ -379,8 +379,7 @@ BaseFetchContext::CanRequestInternal(
 
   if (url.PotentiallyDanglingMarkup() && url.ProtocolIsInHTTPFamily()) {
     CountDeprecation(WebFeature::kCanRequestURLHTTPContainingNewline);
-    if (RuntimeEnabledFeatures::RestrictCanRequestURLCharacterSetEnabled())
-      return ResourceRequestBlockedReason::kOther;
+    return ResourceRequestBlockedReason::kOther;
   }
 
   // Loading of a subresource may be blocked by previews resource loading hints.

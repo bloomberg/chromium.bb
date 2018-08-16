@@ -1023,10 +1023,6 @@
       name: "RestrictAppCacheToSecureContexts",
       status: "stable",
     },
-    {
-      name: "RestrictCanRequestURLCharacterSet",
-      status: "stable",
-    },
     // Enables the use of the RTCIceTransport with extensions.
     {
       name: "RTCIceTransportExtension",
