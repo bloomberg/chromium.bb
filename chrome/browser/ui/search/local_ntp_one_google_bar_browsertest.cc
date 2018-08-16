@@ -59,8 +59,7 @@ class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest {
 
  private:
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {features::kUseGoogleLocalNtp, features::kOneGoogleBarOnLocalNtp}, {});
+    feature_list_.InitWithFeatures({features::kUseGoogleLocalNtp}, {});
     InProcessBrowserTest::SetUp();
   }
 

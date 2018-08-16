@@ -32,13 +32,10 @@ struct OneGoogleBarData;
 // See https://crbug.com/751534.
 class OneGoogleBarLoaderImpl : public OneGoogleBarLoader {
  public:
-  // |api_url_override| can be either absolute, or relative to the Google base
-  // URL.
   OneGoogleBarLoaderImpl(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GoogleURLTracker* google_url_tracker,
       const std::string& application_locale,
-      const base::Optional<std::string>& api_url_override,
       bool account_consistency_mirror_required);
   ~OneGoogleBarLoaderImpl() override;
 
@@ -62,7 +59,6 @@ class OneGoogleBarLoaderImpl : public OneGoogleBarLoader {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   GoogleURLTracker* google_url_tracker_;
   const std::string application_locale_;
-  const base::Optional<std::string> api_url_override_;
   const bool account_consistency_mirror_required_;
 
   std::vector<OneGoogleCallback> callbacks_;

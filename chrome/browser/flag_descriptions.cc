@@ -2817,12 +2817,6 @@ const char kOmniboxTailSuggestionsDescription[] =
     "Enable receiving tail suggestions, a type of search suggestion based on "
     "the last few words in the query, for the Omnibox.";
 
-const char kOneGoogleBarOnLocalNtpName[] =
-    "Enable the OneGoogleBar on the local NTP";
-const char kOneGoogleBarOnLocalNtpDescription[] =
-    "Show a OneGoogleBar on the local New Tab page if Google is the default "
-    "search engine.";
-
 const char kPageAlmostIdleName[] = "Page Almost Idle";
 const char kPageAlmostIdleDescription[] =
     "Make session restore use a definition of loading that waits for CPU and "
