@@ -16,7 +16,7 @@
         <div class="container">
           <img id="logo" src="assistant_logo.png">
           <div class="title" id="title-text"></div>
-          <div class="sub-title" id="intro-text"></div>
+          <div class="content" id="intro-text"></div>
           <div class="flex layout horizontal">
             <div id="value-prop-container">
               <div class="flex layout horizontal center">
@@ -50,12 +50,13 @@
         <div id="overlay-close-top">
         </div>
         <div id="overlay-text">
-          <b id="overlay-title-text"></b><p></p>
+          <div id="overlay-title-text"></div>
           <div id="overlay-additional-info-text"></div>
         </div>
         <div class="button-strip">
           <oobe-text-button inverse id="overlay-close-bottom">
-            <div i18n-content="assistantOptinOKButton"></div>
+            <div i18n-content="assistantOptinOKButton" id="close-button-text">
+            </div>
           </oobe-text-button>
         </div>
       </div>

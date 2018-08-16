@@ -4852,24 +4852,6 @@
   <message name="IDS_ASSISTANT_THIRD_PARTY_SCREEN_TITLE" desc="Title for assitant third party screen.">
     Google Partners work with your Assistant to help you
   </message>
-  <message name="IDS_ASSISTANT_CONFIRM_SCREEN_TITLE" desc="Title for assistant confirm screen.">
-    Get the full Assistant experience with these settings
-  </message>
-  <message name="IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_TITLE" desc="Title for accept assistant confirm screen.">
-    Yes I'm In
-  </message>
-  <message name="IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_MESSAGE" desc="Message for accept assistant confirm screen.">
-    To help you with your calendar, reminders, flights and more, your Assistant needs the Web &amp; App Activity, Device Information, Voice &amp; Audio Activity settings.
-  </message>
-  <message name="IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_MESSAGE_EXPANDED" desc="Extra message for accept assistant confirm screen.">
-    Note: The data these settings control may be saved and used in any Google service where you are signed in to give you personalized experiences and useful ads. You can see your data, delete it and change your settings at account.google.com.
-  </message>
-  <message name="IDS_ASSISTANT_CONFIRM_SCREEN_REJECT_TITLE" desc="Title for reject assistant confirm screen.">
-    No Thanks
-  </message>
-  <message name="IDS_ASSISTANT_CONFIRM_SCREEN_REJECT_MESSAGE" desc="Message for reject assistant confirm screen.">
-    Depending on your account settings, your Assistant experience may be limited to things like web results, jokes, and local info.
-  </message>
   <message name="IDS_ASSISTANT_CONTINUE_BUTTON" desc="Continue button for asssitant optin flow.">
     Continue
   </message>

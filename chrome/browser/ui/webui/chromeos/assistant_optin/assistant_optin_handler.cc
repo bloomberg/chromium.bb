@@ -158,7 +158,6 @@ base::Value CreateGetMoreData(bool email_optin_needed,
 base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
                                  bool activity_control_needed) {
   auto consent_ui = settings_ui.consent_flow_ui().consent_ui();
-  auto confirm_reject_ui = consent_ui.activity_control_confirm_reject_ui();
   auto activity_control_ui = consent_ui.activity_control_ui();
   auto third_party_disclosure_ui = consent_ui.third_party_disclosure_ui();
   base::Value dictionary(base::Value::Type::DICTIONARY);
@@ -190,30 +189,6 @@ base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
     dictionary.SetKey("valuePropSkipButton",
                       base::Value(consent_ui.reject_button_text()));
   }
-
-  // Add confirm reject screen string constants.
-  // TODO(updowndota) Use remote strings after server bug fixed.
-  dictionary.SetKey("confirmRejectTitle",
-                    base::Value(l10n_util::GetStringUTF16(
-                        IDS_ASSISTANT_CONFIRM_SCREEN_TITLE)));
-  dictionary.SetKey("confirmRejectAcceptTitle",
-                    base::Value(l10n_util::GetStringUTF16(
-                        IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_TITLE)));
-  dictionary.SetKey("confirmRejectAcceptMessage",
-                    base::Value(l10n_util::GetStringUTF16(
-                        IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_MESSAGE)));
-  dictionary.SetKey("confirmRejectAcceptMessageExpanded",
-                    base::Value(l10n_util::GetStringUTF16(
-                        IDS_ASSISTANT_CONFIRM_SCREEN_ACCEPT_MESSAGE_EXPANDED)));
-  dictionary.SetKey("confirmRejectRejectTitle",
-                    base::Value(l10n_util::GetStringUTF16(
-                        IDS_ASSISTANT_CONFIRM_SCREEN_REJECT_TITLE)));
-  dictionary.SetKey("confirmRejectRejectMessage",
-                    base::Value(l10n_util::GetStringUTF16(
-                        IDS_ASSISTANT_CONFIRM_SCREEN_REJECT_MESSAGE)));
-  dictionary.SetKey(
-      "confirmRejectContinueButton",
-      base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON)));
 
   // Add third party string constants.
   dictionary.SetKey("thirdPartyTitle",
@@ -342,7 +317,6 @@ void AssistantOptInHandler::OnGetSettingsResponse(const std::string& settings) {
   DCHECK(settings_ui.has_consent_flow_ui());
   auto consent_ui = settings_ui.consent_flow_ui().consent_ui();
   auto activity_control_ui = consent_ui.activity_control_ui();
-  auto confirm_reject_ui = consent_ui.activity_control_confirm_reject_ui();
   auto third_party_disclosure_ui = consent_ui.third_party_disclosure_ui();
 
   consent_token_ = activity_control_ui.consent_token();

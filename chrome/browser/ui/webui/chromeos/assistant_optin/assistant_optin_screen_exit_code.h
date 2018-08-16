@@ -17,8 +17,6 @@ enum class AssistantOptInScreenExitCode {
   THIRD_PARTY_CONTINUED = 2,
   EMAIL_OPTED_IN = 3,
   EMAIL_OPTED_OUT = 4,
-  CONFIRM_ACCEPTED = 5,
-  CONFIRM_REJECTED = 6,
   EXIT_CODES_COUNT
 };
 

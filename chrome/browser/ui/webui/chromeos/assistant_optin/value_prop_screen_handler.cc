@@ -38,6 +38,8 @@ void ValuePropScreenHandler::DeclareLocalizedValues(
                IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_TITLE);
   builder->Add("assistantOptinLoadErrorMessage",
                IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_MESSAGE);
+  builder->Add("assistantOptinSkipButton",
+               IDS_VOICE_INTERACTION_VALUE_PROP_SKIP_BUTTON);
   builder->Add("assistantOptinRetryButton",
                IDS_VOICE_INTERACTION_VALUE_PROP_RETRY_BUTTON);
   builder->Add("assistantOptinOKButton", IDS_OOBE_OK_BUTTON_TEXT);

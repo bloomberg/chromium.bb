@@ -40,14 +40,6 @@ Polymer({
       value:
           'https://www.gstatic.com/opa-android/oobe/a02187e41eed9e42/v1_omni_en_us.html',
     },
-
-    /**
-     * Whether user accept the activity control.
-     */
-    userAccepted: {
-      type: Boolean,
-      value: true,
-    },
   },
 
   /**
@@ -119,7 +111,6 @@ Polymer({
    * @private
    */
   onSkipTap_: function() {
-    this.userAccepted = false;
     chrome.send('AssistantValuePropScreen.userActed', ['skip-pressed']);
   },
 
@@ -129,7 +120,6 @@ Polymer({
    * @private
    */
   onNextTap_: function() {
-    this.userAccepted = true;
     chrome.send('AssistantValuePropScreen.userActed', ['next-pressed']);
   },
 
