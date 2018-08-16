@@ -48,7 +48,7 @@
     ]
   },
   "arcAppsPrivate": {
-    "channel": "trunk",
+    "channel": "stable",
     "extension_types": ["platform_app"],
     "whitelist": [
       "46578A13607D38F1DC8E280C4F499FB0A2F9565C", // http://crbug.com/819404
