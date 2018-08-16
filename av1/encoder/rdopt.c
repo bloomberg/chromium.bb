@@ -7608,7 +7608,7 @@ static int64_t build_and_cost_compound_type(
     const BLOCK_SIZE bsize, const PREDICTION_MODE this_mode, int *rs2,
     int rate_mv, BUFFER_SET *ctx, int *out_rate_mv, uint8_t **preds0,
     uint8_t **preds1, int16_t *residual1, int16_t *diff10, int *strides,
-    int mi_row, int mi_col) {
+    int mi_row, int mi_col, int mode_rate, int64_t ref_best_rd) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -7624,6 +7624,12 @@ static int64_t build_and_cost_compound_type(
       pick_interinter_mask(cpi, x, bsize, *preds0, *preds1, residual1, diff10);
   *rs2 += get_interinter_compound_mask_rate(x, mbmi);
   best_rd_cur += RDCOST(x->rdmult, *rs2 + rate_mv, 0);
+
+  // Although the true rate_mv might be different after motion search, but it
+  // is unlikely to be the best mode considering the transform rd cost and other
+  // mode overhead cost
+  int64_t mode_rd = RDCOST(x->rdmult, *rs2 + mode_rate, 0);
+  if (mode_rd > ref_best_rd) return INT64_MAX;
 
   if (have_newmv_in_inter_mode(this_mode) && compound_type == COMPOUND_WEDGE) {
     *out_rate_mv = interinter_compound_motion_search(cpi, x, cur_mv, bsize,
@@ -9002,14 +9008,17 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
       masked_type_cost += x->comp_idx_cost[comp_index_ctx][1];
       rs2 = masked_type_cost;
-      av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
-      int64_t est_rd =
-          estimate_yrd_for_sb(cpi, bsize, x, &rate_sum, &dist_sum,
-                              &tmp_skip_txfm_sb, &tmp_skip_sse_sb, INT64_MAX);
+      const int64_t mode_rd = RDCOST(x->rdmult, rs2 + rd_stats->rate, 0);
+      if (mode_rd < ref_best_rd) {
+        av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
+        int64_t est_rd =
+            estimate_yrd_for_sb(cpi, bsize, x, &rate_sum, &dist_sum,
+                                &tmp_skip_txfm_sb, &tmp_skip_sse_sb, INT64_MAX);
+        if (est_rd != INT64_MAX)
+          best_rd_cur = RDCOST(x->rdmult, rs2 + *rate_mv + rate_sum, dist_sum);
+      }
       // use spare buffer for following compound type try
       restore_dst_buf(xd, *tmp_dst, 1);
-      if (est_rd != INT64_MAX)
-        best_rd_cur = RDCOST(x->rdmult, rs2 + *rate_mv + rate_sum, dist_sum);
     } else {
       mbmi->comp_group_idx = 1;
       masked_type_cost += x->comp_group_idx_cost[comp_group_idx_ctx][1];
@@ -9020,7 +9029,7 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
         best_rd_cur = build_and_cost_compound_type(
             cpi, x, cur_mv, bsize, this_mode, &rs2, *rate_mv, orig_dst,
             &tmp_rate_mv, preds0, preds1, residual1, diff10, strides, mi_row,
-            mi_col);
+            mi_col, rd_stats->rate, ref_best_rd);
       }
     }
     if (best_rd_cur < *rd) {
