@@ -40,7 +40,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/views/window/dialog_delegate.h"
 
 namespace {
 constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
@@ -376,13 +375,6 @@ void BridgedNativeWidget::Init(const Widget::InitParams& params) {
   tooltip_manager_.reset(new TooltipManagerMac(this));
 }
 
-void BridgedNativeWidget::OnWidgetInitDone() {
-  DialogDelegate* dialog =
-      native_widget_mac_->GetWidget()->widget_delegate()->AsDialogDelegate();
-  if (dialog)
-    dialog->AddObserver(this);
-}
-
 void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
   Widget* widget = native_widget_mac_->GetWidget();
   // -[NSWindow contentMinSize] is only checked by Cocoa for user-initiated
@@ -622,10 +614,7 @@ void BridgedNativeWidget::SetCursor(NSCursor* cursor) {
 }
 
 void BridgedNativeWidget::OnWindowWillClose() {
-  Widget* widget = native_widget_mac_->GetWidget();
-  if (DialogDelegate* dialog = widget->widget_delegate()->AsDialogDelegate())
-    dialog->RemoveObserver(this);
-  native_widget_mac_->WindowDestroying();
+  host_->OnWindowWillClose();
 
   // Ensure BridgedNativeWidget does not have capture, otherwise
   // OnMouseCaptureLost() may reference a deleted |native_widget_mac_| when
@@ -645,7 +634,7 @@ void BridgedNativeWidget::OnWindowWillClose() {
   DCHECK(!show_animation_);
 
   [window_ setDelegate:nil];
-  native_widget_mac_->WindowDestroyed();
+  host_->OnWindowHasClosed();
   // Note: |this| is deleted here.
 }
 
@@ -1034,6 +1023,13 @@ void BridgedNativeWidget::SetCALayerParams(
   }
 }
 
+void BridgedNativeWidget::ClearTouchBar() {
+  if (@available(macOS 10.12.2, *)) {
+    if ([bridged_view_ respondsToSelector:@selector(setTouchBar:)])
+      [bridged_view_ setTouchBar:nil];
+  }
+}
+
 void BridgedNativeWidget::SetTextInputClient(
     ui::TextInputClient* text_input_client) {
   [bridged_view_ setTextInputClient:text_input_client];
@@ -1065,18 +1061,6 @@ void BridgedNativeWidget::RemoveChildWindow(BridgedNativeWidget* child) {
   // version, and possibly some unpredictable reference counting. Removing it
   // here should be safe regardless.
   [window_ removeChildWindow:child->window_];
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidget, DialogObserver:
-
-void BridgedNativeWidget::OnDialogModelChanged() {
-  // Note it's only necessary to clear the TouchBar. If the OS needs it again,
-  // a new one will be created.
-  if (@available(macOS 10.12.2, *)) {
-    if ([bridged_view_ respondsToSelector:@selector(setTouchBar:)])
-      [bridged_view_ setTouchBar:nil];
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
