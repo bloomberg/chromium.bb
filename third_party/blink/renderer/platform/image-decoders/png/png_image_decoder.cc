@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/platform/image-decoders/png/png_image_decoder.h"
 
 #include <memory>
+#include "third_party/skia/third_party/skcms/skcms.h"
 
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
 #include <arm_neon.h>
@@ -63,7 +64,9 @@ PNGImageDecoder::PNGImageDecoder(
       // never be respected.
       repetition_count_(kAnimationLoopOnce),
       has_alpha_channel_(false),
-      current_buffer_saw_alpha_(false) {}
+      current_buffer_saw_alpha_(false),
+      decode_to_half_float_(false),
+      bit_depth_(0) {}
 
 PNGImageDecoder::~PNGImageDecoder() = default;
 
@@ -139,6 +142,8 @@ int PNGImageDecoder::RepetitionCount() const {
 void PNGImageDecoder::InitializeNewFrame(size_t index) {
   const PNGImageReader::FrameInfo& frame_info = reader_->GetFrameInfo(index);
   ImageFrame& buffer = frame_buffer_cache_[index];
+  if (decode_to_half_float_)
+    buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
 
   DCHECK(IntRect(IntPoint(), Size()).Contains(frame_info.frame_rect));
   buffer.SetOriginalFrameRect(frame_info.frame_rect);
@@ -226,6 +231,26 @@ void PNGImageDecoder::SetColorSpace() {
   }
 }
 
+void PNGImageDecoder::SetBitDepth() {
+  if (bit_depth_)
+    return;
+  png_structp png = reader_->PngPtr();
+  png_infop info = reader_->InfoPtr();
+  bit_depth_ = png_get_bit_depth(png, info);
+  decode_to_half_float_ =
+      (bit_depth_ == 16) &&
+      (high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat) &&
+      // TODO(zakerinasab): https://crbug.com/874057
+      // Due to a lack of 16 bit APNG encoders, multi-frame 16 bit APNGs are not
+      // supported. In this case the decoder falls back to 8888 decode mode.
+      (repetition_count_ == kAnimationNone);
+}
+
+bool PNGImageDecoder::ImageIsHighBitDepth() {
+  SetBitDepth();
+  return bit_depth_ == 16;
+}
+
 bool PNGImageDecoder::SetSize(unsigned width, unsigned height) {
   DCHECK(!IsDecodedSizeAvailable());
   // Protect against large PNGs. See http://bugzil.la/251381 for more details.
@@ -255,7 +280,7 @@ void PNGImageDecoder::HeaderAvailable() {
   if (png_get_valid(png, info, PNG_INFO_tRNS))
     png_set_expand(png);
 
-  if (bit_depth == 16)
+  if (!decode_to_half_float_)
     png_set_strip_16(png);
 
   if (color_type == PNG_COLOR_TYPE_GRAY ||
@@ -503,7 +528,10 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
     if (PNG_INTERLACE_ADAM7 ==
         png_get_interlace_type(png, reader_->InfoPtr())) {
       unsigned color_channels = has_alpha_channel_ ? 4 : 3;
-      reader_->CreateInterlaceBuffer(color_channels * Size().Area());
+      unsigned interlace_buffer_size = color_channels * Size().Area();
+      if (decode_to_half_float_)
+        interlace_buffer_size *= 2;
+      reader_->CreateInterlaceBuffer(interlace_buffer_size);
       if (!reader_->InterlaceBuffer()) {
         longjmp(JMPBUF(png), 1);
         return;
@@ -575,120 +603,143 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
 
   // Write the decoded row pixels to the frame buffer. The repetitive
   // form of the row write loops is for speed.
-  ImageFrame::PixelData* const dst_row = buffer.GetAddr(frame_rect.X(), y);
   const int width = frame_rect.Width();
-
   png_bytep src_ptr = row;
-  if (has_alpha) {
-    // Here we apply the color space transformation to the dst space.
-    // It does not really make sense to transform to a gamma-encoded
-    // space and then immediately after, perform a linear premultiply.
-    // Ideally we would pass kPremul_SkAlphaType to xform->apply(),
-    // instructing SkColorSpaceXform to perform the linear premultiply
-    // while the pixels are a linear space.
-    // We cannot do this because when we apply the gamma encoding after
-    // the premultiply, we will very likely end up with valid pixels
-    // where R, G, and/or B are greater than A.  The legacy drawing
-    // pipeline does not know how to handle this.
-    if (ColorProfileTransform* xform = ColorTransform()) {
-      ImageFrame::PixelData* xform_dst = dst_row;
-      // If we're blending over the previous frame, we can't overwrite that
-      // when we do the color transform. So we allocate another row of pixels
-      // to hold the temporary result before blending. In all other cases,
-      // we can safely transform directly to the destination buffer, then do
-      // any operations in-place (premul, swizzle).
+
+  if (!decode_to_half_float_) {
+    ImageFrame::PixelData* const dst_row = buffer.GetAddr(frame_rect.X(), y);
+    if (has_alpha) {
+      if (ColorProfileTransform* xform = ColorTransform()) {
+        ImageFrame::PixelData* xform_dst = dst_row;
+        // If we're blending over the previous frame, we can't overwrite that
+        // when we do the color transform. So we allocate another row of pixels
+        // to hold the temporary result before blending. In all other cases,
+        // we can safely transform directly to the destination buffer, then do
+        // any operations in-place (premul, swizzle).
+        if (frame_buffer_cache_[current_frame_].GetAlphaBlendSource() ==
+            ImageFrame::kBlendAtopPreviousFrame) {
+          if (!color_transform_scanline_) {
+            // This buffer may be wider than necessary for this frame, but by
+            // allocating the full width of the PNG, we know it will be able to
+            // hold temporary data for any subsequent frame.
+            color_transform_scanline_.reset(
+                new ImageFrame::PixelData[Size().Width()]);
+          }
+          xform_dst = color_transform_scanline_.get();
+        }
+        skcms_PixelFormat color_format = skcms_PixelFormat_RGBA_8888;
+        skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
+        bool color_conversion_successful = skcms_Transform(
+            src_ptr, color_format, alpha_format, xform->SrcProfile(), xform_dst,
+            color_format, alpha_format, xform->DstProfile(), width);
+        DCHECK(color_conversion_successful);
+        src_ptr = png_bytep(xform_dst);
+      }
+
+      unsigned alpha_mask = 255;
       if (frame_buffer_cache_[current_frame_].GetAlphaBlendSource() ==
-          ImageFrame::kBlendAtopPreviousFrame) {
-        if (!color_transform_scanline_) {
-          // This buffer may be wider than necessary for this frame, but by
-          // allocating the full width of the PNG, we know it will be able to
-          // hold temporary data for any subsequent frame.
-          color_transform_scanline_.reset(
-              new ImageFrame::PixelData[Size().Width()]);
-        }
-        xform_dst = color_transform_scanline_.get();
-      }
-      skcms_PixelFormat color_format = skcms_PixelFormat_RGBA_8888;
-      skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
-      bool color_conversion_successful = skcms_Transform(
-          src_ptr, color_format, alpha_format, xform->SrcProfile(), xform_dst,
-          color_format, alpha_format, xform->DstProfile(), width);
-      DCHECK(color_conversion_successful);
-      src_ptr = png_bytep(xform_dst);
-    }
-
-    unsigned alpha_mask = 255;
-    if (frame_buffer_cache_[current_frame_].GetAlphaBlendSource() ==
-        ImageFrame::kBlendAtopBgcolor) {
-      if (buffer.PremultiplyAlpha()) {
+          ImageFrame::kBlendAtopBgcolor) {
+        if (buffer.PremultiplyAlpha()) {
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
-        SetRGBAPremultiplyRowNeon(src_ptr, width, dst_row, &alpha_mask);
+          SetRGBAPremultiplyRowNeon(src_ptr, width, dst_row, &alpha_mask);
 #else
-        for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
-             dst_pixel++, src_ptr += 4) {
-          ImageFrame::SetRGBAPremultiply(dst_pixel, src_ptr[0], src_ptr[1],
-                                         src_ptr[2], src_ptr[3]);
-          alpha_mask &= src_ptr[3];
-        }
+          for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
+               dst_pixel++, src_ptr += 4) {
+            ImageFrame::SetRGBAPremultiply(dst_pixel, src_ptr[0], src_ptr[1],
+                                           src_ptr[2], src_ptr[3]);
+            alpha_mask &= src_ptr[3];
+          }
 #endif
-      } else {
+        } else {
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
-        SetRGBARawRowNeon(src_ptr, width, dst_row, &alpha_mask);
+          SetRGBARawRowNeon(src_ptr, width, dst_row, &alpha_mask);
 #else
-        for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
-             dst_pixel++, src_ptr += 4) {
-          ImageFrame::SetRGBARaw(dst_pixel, src_ptr[0], src_ptr[1], src_ptr[2],
-                                 src_ptr[3]);
-          alpha_mask &= src_ptr[3];
-        }
-#endif
-      }
-    } else {
-      // Now, the blend method is ImageFrame::BlendAtopPreviousFrame. Since the
-      // frame data of the previous frame is copied at InitFrameBuffer, we can
-      // blend the pixel of this frame, stored in |src_ptr|, over the previous
-      // pixel stored in |dst_pixel|.
-      if (buffer.PremultiplyAlpha()) {
-        for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
-             dst_pixel++, src_ptr += 4) {
-          ImageFrame::BlendRGBAPremultiplied(dst_pixel, src_ptr[0], src_ptr[1],
-                                             src_ptr[2], src_ptr[3]);
-          alpha_mask &= src_ptr[3];
-        }
-      } else {
-        for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
-             dst_pixel++, src_ptr += 4) {
-          ImageFrame::BlendRGBARaw(dst_pixel, src_ptr[0], src_ptr[1],
+          for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
+               dst_pixel++, src_ptr += 4) {
+            ImageFrame::SetRGBARaw(dst_pixel, src_ptr[0], src_ptr[1],
                                    src_ptr[2], src_ptr[3]);
-          alpha_mask &= src_ptr[3];
+            alpha_mask &= src_ptr[3];
+          }
+#endif
+        }
+      } else {
+        // Now, the blend method is ImageFrame::BlendAtopPreviousFrame. Since
+        // the frame data of the previous frame is copied at InitFrameBuffer, we
+        // can blend the pixel of this frame, stored in |src_ptr|, over the
+        // previous pixel stored in |dst_pixel|.
+        if (buffer.PremultiplyAlpha()) {
+          for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
+               dst_pixel++, src_ptr += 4) {
+            ImageFrame::BlendRGBAPremultiplied(
+                dst_pixel, src_ptr[0], src_ptr[1], src_ptr[2], src_ptr[3]);
+            alpha_mask &= src_ptr[3];
+          }
+        } else {
+          for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
+               dst_pixel++, src_ptr += 4) {
+            ImageFrame::BlendRGBARaw(dst_pixel, src_ptr[0], src_ptr[1],
+                                     src_ptr[2], src_ptr[3]);
+            alpha_mask &= src_ptr[3];
+          }
         }
       }
-    }
 
-    if (alpha_mask != 255)
-      current_buffer_saw_alpha_ = true;
+      if (alpha_mask != 255)
+        current_buffer_saw_alpha_ = true;
 
-  } else {
+    } else {
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
-    SetRGBARawRowNoAlphaNeon(src_ptr, width, dst_row);
+      SetRGBARawRowNoAlphaNeon(src_ptr, width, dst_row);
 #else
-    for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
-         src_ptr += 3, ++dst_pixel) {
-      ImageFrame::SetRGBARaw(dst_pixel, src_ptr[0], src_ptr[1], src_ptr[2],
-                             255);
-    }
+      for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
+           src_ptr += 3, ++dst_pixel) {
+        ImageFrame::SetRGBARaw(dst_pixel, src_ptr[0], src_ptr[1], src_ptr[2],
+                               255);
+      }
 #endif
-    // We'll apply the color space xform to opaque pixels after they have been
-    // written to the ImageFrame.
-    // TODO: Apply the xform to the RGB pixels, skipping second pass over data.
-    if (ColorProfileTransform* xform = ColorTransform()) {
-      skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Opaque;
-      bool color_conversion_successful =
-          skcms_Transform(dst_row, XformColorFormat(), alpha_format,
-                          xform->SrcProfile(), dst_row, XformColorFormat(),
-                          alpha_format, xform->DstProfile(), width);
-      DCHECK(color_conversion_successful);
+      // We'll apply the color space xform to opaque pixels after they have been
+      // written to the ImageFrame.
+      // TODO: Apply the xform to the RGB pixels, skipping second pass over
+      // data.
+      if (ColorProfileTransform* xform = ColorTransform()) {
+        skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Opaque;
+        bool color_conversion_successful =
+            skcms_Transform(dst_row, XformColorFormat(), alpha_format,
+                            xform->SrcProfile(), dst_row, XformColorFormat(),
+                            alpha_format, xform->DstProfile(), width);
+        DCHECK(color_conversion_successful);
+      }
     }
+  } else {  // for if (!decode_to_half_float_)
+    ImageFrame::PixelDataF16* const dst_row_f16 =
+        buffer.GetAddrF16(frame_rect.X(), y);
+
+    // TODO(zakerinasab): https://crbug.com/874057
+    // Due to a lack of 16 bit APNG encoders, multi-frame 16 bit APNGs are not
+    // supported. Hence, we expect the blending mode always be
+    // kBlendAtopBgcolor.
+    DCHECK(frame_buffer_cache_[current_frame_].GetAlphaBlendSource() ==
+           ImageFrame::kBlendAtopBgcolor);
+
+    // Color space transformation to the dst space and converting the decoded
+    // color componenets from uint16 to float16.
+    auto* xform = ColorTransform();
+    auto* src_profile = xform ? xform->SrcProfile() : nullptr;
+    auto* dst_profile = xform ? xform->DstProfile() : nullptr;
+    auto src_format = has_alpha ? skcms_PixelFormat_RGBA_16161616
+                                : skcms_PixelFormat_RGB_161616;
+    auto src_alpha_format =
+        has_alpha ? skcms_AlphaFormat_Unpremul : skcms_AlphaFormat_Opaque;
+    auto dst_alpha_format = has_alpha ? (buffer.PremultiplyAlpha()
+                                             ? skcms_AlphaFormat_PremulAsEncoded
+                                             : skcms_AlphaFormat_Unpremul)
+                                      : skcms_AlphaFormat_Opaque;
+    bool success = skcms_Transform(
+        src_ptr, src_format, src_alpha_format, src_profile, dst_row_f16,
+        skcms_PixelFormat_RGBA_hhhh, dst_alpha_format, dst_profile, width);
+    DCHECK(success);
+
+    current_buffer_saw_alpha_ = has_alpha;
   }
 
   buffer.SetPixelsChanged(true);

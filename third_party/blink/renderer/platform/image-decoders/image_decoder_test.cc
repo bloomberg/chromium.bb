@@ -39,11 +39,14 @@ namespace blink {
 
 class TestImageDecoder : public ImageDecoder {
  public:
-  TestImageDecoder()
+  TestImageDecoder(
+      ImageDecoder::HighBitDepthDecodingOption high_bit_depth_decoding_option)
       : ImageDecoder(kAlphaNotPremultiplied,
-                     ImageDecoder::kDefaultBitDepth,
+                     high_bit_depth_decoding_option,
                      ColorBehavior::TransformToSRGB(),
                      kNoDecodedImageByteLimit) {}
+
+  TestImageDecoder() : TestImageDecoder(ImageDecoder::kDefaultBitDepth) {}
 
   String FilenameExtension() const override { return ""; }
 
@@ -64,20 +67,52 @@ class TestImageDecoder : public ImageDecoder {
       frame_buffer_cache_[i].SetOriginalFrameRect(IntRect(0, 0, width, height));
   }
 
+  bool ImageIsHighBitDepth() override { return image_is_high_bit_depth_; }
+  void SetImageToHighBitDepthForTest() { image_is_high_bit_depth_ = true; }
+
  private:
+  bool image_is_high_bit_depth_ = false;
   void DecodeSize() override {}
   void Decode(size_t index) override {}
 };
 
 TEST(ImageDecoderTest, sizeCalculationMayOverflow) {
-  std::unique_ptr<TestImageDecoder> decoder(
-      std::make_unique<TestImageDecoder>());
-  EXPECT_FALSE(decoder->SetSize(1 << 29, 1));
-  EXPECT_FALSE(decoder->SetSize(1, 1 << 29));
-  EXPECT_FALSE(decoder->SetSize(1 << 15, 1 << 15));
-  EXPECT_TRUE(decoder->SetSize(1 << 28, 1));
-  EXPECT_TRUE(decoder->SetSize(1, 1 << 28));
-  EXPECT_TRUE(decoder->SetSize(1 << 14, 1 << 14));
+  // Test coverage:
+  // Regular bit depth image with regular decoder
+  // Regular bit depth image with high bit depth decoder
+  // High bit depth image with regular decoder
+  // High bit depth image with high bit depth decoder
+  bool high_bit_depth_decoder_status[] = {false, true};
+  bool high_bit_depth_image_status[] = {false, true};
+
+  for (bool high_bit_depth_decoder : high_bit_depth_decoder_status) {
+    for (bool high_bit_depth_image : high_bit_depth_image_status) {
+      std::unique_ptr<TestImageDecoder> decoder;
+      if (high_bit_depth_decoder) {
+        decoder = std::make_unique<TestImageDecoder>(
+            ImageDecoder::kHighBitDepthToHalfFloat);
+      } else {
+        decoder = std::make_unique<TestImageDecoder>();
+      }
+      if (high_bit_depth_image)
+        decoder->SetImageToHighBitDepthForTest();
+
+      unsigned log_pixel_size = 2;  // pixel is 4 bytes
+      if (high_bit_depth_decoder && high_bit_depth_image)
+        log_pixel_size = 3;  // pixel is 8 byts
+      unsigned overflow_dim_shift = 31 - log_pixel_size;
+      unsigned overflow_dim_shift_half = (overflow_dim_shift + 1) / 2;
+
+      EXPECT_FALSE(decoder->SetSize(1 << overflow_dim_shift, 1));
+      EXPECT_FALSE(decoder->SetSize(1, 1 << overflow_dim_shift));
+      EXPECT_FALSE(decoder->SetSize(1 << overflow_dim_shift_half,
+                                    1 << overflow_dim_shift_half));
+      EXPECT_TRUE(decoder->SetSize(1 << (overflow_dim_shift - 1), 1));
+      EXPECT_TRUE(decoder->SetSize(1, 1 << (overflow_dim_shift - 1)));
+      EXPECT_TRUE(decoder->SetSize(1 << (overflow_dim_shift_half - 1),
+                                   1 << (overflow_dim_shift_half - 1)));
+    }
+  }
 }
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndex) {

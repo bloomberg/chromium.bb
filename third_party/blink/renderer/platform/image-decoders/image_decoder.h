@@ -153,6 +153,12 @@ class PLATFORM_EXPORT ImageDecoder {
 
   bool IsAllDataReceived() const { return is_all_data_received_; }
 
+  // Returns true if the decoder supports decoding to high bit depth. The
+  // decoded output will be high bit depth (half float backed bitmap) iff
+  // encoded image is high bit depth and high_bit_depth_decoding_option_ is set
+  // to kHighBitDepthToHalfFloat.
+  virtual bool ImageIsHighBitDepth() { return false; }
+
   // Returns true if the buffer holds enough data to instantiate a decoder.
   // This is useful for callers to determine whether a decoder instantiation
   // failure is due to insufficient or bad data.
@@ -214,7 +220,11 @@ class PLATFORM_EXPORT ImageDecoder {
   // Returns whether the size is legal (i.e. not going to result in
   // overflow elsewhere).  If not, marks decoding as failed.
   virtual bool SetSize(unsigned width, unsigned height) {
-    if (SizeCalculationMayOverflow(width, height))
+    unsigned decoded_bytes_per_pixel = 4;
+    if (ImageIsHighBitDepth() &&
+        high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat)
+      decoded_bytes_per_pixel = 8;
+    if (SizeCalculationMayOverflow(width, height, decoded_bytes_per_pixel))
       return SetFailed();
 
     size_ = IntSize(width, height);
@@ -447,12 +457,16 @@ class PLATFORM_EXPORT ImageDecoder {
   }
 
  private:
-  // Some code paths compute the size of the image as "width * height * 4"
+  // Some code paths compute the size of the image as "width * height * 4 or 8"
   // and return it as a (signed) int.  Avoid overflow.
-  static bool SizeCalculationMayOverflow(unsigned width, unsigned height) {
+  static bool SizeCalculationMayOverflow(unsigned width,
+                                         unsigned height,
+                                         unsigned decoded_bytes_per_pixel) {
     unsigned long long total_size = static_cast<unsigned long long>(width) *
                                     static_cast<unsigned long long>(height);
-    return total_size > ((1 << 29) - 1);
+    if (decoded_bytes_per_pixel == 4)
+      return total_size > ((1 << 29) - 1);
+    return total_size > ((1 << 28) - 1);
   }
 
   bool purge_aggressively_;
