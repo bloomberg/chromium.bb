@@ -1496,12 +1496,21 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(items[2]->GetTargetFilePath().value(), item_name);
 }
 
+// https://crbug.com/874946, flaky on Win.
+#if defined(OS_WIN)
+#define MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito \
+  DISABLED_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito
+#else
+#define MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito \
+  DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito
+#endif
 // Test that incognito downloads are only visible in incognito contexts, and
 // test that on-record downloads are visible in both incognito and on-record
 // contexts, for DownloadsSearchFunction, DownloadsPauseFunction,
 // DownloadsResumeFunction, and DownloadsCancelFunction.
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito) {
+IN_PROC_BROWSER_TEST_F(
+    DownloadExtensionTest,
+    MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito) {
   std::unique_ptr<base::Value> result_value;
   base::ListValue* result_list = NULL;
   base::DictionaryValue* result_dict = NULL;
