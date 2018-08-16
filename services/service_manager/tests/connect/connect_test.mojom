@@ -40,15 +40,6 @@ interface UserIdTest {
       (int32 connection_result, service_manager.mojom.Identity target);
 };
 
-interface ClientProcessTest {
-  // Attempts to launch a bare exe and connect to it using the
-  // ClientProcessConnection param to Connector::Connect(). The callback takes
-  // the result of the connection, and the identity of the app that the caller
-  // can use to connect to this app as well.
-  LaunchAndConnectToProcess() =>
-      (int32 connection_result, service_manager.mojom.Identity target);
-};
-
 struct ConnectionState {
   string connection_remote_name;
   string connection_remote_userid;
