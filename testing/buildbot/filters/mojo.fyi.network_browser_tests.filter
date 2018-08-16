@@ -181,10 +181,6 @@
 # about an origin.
 -ReportingBrowserTest.TestReportingHeadersProcessed
 
-# https://crbug.com/862176
-# Requires checking Origin headers on requests made after extension unload.
--ExtensionUnloadBrowserTest.UnloadWithContentScripts
-
 # https://crbug.com/721403
 -ContextMenuBrowserTest.DataSaverOpenOrigImageInNewTab
 
