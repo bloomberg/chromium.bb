@@ -10,6 +10,7 @@
 namespace blink {
 
 class CSSParserContext;
+class CSSStyleValue;
 class CSSValue;
 
 enum class CSSSyntaxType {
@@ -45,6 +46,8 @@ struct CSSSyntaxComponent {
 
   bool IsRepeatable() const { return repeat_ != CSSSyntaxRepeat::kNone; }
 
+  bool CanTake(const CSSStyleValue&) const;
+
   CSSSyntaxType type_;
   String string_;  // Only used when type_ is CSSSyntaxType::kIdent
   CSSSyntaxRepeat repeat_;
@@ -57,6 +60,7 @@ class CORE_EXPORT CSSSyntaxDescriptor {
   const CSSValue* Parse(CSSParserTokenRange,
                         const CSSParserContext*,
                         bool is_animation_tainted) const;
+  bool CanTake(const CSSStyleValue&) const;
   bool IsValid() const { return !syntax_components_.IsEmpty(); }
   bool IsTokenStream() const {
     return syntax_components_.size() == 1 &&
