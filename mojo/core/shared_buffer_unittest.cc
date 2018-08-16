@@ -289,8 +289,9 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassReadOnlyBuffer,
   WriteMessage(h, "ok");
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
 // Android multi-process tests are not executing the new process. This is flaky.
+// Flaky on Fuchsia; see http://crbug.com/874719
 #define MAYBE_CreateAndPassFromChildReadOnlyBuffer \
   DISABLED_CreateAndPassFromChildReadOnlyBuffer
 #else
