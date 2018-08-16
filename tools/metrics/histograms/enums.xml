@@ -26053,6 +26053,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
     The page displaying the dialog was switched out of its tab (e.g. tab
     discarding)
   </int>
+  <int value="9" label="Dialog closed">
+    The UI toolkit forced the dialog to close (at root caused by the user
+    closing the owning tab but going through a different path due to platform
+    differences)
+  </int>
 </enum>
 
 <enum name="JumplisticonsDeleteCategory">
