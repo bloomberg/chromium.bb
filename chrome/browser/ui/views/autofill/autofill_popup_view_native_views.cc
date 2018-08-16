@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/suggestion.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -698,26 +697,6 @@ void AutofillPopupViewNativeViews::Hide() {
   controller_ = nullptr;
 
   DoHide();
-}
-
-void AutofillPopupViewNativeViews::VisibilityChanged(View* starting_from,
-                                                     bool is_visible) {
-  if (is_visible) {
-    // TODO(https://crbug.com/848427) Call this when suggestions become
-    // available at all, even if it not currently visible.
-    ui::AXPlatformNode::OnInputSuggestionsAvailable();
-    // Fire these the first time a menu is visible. By firing these and the
-    // matching end events, we are telling screen readers that the focus
-    // is only changing temporarily, and the screen reader will restore the
-    // focus back to the appropriate textfield when the menu closes.
-    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
-  } else {
-    // TODO(https://crbug.com/848427) Only call if suggestions are actually no
-    // longer available. The suggestions could be hidden but still available, as
-    // is the case when the Escape key is pressed.
-    ui::AXPlatformNode::OnInputSuggestionsUnavailable();
-    NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
-  }
 }
 
 void AutofillPopupViewNativeViews::OnSelectedRowChanged(

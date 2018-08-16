@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
 #include "ui/gfx/color_palette.h"
@@ -316,6 +317,26 @@ void AutofillPopupBaseView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kMenu;
   node_data->SetName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
+}
+
+void AutofillPopupBaseView::VisibilityChanged(View* starting_from,
+                                              bool is_visible) {
+  if (is_visible) {
+    // Announce that the suggestions are available before the pop up is open.
+    // The password generation pop up relies on this call.
+    ui::AXPlatformNode::OnInputSuggestionsAvailable();
+    // Fire these the first time a menu is visible. By firing these and the
+    // matching end events, we are telling screen readers that the focus
+    // is only changing temporarily, and the screen reader will restore the
+    // focus back to the appropriate textfield when the menu closes.
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
+  } else {
+    // TODO(https://crbug.com/848427) Only call if suggestions are actually no
+    // longer available. The suggestions could be hidden but still available, as
+    // is the case when the Escape key is pressed.
+    ui::AXPlatformNode::OnInputSuggestionsUnavailable();
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
+  }
 }
 
 void AutofillPopupBaseView::SetSelection(const gfx::Point& point) {
