@@ -13,6 +13,8 @@
 #include "build/build_config.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/transitional_url_loader_factory_owner.h"
 
 namespace remoting {
 
@@ -46,7 +48,11 @@ ChromotingHostContext::ChromotingHostContext(
       url_request_context_getter_(url_request_context_getter),
       system_input_injector_factory_(system_input_injector_factory) {}
 
-ChromotingHostContext::~ChromotingHostContext() = default;
+ChromotingHostContext::~ChromotingHostContext() {
+  if (url_loader_factory_owner_)
+    network_task_runner_->DeleteSoon(FROM_HERE,
+                                     url_loader_factory_owner_.release());
+}
 
 std::unique_ptr<ChromotingHostContext> ChromotingHostContext::Copy() {
   return base::WrapUnique(new ChromotingHostContext(
@@ -94,6 +100,17 @@ ChromotingHostContext::video_encode_task_runner() const {
 scoped_refptr<net::URLRequestContextGetter>
 ChromotingHostContext::url_request_context_getter() const {
   return url_request_context_getter_;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromotingHostContext::url_loader_factory() {
+  DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
+  if (!url_loader_factory_owner_) {
+    url_loader_factory_owner_ =
+        std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
+            url_request_context_getter_);
+  }
+  return url_loader_factory_owner_->GetURLLoaderFactory();
 }
 
 ui::SystemInputInjectorFactory*

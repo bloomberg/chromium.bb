@@ -9,17 +9,17 @@
 
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/time/tick_clock.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -32,103 +32,87 @@ using ::testing::SaveArg;
 
 namespace {
 
-// Responds as though OAuth returned from the server.
-class MockOAuthFetcher : public net::TestURLFetcher {
+// Simulates some number of failures, followed by an optional success.
+// Does not distinguish between different URLs.
+class ResponseInjector {
  public:
-  MockOAuthFetcher(int response_code,
-                   int max_failure_count,
-                   bool complete_immediately,
-                   const GURL& url,
-                   const std::string& results,
-                   net::URLFetcher::RequestType request_type,
-                   net::URLFetcherDelegate* d)
-      : net::TestURLFetcher(0, url, d),
-        max_failure_count_(max_failure_count),
+  explicit ResponseInjector(network::TestURLLoaderFactory* url_loader_factory)
+      : url_loader_factory_(url_loader_factory),
+        response_code_(net::HTTP_OK),
+        complete_immediately_(true),
         current_failure_count_(0),
-        complete_immediately_(complete_immediately) {
-    set_url(url);
-    set_response_code(response_code);
-    SetResponseString(results);
+        max_failure_count_(0) {
+    url_loader_factory->SetInterceptor(
+        base::BindRepeating(&ResponseInjector::AdjustResponseBasedOnSettings,
+                            base::Unretained(this)));
   }
 
-  ~MockOAuthFetcher() override {}
+  ~ResponseInjector() {
+    url_loader_factory_->SetInterceptor(
+        base::BindRepeating([](const network::ResourceRequest& request) {
+          ADD_FAILURE() << "Unexpected fetch of:" << request.url;
+        }));
+  }
 
-  void Start() override {
-    if ((GetResponseCode() != net::HTTP_OK) && (max_failure_count_ != -1) &&
-        (current_failure_count_ == max_failure_count_)) {
-      set_response_code(net::HTTP_OK);
+  void AdjustResponseBasedOnSettings(const network::ResourceRequest& request) {
+    url_loader_factory_->ClearResponses();
+    DCHECK(pending_url_.is_empty());
+    pending_url_ = request.url;
+    if (complete_immediately_) {
+      Finish();
     }
-
-    net::Error error = net::OK;
-    if (GetResponseCode() != net::HTTP_OK) {
-      error = net::ERR_FAILED;
-      current_failure_count_++;
-    }
-    set_status(net::URLRequestStatus::FromError(error));
-
-    if (complete_immediately_)
-      delegate()->OnURLFetchComplete(this);
   }
 
   void Finish() {
-    ASSERT_FALSE(complete_immediately_);
-    delegate()->OnURLFetchComplete(this);
+    net::HttpStatusCode response_code = response_code_;
+    if (response_code_ != net::HTTP_OK && (max_failure_count_ != -1) &&
+        (current_failure_count_ == max_failure_count_))
+      response_code = net::HTTP_OK;
+
+    if (response_code != net::HTTP_OK)
+      ++current_failure_count_;
+
+    url_loader_factory_->AddResponse(pending_url_.spec(), results_,
+                                     response_code);
+    pending_url_ = GURL();
   }
 
- private:
-  int max_failure_count_;
-  int current_failure_count_;
-  bool complete_immediately_;
-  DISALLOW_COPY_AND_ASSIGN(MockOAuthFetcher);
-};
+  std::string GetUploadData() {
+    const std::vector<network::TestURLLoaderFactory::PendingRequest>& pending =
+        *url_loader_factory_->pending_requests();
+    if (pending.size() == 1) {
+      return network::GetUploadData(pending[0].request);
+    } else {
+      ADD_FAILURE() << "Unexpected state in GetUploadData";
+      return "";
+    }
+  }
 
-class MockOAuthFetcherFactory : public net::URLFetcherFactory,
-                                public net::ScopedURLFetcherFactory {
- public:
-  MockOAuthFetcherFactory()
-      : net::ScopedURLFetcherFactory(this),
-        response_code_(net::HTTP_OK),
-        complete_immediately_(true) {
-  }
-  ~MockOAuthFetcherFactory() override {}
-  std::unique_ptr<net::URLFetcher> CreateURLFetcher(
-      int id,
-      const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* d,
-      net::NetworkTrafficAnnotationTag traffic_annotation) override {
-    url_fetcher_ = new MockOAuthFetcher(
-        response_code_,
-        max_failure_count_,
-        complete_immediately_,
-        url,
-        results_,
-        request_type,
-        d);
-    return std::unique_ptr<net::URLFetcher>(url_fetcher_);
-  }
   void set_response_code(int response_code) {
-    response_code_ = response_code;
+    response_code_ = static_cast<net::HttpStatusCode>(response_code);
   }
+
   void set_max_failure_count(int count) {
     max_failure_count_ = count;
   }
+
   void set_results(const std::string& results) {
     results_ = results;
   }
-  MockOAuthFetcher* get_url_fetcher() {
-    return url_fetcher_;
-  }
+
   void set_complete_immediately(bool complete_immediately) {
     complete_immediately_ = complete_immediately;
   }
  private:
-  MockOAuthFetcher* url_fetcher_;
-  int response_code_;
+  network::TestURLLoaderFactory* url_loader_factory_;
+  GURL pending_url_;
+
+  net::HttpStatusCode response_code_;
   bool complete_immediately_;
+  int current_failure_count_;
   int max_failure_count_;
   std::string results_;
-  DISALLOW_COPY_AND_ASSIGN(MockOAuthFetcherFactory);
+  DISALLOW_COPY_AND_ASSIGN(ResponseInjector);
 };
 
 const std::string kTestAccessToken = "1/fFAGRNJru1FTz70BzhT3Zg";
@@ -182,23 +166,33 @@ namespace gaia {
 
 class GaiaOAuthClientTest : public testing::Test {
  protected:
+  GaiaOAuthClientTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+
   void SetUp() override {
     client_info_.client_id = "test_client_id";
     client_info_.client_secret = "test_client_secret";
     client_info_.redirect_uri = "test_redirect_uri";
   };
 
- protected:
-  net::TestURLRequestContextGetter* GetRequestContext() {
-    if (!request_context_getter_.get()) {
-      request_context_getter_ = new net::TestURLRequestContextGetter(
-          message_loop_.task_runner());
-    }
-    return request_context_getter_.get();
+  scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory() {
+    return base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+        &url_loader_factory_);
   }
 
-  base::MessageLoop message_loop_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  void FlushNetwork() {
+    // An event loop spin is required for things to be delivered from
+    // TestURLLoaderFactory to its clients via mojo pipes. In addition,
+    // some retries may have back off, so may need to advance (mock) time
+    // for them to finish, too.
+    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  }
+
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  network::TestURLLoaderFactory url_loader_factory_;
+
   OAuthClientInfo client_info_;
 };
 
@@ -249,12 +243,13 @@ TEST_F(GaiaOAuthClientTest, NetworkFailure) {
   EXPECT_CALL(delegate, OnNetworkError(response_code))
       .Times(1);
 
-  MockOAuthFetcherFactory factory;
-  factory.set_response_code(response_code);
-  factory.set_max_failure_count(4);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_response_code(response_code);
+  injector.set_max_failure_count(4);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.GetTokensFromAuthCode(client_info_, "auth_code", 2, &delegate);
+  FlushNetwork();
 }
 
 TEST_F(GaiaOAuthClientTest, NetworkFailureRecover) {
@@ -264,13 +259,47 @@ TEST_F(GaiaOAuthClientTest, NetworkFailureRecover) {
   EXPECT_CALL(delegate, OnGetTokensResponse(kTestRefreshToken, kTestAccessToken,
       kTestExpiresIn)).Times(1);
 
-  MockOAuthFetcherFactory factory;
-  factory.set_response_code(response_code);
-  factory.set_max_failure_count(4);
-  factory.set_results(kDummyGetTokensResult);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_response_code(response_code);
+  injector.set_max_failure_count(4);
+  injector.set_results(kDummyGetTokensResult);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.GetTokensFromAuthCode(client_info_, "auth_code", -1, &delegate);
+  FlushNetwork();
+}
+
+TEST_F(GaiaOAuthClientTest, NetworkFailureRecoverBackoff) {
+  // Make sure long backoffs are expontential.
+  int response_code = net::HTTP_INTERNAL_SERVER_ERROR;
+
+  MockGaiaOAuthClientDelegate delegate;
+  EXPECT_CALL(delegate, OnGetTokensResponse(kTestRefreshToken, kTestAccessToken,
+                                            kTestExpiresIn))
+      .Times(1);
+
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_response_code(response_code);
+  injector.set_max_failure_count(21);
+  injector.set_results(kDummyGetTokensResult);
+
+  base::TimeTicks start =
+      scoped_task_environment_.GetMockTickClock()->NowTicks();
+
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
+  auth.GetTokensFromAuthCode(client_info_, "auth_code", -1, &delegate);
+  FlushNetwork();
+
+  // Default params are:
+  //    40% jitter, 700ms initial, 1.4 exponent, ignore first 2 failures.
+  // So after 19 retries, delay is at least:
+  //    0.6 * 700ms * 1.4^(19-2) ~ 128s
+  // After 20:
+  //    0.6 * 700ms * 1.4^(20-2) ~ 179s
+  //
+  // ... so the whole thing should take at least 307s
+  EXPECT_GE(scoped_task_environment_.GetMockTickClock()->NowTicks() - start,
+            base::TimeDelta::FromSeconds(307));
 }
 
 TEST_F(GaiaOAuthClientTest, OAuthFailure) {
@@ -279,13 +308,14 @@ TEST_F(GaiaOAuthClientTest, OAuthFailure) {
   MockGaiaOAuthClientDelegate delegate;
   EXPECT_CALL(delegate, OnOAuthError()).Times(1);
 
-  MockOAuthFetcherFactory factory;
-  factory.set_response_code(response_code);
-  factory.set_max_failure_count(-1);
-  factory.set_results(kDummyGetTokensResult);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_response_code(response_code);
+  injector.set_max_failure_count(-1);
+  injector.set_results(kDummyGetTokensResult);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.GetTokensFromAuthCode(client_info_, "auth_code", -1, &delegate);
+  FlushNetwork();
 }
 
 
@@ -294,11 +324,12 @@ TEST_F(GaiaOAuthClientTest, GetTokensSuccess) {
   EXPECT_CALL(delegate, OnGetTokensResponse(kTestRefreshToken, kTestAccessToken,
       kTestExpiresIn)).Times(1);
 
-  MockOAuthFetcherFactory factory;
-  factory.set_results(kDummyGetTokensResult);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_results(kDummyGetTokensResult);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.GetTokensFromAuthCode(client_info_, "auth_code", -1, &delegate);
+  FlushNetwork();
 }
 
 TEST_F(GaiaOAuthClientTest, GetTokensAfterNetworkFailure) {
@@ -311,14 +342,16 @@ TEST_F(GaiaOAuthClientTest, GetTokensAfterNetworkFailure) {
   EXPECT_CALL(success_delegate, OnGetTokensResponse(kTestRefreshToken,
       kTestAccessToken, kTestExpiresIn)).Times(1);
 
-  MockOAuthFetcherFactory factory;
-  factory.set_response_code(response_code);
-  factory.set_max_failure_count(4);
-  factory.set_results(kDummyGetTokensResult);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_response_code(response_code);
+  injector.set_max_failure_count(4);
+  injector.set_results(kDummyGetTokensResult);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.GetTokensFromAuthCode(client_info_, "auth_code", 2, &failure_delegate);
+  FlushNetwork();
   auth.GetTokensFromAuthCode(client_info_, "auth_code", -1, &success_delegate);
+  FlushNetwork();
 }
 
 TEST_F(GaiaOAuthClientTest, RefreshTokenSuccess) {
@@ -326,16 +359,16 @@ TEST_F(GaiaOAuthClientTest, RefreshTokenSuccess) {
   EXPECT_CALL(delegate, OnRefreshTokenResponse(kTestAccessToken,
       kTestExpiresIn)).Times(1);
 
-  MockOAuthFetcherFactory factory;
-  factory.set_results(kDummyRefreshTokenResult);
-  factory.set_complete_immediately(false);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_results(kDummyRefreshTokenResult);
+  injector.set_complete_immediately(false);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.RefreshToken(client_info_, "refresh_token", std::vector<std::string>(),
                     -1, &delegate);
-  EXPECT_THAT(factory.get_url_fetcher()->upload_data(),
-              Not(HasSubstr("scope")));
-  factory.get_url_fetcher()->Finish();
+  EXPECT_THAT(injector.GetUploadData(), Not(HasSubstr("scope")));
+  injector.Finish();
+  FlushNetwork();
 }
 
 TEST_F(GaiaOAuthClientTest, RefreshTokenDownscopingSuccess) {
@@ -343,39 +376,40 @@ TEST_F(GaiaOAuthClientTest, RefreshTokenDownscopingSuccess) {
   EXPECT_CALL(delegate, OnRefreshTokenResponse(kTestAccessToken,
       kTestExpiresIn)).Times(1);
 
-  MockOAuthFetcherFactory factory;
-  factory.set_results(kDummyRefreshTokenResult);
-  factory.set_complete_immediately(false);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_results(kDummyRefreshTokenResult);
+  injector.set_complete_immediately(false);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.RefreshToken(client_info_, "refresh_token",
                     std::vector<std::string>(1, "scope4test"), -1, &delegate);
-  EXPECT_THAT(factory.get_url_fetcher()->upload_data(),
-              HasSubstr("&scope=scope4test"));
-  factory.get_url_fetcher()->Finish();
+  EXPECT_THAT(injector.GetUploadData(), HasSubstr("&scope=scope4test"));
+  injector.Finish();
+  FlushNetwork();
 }
-
 
 TEST_F(GaiaOAuthClientTest, GetUserEmail) {
   MockGaiaOAuthClientDelegate delegate;
   EXPECT_CALL(delegate, OnGetUserEmailResponse(kTestUserEmail)).Times(1);
 
-  MockOAuthFetcherFactory factory;
-  factory.set_results(kDummyUserInfoResult);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_results(kDummyUserInfoResult);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.GetUserEmail("access_token", 1, &delegate);
+  FlushNetwork();
 }
 
 TEST_F(GaiaOAuthClientTest, GetUserId) {
   MockGaiaOAuthClientDelegate delegate;
   EXPECT_CALL(delegate, OnGetUserIdResponse(kTestUserId)).Times(1);
 
-  MockOAuthFetcherFactory factory;
-  factory.set_results(kDummyUserIdResult);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_results(kDummyUserIdResult);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.GetUserId("access_token", 1, &delegate);
+  FlushNetwork();
 }
 
 TEST_F(GaiaOAuthClientTest, GetUserInfo) {
@@ -385,11 +419,12 @@ TEST_F(GaiaOAuthClientTest, GetUserInfo) {
   EXPECT_CALL(delegate, OnGetUserInfoResponsePtr(_))
       .WillOnce(SaveArg<0>(&captured_result));
 
-  MockOAuthFetcherFactory factory;
-  factory.set_results(kDummyFullUserInfoResult);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_results(kDummyFullUserInfoResult);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.GetUserInfo("access_token", 1, &delegate);
+  FlushNetwork();
 
   std::unique_ptr<base::Value> value =
       base::JSONReader::Read(kDummyFullUserInfoResult);
@@ -408,11 +443,12 @@ TEST_F(GaiaOAuthClientTest, GetTokenInfo) {
   EXPECT_CALL(delegate, OnGetTokenInfoResponsePtr(_))
       .WillOnce(SaveArg<0>(&captured_result));
 
-  MockOAuthFetcherFactory factory;
-  factory.set_results(kDummyTokenInfoResult);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_results(kDummyTokenInfoResult);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.GetTokenInfo("some_token", 1, &delegate);
+  FlushNetwork();
 
   std::string issued_to;
   ASSERT_TRUE(captured_result->GetString("issued_to", &issued_to));
@@ -426,11 +462,12 @@ TEST_F(GaiaOAuthClientTest, GetTokenHandleInfo) {
   EXPECT_CALL(delegate, OnGetTokenInfoResponsePtr(_))
       .WillOnce(SaveArg<0>(&captured_result));
 
-  MockOAuthFetcherFactory factory;
-  factory.set_results(kDummyTokenHandleInfoResult);
+  ResponseInjector injector(&url_loader_factory_);
+  injector.set_results(kDummyTokenHandleInfoResult);
 
-  GaiaOAuthClient auth(GetRequestContext());
+  GaiaOAuthClient auth(GetSharedURLLoaderFactory());
   auth.GetTokenHandleInfo("some_handle", 1, &delegate);
+  FlushNetwork();
 
   std::string audience;
   ASSERT_TRUE(captured_result->GetString("audience", &audience));

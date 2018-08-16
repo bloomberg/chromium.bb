@@ -20,7 +20,6 @@
 #include "components/signin/core/browser/child_account_info_fetcher.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_switches.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
@@ -210,7 +209,7 @@ void AccountFetcherService::StartFetchingUserInfo(
     DVLOG(1) << "StartFetching " << account_id;
     std::unique_ptr<AccountInfoFetcher> fetcher =
         std::make_unique<AccountInfoFetcher>(
-            token_service_, signin_client_->GetURLRequestContext(), this,
+            token_service_, signin_client_->GetURLLoaderFactory(), this,
             account_id);
     request = std::move(fetcher);
     request->Start();

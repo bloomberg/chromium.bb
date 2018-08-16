@@ -13,15 +13,19 @@
 #include "base/message_loop/message_loop.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/base/ip_endpoint.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
 
 namespace {
+
+const char kOAuthURL[] = "https://www.googleapis.com/oauth2/v1/userinfo";
 
 const char kEmail1[] = "account_1@me.com";
 const char kEmail2[] = "account_2@me.com";
@@ -194,19 +198,25 @@ class GCMAccountTrackerTest : public testing::Test {
   bool IsTokenReportingRequired() const;
   base::TimeDelta GetTimeToNextTokenReporting() const;
 
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
+
  private:
   CustomFakeGCMDriver driver_;
 
   base::MessageLoop message_loop_;
-  net::TestURLFetcherFactory test_fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_test_env_;
+
   std::unique_ptr<GCMAccountTracker> tracker_;
 };
 
 GCMAccountTrackerTest::GCMAccountTrackerTest() {
   std::unique_ptr<AccountTracker> gaia_account_tracker(new AccountTracker(
       identity_test_env_.identity_manager(),
-      new net::TestURLRequestContextGetter(message_loop_.task_runner())));
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory_)));
 
   tracker_.reset(new GCMAccountTracker(std::move(gaia_account_tracker),
                                        identity_test_env_.identity_manager(),
@@ -239,12 +249,13 @@ void GCMAccountTrackerTest::FinishAccountAddition(
     const std::string& account_id) {
   IssueAccessToken(account_id);
 
-  net::TestURLFetcher* fetcher = test_fetcher_factory_.GetFetcherByID(
-      gaia::GaiaOAuthClient::kUrlFetcherId);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenInfoResponse(account_id));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(test_url_loader_factory()->IsPending(kOAuthURL));
+  test_url_loader_factory()->SimulateResponseForPendingRequest(
+      GURL(kOAuthURL), network::URLLoaderCompletionStatus(net::OK),
+      network::CreateResourceResponseHead(net::HTTP_OK),
+      GetValidTokenInfoResponse(account_id));
+
+  GetValidTokenInfoResponse(account_id);
 }
 
 std::string GCMAccountTrackerTest::AddPrimaryAccount(const std::string& email) {

@@ -8,11 +8,12 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -66,28 +67,33 @@ class AccessTokenFetcherTest : public ::testing::Test {
                               const std::string& refresh_token);
 
  protected:
-  // Test interface.
-  void SetUp() override;
-
   void SetFakeResponse(const GURL& url,
                        const std::string& data,
                        net::HttpStatusCode code,
-                       net::URLRequestStatus::Status status);
+                       int net_error);
+
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory() {
+    return shared_factory_;
+  }
 
   // Used for result verification
   std::string access_token_retrieved_;
   std::string refresh_token_retrieved_;
 
  private:
-  net::FakeURLFetcherFactory url_fetcher_factory_;
-  std::unique_ptr<base::MessageLoopForIO> message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessTokenFetcherTest);
 };
 
 AccessTokenFetcherTest::AccessTokenFetcherTest()
-    : url_fetcher_factory_(nullptr) {
-}
+    : scoped_task_environment_(
+          base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      shared_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)) {}
 
 AccessTokenFetcherTest::~AccessTokenFetcherTest() = default;
 
@@ -101,30 +107,21 @@ void AccessTokenFetcherTest::OnAccessTokenRetrieved(
   done_closure.Run();
 }
 
-void AccessTokenFetcherTest::SetUp() {
-  if (!base::MessageLoopCurrent::Get()) {
-    // Create a temporary message loop if the current thread does not already
-    // have one so we can use its task runner to create a request object.
-    message_loop_.reset(new base::MessageLoopForIO);
-  }
-}
-
-void AccessTokenFetcherTest::SetFakeResponse(
-    const GURL& url,
-    const std::string& data,
-    net::HttpStatusCode code,
-    net::URLRequestStatus::Status status) {
-  url_fetcher_factory_.SetFakeResponse(url, data, code, status);
+void AccessTokenFetcherTest::SetFakeResponse(const GURL& url,
+                                             const std::string& data,
+                                             net::HttpStatusCode code,
+                                             int net_error) {
+  test_url_loader_factory_.AddResponse(
+      url, network::CreateResourceResponseHead(code), data,
+      network::URLLoaderCompletionStatus(net_error));
 }
 
 TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                  kAuthCodeExchangeValidResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kAuthCodeExchangeValidResponse, net::HTTP_OK, net::OK);
 
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_info_url(),
-                  kValidTokenInfoResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kValidTokenInfoResponse, net::HTTP_OK, net::OK);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
@@ -132,6 +129,7 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken) {
                  base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
+  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
   access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
                                                   access_token_callback);
 
@@ -143,12 +141,10 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken) {
 
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                  kRefreshTokenExchangeValidResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kRefreshTokenExchangeValidResponse, net::HTTP_OK, net::OK);
 
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_info_url(),
-                  kValidTokenInfoResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kValidTokenInfoResponse, net::HTTP_OK, net::OK);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
@@ -156,6 +152,7 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken) {
                  base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
+  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
   access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
                                                       access_token_callback);
 
@@ -167,12 +164,10 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken) {
 
 TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                  kAuthCodeExchangeValidResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kAuthCodeExchangeValidResponse, net::HTTP_OK, net::OK);
 
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_info_url(),
-                  kValidTokenInfoResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kValidTokenInfoResponse, net::HTTP_OK, net::OK);
 
   std::unique_ptr<base::RunLoop> run_loop;
   run_loop.reset(new base::RunLoop());
@@ -181,6 +176,7 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
                  base::Unretained(this), run_loop->QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
+  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
   access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
                                                   access_token_callback);
 
@@ -195,8 +191,7 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
 
   // Update the response since we will call the refresh token method next.
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                  kRefreshTokenExchangeValidResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kRefreshTokenExchangeValidResponse, net::HTTP_OK, net::OK);
 
   run_loop.reset(new base::RunLoop());
   access_token_callback =
@@ -232,7 +227,7 @@ TEST_F(AccessTokenFetcherTest, MultipleAccessTokenCalls) {
 TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_Unauthorized_Error) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
                   kAuthCodeExchangeValidResponse, net::HTTP_UNAUTHORIZED,
-                  net::URLRequestStatus::FAILED);
+                  net::ERR_FAILED);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
@@ -240,6 +235,7 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_Unauthorized_Error) {
                  base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
+  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
   access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
                                                   access_token_callback);
 
@@ -253,7 +249,7 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_Unauthorized_Error) {
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_Unauthorized_Error) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
                   kRefreshTokenExchangeValidResponse, net::HTTP_UNAUTHORIZED,
-                  net::URLRequestStatus::FAILED);
+                  net::ERR_FAILED);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
@@ -261,6 +257,7 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_Unauthorized_Error) {
                  base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
+  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
   access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
                                                       access_token_callback);
 
@@ -274,7 +271,7 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_Unauthorized_Error) {
 TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_NetworkError) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
                   kAuthCodeExchangeValidResponse, net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
+                  net::ERR_FAILED);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
@@ -282,6 +279,7 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_NetworkError) {
                  base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
+  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
   access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
                                                   access_token_callback);
 
@@ -295,7 +293,7 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCode_NetworkError) {
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_NetworkError) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
                   kRefreshTokenExchangeValidResponse, net::HTTP_NOT_FOUND,
-                  net::URLRequestStatus::FAILED);
+                  net::ERR_FAILED);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
@@ -303,6 +301,7 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_NetworkError) {
                  base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
+  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
   access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
                                                       access_token_callback);
 
@@ -315,12 +314,10 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshToken_NetworkError) {
 
 TEST_F(AccessTokenFetcherTest, AuthCode_GetTokenInfoResponse_InvalidToken) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                  kAuthCodeExchangeValidResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kAuthCodeExchangeValidResponse, net::HTTP_OK, net::OK);
 
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_info_url(),
-                  kInvalidTokenInfoResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kInvalidTokenInfoResponse, net::HTTP_OK, net::OK);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
@@ -328,6 +325,7 @@ TEST_F(AccessTokenFetcherTest, AuthCode_GetTokenInfoResponse_InvalidToken) {
                  base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
+  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
   access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
                                                   access_token_callback);
 
@@ -340,8 +338,7 @@ TEST_F(AccessTokenFetcherTest, AuthCode_GetTokenInfoResponse_InvalidToken) {
 
 TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken_EmptyToken) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                  kAuthCodeExchangeEmptyResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kAuthCodeExchangeEmptyResponse, net::HTTP_OK, net::OK);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
@@ -349,6 +346,7 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken_EmptyToken) {
                  base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
+  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
   access_token_fetcher.GetAccessTokenFromAuthCode(kAuthCodeValue,
                                                   access_token_callback);
 
@@ -361,12 +359,10 @@ TEST_F(AccessTokenFetcherTest, ExchangeAuthCodeForAccessToken_EmptyToken) {
 
 TEST_F(AccessTokenFetcherTest, RefreshToken_GetTokenInfoResponse_InvalidToken) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                  kRefreshTokenExchangeValidResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kRefreshTokenExchangeValidResponse, net::HTTP_OK, net::OK);
 
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_info_url(),
-                  kInvalidTokenInfoResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kInvalidTokenInfoResponse, net::HTTP_OK, net::OK);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
@@ -374,6 +370,7 @@ TEST_F(AccessTokenFetcherTest, RefreshToken_GetTokenInfoResponse_InvalidToken) {
                  base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
+  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
   access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
                                                       access_token_callback);
 
@@ -386,8 +383,7 @@ TEST_F(AccessTokenFetcherTest, RefreshToken_GetTokenInfoResponse_InvalidToken) {
 
 TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken_EmptyToken) {
   SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
-                  kRefreshTokenExchangeEmptyResponse, net::HTTP_OK,
-                  net::URLRequestStatus::SUCCESS);
+                  kRefreshTokenExchangeEmptyResponse, net::HTTP_OK, net::OK);
 
   base::RunLoop run_loop;
   AccessTokenCallback access_token_callback =
@@ -395,6 +391,7 @@ TEST_F(AccessTokenFetcherTest, ExchangeRefreshTokenForAccessToken_EmptyToken) {
                  base::Unretained(this), run_loop.QuitClosure());
 
   AccessTokenFetcher access_token_fetcher;
+  access_token_fetcher.SetURLLoaderFactoryForTesting(shared_factory());
   access_token_fetcher.GetAccessTokenFromRefreshToken(kRefreshTokenValue,
                                                       access_token_callback);
 

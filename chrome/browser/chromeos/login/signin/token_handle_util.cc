@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/user_manager/known_user.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
@@ -86,9 +87,11 @@ void TokenHandleUtil::CheckToken(const AccountId& account_id,
   }
 
   if (!gaia_client_.get()) {
-    auto* request_context =
-        chromeos::ProfileHelper::Get()->GetSigninProfile()->GetRequestContext();
-    gaia_client_.reset(new gaia::GaiaOAuthClient(request_context));
+    auto url_loader_factory = chromeos::ProfileHelper::Get()
+                                  ->GetSigninProfile()
+                                  ->GetURLLoaderFactory();
+    gaia_client_.reset(
+        new gaia::GaiaOAuthClient(std::move(url_loader_factory)));
   }
 
   validation_delegates_[token] =

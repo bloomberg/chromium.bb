@@ -14,8 +14,8 @@
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/net/service_url_request_context_getter.h"
-#include "chrome/service/service_process.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace cloud_print {
 
@@ -95,8 +95,8 @@ void CloudPrintAuth::AuthenticateWithRobotAuthCode(
 
   robot_email_ = robot_email;
   // Now that we have an auth code we need to get the refresh and access tokens.
-  oauth_client_.reset(new gaia::GaiaOAuthClient(
-      g_service_process->GetServiceURLRequestContextGetter()));
+  oauth_client_.reset(
+      new gaia::GaiaOAuthClient(client_->GetURLLoaderFactory()));
   oauth_client_->GetTokensFromAuthCode(oauth_client_info_,
                                        robot_oauth_auth_code,
                                        kCloudPrintAuthMaxRetryCount,
@@ -106,8 +106,8 @@ void CloudPrintAuth::AuthenticateWithRobotAuthCode(
 void CloudPrintAuth::RefreshAccessToken() {
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.AuthEvent", AUTH_EVENT_REFRESH_REQUEST,
                             AUTH_EVENT_MAX);
-  oauth_client_.reset(new gaia::GaiaOAuthClient(
-      g_service_process->GetServiceURLRequestContextGetter()));
+  oauth_client_.reset(
+      new gaia::GaiaOAuthClient(client_->GetURLLoaderFactory()));
   std::vector<std::string> empty_scope_list;  // (Use scope from refresh token.)
   oauth_client_->RefreshToken(oauth_client_info_,
                               refresh_token_,
@@ -191,8 +191,8 @@ CloudPrintURLFetcher::ResponseAction CloudPrintAuth::HandleJSONData(
 
   json_data->GetString(kXMPPJidValue, &robot_email_);
   // Now that we have an auth code we need to get the refresh and access tokens.
-  oauth_client_.reset(new gaia::GaiaOAuthClient(
-      g_service_process->GetServiceURLRequestContextGetter()));
+  oauth_client_.reset(
+      new gaia::GaiaOAuthClient(client_->GetURLLoaderFactory()));
   oauth_client_->GetTokensFromAuthCode(oauth_client_info_,
                                        auth_code,
                                        kCloudPrintAPIMaxRetryCount,

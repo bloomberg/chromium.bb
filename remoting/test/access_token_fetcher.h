@@ -13,6 +13,11 @@
 #include "base/memory/ref_counted.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+class TransitionalURLLoaderFactoryOwner;
+};  // namespace network
+
 namespace remoting {
 namespace test {
 
@@ -40,6 +45,10 @@ class AccessTokenFetcher : public gaia::GaiaOAuthClient::Delegate {
   virtual void GetAccessTokenFromRefreshToken(
       const std::string& refresh_token,
       const AccessTokenCallback& callback);
+
+  void SetURLLoaderFactoryForTesting(
+      scoped_refptr<network::SharedURLLoaderFactory>
+          url_loader_factory_for_testing);
 
  private:
   // gaia::GaiaOAuthClient::Delegate Interface.
@@ -76,6 +85,13 @@ class AccessTokenFetcher : public gaia::GaiaOAuthClient::Delegate {
   // Holds the client id, secret, and redirect url used to make
   // the Gaia service request.
   gaia::OAuthClientInfo oauth_client_info_;
+
+  // Used to feed network into |auth_client_|.
+  std::unique_ptr<network::TransitionalURLLoaderFactoryOwner>
+      url_loader_factory_owner_;
+
+  scoped_refptr<network::SharedURLLoaderFactory>
+      url_loader_factory_for_testing_;
 
   // Used to make token requests to GAIA.
   std::unique_ptr<gaia::GaiaOAuthClient> auth_client_;

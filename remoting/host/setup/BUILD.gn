@@ -37,6 +37,8 @@ source_set("setup") {
     "//remoting/base:authorization",
     "//remoting/host",
     "//remoting/host/native_messaging",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
   ]
 
   if (is_mac || is_ios) {

@@ -165,6 +165,7 @@ target("mac_app_bundle", "remoting_native_messaging_host") {
     "//remoting/host:remoting_infoplist_strings",
     "//remoting/host/native_messaging",
     "//remoting/host/setup",
+    "//services/network/public/mojom",
   ]
   foreach(locale, remoting_locales_with_underscores) {
     deps += [

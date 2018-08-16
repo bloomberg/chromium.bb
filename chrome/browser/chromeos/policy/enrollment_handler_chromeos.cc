@@ -38,6 +38,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
 
@@ -566,8 +567,8 @@ void EnrollmentHandlerChromeOS::OnRobotAuthCodesFetched(
   client_info.redirect_uri = "oob";
 
   // Use the system request context to avoid sending user cookies.
-  gaia_oauth_client_.reset(
-      new gaia::GaiaOAuthClient(g_browser_process->system_request_context()));
+  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
+      g_browser_process->shared_url_loader_factory()));
   gaia_oauth_client_->GetTokensFromAuthCode(
       client_info, client->robot_api_auth_code(), 0 /* max_retries */, this);
 }

@@ -24,6 +24,8 @@
 #include "remoting/base/url_request_context_getter.h"
 #include "remoting/host/setup/host_starter.h"
 #include "remoting/host/setup/pin_validator.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/transitional_url_loader_factory_owner.h"
 
 #if defined(OS_POSIX)
 #include <termios.h>
@@ -221,12 +223,15 @@ int StartHostMain(int argc, char** argv) {
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter(
       new remoting::URLRequestContextGetter(io_thread.task_runner()));
+  network::TransitionalURLLoaderFactoryOwner url_loader_factory_owner(
+      url_request_context_getter);
 
   net::URLFetcher::SetIgnoreCertificateRequests(true);
 
   // Start the host.
   std::unique_ptr<HostStarter> host_starter(HostStarter::Create(
       remoting::ServiceUrls::GetInstance()->directory_hosts_url(),
+      url_loader_factory_owner.GetURLLoaderFactory(),
       url_request_context_getter.get()));
   if (redirect_url.empty()) {
     redirect_url = remoting::GetDefaultOauthRedirectUrl();

@@ -243,6 +243,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libyuv",

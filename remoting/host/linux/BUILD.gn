@@ -140,6 +140,7 @@ executable("remoting_native_messaging_host") {
     "//remoting/host:remoting_infoplist_strings",
     "//remoting/host/native_messaging",
     "//remoting/host/setup",
+    "//services/network/public/mojom",
   ]
 
   # The |major|, |build| and |patch| versions are inherited from Chrome.

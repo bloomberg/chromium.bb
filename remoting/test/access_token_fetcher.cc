@@ -15,6 +15,8 @@
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/transitional_url_loader_factory_owner.h"
 
 namespace {
 const int kMaxGetTokensRetries = 3;
@@ -76,12 +78,27 @@ void AccessTokenFetcher::GetAccessTokenFromRefreshToken(
                              /*delegate=*/this);
 }
 
-void AccessTokenFetcher::CreateNewGaiaOAuthClientInstance() {
-  scoped_refptr<remoting::URLRequestContextGetter> request_context_getter;
-  request_context_getter = new remoting::URLRequestContextGetter(
-      base::ThreadTaskRunnerHandle::Get());
+void AccessTokenFetcher::SetURLLoaderFactoryForTesting(
+    scoped_refptr<network::SharedURLLoaderFactory>
+        url_loader_factory_for_testing) {
+  url_loader_factory_for_testing_ = url_loader_factory_for_testing;
+}
 
-  auth_client_.reset(new gaia::GaiaOAuthClient(request_context_getter.get()));
+void AccessTokenFetcher::CreateNewGaiaOAuthClientInstance() {
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+  if (url_loader_factory_for_testing_) {
+    url_loader_factory = url_loader_factory_for_testing_;
+  } else {
+    scoped_refptr<remoting::URLRequestContextGetter> request_context_getter;
+    request_context_getter = new remoting::URLRequestContextGetter(
+        base::ThreadTaskRunnerHandle::Get());
+
+    url_loader_factory_owner_.reset(
+        new network::TransitionalURLLoaderFactoryOwner(request_context_getter));
+    url_loader_factory = url_loader_factory_owner_->GetURLLoaderFactory();
+  }
+
+  auth_client_.reset(new gaia::GaiaOAuthClient(url_loader_factory));
 }
 
 void AccessTokenFetcher::OnGetTokensResponse(const std::string& refresh_token,

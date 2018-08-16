@@ -15,6 +15,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 const int kMaxRetries = 3;
@@ -120,7 +121,7 @@ void TokenHandleFetcher::FillForNewUser(const std::string& access_token,
 void TokenHandleFetcher::FillForAccessToken(const std::string& access_token) {
   if (!gaia_client_.get())
     gaia_client_.reset(
-        new gaia::GaiaOAuthClient(profile_->GetRequestContext()));
+        new gaia::GaiaOAuthClient(profile_->GetURLLoaderFactory()));
   tokeninfo_response_start_time_ = base::TimeTicks::Now();
   gaia_client_->GetTokenInfo(access_token, kMaxRetries, this);
 }

@@ -14,8 +14,8 @@ const int kMaxGaiaRetries = 3;
 namespace remoting {
 
 GaiaOAuthClient::GaiaOAuthClient(
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
-    : gaia_oauth_client_(url_request_context_getter.get()) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : gaia_oauth_client_(std::move(url_loader_factory)) {}
 
 GaiaOAuthClient::~GaiaOAuthClient() = default;
 

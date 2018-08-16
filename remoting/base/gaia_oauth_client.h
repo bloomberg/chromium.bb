@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #include "remoting/base/oauth_client.h"
 
@@ -22,7 +22,7 @@ class GaiaOAuthClient : public OAuthClient,
                         public gaia::GaiaOAuthClient::Delegate {
  public:
   GaiaOAuthClient(
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   ~GaiaOAuthClient() override;
 
