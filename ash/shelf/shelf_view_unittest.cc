@@ -2935,14 +2935,9 @@ TEST_F(OverflowButtonInkDropTest, MouseDragOutAndBack) {
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 }
 
-#if defined(OS_LINUX)
-#define MAYBE_MouseContextMenu DISABLED_MouseContextMenu
-#else
-#define MAYBE_MouseContextMenu MouseContextMenu
-#endif
 // Tests ink drop state transitions for the overflow button when the user
 // right clicks on the button to show the context menu.
-TEST_F(OverflowButtonInkDropTest, MAYBE_MouseContextMenu) {
+TEST_F(OverflowButtonInkDropTest, MouseContextMenu) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
 
