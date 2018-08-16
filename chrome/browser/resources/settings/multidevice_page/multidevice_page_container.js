@@ -71,8 +71,8 @@ Polymer({
 
   /**
    * If the new mode corresponds to no eligible host or unset potential hosts
-   * (i.e. NO_ELIGIBLE_HOSTS or NO_HOST_SET), then newHostDevice should be null
-   * or undefined. Otherwise it should be defined and non-null.
+   * (i.e. NO_ELIGIBLE_HOSTS or NO_HOST_SET), then newHostDeviceName should be
+   * falsy. Otherwise it should be truthy.
    * @param {!MultiDevicePageContentData} newData
    * @private
    */
@@ -81,7 +81,7 @@ Polymer({
       settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS,
       settings.MultiDeviceSettingsMode.NO_HOST_SET,
     ];
-    return !newData.hostDevice == noHostModes.includes(newData.mode);
+    return !newData.hostDeviceName === noHostModes.includes(newData.mode);
   },
 
   /**

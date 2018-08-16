@@ -8,14 +8,11 @@ suite('Multidevice', function() {
   // enum settings.MultiDeviceSettingsMode from here so its initialization is
   // deferred to the suiteSetup function.
   let HOST_SET_MODES;
-  const HOST_DEVICE = {
-    name: 'Pixel XL',
-  };
 
   function setPageContentData(newMode) {
     multideviceSubpage.pageContentData = {
       mode: newMode,
-      hostDevice: HOST_DEVICE,
+      hostDeviceName: 'Pixel XL',
     };
     Polymer.dom.flush();
   }

@@ -25,14 +25,12 @@ suite('Multidevice', function() {
   let multidevicePage = null;
   let browserProxy = null;
   let HOST_SET_MODES;
-  const HOST_DEVICE = {
-    name: 'Pixel XL',
-  };
+  const HOST_DEVICE = 'Pixel XL';
 
-  function setPageContentData(newMode, newHostDevice) {
+  function setPageContentData(newMode, newHostDeviceName) {
     multidevicePage.pageContentData = {
       mode: newMode,
-      hostDevice: newHostDevice,
+      hostDeviceName: newHostDeviceName,
     };
     Polymer.dom.flush();
   }
@@ -66,7 +64,7 @@ suite('Multidevice', function() {
   const getSubpage = () => multidevicePage.$$('settings-multidevice-subpage');
 
   test('clicking setup shows multidevice setup dialog', function() {
-    setPageContentData(settings.MultiDeviceSettingsMode.NO_HOST_SET, null);
+    setPageContentData(settings.MultiDeviceSettingsMode.NO_HOST_SET, undefined);
     const button = multidevicePage.$$('paper-button');
     assertTrue(!!button);
     button.click();
@@ -76,25 +74,24 @@ suite('Multidevice', function() {
   test('headings render based on mode and host', function() {
     for (let mode of HOST_SET_MODES) {
       setPageContentData(mode, HOST_DEVICE);
-      assertEquals(getLabel(), HOST_DEVICE.name);
+      assertEquals(getLabel(), HOST_DEVICE);
     }
-    setPageContentData(settings.MultiDeviceSettingsMode.NO_HOST_SET, null);
-    assertNotEquals(getLabel(), HOST_DEVICE.name);
+    setPageContentData(settings.MultiDeviceSettingsMode.NO_HOST_SET, undefined);
+    assertNotEquals(getLabel(), HOST_DEVICE);
   });
 
   test('changing host device and fixing mode changes header', function() {
     setPageContentData(
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED, HOST_DEVICE);
-    assertEquals(getLabel(), HOST_DEVICE.name);
-    const anotherHost =
-        Object.assign(HOST_DEVICE, {name: 'Super Duper ' + HOST_DEVICE.name});
+    assertEquals(getLabel(), HOST_DEVICE);
+    const anotherHost = 'Super Duper ' + HOST_DEVICE;
     setPageContentData(
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED, anotherHost);
-    assertEquals(getLabel(), anotherHost.name);
+    assertEquals(getLabel(), anotherHost);
   });
 
   test('item is actionable if and only if a host is set', function() {
-    setPageContentData(settings.MultiDeviceSettingsMode.NO_HOST_SET, null);
+    setPageContentData(settings.MultiDeviceSettingsMode.NO_HOST_SET, undefined);
     assertFalse(
         multidevicePage.$$('#multidevice-item').hasAttribute('actionable'));
     for (let mode of HOST_SET_MODES) {
