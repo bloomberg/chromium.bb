@@ -795,6 +795,22 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
         std::getline(ss, line);
         VLOG(3) << line;
       }
+
+      VLOG(3) << "CC Layer List:";
+      for (auto* layer : *this) {
+        VLOG(3) << "layer id " << layer->id();
+        VLOG(3) << "  element_id: " << layer->element_id();
+        VLOG(3) << "  bounds: " << layer->bounds().ToString();
+        VLOG(3) << "  opacity: " << layer->opacity();
+        VLOG(3) << "  position: " << layer->position().ToString();
+        VLOG(3) << "  draws_content: " << layer->DrawsContent();
+        VLOG(3) << "  scrollable: " << layer->scrollable();
+        VLOG(3) << "  contents_opaque: " << layer->contents_opaque();
+        VLOG(3) << "  transform_tree_index: " << layer->transform_tree_index();
+        VLOG(3) << "  clip_tree_index: " << layer->clip_tree_index();
+        VLOG(3) << "  effect_tree_index: " << layer->effect_tree_index();
+        VLOG(3) << "  scroll_tree_index: " << layer->scroll_tree_index();
+      }
     }
 
   bool painted_content_has_slow_paths = false;
