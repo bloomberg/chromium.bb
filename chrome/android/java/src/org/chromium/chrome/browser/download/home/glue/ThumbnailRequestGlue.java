@@ -5,10 +5,14 @@
 package org.chromium.chrome.browser.download.home.glue;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
@@ -62,6 +66,14 @@ public class ThumbnailRequestGlue implements ThumbnailRequest {
 
     @Override
     public boolean getThumbnail(Callback<Bitmap> callback) {
+        // TODO(shaktisahu, xingliu): Remove this after video thumbnail generation pipeline is done.
+        if (mItem.filter == OfflineItemFilter.FILTER_VIDEO) {
+            callback.onResult(BitmapFactory.decodeResource(
+                    ContextUtils.getApplicationContext().getResources(),
+                    R.drawable.audio_playing_square));
+            return true;
+        }
+
         return mProvider.getVisualsForItem(mItem.id, (id, visuals) -> {
             if (visuals == null) {
                 callback.onResult(null);
