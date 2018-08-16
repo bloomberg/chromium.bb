@@ -13,9 +13,9 @@
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "remoting/base/oauth_token_getter.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace remoting {
 
@@ -33,13 +33,11 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   OAuthTokenGetterImpl(
       std::unique_ptr<OAuthIntermediateCredentials> intermediate_credentials,
       const OAuthTokenGetter::CredentialsUpdatedCallback& on_credentials_update,
-      const scoped_refptr<net::URLRequestContextGetter>&
-          url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       bool auto_refresh);
   OAuthTokenGetterImpl(
       std::unique_ptr<OAuthAuthorizationCredentials> authorization_credentials,
-      const scoped_refptr<net::URLRequestContextGetter>&
-          url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       bool auto_refresh);
   ~OAuthTokenGetterImpl() override;
 
@@ -72,7 +70,6 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   std::unique_ptr<OAuthAuthorizationCredentials> authorization_credentials_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
   OAuthTokenGetter::CredentialsUpdatedCallback credentials_updated_callback_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   bool response_pending_ = false;
   bool email_verified_ = false;

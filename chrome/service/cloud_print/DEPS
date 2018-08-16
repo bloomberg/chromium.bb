@@ -5,4 +5,5 @@ include_rules = [
   "+google_apis",
   # sync notifier depends on the common jingle notifier classes.
   "+jingle/notifier",
+  "+services/network",
 ]

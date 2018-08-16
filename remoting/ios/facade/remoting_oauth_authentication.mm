@@ -25,6 +25,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/base/oauth_token_getter_impl.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 static const char kOauthRedirectUrl[] =
     "https://chromoting-oauth.talkgadget."
@@ -52,7 +53,7 @@ CreateOAuthTokenGetterWithAuthorizationCode(
   std::unique_ptr<remoting::OAuthTokenGetter> oauth_tokenGetter(
       new remoting::OAuthTokenGetterImpl(
           std::move(oauth_credentials), on_credentials_update,
-          RemotingService.instance.runtime->url_requester(),
+          RemotingService.instance.runtime->url_loader_factory(),
           /*auto_refresh=*/true));
   return oauth_tokenGetter;
 }
@@ -68,7 +69,7 @@ std::unique_ptr<remoting::OAuthTokenGetter> CreateOAuthTokenWithRefreshToken(
   std::unique_ptr<remoting::OAuthTokenGetter> oauth_tokenGetter(
       new remoting::OAuthTokenGetterImpl(
           std::move(oauth_credentials),
-          RemotingService.instance.runtime->url_requester(),
+          RemotingService.instance.runtime->url_loader_factory(),
           /*auto_refresh=*/true));
   return oauth_tokenGetter;
 }

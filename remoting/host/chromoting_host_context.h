@@ -19,6 +19,11 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
+namespace network {
+class SharedURLLoaderFactory;
+class TransitionalURLLoaderFactoryOwner;
+}  // namespace network
+
 namespace ui {
 class SystemInputInjectorFactory;
 }  // namespace ui
@@ -92,6 +97,8 @@ class ChromotingHostContext {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter()
       const;
 
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory();
+
   // Gives the factory which builds the SystemInputInjector, which takes events
   // and passes them to the system for dispatch.
   //
@@ -134,6 +141,10 @@ class ChromotingHostContext {
 
   // Serves URLRequestContexts that use the network and UI task runners.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  // Makes a SharedURLLoaderFactory out of |url_request_context_getter_|
+  std::unique_ptr<network::TransitionalURLLoaderFactoryOwner>
+      url_loader_factory_owner_;
 
   // A factory which makes a SystemInputInjector. Currently only non-null on
   // chromeos, though it's intended to be set everywhere mus is used.

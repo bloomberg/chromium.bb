@@ -12,14 +12,15 @@
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
+const char kOAuthURL[] = "https://www.googleapis.com/oauth2/v1/userinfo";
 const char kPrimaryAccountEmail[] = "primary_account@example.com";
 
 enum TrackingEventType { SIGN_IN, SIGN_OUT };
@@ -243,7 +244,8 @@ class AccountTrackerTest : public testing::Test {
   void SetUp() override {
     account_tracker_.reset(new AccountTracker(
         identity_test_env_.identity_manager(),
-        new net::TestURLRequestContextGetter(message_loop_.task_runner())));
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_)));
     account_tracker_->AddObserver(&observer_);
   }
 
@@ -308,8 +310,7 @@ class AccountTrackerTest : public testing::Test {
            "\" }";
   }
 
-  void ReturnOAuthUrlFetchResults(int fetcher_id,
-                                  net::HttpStatusCode response_code,
+  void ReturnOAuthUrlFetchResults(net::HttpStatusCode response_code,
                                   const std::string& response_string);
 
   void ReturnOAuthUrlFetchSuccess(const std::string& account_key);
@@ -325,9 +326,13 @@ class AccountTrackerTest : public testing::Test {
     return primary_account_id;
   }
 
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
+
  private:
   base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
-  net::TestURLFetcherFactory test_fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_test_env_;
 
   std::unique_ptr<AccountTracker> account_tracker_;
@@ -335,29 +340,24 @@ class AccountTrackerTest : public testing::Test {
 };
 
 void AccountTrackerTest::ReturnOAuthUrlFetchResults(
-    int fetcher_id,
     net::HttpStatusCode response_code,
     const std::string& response_string) {
-  net::TestURLFetcher* fetcher =
-      test_fetcher_factory_.GetFetcherByID(fetcher_id);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(response_code);
-  fetcher->SetResponseString(response_string);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(test_url_loader_factory()->SimulateResponseForPendingRequest(
+      GURL(kOAuthURL), network::URLLoaderCompletionStatus(net::OK),
+      network::CreateResourceResponseHead(response_code), response_string));
 }
 
 void AccountTrackerTest::ReturnOAuthUrlFetchSuccess(
     const std::string& account_id) {
   IssueAccessToken(account_id);
-  ReturnOAuthUrlFetchResults(gaia::GaiaOAuthClient::kUrlFetcherId, net::HTTP_OK,
+  ReturnOAuthUrlFetchResults(net::HTTP_OK,
                              GetValidTokenInfoResponse(account_id));
 }
 
 void AccountTrackerTest::ReturnOAuthUrlFetchFailure(
     const std::string& account_id) {
   IssueAccessToken(account_id);
-  ReturnOAuthUrlFetchResults(gaia::GaiaOAuthClient::kUrlFetcherId,
-                             net::HTTP_BAD_REQUEST, "");
+  ReturnOAuthUrlFetchResults(net::HTTP_BAD_REQUEST, "");
 }
 
 // Primary tests just involve the Active account

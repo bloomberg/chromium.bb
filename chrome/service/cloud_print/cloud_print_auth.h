@@ -15,6 +15,10 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace cloud_print {
 
 // CloudPrintAuth is a class to handle login, token refresh, and other
@@ -35,6 +39,9 @@ class CloudPrintAuth : public base::RefCountedThreadSafe<CloudPrintAuth>,
         const std::string& robot_email,
         const std::string& user_email) = 0;
     virtual void OnInvalidCredentials() = 0;
+    virtual scoped_refptr<network::SharedURLLoaderFactory>
+    GetURLLoaderFactory() = 0;
+
    protected:
      virtual ~Client() {}
   };

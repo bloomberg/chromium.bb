@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
@@ -17,8 +18,8 @@
 
 class GoogleServiceAuthError;
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace gcm {
@@ -42,8 +43,9 @@ class AccountIdFetcher;
 // 4. If there is no primary account, there are no other accounts.
 class AccountTracker : public identity::IdentityManager::Observer {
  public:
-  AccountTracker(identity::IdentityManager* identity_manager,
-                 net::URLRequestContextGetter* request_context_getter);
+  AccountTracker(
+      identity::IdentityManager* identity_manager,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~AccountTracker() override;
 
   class Observer {
@@ -103,7 +105,7 @@ class AccountTracker : public identity::IdentityManager::Observer {
   void DeleteFetcher(AccountIdFetcher* fetcher);
 
   identity::IdentityManager* identity_manager_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::map<std::string, std::unique_ptr<AccountIdFetcher>> user_info_requests_;
   std::map<std::string, AccountState> accounts_;
   base::ObserverList<Observer> observer_list_;
@@ -112,10 +114,11 @@ class AccountTracker : public identity::IdentityManager::Observer {
 
 class AccountIdFetcher : public gaia::GaiaOAuthClient::Delegate {
  public:
-  AccountIdFetcher(identity::IdentityManager* identity_manager,
-                   net::URLRequestContextGetter* request_context_getter,
-                   AccountTracker* tracker,
-                   const std::string& account_key);
+  AccountIdFetcher(
+      identity::IdentityManager* identity_manager,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      AccountTracker* tracker,
+      const std::string& account_key);
   ~AccountIdFetcher() override;
 
   const std::string& account_key() { return account_key_; }
@@ -132,7 +135,7 @@ class AccountIdFetcher : public gaia::GaiaOAuthClient::Delegate {
 
  private:
   identity::IdentityManager* identity_manager_;
-  net::URLRequestContextGetter* request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   AccountTracker* tracker_;
   const std::string account_key_;
 

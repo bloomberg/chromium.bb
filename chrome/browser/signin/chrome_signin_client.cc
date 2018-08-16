@@ -367,8 +367,7 @@ void ChromeSigninClient::OnGetTokenSuccess(
   // verification that the token is still valid (i.e. the password has not
   // been changed).
     if (!oauth_client_) {
-        oauth_client_.reset(new gaia::GaiaOAuthClient(
-            profile_->GetRequestContext()));
+      oauth_client_.reset(new gaia::GaiaOAuthClient(GetURLLoaderFactory()));
     }
     oauth_client_->GetTokenInfo(access_token, 3 /* retries */, this);
 }

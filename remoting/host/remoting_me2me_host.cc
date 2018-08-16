@@ -99,6 +99,7 @@
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/push_notification_subscriber.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 
 #if defined(OS_POSIX)
@@ -1430,9 +1431,8 @@ void HostProcess::InitializeSignaling() {
       oauth_credentials(new OAuthTokenGetter::OAuthAuthorizationCredentials(
           xmpp_server_config_.username, oauth_refresh_token_,
           use_service_account_));
-  oauth_token_getter_.reset(
-      new OAuthTokenGetterImpl(std::move(oauth_credentials),
-                               context_->url_request_context_getter(), false));
+  oauth_token_getter_.reset(new OAuthTokenGetterImpl(
+      std::move(oauth_credentials), context_->url_loader_factory(), false));
   signaling_connector_.reset(new SignalingConnector(
       xmpp_signal_strategy, std::move(dns_blackhole_checker),
       oauth_token_getter_.get(),

@@ -8,12 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 class AccountFetcherService;
@@ -24,10 +25,11 @@ class AccountFetcherService;
 class AccountInfoFetcher : public OAuth2TokenService::Consumer,
                            public gaia::GaiaOAuthClient::Delegate {
  public:
-  AccountInfoFetcher(OAuth2TokenService* token_service,
-                     net::URLRequestContextGetter* request_context_getter,
-                     AccountFetcherService* service,
-                     const std::string& account_id);
+  AccountInfoFetcher(
+      OAuth2TokenService* token_service,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      AccountFetcherService* service,
+      const std::string& account_id);
   ~AccountInfoFetcher() override;
 
   const std::string& account_id() { return account_id_; }
@@ -50,7 +52,7 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
 
  private:
   OAuth2TokenService* token_service_;
-  net::URLRequestContextGetter* request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   AccountFetcherService* service_;
   const std::string account_id_;
 

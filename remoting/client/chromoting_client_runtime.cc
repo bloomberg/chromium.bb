@@ -16,6 +16,8 @@
 #include "remoting/base/telemetry_log_writer.h"
 #include "remoting/base/url_request_context_getter.h"
 #include "remoting/client/oauth_token_getter_proxy.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/transitional_url_loader_factory_owner.h"
 
 namespace {
 
@@ -57,6 +59,9 @@ ChromotingClientRuntime::ChromotingClientRuntime() {
   network_task_runner_ = AutoThread::CreateWithType(
       "native_net", ui_task_runner_, base::MessageLoop::TYPE_IO);
   url_requester_ = new URLRequestContextGetter(network_task_runner_);
+  url_loader_factory_owner_ =
+      std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
+          url_requester_);
 }
 
 ChromotingClientRuntime::~ChromotingClientRuntime() {
@@ -89,6 +94,11 @@ std::unique_ptr<OAuthTokenGetter>
 ChromotingClientRuntime::CreateOAuthTokenGetter() {
   return std::make_unique<OAuthTokenGetterProxy>(
       delegate_->oauth_token_getter(), ui_task_runner());
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromotingClientRuntime::url_loader_factory() {
+  return url_loader_factory_owner_->GetURLLoaderFactory();
 }
 
 }  // namespace remoting

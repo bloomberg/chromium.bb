@@ -25,10 +25,9 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -350,9 +349,6 @@ class AccountTrackerServiceTest : public testing::Test {
   void ReturnAccountImageFetchSuccess(const std::string& account_id);
   void ReturnAccountImageFetchFailure(const std::string& account_id);
 
-  net::TestURLFetcherFactory* test_fetcher_factory() {
-    return &test_fetcher_factory_;
-  }
   AccountFetcherService* account_fetcher() { return account_fetcher_.get(); }
   AccountTrackerService* account_tracker() { return account_tracker_.get(); }
   OAuth2TokenService* token_service() {
@@ -360,8 +356,6 @@ class AccountTrackerServiceTest : public testing::Test {
   }
   SigninClient* signin_client() { return signin_client_.get(); }
 
-  // Images go through test_url_loader_factory(); others use
-  // |test_fetcher_factory_| for now.
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return signin_client_->test_url_loader_factory();
   }
@@ -370,11 +364,9 @@ class AccountTrackerServiceTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
-  void ReturnFetchResults(int fetcher_id,
-                          net::HttpStatusCode response_code,
+  void ReturnFetchResults(net::HttpStatusCode response_code,
                           const std::string& response_string);
 
-  net::TestURLFetcherFactory test_fetcher_factory_;
   std::unique_ptr<FakeOAuth2TokenService> fake_oauth2_token_service_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<AccountFetcherService> account_fetcher_;
@@ -383,36 +375,40 @@ class AccountTrackerServiceTest : public testing::Test {
 };
 
 void AccountTrackerServiceTest::ReturnFetchResults(
-    int fetcher_id,
     net::HttpStatusCode response_code,
     const std::string& response_string) {
-  net::TestURLFetcher* fetcher =
-      test_fetcher_factory_.GetFetcherByID(fetcher_id);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(response_code);
-  fetcher->SetResponseString(response_string);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  GURL url = GaiaUrls::GetInstance()->oauth_user_info_url();
+  EXPECT_TRUE(test_url_loader_factory()->IsPending(url.spec()));
+
+  // It's possible for multiple requests to be pending, since some tests have
+  // a local AccountFetcherService which shares token_service() with fixture's
+  // |account_fetcher_service_|, so when they make tokens available, both end up
+  // doing fetches. Respond to all of them.
+  while (test_url_loader_factory()->IsPending(url.spec())) {
+    test_url_loader_factory()->SimulateResponseForPendingRequest(
+        url, network::URLLoaderCompletionStatus(net::OK),
+        network::CreateResourceResponseHead(response_code), response_string,
+        network::TestURLLoaderFactory::kMostRecentMatch);
+  }
 }
 
 void AccountTrackerServiceTest::ReturnAccountInfoFetchSuccess(
     const std::string& account_id) {
   IssueAccessToken(account_id);
-  ReturnFetchResults(gaia::GaiaOAuthClient::kUrlFetcherId, net::HTTP_OK,
-                     GenerateValidTokenInfoResponse(account_id));
+  ReturnFetchResults(net::HTTP_OK, GenerateValidTokenInfoResponse(account_id));
 }
 
 void AccountTrackerServiceTest::ReturnAccountInfoFetchSuccessIncomplete(
     const std::string& account_id) {
   IssueAccessToken(account_id);
-  ReturnFetchResults(gaia::GaiaOAuthClient::kUrlFetcherId, net::HTTP_OK,
+  ReturnFetchResults(net::HTTP_OK,
                      GenerateIncompleteTokenInfoResponse(account_id));
 }
 
 void AccountTrackerServiceTest::ReturnAccountInfoFetchFailure(
     const std::string& account_id) {
   IssueAccessToken(account_id);
-  ReturnFetchResults(gaia::GaiaOAuthClient::kUrlFetcherId,
-                     net::HTTP_BAD_REQUEST, "");
+  ReturnFetchResults(net::HTTP_BAD_REQUEST, "");
 }
 
 void AccountTrackerServiceTest::ReturnAccountImageFetchSuccess(
@@ -616,9 +612,7 @@ TEST_F(AccountTrackerServiceTest, GetAccountInfo_TokenAvailable_EnableNetwork) {
   SimulateTokenAvailable("alpha");
   IssueAccessToken("alpha");
   // No fetcher has been created yet.
-  net::TestURLFetcher* fetcher = test_fetcher_factory()->GetFetcherByID(
-      gaia::GaiaOAuthClient::kUrlFetcherId);
-  ASSERT_FALSE(fetcher);
+  EXPECT_EQ(0, test_url_loader_factory()->NumPending());
 
   // Enable the network to create the fetcher then issue the access token.
   fetcher_service.EnableNetworkFetchesForTest();

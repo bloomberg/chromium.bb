@@ -33,6 +33,8 @@
 #include "remoting/host/setup/me2me_native_messaging_host.h"
 #include "remoting/host/switches.h"
 #include "remoting/host/usage_stats_consent.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/transitional_url_loader_factory_owner.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -181,8 +183,10 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   // OAuth client (for credential requests). IO thread is used for blocking
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter(
       new URLRequestContextGetter(io_thread.task_runner()));
+  network::TransitionalURLLoaderFactoryOwner url_loader_factory_owner(
+      url_request_context_getter);
   std::unique_ptr<OAuthClient> oauth_client(
-      new GaiaOAuthClient(url_request_context_getter));
+      new GaiaOAuthClient(url_loader_factory_owner.GetURLLoaderFactory()));
 
   net::URLFetcher::SetIgnoreCertificateRequests(true);
 

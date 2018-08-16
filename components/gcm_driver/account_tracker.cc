@@ -8,15 +8,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace gcm {
 
 AccountTracker::AccountTracker(
     identity::IdentityManager* identity_manager,
-    net::URLRequestContextGetter* request_context_getter)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : identity_manager_(identity_manager),
-      request_context_getter_(request_context_getter),
+      url_loader_factory_(std::move(url_loader_factory)),
       shutdown_called_(false) {
   identity_manager_->AddObserver(this);
 }
@@ -169,7 +169,7 @@ void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
 
   DVLOG(1) << "StartFetching " << account_key;
   AccountIdFetcher* fetcher = new AccountIdFetcher(
-      identity_manager_, request_context_getter_.get(), this, account_key);
+      identity_manager_, url_loader_factory_, this, account_key);
   user_info_requests_[account_key] = base::WrapUnique(fetcher);
   fetcher->Start();
 }
@@ -205,11 +205,11 @@ void AccountTracker::DeleteFetcher(AccountIdFetcher* fetcher) {
 
 AccountIdFetcher::AccountIdFetcher(
     identity::IdentityManager* identity_manager,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     AccountTracker* tracker,
     const std::string& account_key)
     : identity_manager_(identity_manager),
-      request_context_getter_(request_context_getter),
+      url_loader_factory_(std::move(url_loader_factory)),
       tracker_(tracker),
       account_key_(account_key) {
   TRACE_EVENT_ASYNC_BEGIN1("identity", "AccountIdFetcher", this, "account_key",
@@ -247,7 +247,7 @@ void AccountIdFetcher::AccessTokenFetched(
   TRACE_EVENT_ASYNC_STEP_PAST0("identity", "AccountIdFetcher", this,
                                "AccessTokenFetched");
 
-  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(request_context_getter_));
+  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(url_loader_factory_));
 
   const int kMaxGetUserIdRetries = 3;
   gaia_oauth_client_->GetUserId(access_token_info.token, kMaxGetUserIdRetries,

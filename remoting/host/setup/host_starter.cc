@@ -17,6 +17,7 @@
 #include "google_apis/google_api_keys.h"
 #include "remoting/base/oauth_helper.h"
 #include "remoting/host/pin_hash.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 const int kMaxGetTokensRetries = 3;
@@ -42,9 +43,10 @@ HostStarter::~HostStarter() = default;
 
 std::unique_ptr<HostStarter> HostStarter::Create(
     const std::string& chromoting_hosts_url,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     net::URLRequestContextGetter* url_request_context_getter) {
   return base::WrapUnique(new HostStarter(
-      std::make_unique<gaia::GaiaOAuthClient>(url_request_context_getter),
+      std::make_unique<gaia::GaiaOAuthClient>(url_loader_factory),
       std::make_unique<remoting::ServiceClient>(chromoting_hosts_url,
                                                 url_request_context_getter),
       remoting::DaemonController::Create()));

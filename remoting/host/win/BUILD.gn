@@ -407,6 +407,7 @@ shared_library("remoting_core") {
     "//remoting/host/setup",
     "//remoting/protocol",
     "//sandbox/win:sandbox",  # Should always use Windows version
+    "//services/network/public/mojom",
     "//third_party/webrtc/modules/desktop_capture",
   ]
 

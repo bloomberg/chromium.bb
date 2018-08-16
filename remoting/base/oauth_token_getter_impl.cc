@@ -11,9 +11,9 @@
 #include "base/containers/queue.h"
 #include "base/strings/string_util.h"
 #include "google_apis/google_api_keys.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/oauth_helper.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace remoting {
 
@@ -30,14 +30,12 @@ const int kTokenUpdateTimeBeforeExpirySeconds = 60;
 OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     std::unique_ptr<OAuthIntermediateCredentials> intermediate_credentials,
     const OAuthTokenGetter::CredentialsUpdatedCallback& on_credentials_update,
-    const scoped_refptr<net::URLRequestContextGetter>&
-        url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     bool auto_refresh)
     : intermediate_credentials_(std::move(intermediate_credentials)),
       gaia_oauth_client_(
-          new gaia::GaiaOAuthClient(url_request_context_getter.get())),
-      credentials_updated_callback_(on_credentials_update),
-      url_request_context_getter_(url_request_context_getter) {
+          new gaia::GaiaOAuthClient(std::move(url_loader_factory))),
+      credentials_updated_callback_(on_credentials_update) {
   if (auto_refresh) {
     refresh_timer_.reset(new base::OneShotTimer());
   }
@@ -45,13 +43,11 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
 
 OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     std::unique_ptr<OAuthAuthorizationCredentials> authorization_credentials,
-    const scoped_refptr<net::URLRequestContextGetter>&
-        url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     bool auto_refresh)
     : authorization_credentials_(std::move(authorization_credentials)),
       gaia_oauth_client_(
-          new gaia::GaiaOAuthClient(url_request_context_getter.get())),
-      url_request_context_getter_(url_request_context_getter) {
+          new gaia::GaiaOAuthClient(std::move(url_loader_factory))) {
   if (auto_refresh) {
     refresh_timer_.reset(new base::OneShotTimer());
   }

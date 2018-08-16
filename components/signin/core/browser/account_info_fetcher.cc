@@ -9,15 +9,16 @@
 #include "base/trace_event/trace_event.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 AccountInfoFetcher::AccountInfoFetcher(
     OAuth2TokenService* token_service,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     AccountFetcherService* service,
     const std::string& account_id)
     : OAuth2TokenService::Consumer("gaia_account_tracker"),
       token_service_(token_service),
-      request_context_getter_(request_context_getter),
+      url_loader_factory_(std::move(url_loader_factory)),
       service_(service),
       account_id_(account_id) {
   TRACE_EVENT_ASYNC_BEGIN1("AccountFetcherService", "AccountIdFetcher", this,
@@ -44,7 +45,7 @@ void AccountInfoFetcher::OnGetTokenSuccess(
                                this, "OnGetTokenSuccess");
   DCHECK_EQ(request, login_token_request_.get());
 
-  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(request_context_getter_));
+  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(url_loader_factory_));
   const int kMaxRetries = 3;
   gaia_oauth_client_->GetUserInfo(access_token, kMaxRetries, this);
 }

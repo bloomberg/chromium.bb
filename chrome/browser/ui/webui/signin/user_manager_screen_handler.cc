@@ -351,8 +351,8 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     if (!oauth_client_) {
       oauth_client_.reset(new gaia::GaiaOAuthClient(
           content::BrowserContext::GetDefaultStoragePartition(
-              web_ui()->GetWebContents()->GetBrowserContext())->
-                  GetURLRequestContext()));
+              web_ui()->GetWebContents()->GetBrowserContext())
+              ->GetURLLoaderFactoryForBrowserProcess()));
     }
 
     const std::string token = entry->GetPasswordChangeDetectionToken();

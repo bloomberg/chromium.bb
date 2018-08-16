@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 // A helper class to get and refresh OAuth2 refresh and access tokens.
@@ -32,8 +32,6 @@ struct OAuthClientInfo {
 
 class GaiaOAuthClient {
  public:
-  const static int kUrlFetcherId;
-
   class Delegate {
    public:
     // Invoked on a successful response to the GetTokensFromAuthCode request.
@@ -64,7 +62,8 @@ class GaiaOAuthClient {
     virtual ~Delegate() {}
   };
 
-  GaiaOAuthClient(net::URLRequestContextGetter* context_getter);
+  GaiaOAuthClient(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~GaiaOAuthClient();
 
   // In the below methods, |max_retries| specifies the maximum number of times

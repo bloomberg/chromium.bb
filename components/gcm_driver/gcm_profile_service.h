@@ -94,7 +94,7 @@ class GCMProfileService : public KeyedService {
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
   identity::IdentityManager* identity_manager_;
 
-  net::URLRequestContextGetter* request_context_ = nullptr;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Used for both account tracker and GCM.UserSignedIn UMA.
   class IdentityObserver;

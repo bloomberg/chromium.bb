@@ -281,8 +281,8 @@ void DeviceOAuth2TokenServiceDelegate::StartValidation() {
 
   state_ = STATE_VALIDATION_STARTED;
 
-  gaia_oauth_client_.reset(
-      new gaia::GaiaOAuthClient(g_browser_process->system_request_context()));
+  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
+      g_browser_process->shared_url_loader_factory()));
 
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   gaia::OAuthClientInfo client_info;

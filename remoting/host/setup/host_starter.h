@@ -20,6 +20,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace remoting {
 
 // A helper class that registers and starts a host.
@@ -40,6 +44,7 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
   // Creates a HostStarter.
   static std::unique_ptr<HostStarter> Create(
       const std::string& chromoting_hosts_url,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       net::URLRequestContextGetter* url_request_context_getter);
 
   // Registers a new host with the Chromoting service, and starts it.
