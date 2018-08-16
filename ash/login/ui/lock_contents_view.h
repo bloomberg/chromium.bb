@@ -47,7 +47,6 @@ class LoginBigUserView;
 class LoginBubble;
 class LoginDetachableBaseModel;
 class LoginExpandedPublicAccountView;
-class LoginPublicAccountUserView;
 class LoginUserView;
 class NoteActionLaunchButton;
 class ScrollableUsersListView;
@@ -323,18 +322,6 @@ class ASH_EXPORT LockContentsView
   ScrollableUsersListView* BuildScrollableUsersListView(
       const std::vector<mojom::LoginUserInfoPtr>& users,
       LoginDisplayStyle display_style);
-
-  // Update the auth enable/disabled for public account user.
-  // Both |opt_to_update| and |opt_to_hide| could be null.
-  void UpdateAuthForPublicAccount(LoginPublicAccountUserView* opt_to_update,
-                                  LoginPublicAccountUserView* opt_to_hide,
-                                  bool animate);
-
-  // Update the auth method for regular user.
-  // Both |opt_to_update| and |opt_to_hide| could be null.
-  void UpdateAuthForAuthUser(LoginAuthUserView* opt_to_update,
-                             LoginAuthUserView* opt_to_hide,
-                             bool animate);
 
   // Change the visibility of child views based on the |style|.
   void SetDisplayStyle(DisplayStyle style);
