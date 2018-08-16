@@ -19,6 +19,5 @@
     </application>
     <instrumentation android:name="org.chromium.base.test.BaseChromiumAndroidJUnitRunner"
         android:targetPackage="{{manifest_package}}"
-        android:label="Tests for {{manifest_package}}"
-        chromium-junit4="true"/>
+        android:label="Tests for {{manifest_package}}"/>
 </manifest>

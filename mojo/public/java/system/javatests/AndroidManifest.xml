@@ -24,7 +24,6 @@
 
     <instrumentation android:name="android.support.test.runner.AndroidJUnitRunner"
         android:targetPackage="org.chromium.mojo.tests"
-        android:label="Tests for org.chromium.mojo"
-        chromium-junit4="true"/>
+        android:label="Tests for org.chromium.mojo"/>
 
 </manifest>

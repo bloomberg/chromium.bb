@@ -18,8 +18,7 @@
     </application>
     <instrumentation android:name="org.chromium.base.test.BaseChromiumAndroidJUnitRunner"
         android:targetPackage="org.chromium.net"
-        android:label="Tests for org.chromium.net"
-        chromium-junit4="true">
+        android:label="Tests for org.chromium.net">
         <!-- Meta data used for BaseChromiumAndroidJUnitRunner to scan only
              one package path for potential tests -->
         <meta-data android:name="org.chromium.base.test.BaseChromiumAndroidJUnitRunner.TestListPackage"

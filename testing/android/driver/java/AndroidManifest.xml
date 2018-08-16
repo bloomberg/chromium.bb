@@ -17,6 +17,7 @@ found in the LICENSE file.
 
     <instrumentation android:name="org.chromium.test.driver.OnDeviceInstrumentationDriver"
             android:targetPackage="org.chromium.test.driver"
-            android:label="OnDeviceInstrumentationDriver"/>
+            android:label="OnDeviceInstrumentationDriver"
+            chromium-junit3="true"/>
 
 </manifest>
