@@ -24,6 +24,8 @@ class PendingAppManager {
  public:
   using OnceInstallCallback =
       base::OnceCallback<void(const GURL& app_url, const std::string&)>;
+  using RepeatingInstallCallback =
+      base::RepeatingCallback<void(const GURL& app_url, const std::string&)>;
 
   // How the app will be launched after installation.
   enum class LaunchContainer {
@@ -58,8 +60,13 @@ class PendingAppManager {
   virtual void Install(AppInfo app_to_install,
                        OnceInstallCallback callback) = 0;
 
-  // Adds |apps_to_install| to the queue of operations.
-  virtual void ProcessAppOperations(std::vector<AppInfo> apps_to_install) = 0;
+  // Adds |apps_to_install| to the queue of operations. Runs |callback|
+  // with the URL of the corresponding AppInfo in |apps_to_install| and with the
+  // id of the installed app or an empty string if the installation fails. Runs
+  // |callback| for every completed installation - whether or not the
+  // installation actually succeeded.
+  virtual void InstallApps(std::vector<AppInfo> apps_to_install,
+                           const RepeatingInstallCallback& callback) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PendingAppManager);
 };

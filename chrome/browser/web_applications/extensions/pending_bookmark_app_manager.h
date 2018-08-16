@@ -46,7 +46,8 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
 
   // web_app::PendingAppManager
   void Install(AppInfo app_to_install, OnceInstallCallback callback) override;
-  void ProcessAppOperations(std::vector<AppInfo> apps_to_install) override;
+  void InstallApps(std::vector<AppInfo> apps_to_install,
+                   const RepeatingInstallCallback& callback) override;
 
   void SetFactoriesForTesting(WebContentsFactory web_contents_factory,
                               TaskFactory task_factory);

@@ -49,7 +49,8 @@ class TestPendingAppManager : public PendingAppManager {
   void Install(AppInfo app_to_install,
                PendingAppManager::OnceInstallCallback callback) override {}
 
-  void ProcessAppOperations(std::vector<AppInfo> apps_to_install) override {
+  void InstallApps(std::vector<AppInfo> apps_to_install,
+                   const RepeatingInstallCallback& callback) override {
     last_apps_to_install_ = std::move(apps_to_install);
   }
 

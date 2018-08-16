@@ -64,7 +64,7 @@ void PendingBookmarkAppManager::Install(AppInfo app_to_install,
     }
   }
 
-  installation_queue_.push_back(std::make_unique<Installation>(
+  installation_queue_.push_front(std::make_unique<Installation>(
       std::move(app_to_install), std::move(callback)));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -73,8 +73,19 @@ void PendingBookmarkAppManager::Install(AppInfo app_to_install,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PendingBookmarkAppManager::ProcessAppOperations(
-    std::vector<AppInfo> apps_to_install) {}
+void PendingBookmarkAppManager::InstallApps(
+    std::vector<AppInfo> apps_to_install,
+    const RepeatingInstallCallback& callback) {
+  for (auto& app_to_install : apps_to_install) {
+    installation_queue_.push_back(
+        std::make_unique<Installation>(std::move(app_to_install), callback));
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PendingBookmarkAppManager::MaybeStartNextInstallation,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
 
 void PendingBookmarkAppManager::SetFactoriesForTesting(
     WebContentsFactory web_contents_factory,
