@@ -104,11 +104,16 @@ bool ShouldForceLegacyLayout(const ComputedStyle& style,
   if (layout_parent_style.ForceLegacyLayout())
     return true;
 
+  const Document& document = element.GetDocument();
+
   // TODO(layout-dev): Once LayoutNG handles inline content editable, we
   // should get rid of following code fragment.
-  const Document& document = element.GetDocument();
-  if (style.UserModify() != EUserModify::kReadOnly || document.InDesignMode() ||
-      style.Display() == EDisplay::kWebkitBox ||
+  if (!RuntimeEnabledFeatures::EditingNGEnabled()) {
+    if (style.UserModify() != EUserModify::kReadOnly || document.InDesignMode())
+      return true;
+  }
+
+  if (style.Display() == EDisplay::kWebkitBox ||
       style.Display() == EDisplay::kWebkitInlineBox)
     return true;
 
