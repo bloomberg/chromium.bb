@@ -33,8 +33,12 @@ AshMessageCenterLockScreenController::GetMode() {
   if (!features::IsLockScreenNotificationsEnabled())
     return Mode::HIDE;
 
+  // User prefs may be null in some tests.
   PrefService* user_prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  if (!user_prefs)
+    return Mode::HIDE;
+
   const std::string& mode =
       user_prefs->GetString(prefs::kMessageCenterLockScreenMode);
   if (mode == prefs::kMessageCenterLockScreenModeShow)
