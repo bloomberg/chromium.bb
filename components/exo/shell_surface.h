@@ -82,6 +82,9 @@ class ShellSurface : public ShellSurfaceBase,
   // Start an interactive move of surface.
   void StartMove();
 
+  // Overridden from SurfaceDelegate:
+  void OnSetParent(Surface* parent, const gfx::Point& position) override;
+
   // Overridden from ShellSurfaceBase:
   void InitializeWindowState(ash::wm::WindowState* window_state) override;
   base::Optional<gfx::Rect> GetWidgetBounds() const override;
@@ -132,6 +135,7 @@ class ShellSurface : public ShellSurfaceBase,
   };
 
   // Overridden from ShellSurfaceBase:
+  void SetWidgetBounds(const gfx::Rect& bounds) override;
   void OnPreWidgetCommit() override;
   void OnPostWidgetCommit() override;
 
@@ -154,6 +158,8 @@ class ShellSurface : public ShellSurfaceBase,
   gfx::Vector2d pending_origin_offset_accumulator_;
   int resize_component_ = HTCAPTION;  // HT constant (see ui/base/hit_test.h)
   int pending_resize_component_ = HTCAPTION;
+
+  bool ignore_window_bounds_changes_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };

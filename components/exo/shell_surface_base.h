@@ -155,7 +155,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool IsInputEnabled(Surface* surface) const override;
   void OnSetFrame(SurfaceFrameType type) override;
   void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override;
-  void OnSetParent(Surface* parent, const gfx::Point& position) override;
   void OnSetStartupId(const char* startup_id) override;
   void OnSetApplicationId(const char* application_id) override;
 
@@ -218,7 +217,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void UpdateWidgetBounds();
 
   // Called by UpdateWidgetBounds to set widget bounds.
-  virtual void SetWidgetBounds(const gfx::Rect& bounds);
+  virtual void SetWidgetBounds(const gfx::Rect& bounds) = 0;
 
   // Updates the bounds of surface to match the current widget bounds.
   void UpdateSurfaceBounds();
@@ -257,7 +256,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // Container Window Id (see ash/public/cpp/shell_window_ids.h)
   int container_;
-  bool ignore_window_bounds_changes_ = false;
   gfx::Rect geometry_;
   gfx::Rect pending_geometry_;
   base::Optional<gfx::Rect> shadow_bounds_;

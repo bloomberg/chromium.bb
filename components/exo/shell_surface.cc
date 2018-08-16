@@ -256,6 +256,44 @@ void ShellSurface::StartResize(int component) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// SurfaceDelegate overrides:
+
+void ShellSurface::OnSetParent(Surface* parent, const gfx::Point& position) {
+  views::Widget* parent_widget =
+      parent ? views::Widget::GetTopLevelWidgetForNativeView(parent->window())
+             : nullptr;
+  if (parent_widget) {
+    // Set parent window if using default container and the container itself
+    // is not the parent.
+    if (container_ == ash::kShellWindowId_DefaultContainer)
+      SetParentWindow(parent_widget->GetNativeWindow());
+
+    origin_ = position;
+    views::View::ConvertPointToScreen(
+        parent_widget->widget_delegate()->GetContentsView(), &origin_);
+
+    if (!widget_)
+      return;
+
+    ash::wm::WindowState* window_state =
+        ash::wm::GetWindowState(widget_->GetNativeWindow());
+    if (window_state->is_dragged())
+      return;
+
+    gfx::Rect widget_bounds = widget_->GetWindowBoundsInScreen();
+    gfx::Rect new_widget_bounds(origin_, widget_bounds.size());
+    if (new_widget_bounds != widget_bounds) {
+      base::AutoReset<bool> auto_ignore_window_bounds_changes(
+          &ignore_window_bounds_changes_, true);
+      widget_->SetBounds(new_widget_bounds);
+      UpdateSurfaceBounds();
+    }
+  } else {
+    SetParentWindow(nullptr);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ShellSurfaceBase overrides:
 
 void ShellSurface::InitializeWindowState(ash::wm::WindowState* window_state) {
@@ -412,6 +450,18 @@ void ShellSurface::OnPostWindowStateTypeChange(
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurfaceBase overrides:
+
+void ShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
+  // Set |ignore_window_bounds_changes_| as this change to window bounds
+  // should not result in a configure request.
+  DCHECK(!ignore_window_bounds_changes_);
+  ignore_window_bounds_changes_ = true;
+
+  widget_->SetBounds(bounds);
+  UpdateSurfaceBounds();
+
+  ignore_window_bounds_changes_ = false;
+}
 
 void ShellSurface::OnPreWidgetCommit() {
   if (!widget_ && enabled()) {
