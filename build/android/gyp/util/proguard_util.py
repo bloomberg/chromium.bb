@@ -165,7 +165,7 @@ class ProguardCmdBuilder(object):
     # Quite useful for auditing proguard flags.
     for config in sorted(self._configs):
       out.write('#' * 80 + '\n')
-      out.write(config + '\n')
+      out.write('# ' + config + '\n')
       out.write('#' * 80 + '\n')
       with open(config) as config_file:
         contents = config_file.read().rstrip()
@@ -175,9 +175,9 @@ class ProguardCmdBuilder(object):
       out.write(contents)
       out.write('\n\n')
     out.write('#' * 80 + '\n')
-    out.write('Command-line\n')
+    out.write('# Command-line\n')
     out.write('#' * 80 + '\n')
-    out.write(' '.join(cmd) + '\n')
+    out.write('# ' + ' '.join(cmd) + '\n')
 
   def CheckOutput(self):
     cmd = self.build()
