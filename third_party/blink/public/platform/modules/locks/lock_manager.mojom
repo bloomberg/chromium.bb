@@ -46,7 +46,7 @@ struct LockInfo {
 // availablility and options. Once granted, the lock will be held until
 // explicitly released or the holding context is terminated.
 //
-// Proposal: https://github.com/inexorabletash/web-locks
+// Proposal: https://wicg.github.io/web-locks
 
 interface LockManager {
   // PREEMPT corresponds to the |steal| option in the API; if used then
