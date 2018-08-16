@@ -89,10 +89,10 @@ static void CopyNALUPrependingStartCode(const uint8_t* src,
 namespace media {
 
 struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
-  BitstreamBufferRef(int32_t id, std::unique_ptr<WritableUnalignedMapping> shm)
+  BitstreamBufferRef(int32_t id, std::unique_ptr<UnalignedSharedMemory> shm)
       : id(id), shm(std::move(shm)) {}
   const int32_t id;
-  const std::unique_ptr<WritableUnalignedMapping> shm;
+  const std::unique_ptr<UnalignedSharedMemory> shm;
 };
 
 V4L2VideoEncodeAccelerator::InputRecord::InputRecord() : at_device(false) {}
@@ -309,9 +309,9 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  auto shm = std::make_unique<WritableUnalignedMapping>(
-      buffer.handle(), buffer.size(), buffer.offset());
-  if (!shm->IsValid()) {
+  auto shm = std::make_unique<UnalignedSharedMemory>(buffer.handle(),
+                                                     buffer.size(), false);
+  if (!shm->MapAt(buffer.offset(), buffer.size())) {
     NOTIFY_ERROR(kPlatformFailureError);
     return;
   }

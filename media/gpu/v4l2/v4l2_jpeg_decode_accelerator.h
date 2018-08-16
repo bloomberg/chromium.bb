@@ -67,7 +67,9 @@ class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
     // Input image buffer ID.
     int32_t bitstream_buffer_id;
     // Memory mapped from |bitstream_buffer|.
-    WritableUnalignedMapping shm;
+    UnalignedSharedMemory shm;
+    // Offset used for shm.
+    off_t offset;
     // Output frame buffer.
     scoped_refptr<VideoFrame> out_frame;
   };
