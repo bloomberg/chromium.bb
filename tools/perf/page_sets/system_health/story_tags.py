@@ -22,6 +22,9 @@ CSS_ANIMATION = Tag(
     'css_animation', 'Story has animations that are implemented using CSS.')
 EXTENSION = Tag(
     'extension', 'Story has browser with extension installed.')
+HEALTH_CHECK = Tag(  # See go/health_check_stories for details.
+    'health_check', 'Story belongs to a collection chosen to have a wide '
+    'coverage but low running time.')
 IMAGES = Tag(
     'images', 'Story has sites with heavy uses of images.')
 INFINITE_SCROLL = Tag('infinite_scroll', 'Story has infinite scroll action.')

@@ -33,7 +33,7 @@ class LoadGoogleStory(_LoadingStory):
 class LoadBaiduStory(_LoadingStory):
   NAME = 'load:search:baidu'
   URL = 'https://www.baidu.com/s?word=google'
-  TAGS = [story_tags.INTERNATIONAL]
+  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK]
 
 
 class LoadYahooStory(_LoadingStory):
@@ -59,7 +59,7 @@ class LoadTaobaoMobileStory(_LoadingStory):
   # "ali_trackid" in the URL suppresses "Download app" interstitial.
   URL = 'http://m.intl.taobao.com/?ali_trackid'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.INTERNATIONAL]
+  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK]
 
 
 class LoadYandexStory(_LoadingStory):
@@ -72,6 +72,7 @@ class LoadEbayStory(_LoadingStory):
   NAME = 'load:search:ebay'
   # Redirects to the "http://" version.
   URL = 'https://www.ebay.com/sch/i.html?_nkw=headphones'
+  TAGS = [story_tags.HEALTH_CHECK]
 
 
 ################################################################################
@@ -155,6 +156,7 @@ class LoadNytimesMobileStory(_LoadingStory):
   NAME = 'load:news:nytimes'
   URL = 'http://mobile.nytimes.com'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK]
 
 
 class LoadQqMobileStory(_LoadingStory):
@@ -174,12 +176,14 @@ class LoadRedditMobileStory(_LoadingStory):
   NAME = 'load:news:reddit'
   URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK]
 
 
 class LoadWashingtonPostMobileStory(_LoadingStory):
   NAME = 'load:news:washingtonpost'
   URL = 'https://www.washingtonpost.com/pwa'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK]
   _CLOSE_BUTTON_SELECTOR = '.close'
 
   def _DidLoadDocument(self, action_runner):
@@ -204,7 +208,7 @@ class LoadIrctcStory(_LoadingStory):
   NAME = 'load:news:irctc'
   URL = 'https://www.irctc.co.in'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.EMERGING_MARKET]
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK]
 
 
 ################################################################################
@@ -217,7 +221,7 @@ class LoadYouTubeStory(_LoadingStory):
   NAME = 'load:media:youtube'
   URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
   PLATFORM_SPECIFIC = True
-  TAGS = [story_tags.EMERGING_MARKET]
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK]
 
 
 class LoadDailymotionStory(_LoadingStory):
@@ -231,6 +235,7 @@ class LoadDailymotionStory(_LoadingStory):
 class LoadGoogleImagesStory(_LoadingStory):
   NAME = 'load:media:google_images'
   URL = 'https://www.google.co.uk/search?tbm=isch&q=love'
+  TAGS = [story_tags.HEALTH_CHECK]
 
 
 class LoadSoundCloudStory(_LoadingStory):
@@ -249,6 +254,7 @@ class Load9GagDesktopStory(_LoadingStory):
 class LoadImgurStory(_LoadingStory):
   NAME = 'load:media:imgur'
   URL = 'http://imgur.com/gallery/5UlBN'
+  TAGS = [story_tags.HEALTH_CHECK]
 
 
 class LoadFacebookPhotosMobileStory(_LoadingStory):
@@ -280,6 +286,7 @@ class LoadDocsStory(_LoadingStory):
   NAME = 'load:tools:docs'
   URL = (
       'https://docs.google.com/document/d/1GvzDP-tTLmJ0myRhUAfTYWs3ZUFilUICg8psNHyccwQ/edit?usp=sharing')
+  TAGS = [story_tags.HEALTH_CHECK]
 
 
 class _LoadGmailBaseStory(_LoadingStory):
@@ -327,6 +334,7 @@ class LoadStackOverflowStory(_LoadingStory):
   NAME = 'load:tools:stackoverflow'
   URL = (
       'https://stackoverflow.com/questions/36827659/compiling-an-application-for-use-in-highly-radioactive-environments')
+  TAGS = [story_tags.HEALTH_CHECK]
 
 
 class LoadDropboxStory(_LoadingStory):
@@ -362,6 +370,7 @@ class LoadBubblesStory(_LoadingStory):
   NAME = 'load:games:bubbles'
   URL = (
       'https://games.cdn.famobi.com/html5games/s/smarty-bubbles/v010/?fg_domain=play.famobi.com&fg_uid=d8f24956-dc91-4902-9096-a46cb1353b6f&fg_pid=4638e320-4444-4514-81c4-d80a8c662371&fg_beat=620')
+  TAGS = [story_tags.HEALTH_CHECK]
 
   def _DidLoadDocument(self, action_runner):
     # The #logo element is removed right before the main menu is displayed.
@@ -373,12 +382,14 @@ class LoadLazorsStory(_LoadingStory):
   NAME = 'load:games:lazors'
   # Using "https://" hangs and shows "This site can't be reached".
   URL = 'http://www8.games.mobi/games/html5/lazors/lazors.html'
+  TAGS = [story_tags.HEALTH_CHECK]
 
 
 class LoadSpyChaseStory(_LoadingStory):
   NAME = 'load:games:spychase'
   # Using "https://" shows "Your connection is not private".
   URL = 'http://playstar.mobi/games/spychase/index.php'
+  TAGS = [story_tags.HEALTH_CHECK]
 
   def _DidLoadDocument(self, action_runner):
     # The background of the game canvas is set when the "Tap screen to play"
