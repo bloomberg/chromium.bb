@@ -2296,7 +2296,7 @@ void remote_surface_unset_always_on_top(wl_client* client,
 void remote_surface_ack_configure(wl_client* client,
                                   wl_resource* resource,
                                   uint32_t serial) {
-  GetUserDataAs<ShellSurfaceBase>(resource)->AcknowledgeConfigure(serial);
+  // DEPRECATED
 }
 
 void remote_surface_move(wl_client* client, wl_resource* resource) {
@@ -2818,26 +2818,6 @@ void HandleRemoteSurfaceDragFinishedCallback(wl_resource* resource,
   wl_client_flush(wl_resource_get_client(resource));
 }
 
-uint32_t HandleRemoteSurfaceConfigureCallback(
-    wl_resource* resource,
-    const gfx::Size& size,
-    ash::mojom::WindowStateType state_type,
-    bool resizing,
-    bool activated,
-    const gfx::Vector2d& origin_offset) {
-  wl_array states;
-  wl_array_init(&states);
-  uint32_t serial = wl_display_next_serial(
-      wl_client_get_display(wl_resource_get_client(resource)));
-  zcr_remote_surface_v1_send_configure(resource,
-                                       origin_offset.x(),
-                                       origin_offset.y(),
-                                       &states, serial);
-  wl_client_flush(wl_resource_get_client(resource));
-  wl_array_release(&states);
-  return serial;
-}
-
 void HandleRemoteSurfaceGeometryChangedCallback(wl_resource* resource,
                                                 const gfx::Rect& geometry) {
   zcr_remote_surface_v1_send_window_geometry_changed(
@@ -2875,9 +2855,6 @@ void remote_shell_get_remote_surface(wl_client* client,
                  base::Unretained(remote_surface_resource)));
   shell_surface->set_state_changed_callback(
       base::Bind(&HandleRemoteSurfaceStateChangedCallback,
-                 base::Unretained(remote_surface_resource)));
-  shell_surface->set_configure_callback(
-      base::Bind(&HandleRemoteSurfaceConfigureCallback,
                  base::Unretained(remote_surface_resource)));
   shell_surface->set_geometry_changed_callback(
       base::BindRepeating(&HandleRemoteSurfaceGeometryChangedCallback,

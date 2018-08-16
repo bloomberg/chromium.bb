@@ -7,8 +7,13 @@
 
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/wm_toplevel_window_event_handler.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "components/exo/shell_surface_base.h"
+
+namespace ui {
+class CompositorLock;
+}  // namespace ui
 
 namespace exo {
 class Surface;
@@ -27,6 +32,25 @@ class ShellSurface : public ShellSurfaceBase,
                int container);
   explicit ShellSurface(Surface* surface);
   ~ShellSurface() override;
+
+  // Set the callback to run when the client is asked to configure the surface.
+  // The size is a hint, in the sense that the client is free to ignore it if
+  // it doesn't resize, pick a smaller size (to satisfy aspect ratio or resize
+  // in steps of NxM pixels).
+  using ConfigureCallback =
+      base::RepeatingCallback<uint32_t(const gfx::Size& size,
+                                       ash::mojom::WindowStateType state_type,
+                                       bool resizing,
+                                       bool activated,
+                                       const gfx::Vector2d& origin_offset)>;
+  void set_configure_callback(const ConfigureCallback& configure_callback) {
+    configure_callback_ = configure_callback;
+  }
+
+  // When the client is asked to configure the surface, it should acknowledge
+  // the configure request sometime before the commit. |serial| is the serial
+  // from the configure callback.
+  void AcknowledgeConfigure(uint32_t serial);
 
   // Set the "parent" of this surface. This window should be stacked above a
   // parent.
@@ -60,6 +84,14 @@ class ShellSurface : public ShellSurfaceBase,
 
   // Overridden from ShellSurfaceBase:
   void InitializeWindowState(ash::wm::WindowState* window_state) override;
+  base::Optional<gfx::Rect> GetWidgetBounds() const override;
+  gfx::Point GetSurfaceOrigin() const override;
+
+  // Overridden from aura::WindowObserver:
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
 
   // Overridden from ash::wm::WindowStateObserver:
   void OnPreWindowStateTypeChange(
@@ -69,18 +101,59 @@ class ShellSurface : public ShellSurfaceBase,
       ash::wm::WindowState* window_state,
       ash::mojom::WindowStateType old_type) override;
 
+  // Overridden from wm::ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
+
  private:
   class ScopedAnimationsDisabled;
+  struct Config;
+
+  // Helper class used to coalesce a number of changes into one "configure"
+  // callback. Callbacks are suppressed while an instance of this class is
+  // instantiated and instead called when the instance is destroyed.
+  // If |force_configure_| is true ShellSurface::Configure() will be called
+  // even if no changes to shell surface took place during the lifetime of the
+  // ScopedConfigure instance.
+  class ScopedConfigure {
+   public:
+    ScopedConfigure(ShellSurface* shell_surface, bool force_configure);
+    ~ScopedConfigure();
+
+    void set_needs_configure() { needs_configure_ = true; }
+
+   private:
+    ShellSurface* const shell_surface_;
+    const bool force_configure_;
+    bool needs_configure_ = false;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedConfigure);
+  };
 
   // Overridden from ShellSurfaceBase:
   void OnPreWidgetCommit() override;
   void OnPostWidgetCommit() override;
+
+  // Asks the client to configure its surface.
+  void Configure();
 
   void AttemptToStartDrag(int component);
 
   void EndDrag();
 
   std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;
+
+  std::unique_ptr<ui::CompositorLock> configure_compositor_lock_;
+  ConfigureCallback configure_callback_;
+  ScopedConfigure* scoped_configure_ = nullptr;
+  base::circular_deque<std::unique_ptr<Config>> pending_configs_;
+
+  gfx::Vector2d origin_offset_;
+  gfx::Vector2d pending_origin_offset_;
+  gfx::Vector2d pending_origin_offset_accumulator_;
+  int resize_component_ = HTCAPTION;  // HT constant (see ui/base/hit_test.h)
+  int pending_resize_component_ = HTCAPTION;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };

@@ -371,9 +371,6 @@ void ClientControlledShellSurface::SetPinned(ash::mojom::WindowPinType type) {
   if (!widget_)
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
 
-  // Note: This will ask client to configure its surface even if pinned
-  // state doesn't change.
-  ScopedConfigure scoped_configure(this, true);
   widget_->GetNativeWindow()->SetProperty(ash::kWindowPinTypeKey, type);
 }
 
@@ -622,11 +619,6 @@ void ClientControlledShellSurface::OnSetFrameColors(SkColor active_color,
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
-void ClientControlledShellSurface::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds,
-    ui::PropertyChangeReason reason) {}
 
 void ClientControlledShellSurface::OnWindowAddedToRootWindow(
     aura::Window* window) {
@@ -828,7 +820,8 @@ float ClientControlledShellSurface::GetScale() const {
   return scale_;
 }
 
-gfx::Rect ClientControlledShellSurface::GetWidgetBounds() const {
+base::Optional<gfx::Rect> ClientControlledShellSurface::GetWidgetBounds()
+    const {
   const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
   if (frame_view->visible()) {
     // The client's geometry uses entire display area in client
@@ -844,7 +837,6 @@ gfx::Rect ClientControlledShellSurface::GetWidgetBounds() const {
 }
 
 gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
-  DCHECK(resize_component_ == HTCAPTION);
   return gfx::Point();
 }
 
