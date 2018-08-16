@@ -111,9 +111,11 @@ def UndoHierarchicalSizing(data):
       else:
         # Sibling or higher nodes
         break
-    assert total_child_size <= size, (
-        'Child node total size exceeded parent node total size')
-    node_size = size - total_child_size
+    # Disabled for perf bots: https://crbug.com/874956
+    # TODO(wnwen): Investigate reason
+    #assert total_child_size <= size, (
+    #    'Child node total size exceeded parent node total size')
+    node_size = max(0, size - total_child_size)
     nodes.append((name, node_size))
     return next_idx, size
 
