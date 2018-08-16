@@ -38,6 +38,7 @@ class PrivetTrafficDetector
                         content::BrowserContext* profile,
                         const base::Closure& on_traffic_detected);
 
+  // Called on the UI thread.
   void Start();
   void Stop();
 
@@ -45,17 +46,20 @@ class PrivetTrafficDetector
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::IO>;
   friend class base::DeleteHelper<PrivetTrafficDetector>;
+
   ~PrivetTrafficDetector() override;
 
+  // Unless otherwise noted, all methods are called on the IO thread.
   void HandleConnectionChanged(network::mojom::ConnectionType type);
-
-  void StartOnIOThread();
   void ScheduleRestart();
   void Restart(const net::NetworkInterfaceList& networks);
   void Bind();
+
+  // Called on the UI thread.
   void CreateUDPSocketOnUIThread(
       network::mojom::UDPSocketRequest request,
       network::mojom::UDPSocketReceiverPtr receiver_ptr);
+
   void OnBindComplete(net::IPEndPoint multicast_addr,
                       int rv,
                       const base::Optional<net::IPEndPoint>& ip_address);
@@ -65,6 +69,7 @@ class PrivetTrafficDetector
   void ResetConnection();
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
+  // Called on the UI thread.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // network::mojom::UDPSocketReceiver implementation
@@ -72,22 +77,23 @@ class PrivetTrafficDetector
                   const base::Optional<net::IPEndPoint>& src_addr,
                   base::Optional<base::span<const uint8_t>> data) override;
 
+  // Initialized on the UI thread, but only accessed on the IO thread.
   base::Closure on_traffic_detected_;
   scoped_refptr<base::TaskRunner> callback_runner_;
   net::NetworkInterfaceList networks_;
   net::AddressFamily address_family_;
-  net::IPEndPoint recv_addr_;
-  base::Time start_time_;
   int restart_attempts_;
 
-  // Only accessed on the IO thread
-
+  // Only accessed on the IO thread.
+  net::IPEndPoint recv_addr_;
+  base::Time start_time_;
   network::mojom::UDPSocketPtr socket_;
-  // Implementation of socket receiver callback
+
+  // Implementation of socket receiver callback.
+  // Initialized on the UI thread, but only accessed on the IO thread.
   mojo::Binding<network::mojom::UDPSocketReceiver> receiver_binding_;
 
   // Only accessed on the UI thread
-
   content::BrowserContext* const profile_;
 
   base::WeakPtrFactory<PrivetTrafficDetector> weak_ptr_factory_;

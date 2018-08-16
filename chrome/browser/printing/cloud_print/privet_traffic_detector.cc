@@ -4,7 +4,7 @@
 
 #include "chrome/browser/printing/cloud_print/privet_traffic_detector.h"
 
-#include <stddef.h>
+#include <utility>
 
 #include "base/location.h"
 #include "base/macros.h"
@@ -177,6 +177,7 @@ void PrivetTrafficDetector::OnBindComplete(
 }
 
 bool PrivetTrafficDetector::IsSourceAcceptable() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   for (size_t i = 0; i < networks_.size(); ++i) {
     if (net::IPAddressMatchesPrefix(recv_addr_.address(), networks_[i].address,
                                     networks_[i].prefix_length)) {
@@ -188,6 +189,7 @@ bool PrivetTrafficDetector::IsSourceAcceptable() const {
 
 bool PrivetTrafficDetector::IsPrivetPacket(
     base::span<const uint8_t> data) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (data.size() <= sizeof(net::dns_protocol::Header) ||
       !IsSourceAcceptable()) {
     return false;
