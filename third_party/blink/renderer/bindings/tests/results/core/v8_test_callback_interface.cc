@@ -26,17 +26,15 @@ const char* V8TestCallbackInterface::NameInHeapSnapshot() const {
 }
 
 v8::Maybe<void> V8TestCallbackInterface::voidMethod(ScriptWrappable* callback_this_value) {
-  // This function implements "call a user object's operation".
-  // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    CHECK(!CallbackObject().IsEmpty());
-    v8::Context::Scope context_scope(CallbackObject()->CreationContext());
+    v8::Local<v8::Object> callback_object = CallbackObject();
+    CHECK(!callback_object.IsEmpty());
+    v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -46,10 +44,10 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethod(ScriptWrappable* callback_th
     return v8::Nothing<void>();
   }
 
-  // step 7. Prepare to run script with relevant settings.
+  // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
-  // step 8. Prepare to run a callback with stored settings.
+  // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -96,43 +94,42 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethod(ScriptWrappable* callback_th
     this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
   }
 
-  // step 12. Let esArgs be the result of converting args to an ECMAScript
+  // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
+  const int argc = 0;
   v8::Local<v8::Value> *argv = nullptr;
 
-  // step 13. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
+  // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          0,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
-    // step 14. If callResult is an abrupt completion, set completion to
-    //   callResult and jump to the step labeled return.
+    // step: If callResult is an abrupt completion, set completion to callResult
+    //   and jump to the step labeled return.
     return v8::Nothing<void>();
   }
 
-  // step 15. Set completion to the result of converting callResult.[[Value]] to
+  // step: Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
   return v8::JustVoid();
 }
 
 v8::Maybe<bool> V8TestCallbackInterface::booleanMethod(ScriptWrappable* callback_this_value) {
-  // This function implements "call a user object's operation".
-  // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    CHECK(!CallbackObject().IsEmpty());
-    v8::Context::Scope context_scope(CallbackObject()->CreationContext());
+    v8::Local<v8::Object> callback_object = CallbackObject();
+    CHECK(!callback_object.IsEmpty());
+    v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -142,10 +139,10 @@ v8::Maybe<bool> V8TestCallbackInterface::booleanMethod(ScriptWrappable* callback
     return v8::Nothing<bool>();
   }
 
-  // step 7. Prepare to run script with relevant settings.
+  // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
-  // step 8. Prepare to run a callback with stored settings.
+  // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -192,27 +189,28 @@ v8::Maybe<bool> V8TestCallbackInterface::booleanMethod(ScriptWrappable* callback
     this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
   }
 
-  // step 12. Let esArgs be the result of converting args to an ECMAScript
+  // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
+  const int argc = 0;
   v8::Local<v8::Value> *argv = nullptr;
 
-  // step 13. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
+  // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          0,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
-    // step 14. If callResult is an abrupt completion, set completion to
-    //   callResult and jump to the step labeled return.
+    // step: If callResult is an abrupt completion, set completion to callResult
+    //   and jump to the step labeled return.
     return v8::Nothing<bool>();
   }
 
-  // step 15. Set completion to the result of converting callResult.[[Value]] to
+  // step: Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
   {
     ExceptionState exception_state(GetIsolate(),
@@ -230,17 +228,15 @@ v8::Maybe<bool> V8TestCallbackInterface::booleanMethod(ScriptWrappable* callback
 }
 
 v8::Maybe<void> V8TestCallbackInterface::voidMethodBooleanArg(ScriptWrappable* callback_this_value, bool boolArg) {
-  // This function implements "call a user object's operation".
-  // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    CHECK(!CallbackObject().IsEmpty());
-    v8::Context::Scope context_scope(CallbackObject()->CreationContext());
+    v8::Local<v8::Object> callback_object = CallbackObject();
+    CHECK(!callback_object.IsEmpty());
+    v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -250,10 +246,10 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodBooleanArg(ScriptWrappable* c
     return v8::Nothing<void>();
   }
 
-  // step 7. Prepare to run script with relevant settings.
+  // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
-  // step 8. Prepare to run a callback with stored settings.
+  // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -300,47 +296,47 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodBooleanArg(ScriptWrappable* c
     this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
   }
 
-  // step 12. Let esArgs be the result of converting args to an ECMAScript
+  // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
-  v8::Local<v8::Value> boolArgHandle = v8::Boolean::New(GetIsolate(), boolArg);
-  v8::Local<v8::Value> argv[] = { boolArgHandle };
+  v8::Local<v8::Value> v8_boolArg = v8::Boolean::New(GetIsolate(), boolArg);
+  constexpr int argc = 1;
+  v8::Local<v8::Value> argv[] = { v8_boolArg };
+  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
 
-  // step 13. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
+  // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          1,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
-    // step 14. If callResult is an abrupt completion, set completion to
-    //   callResult and jump to the step labeled return.
+    // step: If callResult is an abrupt completion, set completion to callResult
+    //   and jump to the step labeled return.
     return v8::Nothing<void>();
   }
 
-  // step 15. Set completion to the result of converting callResult.[[Value]] to
+  // step: Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
   return v8::JustVoid();
 }
 
 v8::Maybe<void> V8TestCallbackInterface::voidMethodSequenceArg(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) {
-  // This function implements "call a user object's operation".
-  // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    CHECK(!CallbackObject().IsEmpty());
-    v8::Context::Scope context_scope(CallbackObject()->CreationContext());
+    v8::Local<v8::Object> callback_object = CallbackObject();
+    CHECK(!callback_object.IsEmpty());
+    v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -350,10 +346,10 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodSequenceArg(ScriptWrappable* 
     return v8::Nothing<void>();
   }
 
-  // step 7. Prepare to run script with relevant settings.
+  // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
-  // step 8. Prepare to run a callback with stored settings.
+  // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -400,47 +396,47 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodSequenceArg(ScriptWrappable* 
     this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
   }
 
-  // step 12. Let esArgs be the result of converting args to an ECMAScript
+  // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
-  v8::Local<v8::Value> sequenceArgHandle = ToV8(sequenceArg, argument_creation_context, GetIsolate());
-  v8::Local<v8::Value> argv[] = { sequenceArgHandle };
+  v8::Local<v8::Value> v8_sequenceArg = ToV8(sequenceArg, argument_creation_context, GetIsolate());
+  constexpr int argc = 1;
+  v8::Local<v8::Value> argv[] = { v8_sequenceArg };
+  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
 
-  // step 13. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
+  // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          1,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
-    // step 14. If callResult is an abrupt completion, set completion to
-    //   callResult and jump to the step labeled return.
+    // step: If callResult is an abrupt completion, set completion to callResult
+    //   and jump to the step labeled return.
     return v8::Nothing<void>();
   }
 
-  // step 15. Set completion to the result of converting callResult.[[Value]] to
+  // step: Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
   return v8::JustVoid();
 }
 
 v8::Maybe<void> V8TestCallbackInterface::voidMethodFloatArg(ScriptWrappable* callback_this_value, float floatArg) {
-  // This function implements "call a user object's operation".
-  // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    CHECK(!CallbackObject().IsEmpty());
-    v8::Context::Scope context_scope(CallbackObject()->CreationContext());
+    v8::Local<v8::Object> callback_object = CallbackObject();
+    CHECK(!callback_object.IsEmpty());
+    v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -450,10 +446,10 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodFloatArg(ScriptWrappable* cal
     return v8::Nothing<void>();
   }
 
-  // step 7. Prepare to run script with relevant settings.
+  // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
-  // step 8. Prepare to run a callback with stored settings.
+  // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -500,47 +496,47 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodFloatArg(ScriptWrappable* cal
     this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
   }
 
-  // step 12. Let esArgs be the result of converting args to an ECMAScript
+  // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
-  v8::Local<v8::Value> floatArgHandle = v8::Number::New(GetIsolate(), floatArg);
-  v8::Local<v8::Value> argv[] = { floatArgHandle };
+  v8::Local<v8::Value> v8_floatArg = v8::Number::New(GetIsolate(), floatArg);
+  constexpr int argc = 1;
+  v8::Local<v8::Value> argv[] = { v8_floatArg };
+  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
 
-  // step 13. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
+  // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          1,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
-    // step 14. If callResult is an abrupt completion, set completion to
-    //   callResult and jump to the step labeled return.
+    // step: If callResult is an abrupt completion, set completion to callResult
+    //   and jump to the step labeled return.
     return v8::Nothing<void>();
   }
 
-  // step 15. Set completion to the result of converting callResult.[[Value]] to
+  // step: Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
   return v8::JustVoid();
 }
 
 v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) {
-  // This function implements "call a user object's operation".
-  // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    CHECK(!CallbackObject().IsEmpty());
-    v8::Context::Scope context_scope(CallbackObject()->CreationContext());
+    v8::Local<v8::Object> callback_object = CallbackObject();
+    CHECK(!callback_object.IsEmpty());
+    v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -550,10 +546,10 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(ScriptW
     return v8::Nothing<void>();
   }
 
-  // step 7. Prepare to run script with relevant settings.
+  // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
-  // step 8. Prepare to run a callback with stored settings.
+  // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -600,47 +596,47 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(ScriptW
     this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
   }
 
-  // step 12. Let esArgs be the result of converting args to an ECMAScript
+  // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
-  v8::Local<v8::Value> testInterfaceEmptyArgHandle = ToV8(testInterfaceEmptyArg, argument_creation_context, GetIsolate());
-  v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle };
+  v8::Local<v8::Value> v8_testInterfaceEmptyArg = ToV8(testInterfaceEmptyArg, argument_creation_context, GetIsolate());
+  constexpr int argc = 1;
+  v8::Local<v8::Value> argv[] = { v8_testInterfaceEmptyArg };
+  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
 
-  // step 13. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
+  // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          1,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
-    // step 14. If callResult is an abrupt completion, set completion to
-    //   callResult and jump to the step labeled return.
+    // step: If callResult is an abrupt completion, set completion to callResult
+    //   and jump to the step labeled return.
     return v8::Nothing<void>();
   }
 
-  // step 15. Set completion to the result of converting callResult.[[Value]] to
+  // step: Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
   return v8::JustVoid();
 }
 
 v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) {
-  // This function implements "call a user object's operation".
-  // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    CHECK(!CallbackObject().IsEmpty());
-    v8::Context::Scope context_scope(CallbackObject()->CreationContext());
+    v8::Local<v8::Object> callback_object = CallbackObject();
+    CHECK(!callback_object.IsEmpty());
+    v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -650,10 +646,10 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(S
     return v8::Nothing<void>();
   }
 
-  // step 7. Prepare to run script with relevant settings.
+  // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
-  // step 8. Prepare to run a callback with stored settings.
+  // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -700,48 +696,48 @@ v8::Maybe<void> V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(S
     this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
   }
 
-  // step 12. Let esArgs be the result of converting args to an ECMAScript
+  // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
-  v8::Local<v8::Value> testInterfaceEmptyArgHandle = ToV8(testInterfaceEmptyArg, argument_creation_context, GetIsolate());
-  v8::Local<v8::Value> stringArgHandle = V8String(GetIsolate(), stringArg);
-  v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle, stringArgHandle };
+  v8::Local<v8::Value> v8_testInterfaceEmptyArg = ToV8(testInterfaceEmptyArg, argument_creation_context, GetIsolate());
+  v8::Local<v8::Value> v8_stringArg = V8String(GetIsolate(), stringArg);
+  constexpr int argc = 2;
+  v8::Local<v8::Value> argv[] = { v8_testInterfaceEmptyArg, v8_stringArg };
+  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
 
-  // step 13. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
+  // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          2,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
-    // step 14. If callResult is an abrupt completion, set completion to
-    //   callResult and jump to the step labeled return.
+    // step: If callResult is an abrupt completion, set completion to callResult
+    //   and jump to the step labeled return.
     return v8::Nothing<void>();
   }
 
-  // step 15. Set completion to the result of converting callResult.[[Value]] to
+  // step: Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
   return v8::JustVoid();
 }
 
 v8::Maybe<void> V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptWrappable* callback_this_value, const String& stringArg) {
-  // This function implements "call a user object's operation".
-  // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    CHECK(!CallbackObject().IsEmpty());
-    v8::Context::Scope context_scope(CallbackObject()->CreationContext());
+    v8::Local<v8::Object> callback_object = CallbackObject();
+    CHECK(!callback_object.IsEmpty());
+    v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -751,10 +747,10 @@ v8::Maybe<void> V8TestCallbackInterface::callbackWithThisValueVoidMethodStringAr
     return v8::Nothing<void>();
   }
 
-  // step 7. Prepare to run script with relevant settings.
+  // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
-  // step 8. Prepare to run a callback with stored settings.
+  // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -801,47 +797,47 @@ v8::Maybe<void> V8TestCallbackInterface::callbackWithThisValueVoidMethodStringAr
     this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
   }
 
-  // step 12. Let esArgs be the result of converting args to an ECMAScript
+  // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
-  v8::Local<v8::Value> stringArgHandle = V8String(GetIsolate(), stringArg);
-  v8::Local<v8::Value> argv[] = { stringArgHandle };
+  v8::Local<v8::Value> v8_stringArg = V8String(GetIsolate(), stringArg);
+  constexpr int argc = 1;
+  v8::Local<v8::Value> argv[] = { v8_stringArg };
+  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
 
-  // step 13. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
+  // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          1,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
-    // step 14. If callResult is an abrupt completion, set completion to
-    //   callResult and jump to the step labeled return.
+    // step: If callResult is an abrupt completion, set completion to callResult
+    //   and jump to the step labeled return.
     return v8::Nothing<void>();
   }
 
-  // step 15. Set completion to the result of converting callResult.[[Value]] to
+  // step: Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
   return v8::JustVoid();
 }
 
 v8::Maybe<void> V8TestCallbackInterface::customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) {
-  // This function implements "call a user object's operation".
-  // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    CHECK(!CallbackObject().IsEmpty());
-    v8::Context::Scope context_scope(CallbackObject()->CreationContext());
+    v8::Local<v8::Object> callback_object = CallbackObject();
+    CHECK(!callback_object.IsEmpty());
+    v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -851,10 +847,10 @@ v8::Maybe<void> V8TestCallbackInterface::customVoidMethodTestInterfaceEmptyArg(S
     return v8::Nothing<void>();
   }
 
-  // step 7. Prepare to run script with relevant settings.
+  // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
       CallbackRelevantScriptState());
-  // step 8. Prepare to run a callback with stored settings.
+  // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
@@ -901,31 +897,33 @@ v8::Maybe<void> V8TestCallbackInterface::customVoidMethodTestInterfaceEmptyArg(S
     this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
   }
 
-  // step 12. Let esArgs be the result of converting args to an ECMAScript
+  // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
       CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
-  v8::Local<v8::Value> testInterfaceEmptyArgHandle = ToV8(testInterfaceEmptyArg, argument_creation_context, GetIsolate());
-  v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle };
+  v8::Local<v8::Value> v8_testInterfaceEmptyArg = ToV8(testInterfaceEmptyArg, argument_creation_context, GetIsolate());
+  constexpr int argc = 1;
+  v8::Local<v8::Value> argv[] = { v8_testInterfaceEmptyArg };
+  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
 
-  // step 13. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
+  // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
-          1,
+          argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
-    // step 14. If callResult is an abrupt completion, set completion to
-    //   callResult and jump to the step labeled return.
+    // step: If callResult is an abrupt completion, set completion to callResult
+    //   and jump to the step labeled return.
     return v8::Nothing<void>();
   }
 
-  // step 15. Set completion to the result of converting callResult.[[Value]] to
+  // step: Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
   return v8::JustVoid();
 }

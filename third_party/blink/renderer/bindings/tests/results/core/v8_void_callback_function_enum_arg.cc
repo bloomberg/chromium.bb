@@ -28,18 +28,15 @@ const char* V8VoidCallbackFunctionEnumArg::NameInHeapSnapshot() const {
 }
 
 v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_this_value, const String& arg) {
-  // This function implements "invoke" algorithm defined in
-  // "3.10. Invoking callback functions".
-  // https://heycam.github.io/webidl/#es-invoking-callback-functions
-
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    CHECK(!CallbackFunction().IsEmpty());
-    v8::Context::Scope context_scope(CallbackFunction()->CreationContext());
+    v8::Local<v8::Object> callback_object = CallbackFunction();
+    CHECK(!callback_object.IsEmpty());
+    v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -49,26 +46,24 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
     return v8::Nothing<void>();
   }
 
+  // step: Prepare to run script with relevant settings.
+  ScriptState::Scope callback_relevant_context_scope(
+      CallbackRelevantScriptState());
+  // step: Prepare to run a callback with stored settings.
+  v8::Context::BackupIncumbentScope backup_incumbent_scope(
+      IncumbentScriptState()->GetContext());
+
+  v8::Local<v8::Function> function;
+  // callback function\'s invoke:
   // step 4. If ! IsCallable(F) is false:
   //
   // As Blink no longer supports [TreatNonObjectAsNull], there must be no such a
   // case.
-#if DCHECK_IS_ON()
-  {
-    v8::HandleScope handle_scope(GetIsolate());
-    DCHECK(CallbackFunction()->IsFunction());
-  }
-#endif
+  DCHECK(CallbackFunction()->IsFunction());
+  function = CallbackFunction();
 
-  // step 8. Prepare to run script with relevant settings.
-  ScriptState::Scope callback_relevant_context_scope(
-      CallbackRelevantScriptState());
-  // step 9. Prepare to run a callback with stored settings.
-  v8::Context::BackupIncumbentScope backup_incumbent_scope(
-      IncumbentScriptState()->GetContext());
-
-  v8::Local<v8::Value> this_arg = ToV8(callback_this_value,
-                                       CallbackRelevantScriptState());
+  v8::Local<v8::Value> this_arg;
+  this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
 
   // Enum values provided by Blink must be valid, otherwise typo.
 #if DCHECK_IS_ON()
@@ -83,14 +78,14 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
                                    ExceptionState::kExecutionContext,
                                    "VoidCallbackFunctionEnumArg",
                                    "invoke");
-    if (!IsValidEnum(arg, valid_arg_values, base::size(valid_arg_values), "TestEnum", exception_state)) {
+    if (!IsValidEnum(arg, valid_arg_values, base::size(valid_arg_values), "TestEnum", exception_state)) { //
       NOTREACHED();
       return v8::Nothing<void>();
     }
   }
 #endif
 
-  // step 10. Let esArgs be the result of converting args to an ECMAScript
+  // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
@@ -102,21 +97,21 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
   v8::Local<v8::Value> argv[] = { v8_arg };
   static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
 
-  // step 11. Let callResult be Call(X, thisArg, esArgs).
   v8::Local<v8::Value> call_result;
+  // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
-          CallbackFunction(),
+          function,
           ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
           argc,
           argv,
           GetIsolate()).ToLocal(&call_result)) {
-    // step 12. If callResult is an abrupt completion, set completion to
-    //   callResult and jump to the step labeled return.
+    // step: If callResult is an abrupt completion, set completion to callResult
+    //   and jump to the step labeled return.
     return v8::Nothing<void>();
   }
 
-  // step 13. Set completion to the result of converting callResult.[[Value]] to
+  // step: Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
   return v8::JustVoid();
 }

@@ -145,24 +145,12 @@ def method_context(operation):
     idl_type = operation.idl_type
     idl_type_str = str(idl_type)
 
-    # TODO(yukishiino,peria,rakuco): We should have this mapping as part of the
-    # bindings generator's infrastructure.
-    native_value_traits_tag_map = {
-        'boolean': 'IDLBoolean',
-        'unsigned short': 'IDLUnsignedShort',
-        'void': None,
-    }
-    if idl_type_str in native_value_traits_tag_map:
-        native_value_traits_tag_name = native_value_traits_tag_map[idl_type_str]
-    else:
-        raise Exception("Callback that returns type `%s' is not supported." % idl_type_str)
-
     add_includes_for_operation(operation)
     context = {
         'cpp_type': idl_type.callback_cpp_type,
         'idl_type': idl_type_str,
         'name': operation.name,
-        'native_value_traits_tag': native_value_traits_tag_name,
+        'native_value_traits_tag': v8_types.idl_type_to_native_value_traits_tag(idl_type),
     }
     context.update(arguments_context(operation.arguments))
     return context
@@ -176,6 +164,7 @@ def arguments_context(arguments):
                 creation_context='argument_creation_context'),
             'handle': '%sHandle' % argument.name,
             'name': argument.name,
+            'v8_name': 'v8_' + argument.name,
         }
 
     argument_declarations = ['ScriptWrappable* callback_this_value']
