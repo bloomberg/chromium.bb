@@ -57,6 +57,14 @@ void SearchBoxModel::SetTabletMode(bool is_tablet_mode) {
   UpdateAccessibleName();
 }
 
+void SearchBoxModel::SetShowAssistantButton(bool show) {
+  if (show_assistant_button_ == show)
+    return;
+  show_assistant_button_ = show;
+  for (auto& observer : observers_)
+    observer.ShowAssistantChanged();
+}
+
 void SearchBoxModel::SetSearchEngineIsGoogle(bool is_google) {
   if (is_google == search_engine_is_google_)
     return;

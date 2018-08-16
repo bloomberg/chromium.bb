@@ -48,6 +48,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   // AppListViewDelegate overrides:
   AppListModel* GetModel() override;
   SearchModel* GetSearchModel() override;
+  void StartAssistant() override {}
   void StartSearch(const base::string16& raw_query) override {}
   void OpenSearchResult(const std::string& result_id, int event_flags) override;
   void InvokeSearchResultAction(const std::string& result_id,

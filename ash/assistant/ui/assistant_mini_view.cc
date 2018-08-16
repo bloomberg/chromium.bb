@@ -4,6 +4,7 @@
 
 #include "ash/assistant/ui/assistant_mini_view.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
@@ -11,7 +12,7 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"

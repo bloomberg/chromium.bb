@@ -52,6 +52,9 @@ class APP_LIST_MODEL_EXPORT SearchBoxModel {
   void SetTabletMode(bool is_tablet_mode);
   bool is_tablet_mode() const { return is_tablet_mode_; }
 
+  void SetShowAssistantButton(bool show);
+  bool show_assistant_button() const { return show_assistant_button_; }
+
   void SetSearchEngineIsGoogle(bool is_google);
   bool search_engine_is_google() const { return search_engine_is_google_; }
 
@@ -73,6 +76,7 @@ class APP_LIST_MODEL_EXPORT SearchBoxModel {
   base::string16 text_;
   bool search_engine_is_google_ = false;
   bool is_tablet_mode_ = false;
+  bool show_assistant_button_ = false;
 
   base::ObserverList<SearchBoxModelObserver> observers_;
 

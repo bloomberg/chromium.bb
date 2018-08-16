@@ -39,6 +39,7 @@ class KSVSearchBoxView : public search_box::SearchBoxViewBase {
   void UpdateModel(bool initiated_by_user) override {}
   void UpdateSearchIcon() override {}
   void UpdateSearchBoxBorder() override;
+  void SetupAssistantButton() override {}
   void SetupCloseButton() override;
   void SetupBackButton() override;
 
