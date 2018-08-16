@@ -218,8 +218,13 @@ public class OverviewListLayoutTest {
             }
         });
 
-        TestTouchUtils.performClickOnMainSync(
-                InstrumentationRegistry.getInstrumentation(), item.findViewById(R.id.close_btn));
+        if (FeatureUtilities.isChromeModernDesignEnabled()) {
+            TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                    item.findViewById(R.id.close_btn_modern));
+        } else {
+            TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                    item.findViewById(R.id.close_btn));
+        }
 
         didReceiveClosureCommittedHelper.waitForCallback(0);
 
