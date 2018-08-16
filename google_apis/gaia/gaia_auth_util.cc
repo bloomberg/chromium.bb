@@ -30,21 +30,19 @@ const void* const kURLRequestUserDataKey = &kURLRequestUserDataKey;
 
 std::string CanonicalizeEmailImpl(const std::string& email_address,
                                   bool change_googlemail_to_gmail) {
+  std::string lower_case_email = base::ToLowerASCII(email_address);
   std::vector<std::string> parts = base::SplitString(
-      email_address, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (parts.size() != 2U) {
-    NOTREACHED() << "expecting exactly one @, but got "
-                 << (parts.empty() ? 0 : parts.size() - 1)
-                 << " : " << email_address;
-  } else {
-    if (change_googlemail_to_gmail && parts[1] == kGooglemailDomain)
-      parts[1] = kGmailDomain;
+      lower_case_email, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (parts.size() != 2U)
+    return lower_case_email;
 
-    if (parts[1] == kGmailDomain)  // only strip '.' for gmail accounts.
-      base::RemoveChars(parts[0], ".", &parts[0]);
-  }
+  if (change_googlemail_to_gmail && parts[1] == kGooglemailDomain)
+    parts[1] = kGmailDomain;
 
-  std::string new_email = base::ToLowerASCII(base::JoinString(parts, "@"));
+  if (parts[1] == kGmailDomain)  // only strip '.' for gmail accounts.
+    base::RemoveChars(parts[0], ".", &parts[0]);
+
+  std::string new_email = base::JoinString(parts, "@");
   VLOG(1) << "Canonicalized " << email_address << " to " << new_email;
   return new_email;
 }
