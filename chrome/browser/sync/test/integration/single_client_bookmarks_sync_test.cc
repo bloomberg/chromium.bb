@@ -66,7 +66,7 @@ class UssSwitchToggler : public testing::WithParamInterface<bool> {
   base::test::ScopedFeatureList override_features_;
 };
 
-class SingleClientBookmarksSyncTest : public SyncTest {
+class SingleClientBookmarksSyncTest : public UssSwitchToggler, public SyncTest {
  public:
   SingleClientBookmarksSyncTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientBookmarksSyncTest() override {}
@@ -97,20 +97,7 @@ void SingleClientBookmarksSyncTest::VerifyBookmarkModelMatchesFakeServer(
   }
 }
 
-// TODO(crbug.com/516866): Merge the two fixtures into one when all tests are
-// passing for USS.
-class SingleClientBookmarksSyncTestIncludingUssTests
-    : public UssSwitchToggler,
-      public SingleClientBookmarksSyncTest {
- public:
-  SingleClientBookmarksSyncTestIncludingUssTests() {}
-  ~SingleClientBookmarksSyncTestIncludingUssTests() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientBookmarksSyncTestIncludingUssTests);
-};
-
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests, Sanity) {
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Starting state:
@@ -244,8 +231,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests, Sanity) {
     VerifyBookmarkModelMatchesFakeServer(kSingleProfileIndex);
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
-                       CommitLocalCreations) {
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, CommitLocalCreations) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Starting state:
@@ -286,8 +272,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
   EXPECT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
-                       InjectedBookmark) {
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, InjectedBookmark) {
   std::string title = "Montreal Canadiens";
   fake_server::EntityBuilderFactory entity_builder_factory;
   fake_server::BookmarkEntityBuilder bookmark_builder =
@@ -305,7 +290,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
 // Test that a client doesn't mutate the favicon data in the process
 // of storing the favicon data from sync to the database or in the process
 // of requesting data from the database for sync.
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                        SetFaviconHiDPIDifferentCodec) {
   // Set the supported scale factors to 1x and 2x such that
   // BookmarkModel::GetFavicon() requests both 1x and 2x.
@@ -350,8 +335,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
 
 // Test that a client deletes favicons from sync when they have been removed
 // from the local database.
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
-                       DeleteFaviconFromSync) {
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, DeleteFaviconFromSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
@@ -377,7 +361,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
       GetBookmarkModel(kSingleProfileIndex)->GetFavicon(bookmark).IsEmpty());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                        BookmarkAllNodesRemovedEvent) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   // Starting state:
@@ -438,8 +422,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
-                       DownloadDeletedBookmark) {
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, DownloadDeletedBookmark) {
   std::string title = "Patrick Star";
   fake_server::EntityBuilderFactory entity_builder_factory;
   fake_server::BookmarkEntityBuilder bookmark_builder =
@@ -469,7 +452,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
                   .Wait());
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                        DownloadModifiedBookmark) {
   std::string title = "Syrup";
   GURL original_url = GURL("https://en.wikipedia.org/?title=Maple_syrup");
@@ -508,8 +491,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
   ASSERT_EQ(1, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
-                       DownloadBookmarkFolder) {
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, DownloadBookmarkFolder) {
   const std::string title = "Seattle Sounders FC";
   fake_server::EntityBuilderFactory entity_builder_factory;
   fake_server::BookmarkEntityBuilder bookmark_builder =
@@ -525,7 +507,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
   ASSERT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                        DownloadBookmarkFoldersWithPositions) {
   const std::string title0 = "Folder left";
   const std::string title1 = "Folder middle";
@@ -565,12 +547,12 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
   EXPECT_EQ(base::ASCIIToUTF16(title2), bar->GetChild(2)->GetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, E2E_ONLY(SanitySetup)) {
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, E2E_ONLY(SanitySetup)) {
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
 }
 
 INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientBookmarksSyncTestIncludingUssTests,
+                        SingleClientBookmarksSyncTest,
                         ::testing::Values(false, true));
 
 }  // namespace
