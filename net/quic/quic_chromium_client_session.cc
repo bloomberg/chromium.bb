@@ -1366,10 +1366,6 @@ void QuicChromiumClientSession::OnClosedStream() {
         CreateOutgoingReliableStreamImpl(request->traffic_annotation())
             ->CreateHandle());
   }
-
-  if (GetNumOpenOutgoingStreams() == 0 && stream_factory_) {
-    stream_factory_->OnIdleSession(this);
-  }
 }
 
 void QuicChromiumClientSession::OnConfigNegotiated() {
