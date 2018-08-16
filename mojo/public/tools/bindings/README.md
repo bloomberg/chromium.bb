@@ -283,7 +283,7 @@ For details on how unions like this translate to generated bindings code, see
 ### Enumeration Types
 
 Enumeration types may be defined using the **enum** keyword either directly
-within a module or within the namespace of some struct or interface:
+within a module or nested within the namespace of some struct or interface:
 
 ```
 module business.mojom;
@@ -304,8 +304,8 @@ struct Employee {
 };
 ```
 
-That that similar to C-style enums, individual values may be explicitly assigned
-within an enum definition. By default values are based at zero and incremenet by
+Similar to C-style enums, individual values may be explicitly assigned within an
+enum definition. By default, values are based at zero and increment by
 1 sequentially.
 
 The effect of nested definitions on generated bindings varies depending on the
@@ -314,7 +314,7 @@ target language. See [documentation for individual target languages](#Generated-
 ### Constants
 
 Constants may be defined using the **const** keyword either directly within a
-module or within the namespace of some struct or interface:
+module or nested within the namespace of some struct or interface:
 
 ```
 module business.mojom;
@@ -341,7 +341,7 @@ target language. See [documentation for individual target languages](#Generated-
 
 An **interface** is a logical bundle of parameterized request messages. Each
 request message may optionally define a parameterized response message. Here's
-syntax to define an interface `Foo` with various kinds of requests:
+an example to define an interface `Foo` with various kinds of requests:
 
 ```
 interface Foo {
