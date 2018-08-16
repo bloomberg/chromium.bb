@@ -8,10 +8,10 @@ import org.chromium.chrome.browser.modelutil.PropertyModel;
 
 /**
  * This model represents the data required to build a list UI around a set of {@link ListItem}s.
- * This includes (1) a {@link BatchListObservable} implementation and (2) exposing a
+ * This includes (1) a {@link BatchListModel} implementation and (2) exposing a
  * {@link PropertyModel} for shared item properties and general list information.
  */
-class ListItemModel extends BatchListObservable<ListItem> {
+class ListItemModel extends BatchListModel<ListItem> {
     private final PropertyModel mListProperties = new PropertyModel(ListProperties.ALL_KEYS);
 
     /**

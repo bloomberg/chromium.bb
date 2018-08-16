@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
+import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 /**
  * This model holds all view state of the accessory sheet.
@@ -24,9 +24,9 @@ class AccessorySheetModel extends PropertyObservable<AccessorySheetModel.Propert
     private int mActiveTabIndex = NO_ACTIVE_TAB;
     private boolean mVisible;
     private int mHeight;
-    private final SimpleListObservable<Tab> mTabList = new SimpleListObservable<>();
+    private final ListModel<Tab> mTabList = new ListModel<>();
 
-    SimpleListObservable<Tab> getTabList() {
+    ListModel<Tab> getTabList() {
         return mTabList;
     }
 

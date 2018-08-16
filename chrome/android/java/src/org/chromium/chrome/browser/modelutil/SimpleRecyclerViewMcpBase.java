@@ -23,7 +23,7 @@ public class SimpleRecyclerViewMcpBase<T, VH, P>
     private final ViewBinder<T, VH, P> mViewBinder;
 
     public SimpleRecyclerViewMcpBase(@Nullable ItemViewTypeCallback<T> itemViewTypeCallback,
-            ViewBinder<T, VH, P> viewBinder, SimpleListObservableBase<T, P> model) {
+            ViewBinder<T, VH, P> viewBinder, ListModelBase<T, P> model) {
         mItemViewTypeCallback = itemViewTypeCallback;
         mViewBinder = viewBinder;
         mModel = model;

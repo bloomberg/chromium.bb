@@ -13,8 +13,8 @@ import android.support.v7.widget.RecyclerView.State;
 import android.view.View;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
 
 /**
@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
  */
 public class ChipsCoordinator implements ChipsProvider.Observer {
     private final ChipsProvider mProvider;
-    private final SimpleListObservable<Chip> mModel = new SimpleListObservable<>();
+    private final ListModel<Chip> mModel = new ListModel<>();
     private final RecyclerView mView;
 
     /**

@@ -40,8 +40,8 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
+import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.util.browser.Features;
@@ -181,10 +181,10 @@ public class ManualFillingControllerTest {
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         PropertyProvider<Action> secondTabProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        SimpleListObservable<Action> keyboardActions = mediator.getKeyboardAccessory()
-                                                               .getMediatorForTesting()
-                                                               .getModelForTesting()
-                                                               .getActionList();
+        ListModel<Action> keyboardActions = mediator.getKeyboardAccessory()
+                                                    .getMediatorForTesting()
+                                                    .getModelForTesting()
+                                                    .getActionList();
         keyboardActions.addObserver(mMockItemListObserver);
 
         // Simulate opening a new tab which automatically triggers the registration:

@@ -28,7 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
+import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordAccessorySheetViewTest {
-    private SimpleListObservable<Item> mModel;
+    private ListModel<Item> mModel;
     private AtomicReference<RecyclerView> mView = new AtomicReference<>();
 
     @Rule
@@ -75,7 +75,7 @@ public class PasswordAccessorySheetViewTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        mModel = new SimpleListObservable<>();
+        mModel = new ListModel<>();
         mActivityTestRule.startMainActivityOnBlankPage();
         openLayoutInAccessorySheet(
                 R.layout.password_accessory_sheet, new KeyboardAccessoryData.Tab.Listener() {

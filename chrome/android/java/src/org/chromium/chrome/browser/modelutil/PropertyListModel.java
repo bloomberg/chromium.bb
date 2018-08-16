@@ -1,6 +1,7 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 package org.chromium.chrome.browser.modelutil;
 
 import android.support.annotation.Nullable;
@@ -13,8 +14,7 @@ import java.util.Collection;
  * @param <T> The type of item in the list.
  * @param <P> The property key type for {@code T} to be used as payload for partial updates.
  */
-public class PropertyListObservable<T extends PropertyObservable<P>, P>
-        extends SimpleListObservableBase<T, P> {
+public class PropertyListModel<T extends PropertyObservable<P>, P> extends ListModelBase<T, P> {
     private final PropertyObservable.PropertyObserver<P> mPropertyObserver =
             this::onPropertyChanged;
 

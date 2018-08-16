@@ -13,8 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
+import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,15 +24,15 @@ import java.util.Map;
  * {@link ViewPager}. It instantiates the tab views based on the layout they provide.
  */
 class AccessoryPagerAdapter extends PagerAdapter
-        implements ListModelChangeProcessor.ViewBinder<SimpleListObservable<Tab>, ViewPager> {
-    private final SimpleListObservable<Tab> mTabList;
+        implements ListModelChangeProcessor.ViewBinder<ListModel<Tab>, ViewPager> {
+    private final ListModel<Tab> mTabList;
     private final Map<Tab, ViewGroup> mViews;
 
     /**
      * Creates the PagerAdapter that populates a ViewPager based on a held list of tabs.
      * @param tabList The list that contains the tabs to instantiate.
      */
-    public AccessoryPagerAdapter(SimpleListObservable<Tab> tabList) {
+    public AccessoryPagerAdapter(ListModel<Tab> tabList) {
         mTabList = tabList;
         mViews = new HashMap<>(mTabList.size());
     }
@@ -89,20 +89,17 @@ class AccessoryPagerAdapter extends PagerAdapter
     }
 
     @Override
-    public void onItemsInserted(
-            SimpleListObservable<Tab> model, ViewPager view, int index, int count) {
+    public void onItemsInserted(ListModel<Tab> model, ViewPager view, int index, int count) {
         notifyDataSetChanged();
     }
 
     @Override
-    public void onItemsRemoved(
-            SimpleListObservable<Tab> model, ViewPager view, int index, int count) {
+    public void onItemsRemoved(ListModel<Tab> model, ViewPager view, int index, int count) {
         notifyDataSetChanged();
     }
 
     @Override
-    public void onItemsChanged(
-            SimpleListObservable<Tab> model, ViewPager view, int index, int count) {
+    public void onItemsChanged(ListModel<Tab> model, ViewPager view, int index, int count) {
         notifyDataSetChanged();
     }
 }

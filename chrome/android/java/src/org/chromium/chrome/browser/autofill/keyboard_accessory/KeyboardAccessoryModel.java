@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 
+import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,15 +37,15 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
         }
     }
 
-    private SimpleListObservable<KeyboardAccessoryData.Action> mActionListObservable;
-    private SimpleListObservable<KeyboardAccessoryData.Tab> mTabListObservable;
+    private ListModel<KeyboardAccessoryData.Action> mActionListObservable;
+    private ListModel<KeyboardAccessoryData.Tab> mTabListObservable;
     private boolean mVisible;
     private @Nullable Integer mActiveTab;
     private TabLayout.OnTabSelectedListener mTabSelectionCallbacks;
 
     KeyboardAccessoryModel() {
-        mActionListObservable = new SimpleListObservable<>();
-        mTabListObservable = new SimpleListObservable<>();
+        mActionListObservable = new ListModel<>();
+        mTabListObservable = new ListModel<>();
     }
 
     void addActionListObserver(ListObservable.ListObserver<Void> observer) {
@@ -56,7 +56,7 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
         mActionListObservable.set(actions);
     }
 
-    SimpleListObservable<KeyboardAccessoryData.Action> getActionList() {
+    ListModel<KeyboardAccessoryData.Action> getActionList() {
         return mActionListObservable;
     }
 
@@ -72,7 +72,7 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
         mTabListObservable.remove(tab);
     }
 
-    SimpleListObservable<KeyboardAccessoryData.Tab> getTabList() {
+    ListModel<KeyboardAccessoryData.Tab> getTabList() {
         return mTabListObservable;
     }
 

@@ -11,7 +11,7 @@ import android.support.annotation.Nullable;
  * their items. Note also that this class on purpose does not expose an item type (it only exposes a
  * <i>payload</i> type for partial change notifications), nor does it give access to the list
  * contents. This is because the list might not be homogeneous -- it could represent items of vastly
- * different types that don't share a common base class. Use the {@link SimpleListObservable}
+ * different types that don't share a common base class. Use the {@link ListModel}
  * subclass for homogeneous lists.
  * @param <P> The parameter type for the payload for partial updates. Use {@link Void} for
  *         implementations that don't support partial updates.
