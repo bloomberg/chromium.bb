@@ -18,33 +18,11 @@ namespace settings {
 namespace {
 
 const char kPageContentDataModeKey[] = "mode";
-const char kPageContentDataHostDeviceKey[] = "hostDevice";
-
-const char kRemoteDeviceNameKey[] = "name";
-const char kRemoteDeviceSoftwareFeaturesKey[] = "softwareFeatures";
-
-std::unique_ptr<base::DictionaryValue> GeneratePageContentDataDictionary(
-    multidevice_setup::mojom::HostStatus host_status,
-    const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
-  auto page_content_dictionary = std::make_unique<base::DictionaryValue>();
-  page_content_dictionary->SetInteger(kPageContentDataModeKey,
-                                      static_cast<int32_t>(host_status));
-
-  if (host_device) {
-    auto device_dictionary = std::make_unique<base::DictionaryValue>();
-    device_dictionary->SetString(kRemoteDeviceNameKey, host_device->name());
-
-    // TODO(khorimoto): Send actual feature dictionary. Currently, an empty
-    // dictionary is passed.
-    device_dictionary->SetDictionary(kRemoteDeviceSoftwareFeaturesKey,
-                                     std::make_unique<base::DictionaryValue>());
-
-    page_content_dictionary->SetDictionary(kPageContentDataHostDeviceKey,
-                                           std::move(device_dictionary));
-  }
-
-  return page_content_dictionary;
-}
+const char kPageContentDataHostDeviceNameKey[] = "hostDeviceName";
+const char kPageContentDataBetterTogetherStateKey[] = "betterTogetherState";
+const char kPageContentDataInstantTetheringStateKey[] = "instantTetheringState";
+const char kPageContentDataMessagesStateKey[] = "messagesState";
+const char kPageContentDataSmartLockStateKey[] = "smartLockState";
 
 void OnRetrySetHostNowResult(bool success) {
   if (success)
@@ -93,9 +71,36 @@ void MultideviceHandler::OnJavascriptDisallowed() {
 void MultideviceHandler::OnHostStatusChanged(
     multidevice_setup::mojom::HostStatus host_status,
     const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
-  FireWebUIListener(
-      "settings.updateMultidevicePageContentData",
-      *GeneratePageContentDataDictionary(host_status, host_device));
+  last_host_status_update_ = std::make_pair(host_status, host_device);
+  AttemptUpdatePageContent();
+}
+
+void MultideviceHandler::OnFeatureStatesChanged(
+    const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+        feature_states_map) {
+  last_feature_states_update_ = feature_states_map;
+  AttemptUpdatePageContent();
+}
+
+void MultideviceHandler::AttemptGetPageContentResponse(
+    const std::string& js_callback_id) {
+  std::unique_ptr<base::DictionaryValue> page_content_dictionary =
+      GeneratePageContentDataDictionary();
+  if (!page_content_dictionary)
+    return;
+
+  ResolveJavascriptCallback(base::Value(js_callback_id),
+                            *page_content_dictionary);
+}
+
+void MultideviceHandler::AttemptUpdatePageContent() {
+  std::unique_ptr<base::DictionaryValue> page_content_dictionary =
+      GeneratePageContentDataDictionary();
+  if (!page_content_dictionary)
+    return;
+
+  FireWebUIListener("settings.updateMultidevicePageContentData",
+                    *page_content_dictionary);
 }
 
 void MultideviceHandler::HandleShowMultiDeviceSetupDialog(
@@ -113,8 +118,16 @@ void MultideviceHandler::HandleGetPageContent(const base::ListValue* args) {
   bool result = args->GetString(0, &callback_id);
   DCHECK(result);
 
+  if (last_host_status_update_ && last_feature_states_update_) {
+    AttemptGetPageContentResponse(callback_id);
+    return;
+  }
+
   multidevice_setup_client_->GetHostStatus(
       base::BindOnce(&MultideviceHandler::OnHostStatusFetched,
+                     callback_weak_ptr_factory_.GetWeakPtr(), callback_id));
+  multidevice_setup_client_->GetFeatureStates(
+      base::BindOnce(&MultideviceHandler::OnFeatureStatesFetched,
                      callback_weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
@@ -129,9 +142,56 @@ void MultideviceHandler::OnHostStatusFetched(
     const std::string& js_callback_id,
     multidevice_setup::mojom::HostStatus host_status,
     const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
-  ResolveJavascriptCallback(
-      base::Value(js_callback_id),
-      *GeneratePageContentDataDictionary(host_status, host_device));
+  last_host_status_update_ = std::make_pair(host_status, host_device);
+  AttemptGetPageContentResponse(js_callback_id);
+}
+
+void MultideviceHandler::OnFeatureStatesFetched(
+    const std::string& js_callback_id,
+    const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+        feature_states_map) {
+  last_feature_states_update_ = feature_states_map;
+  AttemptGetPageContentResponse(js_callback_id);
+}
+
+std::unique_ptr<base::DictionaryValue>
+MultideviceHandler::GeneratePageContentDataDictionary() {
+  // Cannot generate page contents without all required data.
+  if (!last_host_status_update_ || !last_feature_states_update_)
+    return nullptr;
+
+  auto page_content_dictionary = std::make_unique<base::DictionaryValue>();
+
+  page_content_dictionary->SetInteger(
+      kPageContentDataModeKey,
+      static_cast<int32_t>(last_host_status_update_->first));
+  page_content_dictionary->SetInteger(
+      kPageContentDataBetterTogetherStateKey,
+      static_cast<int32_t>(
+          (*last_feature_states_update_)
+              [multidevice_setup::mojom::Feature::kBetterTogetherSuite]));
+  page_content_dictionary->SetInteger(
+      kPageContentDataInstantTetheringStateKey,
+      static_cast<int32_t>(
+          (*last_feature_states_update_)
+              [multidevice_setup::mojom::Feature::kInstantTethering]));
+  page_content_dictionary->SetInteger(
+      kPageContentDataMessagesStateKey,
+      static_cast<int32_t>((*last_feature_states_update_)
+                               [multidevice_setup::mojom::Feature::kMessages]));
+  page_content_dictionary->SetInteger(
+      kPageContentDataSmartLockStateKey,
+      static_cast<int32_t>(
+          (*last_feature_states_update_)
+              [multidevice_setup::mojom::Feature::kSmartLock]));
+
+  if (last_host_status_update_->second) {
+    page_content_dictionary->SetString(
+        kPageContentDataHostDeviceNameKey,
+        last_host_status_update_->second->name());
+  }
+
+  return page_content_dictionary;
 }
 
 }  // namespace settings

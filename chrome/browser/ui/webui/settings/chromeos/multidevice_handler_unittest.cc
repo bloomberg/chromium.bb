@@ -34,7 +34,9 @@ class TestMultideviceHandler : public MultideviceHandler {
 void VerifyPageContentDict(
     const base::Value* value,
     multidevice_setup::mojom::HostStatus expected_host_status,
-    const base::Optional<cryptauth::RemoteDeviceRef>& expected_host_device) {
+    const base::Optional<cryptauth::RemoteDeviceRef>& expected_host_device,
+    const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+        feature_states_map) {
   const base::DictionaryValue* page_content_dict;
   EXPECT_TRUE(value->GetAsDictionary(&page_content_dict));
 
@@ -42,16 +44,39 @@ void VerifyPageContentDict(
   EXPECT_TRUE(page_content_dict->GetInteger("mode", &mode));
   EXPECT_EQ(static_cast<int>(expected_host_status), mode);
 
-  if (expected_host_device) {
-    const base::DictionaryValue* remote_device_dict;
-    EXPECT_TRUE(
-        page_content_dict->GetDictionary("hostDevice", &remote_device_dict));
+  int better_together_state;
+  EXPECT_TRUE(page_content_dict->GetInteger("betterTogetherState",
+                                            &better_together_state));
+  auto it = feature_states_map.find(
+      multidevice_setup::mojom::Feature::kBetterTogetherSuite);
+  EXPECT_EQ(static_cast<int>(it->second), better_together_state);
 
-    std::string name;
-    EXPECT_TRUE(remote_device_dict->GetString("name", &name));
-    EXPECT_EQ(expected_host_device->name(), name);
+  int instant_tethering_state;
+  EXPECT_TRUE(page_content_dict->GetInteger("instantTetheringState",
+                                            &instant_tethering_state));
+  it = feature_states_map.find(
+      multidevice_setup::mojom::Feature::kInstantTethering);
+  EXPECT_EQ(static_cast<int>(it->second), instant_tethering_state);
+
+  int messages_state;
+  EXPECT_TRUE(page_content_dict->GetInteger("messagesState", &messages_state));
+  it = feature_states_map.find(multidevice_setup::mojom::Feature::kMessages);
+  EXPECT_EQ(static_cast<int>(it->second), messages_state);
+
+  int smart_lock_state;
+  EXPECT_TRUE(
+      page_content_dict->GetInteger("smartLockState", &smart_lock_state));
+  it = feature_states_map.find(multidevice_setup::mojom::Feature::kSmartLock);
+  EXPECT_EQ(static_cast<int>(it->second), smart_lock_state);
+
+  std::string host_device_name;
+  if (expected_host_device) {
+    EXPECT_TRUE(
+        page_content_dict->GetString("hostDeviceName", &host_device_name));
+    EXPECT_EQ(expected_host_device->name(), host_device_name);
   } else {
-    EXPECT_FALSE(page_content_dict->GetDictionary("hostDevice", nullptr));
+    EXPECT_FALSE(
+        page_content_dict->GetString("hostDeviceName", &host_device_name));
   }
 }
 
@@ -77,21 +102,40 @@ class MultideviceHandlerTest : public testing::Test {
     handler_->AllowJavascript();
   }
 
-  void CallGetPageContentData(
-      multidevice_setup::mojom::HostStatus expected_host_status,
-      const base::Optional<cryptauth::RemoteDeviceRef>& expected_host_device) {
+  void SetPageContent(
+      multidevice_setup::mojom::HostStatus host_status,
+      const base::Optional<cryptauth::RemoteDeviceRef>& host_device,
+      const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+          feature_states_map) {
+    current_host_status_with_device_ = std::make_pair(host_status, host_device);
+    current_feature_states_map_ = feature_states_map;
+  }
+
+  void CallGetPageContentData(bool expected_to_request_data_from_device_sync) {
+    EXPECT_TRUE(current_host_status_with_device_);
+    EXPECT_TRUE(current_host_status_with_device_);
+
     size_t call_data_count_before_call = test_web_ui()->call_data().size();
 
     base::ListValue args;
     args.AppendString("handlerFunctionName");
     test_web_ui()->HandleReceivedMessage("getPageContentData", &args);
 
-    // The callback did not complete yet, so no call should have been made.
-    EXPECT_EQ(call_data_count_before_call, test_web_ui()->call_data().size());
+    if (expected_to_request_data_from_device_sync) {
+      // The callback did not complete yet, so no call should have been made.
+      EXPECT_EQ(call_data_count_before_call, test_web_ui()->call_data().size());
 
-    // Invoke the callback; this should trigger the event to be sent to JS.
-    fake_multidevice_setup_client()->InvokePendingGetHostStatusCallback(
-        expected_host_status, expected_host_device);
+      // Invoke the host status callback.
+      fake_multidevice_setup_client()->InvokePendingGetHostStatusCallback(
+          current_host_status_with_device_->first /* host_status */,
+          current_host_status_with_device_->second /* host_device */);
+
+      // Invoke the feature states callback; this should trigger the event to be
+      // sent to JS.
+      fake_multidevice_setup_client()->InvokePendingGetFeatureStatesCallback(
+          *current_feature_states_map_);
+    }
+
     EXPECT_EQ(call_data_count_before_call + 1u,
               test_web_ui()->call_data().size());
 
@@ -100,13 +144,13 @@ class MultideviceHandlerTest : public testing::Test {
     EXPECT_EQ("cr.webUIResponse", call_data.function_name());
     EXPECT_EQ("handlerFunctionName", call_data.arg1()->GetString());
     EXPECT_TRUE(call_data.arg2()->GetBool());
-    VerifyPageContentDict(call_data.arg3(), expected_host_status,
-                          expected_host_device);
+    VerifyPageContent(call_data.arg3());
   }
 
   void SimulateHostStatusUpdate(
       multidevice_setup::mojom::HostStatus host_status,
       const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
+    current_host_status_with_device_ = std::make_pair(host_status, host_device);
     size_t call_data_count_before_call = test_web_ui()->call_data().size();
 
     fake_multidevice_setup_client_->NotifyHostStatusChanged(host_status,
@@ -119,7 +163,26 @@ class MultideviceHandlerTest : public testing::Test {
     EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
     EXPECT_EQ("settings.updateMultidevicePageContentData",
               call_data.arg1()->GetString());
-    VerifyPageContentDict(call_data.arg2(), host_status, host_device);
+    VerifyPageContent(call_data.arg2());
+  }
+
+  void SimulateFeatureStatesUpdate(
+      const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+          feature_states_map) {
+    current_feature_states_map_ = feature_states_map;
+    size_t call_data_count_before_call = test_web_ui()->call_data().size();
+
+    fake_multidevice_setup_client_->NotifyFeatureStateChanged(
+        feature_states_map);
+    EXPECT_EQ(call_data_count_before_call + 1u,
+              test_web_ui()->call_data().size());
+
+    const content::TestWebUI::CallData& call_data =
+        CallDataAtIndex(call_data_count_before_call);
+    EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+    EXPECT_EQ("settings.updateMultidevicePageContentData",
+              call_data.arg1()->GetString());
+    VerifyPageContent(call_data.arg2());
   }
 
   void CallRetryPendingHostSetup(bool success) {
@@ -143,34 +206,45 @@ class MultideviceHandlerTest : public testing::Test {
   const cryptauth::RemoteDeviceRef test_device_;
 
  private:
+  void VerifyPageContent(const base::Value* value) {
+    VerifyPageContentDict(value, current_host_status_with_device_->first,
+                          current_host_status_with_device_->second,
+                          *current_feature_states_map_);
+  }
+
   std::unique_ptr<content::TestWebUI> test_web_ui_;
   std::unique_ptr<multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;
   std::unique_ptr<TestMultideviceHandler> handler_;
 
+  base::Optional<std::pair<multidevice_setup::mojom::HostStatus,
+                           base::Optional<cryptauth::RemoteDeviceRef>>>
+      current_host_status_with_device_;
+  base::Optional<multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap>
+      current_feature_states_map_;
+
   DISALLOW_COPY_AND_ASSIGN(MultideviceHandlerTest);
 };
 
 TEST_F(MultideviceHandlerTest, PageContentData) {
-  CallGetPageContentData(multidevice_setup::mojom::HostStatus::kNoEligibleHosts,
-                         base::nullopt /* host_device */);
-  CallGetPageContentData(
-      multidevice_setup::mojom::HostStatus::kEligibleHostExistsButNoHostSet,
-      base::nullopt /* host_device */);
-  CallGetPageContentData(multidevice_setup::mojom::HostStatus::
-                             kHostSetLocallyButWaitingForBackendConfirmation,
-                         test_device_);
-  CallGetPageContentData(
-      multidevice_setup::mojom::HostStatus::kHostSetButNotYetVerified,
-      test_device_);
-  CallGetPageContentData(multidevice_setup::mojom::HostStatus::kHostVerified,
-                         test_device_);
-}
+  static multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap
+      feature_states_map{
+          {multidevice_setup::mojom::Feature::kBetterTogetherSuite,
+           multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
+          {multidevice_setup::mojom::Feature::kInstantTethering,
+           multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
+          {multidevice_setup::mojom::Feature::kMessages,
+           multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost},
+          {multidevice_setup::mojom::Feature::kSmartLock,
+           multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost}};
+  // multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap
+  //     feature_states_map = GenerateUnverifiedFeatureStatesMap();
 
-TEST_F(MultideviceHandlerTest, HostStatusUpdates) {
-  SimulateHostStatusUpdate(
-      multidevice_setup::mojom::HostStatus::kNoEligibleHosts,
-      base::nullopt /* host_device */);
+  SetPageContent(multidevice_setup::mojom::HostStatus::kNoEligibleHosts,
+                 base::nullopt /* host_device */, feature_states_map);
+  CallGetPageContentData(true /* expected_to_request_data_from_device_sync */);
+  CallGetPageContentData(false /* expected_to_request_data_from_device_sync */);
+
   SimulateHostStatusUpdate(
       multidevice_setup::mojom::HostStatus::kEligibleHostExistsButNoHostSet,
       base::nullopt /* host_device */);
@@ -182,6 +256,14 @@ TEST_F(MultideviceHandlerTest, HostStatusUpdates) {
       test_device_);
   SimulateHostStatusUpdate(multidevice_setup::mojom::HostStatus::kHostVerified,
                            test_device_);
+
+  feature_states_map[multidevice_setup::mojom::Feature::kBetterTogetherSuite] =
+      multidevice_setup::mojom::FeatureState::kEnabledByUser;
+  SimulateFeatureStatesUpdate(feature_states_map);
+
+  feature_states_map[multidevice_setup::mojom::Feature::kBetterTogetherSuite] =
+      multidevice_setup::mojom::FeatureState::kDisabledByUser;
+  SimulateFeatureStatesUpdate(feature_states_map);
 }
 
 TEST_F(MultideviceHandlerTest, RetryPendingHostSetup) {
