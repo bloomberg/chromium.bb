@@ -26,7 +26,6 @@
 #include "components/ukm/ukm_pref_names.h"
 #include "components/variations/pref_names.h"
 #include "components/web_resource/web_resource_pref_names.h"
-#include "services/preferences/public/cpp/tracked/pref_names.h"
 
 #if defined(OS_ANDROID)
 #include "components/feed/buildflags.h"
@@ -773,9 +772,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     // components/web_resource/web_resource_pref_names.h
     prefs::kEulaAccepted,
-
-    // services/preferences/public/cpp/tracked/pref_names.h
-    user_prefs::kPreferenceResetTime,
 
 // ui/base/ime/chromeos/extension_ime_util.h
 #if defined(OS_CHROMEOS)
