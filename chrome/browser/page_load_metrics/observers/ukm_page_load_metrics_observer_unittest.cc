@@ -15,9 +15,9 @@
 #include "components/ukm/ukm_source.h"
 #include "content/public/test/navigation_simulator.h"
 #include "net/nqe/effective_connection_type.h"
-#include "net/nqe/network_quality_provider.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -32,13 +32,13 @@ using PageLoad = ukm::builders::PageLoad;
 const char kTestUrl1[] = "https://www.google.com/";
 const char kTestUrl2[] = "https://www.example.com/";
 
-class MockNetworkQualityProvider : public net::NetworkQualityProvider {
+class MockNetworkQualityProvider : public network::NetworkQualityTracker {
  public:
   MOCK_CONST_METHOD0(GetEffectiveConnectionType,
                      net::EffectiveConnectionType());
-  MOCK_CONST_METHOD0(GetHttpRTT, base::Optional<base::TimeDelta>());
-  MOCK_CONST_METHOD0(GetTransportRTT, base::Optional<base::TimeDelta>());
-  MOCK_CONST_METHOD0(GetDownstreamThroughputKbps, base::Optional<int32_t>());
+  MOCK_CONST_METHOD0(GetHttpRTT, base::TimeDelta());
+  MOCK_CONST_METHOD0(GetTransportRTT, base::TimeDelta());
+  MOCK_CONST_METHOD0(GetDownstreamThroughputKbps, int32_t());
 };
 
 }  // namespace
@@ -60,15 +60,15 @@ class UkmPageLoadMetricsObserverTest
 
     EXPECT_CALL(mock_network_quality_provider_, GetHttpRTT())
         .Times(AnyNumber())
-        .WillRepeatedly(Return(base::Optional<base::TimeDelta>()));
+        .WillRepeatedly(Return(base::TimeDelta()));
 
     EXPECT_CALL(mock_network_quality_provider_, GetTransportRTT())
         .Times(AnyNumber())
-        .WillRepeatedly(Return(base::Optional<base::TimeDelta>()));
+        .WillRepeatedly(Return(base::TimeDelta()));
 
     EXPECT_CALL(mock_network_quality_provider_, GetDownstreamThroughputKbps())
         .Times(AnyNumber())
-        .WillRepeatedly(Return(base::Optional<int32_t>()));
+        .WillRepeatedly(Return(int32_t()));
   }
 
   MockNetworkQualityProvider& mock_network_quality_provider() {

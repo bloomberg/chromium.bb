@@ -127,7 +127,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
       tracker->AddObserver(std::move(ads_observer));
 
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver> ukm_observer =
-        UkmPageLoadMetricsObserver::CreateIfNeeded(web_contents_);
+        UkmPageLoadMetricsObserver::CreateIfNeeded();
     if (ukm_observer)
       tracker->AddObserver(std::move(ukm_observer));
 

@@ -76,21 +76,21 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkQualityTracker
   ~NetworkQualityTracker() override;
 
   // Returns the current estimate of the effective connection type.
-  net::EffectiveConnectionType GetEffectiveConnectionType() const;
+  virtual net::EffectiveConnectionType GetEffectiveConnectionType() const;
 
   // Returns the current HTTP RTT estimate. The RTT at the HTTP layer measures
   // the time from when the request was sent (this happens after the connection
   // is established) to the time when the response headers were received.
-  base::TimeDelta GetHttpRTT() const;
+  virtual base::TimeDelta GetHttpRTT() const;
 
   // Returns the current transport-layer RTT estimate. The RTT at the transport
   // layer provides an aggregate estimate of the transport RTT as computed by
   // various underlying TCP and QUIC connections.
-  base::TimeDelta GetTransportRTT() const;
+  virtual base::TimeDelta GetTransportRTT() const;
 
   // Returns the current downstream throughput estimate (in kilobits per
   // second).
-  int32_t GetDownstreamThroughputKbps() const;
+  virtual int32_t GetDownstreamThroughputKbps() const;
 
   // Registers |observer| to receive notifications of network changes. The
   // thread on which this is called is the thread on which |observer| will be
