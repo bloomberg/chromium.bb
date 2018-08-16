@@ -56,6 +56,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       DCHECK(!suppress_manipulation_events_);
       DCHECK(!touchscreen_scroll_in_progress_);
       touchscreen_scroll_in_progress_ = true;
+      gesture_sequence_.append("B");
       // TODO(https://crbug.com/851644): Make sure the value is properly set.
       if (!scrolling_touch_action_.has_value()) {
         static auto* crash_key = base::debug::AllocateCrashKeyString(
@@ -130,6 +131,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
 
     // If double tap is disabled, there's no reason for the tap delay.
     case WebInputEvent::kGestureTapUnconfirmed: {
+      gesture_sequence_.append("C");
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
       // TODO(https://crbug.com/851644): Make sure the value is properly set.
       if (!scrolling_touch_action_.has_value()) {
@@ -158,6 +160,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       break;
 
     case WebInputEvent::kGestureTapDown:
+      gesture_sequence_.append("O");
       // If the gesture is hitting a region that has a non-blocking (such as a
       // passive) event listener.
       if (gesture_event->is_source_touch_event_set_non_blocking)
