@@ -17,6 +17,7 @@
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "ui/gfx/geometry/size.h"
@@ -206,7 +207,8 @@ void LayoutTestBackgroundFetchDelegate::DownloadUrl(
 
       download_service_ =
           base::WrapUnique(download::BuildInMemoryDownloadService(
-              browser_context_, std::move(clients), base::FilePath(),
+              browser_context_, std::move(clients),
+              GetNetworkConnectionTracker(), base::FilePath(),
               BrowserContext::GetBlobStorageContext(browser_context_),
               BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
     }

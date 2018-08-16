@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_SCHEDULER_NETWORK_STATUS_LISTENER_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_SCHEDULER_NETWORK_STATUS_LISTENER_H_
 
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace download {
 
@@ -18,8 +18,7 @@ class NetworkStatusListener {
   // Observer to receive network connection type change notifications.
   class Observer {
    public:
-    virtual void OnNetworkChanged(
-        net::NetworkChangeNotifier::ConnectionType type) = 0;
+    virtual void OnNetworkChanged(network::mojom::ConnectionType type) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -32,7 +31,7 @@ class NetworkStatusListener {
   virtual void Stop();
 
   // Gets the current connection type.
-  virtual net::NetworkChangeNotifier::ConnectionType GetConnectionType() = 0;
+  virtual network::mojom::ConnectionType GetConnectionType() = 0;
 
   virtual ~NetworkStatusListener() {}
 
@@ -43,31 +42,34 @@ class NetworkStatusListener {
   Observer* observer_ = nullptr;
 
   // The current network status.
-  net::NetworkChangeNotifier::ConnectionType network_status_ =
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE;
+  network::mojom::ConnectionType network_status_ =
+      network::mojom::ConnectionType::CONNECTION_NONE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkStatusListener);
 };
 
 // Default implementation of NetworkStatusListener using
-// net::NetworkChangeNotifier to listen to connectivity changes.
+// NetworkConnectionTracker to listen to connectivity changes.
 class NetworkStatusListenerImpl
-    : public net::NetworkChangeNotifier::NetworkChangeObserver,
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public NetworkStatusListener {
  public:
-  NetworkStatusListenerImpl();
+  explicit NetworkStatusListenerImpl(
+      network::NetworkConnectionTracker* network_connection_tracker);
   ~NetworkStatusListenerImpl() override;
 
   // NetworkStatusListener implementation.
   void Start(NetworkStatusListener::Observer* observer) override;
   void Stop() override;
-  net::NetworkChangeNotifier::ConnectionType GetConnectionType() override;
+  network::mojom::ConnectionType GetConnectionType() override;
 
  private:
-  // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // network::NetworkConnectionTracker::NetworkConnectionObserver.
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
+
+  network::NetworkConnectionTracker* network_connection_tracker_;
+  network::mojom::ConnectionType connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStatusListenerImpl);
 };

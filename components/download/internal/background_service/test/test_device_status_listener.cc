@@ -24,7 +24,11 @@ class FakeBatteryStatusListener : public BatteryStatusListener {
 TestDeviceStatusListener::TestDeviceStatusListener()
     : DeviceStatusListener(base::TimeDelta(), /* startup_delay */
                            base::TimeDelta(), /* online_delay */
-                           std::make_unique<FakeBatteryStatusListener>()),
+                           std::make_unique<FakeBatteryStatusListener>(),
+                           &test_network_connection_tracker_),
+      test_network_connection_tracker_(
+          true,
+          network::mojom::ConnectionType::CONNECTION_UNKNOWN),
       weak_ptr_factory_(this) {}
 
 TestDeviceStatusListener::~TestDeviceStatusListener() {

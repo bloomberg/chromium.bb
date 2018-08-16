@@ -18,6 +18,10 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace network {
+class NetworkConnectionTracker;
+}
+
 namespace download {
 
 class DownloadService;
@@ -36,6 +40,7 @@ class TaskScheduler;
 DownloadService* BuildDownloadService(
     content::BrowserContext* browser_context,
     std::unique_ptr<DownloadClientMap> clients,
+    network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     std::unique_ptr<TaskScheduler> task_scheduler);
@@ -45,6 +50,7 @@ DownloadService* BuildDownloadService(
 DownloadService* BuildInMemoryDownloadService(
     content::BrowserContext* browser_context,
     std::unique_ptr<DownloadClientMap> clients,
+    network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
     BlobTaskProxy::BlobContextGetter blob_context_getter,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
