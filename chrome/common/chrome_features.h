@@ -226,10 +226,6 @@ extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
 extern const base::Feature kOomIntervention;
 #endif
 
-#if !defined(OS_ANDROID)
-extern const base::Feature kOneGoogleBarOnLocalNtp;
-#endif
-
 #if defined(OS_CHROMEOS)
 extern const base::Feature kOobeRecommendAppsScreen;
 #endif

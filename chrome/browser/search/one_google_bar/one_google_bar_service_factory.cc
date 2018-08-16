@@ -49,21 +49,12 @@ OneGoogleBarServiceFactory::~OneGoogleBarServiceFactory() = default;
 
 KeyedService* OneGoogleBarServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!base::FeatureList::IsEnabled(features::kOneGoogleBarOnLocalNtp)) {
-    return nullptr;
-  }
 
   Profile* profile = Profile::FromBrowserContext(context);
   GaiaCookieManagerService* cookie_service =
       GaiaCookieManagerServiceFactory::GetForProfile(profile);
   GoogleURLTracker* google_url_tracker =
       GoogleURLTrackerFactory::GetForProfile(profile);
-  std::string override_api_url_str = base::GetFieldTrialParamValueByFeature(
-      features::kOneGoogleBarOnLocalNtp, "one-google-api-url");
-  base::Optional<std::string> override_api_url;
-  if (!override_api_url_str.empty()) {
-    override_api_url = override_api_url_str;
-  }
   content_settings::CookieSettings* cookie_settings =
       CookieSettingsFactory::GetForProfile(profile).get();
   auto url_loader_factory =
@@ -73,7 +64,7 @@ KeyedService* OneGoogleBarServiceFactory::BuildServiceInstanceFor(
       cookie_service,
       std::make_unique<OneGoogleBarLoaderImpl>(
           url_loader_factory, google_url_tracker,
-          g_browser_process->GetApplicationLocale(), override_api_url,
+          g_browser_process->GetApplicationLocale(),
           AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile) &&
               signin::SettingsAllowSigninCookies(cookie_settings)));
 }

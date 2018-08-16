@@ -3403,11 +3403,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"use-google-local-ntp", flag_descriptions::kUseGoogleLocalNtpName,
      flag_descriptions::kUseGoogleLocalNtpDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kUseGoogleLocalNtp)},
-
-    {"one-google-bar-on-local-ntp",
-     flag_descriptions::kOneGoogleBarOnLocalNtpName,
-     flag_descriptions::kOneGoogleBarOnLocalNtpDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kOneGoogleBarOnLocalNtp)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)

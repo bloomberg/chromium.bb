@@ -424,12 +424,6 @@ const base::Feature kOomIntervention{"OomIntervention",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if !defined(OS_ANDROID)
-// Enables or disabled the OneGoogleBar on the local NTP.
-const base::Feature kOneGoogleBarOnLocalNtp{"OneGoogleBarOnLocalNtp",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_CHROMEOS)
 // Enables the Recommend Apps screen in OOBE.
 // TODO(https://crbug.com/862774): Remove this after the feature is fully
