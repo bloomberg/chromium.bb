@@ -458,7 +458,7 @@ ContainerNode* HighestEditableRoot(const PositionInFlatTree& position) {
 }
 
 bool IsEditablePosition(const Position& position) {
-  const Node* node = position.ParentAnchoredEquivalent().AnchorNode();
+  const Node* node = position.ComputeContainerNode();
   if (!node)
     return false;
   DCHECK(node->GetDocument().IsActive());

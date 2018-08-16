@@ -104,6 +104,22 @@ TEST_F(EditingUtilitiesTest, enclosingNodeOfType) {
             EnclosingNodeOfType(PositionInFlatTree(one, 0), IsEnclosingBlock));
 }
 
+// http://crbug.com/873088
+TEST_F(EditingUtilitiesTest, IsEditablePositionWithHr) {
+  SetBodyContent("<hr contenteditable id=target>");
+  Element& target = *GetDocument().getElementById("target");
+  EXPECT_FALSE(IsEditablePosition(Position::BeforeNode(target)));
+  EXPECT_TRUE(IsEditablePosition(Position(target, 0)));
+}
+
+// http://crbug.com/873088
+TEST_F(EditingUtilitiesTest, IsEditablePositionWithSpan) {
+  SetBodyContent("<span contenteditable id=target>abc</span>");
+  Element& target = *GetDocument().getElementById("target");
+  EXPECT_FALSE(IsEditablePosition(Position::BeforeNode(target)));
+  EXPECT_TRUE(IsEditablePosition(Position(target, 0)));
+}
+
 TEST_F(EditingUtilitiesTest, isEditablePositionWithTable) {
   // We would like to have below DOM tree without HTML, HEAD and BODY element.
   //   <table id=table><caption>foo</caption></table>
