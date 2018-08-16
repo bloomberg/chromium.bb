@@ -69,11 +69,6 @@ class PLATFORM_EXPORT SecurityPolicy {
                                             const String& destination_protocol,
                                             const String& destination_domain,
                                             bool allow_destination_subdomains);
-  static void RemoveOriginAccessWhitelistEntry(
-      const SecurityOrigin& source_origin,
-      const String& destination_protocol,
-      const String& destination_domain,
-      bool allow_destination_subdomains);
   static void RemoveAllOriginAccessWhitelistEntriesForOrigin(
       const SecurityOrigin& source_origin);
   static void ResetOriginAccessWhitelists();

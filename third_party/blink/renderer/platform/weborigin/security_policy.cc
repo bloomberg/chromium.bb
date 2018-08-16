@@ -89,36 +89,6 @@ static void AddOriginAccessEntry(const SecurityOrigin& source_origin,
                                    : OriginAccessEntry::kDisallowSubdomains));
 }
 
-static void RemoveOriginAccessEntry(const SecurityOrigin& source_origin,
-                                    const String& destination_protocol,
-                                    const String& destination_domain,
-                                    bool allow_destination_subdomains,
-                                    OriginAccessMap& access_map) {
-  DCHECK(IsMainThread());
-  DCHECK(!source_origin.IsOpaque());
-  if (source_origin.IsOpaque())
-    return;
-
-  String source_string = source_origin.ToString();
-  OriginAccessMap::iterator it = access_map.find(source_string);
-  if (it == access_map.end())
-    return;
-
-  OriginAccessList* list = it->value.get();
-  size_t index = list->Find(OriginAccessEntry(
-      destination_protocol, destination_domain,
-      allow_destination_subdomains ? OriginAccessEntry::kAllowSubdomains
-                                   : OriginAccessEntry::kDisallowSubdomains));
-
-  if (index == kNotFound)
-    return;
-
-  list->EraseAt(index);
-
-  if (list->IsEmpty())
-    access_map.erase(it);
-}
-
 static void RemoveAllOriginAccessEntriesForOrigin(
     const SecurityOrigin& source_origin,
     OriginAccessMap& access_map) {
@@ -320,16 +290,6 @@ void SecurityPolicy::AddOriginAccessWhitelistEntry(
   AddOriginAccessEntry(source_origin, destination_protocol, destination_domain,
                        allow_destination_subdomains,
                        GetOriginAccessWhitelistMap());
-}
-
-void SecurityPolicy::RemoveOriginAccessWhitelistEntry(
-    const SecurityOrigin& source_origin,
-    const String& destination_protocol,
-    const String& destination_domain,
-    bool allow_destination_subdomains) {
-  RemoveOriginAccessEntry(source_origin, destination_protocol,
-                          destination_domain, allow_destination_subdomains,
-                          GetOriginAccessWhitelistMap());
 }
 
 void SecurityPolicy::RemoveAllOriginAccessWhitelistEntriesForOrigin(
