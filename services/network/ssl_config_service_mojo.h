@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "services/network/public/mojom/ssl_config.mojom.h"
@@ -25,6 +26,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SSLConfigServiceMojo
                        mojom::SSLConfigClientRequest ssl_config_client_request);
   ~SSLConfigServiceMojo() override;
 
+  // Sets |cert_verifier| to be configured by certificate-related settings
+  // provided by the mojom::SSLConfigClient via OnSSLConfigUpdated. Once set,
+  // |cert_verifier| must outlive the SSLConfigServiceMojo or be cleared by
+  // passing nullptr as |cert_verifier| prior to destruction.
+  void SetCertVerifierForConfiguring(net::CertVerifier* cert_verifier);
+
   // mojom::SSLConfigClient implementation:
   void OnSSLConfigUpdated(const mojom::SSLConfigPtr ssl_config) override;
 
@@ -37,6 +44,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SSLConfigServiceMojo
   mojo::Binding<mojom::SSLConfigClient> binding_;
 
   net::SSLConfig ssl_config_;
+  net::CertVerifier::Config cert_verifier_config_;
+
+  net::CertVerifier* cert_verifier_;
 
   // The list of domains and subdomains from enterprise policy where connection
   // coalescing is allowed when client certs are in use if the hosts being

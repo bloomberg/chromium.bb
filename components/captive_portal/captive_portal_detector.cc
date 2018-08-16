@@ -38,7 +38,7 @@ void CaptivePortalDetector::DetectCaptivePortal(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
 
-  // Can't safely use net::LOAD_DISABLE_CERT_REVOCATION_CHECKING here,
+  // Can't safely use net::LOAD_DISABLE_CERT_NETWORK_FETCHES here,
   // since then the connection may be reused without checking the cert.
   resource_request->load_flags = net::LOAD_BYPASS_CACHE;
   resource_request->allow_credentials = false;

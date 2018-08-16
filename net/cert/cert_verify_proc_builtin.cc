@@ -183,7 +183,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
 
     // Use hard-fail revocation checking for local trust anchors, if requested
     // by the load flag and the chain uses a non-public root.
-    if ((flags_ & CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS) &&
+    if ((flags_ & CertVerifyProc::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS) &&
         !certs.empty() && !ssl_trust_store_->IsKnownRoot(certs.back().get())) {
       RevocationPolicy policy;
       policy.check_revocation = true;
@@ -214,7 +214,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
     }
 
     // Use soft-fail revocation checking for VERIFY_REV_CHECKING_ENABLED.
-    if (flags_ & CertVerifier::VERIFY_REV_CHECKING_ENABLED) {
+    if (flags_ & CertVerifyProc::VERIFY_REV_CHECKING_ENABLED) {
       RevocationPolicy policy;
       policy.check_revocation = true;
       policy.networking_allowed = true;

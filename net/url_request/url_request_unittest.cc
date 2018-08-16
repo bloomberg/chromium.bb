@@ -4128,13 +4128,8 @@ std::unique_ptr<test_server::HttpResponse> HandleRedirectConnect(
 
 class TestSSLConfigService : public SSLConfigService {
  public:
-  TestSSLConfigService(bool online_rev_checking,
-                       bool rev_checking_required_local_anchors,
-                       bool token_binding_enabled)
-      : online_rev_checking_(online_rev_checking),
-        rev_checking_required_local_anchors_(
-            rev_checking_required_local_anchors),
-        token_binding_enabled_(token_binding_enabled),
+  explicit TestSSLConfigService(bool token_binding_enabled)
+      : token_binding_enabled_(token_binding_enabled),
         min_version_(kDefaultSSLVersionMin),
         max_version_(kDefaultSSLVersionMax) {}
   ~TestSSLConfigService() override = default;
@@ -4145,9 +4140,6 @@ class TestSSLConfigService : public SSLConfigService {
   // SSLConfigService:
   void GetSSLConfig(SSLConfig* config) override {
     *config = SSLConfig();
-    config->rev_checking_enabled = online_rev_checking_;
-    config->rev_checking_required_local_anchors =
-        rev_checking_required_local_anchors_;
     config->version_min = min_version_;
     config->version_max = max_version_;
     if (token_binding_enabled_) {
@@ -4161,8 +4153,6 @@ class TestSSLConfigService : public SSLConfigService {
   }
 
  private:
-  const bool online_rev_checking_;
-  const bool rev_checking_required_local_anchors_;
   const bool token_binding_enabled_;
   uint16_t min_version_;
   uint16_t max_version_;
@@ -4177,8 +4167,8 @@ class TokenBindingURLRequestTest : public URLRequestTestHTTP {
   TokenBindingURLRequestTest() = default;
 
   void SetUp() override {
-    ssl_config_service_ =
-        std::make_unique<TestSSLConfigService>(false, false, true);
+    ssl_config_service_ = std::make_unique<TestSSLConfigService>(
+        true /* token_binding_enabled */);
     default_context().set_ssl_config_service(ssl_config_service_.get());
     channel_id_service_ =
         std::make_unique<ChannelIDService>(new DefaultChannelIDStore(NULL));
@@ -10816,8 +10806,6 @@ class HTTPSFallbackTest : public TestWithScopedTaskEnvironment {
  public:
   HTTPSFallbackTest() : context_(true) {
     ssl_config_service_ = std::make_unique<TestSSLConfigService>(
-        false /* online revocation checking */,
-        false /* require rev. checking for local anchors */,
         false /* token binding enabled */);
     context_.set_ssl_config_service(ssl_config_service_.get());
   }
@@ -11024,8 +11012,9 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 
   void SetUp() override {
     context_.SetCTPolicyEnforcer(std::make_unique<DefaultCTPolicyEnforcer>());
-    SetupContext();
     context_.Init();
+
+    context_.cert_verifier()->SetConfig(GetCertVerifierConfig());
 
     scoped_refptr<X509Certificate> root_cert =
         ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
@@ -11090,15 +11079,13 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   }
 
  protected:
-  // SetupContext configures the URLRequestContext that will be used for making
-  // connetions to testserver. This can be overridden in test subclasses for
-  // different behaviour.
-  virtual void SetupContext() {
-    ssl_config_service_ = std::make_unique<TestSSLConfigService>(
-        true /* online revocation checking */,
-        false /* require rev. checking for local anchors */,
-        false /* token binding enabled */);
-    context_.set_ssl_config_service(ssl_config_service_.get());
+  // GetCertVerifierConfig() configures the URLRequestContext that will be used
+  // for making connections to the testserver. This can be overridden in test
+  // subclasses for different behaviour.
+  virtual CertVerifier::Config GetCertVerifierConfig() {
+    CertVerifier::Config config;
+    config.enable_rev_checking = true;
+    return config;
   }
 
   std::unique_ptr<ScopedTestRoot> test_root_;
@@ -11697,12 +11684,9 @@ INSTANTIATE_TEST_CASE_P(OCSPVerify,
 
 class HTTPSAIATest : public HTTPSOCSPTest {
  public:
-  void SetupContext() override {
-    ssl_config_service_ = std::make_unique<TestSSLConfigService>(
-        false /* online revocation checking */,
-        false /* require rev. checking for local anchors */,
-        false /* token binding enabled */);
-    context_.set_ssl_config_service(ssl_config_service_.get());
+  CertVerifier::Config GetCertVerifierConfig() override {
+    CertVerifier::Config config;
+    return config;
   }
 };
 
@@ -11742,12 +11726,10 @@ TEST_F(HTTPSAIATest, AIAFetching) {
 
 class HTTPSHardFailTest : public HTTPSOCSPTest {
  protected:
-  void SetupContext() override {
-    ssl_config_service_ = std::make_unique<TestSSLConfigService>(
-        false /* online revocation checking */,
-        true /* require rev. checking for local anchors */,
-        false /* token binding enabled */);
-    context_.set_ssl_config_service(ssl_config_service_.get());
+  CertVerifier::Config GetCertVerifierConfig() override {
+    CertVerifier::Config config;
+    config.require_rev_checking_local_anchors = true;
+    return config;
   }
 };
 
@@ -11787,12 +11769,9 @@ TEST_F(HTTPSHardFailTest, FailsOnOCSPInvalid) {
 
 class HTTPSEVCRLSetTest : public HTTPSOCSPTest {
  protected:
-  void SetupContext() override {
-    ssl_config_service_ = std::make_unique<TestSSLConfigService>(
-        false /* online revocation checking */,
-        false /* require rev. checking for local anchors */,
-        false /* token binding enabled */);
-    context_.set_ssl_config_service(ssl_config_service_.get());
+  CertVerifier::Config GetCertVerifierConfig() override {
+    CertVerifier::Config config;
+    return config;
   }
 };
 
@@ -11962,12 +11941,9 @@ TEST_F(HTTPSEVCRLSetTest, FreshCRLSetNotCovered) {
 
 class HTTPSCRLSetTest : public HTTPSOCSPTest {
  protected:
-  void SetupContext() override {
-    ssl_config_service_ = std::make_unique<TestSSLConfigService>(
-        false /* online revocation checking */,
-        false /* require rev. checking for local anchors */,
-        false /* token binding enabled */);
-    context_.set_ssl_config_service(ssl_config_service_.get());
+  CertVerifier::Config GetCertVerifierConfig() override {
+    CertVerifier::Config config;
+    return config;
   }
 
   void SetUp() override {
