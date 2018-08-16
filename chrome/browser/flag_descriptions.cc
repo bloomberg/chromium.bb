@@ -440,6 +440,11 @@ const char kEnableAutoplayIgnoreWebAudioName[] =
 const char kEnableAutoplayIgnoreWebAudioDescription[] =
     "If enabled, autoplay restrictions will be ignored for WebAudio.";
 
+const char kEnableAutoplayUnifiedSoundSettingsName[] =
+    "Autoplay unified sound settings UI";
+const char kEnableAutoplayUnifiedSoundSettingsDescription[] =
+    "If enabled, shows the new unified autoplay sound settings UI.";
+
 const char kEnableBreakingNewsPushName[] = "Breaking News Push";
 const char kEnableBreakingNewsPushDescription[] =
     "Listen for breaking news content suggestions (e.g. for New Tab Page) "
