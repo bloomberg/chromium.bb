@@ -24,14 +24,13 @@ class AuthenticatorRequestDialogModel {
  public:
   // Defines the potential steps of the Web Authentication API request UX flow.
   enum class Step {
-    kInitial,
+    kWelcomeScreen,
     kTransportSelection,
     kErrorTimedOut,
     kCompleted,
 
     // Universal Serial Bus (USB).
-    kUsbInsertAndActivateOnRegister,
-    kUsbInsertAndActivateOnSign,
+    kUsbInsertAndActivate,
 
     // Bluetooth Low Energy (BLE).
     kBlePowerOnAutomatic,
@@ -159,7 +158,7 @@ class AuthenticatorRequestDialogModel {
 
  private:
   // The current step of the request UX flow that is currently shown.
-  Step current_step_ = Step::kInitial;
+  Step current_step_ = Step::kWelcomeScreen;
 
   TransportListModel transport_list_model_;
   base::ObserverList<Observer> observers_;

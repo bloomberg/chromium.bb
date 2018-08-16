@@ -9039,99 +9039,144 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- Web-modal dialog shown during Web Authenticaton API requests. -->
     <if expr="is_win or is_macosx or desktop_linux or chromeos">
-      <message name="IDS_WEBAUTHN_INITIAL_SHEET_TITLE" desc="Title of the dialog shown when a web site wants to register/verify a user's security key through the Web Authentication API.">
-      <ph name="APP_NAME">$1<ex>google.com</ex></ph> wants to verify your identity
+      <message name="IDS_WEBAUTHN_GENERIC_TITLE" desc="Title of most dialogs shown while the user is authenticating on a web site using a Security Key.">
+        Use your Security Key with <ph name="APP_NAME">$1<ex>google.com</ex></ph>
       </message>
-      <message name="IDS_WEBAUTHN_INITIAL_SHEET_DESCRIPTION" desc="Contents of the dialog shown when a web site wants to register/verify a user's security key through the Web Authentication API.">
-        Verifying your identity helps protect your private data
+      <message name="IDS_WEBAUTHN_WELCOME_SCREEN_TITLE" desc="Title of the dialog shown the very first time the user wants to authenticate on a web site using a Security Key.">
+        <ph name="APP_NAME">$1<ex>google.com</ex></ph> wants to verify your identity
       </message>
-      <message name="IDS_WEBAUTHN_INITIAL_SHEET_NEXT" desc="Contents of the button shown to let the user continue to register/verify his/her identity via using a security key.">
+      <message name="IDS_WEBAUTHN_WELCOME_SCREEN_DESCRIPTION" desc="Description in the dialog shown the very first time the user wants to authenticate on a web site using a Security Key.">
+        Verifying your identity helps protect your personal information
+      </message>
+      <message name="IDS_WEBAUTHN_WELCOME_SCREEN_NEXT" desc="Button text to continue using a Security Key for authentication on the web for the very first time.">
         Continue
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_SELECTION_TITLE" desc="Title of the dialog shown when instructing the user to choose transport type to use to register/verfify using a security key.">
-      Verify your identity with <ph name="APP_NAME">$1<ex>google.com</ex></ph>
+      <message name="IDS_WEBAUTHN_TRANSPORT_SELECTION_TITLE" desc="Title of the dialog instructing the user to choose how they want to connect their Security Key with their computer, e.g. USB or Bluetooth.">
+        Verify your identity with <ph name="APP_NAME">$1<ex>google.com</ex></ph>
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_SELECTION_DESCRIPTION" desc="Contents of the dialog shown when instructing the user to choose transport type for the security key to be used by the Web Authentication API.">
+      <message name="IDS_WEBAUTHN_TRANSPORT_SELECTION_DESCRIPTION" desc="Description in the dialog instructing the user to choose how they want to connect their Security Key with their computer, e.g. USB or Bluetooth.">
         Pick an option
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_BLE" desc="Use a Security Key with the Web Authentication API over Bluetooth Low Energy.">
-        Use your Security Key with Bluetooth
+      <message name="IDS_WEBAUTHN_TRANSPORT_BLE" desc="Menu item text. The user selects this to use a Security Key (an external physcial device for user authentication) connected to the computer over Bluetooth Low Energy.">
+        Bluetooth Security Key
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_USB" desc="Use a Security Key with the Web Authentication API over Universal Serial Bus (USB).">
-        Use your Security Key with USB
+      <message name="IDS_WEBAUTHN_TRANSPORT_USB" desc="Menu item text. The user selects this to use a Security Key (an external physical device for user authentication) plugged in to the USB port of the computer.">
+        USB Security Key
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_NFC" desc="Use a Security Key with the Web Authentication API over Near-Field Communication (NFC).">
-        Use your Security Key with NFC
+      <message name="IDS_WEBAUTHN_TRANSPORT_NFC" desc="Menu item text. The user selects this to use a Security Key (an external physical device for user authentication) connected to the computer over Near-Field Communication.">
+        NFC Security Key
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_INTERNAL" desc="Use a Security Key with the Web Authentication API that is built in to the platform, such as Touch ID or Face ID.">
-        Use a built-in Security Key
+      <message name="IDS_WEBAUTHN_TRANSPORT_INTERNAL" desc="Menu item text. The user selects this to use a hardware-based authentication mechanism that is built in to the computer, such as a fingerprint reader.">
+        Built-in sensor
       </message>
-      <message name="IDS_WEBAUTHN_TRANSPORT_CABLE" desc="Use a phone as a Security Key over cloud-assisted BLE with the Web Authentication API.">
-        Use your phone as a Security Key
+      <message name="IDS_WEBAUTHN_TRANSPORT_CABLE" desc="Menu item text. The user selects this to use their phone, once connected to their computer over Bluetooth Low Energy, to sign in to web site on their computer.">
+        Your phone
       </message>
-      <message name="IDS_WEBAUTHN_USB_TITLE_ON_REGISTER" desc="Title of the dialog shown when the user has choosen to access their security key through USB during registration.">
-        Use USB Security Key
-      </message>
-      <message name="IDS_WEBAUTHN_USB_TITLE_ON_SIGNIN" desc="Title of the dialog shown when the user has choosen to access their security key through USB during sign-in.">
-        Use USB Security Key with <ph name="APP_NAME">$1<ex>google.com</ex></ph>
-      </message>
-      <message name="IDS_WEBAUTHN_USB_INSERT_DESCRIPTION" desc="Contents of the dialog shown instructing the user to plug in their USB security key.">
+      <message name="IDS_WEBAUTHN_USB_ACTIVATE_DESCRIPTION" desc="Description in the dialog instructing the user to plug in and activate (e.g. press a button on) their USB Security Key (an external physcial device for user authentication).">
         Plug in your Security Key and activate it
       </message>
-      <message name="IDS_WEBAUTHN_TIMEOUT_TITLE" desc="Title of the dialog shown when the Web Authentication request times out.">
-        Time out
+      <message name="IDS_WEBAUTHN_USB_SUCCESS_TITLE" desc="Title of the dialog informing the user that Chrome detected that they activated (e.g. pressed a button on) an external physical device used for authentication.">
+        Touch registered...
       </message>
-      <message name="IDS_WEBAUTHN_TIMEOUT_DESCRIPTION" desc="Contents of the dialog shown when Web Authentication request times out due to inactivity or error.">
+      <message name="IDS_WEBAUTHN_ERROR_GENERIC_TITLE" desc="Title of most dialogs shown when an error occurs while the user trying to sign in to a web site using a hardware-based authentication mechanism.">
+        Something went wrong...
+      </message>
+      <message name="IDS_WEBAUTHN_ERROR_WRONG_KEY_DESCRIPTION" desc="Description in the dialog informing the user that they are trying to use the wrong Security Key (an external physical device for user authentication) to sign in to a given web site, that is, not the one they have previously registered on that site." meaning="Here, `key` refers to a Security Key, an external physical device for user authentication.">
+        You have registered with a different key before
+      </message>
+      <message name="IDS_WEBAUTHN_ERROR_TIMEOUT_DESCRIPTION" desc="Description in the dialog shown when the user takes too long to sign in to a web site using a hardware-based authentication mechanism.">
         The request timed out
       </message>
-      <message name="IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_TITLE" desc="Title of the dialog shown when instructing the user to manually turn on Bluetooth so that security keys can be used over Bluetooth.">
-        Turn on Bluetooth
+      <message name="IDS_WEBAUTHN_ERROR_NO_TRANSPORTS_DESCRIPTION" desc="Description in the dialog shown when the user's could not sign in to a web site, because their computer did not support any of the hardware-based authentication mechanisms desired by the web site.">
+        We could not verify your identity on this device
       </message>
-      <message name="IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_DESCRIPTION" desc="Contents of the dialog shown instructing the user to turn on bluetooth so that security keys can be used over Bluetooth.">
+      <message name="IDS_WEBAUTHN_BLUETOOTH_POWER_ON_AUTO_TITLE" desc="Title of the dialog informing the user that Chrome needs to turn on Bluetooth by itself so that Security Keys can be used over Bluetooth.">
+        Turn on Bluetooth?
+      </message>
+      <message name="IDS_WEBAUTHN_BLUETOOTH_POWER_ON_AUTO_DESCRIPTION" desc="Description in the dialog informing the user that Chrome needs to turn on Bluetooth by itself so that Security Keys (external physical devices for user authentication) can be used over Bluetooth.">
+        Bluetooth will be temporarily turned on to communicate with your Security Key
+      </message>
+      <message name="IDS_WEBAUTHN_BLUETOOTH_POWER_ON_AUTO_NEXT" desc="Button text to allow Chrome to turn on Bluetooth so that Security Keys can be used over Bluetooth.">
+        Turn on
+      </message>
+      <message name="IDS_WEBAUTHN_BLUETOOTH_POWER_ON_MANUAL_TITLE" desc="Title of the dialog requesting the user to manually turn on Bluetooth so that Security Keys can be used over Bluetooth.">
+        Turn on Bluetooth?
+      </message>
+      <message name="IDS_WEBAUTHN_BLUETOOTH_POWER_ON_MANUAL_DESCRIPTION" desc="Description in the dialog requesting the user to manually turn on Bluetooth so that Security Keys (external physical devices for user authentication)can be used over Bluetooth.">
         Your Security Key only works when your device's Bluetooth is on
       </message>
-      <message name="IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_TRY_AGAIN" desc="Contents of the button shown to let the user restart the Bluetooth pairing process with Bluetooth powered on.">
+      <message name="IDS_WEBAUTHN_BLUETOOTH_POWER_ON_MANUAL_NEXT" desc="Button text. The user clicks this once they manually turned on Bluetooth, so that Chrome would retry connecting to Security Keys over Bluetooth.">
         Try again
       </message>
-      <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_TITLE" desc="Title of the dialog shown when preparing the user to pair Bluetooth security key.">
+      <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_TITLE" desc="Title of the dialog explaining to the user that they first need to pair a Bluetooth Security Key (an external physical device for user authentication) with their computer, and only after they can use it to sign in to web sites on their computer.">
         Ready to pair your Security Key?
       </message>
-      <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_DESCRIPTION" desc="Contents of the dialog shown when initiating the user to pair Bluetooth security key.">
+      <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_DESCRIPTION" desc="Description in the dialog explaining to the user that they first need to pair a Bluetooth Security Key (an external physical device for user authentication) with their computer, and only after they can use it to sign in to web sites on their computer." meaning="Here, `key` refers to a Security Key, an external physical device for user authentication.">
         Pair your key to this device so you can use it to sign into your account
       </message>
-      <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_START" desc="Contents of the button that lets the user initiate Bluetooth pairing process.">
-       Begin
+      <message name="IDS_WEBAUTHN_BLE_PAIRING_BEGIN_NEXT" desc="Button text to initiate pairing of a Bluetooth Security Key with their computer.">
+        Begin
       </message>
-      <message name="IDS_WEBAUTHN_BLE_ENTER_PAIRING_MODE_TITLE" desc="Title of the dialog shown when instructing the user to put security key into pairing mode.">
-        Allow the use of your Security Key
-      </message>
-      <message name="IDS_WEBAUTHN_BLE_ENTER_PAIRING_MODE_DESCRIPTION" desc="Contents of the dialog shown when instructing the user to put security key into pairing mode.">
+      <message name="IDS_WEBAUTHN_BLE_ENTER_PAIRING_MODE_DESCRIPTION" desc="Description in the dialog instructing the user to put their Bluetooth Security Key (an external physical device for user authentication) into pairing mode. This is achieved by holding down the button on the device for 5 seconds, or longer.">
         Press and hold the button on your Security Key for at least 5 seconds
       </message>
-      <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_TITLE" desc="Title of the dialog shown when instructing the user to select security key to connect.">
+      <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_TITLE" desc="Title of the dialog instructing the user to select their Bluetooth Security Key (an external physical device for user authentication) from a list of nearby Bluetooth devices. The user can identify their Security Key in the list by the name printed on the back of the Security Key.">
         Select your Security Key
       </message>
-      <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_DESCRIPTION" desc="Contents of the dialog shown when instructing the user to select his/her security key from list of near by BLE devices.">
+      <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_DESCRIPTION" desc="Description in the dialog instructing the user to select their Bluetooth Security Key (an external physical device for user authentication) from a list of nearby Bluetooth devices. The user can identify their Security Key in the list by the name printed on the back of the Security Key." meaning="Here, `key` refers to a Security Key, an external physical device for user authentication.">
         Find the name printed on the back of your key
       </message>
-      <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE" desc="Title of the dialog shown when instructing the user to enter the PIN code to pair a Bluetooth security key.">
+      <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_SEARCHING_LABEL" desc="Label text. Displayed while Chrome is scanning for nearby Bluetooth devices.">
+        Searching...
+      </message>
+      <message name="IDS_WEBAUTHN_BLE_DEVICE_SELECTION_REMINDER_LABEL" desc="Label text. Reminds the user that their Bluetooth Security Key (an external physical device for user authentication) will only show up in the list of nearby Bluetooth devices if they put it into pairing mode. This is achieved by holding down the button on the device for 5 seconds, or longer." meaning="Here, `key` refers to a Security Key, an external physical device for user authentication.">
+        To see your Security Key, it needs to be in pairing mode. Press the button on your key for at least 5 seconds.
+      </message>
+      <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE" desc="Title of the dialog shown when instructing the user to enter the PIN code (a 6-digit number) to pair a Bluetooth Security Key (an external physical device for user authentication) with their computer.">
         Pair with <ph name="DEVICE_NAME">$1<ex>VHGSHSSN</ex></ph>
       </message>
-      <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_DESCRIPTION" desc="Contents of the dialog shown when instructing the user to enter the PIN code to pair a Bluetooth security key.">
-       Find the 6-digit PIN on the back of your key
+      <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_DESCRIPTION" desc="Description in the dialog shown when instructing the user to enter the PIN code to pair a Bluetooth Security Key (an external physical device for user authentication) with their computer. The PIN code is a 6-digit secret number written on the back of the device." meaning="Here, `key` refers to a Security Key, an external physical device for user authentication.">
+        Find the 6-digit PIN on the back of your key
       </message>
-      <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_NEXT" desc="Contents of the button that lets the user continue the pairing process with the entered Bluetooth PIN code.">
-       Next
+      <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_PIN_LABEL" desc="Label text. Displayed next to a text box where the user enters the PIN code (a 6-digit number) to pair a Bluetooth device.">
+        Pin
       </message>
-      <message name="IDS_WEBAUTHN_BLE_VERIFYING_TITLE" desc="Title of the dialog shown when the user has established BLE connection with the security key.">
-        Verifying your Security Key
+      <message name="IDS_WEBAUTHN_BLE_PIN_ENTRY_NEXT" desc="Button text. The user clicks this button once they have entered the PIN code (a 6-digit number) into a text vbox, so that the pairing of the Bluetooth device can continue.">
+        Next
       </message>
-      <message name="IDS_WEBAUTHN_BLE_ACTIVATE_TITLE" desc="Title of the dialog shown when the user tries to sign-in using a security key.">
-        Use your Security Key with <ph name="APP_NAME">$1<ex>airbnb.com</ex></ph>
+      <message name="IDS_WEBAUTHN_BLE_OS_PIN_ENTRY_TITLE" desc="Description in the dialog instructing the user to enter the PIN code to pair a Bluetooth Security Key (an external physical device for user authentication) with their computer. The PIN code is a 6-digit secret number written on the back of the device." meaning="Here, `key` refers to a Security Key, an external physical device for user authentication.">
+        Find the 6-digit PIN on the back of your key
       </message>
-      <message name="IDS_WEBAUTHN_BLE_ACTIVATE_DESCRIPTION" desc="Contents of the dialog shown when the user tries to sign-in using a security key.">
+      <message name="IDS_WEBAUTHN_BLE_OS_PIN_ENTRY_DESCRIPTION" desc="Description in the drepresenting using the user's phone as a physical device that is connected to the user's computer over Bluetooth Low Energy to authenticate the user on the web.ialog shown when instructing the user to enter the PIN code to pair a Bluetooth Security Key (an external physical device for user authentication).">
+        Continue when you're ready to enter the PIN
+      </message>
+      <message name="IDS_WEBAUTHN_BLE_VERIFYING_TITLE" desc="Title of the dialog informing the user that verifying a Bluetooth Security Key (an external physical device for user authentication) is in progress.">
+        Verifying your Security Key...
+      </message>
+      <message name="IDS_WEBAUTHN_BLE_ACTIVATE_DESCRIPTION" desc="Description in the dialog instructing the user to activate (e.g. press a button on) their Bluetooth Security Key (an external physical device for user authentication)." meaning="Here, `key` refers to a Security Key, an external physical device for user authentication.">
         To use most keys, simply press the button
-     </message>
+      </message>
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_LABEL" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a different hardware-based authentication mechanism from what they have selected previously.">
+        Choose another option
+      </message>
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_USB" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a Security Key (an external physcial device for user authentication) plugged in to the USB port of the computer.">
+        Verify via USB
+      </message>
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_BLE" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a Security Key (an external physcial device for user authentication) connected to the user's computer over Bluetooth Low Energy.">
+        Verify via Bluetooth
+      </message>
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_ANOTHER_BLE" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a Bluetooth Security Key (an external physcial device for user authentication connected over Bluetooth Low Energy) that they haven't used on this computer before.">
+        Add another Bluetooth Security Key
+      </message>
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_NFC" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a Security Key (an external physcial device for user authentication) connected to the computer over Near-Field Communication.">
+        Verify via NFC
+      </message>
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_INTERNAL" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a hardware-based authentication mechanism that is built in to the computer, such as a fingerprint reader.">
+        Verify via built-in sensor
+      </message>
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_CABLE" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using their phone. They wirelessly connect their phone to their computer over Bluetooth Low Energy, and then use the phone to sign in to web sites on their computer.">
+        Verify via your phone
+      </message>
    </if>
    <if expr="is_macosx">
      <message name="IDS_WEBAUTHN_TOUCH_ID_TITLE" desc="Title of the dialog shown when the user tries to sign in with Touch ID." meaning="'Touch ID' is the fingerprint recognition feature in macOS. Try to refer Apple support documentation in the target language for the appropriate product name translation.">

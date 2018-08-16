@@ -37,7 +37,7 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
   DCHECK_EQ(current_step(), Step::kTransportSelection);
   switch (transport) {
     case AuthenticatorTransport::kUsb:
-      SetCurrentStep(Step::kUsbInsertAndActivateOnRegister);
+      SetCurrentStep(Step::kUsbInsertAndActivate);
       break;
     case AuthenticatorTransport::kBluetoothLowEnergy:
       SetCurrentStep(Step::kBlePowerOnManual);
@@ -73,7 +73,7 @@ void AuthenticatorRequestDialogModel::FinishPairingWithPin(
 }
 
 void AuthenticatorRequestDialogModel::TryUsbDevice() {
-  DCHECK_EQ(current_step(), Step::kUsbInsertAndActivateOnRegister);
+  DCHECK_EQ(current_step(), Step::kUsbInsertAndActivate);
 }
 
 void AuthenticatorRequestDialogModel::TryTouchId() {
@@ -86,10 +86,10 @@ void AuthenticatorRequestDialogModel::Cancel() {
 }
 
 void AuthenticatorRequestDialogModel::Back() {
-  if (current_step() == Step::kInitial) {
+  if (current_step() == Step::kWelcomeScreen) {
     Cancel();
   } else {
-    SetCurrentStep(Step::kInitial);
+    SetCurrentStep(Step::kWelcomeScreen);
   }
 }
 

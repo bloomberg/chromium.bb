@@ -81,8 +81,8 @@ void SetInitialUiModelBasedOnPreviouslyUsedTransport(
   // TouchID transports.
   switch (*previous_transport) {
     case device::FidoTransportProtocol::kUsbHumanInterfaceDevice:
-      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::
-                                kUsbInsertAndActivateOnRegister);
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate);
       break;
     default:
       return;
