@@ -602,9 +602,6 @@ void FindRequestManager::SendFindRequest(const FindRequest& request,
   options->forward = request.options.forward;
   options->match_case = request.options.match_case;
   options->find_next = request.options.find_next;
-  options->word_start = request.options.word_start;
-  options->medial_capital_as_word_start =
-      request.options.medial_capital_as_word_start;
   options->force = request.options.force;
   static_cast<RenderFrameHostImpl*>(rfh)->GetFindInPage()->Find(
       request.id, base::UTF16ToUTF8(request.search_text), std::move(options));

@@ -96,9 +96,6 @@ void FindInPage::Find(int request_id,
   web_options.forward = options->forward;
   web_options.match_case = options->match_case;
   web_options.find_next = options->find_next;
-  web_options.word_start = options->word_start;
-  web_options.medial_capital_as_word_start =
-      options->medial_capital_as_word_start;
   web_options.force = options->force;
 
   // Search for an active match only if this frame is focused or if this is a

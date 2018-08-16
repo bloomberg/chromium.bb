@@ -35,97 +35,38 @@ PASS: Got a match at 5,10 as expected.
 PASS: Got a match at 15,20 as expected.
 PASS: Got no match as expected.
 
-Searching for ‘mount’ in ‘insurmountable mountain’ with options [AtWordStarts]:
-PASS: Got a match at 15,20 as expected.
-PASS: Got no match as expected.
-
 Searching for ‘co’ in ‘cocoa’ with options []:
 PASS: Got a match at 0,2 as expected.
 PASS: Got a match at 2,4 as expected.
 PASS: Got no match as expected.
 
-Searching for ‘co’ in ‘cocoa’ with options [AtWordStarts]:
-PASS: Got a match at 0,2 as expected.
-PASS: Got no match as expected.
-
-Searching for ‘org’ in ‘webkit.org’ with options [AtWordStarts]:
+Searching for ‘org’ in ‘webkit.org’ with options []:
 PASS: Got a match at 7,10 as expected.
 
-Searching for ‘.org’ in ‘webkit.org’ with options [AtWordStarts]:
+Searching for ‘.org’ in ‘webkit.org’ with options []:
 PASS: Got a match at 6,10 as expected.
 PASS: Got no match as expected.
 
-Searching for ‘rg’ in ‘webkit.org’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got no match as expected.
-
-Searching for ‘org’ in ‘webkit.org’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got a match at 7,10 as expected.
-PASS: Got no match as expected.
-
-Searching for ‘.org’ in ‘webkit.org’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got a match at 6,10 as expected.
-PASS: Got no match as expected.
-
-Searching for ‘t.org’ in ‘webkit.org’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got no match as expected.
-
-Searching for ‘it’ in ‘WebKit’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got no match as expected.
-
-Searching for ‘Kit’ in ‘WebKit’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got a match at 3,6 as expected.
-PASS: Got no match as expected.
-
-Searching for ‘bKit’ in ‘WebKit’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got no match as expected.
-
-Searching for ‘equest’ in ‘XMLHTTPRequest’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got no match as expected.
-
-Searching for ‘Request’ in ‘XMLHTTPRequest’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got a match at 7,14 as expected.
-PASS: Got no match as expected.
-
-Searching for ‘PRequest’ in ‘XMLHTTPRequest’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got no match as expected.
-
-Searching for ‘64’ in ‘LP64’ with options [AtWordStarts]:
-PASS: Got no match as expected.
-
-Searching for ‘4’ in ‘LP64’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got no match as expected.
-
-Searching for ‘64’ in ‘LP64’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got a match at 2,4 as expected.
-PASS: Got no match as expected.
-
-Searching for ‘P64’ in ‘LP64’ with options [AtWordStarts, TreatMedialCapitalAsWordStart]:
-PASS: Got no match as expected.
-
-Searching for ‘動戦士’ in ‘起動戦士’ with options [AtWordStarts]:
+Searching for ‘動戦士’ in ‘起動戦士’ with options []:
 PASS: Got a match at 1,4 as expected.
 PASS: Got no match as expected.
 
-Searching for ‘戦士’ in ‘起動戦士’ with options [AtWordStarts]:
+Searching for ‘戦士’ in ‘起動戦士’ with options []:
 PASS: Got a match at 2,4 as expected.
 PASS: Got no match as expected.
 
-Searching for ‘士’ in ‘起動戦士’ with options [AtWordStarts]:
+Searching for ‘士’ in ‘起動戦士’ with options []:
 PASS: Got a match at 3,4 as expected.
 PASS: Got no match as expected.
 
-Searching for ‘a’ in long string with options [AtWordStarts]:
+Searching for ‘a’ in long string with options []:
+PASS: Got a match at 6144,6145 as expected.
 PASS: Got a match at 6146,6147 as expected.
 PASS: Got no match as expected.
 
 Searching for ‘กร’ in ‘กรปูเลกชกชกรกรกชบงกช’ with options []:
 PASS: Got a match at 0,2 as expected.
 PASS: Got a match at 10,12 as expected.
-PASS: Got a match at 12,14 as expected.
-PASS: Got no match as expected.
-
-Searching for ‘กร’ in ‘กรปูเลกชกชกรกรกชบงกช’ with options [AtWordStarts]:
-PASS: Got a match at 0,2 as expected.
 PASS: Got a match at 12,14 as expected.
 PASS: Got no match as expected.
 
@@ -136,40 +77,23 @@ PASS: Got a match at 14,16 as expected.
 PASS: Got a match at 18,20 as expected.
 PASS: Got no match as expected.
 
-Searching for ‘กช’ in ‘กรปูเลกชกชกรกรกชบงกช’ with options [AtWordStarts]:
-PASS: Got a match at 6,8 as expected.
-PASS: Got a match at 8,10 as expected.
-PASS: Got no match as expected.
-
 Searching for ‘กร’ in long string with options []:
 PASS: Got a match at 6144,6146 as expected.
 PASS: Got a match at 6154,6156 as expected.
 PASS: Got a match at 6156,6158 as expected.
 PASS: Got no match as expected.
 
-Searching for ‘กร’ in long string with options [AtWordStarts]:
-PASS: Got a match at 6156,6158 as expected.
-PASS: Got no match as expected.
-
-Searching for ‘กร’ in long string with options [AtWordStarts]:
-PASS: Got a match at 6144,6146 as expected.
-PASS: Got a match at 6156,6158 as expected.
-PASS: Got no match as expected.
-
-Searching for ‘กช’ in long string with options [AtWordStarts]:
-PASS: Got no match as expected.
-
-Searching for ‘ ’ in ‘Spaces, the final frontier’ with options [AtWordStarts]:
+Searching for ‘ ’ in ‘Spaces, the final frontier’ with options []:
 PASS: Got a match at 7,8 as expected.
 PASS: Got a match at 11,12 as expected.
 PASS: Got a match at 17,18 as expected.
 PASS: Got no match as expected.
 
-Searching for ‘@’ in ‘Use an @import rule’ with options [AtWordStarts]:
+Searching for ‘@’ in ‘Use an @import rule’ with options []:
 PASS: Got a match at 7,8 as expected.
 PASS: Got no match as expected.
 
-Searching for ‘(x’ in ‘If ((x + 5) * 2) = 14, then x = 2’ with options [AtWordStarts]:
+Searching for ‘(x’ in ‘If ((x + 5) * 2) = 14, then x = 2’ with options []:
 PASS: Got a match at 4,6 as expected.
 PASS: Got no match as expected.
 
