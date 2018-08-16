@@ -280,7 +280,7 @@ void ExportedObject::OnMethodCompleted(std::unique_ptr<MethodCall> method_call,
 
   // Check if the bus is still connected. If the method takes long to
   // complete, the bus may be shut down meanwhile.
-  if (!bus_->is_connected())
+  if (!bus_->IsConnected())
     return;
 
   if (!response) {
