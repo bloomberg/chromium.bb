@@ -32,6 +32,7 @@ CGFloat kFontAlpha = .87;
   if (self) {
     UILabel* label = [[UILabel alloc] init];
     label.translatesAutoresizingMaskIntoConstraints = NO;
+    label.numberOfLines = 2;
     label.text =
         l10n_util::GetNSString(IDS_IOS_ACCOUNT_IDENTITY_CHOOSER_CHOOSE_ACCOUNT);
     label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
