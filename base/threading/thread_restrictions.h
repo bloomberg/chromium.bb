@@ -127,10 +127,6 @@ namespace ui {
 class WindowResizeHelperMac;
 }
 
-namespace views {
-class ScreenMus;
-}
-
 namespace viz {
 class HostGpuMemoryBufferManager;
 }
@@ -506,7 +502,6 @@ class BASE_EXPORT ThreadRestrictions {
 #if !defined(OFFICIAL_BUILD)
   friend class content::SoftwareOutputDeviceMus;  // Interim non-production code
 #endif
-  friend class views::ScreenMus;
 // END USAGE THAT NEEDS TO BE FIXED.
 
 #if DCHECK_IS_ON()
