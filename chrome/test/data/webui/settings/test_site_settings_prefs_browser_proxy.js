@@ -44,6 +44,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'setOriginPermissions',
       'setProtocolDefault',
       'updateIncognitoStatus',
+      'fetchBlockAutoplayStatus',
     ]);
 
     /** @private {boolean} */
@@ -385,5 +386,10 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   /** @override */
   updateIncognitoStatus() {
     this.methodCalled('updateIncognitoStatus', arguments);
+  }
+
+  /** @override */
+  fetchBlockAutoplayStatus() {
+    this.methodCalled('fetchBlockAutoplayStatus');
   }
 }

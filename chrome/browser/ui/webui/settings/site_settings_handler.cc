@@ -277,6 +277,10 @@ void SiteSettingsHandler::RegisterMessages() {
       "setBlockAutoplayEnabled",
       base::BindRepeating(&SiteSettingsHandler::HandleSetBlockAutoplayEnabled,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "fetchBlockAutoplayStatus",
+      base::BindRepeating(&SiteSettingsHandler::HandleFetchBlockAutoplayStatus,
+                          base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {
@@ -1138,6 +1142,12 @@ void SiteSettingsHandler::HandleRemoveZoomLevel(const base::ListValue* args) {
   host_zoom_map = content::HostZoomMap::GetDefaultForBrowserContext(profile_);
   double default_level = host_zoom_map->GetDefaultZoomLevel();
   host_zoom_map->SetZoomLevelForHost(origin, default_level);
+}
+
+void SiteSettingsHandler::HandleFetchBlockAutoplayStatus(
+    const base::ListValue* args) {
+  AllowJavascript();
+  SendBlockAutoplayStatus();
 }
 
 void SiteSettingsHandler::SendBlockAutoplayStatus() {

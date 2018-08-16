@@ -148,7 +148,8 @@
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.SOUND}}"
           icon="settings:volume-up" id="sound"
-          label="$i18n{siteSettingsSound}">
+          label="$i18n{siteSettingsSound}"
+          use-automatic-label="[[blockAutoplayEnabled]]">
       </site-details-permission>
       <site-details-permission
           category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}"

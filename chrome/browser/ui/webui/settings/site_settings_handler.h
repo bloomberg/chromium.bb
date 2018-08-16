@@ -91,6 +91,8 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerInfobarTest,
                            SettingPermissionsTriggersInfobar);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, SessionOnlyException);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
+                           BlockAutoplay_SendOnRequest);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, BlockAutoplay_Update);
 
   // Asynchronously fetches the usage for a given origin. Replies back with
@@ -161,6 +163,9 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
   // Removes a particular zoom level for a given host.
   void HandleRemoveZoomLevel(const base::ListValue* args);
+
+  // Handles the request to send block autoplay state.
+  void HandleFetchBlockAutoplayStatus(const base::ListValue* args);
 
   // Notifies the JS side about the state of the block autoplay toggle.
   void SendBlockAutoplayStatus();

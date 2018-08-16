@@ -443,4 +443,12 @@ suite('SiteDetails', function() {
         });
   });
 
+  test('call fetch block autoplay status', function() {
+    const origin = 'https://foo.com:443';
+    browserProxy.setPrefs(prefs);
+    loadTimeData.overrideValues({enableSiteSettings: true});
+    testElement = createSiteDetails(origin);
+    return browserProxy.whenCalled('fetchBlockAutoplayStatus');
+  });
+
 });

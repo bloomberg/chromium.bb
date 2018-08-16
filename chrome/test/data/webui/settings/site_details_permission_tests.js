@@ -28,6 +28,8 @@ suite('SiteDetailsPermission', function() {
             settings.ContentSettingsTypes.CAMERA,
             [test_util.createRawSiteException('https://www.example.com')])]);
 
+    loadTimeData.overrideValues({enableBlockAutoplayContentSetting: true});
+
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
@@ -309,5 +311,84 @@ suite('SiteDetailsPermission', function() {
     assertEquals('', testElement.$.permissionItem.innerText.trim());
     assertFalse(testElement.$.permissionItem.classList.contains('two-line'));
     assertFalse(testElement.$.permission.disabled);
+  });
+
+  test('sound setting default string is correct', function() {
+    const origin = 'https://www.example.com';
+    browserProxy.setPrefs(prefs);
+    testElement.category = settings.ContentSettingsTypes.SOUND;
+    testElement.label = 'Sound';
+    testElement.site = {
+      origin: origin,
+      embeddingOrigin: '',
+      setting: settings.ContentSetting.ALLOW,
+      source: settings.SiteSettingSource.PREFERENCE,
+    };
+
+    return browserProxy.whenCalled('getDefaultValueForContentType')
+        .then((args) => {
+          // Check getDefaultValueForContentType was called for sound category.
+          assertEquals(settings.ContentSettingsTypes.SOUND, args);
+
+          // The default option will always be the first in the menu.
+          assertEquals(
+              'Allow (default)', testElement.$.permission.options[0].text,
+              'Default setting string should match prefs');
+          browserProxy.resetResolver('getDefaultValueForContentType');
+          const defaultPrefs = test_util.createSiteSettingsPrefs(
+              [test_util.createContentSettingTypeToValuePair(
+                  settings.ContentSettingsTypes.SOUND,
+                  test_util.createDefaultContentSetting(
+                      {setting: settings.ContentSetting.BLOCK}))],
+              []);
+          browserProxy.setPrefs(defaultPrefs);
+          return browserProxy.whenCalled('getDefaultValueForContentType');
+        })
+        .then((args) => {
+          assertEquals(settings.ContentSettingsTypes.SOUND, args);
+          assertEquals(
+              'Mute (default)', testElement.$.permission.options[0].text,
+              'Default setting string should match prefs');
+          browserProxy.resetResolver('getDefaultValueForContentType');
+          testElement.useAutomaticLabel = true;
+          const defaultPrefs = test_util.createSiteSettingsPrefs(
+              [test_util.createContentSettingTypeToValuePair(
+                  settings.ContentSettingsTypes.SOUND,
+                  test_util.createDefaultContentSetting(
+                      {setting: settings.ContentSetting.ALLOW}))],
+              []);
+          browserProxy.setPrefs(defaultPrefs);
+          return browserProxy.whenCalled('getDefaultValueForContentType');
+        })
+        .then((args) => {
+          assertEquals(settings.ContentSettingsTypes.SOUND, args);
+          assertEquals(
+              'Automatic (default)', testElement.$.permission.options[0].text,
+              'Default setting string should match prefs');
+        });
+  });
+
+  test('sound setting block string is correct', function() {
+    const origin = 'https://www.example.com';
+    browserProxy.setPrefs(prefs);
+    testElement.category = settings.ContentSettingsTypes.SOUND;
+    testElement.label = 'Sound';
+    testElement.site = {
+      origin: origin,
+      embeddingOrigin: '',
+      setting: settings.ContentSetting.ALLOW,
+      source: settings.SiteSettingSource.PREFERENCE,
+    };
+
+    return browserProxy.whenCalled('getDefaultValueForContentType')
+        .then((args) => {
+          // Check getDefaultValueForContentType was called for sound category.
+          assertEquals(settings.ContentSettingsTypes.SOUND, args);
+
+          // The block option will always be the third in the menu.
+          assertEquals(
+              'Mute', testElement.$.permission.options[2].text,
+              'Block setting string should match prefs');
+        });
   });
 });
