@@ -543,8 +543,14 @@ bool PNGImageReader::ParseSize(const FastSharedBufferReader& reader) {
       fctl_needs_dat_chunk_ = false;
       if (ignore_animation_)
         is_animated_ = false;
+      // SetSize() requires bit depth information to correctly fallback to 8888
+      // decoding if there is not enough memory to decode to f16 pixel format.
+      // SetBitDepth() requires repition count to correctly fallback to 8888
+      // decoding for multi-frame APNGs (https://crbug.com/874057). Therefore,
+      // the order of the next three calls matters.
       if (!is_animated_ || 1 == reported_frame_count_)
         decoder_->SetRepetitionCount(kAnimationNone);
+      decoder_->SetBitDepth();
       if (!decoder_->SetSize(width_, height_))
         return false;
       decoder_->SetColorSpace();

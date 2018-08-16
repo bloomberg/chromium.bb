@@ -81,10 +81,6 @@ class PLATFORM_EXPORT ImageFrame final {
 
   ImageFrame();
 
-  ImageFrame(PixelFormat pixel_format) : ImageFrame() {
-    pixel_format_ = pixel_format;
-  }
-
   // The assignment operator reads has_alpha_ (inside SetStatus()) before it
   // sets it (in SetHasAlpha()).  This doesn't cause any problems, since the
   // SetHasAlpha() call ensures all state is set correctly, but it means we
@@ -157,6 +153,7 @@ class PLATFORM_EXPORT ImageFrame final {
     return required_previous_frame_index_;
   }
   void SetHasAlpha(bool alpha);
+  void SetPixelFormat(PixelFormat format) { pixel_format_ = format; }
   void SetOriginalFrameRect(const IntRect& r) { original_frame_rect_ = r; }
   void SetStatus(Status);
   void SetDuration(TimeDelta duration) { duration_ = duration; }
@@ -234,10 +231,6 @@ class PLATFORM_EXPORT ImageFrame final {
     *dest = SkPackARGB32NoCheck(a, r, g, b);
   }
 
-  static void SetRGBAPremultiplyF16Buffer(PixelDataF16* dst,
-                                          PixelDataF16* src,
-                                          size_t num_pixels);
-
   static inline void SetRGBARaw(PixelData* dest,
                                 unsigned r,
                                 unsigned g,
@@ -245,10 +238,6 @@ class PLATFORM_EXPORT ImageFrame final {
                                 unsigned a) {
     *dest = SkPackARGB32NoCheck(a, r, g, b);
   }
-
-  static void SetPixelsOpaqueF16Buffer(PixelDataF16* dst,
-                                       PixelDataF16* src,
-                                       size_t num_pixels);
 
   // Blend the RGBA pixel provided by |red|, |green|, |blue| and |alpha| over
   // the pixel in |dest|, without premultiplication, and overwrite |dest| with

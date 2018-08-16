@@ -86,6 +86,7 @@ void ImageFrame::ZeroFillPixelData() {
 bool ImageFrame::CopyBitmapData(const ImageFrame& other) {
   DCHECK_NE(this, &other);
   has_alpha_ = other.has_alpha_;
+  pixel_format_ = other.pixel_format_;
   bitmap_.reset();
   SkImageInfo info = other.bitmap_.info();
   return bitmap_.tryAllocPixels(info) &&
@@ -101,6 +102,7 @@ bool ImageFrame::TakeBitmapDataIfWritable(ImageFrame* other) {
   if (other->bitmap_.isImmutable())
     return false;
   has_alpha_ = other->has_alpha_;
+  pixel_format_ = other->pixel_format_;
   bitmap_.reset();
   bitmap_.swap(other->bitmap_);
   other->status_ = kFrameEmpty;
@@ -155,24 +157,6 @@ void ImageFrame::ZeroFillFrameRect(const IntRect& rect) {
 
   bitmap_.eraseArea(rect, SkColorSetARGB(0, 0, 0, 0));
   SetHasAlpha(true);
-}
-
-void ImageFrame::SetRGBAPremultiplyF16Buffer(PixelDataF16* dst,
-                                             PixelDataF16* src,
-                                             size_t num_pixels) {
-  sk_sp<SkColorSpace> color_space = SkColorSpace::MakeSRGBLinear();
-  auto color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
-  SkColorSpaceXform::Apply(color_space.get(), color_format, dst,
-                           color_space.get(), color_format, src, num_pixels,
-                           SkColorSpaceXform::AlphaOp::kPremul_AlphaOp);
-}
-
-void ImageFrame::SetPixelsOpaqueF16Buffer(PixelDataF16* dst,
-                                          PixelDataF16* src,
-                                          size_t num_pixels) {
-  // We set the alpha half float to 0x3c00, which is equal to 1.
-  while (num_pixels-- > 0)
-    *dst++ = (*src++ & 0x0000ffffffffffff) | 0x3c00000000000000;
 }
 
 static void BlendRGBAF16Buffer(ImageFrame::PixelDataF16* dst,
