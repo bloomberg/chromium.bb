@@ -1264,6 +1264,14 @@ TEST_F(SiteSettingsHandlerTest, SessionOnlyException) {
   histograms.ExpectTotalCount(uma_base + ".SessionOnly", 1);
 }
 
+TEST_F(SiteSettingsHandlerTest, BlockAutoplay_SendOnRequest) {
+  base::ListValue args;
+  handler()->HandleFetchBlockAutoplayStatus(&args);
+
+  // Check that we are checked and enabled.
+  ValidateBlockAutoplay(true, true);
+}
+
 TEST_F(SiteSettingsHandlerTest, BlockAutoplay_SoundSettingUpdate) {
   SetSoundContentSettingDefault(CONTENT_SETTING_BLOCK);
   base::RunLoop().RunUntilIdle();

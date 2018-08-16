@@ -17,6 +17,11 @@ Polymer({
 
   properties: {
     /**
+     * Whether unified autoplay blocking is enabled.
+     */
+    blockAutoplayEnabled: Boolean,
+
+    /**
      * The origin that this widget is showing details for.
      * @private
      */
@@ -72,6 +77,9 @@ Polymer({
     this.addWebUIListener(
         'prefEnableDrmChanged', this.prefEnableDrmChanged_.bind(this));
     // </if>
+
+    // Refresh block autoplay status from the backend.
+    this.browserProxy.fetchBlockAutoplayStatus();
   },
 
   /** @override */

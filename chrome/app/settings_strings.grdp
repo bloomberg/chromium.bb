@@ -2962,8 +2962,14 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOW_DEFAULT_MENU" desc="Label for the default menu item to allow a permission for a particular site.">
     Allow (default)
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DEFAULT_MENU" desc="Label for the default menu item to automatically control autoplay for a particular site.">
+    Automatic (default)
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCK_DEFAULT_MENU" desc="Label for the default menu item to block a permission for a particular site.">
     Block (default)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_MUTE_DEFAULT_MENU" desc="Label for the default menu item to mute sound for a particular site.">
+    Mute (default)
   </message>
   <!-- TODO(https://crbug.com/753173): Consolidate these strings with those used in the Page Info bubble. -->
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOW_MENU" desc="Label for the menu item to allow permission for a particular site.">
@@ -2974,6 +2980,9 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_MENU" desc="Label for the menu item to ask for permission for a particular site.">
     Ask
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_MUTE_MENU" desc="Label for the menu item to mute sound for a particular site.">
+    Mute
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_RESET_MENU" desc="Label for the menu item to remove the permission for a particular site (make it ask you again next time).">
     Remove

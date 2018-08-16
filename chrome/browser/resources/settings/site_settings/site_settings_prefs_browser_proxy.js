@@ -317,6 +317,12 @@ cr.define('settings', function() {
      */
     showAndroidManageAppLinks() {}
     // </if>
+
+    /**
+     * Fetches the current block autoplay state. Returns the results via
+     * onBlockAutoplayStatusChanged.
+     */
+    fetchBlockAutoplayStatus() {}
   }
 
   /**
@@ -459,6 +465,11 @@ cr.define('settings', function() {
       chrome.send('showAndroidManageAppLinks');
     }
     // </if>
+
+    /** @override */
+    fetchBlockAutoplayStatus() {
+      chrome.send('fetchBlockAutoplayStatus');
+    }
   }
 
   // The singleton instance_ is replaced with a test version of this wrapper
