@@ -887,8 +887,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   if (url.PotentiallyDanglingMarkup() && url.ProtocolIsInHTTPFamily()) {
     Deprecation::CountDeprecation(
         frame_, WebFeature::kCanRequestURLHTTPContainingNewline);
-    if (RuntimeEnabledFeatures::RestrictCanRequestURLCharacterSetEnabled())
-      return;
+    return;
   }
 
   policy = Client()->DecidePolicyForNavigation(

@@ -316,8 +316,7 @@ void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
       ping_value.Contains('<')) {
     Deprecation::CountDeprecation(
         GetDocument(), WebFeature::kCanRequestURLHTTPContainingNewline);
-    if (RuntimeEnabledFeatures::RestrictCanRequestURLCharacterSetEnabled())
-      return;
+    return;
   }
 
   UseCounter::Count(GetDocument(), WebFeature::kHTMLAnchorElementPingAttribute);
