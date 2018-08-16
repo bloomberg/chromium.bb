@@ -218,7 +218,7 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
   }
 
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
-  if (!window->Contains(target) && !presenter_->Back() &&
+  if (!window->Contains(target) && !presenter_->CloseOpenedPage() &&
       !app_list::switches::ShouldNotDismissOnBlur() &&
       !IsHomeLauncherEnabledInTabletMode()) {
     presenter_->Dismiss(event->time_stamp());

@@ -126,8 +126,12 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Dismisses the UI, cleans up and sets the state to CLOSED.
   void Dismiss();
 
-  // Resets the UI to initial state.
-  void ResetToInitialState();
+  // Closes opened folder or search result page if they are opened. Returns
+  // whether the action was handled.
+  bool CloseOpenedPage();
+
+  // Performs the 'back' action for the active page.
+  void Back();
 
   // Enables/disables a semi-transparent overlay over the app list (good for
   // hiding the app list when a modal dialog is being shown).

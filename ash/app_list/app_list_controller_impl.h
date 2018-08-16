@@ -203,6 +203,9 @@ class ASH_EXPORT AppListControllerImpl
   // Returns true if the home launcher is enabled in tablet mode.
   bool IsHomeLauncherEnabledInTabletMode() const;
 
+  // Performs the 'back' action for the active page.
+  void Back();
+
  private:
   syncer::StringOrdinal GetOemFolderPos();
   std::unique_ptr<app_list::AppListItem> CreateAppListItem(

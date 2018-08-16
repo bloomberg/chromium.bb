@@ -547,6 +547,10 @@ bool AppListControllerImpl::IsHomeLauncherEnabledInTabletMode() const {
                                           ->IsTabletModeWindowManagerEnabled();
 }
 
+void AppListControllerImpl::Back() {
+  presenter_.GetView()->Back();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Methods of |client_|:
 
@@ -595,7 +599,7 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
     client_->OpenSearchResult(result_id, event_flags);
 
   if (IsHomeLauncherEnabledInTabletMode() && presenter_.IsVisible())
-    presenter_.GetView()->ResetToInitialState();
+    presenter_.GetView()->CloseOpenedPage();
 }
 
 void AppListControllerImpl::InvokeSearchResultAction(
@@ -644,7 +648,7 @@ void AppListControllerImpl::ActivateItem(const std::string& id,
     client_->ActivateItem(id, event_flags);
 
   if (IsHomeLauncherEnabledInTabletMode() && presenter_.IsVisible())
-    presenter_.GetView()->ResetToInitialState();
+    presenter_.GetView()->CloseOpenedPage();
 }
 
 void AppListControllerImpl::GetContextMenuModel(
