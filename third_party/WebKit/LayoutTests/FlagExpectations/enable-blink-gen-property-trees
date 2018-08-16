@@ -357,7 +357,6 @@ crbug.com/854192 fast/multicol/vertical-rl/composited-relpos-overlapping-will-ch
 crbug.com/854192 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 
 # Paint invalidation test failures. Needs investigation.
-crbug.com/857322 paint/invalidation/background/obscured-background-no-repaint.html [ Failure Crash ]
 crbug.com/854196 paint/invalidation/compositing/clipping-should-not-repaint-composited-descendants.html [ Failure ]
 crbug.com/854196 paint/invalidation/compositing/overlap-test-with-filter.html [ Failure ]
 crbug.com/854196 paint/invalidation/compositing/repaint-overflow-scrolled-squashed-content.html [ Failure ]
