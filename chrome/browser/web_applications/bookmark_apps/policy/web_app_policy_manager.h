@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "url/gurl.h"
 
@@ -34,12 +35,14 @@ class WebAppPolicyManager {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  std::vector<PendingAppManager::AppInfo> GetAppsToInstall();
+  void RefreshPolicyInstalledApps();
 
   PrefService* pref_service_;
 
   // Used to install, uninstall, and update apps. Should outlive this class.
   PendingAppManager* pending_app_manager_;
+
+  base::WeakPtrFactory<WebAppPolicyManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppPolicyManager);
 };
