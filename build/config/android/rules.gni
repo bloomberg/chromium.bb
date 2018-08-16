@@ -3639,6 +3639,9 @@ if (enable_java_templates) {
   #    proguard_jar_path: Optional. Path to custom proguard jar used for
   #      proguarding.
   #
+  #    enable_multidex: Optional. Enable multidexing of optimized modules jars
+  #      when using synchronized proguarding.
+  #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
   #      base_module_target = "//chrome/android:chrome_public_apk"
@@ -3675,6 +3678,11 @@ if (enable_java_templates) {
 
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
+    _enable_multidex =
+        defined(invoker.enable_multidex) && invoker.enable_multidex
+    assert(
+        _proguard_enabled || !_enable_multidex,
+        "Bundle only adds dexing step if synchronized proguarding is enabled.")
 
     # Make build config, which is required for synchronized proguarding.
     _module_targets = []
@@ -3725,8 +3733,13 @@ if (enable_java_templates) {
 
         _module_final_dex_target = "${target_name}__${_module.name}__dex"
         _module_final_dex_target_dep = ":$_module_final_dex_target"
-        _module_final_dex_path =
-            "$target_gen_dir/$target_name/${_module.name}/classes.dex"
+        if (_enable_multidex) {
+          _module_final_dex_path =
+              "$target_gen_dir/$target_name/${_module.name}/classes.dex.zip"
+        } else {
+          _module_final_dex_path =
+              "$target_gen_dir/$target_name/${_module.name}/classes.dex"
+        }
         _module_final_dex_path_file_arg =
             rebase_path(_module_final_dex_path, root_build_dir)
 
@@ -3756,6 +3769,14 @@ if (enable_java_templates) {
 
           # http://crbug.com/725224. Fix for bots running out of memory.
           use_pool = true
+
+          if (_enable_multidex) {
+            enable_multidex = _enable_multidex
+            extra_main_dex_proguard_config =
+                "$_module_target_gen_dir/$_module_target_name/" +
+                "$_module_target_name.resources.main-dex-proguard.txt"
+            deps += [ "${_module_target}__compile_resources" ]
+          }
         }
       } else {
         _module_final_dex_target_dep = "${_module_target}__final_dex"
