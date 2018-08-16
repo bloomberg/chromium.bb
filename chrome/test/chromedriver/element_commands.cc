@@ -504,24 +504,24 @@ Status ExecuteGetElementRect(Session* session,
     return Status(kUnknownError, "could not convert to DictionaryValue");
 
   // grab values
-  int x, y, width, height;
-  if (!location_dict->GetInteger("x", &x))
-    return Status(kUnknownError, "getting size failed to return x");
+  double x, y, width, height;
+  if (!location_dict->GetDouble("x", &x))
+    return Status(kUnknownError, "x coordinate is missing in element location");
 
-  if (!location_dict->GetInteger("y", &y))
-    return Status(kUnknownError, "getting size failed to return y");
+  if (!location_dict->GetDouble("y", &y))
+    return Status(kUnknownError, "y coordinate is missing in element location");
 
-  if (!size_dict->GetInteger("height", &height))
-    return Status(kUnknownError, "getting location failed to return height");
+  if (!size_dict->GetDouble("height", &height))
+    return Status(kUnknownError, "height is missing in element size");
 
-  if (!size_dict->GetInteger("width", &width))
-    return Status(kUnknownError, "getting location failed to return width");
+  if (!size_dict->GetDouble("width", &width))
+    return Status(kUnknownError, "width is missing in element size");
 
   base::DictionaryValue ret;
-  ret.SetInteger("x", x);
-  ret.SetInteger("y", y);
-  ret.SetInteger("width", width);
-  ret.SetInteger("height", height);
+  ret.SetDouble("x", x);
+  ret.SetDouble("y", y);
+  ret.SetDouble("width", width);
+  ret.SetDouble("height", height);
   value->reset(ret.DeepCopy());
   return Status(kOk);
 }
