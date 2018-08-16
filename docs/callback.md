@@ -514,7 +514,7 @@ These functions, along with a set of internal templates, are responsible for
  - Determining the number of parameters that are bound
  - Creating the BindState storing the bound parameters
  - Performing compile-time asserts to avoid error-prone behavior
- - Returning an `Callback<>` with an arity matching the number of unbound
+ - Returning a `Callback<>` with an arity matching the number of unbound
    parameters and that knows the correct refcounting semantics for the
    target object if we are binding a method.
 
