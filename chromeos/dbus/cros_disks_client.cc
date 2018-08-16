@@ -73,6 +73,52 @@ DeviceType DeviceMediaTypeToDeviceType(uint32_t media_type_uint32) {
   }
 }
 
+MountError CrosDisksMountErrorToChromeMountError(
+    cros_disks::MountErrorType mount_error) {
+  switch (mount_error) {
+    case cros_disks::MOUNT_ERROR_NONE:
+      return MOUNT_ERROR_NONE;
+    case cros_disks::MOUNT_ERROR_UNKNOWN:
+      return MOUNT_ERROR_UNKNOWN;
+    case cros_disks::MOUNT_ERROR_INTERNAL:
+      return MOUNT_ERROR_INTERNAL;
+    case cros_disks::MOUNT_ERROR_INVALID_ARGUMENT:
+      return MOUNT_ERROR_INVALID_ARGUMENT;
+    case cros_disks::MOUNT_ERROR_INVALID_PATH:
+      return MOUNT_ERROR_INVALID_PATH;
+    case cros_disks::MOUNT_ERROR_PATH_ALREADY_MOUNTED:
+      return MOUNT_ERROR_PATH_ALREADY_MOUNTED;
+    case cros_disks::MOUNT_ERROR_PATH_NOT_MOUNTED:
+      return MOUNT_ERROR_PATH_NOT_MOUNTED;
+    case cros_disks::MOUNT_ERROR_DIRECTORY_CREATION_FAILED:
+      return MOUNT_ERROR_DIRECTORY_CREATION_FAILED;
+    case cros_disks::MOUNT_ERROR_INVALID_MOUNT_OPTIONS:
+      return MOUNT_ERROR_INVALID_MOUNT_OPTIONS;
+    case cros_disks::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS:
+      return MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS;
+    case cros_disks::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS:
+      return MOUNT_ERROR_INSUFFICIENT_PERMISSIONS;
+    case cros_disks::MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND:
+      return MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND;
+    case cros_disks::MOUNT_ERROR_MOUNT_PROGRAM_FAILED:
+      return MOUNT_ERROR_MOUNT_PROGRAM_FAILED;
+    case cros_disks::MOUNT_ERROR_INVALID_DEVICE_PATH:
+      return MOUNT_ERROR_INVALID_DEVICE_PATH;
+    case cros_disks::MOUNT_ERROR_UNKNOWN_FILESYSTEM:
+      return MOUNT_ERROR_UNKNOWN_FILESYSTEM;
+    case cros_disks::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM:
+      return MOUNT_ERROR_UNSUPPORTED_FILESYSTEM;
+    case cros_disks::MOUNT_ERROR_INVALID_ARCHIVE:
+      return MOUNT_ERROR_INVALID_ARCHIVE;
+    case cros_disks::MOUNT_ERROR_UNSUPPORTED_ARCHIVE:
+      // TODO(amistry): Add MOUNT_ERROR_UNSUPPORTED_ARCHIVE.
+      return MOUNT_ERROR_UNKNOWN;
+    default:
+      NOTREACHED() << "Unrecognised mount error code " << mount_error;
+      return MOUNT_ERROR_UNKNOWN;
+  }
+}
+
 bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountEntry* entry) {
   uint32_t error_code = 0;
   std::string source_path;
@@ -84,8 +130,10 @@ bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountEntry* entry) {
       !reader->PopString(&mount_path)) {
     return false;
   }
-  *entry = MountEntry(static_cast<MountError>(error_code), source_path,
-                      static_cast<MountType>(mount_type), mount_path);
+  *entry =
+      MountEntry(CrosDisksMountErrorToChromeMountError(
+                     static_cast<cros_disks::MountErrorType>(error_code)),
+                 source_path, static_cast<MountType>(mount_type), mount_path);
   return true;
 }
 
@@ -293,7 +341,9 @@ class CrosDisksClientImpl : public CrosDisksClient {
     dbus::MessageReader reader(response);
     uint32_t error_code = 0;
     if (reader.PopUint32(&error_code) &&
-        static_cast<MountError>(error_code) != MOUNT_ERROR_NONE) {
+        CrosDisksMountErrorToChromeMountError(
+            static_cast<cros_disks::MountErrorType>(error_code)) !=
+            MOUNT_ERROR_NONE) {
       std::move(callback).Run(false);
       return;
     }
