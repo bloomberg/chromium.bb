@@ -91,7 +91,7 @@ void SetVp8CodecParameters(vpx_codec_enc_cfg_t* config,
   // to be met, we relax the max quantizer. The quality will get topped-off
   // in subsequent frames.
   config->rc_min_quantizer = 20;
-  config->rc_max_quantizer = 63;
+  config->rc_max_quantizer = 50;
 }
 
 void SetVp9CodecParameters(vpx_codec_enc_cfg_t* config,
