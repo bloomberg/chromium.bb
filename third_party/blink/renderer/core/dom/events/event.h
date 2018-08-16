@@ -190,6 +190,8 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   virtual bool IsBeforeUnloadEvent() const;
 
+  virtual bool IsActivateInvisibleEvent() const;
+
   bool PropagationStopped() const {
     return propagation_stopped_ || immediate_propagation_stopped_;
   }

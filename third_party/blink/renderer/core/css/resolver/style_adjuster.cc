@@ -563,11 +563,14 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   const ComputedStyle& parent_style = *state.ParentStyle();
   const ComputedStyle& layout_parent_style = *state.LayoutParentStyle();
 
-  if (element &&
-      (style.Display() != EDisplay::kNone ||
-       element->LayoutObjectIsNeeded(style)) &&
-      element->IsHTMLElement()) {
-    AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
+  if (element && (style.Display() != EDisplay::kNone ||
+                  element->LayoutObjectIsNeeded(style))) {
+    // TODO(rakina): Move this attribute check somewhere else.
+    if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
+        !element->invisible().IsNull())
+      style.SetDisplay(EDisplay::kNone);
+    else if (element->IsHTMLElement())
+      AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
   }
   if (style.Display() != EDisplay::kNone) {
     // Per the spec, position 'static' and 'relative' in the top layer compute

@@ -30,6 +30,7 @@ const char kInlineCSSStyleMutated[] =
     "Inline CSS style declaration was mutated";
 const char kInspector[] = "Inspector";
 const char kLanguage[] = "Language";
+const char kInvisibleChange[] = "InvisibleChange";
 const char kLinkColorChange[] = "LinkColorChange";
 const char kPlatformColorChange[] = "PlatformColorChange";
 const char kPolicyViolation[] = "Feature Policy Violation";

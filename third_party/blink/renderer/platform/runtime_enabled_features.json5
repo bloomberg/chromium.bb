@@ -586,6 +586,10 @@
       status: "stable",
     },
     {
+      name: "InvisibleDOM",
+      status: "experimental",
+    },
+    {
       name: "IsolatedCodeCache",
       status: "experimental",
     },

@@ -1521,6 +1521,9 @@ bool LocalFrameView::ProcessUrlFragmentHelper(const String& name,
       !(name.IsEmpty() || DeprecatedEqualIgnoringCase(name, "top")))
     return false;
 
+  if (anchor_node)
+    anchor_node->DispatchActivateInvisibleEventIfNeeded();
+
   if (behavior == kUrlFragmentDontScroll)
     return true;
 

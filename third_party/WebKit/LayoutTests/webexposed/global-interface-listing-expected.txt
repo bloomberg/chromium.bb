@@ -146,6 +146,10 @@ interface AccessibleNodeList
     method item
     method remove
     setter length
+interface ActivateInvisibleEvent : Event
+    attribute @@toStringTag
+    getter activatedElement
+    method constructor
 interface AmbientLightSensor : Sensor
     attribute @@toStringTag
     getter illuminance
@@ -1500,6 +1504,7 @@ interface Document : Node
     getter linkColor
     getter links
     getter onabort
+    getter onactivateinvisible
     getter onauxclick
     getter onbeforecopy
     getter onbeforecut
@@ -1689,6 +1694,7 @@ interface Document : Node
     setter fullscreenEnabled
     setter linkColor
     setter onabort
+    setter onactivateinvisible
     setter onauxclick
     setter onbeforecopy
     setter onbeforecut
@@ -1889,6 +1895,7 @@ interface Element : Node
     getter firstElementChild
     getter id
     getter innerHTML
+    getter invisible
     getter lastElementChild
     getter localName
     getter namespaceURI
@@ -2015,6 +2022,7 @@ interface Element : Node
     setter className
     setter id
     setter innerHTML
+    setter invisible
     setter onbeforecopy
     setter onbeforecut
     setter onbeforepaste
@@ -2537,6 +2545,7 @@ interface HTMLElement : Element
     getter offsetTop
     getter offsetWidth
     getter onabort
+    getter onactivateinvisible
     getter onauxclick
     getter onblur
     getter oncancel
@@ -2633,6 +2642,7 @@ interface HTMLElement : Element
     setter lang
     setter nonce
     setter onabort
+    setter onactivateinvisible
     setter onauxclick
     setter onblur
     setter oncancel
@@ -5837,6 +5847,7 @@ interface SVGElement : Element
     getter dataset
     getter nonce
     getter onabort
+    getter onactivateinvisible
     getter onauxclick
     getter onblur
     getter oncancel
@@ -5920,6 +5931,7 @@ interface SVGElement : Element
     method focus
     setter nonce
     setter onabort
+    setter onactivateinvisible
     setter onauxclick
     setter onblur
     setter oncancel
@@ -10358,6 +10370,7 @@ interface webkitURL
     getter navigator
     getter offscreenBuffering
     getter onabort
+    getter onactivateinvisible
     getter onafterprint
     getter onanimationend
     getter onanimationiteration
@@ -10544,6 +10557,7 @@ interface webkitURL
     setter name
     setter offscreenBuffering
     setter onabort
+    setter onactivateinvisible
     setter onafterprint
     setter onanimationend
     setter onanimationiteration

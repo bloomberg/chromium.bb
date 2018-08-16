@@ -119,6 +119,7 @@
 #include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
+#include "third_party/blink/renderer/core/invisible_dom/activate_invisible_event.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -1434,6 +1435,57 @@ AccessibleNode* Element::accessibleNode() {
   return rare_data.EnsureAccessibleNode(this);
 }
 
+const AtomicString& Element::invisible() const {
+  return FastGetAttribute(invisibleAttr);
+}
+
+void Element::setInvisible(const AtomicString& value) {
+  setAttribute(invisibleAttr, value);
+}
+
+void Element::DispatchActivateInvisibleEventIfNeeded() {
+  if (!RuntimeEnabledFeatures::InvisibleDOMEnabled())
+    return;
+  // Traverse all inclusive flat-tree ancestor and send activateinvisible
+  // on the ones that have the invisible attribute. Default event handler
+  // will remove invisible attribute of all invisible element if the event is
+  // not canceled, making this element and all ancestors visible again.
+  // We're saving them and the retargeted activated element as DOM structure
+  // may change due to event handlers.
+  HeapVector<Member<Element>> invisible_ancestors;
+  HeapVector<Member<Element>> activated_elements;
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
+    if (ancestor.IsElementNode() && ToElement(ancestor).invisible()) {
+      invisible_ancestors.push_back(ToElement(ancestor));
+      activated_elements.push_back(ancestor.GetTreeScope().Retarget(*this));
+    }
+  }
+  auto* activated_element_iterator = activated_elements.begin();
+  for (Element* ancestor : invisible_ancestors) {
+    DCHECK(activated_element_iterator != activated_elements.end());
+    ancestor->DispatchEvent(
+        *ActivateInvisibleEvent::Create(*activated_element_iterator));
+    ++activated_element_iterator;
+  }
+}
+
+void Element::InvisibleAttributeChanged() {
+  SetNeedsStyleRecalc(
+      kLocalStyleChange,
+      StyleChangeReasonForTracing::Create(StyleChangeReason::kInvisibleChange));
+}
+
+void Element::DefaultEventHandler(Event* event) {
+  if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
+      event->type() == EventTypeNames::activateinvisible &&
+      event->target() == this) {
+    removeAttribute(invisibleAttr);
+    event->SetDefaultHandled();
+    return;
+  }
+  ContainerNode::DefaultEventHandler(event);
+}
+
 bool Element::toggleAttribute(const AtomicString& qualified_name,
                               ExceptionState& exception_state) {
   // https://dom.spec.whatwg.org/#dom-element-toggleattribute
@@ -1706,6 +1758,10 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       GetElementData()->presentation_attribute_style_is_dirty_ = true;
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));
+    } else if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
+               name == HTMLNames::invisibleAttr &&
+               params.old_value.IsNull() != params.new_value.IsNull()) {
+      InvisibleAttributeChanged();
     }
   }
 
