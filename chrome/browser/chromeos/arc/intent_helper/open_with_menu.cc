@@ -5,10 +5,6 @@
 #include "chrome/browser/chromeos/arc/intent_helper/open_with_menu.h"
 
 #include <algorithm>
-#include <memory>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 #include "base/strings/string_util.h"
 #include "chrome/app/chrome_command_ids.h"
