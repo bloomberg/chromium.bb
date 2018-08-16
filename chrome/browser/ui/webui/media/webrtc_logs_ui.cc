@@ -191,8 +191,8 @@ void WebRtcLogsDOMHandler::UpdateUI() {
 
   base::Value version(version_info::GetVersionNumber());
 
-  web_ui()->CallJavascriptFunctionUnsafe("updateWebRtcLogsList", upload_list,
-                                         version);
+  AllowJavascript();
+  CallJavascriptFunction("updateWebRtcLogsList", upload_list, version);
 }
 
 }  // namespace
