@@ -2655,20 +2655,19 @@ void PepperPluginInstanceImpl::NumberOfFindResultsChanged(
   // them.
   if (find_identifier_ == -1)
     return;
-  if (render_frame_) {
-    render_frame_->GetWebFrame()->ReportFindInPageMatchCount(
-        find_identifier_, total, PP_ToBool(final_result));
-  }
+  if (!container_)
+    return;
+  container_->ReportFindInPageMatchCount(find_identifier_, total,
+                                         PP_ToBool(final_result));
 }
 
 void PepperPluginInstanceImpl::SelectedFindResultChanged(PP_Instance instance,
                                                          int32_t index) {
   if (find_identifier_ == -1)
     return;
-  if (render_frame_ && render_frame_->GetWebFrame()) {
-    render_frame_->GetWebFrame()->ReportFindInPageSelection(
-        find_identifier_, index + 1, blink::WebRect(), false /* final_update*/);
-  }
+  if (!container_)
+    return;
+  container_->ReportFindInPageSelection(find_identifier_, index + 1);
 }
 
 void PepperPluginInstanceImpl::SetTickmarks(PP_Instance instance,

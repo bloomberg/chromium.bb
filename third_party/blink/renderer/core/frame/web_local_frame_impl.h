@@ -312,13 +312,6 @@ class CORE_EXPORT WebLocalFrameImpl final
             bool* active_now = nullptr) override;
   void StopFindingForTesting(mojom::StopFindAction) override;
   void SetTickmarks(const WebVector<WebRect>&) override;
-  void ReportFindInPageMatchCount(int identifier,
-                                  int count,
-                                  bool final_update) override;
-  void ReportFindInPageSelection(int identifier,
-                                 int active_match_ordinal,
-                                 const WebRect& selection,
-                                 bool final_update) override;
   WebNode ContextMenuNode() const override;
   WebFrameWidget* FrameWidget() const override;
   void CopyImageAt(const WebPoint&) override;

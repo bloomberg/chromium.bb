@@ -310,8 +310,30 @@ void WebPluginContainerImpl::SetPlugin(WebPlugin* plugin) {
 void WebPluginContainerImpl::UsePluginAsFindHandler() {
   WebLocalFrameImpl* frame =
       WebLocalFrameImpl::FromFrame(element_->GetDocument().GetFrame());
-  if (frame)
-    frame->GetFindInPage()->SetPluginFindHandler(this);
+  if (!frame)
+    return;
+  frame->GetFindInPage()->SetPluginFindHandler(this);
+}
+
+void WebPluginContainerImpl::ReportFindInPageMatchCount(int identifier,
+                                                        int total,
+                                                        bool final_update) {
+  WebLocalFrameImpl* frame =
+      WebLocalFrameImpl::FromFrame(element_->GetDocument().GetFrame());
+  if (!frame)
+    return;
+  frame->GetFindInPage()->ReportFindInPageMatchCount(identifier, total,
+                                                     final_update);
+}
+
+void WebPluginContainerImpl::ReportFindInPageSelection(int identifier,
+                                                       int index) {
+  WebLocalFrameImpl* frame =
+      WebLocalFrameImpl::FromFrame(element_->GetDocument().GetFrame());
+  if (!frame)
+    return;
+  frame->GetFindInPage()->ReportFindInPageSelection(
+      identifier, index, blink::WebRect(), false /* final_update */);
 }
 
 float WebPluginContainerImpl::DeviceScaleFactor() {
