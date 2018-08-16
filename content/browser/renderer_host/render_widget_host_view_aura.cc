@@ -2389,6 +2389,16 @@ void RenderWidgetHostViewAura::OnSelectionBoundsChanged(
   if (!region)
     return;
 
+  // Do not notify of change unless selection or caret is visible.
+  if (region->anchor == region->focus) {
+    // If selection is collapsed, check to see if user is editing (caret will be
+    // visible).
+    const TextInputState* state = GetTextInputManager()->GetTextInputState();
+    if (!state || (state->type == ui::TEXT_INPUT_TYPE_NONE &&
+                   state->mode == ui::TEXT_INPUT_MODE_NONE))
+      return;
+  }
+
   const gfx::Rect caret_rect = ConvertRectToScreen(gfx::Rect(
       region->focus.edge_top_rounded().x(),
       region->focus.edge_top_rounded().y(), 1, region->focus.GetHeight()));

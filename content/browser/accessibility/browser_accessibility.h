@@ -303,8 +303,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool HasState(ax::mojom::State state_enum) const;
   bool HasAction(ax::mojom::Action action_enum) const;
 
-  // Returns true if the caret is active on this object.
-  bool HasCaret() const;
+  // Returns true if the caret or selection is visible on this object.
+  bool HasVisibleCaretOrSelection() const;
 
   // True if this is a web area, and its grandparent is a presentational iframe.
   bool IsWebAreaForPresentationalIframe() const;
