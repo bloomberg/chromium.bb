@@ -1,4 +1,10 @@
 # Urdu 6 Dot Grade 2 Braille Table
+#
+#+locale:ur_PK
+#+type:literary
+#+contraction:yes
+#+grade:2
+#
 # Copyright (C) 2018 Compass Braille
 #
 #  This file is part of liblouis.
@@ -186,11 +192,11 @@ word \x0646\x06C1\x06CC\x06BA 1345                                         NHI; 
 word \x0648\x06C1 2456                                                     WH                  W          
 word \x06C1\x06D2 125                                                      H/                  H          
 # midendword \x0633\x0627 345                                                SA                  >                     Contraction correct but advised to ignore as it is confusing.
-always \x0646\x06D2 3456                                                   N/                  #          
+prfword \x0646\x06D2 3456                                                  N/                  #          
 word \x06CC\x06C1 24                                                       IH                  I          
 sufword \x06C1\x0648 34                                                    HW                  /          
-sufword \x06C1\x064F\x0648\x0654 34                                        HUW'                /          
-sufword \x06C1\x064F\x0648\x0626 34                                        HUW'                /          
+begword \x06C1\x064F\x0648\x0654 34                                        HUW'                /          
+begword \x06C1\x064F\x0648\x0626 34                                        HUW'                /          
 word \x06C1\x0648\x0627 125-2456-1                                         HWA                 HWA                   added 14-11-2017
 word \x06C1\x0648\x0020\x06AF\x0627 34-1245-1                              HW GA               /GA                   join words up.
 word \x06C1\x0648\x0020\x06AF\x06CC 34-1245-24                             HW GI               /GI                   join words up.
@@ -204,10 +210,14 @@ begword \x0628\x06CC 36                                                    BI   
 begword \x0628\x06D2 36                                                    B/                  -          
 begmidword \x0628\x0627 25                                                 BA                  3          
 begmidword \x062A\x0627 256                                                TA                  4          
+always \x0627\x0626 4                                                    A'                  @          
 syllable \x0627\x0626 4                                                    A'                  @          
+always \x0627\x0654 4                                                    A'                  @          
 syllable \x0627\x0654 4                                                    A'                  @          
+always \x0627\x0648\x0654 4-2456                                         AW'                 @W
 syllable \x0627\x0648\x0654 4-2456                                         AW'                 @W
-syllable \x0627\x0648\x0654\x064F 4-136-2456                               AW'U                @UW
+always \x0627\x0648\x0654\x064F 4-136-2456                               AW'U                @UW 
+syllable \x0627\x0648\x0654\x064F 4-136-2456                               AW'U                @UW 
 word \x067E\x06BE\x0650\x0631 235                                          P8ER                6          
 word \x062A\x06A9 1256                                                     TK                  [backslash]
 word \x062C\x0628 356                                                      JB                  J          
@@ -216,10 +226,10 @@ word \x0627\x0648\x0631 136                                                AWR  
 lowword \x0628\x06BE\x06CC 23                                              B8I                 2
 word \x0679\x0650\x06BE\x06CC\x06A9 135                                    [E8IK               O          
 word \x0679\x06BE\x06CC\x06A9 135                                          [8IK                O          
-# word \x0645\x06AF\x0631 2356                                               MGR                 7                     Contraction correct but better to ignore
-# endword \x0648\x0646\x06AF 2356                                            WNG                 7                     Contraction correct but better to ignore
+#word \x0645\x06AF\x0631 2356                                               MGR                 7                     Contraction correct but better to ignore
+#endword \x0648\x0646\x06AF 2356                                            WNG                 7                     Contraction correct but better to ignore
 always \x0646\x0627 26                                                     NA                  5          
-always \x062D\x0627\x0635\x0650\x0644 156                                  :A&EL               :
+word \x062D\x0627\x0635\x0650\x0644 156                                    :A&EL               :
 always \x0020\x0648\x0020 36                                               spaceWspace         -                      join words with hyphen
 
 # New Ones
