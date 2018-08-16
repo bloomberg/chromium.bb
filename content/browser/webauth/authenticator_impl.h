@@ -104,8 +104,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   static std::string SerializeCollectedClientDataToJson(
       const std::string& type,
       const url::Origin& origin,
-      base::span<const uint8_t> challenge,
-      base::Optional<base::span<const uint8_t>> token_binding);
+      base::span<const uint8_t> challenge);
 
   // mojom:Authenticator
   void MakeCredential(

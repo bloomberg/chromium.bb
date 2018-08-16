@@ -379,37 +379,15 @@ bool AuthenticatorImpl::IsFocused() const {
 std::string AuthenticatorImpl::SerializeCollectedClientDataToJson(
     const std::string& type,
     const url::Origin& origin,
-    base::span<const uint8_t> challenge,
-    base::Optional<base::span<const uint8_t>> token_binding) {
+    base::span<const uint8_t> challenge) {
   static constexpr char kTypeKey[] = "type";
   static constexpr char kChallengeKey[] = "challenge";
   static constexpr char kOriginKey[] = "origin";
-  static constexpr char kTokenBindingKey[] = "tokenBinding";
 
   base::DictionaryValue client_data;
   client_data.SetKey(kTypeKey, base::Value(type));
   client_data.SetKey(kChallengeKey, base::Value(Base64UrlEncode(challenge)));
   client_data.SetKey(kOriginKey, base::Value(origin.Serialize()));
-
-  if (token_binding) {
-    base::DictionaryValue token_binding_dict;
-    static constexpr char kTokenBindingStatusKey[] = "status";
-    static constexpr char kTokenBindingIdKey[] = "id";
-    static constexpr char kTokenBindingSupportedStatus[] = "supported";
-    static constexpr char kTokenBindingPresentStatus[] = "present";
-
-    if (token_binding->empty()) {
-      token_binding_dict.SetKey(kTokenBindingStatusKey,
-                                base::Value(kTokenBindingSupportedStatus));
-    } else {
-      token_binding_dict.SetKey(kTokenBindingStatusKey,
-                                base::Value(kTokenBindingPresentStatus));
-      token_binding_dict.SetKey(kTokenBindingIdKey,
-                                base::Value(Base64UrlEncode(*token_binding)));
-    }
-
-    client_data.SetKey(kTokenBindingKey, std::move(token_binding_dict));
-  }
 
   if (base::RandDouble() < 0.2) {
     // An extra key is sometimes added to ensure that RPs do not make
@@ -488,8 +466,7 @@ void AuthenticatorImpl::MakeCredential(
   // TODO(kpaulhamus): Fetch and add the Token Binding ID public key used to
   // communicate with the origin.
   client_data_json_ = SerializeCollectedClientDataToJson(
-      client_data::kCreateType, caller_origin, std::move(options->challenge),
-      base::nullopt);
+      client_data::kCreateType, caller_origin, std::move(options->challenge));
 
   const bool individual_attestation =
       options->attestation ==
@@ -587,8 +564,7 @@ void AuthenticatorImpl::GetAssertion(
   // TODO(kpaulhamus): Fetch and add the Token Binding ID public key used to
   // communicate with the origin.
   client_data_json_ = SerializeCollectedClientDataToJson(
-      client_data::kGetType, caller_origin, std::move(options->challenge),
-      base::nullopt);
+      client_data::kGetType, caller_origin, std::move(options->challenge));
 
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
       connector_, protocols_,
