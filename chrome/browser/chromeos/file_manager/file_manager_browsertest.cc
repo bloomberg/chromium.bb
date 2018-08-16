@@ -264,7 +264,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("renameFileDownloads"),
                       TestCase("renameFileDrive"),
                       TestCase("renameFileDrive").EnableDriveFs(),
-                      TestCase("renameNewFolderDownloads").InGuestMode(),
+                      // https://crbug.com/874954, failed on MSan bots.
+                      // TestCase("renameNewFolderDownloads").InGuestMode(),
                       TestCase("renameNewFolderDownloads"),
                       TestCase("renameNewFolderDrive"),
                       TestCase("renameNewFolderDrive").EnableDriveFs()));
