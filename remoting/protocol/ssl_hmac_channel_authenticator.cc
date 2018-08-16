@@ -93,7 +93,6 @@ class FailingCertVerifier : public net::CertVerifier {
     verify_result->cert_status = net::CERT_STATUS_INVALID;
     return net::ERR_CERT_INVALID;
   }
-  void SetConfig(const Config& config) override {}
 };
 
 // Implements net::StreamSocket interface on top of P2PStreamSocket to be passed
@@ -288,6 +287,11 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     ct_policy_enforcer_.reset(new net::DefaultCTPolicyEnforcer);
 
     net::SSLConfig ssl_config;
+    // Certificate verification and revocation checking are not needed
+    // because we use self-signed certs. Disable it so that the SSL
+    // layer doesn't try to initialize OCSP (OCSP works only on the IO
+    // thread).
+    ssl_config.rev_checking_enabled = false;
     ssl_config.require_ecdhe = true;
 
     scoped_refptr<net::X509Certificate> cert =

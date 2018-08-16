@@ -16,7 +16,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/variations_params_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_config.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/ssl_config.mojom.h"
@@ -365,7 +364,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, SHA1ForLocalAnchors) {
 
   // By default, SHA-1 local trust anchors should not be enabled when not
   // not using any pref service.
-  EXPECT_FALSE(net::CertVerifier::Config().enable_sha1_local_anchors);
+  EXPECT_FALSE(net::SSLConfig().sha1_local_anchors_enabled);
   EXPECT_FALSE(network::mojom::SSLConfig::New()->sha1_local_anchors_enabled);
 
   // Using a pref service without any preference set should result in
@@ -403,7 +402,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, SymantecLegacyInfrastructure) {
 
   // By default, Symantec's legacy infrastructure should be disabled when
   // not using any pref service.
-  EXPECT_FALSE(net::CertVerifier::Config().disable_symantec_enforcement);
+  EXPECT_FALSE(net::SSLConfig().symantec_enforcement_disabled);
   EXPECT_FALSE(network::mojom::SSLConfig::New()->symantec_enforcement_disabled);
 
   // Using a pref service without any preference set should result in

@@ -31,7 +31,6 @@ include_rules = [
   "+services/viz/public/interfaces",
   "+skia",
   "+third_party/skia/include",
-  "+third_party/boringssl/src/include",
   "+ui/android",
   "+ui/base",
   "+ui/gfx",

@@ -152,7 +152,6 @@ class MyTestCertVerifier : public net::CertVerifier {
              const net::NetLogWithSource& net_log) override {
     return net::OK;
   }
-  void SetConfig(const Config& config) override {}
 };
 
 class MCSProbeAuthPreferences : public net::HttpAuthPreferences {

@@ -124,7 +124,6 @@ class GMockCertVerifier : public net::CertVerifier {
                    net::CertVerifyResult* verify_result,
                    std::unique_ptr<net::CertVerifier::Request>* out_req,
                    const net::NetLogWithSource& net_log));
-  MOCK_METHOD1(SetConfig, void(const net::CertVerifier::Config& config));
 };
 
 class MockCTVerifier : public net::CTVerifier {

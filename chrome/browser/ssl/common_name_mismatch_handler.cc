@@ -75,7 +75,7 @@ void CommonNameMismatchHandler::CheckSuggestedUrl(
         })");
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  // Can't safely use net::LOAD_DISABLE_CERT_NETWORK_FETCHES here,
+  // Can't safely use net::LOAD_DISABLE_CERT_REVOCATION_CHECKING here,
   // since then the connection may be reused without checking the cert.
   resource_request->url = check_url_;
   resource_request->method = "HEAD";

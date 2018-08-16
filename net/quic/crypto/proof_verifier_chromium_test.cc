@@ -52,7 +52,6 @@ class FailsTestCertVerifier : public CertVerifier {
     ADD_FAILURE() << "CertVerifier::Verify() should not be called";
     return ERR_FAILED;
   }
-  void SetConfig(const Config& config) override {}
 };
 
 // A mock CTPolicyEnforcer that returns a custom verification result.

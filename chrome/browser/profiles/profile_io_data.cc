@@ -204,11 +204,6 @@ class WrappedCertVerifierForProfileIODataTesting : public net::CertVerifier {
     return g_cert_verifier_for_profile_io_data_testing->Verify(
         params, crl_set, verify_result, std::move(callback), out_req, net_log);
   }
-  void SetConfig(const Config& config) override {
-    if (!g_cert_verifier_for_profile_io_data_testing)
-      return;
-    return g_cert_verifier_for_profile_io_data_testing->SetConfig(config);
-  }
 };
 
 #if BUILDFLAG(DEBUG_DEVTOOLS)

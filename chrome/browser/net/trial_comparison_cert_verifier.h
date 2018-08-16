@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_NET_TRIAL_COMPARISON_CERT_VERIFIER_H_
 #define CHROME_BROWSER_NET_TRIAL_COMPARISON_CERT_VERIFIER_H_
 
-#include <stdint.h>
-
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -34,8 +32,7 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
     kIgnoredMultipleEVPoliciesAndOneMatchesRoot = 7,
     kIgnoredDifferentPathReVerifiesEquivalent = 8,
     kIgnoredLocallyTrustedLeaf = 9,
-    kIgnoredConfigurationChanged = 10,
-    kMaxValue = kIgnoredConfigurationChanged
+    kMaxValue = kIgnoredLocallyTrustedLeaf
   };
 
   TrialComparisonCertVerifier(
@@ -56,7 +53,6 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
              net::CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
              const net::NetLogWithSource& net_log) override;
-  void SetConfig(const Config& config) override;
 
   // Returns a CertVerifier using the primary CertVerifyProc, which will not
   // cause OnPrimaryVerifierComplete to be called. This can be used to
@@ -66,9 +62,6 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
     return primary_reverifier_.get();
   }
   net::CertVerifier* trial_verifier() const { return trial_verifier_.get(); }
-  net::CertVerifier* revocation_trial_verifier() const {
-    return revocation_trial_verifier_.get();
-  }
 
  private:
   class TrialVerificationJob;
@@ -78,7 +71,7 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
                                  const net::NetLogWithSource& net_log,
                                  int primary_error,
                                  const net::CertVerifyResult& primary_result,
-                                 base::TimeDelta primary_latency,
+                                 base::TimeDelta latency,
                                  bool is_first_job);
   void OnTrialVerifierComplete(const RequestParams& params,
                                scoped_refptr<net::CRLSet> crl_set,
@@ -92,9 +85,6 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
                                 const net::NetLogWithSource& net_log,
                                 int primary_error,
                                 const net::CertVerifyResult& primary_result,
-                                base::TimeDelta primary_latency,
-                                bool is_first_job,
-                                uint32_t config_id,
                                 void* profile_id,
                                 bool trial_allowed);
 
@@ -104,17 +94,9 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
   // accidentally using it on IO thread.
   void* profile_id_;
 
-  // Unique identifier for the current configuration, to determine if a
-  // configuration has changed in between primary and trial verifications.
-  uint32_t config_id_;
-  net::CertVerifier::Config config_;
-
   std::unique_ptr<net::CertVerifier> primary_verifier_;
   std::unique_ptr<net::CertVerifier> primary_reverifier_;
   std::unique_ptr<net::CertVerifier> trial_verifier_;
-  // Similar to |trial_verifier_|, except configured to always check
-  // revocation information.
-  std::unique_ptr<net::CertVerifier> revocation_trial_verifier_;
 
   std::set<std::unique_ptr<TrialVerificationJob>, base::UniquePtrComparator>
       jobs_;

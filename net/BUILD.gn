@@ -399,7 +399,6 @@ component("net") {
 
   if (!is_nacl) {
     sources += [
-      "android/android_http_util.cc",
       "android/cellular_signal_strength.cc",
       "android/cellular_signal_strength.h",
       "android/cert_verify_result_android.cc",
@@ -407,6 +406,7 @@ component("net") {
       "android/gurl_utils.cc",
       "android/http_auth_negotiate_android.cc",
       "android/http_auth_negotiate_android.h",
+      "android/android_http_util.cc",
       "android/keystore.cc",
       "android/keystore.h",
       "android/legacy_openssl.h",
@@ -2508,7 +2508,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/websocket_cacert.pem",
     "data/ssl/certificates/websocket_client_cert.p12",
     "data/ssl/certificates/wildcard.pem",
-    "data/ssl/certificates/www.ahrn.com.pem",
     "data/ssl/certificates/x509_verify_results.chain.pem",
   ]
   outputs = [

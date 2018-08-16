@@ -93,8 +93,4 @@ int PolicyCertVerifier::Verify(const RequestParams& params,
   return error;
 }
 
-void PolicyCertVerifier::SetConfig(const Config& config) {
-  delegate_->SetConfig(config);
-}
-
 }  // namespace policy

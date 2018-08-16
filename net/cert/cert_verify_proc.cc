@@ -600,7 +600,7 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   //   allowed for that platform. See https://crbug.com/588789
   bool current_sha1_issue =
       (verify_result->is_issued_by_known_root ||
-       !(flags & VERIFY_ENABLE_SHA1_LOCAL_ANCHORS)) &&
+       !(flags & CertVerifier::VERIFY_ENABLE_SHA1_LOCAL_ANCHORS)) &&
       (verify_result->has_sha1_leaf ||
        (verify_result->has_sha1 && !AreSHA1IntermediatesAllowed()));
 
@@ -617,7 +617,7 @@ int CertVerifyProc::Verify(X509Certificate* cert,
 
   // Distrust Symantec-issued certificates, as described at
   // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
-  if (!(flags & VERIFY_DISABLE_SYMANTEC_ENFORCEMENT) &&
+  if (!(flags & CertVerifier::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT) &&
       IsLegacySymantecCert(verify_result->public_key_hashes)) {
     if (base::FeatureList::IsEnabled(kLegacySymantecPKIEnforcement) ||
         IsUntrustedSymantecCert(*verify_result->verified_cert)) {

@@ -85,7 +85,6 @@ class FakeCertVerifier : public net::CertVerifier {
     verify_result->verified_cert = params.certificate();
     return net::OK;
   }
-  void SetConfig(const Config& config) override {}
 };
 
 }  // namespace

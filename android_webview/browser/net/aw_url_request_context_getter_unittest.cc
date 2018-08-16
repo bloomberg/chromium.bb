@@ -14,22 +14,16 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
-#include "net/base/test_completion_callback.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cert/test_root_certs.h"
 #include "net/log/net_log.h"
-#include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/test/cert_test_util.h"
-#include "net/test/gtest_util.h"
-#include "net/test/test_data_directory.h"
+#include "net/ssl/ssl_config.h"
+#include "net/ssl/ssl_config_service.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/boringssl/src/include/openssl/pool.h"
 
 namespace android_webview {
 
@@ -101,33 +95,13 @@ class AwURLRequestContextGetterTest : public ::testing::Test {
 TEST_F(AwURLRequestContextGetterTest, SymantecPoliciesExempted) {
   net::URLRequestContext* context = getter_->GetURLRequestContext();
   ASSERT_TRUE(context);
+  net::SSLConfigService* config_service = context->ssl_config_service();
+  ASSERT_TRUE(config_service);
 
-  scoped_refptr<net::X509Certificate> cert =
-      net::CreateCertificateChainFromFile(net::GetTestCertsDirectory(),
-                                          "www.ahrn.com.pem",
-                                          net::X509Certificate::FORMAT_AUTO);
-  ASSERT_TRUE(cert);
-  ASSERT_EQ(2u, cert->intermediate_buffers().size());
-
-  scoped_refptr<net::X509Certificate> root =
-      net::X509Certificate::CreateFromBuffer(
-          bssl::UpRef(cert->intermediate_buffers().back()), {});
-  ASSERT_TRUE(root);
-  net::ScopedTestRoot test_root(root.get());
-
-  net::CertVerifyResult result;
-  int flags = 0;
-  net::TestCompletionCallback callback;
-  std::unique_ptr<net::CertVerifier::Request> request;
-  int error = context->cert_verifier()->Verify(
-      net::CertVerifier::RequestParams(cert, "www.ahrn.com", flags,
-                                       std::string(), net::CertificateList()),
-      nullptr, &result, callback.callback(), &request, net::NetLogWithSource());
-  EXPECT_THAT(error, net::test::IsError(net::ERR_IO_PENDING));
-  EXPECT_TRUE(request);
-
-  error = callback.WaitForResult();
-  EXPECT_THAT(error, net::test::IsError(net::OK));
+  net::SSLConfig config;
+  EXPECT_FALSE(config.symantec_enforcement_disabled);
+  config_service->GetSSLConfig(&config);
+  EXPECT_TRUE(config.symantec_enforcement_disabled);
 }
 
 // Tests that SHA-1 is still allowed for locally-installed trust anchors,
@@ -136,36 +110,13 @@ TEST_F(AwURLRequestContextGetterTest, SymantecPoliciesExempted) {
 TEST_F(AwURLRequestContextGetterTest, SHA1LocalAnchorsAllowed) {
   net::URLRequestContext* context = getter_->GetURLRequestContext();
   ASSERT_TRUE(context);
+  net::SSLConfigService* config_service = context->ssl_config_service();
+  ASSERT_TRUE(config_service);
 
-  net::CertificateList certs;
-  ASSERT_TRUE(net::LoadCertificateFiles(
-      {"weak_digest_sha1_ee.pem", "weak_digest_sha1_intermediate.pem",
-       "weak_digest_sha1_root.pem"},
-      &certs));
-  ASSERT_EQ(3u, certs.size());
-
-  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(bssl::UpRef(certs[1]->cert_buffer()));
-  scoped_refptr<net::X509Certificate> cert =
-      net::X509Certificate::CreateFromBuffer(
-          bssl::UpRef(certs[0]->cert_buffer()), std::move(intermediates));
-  ASSERT_TRUE(cert);
-
-  net::ScopedTestRoot test_root(certs[2].get());
-
-  net::CertVerifyResult result;
-  int flags = 0;
-  net::TestCompletionCallback callback;
-  std::unique_ptr<net::CertVerifier::Request> request;
-  int error = context->cert_verifier()->Verify(
-      net::CertVerifier::RequestParams(cert, "127.0.0.1", flags, std::string(),
-                                       net::CertificateList()),
-      nullptr, &result, callback.callback(), &request, net::NetLogWithSource());
-  EXPECT_THAT(error, net::test::IsError(net::ERR_IO_PENDING));
-  EXPECT_TRUE(request);
-
-  error = callback.WaitForResult();
-  EXPECT_THAT(error, net::test::IsError(net::OK));
+  net::SSLConfig config;
+  EXPECT_FALSE(config.sha1_local_anchors_enabled);
+  config_service->GetSSLConfig(&config);
+  EXPECT_TRUE(config.sha1_local_anchors_enabled);
 }
 
 }  // namespace android_webview
