@@ -285,6 +285,13 @@ def dart(c):
   soln.managed = False
 
 @config_ctx()
+def expect_tests(c):
+  soln = c.solutions.add()
+  soln.name = 'expect_tests'
+  soln.url = 'https://chromium.googlesource.com/infra/testing/expect_tests.git'
+  c.got_revision_mapping['expect_tests'] = 'got_revision'
+
+@config_ctx()
 def infra(c):
   soln = c.solutions.add()
   soln.name = 'infra'

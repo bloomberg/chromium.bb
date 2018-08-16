@@ -22,6 +22,7 @@ TEST_CONFIGS = [
   'custom_tabs_client',
   'dart',
   'disable_syntax_validation',
+  'expect_tests',
   'gerrit_test_cq_normal',
   'gyp',
   'infra',
