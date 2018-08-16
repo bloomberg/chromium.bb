@@ -14,6 +14,7 @@ const char kVmApplicationsServiceInterface[] = "org.chromium.VmApplicationsServi
 
 const char kVmApplicationsServiceUpdateApplicationListMethod[] = "UpdateApplicationList";
 const char kVmApplicationsServiceLaunchTerminalMethod[] = "LaunchTerminal";
+const char kVmApplicationsServiceUpdateMimeTypesMethod[] = "UpdateMimeTypes";
 
 }  // namespace apps
 }  // namespace vm_tools
