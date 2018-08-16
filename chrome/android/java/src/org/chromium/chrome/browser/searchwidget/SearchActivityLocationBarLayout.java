@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.searchwidget;
 import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.ui.UiUtils;
 
 import java.util.List;
@@ -42,6 +44,25 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     public SearchActivityLocationBarLayout(Context context, AttributeSet attrs) {
         super(context, attrs, R.layout.location_bar_base);
         setUrlBarFocusable(true);
+        setBackground(ToolbarPhone.createModernLocationBarBackground(getResources()));
+
+        // Now you might ask yourself what these paddings are doing? Great question, really glad
+        // you asked...OH MY...LOOK BEHIND YOU!!!
+        //
+        // <Sounds of original author running away>
+        //
+        // These numbers were chosen at a single snapshot in time where they roughly equated to
+        // the padding used in the modern tabbed mode focused omnibox.  There is minimal rhyme or
+        // reason to this, but using something that approximated the toolbar logic looked even
+        // worse.
+        //
+        // Shrug. Once that layout logic is cleaned up, this should be universally replaced with
+        // something sane.
+        int toolbarSidePadding = getResources().getDimensionPixelSize(R.dimen.toolbar_edge_padding);
+        int backgroundSidePadding = getResources().getDimensionPixelSize(
+                R.dimen.modern_toolbar_background_focused_left_margin);
+        ViewCompat.setPaddingRelative(this, backgroundSidePadding + toolbarSidePadding,
+                getPaddingTop(), backgroundSidePadding, getPaddingBottom());
         mPendingSearchPromoDecision = LocaleManager.getInstance().needToCheckForSearchEnginePromo();
     }
 
@@ -163,6 +184,6 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
 
     @Override
     public boolean useModernDesign() {
-        return false;
+        return true;
     }
 }

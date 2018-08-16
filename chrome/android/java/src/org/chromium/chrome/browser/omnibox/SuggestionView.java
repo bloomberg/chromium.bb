@@ -316,7 +316,10 @@ class SuggestionView extends ViewGroup {
                 .getDimension(R.dimen.omnibox_suggestion_second_line_text_size));
 
         mRefineViewOffsetPx = useModernDesign ? mRefineViewModernEndPadding : 0;
-        mSuggestionViewStartOffset = useModernDesign ? mSuggestionListModernOffset : 0;
+        mSuggestionViewStartOffset =
+                useModernDesign && !mLocationBar.mustQueryUrlBarLocationForSuggestions()
+                ? mSuggestionListModernOffset
+                : 0;
 
         // Suggestions with attached answers are rendered with rich results regardless of which
         // suggestion type they are.

@@ -284,7 +284,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         String text = TextUtils.isEmpty(engineName) || !shouldShowFullString()
                 ? context.getString(R.string.search_widget_default)
                 : context.getString(R.string.search_with_product, engineName);
-        views.setTextViewText(R.id.title, text);
+        views.setCharSequence(R.id.title, "setHint", text);
 
         return views;
     }

@@ -419,7 +419,7 @@ public class ToolbarPhone extends ToolbarLayout
             Resources res = getResources();
             mModernLocationBarBackgroundHeight =
                     res.getDimensionPixelSize(R.dimen.modern_toolbar_background_size);
-            mLocationBarBackground = createModernLocationBarBackground();
+            mLocationBarBackground = createModernLocationBarBackground(getResources());
             mLocationBarBackground.getPadding(mLocationBarBackgroundPadding);
             mLocationBarBackground.mutate();
             mLocationBar.setPadding(mLocationBarBackgroundPadding.left,
@@ -448,12 +448,12 @@ public class ToolbarPhone extends ToolbarLayout
     /**
      * @return The drawable for the modern location bar background.
      */
-    public Drawable createModernLocationBarBackground() {
+    public static Drawable createModernLocationBarBackground(Resources resources) {
         Drawable drawable = ApiCompatibilityUtils.getDrawable(
-                getResources(), R.drawable.modern_toolbar_background_white);
+                resources, R.drawable.modern_toolbar_background_white);
         drawable.mutate();
         drawable.setColorFilter(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_light_grey),
+                ApiCompatibilityUtils.getColor(resources, R.color.modern_light_grey),
                 PorterDuff.Mode.SRC_IN);
         return drawable;
     }

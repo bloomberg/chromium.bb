@@ -50,7 +50,7 @@
     <!-- Extend MainThemeBase rather than MainTheme to avoid values-v27 navigation bar colors from
          being applied -->
     <style name="SearchActivityTheme" parent="MainThemeBase">
-        <item name="android:windowBackground">@color/google_grey_500</item>
+        <item name="android:windowBackground">@android:color/white</item>
     </style>
 
     <style name="TabbedModeThemeBase" parent="MainTheme">
@@ -615,6 +615,11 @@
     <style name="NewTabPageRecyclerView">
         <item name="android:colorEdgeEffect" tools:targetApi="21">@color/google_grey_300</item>
     </style>
+
+    <!-- Use style="..." for the following search box style as textColorHint
+         can not use android:textAppearance="...".  textColorHint is defined
+         in a parent theme therefore can not be overridden by appearance.
+    -->
     <style name="TextAppearance.NewTabPageSearchBoxText">
         <item name="android:textSize">@dimen/location_bar_url_text_size</item>
         <item name="android:textColorHint">@color/search_box_hint</item>
