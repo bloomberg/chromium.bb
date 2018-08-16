@@ -4012,13 +4012,12 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
   content::SetBrowserClientForTesting(old_browser_client);
 }
 
-// Flaky on Windows 7 (dbg) trybot, see https://crbug.com/443374.
-#if defined(OS_WIN) && !defined(NDEBUG)
+// Flaky on Windows 7 bot, see https://crbug.com/874959.
+#if defined(OS_WIN)
 #define MAYBE_MixedContentSubFrame DISABLED_MixedContentSubFrame
 #else
 #define MAYBE_MixedContentSubFrame MixedContentSubFrame
 #endif
-
 // This test checks that all mixed content requests from a dedicated worker
 // which is started from a subframe are blocked if
 // allow_running_insecure_content setting is false or
