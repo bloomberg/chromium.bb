@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
@@ -36,6 +37,31 @@ constexpr char kCancel[] = "cancel";
 
 }  // namespace
 
+class OobeWebDialogView : public views::WebDialogView {
+ public:
+  OobeWebDialogView(content::BrowserContext* context,
+                    ui::WebDialogDelegate* delegate,
+                    WebContentsHandler* handler)
+      : views::WebDialogView(context, delegate, handler) {}
+
+  // views::WebDialogView:
+  void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      content::MediaResponseCallback callback) override {
+    // This is required for accessing the camera for SAML logins.
+    MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
+        web_contents, request, std::move(callback), nullptr /* extension */);
+  }
+
+  bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type) override {
+    return MediaCaptureDevicesDispatcher::GetInstance()
+        ->CheckMediaAccessPermission(render_frame_host, security_origin, type);
+  }
+};
+
 OobeUIDialogDelegate::OobeUIDialogDelegate(
     base::WeakPtr<LoginDisplayHostMojo> controller)
     : controller_(controller),
@@ -62,8 +88,8 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
   // Widget owns a root view which has |dialog_view_| as its child view.
   // Before the widget is destroyed, it will clean up the view hierarchy
   // starting from root view.
-  dialog_view_ = new views::WebDialogView(ProfileHelper::GetSigninProfile(),
-                                          this, new ChromeWebContentsHandler);
+  dialog_view_ = new OobeWebDialogView(ProfileHelper::GetSigninProfile(), this,
+                                       new ChromeWebContentsHandler);
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = dialog_view_;
