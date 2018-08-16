@@ -56,7 +56,7 @@ class QemuTarget(target.Target):
 
   def Start(self):
     qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin',
-                             'qemu-system-' + self._GetTargetSdkArch())
+                             'qemu-system-' + self._GetTargetSdkLegacyArch())
     kernel_args = boot_data.GetKernelArgs(self._output_dir)
 
     # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
