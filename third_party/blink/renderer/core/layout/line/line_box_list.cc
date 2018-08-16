@@ -39,13 +39,26 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 
 namespace blink {
+
 #if DCHECK_IS_ON()
 template <typename InlineBoxType>
-InlineBoxList<InlineBoxType>::~InlineBoxList() {
+void InlineBoxList<InlineBoxType>::AssertIsEmpty() {
   DCHECK(!first_);
   DCHECK(!last_);
 }
 #endif
+
+const LineBoxList& LineBoxList::Empty() {
+  // Need to use "static" because DISALLOW_NEW.
+  static LineBoxList empty;
+  return empty;
+}
+
+const InlineTextBoxList& InlineTextBoxList::Empty() {
+  // Need to use "static" because DISALLOW_NEW.
+  static InlineTextBoxList empty;
+  return empty;
+}
 
 template <typename InlineBoxType>
 void InlineBoxList<InlineBoxType>::AppendLineBox(InlineBoxType* box) {
