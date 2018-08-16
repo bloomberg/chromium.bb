@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/clock.h"
@@ -26,10 +27,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
 using testing::Mock;
 using testing::Return;
 using testing::Sequence;
-using testing::_;
 
 namespace chromeos {
 
@@ -126,6 +127,8 @@ TestingPrefServiceSimple* SAMLOfflineSigninLimiterTest::GetTestingLocalState() {
 
 void SAMLOfflineSigninLimiterTest::TearDown() {
   SAMLOfflineSigninLimiterFactory::SetClockForTesting(NULL);
+  // Clear any PostAfterStartupTask's to avoid hanging.
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SAMLOfflineSigninLimiterTest, NoSAMLDefaultLimit) {
