@@ -16,33 +16,6 @@ import "execution_context.proto";
 // Call stack sample data for a given profiling session.
 // Next tag: 5
 message CallStackProfile {
-  // Describes an entry in the callstack.
-  message Entry {
-    // Instruction pointer subtracted by module base.
-    optional uint64 address = 1;
-
-    // Index to the module identifier in |module_ids| of CallStackProfile.
-    optional int32 module_id_index = 2;
-  }
-
-  // A sample consisting of one or more callstacks with the same stack frames
-  // and instruction pointers.
-  message Sample {
-    // The callstack. Sample.entries[0] represents the call on the top of the
-    // stack.
-    repeated Entry entry = 1;
-
-    // Number of times this stack signature occurs.
-    optional int64 count = 2;
-
-    // This repeating field indicates the current phase of the system such as
-    // whether it is in startup, general operation, or shutdown. The first
-    // Sample of a CallStackProfile will list all phases that have been reached;
-    // later samples will list only the new phases that occurred since the
-    // previous one.
-    repeated ProcessPhase process_phase = 3;
-  }
-
   // Uniquely identifies a module.
   message ModuleIdentifier {
     // A hash that uniquely identifies a particular program version with high
@@ -56,6 +29,33 @@ message CallStackProfile {
     // MD5Sum Prefix of the module name. This is the same hashing scheme as used
     // to hash UMA histogram names.
     optional fixed64 name_md5_prefix = 2;
+  }
+
+  // Describes a location within executable code.
+  message Location {
+    // Instruction pointer subtracted by module base.
+    optional uint64 address = 1;
+
+    // Index to the module identifier in |module_ids| of CallStackProfile.
+    optional int32 module_id_index = 2;
+  }
+
+  // A sample consisting of one or more callstacks with the same stack frames
+  // and instruction pointers.
+  message Sample {
+    // The callstack. Sample.frame[0] represents the call on the top of the
+    // stack.
+    repeated Location frame = 1;
+
+    // Number of times this stack signature occurs.
+    optional int64 count = 2;
+
+    // This repeating field indicates the current phase of the system such as
+    // whether it is in startup, general operation, or shutdown. The first
+    // Sample of a CallStackProfile will list all phases that have been reached;
+    // later samples will list only the new phases that occurred since the
+    // previous one.
+    repeated ProcessPhase process_phase = 3;
   }
 
   // The callstack and counts.

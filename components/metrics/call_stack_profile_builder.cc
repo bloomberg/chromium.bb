@@ -79,7 +79,7 @@ void CopySampleToProto(const CallStackProfileBuilder::Sample& sample,
                        const std::vector<base::ModuleCache::Module>& modules,
                        CallStackProfile::Sample* proto_sample) {
   for (const auto& frame : sample.frames) {
-    CallStackProfile::Entry* entry = proto_sample->add_entry();
+    CallStackProfile::Location* location = proto_sample->add_frame();
     // A frame may not have a valid module. If so, we can't compute the
     // instruction pointer offset, and we don't want to send bare pointers,
     // so leave call_stack_entry empty.
@@ -89,8 +89,8 @@ void CopySampleToProto(const CallStackProfileBuilder::Sample& sample,
         reinterpret_cast<const char*>(frame.instruction_pointer) -
         reinterpret_cast<const char*>(modules[frame.module_index].base_address);
     DCHECK_GE(module_offset, 0);
-    entry->set_address(static_cast<uint64_t>(module_offset));
-    entry->set_module_id_index(frame.module_index);
+    location->set_address(static_cast<uint64_t>(module_offset));
+    location->set_module_id_index(frame.module_index);
   }
 }
 

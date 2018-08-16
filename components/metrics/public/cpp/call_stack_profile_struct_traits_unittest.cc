@@ -54,9 +54,9 @@ TEST_F(CallStackProfileStructTraitsTest, SampledProfile) {
 
   CallStackProfile::Sample* proto_sample = proto_profile->add_sample();
   proto_sample->set_count(1);
-  CallStackProfile::Entry* entry = proto_sample->add_entry();
-  entry->set_address(0x10ULL);
-  entry->set_module_id_index(0);
+  CallStackProfile::Location* location = proto_sample->add_frame();
+  location->set_address(0x10ULL);
+  location->set_module_id_index(0);
 
   CallStackProfile::ModuleIdentifier* module_id =
       proto_profile->add_module_id();
@@ -74,13 +74,13 @@ TEST_F(CallStackProfileStructTraitsTest, SampledProfile) {
   const CallStackProfile& out_profile = output_proto.call_stack_profile();
 
   ASSERT_EQ(1, out_profile.sample_size());
-  ASSERT_EQ(1, out_profile.sample(0).entry_size());
+  ASSERT_EQ(1, out_profile.sample(0).frame_size());
 
-  ASSERT_TRUE(out_profile.sample(0).entry(0).has_address());
-  EXPECT_EQ(0x10ULL, out_profile.sample(0).entry(0).address());
+  ASSERT_TRUE(out_profile.sample(0).frame(0).has_address());
+  EXPECT_EQ(0x10ULL, out_profile.sample(0).frame(0).address());
 
-  ASSERT_TRUE(out_profile.sample(0).entry(0).has_module_id_index());
-  EXPECT_EQ(0, out_profile.sample(0).entry(0).module_id_index());
+  ASSERT_TRUE(out_profile.sample(0).frame(0).has_module_id_index());
+  EXPECT_EQ(0, out_profile.sample(0).frame(0).module_id_index());
 
   ASSERT_EQ(1, out_profile.module_id().size());
 

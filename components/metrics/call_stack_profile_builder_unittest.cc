@@ -113,14 +113,14 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   const CallStackProfile& profile = proto.call_stack_profile();
 
   ASSERT_EQ(2, profile.sample_size());
-  ASSERT_EQ(2, profile.sample(0).entry_size());
-  ASSERT_TRUE(profile.sample(0).entry(0).has_module_id_index());
-  EXPECT_EQ(0, profile.sample(0).entry(0).module_id_index());
-  ASSERT_TRUE(profile.sample(0).entry(1).has_module_id_index());
-  EXPECT_EQ(1, profile.sample(0).entry(1).module_id_index());
-  ASSERT_EQ(1, profile.sample(1).entry_size());
-  ASSERT_TRUE(profile.sample(1).entry(0).has_module_id_index());
-  EXPECT_EQ(2, profile.sample(1).entry(0).module_id_index());
+  ASSERT_EQ(2, profile.sample(0).frame_size());
+  ASSERT_TRUE(profile.sample(0).frame(0).has_module_id_index());
+  EXPECT_EQ(0, profile.sample(0).frame(0).module_id_index());
+  ASSERT_TRUE(profile.sample(0).frame(1).has_module_id_index());
+  EXPECT_EQ(1, profile.sample(0).frame(1).module_id_index());
+  ASSERT_EQ(1, profile.sample(1).frame_size());
+  ASSERT_TRUE(profile.sample(1).frame(0).has_module_id_index());
+  EXPECT_EQ(2, profile.sample(1).frame(0).module_id_index());
 
   ASSERT_EQ(3, profile.module_id().size());
   ASSERT_TRUE(profile.module_id(0).has_build_id());
@@ -268,15 +268,15 @@ TEST(CallStackProfileBuilderTest, Modules) {
   const CallStackProfile& profile = proto.call_stack_profile();
 
   ASSERT_EQ(1, profile.sample_size());
-  ASSERT_EQ(2, profile.sample(0).entry_size());
+  ASSERT_EQ(2, profile.sample(0).frame_size());
 
-  ASSERT_FALSE(profile.sample(0).entry(0).has_module_id_index());
-  ASSERT_FALSE(profile.sample(0).entry(0).has_address());
+  ASSERT_FALSE(profile.sample(0).frame(0).has_module_id_index());
+  ASSERT_FALSE(profile.sample(0).frame(0).has_address());
 
-  ASSERT_TRUE(profile.sample(0).entry(1).has_module_id_index());
-  EXPECT_EQ(0, profile.sample(0).entry(1).module_id_index());
-  ASSERT_TRUE(profile.sample(0).entry(1).has_address());
-  EXPECT_EQ(0x10ULL, profile.sample(0).entry(1).address());
+  ASSERT_TRUE(profile.sample(0).frame(1).has_module_id_index());
+  EXPECT_EQ(0, profile.sample(0).frame(1).module_id_index());
+  ASSERT_TRUE(profile.sample(0).frame(1).has_address());
+  EXPECT_EQ(0x10ULL, profile.sample(0).frame(1).address());
 
   ASSERT_EQ(1, profile.module_id().size());
   ASSERT_TRUE(profile.module_id(0).has_build_id());
@@ -318,19 +318,19 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   const CallStackProfile& profile = proto.call_stack_profile();
 
   ASSERT_EQ(1, profile.sample_size());
-  ASSERT_EQ(2, profile.sample(0).entry_size());
+  ASSERT_EQ(2, profile.sample(0).frame_size());
 
   // Since module1 and module2 have the same base address, they are considered
   // the same module and therefore deduped.
-  ASSERT_TRUE(profile.sample(0).entry(0).has_module_id_index());
-  EXPECT_EQ(0, profile.sample(0).entry(0).module_id_index());
-  ASSERT_TRUE(profile.sample(0).entry(0).has_address());
-  EXPECT_EQ(0x10ULL, profile.sample(0).entry(0).address());
+  ASSERT_TRUE(profile.sample(0).frame(0).has_module_id_index());
+  EXPECT_EQ(0, profile.sample(0).frame(0).module_id_index());
+  ASSERT_TRUE(profile.sample(0).frame(0).has_address());
+  EXPECT_EQ(0x10ULL, profile.sample(0).frame(0).address());
 
-  ASSERT_TRUE(profile.sample(0).entry(1).has_module_id_index());
-  EXPECT_EQ(0, profile.sample(0).entry(1).module_id_index());
-  ASSERT_TRUE(profile.sample(0).entry(1).has_address());
-  EXPECT_EQ(0x20ULL, profile.sample(0).entry(1).address());
+  ASSERT_TRUE(profile.sample(0).frame(1).has_module_id_index());
+  EXPECT_EQ(0, profile.sample(0).frame(1).module_id_index());
+  ASSERT_TRUE(profile.sample(0).frame(1).has_address());
+  EXPECT_EQ(0x20ULL, profile.sample(0).frame(1).address());
 
   ASSERT_EQ(1, profile.module_id().size());
   ASSERT_TRUE(profile.module_id(0).has_build_id());
