@@ -220,7 +220,8 @@ bool VaapiVP8Accelerator::SubmitDecode(
                                     frame_hdr->frame_size, frame_hdr->data))
     return false;
 
-  return vaapi_dec_->DecodeVASurface(pic->AsVaapiVP8Picture()->va_surface());
+  return vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
+      pic->AsVaapiVP8Picture()->va_surface()->id());
 }
 
 bool VaapiVP8Accelerator::OutputPicture(const scoped_refptr<VP8Picture>& pic) {

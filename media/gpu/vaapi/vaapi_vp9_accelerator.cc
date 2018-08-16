@@ -158,7 +158,8 @@ bool VaapiVP9Accelerator::SubmitDecode(
                                     frame_hdr->frame_size, frame_hdr->data))
     return false;
 
-  return vaapi_dec_->DecodeVASurface(pic->AsVaapiVP9Picture()->va_surface());
+  return vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
+      pic->AsVaapiVP9Picture()->va_surface()->id());
 }
 
 bool VaapiVP9Accelerator::OutputPicture(const scoped_refptr<VP9Picture>& pic) {

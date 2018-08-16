@@ -872,15 +872,6 @@ bool VaapiVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
   return false;
 }
 
-bool VaapiVideoDecodeAccelerator::DecodeVASurface(
-    const scoped_refptr<VASurface>& va_surface) {
-  const bool result =
-      vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(va_surface->id());
-  if (!result)
-    VLOGF(1) << "Failed decoding picture";
-  return result;
-}
-
 void VaapiVideoDecodeAccelerator::VASurfaceReady(
     const scoped_refptr<VASurface>& va_surface,
     int32_t bitstream_id,
