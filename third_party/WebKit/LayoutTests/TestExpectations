@@ -4688,7 +4688,7 @@ crbug.com/855816 [ Win7 ] virtual/stable/http/tests/navigation/rename-subframe-g
 
 # Sheriff 2018-06-29
 crbug.com/859064 http/tests/devtools/console-resource-errors.js [ Pass Failure ]
-crbug.com/859169 [ Win7 ] http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure Pass ]
+crbug.com/859169 http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure Pass ]
 
 # User Activation
 crbug.com/736415 external/wpt/html/user-activation/activation-api-iframe.tenative.html [ Failure ]
