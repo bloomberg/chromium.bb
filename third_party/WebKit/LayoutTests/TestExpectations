@@ -3964,6 +3964,7 @@ crbug.com/874444 [ Linux ] external/wpt/fullscreen/api/element-request-fullscree
 crbug.com/874500 [ Mac ] media/media-ended.html [ Pass Timeout ]
 crbug.com/874567 [ Mac ] svg/custom/getscreenctm-in-scrollable-div-area-nested.xhtml [ Pass Failure ]
 crbug.com/874837 [ Win ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Pass Failure ]
+crbug.com/874866 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-backwards-at-start.html [ Pass Timeout ]
 
 crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
