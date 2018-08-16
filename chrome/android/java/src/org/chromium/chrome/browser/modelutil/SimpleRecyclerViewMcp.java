@@ -34,7 +34,7 @@ public class SimpleRecyclerViewMcp<T, VH> extends SimpleRecyclerViewMcpBase<T, V
      *         the default view type.
      * @param viewBinder The {@link ViewBinder} binding this adapter to the view holder.
      */
-    public SimpleRecyclerViewMcp(SimpleListObservable<T> model,
+    public SimpleRecyclerViewMcp(ListModel<T> model,
             @Nullable ItemViewTypeCallback<T> itemViewTypeCallback, ViewBinder<T, VH> viewBinder) {
         super(itemViewTypeCallback,
                 (holder, item, payload) -> viewBinder.onBindViewHolder(holder, item), model);

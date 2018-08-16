@@ -21,11 +21,11 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
+import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 /**
- * This stateless class provides methods to bind the items in a {@link SimpleListObservable<Item>}
+ * This stateless class provides methods to bind the items in a {@link ListModel <Item>}
  * to the {@link RecyclerView} used as view of the Password accessory sheet component.
  */
 class PasswordAccessorySheetViewBinder {

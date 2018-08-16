@@ -8,18 +8,18 @@ import android.support.annotation.Nullable;
 import android.support.v7.util.BatchingListUpdateCallback;
 import android.support.v7.util.ListUpdateCallback;
 
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
+import org.chromium.chrome.browser.modelutil.ListModel;
 
 /**
- * Helper class to batch updates to SimpleListObservable before notifying observers.
+ * Helper class to batch updates to ListModel before notifying observers.
  * @see BatchingListUpdateCallback
  * @param <T> The object type that this class manages in a list.
  */
-public abstract class BatchListObservable<T> extends SimpleListObservable<T> {
+public abstract class BatchListModel<T> extends ListModel<T> {
     final BatchingListUpdateCallback mBatchingCallback;
 
-    /** Creates a new BatchListObservable instance. */
-    public BatchListObservable() {
+    /** Creates a new BatchListModel instance. */
+    public BatchListModel() {
         mBatchingCallback = new BatchingListUpdateCallback(new ListUpdateCallback() {
             @Override
             public void onInserted(int position, int count) {

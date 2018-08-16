@@ -10,9 +10,9 @@ import android.text.TextUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.modelutil.ListModelBase;
 import org.chromium.chrome.browser.modelutil.ListObservable;
-import org.chromium.chrome.browser.modelutil.PropertyListObservable;
-import org.chromium.chrome.browser.modelutil.SimpleListObservableBase;
+import org.chromium.chrome.browser.modelutil.PropertyListModel;
 import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcpBase;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
@@ -52,8 +52,8 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
     private final SuggestionsSource mSuggestionsSource;
     private final SuggestionsRanker mSuggestionsRanker;
 
-    private final PropertyListObservable<SnippetArticle, PartialBindCallback> mSuggestions =
-            new PropertyListObservable<>();
+    private final PropertyListModel<SnippetArticle, PartialBindCallback> mSuggestions =
+            new PropertyListModel<>();
 
     // Children
     private final SectionHeader mHeader;
@@ -122,12 +122,12 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
     private static class SuggestionsList extends SimpleRecyclerViewMcpBase<SnippetArticle,
             NewTabPageViewHolder, PartialBindCallback> {
         private final SuggestionsSource mSuggestionsSource;
-        private final SimpleListObservableBase<SnippetArticle, PartialBindCallback> mSuggestions;
+        private final ListModelBase<SnippetArticle, PartialBindCallback> mSuggestions;
 
         private boolean mIsDestroyed;
 
         public SuggestionsList(SuggestionsSource suggestionsSource,
-                PropertyListObservable<SnippetArticle, PartialBindCallback> suggestions,
+                PropertyListModel<SnippetArticle, PartialBindCallback> suggestions,
                 ViewBinder<SnippetArticle, NewTabPageViewHolder, PartialBindCallback> viewBinder) {
             super(ignored -> ItemViewType.SNIPPET, viewBinder, suggestions);
             mSuggestionsSource = suggestionsSource;

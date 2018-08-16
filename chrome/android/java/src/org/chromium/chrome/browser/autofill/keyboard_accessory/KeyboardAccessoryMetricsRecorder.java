@@ -11,9 +11,9 @@ import android.support.annotation.Nullable;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
+import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -280,7 +280,7 @@ public class KeyboardAccessoryMetricsRecorder {
      * @param suggestionList The list containing all suggestions.
      */
     static void recordSheetSuggestions(
-            @AccessoryTabType int tabType, SimpleListObservable<Item> suggestionList) {
+            @AccessoryTabType int tabType, ListModel<Item> suggestionList) {
         int interactiveSuggestions = 0;
         for (int i = 0; i < suggestionList.size(); ++i) {
             if (suggestionList.get(i).getType() == ItemType.SUGGESTION) ++interactiveSuggestions;
@@ -297,8 +297,7 @@ public class KeyboardAccessoryMetricsRecorder {
     }
 
     private static boolean hasAtLeastOneActionOfType(
-            SimpleListObservable<KeyboardAccessoryData.Action> actionList,
-            @AccessoryAction int... types) {
+            ListModel<KeyboardAccessoryData.Action> actionList, @AccessoryAction int... types) {
         Set<Integer> typeList = new HashSet<>(types.length);
         for (@AccessoryAction int type : types) typeList.add(type);
         for (KeyboardAccessoryData.Action action : actionList) {

@@ -15,8 +15,8 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModel.PropertyKey;
 import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
+import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 /**
  * Observes {@link KeyboardAccessoryModel} changes (like a newly available tab) and triggers the
@@ -59,11 +59,10 @@ class KeyboardAccessoryViewBinder
     }
 
     static class TabViewBinder
-            implements ListModelChangeProcessor
-                               .ViewBinder<SimpleListObservable<Tab>, KeyboardAccessoryView> {
+            implements ListModelChangeProcessor.ViewBinder<ListModel<Tab>, KeyboardAccessoryView> {
         @Override
         public void onItemsInserted(
-                SimpleListObservable<Tab> model, KeyboardAccessoryView view, int index, int count) {
+                ListModel<Tab> model, KeyboardAccessoryView view, int index, int count) {
             assert count > 0 : "Tried to insert invalid amount of tabs - must be at least one.";
             while (count-- > 0) {
                 Tab tab = model.get(index);
@@ -74,7 +73,7 @@ class KeyboardAccessoryViewBinder
 
         @Override
         public void onItemsRemoved(
-                SimpleListObservable<Tab> model, KeyboardAccessoryView view, int index, int count) {
+                ListModel<Tab> model, KeyboardAccessoryView view, int index, int count) {
             assert count > 0 : "Tried to remove invalid amount of tabs - must be at least one.";
             while (count-- > 0) {
                 view.removeTabAt(index++);
@@ -83,12 +82,12 @@ class KeyboardAccessoryViewBinder
 
         @Override
         public void onItemsChanged(
-                SimpleListObservable<Tab> model, KeyboardAccessoryView view, int index, int count) {
+                ListModel<Tab> model, KeyboardAccessoryView view, int index, int count) {
             // TODO(fhorschig): Implement fine-grained, ranged changes should the need arise.
             updateAllTabs(view, model);
         }
 
-        void updateAllTabs(KeyboardAccessoryView view, SimpleListObservable<Tab> model) {
+        void updateAllTabs(KeyboardAccessoryView view, ListModel<Tab> model) {
             view.clearTabs();
             for (int i = 0; i < model.size(); ++i) {
                 Tab tab = model.get(i);

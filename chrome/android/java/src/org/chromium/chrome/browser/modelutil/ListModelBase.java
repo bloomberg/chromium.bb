@@ -15,12 +15,12 @@ import java.util.List;
 /**
  * Base class for a {@link ListObservable} containing a {@link SimpleList} of items that support
  * sending partial change notifications. If the list item type does not support partial change
- * notifications, use the {@link SimpleListObservable} subclass.
+ * notifications, use the {@link ListModel} subclass.
  * It allows models to compose different ListObservables.
  * @param <T> The object type that this class manages in a list.
  * @param <P> The payload type for partial change notifications.
  */
-public class SimpleListObservableBase<T, P> extends ListObservableImpl<P> implements SimpleList<T> {
+public class ListModelBase<T, P> extends ListObservableImpl<P> implements SimpleList<T> {
     private final List<T> mItems = new ArrayList<>();
 
     /**
@@ -57,7 +57,7 @@ public class SimpleListObservableBase<T, P> extends ListObservableImpl<P> implem
     /**
      * Appends all given {@code items} to the last position of the held {@link List}.
      * Notifies observers about the inserted items.
-     * @param item The items to be stored.
+     * @param items The items to be stored.
      */
     public void addAll(Collection<T> items) {
         int insertionIndex = mItems.size();
