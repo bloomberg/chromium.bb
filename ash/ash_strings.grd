@@ -1733,8 +1733,29 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ASSISTANT_MULTI_DEVICE_HOTWORD_LOSS" desc="Message shown in Assistant UI when we have detected hotword but are answering on another device.">
         Answering on another device
       </message>
-      <message name="IDS_ASH_ASSISTANT_WHATS_ON_MY_SCREEN" desc="Message shown on suggestion chip in Assistant UI to initiate a contextual search for results matching screen content.">
+      <message name="IDS_ASH_ASSISTANT_CHIP_IM_BORED" desc="Message shown on suggestion chip in Assistant UI to initiate a query for something amusing, a joke for example.">
+        I'm bored
+      </message>
+      <message name="IDS_ASH_ASSISTANT_CHIP_OPEN_FILES" desc="Message shown on suggestion chip in Assistant UI to initiate a query to open files.">
+        Open files
+      </message>
+      <message name="IDS_ASH_ASSISTANT_CHIP_PLAY_MUSIC" desc="Message shown on suggestion chip in Assistant UI to initiate a query to play music.">
+        Play music
+      </message>
+      <message name="IDS_ASH_ASSISTANT_CHIP_SEND_AN_EMAIL" desc="Message shown on suggestion chip in Assistant UI to initiate a query to send an email.">
+        Send an email
+      </message>
+      <message name="IDS_ASH_ASSISTANT_CHIP_WHAT_CAN_YOU_DO" desc="Message shown on suggestion chip in Assistant UI to initiate a query for Assistant capabilities.">
+        What can you do?
+      </message>
+      <message name="IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_CALENDAR" desc="Message shown on suggestion chip in Assistant UI to initiate a query for upcoming calendar events.">
+        What's on my calendar?
+      </message>
+      <message name="IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN" desc="Message shown on suggestion chip in Assistant UI to initiate a contextual search for results matching screen content.">
         What's on my screen?
+      </message>
+      <message name="IDS_ASH_ASSISTANT_CHIP_WHATS_THE_WEATHER" desc="Message shown on suggestion chip in Assistant UI to initiate a query for the current weather.">
+        What's the weather?
       </message>
       <message name="IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_PERFORM_ACTION" desc="The short message to encourage user to unlock the device so that Chrome OS can perform the notification action selected by user after unlocking.">
         Unlock device to perform the notification action
