@@ -4947,3 +4947,7 @@ crbug.com/874737 [ Android ] animations/responsive/interpolation/offset-rotate-r
 crbug.com/874737 [ Android ] animations/stability/empty-keyframes.html [ Crash ]
 crbug.com/874737 [ Android ] animations/svg-attribute-composition/svg-bias-composition.html [ Crash ]
 crbug.com/874737 [ Android ] animations/svg-attribute-interpolation/svg-numOctaves-interpolation.html [ Crash ]
+
+# Test frequently times out on Mac CQ bots.
+crbug.com/874703 [ Mac ] http/tests/devtools/extensions/extensions-panel.js [ Timeout Pass ]
+
