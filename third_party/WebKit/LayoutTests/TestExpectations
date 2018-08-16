@@ -4937,3 +4937,8 @@ crbug.com/873873 virtual/service-worker-servicification/external/wpt/service-wor
 
 # Tests that work only when LazyImageLoading feature is enabled.
 crbug.com/846170 http/tests/lazyload/lazy.html [ Skip ]
+
+# Sheriff 2018-08-15
+crbug.com/874733 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash ]
+crbug.com/874733 [ Android ] accessibility/aria-link-supports-press.html [ Crash ]
+crbug.com/874733 [ Android ] accessibility/insert-adjacent-html-causes-crash.xhtml [ Crash ]
