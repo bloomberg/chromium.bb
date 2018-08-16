@@ -3065,6 +3065,7 @@ jumbo_split_static_library("browser") {
       "//ash/components/quick_launch/public/mojom:constants",
       "//ash/public/cpp",
       "//chrome/browser/chromeos",
+      "//chrome/browser/chromeos/android_sms:android_sms",
       "//chromeos/services/device_sync",
       "//chromeos/services/device_sync/public/mojom",
       "//chromeos/services/multidevice_setup",
