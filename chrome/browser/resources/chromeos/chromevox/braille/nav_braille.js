@@ -109,3 +109,14 @@ cvox.NavBraille.prototype.toJson = function() {
     endIndex: this.endIndex
   };
 };
+
+/**
+ *  Output braille text to console.
+ */
+cvox.NavBraille.prototype.brailleLogging = function() {
+  if (localStorage['enableBrailleLogging'] != 'true')
+    return;
+
+  var logStr = 'Braille "' + this.text.toString() + '"';
+  console.log(logStr);
+};

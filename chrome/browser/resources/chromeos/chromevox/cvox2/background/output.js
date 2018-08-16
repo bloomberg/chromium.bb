@@ -1039,6 +1039,7 @@ Output.prototype = {
 
       var output = new cvox.NavBraille(
           {text: buff, startIndex: startIndex, endIndex: endIndex});
+      output.brailleLogging();
 
       cvox.ChromeVox.braille.write(output);
     }
