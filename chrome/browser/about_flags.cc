@@ -795,7 +795,7 @@ const FeatureEntry::Choice kForceColorProfileChoices[] = {
 
 const FeatureEntry::FeatureParam kAutofillPreviewStyleBlackOnBlue050[] = {
     {blink::features::kAutofillPreviewStyleExperimentBgColorParameterName,
-     "#E8F0F3"},
+     "#E8F0FE"},
     {blink::features::kAutofillPreviewStyleExperimentColorParameterName,
      "#000000"},
 };
@@ -807,7 +807,7 @@ const FeatureEntry::FeatureParam kAutofillPreviewStyleBlackOnBlue100[] = {
 };
 const FeatureEntry::FeatureParam kAutofillPreviewStyleBlue900OnBlue050[] = {
     {blink::features::kAutofillPreviewStyleExperimentBgColorParameterName,
-     "#E8F0F3"},
+     "#E8F0FE"},
     {blink::features::kAutofillPreviewStyleExperimentColorParameterName,
      "#174EA6"},
 };
