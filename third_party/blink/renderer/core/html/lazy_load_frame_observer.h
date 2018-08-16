@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LAZY_LOAD_FRAME_OBSERVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LAZY_LOAD_FRAME_OBSERVER_H_
 
+#include <memory>
+
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -19,7 +21,8 @@ class HTMLFrameOwnerElement;
 class ResourceRequest;
 class Visitor;
 
-class LazyLoadFrameObserver : public GarbageCollected<LazyLoadFrameObserver> {
+class LazyLoadFrameObserver
+    : public GarbageCollectedFinalized<LazyLoadFrameObserver> {
  public:
   // This enum is logged to histograms, so values should not be reordered or
   // reused, and it must match the corresponding enum
@@ -40,6 +43,7 @@ class LazyLoadFrameObserver : public GarbageCollected<LazyLoadFrameObserver> {
   };
 
   explicit LazyLoadFrameObserver(HTMLFrameOwnerElement&);
+  ~LazyLoadFrameObserver();
 
   void DeferLoadUntilNearViewport(const ResourceRequest&, WebFrameLoadType);
   bool IsLazyLoadPending() const { return lazy_load_intersection_observer_; }
@@ -48,12 +52,14 @@ class LazyLoadFrameObserver : public GarbageCollected<LazyLoadFrameObserver> {
   void StartTrackingVisibilityMetrics();
   void RecordMetricsOnLoadFinished();
 
+  void LoadImmediately();
+
   void Trace(blink::Visitor*);
 
  private:
+  struct LazyLoadRequestInfo;
+
   void LoadIfHiddenOrNearViewport(
-      const ResourceRequest&,
-      WebFrameLoadType,
       const HeapVector<Member<IntersectionObserverEntry>>&);
 
   void RecordMetricsOnVisibilityChanged(
@@ -67,6 +73,10 @@ class LazyLoadFrameObserver : public GarbageCollected<LazyLoadFrameObserver> {
   // The intersection observer responsible for loading the frame once it's near
   // the viewport.
   Member<IntersectionObserver> lazy_load_intersection_observer_;
+
+  // Keeps track of the resource request and other info needed to load in the
+  // deferred frame. This is only non-null if there's a lazy load pending.
+  std::unique_ptr<LazyLoadRequestInfo> lazy_load_request_info_;
 
   // Used to record visibility-related metrics related to lazy load. This is an
   // IntersectionObserver instead of just an ElementVisibilityObserver so that

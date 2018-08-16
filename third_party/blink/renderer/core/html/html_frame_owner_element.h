@@ -118,6 +118,8 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   void CancelPendingLazyLoad();
 
+  void ParseAttribute(const AttributeModificationParams&) override;
+
   void Trace(blink::Visitor*) override;
 
  protected:
