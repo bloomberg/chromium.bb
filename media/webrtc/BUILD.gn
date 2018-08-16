@@ -5,13 +5,19 @@
 import("//media/media_options.gni")
 import("//third_party/webrtc/webrtc.gni")
 
-source_set("webrtc") {
+component("webrtc") {
+  output_name = "media_webrtc"
+
   sources = [
     "audio_processor_controls.h",
+    "echo_information.cc",
+    "echo_information.h",
   ]
+
+  defines = [ "IS_MEDIA_WEBRTC_IMPL" ]
+
   deps = [
     "//base",
-    "//media",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
     "//third_party/webrtc/modules/audio_processing",
     "//third_party/webrtc/modules/audio_processing:audio_processing_statistics",
