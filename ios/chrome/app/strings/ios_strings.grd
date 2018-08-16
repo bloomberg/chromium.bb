@@ -939,6 +939,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_OPEN_TABS_RECENTLY_SYNCED" desc="Relative time display for small time deltas, anything less than a minute [Length: 10em] [iOS only]">
         Seconds ago
       </message>
+      <message name="IDS_IOS_OPEN_TABS_SYNCED_YESTERDAY" desc="Relative time display for time deltas that cover yesterday [Length: 10em] [iOS only]">
+        Yesterday
+      </message>
       <message name="IDS_IOS_OPTIONS_ACCOUNTS_ADD_ACCOUNT_BUTTON" desc="The title of the Add account button on the accounts settings screen [iOS only] [30em]">
         Add Account…
       </message>
