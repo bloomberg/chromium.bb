@@ -8,6 +8,12 @@ if (is_android) {
 
 source_set("feed_core") {
   sources = [
+    "feed_content_database.cc",
+    "feed_content_database.h",
+    "feed_content_mutation.cc",
+    "feed_content_mutation.h",
+    "feed_content_operation.cc",
+    "feed_content_operation.h",
     "feed_host_service.cc",
     "feed_host_service.h",
     "feed_image_database.cc",
@@ -66,6 +72,7 @@ if (is_android) {
 source_set("core_unit_tests") {
   testonly = true
   sources = [
+    "feed_content_database_unittest.cc",
     "feed_image_database_unittest.cc",
     "feed_image_manager_unittest.cc",
     "feed_networking_host_unittest.cc",

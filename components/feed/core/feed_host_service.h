@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/feed/core/feed_content_database.h"
 #include "components/feed/core/feed_image_manager.h"
 #include "components/feed/core/feed_networking_host.h"
 #include "components/feed/core/feed_scheduler_host.h"
@@ -26,19 +27,22 @@ class FeedHostService : public KeyedService {
   FeedHostService(std::unique_ptr<FeedImageManager> image_manager,
                   std::unique_ptr<FeedNetworkingHost> networking_host,
                   std::unique_ptr<FeedSchedulerHost> scheduler_host,
-                  std::unique_ptr<FeedStorageDatabase> storage_database);
+                  std::unique_ptr<FeedStorageDatabase> storage_database,
+                  std::unique_ptr<FeedContentDatabase> content_database);
   ~FeedHostService() override;
 
   FeedImageManager* GetImageManager();
   FeedNetworkingHost* GetNetworkingHost();
   FeedSchedulerHost* GetSchedulerHost();
   FeedStorageDatabase* GetStorageDatabase();
+  FeedContentDatabase* GetContentDatabase();
 
  private:
   std::unique_ptr<FeedImageManager> image_manager_;
   std::unique_ptr<FeedNetworkingHost> networking_host_;
   std::unique_ptr<FeedSchedulerHost> scheduler_host_;
   std::unique_ptr<FeedStorageDatabase> storage_database_;
+  std::unique_ptr<FeedContentDatabase> content_database_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedHostService);
 };
