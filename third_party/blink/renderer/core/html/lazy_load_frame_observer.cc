@@ -77,13 +77,28 @@ int GetLazyFrameLoadingViewportDistanceThresholdPx(const Document& document) {
 
 }  // namespace
 
+struct LazyLoadFrameObserver::LazyLoadRequestInfo {
+  LazyLoadRequestInfo(const ResourceRequest& resource_request,
+                      WebFrameLoadType frame_load_type)
+      : resource_request(resource_request), frame_load_type(frame_load_type) {}
+
+  const ResourceRequest resource_request;
+  const WebFrameLoadType frame_load_type;
+};
+
 LazyLoadFrameObserver::LazyLoadFrameObserver(HTMLFrameOwnerElement& element)
     : element_(&element) {}
+
+LazyLoadFrameObserver::~LazyLoadFrameObserver() = default;
 
 void LazyLoadFrameObserver::DeferLoadUntilNearViewport(
     const ResourceRequest& resource_request,
     WebFrameLoadType frame_load_type) {
   DCHECK(!lazy_load_intersection_observer_);
+  DCHECK(!lazy_load_request_info_);
+  lazy_load_request_info_ =
+      std::make_unique<LazyLoadRequestInfo>(resource_request, frame_load_type);
+
   was_recorded_as_deferred_ = false;
 
   lazy_load_intersection_observer_ = IntersectionObserver::Create(
@@ -92,13 +107,14 @@ void LazyLoadFrameObserver::DeferLoadUntilNearViewport(
               kFixed)},
       {std::numeric_limits<float>::min()}, &element_->GetDocument(),
       WTF::BindRepeating(&LazyLoadFrameObserver::LoadIfHiddenOrNearViewport,
-                         WrapWeakPersistent(this), resource_request,
-                         frame_load_type));
+                         WrapWeakPersistent(this)));
 
   lazy_load_intersection_observer_->observe(element_);
 }
 
 void LazyLoadFrameObserver::CancelPendingLazyLoad() {
+  lazy_load_request_info_.reset();
+
   if (!lazy_load_intersection_observer_)
     return;
   lazy_load_intersection_observer_->disconnect();
@@ -106,8 +122,6 @@ void LazyLoadFrameObserver::CancelPendingLazyLoad() {
 }
 
 void LazyLoadFrameObserver::LoadIfHiddenOrNearViewport(
-    const ResourceRequest& resource_request,
-    WebFrameLoadType frame_load_type,
     const HeapVector<Member<IntersectionObserverEntry>>& entries) {
   DCHECK(!entries.IsEmpty());
   DCHECK_EQ(element_, entries.back()->target());
@@ -122,6 +136,13 @@ void LazyLoadFrameObserver::LoadIfHiddenOrNearViewport(
     return;
   }
 
+  LoadImmediately();
+}
+
+void LazyLoadFrameObserver::LoadImmediately() {
+  DCHECK(IsLazyLoadPending());
+  DCHECK(lazy_load_request_info_);
+
   if (was_recorded_as_deferred_) {
     DCHECK(element_->GetDocument().GetFrame());
     DCHECK(element_->GetDocument().GetFrame()->Client());
@@ -134,18 +155,23 @@ void LazyLoadFrameObserver::LoadIfHiddenOrNearViewport(
             ->GetEffectiveConnectionType());
   }
 
+  std::unique_ptr<LazyLoadRequestInfo> scoped_request_info =
+      std::move(lazy_load_request_info_);
+
   // The content frame of the element should not have changed, since any
   // pending lazy load should have been already been cancelled in
   // DisconnectContentFrame() if the content frame changes.
   DCHECK(element_->ContentFrame());
 
-  // Note that calling FrameLoader::Load() causes the
-  // |lazy_load_intersection_observer| to be disconnected.
+  // Note that calling FrameLoader::StartNavigation() causes the
+  // |lazy_load_intersection_observer_| to be disconnected.
   ToLocalFrame(element_->ContentFrame())
       ->Loader()
-      .StartNavigation(
-          FrameLoadRequest(&element_->GetDocument(), resource_request),
-          frame_load_type);
+      .StartNavigation(FrameLoadRequest(&element_->GetDocument(),
+                                        scoped_request_info->resource_request),
+                       scoped_request_info->frame_load_type);
+
+  DCHECK(!IsLazyLoadPending());
 }
 
 void LazyLoadFrameObserver::StartTrackingVisibilityMetrics() {

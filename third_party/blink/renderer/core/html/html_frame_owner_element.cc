@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/html/lazy_load_frame_observer.h"
+#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
@@ -337,6 +338,16 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     const KURL& url,
     const AtomicString& frame_name,
     bool replace_current_item) {
+  // Update the |should_lazy_load_children_| value according to the "lazyload"
+  // attribute immediately, so that it still gets respected even if the "src"
+  // attribute gets parsed in ParseAttribute() before the "lazyload" attribute
+  // does.
+  if (should_lazy_load_children_ &&
+      EqualIgnoringASCIICase(FastGetAttribute(HTMLNames::lazyloadAttr),
+                             "off")) {
+    should_lazy_load_children_ = false;
+  }
+
   UpdateContainerPolicy();
 
   if (ContentFrame()) {
@@ -380,25 +391,27 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
 
   if ((RuntimeEnabledFeatures::LazyFrameLoadingEnabled() ||
        RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) &&
-      should_lazy_load_children_ &&
+      !lazy_load_frame_observer_ &&
       // Only http:// or https:// URLs are eligible for lazy loading, excluding
       // URLs like invalid or empty URLs, "about:blank", local file URLs, etc.
       // that it doesn't make sense to lazily load.
       url.ProtocolIsInHTTPFamily() &&
-      // Disallow lazy loading if javascript in the embedding document would be
-      // able to access the contents of the frame, since in those cases
-      // deferring the frame could break the page. Note that this check does not
-      // take any possible redirects of |url| into account.
-      !GetDocument().GetSecurityOrigin()->CanAccess(
-          SecurityOrigin::Create(url).get())) {
-    // Don't lazy load subresources inside a lazily loaded frame. This will make
-    // it possible for subresources in hidden frames to load that will
-    // never be visible, as well as make it so that deferred frames that have
-    // multiple layers of iframes inside them can load faster once they're near
-    // the viewport or visible.
+      (EqualIgnoringASCIICase(FastGetAttribute(HTMLNames::lazyloadAttr),
+                              "on") ||
+       (should_lazy_load_children_ &&
+        // Disallow lazy loading by default if javascript in the embedding
+        // document would be able to access the contents of the frame, since in
+        // those cases deferring the frame could break the page. Note that this
+        // check does not take any possible redirects of |url| into account.
+        !GetDocument().GetSecurityOrigin()->CanAccess(
+            SecurityOrigin::Create(url).get())))) {
+    // By default, avoid deferring subresources inside a lazily loaded frame.
+    // This will make it possible for subresources in hidden frames to load that
+    // will never be visible, as well as make it so that deferred frames that
+    // have multiple layers of iframes inside them can load faster once they're
+    // near the viewport or visible.
     should_lazy_load_children_ = false;
 
-    DCHECK(!lazy_load_frame_observer_);
     lazy_load_frame_observer_ = new LazyLoadFrameObserver(*this);
 
     if (RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled())
@@ -425,6 +438,21 @@ void HTMLFrameOwnerElement::CancelPendingLazyLoad() {
 
 bool HTMLFrameOwnerElement::ShouldLazyLoadChildren() const {
   return should_lazy_load_children_;
+}
+
+void HTMLFrameOwnerElement::ParseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == HTMLNames::lazyloadAttr) {
+    if (EqualIgnoringASCIICase(params.new_value, "off")) {
+      should_lazy_load_children_ = false;
+      if (lazy_load_frame_observer_ &&
+          lazy_load_frame_observer_->IsLazyLoadPending()) {
+        lazy_load_frame_observer_->LoadImmediately();
+      }
+    }
+  } else {
+    HTMLElement::ParseAttribute(params);
+  }
 }
 
 void HTMLFrameOwnerElement::Trace(blink::Visitor* visitor) {
