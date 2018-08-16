@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
@@ -25,26 +26,39 @@
 NSErrorDomain const CWVTranslationErrorDomain =
     @"org.chromium.chromewebview.TranslationErrorDomain";
 
-const NSInteger CWVTranslationErrorNetwork =
-    translate::TranslateErrors::NETWORK;
-const NSInteger CWVTranslationErrorInitializationError =
-    translate::TranslateErrors::INITIALIZATION_ERROR;
-const NSInteger CWVTranslationErrorUnknownLanguage =
-    translate::TranslateErrors::UNKNOWN_LANGUAGE;
-const NSInteger CWVTranslationErrorUnsupportedLanguage =
-    translate::TranslateErrors::UNSUPPORTED_LANGUAGE;
-const NSInteger CWVTranslationErrorIdenticalLanguages =
-    translate::TranslateErrors::IDENTICAL_LANGUAGES;
-const NSInteger CWVTranslationErrorTranslationError =
-    translate::TranslateErrors::TRANSLATION_ERROR;
-const NSInteger CWVTranslationErrorTranslationTimeout =
-    translate::TranslateErrors::TRANSLATION_TIMEOUT;
-const NSInteger CWVTranslationErrorUnexpectedScriptError =
-    translate::TranslateErrors::UNEXPECTED_SCRIPT_ERROR;
-const NSInteger CWVTranslationErrorBadOrigin =
-    translate::TranslateErrors::BAD_ORIGIN;
-const NSInteger CWVTranslationErrorScriptLoadError =
-    translate::TranslateErrors::SCRIPT_LOAD_ERROR;
+namespace {
+// Converts a |translate::TranslateErrors::Type| to a |CWVTranslationError|.
+CWVTranslationError CWVConvertTranslateError(
+    translate::TranslateErrors::Type type) {
+  switch (type) {
+    case translate::TranslateErrors::NONE:
+      return CWVTranslationErrorNone;
+    case translate::TranslateErrors::NETWORK:
+      return CWVTranslationErrorNetwork;
+    case translate::TranslateErrors::INITIALIZATION_ERROR:
+      return CWVTranslationErrorInitializationError;
+    case translate::TranslateErrors::UNKNOWN_LANGUAGE:
+      return CWVTranslationErrorUnknownLanguage;
+    case translate::TranslateErrors::UNSUPPORTED_LANGUAGE:
+      return CWVTranslationErrorUnsupportedLanguage;
+    case translate::TranslateErrors::IDENTICAL_LANGUAGES:
+      return CWVTranslationErrorIdenticalLanguages;
+    case translate::TranslateErrors::TRANSLATION_ERROR:
+      return CWVTranslationErrorTranslationError;
+    case translate::TranslateErrors::TRANSLATION_TIMEOUT:
+      return CWVTranslationErrorTranslationTimeout;
+    case translate::TranslateErrors::UNEXPECTED_SCRIPT_ERROR:
+      return CWVTranslationErrorUnexpectedScriptError;
+    case translate::TranslateErrors::BAD_ORIGIN:
+      return CWVTranslationErrorBadOrigin;
+    case translate::TranslateErrors::SCRIPT_LOAD_ERROR:
+      return CWVTranslationErrorScriptLoadError;
+    case translate::TranslateErrors::TRANSLATE_ERROR_MAX:
+      NOTREACHED();
+      return CWVTranslationErrorNone;
+  }
+}
+}  // namespace
 
 @interface CWVTranslationController ()
 
@@ -90,7 +104,7 @@ const NSInteger CWVTranslationErrorScriptLoadError =
   NSError* error;
   if (errorType != translate::TranslateErrors::NONE) {
     error = [NSError errorWithDomain:CWVTranslationErrorDomain
-                                code:errorType
+                                code:CWVConvertTranslateError(errorType)
                             userInfo:nil];
   }
 

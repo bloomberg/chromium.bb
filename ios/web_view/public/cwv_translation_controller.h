@@ -16,29 +16,33 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol CWVTranslationControllerDelegate;
 
 // The error domain for translation errors.
-extern NSErrorDomain const CWVTranslationErrorDomain;
+FOUNDATION_EXPORT CWV_EXPORT NSErrorDomain const CWVTranslationErrorDomain;
 
 // Possible error codes during translation.
-// No connectivity.
-extern const NSInteger CWVTranslationErrorNetwork;
-// The translation script failed to initialize.
-extern const NSInteger CWVTranslationErrorInitializationError;
-// The page's language could not be detected.
-extern const NSInteger CWVTranslationErrorUnknownLanguage;
-// The server detected a language that the browser does not know.
-extern const NSInteger CWVTranslationErrorUnsupportedLanguage;
-// The original and target languages are the same.
-extern const NSInteger CWVTranslationErrorIdenticalLanguages;
-// An error was reported by the translation script during translation.
-extern const NSInteger CWVTranslationErrorTranslationError;
-// The library doesn't finish the translation.
-extern const NSInteger CWVTranslationErrorTranslationTimeout;
-// The library raises an unexpected exception.
-extern const NSInteger CWVTranslationErrorUnexpectedScriptError;
-// The library is blocked because of bad origin.
-extern const NSInteger CWVTranslationErrorBadOrigin;
-// Loader fails to load a dependent JavaScript.
-extern const NSInteger CWVTranslationErrorScriptLoadError;
+typedef NS_ENUM(NSInteger, CWVTranslationError) {
+  // No error.
+  CWVTranslationErrorNone = 0,
+  // No connectivity.
+  CWVTranslationErrorNetwork,
+  // The translation script failed to initialize.
+  CWVTranslationErrorInitializationError,
+  // The page's language could not be detected.
+  CWVTranslationErrorUnknownLanguage,
+  // The server detected a language that the browser does not know.
+  CWVTranslationErrorUnsupportedLanguage,
+  // The original and target languages are the same.
+  CWVTranslationErrorIdenticalLanguages,
+  // An error was reported by the translation script during translation.
+  CWVTranslationErrorTranslationError,
+  // The library doesn't finish the translation.
+  CWVTranslationErrorTranslationTimeout,
+  // The library raises an unexpected exception.
+  CWVTranslationErrorUnexpectedScriptError,
+  // The library is blocked because of bad origin.
+  CWVTranslationErrorBadOrigin,
+  // Loader fails to load a dependent JavaScript.
+  CWVTranslationErrorScriptLoadError,
+};
 
 // Allows page translation from one language to another.
 CWV_EXPORT
