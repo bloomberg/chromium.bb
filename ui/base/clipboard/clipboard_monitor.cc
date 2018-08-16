@@ -12,28 +12,28 @@ namespace ui {
 ClipboardMonitor::ClipboardMonitor() {}
 
 ClipboardMonitor::~ClipboardMonitor() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 // static
 ClipboardMonitor* ClipboardMonitor::GetInstance() {
-  return base::Singleton<ClipboardMonitor,
-                         base::LeakySingletonTraits<ClipboardMonitor>>::get();
+  static base::NoDestructor<ClipboardMonitor> monitor;
+  return monitor.get();
 }
 
 void ClipboardMonitor::NotifyClipboardDataChanged() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (ClipboardObserver& observer : observers_)
     observer.OnClipboardDataChanged();
 }
 
 void ClipboardMonitor::AddObserver(ClipboardObserver* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observers_.AddObserver(observer);
 }
 
 void ClipboardMonitor::RemoveObserver(ClipboardObserver* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observers_.RemoveObserver(observer);
 }
 
