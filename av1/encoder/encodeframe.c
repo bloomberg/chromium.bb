@@ -5026,6 +5026,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
   av1_zero(rdc->global_motion_used);
   av1_zero(cpi->gmparams_cost);
+#if !CONFIG_GLOBAL_MOTION_SEARCH
+  cpi->global_motion_search_done = 1;
+#endif  // !CONFIG_GLOBAL_MOTION_SEARCH
   if (cpi->common.frame_type == INTER_FRAME && cpi->source &&
       !cpi->global_motion_search_done) {
     YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES];
