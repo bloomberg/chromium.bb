@@ -39,10 +39,11 @@ WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
       blink::WebLocalFrame::FrameForCurrentContext();
   RenderFrame* const render_frame = RenderFrame::FromWebFrame(web_frame);
   if (render_frame) {
-    int sample_rate = AudioDeviceFactory::GetOutputDeviceInfo(
-                          render_frame->GetRoutingID(), 0, std::string())
-                          .output_params()
-                          .sample_rate();
+    int sample_rate =
+        AudioDeviceFactory::GetOutputDeviceInfo(render_frame->GetRoutingID(),
+                                                media::AudioSinkParameters())
+            .output_params()
+            .sample_rate();
     sink_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                        media::CHANNEL_LAYOUT_STEREO, sample_rate,
                        kWebAudioRenderBufferSize);

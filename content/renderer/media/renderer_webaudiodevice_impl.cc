@@ -92,8 +92,8 @@ int FrameIdFromCurrentContext() {
 media::AudioParameters GetOutputDeviceParameters(int frame_id,
                                                  int session_id,
                                                  const std::string& device_id) {
-  return AudioDeviceFactory::GetOutputDeviceInfo(frame_id, session_id,
-                                                 device_id)
+  return AudioDeviceFactory::GetOutputDeviceInfo(frame_id,
+                                                 {session_id, device_id})
       .output_params();
 }
 
@@ -168,7 +168,7 @@ void RendererWebAudioDeviceImpl::Start() {
 
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
       GetLatencyHintSourceType(latency_hint_.Category()), frame_id_,
-      session_id_, std::string());
+      media::AudioSinkParameters(session_id_, std::string()));
 
   // Use the media thread instead of the render thread for fake Render() calls
   // since it has special connotations for Blink and garbage collection. Timeout

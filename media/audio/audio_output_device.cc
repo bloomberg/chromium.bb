@@ -29,15 +29,15 @@ namespace media {
 AudioOutputDevice::AudioOutputDevice(
     std::unique_ptr<AudioOutputIPC> ipc,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    int session_id,
-    const std::string& device_id,
+    const AudioSinkParameters& sink_params,
     base::TimeDelta authorization_timeout)
     : io_task_runner_(io_task_runner),
       callback_(NULL),
       ipc_(std::move(ipc)),
       state_(IDLE),
-      session_id_(session_id),
-      device_id_(device_id),
+      session_id_(sink_params.session_id),
+      device_id_(sink_params.device_id),
+      processing_id_(sink_params.processing_id),
       stopping_hack_(false),
       did_receive_auth_(base::WaitableEvent::ResetPolicy::MANUAL,
                         base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -182,7 +182,7 @@ void AudioOutputDevice::CreateStreamOnIOThread() {
   if (state_ == IDLE && !(did_receive_auth_.IsSignaled() && device_id_.empty()))
     RequestDeviceAuthorizationOnIOThread();
 
-  ipc_->CreateStream(this, audio_parameters_);
+  ipc_->CreateStream(this, audio_parameters_ /* TODO(ossu):, processing_id_ */);
   // By default, start playing right away.
   ipc_->PlayStream();
   state_ = STREAM_CREATION_REQUESTED;

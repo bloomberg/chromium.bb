@@ -43,11 +43,10 @@ const int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
 
 scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
     int render_frame_id,
-    int session_id,
-    const std::string& device_id) {
+    const media::AudioSinkParameters& params) {
   auto device = base::MakeRefCounted<media::AudioOutputDevice>(
       AudioOutputIPCFactory::get()->CreateAudioOutputIPC(render_frame_id),
-      AudioOutputIPCFactory::get()->io_task_runner(), session_id, device_id,
+      AudioOutputIPCFactory::get()->io_task_runner(), params,
       // Set authorization request timeout at 80% of renderer hung timeout,
       // but no more than kMaxAuthorizationTimeout.
       base::TimeDelta::FromMilliseconds(
@@ -69,14 +68,14 @@ bool IsMixable(AudioDeviceFactory::SourceType source_type) {
 scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
     AudioDeviceFactory::SourceType source_type,
     int render_frame_id,
-    int session_id,
-    const std::string& device_id) {
+    const media::AudioSinkParameters& params) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread) << "RenderThreadImpl is not instantiated, or "
                         << "GetOutputDeviceInfo() is called on a wrong thread ";
+  DCHECK(!params.processing_id.has_value());
   return scoped_refptr<media::AudioRendererMixerInput>(
       render_thread->GetAudioRendererMixerManager()->CreateInput(
-          render_frame_id, session_id, device_id,
+          render_frame_id, params.session_id, params.device_id,
           AudioDeviceFactory::GetSourceLatencyType(source_type)));
 }
 
@@ -103,32 +102,35 @@ media::AudioLatency::LatencyType AudioDeviceFactory::GetSourceLatencyType(
 }
 
 scoped_refptr<media::AudioRendererSink>
-AudioDeviceFactory::NewAudioRendererMixerSink(int render_frame_id,
-                                              int session_id,
-                                              const std::string& device_id) {
-  return NewFinalAudioRendererSink(render_frame_id, session_id, device_id);
+AudioDeviceFactory::NewAudioRendererMixerSink(
+    int render_frame_id,
+    const media::AudioSinkParameters& params) {
+  return NewFinalAudioRendererSink(render_frame_id, params);
 }
 
 // static
 scoped_refptr<media::AudioRendererSink>
-AudioDeviceFactory::NewAudioRendererSink(SourceType source_type,
-                                         int render_frame_id,
-                                         int session_id,
-                                         const std::string& device_id) {
+AudioDeviceFactory::NewAudioRendererSink(
+    SourceType source_type,
+    int render_frame_id,
+    const media::AudioSinkParameters& params) {
   if (factory_) {
     scoped_refptr<media::AudioRendererSink> device =
-        factory_->CreateAudioRendererSink(source_type, render_frame_id,
-                                          session_id, device_id);
+        factory_->CreateAudioRendererSink(source_type, render_frame_id, params);
     if (device)
       return device;
   }
 
+  // Perhaps streams with a processing ID just shouldn't be mixable, i.e. call
+  // NewFinalAudioRendererSink for them rather than DCHECK?
+  DCHECK(!(params.processing_id.has_value() && IsMixable(source_type)));
+
   if (IsMixable(source_type))
-    return NewMixableSink(source_type, render_frame_id, session_id, device_id);
+    return NewMixableSink(source_type, render_frame_id, params);
 
   UMA_HISTOGRAM_BOOLEAN("Media.Audio.Render.SinkCache.UsedForSinkCreation",
                         false);
-  return NewFinalAudioRendererSink(render_frame_id, session_id, device_id);
+  return NewFinalAudioRendererSink(render_frame_id, params);
 }
 
 // static
@@ -136,18 +138,17 @@ scoped_refptr<media::SwitchableAudioRendererSink>
 AudioDeviceFactory::NewSwitchableAudioRendererSink(
     SourceType source_type,
     int render_frame_id,
-    int session_id,
-    const std::string& device_id) {
+    const media::AudioSinkParameters& params) {
   if (factory_) {
     scoped_refptr<media::SwitchableAudioRendererSink> sink =
-        factory_->CreateSwitchableAudioRendererSink(
-            source_type, render_frame_id, session_id, device_id);
+        factory_->CreateSwitchableAudioRendererSink(source_type,
+                                                    render_frame_id, params);
     if (sink)
       return sink;
   }
 
   if (IsMixable(source_type))
-    return NewMixableSink(source_type, render_frame_id, session_id, device_id);
+    return NewMixableSink(source_type, render_frame_id, params);
 
   // AudioOutputDevice is not RestartableAudioRendererSink, so we can't return
   // anything for those who wants to create an unmixable sink.
@@ -176,13 +177,12 @@ AudioDeviceFactory::NewAudioCapturerSource(int render_frame_id,
 // static
 media::OutputDeviceInfo AudioDeviceFactory::GetOutputDeviceInfo(
     int render_frame_id,
-    int session_id,
-    const std::string& device_id) {
+    const media::AudioSinkParameters& params) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread) << "RenderThreadImpl is not instantiated, or "
                         << "GetOutputDeviceInfo() is called on a wrong thread ";
   return render_thread->GetAudioRendererMixerManager()->GetOutputDeviceInfo(
-      render_frame_id, session_id, device_id);
+      render_frame_id, params.session_id, params.device_id);
 }
 
 AudioDeviceFactory::AudioDeviceFactory() {
@@ -196,18 +196,17 @@ AudioDeviceFactory::~AudioDeviceFactory() {
 
 // static
 scoped_refptr<media::AudioRendererSink>
-AudioDeviceFactory::NewFinalAudioRendererSink(int render_frame_id,
-                                              int session_id,
-                                              const std::string& device_id) {
+AudioDeviceFactory::NewFinalAudioRendererSink(
+    int render_frame_id,
+    const media::AudioSinkParameters& params) {
   if (factory_) {
     scoped_refptr<media::AudioRendererSink> sink =
-        factory_->CreateFinalAudioRendererSink(render_frame_id, session_id,
-                                               device_id);
+        factory_->CreateFinalAudioRendererSink(render_frame_id, params);
     if (sink)
       return sink;
   }
 
-  return NewOutputDevice(render_frame_id, session_id, device_id);
+  return NewOutputDevice(render_frame_id, params);
 }
 
 }  // namespace content

@@ -25,6 +25,7 @@ namespace content {
 
 AudioRendererSinkCacheImpl* AudioRendererSinkCacheImpl::instance_ = nullptr;
 constexpr int kDeleteTimeoutMs = 5000;
+constexpr int kDefaultSessionId = 0;
 
 class AudioRendererSinkCacheImpl::FrameObserver : public RenderFrameObserver {
  public:
@@ -138,7 +139,7 @@ media::OutputDeviceInfo AudioRendererSinkCacheImpl::GetSinkInfo(
     // We are provided with session id instead of device id. Session id is
     // unique, so we can't find any matching sink. Creating a new one.
     scoped_refptr<media::AudioRendererSink> sink =
-        create_sink_cb_.Run(source_render_frame_id, session_id, device_id);
+        create_sink_cb_.Run(source_render_frame_id, {session_id, device_id});
 
     CacheOrStopUnusedSink(source_render_frame_id,
                           sink->GetOutputDeviceInfo().device_id(), sink);
@@ -169,7 +170,8 @@ media::OutputDeviceInfo AudioRendererSinkCacheImpl::GetSinkInfo(
 
   // No matching sink found, create a new one.
   scoped_refptr<media::AudioRendererSink> sink = create_sink_cb_.Run(
-      source_render_frame_id, 0 /* session_id */, device_id);
+      source_render_frame_id,
+      media::AudioSinkParameters(kDefaultSessionId, device_id));
 
   CacheOrStopUnusedSink(source_render_frame_id, device_id, sink);
 
@@ -208,10 +210,12 @@ scoped_refptr<media::AudioRendererSink> AudioRendererSinkCacheImpl::GetSink(
   }
 
   // No unused sink is found, create one, mark it used, cache it and return.
-  CacheEntry cache_entry = {source_render_frame_id, device_id,
-                            create_sink_cb_.Run(source_render_frame_id,
-                                                0 /* session_id */, device_id),
-                            true /* used */};
+  CacheEntry cache_entry = {
+      source_render_frame_id, device_id,
+      create_sink_cb_.Run(
+          source_render_frame_id,
+          media::AudioSinkParameters(kDefaultSessionId, device_id)),
+      true /* used */};
 
   if (SinkIsHealthy(cache_entry.sink.get())) {
     TRACE_EVENT_INSTANT0(

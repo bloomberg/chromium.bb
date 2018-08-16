@@ -124,6 +124,8 @@ source_set("audio") {
     "audio_power_monitor.cc",
     "audio_power_monitor.h",
     "audio_processing.h",
+    "audio_sink_parameters.cc",
+    "audio_sink_parameters.h",
     "audio_source_diverter.h",
     "audio_sync_reader.cc",
     "audio_sync_reader.h",

@@ -7062,7 +7062,8 @@ void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
   media::OutputDeviceStatusCB callback =
       media::ConvertToOutputDeviceStatusCB(web_callbacks);
   std::move(callback).Run(
-      AudioDeviceFactory::GetOutputDeviceInfo(GetRoutingID(), 0, sink_id.Utf8())
+      AudioDeviceFactory::GetOutputDeviceInfo(
+          GetRoutingID(), media::AudioSinkParameters(0, sink_id.Utf8()))
           .device_status());
 }
 

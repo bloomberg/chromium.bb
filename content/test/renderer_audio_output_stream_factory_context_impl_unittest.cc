@@ -45,7 +45,6 @@ using testing::Test;
 
 const int kRenderProcessId = 42;
 const int kRenderFrameId = 24;
-const int kNoSessionId = 0;
 const float kWaveFrequency = 440.f;
 const int kChannels = 1;
 const int kBuffers = 1000;
@@ -259,8 +258,8 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
       renderer_ipc_task_runner);
 
   auto device = base::MakeRefCounted<media::AudioOutputDevice>(
-      std::move(renderer_side_ipc), renderer_ipc_task_runner, kNoSessionId, "",
-      base::TimeDelta());
+      std::move(renderer_side_ipc), renderer_ipc_task_runner,
+      media::AudioSinkParameters(), base::TimeDelta());
 
   StrictMock<TestRenderCallback> source;
 

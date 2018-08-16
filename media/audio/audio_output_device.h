@@ -73,6 +73,7 @@
 #include "base/time/time.h"
 #include "media/audio/audio_device_thread.h"
 #include "media/audio/audio_output_ipc.h"
+#include "media/audio/audio_sink_parameters.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_export.h"
@@ -93,8 +94,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   AudioOutputDevice(
       std::unique_ptr<AudioOutputIPC> ipc,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      int session_id,
-      const std::string& device_id,
+      const AudioSinkParameters& sink_params,
       base::TimeDelta authorization_timeout);
 
   // Request authorization to use the device specified in the constructor.
@@ -200,6 +200,8 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   // If |device_id_| is empty and |session_id_| is not, |matched_device_id_| is
   // received in OnDeviceAuthorized().
   std::string matched_device_id_;
+
+  base::Optional<base::UnguessableToken> processing_id_;
 
   // In order to avoid a race between OnStreamCreated and Stop(), we use this
   // guard to control stopping and starting the audio thread.

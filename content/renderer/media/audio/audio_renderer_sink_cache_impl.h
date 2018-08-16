@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "media/audio/audio_sink_parameters.h"
 
 namespace content {
 
@@ -29,8 +30,7 @@ class CONTENT_EXPORT AudioRendererSinkCacheImpl
   using CreateSinkCallback =
       base::RepeatingCallback<scoped_refptr<media::AudioRendererSink>(
           int render_frame_id,
-          int session_id,
-          const std::string& device_id)>;
+          const media::AudioSinkParameters& params)>;
 
   AudioRendererSinkCacheImpl(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
