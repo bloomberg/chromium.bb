@@ -204,6 +204,7 @@ group("telemetry_chrome_test_without_chrome") {
     "//third_party/catapult/telemetry/telemetry/benchmark_runner.py",
     "//third_party/catapult/telemetry/telemetry/benchmark_runner_unittest.py",
     "//third_party/catapult/telemetry/telemetry/benchmark_unittest.py",
+    "//third_party/catapult/telemetry/telemetry/compact_mode_options.py",
     "//third_party/catapult/telemetry/telemetry/decorators.py",
     "//third_party/catapult/telemetry/telemetry/decorators_unittest.py",
     "//third_party/catapult/telemetry/telemetry/project_config.py",
