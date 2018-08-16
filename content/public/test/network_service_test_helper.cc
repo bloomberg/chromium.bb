@@ -40,6 +40,19 @@
 
 namespace content {
 namespace {
+
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enums: " #a)
+
+STATIC_ASSERT_ENUM(network::mojom::ResolverType::kResolverTypeFail,
+                   net::RuleBasedHostResolverProc::Rule::kResolverTypeFail);
+STATIC_ASSERT_ENUM(network::mojom::ResolverType::kResolverTypeSystem,
+                   net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem);
+STATIC_ASSERT_ENUM(
+    network::mojom::ResolverType::kResolverTypeIPLiteral,
+    net::RuleBasedHostResolverProc::Rule::kResolverTypeIPLiteral);
+
 void CrashResolveHost(const std::string& host_to_crash,
                       const std::string& host) {
   if (host_to_crash == host)
@@ -68,8 +81,14 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   void AddRules(std::vector<network::mojom::RulePtr> rules,
                 AddRulesCallback callback) override {
     for (const auto& rule : rules) {
-      test_host_resolver_.host_resolver()->AddRule(rule->host_pattern,
-                                                   rule->replacement);
+      if (rule->resolver_type ==
+          network::mojom::ResolverType::kResolverTypeFail) {
+        test_host_resolver_.host_resolver()->AddSimulatedFailure(
+            rule->host_pattern);
+      } else {
+        test_host_resolver_.host_resolver()->AddRule(rule->host_pattern,
+                                                     rule->replacement);
+      }
     }
     std::move(callback).Run();
   }
