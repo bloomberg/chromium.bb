@@ -1250,12 +1250,72 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
                                   LoginBigUserView* opt_to_hide,
                                   bool animate) {
   DCHECK(to_update);
-  UpdateAuthForAuthUser(to_update->auth_user(),
-                        opt_to_hide ? opt_to_hide->auth_user() : nullptr,
-                        animate);
-  UpdateAuthForPublicAccount(
-      to_update->public_account(),
-      opt_to_hide ? opt_to_hide->public_account() : nullptr, animate);
+
+  auto capture_animation_state_pre_layout = [&](LoginBigUserView* view) {
+    if (!animate || !view)
+      return;
+    if (view->auth_user())
+      view->auth_user()->CaptureStateForAnimationPreLayout();
+  };
+
+  auto enable_auth = [&](LoginBigUserView* view) {
+    DCHECK(view);
+    if (view->auth_user()) {
+      UserState* state = FindStateForUser(
+          view->auth_user()->current_user()->basic_user_info->account_id);
+      uint32_t to_update_auth;
+      if (state->force_online_sign_in) {
+        to_update_auth = LoginAuthUserView::AUTH_ONLINE_SIGN_IN;
+      } else if (state->disable_auth) {
+        to_update_auth = LoginAuthUserView::AUTH_DISABLED;
+      } else {
+        to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
+        keyboard::KeyboardController* keyboard_controller =
+            GetKeyboardController();
+        const bool is_keyboard_visible =
+            keyboard_controller ? keyboard_controller->IsKeyboardVisible()
+                                : false;
+        if (state->show_pin && !is_keyboard_visible)
+          to_update_auth |= LoginAuthUserView::AUTH_PIN;
+        if (state->enable_tap_auth)
+          to_update_auth |= LoginAuthUserView::AUTH_TAP;
+        if (state->fingerprint_state !=
+            mojom::FingerprintUnlockState::UNAVAILABLE) {
+          to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
+        }
+      }
+      view->auth_user()->SetAuthMethods(to_update_auth, state->show_pin);
+    } else if (view->public_account()) {
+      view->public_account()->SetAuthEnabled(true /*enabled*/, animate);
+    }
+  };
+
+  auto disable_auth = [&](LoginBigUserView* view) {
+    if (!view)
+      return;
+    if (view->auth_user()) {
+      view->auth_user()->SetAuthMethods(LoginAuthUserView::AUTH_NONE,
+                                        false /*can_use_pin*/);
+    } else if (view->public_account()) {
+      view->public_account()->SetAuthEnabled(false /*enabled*/, animate);
+    }
+  };
+
+  auto apply_animation_post_layout = [&](LoginBigUserView* view) {
+    if (!animate || !view)
+      return;
+    if (view->auth_user())
+      view->auth_user()->ApplyAnimationPostLayout();
+  };
+
+  // The high-level layout flow:
+  capture_animation_state_pre_layout(to_update);
+  capture_animation_state_pre_layout(opt_to_hide);
+  enable_auth(to_update);
+  disable_auth(opt_to_hide);
+  Layout();
+  apply_animation_post_layout(to_update);
+  apply_animation_post_layout(opt_to_hide);
 }
 
 void LockContentsView::SwapToBigUser(int user_index) {
@@ -1556,74 +1616,6 @@ ScrollableUsersListView* LockContentsView::BuildScrollableUsersListView(
       display_style);
   view->ClipHeightTo(view->contents()->size().height(), size().height());
   return view;
-}
-
-void LockContentsView::UpdateAuthForPublicAccount(
-    LoginPublicAccountUserView* opt_to_update,
-    LoginPublicAccountUserView* opt_to_hide,
-    bool animate) {
-  if (opt_to_update)
-    opt_to_update->SetAuthEnabled(true /*enabled*/, animate);
-  if (opt_to_hide)
-    opt_to_hide->SetAuthEnabled(false /*enabled*/, animate);
-
-  Layout();
-}
-
-void LockContentsView::UpdateAuthForAuthUser(LoginAuthUserView* opt_to_update,
-                                             LoginAuthUserView* opt_to_hide,
-                                             bool animate) {
-  // Capture animation metadata before we changing state.
-  if (animate) {
-    if (opt_to_update)
-      opt_to_update->CaptureStateForAnimationPreLayout();
-    if (opt_to_hide)
-      opt_to_hide->CaptureStateForAnimationPreLayout();
-  }
-
-  // Update auth methods for |opt_to_update|.
-  if (opt_to_update) {
-    UserState* state = FindStateForUser(
-        opt_to_update->current_user()->basic_user_info->account_id);
-    uint32_t to_update_auth;
-    if (state->force_online_sign_in) {
-      to_update_auth = LoginAuthUserView::AUTH_ONLINE_SIGN_IN;
-    } else if (state->disable_auth) {
-      to_update_auth = LoginAuthUserView::AUTH_DISABLED;
-    } else {
-      to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
-      keyboard::KeyboardController* keyboard_controller =
-          GetKeyboardController();
-      const bool is_keyboard_visible =
-          keyboard_controller ? keyboard_controller->IsKeyboardVisible()
-                              : false;
-      if (state->show_pin && !is_keyboard_visible)
-        to_update_auth |= LoginAuthUserView::AUTH_PIN;
-      if (state->enable_tap_auth)
-        to_update_auth |= LoginAuthUserView::AUTH_TAP;
-      if (state->fingerprint_state !=
-          mojom::FingerprintUnlockState::UNAVAILABLE) {
-        to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
-      }
-    }
-    opt_to_update->SetAuthMethods(to_update_auth, state->show_pin);
-  }
-
-  // Disable auth on |opt_to_hide|.
-  if (opt_to_hide) {
-    opt_to_hide->SetAuthMethods(LoginAuthUserView::AUTH_NONE,
-                                false /*can_use_pin*/);
-  }
-
-  Layout();
-
-  // Apply animations.
-  if (animate) {
-    if (opt_to_update)
-      opt_to_update->ApplyAnimationPostLayout();
-    if (opt_to_hide)
-      opt_to_hide->ApplyAnimationPostLayout();
-  }
 }
 
 void LockContentsView::SetDisplayStyle(DisplayStyle style) {
