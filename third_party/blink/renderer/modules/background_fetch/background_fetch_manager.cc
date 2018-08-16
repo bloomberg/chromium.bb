@@ -90,22 +90,8 @@ bool ShouldBlockMixedContent(ExecutionContext* execution_context,
                              const KURL& request_url) {
   // TODO(crbug.com/757441): Using MixedContentChecker::ShouldBlockFetch would
   // log better metrics.
-  if (MixedContentChecker::IsMixedContent(
-          execution_context->GetSecurityOrigin(), request_url)) {
-    return true;
-  }
-
-  // Normally requests from e.g. http://127.0.0.1 aren't subject to Mixed
-  // Content checks even though that is a secure context. Since this is a new
-  // API only exposed on secure contexts, be strict pending the discussion in
-  // https://groups.google.com/a/chromium.org/d/topic/security-dev/29Ftfgn-w0I/discussion
-  // https://w3c.github.io/webappsec-mixed-content/#a-priori-authenticated-url
-  if (!SecurityOrigin::Create(request_url)->IsPotentiallyTrustworthy() &&
-      !request_url.ProtocolIsData()) {
-    return true;
-  }
-
-  return false;
+  return MixedContentChecker::IsMixedContent(
+      execution_context->GetSecurityOrigin(), request_url);
 }
 
 bool ShouldBlockDanglingMarkup(const KURL& request_url) {
