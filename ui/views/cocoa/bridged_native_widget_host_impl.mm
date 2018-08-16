@@ -12,8 +12,6 @@
 #include "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_mac.h"
-#include "ui/views/widget/widget_delegate.h"
-#include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
 
 namespace views {
@@ -21,27 +19,23 @@ namespace views {
 BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
     NativeWidgetMac* parent)
     : native_widget_mac_(parent),
-      bridge_impl_(new BridgedNativeWidget(this, parent)) {}
+      bridge_(new BridgedNativeWidget(this, parent)) {}
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   // Destroy the bridge first to prevent any calls back into this during
   // destruction.
   // TODO(ccameron): When all communication from |bridge_| to this goes through
   // the BridgedNativeWidgetHost, this can be replaced with closing that pipe.
-  bridge_impl_.reset();
+  bridge_.reset();
   SetFocusManager(nullptr);
   DestroyCompositor();
-}
-
-BridgedNativeWidgetPublic* BridgedNativeWidgetHostImpl::bridge() const {
-  return bridge_impl_.get();
 }
 
 void BridgedNativeWidgetHostImpl::SetRootView(views::View* root_view) {
   root_view_ = root_view;
   // TODO(ccameron): The BridgedNativeWidget should not need to know its root
   // view.
-  bridge_impl_->SetRootView(root_view);
+  bridge_->SetRootView(root_view);
 }
 
 void BridgedNativeWidgetHostImpl::CreateCompositor(
@@ -75,7 +69,7 @@ void BridgedNativeWidgetHostImpl::CreateCompositor(
   // The compositor is initially locked (prevented from producing frames), and
   // is only unlocked when the BridgedNativeWidget calls back via
   // SetCompositorVisibility.
-  bridge()->InitCompositorView();
+  bridge_->InitCompositorView();
 }
 
 void BridgedNativeWidgetHostImpl::DestroyCompositor() {
@@ -115,12 +109,6 @@ void BridgedNativeWidgetHostImpl::SetFocusManager(FocusManager* focus_manager) {
   focus_manager_->AddFocusChangeListener(this);
   if (View* new_focus = focus_manager_->GetFocusedView())
     OnDidChangeFocus(nullptr, new_focus);
-}
-
-void BridgedNativeWidgetHostImpl::OnWidgetInitDone() {
-  Widget* widget = native_widget_mac_->GetWidget();
-  if (DialogDelegate* dialog = widget->widget_delegate()->AsDialogDelegate())
-    dialog->AddObserver(this);
 }
 
 ui::InputMethod* BridgedNativeWidgetHostImpl::GetInputMethod() {
@@ -240,28 +228,8 @@ void BridgedNativeWidgetHostImpl::GetWordAt(
   *found_word = true;
 }
 
-void BridgedNativeWidgetHostImpl::OnWindowWillClose() {
-  Widget* widget = native_widget_mac_->GetWidget();
-  if (DialogDelegate* dialog = widget->widget_delegate()->AsDialogDelegate())
-    dialog->RemoveObserver(this);
-  native_widget_mac_->WindowDestroying();
-}
-
-void BridgedNativeWidgetHostImpl::OnWindowHasClosed() {
-  native_widget_mac_->WindowDestroyed();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidgetHostImpl, DialogObserver:
-
-void BridgedNativeWidgetHostImpl::OnDialogModelChanged() {
-  // Note it's only necessary to clear the TouchBar. If the OS needs it again,
-  // a new one will be created.
-  bridge()->ClearTouchBar();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidgetHostImpl, FocusChangeListener:
+// BridgedNativeWidget, FocusChangeListener:
 
 void BridgedNativeWidgetHostImpl::OnWillChangeFocus(View* focused_before,
                                                     View* focused_now) {}
@@ -275,7 +243,7 @@ void BridgedNativeWidgetHostImpl::OnDidChangeFocus(View* focused_before,
     // Sanity check: When focus moves away from the widget (i.e. |focused_now|
     // is nil), then the textInputClient will be cleared.
     DCHECK(!!focused_now || !input_client);
-    bridge_impl_->SetTextInputClient(input_client);
+    bridge_->SetTextInputClient(input_client);
   }
 }
 
@@ -314,7 +282,7 @@ void BridgedNativeWidgetHostImpl::AcceleratedWidgetCALayerParamsUpdated() {
   const gfx::CALayerParams* ca_layer_params =
       compositor_->widget()->GetCALayerParams();
   if (ca_layer_params)
-    bridge()->SetCALayerParams(*ca_layer_params);
+    bridge_->SetCALayerParams(*ca_layer_params);
 }
 
 }  // namespace views

@@ -15,7 +15,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_observer.h"
 
 namespace ui {
 class RecyclableCompositorMac;
@@ -24,7 +23,6 @@ class RecyclableCompositorMac;
 namespace views {
 
 class BridgedNativeWidget;
-class BridgedNativeWidgetPublic;
 class NativeWidgetMac;
 
 // The portion of NativeWidgetMac that lives in the browser process. This
@@ -32,7 +30,6 @@ class NativeWidgetMac;
 // APIs, and which may live in an app shim process.
 class VIEWS_EXPORT BridgedNativeWidgetHostImpl
     : public BridgedNativeWidgetHost,
-      public DialogObserver,
       public FocusChangeListener,
       public ui::internal::InputMethodDelegate,
       public ui::LayerDelegate,
@@ -46,8 +43,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // Provide direct access to the BridgedNativeWidget that this is hosting.
   // TODO(ccameron): Remove all accesses to this member, and replace them
   // with methods that may be sent across processes.
-  BridgedNativeWidget* bridge_impl() const { return bridge_impl_.get(); }
-  BridgedNativeWidgetPublic* bridge() const;
+  BridgedNativeWidget* bridge() const { return bridge_.get(); }
 
   // Set the root view (set during initialization and un-set during teardown).
   void SetRootView(views::View* root_view);
@@ -58,9 +54,6 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // Sets or clears the focus manager to use for tracking focused views.
   // This does NOT take ownership of |focus_manager|.
   void SetFocusManager(FocusManager* focus_manager);
-
-  // Called when the owning Widget's Init method has completed.
-  void OnWidgetInitDone();
 
   // See widget.h for documentation.
   ui::InputMethod* GetInputMethod();
@@ -86,11 +79,6 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                  bool* found_word,
                  gfx::DecoratedText* decorated_word,
                  gfx::Point* baseline_point) override;
-  void OnWindowWillClose() override;
-  void OnWindowHasClosed() override;
-
-  // DialogObserver:
-  void OnDialogModelChanged() override;
 
   // FocusChangeListener:
   void OnWillChangeFocus(View* focused_before, View* focused_now) override;
@@ -114,7 +102,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // TODO(ccameron): Rather than instantiate a BridgedNativeWidget here,
   // we will instantiate a mojo BridgedNativeWidget interface to a Cocoa
   // instance that may be in another process.
-  std::unique_ptr<BridgedNativeWidget> bridge_impl_;
+  std::unique_ptr<BridgedNativeWidget> bridge_;
 
   std::unique_ptr<ui::InputMethod> input_method_;
   FocusManager* focus_manager_ = nullptr;  // Weak. Owned by our Widget.
