@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#include "chromeos/login/scoped_test_public_session_login_state.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -92,6 +93,8 @@ scoped_refptr<const extensions::Extension> CreatePlatformApp() {
 TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   DeviceLocalAccountManagementPolicyProvider
       provider(policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
+  // Set the login state to a public session.
+  ScopedTestPublicSessionLoginState login_state;
 
   // Verify that if an extension's location has been whitelisted for use in
   // public sessions, the extension can be installed.
