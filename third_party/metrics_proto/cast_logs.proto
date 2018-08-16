@@ -145,7 +145,7 @@ message CastLogsProto {
   repeated CastConnectionInfo cast_connection_info = 2;
 
   // Stores Cast-enabled device specific events with a various context data.
-  // Next tag: 17
+  // Next tag: 18
   message CastEventProto {
     // The name of the action, hashed by same logic used to hash user action
     // event and histogram.
@@ -198,6 +198,9 @@ message CastLogsProto {
 
     // Optional values associated with the event.
     repeated float feature_vector = 15;
+
+    // Optional value associated with timezone update event.
+    optional string timezone_id = 17;
   }
   repeated CastEventProto cast_event = 3;
 
@@ -206,7 +209,7 @@ message CastLogsProto {
   optional fixed32 virtual_release_track = 4;
 
   // Cast specific device information which is expected to change over time.
-  // Next tag: 7
+  // Next tag: 8
   message CastDeviceMutableInfo {
     // This is the last type of reboot the device encountered
     // Next tag: 9
@@ -246,6 +249,9 @@ message CastLogsProto {
     // True if the system which cast_shell is running on, supports ip dual stack
     // sockets.
     optional bool ip_dual_stack_supported = 6;
+
+    // Current timezone which the device is using.
+    optional string timezone_id = 7;
   }
   // The device sends this information at least once per day.
   optional CastDeviceMutableInfo cast_device_mutable_info = 5;
