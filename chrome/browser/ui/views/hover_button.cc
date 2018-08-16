@@ -69,6 +69,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
     : views::MenuButton(text, this, false),
       title_(nullptr),
       subtitle_(nullptr),
+      icon_view_(nullptr),
       secondary_icon_view_(nullptr),
       listener_(button_listener) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -142,6 +143,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   taken_width_ = GetInsets().width() + icon_view->GetPreferredSize().width() +
                  icon_label_spacing;
 
+  icon_view_ = icon_view.get();
   // Make sure hovering over the icon also hovers the |HoverButton|.
   icon_view->set_can_process_events_within_subtree(false);
   // Don't cover |icon_view| when the ink drops are being painted. |MenuButton|

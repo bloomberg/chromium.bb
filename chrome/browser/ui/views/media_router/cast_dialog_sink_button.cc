@@ -14,6 +14,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/vector_icons.h"
 
@@ -25,7 +26,7 @@ namespace media_router {
 
 namespace {
 
-gfx::ImageSkia CreateSinkIcon(SinkIconType icon_type) {
+gfx::ImageSkia CreateSinkIcon(SinkIconType icon_type, bool enabled = true) {
   const gfx::VectorIcon* vector_icon;
   switch (icon_type) {
     case SinkIconType::CAST_AUDIO_GROUP:
@@ -56,9 +57,13 @@ gfx::ImageSkia CreateSinkIcon(SinkIconType icon_type) {
       vector_icon = &kTvIcon;
       break;
   }
-  return gfx::CreateVectorIcon(*vector_icon,
-                               CastDialogSinkButton::kPrimaryIconSize,
-                               gfx::kChromeIconGrey);
+  SkColor icon_color = enabled ? gfx::kChromeIconGrey : gfx::kGoogleGrey500;
+  return gfx::CreateVectorIcon(
+      *vector_icon, CastDialogSinkButton::kPrimaryIconSize, icon_color);
+}
+
+gfx::ImageSkia CreateDisabledSinkIcon(SinkIconType icon_type) {
+  return CreateSinkIcon(icon_type, false);
 }
 
 std::unique_ptr<views::View> CreatePrimaryIconForSink(const UIMediaSink& sink) {
@@ -158,6 +163,26 @@ bool CastDialogSinkButton::OnKeyPressed(const ui::KeyEvent& event) {
                    ui::LocatedEvent::FromIfValid(&event));
   }
   return handled_event;
+}
+
+void CastDialogSinkButton::OnEnabledChanged() {
+  HoverButton::OnEnabledChanged();
+  SkColor background_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_ProminentButtonColor);
+  if (enabled()) {
+    SetTitleTextStyle(views::style::STYLE_PRIMARY, background_color);
+    if (sink_.state == UIMediaSinkState::AVAILABLE) {
+      static_cast<views::ImageView*>(icon_view())
+          ->SetImage(CreateSinkIcon(sink_.icon_type));
+    }
+  } else {
+    SetTitleTextStyle(views::style::STYLE_DISABLED, background_color);
+    if (sink_.state == UIMediaSinkState::AVAILABLE) {
+      static_cast<views::ImageView*>(icon_view())
+          ->SetImage(CreateDisabledSinkIcon(sink_.icon_type));
+    }
+  }
+  title()->Layout();
 }
 
 std::unique_ptr<views::InkDrop> CastDialogSinkButton::CreateInkDrop() {

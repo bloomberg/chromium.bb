@@ -138,14 +138,19 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // Shows the sources menu that allows the user to choose a source to cast.
   void ShowSourcesMenu();
 
-  // Populates the sources menu with the sources supported by |sink|.
-  void UpdateSourcesMenu(const UIMediaSink& sink);
-
   void SelectSinkAtIndex(size_t index);
 
   const UIMediaSink& GetSelectedSink() const;
 
   void MaybeSizeToContents();
+
+  // Returns the cast mode that is selected in the sources menu and supported by
+  // |sink|. Returns nullopt if no such cast mode exists.
+  base::Optional<MediaCastMode> GetCastModeToUse(const UIMediaSink& sink) const;
+
+  // Disables sink buttons for sinks that do not support the currently selected
+  // source.
+  void DisableUnsupportedSinks();
 
   // Posts a delayed task to record the number of sinks shown with the metrics
   // recorder.

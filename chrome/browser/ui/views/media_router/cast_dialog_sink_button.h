@@ -38,6 +38,9 @@ class CastDialogSinkButton : public HoverButton {
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void OnEnabledChanged() override;
+
+  // views::InkDropHostView:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
 
   // Returns the text that should be shown on the main action button of the Cast
