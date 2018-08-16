@@ -11,13 +11,14 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_path.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
+using blink::IndexedDBKey;
 using blink::WebIDBKey;
 using blink::WebIDBKeyRange;
 using blink::WebIDBKeyView;
@@ -34,8 +35,8 @@ using blink::WebString;
 
 namespace {
 
-content::IndexedDBKey::KeyArray CopyKeyArray(blink::WebIDBKeyArrayView array) {
-  content::IndexedDBKey::KeyArray result;
+IndexedDBKey::KeyArray CopyKeyArray(blink::WebIDBKeyArrayView array) {
+  IndexedDBKey::KeyArray result;
   const size_t array_size = array.size();
   result.reserve(array_size);
   for (size_t i = 0; i < array_size; ++i)

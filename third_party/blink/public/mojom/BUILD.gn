@@ -28,6 +28,7 @@ mojom("mojom_platform") {
     "filesystem/file_system.mojom",
     "filesystem/file_writer.mojom",
     "frame/find_in_page.mojom",
+    "indexeddb/indexeddb.mojom",
     "leak_detector/leak_detector.mojom",
     "loader/navigation_predictor.mojom",
     "loader/pause_subresource_loading_handle.mojom",

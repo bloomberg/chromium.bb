@@ -6,15 +6,10 @@
 #define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_STRUCT_TRAITS_H_
 
 #include "content/common/indexed_db/indexed_db.mojom.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace mojo {
-
-template <>
-struct StructTraits<indexed_db::mojom::KeyDataView, content::IndexedDBKey> {
-  static indexed_db::mojom::KeyDataPtr data(const content::IndexedDBKey& key);
-  static bool Read(indexed_db::mojom::KeyDataView data,
-                   content::IndexedDBKey* out);
-};
 
 template <>
 struct StructTraits<indexed_db::mojom::KeyPathDataView,
@@ -28,11 +23,11 @@ struct StructTraits<indexed_db::mojom::KeyPathDataView,
 template <>
 struct StructTraits<indexed_db::mojom::KeyRangeDataView,
                     content::IndexedDBKeyRange> {
-  static const content::IndexedDBKey& lower(
+  static const blink::IndexedDBKey& lower(
       const content::IndexedDBKeyRange& key_range) {
     return key_range.lower();
   }
-  static const content::IndexedDBKey& upper(
+  static const blink::IndexedDBKey& upper(
       const content::IndexedDBKeyRange& key_range) {
     return key_range.upper();
   }
@@ -48,16 +43,16 @@ struct StructTraits<indexed_db::mojom::KeyRangeDataView,
 
 template <>
 struct StructTraits<indexed_db::mojom::IndexKeysDataView,
-                    content::IndexedDBIndexKeys> {
-  static int64_t index_id(const content::IndexedDBIndexKeys& index_keys) {
+                    blink::IndexedDBIndexKeys> {
+  static int64_t index_id(const blink::IndexedDBIndexKeys& index_keys) {
     return index_keys.first;
   }
-  static const std::vector<content::IndexedDBKey>& index_keys(
-      const content::IndexedDBIndexKeys& index_keys) {
+  static const std::vector<blink::IndexedDBKey>& index_keys(
+      const blink::IndexedDBIndexKeys& index_keys) {
     return index_keys.second;
   }
   static bool Read(indexed_db::mojom::IndexKeysDataView data,
-                   content::IndexedDBIndexKeys* out);
+                   blink::IndexedDBIndexKeys* out);
 };
 
 template <>
@@ -136,31 +131,6 @@ struct StructTraits<indexed_db::mojom::DatabaseMetadataDataView,
   }
   static bool Read(indexed_db::mojom::DatabaseMetadataDataView data,
                    content::IndexedDBDatabaseMetadata* out);
-};
-
-template <>
-struct EnumTraits<indexed_db::mojom::CursorDirection,
-                  blink::WebIDBCursorDirection> {
-  static indexed_db::mojom::CursorDirection ToMojom(
-      blink::WebIDBCursorDirection input);
-  static bool FromMojom(indexed_db::mojom::CursorDirection input,
-                        blink::WebIDBCursorDirection* output);
-};
-
-template <>
-struct EnumTraits<indexed_db::mojom::DataLoss, blink::WebIDBDataLoss> {
-  static indexed_db::mojom::DataLoss ToMojom(blink::WebIDBDataLoss input);
-  static bool FromMojom(indexed_db::mojom::DataLoss input,
-                        blink::WebIDBDataLoss* output);
-};
-
-template <>
-struct EnumTraits<indexed_db::mojom::OperationType,
-                  blink::WebIDBOperationType> {
-  static indexed_db::mojom::OperationType ToMojom(
-      blink::WebIDBOperationType input);
-  static bool FromMojom(indexed_db::mojom::OperationType input,
-                        blink::WebIDBOperationType* output);
 };
 
 template <>

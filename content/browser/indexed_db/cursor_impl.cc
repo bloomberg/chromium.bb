@@ -9,6 +9,8 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 
+using blink::IndexedDBKey;
+
 namespace content {
 
 // Expected to be constructed on IO thread, and used/destroyed on IDB sequence.

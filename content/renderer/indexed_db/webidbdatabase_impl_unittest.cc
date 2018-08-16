@@ -10,16 +10,17 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/indexed_db/indexed_db_key.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/renderer/indexed_db/mock_webidbcallbacks.h"
 #include "content/renderer/indexed_db/webidbdatabase_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/web/web_heap.h"
 
+using blink::IndexedDBKey;
 using blink::WebBlobInfo;
 using blink::WebData;
 using blink::WebIDBCursor;

@@ -32,9 +32,14 @@
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "url/origin.h"
 
+using blink::mojom::IDBValue;
+using blink::mojom::IDBValuePtr;
+using blink::IndexedDBIndexKeys;
+using blink::IndexedDBKey;
 using indexed_db::mojom::Callbacks;
 using indexed_db::mojom::CallbacksAssociatedPtrInfo;
 using indexed_db::mojom::DatabaseAssociatedPtr;
@@ -45,8 +50,6 @@ using indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo;
 using indexed_db::mojom::Factory;
 using indexed_db::mojom::FactoryPtr;
 using indexed_db::mojom::KeyPath;
-using indexed_db::mojom::Value;
-using indexed_db::mojom::ValuePtr;
 using mojo::StrongAssociatedBindingPtr;
 using testing::_;
 using testing::StrictMock;
@@ -421,17 +424,17 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
                                            base::UTF8ToUTF16(kObjectStoreName),
                                            content::IndexedDBKeyPath(), false);
     // Call Put with an invalid blob.
-    std::vector<::indexed_db::mojom::BlobInfoPtr> blobs;
+    std::vector<::blink::mojom::IDBBlobInfoPtr> blobs;
     blink::mojom::BlobPtrInfo blob;
     // Ignore the result of MakeRequest, to end up with an invalid blob.
     mojo::MakeRequest(&blob);
-    blobs.push_back(::indexed_db::mojom::BlobInfo::New(
+    blobs.push_back(::blink::mojom::IDBBlobInfo::New(
         std::move(blob), "fakeUUID", base::string16(), 100, nullptr));
     connection.database->Put(kTransactionId, kObjectStoreId,
-                             Value::New("hello", std::move(blobs)),
-                             content::IndexedDBKey(base::UTF8ToUTF16("hello")),
+                             IDBValue::New("hello", std::move(blobs)),
+                             IndexedDBKey(base::UTF8ToUTF16("hello")),
                              blink::kWebIDBPutModeAddOnly,
-                             std::vector<content::IndexedDBIndexKeys>(),
+                             std::vector<IndexedDBIndexKeys>(),
                              put_callbacks->CreateInterfacePtrAndBind());
     connection.database->Commit(kTransactionId);
     loop.Run();
@@ -1061,11 +1064,10 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
                                             content::IndexedDBKeyPath(), false);
     connection1.database->Put(
         kTransactionId1, kObjectStoreId,
-        ::indexed_db::mojom::Value::New(
-            "value", std::vector<::indexed_db::mojom::BlobInfoPtr>()),
-        content::IndexedDBKey(base::UTF8ToUTF16("key")),
-        blink::kWebIDBPutModeAddOnly,
-        std::vector<content::IndexedDBIndexKeys>(),
+        ::blink::mojom::IDBValue::New(
+            "value", std::vector<::blink::mojom::IDBBlobInfoPtr>()),
+        IndexedDBKey(base::UTF8ToUTF16("key")), blink::kWebIDBPutModeAddOnly,
+        std::vector<IndexedDBIndexKeys>(),
         put_callbacks->CreateInterfacePtrAndBind());
     connection1.database->Commit(kTransactionId1);
     loop.Run();

@@ -7,6 +7,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace blink {
 class WebIDBDatabaseCallbacks;

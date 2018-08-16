@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
 namespace content {
 

@@ -16,7 +16,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/indexed_db/indexed_db_key.h"
 #include "content/renderer/indexed_db/indexed_db_key_builders.h"
 #include "content/renderer/indexed_db/mock_webidbcallbacks.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -24,6 +23,7 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
 
+using blink::IndexedDBKey;
 using blink::WebBlobInfo;
 using blink::WebData;
 using blink::WebIDBCallbacks;

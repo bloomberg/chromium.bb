@@ -5,14 +5,14 @@
 #include "content/common/indexed_db/indexed_db_key_range.h"
 
 #include "base/logging.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
 namespace content {
 
 IndexedDBKeyRange::IndexedDBKeyRange() = default;
 
-IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKey& lower,
-                                     const IndexedDBKey& upper,
+IndexedDBKeyRange::IndexedDBKeyRange(const blink::IndexedDBKey& lower,
+                                     const blink::IndexedDBKey& upper,
                                      bool lower_open,
                                      bool upper_open)
     : lower_(lower),
@@ -20,9 +20,8 @@ IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKey& lower,
       lower_open_(lower_open),
       upper_open_(upper_open) {}
 
-IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKey& key)
-    : lower_(key), upper_(key) {
-}
+IndexedDBKeyRange::IndexedDBKeyRange(const blink::IndexedDBKey& key)
+    : lower_(key), upper_(key) {}
 
 IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKeyRange& other) = default;
 IndexedDBKeyRange::~IndexedDBKeyRange() = default;

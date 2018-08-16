@@ -9,6 +9,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -18,7 +20,6 @@ namespace content {
 
 class IndexedDBCursor;
 class IndexedDBDispatcherHost;
-class IndexedDBKey;
 
 // Expected to be constructed, called, and destructed on the IO thread.
 class CursorImpl : public ::indexed_db::mojom::Cursor {
@@ -34,8 +35,8 @@ class CursorImpl : public ::indexed_db::mojom::Cursor {
       uint32_t count,
       ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
   void Continue(
-      const IndexedDBKey& key,
-      const IndexedDBKey& primary_key,
+      const blink::IndexedDBKey& key,
+      const blink::IndexedDBKey& primary_key,
       ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
   void Prefetch(
       int32_t count,

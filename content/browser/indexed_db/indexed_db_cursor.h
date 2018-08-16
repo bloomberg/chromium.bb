@@ -17,7 +17,7 @@
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
 namespace content {
 
@@ -30,15 +30,17 @@ class CONTENT_EXPORT IndexedDBCursor {
   ~IndexedDBCursor();
 
   void Advance(uint32_t count, scoped_refptr<IndexedDBCallbacks> callbacks);
-  void Continue(std::unique_ptr<IndexedDBKey> key,
-                std::unique_ptr<IndexedDBKey> primary_key,
+  void Continue(std::unique_ptr<blink::IndexedDBKey> key,
+                std::unique_ptr<blink::IndexedDBKey> primary_key,
                 scoped_refptr<IndexedDBCallbacks> callbacks);
   void PrefetchContinue(int number_to_fetch,
                         scoped_refptr<IndexedDBCallbacks> callbacks);
   leveldb::Status PrefetchReset(int used_prefetches, int unused_prefetches);
 
-  const IndexedDBKey& key() const { return cursor_->key(); }
-  const IndexedDBKey& primary_key() const { return cursor_->primary_key(); }
+  const blink::IndexedDBKey& key() const { return cursor_->key(); }
+  const blink::IndexedDBKey& primary_key() const {
+    return cursor_->primary_key();
+  }
   IndexedDBValue* Value() const {
     return (cursor_type_ == indexed_db::CURSOR_KEY_ONLY) ? NULL
                                                          : cursor_->value();
@@ -47,8 +49,8 @@ class CONTENT_EXPORT IndexedDBCursor {
   void Close();
 
   leveldb::Status CursorIterationOperation(
-      std::unique_ptr<IndexedDBKey> key,
-      std::unique_ptr<IndexedDBKey> primary_key,
+      std::unique_ptr<blink::IndexedDBKey> key,
+      std::unique_ptr<blink::IndexedDBKey> primary_key,
       scoped_refptr<IndexedDBCallbacks> callbacks,
       IndexedDBTransaction* transaction);
   leveldb::Status CursorAdvanceOperation(

@@ -27,8 +27,8 @@
 #include "content/public/test/test_utils.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

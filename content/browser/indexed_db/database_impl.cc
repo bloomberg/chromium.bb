@@ -21,6 +21,8 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 
+using blink::IndexedDBIndexKeys;
+using blink::IndexedDBKey;
 using std::swap;
 
 namespace content {
@@ -77,7 +79,7 @@ class DatabaseImpl::IDBSequenceHelper {
               scoped_refptr<IndexedDBCallbacks> callbacks);
   void Put(int64_t transaction_id,
            int64_t object_store_id,
-           ::indexed_db::mojom::ValuePtr value,
+           ::blink::mojom::IDBValuePtr value,
            std::vector<IndexedDBBlobInfo> blob_info,
            const IndexedDBKey& key,
            blink::WebIDBPutMode mode,
@@ -268,7 +270,7 @@ void DatabaseImpl::GetAll(
 void DatabaseImpl::Put(
     int64_t transaction_id,
     int64_t object_store_id,
-    ::indexed_db::mojom::ValuePtr value,
+    ::blink::mojom::IDBValuePtr value,
     const IndexedDBKey& key,
     blink::WebIDBPutMode mode,
     const std::vector<IndexedDBIndexKeys>& index_keys,
@@ -283,7 +285,7 @@ void DatabaseImpl::Put(
   base::CheckedNumeric<uint64_t> total_blob_size = 0;
   std::vector<IndexedDBBlobInfo> blob_info(value->blob_or_file_info.size());
   for (size_t i = 0; i < value->blob_or_file_info.size(); ++i) {
-    ::indexed_db::mojom::BlobInfoPtr& info = value->blob_or_file_info[i];
+    ::blink::mojom::IDBBlobInfoPtr& info = value->blob_or_file_info[i];
 
     std::unique_ptr<storage::BlobDataHandle> handle =
         dispatcher_host_->blob_storage_context()->GetBlobDataFromUUID(
@@ -653,7 +655,7 @@ void DatabaseImpl::IDBSequenceHelper::GetAll(
 void DatabaseImpl::IDBSequenceHelper::Put(
     int64_t transaction_id,
     int64_t object_store_id,
-    ::indexed_db::mojom::ValuePtr mojo_value,
+    ::blink::mojom::IDBValuePtr mojo_value,
     std::vector<IndexedDBBlobInfo> blob_info,
     const IndexedDBKey& key,
     blink::WebIDBPutMode mode,

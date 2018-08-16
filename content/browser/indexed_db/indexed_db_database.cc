@@ -42,6 +42,8 @@
 
 using base::ASCIIToUTF16;
 using base::Int64ToString16;
+using blink::IndexedDBIndexKeys;
+using blink::IndexedDBKey;
 using blink::kWebIDBKeyTypeNumber;
 using leveldb::Status;
 
@@ -831,7 +833,7 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
           changes->observations.size() - 1);
       if (observer->include_transaction() &&
           !base::ContainsKey(changes->transaction_map, observer->id())) {
-        auto mojo_transaction = ::indexed_db::mojom::ObserverTransaction::New();
+        auto mojo_transaction = ::blink::mojom::IDBObserverTransaction::New();
         mojo_transaction->id = connection->NewObserverTransactionId();
         mojo_transaction->scope.insert(mojo_transaction->scope.end(),
                                        observer->object_store_ids().begin(),
