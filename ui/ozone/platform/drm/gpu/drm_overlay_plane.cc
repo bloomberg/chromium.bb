@@ -53,6 +53,13 @@ DrmOverlayPlane& DrmOverlayPlane::operator=(DrmOverlayPlane&& other) = default;
 
 DrmOverlayPlane::~DrmOverlayPlane() {}
 
+// static
+DrmOverlayPlane DrmOverlayPlane::Error() {
+  return DrmOverlayPlane(nullptr, 0, gfx::OVERLAY_TRANSFORM_INVALID,
+                         gfx::Rect(), gfx::RectF(), /* enable_blend */ true,
+                         /* gpu_fence */ nullptr);
+}
+
 bool DrmOverlayPlane::operator<(const DrmOverlayPlane& plane) const {
   return std::tie(z_order, display_bounds, crop_rect, plane_transform) <
          std::tie(plane.z_order, plane.display_bounds, plane.crop_rect,

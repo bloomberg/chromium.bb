@@ -15,6 +15,7 @@
 namespace ui {
 
 class DrmDevice;
+class GbmBuffer;
 
 // Abstraction for a DRM buffer that can be scanned-out of.
 class DrmFramebuffer : public base::RefCountedThreadSafe<DrmFramebuffer> {
@@ -34,6 +35,10 @@ class DrmFramebuffer : public base::RefCountedThreadSafe<DrmFramebuffer> {
   static scoped_refptr<DrmFramebuffer> AddFramebuffer(
       scoped_refptr<DrmDevice> drm_device,
       AddFramebufferParams params);
+
+  static scoped_refptr<DrmFramebuffer> AddFramebuffer(
+      scoped_refptr<DrmDevice> drm_device,
+      const GbmBuffer* buffer);
 
   DrmFramebuffer(scoped_refptr<DrmDevice> drm_device,
                  uint32_t framebuffer_id,

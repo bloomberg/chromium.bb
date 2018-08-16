@@ -44,7 +44,7 @@ class MockDrmDevice : public DrmDevice {
     std::vector<DrmDevice::Property> properties;
   };
 
-  MockDrmDevice();
+  MockDrmDevice(std::unique_ptr<GbmDevice> gbm_device);
 
   static ScopedDrmPropertyBlobPtr AllocateInFormatsBlob(
       uint32_t id,
