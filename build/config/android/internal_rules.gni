@@ -284,10 +284,15 @@ template("write_build_config") {
       ]
     }
 
+    if (defined(invoker.loadable_modules) && invoker.loadable_modules != []) {
+      _rebased_modules = rebase_path(invoker.loadable_modules, root_build_dir)
+      args += [ "--native-libs=$_rebased_modules" ]
+    }
+
     if (defined(invoker.extra_shared_libraries)) {
       _rebased_extra_shared_libraries =
           rebase_path(invoker.extra_shared_libraries, root_build_dir)
-      args += [ "--extra-shared-libraries=$_rebased_extra_shared_libraries" ]
+      args += [ "--native-libs=$_rebased_extra_shared_libraries" ]
     }
 
     if (defined(invoker.secondary_abi_shared_libraries_runtime_deps_file)) {
@@ -303,9 +308,9 @@ template("write_build_config") {
 
     if (defined(invoker.secondary_abi_loadable_modules) &&
         invoker.secondary_abi_loadable_modules != []) {
-      _rebased_modules =
+      _rebased_secondary_abi_modules =
           rebase_path(invoker.secondary_abi_loadable_modules, root_build_dir)
-      args += [ "--secondary-native-libs=$_rebased_modules" ]
+      args += [ "--secondary-native-libs=$_rebased_secondary_abi_modules" ]
     }
 
     if (defined(invoker.uncompress_shared_libraries) &&
@@ -921,6 +926,8 @@ if (enable_java_templates) {
         rebase_path(_output_jar_path, root_build_dir),
         "--classpath",
         "@FileArg($_rebased_build_config:deps_info:proguard_classpath_jars)",
+        "--classpath",
+        "@FileArg($_rebased_build_config:android:sdk_jars)",
       ]
       if (experimental_r8_path != "") {
         args += [
@@ -2884,6 +2891,7 @@ if (enable_java_templates) {
                                "classpath_deps",
                                "gradle_treat_as_prebuilt",
                                "input_jars_paths",
+                               "loadable_modules",
                                "main_class",
                                "proguard_configs",
                                "proguard_enabled",
