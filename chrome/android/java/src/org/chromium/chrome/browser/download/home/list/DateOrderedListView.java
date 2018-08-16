@@ -143,6 +143,11 @@ class DateOrderedListView {
                     outRect.top = mImagePaddingPx;
                     outRect.bottom = mImagePaddingPx;
                     break;
+                case ListUtils.ViewType.VIDEO:
+                    outRect.left = mPrefetchHorizontalPaddingPx;
+                    outRect.right = mPrefetchHorizontalPaddingPx;
+                    outRect.bottom = mPrefetchHorizontalPaddingPx;
+                    break;
                 case ListUtils.ViewType.PREFETCH:
                     outRect.left = mPrefetchHorizontalPaddingPx;
                     outRect.right = mPrefetchHorizontalPaddingPx;
