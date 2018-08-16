@@ -30,6 +30,7 @@ extern const char kInheritedStyleChangeFromParentFrame[];
 extern const char kInline[];
 extern const char kInlineCSSStyleMutated[];
 extern const char kInspector[];
+extern const char kInvisibleChange[];
 extern const char kLanguage[];
 extern const char kLinkColorChange[];
 extern const char kPlatformColorChange[];

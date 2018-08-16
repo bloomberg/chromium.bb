@@ -135,6 +135,8 @@ interface Element : Node {
     // Accessibility Object Model
     [RuntimeEnabled=AccessibilityObjectModel] readonly attribute AccessibleNode? accessibleNode;
 
+    [RuntimeEnabled=InvisibleDOM, CEReactions, CustomElementCallbacks] attribute DOMString invisible;
+
     // Event handler attributes
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;

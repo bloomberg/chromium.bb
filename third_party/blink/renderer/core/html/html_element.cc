@@ -334,6 +334,8 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        &HTMLElement::OnXMLLangAttrChanged},
 
       {onabortAttr, kNoWebFeature, EventTypeNames::abort, nullptr},
+      {onactivateinvisibleAttr, kNoWebFeature,
+       EventTypeNames::activateinvisible, nullptr},
       {onanimationendAttr, kNoWebFeature, EventTypeNames::animationend,
        nullptr},
       {onanimationiterationAttr, kNoWebFeature,
