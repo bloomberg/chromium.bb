@@ -149,6 +149,10 @@ const newTreeElement = (() => {
    * @param {KeyboardEvent} event Event passed from keydown event listener.
    */
   function _handleKeyNavigation(event) {
+    if (event.altKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
     /**
      * @type {HTMLAnchorElement | HTMLSpanElement} Tree node element, either
      * a tree or leaf. Trees use `<a>` tags, leaves use `<span>` tags.
