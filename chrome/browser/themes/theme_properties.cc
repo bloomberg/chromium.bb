@@ -51,7 +51,7 @@ const SkColor kDefaultColorToolbarIncognito = SkColorSetRGB(0x50, 0x50, 0x50);
 
 const SkColor kDefaultDetachedBookmarkBarBackground = SK_ColorWHITE;
 const SkColor kDefaultDetachedBookmarkBarBackgroundIncognito =
-    SkColorSetRGB(0x32, 0x32, 0x32);
+    SkColorSetRGB(0x32, 0x36, 0x39);
 
 // "Toolbar" text is used for active tabs and the bookmarks bar.
 constexpr SkColor kDefaultColorToolbarText = SK_ColorBLACK;
