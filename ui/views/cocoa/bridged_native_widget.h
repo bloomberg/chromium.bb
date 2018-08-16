@@ -22,7 +22,6 @@
 #import "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_observer.h"
 
 @class BridgedContentView;
 @class ModalShowAnimationWithLayer;
@@ -40,14 +39,32 @@ class DragDropClientMac;
 class NativeWidgetMac;
 class View;
 
+// The interface through which a NativeWidgetMac may interact with an NSWindow
+// in another process.
+// TODO(ccameron): Rename this to BridgedNativeWidget, and rename
+// BridgedNativeWidget to BridgedNativeWidgetImpl.
+class VIEWS_EXPORT BridgedNativeWidgetPublic {
+ public:
+  // Initialize the view to display compositor output. This will send the
+  // current visibility and dimensions (and any future updates) to the
+  // BridgedNativeWidgetHost.
+  virtual void InitCompositorView() = 0;
+
+  // Specify the content to draw in the NSView.
+  virtual void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) = 0;
+
+  // Clear the touchbar.
+  virtual void ClearTouchBar() = 0;
+};
+
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
 class VIEWS_EXPORT BridgedNativeWidget
-    : public ui::CATransactionCoordinator::PreCommitObserver,
+    : public BridgedNativeWidgetPublic,
+      public ui::CATransactionCoordinator::PreCommitObserver,
       public CocoaMouseCaptureDelegate,
-      public BridgedNativeWidgetOwner,
-      public DialogObserver {
+      public BridgedNativeWidgetOwner {
  public:
   // Contains NativeViewHost->gfx::NativeView associations.
   using AssociatedViews = std::map<const views::View*, NSView*>;
@@ -80,9 +97,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   void SetWindow(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
   // Initialize the bridge (after the NSWindow has been created).
   void Init(const Widget::InitParams& params);
-
-  // Invoked at the end of Widget::Init().
-  void OnWidgetInitDone();
 
   // Changes the bounds of the window and the hosted layer if present. The
   // origin is a location in screen coordinates except for "child" windows,
@@ -220,16 +234,10 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool ShouldWaitInPreCommit() override;
   base::TimeDelta PreCommitTimeout() override;
 
-  // views::BridgedNativeWidget:
-  // TODO(ccameron): Rename BridgedNativeWidget to BridgedNativeWidgetImpl, and
-  // make these methods be exposed via the BridgedNativeWidget interface.
-  // Initialize the view to display compositor output. This will send the
-  // current visibility and dimensions (and any future updates) to the
-  // BridgedNativeWidgetHost.
-  void InitCompositorView();
-
-  // Specify the content to draw in the NSView.
-  void SetCALayerParams(const gfx::CALayerParams& ca_layer_params);
+  // views::BridgedNativeWidgetPublic:
+  void InitCompositorView() override;
+  void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) override;
+  void ClearTouchBar() override;
 
   // TODO(ccameron): This method exists temporarily as we move all direct access
   // of TextInputClient out of BridgedContentView.
@@ -272,9 +280,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   gfx::Vector2d GetChildWindowOffset() const override;
   bool IsVisibleParent() const override;
   void RemoveChildWindow(BridgedNativeWidget* child) override;
-
-  // DialogObserver:
-  void OnDialogModelChanged() override;
 
   // Set |layer()| to be visible or not visible based on |window_visible_|. If
   // the layer is not visible, then lock the compositor, so we don't draw any
