@@ -90,9 +90,15 @@ void WebViewAutofillClientIOS::OnUnmaskVerificationResult(
   [bridge_ didReceiveUnmaskVerificationResult:result];
 }
 
-void WebViewAutofillClientIOS::ShowLocalCardMigrationPrompt(
-    base::OnceClosure closure) {
-  NOTREACHED();
+void WebViewAutofillClientIOS::ShowLocalCardMigrationDialog(
+    base::OnceClosure show_migration_dialog_closure) {
+  NOTIMPLEMENTED();
+}
+
+void WebViewAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
+    std::vector<MigratableCreditCard>& migratable_credit_cards,
+    base::OnceClosure start_migrating_cards_closure) {
+  NOTIMPLEMENTED();
 }
 
 void WebViewAutofillClientIOS::ConfirmSaveAutofillProfile(

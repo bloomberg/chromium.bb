@@ -170,9 +170,15 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
           /*local_save_card_callback=*/callback, GetPrefs())));
 }
 
-void ChromeAutofillClientIOS::ShowLocalCardMigrationPrompt(
-    base::OnceClosure closure) {
-  NOTREACHED();
+void ChromeAutofillClientIOS::ShowLocalCardMigrationDialog(
+    base::OnceClosure show_migration_dialog_closure) {
+  NOTIMPLEMENTED();
+}
+
+void ChromeAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
+    std::vector<MigratableCreditCard>& migratable_credit_cards,
+    base::OnceClosure start_migrating_cards_closure) {
+  NOTIMPLEMENTED();
 }
 
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(

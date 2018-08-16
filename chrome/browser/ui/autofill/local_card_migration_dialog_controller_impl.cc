@@ -25,7 +25,8 @@
 
 namespace autofill {
 
-LocalCardMigrationDialogControllerImpl::LocalCardMigrationDialogControllerImpl()
+LocalCardMigrationDialogControllerImpl::LocalCardMigrationDialogControllerImpl(
+    content::WebContents* web_contents)
     : local_card_migration_dialog_(nullptr) {}
 
 LocalCardMigrationDialogControllerImpl::

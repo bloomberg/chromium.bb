@@ -98,6 +98,11 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration() {
 void LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog() {
   user_accepted_main_migration_dialog_ = false;
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
+  client_->ConfirmMigrateLocalCardToCloud(
+      migratable_credit_cards_,
+      base::BindOnce(
+          &LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
@@ -125,8 +130,8 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
     legal_message_ = std::move(legal_message);
     // If we successfully received the legal docs, trigger the offer-to-migrate
     // dialog.
-    client_->ShowLocalCardMigrationPrompt(base::BindOnce(
-        &LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog,
+    client_->ShowLocalCardMigrationDialog(base::BindOnce(
+        &LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog,
         weak_ptr_factory_.GetWeakPtr()));
     // TODO(crbug.com/852904): Call the client LoadRiskData()
   }

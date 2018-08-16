@@ -262,7 +262,14 @@ void AwAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {
   NOTIMPLEMENTED();
 }
 
-void AwAutofillClient::ShowLocalCardMigrationPrompt(base::OnceClosure closure) {
+void AwAutofillClient::ShowLocalCardMigrationDialog(
+    base::OnceClosure show_migration_dialog_closure) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::ConfirmMigrateLocalCardToCloud(
+    std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
+    base::OnceClosure start_migrating_cards_closure) {
   NOTIMPLEMENTED();
 }
 

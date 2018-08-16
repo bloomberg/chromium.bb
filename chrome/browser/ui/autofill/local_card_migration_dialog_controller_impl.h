@@ -36,7 +36,8 @@ class LocalCardMigrationDialogControllerImpl
   void OnDialogClosed() override;
 
  protected:
-  explicit LocalCardMigrationDialogControllerImpl();
+  explicit LocalCardMigrationDialogControllerImpl(
+      content::WebContents* web_contents);
 
  private:
   friend class content::WebContentsUserData<
