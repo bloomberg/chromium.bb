@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_service.h"
@@ -357,6 +359,35 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
   EXPECT_FALSE(RunExtensionSubtest("content_settings/incognitoisolation",
                                    "test.html?allow"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
+                       EmbeddedSettingsMetric) {
+  base::HistogramTester histogram_tester;
+  const char kExtensionPath[] = "content_settings/embeddedsettingsmetric";
+  EXPECT_TRUE(RunExtensionSubtest(kExtensionPath, "test.html")) << message_;
+
+  size_t num_values = 0;
+  int javascript_type = ContentSettingTypeToHistogramValue(
+      CONTENT_SETTINGS_TYPE_IMAGES, &num_values);
+  int geolocation_type = ContentSettingTypeToHistogramValue(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, &num_values);
+  int cookies_type = ContentSettingTypeToHistogramValue(
+      CONTENT_SETTINGS_TYPE_COOKIES, &num_values);
+
+  histogram_tester.ExpectBucketCount(
+      "ContentSettings.ExtensionEmbeddedSettingSet", javascript_type, 1);
+  histogram_tester.ExpectBucketCount(
+      "ContentSettings.ExtensionEmbeddedSettingSet", geolocation_type, 1);
+  histogram_tester.ExpectTotalCount(
+      "ContentSettings.ExtensionEmbeddedSettingSet", 2);
+
+  histogram_tester.ExpectBucketCount(
+      "ContentSettings.ExtensionNonEmbeddedSettingSet", javascript_type, 1);
+  histogram_tester.ExpectBucketCount(
+      "ContentSettings.ExtensionNonEmbeddedSettingSet", cookies_type, 1);
+  histogram_tester.ExpectTotalCount(
+      "ContentSettings.ExtensionNonEmbeddedSettingSet", 2);
 }
 
 }  // namespace extensions
