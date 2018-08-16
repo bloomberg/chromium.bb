@@ -92,9 +92,15 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   WaylandConnection* connection() { return connection_; }
 
  private:
+  void CreateZwpLinuxDmabufInternal(base::File file,
+                                    gfx::Size size,
+                                    const std::vector<uint32_t>& strides,
+                                    const std::vector<uint32_t>& offsets,
+                                    const std::vector<uint64_t>& modifiers,
+                                    uint32_t current_format,
+                                    uint32_t planes_count,
+                                    uint32_t buffer_id);
   void DestroyZwpLinuxDmabufInternal(uint32_t buffer_id);
-  void ScheduleBufferSwapInternal(gfx::AcceleratedWidget widget,
-                                  uint32_t buffer_id);
 
   // Non-owned pointer to a WaylandConnection. It is only used in a single
   // process mode, when a shared dmabuf approach is not used.
@@ -110,10 +116,16 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   // A pointer to a WaylandConnection object, which always lives on a browser
   // process side. It's used for a multi-process mode.
   ozone::mojom::WaylandConnectionPtr wc_ptr_;
+  ozone::mojom::WaylandConnectionPtrInfo wc_ptr_info_;
+  bool bound_ = false;
 
-  // A task runner, which is initialized when a WaylandConnectionPtr is set.
-  // It is used to make sure mojo calls are done on a right sequence.
-  scoped_refptr<base::SingleThreadTaskRunner> ui_runner_;
+  // A task runner, which is initialized in a multi-process mode. It is used to
+  // ensure all the methods of this class are run on GpuMainThread. This is
+  // needed to ensure mojo calls happen on a right sequence. What is more, it
+  // makes it possible to use a frame callback (when it is implemented) in the
+  // browser process, which calls back to a right sequence after a
+  // ScheduleBufferSwap call.
+  scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandConnectionProxy);
 };
