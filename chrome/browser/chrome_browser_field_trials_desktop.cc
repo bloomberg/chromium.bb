@@ -89,11 +89,15 @@ void RecordChromeModuleInfo(
 
   GUID guid;
   DWORD age;
-  pe.GetDebugId(&guid, &age, /* pdb_file= */ nullptr);
-  module.age = age;
-  static_assert(sizeof(module.identifier) >= sizeof(guid),
-                "Identifier field must be able to contain a GUID.");
-  memcpy(module.identifier, &guid, sizeof(guid));
+  if (pe.GetDebugId(&guid, &age, /* pdb_filename= */ nullptr,
+                    /* pdb_filename_length= */ nullptr)) {
+    module.age = age;
+    static_assert(sizeof(module.identifier) >= sizeof(guid),
+                  "Identifier field must be able to contain a GUID.");
+    memcpy(module.identifier, &guid, sizeof(guid));
+  } else {
+    memset(module.identifier, 0, sizeof(module.identifier));
+  }
 
   module.file = "chrome.dll";
   module.debug_file = "chrome.dll.pdb";
