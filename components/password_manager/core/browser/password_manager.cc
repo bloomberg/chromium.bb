@@ -292,6 +292,8 @@ void PasswordManager::RegisterProfilePrefs(
       prefs::kWasAutoSignInFirstRunExperienceShown, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kBlacklistedCredentialsStripped, false);
+  registry->RegisterBooleanPref(prefs::kDuplicatedBlacklistedCredentialsRemoved,
+                                false);
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(
       prefs::kKeychainMigrationStatus,
