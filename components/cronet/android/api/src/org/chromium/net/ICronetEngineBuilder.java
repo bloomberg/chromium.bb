@@ -48,10 +48,6 @@ public abstract class ICronetEngineBuilder {
         return this;
     }
 
-    public ICronetEngineBuilder setCertVerifierData(String certVerifierData) {
-        return this;
-    }
-
     public ICronetEngineBuilder setThreadPriority(int priority) {
         return this;
     }
