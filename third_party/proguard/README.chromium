@@ -10,6 +10,3 @@ Description:
 This directory includes proguard.jar to allow Chromium to shrink, optimize java
 classes for Android, as well as retrace.jar, to allow for deobfuscation of stack
 traces.
-
-Note: 6.0.3 is used for monochrome_public_apk to avoid hitting the dex method
-limit (crbug.com/857572).

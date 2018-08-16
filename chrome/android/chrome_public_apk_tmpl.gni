@@ -87,6 +87,12 @@ template("chrome_public_common_apk_or_module_tmpl") {
   _is_modern = defined(invoker.is_modern) && invoker.is_modern
   assert(_is_modern || !_is_modern)  # Mark as used.
 
+  if (defined(invoker.enable_multidex)) {
+    _enable_multidex = invoker.enable_multidex
+  } else {
+    _enable_multidex = is_java_debug || multidex_in_release
+  }
+
   target(_target_type, target_name) {
     forward_variables_from(invoker, "*")
     exclude_xxxhdpi = true
@@ -112,20 +118,22 @@ template("chrome_public_common_apk_or_module_tmpl") {
       aapt_locale_whitelist = locales - android_chrome_omitted_locales
     }
 
-    if (is_java_debug || multidex_in_release) {
+    if (_enable_multidex) {
       enable_multidex = true
-      if (!defined(negative_main_dex_globs)) {
-        negative_main_dex_globs = [
-          "*ApplicationStatus*",  # Doesn't work in non-browser process.
-          "*ChromeActivity*",  # Pulls in the world, so ensure it doesn't slip in.
-          "*GoogleApiAvailability*",  # Play Services only in browser process.
-          "*R\$*",  # Should not use resources from non-browser process.
-        ]
-      }
+      if (_target_type == "android_apk") {
+        if (!defined(negative_main_dex_globs)) {
+          negative_main_dex_globs = [
+            "*ApplicationStatus*",  # Doesn't work in non-browser process.
+            "*ChromeActivity*",  # Pulls in the world, so ensure it doesn't slip in.
+            "*GoogleApiAvailability*",  # Play Services only in browser process.
+            "*R\$*",  # Should not use resources from non-browser process.
+          ]
+        }
 
-      # Allow targets to append to the default list.
-      if (defined(extra_negative_main_dex_globs)) {
-        negative_main_dex_globs += extra_negative_main_dex_globs
+        # Allow targets to append to the default list.
+        if (defined(extra_negative_main_dex_globs)) {
+          negative_main_dex_globs += extra_negative_main_dex_globs
+        }
       }
     }
     if (!is_java_debug) {
@@ -180,6 +188,11 @@ template("chrome_public_common_apk_or_module_tmpl") {
 # The equivalent of chrome_common_apk_or_module_tmpl for all builds of
 # monochrome.
 template("monochrome_public_common_apk_or_module_tmpl") {
+  if (defined(invoker.enable_multidex)) {
+    _enable_multidex = invoker.enable_multidex
+  } else {
+    _enable_multidex = is_java_debug || multidex_in_release
+  }
   chrome_public_common_apk_or_module_tmpl(target_name) {
     # Always build 64-bit //android_webview:monochrome because Chrome runs
     # in 32-bit mode.
@@ -231,7 +244,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       "//chrome/android/monochrome:monochrome_license_provider_java",
     ]
 
-    if ((is_java_debug || multidex_in_release) &&
+    if (_enable_multidex && invoker.target_type == "android_apk" &&
         !defined(invoker.negative_main_dex_globs)) {
       # WebView pulls play services into the main dex.
       negative_main_dex_globs = [
