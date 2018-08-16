@@ -2995,12 +2995,6 @@
         }
       },
       {
-        "alternate_swarming_dimensions": [
-          {
-            "gpu": "8086:0a2e",
-            "os": "Mac-10.12.6"
-          }
-        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -3014,12 +3008,12 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Mac-10.13"
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
             }
           ],
           "shards": 12
-        },
-        "use_multi_dimension_trigger_script": true
+        }
       },
       {
         "isolate_name": "webkit_python_tests",
