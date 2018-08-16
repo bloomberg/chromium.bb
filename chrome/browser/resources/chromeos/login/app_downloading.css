@@ -17,3 +17,8 @@
 #app-downloading-video-container {
   margin: 80px auto auto;
 }
+
+#app-downloading-video-container video {
+  height: 204px;
+  width: 230px;
+}

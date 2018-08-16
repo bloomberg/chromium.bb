@@ -22,7 +22,13 @@
         [[i18nDynamic(locale, 'appDownloadingScreenDescription')]]
       </div>
       <div id="app-downloading-video-container" slot="footer">
-        <!-- TODO(rsgingerrs): add the app downloading video -->
+        <if expr="chromeos and _google_chrome">
+          <video loop="loop" autoplay="autoplay" muted>
+            <source
+                src="../../../internal/resources/arc_support/videos/app_downloading.mp4"
+                type="video/mp4">
+          </video>
+        </if>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-next-button id="app-downloading-continue-setup-button"
