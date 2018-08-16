@@ -353,6 +353,45 @@ TEST(WindowTreeTest, WindowToWindowData) {
           data->properties[ui::mojom::WindowManager::kAlwaysOnTop_Property]));
 }
 
+TEST(WindowTreeTest, EventLocation) {
+  WindowServiceTestSetup setup;
+  TestWindowTreeClient* window_tree_client = setup.window_tree_client();
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(10, 20, 100, 100));
+
+  // Add a child Window that covers the bottom half of the top-level window.
+  aura::Window* window = setup.window_tree_test_helper()->NewWindow();
+  ASSERT_TRUE(window);
+  window->Show();
+  window->SetBounds(gfx::Rect(0, 50, 100, 50));
+  top_level->AddChild(window);
+
+  test::EventGenerator event_generator(setup.root());
+  event_generator.MoveMouseTo(33, 44);
+  ASSERT_EQ(1u, window_tree_client->input_events().size());
+  TestWindowTreeClient::InputEvent event1 = window_tree_client->PopInputEvent();
+  ASSERT_TRUE(event1.event->IsLocatedEvent());
+  ui::LocatedEvent* located_event1 = event1.event->AsLocatedEvent();
+  // The location is in the top-level's (client-root) coordinate system.
+  EXPECT_EQ(gfx::Point(23, 24), located_event1->location());
+  // The root location is in the display's (display-root) coordinate system.
+  EXPECT_EQ(gfx::Point(33, 44), located_event1->root_location());
+
+  event_generator.MoveMouseTo(55, 66);
+  ASSERT_EQ(1u, window_tree_client->input_events().size());
+  TestWindowTreeClient::InputEvent event2 = window_tree_client->PopInputEvent();
+  ASSERT_TRUE(event2.event->IsLocatedEvent());
+  ui::LocatedEvent* located_event2 = event2.event->AsLocatedEvent();
+  // The location is in the top-level's (client-root) coordinate system.
+  EXPECT_EQ(gfx::Point(45, 46), located_event2->location());
+  // The root location is in the display's (display-root) coordinate system.
+  EXPECT_EQ(gfx::Point(55, 66), located_event2->root_location());
+}
+
 TEST(WindowTreeTest, MovePressDragRelease) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();

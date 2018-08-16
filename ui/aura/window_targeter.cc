@@ -127,7 +127,11 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
     // This is used for bezel gesture events (eg. swiping in from screen edge).
     display::Display display =
         display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
-    gfx::Point screen_location = event.root_location();
+    // event.location() is in |root_window|'s coordinate system at this point.
+    // Using event.root_location() breaks calculations in mus clients, because
+    // event.root_location() is in the display-root's coordinate system, but
+    // |root_window| is actually the top-level window of the mus client.
+    gfx::Point screen_location = event.location();
     if (client::GetScreenPositionClient(root_window)) {
       client::GetScreenPositionClient(root_window)
           ->ConvertPointToScreen(root_window, &screen_location);
