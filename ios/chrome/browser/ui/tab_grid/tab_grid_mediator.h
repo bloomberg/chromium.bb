@@ -13,11 +13,17 @@
 @protocol GridConsumer;
 @class TabModel;
 
+namespace sessions {
+class TabRestoreService;
+}  // namespace sessions
+
 // Mediates between model layer and tab grid UI layer.
 @interface TabGridMediator : NSObject<GridCommands, GridImageDataSource>
 
 // The source tab model.
 @property(nonatomic, weak) TabModel* tabModel;
+// TabRestoreService holds the recently closed tabs.
+@property(nonatomic, assign) sessions::TabRestoreService* tabRestoreService;
 
 // Initializer with |consumer| as the receiver of model layer updates.
 - (instancetype)initWithConsumer:(id<GridConsumer>)consumer
