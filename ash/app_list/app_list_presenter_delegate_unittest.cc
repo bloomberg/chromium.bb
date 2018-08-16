@@ -485,6 +485,23 @@ TEST_F(AppListPresenterDelegateTest,
             shelf_layout_manager->GetShelfBackgroundType());
 }
 
+// Tests the shelf background type is as expected when in tablet mode.
+TEST_F(AppListPresenterDelegateTest, ShelfBackgroundWithHomeLauncher) {
+  // Enter tablet mode to display the home launcher.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  EnableTabletMode(true);
+  ShelfLayoutManager* shelf_layout_manager =
+      Shelf::ForWindow(Shell::GetRootWindowForDisplayId(GetPrimaryDisplayId()))
+          ->shelf_layout_manager();
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
+            shelf_layout_manager->GetShelfBackgroundType());
+
+  // Add a window. It should be maximized because it is in tablet mode.
+  auto window = CreateTestWindow();
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED,
+            shelf_layout_manager->GetShelfBackgroundType());
+}
+
 // Tests that the peeking app list closes if the user taps or clicks outside
 // its bounds.
 TEST_P(AppListPresenterDelegateTest, TapAndClickOutsideClosesPeekingAppList) {
