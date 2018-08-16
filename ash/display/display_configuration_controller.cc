@@ -37,6 +37,8 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ash::ScreenRotationAnimator,
                                    kScreenRotationAnimatorKey,
                                    nullptr);
 
+bool g_disable_animator_for_test = false;
+
 }  // namespace
 
 namespace ash {
@@ -58,6 +60,11 @@ class DisplayConfigurationController::DisplayChangeLimiter {
   DISALLOW_COPY_AND_ASSIGN(DisplayChangeLimiter);
 };
 
+// static
+void DisplayConfigurationController::DisableAnimatorForTest() {
+  g_disable_animator_for_test = true;
+}
+
 DisplayConfigurationController::DisplayConfigurationController(
     display::DisplayManager* display_manager,
     WindowTreeHostManager* window_tree_host_manager)
@@ -67,7 +74,8 @@ DisplayConfigurationController::DisplayConfigurationController(
   window_tree_host_manager_->AddObserver(this);
   if (chromeos::IsRunningAsSystemCompositor())
     limiter_.reset(new DisplayChangeLimiter);
-  display_animator_.reset(new DisplayAnimator());
+  if (!g_disable_animator_for_test)
+    display_animator_.reset(new DisplayAnimator());
 }
 
 DisplayConfigurationController::~DisplayConfigurationController() {
@@ -129,12 +137,16 @@ void DisplayConfigurationController::SetDisplayRotation(
   if (display_manager_->IsDisplayIdValid(display_id)) {
     if (GetTargetRotation(display_id) == rotation)
       return;
-    ScreenRotationAnimator* screen_rotation_animator =
-        GetScreenRotationAnimatorForDisplay(display_id);
-    screen_rotation_animator->Rotate(rotation, source, mode);
-  } else {
-    display_manager_->SetDisplayRotation(display_id, rotation, source);
+    if (display_animator_) {
+      ScreenRotationAnimator* screen_rotation_animator =
+          GetScreenRotationAnimatorForDisplay(display_id);
+      screen_rotation_animator->Rotate(rotation, source, mode);
+      return;
+    }
   }
+  // Invalid |display_id| or animator is disabled; call
+  // DisplayManager::SetDisplayRotation directly.
+  display_manager_->SetDisplayRotation(display_id, rotation, source);
 }
 
 display::Display::Rotation DisplayConfigurationController::GetTargetRotation(
@@ -172,10 +184,11 @@ void DisplayConfigurationController::OnDisplayConfigurationChanged() {
 
 // Protected
 
-void DisplayConfigurationController::ResetAnimatorForTest() {
-  if (!display_animator_)
-    return;
-  display_animator_.reset();
+void DisplayConfigurationController::SetAnimatorForTest(bool enable) {
+  if (display_animator_ && !enable)
+    display_animator_.reset();
+  else if (!display_animator_ && enable)
+    display_animator_.reset(new DisplayAnimator());
 }
 
 void DisplayConfigurationController::SetScreenRotationAnimatorForTest(

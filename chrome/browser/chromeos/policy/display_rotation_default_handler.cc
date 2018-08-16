@@ -6,79 +6,97 @@
 
 #include <stddef.h>
 
-#include "ash/shell.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "ui/display/manager/display_manager.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace policy {
 
 DisplayRotationDefaultHandler::DisplayRotationDefaultHandler() {
-  ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
-  ash::Shell::Get()->AddShellObserver(this);
   settings_observer_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
       chromeos::kDisplayRotationDefault,
       base::Bind(&DisplayRotationDefaultHandler::OnCrosSettingsChanged,
                  base::Unretained(this)));
+
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &cros_display_config_);
+
+  // Make the initial display unit info request. This will be queued until the
+  // Ash service is ready.
+  cros_display_config_->GetDisplayUnitInfoList(
+      false /* single_unified */,
+      base::BindOnce(&DisplayRotationDefaultHandler::OnGetInitialDisplayInfo,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-DisplayRotationDefaultHandler::~DisplayRotationDefaultHandler() {
+DisplayRotationDefaultHandler::~DisplayRotationDefaultHandler() = default;
+
+void DisplayRotationDefaultHandler::OnDisplayConfigChanged() {
+  RequestAndRotateDisplays();
 }
 
-void DisplayRotationDefaultHandler::OnShellInitialized() {
+void DisplayRotationDefaultHandler::OnGetInitialDisplayInfo(
+    std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
+  // Add this as an observer to the mojo service now that it is ready.
+  // (We only care about changes that occur after we set any policy
+  // rotation below).
+  ash::mojom::CrosDisplayConfigObserverAssociatedPtrInfo ptr_info;
+  cros_display_config_observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
+  cros_display_config_->AddObserver(std::move(ptr_info));
+
+  // Get the initial policy values from CrosSettings and apply any rotation.
   UpdateFromCrosSettings();
-  RotateDisplays();
+  RotateDisplays(std::move(info_list));
 }
 
-void DisplayRotationDefaultHandler::OnDisplayConfigurationChanged() {
-  RotateDisplays();
-}
-
-void DisplayRotationDefaultHandler::OnWindowTreeHostManagerShutdown() {
-  ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
-  ash::Shell::Get()->RemoveShellObserver(this);
-  settings_observer_.reset();
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+void DisplayRotationDefaultHandler::RequestAndRotateDisplays() {
+  cros_display_config_->GetDisplayUnitInfoList(
+      false /* single_unified */,
+      base::BindOnce(&DisplayRotationDefaultHandler::RotateDisplays,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DisplayRotationDefaultHandler::OnCrosSettingsChanged() {
   if (!UpdateFromCrosSettings())
     return;
   // Policy changed, so reset all displays.
-  rotated_displays_.clear();
-  RotateDisplays();
+  rotated_display_ids_.clear();
+  RequestAndRotateDisplays();
 }
 
-void DisplayRotationDefaultHandler::RotateDisplays() {
-  if (!policy_enabled_ || rotation_in_progress_)
+void DisplayRotationDefaultHandler::RotateDisplays(
+    std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
+  if (!policy_enabled_)
     return;
 
-  // Avoid nested calls of this function due to OnDisplayConfigurationChanged
-  // being called by rotations here.
-  rotation_in_progress_ = true;
+  for (const ash::mojom::DisplayUnitInfoPtr& display_unit_info : info_list) {
+    std::string display_id = display_unit_info->id;
+    if (rotated_display_ids_.find(display_id) != rotated_display_ids_.end())
+      continue;
 
-  display::DisplayManager* const display_manager =
-      ash::Shell::Get()->display_manager();
-  const size_t num_displays = display_manager->GetNumDisplays();
-  for (size_t i = 0; i < num_displays; ++i) {
-    const display::Display& display = display_manager->GetDisplayAt(i);
-    const int64_t id = display.id();
-    if (rotated_displays_.find(id) == rotated_displays_.end()) {
-      rotated_displays_.insert(id);
-      if (display.rotation() != display_rotation_default_) {
-        display_manager->SetDisplayRotation(
-            id, display_rotation_default_,
-            display::Display::RotationSource::ACTIVE);
-      }
-    }
+    rotated_display_ids_.insert(display_id);
+    display::Display::Rotation rotation(display_unit_info->rotation);
+    if (rotation == display_rotation_default_)
+      continue;
+
+    // The following sets only the |rotation| property of the display
+    // configuration; no other properties will be affected.
+    auto config_properties = ash::mojom::DisplayConfigProperties::New();
+    config_properties->rotation =
+        ash::mojom::DisplayRotation::New(display_rotation_default_);
+    cros_display_config_->SetDisplayProperties(
+        display_unit_info->id, std::move(config_properties), base::DoNothing());
   }
-  rotation_in_progress_ = false;
 }
 
 bool DisplayRotationDefaultHandler::UpdateFromCrosSettings() {

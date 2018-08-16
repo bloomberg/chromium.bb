@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
+#include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
@@ -242,6 +243,11 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   login_screen_client_ = std::make_unique<LoginScreenClient>();
   media_client_ = std::make_unique<MediaClient>();
 
+  // Instantiate DisplayRotationDefaultHandler after CrosSettings has been
+  // initialized.
+  display_rotation_handler_ =
+      std::make_unique<policy::DisplayRotationDefaultHandler>();
+
   // Do not create a NetworkPortalNotificationController for tests since the
   // NetworkPortalDetector instance may be replaced.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -286,20 +292,22 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   vpn_list_forwarder_.reset();
   volume_controller_.reset();
 
-  system_tray_client_.reset();
-  session_controller_client_.reset();
-  chrome_new_window_client_.reset();
+  // Initialized in PostProfileInit:
   network_portal_notification_controller_.reset();
+  display_rotation_handler_.reset();
   media_client_.reset();
   login_screen_client_.reset();
-  ime_controller_client_.reset();
   cast_config_client_media_router_.reset();
-  accessibility_controller_client_.reset();
 
+  // Initialized in PreProfileInit:
+  system_tray_client_.reset();
+  session_controller_client_.reset();
+  ime_controller_client_.reset();
+  chrome_new_window_client_.reset();
+  accessibility_controller_client_.reset();
   // AppListClientImpl indirectly holds WebContents for answer card and
   // needs to be released before destroying the profile.
   app_list_client_.reset();
-
   ash_shell_init_.reset();
 
   chromeos::NetworkConnect::Shutdown();

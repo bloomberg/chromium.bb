@@ -22,7 +22,7 @@ class DisplayConfigurationControllerTestApi {
       DisplayConfigurationController* controller);
 
   // Wrapper functions for DisplayConfigurationController.
-  void DisableDisplayAnimator();
+  void SetDisplayAnimator(bool enable);
   ScreenRotationAnimator* GetScreenRotationAnimatorForDisplay(
       int64_t display_id);
 

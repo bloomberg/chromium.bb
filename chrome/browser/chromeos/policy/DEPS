@@ -3,12 +3,3 @@ include_rules = [
   "+components/invalidation",
   "+components/user_manager",
 ]
-
-specific_include_rules = {
-  # TODO(mash): http://crbug.com/705713.
-  "display_rotation_default_handler\.*": [
-    "+ash/display/window_tree_host_manager.h",
-    "+ash/shell.h",
-    "+ash/shell_observer.h",
-  ],
-}

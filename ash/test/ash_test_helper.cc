@@ -279,7 +279,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
       .DisableChangeDisplayUponHostResize();
   DisplayConfigurationControllerTestApi(
       shell->display_configuration_controller())
-      .DisableDisplayAnimator();
+      .SetDisplayAnimator(false);
 
   app_list_test_helper_ = std::make_unique<AppListTestHelper>();
 
