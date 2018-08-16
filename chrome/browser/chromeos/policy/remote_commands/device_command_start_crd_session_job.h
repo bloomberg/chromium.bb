@@ -44,7 +44,7 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
   };
 
   using OAuthTokenCallback = base::OnceCallback<void(const std::string&)>;
-  using AuthCodeCallback = base::OnceCallback<void(const std::string&)>;
+  using AccessCodeCallback = base::OnceCallback<void(const std::string&)>;
   using ICEConfigCallback = base::OnceCallback<void(base::Value)>;
   using ErrorCallback =
       base::OnceCallback<void(ResultCode, const std::string&)>;
@@ -80,10 +80,9 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
                                 ErrorCallback error_callback) = 0;
 
     // Attempts to start CRD host and get Auth Code.
-    virtual void StartCRDHostAndGetCode(const std::string& directory_bot_jid,
-                                        const std::string& oauth_token,
+    virtual void StartCRDHostAndGetCode(const std::string& oauth_token,
                                         base::Value ice_config,
-                                        AuthCodeCallback success_callback,
+                                        AccessCodeCallback success_callback,
                                         ErrorCallback error_callback) = 0;
   };
 
@@ -108,7 +107,7 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
 
   void OnOAuthTokenReceived(const std::string& token);
   void OnICEConfigReceived(base::Value ice_config);
-  void OnAuthCodeReceived(const std::string& token);
+  void OnAccessCodeReceived(const std::string& access_code);
 
   // The callback that will be called when the access code was successfully
   // obtained.
@@ -123,7 +122,6 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
   base::TimeDelta idleness_cutoff_;
 
   std::string oauth_token_;
-  std::string directory_bot_jid_;
   base::Value ice_config_;
 
   // The Delegate is used to interact with chrome services and CRD host.
