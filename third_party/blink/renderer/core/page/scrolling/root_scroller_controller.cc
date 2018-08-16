@@ -31,7 +31,7 @@ class RootFrameViewport;
 
 namespace {
 
-bool FillsViewport(const Element& element, bool check_location) {
+bool FillsViewport(const Element& element) {
   if (!element.GetLayoutObject())
     return false;
 
@@ -48,23 +48,19 @@ bool FillsViewport(const Element& element, bool check_location) {
   if (!quad.IsRectilinear())
     return false;
 
-  LayoutRect bounding_box(quad.BoundingBox());
+  IntRect bounding_box = EnclosingIntRect(quad.BoundingBox());
 
-  LayoutSize icb_size =
-      LayoutSize(top_document.GetLayoutView()->GetLayoutSize());
+  IntSize icb_size = top_document.GetLayoutView()->GetLayoutSize();
 
   float zoom = top_document.GetFrame()->PageZoomFactor();
-  LayoutSize controls_hidden_size = LayoutSize(
+  IntSize controls_hidden_size = ExpandedIntSize(
       top_document.View()->ViewportSizeForViewportUnits().ScaledBy(zoom));
 
   if (bounding_box.Size() != icb_size &&
       bounding_box.Size() != controls_hidden_size)
     return false;
 
-  if (!check_location)
-    return true;
-
-  return bounding_box.Location() == LayoutPoint::Zero();
+  return bounding_box.Location() == IntPoint::Zero();
 }
 
 // If the element is an iframe this grabs the ScrollableArea for the owned
@@ -277,7 +273,7 @@ bool RootScrollerController::IsValidRootScroller(const Element& element) const {
       return false;
   }
 
-  if (!FillsViewport(element, true))
+  if (!FillsViewport(element))
     return false;
 
   return true;
@@ -387,6 +383,9 @@ void RootScrollerController::ProcessImplicitCandidates() {
     return;
 
   if (!document_->GetLayoutView())
+    return;
+
+  if (!document_->GetFrame()->IsMainFrame())
     return;
 
   // If the main document has vertical scrolling, that's a good sign we
