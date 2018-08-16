@@ -9,7 +9,7 @@
 #include "base/ios/ios_util.h"
 #include "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #import "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"

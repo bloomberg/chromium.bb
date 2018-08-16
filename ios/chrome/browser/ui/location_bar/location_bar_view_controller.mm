@@ -217,9 +217,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
 - (void)updateLocationIcon:(UIImage*)icon
         securityStatusText:(NSString*)statusText {
-  [self.locationBarSteadyView
-      setLocationImage:
-          [icon imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
+  [self.locationBarSteadyView setLocationImage:icon];
   self.locationBarSteadyView.securityLevelAccessibilityString = statusText;
 }
 

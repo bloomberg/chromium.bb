@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/suggestion_answer.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -231,11 +231,8 @@ UIColor* DimColorIncognito() {
       !(self.isIncognito && _match.type == AutocompleteMatchType::CALCULATOR))
       << "Calculator answers are never shown in incognito mode because input "
          "is never sent to the search provider.";
-  NSString* imageName = base::SysUTF8ToNSString(
-      GetResourceNameForAutocompleteMatchType(_match.type, self.isStarred));
-  UIImage* icon = [[UIImage imageNamed:imageName]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  return icon;
+  return GetOmniboxSuggestionIconForAutocompleteMatchType(_match.type,
+                                                          self.isStarred);
 }
 
 #pragma mark helpers

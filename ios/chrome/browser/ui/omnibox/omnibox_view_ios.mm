@@ -24,7 +24,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/ui/omnibox/chrome_omnibox_client_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_text_field_paste_delegate.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"

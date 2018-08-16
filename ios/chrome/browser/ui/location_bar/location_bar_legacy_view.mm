@@ -7,7 +7,7 @@
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/omnibox/clipping_textfield_container.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
