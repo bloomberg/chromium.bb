@@ -2734,8 +2734,6 @@ crbug.com/626703 external/wpt/clear-site-data/executionContexts.sub.html [ Timeo
 crbug.com/626703 [ Win10 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-004.html [ Failure ]
 crbug.com/626703 [ Linux Mac Win7 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-004.html [ Failure ]
 crbug.com/626703 [ Mac10.12 Mac10.13 ] external/wpt/service-workers/service-worker/clients-matchall-order.https.html [ Timeout ]
-crbug.com/626703 external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
-crbug.com/626703 external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-lists/content-property/marker-text-matches-armenian.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-lists/content-property/marker-text-matches-upper-latin.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-lists/content-property/marker-text-matches-disc.html [ Failure ]
