@@ -143,6 +143,275 @@
     </label>
   </div>
 
+  <div class="option" id="developerEventStream">
+    <label>
+      <input id="enableEventStreamLogging" type="checkbox" class="checkbox pref"
+             name="enableEventStreamLogging">
+      <span class="i18n" msgid="options_event_stream_logging">
+        Enable event stream logging
+      </span>
+    </label>
+    <button id="toggleEventStreamFilters"></button>
+  </div>
+  <div id="eventStreamFilters" hidden>
+    <label><div class="option-eventstream">
+      <input name="activedescendantchanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>activedescendantchanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="alert" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>alert</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="ariaAttributeChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>ariaAttributeChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="autocorrectionOccured" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>autocorrectionOccured</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="blur" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>blur</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="checkedStateChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>checkedStateChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="childrenChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>childrenChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="clicked" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>clicked</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="documentSelectionChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>documentSelectionChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="documentTitleChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>documentTitleChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="expandedChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>expandedChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="focus" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>focus</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="focusContext" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>focusContext</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="imageFrameUpdated" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>imageFrameUpdated</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="hide" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>hide</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="hitTestResult" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>hitTestResult</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="hover" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>hover</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="invalidStatusChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>invalidStatusChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="layoutComplete" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>layoutComplete</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="liveRegionCreated" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>liveRegionCreated</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="liveRegionChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>liveRegionChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="loadComplete" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>loadComplete</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="locationChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>locationChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="mediaStartedPlaying" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>mediaStartedPlaying</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="mediaStoppedPlaying" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>mediaStoppedPlaying</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="menuEnd" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>menuEnd</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="menuListItemSelected" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>menuListItemSelected</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="menuListValueChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>menuListValueChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="menuPopupEnd" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>menuPopupEnd</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="menuPopupStart" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>menuPopupStart</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="menuStart" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>menuStart</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="mouseCanceled" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>mouseCanceled</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="mouseDragged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>mouseDragged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="mouseMoved" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>mouseMoved</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="mousePressed" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>mousePressed</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="mouseReleased" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>mouseReleased</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="rowCollapsed" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>rowCollapsed</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="rowCountChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>rowCountChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="rowExpanded" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>rowExpanded</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="scrollPositionChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>scrollPositionChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="scrolledToAnchor" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>scrolledToAnchor</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="selectedChildrenChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>selectedChildrenChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="selection" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>selection</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="selectionAdd" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>selectionAdd</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="selectionRemove" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>selectionRemove</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="show" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>show</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="stateChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>stateChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="textChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>textChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="textSelectionChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>textSelectionChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="treeChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>treeChanged</span>
+    </div></label>
+    <label><div class="option-eventstream">
+      <input name="valueChanged" type="checkbox"
+             class="checkbox pref eventstream">
+      <span>valueChanged</span>
+    </div></label>
+  </div>
+  </div>
+
   <div id="status" role="live" aria-live="assertive">
   </div>
 

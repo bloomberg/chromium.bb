@@ -9,6 +9,7 @@
 goog.provide('cvox.ChromeVoxBackground');
 
 goog.require('ChromeVoxState');
+goog.require('EventStreamLogger');
 goog.require('Msgs');
 goog.require('constants');
 goog.require('cvox.AbstractEarcons');

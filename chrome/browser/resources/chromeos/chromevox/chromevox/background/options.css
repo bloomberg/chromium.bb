@@ -99,3 +99,15 @@ h2 {
     margin-left: 20px;
     padding: 0 20px;
 }
+
+.option-eventstream {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    font-size: 13px;
+    line-height: 30px;
+    min-height: 30px;
+    padding: 0 20px;
+    vertical-align: middle;
+    width: 646px;
+}
+

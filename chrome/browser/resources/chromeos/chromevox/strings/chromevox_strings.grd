@@ -565,6 +565,15 @@
       <message desc="Enable chromevox speech logging." name="IDS_CHROMEVOX_OPTIONS_DEVELOPER_SPEECH_LOGGING">
         Enable speech logging
       </message>
+      <message desc="Enable event stream logging in chromevox for developer options." name="IDS_CHROMEVOX_OPTIONS_EVENT_STREAM_LOGGING">
+        Enable event stream logging
+      </message>
+      <message desc="Show event stream filters options for event stream logging." name="IDS_CHROMEVOX_OPTIONS_SHOW_EVENT_STREAM_FILTERS">
+        Show event stream filters
+      </message>
+      <message desc="Hide event stream filters options for event stream logging." name="IDS_CHROMEVOX_OPTIONS_HIDE_EVENT_STREAM_FILTERS">
+        Hide event stream filters
+      </message>
       <message desc="The title of ChromeVox Learn Mode page.  The keyboard explorer voices the name of each key when the user presses it." name="IDS_CHROMEVOX_KBEXPLORER_TITLE">
         ChromeVox Learn Mode
       </message>
