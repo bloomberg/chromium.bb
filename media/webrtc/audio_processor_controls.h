@@ -10,7 +10,7 @@
 
 namespace media {
 
-class MEDIA_EXPORT AudioProcessorControls {
+class AudioProcessorControls {
  public:
   using GetStatsCB = base::OnceCallback<void(
       const webrtc::AudioProcessorInterface::AudioProcessorStatistics& stats)>;

@@ -29,6 +29,7 @@
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "media/webrtc/echo_information.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing_statistics.h"
@@ -628,7 +629,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     // updated.
     if (properties.echo_cancellation_type !=
         EchoCancellationType::kEchoCancellationAec3) {
-      echo_information_ = std::make_unique<EchoInformation>();
+      echo_information_ = std::make_unique<media::EchoInformation>();
     }
   }
 
