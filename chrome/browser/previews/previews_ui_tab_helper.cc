@@ -53,6 +53,23 @@ void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
 
 PreviewsUITabHelper::~PreviewsUITabHelper() {}
 
+void PreviewsUITabHelper::ShowUIElement(
+    previews::PreviewsType previews_type,
+    base::Time previews_freshness,
+    bool is_data_saver_user,
+    bool is_reload,
+    OnDismissPreviewsUICallback on_dismiss_callback) {
+  // Retrieve PreviewsUIService* from |web_contents| if available.
+  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  previews::PreviewsUIService* previews_ui_service =
+      previews_service ? previews_service->previews_ui_service() : nullptr;
+
+  PreviewsInfoBarDelegate::Create(
+      web_contents(), previews_type, previews_freshness, is_data_saver_user,
+      is_reload, std::move(on_dismiss_callback), previews_ui_service);
+}
+
 PreviewsUITabHelper::PreviewsUITabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       displayed_preview_ui_(false),
@@ -85,12 +102,6 @@ void PreviewsUITabHelper::DidFinishNavigation(
           : false;
   displayed_preview_ui_ = false;
   displayed_preview_timestamp_ = false;
-
-  // Retrieve PreviewsUIService* from |web_contents| if available.
-  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  previews::PreviewsUIService* previews_ui_service =
-      previews_service ? previews_service->previews_ui_service() : nullptr;
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageTabHelper* tab_helper =
@@ -128,16 +139,15 @@ void PreviewsUITabHelper::DidFinishNavigation(
                                true,
                                data_use_measurement::DataUseUserData::OTHER, 0);
 
-    PreviewsInfoBarDelegate::Create(
-        web_contents(), previews::PreviewsType::OFFLINE,
-        base::Time() /* previews_freshness */,
+    PreviewsUITabHelper::ShowUIElement(
+        previews::PreviewsType::OFFLINE, base::Time() /* previews_freshness */,
         data_reduction_proxy_settings && data_saver_enabled,
         false /* is_reload */,
         base::BindOnce(&AddPreviewNavigationCallback,
                        web_contents()->GetBrowserContext(),
                        navigation_handle->GetRedirectChain()[0],
-                       previews::PreviewsType::OFFLINE, page_id),
-        previews_ui_service);
+                       previews::PreviewsType::OFFLINE, page_id));
+
     // Don't try to show other UIs if this is an offline preview.
     return;
   }
@@ -157,14 +167,13 @@ void PreviewsUITabHelper::DidFinishNavigation(
           headers->GetDateValue(&previews_freshness);
       }
 
-      PreviewsInfoBarDelegate::Create(
-          web_contents(), main_frame_preview, previews_freshness,
-          true /* is_data_saver_user */, is_reload,
+      PreviewsUITabHelper::ShowUIElement(
+          main_frame_preview, previews_freshness, true /* is_data_saver_user */,
+          is_reload,
           base::BindOnce(&AddPreviewNavigationCallback,
                          web_contents()->GetBrowserContext(),
                          navigation_handle->GetRedirectChain()[0],
-                         main_frame_preview, page_id),
-          previews_ui_service);
+                         main_frame_preview, page_id));
     }
   }
 }

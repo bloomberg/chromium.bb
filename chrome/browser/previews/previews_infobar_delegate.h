@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_INFOBAR_DELEGATE_H_
 
-#include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/previews/core/previews_experiments.h"
 
@@ -27,9 +27,6 @@ class PreviewsUIService;
 // infobar.
 class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  typedef base::OnceCallback<void(bool opt_out)>
-      OnDismissPreviewsInfobarCallback;
-
   // Actions on the previews infobar. This enum must remain synchronized with
   // the enum of the same name in metrics/histograms/histograms.xml.
   enum PreviewsInfoBarAction {
@@ -59,16 +56,13 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Creates a preview infobar and corresponding delegate and adds the infobar
   // to InfoBarService. |on_dismiss_callback| is called when the InfoBar is
   // dismissed.
-  static void Create(
-      content::WebContents* web_contents,
-      previews::PreviewsType previews_type,
-      base::Time previews_freshness,
-      bool is_data_saver_user,
-      bool is_reload,
-      // TODO(ryansturm): Replace |on_dismiss_callback| with direct call to
-      // |previews_ui_service|.
-      OnDismissPreviewsInfobarCallback on_dismiss_callback,
-      previews::PreviewsUIService* previews_ui_service);
+  static void Create(content::WebContents* web_contents,
+                     previews::PreviewsType previews_type,
+                     base::Time previews_freshness,
+                     bool is_data_saver_user,
+                     bool is_reload,
+                     OnDismissPreviewsUICallback on_dismiss_callback,
+                     previews::PreviewsUIService* previews_ui_service);
 
   // ConfirmInfoBarDelegate overrides:
   int GetIconId() const override;
@@ -86,7 +80,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
                           base::Time previews_freshness,
                           bool is_data_saver_user,
                           bool is_reload,
-                          OnDismissPreviewsInfobarCallback on_dismiss_callback);
+                          OnDismissPreviewsUICallback on_dismiss_callback);
 
   // ConfirmInfoBarDelegate overrides:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -105,7 +99,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   const base::string16 message_text_;
 
-  OnDismissPreviewsInfobarCallback on_dismiss_callback_;
+  OnDismissPreviewsUICallback on_dismiss_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsInfoBarDelegate);
 };

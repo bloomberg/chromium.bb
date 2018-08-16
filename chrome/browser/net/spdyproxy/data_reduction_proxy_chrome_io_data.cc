@@ -61,12 +61,6 @@ void AddPreviewNavigationToBlackListCallback(
 void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Retrieve PreviewsUIService* from |web_contents| if available.
-  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  previews::PreviewsUIService* previews_ui_service =
-      previews_service ? previews_service->previews_ui_service() : nullptr;
-
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents);
 
@@ -75,17 +69,15 @@ void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
     page_id = ui_tab_helper->previews_user_data()->page_id();
   }
 
-  PreviewsInfoBarDelegate::Create(
-      web_contents, previews::PreviewsType::LOFI,
-      base::Time() /* previews_freshness */, true /* is_data_saver_user */,
-      false /* is_reload */,
+  ui_tab_helper->ShowUIElement(
+      previews::PreviewsType::LOFI, base::Time() /* previews_freshness */,
+      true /* is_data_saver_user */, false /* is_reload */,
       base::BindOnce(&AddPreviewNavigationToBlackListCallback,
                      web_contents->GetBrowserContext(),
                      web_contents->GetController()
                          .GetLastCommittedEntry()
                          ->GetRedirectChain()[0],
-                     previews::PreviewsType::LOFI, page_id),
-      previews_ui_service);
+                     previews::PreviewsType::LOFI, page_id));
 }
 
 }  // namespace
