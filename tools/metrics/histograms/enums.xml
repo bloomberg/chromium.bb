@@ -1687,6 +1687,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="21" label="Already provisioned"/>
 </enum>
 
+<enum name="ArcSdkVersionUpgradeType">
+  <summary>Defines the types of ARC SDK version upgrade</summary>
+  <int value="0" label="NO_UPGRADE"/>
+  <int value="1" label="UNKNOWN_UPGRADE"/>
+  <int value="2" label="N_TO_P"/>
+  <int value="3" label="M_TO_P"/>
+</enum>
+
 <enum name="ArcSupervisionTransitionResult">
   <summary>
     Defines Arc supervision transition success and failure reasons
