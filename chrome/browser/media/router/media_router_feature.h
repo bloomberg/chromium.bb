@@ -38,7 +38,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 // If enabled, allows Media Router to connect to Cast devices on all IP
-// addresses, not just RFC1918/RFC4913 private addresses. Workaround for
+// addresses, not just RFC1918/RFC4193 private addresses. Workaround for
 // https://crbug.com/813974.
 extern const base::Feature kCastAllowAllIPsFeature;
 
