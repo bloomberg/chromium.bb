@@ -537,6 +537,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   base::HistogramTester histogram_tester;
   AddMockFailure();
   AddMockFailure();
+  AddMockSuccess();
 
   EXPECT_EQ(0, config_client()->failed_attempts_before_success());
 
@@ -703,8 +704,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
     EXPECT_EQ(kFailureCount, config_client()->GetBackoffErrorCount());
 
     // IP address change should reset.
-    config_client()->OnNetworkChanged(
-        net::NetworkChangeNotifier::CONNECTION_WIFI);
+    config_client()->OnConnectionChanged(
+        network::mojom::ConnectionType::CONNECTION_WIFI);
     EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
     EXPECT_EQ(i == 0, persisted_config().empty());
     EXPECT_EQ(i == 0, persisted_config_retrieval_time().is_null());
@@ -746,8 +747,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   EXPECT_EQ(kFailureCount, config_client()->GetBackoffErrorCount());
 
   // IP address change should reset.
-  config_client()->OnNetworkChanged(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  config_client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
   EXPECT_TRUE(persisted_config().empty());
   EXPECT_TRUE(persisted_config_retrieval_time().is_null());
@@ -797,8 +798,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChangeDisabled) {
   }
 
   EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
-  config_client()->OnNetworkChanged(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  config_client()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
 
   config_client()->RetrieveConfig();

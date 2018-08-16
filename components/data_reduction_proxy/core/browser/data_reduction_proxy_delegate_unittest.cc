@@ -41,7 +41,6 @@
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_change_notifier.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_request_headers.h"
@@ -88,12 +87,14 @@ class TestDataReductionProxyDelegate : public DataReductionProxyDelegate {
       DataReductionProxyEventCreator* event_creator,
       DataReductionProxyBypassStats* bypass_stats,
       bool proxy_supports_quic,
-      net::NetLog* net_log)
+      net::NetLog* net_log,
+      network::NetworkConnectionTracker* network_connection_tracker)
       : DataReductionProxyDelegate(config,
                                    configurator,
                                    event_creator,
                                    bypass_stats,
-                                   net_log),
+                                   net_log,
+                                   network_connection_tracker),
         proxy_supports_quic_(proxy_supports_quic) {}
 
   ~TestDataReductionProxyDelegate() override {}
@@ -187,11 +188,6 @@ class DataReductionProxyDelegateTest : public testing::Test {
     lofi_ui_service_ = lofi_ui_service.get();
     test_context_->io_data()->set_lofi_ui_service(std::move(lofi_ui_service));
 
-    // Create a mock network change notifier to make it possible to call its
-    // static methods.
-    network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
-    base::RunLoop().RunUntilIdle();
-
     proxy_delegate_ = test_context_->io_data()->CreateProxyDelegate();
     context_.set_proxy_delegate(proxy_delegate_.get());
 
@@ -262,6 +258,10 @@ class DataReductionProxyDelegateTest : public testing::Test {
     return proxy_delegate_.get();
   }
 
+  network::NetworkConnectionTracker* network_connection_tracker() const {
+    return test_context_->test_network_connection_tracker();
+  }
+
  private:
   int64_t GetSessionNetworkStatsInfoInt64(const char* key) const {
     std::unique_ptr<base::DictionaryValue> session_network_stats_info =
@@ -285,9 +285,8 @@ class DataReductionProxyDelegateTest : public testing::Test {
 
   TestLoFiUIService* lofi_ui_service_;
 
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  std::unique_ptr<DataReductionProxyDelegate> proxy_delegate_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
+  std::unique_ptr<DataReductionProxyDelegate> proxy_delegate_;
 };
 
 TEST_F(DataReductionProxyDelegateTest, OnResolveProxy) {
@@ -484,7 +483,7 @@ TEST_F(DataReductionProxyDelegateTest, AlternativeProxy) {
     TestDataReductionProxyDelegate delegate(
         config(), io_data()->configurator(), io_data()->event_creator(),
         io_data()->bypass_stats(), test.proxy_supports_quic,
-        io_data()->net_log());
+        io_data()->net_log(), network_connection_tracker());
 
     base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(

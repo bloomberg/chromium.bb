@@ -111,7 +111,8 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
  protected:
   std::unique_ptr<DataReductionProxyBypassStats> BuildBypassStats() {
     return std::make_unique<DataReductionProxyBypassStats>(
-        test_context_->config(), test_context_->unreachable_callback());
+        test_context_->config(), test_context_->unreachable_callback(),
+        test_context_->test_network_connection_tracker());
   }
 
   MockDataReductionProxyConfig* config() const {
@@ -382,8 +383,8 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
   net::URLRequestContextStorage context_storage_;
-  std::unique_ptr<net::ProxyDelegate> proxy_delegate_;
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context_;
+  std::unique_ptr<net::ProxyDelegate> proxy_delegate_;
 };
 
 TEST_F(DataReductionProxyBypassStatsEndToEndTest, BypassedBytesNoRetry) {

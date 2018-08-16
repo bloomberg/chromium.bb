@@ -93,9 +93,11 @@ void DataReductionProxyBypassStats::DetectAndRecordMissingViaHeaderResponseCode(
 
 DataReductionProxyBypassStats::DataReductionProxyBypassStats(
     DataReductionProxyConfig* config,
-    UnreachableCallback unreachable_callback)
+    UnreachableCallback unreachable_callback,
+    network::NetworkConnectionTracker* network_connection_tracker)
     : data_reduction_proxy_config_(config),
       unreachable_callback_(unreachable_callback),
+      network_connection_tracker_(network_connection_tracker),
       last_bypass_type_(BYPASS_EVENT_TYPE_MAX),
       triggering_request_(true),
       successful_requests_through_proxy_count_(0),
@@ -107,12 +109,12 @@ DataReductionProxyBypassStats::DataReductionProxyBypassStats(
 }
 
 DataReductionProxyBypassStats::~DataReductionProxyBypassStats() {
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
 void DataReductionProxyBypassStats::InitializeOnIOThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
 }
 
 void DataReductionProxyBypassStats::OnUrlRequestCompleted(
@@ -322,8 +324,8 @@ void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
   }
 }
 
-void DataReductionProxyBypassStats::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void DataReductionProxyBypassStats::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ClearRequestCounts();
 }

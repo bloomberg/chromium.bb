@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "net/base/network_change_notifier.h"
 #include "net/base/proxy_delegate.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -34,15 +34,17 @@ class DataReductionProxyIOData;
 
 class DataReductionProxyDelegate
     : public net::ProxyDelegate,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // ProxyDelegate instance is owned by io_thread. |auth_handler| and |config|
   // outlives this class instance.
-  DataReductionProxyDelegate(DataReductionProxyConfig* config,
-                             const DataReductionProxyConfigurator* configurator,
-                             DataReductionProxyEventCreator* event_creator,
-                             DataReductionProxyBypassStats* bypass_stats,
-                             net::NetLog* net_log);
+  DataReductionProxyDelegate(
+      DataReductionProxyConfig* config,
+      const DataReductionProxyConfigurator* configurator,
+      DataReductionProxyEventCreator* event_creator,
+      DataReductionProxyBypassStats* bypass_stats,
+      net::NetLog* net_log,
+      network::NetworkConnectionTracker* network_connection_tracker);
 
   ~DataReductionProxyDelegate() override;
 
@@ -77,9 +79,8 @@ class DataReductionProxyDelegate
   // Records the availability status of data reduction proxy.
   void RecordQuicProxyStatus(QuicProxyStatus status) const;
 
-  // NetworkChangeNotifier::NetworkChangeObserver:
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // Checks if the first proxy server in |result| supports QUIC and if so
   // adds an alternative proxy configuration to |result|.
@@ -102,6 +103,8 @@ class DataReductionProxyDelegate
   DataReductionProxyIOData* io_data_;
 
   net::NetLog* net_log_;
+
+  network::NetworkConnectionTracker* network_connection_tracker_;
 
   base::ThreadChecker thread_checker_;
 

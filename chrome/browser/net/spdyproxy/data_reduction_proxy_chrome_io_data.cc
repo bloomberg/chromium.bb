@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
@@ -98,7 +99,8 @@ CreateDataReductionProxyChromeIOData(
       data_reduction_proxy_io_data(
           new data_reduction_proxy::DataReductionProxyIOData(
               DataReductionProxyChromeSettings::GetClient(), prefs, net_log,
-              io_task_runner, ui_task_runner, enabled, GetUserAgent(),
+              content::GetNetworkConnectionTracker(), io_task_runner,
+              ui_task_runner, enabled, GetUserAgent(),
               version_info::GetChannelString(chrome::GetChannel())));
 
   data_reduction_proxy_io_data->set_lofi_decider(

@@ -24,6 +24,10 @@ namespace net {
 class NetLog;
 }
 
+namespace network {
+class NetworkConnectionTracker;
+}
+
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfigurator;
@@ -40,6 +44,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   TestDataReductionProxyConfig(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
+      network::NetworkConnectionTracker* network_connection_tracker,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
 
@@ -50,6 +55,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
+      network::NetworkConnectionTracker* network_connection_tracker,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
 
@@ -78,7 +84,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   void SetIsCaptivePortal(bool is_captive_portal);
 
   void SetConnectionTypeForTesting(
-      net::NetworkChangeNotifier::ConnectionType connection_type) {
+      network::mojom::ConnectionType connection_type) {
     connection_type_ = connection_type;
   }
 
@@ -144,6 +150,7 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
+      network::NetworkConnectionTracker* network_connection_tracker,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
   ~MockDataReductionProxyConfig() override;

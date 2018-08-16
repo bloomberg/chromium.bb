@@ -359,8 +359,8 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
   net::URLRequestContextStorage context_storage_;
-  std::unique_ptr<net::ProxyDelegate> proxy_delegate_;
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context_;
+  std::unique_ptr<net::ProxyDelegate> proxy_delegate_;
 };
 
 const std::string kBody = "response body";

@@ -17,9 +17,9 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
-#include "net/base/network_change_notifier.h"
 #include "net/log/net_log_with_source.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -83,7 +83,7 @@ const net::BackoffEntry::Policy& GetBackoffPolicy();
 // fetch policy is different if Chrome is in the background. Every time a config
 // is fetched, it is written to the disk.
 class DataReductionProxyConfigServiceClient
-    : public net::NetworkChangeNotifier::NetworkChangeObserver,
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public net::URLFetcherDelegate {
  public:
   // The caller must ensure that all parameters remain alive for the lifetime of
@@ -98,6 +98,7 @@ class DataReductionProxyConfigServiceClient
       DataReductionProxyEventCreator* event_creator,
       DataReductionProxyIOData* io_data,
       net::NetLog* net_log,
+      network::NetworkConnectionTracker* network_connection_tracker,
       ConfigStorer config_storer);
 
   ~DataReductionProxyConfigServiceClient() override;
@@ -162,9 +163,8 @@ class DataReductionProxyConfigServiceClient
       const base::TimeDelta& config_expiration,
       const base::TimeDelta& backoff_delay);
 
-  // Override of net::NetworkChangeNotifier::NetworkChangeObserver.
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // Override of network::NetworkConnectionTracker::NetworkConnectionObserver.
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // Override of net::URLFetcherDelegate.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -221,6 +221,9 @@ class DataReductionProxyConfigServiceClient
 
   // The caller must ensure that the |net_log_| outlives this instance.
   net::NetLog* net_log_;
+
+  // Watches for network changes.
+  network::NetworkConnectionTracker* network_connection_tracker_;
 
   // Used to persist a serialized Data Reduction Proxy configuration.
   ConfigStorer config_storer_;

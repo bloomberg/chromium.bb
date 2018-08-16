@@ -37,6 +37,10 @@ class URLRequestContextGetter;
 class URLRequestInterceptor;
 }
 
+namespace network {
+class NetworkConnectionTracker;
+}
+
 namespace previews {
 class PreviewsDecider;
 }
@@ -61,6 +65,7 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
       Client client,
       PrefService* prefs,
       net::NetLog* net_log,
+      network::NetworkConnectionTracker* network_connection_tracker,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       bool enabled,
@@ -303,6 +308,9 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // A net log.
   net::NetLog* net_log_;
+
+  // Watches for network connection changes.
+  network::NetworkConnectionTracker* network_connection_tracker_;
 
   // IO and UI task runners, respectively.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

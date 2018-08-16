@@ -151,6 +151,7 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
     DataReductionProxyEventCreator* event_creator,
     DataReductionProxyIOData* io_data,
     net::NetLog* net_log,
+    network::NetworkConnectionTracker* network_connection_tracker,
     ConfigStorer config_storer)
     : params_(std::move(params)),
       request_options_(request_options),
@@ -159,6 +160,7 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       event_creator_(event_creator),
       io_data_(io_data),
       net_log_(net_log),
+      network_connection_tracker_(network_connection_tracker),
       config_storer_(config_storer),
       backoff_entry_(&backoff_policy),
       config_service_url_(util::AddApiKeyToUrl(params::GetConfigServiceURL())),
@@ -191,7 +193,7 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
 
 DataReductionProxyConfigServiceClient::
     ~DataReductionProxyConfigServiceClient() {
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
 base::TimeDelta
@@ -235,8 +237,8 @@ void DataReductionProxyConfigServiceClient::InitializeOnIOThread(
           &DataReductionProxyConfigServiceClient::OnApplicationStateChange,
           base::Unretained(this))));
 #endif
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   url_request_context_getter_ = url_request_context_getter;
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
 }
 
 void DataReductionProxyConfigServiceClient::SetEnabled(bool enabled) {
@@ -362,10 +364,12 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
 
   RetrieveConfig();
 
+  auto connection_type = network::mojom::ConnectionType::CONNECTION_NONE;
+  network_connection_tracker_->GetConnectionType(&connection_type,
+                                                 base::DoNothing());
   if (!load_timing_info.send_start.is_null() &&
       !load_timing_info.request_start.is_null() &&
-      net::NetworkChangeNotifier::GetConnectionType() !=
-          net::NetworkChangeNotifier::CONNECTION_NONE &&
+      connection_type != network::mojom::ConnectionType::CONNECTION_NONE &&
       last_ip_address_change_ < load_timing_info.request_start) {
     // Record only if there was no change in the IP address since the
     // request started.
@@ -396,11 +400,11 @@ base::Time DataReductionProxyConfigServiceClient::Now() {
   return base::Time::Now();
 }
 
-void DataReductionProxyConfigServiceClient::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void DataReductionProxyConfigServiceClient::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+  if (type == network::mojom::ConnectionType::CONNECTION_NONE)
     return;
 
   GetBackoffEntry()->Reset();
@@ -538,8 +542,10 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
   ClientConfig config;
   bool succeeded = false;
 
-  if (net::NetworkChangeNotifier::GetConnectionType() !=
-      net::NetworkChangeNotifier::CONNECTION_NONE) {
+  auto connection_type = network::mojom::ConnectionType::CONNECTION_NONE;
+  network_connection_tracker_->GetConnectionType(&connection_type,
+                                                 base::DoNothing());
+  if (connection_type != network::mojom::ConnectionType::CONNECTION_NONE) {
     base::UmaHistogramSparse(kUMAConfigServiceFetchResponseCode, response_code);
   }
 
