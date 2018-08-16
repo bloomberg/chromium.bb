@@ -171,6 +171,7 @@ std::unique_ptr<NGPaintFragment> NGPaintFragment::Create(
 
   HashMap<const LayoutObject*, NGPaintFragment*> last_fragment_map;
   paint_fragment->PopulateDescendants(NGPhysicalOffset(),
+                                      &paint_fragment->first_fragment_map_,
                                       &last_fragment_map);
 
   return paint_fragment;
@@ -231,6 +232,7 @@ LayoutRect NGPaintFragment::ChildrenInkOverflow() const {
 // Populate descendants from NGPhysicalFragment tree.
 void NGPaintFragment::PopulateDescendants(
     const NGPhysicalOffset inline_offset_to_container_box,
+    HashMap<const LayoutObject*, NGPaintFragment*>* first_fragment_map,
     HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map) {
   DCHECK(children_.IsEmpty());
   const NGPhysicalFragment& fragment = PhysicalFragment();
@@ -244,16 +246,30 @@ void NGPaintFragment::PopulateDescendants(
     std::unique_ptr<NGPaintFragment> child =
         std::make_unique<NGPaintFragment>(child_fragment, this);
 
-    if (!child_fragment->IsFloating() &&
-        !child_fragment->IsOutOfFlowPositioned() &&
-        !child_fragment->IsListMarker()) {
-      if (LayoutObject* layout_object = child_fragment->GetLayoutObject()) {
-        child->AssociateWithLayoutObject(layout_object, last_fragment_map);
+    // Create a linked list for each LayoutObject.
+    //
+    // |first_fragment_map| and |last_fragment_map| each keeps the first and the
+    // last of the list of fragments for a LayoutObject. We use two maps because
+    // |last_fragment_map| is needed only while creating lists, while
+    // |first_fragment_map| is kept for later queries. This may change when we
+    // use fields in LayoutObject to keep the first fragments.
+    if (LayoutObject* layout_object = child_fragment->GetLayoutObject()) {
+      auto add_result = last_fragment_map->insert(layout_object, child.get());
+      if (add_result.is_new_entry) {
+        DCHECK(first_fragment_map->find(layout_object) ==
+               first_fragment_map->end());
+        first_fragment_map->insert(layout_object, child.get());
+      } else {
+        DCHECK(first_fragment_map->find(layout_object) !=
+               first_fragment_map->end());
+        DCHECK(add_result.stored_value->value);
+        add_result.stored_value->value->next_fragment_ = child.get();
+        add_result.stored_value->value = child.get();
       }
-
-      child->inline_offset_to_container_box_ =
-          inline_offset_to_container_box + child_fragment->Offset();
     }
+
+    child->inline_offset_to_container_box_ =
+        inline_offset_to_container_box + child_fragment->Offset();
 
     // Recurse children, except when this is a block formatting context root.
     // TODO(kojii): At the block formatting context root, children may be for
@@ -262,36 +278,10 @@ void NGPaintFragment::PopulateDescendants(
     // engine boundaries.
     if (!child_fragment->IsBlockFormattingContextRoot()) {
       child->PopulateDescendants(child->inline_offset_to_container_box_,
-                                 last_fragment_map);
+                                 first_fragment_map, last_fragment_map);
     }
 
     children_.push_back(std::move(child));
-  }
-}
-
-// Add to a linked list for each LayoutObject.
-void NGPaintFragment::AssociateWithLayoutObject(
-    LayoutObject* layout_object,
-    HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map) {
-  DCHECK(layout_object);
-
-  // TODO(kojii): The LayoutObject is inline, except for column container
-  // fragment. We should have better way to distinguish it, probably after we
-  // determined the generated fragment tree for multicol with fragmentations
-  // supported.
-  if (!layout_object->IsInline()) {
-    DCHECK(Parent() && layout_object == Parent()->GetLayoutObject());
-    return;
-  }
-
-  auto add_result = last_fragment_map->insert(layout_object, this);
-  if (add_result.is_new_entry) {
-    DCHECK(!layout_object->FirstInlineFragment());
-    layout_object->SetFirstInlineFragment(this);
-  } else {
-    DCHECK(add_result.stored_value->value);
-    add_result.stored_value->value->next_fragment_ = this;
-    add_result.stored_value->value = this;
   }
 }
 
@@ -302,28 +292,25 @@ NGPaintFragment* NGPaintFragment::GetForInlineContainer(
   // the LayoutObject is a box (i.e., atomic inline, including inline block and
   // replaced elements.)
   if (LayoutObject* parent = layout_object->Parent()) {
-    if (LayoutBlockFlow* block_flow = parent->EnclosingNGBlockFlow()) {
-      // TODO(kojii): IsLayoutFlowThread should probably be done in
-      // EnclosingNGBlockFlow(), but there seem to be both expectations today.
-      // This needs cleanup.
-      if (block_flow->IsLayoutFlowThread()) {
-        DCHECK(!block_flow->PaintFragment() && block_flow->Parent() &&
-               block_flow->Parent()->IsLayoutBlockFlow());
-        block_flow = ToLayoutBlockFlow(block_flow->Parent());
-      }
+    if (LayoutBlockFlow* block_flow = parent->EnclosingNGBlockFlow())
       return block_flow->PaintFragment();
-    }
   }
   return nullptr;
 }
 
 NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
     const LayoutObject* layout_object) {
-  DCHECK(layout_object && layout_object->IsInline() &&
-         !layout_object->IsFloatingOrOutOfFlowPositioned());
+  DCHECK(layout_object && layout_object->IsInline());
+  if (const NGPaintFragment* root = GetForInlineContainer(layout_object)) {
+    auto it = root->first_fragment_map_.find(layout_object);
+    if (it != root->first_fragment_map_.end())
+      return FragmentRange(it->value);
 
-  if (layout_object->IsInLayoutNGInlineFormattingContext())
-    return FragmentRange(layout_object->FirstInlineFragment());
+    // Reaching here means that there are no fragments for the LayoutObject.
+    // Culled inline box is one, but can be space-only LayoutText that were
+    // collapsed out.
+    return FragmentRange(nullptr);
+  }
   return FragmentRange(nullptr, false);
 }
 

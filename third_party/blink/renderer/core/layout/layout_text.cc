@@ -132,8 +132,7 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
       max_width_(-1),
       first_line_min_width_(0),
       last_line_line_min_width_(0),
-      text_(std::move(str)),
-      text_boxes_() {
+      text_(std::move(str)) {
   DCHECK(text_);
   DCHECK(!node || !node->IsDocumentNode());
 
@@ -142,13 +141,6 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
   if (node)
     GetFrameView()->IncrementVisuallyNonEmptyCharacterCount(text_.length());
 }
-
-#if DCHECK_IS_ON()
-LayoutText::~LayoutText() {
-  if (!IsInLayoutNGInlineFormattingContext())
-    text_boxes_.AssertIsEmpty();
-}
-#endif
 
 LayoutText* LayoutText::CreateEmptyAnonymous(
     Document& doc,
@@ -231,35 +223,19 @@ void LayoutText::WillBeDestroyed() {
 }
 
 void LayoutText::ExtractTextBox(InlineTextBox* box) {
-  MutableTextBoxes().ExtractLineBox(box);
+  text_boxes_.ExtractLineBox(box);
 }
 
 void LayoutText::AttachTextBox(InlineTextBox* box) {
-  MutableTextBoxes().AttachLineBox(box);
+  text_boxes_.AttachLineBox(box);
 }
 
 void LayoutText::RemoveTextBox(InlineTextBox* box) {
-  MutableTextBoxes().RemoveLineBox(box);
+  text_boxes_.RemoveLineBox(box);
 }
 
 void LayoutText::DeleteTextBoxes() {
-  if (IsInLayoutNGInlineFormattingContext())
-    first_paint_fragment_ = nullptr;
-  else
-    MutableTextBoxes().DeleteLineBoxes();
-}
-
-void LayoutText::SetFirstInlineFragment(NGPaintFragment* fragment) {
-  CHECK(IsInLayoutNGInlineFormattingContext());
-  first_paint_fragment_ = fragment;
-}
-
-void LayoutText::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
-  DeleteTextBoxes();
-
-  // Because |first_paint_fragment_| and |text_boxes_| are union, when one is
-  // deleted, the other should be initialized to nullptr.
-  DCHECK(new_value ? !first_paint_fragment_ : !text_boxes_.First());
+  text_boxes_.DeleteLineBoxes();
 }
 
 Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
@@ -1831,7 +1807,7 @@ InlineTextBox* LayoutText::CreateTextBox(int start, unsigned short length) {
 InlineTextBox* LayoutText::CreateInlineTextBox(int start,
                                                unsigned short length) {
   InlineTextBox* text_box = CreateTextBox(start, length);
-  MutableTextBoxes().AppendLineBox(text_box);
+  text_boxes_.AppendLineBox(text_box);
   return text_box;
 }
 
@@ -1842,7 +1818,7 @@ void LayoutText::PositionLineBox(InlineBox* box) {
   if (!s->Len()) {
     // We want the box to be destroyed.
     s->Remove(kDontMarkLineBoxes);
-    MutableTextBoxes().RemoveLineBox(s);
+    text_boxes_.RemoveLineBox(s);
     s->Destroy();
     return;
   }

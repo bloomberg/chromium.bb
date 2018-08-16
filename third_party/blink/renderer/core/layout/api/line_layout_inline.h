@@ -63,7 +63,7 @@ class LineLayoutInline : public LineLayoutBoxModel {
     return ToInline()->LastLineBoxIncludingCulling();
   }
 
-  LineBoxList* LineBoxes() { return ToInline()->MutableLineBoxes(); }
+  LineBoxList* LineBoxes() { return ToInline()->LineBoxes(); }
 
   bool HitTestCulledInline(HitTestResult& result,
                            const HitTestLocation& location_in_container,

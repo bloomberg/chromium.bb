@@ -1105,9 +1105,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, LinesInMulticolExactFit) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(kojii): Enable when NGPaintFragment supports fragmentations.
-// https://crbug.com/874506
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_LinesInMulticolChildExtraSpace) {
+TEST_F(NGColumnLayoutAlgorithmTest, LinesInMulticolChildExtraSpace) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1153,9 +1151,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_LinesInMulticolChildExtraSpace) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(kojii): Enable when NGPaintFragment supports fragmentations.
-// https://crbug.com/874506
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_LinesInMulticolChildExactFit) {
+TEST_F(NGColumnLayoutAlgorithmTest, LinesInMulticolChildExactFit) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1201,10 +1197,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_LinesInMulticolChildExactFit) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(kojii): Enable when NGPaintFragment supports fragmentations.
-// https://crbug.com/874506
-TEST_F(NGColumnLayoutAlgorithmTest,
-       DISABLED_LinesInMulticolChildNoSpaceForFirst) {
+TEST_F(NGColumnLayoutAlgorithmTest, LinesInMulticolChildNoSpaceForFirst) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1250,10 +1243,8 @@ TEST_F(NGColumnLayoutAlgorithmTest,
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(kojii): Enable when NGPaintFragment supports fragmentations.
-// https://crbug.com/874506
 TEST_F(NGColumnLayoutAlgorithmTest,
-       DISABLED_LinesInMulticolChildInsufficientSpaceForFirst) {
+       LinesInMulticolChildInsufficientSpaceForFirst) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -2448,9 +2439,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesOrphans) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(kojii): Enable when NGPaintFragment supports fragmentations.
-// https://crbug.com/874506
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_ColumnBalancingLinesForcedBreak) {
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesForcedBreak) {
   // We have 6 lines and 3 columns. If we make the columns tall enough to hold 2
   // lines each, it should all fit. But then there's a forced break after the
   // first line, so that the remaining 5 lines have to be distributed into the 2
