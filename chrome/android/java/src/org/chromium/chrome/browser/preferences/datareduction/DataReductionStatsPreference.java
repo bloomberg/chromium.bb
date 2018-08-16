@@ -15,6 +15,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.preference.Preference;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
@@ -274,6 +275,10 @@ public class DataReductionStatsPreference extends Preference {
     protected void onBindView(View view) {
         super.onBindView(view);
         mInitialDataSavingsTextView = (TextView) view.findViewById(R.id.initial_data_savings);
+        mInitialDataSavingsTextView.setCompoundDrawablesWithIntrinsicBounds(null,
+                VectorDrawableCompat.create(getContext().getResources(),
+                        R.drawable.data_reduction_big, getContext().getTheme()),
+                null, null);
         mDataSavingsSummaryContainer =
                 (LinearLayout) view.findViewById(R.id.data_savings_summary_container);
         mDataUsageTextView = (TextView) view.findViewById(R.id.data_reduction_usage);
