@@ -78,6 +78,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SessionCleanupCookieStore
   // will be kept.
   bool force_keep_session_state_ = false;
 
+  net::NetLogWithSource net_log_;
+
   DISALLOW_COPY_AND_ASSIGN(SessionCleanupCookieStore);
 };
 
