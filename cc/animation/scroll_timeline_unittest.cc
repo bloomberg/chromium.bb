@@ -5,10 +5,48 @@
 #include "cc/animation/scroll_timeline.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
+#include "cc/trees/transform_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
 namespace cc {
+
+void SetScrollOffset(PropertyTrees* property_trees,
+                     ElementId scroller_id,
+                     gfx::ScrollOffset offset) {
+  // Update both scroll and transform trees
+  property_trees->scroll_tree.SetScrollOffset(scroller_id, offset);
+  TransformNode* transform_node =
+      property_trees->transform_tree.FindNodeFromElementId(scroller_id);
+  transform_node->scroll_offset = offset;
+  transform_node->needs_local_transform_update = true;
+}
+
+void CreateScrollingElement(PropertyTrees* property_trees,
+                            ElementId scroller_id,
+                            gfx::Size content_size,
+                            gfx::Size container_size) {
+  // Create a corresponding TransformNode for the scrolling element.
+  TransformNode transform_node;
+  transform_node.scrolls = true;
+  transform_node.source_node_id = TransformTree::kRootNodeId;
+  int transform_node_id =
+      property_trees->transform_tree.Insert(transform_node, 0);
+  property_trees->element_id_to_transform_node_index[scroller_id] =
+      transform_node_id;
+
+  // Add the scrolling node for the scrolling and link it to the above transform
+  // node.
+  ScrollNode scroll_node;
+  scroll_node.scrollable = true;
+  scroll_node.bounds = content_size;
+  scroll_node.container_bounds = container_size;
+  scroll_node.element_id = scroller_id;
+  scroll_node.transform_id = transform_node_id;
+  int scroll_node_id = property_trees->scroll_tree.Insert(scroll_node, 0);
+
+  property_trees->element_id_to_scroll_node_index[scroller_id] = scroll_node_id;
+}
 
 class ScrollTimelineTest : public ::testing::Test {
  public:
@@ -19,16 +57,13 @@ class ScrollTimelineTest : public ::testing::Test {
     property_trees_.is_main_thread = true;
     property_trees_.is_active = false;
 
-    // We add a single node that is scrolling a 550x1100 contents inside a
-    // 50x100 container.
-    ScrollNode node;
-    node.scrollable = true;
-    node.bounds = content_size_;
-    node.container_bounds = container_size_;
-
-    int node_id = property_trees_.scroll_tree.Insert(node, 0);
-    property_trees_.element_id_to_scroll_node_index[scroller_id_] = node_id;
+    // Create a single scroller that is scrolling a 500x500 contents inside a
+    // 100x100 container.
+    CreateScrollingElement(&property_trees_, scroller_id_, content_size_,
+                           container_size_);
   }
+
+  PropertyTrees& property_trees() { return property_trees_; }
 
   ScrollTree& scroll_tree() { return property_trees_.scroll_tree; }
   ElementId scroller_id() const { return scroller_id_; }
@@ -54,12 +89,12 @@ TEST_F(ScrollTimelineTest, BasicCurrentTimeCalculations) {
                                      time_range);
 
   // Unscrolled, both timelines should read a current time of 0.
-  scroll_tree().SetScrollOffset(scroller_id(), gfx::ScrollOffset());
+  SetScrollOffset(&property_trees(), scroller_id(), gfx::ScrollOffset());
   EXPECT_FLOAT_EQ(0, vertical_timeline.CurrentTime(scroll_tree(), false));
   EXPECT_FLOAT_EQ(0, horizontal_timeline.CurrentTime(scroll_tree(), false));
 
   // Now do some scrolling and make sure that the ScrollTimelines update.
-  scroll_tree().SetScrollOffset(scroller_id(), gfx::ScrollOffset(75, 50));
+  SetScrollOffset(&property_trees(), scroller_id(), gfx::ScrollOffset(75, 50));
 
   // As noted above, we have mapped the time range such that current time should
   // just be the scroll offset.
@@ -73,7 +108,8 @@ TEST_F(ScrollTimelineTest, CurrentTimeIsAdjustedForTimeRange) {
   ScrollTimeline timeline(scroller_id(), ScrollTimeline::Vertical, 100);
 
   double halfwayY = (content_size().height() - container_size().height()) / 2.;
-  scroll_tree().SetScrollOffset(scroller_id(), gfx::ScrollOffset(0, halfwayY));
+  SetScrollOffset(&property_trees(), scroller_id(),
+                  gfx::ScrollOffset(0, halfwayY));
 
   EXPECT_FLOAT_EQ(50, timeline.CurrentTime(scroll_tree(), false));
 }
@@ -95,17 +131,11 @@ TEST_F(ScrollTimelineTest, ActiveTimeIsSetOnlyAfterPromotion) {
 
   // Initially only the pending tree has the scroll node.
   ElementId scroller_id(1);
-  ScrollNode node;
-  node.scrollable = true;
-  node.bounds = content_size();
-  node.container_bounds = container_size();
-
-  int node_id = pending_tree.scroll_tree.Insert(node, 0);
-  pending_tree.element_id_to_scroll_node_index[scroller_id] = node_id;
+  CreateScrollingElement(&pending_tree, scroller_id, content_size(),
+                         container_size());
 
   double halfwayY = (content_size().height() - container_size().height()) / 2.;
-  pending_tree.scroll_tree.SetScrollOffset(scroller_id,
-                                           gfx::ScrollOffset(0, halfwayY));
+  SetScrollOffset(&pending_tree, scroller_id, gfx::ScrollOffset(0, halfwayY));
 
   ScrollTimeline main_timeline(scroller_id, ScrollTimeline::Vertical, 100);
 
@@ -129,6 +159,21 @@ TEST_F(ScrollTimelineTest, ActiveTimeIsSetOnlyAfterPromotion) {
                   impl_timeline->CurrentTime(pending_tree.scroll_tree, true));
   EXPECT_FLOAT_EQ(50,
                   impl_timeline->CurrentTime(pending_tree.scroll_tree, false));
+}
+
+TEST_F(ScrollTimelineTest, CurrentTimeIsAdjustedForPixelSnapping) {
+  double time_range = content_size().height() - container_size().height();
+  ScrollTimeline timeline(scroller_id(), ScrollTimeline::Vertical, time_range);
+
+  SetScrollOffset(&property_trees(), scroller_id(), gfx::ScrollOffset(0, 50));
+
+  // For simplicity emulate snapping by directly setting snap_amount of
+  // transform node.
+  TransformNode* transform_node =
+      property_trees().transform_tree.FindNodeFromElementId(scroller_id());
+  transform_node->snap_amount = gfx::Vector2dF(0, 0.5);
+
+  EXPECT_FLOAT_EQ(49.5, timeline.CurrentTime(scroll_tree(), false));
 }
 
 }  // namespace cc

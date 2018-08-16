@@ -419,6 +419,18 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // on the active tree.
   const gfx::ScrollOffset current_scroll_offset(ElementId id) const;
 
+  // Returns the scroll offset taking into account any adjustments that may be
+  // included due to pixel snapping.
+  //
+  // Note: Using this method may causes the associated transform node for this
+  // scroll node to update its transforms.
+  //
+  // TODO(crbug.com/585458): Updating single transform node only works for
+  // simple cases but we really should update the whole transform tree otherwise
+  // we are ignoring any parent transform node that needs updating and thus our
+  // snap amount can be incorrect.
+  const gfx::ScrollOffset GetPixelSnappedScrollOffset(int scroll_node_id) const;
+
   // Collects deltas for scroll changes on the impl thread that need to be
   // reported to the main thread during the main frame. As such, should only be
   // called on the impl thread side PropertyTrees.
