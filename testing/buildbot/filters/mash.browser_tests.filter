@@ -41,10 +41,10 @@
 -BrowserNonClientFrameViewAshTest.TopViewInset/*
 
 # Direct access to ash window frames, tablet mode, overview mode, etc.
--HostedAppNonClientFrameViewAshTest.*
 -NonHomeLauncherBrowserNonClientFrameViewAshTest.*
 
 # Fix immersive fullscreen mode in mash. https://crbug.com/844748.
+# Needs EventGenerator to work across window tree hosts. crbug.com/814675
 -ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInAppImmersiveMode*
 -ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInBrowserImmersiveMode*
 
