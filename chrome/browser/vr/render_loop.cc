@@ -21,12 +21,14 @@
 namespace vr {
 
 RenderLoop::RenderLoop(std::unique_ptr<UiInterface> ui,
-                       RenderLoopBrowserInterface* browser,
                        CompositorDelegate* compositor_delegate,
+                       std::unique_ptr<ControllerDelegate> controller_delegate,
+                       RenderLoopBrowserInterface* browser,
                        size_t sliding_time_size)
     : ui_(std::move(ui)),
-      browser_(browser),
       compositor_delegate_(compositor_delegate),
+      controller_delegate_(std::move(controller_delegate)),
+      browser_(browser),
       ui_processing_time_(sliding_time_size),
       ui_controller_update_time_(sliding_time_size) {}
 RenderLoop::~RenderLoop() = default;

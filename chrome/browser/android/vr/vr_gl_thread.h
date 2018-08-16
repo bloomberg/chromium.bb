@@ -13,25 +13,27 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr/gl_browser_interface.h"
 #include "chrome/browser/android/vr/gvr_keyboard_delegate.h"
+#include "chrome/browser/android/vr/render_loop_factory.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/sound_id.h"
 #include "chrome/browser/vr/platform_input_handler.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
-#include "chrome/browser/vr/ui_initial_state.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace base {
 class Version;
 class WaitableEvent;
 }  // namespace base
 
+namespace gvr {
+class GvrApi;
+}
+
 namespace vr {
 
-class AudioDelegate;
 class VrInputConnection;
 class VrShell;
 class VrShellGl;
@@ -45,13 +47,13 @@ class VrGLThread : public base::android::JavaHandlerThread,
   VrGLThread(
       const base::WeakPtr<VrShell>& weak_vr_shell,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-      base::WaitableEvent* gl_surface_created_event,
       gvr_context* gvr_api,
       const UiInitialState& ui_initial_state,
       bool reprojected_rendering,
       bool daydream_support,
       bool pause_content,
       bool low_density,
+      base::WaitableEvent* gl_surface_created_event,
       base::OnceCallback<gfx::AcceleratedWidget()> surface_callback);
 
   ~VrGLThread() override;
@@ -156,12 +158,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
   bool OnMainThread() const;
   bool OnGlThread() const;
 
-  // Created on GL thread.
-  std::unique_ptr<VrShellGl> vr_shell_gl_;
-  std::unique_ptr<GvrKeyboardDelegate> keyboard_delegate_;
-  std::unique_ptr<TextInputDelegate> text_input_delegate_;
-  std::unique_ptr<AudioDelegate> audio_delegate_;
-
   base::WeakPtr<VrShell> weak_vr_shell_;
   base::WeakPtr<BrowserUiInterface> weak_browser_ui_;
   base::WeakPtr<VrInputConnection> weak_input_connection_;
@@ -170,16 +166,14 @@ class VrGLThread : public base::android::JavaHandlerThread,
   // VrGlThread. So it is safe to use raw pointer here.
   VrInputConnection* input_connection_ = nullptr;
 
-  // This state is used for initializing vr_shell_gl_.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  base::WaitableEvent* gl_surface_created_event_;
-  gvr_context* gvr_api_;
-  UiInitialState ui_initial_state_;
-  bool reprojected_rendering_;
-  bool daydream_support_;
-  bool pause_content_;
-  bool low_density_;
-  base::OnceCallback<gfx::AcceleratedWidget()> surface_callback_;
+
+  // Created on GL thread.
+  std::unique_ptr<VrShellGl> vr_shell_gl_;
+  std::unique_ptr<gvr::GvrApi> gvr_api_;
+
+  // This state is used for initializing the RenderLoop.
+  std::unique_ptr<RenderLoopFactory::Params> factory_params_;
 
   DISALLOW_COPY_AND_ASSIGN(VrGLThread);
 };

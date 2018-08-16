@@ -77,38 +77,48 @@ UiElementName UserFriendlyElementNameToUiElementName(
 
 Ui::Ui(UiBrowserInterface* browser,
        PlatformInputHandler* content_input_forwarder,
-       KeyboardDelegate* keyboard_delegate,
-       TextInputDelegate* text_input_delegate,
-       AudioDelegate* audio_delegate,
+       std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+       std::unique_ptr<TextInputDelegate> text_input_delegate,
+       std::unique_ptr<AudioDelegate> audio_delegate,
        const UiInitialState& ui_initial_state)
     : Ui(browser,
          std::make_unique<ContentInputDelegate>(content_input_forwarder),
-         keyboard_delegate,
-         text_input_delegate,
-         audio_delegate,
+         std::move(keyboard_delegate),
+         std::move(text_input_delegate),
+         std::move(audio_delegate),
          ui_initial_state) {}
 
 Ui::Ui(UiBrowserInterface* browser,
        std::unique_ptr<ContentInputDelegate> content_input_delegate,
-       KeyboardDelegate* keyboard_delegate,
-       TextInputDelegate* text_input_delegate,
-       AudioDelegate* audio_delegate,
+       std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+       std::unique_ptr<TextInputDelegate> text_input_delegate,
+       std::unique_ptr<AudioDelegate> audio_delegate,
        const UiInitialState& ui_initial_state)
     : browser_(browser),
       scene_(std::make_unique<UiScene>()),
       model_(std::make_unique<Model>()),
       content_input_delegate_(std::move(content_input_delegate)),
       input_manager_(std::make_unique<UiInputManager>(scene_.get())),
-      audio_delegate_(audio_delegate),
+      keyboard_delegate_(std::move(keyboard_delegate)),
+      text_input_delegate_(std::move(text_input_delegate)),
+      audio_delegate_(std::move(audio_delegate)),
       weak_ptr_factory_(this) {
   UiInitialState state = ui_initial_state;
-  if (keyboard_delegate != nullptr)
-    state.supports_selection = keyboard_delegate->SupportsSelection();
+  if (text_input_delegate_) {
+    text_input_delegate_->SetRequestFocusCallback(
+        base::BindRepeating(&Ui::RequestFocus, base::Unretained(this)));
+    text_input_delegate_->SetRequestUnfocusCallback(
+        base::BindRepeating(&Ui::RequestUnfocus, base::Unretained(this)));
+  }
+  if (keyboard_delegate_) {
+    keyboard_delegate_->SetUiInterface(this);
+    state.supports_selection = keyboard_delegate_->SupportsSelection();
+  }
   InitializeModel(state);
 
   UiSceneCreator(browser, scene_.get(), this, content_input_delegate_.get(),
-                 keyboard_delegate, text_input_delegate, audio_delegate,
-                 model_.get())
+                 keyboard_delegate_.get(), text_input_delegate_.get(),
+                 audio_delegate_.get(), model_.get())
       .CreateScene();
 }
 

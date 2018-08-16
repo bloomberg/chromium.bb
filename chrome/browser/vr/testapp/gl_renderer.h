@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/vr/base_compositor_delegate.h"
 #include "ui/gfx/swap_result.h"
 
 namespace gl {
@@ -19,20 +20,18 @@ namespace vr {
 class VrTestContext;
 
 // This class manages an OpenGL context and initiates per-frame rendering.
-class GlRenderer {
+class GlRenderer : public BaseCompositorDelegate {
  public:
-  GlRenderer(const scoped_refptr<gl::GLSurface>& surface,
-             vr::VrTestContext* vr);
+  GlRenderer();
+  ~GlRenderer() override;
 
-  virtual ~GlRenderer();
-
-  bool Initialize();
+  bool Initialize(const scoped_refptr<gl::GLSurface>& surface) override;
   void RenderFrame();
-  void PostRenderFrameTask(gfx::SwapResult result);
+  void PostRenderFrameTask();
+  void set_vr_context(VrTestContext* vr_context) { vr_context_ = vr_context; }
 
  private:
-  scoped_refptr<gl::GLSurface> surface_;
-  vr::VrTestContext* vr_;
+  VrTestContext* vr_context_;
 
   base::WeakPtrFactory<GlRenderer> weak_ptr_factory_;
 

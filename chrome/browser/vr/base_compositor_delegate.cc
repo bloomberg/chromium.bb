@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
@@ -41,6 +43,12 @@ bool BaseCompositorDelegate::RunInSkiaContext(SkiaContextCallback callback) {
     return false;
   std::move(callback).Run();
   return MakeContextCurrent(kMainContext);
+}
+
+void BaseCompositorDelegate::SwapSurfaceBuffers() {
+  TRACE_EVENT0("gpu", __func__);
+  DCHECK(surface_);
+  surface_->SwapBuffers(base::DoNothing());
 }
 
 bool BaseCompositorDelegate::MakeContextCurrent(ContextId context_id) {

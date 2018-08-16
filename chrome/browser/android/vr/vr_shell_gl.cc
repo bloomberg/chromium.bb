@@ -9,7 +9,6 @@
 
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/jni_android.h"
-#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/metrics/field_trial_params.h"
@@ -21,7 +20,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "chrome/browser/android/vr/gl_browser_interface.h"
-#include "chrome/browser/android/vr/gvr_controller_delegate.h"
 #include "chrome/browser/android/vr/gvr_util.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
 #include "chrome/browser/android/vr/metrics_util_android.h"
@@ -29,6 +27,7 @@
 #include "chrome/browser/android/vr/vr_controller.h"
 #include "chrome/browser/android/vr/vr_shell.h"
 #include "chrome/browser/vr/assets_loader.h"
+#include "chrome/browser/vr/controller_delegate.h"
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
@@ -186,15 +185,21 @@ UiInterface::FovRectangle ToUiFovRect(const gvr::Rectf& rect) {
 
 VrShellGl::VrShellGl(GlBrowserInterface* browser,
                      std::unique_ptr<UiInterface> ui,
-                     gvr_context* gvr_api,
+                     std::unique_ptr<ControllerDelegate> controller_delegate,
+                     gvr::GvrApi* gvr_api,
                      bool reprojected_rendering,
                      bool daydream_support,
                      bool start_in_web_vr_mode,
                      bool pause_content,
                      bool low_density)
-    : RenderLoop(std::move(ui), browser, this, kWebVRSlidingAverageSize),
+    : RenderLoop(std::move(ui),
+                 this,
+                 std::move(controller_delegate),
+                 browser,
+                 kWebVRSlidingAverageSize),
       webvr_vsync_align_(
           base::FeatureList::IsEnabled(features::kWebVrVsyncAlign)),
+      gvr_api_(gvr_api),
       low_density_(low_density),
       web_vr_mode_(start_in_web_vr_mode),
       surfaceless_rendering_(reprojected_rendering),
@@ -212,9 +217,7 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser,
       webvr_acquire_time_(kWebVRSlidingAverageSize),
       webvr_submit_time_(kWebVRSlidingAverageSize),
       weak_ptr_factory_(this) {
-  GvrInit(gvr_api);
-  set_controller_delegate(std::make_unique<GvrControllerDelegate>(
-      std::make_unique<VrController>(gvr_api), browser_));
+  GvrInit();
 }
 
 VrShellGl::~VrShellGl() {
@@ -239,20 +242,21 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     ForceExitVr();
     return;
   }
+  scoped_refptr<gl::GLSurface> surface;
   if (window) {
     DCHECK(!surfaceless_rendering_);
-    surface_ = gl::init::CreateViewGLSurface(window);
+    surface = gl::init::CreateViewGLSurface(window);
   } else {
     DCHECK(surfaceless_rendering_);
-    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+    surface = gl::init::CreateOffscreenGLSurface(gfx::Size());
   }
-  if (!surface_.get()) {
+  if (!surface.get()) {
     LOG(ERROR) << "gl::init::CreateOffscreenGLSurface failed";
     ForceExitVr();
     return;
   }
 
-  if (!BaseCompositorDelegate::Initialize(surface_)) {
+  if (!BaseCompositorDelegate::Initialize(surface)) {
     ForceExitVr();
     return;
   }
@@ -865,9 +869,7 @@ void VrShellGl::OnWebVrTimeoutImminent() {
   ui_->OnWebVrTimeoutImminent();
 }
 
-void VrShellGl::GvrInit(gvr_context* gvr_api) {
-  gvr_api_ = gvr::GvrApi::WrapNonOwned(gvr_api);
-
+void VrShellGl::GvrInit() {
   MetricsUtilAndroid::LogVrViewerType(gvr_api_->GetViewerType());
 
   cardboard_ =
@@ -1180,7 +1182,7 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
     WebXrFrame* frame = webxr_.GetProcessingFrame();
     render_info_.head_pose = frame->head_pose;
   } else {
-    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(),
+    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_,
                                                  &render_info_.head_pose);
   }
 
@@ -1534,8 +1536,7 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
   // No need to swap buffers for surfaceless rendering.
   if (!surfaceless_rendering_) {
     // TODO(mthiesse): Support asynchronous SwapBuffers.
-    TRACE_EVENT0("gpu", "VrShellGl::SwapBuffers");
-    surface_->SwapBuffers(base::DoNothing());
+    SwapSurfaceBuffers();
   }
 
   // At this point, ShouldDrawWebVr and webvr_frame_processing_ may have become
@@ -1859,7 +1860,7 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     // When drawing WebVR, controller input doesn't need to be synchronized with
     // rendering as WebVR uses the gamepad api. To ensure we always handle input
     // like app button presses, process the controller here.
-    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(),
+    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_,
                                                  &render_info_.head_pose);
     input_states_.push_back(
         ProcessControllerInputForWebXr(render_info_, frame_time));
@@ -2040,7 +2041,7 @@ void VrShellGl::SendVSync() {
   gfx::Transform head_mat;
   TRACE_EVENT_BEGIN0("gpu", "VrShellGl::GetVRPosePtrWithNeckModel");
   device::mojom::VRPosePtr pose =
-      device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), &head_mat,
+      device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_, &head_mat,
                                                      prediction_nanos);
   TRACE_EVENT_END0("gpu", "VrShellGl::GetVRPosePtrWithNeckModel");
 

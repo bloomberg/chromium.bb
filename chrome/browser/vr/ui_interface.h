@@ -105,8 +105,6 @@ class UiInterface : public BrowserUiInterface, public KeyboardUiInterface {
                            ReticleModel* reticle_model,
                            InputEventList* input_event_list) = 0;
   virtual void HandleMenuButtonEvents(InputEventList* input_event_list) = 0;
-  virtual void RequestFocus(int element_id) = 0;
-  virtual void RequestUnfocus(int element_id) = 0;
 
   // This function calculates the minimal FOV (in degrees) which covers all
   // visible overflow elements as if it was viewing from fov_recommended. For

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VR_TESTAPP_TEST_KEYBOARD_DELEGATE_H_
 #define CHROME_BROWSER_VR_TESTAPP_TEST_KEYBOARD_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/keyboard_ui_interface.h"
@@ -30,6 +32,7 @@ class TestKeyboardDelegate : public KeyboardDelegate {
   TestKeyboardDelegate();
   ~TestKeyboardDelegate() override;
 
+  void SetUiInterface(KeyboardUiInterface* ui) override;
   void ShowKeyboard() override;
   void HideKeyboard() override;
   void SetTransform(const gfx::Transform& transform) override;
@@ -38,12 +41,9 @@ class TestKeyboardDelegate : public KeyboardDelegate {
                gfx::Point3F* hit_position) override;
   void Draw(const CameraModel& model) override;
   bool SupportsSelection() override;
+  void UpdateInput(const vr::TextInputInfo& info) override;
 
   void Initialize(SkiaSurfaceProvider* provider, UiElementRenderer* renderer);
-  void SetUiInterface(KeyboardUiInterface* keyboard) {
-    ui_interface_ = keyboard;
-  }
-  void UpdateInput(const vr::TextInputInfo& info);
   bool HandleInput(ui::Event* e);
 
  private:

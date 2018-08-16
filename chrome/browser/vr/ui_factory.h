@@ -24,9 +24,9 @@ class VR_EXPORT UiFactory {
   static std::unique_ptr<UiInterface> Create(
       UiBrowserInterface* browser,
       PlatformInputHandler* content_input_forwarder,
-      KeyboardDelegate* keyboard_delegate,
-      TextInputDelegate* text_input_delegate,
-      AudioDelegate* audio_delegate,
+      std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+      std::unique_ptr<TextInputDelegate> text_input_delegate,
+      std::unique_ptr<AudioDelegate> audio_delegate,
       const UiInitialState& ui_initial_state);
 };
 

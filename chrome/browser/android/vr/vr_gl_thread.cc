@@ -27,25 +27,27 @@ namespace vr {
 VrGLThread::VrGLThread(
     const base::WeakPtr<VrShell>& weak_vr_shell,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-    base::WaitableEvent* gl_surface_created_event,
     gvr_context* gvr_api,
     const UiInitialState& ui_initial_state,
     bool reprojected_rendering,
     bool daydream_support,
     bool pause_content,
     bool low_density,
+    base::WaitableEvent* gl_surface_created_event,
     base::OnceCallback<gfx::AcceleratedWidget()> surface_callback)
     : base::android::JavaHandlerThread("VrShellGL"),
       weak_vr_shell_(weak_vr_shell),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
-      gl_surface_created_event_(gl_surface_created_event),
-      gvr_api_(gvr_api),
-      ui_initial_state_(ui_initial_state),
-      reprojected_rendering_(reprojected_rendering),
-      daydream_support_(daydream_support),
-      pause_content_(pause_content),
-      low_density_(low_density),
-      surface_callback_(std::move(surface_callback)) {}
+      gvr_api_(gvr::GvrApi::WrapNonOwned(gvr_api)),
+      factory_params_(std::make_unique<RenderLoopFactory::Params>(
+          gvr_api_.get(),
+          ui_initial_state,
+          reprojected_rendering,
+          daydream_support,
+          pause_content,
+          low_density,
+          gl_surface_created_event,
+          std::move(surface_callback))) {}
 
 VrGLThread::~VrGLThread() {
   Stop();
@@ -61,40 +63,11 @@ void VrGLThread::SetInputConnection(VrInputConnection* input_connection) {
 }
 
 void VrGLThread::Init() {
-  keyboard_delegate_ = GvrKeyboardDelegate::Create();
-  text_input_delegate_ = std::make_unique<TextInputDelegate>();
-  if (!keyboard_delegate_.get())
-    ui_initial_state_.needs_keyboard_update = true;
-
-  audio_delegate_ = std::make_unique<SoundsManagerAudioDelegate>();
-
-  auto ui = UiFactory::Create(this, this, keyboard_delegate_.get(),
-                              text_input_delegate_.get(), audio_delegate_.get(),
-                              ui_initial_state_);
-  text_input_delegate_->SetRequestFocusCallback(base::BindRepeating(
-      &UiInterface::RequestFocus, base::Unretained(ui.get())));
-  text_input_delegate_->SetRequestUnfocusCallback(base::BindRepeating(
-      &UiInterface::RequestUnfocus, base::Unretained(ui.get())));
-  if (keyboard_delegate_.get()) {
-    keyboard_delegate_->SetUiInterface(ui.get());
-    text_input_delegate_->SetUpdateInputCallback(
-        base::BindRepeating(&GvrKeyboardDelegate::UpdateInput,
-                            base::Unretained(keyboard_delegate_.get())));
-  }
-
-  vr_shell_gl_ = std::make_unique<VrShellGl>(
-      this, std::move(ui), gvr_api_, reprojected_rendering_, daydream_support_,
-      ui_initial_state_.in_web_vr, pause_content_, low_density_);
-
+  vr_shell_gl_ = RenderLoopFactory::Create(this, std::move(factory_params_));
   weak_browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
-  task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&VrShellGl::Init, vr_shell_gl_->GetWeakPtr(),
-                                base::Unretained(gl_surface_created_event_),
-                                base::Passed(std::move(surface_callback_))));
 }
 
 void VrGLThread::CleanUp() {
-  audio_delegate_.reset();
   vr_shell_gl_.reset();
 }
 

@@ -6,6 +6,7 @@
 
 #include <android/native_window_jni.h>
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -168,10 +169,10 @@ VrShell::VrShell(JNIEnv* env,
       base::BindOnce(&VrShell::GetRenderSurface, base::Unretained(this));
 
   gl_thread_ = std::make_unique<VrGLThread>(
-      weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_,
-      &gl_surface_created_event_, gvr_api, ui_initial_state,
-      reprojected_rendering_, HasDaydreamSupport(env), pause_content,
-      low_density, std::move(surface_callback));
+      weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_, gvr_api,
+      ui_initial_state, reprojected_rendering_, HasDaydreamSupport(env),
+      pause_content, low_density, &gl_surface_created_event_,
+      std::move(surface_callback));
   ui_ = gl_thread_.get();
   toolbar_ = std::make_unique<ToolbarHelper>(ui_, this);
   autocomplete_controller_ =
@@ -331,8 +332,7 @@ VrShell::~VrShell() {
 
 void VrShell::PostToGlThread(const base::Location& from_here,
                              base::OnceClosure task) {
-  gl_thread_->message_loop()->task_runner()->PostTask(from_here,
-                                                      std::move(task));
+  gl_thread_->task_runner()->PostTask(from_here, std::move(task));
 }
 
 void VrShell::Navigate(GURL url, NavigationMethod method) {

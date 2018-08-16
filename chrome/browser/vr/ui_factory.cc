@@ -4,7 +4,12 @@
 
 #include "chrome/browser/vr/ui_factory.h"
 
+#include <utility>
+
+#include "chrome/browser/vr/audio_delegate.h"
 #include "chrome/browser/vr/content_input_delegate.h"
+#include "chrome/browser/vr/keyboard_delegate.h"
+#include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui.h"
 
 namespace vr {
@@ -12,13 +17,14 @@ namespace vr {
 std::unique_ptr<UiInterface> UiFactory::Create(
     UiBrowserInterface* browser,
     PlatformInputHandler* content_input_forwarder,
-    KeyboardDelegate* keyboard_delegate,
-    TextInputDelegate* text_input_delegate,
-    AudioDelegate* audio_delegate,
+    std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+    std::unique_ptr<TextInputDelegate> text_input_delegate,
+    std::unique_ptr<AudioDelegate> audio_delegate,
     const UiInitialState& ui_initial_state) {
   return std::make_unique<Ui>(browser, content_input_forwarder,
-                              keyboard_delegate, text_input_delegate,
-                              audio_delegate, ui_initial_state);
+                              std::move(keyboard_delegate),
+                              std::move(text_input_delegate),
+                              std::move(audio_delegate), ui_initial_state);
 }
 
 }  // namespace vr

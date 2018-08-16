@@ -12,6 +12,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/browser/vr/base_compositor_delegate.h"
 #include "chrome/browser/vr/testapp/gl_renderer.h"
 #include "chrome/browser/vr/testapp/vr_test_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -45,8 +46,7 @@ class RendererFactory {
   ~RendererFactory();
 
   bool Initialize();
-  std::unique_ptr<vr::GlRenderer> CreateRenderer(gfx::AcceleratedWidget widget,
-                                                 vr::VrTestContext* vr);
+  std::unique_ptr<vr::GlRenderer> CreateRenderer(gfx::AcceleratedWidget widget);
 
  private:
   // Helper for applications that do GL on main thread.
@@ -100,7 +100,6 @@ class AppWindow : public ui::PlatformWindowDelegate {
             const gfx::Rect& bounds)
       : window_manager_(window_manager),
         renderer_factory_(renderer_factory),
-        vr_(std::make_unique<vr::VrTestContext>()),
         weak_ptr_factory_(this) {
     ui::PlatformWindowInitProperties properties;
     properties.bounds = gfx::Rect(1024, 768);
@@ -131,10 +130,12 @@ class AppWindow : public ui::PlatformWindowDelegate {
 
   // PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override {
-    vr_->set_window_size(new_bounds.size());
+    vr_context_->set_window_size(new_bounds.size());
   }
   void OnDamageRect(const gfx::Rect& damaged_region) override {}
-  void DispatchEvent(ui::Event* event) override { vr_->HandleInput(event); }
+  void DispatchEvent(ui::Event* event) override {
+    vr_context_->HandleInput(event);
+  }
   void OnCloseRequest() override { Quit(); }
   void OnClosed() override {}
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override {}
@@ -150,15 +151,15 @@ class AppWindow : public ui::PlatformWindowDelegate {
   // Since we pretend to have a GPU process, we should also pretend to
   // initialize the GPU resources via a posted task.
   void StartOnGpu() {
-    renderer_ =
-        renderer_factory_->CreateRenderer(GetAcceleratedWidget(), vr_.get());
-    renderer_->Initialize();
+    renderer_ = renderer_factory_->CreateRenderer(GetAcceleratedWidget());
+    vr_context_ = std::make_unique<vr::VrTestContext>(renderer_.get());
+    renderer_->set_vr_context(vr_context_.get());
   }
 
   WindowManager* window_manager_;      // Not owned.
   RendererFactory* renderer_factory_;  // Not owned.
 
-  std::unique_ptr<vr::VrTestContext> vr_;
+  std::unique_ptr<vr::VrTestContext> vr_context_;
   std::unique_ptr<vr::GlRenderer> renderer_;
 
   // Window-related state.
@@ -187,14 +188,15 @@ bool RendererFactory::Initialize() {
 }
 
 std::unique_ptr<vr::GlRenderer> RendererFactory::CreateRenderer(
-    gfx::AcceleratedWidget widget,
-    vr::VrTestContext* vr) {
+    gfx::AcceleratedWidget widget) {
   scoped_refptr<gl::GLSurface> surface = gl::init::CreateViewGLSurface(widget);
   if (!surface) {
     LOG(FATAL) << "Failed to create GL surface";
     return nullptr;
   }
-  return std::make_unique<vr::GlRenderer>(surface, vr);
+  auto renderer = std::make_unique<vr::GlRenderer>();
+  CHECK(renderer->Initialize(surface));
+  return renderer;
 }
 
 WindowManager::WindowManager(const base::Closure& quit_closure)

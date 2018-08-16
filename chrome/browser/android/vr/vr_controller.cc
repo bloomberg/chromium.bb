@@ -52,13 +52,11 @@ gvr::ControllerButton PlatformToGvrButton(PlatformController::ButtonType type) {
 
 }  // namespace
 
-VrController::VrController(gvr_context* gvr_context)
-    : previous_button_states_{0} {
+VrController::VrController(gvr::GvrApi* gvr_api)
+    : gvr_api_(gvr_api), previous_button_states_{0} {
   DVLOG(1) << __FUNCTION__ << "=" << this;
-  CHECK(gvr_context != nullptr) << "invalid gvr_context";
   controller_api_ = std::make_unique<gvr::ControllerApi>();
   controller_state_ = std::make_unique<gvr::ControllerState>();
-  gvr_api_ = gvr::GvrApi::WrapNonOwned(gvr_context);
 
   int32_t options = gvr::ControllerApi::DefaultOptions();
 
@@ -69,7 +67,7 @@ VrController::VrController(gvr_context* gvr_context)
   options |= GVR_CONTROLLER_ENABLE_GYRO;
   options |= GVR_CONTROLLER_ENABLE_ACCEL;
 
-  CHECK(controller_api_->Init(options, gvr_context));
+  CHECK(controller_api_->Init(options, gvr_api_->cobj()));
   controller_api_->Resume();
 
   handedness_ = gvr_api_->GetUserPrefs().GetControllerHandedness();

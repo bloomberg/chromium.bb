@@ -59,6 +59,7 @@ struct SyncToken;
 namespace vr {
 
 class BrowserUiInterface;
+class ControllerDelegate;
 class FPSMeter;
 class GlBrowserInterface;
 class MailboxToSurfaceBridge;
@@ -103,7 +104,8 @@ class VrShellGl : public RenderLoop,
  public:
   VrShellGl(GlBrowserInterface* browser,
             std::unique_ptr<UiInterface> ui,
-            gvr_context* gvr_api,
+            std::unique_ptr<ControllerDelegate> controller_delegate,
+            gvr::GvrApi* gvr_api,
             bool reprojected_rendering,
             bool daydream_support,
             bool start_in_web_vr_mode,
@@ -163,7 +165,7 @@ class VrShellGl : public RenderLoop,
 
  private:
   void InitializeGl(gfx::AcceleratedWidget surface);
-  void GvrInit(gvr_context* gvr_api);
+  void GvrInit();
 
   device::mojom::XRPresentationTransportOptionsPtr
   GetWebVrFrameTransportOptions(
@@ -284,7 +286,7 @@ class VrShellGl : public RenderLoop,
   std::unique_ptr<gl::ScopedJavaSurface> ui_surface_;
   std::unique_ptr<gl::ScopedJavaSurface> content_overlay_surface_;
 
-  std::unique_ptr<gvr::GvrApi> gvr_api_;
+  gvr::GvrApi* gvr_api_;
   gvr::BufferViewportList viewport_list_;
   Viewport main_viewport_;
   Viewport webvr_viewport_;

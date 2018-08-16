@@ -26,6 +26,9 @@ class VR_EXPORT BaseCompositorDelegate : public CompositorDelegate {
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface) override;
   bool RunInSkiaContext(SkiaContextCallback callback) override;
 
+ protected:
+  void SwapSurfaceBuffers();
+
  private:
   enum ContextId { kNone = -1, kMainContext, kSkiaContext, kNumContexts };
 
