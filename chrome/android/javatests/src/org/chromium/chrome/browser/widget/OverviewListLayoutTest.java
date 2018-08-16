@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelListItem;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -149,8 +150,12 @@ public class OverviewListLayoutTest {
 
     private CharSequence getTabTitleOfListItem(int index) {
         View childView = getListItem(index);
-        TextView childTextView =
-                (TextView) childView.findViewById(org.chromium.chrome.R.id.tab_title);
+        TextView childTextView;
+        if (FeatureUtilities.isChromeModernDesignEnabled()) {
+            childTextView = (TextView) childView.findViewById(org.chromium.chrome.R.id.title);
+        } else {
+            childTextView = (TextView) childView.findViewById(org.chromium.chrome.R.id.tab_title);
+        }
         return childTextView.getText();
     }
 
