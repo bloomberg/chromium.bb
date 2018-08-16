@@ -320,8 +320,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   PreviewsInfoBarDelegate::Create(
       web_contents(), previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
-      false /* is_reload */,
-      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback(),
+      false /* is_reload */, OnDismissPreviewsUICallback(),
       previews_ui_service_.get());
   EXPECT_EQ(1U, infobar_service()->infobar_count());
 
@@ -348,8 +347,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   PreviewsInfoBarDelegate::Create(
       web_contents(), previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
-      false /* is_reload */,
-      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback(),
+      false /* is_reload */, OnDismissPreviewsUICallback(),
       previews_ui_service_.get());
   EXPECT_EQ(1U, infobar_service()->infobar_count());
 
@@ -478,8 +476,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   PreviewsInfoBarDelegate::Create(
       web_contents(), previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
-      false /* is_reload */,
-      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback(),
+      false /* is_reload */, OnDismissPreviewsUICallback(),
       previews_ui_service_.get());
 
   // Infobar should not be shown again since a navigation hasn't happened.

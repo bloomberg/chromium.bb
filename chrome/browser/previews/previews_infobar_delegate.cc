@@ -115,7 +115,7 @@ void PreviewsInfoBarDelegate::Create(
     base::Time previews_freshness,
     bool is_data_saver_user,
     bool is_reload,
-    OnDismissPreviewsInfobarCallback on_dismiss_callback,
+    OnDismissPreviewsUICallback on_dismiss_callback,
     previews::PreviewsUIService* previews_ui_service) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents);
@@ -167,7 +167,7 @@ PreviewsInfoBarDelegate::PreviewsInfoBarDelegate(
     base::Time previews_freshness,
     bool is_data_saver_user,
     bool is_reload,
-    OnDismissPreviewsInfobarCallback on_dismiss_callback)
+    OnDismissPreviewsUICallback on_dismiss_callback)
     : ConfirmInfoBarDelegate(),
       ui_tab_helper_(ui_tab_helper),
       previews_type_(previews_type),
