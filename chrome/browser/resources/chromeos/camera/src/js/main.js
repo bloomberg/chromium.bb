@@ -70,12 +70,6 @@ camera.Camera = function() {
   // Handle window resize.
   window.addEventListener('resize', this.onWindowResize_.bind(this));
 
-  // Animate the error icon.
-  document.querySelector('#error .icon').addEventListener('mousedown',
-      this.onErrorIconClicked_.bind(this));
-  document.querySelector('#error .icon').addEventListener('touchstart',
-      this.onErrorIconClicked_.bind(this));
-
   // Set the localized window title.
   document.title = chrome.i18n.getMessage('name');
 };
@@ -309,18 +303,6 @@ camera.Camera.prototype.onWindowResize_ = function() {
   this.viewsStack_.all.forEach(view => {
     view.onResize();
   });
-};
-
-/**
- * Handles clicking on the error icon.
- * @private
- */
-camera.Camera.prototype.onErrorIconClicked_ = function() {
-  var icon = document.querySelector('#error .icon');
-  icon.classList.remove('animate');
-  setTimeout(() => {
-    icon.classList.add('animate');
-  }, 0);
 };
 
 /**
