@@ -431,6 +431,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[ash::prefs::kDockedMagnifierScale] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
+  // App list settings.
+  (*s_whitelist)[prefs::kAppListContinueReadingEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
   // Input method settings.
   (*s_whitelist)[::prefs::kLanguagePreloadEngines] =
       settings_api::PrefType::PREF_TYPE_STRING;

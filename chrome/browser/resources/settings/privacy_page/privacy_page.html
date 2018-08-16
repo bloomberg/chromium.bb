@@ -146,6 +146,13 @@
                 aria-describedby="clearBrowsingDataSecondary"></button>
           </paper-icon-button-light>
         </div>
+<if expr="chromeos">
+        <settings-toggle-button
+            pref="{{prefs.app_list.continue_reading_enabled}}"
+            label="$i18n{enableAppListContinueReading}"
+            sub-label="$i18n{enableAppListContinueReadingDescription}">
+        </settings-toggle-button>
+</if>
         <div class="settings-box" on-click="onMoreSettingsBoxClicked_"
             hidden="[[!unifiedConsentEnabled_]]">
           <div class="start">$i18nRaw{syncAndPersonalizationLink}</div>
