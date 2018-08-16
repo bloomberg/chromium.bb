@@ -353,16 +353,6 @@ void SecurityPolicy::AddOriginAccessBlacklistEntry(
                        GetOriginAccessBlacklistMap());
 }
 
-void SecurityPolicy::RemoveOriginAccessBlacklistEntry(
-    const SecurityOrigin& source_origin,
-    const String& destination_protocol,
-    const String& destination_domain,
-    bool allow_destination_subdomains) {
-  RemoveOriginAccessEntry(source_origin, destination_protocol,
-                          destination_domain, allow_destination_subdomains,
-                          GetOriginAccessBlacklistMap());
-}
-
 void SecurityPolicy::ResetOriginAccessBlacklists() {
   DCHECK(IsMainThread());
   GetOriginAccessBlacklistMap().clear();
