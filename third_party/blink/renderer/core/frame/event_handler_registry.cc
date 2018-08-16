@@ -292,8 +292,14 @@ void EventHandlerRegistry::NotifyHasHandlersChanged(
     if (handler_class == kTouchStartOrMoveEventBlocking ||
         handler_class == kTouchStartOrMoveEventBlockingLowLatency) {
       if (auto* node = target->ToNode()) {
-        if (auto* layout_object = node->GetLayoutObject())
+        if (auto* layout_object = node->GetLayoutObject()) {
           layout_object->MarkEffectiveWhitelistedTouchActionChanged();
+          auto* continuation = layout_object->VirtualContinuation();
+          while (continuation) {
+            continuation->MarkEffectiveWhitelistedTouchActionChanged();
+            continuation = continuation->VirtualContinuation();
+          }
+        }
       } else if (auto* dom_window = target->ToLocalDOMWindow()) {
         // This event handler is on a window. Ensure the layout view is
         // invalidated because the layout view tracks the window's blocking
