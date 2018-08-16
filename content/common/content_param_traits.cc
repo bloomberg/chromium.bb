@@ -148,7 +148,7 @@ void ParamTraits<scoped_refptr<storage::BlobHandle>>::Log(const param_type& p,
 void ParamTraits<content::FrameMsg_ViewChanged_Params>::Write(
     base::Pickle* m,
     const param_type& p) {
-  DCHECK(!features::IsAshInBrowserProcess() ||
+  DCHECK(features::IsUsingWindowService() ||
          (p.frame_sink_id.has_value() && p.frame_sink_id->is_valid()));
   WriteParam(m, p.frame_sink_id);
 }
@@ -159,7 +159,7 @@ bool ParamTraits<content::FrameMsg_ViewChanged_Params>::Read(
     param_type* r) {
   if (!ReadParam(m, iter, &(r->frame_sink_id)))
     return false;
-  if (features::IsAshInBrowserProcess() &&
+  if (!features::IsUsingWindowService() &&
       (!r->frame_sink_id || !r->frame_sink_id->is_valid())) {
     NOTREACHED();
     return false;

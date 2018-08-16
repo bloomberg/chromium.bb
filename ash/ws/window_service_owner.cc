@@ -29,7 +29,7 @@ void WindowServiceOwner::BindWindowService(
     service_manager::mojom::ServiceRequest request) {
   // This should only be called once. If called more than once it means the
   // WindowService lost its connection to the service_manager, which triggered
-  // a new connection WindowService to be created. That should never happen.
+  // a new WindowService to be created. That should never happen.
   DCHECK(!service_context_);
 
   window_service_delegate_ = std::make_unique<WindowServiceDelegateImpl>();

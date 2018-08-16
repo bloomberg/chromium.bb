@@ -1164,7 +1164,7 @@ void Shell::Init(
   power_button_controller_->OnDisplayModeChanged(
       display_configurator_->cached_displays());
 
-  if (!::features::IsAshInBrowserProcess() || ::features::IsSingleProcessMash())
+  if (::features::IsUsingWindowService())
     client_image_registry_ = std::make_unique<ClientImageRegistry>();
 
   drag_drop_controller_ = std::make_unique<DragDropController>();
