@@ -34,7 +34,7 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
 
   std::unique_ptr<AuthenticatorRequestSheetView> sheet_view;
   switch (dialog_model->current_step()) {
-    case Step::kInitial:
+    case Step::kWelcomeScreen:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AuthenticatorInitialSheetModel>(dialog_model));
       break;
@@ -43,15 +43,9 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
           std::make_unique<AuthenticatorTransportSelectorSheetModel>(
               dialog_model));
       break;
-    case Step::kUsbInsertAndActivateOnRegister:
+    case Step::kUsbInsertAndActivate:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
-          std::make_unique<
-              AuthenticatorInsertAndActivateUsbOnRegisterSheetModel>(
-              dialog_model));
-      break;
-    case Step::kUsbInsertAndActivateOnSign:
-      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
-          std::make_unique<AuthenticatorInsertAndActivateUsbOnSignSheetModel>(
+          std::make_unique<AuthenticatorInsertAndActivateUsbSheetModel>(
               dialog_model));
       break;
     case Step::kErrorTimedOut:

@@ -90,12 +90,12 @@ base::string16 AuthenticatorInitialSheetModel::GetStepTitle() const {
   // TODO(hongjunchoi): Insert actual domain name from model to
   // |application_name|.
   base::string16 application_name = base::UTF8ToUTF16("example.com");
-  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_INITIAL_SHEET_TITLE,
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_TITLE,
                                     application_name);
 }
 
 base::string16 AuthenticatorInitialSheetModel::GetStepDescription() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_INITIAL_SHEET_DESCRIPTION);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_DESCRIPTION);
 }
 
 bool AuthenticatorInitialSheetModel::IsAcceptButtonVisible() const {
@@ -107,14 +107,14 @@ bool AuthenticatorInitialSheetModel::IsAcceptButtonEnabled() const {
 }
 
 base::string16 AuthenticatorInitialSheetModel::GetAcceptButtonLabel() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_INITIAL_SHEET_NEXT);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_NEXT);
 }
 
 void AuthenticatorInitialSheetModel::OnAccept() {
   // TODO(hongjunchoi): Check whether Bluetooth adapter is enabled and if it is,
   // set current step to |kTransportSelection|.
   dialog_model()->SetCurrentStep(
-      AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivateOnRegister);
+      AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate);
 }
 
 // AuthenticatorTransportSelectorSheetModel -----------------------------------
@@ -143,44 +143,25 @@ void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
   dialog_model()->StartGuidedFlowForTransport(transport);
 }
 
-// AuthenticatorInsertAndActivateUsbOnRegisterSheetModel ----------------------
+// AuthenticatorInsertAndActivateUsbSheetModel ----------------------
 
 gfx::ImageSkia*
-AuthenticatorInsertAndActivateUsbOnRegisterSheetModel::GetStepIllustration()
-    const {
+AuthenticatorInsertAndActivateUsbSheetModel::GetStepIllustration() const {
   return GetImage(IDR_WEBAUTHN_ILLUSTRATION_USB_1X);
 }
 
-base::string16
-AuthenticatorInsertAndActivateUsbOnRegisterSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_TITLE_ON_REGISTER);
-}
-
-base::string16
-AuthenticatorInsertAndActivateUsbOnRegisterSheetModel::GetStepDescription()
-    const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_INSERT_DESCRIPTION);
-}
-
-// AuthenticatorInsertAndActivateUsbOnSignSheetModel ----------------------
-
-gfx::ImageSkia*
-AuthenticatorInsertAndActivateUsbOnSignSheetModel::GetStepIllustration() const {
-  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_USB_1X);
-}
-
-base::string16 AuthenticatorInsertAndActivateUsbOnSignSheetModel::GetStepTitle()
+base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepTitle()
     const {
   // TODO(hongjunchoi): Insert actual domain name from model to
   // |application_name|.
   base::string16 application_name = base::UTF8ToUTF16("example.com");
-  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_USB_TITLE_ON_SIGNIN,
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
                                     application_name);
 }
 
-base::string16
-AuthenticatorInsertAndActivateUsbOnSignSheetModel::GetStepDescription() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_INSERT_DESCRIPTION);
+base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_ACTIVATE_DESCRIPTION);
 }
 
 // AuthenticatorTimeoutErrorModel ---------------------------------------------
@@ -190,11 +171,11 @@ gfx::ImageSkia* AuthenticatorTimeoutErrorModel::GetStepIllustration() const {
 }
 
 base::string16 AuthenticatorTimeoutErrorModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_TIMEOUT_TITLE);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_GENERIC_TITLE);
 }
 
 base::string16 AuthenticatorTimeoutErrorModel::GetStepDescription() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_TIMEOUT_DESCRIPTION);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_TIMEOUT_DESCRIPTION);
 }
 
 // AuthenticatorBlePowerOnManualSheetModel ------------------------------------
@@ -205,13 +186,14 @@ gfx::ImageSkia* AuthenticatorBlePowerOnManualSheetModel::GetStepIllustration()
 }
 
 base::string16 AuthenticatorBlePowerOnManualSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_TITLE);
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_BLUETOOTH_POWER_ON_MANUAL_TITLE);
 }
 
 base::string16 AuthenticatorBlePowerOnManualSheetModel::GetStepDescription()
     const {
   return l10n_util::GetStringUTF16(
-      IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_DESCRIPTION);
+      IDS_WEBAUTHN_BLUETOOTH_POWER_ON_MANUAL_DESCRIPTION);
 }
 
 bool AuthenticatorBlePowerOnManualSheetModel::IsAcceptButtonVisible() const {
@@ -224,7 +206,7 @@ bool AuthenticatorBlePowerOnManualSheetModel::IsAcceptButtonEnabled() const {
 
 base::string16 AuthenticatorBlePowerOnManualSheetModel::GetAcceptButtonLabel()
     const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_POWER_ON_MANUAL_TRY_AGAIN);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLUETOOTH_POWER_ON_MANUAL_NEXT);
 }
 
 // AuthenticatorBlePairingBeginSheetModel -------------------------------------
@@ -253,7 +235,7 @@ bool AuthenticatorBlePairingBeginSheetModel::IsAcceptButtonEnabled() const {
 
 base::string16 AuthenticatorBlePairingBeginSheetModel::GetAcceptButtonLabel()
     const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_PAIRING_BEGIN_START);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_PAIRING_BEGIN_NEXT);
 }
 
 // AuthenticatorBleEnterPairingModeSheetModel ---------------------------------
@@ -265,7 +247,11 @@ AuthenticatorBleEnterPairingModeSheetModel::GetStepIllustration() const {
 
 base::string16 AuthenticatorBleEnterPairingModeSheetModel::GetStepTitle()
     const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_ENTER_PAIRING_MODE_TITLE);
+  // TODO(hongjunchoi): Insert actual domain name from model to
+  // |application_name|.
+  base::string16 application_name = base::UTF8ToUTF16("example.com");
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
+                                    application_name);
 }
 
 base::string16 AuthenticatorBleEnterPairingModeSheetModel::GetStepDescription()
@@ -348,7 +334,7 @@ base::string16 AuthenticatorBleActivateSheetModel::GetStepTitle() const {
   // TODO(hongjunchoi): Insert actual domain name from model to
   // |application_name|.
   base::string16 application_name = base::UTF8ToUTF16("example.com");
-  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_BLE_ACTIVATE_TITLE,
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
                                     application_name);
 }
 

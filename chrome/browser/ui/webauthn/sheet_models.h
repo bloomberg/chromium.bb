@@ -83,19 +83,7 @@ class AuthenticatorTransportSelectorSheetModel
   base::string16 GetStepDescription() const override;
 };
 
-class AuthenticatorInsertAndActivateUsbOnRegisterSheetModel
-    : public AuthenticatorSheetModelBase {
- public:
-  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
-
- private:
-  // AuthenticatorSheetModelBase:
-  gfx::ImageSkia* GetStepIllustration() const override;
-  base::string16 GetStepTitle() const override;
-  base::string16 GetStepDescription() const override;
-};
-
-class AuthenticatorInsertAndActivateUsbOnSignSheetModel
+class AuthenticatorInsertAndActivateUsbSheetModel
     : public AuthenticatorSheetModelBase {
  public:
   using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
