@@ -2580,7 +2580,8 @@ V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitDecode(
 
   Reset();
 
-  v4l2_dec_->DecodeSurface(dec_surface);
+  DVLOGF(4) << "Submitting decode for surface: " << dec_surface->ToString();
+  v4l2_dec_->Enqueue(dec_surface);
   return Status::kOk;
 }
 
@@ -2815,7 +2816,8 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator::SubmitDecode(
                               frame_hdr->frame_size))
     return false;
 
-  v4l2_dec_->DecodeSurface(dec_surface);
+  DVLOGF(4) << "Submitting decode for surface: " << dec_surface->ToString();
+  v4l2_dec_->Enqueue(dec_surface);
   return true;
 }
 
@@ -3118,7 +3120,8 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2VP9Accelerator::SubmitDecode(
                               frame_hdr->frame_size))
     return false;
 
-  v4l2_dec_->DecodeSurface(dec_surface);
+  DVLOGF(4) << "Submitting decode for surface: " << dec_surface->ToString();
+  v4l2_dec_->Enqueue(dec_surface);
   return true;
 }
 
@@ -3200,14 +3203,6 @@ V4L2SliceVideoDecodeAccelerator::V4L2VP9Accelerator::
   V4L2VP9Picture* v4l2_pic = pic->AsV4L2VP9Picture();
   CHECK(v4l2_pic);
   return v4l2_pic->dec_surface();
-}
-
-void V4L2SliceVideoDecodeAccelerator::DecodeSurface(
-    const scoped_refptr<V4L2DecodeSurface>& dec_surface) {
-  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-
-  DVLOGF(4) << "Submitting decode for surface: " << dec_surface->ToString();
-  Enqueue(dec_surface);
 }
 
 void V4L2SliceVideoDecodeAccelerator::SurfaceReady(

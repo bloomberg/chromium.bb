@@ -134,10 +134,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Return true if the driver exposes V4L2 control |ctrl_id|, false otherwise.
   bool IsCtrlExposed(uint32_t ctrl_id);
 
-  // Decode of |dec_surface| is ready to be submitted and all codec-specific
-  // settings are set in hardware.
-  void DecodeSurface(const scoped_refptr<V4L2DecodeSurface>& dec_surface);
-
   // |dec_surface| is ready to be outputted once decode is finished.
   // This can be called before decode is actually done in hardware, and this
   // method is responsible for maintaining the ordering, i.e. the surfaces will
