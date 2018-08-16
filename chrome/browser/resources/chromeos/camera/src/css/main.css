@@ -211,6 +211,10 @@ body.mirror #preview-video {
   overflow: hidden;
 }
 
+.buttons.circle #gallery-enter:active {
+  -webkit-transform: scale(1.05);
+}
+
 .buttons.circle #gallery-enter img {
   position: absolute;
   left: 50%;
@@ -270,6 +274,11 @@ body.record-mode #take-picture {
   background-image: url(../images/camera_button_toggle_device.svg);
   width: 48px;
   height: 48px;
+}
+
+.buttons #toggle-device.animate {
+  -webkit-transform: rotate(-180deg);
+  transition: transform 1s ease-out;
 }
 
 .buttons #switch-recordvideo {
@@ -606,7 +615,6 @@ body.capturing #preview-grid.visible {
      to 100%. */
   #browser div.media-wrapper.selected {
     display: block; /* Allows to keep aspect ratio of children. */
-    -webkit-transform: scale(1);
     border: none;
     box-shadow: none;
     margin: auto;
