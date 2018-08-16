@@ -343,9 +343,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCORS))
     WebRuntimeFeatures::EnableOutOfBlinkCORS(true);
 
-  if (base::FeatureList::IsEnabled(features::kOriginPolicy))
-    WebRuntimeFeatures::EnableOriginPolicy(true);
-
   WebRuntimeFeatures::EnableMediaCastOverlayButton(
       base::FeatureList::IsEnabled(media::kMediaCastOverlayButton));
 

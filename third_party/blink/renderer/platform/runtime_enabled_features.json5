@@ -843,10 +843,6 @@
       name: "OrientationEvent",
     },
     {
-      name: "OriginPolicy",
-      status: "test",
-    },
-    {
       name: "OriginTrials",
       status: "stable",
     },
