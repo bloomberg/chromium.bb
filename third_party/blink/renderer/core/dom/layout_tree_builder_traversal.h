@@ -62,6 +62,7 @@ class CORE_EXPORT LayoutTreeBuilderTraversal {
   static ContainerNode* Parent(const Node&, ParentDetails* = nullptr);
   static ContainerNode* LayoutParent(const Node&, ParentDetails* = nullptr);
   static Node* FirstChild(const Node&);
+  static Node* LastChild(const Node&);
   static Node* NextSibling(const Node&);
   static Node* NextLayoutSibling(const Node& node) {
     int32_t limit = kTraverseAllSiblings;
