@@ -361,7 +361,11 @@ var pincher = (function() {
   };
 }());
 
-window.addEventListener('touchstart', pincher.handleTouchStart, false);
-window.addEventListener('touchmove', pincher.handleTouchMove, false);
-window.addEventListener('touchend', pincher.handleTouchEnd, false);
-window.addEventListener('touchcancel', pincher.handleTouchCancel, false);
+window.addEventListener(
+  'touchstart', pincher.handleTouchStart, {passive: false});
+window.addEventListener(
+  'touchmove', pincher.handleTouchMove, {passive: false});
+window.addEventListener(
+  'touchend', pincher.handleTouchEnd, {passive: false});
+window.addEventListener(
+  'touchcancel', pincher.handleTouchCancel, {passive: false});
