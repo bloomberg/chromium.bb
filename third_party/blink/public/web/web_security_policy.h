@@ -83,12 +83,6 @@ class WebSecurityPolicy {
       const WebString& destination_protocol,
       const WebString& destination_host,
       bool disallow_destination_subdomains);
-  BLINK_EXPORT static void RemoveOriginAccessBlacklistEntry(
-      const WebURL& source_origin,
-      const WebString& destination_protocol,
-      const WebString& destination_host,
-      bool allow_destination_subdomains);
-  BLINK_EXPORT static void ResetOriginAccessBlacklists();
 
   // Support for whitelisting origins or hostname patterns to treat them as
   // trustworthy. This method does not do any canonicalization; the caller is
