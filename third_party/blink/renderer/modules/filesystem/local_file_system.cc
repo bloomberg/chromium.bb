@@ -90,7 +90,7 @@ void LocalFileSystem::ResolveURL(
 
 void LocalFileSystem::RequestFileSystem(
     ExecutionContext* context,
-    FileSystemType type,
+    mojom::blink::FileSystemType type,
     long long size,
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
@@ -145,9 +145,10 @@ void LocalFileSystem::FileSystemNotAllowedInternal(ExecutionContext* context,
                            FileError::kAbortErr));
 }
 
-void LocalFileSystem::FileSystemAllowedInternal(ExecutionContext* context,
-                                                FileSystemType type,
-                                                CallbackWrapper* callbacks) {
+void LocalFileSystem::FileSystemAllowedInternal(
+    ExecutionContext* context,
+    mojom::blink::FileSystemType type,
+    CallbackWrapper* callbacks) {
   WebFileSystem* file_system = GetFileSystem();
   if (!file_system) {
     FileSystemNotAvailable(context, callbacks);

@@ -29,6 +29,7 @@
 
 #include <memory>
 
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -40,7 +41,6 @@
 #include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/sync_callback_helper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/file_system_type.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -61,7 +61,8 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(
     UseCounter::Count(secure_context, WebFeature::kFileAccessedFileSystem);
   }
 
-  FileSystemType file_system_type = static_cast<FileSystemType>(type);
+  mojom::blink::FileSystemType file_system_type =
+      static_cast<mojom::blink::FileSystemType>(type);
   if (!DOMFileSystemBase::IsValidType(file_system_type)) {
     DOMFileSystem::ReportError(&worker,
                                ScriptErrorCallback::Wrap(error_callback),
@@ -91,7 +92,8 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
     UseCounter::Count(secure_context, WebFeature::kFileAccessedFileSystem);
   }
 
-  FileSystemType file_system_type = static_cast<FileSystemType>(type);
+  mojom::blink::FileSystemType file_system_type =
+      static_cast<mojom::blink::FileSystemType>(type);
   if (!DOMFileSystemBase::IsValidType(file_system_type)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidModificationError,
@@ -178,11 +180,11 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(
 }
 
 static_assert(static_cast<int>(WorkerGlobalScopeFileSystem::kTemporary) ==
-                  static_cast<int>(kFileSystemTypeTemporary),
+                  static_cast<int>(mojom::blink::FileSystemType::kTemporary),
               "WorkerGlobalScopeFileSystem::kTemporary should match "
               "FileSystemTypeTemporary");
 static_assert(static_cast<int>(WorkerGlobalScopeFileSystem::kPersistent) ==
-                  static_cast<int>(kFileSystemTypePersistent),
+                  static_cast<int>(mojom::blink::FileSystemType::kPersistent),
               "WorkerGlobalScopeFileSystem::kPersistent should match "
               "FileSystemTypePersistent");
 

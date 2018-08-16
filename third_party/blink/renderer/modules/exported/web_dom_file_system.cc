@@ -70,7 +70,7 @@ WebDOMFileSystem WebDOMFileSystem::Create(WebLocalFrame* frame,
   DCHECK(ToWebLocalFrameImpl(frame)->GetFrame());
   DOMFileSystem* dom_file_system = DOMFileSystem::Create(
       ToWebLocalFrameImpl(frame)->GetFrame()->GetDocument(), name,
-      static_cast<FileSystemType>(type), root_url);
+      static_cast<mojom::blink::FileSystemType>(type), root_url);
   if (serializable_type == kSerializableTypeSerializable)
     dom_file_system->MakeClonable();
   return WebDOMFileSystem(dom_file_system);
@@ -92,13 +92,13 @@ WebString WebDOMFileSystem::GetName() const {
 WebFileSystem::Type WebDOMFileSystem::GetType() const {
   DCHECK(private_.Get());
   switch (private_->GetType()) {
-    case kFileSystemTypeTemporary:
+    case blink::mojom::FileSystemType::kTemporary:
       return WebFileSystem::kTypeTemporary;
-    case kFileSystemTypePersistent:
+    case blink::mojom::FileSystemType::kPersistent:
       return WebFileSystem::kTypePersistent;
-    case kFileSystemTypeIsolated:
+    case blink::mojom::FileSystemType::kIsolated:
       return WebFileSystem::kTypeIsolated;
-    case kFileSystemTypeExternal:
+    case blink::mojom::FileSystemType::kExternal:
       return WebFileSystem::kTypeExternal;
     default:
       NOTREACHED();

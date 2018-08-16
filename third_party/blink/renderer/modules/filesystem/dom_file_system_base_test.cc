@@ -27,11 +27,11 @@ class DOMFileSystemBaseTest : public testing::Test {
 
 TEST_F(DOMFileSystemBaseTest, externalFilesystemFilesAreUserVisible) {
   KURL root_url = DOMFileSystemBase::CreateFileSystemRootURL(
-      "http://chromium.org/", kFileSystemTypeExternal);
+      "http://chromium.org/", mojom::blink::FileSystemType::kExternal);
 
-  File* file = DOMFileSystemBase::CreateFile(file_metadata_, root_url,
-                                             kFileSystemTypeExternal,
-                                             "dom_file_system_base_test.cc");
+  File* file = DOMFileSystemBase::CreateFile(
+      file_metadata_, root_url, mojom::blink::FileSystemType::kExternal,
+      "dom_file_system_base_test.cc");
   EXPECT_TRUE(file);
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ(File::kIsUserVisible, file->GetUserVisibility());
@@ -41,11 +41,11 @@ TEST_F(DOMFileSystemBaseTest, externalFilesystemFilesAreUserVisible) {
 
 TEST_F(DOMFileSystemBaseTest, temporaryFilesystemFilesAreNotUserVisible) {
   KURL root_url = DOMFileSystemBase::CreateFileSystemRootURL(
-      "http://chromium.org/", kFileSystemTypeTemporary);
+      "http://chromium.org/", mojom::blink::FileSystemType::kTemporary);
 
-  File* file = DOMFileSystemBase::CreateFile(file_metadata_, root_url,
-                                             kFileSystemTypeTemporary,
-                                             "UserVisibleName.txt");
+  File* file = DOMFileSystemBase::CreateFile(
+      file_metadata_, root_url, mojom::blink::FileSystemType::kTemporary,
+      "UserVisibleName.txt");
   EXPECT_TRUE(file);
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ(File::kIsNotUserVisible, file->GetUserVisibility());
@@ -55,11 +55,11 @@ TEST_F(DOMFileSystemBaseTest, temporaryFilesystemFilesAreNotUserVisible) {
 
 TEST_F(DOMFileSystemBaseTest, persistentFilesystemFilesAreNotUserVisible) {
   KURL root_url = DOMFileSystemBase::CreateFileSystemRootURL(
-      "http://chromium.org/", kFileSystemTypePersistent);
+      "http://chromium.org/", mojom::blink::FileSystemType::kPersistent);
 
-  File* file = DOMFileSystemBase::CreateFile(file_metadata_, root_url,
-                                             kFileSystemTypePersistent,
-                                             "UserVisibleName.txt");
+  File* file = DOMFileSystemBase::CreateFile(
+      file_metadata_, root_url, mojom::blink::FileSystemType::kPersistent,
+      "UserVisibleName.txt");
   EXPECT_TRUE(file);
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ(File::kIsNotUserVisible, file->GetUserVisibility());

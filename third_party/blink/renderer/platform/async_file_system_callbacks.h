@@ -32,10 +32,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ASYNC_FILE_SYSTEM_CALLBACKS_H_
 
 #include <memory>
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/public/platform/web_file_writer.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
-#include "third_party/blink/renderer/platform/file_system_type.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
@@ -61,7 +61,7 @@ class PLATFORM_EXPORT AsyncFileSystemCallbacks {
   // Called when a filesystem URL is resolved.
   virtual void DidResolveURL(const String& name,
                              const KURL& root_url,
-                             FileSystemType,
+                             mojom::blink::FileSystemType,
                              const String& file_path,
                              bool is_directory) {
     NOTREACHED();

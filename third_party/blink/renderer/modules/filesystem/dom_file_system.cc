@@ -65,7 +65,7 @@ void RunCallback(ExecutionContext* execution_context,
 // static
 DOMFileSystem* DOMFileSystem::Create(ExecutionContext* context,
                                      const String& name,
-                                     FileSystemType type,
+                                     mojom::blink::FileSystemType type,
                                      const KURL& root_url) {
   return new DOMFileSystem(context, name, type, root_url);
 }
@@ -94,13 +94,13 @@ DOMFileSystem* DOMFileSystem::CreateIsolatedFileSystem(
   root_url.Append('/');
 
   return DOMFileSystem::Create(context, filesystem_name.ToString(),
-                               kFileSystemTypeIsolated,
+                               mojom::blink::FileSystemType::kIsolated,
                                KURL(root_url.ToString()));
 }
 
 DOMFileSystem::DOMFileSystem(ExecutionContext* context,
                              const String& name,
-                             FileSystemType type,
+                             mojom::blink::FileSystemType type,
                              const KURL& root_url)
     : DOMFileSystemBase(context, name, type, root_url),
       ContextClient(context),

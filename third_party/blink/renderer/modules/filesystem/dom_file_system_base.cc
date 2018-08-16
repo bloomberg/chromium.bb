@@ -58,7 +58,7 @@ const char DOMFileSystemBase::kExternalPathPrefix[] = "external";
 
 DOMFileSystemBase::DOMFileSystemBase(ExecutionContext* context,
                                      const String& name,
-                                     FileSystemType type,
+                                     mojom::blink::FileSystemType type,
                                      const KURL& root_url)
     : context_(context),
       name_(name),
@@ -84,20 +84,22 @@ const SecurityOrigin* DOMFileSystemBase::GetSecurityOrigin() const {
   return context_->GetSecurityOrigin();
 }
 
-bool DOMFileSystemBase::IsValidType(FileSystemType type) {
-  return type == kFileSystemTypeTemporary ||
-         type == kFileSystemTypePersistent || type == kFileSystemTypeIsolated ||
-         type == kFileSystemTypeExternal;
+bool DOMFileSystemBase::IsValidType(mojom::blink::FileSystemType type) {
+  return type == mojom::blink::FileSystemType::kTemporary ||
+         type == mojom::blink::FileSystemType::kPersistent ||
+         type == mojom::blink::FileSystemType::kIsolated ||
+         type == mojom::blink::FileSystemType::kExternal;
 }
 
-KURL DOMFileSystemBase::CreateFileSystemRootURL(const String& origin,
-                                                FileSystemType type) {
+KURL DOMFileSystemBase::CreateFileSystemRootURL(
+    const String& origin,
+    mojom::blink::FileSystemType type) {
   String type_string;
-  if (type == kFileSystemTypeTemporary)
+  if (type == mojom::blink::FileSystemType::kTemporary)
     type_string = kTemporaryPathPrefix;
-  else if (type == kFileSystemTypePersistent)
+  else if (type == mojom::blink::FileSystemType::kPersistent)
     type_string = kPersistentPathPrefix;
-  else if (type == kFileSystemTypeExternal)
+  else if (type == mojom::blink::FileSystemType::kExternal)
     type_string = kExternalPathPrefix;
   else
     return KURL();
@@ -108,7 +110,7 @@ KURL DOMFileSystemBase::CreateFileSystemRootURL(const String& origin,
 
 bool DOMFileSystemBase::SupportsToURL() const {
   DCHECK(IsValidType(type_));
-  return type_ != kFileSystemTypeIsolated;
+  return type_ != mojom::blink::FileSystemType::kIsolated;
 }
 
 KURL DOMFileSystemBase::CreateFileSystemURL(const EntryBase* entry) const {
@@ -118,7 +120,7 @@ KURL DOMFileSystemBase::CreateFileSystemURL(const EntryBase* entry) const {
 KURL DOMFileSystemBase::CreateFileSystemURL(const String& full_path) const {
   DCHECK(DOMFilePath::IsAbsolute(full_path));
 
-  if (GetType() == kFileSystemTypeExternal) {
+  if (GetType() == mojom::blink::FileSystemType::kExternal) {
     // For external filesystem originString could be different from what we have
     // in m_filesystemRootURL.
     StringBuilder result;
@@ -143,7 +145,7 @@ KURL DOMFileSystemBase::CreateFileSystemURL(const String& full_path) const {
   return url;
 }
 
-bool DOMFileSystemBase::PathToAbsolutePath(FileSystemType type,
+bool DOMFileSystemBase::PathToAbsolutePath(mojom::blink::FileSystemType type,
                                            const EntryBase* base,
                                            String path,
                                            String& absolute_path) {
@@ -153,25 +155,26 @@ bool DOMFileSystemBase::PathToAbsolutePath(FileSystemType type,
     path = DOMFilePath::Append(base->fullPath(), path);
   absolute_path = DOMFilePath::RemoveExtraParentReferences(path);
 
-  return (type != kFileSystemTypeTemporary &&
-          type != kFileSystemTypePersistent) ||
+  return (type != mojom::blink::FileSystemType::kTemporary &&
+          type != mojom::blink::FileSystemType::kPersistent) ||
          DOMFilePath::IsValidPath(absolute_path);
 }
 
-bool DOMFileSystemBase::PathPrefixToFileSystemType(const String& path_prefix,
-                                                   FileSystemType& type) {
+bool DOMFileSystemBase::PathPrefixToFileSystemType(
+    const String& path_prefix,
+    mojom::blink::FileSystemType& type) {
   if (path_prefix == kTemporaryPathPrefix) {
-    type = kFileSystemTypeTemporary;
+    type = mojom::blink::FileSystemType::kTemporary;
     return true;
   }
 
   if (path_prefix == kPersistentPathPrefix) {
-    type = kFileSystemTypePersistent;
+    type = mojom::blink::FileSystemType::kPersistent;
     return true;
   }
 
   if (path_prefix == kExternalPathPrefix) {
-    type = kFileSystemTypeExternal;
+    type = mojom::blink::FileSystemType::kExternal;
     return true;
   }
 
@@ -180,7 +183,7 @@ bool DOMFileSystemBase::PathPrefixToFileSystemType(const String& path_prefix,
 
 File* DOMFileSystemBase::CreateFile(const FileMetadata& metadata,
                                     const KURL& file_system_url,
-                                    FileSystemType type,
+                                    mojom::blink::FileSystemType type,
                                     const String name) {
   // For regular filesystem types (temporary or persistent), we should not cache
   // file metadata as it could change File semantics.  For other filesystem
@@ -189,12 +192,14 @@ File* DOMFileSystemBase::CreateFile(const FileMetadata& metadata,
   // pass it to File constructor (so we may cache the metadata).
   // FIXME: We should use the snapshot metadata for all files.
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=17746
-  if (type == kFileSystemTypeTemporary || type == kFileSystemTypePersistent)
+  if (type == mojom::blink::FileSystemType::kTemporary ||
+      type == mojom::blink::FileSystemType::kPersistent)
     return File::CreateForFileSystemFile(metadata.platform_path, name);
 
-  const File::UserVisibility user_visibility = (type == kFileSystemTypeExternal)
-                                                   ? File::kIsUserVisible
-                                                   : File::kIsNotUserVisible;
+  const File::UserVisibility user_visibility =
+      (type == mojom::blink::FileSystemType::kExternal)
+          ? File::kIsUserVisible
+          : File::kIsNotUserVisible;
 
   if (!metadata.platform_path.IsEmpty()) {
     // If the platformPath in the returned metadata is given, we create a File
@@ -475,9 +480,13 @@ bool DOMFileSystemBase::WaitForAdditionalResult(int callbacks_id) {
   return FileSystem()->WaitForAdditionalResult(callbacks_id);
 }
 
-STATIC_ASSERT_ENUM(WebFileSystem::kTypeTemporary, kFileSystemTypeTemporary);
-STATIC_ASSERT_ENUM(WebFileSystem::kTypePersistent, kFileSystemTypePersistent);
-STATIC_ASSERT_ENUM(WebFileSystem::kTypeExternal, kFileSystemTypeExternal);
-STATIC_ASSERT_ENUM(WebFileSystem::kTypeIsolated, kFileSystemTypeIsolated);
+STATIC_ASSERT_ENUM(WebFileSystem::kTypeTemporary,
+                   mojom::blink::FileSystemType::kTemporary);
+STATIC_ASSERT_ENUM(WebFileSystem::kTypePersistent,
+                   mojom::blink::FileSystemType::kPersistent);
+STATIC_ASSERT_ENUM(WebFileSystem::kTypeExternal,
+                   mojom::blink::FileSystemType::kExternal);
+STATIC_ASSERT_ENUM(WebFileSystem::kTypeIsolated,
+                   mojom::blink::FileSystemType::kIsolated);
 
 }  // namespace blink
