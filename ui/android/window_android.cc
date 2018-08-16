@@ -191,6 +191,8 @@ void WindowAndroid::AttachCompositor(WindowAndroidCompositor* compositor) {
   compositor_ = compositor;
   for (WindowAndroidObserver& observer : observer_list_)
     observer.OnAttachCompositor();
+
+  compositor_->SetVSyncPaused(vsync_paused_);
 }
 
 void WindowAndroid::DetachCompositor() {
@@ -271,6 +273,11 @@ void WindowAndroid::OnActivityStarted(JNIEnv* env,
 void WindowAndroid::SetVSyncPaused(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj,
                                    bool paused) {
+  vsync_paused_ = paused;
+
+  if (compositor_)
+    compositor_->SetVSyncPaused(paused);
+
   begin_frame_source_->OnPauseChanged(paused);
 }
 

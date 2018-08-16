@@ -1231,6 +1231,19 @@ bool CompositorImpl::IsDrawingFirstVisibleFrame() const {
   return !has_submitted_frame_since_became_visible_;
 }
 
+void CompositorImpl::SetVSyncPaused(bool paused) {
+  // No action needed in non-Viz mode, as VSync is handled in WindowAndroid.
+  if (!enable_viz_)
+    return;
+
+  if (vsync_paused_ == paused)
+    return;
+
+  vsync_paused_ = paused;
+  if (display_private_)
+    display_private_->SetVSyncPaused(paused);
+}
+
 void CompositorImpl::OnCompositorLockStateChanged(bool locked) {
   if (host_)
     host_->SetDeferCommits(locked);
@@ -1325,6 +1338,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
   display_private_->SetDisplayVisible(true);
   display_private_->Resize(size_);
+  display_private_->SetVSyncPaused(vsync_paused_);
 }
 
 viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() const {

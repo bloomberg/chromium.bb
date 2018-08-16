@@ -148,6 +148,7 @@ class CONTENT_EXPORT CompositorImpl
       ui::CompositorLockClient* client,
       base::TimeDelta timeout) override;
   bool IsDrawingFirstVisibleFrame() const override;
+  void SetVSyncPaused(bool paused) override;
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {
@@ -253,6 +254,7 @@ class CONTENT_EXPORT CompositorImpl
   // Viz-specific members for communicating with the display.
   viz::mojom::DisplayPrivateAssociatedPtr display_private_;
   std::unique_ptr<viz::HostDisplayClient> display_client_;
+  bool vsync_paused_ = false;
 
   // Test-only. Called when we are notified of a swap.
   base::RepeatingCallback<void(const gfx::Size&)>

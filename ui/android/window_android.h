@@ -119,6 +119,7 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   bool needs_begin_frames_;
   std::list<base::Closure> vsync_complete_callbacks_;
   float mouse_wheel_scroll_factor_;
+  bool vsync_paused_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowAndroid);
 };
