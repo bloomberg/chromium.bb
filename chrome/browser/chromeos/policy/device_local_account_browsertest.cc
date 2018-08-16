@@ -524,6 +524,11 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     device_local_account_policy_.policy_data().set_public_key_version(1);
     device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
         kDisplayName1);
+
+    // Don't enable new managed sessions, use old public sessions.
+    device_local_account_policy_.payload()
+        .mutable_devicelocalaccountmanagedsessionenabled()
+        ->set_value(false);
   }
 
   void BuildDeviceLocalAccountPolicy() {

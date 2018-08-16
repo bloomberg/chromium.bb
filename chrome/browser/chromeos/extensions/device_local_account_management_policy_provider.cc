@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/device_local_account_util.h"
 #include "extensions/common/extension.h"
@@ -648,6 +649,10 @@ void LogPermissionUmaStats(const std::string& permission_string) {
 // contained in |kSafePermissionStrings| or |kSafePermissionDicts|.  Otherwise
 // returns false and logs all reasons for failure.
 bool IsSafeForPublicSession(const extensions::Extension* extension) {
+  // If Public Session restrictions are not enabled, just return true.
+  if (!profiles::ArePublicSessionRestrictionsEnabled())
+    return true;
+
   bool safe = true;
   if (!extension->is_extension() &&
       !extension->is_hosted_app() &&
