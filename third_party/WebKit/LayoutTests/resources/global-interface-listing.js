@@ -17,6 +17,7 @@ function globalInterfaceListing(globalObject, propertyNamesInGlobal, platformSpe
 var jsBuiltins = new Set([
     'Array',
     'ArrayBuffer',
+    'Atomics',
     'BigInt',
     'BigInt64Array',
     'BigUint64Array',
@@ -46,6 +47,7 @@ var jsBuiltins = new Set([
     'Reflect',
     'RegExp',
     'Set',
+    'SharedArrayBuffer',
     'String',
     'Symbol',
     'SyntaxError',

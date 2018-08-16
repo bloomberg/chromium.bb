@@ -5,7 +5,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS face1.status is "loaded"
 PASS face2.status is "loaded"
-PASS rejectionValue.name is "TypeError"
 PASS face3.status is "error"
 PASS rejectionValue.name is "SyntaxError"
 PASS document.getElementById('FontFromArrayBuffer').offsetWidth is document.getElementById('ref').offsetWidth

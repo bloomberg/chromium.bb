@@ -111,7 +111,7 @@ test(function() {
 
 if (self.SharedArrayBuffer) {
     test(function() {
-        assert_throws(null, () => {
+        assert_throws(new TypeError, () => {
             createPushMessageData(new Uint8Array(new SharedArrayBuffer(16)));
         });
     }, 'PushMessageData throws when passed SharedArrayBuffer view.');

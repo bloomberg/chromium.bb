@@ -21,6 +21,7 @@ var globals = [];
 var js_builtins = new Set([
     'Array',
     'ArrayBuffer',
+    'Atomics',
     'BigInt',
     'BigInt64Array',
     'BigUint64Array',
@@ -50,6 +51,7 @@ var js_builtins = new Set([
     'Reflect',
     'RegExp',
     'Set',
+    'SharedArrayBuffer',
     'String',
     'Symbol',
     'SyntaxError',

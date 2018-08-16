@@ -11,7 +11,7 @@ error is: TypeError: Invalid keyUsages argument
 error is: TypeError: Invalid keyFormat argument
 error is: TypeError: HmacImportParams: hash: Missing or not an AlgorithmIdentifier
 error is: NotSupportedError: SHA-1: Unsupported operation: importKey
-error is: TypeError: Failed to execute 'importKey' on 'SubtleCrypto': The provided ArrayBufferView value must not be shared.
+error is: SharedArrayBuffers not enabled.
 PASS successfullyParsed is true
 
 TEST COMPLETE
