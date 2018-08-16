@@ -114,6 +114,20 @@ class StatusAndValueCallbackReceiver
   }
 };
 
+template <class Status, class... Values>
+class StatusAndValuesCallbackReceiver
+    : public TestCallbackReceiver<Status, Values...> {
+ public:
+  const Status& status() const {
+    return std::get<0>(*TestCallbackReceiver<Status, Values...>::result());
+  }
+
+  template <size_t I>
+  const std::tuple_element_t<I, std::tuple<Values...>>& value() const {
+    return std::get<I + 1>(*TestCallbackReceiver<Status, Values...>::result());
+  }
+};
+
 }  // namespace test
 }  // namespace device
 
