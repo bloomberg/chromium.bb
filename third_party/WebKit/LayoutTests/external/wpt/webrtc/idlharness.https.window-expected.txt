@@ -20,12 +20,12 @@ PASS RTCPeerConnection interface: operation createOffer(RTCOfferOptions)
 PASS RTCPeerConnection interface: operation createAnswer(RTCAnswerOptions)
 PASS RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescriptionInit)
 PASS RTCPeerConnection interface: attribute localDescription
-FAIL RTCPeerConnection interface: attribute currentLocalDescription assert_true: The prototype object must have a property "currentLocalDescription" expected true got false
-FAIL RTCPeerConnection interface: attribute pendingLocalDescription assert_true: The prototype object must have a property "pendingLocalDescription" expected true got false
+PASS RTCPeerConnection interface: attribute currentLocalDescription
+PASS RTCPeerConnection interface: attribute pendingLocalDescription
 PASS RTCPeerConnection interface: operation setRemoteDescription(RTCSessionDescriptionInit)
 PASS RTCPeerConnection interface: attribute remoteDescription
-FAIL RTCPeerConnection interface: attribute currentRemoteDescription assert_true: The prototype object must have a property "currentRemoteDescription" expected true got false
-FAIL RTCPeerConnection interface: attribute pendingRemoteDescription assert_true: The prototype object must have a property "pendingRemoteDescription" expected true got false
+PASS RTCPeerConnection interface: attribute currentRemoteDescription
+PASS RTCPeerConnection interface: attribute pendingRemoteDescription
 PASS RTCPeerConnection interface: operation addIceCandidate(RTCIceCandidateInit)
 PASS RTCPeerConnection interface: attribute signalingState
 PASS RTCPeerConnection interface: attribute iceGatheringState
@@ -70,13 +70,13 @@ PASS RTCPeerConnection interface: calling createAnswer(RTCAnswerOptions) on new 
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "setLocalDescription(RTCSessionDescriptionInit)" with the proper type
 PASS RTCPeerConnection interface: calling setLocalDescription(RTCSessionDescriptionInit) on new RTCPeerConnection() with too few arguments must throw TypeError
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "localDescription" with the proper type
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "currentLocalDescription" with the proper type assert_inherits: property "currentLocalDescription" not found in prototype chain
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "pendingLocalDescription" with the proper type assert_inherits: property "pendingLocalDescription" not found in prototype chain
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "currentLocalDescription" with the proper type
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "pendingLocalDescription" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "setRemoteDescription(RTCSessionDescriptionInit)" with the proper type
 PASS RTCPeerConnection interface: calling setRemoteDescription(RTCSessionDescriptionInit) on new RTCPeerConnection() with too few arguments must throw TypeError
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "remoteDescription" with the proper type
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "currentRemoteDescription" with the proper type assert_inherits: property "currentRemoteDescription" not found in prototype chain
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "pendingRemoteDescription" with the proper type assert_inherits: property "pendingRemoteDescription" not found in prototype chain
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "currentRemoteDescription" with the proper type
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "pendingRemoteDescription" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "addIceCandidate(RTCIceCandidateInit)" with the proper type
 PASS RTCPeerConnection interface: calling addIceCandidate(RTCIceCandidateInit) on new RTCPeerConnection() with too few arguments must throw TypeError
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "signalingState" with the proper type

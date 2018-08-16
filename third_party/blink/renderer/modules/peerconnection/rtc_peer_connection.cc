@@ -886,6 +886,24 @@ RTCSessionDescription* RTCPeerConnection::localDescription() {
   return RTCSessionDescription::Create(web_session_description);
 }
 
+RTCSessionDescription* RTCPeerConnection::currentLocalDescription() {
+  WebRTCSessionDescription web_session_description =
+      peer_handler_->CurrentLocalDescription();
+  if (web_session_description.IsNull())
+    return nullptr;
+
+  return RTCSessionDescription::Create(web_session_description);
+}
+
+RTCSessionDescription* RTCPeerConnection::pendingLocalDescription() {
+  WebRTCSessionDescription web_session_description =
+      peer_handler_->PendingLocalDescription();
+  if (web_session_description.IsNull())
+    return nullptr;
+
+  return RTCSessionDescription::Create(web_session_description);
+}
+
 ScriptPromise RTCPeerConnection::setRemoteDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit& session_description_init) {
@@ -943,6 +961,24 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
 RTCSessionDescription* RTCPeerConnection::remoteDescription() {
   WebRTCSessionDescription web_session_description =
       peer_handler_->RemoteDescription();
+  if (web_session_description.IsNull())
+    return nullptr;
+
+  return RTCSessionDescription::Create(web_session_description);
+}
+
+RTCSessionDescription* RTCPeerConnection::currentRemoteDescription() {
+  WebRTCSessionDescription web_session_description =
+      peer_handler_->CurrentRemoteDescription();
+  if (web_session_description.IsNull())
+    return nullptr;
+
+  return RTCSessionDescription::Create(web_session_description);
+}
+
+RTCSessionDescription* RTCPeerConnection::pendingRemoteDescription() {
+  WebRTCSessionDescription web_session_description =
+      peer_handler_->PendingRemoteDescription();
   if (web_session_description.IsNull())
     return nullptr;
 

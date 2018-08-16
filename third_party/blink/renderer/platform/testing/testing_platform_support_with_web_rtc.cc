@@ -133,6 +133,26 @@ WebRTCSessionDescription MockWebRTCPeerConnectionHandler::RemoteDescription() {
   return WebRTCSessionDescription();
 }
 
+WebRTCSessionDescription
+MockWebRTCPeerConnectionHandler::CurrentLocalDescription() {
+  return WebRTCSessionDescription();
+}
+
+WebRTCSessionDescription
+MockWebRTCPeerConnectionHandler::CurrentRemoteDescription() {
+  return WebRTCSessionDescription();
+}
+
+WebRTCSessionDescription
+MockWebRTCPeerConnectionHandler::PendingLocalDescription() {
+  return WebRTCSessionDescription();
+}
+
+WebRTCSessionDescription
+MockWebRTCPeerConnectionHandler::PendingRemoteDescription() {
+  return WebRTCSessionDescription();
+}
+
 webrtc::RTCErrorType MockWebRTCPeerConnectionHandler::SetConfiguration(
     const WebRTCConfiguration&) {
   return webrtc::RTCErrorType::NONE;

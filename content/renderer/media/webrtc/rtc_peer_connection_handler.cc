@@ -151,6 +151,16 @@ void RunClosureWithTrace(const base::Closure& closure,
   closure.Run();
 }
 
+void RunSynchronousOnceClosure(base::OnceClosure closure,
+                               const char* trace_event_name,
+                               base::WaitableEvent* event) {
+  {
+    TRACE_EVENT0("webrtc", trace_event_name);
+    std::move(closure).Run();
+  }
+  event->Signal();
+}
+
 void RunSynchronousClosure(const base::Closure& closure,
                            const char* trace_event_name,
                            base::WaitableEvent* event) {
@@ -164,11 +174,11 @@ void RunSynchronousClosure(const base::Closure& closure,
 // Initializes |web_description| if |description_callback| returns non-null,
 // otherwise does nothing.
 void GetWebRTCSessionDescriptionFromSessionDescriptionCallback(
-    const base::Callback<const webrtc::SessionDescriptionInterface*()>&
+    base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
         description_callback,
     blink::WebRTCSessionDescription* web_description) {
   const webrtc::SessionDescriptionInterface* description =
-      description_callback.Run();
+      std::move(description_callback).Run();
   if (description) {
     std::string sdp;
     description->ToString(&sdp);
@@ -1359,45 +1369,72 @@ blink::WebRTCSessionDescription RTCPeerConnectionHandler::LocalDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::localDescription");
 
-  // Since webrtc::PeerConnectionInterface::local_description() returns a
-  // pointer to a non-reference-counted object that lives on the signaling
-  // thread, we cannot fetch a pointer to it and use it directly here. Instead,
-  // we access the object completely on the signaling thread. Initializing
-  // |local_description| on the signaling thread is safe because we own it and
-  // wait for it to be initialized here.
-  blink::WebRTCSessionDescription local_description;  // IsNull() by default.
-  base::Callback<const webrtc::SessionDescriptionInterface*()> description_cb =
-      base::Bind(&webrtc::PeerConnectionInterface::local_description,
-                 native_peer_connection_);
-  RunSynchronousClosureOnSignalingThread(
-      base::Bind(&GetWebRTCSessionDescriptionFromSessionDescriptionCallback,
-                 std::move(description_cb),
-                 base::Unretained(&local_description)),
-      "localDescription");
-
-  return local_description;
+  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
+      description_cb =
+          base::BindOnce(&webrtc::PeerConnectionInterface::local_description,
+                         native_peer_connection_);
+  return GetWebRTCSessionDescriptionOnSignalingThread(std::move(description_cb),
+                                                      "localDescription");
 }
 
 blink::WebRTCSessionDescription RTCPeerConnectionHandler::RemoteDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::remoteDescription");
-  // Since webrtc::PeerConnectionInterface::remote_description() returns a
-  // pointer to a non-reference-counted object that lives on the signaling
-  // thread, we cannot fetch a pointer to it and use it directly here. Instead,
-  // we access the object completely on the signaling thread. Initializing
-  // |remote_description| on the signaling thread is safe because we own it and
-  // wait for it to be initialized here.
-  blink::WebRTCSessionDescription remote_description;  // IsNull() by default.
-  base::Callback<const webrtc::SessionDescriptionInterface*()> description_cb =
-      base::Bind(&webrtc::PeerConnectionInterface::remote_description,
-                 native_peer_connection_);
-  RunSynchronousClosureOnSignalingThread(
-      base::Bind(&GetWebRTCSessionDescriptionFromSessionDescriptionCallback,
-                 std::move(description_cb),
-                 base::Unretained(&remote_description)),
-      "remoteDescription");
+  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
+      description_cb =
+          base::BindOnce(&webrtc::PeerConnectionInterface::remote_description,
+                         native_peer_connection_);
+  return GetWebRTCSessionDescriptionOnSignalingThread(std::move(description_cb),
+                                                      "remoteDescription");
+}
 
-  return remote_description;
+blink::WebRTCSessionDescription
+RTCPeerConnectionHandler::CurrentLocalDescription() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::currentLocalDescription");
+
+  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
+      description_cb = base::BindOnce(
+          &webrtc::PeerConnectionInterface::current_local_description,
+          native_peer_connection_);
+  return GetWebRTCSessionDescriptionOnSignalingThread(
+      std::move(description_cb), "currentLocalDescription");
+}
+
+blink::WebRTCSessionDescription
+RTCPeerConnectionHandler::CurrentRemoteDescription() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::currentRemoteDescription");
+  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
+      description_cb = base::BindOnce(
+          &webrtc::PeerConnectionInterface::current_remote_description,
+          native_peer_connection_);
+  return GetWebRTCSessionDescriptionOnSignalingThread(
+      std::move(description_cb), "currentRemoteDescription");
+}
+
+blink::WebRTCSessionDescription
+RTCPeerConnectionHandler::PendingLocalDescription() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::pendingLocalDescription");
+  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
+      description_cb = base::BindOnce(
+          &webrtc::PeerConnectionInterface::pending_local_description,
+          native_peer_connection_);
+  return GetWebRTCSessionDescriptionOnSignalingThread(
+      std::move(description_cb), "pendingLocalDescription");
+}
+
+blink::WebRTCSessionDescription
+RTCPeerConnectionHandler::PendingRemoteDescription() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::pendingRemoteDescription");
+  base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
+      description_cb = base::BindOnce(
+          &webrtc::PeerConnectionInterface::pending_remote_description,
+          native_peer_connection_);
+  return GetWebRTCSessionDescriptionOnSignalingThread(
+      std::move(description_cb), "pendingRemoteDescription");
 }
 
 webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
@@ -2351,8 +2388,29 @@ RTCPeerConnectionHandler::signaling_thread() const {
   return dependency_factory_->GetWebRtcSignalingThread();
 }
 
+void RTCPeerConnectionHandler::RunSynchronousOnceClosureOnSignalingThread(
+    base::OnceClosure closure,
+    const char* trace_event_name) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  scoped_refptr<base::SingleThreadTaskRunner> thread(signaling_thread());
+  if (!thread.get() || thread->BelongsToCurrentThread()) {
+    TRACE_EVENT0("webrtc", trace_event_name);
+    std::move(closure).Run();
+  } else {
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
+    thread->PostTask(
+        FROM_HERE,
+        base::BindOnce(&RunSynchronousOnceClosure, std::move(closure),
+                       base::Unretained(trace_event_name),
+                       base::Unretained(&event)));
+    event.Wait();
+  }
+}
+
+// Deprecated version - uses a RepeatingCosure (aka old-style Closure)
 void RTCPeerConnectionHandler::RunSynchronousClosureOnSignalingThread(
-    const base::Closure& closure,
+    const base::RepeatingClosure& closure,
     const char* trace_event_name) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   scoped_refptr<base::SingleThreadTaskRunner> thread(signaling_thread());
@@ -2368,6 +2426,27 @@ void RTCPeerConnectionHandler::RunSynchronousClosureOnSignalingThread(
                                     base::Unretained(&event)));
     event.Wait();
   }
+}
+
+blink::WebRTCSessionDescription
+RTCPeerConnectionHandler::GetWebRTCSessionDescriptionOnSignalingThread(
+    base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
+        description_cb,
+    const char* log_text) {
+  // Since the webrtc::PeerConnectionInterface::*_description() functions
+  // return a pointer to a non-reference-counted object that lives on the
+  // signaling thread, we cannot fetch a pointer to it and use it directly
+  // here.
+  // Instead, we access the object completely on the signaling thread.
+  // Initializing |description| on the signaling thread is safe because we
+  // own it and wait for it to be initialized here.
+
+  blink::WebRTCSessionDescription description;  // IsNull() by default.
+  RunSynchronousOnceClosureOnSignalingThread(
+      base::BindOnce(&GetWebRTCSessionDescriptionFromSessionDescriptionCallback,
+                     std::move(description_cb), base::Unretained(&description)),
+      log_text);
+  return description;
 }
 
 void RTCPeerConnectionHandler::ReportICEState(

@@ -112,6 +112,8 @@ class MODULES_EXPORT RTCPeerConnection final
       V8VoidFunction*,
       V8RTCPeerConnectionErrorCallback* = nullptr);
   RTCSessionDescription* localDescription();
+  RTCSessionDescription* currentLocalDescription();
+  RTCSessionDescription* pendingLocalDescription();
 
   ScriptPromise setRemoteDescription(ScriptState*,
                                      const RTCSessionDescriptionInit&);
@@ -121,6 +123,8 @@ class MODULES_EXPORT RTCPeerConnection final
       V8VoidFunction*,
       V8RTCPeerConnectionErrorCallback* = nullptr);
   RTCSessionDescription* remoteDescription();
+  RTCSessionDescription* currentRemoteDescription();
+  RTCSessionDescription* pendingRemoteDescription();
 
   String signalingState() const;
 
