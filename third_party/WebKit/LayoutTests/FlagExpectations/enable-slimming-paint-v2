@@ -1396,3 +1396,5 @@ Bug(none) compositing/overflow/scrollbar-layer-placement-negative-z-index-child-
 
 Bug(none) fast/events/touch/compositor-touch-hit-rects-svg.html [ Failure ]
 Bug(none) virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-svg.html [ Failure ]
+Bug(none) fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
+Bug(none) virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]

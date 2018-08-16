@@ -1,0 +1,7 @@
+This tests verifies the hit test regions given to the compositor specifically for continuation case. It can only be run in DumpRenderTree.
+
+continuation: #document scrolling (13, 79, 101, 11)
+continuation: #document scrolling (13, 90, 290, 12)
+continuation: #document scrolling (13, 102, 121, 11)
+
+
