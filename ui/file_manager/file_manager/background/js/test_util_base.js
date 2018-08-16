@@ -12,42 +12,49 @@ var test = test || {};
  * @param {Element} element Element to be extracted.
  * @param {Window} contentWindow Window to be tested.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
- *     obtained.
+ *     obtained. NOTE: Causes element style re-calculation.
  * @return {{attributes:Object<string>, text:string,
- *           styles:Object<string>, hidden:boolean}} Element
+ *           styles:(Object<string>|undefined), hidden:boolean}} Element
  *     information that contains contentText, attribute names and
  *     values, hidden attribute, and style names and values.
  */
 function extractElementInfo(element, contentWindow, opt_styleNames) {
-  var attributes = {};
-  for (var i = 0; i < element.attributes.length; i++) {
+  const attributes = {};
+  for (let i = 0; i < element.attributes.length; i++) {
     attributes[element.attributes[i].nodeName] =
         element.attributes[i].nodeValue;
   }
-  var styles = {};
-  var styleNames = opt_styleNames || [];
-  assert(Array.isArray(styleNames));
-  var computedStyles = contentWindow.getComputedStyle(element);
-  for (var i = 0; i < styleNames.length; i++) {
-    styles[styleNames[i]] = computedStyles[styleNames[i]];
-  }
-  var text = element.textContent;
-  var size = element.getBoundingClientRect();
-  return {
+
+  const result = {
     attributes: attributes,
-    text: text,
+    text: element.textContent,
     value: element.value,
-    styles: styles,
     // The hidden attribute is not in the element.attributes even if
     // element.hasAttribute('hidden') is true.
     hidden: !!element.hidden,
-    // These attributes are set when element is img or canvas.
-    imageWidth: Number(element.width),
-    imageHeight: Number(element.height),
-    // These attributes are set in any element.
-    renderedWidth: size.width,
-    renderedHeight: size.height
   };
+
+  const styleNames = opt_styleNames || [];
+  assert(Array.isArray(styleNames));
+  if (!styleNames.length)
+    return result;
+
+  const styles = {};
+  const size = element.getBoundingClientRect();
+  const computedStyles = contentWindow.getComputedStyle(element);
+  for (let i = 0; i < styleNames.length; i++) {
+    styles[styleNames[i]] = computedStyles[styleNames[i]];
+  }
+
+  result.styles = styles;
+  // These attributes are set when element is img or canvas.
+  result.imageWidth = Number(element.width);
+  result.imageHeight = Number(element.height);
+
+  // These attributes are set in any element.
+  result.renderedWidth = size.width;
+  result.renderedHeight = size.height;
+  return result;
 }
 
 /**
@@ -257,7 +264,7 @@ test.util.sync.deepQuerySelectorAll_ = function(root, targetQuery) {
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
  * @return {?{attributes:Object<string>, text:string,
- *                  styles:Object<string>, hidden:boolean}} Element
+ *                  styles:(Object<string>|undefined), hidden:boolean}} Element
  *     information that contains contentText, attribute names and
  *     values, hidden attribute, and style names and values. If there is no
  *     active element, returns null.

@@ -43,8 +43,8 @@ function openSingleImage(testVolumeName, volumeType) {
     return resizedWindowPromise.then(function() {
       var rootElementPromise =
           gallery.waitForElement(appId, '.gallery[mode="slide"]');
-      var fullImagePromsie = gallery.waitForElement(
-          appId, '.gallery .image-container > .image');
+      var fullImagePromsie = gallery.waitForElementStyles(
+          appId, '.gallery .image-container > .image', ['any']);
       return Promise.all([rootElementPromise, fullImagePromsie]).
           then(function(args) {
             chrome.test.assertEq(760, args[1].renderedWidth);

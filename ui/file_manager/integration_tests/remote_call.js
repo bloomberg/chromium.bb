@@ -179,15 +179,29 @@ RemoteCall.prototype.waitForWindowGeometry = function(windowId, width, height) {
  * @return {Promise} Promise to be fulfilled when the element appears.
  */
 RemoteCall.prototype.waitForElement = function(windowId, query) {
+  return this.waitForElementStyles(windowId, query, []);
+};
+
+/**
+ * Waits for the specified element appearing in the DOM.
+ * @param {string} windowId Target window ID.
+ * @param {string} query Query string for the element.
+ * @param {!Array<string>} styleNames List of CSS property name to be
+ *     obtained. NOTE: Causes element style re-calculation.
+ * @return {Promise} Promise to be fulfilled when the element appears.
+ */
+RemoteCall.prototype.waitForElementStyles = function(
+    windowId, query, styleNames) {
   var caller = getCaller();
-  return repeatUntil(function() {
-    return this.callRemoteTestUtil('queryAllElements', windowId, [query])
+  return repeatUntil(() => {
+    return this
+        .callRemoteTestUtil('queryAllElements', windowId, [query, styleNames])
         .then(function(elements) {
           if (elements.length > 0)
             return elements[0];
           return pending(caller, 'Element %s is not found.', query);
         });
-  }.bind(this));
+  });
 };
 
 /**
@@ -460,7 +474,7 @@ RemoteCallGallery.prototype.waitForSlideImage =
     return Promise
         .all([
           this.waitForElement(windowId, '#rename-input'),
-          this.waitForElement(windowId, query)
+          this.waitForElementStyles(windowId, query, ['any'])
         ])
         .then(function(args) {
           var nameBox = args[0];
