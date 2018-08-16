@@ -332,7 +332,7 @@ void DelegatedFrameHostAndroid::PixelSizeWillChange(
 
   expected_pixel_size_ = pixel_size;
   if (registered_parent_compositor_) {
-    if (HasSavedFrame() && content_layer_->bounds() != expected_pixel_size_) {
+    if (content_layer_->bounds() != expected_pixel_size_) {
       compositor_pending_resize_lock_ =
           registered_parent_compositor_->GetCompositorLock(this,
                                                            ResizeTimeout());
