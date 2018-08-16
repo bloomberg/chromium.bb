@@ -82,7 +82,14 @@ MaterialHistoryItemTest.prototype = {
   ]),
 };
 
-TEST_F('MaterialHistoryItemTest', 'All', function() {
+// https://crbug.com/874976, fails on Mac.
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+
+TEST_F('MaterialHistoryItemTest', 'MAYBE_All', function() {
   mocha.run();
 });
 
