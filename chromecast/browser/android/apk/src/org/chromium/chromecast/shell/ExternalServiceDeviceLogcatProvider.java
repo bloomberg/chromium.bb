@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 
@@ -45,7 +46,7 @@ class ExternalServiceDeviceLogcatProvider extends ElidedLogcatProvider {
 
                 ServiceConnection conn = this;
 
-                new AsyncTaskRunner().doAsync(() -> {
+                new AsyncTaskRunner(AsyncTask.THREAD_POOL_EXECUTOR).doAsync(() -> {
                     String logsFileName = "";
                     try {
                         // getLogs() currently gives us the filename of the location of the logs
