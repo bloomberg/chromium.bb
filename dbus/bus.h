@@ -601,7 +601,7 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   std::string GetConnectionName();
 
   // Returns true if the bus is connected to D-Bus.
-  bool is_connected() { return connection_ != nullptr; }
+  virtual bool IsConnected();
 
  protected:
   // This is protected, so we can define sub classes.

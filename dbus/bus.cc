@@ -997,6 +997,10 @@ std::string Bus::GetConnectionName() {
   return dbus_bus_get_unique_name(connection_);
 }
 
+bool Bus::IsConnected() {
+  return connection_ != nullptr;
+}
+
 dbus_bool_t Bus::OnAddWatch(DBusWatch* raw_watch) {
   AssertOnDBusThread();
 

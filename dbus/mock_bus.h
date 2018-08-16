@@ -73,6 +73,7 @@ class MockBus : public Bus {
   MOCK_METHOD0(HasDBusThread, bool());
   MOCK_METHOD0(AssertOnOriginThread, void());
   MOCK_METHOD0(AssertOnDBusThread, void());
+  MOCK_METHOD0(IsConnected, bool());
 
  protected:
   ~MockBus() override;

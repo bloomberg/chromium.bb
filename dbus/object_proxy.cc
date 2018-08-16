@@ -288,7 +288,7 @@ void ObjectProxy::WaitForServiceToBeAvailable(
 void ObjectProxy::Detach() {
   bus_->AssertOnDBusThread();
 
-  if (bus_->is_connected())
+  if (bus_->IsConnected())
     bus_->RemoveFilterFunction(&ObjectProxy::HandleMessageThunk, this);
 
   for (const auto& match_rule : match_rules_) {
