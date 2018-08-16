@@ -8,12 +8,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,11 +32,16 @@ const char kUrl2[] = "https://www.google.com";
 
 class WebAppPolicyManagerTest : public testing::Test {
  public:
-  class TestPendingAppManager;
+  WebAppPolicyManagerTest() = default;
+  ~WebAppPolicyManagerTest() override = default;
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebAppPolicyManagerTest);
 };
 
-class WebAppPolicyManagerTest::TestPendingAppManager
-    : public PendingAppManager {
+class TestPendingAppManager : public PendingAppManager {
  public:
   TestPendingAppManager() = default;
   ~TestPendingAppManager() override = default;
@@ -63,8 +70,9 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledAppsPrefValue) {
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
   WebAppPolicyManager web_app_policy_manager(prefs.get(),
                                              pending_app_manager.get());
-  const auto& apps_to_install = pending_app_manager->last_apps_to_install();
+  base::RunLoop().RunUntilIdle();
 
+  const auto& apps_to_install = pending_app_manager->last_apps_to_install();
   EXPECT_TRUE(apps_to_install.empty());
 }
 
@@ -78,8 +86,9 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledApps) {
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
   WebAppPolicyManager web_app_policy_manager(prefs.get(),
                                              pending_app_manager.get());
-  const auto& apps_to_install = pending_app_manager->last_apps_to_install();
+  base::RunLoop().RunUntilIdle();
 
+  const auto& apps_to_install = pending_app_manager->last_apps_to_install();
   EXPECT_TRUE(apps_to_install.empty());
 }
 
@@ -107,6 +116,8 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
   WebAppPolicyManager web_app_policy_manager(prefs.get(),
                                              pending_app_manager.get());
+  base::RunLoop().RunUntilIdle();
+
   const auto& apps_to_install = pending_app_manager->last_apps_to_install();
 
   std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
