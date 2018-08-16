@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":cloud_printers",
     ":cups_add_printer_dialog",
     ":cups_add_printer_dialog_elements",
+    ":cups_add_printer_dialog_util",
     ":cups_edit_printer_dialog",
     ":cups_printers",
     ":cups_printers_browser_proxy",
@@ -37,6 +38,12 @@ js_library("cups_add_printer_dialog") {
 js_library("cups_add_printer_dialog_elements") {
   deps = [
     ":cups_printers_browser_proxy",
+  ]
+}
+
+js_library("cups_add_printer_dialog_util") {
+  deps = [
+    "//ui/webui/resources/js:cr",
   ]
 }
 
