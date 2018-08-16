@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 
@@ -181,30 +182,6 @@ class LayoutInlineCollector final : public NGPhysicalFragmentCollectorBase {
   DISALLOW_COPY_AND_ASSIGN(LayoutInlineCollector);
 };
 
-// The visitor emitting all fragments generated from the given LayoutObject.
-class LayoutObjectCollector final : public NGPhysicalFragmentCollectorBase {
-  STACK_ALLOCATED();
-
- public:
-  explicit LayoutObjectCollector(const LayoutObject* layout_object)
-      : target_(layout_object) {}
-
-  Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
-    return CollectExclusivelyFrom(fragment);
-  }
-
- private:
-  void Visit() final {
-    if (GetFragment().GetLayoutObject() == target_)
-      Emit();
-    VisitChildren();
-  }
-
-  const LayoutObject* target_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayoutObjectCollector);
-};
-
 // The visitor emitting ancestors of the given fragment in bottom-up order.
 class AncestorCollector : public NGPhysicalFragmentCollectorBase {
   STACK_ALLOCATED();
@@ -271,11 +248,21 @@ class InclusiveAncestorCollector : public NGPhysicalFragmentCollectorBase {
 Vector<Result> NGInlineFragmentTraversal::SelfFragmentsOf(
     const NGPhysicalContainerFragment& container,
     const LayoutObject* layout_object) {
-  if (layout_object->IsLayoutInline()) {
-    return LayoutInlineCollector(ToLayoutInline(*layout_object))
-        .CollectFrom(container);
+  if (const LayoutInline* layout_inline = ToLayoutInlineOrNull(layout_object)) {
+    // TODO(crbug.com/874361): Stop partial culling of inline boxes, so that we
+    // can simply check existence of paint fragments below.
+    if (!layout_inline->HasSelfPaintingLayer()) {
+      return LayoutInlineCollector(ToLayoutInline(*layout_object))
+          .CollectFrom(container);
+    }
   }
-  return LayoutObjectCollector(layout_object).CollectFrom(container);
+  Vector<Result> result;
+  for (const NGPaintFragment* fragment :
+       NGPaintFragment::InlineFragmentsFor(layout_object)) {
+    result.push_back(Result{&fragment->PhysicalFragment(),
+                            fragment->InlineOffsetToContainerBox()});
+  }
+  return result;
 }
 
 // static
