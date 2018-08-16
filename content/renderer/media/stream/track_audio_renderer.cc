@@ -151,7 +151,7 @@ void TrackAudioRenderer::Start() {
   DCHECK(!sink_);
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
       AudioDeviceFactory::kSourceNonRtcAudioTrack, playout_render_frame_id_,
-      session_id_, output_device_id_);
+      {session_id_, output_device_id_});
 
   base::AutoLock auto_lock(thread_lock_);
   prior_elapsed_render_time_ = base::TimeDelta();
@@ -253,7 +253,7 @@ void TrackAudioRenderer::SwitchOutputDevice(
   scoped_refptr<media::AudioRendererSink> new_sink =
       AudioDeviceFactory::NewAudioRendererSink(
           AudioDeviceFactory::kSourceNonRtcAudioTrack, playout_render_frame_id_,
-          session_id_, device_id);
+          {session_id_, device_id});
 
   media::OutputDeviceStatus new_sink_status =
       new_sink->GetOutputDeviceInfo().device_status();
@@ -344,7 +344,7 @@ void TrackAudioRenderer::ReconfigureSink(const media::AudioParameters& params) {
   sink_started_ = false;
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
       AudioDeviceFactory::kSourceNonRtcAudioTrack, playout_render_frame_id_,
-      session_id_, output_device_id_);
+      {session_id_, output_device_id_});
   MaybeStartSink();
 }
 

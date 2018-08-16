@@ -46,23 +46,20 @@ class MockAudioDeviceFactory : public AudioDeviceFactory {
 
   // These methods are just mocked because tests currently don't need them to be
   // implemented.
-  MOCK_METHOD3(
-      CreateFinalAudioRendererSink,
-      scoped_refptr<media::AudioRendererSink>(int render_frame_id,
-                                              int sesssion_id,
-                                              const std::string& device_id));
-  MOCK_METHOD4(
-      CreateAudioRendererSink,
-      scoped_refptr<media::AudioRendererSink>(SourceType source_type,
-                                              int render_frame_id,
-                                              int sesssion_id,
-                                              const std::string& device_id));
-  MOCK_METHOD4(CreateSwitchableAudioRendererSink,
+  MOCK_METHOD2(CreateFinalAudioRendererSink,
+               scoped_refptr<media::AudioRendererSink>(
+                   int render_frame_id,
+                   const media::AudioSinkParameters& params));
+  MOCK_METHOD3(CreateAudioRendererSink,
+               scoped_refptr<media::AudioRendererSink>(
+                   SourceType source_type,
+                   int render_frame_id,
+                   const media::AudioSinkParameters& params));
+  MOCK_METHOD3(CreateSwitchableAudioRendererSink,
                scoped_refptr<media::SwitchableAudioRendererSink>(
                    SourceType source_type,
                    int render_frame_id,
-                   int sesssion_id,
-                   const std::string& device_id));
+                   const media::AudioSinkParameters& params));
 
   // Returns mock_capturer_source_ once. If called a second time, the process
   // will crash.
