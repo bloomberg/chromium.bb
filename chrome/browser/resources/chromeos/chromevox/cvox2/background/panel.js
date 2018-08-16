@@ -270,6 +270,12 @@ Panel.setMode = function(mode) {
  * @param {*=} opt_activateMenuTitle Title msg id of menu to open.
  */
 Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
+  // If the menu was already open, close it now and exit early.
+  if (Panel.mode_ != Panel.Mode.COLLAPSED) {
+    Panel.setMode(Panel.Mode.COLLAPSED);
+    return;
+  }
+
   // Eat the event so that a mousedown isn't turned into a drag, allowing
   // users to click-drag-release to select a menu item.
   if (opt_event) {
