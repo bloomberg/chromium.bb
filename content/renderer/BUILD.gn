@@ -382,8 +382,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/peer_connection_remote_audio_source.h",
     "media/webrtc/peer_connection_tracker.cc",
     "media/webrtc/peer_connection_tracker.h",
-    "media/webrtc/rtc_certificate.cc",
-    "media/webrtc/rtc_certificate.h",
     "media/webrtc/rtc_certificate_generator.cc",
     "media/webrtc/rtc_certificate_generator.h",
     "media/webrtc/rtc_data_channel_handler.cc",

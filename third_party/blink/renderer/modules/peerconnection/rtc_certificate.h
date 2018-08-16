@@ -33,7 +33,6 @@
 
 #include <memory>
 
-#include "third_party/blink/public/platform/web_rtc_certificate.h"
 #include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtls_fingerprint.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/webrtc/rtc_base/rtccertificate.h"
 
 namespace blink {
 
@@ -49,18 +49,18 @@ class MODULES_EXPORT RTCCertificate final : public ScriptWrappable {
 
  public:
   // Takes ownership of the certificate.
-  RTCCertificate(std::unique_ptr<WebRTCCertificate>);
+  RTCCertificate(rtc::scoped_refptr<rtc::RTCCertificate>);
 
-  // Returns a new WebRTCCertificate shallow copy.
-  std::unique_ptr<WebRTCCertificate> CertificateShallowCopy() const;
-  const WebRTCCertificate& Certificate() const { return *certificate_; }
+  const rtc::scoped_refptr<rtc::RTCCertificate>& Certificate() const {
+    return certificate_;
+  }
 
   // Returns the expiration time in ms relative to epoch, 1970-01-01T00:00:00Z.
   DOMTimeStamp expires() const;
   HeapVector<RTCDtlsFingerprint> getFingerprints();
 
  private:
-  std::unique_ptr<WebRTCCertificate> certificate_;
+  rtc::scoped_refptr<rtc::RTCCertificate> certificate_;
 };
 
 }  // namespace blink

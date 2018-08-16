@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_CONFIGURATION_H_
 
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_rtc_certificate.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 
@@ -51,7 +50,7 @@ struct WebRTCConfiguration {
       webrtc::PeerConnectionInterface::kBundlePolicyBalanced;
   webrtc::PeerConnectionInterface::RtcpMuxPolicy rtcp_mux_policy =
       webrtc::PeerConnectionInterface::kRtcpMuxPolicyRequire;
-  WebVector<std::unique_ptr<WebRTCCertificate>> certificates;
+  WebVector<rtc::scoped_refptr<rtc::RTCCertificate>> certificates;
   int ice_candidate_pool_size = 0;
   WebRTCSdpSemantics sdp_semantics = WebRTCSdpSemantics::kDefault;
 };

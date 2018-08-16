@@ -50,7 +50,6 @@
 #include "gin/v8_initializer.h"  // nogncheck
 #endif
 
-#include "content/renderer/media/webrtc/rtc_certificate.h"
 #include "third_party/webrtc/rtc_base/rtccertificate.h"  // nogncheck
 
 using blink::WebString;
@@ -144,7 +143,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
   gin::V8Initializer::LoadV8Natives();
 #endif
-
 
   scoped_refptr<base::SingleThreadTaskRunner> dummy_task_runner;
   std::unique_ptr<base::ThreadTaskRunnerHandle> dummy_task_runner_handle;
@@ -332,15 +330,13 @@ class TestWebRTCCertificateGenerator
   bool IsSupportedKeyParams(const blink::WebRTCKeyParams& key_params) override {
     return false;
   }
-  std::unique_ptr<blink::WebRTCCertificate> FromPEM(
+  rtc::scoped_refptr<rtc::RTCCertificate> FromPEM(
       blink::WebString pem_private_key,
       blink::WebString pem_certificate) override {
     rtc::scoped_refptr<rtc::RTCCertificate> certificate =
         rtc::RTCCertificate::FromPEM(rtc::RTCCertificatePEM(
             pem_private_key.Utf8(), pem_certificate.Utf8()));
-    if (!certificate)
-      return nullptr;
-    return std::make_unique<RTCCertificate>(certificate);
+    return certificate;
   }
 };
 

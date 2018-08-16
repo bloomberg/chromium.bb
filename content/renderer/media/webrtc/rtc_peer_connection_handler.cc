@@ -30,7 +30,6 @@
 #include "content/renderer/media/stream/media_stream_track.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/rtc_certificate.h"
 #include "content/renderer/media/webrtc/rtc_data_channel_handler.h"
 #include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/webrtc/rtc_event_log_output_sink.h"
@@ -214,11 +213,8 @@ void GetNativeRtcConfiguration(
   }
 
   webrtc_config->certificates.clear();
-  for (const std::unique_ptr<blink::WebRTCCertificate>& blink_certificate :
-       blink_config.certificates) {
-    webrtc_config->certificates.push_back(
-        static_cast<RTCCertificate*>(blink_certificate.get())
-            ->rtcCertificate());
+  for (const auto& blink_certificate : blink_config.certificates) {
+    webrtc_config->certificates.push_back(blink_certificate);
   }
 
   webrtc_config->ice_candidate_pool_size = blink_config.ice_candidate_pool_size;

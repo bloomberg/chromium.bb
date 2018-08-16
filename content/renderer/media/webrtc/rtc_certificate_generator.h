@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/web_rtc_certificate.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
 
 namespace content {
 
@@ -32,7 +32,7 @@ class RTCCertificateGenerator : public blink::WebRTCCertificateGenerator {
       std::unique_ptr<blink::WebRTCCertificateCallback> observer,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   bool IsSupportedKeyParams(const blink::WebRTCKeyParams& key_params) override;
-  std::unique_ptr<blink::WebRTCCertificate> FromPEM(
+  rtc::scoped_refptr<rtc::RTCCertificate> FromPEM(
       blink::WebString pem_private_key,
       blink::WebString pem_certificate) override;
 

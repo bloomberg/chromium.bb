@@ -32,9 +32,9 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_CERTIFICATE_GENERATOR_H_
 
 #include "third_party/blink/public/platform/web_callbacks.h"
-#include "third_party/blink/public/platform/web_rtc_certificate.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
 
 #include <memory>
 
@@ -45,7 +45,7 @@ class SingleThreadTaskRunner;
 namespace blink {
 
 using WebRTCCertificateCallback =
-    WebCallbacks<std::unique_ptr<WebRTCCertificate>, void>;
+    WebCallbacks<rtc::scoped_refptr<rtc::RTCCertificate>, void>;
 
 // Interface defining a class that can generate WebRTCCertificates
 // asynchronously.
@@ -72,8 +72,8 @@ class WebRTCCertificateGenerator {
   virtual bool IsSupportedKeyParams(const WebRTCKeyParams&) = 0;
 
   // Creates a certificate from the PEM strings. See also
-  // |WebRTCCertificate::ToPEM|.
-  virtual std::unique_ptr<WebRTCCertificate> FromPEM(
+  // |rtc::RTCCertificate::ToPEM|.
+  virtual rtc::scoped_refptr<rtc::RTCCertificate> FromPEM(
       blink::WebString pem_private_key,
       blink::WebString pem_certificate) = 0;
 };
