@@ -125,7 +125,6 @@ class WebURL;
 struct FramePolicy;
 struct WebContextMenuData;
 struct WebCursorInfo;
-struct WebFindOptions;
 struct WebMediaPlayerAction;
 struct WebImeTextSpan;
 struct WebScrollIntoViewParams;
@@ -1047,9 +1046,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const std::map<GURL, base::FilePath>& url_to_local_path,
       const std::map<int, base::FilePath>& frame_routing_id_to_local_path);
   void OnSerializeAsMHTML(const FrameMsg_SerializeAsMHTML_Params& params);
-  void OnFind(int request_id,
-              const base::string16& search_text,
-              const blink::WebFindOptions& options);
   void OnEnableViewSourceMode();
   void OnSuppressFurtherDialogs();
   void OnFileChooserResponse(
@@ -1207,18 +1203,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void GetInterface(mojo::InterfaceRequest<Interface> request);
 
   void OnHostZoomClientRequest(mojom::HostZoomAssociatedRequest request);
-
-  // Called to get the WebPlugin to handle find requests in the document.
-  // Returns nullptr if there is no such WebPlugin.
-  blink::WebPlugin* GetWebPluginForFind();
-
-  // Sends a reply to the current find operation handling if it was a
-  // synchronous find request.
-  void SendFindReply(int request_id,
-                     int match_count,
-                     int ordinal,
-                     const blink::WebRect& selection_rect,
-                     bool final_status_update) override;
 
   void InitializeBlameContext(RenderFrameImpl* parent_frame);
 
