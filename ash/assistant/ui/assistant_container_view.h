@@ -11,13 +11,13 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
-namespace gfx {
-class SlideAnimation;
-}  // namespace gfx
-
 namespace aura {
 class Window;
 }  // namespace aura
+
+namespace gfx {
+class SlideAnimation;
+}  // namespace gfx
 
 namespace ash {
 
@@ -34,7 +34,13 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   explicit AssistantContainerView(AssistantController* assistant_controller);
   ~AssistantContainerView() override;
 
+  // Instructs the event targeter for the Assistant window to only allow mouse
+  // click events to reach the specified |window|. All other events will not
+  // be explored by |window|'s subtree for handling.
+  static void OnlyAllowMouseClickEvents(aura::Window* window);
+
   // views::BubbleDialogDelegateView:
+  void AddedToWidget() override;
   int GetDialogButtons() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void PreferredSizeChanged() override;

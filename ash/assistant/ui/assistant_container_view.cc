@@ -17,6 +17,8 @@
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -39,6 +41,32 @@ constexpr int kCornerRadiusDip = 20;
 
 // Animation.
 constexpr int kResizeAnimationDurationMs = 250;
+
+// Window properties.
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kOnlyAllowMouseClickEvents, false);
+
+// AssistantContainerEventTargeter ---------------------------------------------
+
+class AssistantContainerEventTargeter : public aura::WindowTargeter {
+ public:
+  AssistantContainerEventTargeter() = default;
+  ~AssistantContainerEventTargeter() override = default;
+
+  // aura::WindowTargeter:
+  bool SubtreeShouldBeExploredForEvent(aura::Window* window,
+                                       const ui::LocatedEvent& event) override {
+    if (window->GetProperty(kOnlyAllowMouseClickEvents)) {
+      if (event.type() != ui::ET_MOUSE_PRESSED &&
+          event.type() != ui::ET_MOUSE_RELEASED) {
+        return false;
+      }
+    }
+    return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(window, event);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AssistantContainerEventTargeter);
+};
 
 // AssistantContainerLayout ----------------------------------------------------
 
@@ -140,6 +168,16 @@ AssistantContainerView::AssistantContainerView(
 AssistantContainerView::~AssistantContainerView() {
   display::Screen::GetScreen()->RemoveObserver(this);
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
+}
+
+// static
+void AssistantContainerView::OnlyAllowMouseClickEvents(aura::Window* window) {
+  window->SetProperty(kOnlyAllowMouseClickEvents, true);
+}
+
+void AssistantContainerView::AddedToWidget() {
+  GetWidget()->GetNativeWindow()->SetEventTargeter(
+      std::make_unique<AssistantContainerEventTargeter>());
 }
 
 void AssistantContainerView::ChildPreferredSizeChanged(views::View* child) {
