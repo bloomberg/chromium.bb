@@ -24,10 +24,6 @@ public class AsyncTaskRunner {
         mExecutor = executor;
     }
 
-    public AsyncTaskRunner() {
-        mExecutor = null;
-    }
-
     /**
      * Schedules work on this runner's executor, with the result provided to the given callback.
      *
@@ -48,11 +44,7 @@ public class AsyncTaskRunner {
                 callback.accept(result);
             }
         };
-        if (mExecutor != null) {
-            asyncTask.executeOnExecutor(mExecutor);
-        } else {
-            asyncTask.execute();
-        }
+        asyncTask.executeOnExecutor(mExecutor);
         return () -> asyncTask.cancel(false);
     }
 }

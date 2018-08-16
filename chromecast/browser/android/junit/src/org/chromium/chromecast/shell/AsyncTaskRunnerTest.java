@@ -10,7 +10,6 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.asynctask.ShadowAsyncTask;
@@ -41,14 +40,6 @@ public class AsyncTaskRunnerTest {
             }
             mTasks.clear();
         }
-    }
-
-    @Test
-    public void testHappyPath() {
-        List<Integer> result = new ArrayList<>();
-        new AsyncTaskRunner().doAsync(() -> 45, result::add);
-        Robolectric.flushBackgroundThreadScheduler();
-        assertThat(result, contains(45));
     }
 
     @Test
