@@ -1181,8 +1181,6 @@ void QuicStreamFactory::OnCertVerifyJobComplete(CertVerifierJob* job, int rv) {
   active_cert_verifier_jobs_.erase(job->server_id());
 }
 
-void QuicStreamFactory::OnIdleSession(QuicChromiumClientSession* session) {}
-
 void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
   const AliasSet& aliases = session_aliases_[session];
   for (AliasSet::const_iterator it = aliases.begin(); it != aliases.end();

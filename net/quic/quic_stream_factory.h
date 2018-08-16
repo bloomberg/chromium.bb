@@ -278,17 +278,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
              const NetLogWithSource& net_log,
              QuicStreamRequest* request);
 
-  // Called when the handshake for |session| is confirmed. If QUIC is disabled
-  // currently disabled, then it closes the connection and returns true.
-  bool OnHandshakeConfirmed(QuicChromiumClientSession* session);
-
-  // Called when a TCP job completes for an origin that QUIC potentially
-  // could be used for.
-  void OnTcpJobCompleted(bool succeeded);
-
-  // Called by a session when it becomes idle.
-  void OnIdleSession(QuicChromiumClientSession* session);
-
   // Called by a session when it is going away and no more streams should be
   // created on it.
   void OnSessionGoingAway(QuicChromiumClientSession* session);
