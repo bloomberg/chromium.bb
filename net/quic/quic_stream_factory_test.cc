@@ -815,6 +815,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   void TestMigrationOnWriteErrorWithMultipleNotifications(
       IoMode write_error_mode,
       bool disconnect_before_connect);
+  void TestNoAlternateNetworkBeforeHandshake(quic::QuicErrorCode error);
   void TestNewConnectionOnAlternateNetworkBeforeHandshake(
       quic::QuicErrorCode error);
 
@@ -4712,6 +4713,83 @@ TEST_P(QuicStreamFactoryTest,
 
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
   EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+// This test verifies that if a connection is closed with
+// QUIC_NETWORK_IDLE_TIMEOUT before handshake is completed and there is no
+// alternate network, no new connection will be created.
+TEST_P(QuicStreamFactoryTest, NoAlternateNetworkBeforeHandshakeOnIdleTimeout) {
+  TestNoAlternateNetworkBeforeHandshake(quic::QUIC_NETWORK_IDLE_TIMEOUT);
+}
+
+// This test verifies that if a connection is closed with QUIC_HANDSHAKE_TIMEOUT
+// and there is no alternate network, no new connection will be created.
+TEST_P(QuicStreamFactoryTest, NoAlternateNetworkOnHandshakeTimeout) {
+  TestNoAlternateNetworkBeforeHandshake(quic::QUIC_HANDSHAKE_TIMEOUT);
+}
+
+void QuicStreamFactoryTestBase::TestNoAlternateNetworkBeforeHandshake(
+    quic::QuicErrorCode quic_error) {
+  DCHECK(quic_error == quic::QUIC_NETWORK_IDLE_TIMEOUT ||
+         quic_error == quic::QUIC_HANDSHAKE_TIMEOUT);
+  InitializeConnectionMigrationV2Test({kDefaultNetworkForTests});
+
+  // Using a testing task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+
+  // Use cold start mode to send crypto message for handshake.
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ASYNC, client_maker_.MakeDummyCHLOPacket(1));
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, version_, privacy_mode_,
+                            DEFAULT_PRIORITY, SocketTag(),
+                            /*cert_verify_flags=*/0, url_, net_log_,
+                            &net_error_details_, callback_.callback()));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Ensure that session is alive but not active.
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
+  QuicChromiumClientSession* session = GetPendingSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+
+  // Cause the connection to report path degrading to the session.
+  // Session will ignore the signal as handshake is not completed.
+  session->connection()->OnPathDegradingTimeout();
+  EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
+
+  // Cause the connection to close due to |quic_error| before handshake.
+  quic::QuicString error_details;
+  if (quic_error == quic::QUIC_NETWORK_IDLE_TIMEOUT) {
+    error_details = "No recent network activity.";
+  } else {
+    error_details = "Handshake timeout expired.";
+  }
+  session->connection()->CloseConnection(
+      quic_error, error_details, quic::ConnectionCloseBehavior::SILENT_CLOSE);
+
+  // A task will be posted to clean up the session in the factory.
+  EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
+  task_runner->FastForwardUntilNoTasksRemain();
+
+  // No new session should be created as there is no alternate network.
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_FALSE(HasActiveJob(host_port_pair_, privacy_mode_));
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
