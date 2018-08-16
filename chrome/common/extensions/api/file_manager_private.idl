@@ -43,8 +43,7 @@ enum MountCompletedStatus {
   error_invalid_device_path,
   error_unknown_filesystem,
   error_unsupported_filesystem,
-  error_invalid_archive,
-  error_path_unmounted
+  error_invalid_archive
 };
 
 // File transfer progress state.

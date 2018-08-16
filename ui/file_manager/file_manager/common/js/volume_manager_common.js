@@ -174,8 +174,7 @@ VolumeManagerCommon.VolumeError = {
   INVALID_DEVICE_PATH: 'error_invalid_device_path',
   UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
   UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
-  INVALID_ARCHIVE: 'error_invalid_archive',
-  PATH_UNMOUNTED: 'error_path_unmounted'
+  INVALID_ARCHIVE: 'error_invalid_archive'
 };
 Object.freeze(VolumeManagerCommon.VolumeError);
 
