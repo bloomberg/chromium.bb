@@ -909,10 +909,7 @@ if (enable_java_templates) {
       depfile = "${target_gen_dir}/${target_name}.d"
       outputs = [
         _output_jar_path,
-        "$_output_jar_path.flags",
         "$_output_jar_path.mapping",
-        "$_output_jar_path.seeds",
-        "$_output_jar_path.usage",
       ]
       _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
       args = [
@@ -925,8 +922,11 @@ if (enable_java_templates) {
         "--classpath",
         "@FileArg($_rebased_build_config:deps_info:proguard_classpath_jars)",
       ]
-      if (proguard_verbose) {
-        args += [ "--verbose" ]
+      if (experimental_r8_path != "") {
+        args += [
+          "--r8-path",
+          rebase_path(experimental_r8_path, root_build_dir),
+        ]
       }
       if (defined(invoker.args)) {
         args += invoker.args

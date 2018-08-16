@@ -163,9 +163,6 @@ if (is_android || is_chromeos) {
     # The password for the keystore to use for signing builds.
     android_keystore_password = default_android_keystore_password
 
-    # Enables verbose proguard output (summaries and unfiltered output).
-    proguard_verbose = false
-
     # Java debug on Android. Having this on enables multidexing, and turning it
     # off will enable proguard.
     is_java_debug = is_debug
@@ -207,6 +204,14 @@ if (is_android || is_chromeos) {
 
     # Turns off android lint. Useful for prototyping or for faster local builds.
     disable_android_lint = false
+
+    # Location of aapt2 binary used for app bundles. For now, a more recent version
+    # than the one distributed with the Android SDK is required.
+    android_sdk_tools_bundle_aapt2 =
+        "//third_party/android_build_tools/aapt2/aapt2"
+
+    # Path to r8.jar. If specified, will be used instead of ProGuard for optimization.
+    experimental_r8_path = ""
   }
 
   # We need a second declare_args block to make sure we are using the overridden
@@ -343,13 +348,6 @@ if (is_android || is_chromeos) {
 
   if (android_libcpp_lib_dir == "") {
     android_libcpp_lib_dir = "${android_libcpp_root}/libs/${android_app_abi}"
-  }
-
-  declare_args() {
-    # Location of aapt2 binary used for app bundles. For now, a more recent version
-    # than the one distributed with the Android SDK is required.
-    android_sdk_tools_bundle_aapt2 =
-        "//third_party/android_build_tools/aapt2/aapt2"
   }
 }
 

@@ -35,13 +35,16 @@ def _RemoveMethodMappings(orig_path, out_fd):
     for line in in_fd:
       if line[:1] != ' ':
         out_fd.write(line)
+  out_fd.flush()
 
 
 def _ParseOptions(args):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
   parser.add_option('--proguard-path',
-                    help='Path to the proguard executable.')
+                    help='Path to the proguard.jar to use.')
+  parser.add_option('--r8-path',
+                    help='Path to the R8.jar to use.')
   parser.add_option('--input-paths',
                     help='Paths to the .jar files proguard should run on.')
   parser.add_option('--output-path', help='Path to the generated .jar file.')
@@ -53,9 +56,6 @@ def _ParseOptions(args):
                          'included by --proguard-configs, but that should '
                          'not actually be included.')
   parser.add_option('--mapping', help='Path to proguard mapping to apply.')
-  parser.add_option('--is-test', action='store_true',
-      help='If true, extra proguard options for instrumentation tests will be '
-      'added.')
   parser.add_option('--classpath', action='append',
                     help='Classpath for proguard.')
   parser.add_option('--enable-dangerous-optimizations', action='store_true',
@@ -82,6 +82,29 @@ def _ParseOptions(args):
   return options
 
 
+def _CreateR8Command(options):
+  # TODO: R8 needs -applymapping equivalent.
+  cmd = [
+    'java', '-jar', options.r8_path,
+    '--no-desugaring',
+    '--classfile',
+    '--output', options.output_path,
+    '--pg-map-output', options.output_path + '.mapping',
+  ]
+
+  classpath = [
+      p for p in set(options.classpath) if p not in options.input_paths
+  ]
+  for lib in classpath:
+    cmd += ['--lib', lib]
+
+  for config_file in options.proguard_configs:
+    cmd += ['--pg-conf', config_file]
+
+  cmd += options.input_paths
+  return cmd
+
+
 def main(args):
   args = build_utils.ExpandFileArgs(args)
   options = _ParseOptions(args)
@@ -101,30 +124,38 @@ def main(args):
   if not options.enable_dangerous_optimizations:
     proguard.disable_optimizations(_DANGEROUS_OPTIMIZATIONS)
 
-  # Do not consider the temp file as an input since its name is random.
-  input_paths = proguard.GetInputs()
+  # TODO(agrieve): Remove proguard usages.
+  if options.r8_path:
+    cmd = _CreateR8Command(options)
+    build_utils.CheckOutput(cmd)
+    build_utils.WriteDepfile(options.depfile, options.output_path,
+                             inputs=proguard.GetDepfileDeps(),
+                             add_pydeps=False)
+  else:
+    # Do not consider the temp file as an input since its name is random.
+    input_paths = proguard.GetInputs()
 
-  with tempfile.NamedTemporaryFile() as f:
-    if options.mapping:
-      input_paths.append(options.mapping)
-      # Maintain only class name mappings in the .mapping file in order to work
-      # around what appears to be a ProGuard bug in -applymapping:
-      #     method 'int closed()' is not being kept as 'a', but remapped to 'c'
-      _RemoveMethodMappings(options.mapping, f)
-      proguard.mapping(f.name)
+    with tempfile.NamedTemporaryFile() as f:
+      if options.mapping:
+        input_paths.append(options.mapping)
+        # Maintain only class name mappings in the .mapping file in order to
+        # work around what appears to be a ProGuard bug in -applymapping:
+        #     method 'int close()' is not being kept as 'a', but remapped to 'c'
+        _RemoveMethodMappings(options.mapping, f)
+        proguard.mapping(f.name)
 
-    input_strings = proguard.build()
-    if f.name in input_strings:
-      input_strings[input_strings.index(f.name)] = '$M'
+      input_strings = proguard.build()
+      if f.name in input_strings:
+        input_strings[input_strings.index(f.name)] = '$M'
 
-    build_utils.CallAndWriteDepfileIfStale(
-        proguard.CheckOutput,
-        options,
-        input_paths=input_paths,
-        input_strings=input_strings,
-        output_paths=proguard.GetOutputs(),
-        depfile_deps=proguard.GetDepfileDeps(),
-        add_pydeps=False)
+      build_utils.CallAndWriteDepfileIfStale(
+          proguard.CheckOutput,
+          options,
+          input_paths=input_paths,
+          input_strings=input_strings,
+          output_paths=proguard.GetOutputs(),
+          depfile_deps=proguard.GetDepfileDeps(),
+          add_pydeps=False)
 
 
 if __name__ == '__main__':
