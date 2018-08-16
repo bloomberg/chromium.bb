@@ -534,6 +534,10 @@ class WebContents : public PageNavigator,
   // Otherwise, return nullptr.
   virtual WebContents* GetOuterWebContents() = 0;
 
+  // Returns the root WebContents of the WebContents tree. Always returns
+  // non-null value.
+  virtual WebContents* GetOutermostWebContents() = 0;
+
   // Invoked when visible security state changes.
   virtual void DidChangeVisibleSecurityState() = 0;
 
