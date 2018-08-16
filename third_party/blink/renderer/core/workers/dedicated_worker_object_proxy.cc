@@ -111,12 +111,6 @@ void DedicatedWorkerObjectProxy::ReportException(
                       WTF::Passed(location->Clone()), exception_id));
 }
 
-void DedicatedWorkerObjectProxy::DidCreateWorkerGlobalScope(
-    WorkerOrWorkletGlobalScope* global_scope) {
-  DCHECK(!worker_global_scope_);
-  worker_global_scope_ = ToWorkerGlobalScope(global_scope);
-}
-
 void DedicatedWorkerObjectProxy::DidEvaluateClassicScript(bool success) {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
@@ -131,10 +125,6 @@ void DedicatedWorkerObjectProxy::DidEvaluateModuleScript(bool success) {
       FROM_HERE,
       CrossThreadBind(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
                       messaging_proxy_weak_ptr_, success));
-}
-
-void DedicatedWorkerObjectProxy::WillDestroyWorkerGlobalScope() {
-  worker_global_scope_ = nullptr;
 }
 
 DedicatedWorkerObjectProxy::DedicatedWorkerObjectProxy(
