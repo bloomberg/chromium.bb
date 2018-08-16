@@ -296,9 +296,9 @@ Status VaapiH264Accelerator::SubmitDecode(
     const scoped_refptr<H264Picture>& pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  return vaapi_dec_->DecodeVASurface(pic->AsVaapiH264Picture()->va_surface())
-             ? Status::kOk
-             : Status::kFail;
+  const bool success = vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
+      pic->AsVaapiH264Picture()->va_surface()->id());
+  return success ? Status::kOk : Status::kFail;
 }
 
 bool VaapiH264Accelerator::OutputPicture(

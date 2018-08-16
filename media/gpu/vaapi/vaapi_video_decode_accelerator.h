@@ -83,10 +83,6 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   //
   // Below methods are used by accelerator implementations.
   //
-  // Decode of |va_surface| is ready to be submitted and all codec-specific
-  // settings are set in hardware.
-  bool DecodeVASurface(const scoped_refptr<VASurface>& va_surface);
-
   // The |visible_rect| area of |va_surface| associated with |bitstream_id| is
   // ready to be outputted once decode is finished. This can be called before
   // decode is actually done in hardware, and this method is responsible for
@@ -98,8 +94,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   void VASurfaceReady(const scoped_refptr<VASurface>& va_surface,
                       int32_t bitstream_id,
                       const gfx::Rect& visible_rect);
-
-  // Return a new VASurface for decoding into, or nullptr if not available.
+  // Returns a new VASurface for decoding into, or nullptr if not available.
   scoped_refptr<VASurface> CreateVASurface();
 
  private:
