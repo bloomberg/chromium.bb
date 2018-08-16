@@ -6706,14 +6706,7 @@ TEST_F(URLRequestTestHTTP, TestPostChunkedDataJustAfterStart) {
   }
 }
 
-#if defined(OS_CHROMEOS)
-// https://crbug.com/873851.
-#define MAYBE_TestPostChunkedDataAfterStart \
-  DISABLED_TestPostChunkedDataAfterStart
-#else
-#define MAYBE_TestPostChunkedDataAfterStart TestPostChunkedDataAfterStart
-#endif
-TEST_F(URLRequestTestHTTP, MAYBE_TestPostChunkedDataAfterStart) {
+TEST_F(URLRequestTestHTTP, TestPostChunkedDataAfterStart) {
   ASSERT_TRUE(http_test_server()->Start());
 
   TestDelegate d;
@@ -6730,9 +6723,14 @@ TEST_F(URLRequestTestHTTP, MAYBE_TestPostChunkedDataAfterStart) {
     r->Start();
     EXPECT_TRUE(r->is_pending());
 
+    // Pump messages until we start sending headers..
     base::RunLoop().RunUntilIdle();
+
+    // And now wait for completion.
+    base::RunLoop run_loop;
+    d.set_on_complete(run_loop.QuitClosure());
     AddDataToUpload(writer.get());
-    d.RunUntilComplete();
+    run_loop.Run();
 
     VerifyReceivedDataMatchesChunks(r.get(), &d);
   }
