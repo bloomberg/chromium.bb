@@ -117,7 +117,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableNotifications(bool);
   BLINK_PLATFORM_EXPORT static void EnableOnDeviceChange(bool);
   BLINK_PLATFORM_EXPORT static void EnableOrientationEvent(bool);
-  BLINK_PLATFORM_EXPORT static void EnableOriginPolicy(bool);
   BLINK_PLATFORM_EXPORT static void EnableOverflowIconsForMediaControls(bool);
   BLINK_PLATFORM_EXPORT static void EnableOverlayScrollbars(bool);
   BLINK_PLATFORM_EXPORT static void EnableOutOfBlinkCORS(bool);
