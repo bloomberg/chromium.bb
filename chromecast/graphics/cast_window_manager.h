@@ -27,7 +27,10 @@ class CastWindowManager {
   // Note: these window IDs are ordered by z-order.
   enum WindowId {
     BOTTOM = -1,
+    // Base layer for WebUiManager and apps and activities managed by it.
     APP = BOTTOM,
+    // Apps running in this layer won't be managed by WebUiManager.
+    UNMANAGED_APP,
     DEBUG_OVERLAY,
     INFO_OVERLAY,
     SOFT_KEYBOARD,
