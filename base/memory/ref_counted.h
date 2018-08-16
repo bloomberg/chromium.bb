@@ -12,6 +12,7 @@
 #include "base/atomic_ref_count.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -114,6 +115,8 @@ class BASE_EXPORT RefCountedBase {
   template <typename U>
   friend scoped_refptr<U> base::AdoptRef(U*);
 
+  FRIEND_TEST_ALL_PREFIXES(RefCountedDeathTest, TestOverflowCheck);
+
   void Adopted() const {
 #if DCHECK_IS_ON()
     DCHECK(needs_adopt_ref_);
@@ -121,7 +124,7 @@ class BASE_EXPORT RefCountedBase {
 #endif
   }
 
-#if defined(ARCH_CPU_64_BIT)
+#if defined(ARCH_CPU_64_BITS)
   void AddRefImpl() const;
 #else
   void AddRefImpl() const { ++ref_count_; }
