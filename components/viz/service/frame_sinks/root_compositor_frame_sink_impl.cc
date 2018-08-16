@@ -140,6 +140,13 @@ void RootCompositorFrameSinkImpl::SetDisplayVSyncParameters(
     synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
+#if defined(OS_ANDROID)
+void RootCompositorFrameSinkImpl::SetVSyncPaused(bool paused) {
+  if (external_begin_frame_source_)
+    external_begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
+}
+#endif  // defined(OS_ANDROID)
+
 void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }

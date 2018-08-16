@@ -43,6 +43,10 @@ interface DisplayPrivate {
   SetDisplayVSyncParameters(
     mojo_base.mojom.TimeTicks timebase,
     mojo_base.mojom.TimeDelta interval);
+
+  // Notifies the display to pause VSync signals. Used for VR.
+  [EnableIf=is_android]
+  SetVSyncPaused(bool paused);
 };
 
 interface DisplayClient {

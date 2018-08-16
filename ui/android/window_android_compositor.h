@@ -37,6 +37,7 @@ class UI_ANDROID_EXPORT WindowAndroidCompositor {
       CompositorLockClient* client,
       base::TimeDelta timeout) = 0;
   virtual bool IsDrawingFirstVisibleFrame() const = 0;
+  virtual void SetVSyncPaused(bool paused) = 0;
 };
 
 }  // namespace ui

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/service/display/display_client.h"
@@ -49,6 +50,9 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void SetAuthoritativeVSyncInterval(base::TimeDelta interval) override;
   void SetDisplayVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval) override;
+#if defined(OS_ANDROID)
+  void SetVSyncPaused(bool paused) override;
+#endif
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
