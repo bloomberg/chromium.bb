@@ -33,8 +33,7 @@ int HashUUID(const std::string& canonical_uuid) {
   // should be migrated to a dedicated histogram macro for hashed strings.
   uint32_t data = base::PersistentHash(canonical_uuid);
 
-  // Strip off the sign bit because UMA doesn't support negative values,
-  // but takes a signed int as input.
+  // Strip off the sign bit to make the hash look nicer.
   return static_cast<int>(data & 0x7fffffff);
 }
 
