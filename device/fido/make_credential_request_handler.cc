@@ -130,11 +130,6 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
 
 MakeCredentialRequestHandler::~MakeCredentialRequestHandler() = default;
 
-base::WeakPtr<FidoRequestHandlerBase>
-MakeCredentialRequestHandler::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
 void MakeCredentialRequestHandler::DispatchRequest(
     FidoAuthenticator* authenticator) {
   // The user verification field of the request may be adjusted to the

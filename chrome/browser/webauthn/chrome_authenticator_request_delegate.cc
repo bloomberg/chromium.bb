@@ -63,6 +63,13 @@ bool IsWebAuthnUiEnabled() {
       switches::kWebAuthenticationUI);
 }
 
+bool ShouldDispatchRequestImmediately(
+    const device::FidoAuthenticator& authenticator) {
+  // TODO(hongjunchoi): Change this so that requests for BLE and platform
+  // authenticators are not dispatched immediately if WebAuthN UI is enabled.
+  return true;
+}
+
 #if !defined(OS_ANDROID)
 void SetInitialUiModelBasedOnPreviouslyUsedTransport(
     AuthenticatorRequestDialogModel* model,
@@ -143,8 +150,11 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
 }
 
 void ChromeAuthenticatorRequestDelegate::DidStartRequest(
-    base::OnceClosure cancel_callback) {
+    base::OnceClosure cancel_callback,
+    device::FidoRequestHandlerBase::RequestCallback request_callback) {
 #if !defined(OS_ANDROID)
+  request_callback_ = request_callback;
+
   if (!IsWebAuthnUiEnabled())
     return;
 
@@ -267,7 +277,11 @@ void ChromeAuthenticatorRequestDelegate::UpdateLastTransportUsed(
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
-    const device::FidoAuthenticator& authenticator) {
+    const device::FidoAuthenticator& authenticator,
+    bool* hold_off_request) {
+  if (!ShouldDispatchRequestImmediately(authenticator))
+    *hold_off_request = true;
+
   if (!IsWebAuthnUiEnabled())
     return;
 

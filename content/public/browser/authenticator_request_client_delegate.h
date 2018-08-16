@@ -33,7 +33,9 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   ~AuthenticatorRequestClientDelegate() override;
 
   // Notifies the delegate that the request is actually starting.
-  virtual void DidStartRequest(base::OnceClosure cancel_callback);
+  virtual void DidStartRequest(
+      base::OnceClosure cancel_callback,
+      device::FidoRequestHandlerBase::RequestCallback request_callback);
 
   // Returns true if the given relying party ID is permitted to receive
   // individual attestation certificates. This:
@@ -91,8 +93,8 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void OnTransportAvailabilityEnumerated(
       device::FidoRequestHandlerBase::TransportAvailabilityInfo data) override;
   void BluetoothAdapterPowerChanged(bool is_powered_on) override;
-  void FidoAuthenticatorAdded(
-      const device::FidoAuthenticator& authenticator) override;
+  void FidoAuthenticatorAdded(const device::FidoAuthenticator& authenticator,
+                              bool* hold_off_request) override;
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
 
  private:

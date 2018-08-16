@@ -1115,7 +1115,9 @@ class TestAuthenticatorRequestDelegate
         is_focused_(is_focused) {}
   ~TestAuthenticatorRequestDelegate() override {}
 
-  void DidStartRequest(base::OnceClosure cancel_callback) override {
+  void DidStartRequest(base::OnceClosure cancel_callback,
+                       device::FidoRequestHandlerBase::RequestCallback
+                           request_callback) override {
     ASSERT_TRUE(did_start_request_callback_) << "DidStartRequest called twice.";
     std::move(did_start_request_callback_).Run();
   }
@@ -1750,7 +1752,8 @@ class MockAuthenticatorRequestDelegateObserver
   MOCK_METHOD1(
       OnTransportAvailabilityEnumerated,
       void(device::FidoRequestHandlerBase::TransportAvailabilityInfo data));
-  MOCK_METHOD1(FidoAuthenticatorAdded, void(const device::FidoAuthenticator&));
+  MOCK_METHOD2(FidoAuthenticatorAdded,
+               void(const device::FidoAuthenticator&, bool*));
   MOCK_METHOD1(FidoAuthenticatorRemoved, void(base::StringPiece));
 
  private:
@@ -1863,7 +1866,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   EXPECT_CALL(*mock_delegate_ptr, OnTransportAvailabilityEnumerated(_));
 
   base::RunLoop ble_device_found_done;
-  EXPECT_CALL(*mock_delegate_ptr, FidoAuthenticatorAdded(_))
+  EXPECT_CALL(*mock_delegate_ptr, FidoAuthenticatorAdded(_, _))
       .WillOnce(testing::InvokeWithoutArgs(
           [&ble_device_found_done]() { ble_device_found_done.Quit(); }));
 

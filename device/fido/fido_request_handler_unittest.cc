@@ -72,8 +72,8 @@ class TestTransportAvailabilityObserver
   }
 
   void BluetoothAdapterPowerChanged(bool is_powered_on) override {}
-  void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator) override {
-  }
+  void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator,
+                              bool* hold_off_request) override {}
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override {}
 
  private:
@@ -126,7 +126,8 @@ class FakeFidoTask : public FidoTask {
 
 class FakeFidoAuthenticator : public FidoDeviceAuthenticator {
  public:
-  FakeFidoAuthenticator(FidoDevice* device) : FidoDeviceAuthenticator(device) {}
+  explicit FakeFidoAuthenticator(FidoDevice* device)
+      : FidoDeviceAuthenticator(device) {}
 
   void RunFakeTask(FakeTaskCallback callback) {
     SetTaskForTesting(
@@ -149,10 +150,6 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
     Start();
   }
   ~FakeFidoRequestHandler() override = default;
-
-  base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr() override {
-    return weak_factory_.GetWeakPtr();
-  }
 
   void DispatchRequest(FidoAuthenticator* authenticator) override {
     static_cast<FakeFidoAuthenticator*>(authenticator)

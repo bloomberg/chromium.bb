@@ -45,6 +45,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
       std::map<std::string, std::unique_ptr<FidoAuthenticator>, std::less<>>;
   using AddPlatformAuthenticatorCallback =
       base::OnceCallback<std::unique_ptr<FidoAuthenticator>()>;
+  using RequestCallback = base::RepeatingCallback<void(const std::string&)>;
 
   enum class RequestType { kMakeCredential, kGetAssertion };
 
@@ -79,8 +80,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     virtual void OnTransportAvailabilityEnumerated(
         TransportAvailabilityInfo data) = 0;
     virtual void BluetoothAdapterPowerChanged(bool is_powered_on) = 0;
-    virtual void FidoAuthenticatorAdded(
-        const FidoAuthenticator& authenticator) = 0;
+    virtual void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator,
+                                        bool* hold_off_request) = 0;
     virtual void FidoAuthenticatorRemoved(base::StringPiece device_id) = 0;
   };
 
@@ -97,6 +98,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
       AddPlatformAuthenticatorCallback add_platform_authenticator);
   ~FidoRequestHandlerBase() override;
 
+  // Triggers DispatchRequest() if |active_authenticators_| hold
+  // FidoAuthenticator with given |authenticator_id|.
+  void StartAuthenticatorRequest(const std::string& authenticator_id);
+
   // Triggers cancellation of all per-device FidoTasks, except for the device
   // with |exclude_device_id|, if one is provided. Cancelled tasks are
   // immediately removed from |ongoing_tasks_|.
@@ -108,6 +113,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   //  per-device tasks are cancelled.
   // https://w3c.github.io/webauthn/#iface-pkcredential
   void CancelOngoingTasks(base::StringPiece exclude_device_id = nullptr);
+
+  base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr();
 
   void set_observer(TransportAvailabilityObserver* observer) {
     DCHECK(!observer_) << "Only one observer is supported.";
@@ -122,8 +129,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   }
 
  protected:
-  virtual base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr() = 0;
-
   // Subclasses implement this method to dispatch their request onto the given
   // FidoAuthenticator. The FidoAuthenticator is owned by this
   // FidoRequestHandler and stored in active_authenticators().
