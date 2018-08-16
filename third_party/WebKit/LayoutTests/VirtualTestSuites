@@ -140,8 +140,7 @@
   {
     "prefix": "feature-policy-permissions",
     "base": "external/wpt/mediacapture-streams",
-    "args": ["--enable-features=UseFeaturePolicyForPermissions",
-             "--use-fake-device-for-media-stream",
+    "args": ["--use-fake-device-for-media-stream",
              "--use-fake-ui-for-media-stream"]
   },
   {
