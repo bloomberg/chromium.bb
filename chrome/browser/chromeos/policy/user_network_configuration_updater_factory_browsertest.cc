@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -300,8 +301,13 @@ class PolicyProvidedTrustRootsPublicSessionTest
   }
 };
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_AllowedInPublicSession DISABLED_AllowedInPublicSession
+#else
+#define MAYBE_AllowedInPublicSession AllowedInPublicSession
+#endif
 IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustRootsPublicSessionTest,
-                       AllowedInPublicSession) {
+                       MAYBE_AllowedInPublicSession) {
   StartLogin();
   WaitForSessionStart();
 
