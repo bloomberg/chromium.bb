@@ -910,17 +910,15 @@ TEST_P(CacheStorageCacheTestP, PutBodyDropBlobRef) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutBadMessage) {
-  // Two unique puts that will collectively overflow unit64_t size of the
-  // batch operation.
   blink::mojom::BatchOperationPtr operation1 =
       blink::mojom::BatchOperation::New(blink::mojom::OperationType::kPut,
                                         body_request_, CreateBlobBodyResponse(),
                                         nullptr /* match_params */);
   operation1->response->blob->size = std::numeric_limits<uint64_t>::max();
   blink::mojom::BatchOperationPtr operation2 =
-      blink::mojom::BatchOperation::New(
-          blink::mojom::OperationType::kPut, body_request_with_query_,
-          CreateBlobBodyResponse(), nullptr /* match_params */);
+      blink::mojom::BatchOperation::New(blink::mojom::OperationType::kPut,
+                                        body_request_, CreateBlobBodyResponse(),
+                                        nullptr /* match_params */);
   operation2->response->blob->size = std::numeric_limits<uint64_t>::max();
 
   std::vector<blink::mojom::BatchOperationPtr> operations;
@@ -947,7 +945,7 @@ TEST_P(CacheStorageCacheTestP, PutReplace) {
   EXPECT_FALSE(callback_response_->blob);
 }
 
-TEST_P(CacheStorageCacheTestP, PutReplaceInBatchFails) {
+TEST_P(CacheStorageCacheTestP, PutReplaceInBatch) {
   blink::mojom::BatchOperationPtr operation1 =
       blink::mojom::BatchOperation::New();
   operation1->operation_type = blink::mojom::OperationType::kPut;
@@ -964,11 +962,11 @@ TEST_P(CacheStorageCacheTestP, PutReplaceInBatchFails) {
   operations.push_back(std::move(operation1));
   operations.push_back(std::move(operation2));
 
-  EXPECT_EQ(CacheStorageError::kErrorDuplicateOperation,
-            BatchOperation(std::move(operations)));
+  EXPECT_EQ(CacheStorageError::kSuccess, BatchOperation(std::move(operations)));
 
-  // Neither operation should have completed.
-  EXPECT_FALSE(Match(body_request_));
+  // |operation2| should win.
+  EXPECT_TRUE(Match(body_request_));
+  EXPECT_TRUE(callback_response_->blob);
 }
 
 TEST_P(CacheStorageCacheTestP, MatchNoBody) {
