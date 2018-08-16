@@ -172,31 +172,6 @@ body {
   width: 90px;
 }
 
-#error .icon.animate {
-  -webkit-animation: animateIcon 1.5s ease-out;
-}
-
-@-webkit-keyframes animateIcon {
-  0% {
-    -webkit-transform: translateY(0);
-  }
-  20% {
-    -webkit-transform: translateY(10px);
-  }
-  30% {
-    -webkit-transform: translateY(-150px) rotate(30deg);
-  }
-  80% {
-    -webkit-transform: translateY(-120px) rotate(1050deg);
-  }
-  90% {
-    -webkit-transform: translateY(10px) rotate(1080deg);
-  }
-  100% {
-    -webkit-transform: rotate(1080deg);
-  }
-}
-
 #error #error-msg,
 #error #error-msg-hint {
   text-align: center;
@@ -551,7 +526,7 @@ body.capturing #preview-grid.visible {
 #browser .buttons button {
   width: 32px;
   height: 32px;
-  margin: 2px;
+  margin: 6px 8px;
 }
 
 #browser .buttons button[disabled] {
