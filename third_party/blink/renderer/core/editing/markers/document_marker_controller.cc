@@ -295,9 +295,9 @@ void DocumentMarkerController::AddMarkerToNode(const Node& node,
 
 // Moves markers from src_node to dst_node. Markers are moved if their start
 // offset is less than length. Markers that run past that point are truncated.
-void DocumentMarkerController::MoveMarkers(const Node* src_node,
+void DocumentMarkerController::MoveMarkers(const Text& src_node,
                                            int length,
-                                           const Node* dst_node) {
+                                           const Text& dst_node) {
   if (length <= 0)
     return;
 
@@ -305,15 +305,15 @@ void DocumentMarkerController::MoveMarkers(const Node* src_node,
     return;
   DCHECK(!markers_.IsEmpty());
 
-  MarkerLists* src_markers = markers_.at(src_node);
+  MarkerLists* const src_markers = markers_.at(&src_node);
   if (!src_markers)
     return;
 
-  if (!markers_.Contains(dst_node)) {
-    markers_.insert(dst_node,
+  if (!markers_.Contains(&dst_node)) {
+    markers_.insert(&dst_node,
                     new MarkerLists(DocumentMarker::kMarkerTypeIndexesCount));
   }
-  MarkerLists* dst_markers = markers_.at(dst_node);
+  MarkerLists* const dst_markers = markers_.at(&dst_node);
 
   bool doc_dirty = false;
   for (DocumentMarker::MarkerType type : DocumentMarker::MarkerTypes::All()) {
@@ -332,7 +332,7 @@ void DocumentMarkerController::MoveMarkers(const Node* src_node,
   if (!doc_dirty)
     return;
 
-  InvalidatePaintForNode(*dst_node);
+  InvalidatePaintForNode(dst_node);
 }
 
 void DocumentMarkerController::RemoveMarkersInternal(
