@@ -63,7 +63,9 @@ class ChromeAuthenticatorRequestDelegate
   content::BrowserContext* browser_context() const;
 
   // content::AuthenticatorRequestClientDelegate:
-  void DidStartRequest(base::OnceClosure cancel_callback) override;
+  void DidStartRequest(base::OnceClosure cancel_callback,
+                       device::FidoRequestHandlerBase::RequestCallback
+                           request_callback) override;
   bool ShouldPermitIndividualAttestation(
       const std::string& relying_party_id) override;
   void ShouldReturnAttestation(
@@ -74,8 +76,8 @@ class ChromeAuthenticatorRequestDelegate
       device::FidoTransportProtocol transport) override;
 
   // device::FidoRequestHandlerBase::TransportAvailabilityObserver:
-  void FidoAuthenticatorAdded(
-      const device::FidoAuthenticator& authenticator) override;
+  void FidoAuthenticatorAdded(const device::FidoAuthenticator& authenticator,
+                              bool* hold_off_request) override;
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
 
   // AuthenticatorRequestDialogModel::Observer:
@@ -85,6 +87,7 @@ class ChromeAuthenticatorRequestDelegate
   content::RenderFrameHost* const render_frame_host_;
   AuthenticatorRequestDialogModel* weak_dialog_model_ = nullptr;
   base::OnceClosure cancel_callback_;
+  device::FidoRequestHandlerBase::RequestCallback request_callback_;
 
   base::WeakPtrFactory<ChromeAuthenticatorRequestDelegate> weak_ptr_factory_;
 

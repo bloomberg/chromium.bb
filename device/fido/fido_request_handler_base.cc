@@ -19,16 +19,6 @@
 
 namespace device {
 
-namespace {
-
-bool ShouldDeferRequestDispatchToUi(const FidoAuthenticator& authenticator) {
-  // TODO(hongjunchoi): Change this to be dependent on authenticator transport
-  // type once UI component is in place.
-  return false;
-}
-
-}  // namespace
-
 // FidoRequestHandlerBase::TransportAvailabilityInfo --------------------------
 
 FidoRequestHandlerBase::TransportAvailabilityInfo::TransportAvailabilityInfo() =
@@ -117,6 +107,15 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
 
 FidoRequestHandlerBase::~FidoRequestHandlerBase() = default;
 
+void FidoRequestHandlerBase::StartAuthenticatorRequest(
+    const std::string& authenticator_id) {
+  auto authenticator = active_authenticators_.find(authenticator_id);
+  if (authenticator == active_authenticators_.end())
+    return;
+
+  DispatchRequest(authenticator->second.get());
+}
+
 void FidoRequestHandlerBase::CancelOngoingTasks(
     base::StringPiece exclude_device_id) {
   for (auto task_it = active_authenticators_.begin();
@@ -132,11 +131,22 @@ void FidoRequestHandlerBase::CancelOngoingTasks(
   }
 }
 
+base::WeakPtr<FidoRequestHandlerBase> FidoRequestHandlerBase::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void FidoRequestHandlerBase::Start() {
   for (const auto& discovery : discoveries_)
     discovery->Start();
 
-  MaybeAddPlatformAuthenticator();
+  // Post |MaybeAddPlatformAuthenticator| into its own task. This avoids
+  // FidoAuthenticatorAdded() to be called synchronously from the constructor of
+  // FidoRequestHandlerBase prior to any TransportAvailabilityObserver being
+  // set.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FidoRequestHandlerBase::MaybeAddPlatformAuthenticator,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,
@@ -195,16 +205,23 @@ void FidoRequestHandlerBase::AddAuthenticator(
   FidoAuthenticator* authenticator_ptr = authenticator.get();
   active_authenticators_.emplace(authenticator->GetId(),
                                  std::move(authenticator));
-  if (!ShouldDeferRequestDispatchToUi(*authenticator_ptr)) {
-    // Post |DispatchRequest| into its own task. This avoids hairpinning, even
-    // if the authenticator immediately invokes the request callback.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&FidoRequestHandlerBase::DispatchRequest,
-                                  GetWeakPtr(), authenticator_ptr));
-  }
 
+  // If |observer_| exists, dispatching request to |authenticator_ptr| is
+  // delegated to |observer_|. Else, dispatch request to |authenticator_ptr|
+  // immediately.
+  bool should_delay_request = false;
   if (observer_)
-    observer_->FidoAuthenticatorAdded(*authenticator_ptr);
+    observer_->FidoAuthenticatorAdded(*authenticator_ptr,
+                                      &should_delay_request);
+
+  if (should_delay_request)
+    return;
+
+  // Post |DispatchRequest| into its own task. This avoids hairpinning, even
+  // if the authenticator immediately invokes the request callback.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FidoRequestHandlerBase::DispatchRequest,
+                                GetWeakPtr(), authenticator_ptr));
 }
 
 void FidoRequestHandlerBase::MaybeAddPlatformAuthenticator() {

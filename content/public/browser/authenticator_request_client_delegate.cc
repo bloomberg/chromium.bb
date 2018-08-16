@@ -17,7 +17,8 @@ AuthenticatorRequestClientDelegate::~AuthenticatorRequestClientDelegate() =
     default;
 
 void AuthenticatorRequestClientDelegate::DidStartRequest(
-    base::OnceClosure cancel_callback) {}
+    base::OnceClosure cancel_callback,
+    device::FidoRequestHandlerBase::RequestCallback request_callback) {}
 
 bool AuthenticatorRequestClientDelegate::ShouldPermitIndividualAttestation(
     const std::string& relying_party_id) {
@@ -51,7 +52,8 @@ void AuthenticatorRequestClientDelegate::BluetoothAdapterPowerChanged(
     bool is_powered_on) {}
 
 void AuthenticatorRequestClientDelegate::FidoAuthenticatorAdded(
-    const device::FidoAuthenticator& authenticator) {}
+    const device::FidoAuthenticator& authenticator,
+    bool* hold_off_request) {}
 
 void AuthenticatorRequestClientDelegate::FidoAuthenticatorRemoved(
     base::StringPiece device_id) {}

@@ -452,9 +452,6 @@ void AuthenticatorImpl::MakeCredential(
 
   DCHECK(make_credential_response_callback_.is_null());
   make_credential_response_callback_ = std::move(callback);
-  request_delegate_->DidStartRequest(
-      base::BindOnce(&AuthenticatorImpl::Cancel,
-                     weak_factory_.GetWeakPtr()) /* cancel_callback */);
 
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,
@@ -496,6 +493,13 @@ void AuthenticatorImpl::MakeCredential(
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&AuthenticatorImpl::CreatePlatformAuthenticatorIfAvailable,
                      base::Unretained(this)));
+
+  request_delegate_->DidStartRequest(
+      base::BindOnce(&AuthenticatorImpl::Cancel,
+                     weak_factory_.GetWeakPtr()) /* cancel_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
+          request_->GetWeakPtr()) /* request_callback */);
   request_->set_observer(request_delegate_.get());
 }
 
@@ -549,9 +553,6 @@ void AuthenticatorImpl::GetAssertion(
 
   DCHECK(get_assertion_response_callback_.is_null());
   get_assertion_response_callback_ = std::move(callback);
-  request_delegate_->DidStartRequest(
-      base::BindOnce(&AuthenticatorImpl::Cancel,
-                     weak_factory_.GetWeakPtr()) /* cancel_callback */);
 
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,
@@ -575,6 +576,13 @@ void AuthenticatorImpl::GetAssertion(
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&AuthenticatorImpl::CreatePlatformAuthenticatorIfAvailable,
                      base::Unretained(this)));
+
+  request_delegate_->DidStartRequest(
+      base::BindOnce(&AuthenticatorImpl::Cancel,
+                     weak_factory_.GetWeakPtr()) /* cancel_callback */,
+      base::BindRepeating(
+          &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
+          request_->GetWeakPtr()) /* request_callback */);
   request_->set_observer(request_delegate_.get());
 }
 
