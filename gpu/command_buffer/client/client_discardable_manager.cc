@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/client/client_discardable_manager.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/containers/flat_set.h"
 #include "base/sys_info.h"
 
@@ -120,6 +121,15 @@ size_t AllocationSize() {
   return allocation_size;
 }
 
+ClientDiscardableHandle::Id GetNextHandleId() {
+  static base::AtomicSequenceNumber g_next_handle_id;
+
+  // AtomicSequenceNumber is 0-based, add 1 to have a 1-based ID where 0 is
+  // invalid.
+  return ClientDiscardableHandle::Id::FromUnsafeValue(
+      g_next_handle_id.GetNext() + 1);
+}
+
 }  // namespace
 
 struct ClientDiscardableManager::Allocation {
@@ -147,7 +157,7 @@ ClientDiscardableHandle::Id ClientDiscardableManager::CreateHandle(
   DCHECK_LT(offset * element_size_, std::numeric_limits<uint32_t>::max());
   uint32_t byte_offset = static_cast<uint32_t>(offset * element_size_);
   ClientDiscardableHandle handle(std::move(buffer), byte_offset, shm_id);
-  ClientDiscardableHandle::Id handle_id = handle.GetId();
+  ClientDiscardableHandle::Id handle_id = GetNextHandleId();
   handles_.emplace(handle_id, handle);
 
   return handle_id;

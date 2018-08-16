@@ -83,9 +83,7 @@ class GPU_EXPORT DiscardableHandleBase {
 // handle (via the constructor), and can Lock an existing handle.
 class GPU_EXPORT ClientDiscardableHandle : public DiscardableHandleBase {
  public:
-  using Id = IdType<ClientDiscardableHandle,
-                    uint64_t,
-                    std::numeric_limits<uint64_t>::max()>;
+  using Id = IdType32<ClientDiscardableHandle>;
 
   ClientDiscardableHandle();  // Constructs an invalid handle.
   ClientDiscardableHandle(scoped_refptr<Buffer> buffer,
@@ -104,11 +102,8 @@ class GPU_EXPORT ClientDiscardableHandle : public DiscardableHandleBase {
   // re-used on the client.
   bool CanBeReUsed() const;
 
-  // Gets an Id which uniquely identifies this ClientDiscardableHandle within
-  // the ClientDiscardableManager which created it.
-  Id GetId() const;
-
-  bool IsValid() const { return !GetId().is_null(); }
+  // Returns true if this handle is backed by valid shared memory.
+  bool IsValid() const { return shm_id() > 0; }
 };
 
 // ServiceDiscardableHandle can wrap an existing handle (via the constructor),
