@@ -278,7 +278,28 @@ class DescriberText(Describer):
     indent_prefix = '> ' * indent
     diff_prefix = ''
     total = group.pss
+    # is_default_sorted ==> sorted by abs(PSS) from largest to smallest.
+    if group.is_default_sorted:
+      # Skip long tail of small symbols (useful for diffs where aliases change).
+      # Long tail is defined as:
+      #   * Accounts for < .5% of PSS
+      #   * Symbols are smaller than 1.0 byte (by PSS)
+      #   * Always show at least 50 symbols.
+      min_remaining_pss_to_show = max(1024, total / 1000 * 5)
+      min_symbol_pss_to_show = 1.0
+      min_symbols_to_show = 50
+
     for index, s in enumerate(group):
+      if group.is_default_sorted and not self.verbose:
+        remaining_pss = total - running_total
+        if (index >= min_symbols_to_show and
+            abs(remaining_pss) < min_remaining_pss_to_show and
+            abs(s.pss) < min_symbol_pss_to_show):
+          remaining_count = len(group) - index
+          yield '{}Skipping {} tiny symbols comprising {} bytes.'.format(
+              indent_prefix, remaining_count, _FormatPss(remaining_pss))
+          break
+
       if group.IsBss() or not s.IsBss():
         running_total += s.pss
         running_percent = _Divide(running_total, total)

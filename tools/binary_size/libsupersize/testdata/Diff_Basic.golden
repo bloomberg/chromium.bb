@@ -64,14 +64,14 @@ Index | Running Total | Section@Address | ...
                source_path= 	object_path=
                flags={}  name=IDS_WEB_FONT_FAMILY
                     full_name=../../ui/strings/app_locale_settings.grd: IDS_WEB_FONT_FAMILY
-- 2)       -112 (100.0%) p@0x0        -9 (9->0)  num_aliases=1
-               source_path= 	object_path=
-               flags={}  name=IDS_WEB_FONT_SIZE
-                    full_name=../../ui/strings/app_locale_settings.grd: IDS_WEB_FONT_SIZE
-~ 3)       -130 (116.1%) p@0x0        -18 (0->0)  num_aliases=1
+~ 2)       -121 (108.0%) p@0x0        -18 (0->0)  num_aliases=1
                source_path= 	object_path=
                flags={}  name=../../../mock_apk/assets/en-US.pak
                     full_name=foo: ../../../mock_apk/assets/en-US.pak
+- 3)       -130 (116.1%) p@0x0        -9 (9->0)  num_aliases=1
+               source_path= 	object_path=
+               flags={}  name=IDS_WEB_FONT_SIZE
+                    full_name=../../ui/strings/app_locale_settings.grd: IDS_WEB_FONT_SIZE
 ~ 4)       -120 (107.1%) r@0x284e398  +10 (22->32)  num_aliases=1
                source_path=third_party/container/container.c 	object_path=third_party/sub/ContiguousContainer.o
                flags={}  name=chrome::mojom::FilePatcher::Name_
