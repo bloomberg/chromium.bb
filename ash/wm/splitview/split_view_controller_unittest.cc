@@ -2342,6 +2342,107 @@ TEST_F(SplitViewTabDraggingTest, DragIndicatorsInPortraitOrientationTest) {
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
 }
 
+// Tests that if dragging a window into the preview split area, overivew bounds
+// should be adjusted accordingly.
+TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  WindowSelectorController* selector_controller =
+      Shell::Get()->window_selector_controller();
+  EXPECT_FALSE(selector_controller->IsSelecting());
+
+  // Start dragging |window1|.
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(window1.get(), window1.get());
+  // Overview should have been opened.
+  EXPECT_TRUE(selector_controller->IsSelecting());
+
+  // Test that the new selector item shows up as the first item in overview.
+  WindowGrid* current_grid =
+      selector_controller->window_selector()->GetGridWithRootWindow(
+          window1->GetRootWindow());
+  EXPECT_TRUE(current_grid->GetNewSelectorItem());
+  const gfx::Rect work_area_bounds =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+  EXPECT_EQ(current_grid->bounds(), work_area_bounds);
+  // The new selector item should be visible.
+  views::Widget* new_selector_widget =
+      current_grid->new_selector_item_widget_for_testing();
+  EXPECT_TRUE(new_selector_widget);
+  EXPECT_TRUE(new_selector_widget->IsVisible());
+
+  // Now drag |window1| to the left preview split area.
+  DragWindowTo(resizer.get(),
+               gfx::Point(0, work_area_bounds.CenterPoint().y()));
+  EXPECT_EQ(current_grid->bounds(),
+            split_view_controller()->GetSnappedWindowBoundsInScreen(
+                window1.get(), SplitViewController::RIGHT));
+  EXPECT_FALSE(new_selector_widget->IsVisible());
+
+  // Drag it to middle.
+  DragWindowTo(resizer.get(), work_area_bounds.CenterPoint());
+  EXPECT_EQ(current_grid->bounds(), work_area_bounds);
+  EXPECT_TRUE(new_selector_widget->IsVisible());
+
+  // Drag |window1| to the right preview split area.
+  DragWindowTo(resizer.get(), gfx::Point(work_area_bounds.right(),
+                                         work_area_bounds.CenterPoint().y()));
+  EXPECT_EQ(current_grid->bounds(),
+            split_view_controller()->GetSnappedWindowBoundsInScreen(
+                window1.get(), SplitViewController::LEFT));
+  EXPECT_FALSE(new_selector_widget->IsVisible());
+
+  CompleteDrag(std::move(resizer));
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::RIGHT_SNAPPED);
+  EXPECT_TRUE(selector_controller->IsSelecting());
+
+  // Snap another window should end overview.
+  split_view_controller()->SnapWindow(window2.get(), SplitViewController::LEFT);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_FALSE(selector_controller->IsSelecting());
+
+  // Now drag |window1| again. Overview and splitview should be both active at
+  // the same time during dragging.
+  resizer = StartDrag(window1.get(), window1.get());
+  EXPECT_TRUE(selector_controller->IsSelecting());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+
+  current_grid = selector_controller->window_selector()->GetGridWithRootWindow(
+      window1->GetRootWindow());
+  // The new selector item should be visible.
+  new_selector_widget = current_grid->new_selector_item_widget_for_testing();
+  EXPECT_TRUE(new_selector_widget);
+  EXPECT_TRUE(new_selector_widget->IsVisible());
+  EXPECT_EQ(current_grid->bounds(),
+            split_view_controller()->GetSnappedWindowBoundsInScreen(
+                window1.get(), SplitViewController::RIGHT));
+
+  // Drag |window1| to the right preview split area.
+  DragWindowTo(resizer.get(), gfx::Point(work_area_bounds.right(),
+                                         work_area_bounds.CenterPoint().y()));
+  // Overview bounds stays the same.
+  EXPECT_EQ(current_grid->bounds(),
+            split_view_controller()->GetSnappedWindowBoundsInScreen(
+                window1.get(), SplitViewController::RIGHT));
+  EXPECT_TRUE(new_selector_widget->IsVisible());
+
+  // Drag |window1| to the left preview split area.
+  DragWindowTo(resizer.get(),
+               gfx::Point(0, work_area_bounds.CenterPoint().y()));
+  EXPECT_EQ(current_grid->bounds(),
+            split_view_controller()->GetSnappedWindowBoundsInScreen(
+                window1.get(), SplitViewController::RIGHT));
+  EXPECT_TRUE(new_selector_widget->IsVisible());
+
+  CompleteDrag(std::move(resizer));
+}
+
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
   TestWindowDelegateWithWidget(bool can_activate)

@@ -50,9 +50,8 @@ gfx::Rect GetNewSelectorItemBounds(aura::Window* dragged_window) {
   if (!window_grid || window_grid->empty())
     return gfx::Rect();
 
-  WindowSelectorItem* new_selector_item =
-      window_grid->window_list().front().get();
-  if (!window_grid->IsNewSelectorItemWindow(new_selector_item->GetWindow()))
+  WindowSelectorItem* new_selector_item = window_grid->GetNewSelectorItem();
+  if (!new_selector_item)
     return gfx::Rect();
 
   return new_selector_item->target_bounds();
