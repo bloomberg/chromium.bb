@@ -90,8 +90,9 @@ class PLATFORM_EXPORT RawResource final : public Resource {
 
   // Used for code caching of scripts with source code inline in the HTML.
   // Returns a cache handler which can store multiple cache metadata entries,
-  // keyed by the source code of the script.
-  SourceKeyedCachedMetadataHandler* CacheHandler();
+  // keyed by the source code of the script. This is valid only if type is
+  // kMainResource.
+  SourceKeyedCachedMetadataHandler* InlineScriptCacheHandler();
 
   scoped_refptr<BlobDataHandle> DownloadedBlob() const {
     return downloaded_blob_;

@@ -194,7 +194,8 @@ void RawResource::WillNotFollowRedirect() {
     c->RedirectBlocked();
 }
 
-SourceKeyedCachedMetadataHandler* RawResource::CacheHandler() {
+SourceKeyedCachedMetadataHandler* RawResource::InlineScriptCacheHandler() {
+  DCHECK_EQ(kMainResource, GetType());
   return static_cast<SourceKeyedCachedMetadataHandler*>(
       Resource::CacheHandler());
 }
@@ -227,16 +228,24 @@ void RawResource::ResponseReceived(
 
 CachedMetadataHandler* RawResource::CreateCachedMetadataHandler(
     std::unique_ptr<CachedMetadataSender> send_callback) {
-  return new SourceKeyedCachedMetadataHandler(Encoding(),
-                                              std::move(send_callback));
+  // If this is the document resource, create a cache handler that can handle
+  // multiple inline scripts.
+  if (GetType() == kMainResource) {
+    return new SourceKeyedCachedMetadataHandler(Encoding(),
+                                                std::move(send_callback));
+  }
+  return Resource::CreateCachedMetadataHandler(std::move(send_callback));
 }
 
 void RawResource::SetSerializedCachedMetadata(const char* data, size_t size) {
   Resource::SetSerializedCachedMetadata(data, size);
 
-  SourceKeyedCachedMetadataHandler* cache_handler = CacheHandler();
-  if (cache_handler) {
-    cache_handler->SetSerializedCachedMetadata(data, size);
+  if (GetType() == kMainResource) {
+    SourceKeyedCachedMetadataHandler* cache_handler =
+        InlineScriptCacheHandler();
+    if (cache_handler) {
+      cache_handler->SetSerializedCachedMetadata(data, size);
+    }
   }
 
   ResourceClientWalker<RawResourceClient> w(Clients());

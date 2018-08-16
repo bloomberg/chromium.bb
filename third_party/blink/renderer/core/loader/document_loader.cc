@@ -1160,7 +1160,7 @@ void DocumentLoader::InstallNewDocument(
       parser_->AsScriptableDocumentParser();
   if (scriptable_parser && GetResource()) {
     scriptable_parser->SetInlineScriptCacheHandler(
-        ToRawResource(GetResource())->CacheHandler());
+        ToRawResource(GetResource())->InlineScriptCacheHandler());
   }
 
   // FeaturePolicy is reset in the browser process on commit, so this needs to
