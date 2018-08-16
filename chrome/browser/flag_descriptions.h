@@ -296,6 +296,9 @@ extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
 extern const char kEnableAutoplayIgnoreWebAudioName[];
 extern const char kEnableAutoplayIgnoreWebAudioDescription[];
 
+extern const char kEnableAutoplayUnifiedSoundSettingsName[];
+extern const char kEnableAutoplayUnifiedSoundSettingsDescription[];
+
 extern const char kEnableBreakingNewsPushName[];
 extern const char kEnableBreakingNewsPushDescription[];
 
