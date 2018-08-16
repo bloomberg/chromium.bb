@@ -39,10 +39,6 @@ class ASH_EXPORT ShellDelegate {
   // user.
   virtual bool CanShowWindowForUser(aura::Window* window) const = 0;
 
-  // Called before processing |Shell::Init()| so that the delegate
-  // can perform tasks necessary before the shell is initialized.
-  virtual void PreInit() = 0;
-
   // Create a shell-specific keyboard::KeyboardUI.
   virtual std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() = 0;
 

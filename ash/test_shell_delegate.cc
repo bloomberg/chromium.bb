@@ -21,8 +21,6 @@ bool TestShellDelegate::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }
 
-void TestShellDelegate::PreInit() {}
-
 std::unique_ptr<keyboard::KeyboardUI> TestShellDelegate::CreateKeyboardUI() {
   return std::make_unique<TestKeyboardUI>();
 }

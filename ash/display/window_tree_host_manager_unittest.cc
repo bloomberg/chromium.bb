@@ -245,52 +245,12 @@ class WindowTreeHostManagerShutdownTest : public AshTestBase,
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostManagerShutdownTest);
 };
 
-class StartupHelper : public TestShellDelegate,
-                      public WindowTreeHostManager::Observer {
- public:
-  StartupHelper() : displays_initialized_(false) {}
-  ~StartupHelper() override = default;
-
-  // ShellDelegate:
-  void PreInit() override {
-    Shell::Get()->window_tree_host_manager()->AddObserver(this);
-  }
-
-  // WindowTreeHostManager::Observer:
-  void OnDisplaysInitialized() override {
-    DCHECK(!displays_initialized_);
-    displays_initialized_ = true;
-  }
-
-  bool displays_initialized() const { return displays_initialized_; }
-
- private:
-  bool displays_initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(StartupHelper);
-};
-
 class WindowTreeHostManagerStartupTest : public AshTestBase, public TestHelper {
  public:
-  WindowTreeHostManagerStartupTest()
-      : TestHelper(this), startup_helper_(new StartupHelper) {}
+  WindowTreeHostManagerStartupTest() : TestHelper(this) {}
   ~WindowTreeHostManagerStartupTest() override = default;
 
-  // AshTestBase:
-  void SetUp() override {
-    ash_test_helper()->set_test_shell_delegate(startup_helper_);
-    AshTestBase::SetUp();
-  }
-  void TearDown() override {
-    Shell::Get()->window_tree_host_manager()->RemoveObserver(startup_helper_);
-    AshTestBase::TearDown();
-  }
-
-  const StartupHelper* startup_helper() const { return startup_helper_; }
-
  private:
-  StartupHelper* startup_helper_;  // Owned by ash::Shell.
-
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostManagerStartupTest);
 };
 
@@ -401,7 +361,10 @@ TEST_F(WindowTreeHostManagerShutdownTest, Shutdown) {
 }
 
 TEST_F(WindowTreeHostManagerStartupTest, Startup) {
-  EXPECT_TRUE(startup_helper()->displays_initialized());
+  // Ensure that WindowTreeHostManager was initialized and created at least one
+  // root window.
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_FALSE(root_windows.empty());
 }
 
 TEST_F(WindowTreeHostManagerTest, SecondaryDisplayLayout) {
