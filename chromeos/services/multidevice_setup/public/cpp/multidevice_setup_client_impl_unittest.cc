@@ -42,7 +42,8 @@ class FakeMultiDeviceSetupInitializerFactory
   std::unique_ptr<MultiDeviceSetupBase> BuildInstance(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client) override {
+      secure_channel::SecureChannelClient* secure_channel_client,
+      AuthTokenValidator* auth_token_validator) override {
     EXPECT_TRUE(fake_multidevice_setup_);
     return std::move(fake_multidevice_setup_);
   }
@@ -97,7 +98,8 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
 
     auto multidevice_setup_service = std::make_unique<MultiDeviceSetupService>(
         nullptr /* pref_service */, nullptr /* device_sync_client */,
-        nullptr /* secure_channel_client */);
+        nullptr /* secure_channel_client */,
+        nullptr /* auth_token_validator */);
 
     connector_factory_ =
         service_manager::TestConnectorFactory::CreateForUniqueService(

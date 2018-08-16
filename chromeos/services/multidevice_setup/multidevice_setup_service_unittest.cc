@@ -11,6 +11,7 @@
 #include "chromeos/services/multidevice_setup/fake_host_status_observer.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
+#include "chromeos/services/multidevice_setup/public/cpp/fake_auth_token_validator.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -34,10 +35,12 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
       sync_preferences::TestingPrefServiceSyncable*
           expected_testing_pref_service,
       device_sync::FakeDeviceSyncClient* expected_device_sync_client,
-      secure_channel::FakeSecureChannelClient* expected_secure_channel_client)
+      secure_channel::FakeSecureChannelClient* expected_secure_channel_client,
+      FakeAuthTokenValidator* expected_auth_token_validator)
       : expected_testing_pref_service_(expected_testing_pref_service),
         expected_device_sync_client_(expected_device_sync_client),
-        expected_secure_channel_client_(expected_secure_channel_client) {}
+        expected_secure_channel_client_(expected_secure_channel_client),
+        expected_auth_token_validator_(expected_auth_token_validator) {}
 
   ~FakeMultiDeviceSetupFactory() override = default;
 
@@ -47,11 +50,13 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
   std::unique_ptr<mojom::MultiDeviceSetup> BuildInstance(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client) override {
+      secure_channel::SecureChannelClient* secure_channel_client,
+      AuthTokenValidator* auth_token_validator) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(expected_testing_pref_service_, pref_service);
     EXPECT_EQ(expected_device_sync_client_, device_sync_client);
     EXPECT_EQ(expected_secure_channel_client_, secure_channel_client);
+    EXPECT_EQ(expected_auth_token_validator_, auth_token_validator);
 
     auto instance = std::make_unique<FakeMultiDeviceSetup>();
     instance_ = instance.get();
@@ -61,6 +66,7 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
   sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
   device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
   secure_channel::FakeSecureChannelClient* expected_secure_channel_client_;
+  FakeAuthTokenValidator* expected_auth_token_validator_;
 
   FakeMultiDeviceSetup* instance_ = nullptr;
 
@@ -84,11 +90,13 @@ class MultiDeviceSetupServiceTest : public testing::Test {
         std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
+    fake_auth_token_validator_ = std::make_unique<FakeAuthTokenValidator>();
 
     fake_multidevice_setup_factory_ =
         std::make_unique<FakeMultiDeviceSetupFactory>(
             test_pref_service_.get(), fake_device_sync_client_.get(),
-            fake_secure_channel_client_.get());
+            fake_secure_channel_client_.get(),
+            fake_auth_token_validator_.get());
     MultiDeviceSetupImpl::Factory::SetFactoryForTesting(
         fake_multidevice_setup_factory_.get());
 
@@ -96,7 +104,8 @@ class MultiDeviceSetupServiceTest : public testing::Test {
         service_manager::TestConnectorFactory::CreateForUniqueService(
             std::make_unique<MultiDeviceSetupService>(
                 test_pref_service_.get(), fake_device_sync_client_.get(),
-                fake_secure_channel_client_.get()));
+                fake_secure_channel_client_.get(),
+                fake_auth_token_validator_.get()));
 
     auto connector = connector_factory_->CreateConnector();
     connector->BindInterface(mojom::kServiceName, &multidevice_setup_ptr_);
@@ -152,6 +161,7 @@ class MultiDeviceSetupServiceTest : public testing::Test {
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client_;
+  std::unique_ptr<FakeAuthTokenValidator> fake_auth_token_validator_;
 
   std::unique_ptr<FakeMultiDeviceSetupFactory> fake_multidevice_setup_factory_;
 

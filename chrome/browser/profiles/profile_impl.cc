@@ -149,6 +149,8 @@
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_factory.h"
+#include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_impl.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
@@ -1524,7 +1526,9 @@ ProfileImpl::CreateMultiDeviceSetupService() {
       GetPrefs(),
       chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(this),
       chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
-          ->GetClient());
+          ->GetClient(),
+      chromeos::multidevice_setup::AuthTokenValidatorFactory::GetForProfile(
+          this));
 }
 
 #endif  // defined(OS_CHROMEOS)

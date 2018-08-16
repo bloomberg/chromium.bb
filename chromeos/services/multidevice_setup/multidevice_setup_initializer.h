@@ -24,6 +24,8 @@ class SecureChannelClient;
 
 namespace multidevice_setup {
 
+class AuthTokenValidator;
+
 // Initializes the MultiDeviceSetup service. This class is responsible for
 // waiting for asynchronous initialization steps to complete before creating
 // the concrete implementation of the mojom::MultiDeviceSetup interface.
@@ -39,7 +41,8 @@ class MultiDeviceSetupInitializer
     virtual std::unique_ptr<MultiDeviceSetupBase> BuildInstance(
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
-        secure_channel::SecureChannelClient* secure_channel_client);
+        secure_channel::SecureChannelClient* secure_channel_client,
+        AuthTokenValidator* auth_token_validator);
 
    private:
     static Factory* test_factory_;
@@ -51,7 +54,8 @@ class MultiDeviceSetupInitializer
   MultiDeviceSetupInitializer(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client);
+      secure_channel::SecureChannelClient* secure_channel_client,
+      AuthTokenValidator* auth_token_validator);
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
@@ -81,6 +85,7 @@ class MultiDeviceSetupInitializer
   PrefService* pref_service_;
   device_sync::DeviceSyncClient* device_sync_client_;
   secure_channel::SecureChannelClient* secure_channel_client_;
+  AuthTokenValidator* auth_token_validator_;
 
   std::unique_ptr<mojom::MultiDeviceSetup> multidevice_setup_impl_;
 
