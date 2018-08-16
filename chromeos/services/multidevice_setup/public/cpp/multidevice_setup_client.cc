@@ -27,6 +27,12 @@ void MultiDeviceSetupClient::NotifyHostStatusChanged(
     observer.OnHostStatusChanged(host_status, host_device);
 }
 
+void MultiDeviceSetupClient::NotifyFeatureStateChanged(
+    const FeatureStatesMap& feature_states_map) {
+  for (auto& observer : observer_list_)
+    observer.OnFeatureStatesChanged(feature_states_map);
+}
+
 }  // namespace multidevice_setup
 
 }  // namespace chromeos

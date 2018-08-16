@@ -217,6 +217,57 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
     }
   }
 
+  void CallSetFeatureEnabledState(mojom::Feature feature,
+                                  bool enabled,
+                                  bool should_succeed) {
+    size_t num_set_feature_enabled_args_before_call =
+        fake_multidevice_setup_->set_feature_enabled_args().size();
+
+    base::RunLoop run_loop;
+    client_->SetFeatureEnabledState(
+        feature, enabled,
+        base::BindOnce(
+            &MultiDeviceSetupClientImplTest::OnSetFeatureEnabledStateCompleted,
+            base::Unretained(this), run_loop.QuitClosure()));
+    SendPendingMojoMessages();
+
+    EXPECT_EQ(num_set_feature_enabled_args_before_call + 1u,
+              fake_multidevice_setup_->set_feature_enabled_args().size());
+    EXPECT_EQ(feature,
+              std::get<0>(
+                  fake_multidevice_setup_->set_feature_enabled_args().back()));
+    EXPECT_EQ(enabled,
+              std::get<1>(
+                  fake_multidevice_setup_->set_feature_enabled_args().back()));
+    std::move(
+        std::get<2>(fake_multidevice_setup_->set_feature_enabled_args().back()))
+        .Run(should_succeed /* success */);
+
+    run_loop.Run();
+    EXPECT_EQ(should_succeed, *set_feature_enabled_state_success_);
+  }
+
+  void CallGetFeatureStates(
+      const base::flat_map<mojom::Feature, mojom::FeatureState>&
+          expected_feature_states_map) {
+    size_t num_get_feature_states_args_before_call =
+        fake_multidevice_setup_->get_feature_states_args().size();
+
+    base::RunLoop run_loop;
+    client_->GetFeatureStates(base::BindOnce(
+        &MultiDeviceSetupClientImplTest::OnGetFeatureStatesCompleted,
+        base::Unretained(this), run_loop.QuitClosure()));
+    SendPendingMojoMessages();
+
+    EXPECT_EQ(num_get_feature_states_args_before_call + 1u,
+              fake_multidevice_setup_->get_feature_states_args().size());
+    std::move(fake_multidevice_setup_->get_feature_states_args().back())
+        .Run(expected_feature_states_map);
+
+    run_loop.Run();
+    EXPECT_EQ(expected_feature_states_map, *get_feature_states_result_);
+  }
+
   void CallRetrySetHostNow(bool expect_success) {
     base::RunLoop run_loop;
 
@@ -305,6 +356,20 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
+  void OnSetFeatureEnabledStateCompleted(base::OnceClosure quit_closure,
+                                         bool success) {
+    set_feature_enabled_state_success_ = success;
+    std::move(quit_closure).Run();
+  }
+
+  void OnGetFeatureStatesCompleted(
+      base::OnceClosure quit_closure,
+      const base::flat_map<mojom::Feature, mojom::FeatureState>&
+          feature_states_map) {
+    get_feature_states_result_ = feature_states_map;
+    std::move(quit_closure).Run();
+  }
+
   void OnRetrySetHostNowCompleted(base::OnceClosure quit_closure,
                                   bool success) {
     retry_set_host_now_success_ = success;
@@ -330,6 +395,9 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
   base::Optional<
       std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDeviceRef>>>
       get_host_status_result_;
+  base::Optional<bool> set_feature_enabled_state_success_;
+  base::Optional<base::flat_map<mojom::Feature, mojom::FeatureState>>
+      get_feature_states_result_;
   base::Optional<bool> retry_set_host_now_success_;
   base::Optional<bool> trigger_event_for_debugging_success_;
 
@@ -372,6 +440,19 @@ TEST_F(MultiDeviceSetupClientImplTest, TestGetHostStatus_Verified) {
 TEST_F(MultiDeviceSetupClientImplTest, TestGetHostStatus_NoHost) {
   CallGetHostStatus(mojom::HostStatus::kNoEligibleHosts,
                     base::nullopt /* expected_host_device */);
+}
+
+TEST_F(MultiDeviceSetupClientImplTest, SetFeatureEnabledState) {
+  CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
+                             true /* enabled */, true /* should_succeed */);
+  CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
+                             false /* enabled */, false /* should_succeed */);
+  CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
+                             false /* enabled */, true /* should_succeed */);
+}
+
+TEST_F(MultiDeviceSetupClientImplTest, GetFeatureState) {
+  CallGetFeatureStates(base::flat_map<mojom::Feature, mojom::FeatureState>());
 }
 
 TEST_F(MultiDeviceSetupClientImplTest, TestRetrySetHostNow_Success) {

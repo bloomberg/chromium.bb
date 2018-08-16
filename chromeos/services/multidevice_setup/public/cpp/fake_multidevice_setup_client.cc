@@ -14,6 +14,8 @@ FakeMultiDeviceSetupClient::~FakeMultiDeviceSetupClient() {
   DCHECK(get_eligible_host_devices_callback_queue_.empty());
   DCHECK(set_host_device_id_and_callback_queue_.empty());
   DCHECK(get_host_status_callback_queue_.empty());
+  DCHECK(set_feature_enabled_state_args_queue_.empty());
+  DCHECK(get_feature_states_args_queue_.empty());
   DCHECK(retry_set_host_now_callback_queue_.empty());
   DCHECK(trigger_event_for_debugging_type_and_callback_queue_.empty());
 }
@@ -40,6 +42,23 @@ void FakeMultiDeviceSetupClient::InvokePendingGetHostStatusCallback(
   std::move(get_host_status_callback_queue_.front())
       .Run(host_status, host_device);
   get_host_status_callback_queue_.pop();
+}
+
+void FakeMultiDeviceSetupClient::InvokePendingSetFeatureEnabledStateCallback(
+    mojom::Feature expected_feature,
+    bool expected_enabled,
+    bool success) {
+  auto& tuple = set_feature_enabled_state_args_queue_.front();
+  DCHECK_EQ(expected_feature, std::get<0>(tuple));
+  DCHECK_EQ(expected_enabled, std::get<1>(tuple));
+  std::move(std::get<2>(tuple)).Run(success);
+  set_feature_enabled_state_args_queue_.pop();
+}
+
+void FakeMultiDeviceSetupClient::InvokePendingGetFeatureStatesCallback(
+    const FeatureStatesMap& feature_states_map) {
+  std::move(get_feature_states_args_queue_.front()).Run(feature_states_map);
+  get_feature_states_args_queue_.pop();
 }
 
 void FakeMultiDeviceSetupClient::InvokePendingRetrySetHostNowCallback(
@@ -76,6 +95,19 @@ void FakeMultiDeviceSetupClient::RemoveHostDevice() {
 
 void FakeMultiDeviceSetupClient::GetHostStatus(GetHostStatusCallback callback) {
   get_host_status_callback_queue_.push(std::move(callback));
+}
+
+void FakeMultiDeviceSetupClient::SetFeatureEnabledState(
+    mojom::Feature feature,
+    bool enabled,
+    mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback) {
+  set_feature_enabled_state_args_queue_.emplace(feature, enabled,
+                                                std::move(callback));
+}
+
+void FakeMultiDeviceSetupClient::GetFeatureStates(
+    mojom::MultiDeviceSetup::GetFeatureStatesCallback callback) {
+  get_feature_states_args_queue_.emplace(std::move(callback));
 }
 
 void FakeMultiDeviceSetupClient::RetrySetHostNow(
