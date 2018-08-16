@@ -22,6 +22,9 @@ import org.chromium.chrome.browser.tab.TabObserver;
  * Thread safety: All methods on this class should be called on the UI thread.
  */
 public class TrustedWebActivityUi {
+    /** The Digital Asset Link relationship used for Trusted Web Activities. */
+    private final static int RELATIONSHIP = CustomTabsService.RELATION_HANDLE_ALL_URLS;
+
     private final TrustedWebActivityUiDelegate mDelegate;
     private final TrustedWebActivityDisclosure mDisclosure;
 
@@ -82,8 +85,8 @@ public class TrustedWebActivityUi {
 
             // This doesn't perform a network request or attempt new verification - it checks to
             // see if a verification already exists for the given inputs.
-            setTrustedWebActivityMode(OriginVerifier.isValidOrigin(packageName, new Origin(url),
-                    CustomTabsService.RELATION_HANDLE_ALL_URLS), tab);
+            setTrustedWebActivityMode(
+                    OriginVerifier.isValidOrigin(packageName, new Origin(url), RELATIONSHIP), tab);
         }
     };
 
@@ -120,6 +123,22 @@ public class TrustedWebActivityUi {
 
         mDisclosure.showSnackbarIfNeeded(mDelegate.getSnackbarManager(),
                 mDelegate.getClientPackageName());
+    }
+
+    /**
+     * Perform verification for the URL that the CustomTabActivity starts on.
+     */
+    public void attemptVerificationForInitialUrl(String url, Tab tab) {
+        assert mDelegate.getClientPackageName() != null;
+
+        String packageName = mDelegate.getClientPackageName();
+        Origin origin = new Origin(url);
+
+        new OriginVerifier((packageName2, origin2, verified, online) -> {
+            if (!origin.equals(new Origin(tab.getUrl()))) return;
+
+            setTrustedWebActivityMode(verified, tab);
+        }, packageName, RELATIONSHIP).start(origin);
     }
 
     /**
