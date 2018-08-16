@@ -13,6 +13,9 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "net/log/net_log_capture_mode.h"
+#include "net/log/test_net_log.h"
+#include "net/log/test_net_log_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -42,7 +45,7 @@ class SessionCleanupCookieStoreTest : public testing::Test {
     store_->Load(
         base::BindRepeating(&SessionCleanupCookieStoreTest::OnLoaded,
                             base::Unretained(this), &run_loop, &cookies),
-        net::NetLogWithSource());
+        net_log_.bound());
     run_loop.Run();
     return cookies;
   }
@@ -85,6 +88,7 @@ class SessionCleanupCookieStoreTest : public testing::Test {
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SessionCleanupCookieStore> store_;
+  net::BoundTestNetLog net_log_;
 };
 
 TEST_F(SessionCleanupCookieStoreTest, TestPersistence) {
@@ -125,6 +129,67 @@ TEST_F(SessionCleanupCookieStoreTest, TestPersistence) {
   cookies = CreateAndLoad();
   EXPECT_EQ(0u, cookies.size());
   cookies.clear();
+}
+
+TEST_F(SessionCleanupCookieStoreTest, TestNetLogIncludeCookies) {
+  CanonicalCookieVector cookies = CreateAndLoad();
+  base::Time t = base::Time::Now();
+  AddCookie("A", "B", "nonpersistent.com", "/", t);
+
+  // Cookies from "nonpersistent.com" should be deleted.
+  store_->DeleteSessionCookies(
+      base::BindRepeating([](const std::string& domain, bool is_https) {
+        return domain == "nonpersistent.com";
+      }));
+  DestroyStore();
+
+  net::TestNetLogEntry::List entries;
+  net_log_.GetEntries(&entries);
+  size_t pos = net::ExpectLogContainsSomewhere(
+      entries, 0, net::NetLogEventType::COOKIE_PERSISTENT_STORE_ORIGIN_FILTERED,
+      net::NetLogEventPhase::NONE);
+  std::string cookie_origin;
+  bool cookie_is_https = true;
+  EXPECT_TRUE(entries[pos].GetStringValue("origin", &cookie_origin));
+  EXPECT_TRUE(entries[pos].GetBooleanValue("is_https", &cookie_is_https));
+  EXPECT_EQ("nonpersistent.com", cookie_origin);
+  EXPECT_EQ(false, cookie_is_https);
+  pos = net::ExpectLogContainsSomewhere(
+      entries, pos, net::NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED,
+      net::NetLogEventPhase::NONE);
+  std::string event_type;
+  EXPECT_TRUE(entries[pos].GetStringValue("type", &event_type));
+  EXPECT_EQ("SessionCleanupCookieStore", event_type);
+}
+
+TEST_F(SessionCleanupCookieStoreTest, TestNetLogDoNotIncludeCookies) {
+  CanonicalCookieVector cookies = CreateAndLoad();
+  base::Time t = base::Time::Now();
+  AddCookie("A", "B", "nonpersistent.com", "/", t);
+
+  net_log_.SetCaptureMode(net::NetLogCaptureMode::Default());
+  // Cookies from "nonpersistent.com" should be deleted.
+  store_->DeleteSessionCookies(
+      base::BindRepeating([](const std::string& domain, bool is_https) {
+        return domain == "nonpersistent.com";
+      }));
+  DestroyStore();
+
+  net::TestNetLogEntry::List entries;
+  net_log_.GetEntries(&entries);
+  size_t pos = net::ExpectLogContainsSomewhere(
+      entries, 0, net::NetLogEventType::COOKIE_PERSISTENT_STORE_ORIGIN_FILTERED,
+      net::NetLogEventPhase::NONE);
+  std::string cookie_origin;
+  bool cookie_is_https = true;
+  EXPECT_FALSE(entries[pos].GetStringValue("origin", &cookie_origin));
+  EXPECT_FALSE(entries[pos].GetBooleanValue("is_https", &cookie_is_https));
+  pos = net::ExpectLogContainsSomewhere(
+      entries, pos, net::NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED,
+      net::NetLogEventPhase::NONE);
+  std::string event_type;
+  EXPECT_TRUE(entries[pos].GetStringValue("type", &event_type));
+  EXPECT_EQ("SessionCleanupCookieStore", event_type);
 }
 
 TEST_F(SessionCleanupCookieStoreTest, TestDeleteSessionCookies) {

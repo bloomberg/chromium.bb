@@ -14,19 +14,41 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/values.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
+#include "net/log/net_log.h"
 #include "url/gurl.h"
 
 namespace network {
+
+namespace {
+
+std::unique_ptr<base::Value> CookieStoreOriginFiltered(
+    const std::string& origin,
+    bool is_https,
+    net::NetLogCaptureMode capture_mode) {
+  if (!capture_mode.include_cookies_and_credentials())
+    return nullptr;
+  auto dict = std::make_unique<base::DictionaryValue>();
+  dict->SetString("origin", origin);
+  dict->SetBoolean("is_https", is_https);
+  return dict;
+}
+
+}  // namespace
 
 SessionCleanupCookieStore::SessionCleanupCookieStore(
     const scoped_refptr<net::SQLitePersistentCookieStore>& cookie_store)
     : persistent_store_(cookie_store) {}
 
-SessionCleanupCookieStore::~SessionCleanupCookieStore() {}
+SessionCleanupCookieStore::~SessionCleanupCookieStore() {
+  net_log_.AddEvent(
+      net::NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED,
+      net::NetLog::StringCallback("type", "SessionCleanupCookieStore"));
+}
 
 void SessionCleanupCookieStore::DeleteSessionCookies(
     DeleteCookiePredicate delete_cookie_predicate) {
@@ -46,6 +68,10 @@ void SessionCleanupCookieStore::DeleteSessionCookies(
         !delete_cookie_predicate.Run(cookie.first, cookie.second)) {
       continue;
     }
+    net_log_.AddEvent(
+        net::NetLogEventType::COOKIE_PERSISTENT_STORE_ORIGIN_FILTERED,
+        base::BindRepeating(&CookieStoreOriginFiltered, cookie.first,
+                            cookie.second));
     session_only_cookies.push_back(cookie);
   }
 
@@ -54,6 +80,7 @@ void SessionCleanupCookieStore::DeleteSessionCookies(
 
 void SessionCleanupCookieStore::Load(const LoadedCallback& loaded_callback,
                                      const net::NetLogWithSource& net_log) {
+  net_log_ = net_log;
   persistent_store_->Load(
       base::BindRepeating(&SessionCleanupCookieStore::OnLoad, this,
                           loaded_callback),

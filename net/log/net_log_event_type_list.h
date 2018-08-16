@@ -3135,6 +3135,14 @@ EVENT_TYPE(COOKIE_STORE_COOKIE_REJECTED_HTTPONLY)
 //  }
 EVENT_TYPE(COOKIE_STORE_SESSION_PERSISTENCE)
 
+// Event emitted when a particular origin is removed from the persistent
+// store on shutdown.
+//  {
+//    "origin": <Origin being filtered>
+//    "is_https": <Secure status of origin>
+//  }
+EVENT_TYPE(COOKIE_PERSISTENT_STORE_ORIGIN_FILTERED)
+
 // Event emitted when the persistent database load is started and completed.
 //  {
 //  }
