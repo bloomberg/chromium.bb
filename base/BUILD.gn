@@ -1305,6 +1305,14 @@ jumbo_component("base") {
     }
   }
 
+  if (use_clang_coverage) {
+    # Call-sites use this conditional on the CLANG_COVERAGE macro, for clarity.
+    sources += [
+      "test/clang_coverage.cc",
+      "test/clang_coverage.h",
+    ]
+  }
+
   # Allow more direct string conversions on platforms with native utf8
   # strings
   if (is_mac || is_ios || is_chromeos || is_chromecast || is_fuchsia) {

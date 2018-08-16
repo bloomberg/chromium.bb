@@ -12,6 +12,7 @@
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/clang_coverage.h"
 
 namespace base {
 
@@ -88,6 +89,9 @@ bool Process::CanBackgroundProcesses() {
 
 // static
 void Process::TerminateCurrentProcessImmediately(int exit_code) {
+#if defined(CLANG_COVERAGE)
+  WriteClangCoverageProfile();
+#endif
   _exit(exit_code);
 }
 

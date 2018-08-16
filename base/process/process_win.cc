@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
+#include "base/test/clang_coverage.h"
 #include "base/threading/thread_restrictions.h"
 
 #include <windows.h>
@@ -85,6 +86,9 @@ bool Process::CanBackgroundProcesses() {
 
 // static
 void Process::TerminateCurrentProcessImmediately(int exit_code) {
+#if defined(CLANG_COVERAGE)
+  WriteClangCoverageProfile();
+#endif
   ::TerminateProcess(GetCurrentProcess(), exit_code);
   // There is some ambiguity over whether the call above can return. Rather than
   // hitting confusing crashes later on we should crash right here.
