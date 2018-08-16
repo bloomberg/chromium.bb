@@ -214,8 +214,10 @@ def main(argv=None):
       sys.stdout.write(contents)
     else:
       if out_file:
-        if WriteIfChanged(out_file, contents):
-          with open(out_file + '.committime', 'w') as timefile:
+        committime_file = out_file + '.committime'
+        out_changed = WriteIfChanged(out_file, contents)
+        if out_changed or not os.path.exists(committime_file):
+          with open(committime_file, 'w') as timefile:
             timefile.write(str(version_info.timestamp))
       if header:
         WriteIfChanged(header,
