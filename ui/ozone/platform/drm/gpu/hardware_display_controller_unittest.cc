@@ -13,14 +13,12 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/presentation_feedback.h"
-#include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
-#include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_gbm_device.h"
+#include "ui/ozone/platform/drm/gpu/mock_drm_framebuffer_generator.h"
 
 namespace {
 
@@ -59,18 +57,17 @@ class HardwareDisplayControllerTest : public testing::Test {
                                  const std::string& property_name);
 
   scoped_refptr<ui::DrmFramebuffer> CreateBuffer() {
-    std::unique_ptr<ui::GbmBuffer> buffer = drm_->gbm_device()->CreateBuffer(
-        DRM_FORMAT_XRGB8888, kDefaultModeSize, GBM_BO_USE_SCANOUT);
-    return ui::DrmFramebuffer::AddFramebuffer(drm_, buffer.get());
+    return buffer_generator_->CreateWithModifier(
+        drm_, DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, kDefaultModeSize);
   }
 
   scoped_refptr<ui::DrmFramebuffer> CreateOverlayBuffer() {
-    std::unique_ptr<ui::GbmBuffer> buffer = drm_->gbm_device()->CreateBuffer(
-        DRM_FORMAT_XRGB8888, kOverlaySize, GBM_BO_USE_SCANOUT);
-    return ui::DrmFramebuffer::AddFramebuffer(drm_, buffer.get());
+    return buffer_generator_->CreateWithModifier(
+        drm_, DRM_FORMAT_XRGB8888, DRM_FORMAT_MOD_NONE, kOverlaySize);
   }
 
  protected:
+  std::unique_ptr<ui::MockDrmFramebufferGenerator> buffer_generator_;
   std::unique_ptr<ui::HardwareDisplayController> controller_;
   scoped_refptr<ui::MockDrmDevice> drm_;
 
@@ -86,10 +83,10 @@ void HardwareDisplayControllerTest::SetUp() {
   page_flips_ = 0;
   last_swap_result_ = gfx::SwapResult::SWAP_FAILED;
 
-  auto gbm_device = std::make_unique<ui::MockGbmDevice>();
-  drm_ = new ui::MockDrmDevice(std::move(gbm_device));
+  drm_ = new ui::MockDrmDevice;
   InitializeDrmDevice(/* use_atomic= */ true);
 
+  buffer_generator_.reset(new ui::MockDrmFramebufferGenerator());
   controller_.reset(new ui::HardwareDisplayController(
       std::unique_ptr<ui::CrtcController>(
           new ui::CrtcController(drm_.get(), kPrimaryCrtc, kPrimaryConnector)),

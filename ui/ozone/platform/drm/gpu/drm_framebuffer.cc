@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 
 #include "ui/ozone/common/linux/drm_util_linux.h"
-#include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 
@@ -47,35 +46,6 @@ scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
       std::move(drm_device), framebuffer_id, params.format,
       opaque_framebuffer_id, opaque_format, params.modifier,
       gfx::Size(params.width, params.height));
-}
-
-// static
-scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
-    scoped_refptr<DrmDevice> drm,
-    const GbmBuffer* buffer) {
-  gfx::Size size = buffer->GetSize();
-  AddFramebufferParams params;
-  params.format = buffer->GetFormat();
-  params.modifier = buffer->GetFormatModifier();
-  params.width = size.width();
-  params.height = size.height();
-  params.num_planes = buffer->GetNumPlanes();
-  for (size_t i = 0; i < params.num_planes; ++i) {
-    params.handles[i] = buffer->GetPlaneHandle(i);
-    params.strides[i] = buffer->GetPlaneStride(i);
-    params.offsets[i] = buffer->GetPlaneOffset(i);
-  }
-
-  // AddFramebuffer2 only considers the modifiers if addfb_flags has
-  // DRM_MODE_FB_MODIFIERS set. We only set that when we've created
-  // a bo with modifiers, otherwise, we rely on the "no modifiers"
-  // behavior doing the right thing.
-  params.flags = 0;
-  if (drm->allow_addfb2_modifiers() &&
-      params.modifier != DRM_FORMAT_MOD_INVALID)
-    params.flags |= DRM_MODE_FB_MODIFIERS;
-
-  return AddFramebuffer(std::move(drm), params);
 }
 
 DrmFramebuffer::DrmFramebuffer(scoped_refptr<DrmDevice> drm_device,

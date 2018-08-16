@@ -37,11 +37,12 @@ DrmWindow::DrmWindow(gfx::AcceleratedWidget widget,
 DrmWindow::~DrmWindow() {
 }
 
-void DrmWindow::Initialize() {
+void DrmWindow::Initialize(DrmFramebufferGenerator* buffer_generator) {
   TRACE_EVENT1("drm", "DrmWindow::Initialize", "widget", widget_);
 
   device_manager_->UpdateDrmDevice(widget_, nullptr);
-  overlay_validator_ = std::make_unique<DrmOverlayValidator>(this);
+  overlay_validator_ =
+      std::make_unique<DrmOverlayValidator>(this, buffer_generator);
 }
 
 void DrmWindow::Shutdown() {

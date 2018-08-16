@@ -11,12 +11,14 @@
 namespace ui {
 
 class DrmWindow;
+class DrmFramebufferGenerator;
 struct OverlayCheck_Params;
 struct OverlayCheckReturn_Params;
 
 class DrmOverlayValidator {
  public:
-  DrmOverlayValidator(DrmWindow* window);
+  DrmOverlayValidator(DrmWindow* window,
+                      DrmFramebufferGenerator* buffer_generator);
   ~DrmOverlayValidator();
 
   // Tests if configurations |params| are compatible with |window_| and finds
@@ -28,6 +30,7 @@ class DrmOverlayValidator {
 
  private:
   DrmWindow* window_;  // Not owned.
+  DrmFramebufferGenerator* buffer_generator_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayValidator);
 };

@@ -44,6 +44,7 @@ class DrmDeviceManager;
 class DrmFramebuffer;
 class DrmGpuDisplayManager;
 class GbmBuffer;
+class DrmFramebufferGenerator;
 class ScreenManager;
 
 struct DrmOverlayPlane;
@@ -154,6 +155,7 @@ class DrmThread : public base::Thread,
                                 std::vector<DrmOverlayPlane> planes);
 
   std::unique_ptr<DrmDeviceManager> device_manager_;
+  std::unique_ptr<DrmFramebufferGenerator> buffer_generator_;
   std::unique_ptr<ScreenManager> screen_manager_;
   std::unique_ptr<DrmGpuDisplayManager> display_manager_;
 
