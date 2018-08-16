@@ -173,6 +173,115 @@
         'use_swarming': False,
         'os_type': 'android',
       },
+      'android-cronet-arm-dbg': {
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
+      'android-cronet-arm-rel': {},
+      'android-cronet-arm64-dbg': {
+        'additional_compile_targets': [
+          'cronet_package',
+          'cronet_perf_test_apk',
+          'cronet_sample_test_apk',
+          'cronet_smoketests_missing_native_library_instrumentation_apk',
+          'cronet_smoketests_platform_only_instrumentation_apk',
+          'cronet_test_instrumentation_apk',
+          'cronet_unittests_android',
+          'net_unittests',
+        ],
+      },
+      'android-cronet-arm64-rel': {
+        'additional_compile_targets': [
+          'cronet_package',
+          'cronet_perf_test_apk',
+          'cronet_sample_test_apk',
+          'cronet_smoketests_missing_native_library_instrumentation_apk',
+          'cronet_smoketests_platform_only_instrumentation_apk',
+          'cronet_test_instrumentation_apk',
+          'cronet_unittests_android',
+          'net_unittests',
+        ],
+      },
+      'android-cronet-asan-arm-rel': {
+        # TODO(jbudorick): Run tests on this on swarming after
+        # implementing a reasonable mechanism for doing so w/ asan.
+        'additional_compile_targets': [
+          'cronet_package',
+          'cronet_perf_test_apk',
+          'cronet_sample_test_apk',
+          'cronet_smoketests_missing_native_library_instrumentation_apk',
+          'cronet_smoketests_platform_only_instrumentation_apk',
+          'cronet_test_instrumentation_apk',
+          'cronet_unittests_android',
+          'net_unittests',
+        ],
+      },
+      'android-cronet-kitkat-arm-rel': {
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
+      'android-cronet-lollipop-arm-rel': {},
+      'android-cronet-marshmallow-arm64-rel': {
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
+      'android-cronet-x86-dbg': {
+        'additional_compile_targets': [
+          'cronet_package',
+          'cronet_perf_test_apk',
+          'cronet_sample_test_apk',
+          'cronet_smoketests_missing_native_library_instrumentation_apk',
+          'cronet_smoketests_platform_only_instrumentation_apk',
+          'cronet_test_instrumentation_apk',
+          'cronet_unittests_android',
+          'net_unittests',
+        ],
+      },
+      'android-cronet-x86-rel': {
+        'additional_compile_targets': [
+          'cronet_package',
+          'cronet_perf_test_apk',
+          'cronet_sample_test_apk',
+          'cronet_smoketests_missing_native_library_instrumentation_apk',
+          'cronet_smoketests_platform_only_instrumentation_apk',
+          'cronet_test_instrumentation_apk',
+          'cronet_unittests_android',
+          'net_unittests',
+        ],
+      },
       'android-kitkat-arm-rel': {
         'additional_compile_targets': [
           'cronet_test_instrumentation_apk',
