@@ -275,19 +275,10 @@
     },
 
     'chromium.infra.codesearch': {
-      'codesearch-gen-chromium-android': {
-        'android': 'codesearch_gen_chromium_android_bot',
-      },
-      'codesearch-gen-chromium-chromiumos': {
-        'chromeos': 'codesearch_gen_chromium_chromiumos_bot',
-        'linux': 'codesearch_gen_chromium_linux_bot',
-      },
-      'codesearch-gen-chromium-linux': {
-        'linux': 'codesearch_gen_chromium_linux_bot',
-      },
-      'codesearch-gen-chromium-win': {
-        'win': 'codesearch_gen_chromium_win_bot',
-      },
+      'codesearch-gen-chromium-android': 'codesearch_gen_chromium_android_bot',
+      'codesearch-gen-chromium-chromiumos': 'codesearch_gen_chromium_chromiumos_bot',
+      'codesearch-gen-chromium-linux': 'codesearch_gen_chromium_linux_bot',
+      'codesearch-gen-chromium-win': 'codesearch_gen_chromium_win_bot',
     },
 
     'chromium.linux': {
