@@ -20,18 +20,17 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_service.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_store.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
@@ -163,7 +162,7 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
   // starts using it.
   schema_registry_.RegisterComponent(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()),
-      g_browser_process->browser_policy_connector()->GetChromeSchema());
+      policy::GetChromeSchema());
   schema_registry_.SetAllDomainsReady();
 }
 

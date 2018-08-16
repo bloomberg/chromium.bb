@@ -10,13 +10,11 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -134,15 +132,10 @@ class BlockingLoginTest
     base::RunLoop().RunUntilIdle();
   }
 
-  policy::BrowserPolicyConnectorChromeOS* browser_policy_connector() {
-    return g_browser_process->platform_part()
-        ->browser_policy_connector_chromeos();
-  }
-
   void EnrollDevice(const std::string& domain) {
     base::RunLoop loop;
     InstallAttributes::LockResult result;
-    browser_policy_connector()->GetInstallAttributes()->LockDevice(
+    InstallAttributes::Get()->LockDevice(
         policy::DEVICE_MODE_ENTERPRISE, domain, std::string(), "100200300",
         base::Bind(&CopyLockResult, &loop, &result));
     loop.Run();
@@ -242,7 +235,7 @@ IN_PROC_BROWSER_TEST_P(BlockingLoginTest, LoginBlocksForUser) {
   // Verify that there isn't a logged in user when the test starts.
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
-  EXPECT_FALSE(browser_policy_connector()->IsEnterpriseManaged());
+  EXPECT_FALSE(InstallAttributes::Get()->IsEnterpriseManaged());
   EXPECT_FALSE(profile_added_);
 
   // Enroll the device, if enrollment is enabled for this test instance.
@@ -250,9 +243,8 @@ IN_PROC_BROWSER_TEST_P(BlockingLoginTest, LoginBlocksForUser) {
     EnrollDevice(kDomain);
 
     EXPECT_FALSE(user_manager->IsUserLoggedIn());
-    EXPECT_TRUE(browser_policy_connector()->IsEnterpriseManaged());
-    EXPECT_EQ(kDomain,
-              browser_policy_connector()->GetEnterpriseEnrollmentDomain());
+    EXPECT_TRUE(InstallAttributes::Get()->IsEnterpriseManaged());
+    EXPECT_EQ(kDomain, InstallAttributes::Get()->GetDomain());
     EXPECT_FALSE(profile_added_);
     RunUntilIdle();
     EXPECT_FALSE(
