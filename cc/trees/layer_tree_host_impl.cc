@@ -785,7 +785,7 @@ LayerTreeHostImpl::EventListenerTypeForTouchStartOrMoveAt(
                      : InputHandler::TouchStartOrMoveEventListenerType::HANDLER;
 }
 
-bool LayerTreeHostImpl::HasWheelEventHandlerAt(
+bool LayerTreeHostImpl::HasBlockingWheelEventHandlerAt(
     const gfx::Point& viewport_point) const {
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree_->device_scale_factor());

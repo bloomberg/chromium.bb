@@ -279,7 +279,8 @@ class CC_EXPORT LayerTreeHostImpl
   EventListenerTypeForTouchStartOrMoveAt(
       const gfx::Point& viewport_port,
       TouchAction* out_touch_action) override;
-  bool HasWheelEventHandlerAt(const gfx::Point& viewport_point) const override;
+  bool HasBlockingWheelEventHandlerAt(
+      const gfx::Point& viewport_point) const override;
   std::unique_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override;
   ScrollElasticityHelper* CreateScrollElasticityHelper() override;

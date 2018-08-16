@@ -201,7 +201,7 @@ class CC_EXPORT InputHandler {
 
   // Returns true if |viewport_point| hits a wheel event handler region that
   // could block scrolling.
-  virtual bool HasWheelEventHandlerAt(
+  virtual bool HasBlockingWheelEventHandlerAt(
       const gfx::Point& viewport_point) const = 0;
 
   // It returns the type of a touch start or move event listener at

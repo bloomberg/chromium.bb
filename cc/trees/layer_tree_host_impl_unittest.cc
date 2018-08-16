@@ -1136,8 +1136,8 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {
 
   // LTHI should know the wheel event handler region and only block mouse events
   // in that region.
-  EXPECT_TRUE(host_impl_->HasWheelEventHandlerAt(gfx::Point(10, 10)));
-  EXPECT_FALSE(host_impl_->HasWheelEventHandlerAt(gfx::Point(30, 30)));
+  EXPECT_TRUE(host_impl_->HasBlockingWheelEventHandlerAt(gfx::Point(10, 10)));
+  EXPECT_FALSE(host_impl_->HasBlockingWheelEventHandlerAt(gfx::Point(30, 30)));
 
   // But they don't influence the actual handling of the scroll gestures.
   InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
