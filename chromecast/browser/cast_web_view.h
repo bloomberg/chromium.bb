@@ -101,6 +101,9 @@ class CastWebView {
     // True if this CastWebView is for running a remote control app.
     bool is_remote_control_mode = false;
 
+    // Whether this CastWebView should be managed by web ui window manager.
+    bool managed = true;
+
     CreateParams();
   };
 
