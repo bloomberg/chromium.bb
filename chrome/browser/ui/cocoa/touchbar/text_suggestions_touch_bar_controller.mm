@@ -243,7 +243,6 @@ class WebContentsTextObserver : public content::WebContentsObserver {
                           suggestions_.reset([candidates copy]);
                           [controller_ invalidateTouchBar];
                         });
-
                       }];
 }
 

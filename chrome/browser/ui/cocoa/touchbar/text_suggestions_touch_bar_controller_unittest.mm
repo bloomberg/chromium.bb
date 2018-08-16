@@ -35,6 +35,7 @@ class TextSuggestionsTouchBarControllerTest : public CocoaTest {
   base::scoped_nsobject<TextSuggestionsTouchBarController> controller_;
 };
 
+// Tests that the NSCandidateListTouchBarItem collapses properly.
 TEST_F(TextSuggestionsTouchBarControllerTest, CollapsedCandidateList) {
   if (@available(macOS 10.12.2, *)) {
     base::scoped_nsobject<NSCandidateListTouchBarItem> item;
@@ -133,6 +134,7 @@ TEST_F(TextSuggestionsTouchBarControllerTest, MultipleWordsEditingWordRange) {
   EXPECT_EQ(gfx::Range(6, 11), GetEditingWordRange(kMultipleWords, 11));
 }
 
+// Tests that touch bar usage is properly logged.
 TEST_F(TextSuggestionsTouchBarControllerTest, TouchBarMetrics) {
   if (@available(macOS 10.12.2, *)) {
     base::HistogramTester histogram_tester;
