@@ -11,6 +11,8 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/test_event_handler.h"
 
@@ -56,11 +58,9 @@ TEST_P(WindowTargeterTest, Basic) {
   Window* one = CreateNormalWindow(2, window.get(), &delegate);
   Window* two = CreateNormalWindow(3, window.get(), &delegate);
 
-  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->SetBounds(gfx::Rect(0, 0, 1000, 1000));
   one->SetBounds(gfx::Rect(0, 0, 500, 100));
   two->SetBounds(gfx::Rect(501, 0, 500, 1000));
-
-  root_window()->Show();
 
   ui::test::TestEventHandler handler;
   one->AddPreTargetHandler(&handler);
@@ -76,6 +76,47 @@ TEST_P(WindowTargeterTest, Basic) {
   EXPECT_EQ(1, handler.num_mouse_events());
 
   one->RemovePreTargetHandler(&handler);
+}
+
+TEST_P(WindowTargeterTest, FindTargetInRootWindow) {
+  WindowTargeter targeter;
+
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window());
+  EXPECT_EQ(display.bounds(), root_window()->GetBoundsInScreen());
+  EXPECT_EQ(display.bounds(), gfx::Rect(0, 0, 800, 600));
+
+  // Mouse and touch presses inside the display yield null targets.
+  gfx::Point inside = display.bounds().CenterPoint();
+  ui::MouseEvent mouse1(ui::ET_MOUSE_PRESSED, inside, inside,
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  ui::TouchEvent touch1(ui::ET_TOUCH_PRESSED, inside, ui::EventTimeForNow(),
+                        ui::PointerDetails());
+  touch1.set_root_location(inside);
+  EXPECT_EQ(nullptr, targeter.FindTargetInRootWindow(root_window(), mouse1));
+  EXPECT_EQ(nullptr, targeter.FindTargetInRootWindow(root_window(), touch1));
+
+  // Touch presses outside the display yields the root window as a target.
+  gfx::Point outside(display.bounds().right() + 10, inside.y());
+  ui::MouseEvent mouse2(ui::ET_MOUSE_PRESSED, outside, outside,
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  ui::TouchEvent touch2(ui::ET_TOUCH_PRESSED, outside, ui::EventTimeForNow(),
+                        ui::PointerDetails());
+  touch2.set_root_location(outside);
+  EXPECT_EQ(nullptr, targeter.FindTargetInRootWindow(root_window(), mouse2));
+  EXPECT_EQ(root_window(),
+            targeter.FindTargetInRootWindow(root_window(), touch2));
+
+  // Simulate a mus client root (top level app window) with bottom-right bounds.
+  // Touches in the root and display should yield null targets crbug.com/873763.
+  // (mus clients root locations are display coords, not client-root coords)
+  root_window()->SetBounds(gfx::Rect(600, 500, 200, 100));
+  gfx::Point root_touch_coords(199, 99);
+  gfx::Point display_touch_coords(799, 699);
+  ui::TouchEvent touch3(ui::ET_TOUCH_PRESSED, root_touch_coords,
+                        ui::EventTimeForNow(), ui::PointerDetails());
+  touch3.set_root_location(display_touch_coords);
+  EXPECT_EQ(nullptr, targeter.FindTargetInRootWindow(root_window(), touch3));
 }
 
 TEST_P(WindowTargeterTest, ScopedWindowTargeter) {
