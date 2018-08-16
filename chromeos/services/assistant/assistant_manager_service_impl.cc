@@ -25,7 +25,7 @@
 #include "chromeos/services/assistant/utils.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
-#include "libassistant/shared/internal_api/media_manager.h"
+#include "libassistant/shared/public/media_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
@@ -122,8 +122,7 @@ void AssistantManagerServiceImpl::SetAccessToken(
 
 void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
   // Register handler for media actions.
-  auto* media_manager = assistant_manager_internal_->GetMediaManager();
-  media_manager->RegisterFallbackMediaHandler(
+  assistant_manager_internal_->RegisterFallbackMediaHandler(
       [this](std::string play_media_args_proto) {
         std::string url = GetWebUrlFromMediaArgs(play_media_args_proto);
         if (!url.empty()) {

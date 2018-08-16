@@ -26,6 +26,9 @@ class SystemProviderImpl : public assistant_client::SystemProvider {
   bool GetBatteryState(BatteryState* state) override;
   void UpdateTimezoneAndLocale(const std::string& timezone,
                                const std::string& locale) override;
+  void ProcessTpm(TpmProcessingType type,
+                  const std::string& data,
+                  TpmCallback on_done) override;
 
  private:
   friend class SystemProviderImplTest;
