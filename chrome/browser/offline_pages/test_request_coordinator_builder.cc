@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "components/offline_pages/core/background/network_quality_provider_stub.h"
+#include "chrome/browser/browser_process.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/offliner_stub.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
@@ -33,16 +33,12 @@ std::unique_ptr<KeyedService> BuildTestRequestCoordinator(
   std::unique_ptr<Offliner> offliner(new OfflinerStub());
   std::unique_ptr<Scheduler> scheduler_stub(new SchedulerStub());
 
-  // NetworkQualityProviderStub should be set by the test on the context first.
-  NetworkQualityProviderStub* network_quality_provider =
-      NetworkQualityProviderStub::GetUserData(context);
-
   std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter_stub(
       new OfflinePagesUkmReporterStub());
 
   return std::unique_ptr<RequestCoordinator>(new RequestCoordinator(
       std::move(policy), std::move(offliner), std::move(queue),
-      std::move(scheduler_stub), network_quality_provider,
+      std::move(scheduler_stub), g_browser_process->network_quality_tracker(),
       std::move(ukm_reporter_stub)));
 }
 

@@ -24,6 +24,7 @@
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_pages_ukm_reporter.h"
 #include "components/offline_pages/core/offline_store_utils.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 
 namespace offline_pages {
 
@@ -229,8 +230,7 @@ RequestCoordinator::RequestCoordinator(
     std::unique_ptr<Offliner> offliner,
     std::unique_ptr<RequestQueue> queue,
     std::unique_ptr<Scheduler> scheduler,
-    net::NetworkQualityEstimator::NetworkQualityProvider*
-        network_quality_estimator,
+    network::NetworkQualityTracker* network_quality_tracker,
     std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter)
     : is_low_end_device_(base::SysInfo::IsLowEndDevice()),
       state_(RequestCoordinatorState::IDLE),
@@ -241,7 +241,7 @@ RequestCoordinator::RequestCoordinator(
       queue_(std::move(queue)),
       scheduler_(std::move(scheduler)),
       policy_controller_(new ClientPolicyController()),
-      network_quality_estimator_(network_quality_estimator),
+      network_quality_tracker_(network_quality_tracker),
       ukm_reporter_(std::move(ukm_reporter)),
       network_quality_at_request_start_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       active_request_id_(0),
@@ -251,6 +251,7 @@ RequestCoordinator::RequestCoordinator(
       pending_state_updater_(this),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
+  DCHECK(network_quality_tracker_);
   std::unique_ptr<CleanupTaskFactory> cleanup_factory(
       new CleanupTaskFactory(policy_.get(), this, &event_logger_));
   queue_->SetCleanupFactory(std::move(cleanup_factory));
@@ -305,11 +306,10 @@ int64_t RequestCoordinator::SavePageLater(
                               save_page_later_params.availability));
 
   // Record the network quality when this request is made.
-  if (network_quality_estimator_) {
-    RecordSavePageLaterNetworkQuality(
-        save_page_later_params.client_id,
-        network_quality_estimator_->GetEffectiveConnectionType());
-  }
+
+  RecordSavePageLaterNetworkQuality(
+      save_page_later_params.client_id,
+      network_quality_tracker_->GetEffectiveConnectionType());
 
   // Record UKM for this page offlining attempt.
   if (ukm_reporter_) {
@@ -459,12 +459,10 @@ void RequestCoordinator::RemoveRequests(const std::vector<int64_t>& request_ids,
                      RequestNotifier::BackgroundSavePageResult::USER_CANCELED));
 
   // Record the network quality when this request is removed.
-  if (network_quality_estimator_) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "OfflinePages.Background.EffectiveConnectionType.RemoveRequests",
-        network_quality_estimator_->GetEffectiveConnectionType(),
-        net::EFFECTIVE_CONNECTION_TYPE_LAST);
-  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.Background.EffectiveConnectionType.RemoveRequests",
+      network_quality_tracker_->GetEffectiveConnectionType(),
+      net::EFFECTIVE_CONNECTION_TYPE_LAST);
 
   if (canceled)
     TryNextRequest(!kStartOfProcessing);
@@ -488,12 +486,10 @@ void RequestCoordinator::PauseRequests(
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Record the network quality when this request is paused.
-  if (network_quality_estimator_) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "OfflinePages.Background.EffectiveConnectionType.PauseRequests",
-        network_quality_estimator_->GetEffectiveConnectionType(),
-        net::EFFECTIVE_CONNECTION_TYPE_LAST);
-  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.Background.EffectiveConnectionType.PauseRequests",
+      network_quality_tracker_->GetEffectiveConnectionType(),
+      net::EFFECTIVE_CONNECTION_TYPE_LAST);
 
   if (canceled)
     TryNextRequest(!kStartOfProcessing);
@@ -509,12 +505,10 @@ void RequestCoordinator::ResumeRequests(
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Record the network quality when this request is resumed.
-  if (network_quality_estimator_) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "OfflinePages.Background.EffectiveConnectionType.ResumeRequests",
-        network_quality_estimator_->GetEffectiveConnectionType(),
-        net::EFFECTIVE_CONNECTION_TYPE_LAST);
-  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.Background.EffectiveConnectionType.ResumeRequests",
+      network_quality_tracker_->GetEffectiveConnectionType(),
+      net::EFFECTIVE_CONNECTION_TYPE_LAST);
 
   // Schedule a task, in case there is not one scheduled.
   ScheduleAsNeeded();
@@ -963,7 +957,7 @@ void RequestCoordinator::StartOffliner(
 
   active_request_id_ = request_id;
   network_quality_at_request_start_ =
-      network_quality_estimator_->GetEffectiveConnectionType();
+      network_quality_tracker_->GetEffectiveConnectionType();
 
   // Start the load and save process in the offliner (Async).
   if (offliner_->LoadAndSave(
@@ -1199,7 +1193,6 @@ void RequestCoordinator::RecordOfflinerResult(const SavePageRequest& request,
 }
 
 void RequestCoordinator::Shutdown() {
-  network_quality_estimator_ = nullptr;
 }
 
 }  // namespace offline_pages

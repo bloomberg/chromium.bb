@@ -29,6 +29,10 @@
 #include "net/nqe/network_quality_estimator.h"
 #include "url/gurl.h"
 
+namespace network {
+class NetworkQualityTracker;
+}
+
 namespace offline_pages {
 
 struct ClientId;
@@ -116,8 +120,7 @@ class RequestCoordinator : public KeyedService,
                      std::unique_ptr<Offliner> offliner,
                      std::unique_ptr<RequestQueue> queue,
                      std::unique_ptr<Scheduler> scheduler,
-                     net::NetworkQualityEstimator::NetworkQualityProvider*
-                         network_quality_estimator,
+                     network::NetworkQualityTracker* network_quality_tracker,
                      std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter);
 
   ~RequestCoordinator() override;
@@ -461,9 +464,9 @@ class RequestCoordinator : public KeyedService,
   std::unique_ptr<Scheduler> scheduler_;
   // Controller of client policies. Owned.
   std::unique_ptr<ClientPolicyController> policy_controller_;
-  // Unowned pointer to the Network Quality Estimator.
-  net::NetworkQualityEstimator::NetworkQualityProvider*
-      network_quality_estimator_;
+  // Unowned pointer. Guaranteed to be non-null during the lifetime of |this|.
+  // Must be accessed only on the UI thread.
+  network::NetworkQualityTracker* network_quality_tracker_;
   // Object that can record Url Keyed Metrics (UKM).
   std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter_;
   net::EffectiveConnectionType network_quality_at_request_start_;

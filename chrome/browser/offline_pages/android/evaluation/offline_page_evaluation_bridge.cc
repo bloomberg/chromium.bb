@@ -16,8 +16,7 @@
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
-#include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/offline_pages/android/background_scheduler_bridge.h"
 #include "chrome/browser/offline_pages/android/evaluation/evaluation_test_scheduler.h"
 #include "chrome/browser/offline_pages/background_loader_offliner.h"
@@ -48,6 +47,10 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+
+namespace network {
+class NetworkQualityTracker;
+}
 
 namespace offline_pages {
 namespace android {
@@ -149,15 +152,14 @@ std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(queue_store)));
   std::unique_ptr<android::EvaluationTestScheduler> scheduler(
       new android::EvaluationTestScheduler());
-  net::NetworkQualityEstimator::NetworkQualityProvider*
-      network_quality_estimator =
-          UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
+  network::NetworkQualityTracker* network_quality_tracker =
+      g_browser_process->network_quality_tracker();
   std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter(
       new OfflinePagesUkmReporter());
   std::unique_ptr<RequestCoordinator> request_coordinator =
       std::make_unique<RequestCoordinator>(
           std::move(policy), std::move(offliner), std::move(queue),
-          std::move(scheduler), network_quality_estimator,
+          std::move(scheduler), network_quality_tracker,
           std::move(ukm_reporter));
   request_coordinator->SetInternalStartProcessingCallbackForTest(
       base::Bind(&android::EvaluationTestScheduler::ImmediateScheduleCallback,
