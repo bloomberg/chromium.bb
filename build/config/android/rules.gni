@@ -2296,6 +2296,7 @@ if (enable_java_templates) {
                                "emma_never_instrument",
                                "java_files",
                                "javac_args",
+                               "loadable_modules",
                                "no_build_hooks",
                                "secondary_abi_loadable_modules",
                                "uncompress_shared_libraries",
@@ -2633,8 +2634,6 @@ if (enable_java_templates) {
         args += [ "--native-libs=$_native_libs_file_arg" ]
       }
       if (_extra_native_libs != []) {
-        # Don't pass in _extra_native_libs_even_when_incremental, since these are
-        # end up in the apk and are not side-loaded.
         _rebased_extra_native_libs =
             rebase_path(_extra_native_libs, root_build_dir)
         args += [ "--native-libs=$_rebased_extra_native_libs" ]
@@ -3640,7 +3639,10 @@ if (enable_java_templates) {
   #      proguarding.
   #
   #    enable_multidex: Optional. Enable multidexing of optimized modules jars
-  #      when using synchronized proguarding.
+  #      when using synchronized proguarding. Only applies to base module.
+  #
+  #    proguard_android_sdk_dep: Optional. android_system_java_prebuilt() target
+  #      used as a library jar for synchronized proguarding.
   #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
@@ -3692,9 +3694,14 @@ if (enable_java_templates) {
     _build_config = "$target_gen_dir/${target_name}.build_config"
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
     _build_config_target = "${target_name}__build_config"
+    if (defined(invoker.proguard_android_sdk_dep)) {
+      proguard_android_sdk_dep_ = invoker.proguard_android_sdk_dep
+    } else {
+      proguard_android_sdk_dep_ = "//third_party/android_tools:android_sdk_java"
+    }
     write_build_config(_build_config_target) {
       type = "android_app_bundle"
-      possible_config_deps = _module_targets
+      possible_config_deps = _module_targets + [ proguard_android_sdk_dep_ ]
       build_config = _build_config
     }
 
@@ -3770,7 +3777,7 @@ if (enable_java_templates) {
           # http://crbug.com/725224. Fix for bots running out of memory.
           use_pool = true
 
-          if (_enable_multidex) {
+          if (_enable_multidex && _module.name == "base") {
             enable_multidex = _enable_multidex
             extra_main_dex_proguard_config =
                 "$_module_target_gen_dir/$_module_target_name/" +
