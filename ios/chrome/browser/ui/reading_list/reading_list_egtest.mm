@@ -344,7 +344,7 @@ void AddCurrentPageToReadingList() {
     ReadingListAddCommand* command = [[ReadingListAddCommand alloc]
         initWithURL:web_state->GetVisibleURL()
               title:base::SysUTF16ToNSString(web_state->GetTitle())];
-    [chrome_test_util::DispatcherForActiveViewController()
+    [chrome_test_util::DispatcherForActiveBrowserViewController()
         addToReadingList:command];
   } else {
     [ChromeEarlGreyUI openShareMenu];

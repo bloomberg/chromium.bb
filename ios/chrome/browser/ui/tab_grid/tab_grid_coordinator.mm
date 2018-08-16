@@ -86,8 +86,6 @@
         (id<ApplicationCommands>)applicationCommandEndpoint {
   if ((self = [super initWithWindow:window])) {
     _dispatcher = [[CommandDispatcher alloc] init];
-    [_dispatcher startDispatchingToTarget:self
-                              forProtocol:@protocol(BrowserCommands)];
     [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
                               forProtocol:@protocol(ApplicationCommands)];
     // -startDispatchingToTarget:forProtocol: doesn't pick up protocols the
@@ -172,8 +170,8 @@
   self.adaptor = [[TabGridAdaptor alloc] init];
   self.adaptor.tabGridViewController = self.mainViewController;
   self.adaptor.adaptedDispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
-                     ToolbarCommands>>(self.dispatcher);
+      static_cast<id<ApplicationCommands, OmniboxFocuser, ToolbarCommands>>(
+          self.dispatcher);
   self.adaptor.tabGridPager = mainViewController;
 
   self.regularTabsMediator = [[TabGridMediator alloc]
@@ -247,7 +245,6 @@
 }
 
 - (void)stop {
-  [self.dispatcher stopDispatchingForProtocol:@protocol(BrowserCommands)];
   [self.dispatcher stopDispatchingForProtocol:@protocol(ApplicationCommands)];
   [self.dispatcher
       stopDispatchingForProtocol:@protocol(ApplicationSettingsCommands)];
@@ -369,22 +366,6 @@
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
              shouldFinishWithActiveModel:activeTabModel
                             focusOmnibox:focusOmnibox];
-}
-
-#pragma mark - BrowserCommands
-
-- (void)openNewTab:(OpenNewTabCommand*)command {
-  DCHECK(self.regularTabModel && self.incognitoTabModel);
-  TabModel* activeTabModel =
-      command.inIncognito ? self.incognitoTabModel : self.regularTabModel;
-  // TODO(crbug.com/804587) : It is better to use the mediator to insert a
-  // webState and show the active tab.
-  DCHECK(self.tabSwitcher);
-  [self.tabSwitcher
-      dismissWithNewTabAnimationToModel:activeTabModel
-                                withURL:GURL(kChromeUINewTabURL)
-                                atIndex:NSNotFound
-                             transition:ui::PAGE_TRANSITION_TYPED];
 }
 
 #pragma mark - RecentTabsHandsetViewControllerCommand

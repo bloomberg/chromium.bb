@@ -30,10 +30,9 @@
 
 #pragma mark - TabSwitcher
 
-- (id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>)
-    dispatcher {
-  return static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
-                        ToolbarCommands>>(self.adaptedDispatcher);
+- (id<ApplicationCommands, OmniboxFocuser, ToolbarCommands>)dispatcher {
+  return static_cast<id<ApplicationCommands, OmniboxFocuser, ToolbarCommands>>(
+      self.adaptedDispatcher);
 }
 
 - (void)setAnimationDelegate:

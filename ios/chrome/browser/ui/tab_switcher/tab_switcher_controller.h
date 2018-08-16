@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
 
 @protocol ApplicationCommands;
+@protocol BrowserCommands;
 
 namespace ios {
 class ChromeBrowserState;
@@ -22,6 +23,13 @@ class ChromeBrowserState;
                          otrTabModel:(TabModel*)otrTabModel
                       activeTabModel:(TabModel*)activeTabModel
           applicationCommandEndpoint:(id<ApplicationCommands>)endpoint;
+
+// Dispatcher for anything that acts in a "browser" role, with the
+// |BrowserCommands| added. It is an extension of the |dispatcher| property
+// defined by the TabSwitcher protocol.
+@property(nonatomic, readonly)
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>
+        dispatcher;
 
 @end
 

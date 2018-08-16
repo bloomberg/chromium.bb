@@ -325,7 +325,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Open new tab to cancel sign-in.
   OpenNewTabCommand* command =
       [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
-  [chrome_test_util::DispatcherForActiveViewController()
+  [chrome_test_util::DispatcherForActiveBrowserViewController()
       openURLInNewTab:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
@@ -367,7 +367,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Open new tab to cancel sign-in.
   OpenNewTabCommand* command =
       [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
-  [chrome_test_util::DispatcherForActiveViewController()
+  [chrome_test_util::DispatcherForActiveBrowserViewController()
       openURLInNewTab:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
@@ -427,7 +427,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Open new tab to cancel sign-in.
   OpenNewTabCommand* command =
       [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
-  [chrome_test_util::DispatcherForActiveViewController()
+  [chrome_test_util::DispatcherForActiveBrowserViewController()
       openURLInNewTab:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
@@ -470,7 +470,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Open new tab to cancel sign-in.
   OpenNewTabCommand* command =
       [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
-  [chrome_test_util::DispatcherForActiveViewController()
+  [chrome_test_util::DispatcherForActiveBrowserViewController()
       openURLInNewTab:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
