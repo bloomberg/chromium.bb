@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -28,69 +27,70 @@ namespace cloud_print {
 // listening for traffic.
 // When the network changes, restarts itself to start listening for traffic
 // again on the new network(s).
+// The class lives on the UI thread, with a helper that lives on the IO thread.
 class PrivetTrafficDetector
-    : public base::RefCountedThreadSafe<
-          PrivetTrafficDetector,
-          content::BrowserThread::DeleteOnIOThread>,
-      private network::NetworkConnectionTracker::NetworkConnectionObserver,
-      public network::mojom::UDPSocketReceiver {
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // Called on the UI thread.
   PrivetTrafficDetector(content::BrowserContext* profile,
                         const base::RepeatingClosure& on_traffic_detected);
-
-  // Called on the UI thread.
-  void Start();
-  void Stop();
-
- private:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::IO>;
-  friend class base::DeleteHelper<PrivetTrafficDetector>;
-
   ~PrivetTrafficDetector() override;
 
-  // Unless otherwise noted, all methods are called on the IO thread.
-  void HandleConnectionChanged(network::mojom::ConnectionType type);
-  void ScheduleRestart();
-  void Restart(net::NetworkInterfaceList networks);
-  void Bind();
-  void OnBindComplete(net::IPEndPoint multicast_addr,
-                      int rv,
-                      const base::Optional<net::IPEndPoint>& ip_address);
-  bool IsSourceAcceptable() const;
-  bool IsPrivetPacket(base::span<const uint8_t> data) const;
-  void OnJoinGroupComplete(int rv);
-  void ResetConnection();
-
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
-  // Called on the UI thread.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
-  // network::mojom::UDPSocketReceiver implementation
-  void OnReceived(int32_t result,
-                  const base::Optional<net::IPEndPoint>& src_addr,
-                  base::Optional<base::span<const uint8_t>> data) override;
+ private:
+  // Constructed by PrivetTrafficDetector on the UI thread. but lives on the IO
+  // thread and destroyed on the IO thread.
+  class Helper : public network::mojom::UDPSocketReceiver {
+   public:
+    Helper(content::BrowserContext* profile,
+           const base::RepeatingClosure& on_traffic_detected);
+    ~Helper() override;
 
-  // Initialized on the UI thread, but only accessed on the IO thread.
-  base::RepeatingClosure on_traffic_detected_;
-  int restart_attempts_;
+    // network::mojom::UDPSocketReceiver:
+    void OnReceived(int32_t result,
+                    const base::Optional<net::IPEndPoint>& src_addr,
+                    base::Optional<base::span<const uint8_t>> data) override;
 
-  // Only accessed on the IO thread.
-  net::NetworkInterfaceList networks_;
-  net::IPEndPoint recv_addr_;
-  base::Time start_time_;
-  network::mojom::UDPSocketPtr socket_;
+    void HandleConnectionChanged(network::mojom::ConnectionType type);
+    void ScheduleRestart();
 
-  // Implementation of socket receiver callback.
-  // Initialized on the UI thread, but only accessed on the IO thread.
-  mojo::Binding<network::mojom::UDPSocketReceiver> receiver_binding_;
+   private:
+    void Restart(net::NetworkInterfaceList networks);
+    void Bind();
+    void OnBindComplete(net::IPEndPoint multicast_addr,
+                        int rv,
+                        const base::Optional<net::IPEndPoint>& ip_address);
+    bool IsSourceAcceptable() const;
+    bool IsPrivetPacket(base::span<const uint8_t> data) const;
+    void OnJoinGroupComplete(int rv);
+    void ResetConnection();
 
-  // Initialized on the UI thread, but only accessed on the IO thread for the
-  // purpose of passing it back to the UI thread. Safe because it is const.
-  content::BrowserContext* const profile_;
+    // Initialized on the UI thread, but only accessed on the IO thread for the
+    // purpose of passing it back to the UI thread. Safe because it is const.
+    content::BrowserContext* const profile_;
 
-  base::WeakPtrFactory<PrivetTrafficDetector> weak_ptr_factory_;
+    // Initialized on the UI thread, but only accessed on the IO thread.
+    base::RepeatingClosure on_traffic_detected_;
+    int restart_attempts_;
+
+    // Only accessed on the IO thread.
+    net::NetworkInterfaceList networks_;
+    net::IPEndPoint recv_addr_;
+    base::Time start_time_;
+    network::mojom::UDPSocketPtr socket_;
+
+    // Implementation of socket receiver callback.
+    // Initialized on the UI thread, but only accessed on the IO thread.
+    mojo::Binding<network::mojom::UDPSocketReceiver> receiver_binding_;
+
+    base::WeakPtrFactory<Helper> weak_ptr_factory_;
+
+    DISALLOW_COPY_AND_ASSIGN(Helper);
+  };
+
+  Helper* const helper_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivetTrafficDetector);
 };

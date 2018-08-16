@@ -210,10 +210,6 @@ PrivetNotificationService::PrivetNotificationService(
 
 PrivetNotificationService::~PrivetNotificationService() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-#if BUILDFLAG(ENABLE_MDNS)
-  if (traffic_detector_)
-    traffic_detector_->Stop();
-#endif
 }
 
 void PrivetNotificationService::DeviceChanged(
@@ -329,18 +325,15 @@ void PrivetNotificationService::Start() {
 
 void PrivetNotificationService::OnNotificationsEnabledChanged() {
 #if BUILDFLAG(ENABLE_MDNS)
-  if (traffic_detector_)
-    traffic_detector_->Stop();
-  traffic_detector_ = nullptr;
+  traffic_detector_.reset();
 
   if (IsForced()) {
     StartLister();
   } else if (*enable_privet_notification_member_) {
     ReportPrivetUmaEvent(PRIVET_SERVICE_STARTED);
-    traffic_detector_ = base::MakeRefCounted<PrivetTrafficDetector>(
+    traffic_detector_ = std::make_unique<PrivetTrafficDetector>(
         profile_, base::BindRepeating(&PrivetNotificationService::StartLister,
                                       AsWeakPtr()));
-    traffic_detector_->Start();
   } else {
     device_lister_.reset();
     service_discovery_client_ = nullptr;

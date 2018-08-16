@@ -7,12 +7,12 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/address_family.h"
@@ -73,33 +73,47 @@ namespace cloud_print {
 PrivetTrafficDetector::PrivetTrafficDetector(
     content::BrowserContext* profile,
     const base::RepeatingClosure& on_traffic_detected)
-    : on_traffic_detected_(on_traffic_detected),
-      restart_attempts_(kMaxRestartAttempts),
-      receiver_binding_(this),
-      profile_(profile),
-      weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-}
-
-PrivetTrafficDetector::~PrivetTrafficDetector() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-}
-
-void PrivetTrafficDetector::Start() {
+    : helper_(new Helper(profile, on_traffic_detected)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&PrivetTrafficDetector::ScheduleRestart,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PrivetTrafficDetector::Helper::ScheduleRestart,
+                     base::Unretained(helper_)));
 }
 
-void PrivetTrafficDetector::Stop() {
+PrivetTrafficDetector::~PrivetTrafficDetector() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
+  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
+                                     helper_);
 }
 
-void PrivetTrafficDetector::HandleConnectionChanged(
+void PrivetTrafficDetector::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PrivetTrafficDetector::Helper::HandleConnectionChanged,
+                     base::Unretained(helper_), type));
+}
+
+PrivetTrafficDetector::Helper::Helper(
+    content::BrowserContext* profile,
+    const base::RepeatingClosure& on_traffic_detected)
+    : profile_(profile),
+      on_traffic_detected_(on_traffic_detected),
+      restart_attempts_(kMaxRestartAttempts),
+      receiver_binding_(this),
+      weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
+
+PrivetTrafficDetector::Helper::~Helper() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+}
+
+void PrivetTrafficDetector::Helper::HandleConnectionChanged(
     network::mojom::ConnectionType type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   restart_attempts_ = kMaxRestartAttempts;
@@ -108,25 +122,26 @@ void PrivetTrafficDetector::HandleConnectionChanged(
   }
 }
 
-void PrivetTrafficDetector::ScheduleRestart() {
+void PrivetTrafficDetector::Helper::ScheduleRestart() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   ResetConnection();
   weak_ptr_factory_.InvalidateWeakPtrs();
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-      base::BindOnce(&GetNetworkListInBackground,
-                     base::BindOnce(&PrivetTrafficDetector::Restart,
-                                    weak_ptr_factory_.GetWeakPtr())),
+      base::BindOnce(
+          &GetNetworkListInBackground,
+          base::BindOnce(&Helper::Restart, weak_ptr_factory_.GetWeakPtr())),
       base::TimeDelta::FromSeconds(3));
 }
 
-void PrivetTrafficDetector::Restart(net::NetworkInterfaceList networks) {
+void PrivetTrafficDetector::Helper::Restart(
+    net::NetworkInterfaceList networks) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   networks_ = std::move(networks);
   Bind();
 }
 
-void PrivetTrafficDetector::Bind() {
+void PrivetTrafficDetector::Helper::Bind() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!start_time_.is_null()) {
     base::TimeDelta time_delta = base::Time::Now() - start_time_;
@@ -155,19 +170,19 @@ void PrivetTrafficDetector::Bind() {
   socket_options->multicast_loopback_mode = false;
 
   socket_->Bind(bind_endpoint, std::move(socket_options),
-                base::BindOnce(&PrivetTrafficDetector::OnBindComplete, this,
-                               multicast_addr));
+                base::BindOnce(&Helper::OnBindComplete,
+                               weak_ptr_factory_.GetWeakPtr(), multicast_addr));
 }
 
-void PrivetTrafficDetector::OnBindComplete(
+void PrivetTrafficDetector::Helper::OnBindComplete(
     net::IPEndPoint multicast_addr,
     int rv,
     const base::Optional<net::IPEndPoint>& ip_endpoint) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (rv == net::OK) {
-    socket_->JoinGroup(
-        multicast_addr.address(),
-        base::BindOnce(&PrivetTrafficDetector::OnJoinGroupComplete, this));
+    socket_->JoinGroup(multicast_addr.address(),
+                       base::BindOnce(&Helper::OnJoinGroupComplete,
+                                      weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -175,7 +190,7 @@ void PrivetTrafficDetector::OnBindComplete(
     ScheduleRestart();
 }
 
-bool PrivetTrafficDetector::IsSourceAcceptable() const {
+bool PrivetTrafficDetector::Helper::IsSourceAcceptable() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   for (const auto& network : networks_) {
     if (net::IPAddressMatchesPrefix(recv_addr_.address(), network.address,
@@ -186,7 +201,7 @@ bool PrivetTrafficDetector::IsSourceAcceptable() const {
   return false;
 }
 
-bool PrivetTrafficDetector::IsPrivetPacket(
+bool PrivetTrafficDetector::Helper::IsPrivetPacket(
     base::span<const uint8_t> data) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (data.size() <= sizeof(net::dns_protocol::Header) ||
@@ -211,7 +226,7 @@ bool PrivetTrafficDetector::IsPrivetPacket(
                      substring_end) != buffer_end;
 }
 
-void PrivetTrafficDetector::OnJoinGroupComplete(int rv) {
+void PrivetTrafficDetector::Helper::OnJoinGroupComplete(int rv) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (rv == net::OK) {
     // Reset on success.
@@ -224,22 +239,13 @@ void PrivetTrafficDetector::OnJoinGroupComplete(int rv) {
     ScheduleRestart();
 }
 
-void PrivetTrafficDetector::ResetConnection() {
+void PrivetTrafficDetector::Helper::ResetConnection() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   socket_.reset();
   receiver_binding_.Close();
 }
 
-void PrivetTrafficDetector::OnConnectionChanged(
-    network::mojom::ConnectionType type) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&PrivetTrafficDetector::HandleConnectionChanged,
-                     weak_ptr_factory_.GetWeakPtr(), type));
-}
-
-void PrivetTrafficDetector::OnReceived(
+void PrivetTrafficDetector::Helper::OnReceived(
     int32_t result,
     const base::Optional<net::IPEndPoint>& src_addr,
     base::Optional<base::span<const uint8_t>> data) {

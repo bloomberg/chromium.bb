@@ -140,7 +140,7 @@ class PrivetNotificationService
   BooleanPrefMember enable_privet_notification_member_;
 
 #if BUILDFLAG(ENABLE_MDNS)
-  scoped_refptr<PrivetTrafficDetector> traffic_detector_;
+  std::unique_ptr<PrivetTrafficDetector> traffic_detector_;
 #endif
 };
 
