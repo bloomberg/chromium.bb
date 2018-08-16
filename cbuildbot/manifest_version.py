@@ -91,7 +91,7 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
   if reinitialize:
     logging.info('Cloning fresh manifest-versions checkout.')
     osutils.RmDir(manifest_dir, ignore_missing=True)
-    repository.CloneGitRepo(manifest_dir, manifest_repo)
+    git.Clone(manifest_dir, manifest_repo)
 
 
 def _PushGitChanges(git_repo, message, dry_run=False, push_to=None):

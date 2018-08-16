@@ -307,7 +307,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
   def testLatestSpecFromDir(self):
     """Tests whether we can get sorted specs correctly from a directory."""
     self.manager = self.BuildManager()
-    self.PatchObject(repository, 'CloneGitRepo', side_effect=Exception())
+    self.PatchObject(git, 'Clone', side_effect=Exception())
     info = manifest_version.VersionInfo(
         '99.1.2', CHROME_BRANCH, incr_type='branch')
 

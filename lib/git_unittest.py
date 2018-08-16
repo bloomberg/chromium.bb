@@ -137,7 +137,18 @@ class GitWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
 
     # Should have created the git repo directory, if it didn't exist.
     self.assertExists(self.fake_git_dir)
-    self.assertCommandContains(['clone', url, self.fake_git_dir])
+    self.assertCommandContains(['git', 'clone', url, self.fake_git_dir])
+
+  def testCloneComplex(self):
+    url = 'http://happy/git/repo'
+    ref = 'other/git/repo'
+
+    git.Clone(self.fake_git_dir, url,
+              reference=ref, branch='feature', single_branch=True)
+
+    self.assertCommandContains(['git', 'clone', url, self.fake_git_dir,
+                                '--reference', ref,
+                                '--branch', 'feature', '--single-branch'])
 
   def testShallowFetch(self):
     url = 'http://happy/git/repo'

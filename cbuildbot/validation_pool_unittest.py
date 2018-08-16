@@ -1211,7 +1211,7 @@ class TestPickling(cros_test_lib.TempDirTestCase):
     reference = os.path.abspath(__file__)
     reference = os.path.normpath(os.path.join(reference, '../../'))
 
-    repository.CloneGitRepo(
+    git.Clone(
         repo,
         '%s/chromiumos/chromite' % config_lib.GetSiteParams().EXTERNAL_GOB_URL,
         reference=reference)

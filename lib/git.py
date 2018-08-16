@@ -773,21 +773,33 @@ def Init(git_repo):
   RunGit(git_repo, ['init'])
 
 
-def Clone(git_repo, git_url, branch=None):
+def Clone(dest_path, git_url, reference=None, depth=None, branch=None,
+          single_branch=False):
   """Clone a git repository, into the given directory.
 
   Args:
-    git_repo: Path for where to create a git repo. Directory will be created if
-              it doesnt exist.
-    git_url: Url to clone the git repository from.
-    branch: Branch to checkout ('stabilize.5978.51.B'), or None.
+    dest_path: Path to clone into. Will be created if it doesn't exist.
+    git_url: Git URL to clone from.
+    reference: Path to a git repositry to reference in the clone. See
+      documentation for `git clone --reference`.
+    depth: Create a shallow clone with the given history depth. Cannot be used
+      with 'reference'.
+    branch: Branch to use for the initial HEAD. Defaults to the remote's HEAD.
+    single_branch: Clone only the requested branch.
   """
-  osutils.SafeMakedirs(git_repo)
-
-  cmd = ['clone', git_url, git_repo]
+  if reference and depth:
+    raise ValueError('reference and depth are mutually exclusive')
+  osutils.SafeMakedirs(dest_path)
+  cmd = ['clone', git_url, dest_path]
+  if reference:
+    cmd += ['--reference', reference]
+  if depth:
+    cmd += ['--depth', str(int(depth))]
   if branch:
-    cmd += ['-b', branch]
-  RunGit(git_repo, cmd)
+    cmd += ['--branch', branch]
+  if single_branch:
+    cmd += ['--single-branch']
+  RunGit(dest_path, cmd, print_cmd=True)
 
 
 def ShallowFetch(git_repo, git_url, sparse_checkout=None):

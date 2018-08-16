@@ -296,7 +296,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     logging.info('Cloning manifest repository from %s to %s.',
                  manifest_path, tmp_manifest_repo)
 
-    repository.CloneGitRepo(tmp_manifest_repo, manifest_path)
+    git.Clone(tmp_manifest_repo, manifest_path)
     git.CreateBranch(tmp_manifest_repo, self.cros_source.branch or 'master')
 
     logging.info('Switching to local patched manifest repository:')

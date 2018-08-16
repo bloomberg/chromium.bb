@@ -199,7 +199,7 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
         has_chump_cls=False)
 
     # For _AdjustRepoCheckoutToLocalManifest.
-    self.PatchObject(repository, 'CloneGitRepo')
+    self.PatchObject(git, 'Clone')
     self.PatchObject(git, 'CreateBranch')
 
     # Publish new candidate.
@@ -280,7 +280,7 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
                      return_value=True)
 
     # For _AdjustRepoCheckoutToLocalManifest.
-    self.PatchObject(repository, 'CloneGitRepo')
+    self.PatchObject(git, 'Clone')
     self.PatchObject(git, 'CreateBranch')
 
     candidate = self.manager.CreateNewCandidate()

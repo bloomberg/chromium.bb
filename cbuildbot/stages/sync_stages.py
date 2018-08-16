@@ -230,8 +230,7 @@ class BootstrapStage(PatchChangesStage):
       Exception, if the new patched manifest cannot be parsed.
     """
     checkout_dir = os.path.join(self.tempdir, 'manfest-checkout')
-    repository.CloneGitRepo(checkout_dir,
-                            self._run.config.manifest_repo_url)
+    git.Clone(checkout_dir, self._run.config.manifest_repo_url)
 
     patches = patch_series.PatchSeries.WorkOnSingleRepo(
         checkout_dir, tracking_branch=self._run.manifest_branch)
@@ -326,8 +325,7 @@ class BootstrapStage(PatchChangesStage):
     # Checkout the new version of chromite, and patch it.
     chromite_dir = os.path.join(self.tempdir, 'chromite')
     reference_repo = os.path.join(constants.CHROMITE_DIR, '.git')
-    repository.CloneGitRepo(chromite_dir, constants.CHROMITE_URL,
-                            reference=reference_repo)
+    git.Clone(chromite_dir, constants.CHROMITE_URL, reference=reference_repo)
     git.RunGit(chromite_dir, ['checkout', filter_branch])
 
     chromite_pool = branch_pool.Filter(project=constants.CHROMITE_PROJECT)

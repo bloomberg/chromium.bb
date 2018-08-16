@@ -73,44 +73,6 @@ def _IsLocalPath(url):
   return o.scheme in ('file', '')
 
 
-def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
-                 mirror=False, depth=None, branch=None, single_branch=False):
-  """Clone given git repo
-
-  Args:
-    working_dir: location where it should be cloned to
-    repo_url: git repo to clone
-    reference: If given, pathway to a git repository to access git objects
-      from.  Note that the reference must exist as long as the newly created
-      repo is to be usable.
-    bare: Clone a bare checkout.
-    mirror: Clone a mirror checkout.
-    depth: If given, do a shallow clone limiting the objects pulled to just
-      that # of revs of history.  This option is mutually exclusive to
-      reference.
-    branch: If given, clone the given branch from the parent repository.
-    single_branch: Clone only one the requested branch.
-  """
-  osutils.SafeMakedirs(working_dir)
-  cmd = ['clone', repo_url, working_dir]
-  if reference:
-    if depth:
-      raise ValueError("reference and depth are mutually exclusive "
-                       "options; please pick one or the other.")
-    cmd += ['--reference', reference]
-  if bare:
-    cmd += ['--bare']
-  if mirror:
-    cmd += ['--mirror']
-  if depth:
-    cmd += ['--depth', str(int(depth))]
-  if branch:
-    cmd += ['--branch', branch]
-  if single_branch:
-    cmd += ['--single-branch']
-  git.RunGit(working_dir, cmd, print_cmd=True)
-
-
 def CloneWorkingRepo(dest, url, reference, branch=None, single_branch=False):
   """Clone a git repository with an existing local copy as a reference.
 
@@ -123,8 +85,8 @@ def CloneWorkingRepo(dest, url, reference, branch=None, single_branch=False):
     branch: The branch to clone.
     single_branch: Clone only one the requested branch.
   """
-  CloneGitRepo(dest, url, reference=reference,
-               single_branch=single_branch, branch=branch)
+  git.Clone(dest, url, reference=reference,
+            single_branch=single_branch, branch=branch)
   for name in glob.glob(os.path.join(reference, '.git', 'hooks', '*')):
     newname = os.path.join(dest, '.git', 'hooks', os.path.basename(name))
     shutil.copyfile(name, newname)

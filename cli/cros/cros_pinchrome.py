@@ -44,8 +44,7 @@ def CloneWorkingRepo(dest, url, reference, branch):
     reference: Local checkout to draw objects from.
     branch: The branch to clone.
   """
-  repository.CloneGitRepo(dest, url, reference=reference,
-                          single_branch=True, branch=branch)
+  git.Clone(dest, url, reference=reference, single_branch=True, branch=branch)
   for name in glob.glob(os.path.join(reference, '.git', 'hooks', '*')):
     newname = os.path.join(dest, '.git', 'hooks', os.path.basename(name))
     shutil.copyfile(name, newname)
