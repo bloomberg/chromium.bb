@@ -7,11 +7,11 @@
 
 from __future__ import print_function
 
-import argparse
 import datetime
 import os
 import re
 
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
@@ -42,6 +42,7 @@ class VMTest(object):
 
     self.autotest = opts.autotest
     self.results_dir = opts.results_dir
+    self.test_that_args = opts.test_that_args
 
     self.remote_cmd = opts.remote_cmd
     self.host_cmd = opts.host_cmd
@@ -148,6 +149,12 @@ class VMTest(object):
       cmd += ['--board', self.board]
     if self.results_dir:
       cmd += ['--results_dir', self.results_dir]
+    if self._vm.private_key:
+      cmd += ['--ssh_private_key', self._vm.private_key]
+    if self._vm.log_level == 'debug':
+      cmd += ['--debug']
+    if self.test_that_args:
+      cmd += self.test_that_args[1:]
     cmd += [
         '--no-quickmerge',
         '--ssh_options', '-F /dev/null -i /dev/null',
@@ -273,16 +280,15 @@ def ParseCommandLine(argv):
   """
 
   cros_vm_parser = cros_vm.VM.GetParser()
-  parser = argparse.ArgumentParser(description=__doc__,
-                                   parents=[cros_vm_parser],
-                                   add_help=False)
+  parser = commandline.ArgumentParser(description=__doc__,
+                                      parents=[cros_vm_parser],
+                                      add_help=False, logging=False)
   parser.add_argument('--start-vm', action='store_true', default=False,
                       help='Start a new VM before running tests.')
   parser.add_argument('--catapult-tests', nargs='+',
                       help='Catapult test pattern to run, passed to run_tests.')
   parser.add_argument('--autotest', nargs='+',
                       help='Autotest test pattern to run, passed to test_that.')
-  parser.add_argument('--results-dir', help='Autotest results directory.')
   parser.add_argument('--output', help='Save output to file.')
   parser.add_argument('--guest', action='store_true', default=False,
                       help='Run tests in incognito mode.')
@@ -313,6 +319,9 @@ def ParseCommandLine(argv):
                            'Runs as root if not set.')
   parser.add_argument('--host-cmd', action='store_true', default=False,
                       help='Run a command on the host.')
+  parser.add_argument('--results-dir', help='Autotest results directory.')
+  parser.add_argument('--test_that-args', action='append_option_value',
+                      help='Args to pass directly to test_that for autotest.')
 
   opts = parser.parse_args(argv)
 
