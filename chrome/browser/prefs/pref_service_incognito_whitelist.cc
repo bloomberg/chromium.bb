@@ -684,11 +684,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 
-    prefs::kSettingsResetPromptPromptWave,
-    prefs::kSettingsResetPromptLastTriggeredForDefaultSearch,
-    prefs::kSettingsResetPromptLastTriggeredForStartupUrls,
-    prefs::kSettingsResetPromptLastTriggeredForHomepage,
-
 #if defined(OS_ANDROID)
     prefs::kClipboardLastModifiedTime,
 #endif
