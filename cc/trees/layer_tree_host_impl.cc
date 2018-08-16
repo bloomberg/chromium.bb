@@ -2442,6 +2442,7 @@ void LayerTreeHostImpl::DidFinishImplFrame() {
   skipped_frame_tracker_.FinishFrame();
   impl_thread_phase_ = ImplThreadPhase::IDLE;
   current_begin_frame_tracker_.Finish();
+  tile_manager_.decoded_image_tracker().NotifyFrameFinished();
 }
 
 void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
@@ -2872,7 +2873,6 @@ void LayerTreeHostImpl::OnPurgeMemory() {
   }
   if (resource_pool_)
     resource_pool_->OnPurgeMemory();
-  tile_manager_.decoded_image_tracker().UnlockAllImages();
 }
 
 void LayerTreeHostImpl::OnMemoryPressure(
@@ -2920,7 +2920,6 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
     EvictAllUIResources();
     // Call PrepareTiles to evict tiles when we become invisible.
     PrepareTiles();
-    tile_manager_.decoded_image_tracker().UnlockAllImages();
   }
 }
 
