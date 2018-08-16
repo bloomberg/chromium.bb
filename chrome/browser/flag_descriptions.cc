@@ -1123,7 +1123,7 @@ const char kMediaRouterCastAllowAllIPsName[] =
     "Connect to Cast devices on all IP addresses";
 const char kMediaRouterCastAllowAllIPsDescription[] =
     "Have the Media Router connect to Cast devices on all IP addresses, not "
-    "just RFC1918/RFC4913 private addresses.";
+    "just RFC1918/RFC4193 private addresses.";
 
 const char kMemoryCoordinatorName[] = "Memory coordinator";
 const char kMemoryCoordinatorDescription[] =

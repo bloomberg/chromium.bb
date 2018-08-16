@@ -10155,11 +10155,11 @@
       'id': 437,
       'caption': '''Allow <ph name="PRODUCT_NAME">Google Cast</ph> to connect to Cast devices on all IP addresses.''',
       'tags': [],
-      'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on all IP addresses, not just RFC1918/RFC4913 private addresses.
+      'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on all IP addresses, not just RFC1918/RFC4193 private addresses.
 
-          If this policy is set to false, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on RFC1918/RFC4913 private addresses only.
+          If this policy is set to false, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on RFC1918/RFC4193 private addresses only.
 
-          If this policy is not set, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on RFC1918/RFC4913 private addresses only, unless the CastAllowAllIPs feature is enabled.
+          If this policy is not set, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on RFC1918/RFC4193 private addresses only, unless the CastAllowAllIPs feature is enabled.
 
           If the policy "EnableMediaRouter" is set to false, then this policy's value would have no effect.'''
     },
