@@ -789,8 +789,14 @@ void ChromeMainDelegate::PreSandboxStartup() {
 
   // Register component_updater PathProvider after DIR_USER_DATA overidden by
   // command line flags. Maybe move the chrome PathProvider down here also?
+  int alt_preinstalled_components_dir =
+#if defined(OS_CHROMEOS)
+      chromeos::DIR_PREINSTALLED_COMPONENTS;
+#else
+      chrome::DIR_INTERNAL_PLUGINS;
+#endif
   component_updater::RegisterPathProvider(chrome::DIR_COMPONENTS,
-                                          chrome::DIR_INTERNAL_PLUGINS,
+                                          alt_preinstalled_components_dir,
                                           chrome::DIR_USER_DATA);
 
 #if !defined(OS_ANDROID) && !defined(OS_WIN)

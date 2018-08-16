@@ -53,6 +53,8 @@ enum {
                                         // is stored for the signin profile.
                                         // Currently this is used for policy for
                                         // extensions.
+  DIR_PREINSTALLED_COMPONENTS,          // Directory that contains pre-installed
+                                        // components.
   PATH_END
 };
 
