@@ -6,7 +6,7 @@
 
 namespace device {
 
-const char kUsbHumanInterfaceDevice[] = "hid";
+const char kUsbHumanInterfaceDevice[] = "usb";
 const char kNearFieldCommunication[] = "nfc";
 const char kBluetoothLowEnergy[] = "ble";
 const char kCloudAssistedBluetoothLowEnergy[] = "cable";
