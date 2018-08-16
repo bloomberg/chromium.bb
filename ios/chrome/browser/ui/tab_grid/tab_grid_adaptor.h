@@ -23,7 +23,7 @@
 // Dispatcher object this adaptor will expose as the dispacther for the
 // TabSwitcher protocol.
 @property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>
+    id<ApplicationCommands, OmniboxFocuser, ToolbarCommands>
         adaptedDispatcher;
 // Object that can set the current page of the tab grid.
 @property(nonatomic, weak) id<TabGridPaging> tabGridPager;

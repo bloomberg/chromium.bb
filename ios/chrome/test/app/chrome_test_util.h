@@ -53,7 +53,14 @@ id<BrowserCommands> BrowserCommandDispatcherForMainBVC();
 UIViewController* GetActiveViewController();
 
 // Returns the dispatcher for the active view controller.
+// DEPRECATED. Please use DispatcherForActiveBrowserViewController.
+// TODO(crbug.com/800266): Remove this.
 id<ApplicationCommands, BrowserCommands> DispatcherForActiveViewController();
+
+// Returns the dispatcher for the active BrowserViewController. If the
+// BrowserViewController isn't presented, returns nil.
+id<ApplicationCommands, BrowserCommands>
+DispatcherForActiveBrowserViewController();
 
 // Removes all presented infobars.
 void RemoveAllInfoBars();

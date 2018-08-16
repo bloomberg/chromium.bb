@@ -11,6 +11,7 @@
 #include "ui/base/page_transition_types.h"
 
 @protocol ApplicationCommands;
+@protocol BrowserCommands;
 @class Tab;
 @class TabModel;
 
@@ -28,6 +29,13 @@
 @interface StackViewController : UIViewController<TabSwitcher>
 
 @property(nonatomic, weak) id<StackViewControllerTestDelegate> testDelegate;
+
+// Dispatcher for anything that acts in a "browser" role, with the
+// |BrowserCommands| added. It is an extension of the |dispatcher| property
+// defined by the TabSwitcher protocol.
+@property(nonatomic, readonly)
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>
+        dispatcher;
 
 // Initializes with the given tab models, which must not be nil.
 // |activeTabModel| is the model which starts active, and must be one of the
