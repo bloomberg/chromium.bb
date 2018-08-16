@@ -59,7 +59,7 @@ int aom_count_primitive_symmetric(int16_t v, unsigned int abs_bits) {
 // Encodes a value v in [0, n-1] quasi-uniformly
 void aom_write_primitive_quniform(aom_writer *w, uint16_t n, uint16_t v) {
   if (n <= 1) return;
-  const int l = get_msb(n - 1) + 1;
+  const int l = get_msb(n) + 1;
   const int m = (1 << l) - n;
   if (v < m) {
     aom_write_literal(w, v, l - 1);
@@ -72,7 +72,7 @@ void aom_write_primitive_quniform(aom_writer *w, uint16_t n, uint16_t v) {
 static void aom_wb_write_primitive_quniform(struct aom_write_bit_buffer *wb,
                                             uint16_t n, uint16_t v) {
   if (n <= 1) return;
-  const int l = get_msb(n - 1) + 1;
+  const int l = get_msb(n) + 1;
   const int m = (1 << l) - n;
   if (v < m) {
     aom_wb_write_literal(wb, v, l - 1);
@@ -84,7 +84,7 @@ static void aom_wb_write_primitive_quniform(struct aom_write_bit_buffer *wb,
 
 int aom_count_primitive_quniform(uint16_t n, uint16_t v) {
   if (n <= 1) return 0;
-  const int l = get_msb(n - 1) + 1;
+  const int l = get_msb(n) + 1;
   const int m = (1 << l) - n;
   return v < m ? l - 1 : l;
 }
