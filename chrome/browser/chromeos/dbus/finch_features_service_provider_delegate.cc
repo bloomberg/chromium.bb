@@ -34,4 +34,8 @@ bool FinchFeaturesServiceProviderDelegate::IsUsbguardEnabled() {
   return base::FeatureList::IsEnabled(features::kUsbguard);
 }
 
+bool FinchFeaturesServiceProviderDelegate::IsShillSandboxingEnabled() {
+  return base::FeatureList::IsEnabled(features::kShillSandboxing);
+}
+
 }  // namespace chromeos

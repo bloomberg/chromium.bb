@@ -35,6 +35,14 @@ void ChromeFeaturesServiceProvider::Start(
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsShillSandboxingEnabledMethod,
+      base::BindRepeating(
+          &ChromeFeaturesServiceProvider::IsShillSandboxingEnabled,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeFeaturesServiceProvider::OnExported(
@@ -73,6 +81,16 @@ void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
   writer.AppendBool(delegate_->IsUsbguardEnabled());
+  response_sender.Run(std::move(response));
+}
+
+void ChromeFeaturesServiceProvider::IsShillSandboxingEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
+  dbus::MessageWriter writer(response.get());
+  writer.AppendBool(delegate_->IsShillSandboxingEnabled());
   response_sender.Run(std::move(response));
 }
 
