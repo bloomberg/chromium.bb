@@ -37,9 +37,9 @@ LOAD_FLAG(ONLY_FROM_CACHE, 1 << 3)
 // impact the HTTP request headers or use of the host cache.
 LOAD_FLAG(DISABLE_CACHE, 1 << 4)
 
-// If present, causes dependent network fetches (AIA, CRLs, OCSP) to be
-// skipped on secure connections.
-LOAD_FLAG(DISABLE_CERT_NETWORK_FETCHES, 1 << 5)
+// If present, causes certificate revocation checks to be skipped on secure
+// connections.
+LOAD_FLAG(DISABLE_CERT_REVOCATION_CHECKING, 1 << 5)
 
 // This load will not make any changes to cookies, including storing new
 // cookies or updating existing ones.

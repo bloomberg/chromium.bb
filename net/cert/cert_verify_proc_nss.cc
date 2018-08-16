@@ -892,7 +892,8 @@ int CertVerifyProcNSS::VerifyInternalImpl(
   SECOidTag ev_policy_oid = SEC_OID_UNKNOWN;
   bool is_ev_candidate =
       IsEVCandidate(metadata, cert_handle, &ev_policy_oid);
-  bool check_revocation = (flags & VERIFY_REV_CHECKING_ENABLED);
+  bool check_revocation =
+      (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED);
   if (check_revocation)
     verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
 
@@ -916,7 +917,8 @@ int CertVerifyProcNSS::VerifyInternalImpl(
   }
 
   if (status == SECSuccess &&
-      (flags & VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS) && !known_root) {
+      (flags & CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS) &&
+      !known_root) {
     // TODO(rsleevi): Optimize this by supplying the constructed chain to
     // libpkix via cvin. Omitting for now, due to lack of coverage in upstream
     // NSS tests for that feature.

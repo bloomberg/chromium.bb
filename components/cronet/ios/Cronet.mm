@@ -86,7 +86,6 @@ class TestCertVerifier : public net::CertVerifier {
     verify_result->cert_status = net::MapNetErrorToCertStatus(result);
     return result;
   }
-  void SetConfig(const Config& config) override {}
 };
 
 // net::HTTPProtocolHandlerDelegate for Cronet.

@@ -86,10 +86,9 @@ TEST(CertVerifierTest, RequestParamsComparators) {
       {
           // The same certificate, chain, and host, but with different flags
           // are different validation keys.
-          CertVerifier::RequestParams(
-              ok_cert, "www.example.test",
-              CertVerifier::VERIFY_DISABLE_NETWORK_FETCHES, std::string(),
-              empty_list),
+          CertVerifier::RequestParams(ok_cert, "www.example.test",
+                                      CertVerifier::VERIFY_REV_CHECKING_ENABLED,
+                                      std::string(), empty_list),
           CertVerifier::RequestParams(ok_cert, "www.example.test", 0,
                                       std::string(), empty_list),
           false,

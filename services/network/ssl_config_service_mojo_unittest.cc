@@ -8,7 +8,6 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
@@ -16,7 +15,6 @@
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/ssl_config.mojom.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -74,69 +72,12 @@ class TestSSLConfigServiceObserver : public net::SSLConfigService::Observer {
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 
-class TestCertVerifierConfigObserver : public net::CertVerifier {
- public:
-  TestCertVerifierConfigObserver() = default;
-  ~TestCertVerifierConfigObserver() override {
-    EXPECT_EQ(observed_changes_, changes_to_wait_for_);
-  }
-
-  // CertVerifier implementation:
-  int Verify(const net::CertVerifier::RequestParams& params,
-             net::CRLSet* crl_set,
-             net::CertVerifyResult* verify_result,
-             net::CompletionOnceCallback callback,
-             std::unique_ptr<net::CertVerifier::Request>* out_req,
-             const net::NetLogWithSource& net_log) override {
-    ADD_FAILURE() << "Verify should not be called by tests";
-    return net::ERR_FAILED;
-  }
-  void SetConfig(const Config& config) override {
-    ++observed_changes_;
-    verifier_config_during_change_ = config;
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
-  // Waits for a SSLConfig change. The first time it's called, waits for the
-  // first change, if one hasn't been observed already, the second time, waits
-  // for the second, etc. Must be called once for each change that happens, and
-  // fails it more than once change happens between calls, or during a call.
-  void WaitForChange() {
-    EXPECT_FALSE(run_loop_);
-    ++changes_to_wait_for_;
-    if (changes_to_wait_for_ == observed_changes_)
-      return;
-    EXPECT_LT(observed_changes_, changes_to_wait_for_);
-
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
-    run_loop_.reset();
-    EXPECT_EQ(observed_changes_, changes_to_wait_for_);
-  }
-
-  const net::CertVerifier::Config& verifier_config_during_change() const {
-    return verifier_config_during_change_;
-  }
-
-  int observed_changes() const { return observed_changes_; }
-
- private:
-  int observed_changes_ = 0;
-  int changes_to_wait_for_ = 0;
-  net::CertVerifier::Config verifier_config_during_change_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-};
-
 class NetworkServiceSSLConfigServiceTest : public testing::Test {
  public:
   NetworkServiceSSLConfigServiceTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
         network_service_(NetworkService::CreateForTesting()) {}
-  ~NetworkServiceSSLConfigServiceTest() override {
-    NetworkContext::SetCertVerifierForTesting(nullptr);
-  }
 
   // Creates a NetworkContext using the specified NetworkContextParams, and
   // stores it in |network_context_|.
@@ -202,49 +143,6 @@ class NetworkServiceSSLConfigServiceTest : public testing::Test {
         observer.ssl_config_during_change(), expected_net_config));
   }
 
-  // Runs two conversion tests for |mojo_config|.  Uses it as an initial
-  // net::CertVerifier::Config for a NetworkContext, making sure it matches
-  // |expected_net_config|. Then switches to the default configuration and then
-  // back to |mojo_config|, to make sure it works as a new configuration. The
-  // expected configuration must not be the default configuration.
-  void RunCertConversionTests(
-      const mojom::SSLConfig& mojo_config,
-      const net::CertVerifier::Config& expected_net_config) {
-    TestCertVerifierConfigObserver observer;
-    NetworkContext::SetCertVerifierForTesting(&observer);
-
-    EXPECT_NE(net::CertVerifier::Config(), expected_net_config);
-
-    // Set up |mojo_config| as the initial configuration of a NetworkContext.
-    mojom::NetworkContextParamsPtr network_context_params =
-        mojom::NetworkContextParams::New();
-    network_context_params->initial_ssl_config = mojo_config.Clone();
-    SetUpNetworkContext(std::move(network_context_params));
-
-    // Make sure the initial configuration is set.
-    observer.WaitForChange();
-    EXPECT_EQ(observer.verifier_config_during_change(), expected_net_config);
-    // Sanity check.
-    EXPECT_NE(observer.verifier_config_during_change(),
-              net::CertVerifier::Config());
-
-    // Reset the configuration to the default ones, and check the results.
-    ssl_config_client_->OnSSLConfigUpdated(mojom::SSLConfig::New());
-    observer.WaitForChange();
-    EXPECT_EQ(observer.verifier_config_during_change(),
-              net::CertVerifier::Config());
-    // Sanity check.
-    EXPECT_NE(observer.verifier_config_during_change(), expected_net_config);
-
-    // Set the configuration to |mojo_config| again, and check the results.
-    ssl_config_client_->OnSSLConfigUpdated(mojo_config.Clone());
-    observer.WaitForChange();
-    EXPECT_EQ(observer.verifier_config_during_change(), expected_net_config);
-
-    // Reset the CertVerifier for subsequent invocations.
-    NetworkContext::SetCertVerifierForTesting(nullptr);
-  }
-
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<NetworkService> network_service_;
@@ -282,75 +180,56 @@ TEST_F(NetworkServiceSSLConfigServiceTest, Default) {
   EXPECT_EQ(net::kDefaultTLS13Variant, GetSSLConfig().tls13_variant);
 }
 
-// Check that passing in the default mojom::SSLConfig matches the default
-// net::CertVerifier::Config.
-TEST_F(NetworkServiceSSLConfigServiceTest, DefaultCertConfig) {
-  TestCertVerifierConfigObserver observer;
-  NetworkContext::SetCertVerifierForTesting(&observer);
-
-  mojom::NetworkContextParamsPtr network_context_params =
-      mojom::NetworkContextParams::New();
-  network_context_params->initial_ssl_config = mojom::SSLConfig::New();
-  SetUpNetworkContext(std::move(network_context_params));
-
-  observer.WaitForChange();
-
-  net::CertVerifier::Config default_config;
-  EXPECT_EQ(observer.verifier_config_during_change(), default_config);
-
-  NetworkContext::SetCertVerifierForTesting(nullptr);
-}
-
 TEST_F(NetworkServiceSSLConfigServiceTest, RevCheckingEnabled) {
-  net::CertVerifier::Config expected_net_config;
+  net::SSLConfig expected_net_config;
   // Use the opposite of the default value.
-  expected_net_config.enable_rev_checking =
-      !expected_net_config.enable_rev_checking;
+  expected_net_config.rev_checking_enabled =
+      !expected_net_config.rev_checking_enabled;
 
   mojom::SSLConfigPtr mojo_config = mojom::SSLConfig::New();
-  mojo_config->rev_checking_enabled = expected_net_config.enable_rev_checking;
+  mojo_config->rev_checking_enabled = expected_net_config.rev_checking_enabled;
 
-  RunCertConversionTests(*mojo_config, expected_net_config);
+  RunConversionTests(*mojo_config, expected_net_config);
 }
 
 TEST_F(NetworkServiceSSLConfigServiceTest,
        RevCheckingRequiredLocalTrustAnchors) {
-  net::CertVerifier::Config expected_net_config;
+  net::SSLConfig expected_net_config;
   // Use the opposite of the default value.
-  expected_net_config.require_rev_checking_local_anchors =
-      !expected_net_config.require_rev_checking_local_anchors;
+  expected_net_config.rev_checking_required_local_anchors =
+      !expected_net_config.rev_checking_required_local_anchors;
 
   mojom::SSLConfigPtr mojo_config = mojom::SSLConfig::New();
   mojo_config->rev_checking_required_local_anchors =
-      expected_net_config.require_rev_checking_local_anchors;
+      expected_net_config.rev_checking_required_local_anchors;
 
-  RunCertConversionTests(*mojo_config, expected_net_config);
+  RunConversionTests(*mojo_config, expected_net_config);
 }
 
 TEST_F(NetworkServiceSSLConfigServiceTest, Sha1LocalAnchorsEnabled) {
-  net::CertVerifier::Config expected_net_config;
+  net::SSLConfig expected_net_config;
   // Use the opposite of the default value.
-  expected_net_config.enable_sha1_local_anchors =
-      !expected_net_config.enable_sha1_local_anchors;
+  expected_net_config.sha1_local_anchors_enabled =
+      !expected_net_config.sha1_local_anchors_enabled;
 
   mojom::SSLConfigPtr mojo_config = mojom::SSLConfig::New();
   mojo_config->sha1_local_anchors_enabled =
-      expected_net_config.enable_sha1_local_anchors;
+      expected_net_config.sha1_local_anchors_enabled;
 
-  RunCertConversionTests(*mojo_config, expected_net_config);
+  RunConversionTests(*mojo_config, expected_net_config);
 }
 
 TEST_F(NetworkServiceSSLConfigServiceTest, SymantecEnforcementDisabled) {
-  net::CertVerifier::Config expected_net_config;
+  net::SSLConfig expected_net_config;
   // Use the opposite of the default value.
-  expected_net_config.disable_symantec_enforcement =
-      !expected_net_config.disable_symantec_enforcement;
+  expected_net_config.symantec_enforcement_disabled =
+      !expected_net_config.symantec_enforcement_disabled;
 
   mojom::SSLConfigPtr mojo_config = mojom::SSLConfig::New();
   mojo_config->symantec_enforcement_disabled =
-      expected_net_config.disable_symantec_enforcement;
+      expected_net_config.symantec_enforcement_disabled;
 
-  RunCertConversionTests(*mojo_config, expected_net_config);
+  RunConversionTests(*mojo_config, expected_net_config);
 }
 
 TEST_F(NetworkServiceSSLConfigServiceTest, SSLVersion) {

@@ -135,12 +135,6 @@ class WrappedCertVerifierForIOThreadTesting : public net::CertVerifier {
     return g_cert_verifier_for_io_thread_testing->Verify(
         params, crl_set, verify_result, std::move(callback), out_req, net_log);
   }
-
-  void SetConfig(const Config& config) override {
-    if (!g_cert_verifier_for_io_thread_testing)
-      return;
-    return g_cert_verifier_for_io_thread_testing->SetConfig(config);
-  }
 };
 
 #if defined(OS_MACOSX)

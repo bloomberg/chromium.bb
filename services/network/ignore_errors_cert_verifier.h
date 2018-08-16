@@ -64,7 +64,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) IgnoreErrorsCertVerifier
              net::CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
              const net::NetLogWithSource& net_log) override;
-  void SetConfig(const Config& config) override;
 
  private:
   friend class IgnoreErrorsCertVerifierTest;

@@ -44,6 +44,15 @@ TypeConverter<net::SSLConfig, network::mojom::SSLConfigPtr>::Convert(
 
   net::SSLConfig net_config;
 
+  net_config.rev_checking_enabled = mojo_config->rev_checking_enabled;
+  net_config.rev_checking_required_local_anchors =
+      mojo_config->rev_checking_required_local_anchors;
+
+  net_config.sha1_local_anchors_enabled =
+      mojo_config->sha1_local_anchors_enabled;
+  net_config.symantec_enforcement_disabled =
+      mojo_config->symantec_enforcement_disabled;
+
   net_config.version_min =
       MojoSSLVersionToNetSSLVersion(mojo_config->version_min);
   net_config.version_max =
