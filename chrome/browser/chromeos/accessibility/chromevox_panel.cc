@@ -18,6 +18,16 @@ const char kDisableSpokenFeedbackURLFragment[] = "close";
 const char kFocusURLFragment[] = "focus";
 const char kFullscreenURLFragment[] = "fullscreen";
 const char kWidgetName[] = "ChromeVoxPanel";
+const int kPanelHeight = 35;
+
+ash::mojom::AccessibilityControllerPtr GetAccessibilityController() {
+  // Connect to the accessibility mojo interface in ash.
+  ash::mojom::AccessibilityControllerPtr accessibility_controller;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &accessibility_controller);
+  return accessibility_controller;
+}
 
 }  // namespace
 
@@ -54,6 +64,8 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context)
     : AccessibilityPanel(browser_context, GetUrlForContent(), kWidgetName) {
   web_contents_observer_.reset(
       new ChromeVoxPanelWebContentsObserver(GetWebContents(), this));
+
+  SetAccessibilityPanelFullscreen(false);
 }
 
 ChromeVoxPanel::~ChromeVoxPanel() {}
@@ -76,12 +88,10 @@ void ChromeVoxPanel::Focus() {
 }
 
 void ChromeVoxPanel::SetAccessibilityPanelFullscreen(bool fullscreen) {
-  // Connect to the accessibility mojo interface in ash.
-  ash::mojom::AccessibilityControllerPtr accessibility_controller;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &accessibility_controller);
-  accessibility_controller->SetAccessibilityPanelFullscreen(fullscreen);
+  gfx::Rect bounds(0, 0, 0, kPanelHeight);
+  auto state = fullscreen ? ash::mojom::AccessibilityPanelState::FULLSCREEN
+                          : ash::mojom::AccessibilityPanelState::FULL_WIDTH;
+  GetAccessibilityController()->SetAccessibilityPanelBounds(bounds, state);
 }
 
 std::string ChromeVoxPanel::GetUrlForContent() {
