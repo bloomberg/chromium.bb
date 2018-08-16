@@ -14,7 +14,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -118,6 +117,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 // Public properties.
 @synthesize tabModel = _tabModel;
+@synthesize tabRestoreService = _tabRestoreService;
 // Private properties.
 @synthesize webStateList = _webStateList;
 @synthesize consumer = _consumer;
@@ -305,6 +305,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
                           createParams));
   self.closedSessionWindow = nil;
   [self removeEntriesFromTabRestoreService];
+  self.closedTabsCount = 0;
   // Unmark all images for deletion since they are now active tabs again.
   ios::ChromeBrowserState* browserState = self.tabModel.browserState;
   [SnapshotCacheFactory::GetForBrowserState(browserState) unmarkAllImages];
@@ -378,20 +379,19 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 // Removes |self.closedTabsCount| most recent entries from the
 // TabRestoreService.
 - (void)removeEntriesFromTabRestoreService {
-  sessions::TabRestoreService* tabRestoreService =
-      IOSChromeTabRestoreServiceFactory::GetForBrowserState(
-          self.tabModel.browserState);
+  if (!self.tabRestoreService) {
+    return;
+  }
   std::vector<SessionID> identifiers;
-  auto iter = tabRestoreService->entries().begin();
-  auto end = tabRestoreService->entries().end();
+  auto iter = self.tabRestoreService->entries().begin();
+  auto end = self.tabRestoreService->entries().end();
   for (int i = 0; i < self.closedTabsCount && iter != end; i++) {
     identifiers.push_back(iter->get()->id);
     iter++;
   }
   for (const SessionID sessionID : identifiers) {
-    tabRestoreService->RemoveTabEntryById(sessionID);
+    self.tabRestoreService->RemoveTabEntryById(sessionID);
   }
-  self.closedTabsCount = 0;
 }
 
 @end

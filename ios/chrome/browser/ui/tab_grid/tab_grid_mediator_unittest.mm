@@ -272,9 +272,7 @@ TEST_F(TabGridMediatorTest, DiscardSavedClosedItemsCommand) {
 
 // Tests that the |web_state_list_| is restored to 3 items when
 // |-undoCloseAllItems| is called.
-// TODO(crbug.com/873632): This test is flaky.
-// TODO(crbug.com/873633): What introduced flakyness was cherry picked in M-69.
-TEST_F(TabGridMediatorTest, DISABLED_UndoCloseAllItemsCommand) {
+TEST_F(TabGridMediatorTest, UndoCloseAllItemsCommand) {
   // Previously there were 3 items.
   [mediator_ saveAndCloseAllItems];
   [mediator_ undoCloseAllItems];
