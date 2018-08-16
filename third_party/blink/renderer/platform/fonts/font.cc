@@ -505,6 +505,12 @@ Vector<CharacterRange> Font::IndividualCharacterRanges(
   return ranges;
 }
 
+Vector<double> Font::IndividualCharacterAdvances(const TextRun& run) const {
+  FontCachePurgePreventer purge_preventer;
+  CachingWordShaper shaper(*this);
+  return shaper.IndividualCharacterAdvances(run);
+}
+
 void Font::ExpandRangeToIncludePartialGlyphs(const TextRun& text_run,
                                              int* from,
                                              int* to) const {

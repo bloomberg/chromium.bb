@@ -156,6 +156,11 @@ class PLATFORM_EXPORT Font {
                                    unsigned to) const;
   Vector<CharacterRange> IndividualCharacterRanges(const TextRun&) const;
 
+  // Returns a vector of same size as TextRun.length() with advances measured
+  // in pixels from the left bounding box of the full TextRun to the left bound
+  // of the glyph rendered by each character. Values should always be positive.
+  Vector<double> IndividualCharacterAdvances(const TextRun&) const;
+
   void ExpandRangeToIncludePartialGlyphs(const TextRun&,
                                          int* from,
                                          int* to) const;
