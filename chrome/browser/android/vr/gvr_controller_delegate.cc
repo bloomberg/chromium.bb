@@ -55,22 +55,22 @@ ControllerModel GvrControllerDelegate::GetModel(const RenderInfo& render_info) {
 
   ControllerModel controller_model;
   controller_->GetTransform(&controller_model.transform);
-  controller_model.touchpad_button_state = PlatformController::ButtonState::kUp;
+  controller_model.touchpad_button_state = ControllerModel::ButtonState::kUp;
   DCHECK(!(controller_->ButtonUpHappened(PlatformController::kButtonSelect) &&
            controller_->ButtonDownHappened(PlatformController::kButtonSelect)))
       << "Cannot handle a button down and up event within one frame.";
   if (controller_->ButtonState(gvr::kControllerButtonClick)) {
     controller_model.touchpad_button_state =
-        PlatformController::ButtonState::kDown;
+        ControllerModel::ButtonState::kDown;
   }
   controller_model.app_button_state =
       controller_->ButtonState(gvr::kControllerButtonApp)
-          ? PlatformController::ButtonState::kDown
-          : PlatformController::ButtonState::kUp;
+          ? ControllerModel::ButtonState::kDown
+          : ControllerModel::ButtonState::kUp;
   controller_model.home_button_state =
       controller_->ButtonState(gvr::kControllerButtonHome)
-          ? PlatformController::ButtonState::kDown
-          : PlatformController::ButtonState::kUp;
+          ? ControllerModel::ButtonState::kDown
+          : ControllerModel::ButtonState::kUp;
   controller_model.opacity = controller_->GetOpacity();
   controller_model.laser_direction = controller_direction;
   controller_model.laser_origin = controller_->GetPointerStart();
@@ -121,7 +121,8 @@ GvrControllerDelegate::GetInputSourceState() {
 
     // Set handedness.
     state->description->handedness =
-        controller_->GetHandedness() == PlatformController::kRightHanded
+        controller_->GetHandedness() ==
+                ControllerModel::Handedness::kRightHanded
             ? device::mojom::XRHandedness::RIGHT
             : device::mojom::XRHandedness::LEFT;
 

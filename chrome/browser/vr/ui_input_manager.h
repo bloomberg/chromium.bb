@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "chrome/browser/vr/platform_controller.h"
+#include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/vr_ui_export.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -21,7 +21,6 @@ namespace vr {
 class UiScene;
 class UiElement;
 class InputEvent;
-struct ControllerModel;
 struct RenderInfo;
 struct ReticleModel;
 struct EditedText;
@@ -71,7 +70,7 @@ class VR_UI_EXPORT UiInputManager {
                        const gfx::PointF& target_point);
   void SendScrollEnd(InputEventList* input_event_list,
                      const gfx::PointF& target_point,
-                     PlatformController::ButtonState button_state);
+                     ControllerModel::ButtonState button_state);
   void SendScrollBegin(UiElement* target,
                        InputEventList* input_event_list,
                        const gfx::PointF& target_point);
@@ -87,11 +86,11 @@ class VR_UI_EXPORT UiInputManager {
                      base::TimeTicks timestamp);
 
   void SendButtonUp(const gfx::PointF& target_point,
-                    PlatformController::ButtonState button_state,
+                    ControllerModel::ButtonState button_state,
                     base::TimeTicks timestamp);
   void SendButtonDown(UiElement* target,
                       const gfx::PointF& target_point,
-                      PlatformController::ButtonState button_state,
+                      ControllerModel::ButtonState button_state,
                       base::TimeTicks timestamp);
   void SendTouchMove(const gfx::PointF& target_point,
                      base::TimeTicks timestamp);
@@ -121,8 +120,8 @@ class VR_UI_EXPORT UiInputManager {
 
   HitTestStrategy hit_test_strategy_ = HitTestStrategy::PROJECT_TO_WORLD_ORIGIN;
 
-  PlatformController::ButtonState previous_button_state_ =
-      PlatformController::ButtonState::kUp;
+  ControllerModel::ButtonState previous_button_state_ =
+      ControllerModel::ButtonState::kUp;
 
   base::TimeTicks last_controller_outside_viewport_time_;
   bool controller_resting_in_viewport_ = false;

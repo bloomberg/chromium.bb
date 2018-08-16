@@ -228,9 +228,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
         }
         break;
       case ui::DomCode::US_H:
-        handedness_ = handedness_ == PlatformController::kRightHanded
-                          ? PlatformController::kLeftHanded
-                          : PlatformController::kRightHanded;
+        handedness_ = handedness_ == ControllerModel::kRightHanded
+                          ? ControllerModel::kLeftHanded
+                          : ControllerModel::kRightHanded;
         break;
       case ui::DomCode::US_I:
         incognito_ = !incognito_;
@@ -415,8 +415,8 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
 
   ControllerModel controller_model;
   controller_model.touchpad_button_state =
-      touchpad_pressed_ ? PlatformController::ButtonState::kDown
-                        : PlatformController::ButtonState::kUp;
+      touchpad_pressed_ ? ControllerModel::ButtonState::kDown
+                        : ControllerModel::ButtonState::kUp;
   controller_model.touchpad_touch_position = touchpad_touch_position_;
   controller_model.touching_touchpad = touching_touchpad_;
   controller_model.recentered = recentered_;
@@ -796,7 +796,7 @@ RenderInfo VrTestContext::GetRenderInfo() const {
 
 gfx::Point3F VrTestContext::LaserOrigin() const {
   gfx::Point3F origin = kDefaultLaserOrigin;
-  if (handedness_ == PlatformController::kLeftHanded) {
+  if (handedness_ == ControllerModel::kLeftHanded) {
     origin.set_x(-origin.x());
   }
   return origin;

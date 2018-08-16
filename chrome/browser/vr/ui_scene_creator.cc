@@ -562,15 +562,15 @@ std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
   layout->set_contributes_to_parent_bounds(false);
   layout->AddBinding(VR_BIND_FUNC(
       LayoutAlignment, Model, model,
-      model->controller.handedness == PlatformController::kRightHanded ? LEFT
-                                                                       : RIGHT,
+      model->controller.handedness == ControllerModel::kRightHanded ? LEFT
+                                                                    : RIGHT,
       LinearLayout, layout.get(), set_x_centering));
-  layout->AddBinding(VR_BIND_FUNC(
-      LinearLayout::Direction, Model, model,
-      model->controller.handedness == PlatformController::kRightHanded
-          ? LinearLayout::kRight
-          : LinearLayout::kLeft,
-      LinearLayout, layout.get(), set_direction));
+  layout->AddBinding(
+      VR_BIND_FUNC(LinearLayout::Direction, Model, model,
+                   model->controller.handedness == ControllerModel::kRightHanded
+                       ? LinearLayout::kRight
+                       : LinearLayout::kLeft,
+                   LinearLayout, layout.get(), set_direction));
 
   auto spacer = std::make_unique<UiElement>();
   spacer->SetType(kTypeSpacer);
@@ -624,7 +624,7 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
   touchpad_button->AddBinding(
       VR_BIND_FUNC(SkColor, Model, model,
                    model->controller.touchpad_button_state ==
-                           PlatformController::ButtonState::kDown
+                           ControllerModel::ButtonState::kDown
                        ? model->color_scheme().controller_button_down
                        : model->color_scheme().controller_button,
                    Rect, touchpad_button.get(), SetColor));
@@ -637,13 +637,12 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
   app_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
   app_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   app_button->SetTranslate(0.0f, 0.0f, kControllerAppButtonZ);
-  app_button->AddBinding(
-      VR_BIND_FUNC(SkColor, Model, model,
-                   model->controller.app_button_state ==
-                           PlatformController::ButtonState::kDown
-                       ? model->color_scheme().controller_button_down
-                       : model->color_scheme().controller_button,
-                   VectorIcon, app_button.get(), SetColor));
+  app_button->AddBinding(VR_BIND_FUNC(
+      SkColor, Model, model,
+      model->controller.app_button_state == ControllerModel::ButtonState::kDown
+          ? model->color_scheme().controller_button_down
+          : model->color_scheme().controller_button,
+      VectorIcon, app_button.get(), SetColor));
   controller->AddChild(std::move(app_button));
 
   auto home_button =
@@ -653,13 +652,12 @@ std::unique_ptr<UiElement> CreateControllerElement(Model* model) {
   home_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
   home_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   home_button->SetTranslate(0.0f, 0.0f, kControllerHomeButtonZ);
-  home_button->AddBinding(
-      VR_BIND_FUNC(SkColor, Model, model,
-                   model->controller.home_button_state ==
-                           PlatformController::ButtonState::kDown
-                       ? model->color_scheme().controller_button_down
-                       : model->color_scheme().controller_button,
-                   VectorIcon, home_button.get(), SetColor));
+  home_button->AddBinding(VR_BIND_FUNC(
+      SkColor, Model, model,
+      model->controller.home_button_state == ControllerModel::ButtonState::kDown
+          ? model->color_scheme().controller_button_down
+          : model->color_scheme().controller_button,
+      VectorIcon, home_button.get(), SetColor));
   controller->AddChild(std::move(home_button));
 
   auto battery_layout =

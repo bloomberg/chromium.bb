@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_VR_MODEL_CONTROLLER_MODEL_H_
 
 #include "base/time/time.h"
-#include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/transform.h"
@@ -18,6 +17,16 @@ namespace vr {
 // UiInputManager (for generating gestures), and by the UI for rendering the
 // controller.
 struct VR_EXPORT ControllerModel {
+  enum ButtonState {
+    kUp,
+    kDown,
+  };
+
+  enum Handedness {
+    kRightHanded,
+    kLeftHanded,
+  };
+
   ControllerModel();
   ControllerModel(const ControllerModel& other);
   ~ControllerModel();
@@ -25,18 +34,15 @@ struct VR_EXPORT ControllerModel {
   gfx::Transform transform;
   gfx::Vector3dF laser_direction;
   gfx::Point3F laser_origin;
-  PlatformController::ButtonState touchpad_button_state =
-      PlatformController::ButtonState::kUp;
-  PlatformController::ButtonState app_button_state =
-      PlatformController::ButtonState::kUp;
-  PlatformController::ButtonState home_button_state =
-      PlatformController::ButtonState::kUp;
+  ButtonState touchpad_button_state = kUp;
+  ButtonState app_button_state = kUp;
+  ButtonState home_button_state = kUp;
   bool touching_touchpad = false;
   gfx::PointF touchpad_touch_position;
   float opacity = 1.0f;
   bool resting_in_viewport = false;
   bool recentered = false;
-  PlatformController::Handedness handedness = PlatformController::kRightHanded;
+  Handedness handedness = kRightHanded;
   base::TimeTicks last_orientation_timestamp;
   base::TimeTicks last_button_timestamp;
   int battery_level = 0;

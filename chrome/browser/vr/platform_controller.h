@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_PLATFORM_CONTROLLER_H_
 
 #include "base/time/time.h"
+#include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/vr_export.h"
 
 namespace gfx {
@@ -30,16 +31,6 @@ class VR_EXPORT PlatformController {
     kButtonTypeNumber,
   };
 
-  enum ButtonState {
-    kUp,
-    kDown,
-  };
-
-  enum Handedness {
-    kRightHanded,
-    kLeftHanded,
-  };
-
   virtual ~PlatformController() {}
 
   virtual bool IsButtonDown(ButtonType type) const = 0;
@@ -50,7 +41,7 @@ class VR_EXPORT PlatformController {
   virtual base::TimeTicks GetLastOrientationTimestamp() const = 0;
   virtual base::TimeTicks GetLastTouchTimestamp() const = 0;
   virtual base::TimeTicks GetLastButtonTimestamp() const = 0;
-  virtual Handedness GetHandedness() const = 0;
+  virtual ControllerModel::Handedness GetHandedness() const = 0;
   virtual bool GetRecentered() const = 0;
   virtual int GetBatteryLevel() const = 0;
 };

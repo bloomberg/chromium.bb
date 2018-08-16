@@ -73,8 +73,8 @@ class MockPlatformController : public PlatformController {
     return base::TimeTicks();
   }
 
-  vr::PlatformController::Handedness GetHandedness() const override {
-    return vr::PlatformController::kRightHanded;
+  vr::ControllerModel::Handedness GetHandedness() const override {
+    return vr::ControllerModel::kRightHanded;
   }
 
   bool GetRecentered() const override { return false; }
