@@ -5,7 +5,7 @@
 import("//build/config/ui.gni")
 import("//ui/ozone/ozone.gni")
 
-assert(ozone_platform_gbm)
+assert(ozone_platform_gbm || ozone_platform_wayland)
 
 source_set("linux") {
   sources = [
