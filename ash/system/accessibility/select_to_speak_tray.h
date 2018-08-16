@@ -34,6 +34,10 @@ class ASH_EXPORT SelectToSpeakTray : public TrayBackgroundView,
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
 
+  // Returns true if the screen point passed in is contained within this tray's
+  // bounds.
+  bool ContainsPointInScreen(const gfx::Point& point);
+
  private:
   friend class SelectToSpeakTrayTest;
 

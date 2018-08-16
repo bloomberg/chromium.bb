@@ -73,6 +73,10 @@ void SelectToSpeakTray::OnAccessibilityStatusChanged() {
   CheckStatusAndUpdateIcon();
 }
 
+bool SelectToSpeakTray::ContainsPointInScreen(const gfx::Point& point) {
+  return GetBoundsInScreen().Contains(point);
+}
+
 void SelectToSpeakTray::CheckStatusAndUpdateIcon() {
   if (!Shell::Get()->accessibility_controller()->IsSelectToSpeakEnabled()) {
     SetVisible(false);
