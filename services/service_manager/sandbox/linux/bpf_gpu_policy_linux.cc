@@ -55,17 +55,35 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_prctl:
     case __NR_sysinfo:
       return Allow();
+#if !defined(__aarch64__)
+    case __NR_access:
+    case __NR_open:
+#endif  // !defined(__aarch64__)
+    case __NR_faccessat:
+    case __NR_openat:
+#if defined(__NR_stat)
+    case __NR_stat:
+#endif
+#if defined(__NR_stat64)
+    case __NR_stat64:
+#endif
+#if defined(__NR_fstatat)
+    case __NR_fstatat:
+#endif
+#if defined(__NR_newfstatat)
+    case __NR_newfstatat:
+#endif
+    {
+      auto* broker_process = SandboxLinux::GetInstance()->broker_process();
+      DCHECK(broker_process);
+      return Trap(BrokerProcess::SIGSYS_Handler, broker_process);
+    }
     case __NR_sched_getaffinity:
     case __NR_sched_setaffinity:
       return sandbox::RestrictSchedTarget(GetPolicyPid(), sysno);
     default:
       if (SyscallSets::IsEventFd(sysno))
         return Allow();
-
-      auto* broker_process = SandboxLinux::GetInstance()->broker_process();
-      if (broker_process->IsSyscallAllowed(sysno)) {
-        return Trap(BrokerProcess::SIGSYS_Handler, broker_process);
-      }
 
       // Default on the baseline policy.
       return BPFBasePolicy::EvaluateSyscall(sysno);

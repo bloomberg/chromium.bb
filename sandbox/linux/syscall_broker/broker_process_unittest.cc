@@ -27,8 +27,6 @@
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
-#include "base/stl_util.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "sandbox/linux/syscall_broker/broker_client.h"
 #include "sandbox/linux/tests/scoped_temporary_file.h"
@@ -1452,100 +1450,6 @@ TEST(BrokerProcess, UnlinkClient) {
 
 TEST(BrokerProcess, UnlinkHost) {
   TestUnlinkHelper(false);
-}
-
-TEST(BrokerProcess, IsSyscallAllowed) {
-  const struct {
-    int sysno;
-    BrokerCommand command;
-  } kSyscallToCommandMap[] = {
-#if defined(__NR_access)
-    {__NR_access, COMMAND_ACCESS},
-#endif
-#if defined(__NR_faccessat)
-    {__NR_faccessat, COMMAND_ACCESS},
-#endif
-#if defined(__NR_mkdir)
-    {__NR_mkdir, COMMAND_MKDIR},
-#endif
-#if defined(__NR_mkdirat)
-    {__NR_mkdirat, COMMAND_MKDIR},
-#endif
-#if defined(__NR_open)
-    {__NR_open, COMMAND_OPEN},
-#endif
-#if defined(__NR_openat)
-    {__NR_openat, COMMAND_OPEN},
-#endif
-#if defined(__NR_readlink)
-    {__NR_readlink, COMMAND_READLINK},
-#endif
-#if defined(__NR_readlinkat)
-    {__NR_readlinkat, COMMAND_READLINK},
-#endif
-#if defined(__NR_rename)
-    {__NR_rename, COMMAND_RENAME},
-#endif
-#if defined(__NR_renameat)
-    {__NR_renameat, COMMAND_RENAME},
-#endif
-#if defined(__NR_rmdir)
-    {__NR_rmdir, COMMAND_RMDIR},
-#endif
-#if defined(__NR_stat)
-    {__NR_stat, COMMAND_STAT},
-#endif
-#if defined(__NR_lstat)
-    {__NR_lstat, COMMAND_STAT},
-#endif
-#if defined(__NR_fstatat)
-    {__NR_fstatat, COMMAND_STAT},
-#endif
-#if defined(__NR_newfstatat)
-    {__NR_newfstatat, COMMAND_STAT},
-#endif
-#if defined(__NR_stat64)
-    {__NR_stat64, COMMAND_STAT64},
-#endif
-#if defined(__NR_lstat64)
-    {__NR_lstat64, COMMAND_STAT64},
-#endif
-#if defined(__NR_unlink)
-    {__NR_unlink, COMMAND_UNLINK},
-#endif
-#if defined(__NR_unlinkat)
-    {__NR_unlinkat, COMMAND_UNLINK},
-#endif
-  };
-
-  EXPECT_GT(base::size(kSyscallToCommandMap), 0u);
-
-  for (const auto& test : kSyscallToCommandMap) {
-    // Test with fast_check_in_client.
-    {
-      SCOPED_TRACE(base::StringPrintf("fast check, sysno=%d", test.sysno));
-      BrokerProcess process(ENOSYS, MakeBrokerCommandSet({test.command}), {},
-                            true, true);
-      EXPECT_TRUE(process.IsSyscallAllowed(test.sysno));
-      for (const auto& other : kSyscallToCommandMap) {
-        SCOPED_TRACE(base::StringPrintf("others test, sysno=%d", other.sysno));
-        EXPECT_EQ(other.command == test.command,
-                  process.IsSyscallAllowed(other.sysno));
-      }
-    }
-
-    // Test without fast_check_in_client.
-    {
-      SCOPED_TRACE(base::StringPrintf("no fast check, sysno=%d", test.sysno));
-      BrokerProcess process(ENOSYS, MakeBrokerCommandSet({test.command}), {},
-                            false, true);
-      EXPECT_TRUE(process.IsSyscallAllowed(test.sysno));
-      for (const auto& other : kSyscallToCommandMap) {
-        SCOPED_TRACE(base::StringPrintf("others test, sysno=%d", other.sysno));
-        EXPECT_TRUE(process.IsSyscallAllowed(other.sysno));
-      }
-    }
-  }
 }
 
 }  // namespace syscall_broker
