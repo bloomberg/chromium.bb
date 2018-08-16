@@ -527,9 +527,13 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     return SHELF_BACKGROUND_LOGIN;
   }
 
-  // If the app list is active, hide the shelf background to prevent overlap.
-  if (is_app_list_visible_)
+  // If the app list is active and the home launcher is not shown, hide the
+  // shelf background to prevent overlap.
+  if (is_app_list_visible_ && !Shell::Get()
+                                   ->app_list_controller()
+                                   ->IsHomeLauncherEnabledInTabletMode()) {
     return SHELF_BACKGROUND_APP_LIST;
+  }
 
   if (state_.visibility_state != SHELF_AUTO_HIDE &&
       state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED) {
