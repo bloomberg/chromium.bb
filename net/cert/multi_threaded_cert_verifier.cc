@@ -5,6 +5,7 @@
 #include "net/cert/multi_threaded_cert_verifier.h"
 
 #include <algorithm>
+#include <iterator>
 #include <utility>
 
 #include "base/bind.h"
@@ -119,6 +120,21 @@ struct ResultHelper {
   CertVerifyResult result;
 };
 
+int GetFlagsForConfig(const CertVerifier::Config& config) {
+  int flags = 0;
+
+  if (config.enable_rev_checking)
+    flags |= CertVerifyProc::VERIFY_REV_CHECKING_ENABLED;
+  if (config.require_rev_checking_local_anchors)
+    flags |= CertVerifyProc::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
+  if (config.enable_sha1_local_anchors)
+    flags |= CertVerifyProc::VERIFY_ENABLE_SHA1_LOCAL_ANCHORS;
+  if (config.disable_symantec_enforcement)
+    flags |= CertVerifyProc::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT;
+
+  return flags;
+}
+
 }  // namespace
 
 // Represents the output and result callback of a request. The
@@ -225,15 +241,22 @@ class CertVerifierJob {
   // Posts a task to TaskScheduler to do the verification. Once the verification
   // has completed, it will call OnJobCompleted() on the origin thread.
   void Start(const scoped_refptr<CertVerifyProc>& verify_proc,
+             const CertVerifier::Config& config,
+             uint32_t config_id,
              const scoped_refptr<CRLSet>& crl_set) {
+    int flags = GetFlagsForConfig(config);
+    if (key_.flags() & CertVerifier::VERIFY_DISABLE_NETWORK_FETCHES) {
+      flags &= ~CertVerifyProc::VERIFY_REV_CHECKING_ENABLED;
+      flags &= ~CertVerifyProc::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
+    }
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&DoVerifyOnWorkerThread, verify_proc, key_.certificate(),
-                       key_.hostname(), key_.ocsp_response(), key_.flags(),
-                       crl_set, key_.additional_trust_anchors()),
+                       key_.hostname(), key_.ocsp_response(), flags, crl_set,
+                       key_.additional_trust_anchors()),
         base::BindOnce(&CertVerifierJob::OnJobCompleted,
-                       weak_ptr_factory_.GetWeakPtr(), crl_set));
+                       weak_ptr_factory_.GetWeakPtr(), config_id, crl_set));
   }
 
   ~CertVerifierJob() {
@@ -290,14 +313,16 @@ class CertVerifierJob {
     }
   }
 
-  void OnJobCompleted(scoped_refptr<CRLSet> crl_set,
+  void OnJobCompleted(uint32_t config_id,
+                      scoped_refptr<CRLSet> crl_set,
                       std::unique_ptr<ResultHelper> verify_result) {
     TRACE_EVENT0(kNetTracingCategory, "CertVerifierJob::OnJobCompleted");
     std::unique_ptr<CertVerifierJob> keep_alive =
         cert_verifier_->RemoveJob(this);
 
     LogMetrics(*verify_result);
-    if (cert_verifier_->verify_complete_callback_) {
+    if (cert_verifier_->verify_complete_callback_ &&
+        config_id == cert_verifier_->config_id_) {
       cert_verifier_->verify_complete_callback_.Run(
           key_, std::move(crl_set), net_log_, verify_result->error,
           verify_result->result, base::TimeTicks::Now() - start_time_,
@@ -374,10 +399,10 @@ int MultiThreadedCertVerifier::Verify(const RequestParams& params,
     std::unique_ptr<CertVerifierJob> new_job =
         std::make_unique<CertVerifierJob>(params, net_log.net_log(), this);
 
-    new_job->Start(verify_proc_, crl_set);
+    new_job->Start(verify_proc_, config_, config_id_, crl_set);
 
     job = new_job.get();
-    inflight_[job] = std::move(new_job);
+    joinable_[job] = std::move(new_job);
 
     if (requests_ == 1)
       job->set_is_first_job(true);
@@ -387,6 +412,17 @@ int MultiThreadedCertVerifier::Verify(const RequestParams& params,
       job->CreateRequest(std::move(callback), verify_result, net_log);
   *out_req = std::move(request);
   return ERR_IO_PENDING;
+}
+
+void MultiThreadedCertVerifier::SetConfig(const CertVerifier::Config& config) {
+  ++config_id_;
+  config_ = config;
+
+  // In C++17, this would be a .merge() call to combine |joinable_| into
+  // |inflight_|.
+  inflight_.insert(std::make_move_iterator(joinable_.begin()),
+                   std::make_move_iterator(joinable_.end()));
+  joinable_.clear();
 }
 
 bool MultiThreadedCertVerifier::JobComparator::operator()(
@@ -399,7 +435,8 @@ MultiThreadedCertVerifier::MultiThreadedCertVerifier(
     scoped_refptr<CertVerifyProc> verify_proc,
     VerifyCompleteCallback verify_complete_callback,
     bool should_record_histograms)
-    : requests_(0),
+    : config_id_(0),
+      requests_(0),
       inflight_joins_(0),
       verify_proc_(verify_proc),
       verify_complete_callback_(std::move(verify_complete_callback)),
@@ -408,6 +445,16 @@ MultiThreadedCertVerifier::MultiThreadedCertVerifier(
 std::unique_ptr<CertVerifierJob> MultiThreadedCertVerifier::RemoveJob(
     CertVerifierJob* job) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // See if it's a job from the current generation.
+  auto joinable_it = joinable_.find(job);
+  if (joinable_it != joinable_.end()) {
+    std::unique_ptr<CertVerifierJob> job_ptr = std::move(joinable_it->second);
+    joinable_.erase(joinable_it);
+    return job_ptr;
+  }
+
+  // Otherwise, find it and remove it from previous generations.
   auto it = inflight_.find(job);
   DCHECK(it != inflight_.end());
   std::unique_ptr<CertVerifierJob> job_ptr = std::move(it->second);
@@ -428,9 +475,9 @@ CertVerifierJob* MultiThreadedCertVerifier::FindJob(const RequestParams& key) {
 
   // The JobSet is kept in sorted order so items can be found using binary
   // search.
-  auto it = std::lower_bound(inflight_.begin(), inflight_.end(), key,
+  auto it = std::lower_bound(joinable_.begin(), joinable_.end(), key,
                              JobToRequestParamsComparator());
-  if (it != inflight_.end() && !(key < it->first->key()))
+  if (it != joinable_.end() && !(key < it->first->key()))
     return it->first;
   return nullptr;
 }

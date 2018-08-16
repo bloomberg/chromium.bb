@@ -133,6 +133,10 @@ int IgnoreErrorsCertVerifier::Verify(const RequestParams& params,
                            out_req, net_log);
 }
 
+void IgnoreErrorsCertVerifier::SetConfig(const Config& config) {
+  verifier_->SetConfig(config);
+}
+
 void IgnoreErrorsCertVerifier::set_whitelist(const SPKIHashSet& whitelist) {
   whitelist_ = whitelist;
 }

@@ -911,8 +911,7 @@ int CertVerifyProcWin::VerifyInternal(
   // Note: The root cert is also checked for revocation status, so that CRLSets
   // will cover revoked SPKIs.
   DWORD chain_flags = CERT_CHAIN_REVOCATION_CHECK_CHAIN;
-  bool rev_checking_enabled =
-      (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED);
+  bool rev_checking_enabled = (flags & VERIFY_REV_CHECKING_ENABLED);
   if (rev_checking_enabled) {
     verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
   } else {
@@ -1067,7 +1066,7 @@ int CertVerifyProcWin::VerifyInternal(
   CertVerifyResult temp_verify_result = *verify_result;
   GetCertChainInfo(chain_context, verify_result);
   if (!verify_result->is_issued_by_known_root &&
-      (flags & CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS)) {
+      (flags & VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS)) {
     *verify_result = temp_verify_result;
 
     rev_checking_enabled = true;

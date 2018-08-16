@@ -27,13 +27,13 @@ class NET_EXPORT SSLConfigService {
     // Notify observers if SSL settings have changed.  We don't check all of the
     // data in SSLConfig, just those that qualify as a user config change.
     // The following settings are considered user changes:
-    //     rev_checking_enabled
     //     version_min
     //     version_max
+    //     tls13_variant
     //     disabled_cipher_suites
     //     channel_id_enabled
     //     false_start_enabled
-    //     require_forward_secrecy
+    //     require_ecdhe
     virtual void OnSSLConfigChanged() = 0;
 
    protected:

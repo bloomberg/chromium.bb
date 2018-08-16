@@ -75,18 +75,24 @@ void AddCertStatusToReportStatus(
 }
 
 void AddVerifyFlagsToReport(
-    int verify_flags,
+    const net::CertVerifier::Config& config,
     ::google::protobuf::RepeatedField<int>* report_flags) {
-#define COPY_VERIFY_FLAGS(flag)                        \
-  if (verify_flags & net::CertVerifier::VERIFY_##flag) \
-    report_flags->Add(chrome_browser_ssl::TrialVerificationInfo::VERIFY_##flag);
-
-  COPY_VERIFY_FLAGS(REV_CHECKING_ENABLED);
-  COPY_VERIFY_FLAGS(REV_CHECKING_REQUIRED_LOCAL_ANCHORS);
-  COPY_VERIFY_FLAGS(ENABLE_SHA1_LOCAL_ANCHORS);
-  COPY_VERIFY_FLAGS(DISABLE_SYMANTEC_ENFORCEMENT);
-
-#undef COPY_VERIFY_FLAGS
+  if (config.enable_rev_checking) {
+    report_flags->Add(
+        chrome_browser_ssl::TrialVerificationInfo::VERIFY_REV_CHECKING_ENABLED);
+  }
+  if (config.require_rev_checking_local_anchors) {
+    report_flags->Add(chrome_browser_ssl::TrialVerificationInfo::
+                          VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS);
+  }
+  if (config.enable_sha1_local_anchors) {
+    report_flags->Add(chrome_browser_ssl::TrialVerificationInfo::
+                          VERIFY_ENABLE_SHA1_LOCAL_ANCHORS);
+  }
+  if (config.disable_symantec_enforcement) {
+    report_flags->Add(chrome_browser_ssl::TrialVerificationInfo::
+                          VERIFY_DISABLE_SYMANTEC_ENFORCEMENT);
+  }
 }
 
 bool CertificateChainToString(const net::X509Certificate& cert,
@@ -117,7 +123,7 @@ CertificateErrorReport::CertificateErrorReport(const std::string& hostname,
 CertificateErrorReport::CertificateErrorReport(
     const std::string& hostname,
     const net::X509Certificate& unverified_cert,
-    int verify_flags,
+    const net::CertVerifier::Config& verifier_config,
     const net::CertVerifyResult& primary_result,
     const net::CertVerifyResult& trial_result)
     : CertificateErrorReport(hostname,
@@ -139,7 +145,7 @@ CertificateErrorReport::CertificateErrorReport(
                               trial_report->mutable_cert_error());
   AddCertStatusToReportStatus(trial_result.cert_status,
                               trial_report->mutable_cert_status());
-  AddVerifyFlagsToReport(verify_flags, trial_report->mutable_verify_flags());
+  AddVerifyFlagsToReport(verifier_config, trial_report->mutable_verify_flags());
 }
 
 CertificateErrorReport::~CertificateErrorReport() {}

@@ -67,6 +67,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
              CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
              const NetLogWithSource& net_log) override;
+  void SetConfig(const CertVerifier::Config& config) override;
 
  private:
   struct JobToRequestParamsComparator;
@@ -88,8 +89,8 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
                             VerifyCompleteCallback verify_complete_callback,
                             bool should_record_histograms);
 
-  // Returns an inflight job for |key|. If there is no such job then returns
-  // null.
+  // Returns an inflight job for |key|, if it can be joined. If there is no
+  // such job then returns null.
   CertVerifierJob* FindJob(const RequestParams& key);
 
   // Removes |job| from the inflight set, and passes ownership back to the
@@ -100,12 +101,22 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
   uint64_t requests() const { return requests_; }
   uint64_t inflight_joins() const { return inflight_joins_; }
 
-  // inflight_ holds the jobs for which an active verification is taking place,
-  // mapping the job's raw pointer to an owned pointer. Would be a
-  // set<unique_ptr> but extraction of owned objects from a set of owned types
-  // doesn't come until C++17.
+  // |joinable_| holds the jobs for which an active verification is taking
+  // place and can be joined by new requests (e.g. the config is the same),
+  // mapping the job's raw pointer to an owned pointer.
+  // TODO(rsleevi): Once C++17 is supported, switch this to be a std::set<>,
+  // which supports extracting owned objects from the set.
+  std::map<CertVerifierJob*, std::unique_ptr<CertVerifierJob>, JobComparator>
+      joinable_;
+
+  // |inflight_| contains all jobs that are still undergoing active
+  // verification, but which can no longer be joined - such as due to the
+  // underlying configuration changing.
   std::map<CertVerifierJob*, std::unique_ptr<CertVerifierJob>, JobComparator>
       inflight_;
+
+  uint32_t config_id_;
+  Config config_;
 
   uint64_t requests_;
   uint64_t inflight_joins_;

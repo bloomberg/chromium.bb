@@ -12,22 +12,13 @@ namespace net {
 namespace {
 
 void CheckCertVerifyFlags(SSLConfig* ssl_config,
-                          bool rev_checking_enabled,
-                          bool rev_checking_required_local_anchors,
-                          bool symantec_enforcement_disabled) {
-  ssl_config->rev_checking_enabled = rev_checking_enabled;
-  ssl_config->rev_checking_required_local_anchors =
-      rev_checking_required_local_anchors;
-  ssl_config->symantec_enforcement_disabled = symantec_enforcement_disabled;
+                          bool disable_cert_verification_network_fetches) {
+  ssl_config->disable_cert_verification_network_fetches =
+      disable_cert_verification_network_fetches;
 
   int flags = ssl_config->GetCertVerifyFlags();
-  EXPECT_EQ(rev_checking_enabled,
-            !!(flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED));
-  EXPECT_EQ(
-      rev_checking_required_local_anchors,
-      !!(flags & CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS));
-  EXPECT_EQ(symantec_enforcement_disabled,
-            !!(flags & CertVerifier::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT));
+  EXPECT_EQ(disable_cert_verification_network_fetches,
+            !!(flags & CertVerifier::VERIFY_DISABLE_NETWORK_FETCHES));
 }
 
 }  // namespace
@@ -35,29 +26,9 @@ void CheckCertVerifyFlags(SSLConfig* ssl_config,
 TEST(SSLConfigTest, GetCertVerifyFlags) {
   SSLConfig ssl_config;
   CheckCertVerifyFlags(&ssl_config,
-                       /*rev_checking_enabled=*/true,
-                       /*rev_checking_required_local_anchors=*/true,
-                       /*symantec_enforcement_disabled=*/true);
-
+                       /*disable_cert_verification_network_fetches*/ false);
   CheckCertVerifyFlags(&ssl_config,
-                       /*rev_checking_enabled=*/true,
-                       /*rev_checking_required_local_anchors=*/false,
-                       /*symantec_enforcement_disabled=*/false);
-
-  CheckCertVerifyFlags(&ssl_config,
-                       /*rev_checking_enabled=*/false,
-                       /*rev_checking_required_local_anchors=*/true,
-                       /*symantec_enforcement_disabled=*/false);
-
-  CheckCertVerifyFlags(&ssl_config,
-                       /*rev_checking_enabled=*/false,
-                       /*rev_checking_required_local_anchors=*/false,
-                       /*symantec_enforcement_disabled=*/true);
-
-  CheckCertVerifyFlags(&ssl_config,
-                       /*rev_checking_enabled=*/false,
-                       /*rev_checking_required_local_anchors=*/false,
-                       /*symantec_enforcement_disabled=*/false);
+                       /*disable_cert_verification_network_fetches*/ true);
 }
 
 }  // namespace net

@@ -23,6 +23,7 @@ const unsigned kTTLSecs = 1800;  // 30 minutes.
 
 CachingCertVerifier::CachingCertVerifier(std::unique_ptr<CertVerifier> verifier)
     : verifier_(std::move(verifier)),
+      config_id_(0u),
       cache_(kMaxCacheEntries),
       requests_(0u),
       cache_hits_(0u) {
@@ -53,16 +54,22 @@ int CachingCertVerifier::Verify(const CertVerifier::RequestParams& params,
 
   base::Time start_time = base::Time::Now();
   CompletionOnceCallback caching_callback = base::BindOnce(
-      &CachingCertVerifier::OnRequestFinished, base::Unretained(this), params,
-      start_time, std::move(callback), verify_result);
+      &CachingCertVerifier::OnRequestFinished, base::Unretained(this),
+      config_id_, params, start_time, std::move(callback), verify_result);
   int result = verifier_->Verify(params, crl_set, verify_result,
                                  std::move(caching_callback), out_req, net_log);
   if (result != ERR_IO_PENDING) {
     // Synchronous completion; add directly to cache.
-    AddResultToCache(params, start_time, *verify_result, result);
+    AddResultToCache(config_id_, params, start_time, *verify_result, result);
   }
 
   return result;
+}
+
+void CachingCertVerifier::SetConfig(const CertVerifier::Config& config) {
+  verifier_->SetConfig(config);
+  config_id_++;
+  ClearCache();
 }
 
 CachingCertVerifier::CachedResult::CachedResult() : error(ERR_FAILED) {}
@@ -112,22 +119,29 @@ bool CachingCertVerifier::CacheExpirationFunctor::operator()(
          now.verification_time < expiration.expiration_time;
 };
 
-void CachingCertVerifier::OnRequestFinished(const RequestParams& params,
+void CachingCertVerifier::OnRequestFinished(uint32_t config_id,
+                                            const RequestParams& params,
                                             base::Time start_time,
                                             CompletionOnceCallback callback,
                                             CertVerifyResult* verify_result,
                                             int error) {
-  AddResultToCache(params, start_time, *verify_result, error);
+  AddResultToCache(config_id, params, start_time, *verify_result, error);
 
   // Now chain to the user's callback, which may delete |this|.
   std::move(callback).Run(error);
 }
 
 void CachingCertVerifier::AddResultToCache(
+    uint32_t config_id,
     const RequestParams& params,
     base::Time start_time,
     const CertVerifyResult& verify_result,
     int error) {
+  // If the configuration has changed since this verification was started,
+  // don't add it to the cache.
+  if (config_id != config_id_)
+    return;
+
   // When caching, this uses the time that validation started as the
   // beginning of the validity, rather than the time that it ended (aka
   // base::Time::Now()), to account for the fact that during validation,
@@ -161,6 +175,7 @@ void CachingCertVerifier::AddResultToCache(
 }
 
 void CachingCertVerifier::OnCertDBChanged() {
+  config_id_++;
   ClearCache();
 }
 

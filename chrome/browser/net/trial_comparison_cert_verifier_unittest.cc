@@ -900,12 +900,14 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersOkDifferentCertStatus) {
       base::MakeRefCounted<FakeCertVerifyProc>(net::OK, secondary_result);
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
+  net::CertVerifier::Config config;
+  config.enable_rev_checking = true;
+  config.enable_sha1_local_anchors = true;
+  verifier.SetConfig(config);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1",
-      net::CertVerifier::VERIFY_ENABLE_SHA1_LOCAL_ANCHORS |
-          net::CertVerifier::VERIFY_REV_CHECKING_ENABLED,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0,
+                                          std::string() /* ocsp_response */,
+                                          {} /* additional_trust_anchors */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -1172,7 +1174,64 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringPrimaryVerification) {
   histograms_.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
 }
 
-TEST_F(TrialComparisonCertVerifierTest, DeletedDuringTrialVerification) {
+TEST_F(TrialComparisonCertVerifierTest, DeletedBeforeTrialVerificationStarted) {
+  // Primary verifier returns an error status.
+  net::CertVerifyResult primary_result;
+  primary_result.verified_cert = cert_chain_1_;
+  primary_result.cert_status = net::CERT_STATUS_DATE_INVALID;
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_DATE_INVALID,
+                                               primary_result);
+
+  // Trial verifier has ok status.
+  net::CertVerifyResult secondary_result;
+  secondary_result.verified_cert = cert_chain_1_;
+  scoped_refptr<NotCalledCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<NotCalledCertVerifyProc>();
+
+  auto verifier = std::make_unique<TrialComparisonCertVerifier>(
+      profile(), verify_proc1, verify_proc2);
+
+  net::CertVerifier::RequestParams params(
+      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
+      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifyResult result;
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::CertVerifier::Request> request;
+  int error =
+      verifier->Verify(params, nullptr /* crl_set */, &result,
+                       callback.callback(), &request, net::NetLogWithSource());
+  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
+  EXPECT_TRUE(request);
+
+  // Wait for primary verifier to finish.
+  error = callback.WaitForResult();
+  EXPECT_THAT(error, IsError(net::ERR_CERT_DATE_INVALID));
+
+  // Delete the TrialComparisonCertVerifier.
+  verifier.reset();
+
+  // Trial verification has not yet started, as it was waiting on the profile
+  // to determine whether or not it would be permitted.
+
+  // Wait for any tasks to finish.
+  content::RunAllTasksUntilIdle();
+
+  // Expect no report.
+  reporting_service_test_helper()->ExpectNoRequests(service());
+
+  // The actual verification job should be completed, but neither the
+  // primary nor secondary job metrics should be recorded, as the verifier
+  // was deleted prior to determining whether a trial verification would be
+  // run.
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               0);
+  histograms_.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
+}
+
+TEST_F(TrialComparisonCertVerifierTest, DeletedAfterTrialVerificationStarted) {
   // Primary verifier returns an error status.
   net::CertVerifyResult primary_result;
   primary_result.verified_cert = cert_chain_1_;
@@ -1206,7 +1265,23 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringTrialVerification) {
   error = callback.WaitForResult();
   EXPECT_THAT(error, IsError(net::ERR_CERT_DATE_INVALID));
 
-  // Delete the TrialComparisonCertVerifier.
+  // Allow the lookup on the UI thread for the profile to determine trial
+  // status.
+  std::unique_ptr<base::RunLoop> run_loop(std::make_unique<base::RunLoop>());
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+      ->PostTask(FROM_HERE, run_loop->QuitClosure());
+  run_loop->Run();
+
+  // Allow recording the metrics back on the IO thread, and starting the
+  // second verification, to run.
+  run_loop = std::make_unique<base::RunLoop>();
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+      ->PostTask(FROM_HERE, run_loop->QuitClosure());
+  run_loop->Run();
+
+  // Delete the TrialComparisonCertVerifier. The trial verification is still
+  // running on the task scheduler (or, depending on timing, has posted back
+  // to the IO thread after the Quit event).
   verifier.reset();
 
   // The callback to the trial verifier does not run. The verification task
@@ -1304,8 +1379,8 @@ TEST_F(TrialComparisonCertVerifierTest, MacUndesiredRevocationChecking) {
   // ...unless it was called with REV_CHECKING_ENABLED.
   EXPECT_CALL(
       *verify_proc2,
-      VerifyInternal(_, _, _, net::CertVerifier::VERIFY_REV_CHECKING_ENABLED, _,
-                     _, _))
+      VerifyInternal(_, _, _, net::CertVerifyProc::VERIFY_REV_CHECKING_ENABLED,
+                     _, _, _))
       .WillRepeatedly(DoAll(SetArgPointee<6>(revoked_result),
                             Return(net::ERR_CERT_REVOKED)));
 
