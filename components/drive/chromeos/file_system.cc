@@ -663,9 +663,11 @@ void FileSystem::ReadDirectory(
   DCHECK(completion_callback);
 
   if (util::GetDriveTeamDrivesRootPath().IsParent(directory_path)) {
-    // TODO(slangley): It would be nice to cache the result, rather than needing
-    // to iterate every time. But then most users have very few team drives so
-    // in general this is fine.
+    // If we do not match a single team drive then we will run the default
+    // corpus loader to read the directory. More than one team drive may match
+    // the path so we loop through all of them (team drive roots may have the
+    // same name).
+    bool matched_team_drive = false;
     for (auto& team_drive_loader : team_drive_change_list_loaders_) {
       const base::FilePath& team_drive_path =
           team_drive_loader.second->root_entry_path();
@@ -673,10 +675,14 @@ void FileSystem::ReadDirectory(
           team_drive_path.IsParent(directory_path)) {
         team_drive_loader.second->ReadDirectory(
             directory_path, entries_callback, completion_callback);
-        return;
+        matched_team_drive = true;
       }
     }
-    DVLOG(1) << "No team drive loader for path, " << directory_path;
+    if (matched_team_drive) {
+      return;
+    } else {
+      DVLOG(1) << "No team drive loader for path, " << directory_path;
+    }
   }
   // Fall through to the default corpus loader if no team drive loader is found.
   // We do not refresh the list of team drives from the server until the first
