@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
-#include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
@@ -49,7 +48,7 @@ bool SVGInlineTextBoxPainter::ShouldPaintSelection(
   // pattern or feImage (element reference.)
   if (paint_info.IsRenderingResourceSubtree())
     return false;
-  return svg_inline_text_box_.GetSelectionState() != SelectionState::kNone;
+  return svg_inline_text_box_.IsSelected();
 }
 
 static bool HasShadow(const PaintInfo& paint_info, const ComputedStyle& style) {

@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_br.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_ruby_run.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_ruby_text.h"
+#include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/line/abstract_inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/ellipsis_box.h"
@@ -210,6 +211,10 @@ SelectionState InlineTextBox::GetSelectionState() const {
   return state;
 }
 
+bool InlineTextBox::IsSelected() const {
+  return GetSelectionState() != SelectionState::kNone;
+}
+
 bool InlineTextBox::HasWrappedSelectionNewline() const {
   DCHECK(!GetLineLayoutItem().NeedsLayout());
 
@@ -236,13 +241,12 @@ bool InlineTextBox::HasWrappedSelectionNewline() const {
   if (NextForSameLayoutObject())
     return true;
   auto root_block = Root().Block();
-  if (root_block.IsInline() &&
-      root_block.GetSelectionState() != SelectionState::kEnd &&
-      root_block.GetSelectionState() != SelectionState::kStartAndEnd &&
-      root_block.InlineBoxWrapper() &&
-      ((is_ltr && root_block.InlineBoxWrapper()->NextOnLine()) ||
-       (!is_ltr && root_block.InlineBoxWrapper()->PrevOnLine()))) {
-    return false;
+  if (root_block.IsInline() && root_block.InlineBoxWrapper()) {
+    const InlineBox* next_root =
+        is_ltr ? root_block.InlineBoxWrapper()->NextOnLine()
+               : root_block.InlineBoxWrapper()->PrevOnLine();
+    if (next_root)
+      return false;
   }
 
   return true;
