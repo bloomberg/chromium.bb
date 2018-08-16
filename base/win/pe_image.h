@@ -109,10 +109,12 @@ class PEImage {
   // returns NULL if there is no such section.
   PIMAGE_SECTION_HEADER GetSectionHeader(UINT section) const;
 
-  // Returns the size of a given directory entry.
+  // Returns the size of a given directory entry or 0 if |directory| is out of
+  // bounds.
   DWORD GetImageDirectoryEntrySize(UINT directory) const;
 
-  // Returns the address of a given directory entry.
+  // Returns the address of a given directory entry or NULL if |directory| is
+  // out of bounds.
   PVOID GetImageDirectoryEntryAddr(UINT directory) const;
 
   // Returns the section header for a given address.
@@ -130,10 +132,23 @@ class PEImage {
   // Returns the exports directory.
   PIMAGE_EXPORT_DIRECTORY GetExportDirectory() const;
 
-  // Returns the debug id (guid+age) and |pdb_filename|. Parameters are optional
-  // and can be null. |pdb_filename| is a direct reference to PEImage and
-  // doesn't not need to be freed.
-  bool GetDebugId(LPGUID guid, LPDWORD age, LPCSTR* pdb_filename) const;
+  // Retrieves the contents of the image's CodeView debug entry, returning true
+  // if such an entry is found and is within a section mapped into the current
+  // process's memory. |guid|, |age|, and |pdb_filename| are each optional and
+  // may be NULL. |pdb_filename_length| is mandatory if |pdb_filename| is not
+  // NULL, as the latter is populated with a direct reference to a string in the
+  // image that is is not guaranteed to be terminated (note: informal
+  // documentation indicates that it should be terminated, but the data is
+  // untrusted). Furthermore, owing to its nature of being a string in the
+  // image, it is only valid while the image is mapped into the process, and the
+  // caller is not responsible for freeing it. |pdb_filename_length| is
+  // populated with the string length of |pdb_filename| (not including a
+  // terminator) and must be used rather than relying on |pdb_filename| being
+  // properly terminated.
+  bool GetDebugId(LPGUID guid,
+                  LPDWORD age,
+                  LPCSTR* pdb_filename,
+                  size_t* pdb_filename_length) const;
 
   // Returns a given export entry.
   // Use: e = image.GetExportEntry(f);
@@ -227,6 +242,10 @@ class PEImage {
   bool ImageAddrToOnDiskOffset(LPVOID address, DWORD *on_disk_offset) const;
 
  private:
+  // Returns a pointer to a data directory, or NULL if |directory| is out of
+  // range.
+  const IMAGE_DATA_DIRECTORY* GetDataDirectory(UINT directory) const;
+
   HMODULE module_;
 };
 

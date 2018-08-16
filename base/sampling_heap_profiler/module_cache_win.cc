@@ -35,7 +35,11 @@ namespace {
 std::string GetBuildIDForModule(HMODULE module_handle) {
   GUID guid;
   DWORD age;
-  win::PEImage(module_handle).GetDebugId(&guid, &age, /* pdb_file= */ nullptr);
+  if (!win::PEImage(module_handle)
+           .GetDebugId(&guid, &age, /* pdb_filename= */ nullptr,
+                       /* pdb_filename_length= */ nullptr)) {
+    return std::string();
+  }
   const int kGUIDSize = 39;
   string16 build_id;
   int result =
