@@ -49,8 +49,6 @@ namespace blink {
 class DedicatedWorkerMessagingProxy;
 class ParentExecutionContextTaskRunners;
 class ThreadedMessagingProxyBase;
-class WorkerGlobalScope;
-class WorkerOrWorkletGlobalScope;
 class WorkerThread;
 
 // A proxy class to talk to a DedicatedWorker object on the main thread via the
@@ -78,10 +76,8 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
   void ReportException(const String& error_message,
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;
-  void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
   void DidEvaluateClassicScript(bool success) override;
   void DidEvaluateModuleScript(bool success) override;
-  void WillDestroyWorkerGlobalScope() override;
 
  protected:
   DedicatedWorkerObjectProxy(DedicatedWorkerMessagingProxy*,
@@ -99,7 +95,6 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
   CrossThreadWeakPersistent<DedicatedWorkerMessagingProxy>
       messaging_proxy_weak_ptr_;
 
-  CrossThreadPersistent<WorkerGlobalScope> worker_global_scope_;
   DISALLOW_COPY_AND_ASSIGN(DedicatedWorkerObjectProxy);
 };
 
