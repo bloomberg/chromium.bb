@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
@@ -104,8 +105,9 @@ public class BrandColorTest {
         mActivityTestRule.startMainActivityWithURL(url);
         mToolbar = (ToolbarPhone) mActivityTestRule.getActivity().findViewById(R.id.toolbar);
         mToolbarDataProvider = mToolbar.getToolbarDataProvider();
-        mDefaultColor = ApiCompatibilityUtils.getColor(
-                mActivityTestRule.getActivity().getResources(), R.color.default_primary_color);
+        mDefaultColor =
+                ColorUtils.getDefaultThemeColor(mActivityTestRule.getActivity().getResources(),
+                        FeatureUtilities.isChromeModernDesignEnabled(), /* isIncognito =*/false);
     }
 
     /**
