@@ -203,6 +203,67 @@ TEST_F(EnumSetTest, Iterators) {
   EXPECT_EQ(enums2, enums1);
 }
 
+TEST_F(EnumSetTest, RangeBasedForLoop) {
+  const TestEnumSet enums1(TEST_1, TEST_4, TEST_5);
+  TestEnumSet enums2;
+  for (TestEnum e : enums1) {
+    enums2.Put(e);
+  }
+  EXPECT_EQ(enums2, enums1);
+}
+
+TEST_F(EnumSetTest, IteratorComparisonOperators) {
+  const TestEnumSet enums(TEST_1, TEST_3, TEST_5);
+  const auto first_it = enums.begin();
+  const auto second_it = ++enums.begin();
+
+  // Copy for equality testing.
+  const auto first_it_copy = first_it;
+
+  // Sanity check, as the rest of the test relies on |first_it| and
+  // |first_it_copy| pointing to the same element and |first_it| and |second_it|
+  // pointing to different elements.
+  ASSERT_EQ(*first_it, *first_it_copy);
+  ASSERT_NE(*first_it, *second_it);
+
+  EXPECT_TRUE(first_it == first_it_copy);
+  EXPECT_FALSE(first_it != first_it_copy);
+
+  EXPECT_TRUE(first_it != second_it);
+  EXPECT_FALSE(first_it == second_it);
+}
+
+TEST_F(EnumSetTest, IteratorIncrementOperators) {
+  const TestEnumSet enums(TEST_1, TEST_3, TEST_5);
+  const auto begin = enums.begin();
+
+  auto post_inc_it = begin;
+  auto pre_inc_it = begin;
+
+  auto post_inc_return_it = post_inc_it++;
+  auto pre_inc_return_it = ++pre_inc_it;
+
+  // |pre_inc_it| and |post_inc_it| should point to the same element.
+  EXPECT_EQ(pre_inc_it, post_inc_it);
+  EXPECT_EQ(*pre_inc_it, *post_inc_it);
+
+  // |pre_inc_it| should NOT point to the first element.
+  EXPECT_NE(begin, pre_inc_it);
+  EXPECT_NE(*begin, *pre_inc_it);
+
+  // |post_inc_it| should NOT point to the first element.
+  EXPECT_NE(begin, post_inc_it);
+  EXPECT_NE(*begin, *post_inc_it);
+
+  // Prefix increment should return new iterator.
+  EXPECT_EQ(pre_inc_return_it, post_inc_it);
+  EXPECT_EQ(*pre_inc_return_it, *post_inc_it);
+
+  // Postfix increment should return original iterator.
+  EXPECT_EQ(post_inc_return_it, begin);
+  EXPECT_EQ(*post_inc_return_it, *begin);
+}
+
 TEST_F(EnumSetTest, Union) {
   const TestEnumSet enums1(TEST_3, TEST_4);
   const TestEnumSet enums2(TEST_2, TEST_3);
