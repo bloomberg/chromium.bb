@@ -56,6 +56,43 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
   acc_obj->GetNode()->AddAccessibilityTreeProperties(dict);
 }
 
+const char* const ATK_OBJECT_ATTRIBUTES[] = {
+    "atomic",
+    "autocomplete",
+    "busy",
+    "checkable",
+    "class",
+    "colcount",
+    "colindex",
+    "container-atomic",
+    "container-busy",
+    "container-live",
+    "container-relevant",
+    "display",
+    "explicit-name",
+    "haspopup",
+    "id",
+    "keyshortcuts",
+    "level",
+    "live",
+    "placeholder",
+    "posinset",
+    "relevant",
+    "roledescription",
+    "rowcount",
+    "rowindex",
+    "setsize",
+    "src",
+    "table-cell-index",
+    "tag",
+    "text-input-type",
+    "valuemin",
+    "valuemax",
+    "valuenow",
+    "valuetext",
+    "xml-roles",
+};
+
 base::string16 AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
     const base::DictionaryValue& node,
     base::DictionaryValue* filtered_dict_result) {
@@ -87,14 +124,24 @@ base::string16 AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
        it != states_value->end(); ++it) {
     std::string state_value;
     if (it->GetAsString(&state_value))
-      WriteAttribute(true, state_value, &line);
+      WriteAttribute(false, state_value, &line);
   }
 
   int id_value;
   node.GetInteger("id", &id_value);
   WriteAttribute(false, base::StringPrintf("id=%d", id_value), &line);
 
-  return line + base::ASCIIToUTF16("\n");
+  for (const char* attribute_name : ATK_OBJECT_ATTRIBUTES) {
+    std::string attribute_value;
+    if (node.GetString(attribute_name, &attribute_value)) {
+      WriteAttribute(
+          false,
+          base::StringPrintf("%s:%s", attribute_name, attribute_value.c_str()),
+          &line);
+    }
+  }
+
+  return line;
 }
 
 const base::FilePath::StringType

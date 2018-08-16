@@ -1,6 +1,5 @@
-[document web] enabled focusable focused sensitive showing visible<newline>
-++[text] name='Before' enabled sensitive showing visible<newline>
-++[paragraph] enabled sensitive showing visible<newline>
-++++[text] name='Paragraph' enabled sensitive showing visible<newline>
-++[text] name='After' enabled sensitive showing visible<newline>
-
+[document web]
+++[text] name='Before'
+++[paragraph]
+++++[text] name='Paragraph'
+++[text] name='After'

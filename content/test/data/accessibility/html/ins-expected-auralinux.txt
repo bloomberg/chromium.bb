@@ -1,0 +1,9 @@
+[document web]
+++[paragraph]
+++++[text] name='My favorite browser is '
+++++[section]
+++++++[text] name='ABC'
+++++[text] name=' '
+++++[section]
+++++++[text] name='Chrome'
+++++[text] name='!'
