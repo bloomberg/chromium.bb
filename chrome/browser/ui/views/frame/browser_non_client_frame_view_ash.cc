@@ -647,10 +647,8 @@ void BrowserNonClientFrameViewAsh::OnThemeChanged() {
 
 void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
     views::View* child) {
-  // TODO(estade): Do we need this in a world where Ash provides the header?
-  if (IsMash())
-    return;
-
+  // This is required even when Ash provides the header (as in Mash) for the
+  // |hosted_app_button_container_|.
   if (browser_view()->initialized()) {
     InvalidateLayout();
     frame()->GetRootView()->Layout();
