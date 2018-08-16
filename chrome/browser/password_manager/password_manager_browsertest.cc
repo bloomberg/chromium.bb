@@ -3838,6 +3838,44 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   CheckThatCredentialsStored("user", "new password");
 }
 
+IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
+                       NoFillGaiaReauthenticationForm) {
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+
+  // Visit Gaia reath page.
+  const GURL url = https_test_server().GetURL("accounts.google.com",
+                                              "/password/gaia_reath_form.html");
+
+  NavigationObserver observer(WebContents());
+  ui_test_utils::NavigateToURL(browser(), url);
+  observer.Wait();
+  // Expects no requests to the password store. So no filling.
+  EXPECT_EQ(0, password_store->fill_matching_logins_calls());
+}
+
+IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
+                       NoFillGaiaWithSkipSavePasswordForm) {
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+
+  // Visit Gaia form with ssp=1 as query (ssp stands for Skip Save Password).
+  const GURL url = https_test_server().GetURL(
+      "accounts.google.com", "/password/password_form.html?ssp=1");
+
+  NavigationObserver observer(WebContents());
+  ui_test_utils::NavigateToURL(browser(), url);
+  observer.Wait();
+  // Expects no requests to the password store. So no filling.
+  EXPECT_EQ(0, password_store->fill_matching_logins_calls());
+}
+
 INSTANTIATE_TEST_CASE_P(All,
                         PasswordManagerBrowserTestWithViewsFeature,
                         /*popup_views_enabled=*/::testing::Bool());
