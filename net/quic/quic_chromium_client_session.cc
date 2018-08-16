@@ -1442,7 +1442,15 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     }
 
     NotifyRequestsOfConfirmation(OK);
-    // TODO(zhongyi): spin up the timer to migrate back to the default network.
+    // Attempt to migrate back to the default network after handshake has been
+    // confirmed if the session is not created on the default network.
+    if (migrate_session_on_network_change_v2_ &&
+        default_network_ != NetworkChangeNotifier::kInvalidNetworkHandle &&
+        GetDefaultSocket()->GetBoundNetwork() != default_network_) {
+      current_connection_migration_cause_ = ON_MIGRATE_BACK_TO_DEFAULT_NETWORK;
+      StartMigrateBackToDefaultNetworkTimer(
+          base::TimeDelta::FromSeconds(kMinRetryTimeForDefaultNetworkSecs));
+    }
   }
   quic::QuicSpdySession::OnCryptoHandshakeEvent(event);
 }
