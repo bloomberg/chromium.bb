@@ -40,18 +40,22 @@ std::unique_ptr<MultiDeviceSetupBase>
 MultiDeviceSetupInitializer::Factory::BuildInstance(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client) {
+    secure_channel::SecureChannelClient* secure_channel_client,
+    AuthTokenValidator* auth_token_validator) {
   return base::WrapUnique(new MultiDeviceSetupInitializer(
-      pref_service, device_sync_client, secure_channel_client));
+      pref_service, device_sync_client, secure_channel_client,
+      auth_token_validator));
 }
 
 MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client)
+    secure_channel::SecureChannelClient* secure_channel_client,
+    AuthTokenValidator* auth_token_validator)
     : pref_service_(pref_service),
       device_sync_client_(device_sync_client),
-      secure_channel_client_(secure_channel_client) {
+      secure_channel_client_(secure_channel_client),
+      auth_token_validator_(auth_token_validator) {
   if (device_sync_client_->is_ready()) {
     InitializeImplementation();
     return;
@@ -205,7 +209,8 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
   DCHECK(!multidevice_setup_impl_);
 
   multidevice_setup_impl_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
-      pref_service_, device_sync_client_, secure_channel_client_);
+      pref_service_, device_sync_client_, secure_channel_client_,
+      auth_token_validator_);
 
   if (pending_delegate_) {
     multidevice_setup_impl_->SetAccountStatusChangeDelegate(

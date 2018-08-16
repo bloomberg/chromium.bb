@@ -29,6 +29,7 @@ class SecureChannelClient;
 namespace multidevice_setup {
 
 class AccountStatusChangeDelegateNotifier;
+class AuthTokenValidator;
 class HostBackendDelegate;
 class HostStatusProvider;
 class HostVerifier;
@@ -48,7 +49,8 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
     virtual std::unique_ptr<mojom::MultiDeviceSetup> BuildInstance(
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
-        secure_channel::SecureChannelClient* secure_channel_client);
+        secure_channel::SecureChannelClient* secure_channel_client,
+        AuthTokenValidator* auth_token_validator);
 
    private:
     static Factory* test_factory_;
@@ -62,7 +64,8 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
   MultiDeviceSetupImpl(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client);
+      secure_channel::SecureChannelClient* secure_channel_client,
+      AuthTokenValidator* auth_token_validator);
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(

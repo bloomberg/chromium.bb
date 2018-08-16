@@ -45,15 +45,18 @@ std::unique_ptr<mojom::MultiDeviceSetup>
 MultiDeviceSetupImpl::Factory::BuildInstance(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client) {
-  return base::WrapUnique(new MultiDeviceSetupImpl(
-      pref_service, device_sync_client, secure_channel_client));
+    secure_channel::SecureChannelClient* secure_channel_client,
+    AuthTokenValidator* auth_token_validator) {
+  return base::WrapUnique(
+      new MultiDeviceSetupImpl(pref_service, device_sync_client,
+                               secure_channel_client, auth_token_validator));
 }
 
 MultiDeviceSetupImpl::MultiDeviceSetupImpl(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client)
+    secure_channel::SecureChannelClient* secure_channel_client,
+    AuthTokenValidator* auth_token_validator)
     : eligible_host_devices_provider_(
           EligibleHostDevicesProviderImpl::Factory::Get()->BuildInstance(
               device_sync_client)),
@@ -124,6 +127,9 @@ void MultiDeviceSetupImpl::GetEligibleHostDevices(
 
 void MultiDeviceSetupImpl::SetHostDevice(const std::string& host_device_id,
                                          SetHostDeviceCallback callback) {
+  // TODO(crbug.com/870122): Use AuthTokenValidator to verify that the
+  // user is authenticated.
+
   cryptauth::RemoteDeviceRefList eligible_devices =
       eligible_host_devices_provider_->GetEligibleHostDevices();
   auto it =
