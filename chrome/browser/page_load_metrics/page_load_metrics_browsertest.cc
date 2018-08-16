@@ -1852,3 +1852,89 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   waiter->AddMinimumPageLoadDataUseExpectation(7 * (one_frame_page_size - 100));
   waiter->Wait();
 }
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       ReceivedAggregateResourceDataLength) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/cross_site_iframe_factory.html?foo"));
+  waiter->Wait();
+  int64_t one_frame_page_size = waiter->current_resource_bytes();
+
+  waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "a.com", "/cross_site_iframe_factory.html?a(b,c,d(e,f,g))"));
+  // Verify that 7 iframes are fetched, with some amount of tolerance since
+  // favicon is fetched only once.
+  waiter->AddMinimumResourceBytesExpectation(7 * (one_frame_page_size - 100));
+  waiter->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ReceivedCompleteResources) {
+  const char kHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n";
+  auto main_html_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/mock_page.html",
+          true /*relative_url_is_prefix*/);
+  auto script_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/script.js",
+          true /*relative_url_is_prefix*/);
+  auto iframe_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/iframe.html",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/mock_page.html"), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+
+  main_html_response->WaitForRequest();
+  main_html_response->Send(kHttpResponseHeader);
+  main_html_response->Send(
+      "<html><body></body><script src=\"script.js\"></script></html>");
+  main_html_response->Send(std::string(1000, ' '));
+  main_html_response->Done();
+  waiter->AddCompleteResourcesExpectation(1);
+  waiter->AddMinimumResourceBytesExpectation(1000);
+  waiter->Wait();
+
+  script_response->WaitForRequest();
+  script_response->Send(kHttpResponseHeader);
+  script_response->Send(
+      "var iframe = document.createElement(\"iframe\");"
+      "iframe.src =\"iframe.html\";"
+      "document.body.appendChild(iframe);");
+  script_response->Send(std::string(1000, ' '));
+  // Data received but resource not complete
+  waiter->AddCompleteResourcesExpectation(1);
+  waiter->AddMinimumResourceBytesExpectation(2000);
+  waiter->Wait();
+  script_response->Done();
+  waiter->AddCompleteResourcesExpectation(2);
+  waiter->Wait();
+
+  // Make sure main resources are loaded correctly
+  iframe_response->WaitForRequest();
+  iframe_response->Send(kHttpResponseHeader);
+  iframe_response->Send(std::string(2000, ' '));
+  iframe_response->Done();
+  waiter->AddCompleteResourcesExpectation(3);
+  waiter->AddMinimumResourceBytesExpectation(4000);
+  waiter->Wait();
+}

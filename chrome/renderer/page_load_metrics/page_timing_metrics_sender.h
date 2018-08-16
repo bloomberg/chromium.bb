@@ -8,6 +8,7 @@
 #include <bitset>
 #include <memory>
 
+#include "base/containers/flat_set.h"
 #include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
@@ -83,8 +84,14 @@ class PageTimingMetricsSender {
 
   bool have_sent_ipc_ = false;
 
+  // The page's resources that are currently loading,  or were completed after
+  // the last timing update.
   base::small_map<std::map<int, PageResourceDataUse>, 16>
       page_resource_data_use_;
+
+  // Set of all resources that have completed or received a transfer
+  // size update since the last timimg update.
+  base::flat_set<PageResourceDataUse*> modified_resources_;
 
   // Field trial for alternating page timing metrics sender buffer timer delay.
   // https://crbug.com/847269.

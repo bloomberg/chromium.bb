@@ -181,6 +181,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
   void UpdateFeaturesUsage(
       const mojom::PageLoadFeatures& new_features) override;
   void UpdateDataUse(const mojom::PageLoadDataUse& new_datause) override;
+  void UpdateResourceDataUse(
+      const std::vector<mojom::ResourceDataUpdatePtr>& resources) override;
 
   void Redirect(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(

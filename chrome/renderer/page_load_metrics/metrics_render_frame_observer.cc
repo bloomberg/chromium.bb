@@ -38,14 +38,16 @@ class MojoPageTimingSender : public PageTimingSender {
         &page_load_metrics_);
   }
   ~MojoPageTimingSender() override {}
-  void SendTiming(const mojom::PageLoadTimingPtr& timing,
-                  const mojom::PageLoadMetadataPtr& metadata,
-                  mojom::PageLoadFeaturesPtr new_features,
-                  mojom::PageLoadDataUsePtr new_data_use) override {
+  void SendTiming(
+      const mojom::PageLoadTimingPtr& timing,
+      const mojom::PageLoadMetadataPtr& metadata,
+      mojom::PageLoadFeaturesPtr new_features,
+      mojom::PageLoadDataUsePtr new_data_use,
+      std::vector<mojom::ResourceDataUpdatePtr> resources) override {
     DCHECK(page_load_metrics_);
-    page_load_metrics_->UpdateTiming(timing->Clone(), metadata->Clone(),
-                                     std::move(new_features),
-                                     std::move(new_data_use));
+    page_load_metrics_->UpdateTiming(
+        timing->Clone(), metadata->Clone(), std::move(new_features),
+        std::move(new_data_use), std::move(resources));
   }
 
  private:

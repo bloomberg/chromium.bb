@@ -38,6 +38,16 @@ void PageLoadMetricsTestWaiter::AddSubFrameExpectation(TimingField field) {
     page_expected_fields_.Set(field);
 }
 
+void PageLoadMetricsTestWaiter::AddCompleteResourcesExpectation(
+    int expected_num_complete_resources) {
+  expected_num_complete_resources_ = expected_num_complete_resources;
+}
+
+void PageLoadMetricsTestWaiter::AddMinimumResourceBytesExpectation(
+    int expected_minimum_resource_bytes) {
+  expected_minimum_resource_bytes_ = expected_minimum_resource_bytes;
+}
+
 void PageLoadMetricsTestWaiter::AddMinimumPageLoadDataUseExpectation(
     int expected_minimum_page_load_data_use) {
   expected_minimum_page_load_data_use_ = expected_minimum_page_load_data_use;
@@ -48,21 +58,21 @@ bool PageLoadMetricsTestWaiter::DidObserveInPage(TimingField field) const {
 }
 
 void PageLoadMetricsTestWaiter::Wait() {
-  if (expectations_satisfied())
+  if (ExpectationsSatisfied())
     return;
 
   run_loop_ = std::make_unique<base::RunLoop>();
   run_loop_->Run();
   run_loop_ = nullptr;
 
-  EXPECT_TRUE(expectations_satisfied());
+  EXPECT_TRUE(ExpectationsSatisfied());
 }
 
 void PageLoadMetricsTestWaiter::OnTimingUpdated(
     content::RenderFrameHost* subframe_rfh,
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (expectations_satisfied())
+  if (ExpectationsSatisfied())
     return;
   const page_load_metrics::mojom::PageLoadMetadata& metadata =
       subframe_rfh ? extra_info.subframe_metadata
@@ -74,14 +84,14 @@ void PageLoadMetricsTestWaiter::OnTimingUpdated(
     page_expected_fields_.ClearMatching(matched_bits);
     observed_page_fields_.Merge(matched_bits);
   }
-  if (expectations_satisfied() && run_loop_)
+  if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
 }
 
 void PageLoadMetricsTestWaiter::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
-  if (expectations_satisfied())
+  if (ExpectationsSatisfied())
     return;
 
   if (extra_request_complete_info.resource_type !=
@@ -97,7 +107,7 @@ void PageLoadMetricsTestWaiter::OnLoadedResource(
     observed_page_fields_.Set(TimingField::kLoadTimingInfo);
   }
 
-  if (expectations_satisfied() && run_loop_)
+  if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
 }
 
@@ -105,7 +115,27 @@ void PageLoadMetricsTestWaiter::OnDataUseObserved(
     int64_t received_data_length,
     int64_t data_reduction_proxy_bytes_saved) {
   current_page_load_data_use_ += received_data_length;
-  if (expectations_satisfied() && run_loop_)
+  if (ExpectationsSatisfied() && run_loop_)
+    run_loop_->Quit();
+}
+
+void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
+    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+        resources) {
+  for (auto const& resource : resources) {
+    auto it = page_resources_.find(resource->request_id);
+    if (it != page_resources_.end()) {
+      it->second = resource.get();
+    } else {
+      page_resources_.emplace(std::piecewise_construct,
+                              std::forward_as_tuple(resource->request_id),
+                              std::forward_as_tuple(resource.get()));
+    }
+    if (resource->is_complete)
+      current_complete_resources_++;
+    current_resource_bytes_ += resource->delta_bytes;
+  }
+  if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
 }
 
@@ -166,10 +196,21 @@ void PageLoadMetricsTestWaiter::OnCommit(
   did_add_observer_ = true;
 }
 
-bool PageLoadMetricsTestWaiter::expectations_satisfied() const {
-  return subframe_expected_fields_.Empty() && page_expected_fields_.Empty() &&
-         (expected_minimum_page_load_data_use_ == 0 ||
+bool PageLoadMetricsTestWaiter::ResourceUseExpectationsSatisfied() const {
+  return (expected_num_complete_resources_ == 0 ||
+          current_complete_resources_ == expected_num_complete_resources_) &&
+         (expected_minimum_resource_bytes_ == 0 ||
+          current_resource_bytes_ >= expected_minimum_resource_bytes_);
+}
+
+bool PageLoadMetricsTestWaiter::DataUseExpectationsSatisfied() const {
+  return (expected_minimum_page_load_data_use_ == 0 ||
           current_page_load_data_use_ >= expected_minimum_page_load_data_use_);
+}
+
+bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
+  return subframe_expected_fields_.Empty() && page_expected_fields_.Empty() &&
+         DataUseExpectationsSatisfied() && ResourceUseExpectationsSatisfied();
 }
 
 PageLoadMetricsTestWaiter::WaiterMetricsObserver::~WaiterMetricsObserver() {}
@@ -200,6 +241,14 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnDataUseObserved(
     waiter_->OnDataUseObserved(received_data_length,
                                data_reduction_proxy_bytes_saved);
   }
+}
+
+void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
+    OnResourceDataUseObserved(
+        const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+            resources) {
+  if (waiter_)
+    waiter_->OnResourceDataUseObserved(resources);
 }
 
 }  // namespace page_load_metrics

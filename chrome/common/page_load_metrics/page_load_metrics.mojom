@@ -152,6 +152,8 @@ struct PageLoadFeatures {
 };
 
 // Data used for the page load.
+// TODO(johnidel): Remove/deprecate this struct once per resource updates are
+// being sent to the browser
 struct PageLoadDataUse {
   // Network bytes received for the page load.
   int64 received_data_length = 0;
@@ -162,11 +164,28 @@ struct PageLoadDataUse {
   int64 data_reduction_proxy_bytes_saved = 0;
 };
 
+struct ResourceDataUpdate {
+  // The id for the resource request.
+  int32 request_id = 0;
+
+  // Network bytes received for the resource since the last timing update
+  // from renderer to browser.
+  int64 delta_bytes = 0;
+
+  // Total network bytes received for the resource across timing updates. This
+  // is the aggregate of the |delta_bytes| from each timing update.
+  int64 received_data_length = 0;
+
+  // Whether this resource load has completed.
+  bool is_complete;
+};
+
 // Sent from renderer to browser process when the PageLoadTiming for the
 // associated frame changed.
 interface PageLoadMetrics {
   UpdateTiming(PageLoadTiming page_load_timing,
                PageLoadMetadata page_load_metadata,
                PageLoadFeatures new_features,
-               PageLoadDataUse data_use);
+               PageLoadDataUse data_use,
+               array<ResourceDataUpdate> resources);
 };

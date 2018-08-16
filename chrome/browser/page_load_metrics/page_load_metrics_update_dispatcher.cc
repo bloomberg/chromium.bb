@@ -431,7 +431,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     const mojom::PageLoadTiming& new_timing,
     const mojom::PageLoadMetadata& new_metadata,
     const mojom::PageLoadFeatures& new_features,
-    const mojom::PageLoadDataUse& new_data_use) {
+    const mojom::PageLoadDataUse& new_data_use,
+    const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
   if (render_frame_host->GetLastCommittedURL().SchemeIs(
           extensions::kExtensionScheme)) {
     // Extensions can inject child frames into a page. We don't want to track
@@ -442,6 +443,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
   // Report data usage before new timing and metadata for messages that have
   // both updates.
   client_->UpdateDataUse(new_data_use);
+  client_->UpdateResourceDataUse(resources);
   if (render_frame_host->GetParent() == nullptr) {
     UpdateMainFrameMetadata(new_metadata);
     UpdateMainFrameTiming(new_timing);

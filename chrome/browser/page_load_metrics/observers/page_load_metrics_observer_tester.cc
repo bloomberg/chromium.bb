@@ -88,7 +88,8 @@ void PageLoadMetricsObserverTester::SimulatePageLoadTimingUpdate(
     const mojom::PageLoadMetadata& metadata,
     const mojom::PageLoadFeatures& new_features) {
   observer_->OnTimingUpdated(web_contents()->GetMainFrame(), timing, metadata,
-                             new_features, mojom::PageLoadDataUse());
+                             new_features, mojom::PageLoadDataUse(),
+                             std::vector<mojom::ResourceDataUpdatePtr>());
   // If sending the timing update caused the PageLoadMetricsUpdateDispatcher to
   // schedule a buffering timer, then fire it now so metrics are dispatched to
   // observers.
@@ -101,7 +102,8 @@ void PageLoadMetricsObserverTester::SimulatePageLoadDataUseUpdate(
     const mojom::PageLoadDataUse& data_use) {
   observer_->OnTimingUpdated(web_contents()->GetMainFrame(),
                              mojom::PageLoadTiming(), mojom::PageLoadMetadata(),
-                             mojom::PageLoadFeatures(), data_use);
+                             mojom::PageLoadFeatures(), data_use,
+                             std::vector<mojom::ResourceDataUpdatePtr>());
 }
 
 void PageLoadMetricsObserverTester::SimulateLoadedResource(
