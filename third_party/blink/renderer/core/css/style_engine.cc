@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -1406,8 +1407,10 @@ void StyleEngine::EnvironmentVariableChanged() {
 
 void StyleEngine::MarkForWhitespaceReattachment() {
   for (auto element : whitespace_reattach_set_) {
-    if (!element->GetLayoutObject())
+    if (element->NeedsReattachLayoutTree() || !element->GetLayoutObject() ||
+        !LayoutTreeBuilderTraversal::FirstChild(*element)) {
       continue;
+    }
     element->SetChildNeedsReattachLayoutTree();
     element->MarkAncestorsWithChildNeedsReattachLayoutTree();
   }

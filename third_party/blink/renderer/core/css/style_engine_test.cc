@@ -1500,4 +1500,50 @@ TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
   EXPECT_EQ(2u, stats->rules_fast_rejected);
 }
 
+TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div id=d1><span></span></div>
+    <div id=d2><span></span><span></span></div>
+    <div id=d3><span></span><span></span></div>
+  )HTML");
+
+  Element* d1 = GetDocument().getElementById("d1");
+  Element* d2 = GetDocument().getElementById("d2");
+  Element* d3 = GetDocument().getElementById("d3");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  d1->firstChild()->remove();
+  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(d1));
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
+  EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
+
+  GetDocument().GetStyleEngine().MarkForWhitespaceReattachment();
+  EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  d2->firstChild()->remove();
+  d2->firstChild()->remove();
+  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(d2));
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
+  EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
+
+  GetDocument().GetStyleEngine().MarkForWhitespaceReattachment();
+  EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  d3->firstChild()->remove();
+  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(d3));
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
+  EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
+
+  GetDocument().GetStyleEngine().MarkForWhitespaceReattachment();
+  EXPECT_TRUE(GetDocument().ChildNeedsReattachLayoutTree());
+}
+
 }  // namespace blink
