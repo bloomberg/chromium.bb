@@ -78,11 +78,13 @@ class ASH_EXPORT DisplayConfigurationController
   // WindowTreeHostManager::Observer
   void OnDisplayConfigurationChanged() override;
 
+  static void DisableAnimatorForTest();
+
  protected:
   friend class DisplayConfigurationControllerTestApi;
 
-  // Allow tests to skip animations.
-  void ResetAnimatorForTest();
+  // Allow tests to enable or disable animations.
+  void SetAnimatorForTest(bool enable);
 
   void SetScreenRotationAnimatorForTest(
       int64_t display_id,

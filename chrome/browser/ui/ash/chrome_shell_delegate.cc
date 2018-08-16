@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
@@ -93,17 +92,7 @@ bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
                                 base::BindRepeating(&GetActiveBrowserContext));
 }
 
-void ChromeShellDelegate::PreInit() {
-  // TODO: port to multi-process mash. http://crbug.com/705713.
-  if (!features::IsAshInBrowserProcess())
-    return;
-
-  // Object owns itself and deletes itself in OnWindowTreeHostManagerShutdown().
-  // Setup is done in OnShellInitialized() so this needs to be constructed after
-  // Shell is constructed but before OnShellInitialized() is called. Depends on
-  // CroSettings. TODO(stevenjb): Move to src/ash.
-  new policy::DisplayRotationDefaultHandler();
-}
+void ChromeShellDelegate::PreInit() {}
 
 void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
   chrome::ScopedTabbedBrowserDisplayer scoped_tabbed_browser_displayer(

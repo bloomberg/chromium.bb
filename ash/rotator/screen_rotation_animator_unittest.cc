@@ -635,11 +635,13 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest, DisplayChangeDuringCopy) {
           &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
           base::Unretained(this)),
       run_loop_->QuitWhenIdleClosure());
+
   TestScreenRotationAnimator* animator = animator_.get();
-  DisplayConfigurationControllerTestApi(
-      Shell::Get()->display_configuration_controller())
-      .SetScreenRotationAnimatorForDisplay(internal_display_id,
-                                           std::move(animator_));
+  DisplayConfigurationControllerTestApi testapi(
+      Shell::Get()->display_configuration_controller());
+  testapi.SetDisplayAnimator(true);
+  testapi.SetScreenRotationAnimatorForDisplay(internal_display_id,
+                                              std::move(animator_));
   ScreenOrientationControllerTestApi(
       Shell::Get()->screen_orientation_controller())
       .SetDisplayRotation(display::Display::ROTATE_90,

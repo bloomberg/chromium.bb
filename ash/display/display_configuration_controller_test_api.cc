@@ -13,8 +13,8 @@ DisplayConfigurationControllerTestApi::DisplayConfigurationControllerTestApi(
     DisplayConfigurationController* controller)
     : controller_(controller) {}
 
-void DisplayConfigurationControllerTestApi::DisableDisplayAnimator() {
-  controller_->ResetAnimatorForTest();
+void DisplayConfigurationControllerTestApi::SetDisplayAnimator(bool enable) {
+  controller_->SetAnimatorForTest(enable);
 }
 
 ScreenRotationAnimator*

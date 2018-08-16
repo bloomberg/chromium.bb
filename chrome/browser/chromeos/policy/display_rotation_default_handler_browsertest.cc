@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "ash/display/display_configuration_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -84,6 +85,7 @@ class DisplayRotationDefaultTest
   void SetUpInProcessBrowserTestFixture() override {
     InstallOwnerKey();
     MarkAsEnterpriseOwned();
+    ash::DisplayConfigurationController::DisableAnimatorForTest();
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
@@ -122,8 +124,7 @@ class DisplayRotationDefaultTest
   // Creates second display if there is none yet, or removes it if there is one.
   void ToggleSecondDisplay() {
     GetDisplayManager()->AddRemoveDisplay();
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void RefreshPolicyAndWaitUntilDeviceSettingsUpdated() {
@@ -138,6 +139,8 @@ class DisplayRotationDefaultTest
             chromeos::kSystemUse24HourClock, run_loop.QuitClosure());
     RefreshDevicePolicy();
     run_loop.Run();
+    // Allow tasks posted by CrosSettings observers to complete:
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -276,6 +279,7 @@ class DisplayRotationBootTest
 
     test_helper_.InstallOwnerKey();
     test_helper_.MarkAsEnterpriseOwned();
+    ash::DisplayConfigurationController::DisableAnimatorForTest();
   }
 
   chromeos::FakeSessionManagerClient* fake_session_manager_client_;
@@ -301,6 +305,8 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationBootTest, PRE_Reboot) {
   fake_session_manager_client_->set_device_policy(device_policy->GetBlob());
   fake_session_manager_client_->OnPropertyChangeComplete(true);
   run_loop.Run();
+  // Allow tasks posted by CrosSettings observers to complete:
+  base::RunLoop().RunUntilIdle();
 
   // Check the display's rotation.
   display::DisplayManager* const display_manager = GetDisplayManager();
@@ -313,6 +319,7 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationBootTest, PRE_Reboot) {
   // the policy value is restored after reboot.
   display_manager->SetDisplayRotation(first_display_id, user_rotation,
                                       display::Display::RotationSource::USER);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(user_rotation, first_display.rotation());
 }
 
