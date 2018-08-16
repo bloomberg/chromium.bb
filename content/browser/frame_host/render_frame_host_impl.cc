@@ -3495,9 +3495,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(this)));
 
-  registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::CreateUsbChooserService, base::Unretained(this)));
-
   registry_->AddInterface<media::mojom::InterfaceFactory>(
       base::Bind(&RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
                  base::Unretained(this)));
@@ -4965,12 +4962,6 @@ void RenderFrameHostImpl::DeleteWebBluetoothService(
 void RenderFrameHostImpl::CreateWebUsbService(
     blink::mojom::WebUsbServiceRequest request) {
   GetContentClient()->browser()->CreateWebUsbService(this, std::move(request));
-}
-
-void RenderFrameHostImpl::CreateUsbChooserService(
-    device::mojom::UsbChooserServiceRequest request) {
-  GetContentClient()->browser()->CreateUsbChooserService(this,
-                                                         std::move(request));
 }
 
 void RenderFrameHostImpl::ResetFeaturePolicy() {

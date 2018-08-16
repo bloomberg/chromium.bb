@@ -2,28 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/usb/web_usb_chooser_service_android.h"
+#include "chrome/browser/android/usb/web_usb_chooser_android.h"
 
 #include <utility>
 
 #include "chrome/browser/ui/android/usb_chooser_dialog_android.h"
 #include "chrome/browser/usb/usb_chooser_controller.h"
-#include "content/public/browser/browser_thread.h"
 
-WebUsbChooserServiceAndroid::WebUsbChooserServiceAndroid(
+WebUsbChooserAndroid::WebUsbChooserAndroid(
     content::RenderFrameHost* render_frame_host)
-    : WebUsbChooserService(render_frame_host) {}
+    : WebUsbChooser(render_frame_host), weak_factory_(this) {}
 
-WebUsbChooserServiceAndroid::~WebUsbChooserServiceAndroid() {}
+WebUsbChooserAndroid::~WebUsbChooserAndroid() {}
 
-void WebUsbChooserServiceAndroid::ShowChooser(
+void WebUsbChooserAndroid::ShowChooser(
     std::unique_ptr<UsbChooserController> controller) {
   dialog_ = UsbChooserDialogAndroid::Create(
       render_frame_host(), std::move(controller),
-      base::BindOnce(&WebUsbChooserServiceAndroid::OnDialogClosed,
+      base::BindOnce(&WebUsbChooserAndroid::OnDialogClosed,
                      base::Unretained(this)));
 }
 
-void WebUsbChooserServiceAndroid::OnDialogClosed() {
+void WebUsbChooserAndroid::OnDialogClosed() {
   dialog_.reset();
+}
+
+base::WeakPtr<WebUsbChooser> WebUsbChooserAndroid::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }

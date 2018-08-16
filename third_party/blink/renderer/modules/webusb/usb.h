@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
 
-#include "device/usb/public/mojom/chooser_service.mojom-blink.h"
 #include "device/usb/public/mojom/device_manager.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-blink.h"
@@ -66,7 +65,6 @@ class USB final : public EventTargetWithInlineData,
   void OnDeviceRemoved(device::mojom::blink::UsbDeviceInfoPtr) override;
 
   void OnServiceConnectionError();
-  void OnChooserServiceConnectionError();
 
   void Trace(blink::Visitor*) override;
 
@@ -84,9 +82,8 @@ class USB final : public EventTargetWithInlineData,
   bool IsFeatureEnabled() const;
 
   mojom::blink::WebUsbServicePtr service_;
-  HeapHashSet<Member<ScriptPromiseResolver>> service_requests_;
-  device::mojom::blink::UsbChooserServicePtr chooser_service_;
-  HeapHashSet<Member<ScriptPromiseResolver>> chooser_service_requests_;
+  HeapHashSet<Member<ScriptPromiseResolver>> get_devices_requests_;
+  HeapHashSet<Member<ScriptPromiseResolver>> get_permission_requests_;
   mojo::Binding<device::mojom::blink::UsbDeviceManagerClient> client_binding_;
   HeapHashMap<String, WeakMember<USBDevice>> device_cache_;
 };

@@ -458,9 +458,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void CreateWebUsbService(
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<blink::mojom::WebUsbService> request) override;
-  void CreateUsbChooserService(
-      content::RenderFrameHost* render_frame_host,
-      device::mojom::UsbChooserServiceRequest request) override;
   bool ShowPaymentHandlerWindow(
       content::BrowserContext* browser_context,
       const GURL& url,

@@ -41194,11 +41194,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="593735191" label="blink.mojom.PresentationService"/>
   <int value="620853817" label="media.mojom.Renderer"/>
   <int value="670026296" label="blink.mojom.CacheStorage"/>
-  <int value="803397464" label="device.mojom.UsbDeviceManager"/>
   <int value="833468074" label="device.mojom.VRService"/>
   <int value="846414148" label="blink.mojom.MediaDevicesDispatcherHost"/>
   <int value="917382314" label="blink.mojom.TextSuggestionHost"/>
   <int value="917568449" label="media.mojom.ImageCapture"/>
+  <int value="948847120" label="blink.mojom.WebUsbService"/>
   <int value="968027799" label="blink.mojom.MediaSessionService"/>
   <int value="996732224" label="autofill.mojom.PasswordManagerDriver"/>
   <int value="1071268620" label="blink.mojom.QuotaDispatcherHost"/>
@@ -41226,7 +41226,6 @@ Called by update_net_trust_anchors.py.-->
       label="content.mojom.RendererAudioInputStreamFactory"/>
   <int value="1729889736"
       label="discardable_memory.mojom.DiscardableSharedMemoryManager"/>
-  <int value="1737293395" label="device.mojom.UsbChooserService"/>
   <int value="1750772802" label="blink.mojom.NotificationService"/>
   <int value="1769429998" label="blink.mojom.PrefetchURLLoaderService"/>
   <int value="1785235899" label="shape_detection.mojom.BarcodeDetection"/>

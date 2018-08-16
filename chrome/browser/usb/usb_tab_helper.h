@@ -20,14 +20,12 @@ class WebUsbService;
 }  // namespace blink
 
 namespace device {
-namespace mojom {
-class UsbChooserService;
-}
-
 namespace usb {
 class PermissionProvider;
 }
 }  // namespace device
+
+class WebUsbChooser;
 
 struct FrameUsbServices;
 
@@ -47,10 +45,6 @@ class UsbTabHelper : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<blink::mojom::WebUsbService> request);
 
-  void CreateChooserService(
-      content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<device::mojom::UsbChooserService> request);
-
   void IncrementConnectionCount(content::RenderFrameHost* render_frame_host);
   void DecrementConnectionCount(content::RenderFrameHost* render_frame_host);
   bool IsDeviceConnected() const;
@@ -69,9 +63,8 @@ class UsbTabHelper : public content::WebContentsObserver,
   base::WeakPtr<device::usb::PermissionProvider> GetPermissionProvider(
       content::RenderFrameHost* render_frame_host);
 
-  void GetChooserService(
-      content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<device::mojom::UsbChooserService> request);
+  base::WeakPtr<WebUsbChooser> GetUsbChooser(
+      content::RenderFrameHost* render_frame_host);
 
   void NotifyTabStateChanged() const;
 

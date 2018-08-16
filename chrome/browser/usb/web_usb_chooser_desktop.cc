@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/usb/web_usb_chooser_service_desktop.h"
+#include "chrome/browser/usb/web_usb_chooser_desktop.h"
 
 #include <utility>
 
@@ -13,16 +13,16 @@
 #include "components/bubble/bubble_controller.h"
 #include "content/public/browser/web_contents.h"
 
-WebUsbChooserServiceDesktop::WebUsbChooserServiceDesktop(
+WebUsbChooserDesktop::WebUsbChooserDesktop(
     content::RenderFrameHost* render_frame_host)
-    : WebUsbChooserService(render_frame_host) {}
+    : WebUsbChooser(render_frame_host), weak_factory_(this) {}
 
-WebUsbChooserServiceDesktop::~WebUsbChooserServiceDesktop() {
+WebUsbChooserDesktop::~WebUsbChooserDesktop() {
   if (bubble_)
     bubble_->CloseBubble(BUBBLE_CLOSE_FORCED);
 }
 
-void WebUsbChooserServiceDesktop::ShowChooser(
+void WebUsbChooserDesktop::ShowChooser(
     std::unique_ptr<UsbChooserController> controller) {
   // Only one chooser bubble may be shown at a time.
   if (bubble_)
@@ -35,4 +35,8 @@ void WebUsbChooserServiceDesktop::ShowChooser(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser)
     bubble_ = browser->GetBubbleManager()->ShowBubble(std::move(delegate));
+}
+
+base::WeakPtr<WebUsbChooser> WebUsbChooserDesktop::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }

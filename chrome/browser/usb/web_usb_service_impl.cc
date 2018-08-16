@@ -15,16 +15,20 @@
 // static
 void WebUsbServiceImpl::Create(
     base::WeakPtr<device::usb::PermissionProvider> permission_provider,
+    base::WeakPtr<WebUsbChooser> usb_chooser,
     blink::mojom::WebUsbServiceRequest request) {
   // Bind the Blink request with WebUsbServiceImpl.
-  auto* web_usb_service = new WebUsbServiceImpl(std::move(permission_provider));
+  auto* web_usb_service = new WebUsbServiceImpl(std::move(permission_provider),
+                                                std::move(usb_chooser));
   web_usb_service->binding_ = mojo::MakeStrongBinding(
       base::WrapUnique(web_usb_service), std::move(request));
 }
 
 WebUsbServiceImpl::WebUsbServiceImpl(
-    base::WeakPtr<device::usb::PermissionProvider> permission_provider)
+    base::WeakPtr<device::usb::PermissionProvider> permission_provider,
+    base::WeakPtr<WebUsbChooser> usb_chooser)
     : permission_provider_(std::move(permission_provider)),
+      usb_chooser_(std::move(usb_chooser)),
       observer_(this),
       weak_factory_(this) {
   // Bind |device_manager_| to UsbDeviceManager and set error handler.
@@ -60,6 +64,15 @@ void WebUsbServiceImpl::GetDevice(
   device_client_bindings_.AddBinding(this, mojo::MakeRequest(&device_client));
   device_manager_->GetDevice(guid, std::move(device_request),
                              std::move(device_client));
+}
+
+void WebUsbServiceImpl::GetPermission(
+    std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
+    GetPermissionCallback callback) {
+  if (!usb_chooser_)
+    std::move(callback).Run(nullptr);
+
+  usb_chooser_->GetPermission(std::move(device_filters), std::move(callback));
 }
 
 void WebUsbServiceImpl::SetClient(

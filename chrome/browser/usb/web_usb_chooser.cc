@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/usb/web_usb_chooser_service.h"
+#include "chrome/browser/usb/web_usb_chooser.h"
 
 #include <utility>
 
@@ -14,18 +14,17 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
-WebUsbChooserService::WebUsbChooserService(
-    content::RenderFrameHost* render_frame_host)
+WebUsbChooser::WebUsbChooser(content::RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(render_frame_host);
 }
 
-WebUsbChooserService::~WebUsbChooserService() {}
+WebUsbChooser::~WebUsbChooser() {}
 
-void WebUsbChooserService::GetPermission(
+void WebUsbChooser::GetPermission(
     std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
-    GetPermissionCallback callback) {
+    blink::mojom::WebUsbService::GetPermissionCallback callback) {
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);
   GURL requesting_origin =
@@ -44,10 +43,4 @@ void WebUsbChooserService::GetPermission(
   auto controller = std::make_unique<UsbChooserController>(
       render_frame_host_, std::move(device_filters), std::move(callback));
   ShowChooser(std::move(controller));
-}
-
-void WebUsbChooserService::Bind(
-    device::mojom::UsbChooserServiceRequest request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  bindings_.AddBinding(this, std::move(request));
 }
