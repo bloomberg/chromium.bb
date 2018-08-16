@@ -699,15 +699,13 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
     if (!drivefs_holder_)
       job_list()->CancelAllJobs();
 
-    for (auto& observer : observers_)
-      observer.OnFileSystemBeingUnmounted();
-
-    storage::ExternalMountPoints* const mount_points =
-        storage::ExternalMountPoints::GetSystemInstance();
-    DCHECK(mount_points);
-
-    mount_points->RevokeFileSystem(mount_point_name_);
-    logger_->Log(logging::LOG_INFO, "Drive mount point is removed");
+    if (storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+            mount_point_name_)) {
+      for (auto& observer : observers_) {
+        observer.OnFileSystemBeingUnmounted();
+      }
+      logger_->Log(logging::LOG_INFO, "Drive mount point is removed");
+    }
   }
   if (drivefs_holder_)
     drivefs_holder_->drivefs_host()->Unmount();
