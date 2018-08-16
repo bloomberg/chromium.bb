@@ -1051,8 +1051,6 @@ void Shell::Init(
   cursor_manager_ =
       std::make_unique<CursorManager>(base::WrapUnique(native_cursor_manager_));
 
-  shell_delegate_->PreInit();
-
   // In CLASSIC mode, |initial_display_prefs| contains the synchronously
   // loaded display pref values. Otherwise |initial_display_prefs| is null and
   // the pref values will be loaded once |local_state_| is available. (Any store

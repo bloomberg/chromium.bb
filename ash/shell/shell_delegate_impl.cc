@@ -21,8 +21,6 @@ bool ShellDelegateImpl::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }
 
-void ShellDelegateImpl::PreInit() {}
-
 std::unique_ptr<keyboard::KeyboardUI> ShellDelegateImpl::CreateKeyboardUI() {
   return std::make_unique<TestKeyboardUI>();
 }

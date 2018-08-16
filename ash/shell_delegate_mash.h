@@ -19,7 +19,6 @@ class ShellDelegateMash : public ShellDelegate {
 
   // ShellDelegate:
   bool CanShowWindowForUser(aura::Window* window) const override;
-  void PreInit() override;
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;

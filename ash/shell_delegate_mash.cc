@@ -52,10 +52,6 @@ bool ShellDelegateMash::CanShowWindowForUser(aura::Window* window) const {
   return true;
 }
 
-void ShellDelegateMash::PreInit() {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
 std::unique_ptr<keyboard::KeyboardUI> ShellDelegateMash::CreateKeyboardUI() {
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;

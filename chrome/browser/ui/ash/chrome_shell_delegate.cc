@@ -92,8 +92,6 @@ bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
                                 base::BindRepeating(&GetActiveBrowserContext));
 }
 
-void ChromeShellDelegate::PreInit() {}
-
 void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
   chrome::ScopedTabbedBrowserDisplayer scoped_tabbed_browser_displayer(
       ProfileManager::GetActiveUserProfile());
