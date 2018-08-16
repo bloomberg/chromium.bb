@@ -312,15 +312,16 @@ AccessibilityRole AXLayoutObject::DetermineAccessibilityRole() {
   if (!layout_object_)
     return kUnknownRole;
 
+  native_role_ = NativeAccessibilityRoleIgnoringAria();
+
   if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
     return aria_role_;
 
-  AccessibilityRole role = NativeAccessibilityRoleIgnoringAria();
   // Anything that needs to still be exposed but doesn't have a more specific
   // role should be considered a generic container. Examples are
   // layout blocks with no node, in-page link targets, and plain elements
   // such as a <span> with ARIA markup.
-  return role == kUnknownRole ? kGenericContainerRole : role;
+  return native_role_ == kUnknownRole ? kGenericContainerRole : native_role_;
 }
 
 Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {

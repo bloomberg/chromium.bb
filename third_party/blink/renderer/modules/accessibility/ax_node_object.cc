@@ -87,6 +87,7 @@ const int kDefaultHeadingLevel = 2;
 AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl& ax_object_cache)
     : AXObject(ax_object_cache),
       children_dirty_(false),
+      native_role_(kUnknownRole),
       node_(node) {}
 
 AXNodeObject* AXNodeObject::Create(Node* node,
@@ -519,13 +520,14 @@ AccessibilityRole AXNodeObject::DetermineAccessibilityRole() {
   if (!GetNode())
     return kUnknownRole;
 
+  native_role_ = NativeAccessibilityRoleIgnoringAria();
+
   if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
     return aria_role_;
   if (GetNode()->IsTextNode())
     return kStaticTextRole;
 
-  AccessibilityRole role = NativeAccessibilityRoleIgnoringAria();
-  return role == kUnknownRole ? kGenericContainerRole : role;
+  return native_role_ == kUnknownRole ? kGenericContainerRole : native_role_;
 }
 
 void AXNodeObject::AccessibilityChildrenFromAOMProperty(
@@ -2156,7 +2158,7 @@ bool AXNodeObject::CanHaveChildren() const {
     return false;
   }
 
-  switch (NativeAccessibilityRoleIgnoringAria()) {
+  switch (native_role_) {
     case kButtonRole:
     case kCheckBoxRole:
     case kImageRole:

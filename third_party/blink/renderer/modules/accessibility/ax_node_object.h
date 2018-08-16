@@ -54,6 +54,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 #if DCHECK_IS_ON()
   bool initialized_ = false;
 #endif
+  // The accessibility role, not taking ARIA into account.
+  AccessibilityRole native_role_;
 
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
   const AXObject* InheritsPresentationalRoleFrom() const override;
