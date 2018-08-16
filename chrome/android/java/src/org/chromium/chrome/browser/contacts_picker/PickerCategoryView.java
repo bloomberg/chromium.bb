@@ -13,25 +13,30 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
+import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
  * A class for keeping track of common data associated with showing contact details in
  * the contacts picker, for example the RecyclerView.
  */
-public class PickerCategoryView extends RelativeLayout implements View.OnClickListener {
+public class PickerCategoryView extends RelativeLayout
+        implements View.OnClickListener, SelectionDelegate.SelectionObserver<ContactDetails>,
+                   SelectableListToolbar.SearchDelegate {
     // Constants for the RoundedIconGenerator.
     private static final int ICON_SIZE_DP = 32;
     private static final int ICON_CORNER_RADIUS_DP = 20;
@@ -67,6 +72,12 @@ public class PickerCategoryView extends RelativeLayout implements View.OnClickLi
     // The {@link SelectionDelegate} keeping track of which contacts are selected.
     private SelectionDelegate<ContactDetails> mSelectionDelegate;
 
+    // The search icon.
+    private ImageView mSearchButton;
+
+    // Keeps track of list of last selected contacts.
+    List<ContactDetails> mPreviousSelection;
+
     // The Done text button that confirms the selection choice.
     private Button mDoneButton;
 
@@ -79,6 +90,7 @@ public class PickerCategoryView extends RelativeLayout implements View.OnClickLi
         mActivity = (Activity) context;
 
         mSelectionDelegate = new SelectionDelegate<ContactDetails>();
+        mSelectionDelegate.addObserver(this);
 
         Resources resources = getActivity().getResources();
         int iconColor =
@@ -97,7 +109,10 @@ public class PickerCategoryView extends RelativeLayout implements View.OnClickLi
                 R.string.contacts_picker_select_contacts, null, 0, 0, R.color.modern_primary_color,
                 null, false, false);
         mToolbar.setNavigationOnClickListener(this);
+        mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
 
+        mSearchButton = (ImageView) mToolbar.findViewById(R.id.search);
+        mSearchButton.setOnClickListener(this);
         mDoneButton = (Button) mToolbar.findViewById(R.id.done);
         mDoneButton.setOnClickListener(this);
 
@@ -128,6 +143,58 @@ public class PickerCategoryView extends RelativeLayout implements View.OnClickLi
         mPickerAdapter.notifyDataSetChanged();
     }
 
+    private void onStartSearch() {
+        mDoneButton.setVisibility(GONE);
+
+        // Showing the search clears current selection. Save it, so we can restore it after the
+        // search has completed.
+        mPreviousSelection = mSelectionDelegate.getSelectedItems();
+        mSearchButton.setVisibility(GONE);
+        mToolbar.showSearchView();
+    }
+
+    // SelectableListToolbar.SearchDelegate:
+
+    @Override
+    public void onEndSearch() {
+        mPickerAdapter.setSearchString("");
+        mToolbar.showCloseButton();
+        mToolbar.setNavigationOnClickListener(this);
+        mDoneButton.setVisibility(VISIBLE);
+        mSearchButton.setVisibility(VISIBLE);
+
+        // Hiding the search view clears the selection. Save it first and restore to the old
+        // selection, with the new item added during search.
+        // TODO(finnur): This needs to be revisited after UX is finalized.
+        HashSet<ContactDetails> selection = new HashSet<>();
+        for (ContactDetails item : mSelectionDelegate.getSelectedItems()) {
+            selection.add(item);
+        }
+        mToolbar.hideSearchView();
+        for (ContactDetails item : mPreviousSelection) {
+            selection.add(item);
+        }
+
+        // TODO(finnur): Do this asynchronously to make the number roll view show the right number.
+        mSelectionDelegate.setSelectedItems(selection);
+    }
+
+    @Override
+    public void onSearchTextChanged(String query) {
+        mPickerAdapter.setSearchString(query);
+    }
+
+    // SelectionDelegate.SelectionObserver:
+
+    @Override
+    public void onSelectionStateChange(List<ContactDetails> selectedItems) {
+        // Once a selection is made, drop out of search mode. Note: This function is also called
+        // when entering search mode (with selectedItems then being 0 in size).
+        if (mToolbar.isSearching() && selectedItems.size() > 0) {
+            mToolbar.hideSearchView();
+        }
+    }
+
     // OnClickListener:
 
     @Override
@@ -135,6 +202,8 @@ public class PickerCategoryView extends RelativeLayout implements View.OnClickLi
         int id = view.getId();
         if (id == R.id.done) {
             notifyContactsSelected();
+        } else if (id == R.id.search) {
+            onStartSearch();
         } else {
             executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null);
         }

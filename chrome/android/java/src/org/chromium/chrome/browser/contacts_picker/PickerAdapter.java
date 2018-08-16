@@ -57,6 +57,22 @@ public class PickerAdapter extends Adapter<ViewHolder> {
     }
 
     /**
+     * Sets the search query (filter) for the contact list. Filtering is by display name.
+     * @param query The search term to use.
+     */
+    public void setSearchString(String query) {
+        String searchString = "%" + query + "%";
+        String[] selectionArgs = {searchString};
+        mContactsCursor.close();
+
+        mContactsCursor = mCategoryView.getActivity().getContentResolver().query(
+                ContactsContract.Contacts.CONTENT_URI, PROJECTION,
+                ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ?", selectionArgs,
+                ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " ASC");
+        notifyDataSetChanged();
+    }
+
+    /**
      * Fetches all known contacts and their emails.
      * @return The contact list as a set.
      */
