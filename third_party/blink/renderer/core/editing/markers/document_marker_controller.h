@@ -73,7 +73,7 @@ class CORE_EXPORT DocumentMarkerController final
   void AddSuggestionMarker(const EphemeralRange&,
                            const SuggestionMarkerProperties&);
 
-  void MoveMarkers(const Node* src_node, int length, const Node* dst_node);
+  void MoveMarkers(const Text& src_node, int length, const Text& dst_node);
 
   void PrepareForDestruction();
   void RemoveMarkersInRange(const EphemeralRange&, DocumentMarker::MarkerTypes);
