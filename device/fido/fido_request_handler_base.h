@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
@@ -60,7 +61,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     ~TransportAvailabilityInfo();
 
     RequestType request_type = RequestType::kMakeCredential;
-    std::set<FidoTransportProtocol> available_transports;
+
+    // The intersection of transports supported by the client and allowed by the
+    // relying party.
+    base::flat_set<FidoTransportProtocol> available_transports;
+
     bool has_recognized_mac_touch_id_credential = false;
     bool is_ble_powered = false;
     bool can_power_on_ble_adapter = false;
@@ -70,6 +75,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
    public:
     virtual ~TransportAvailabilityObserver();
 
+    // This method will not be invoked until the observer is set.
     virtual void OnTransportAvailabilityEnumerated(
         TransportAvailabilityInfo data) = 0;
     virtual void BluetoothAdapterPowerChanged(bool is_powered_on) = 0;
@@ -79,13 +85,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   };
 
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once
-  // device/fido is servicified.
+  // device/fido is servicified. The |available_transports| should be the
+  // intersection of transports supported by the client and allowed by the
+  // relying party.
   FidoRequestHandlerBase(
       service_manager::Connector* connector,
-      const base::flat_set<FidoTransportProtocol>& transports);
+      const base::flat_set<FidoTransportProtocol>& available_transports);
   FidoRequestHandlerBase(
       service_manager::Connector* connector,
-      const base::flat_set<FidoTransportProtocol>& transports,
+      const base::flat_set<FidoTransportProtocol>& available_transports,
       AddPlatformAuthenticatorCallback add_platform_authenticator);
   ~FidoRequestHandlerBase() override;
 
@@ -104,6 +112,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void set_observer(TransportAvailabilityObserver* observer) {
     DCHECK(!observer_) << "Only one observer is supported.";
     observer_ = observer;
+
+    DCHECK(notify_observer_callback_);
+    notify_observer_callback_.Run();
+  }
+
+  TransportAvailabilityInfo& transport_availability_info() {
+    return transport_availability_info_;
   }
 
  protected:
@@ -123,9 +138,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   AuthenticatorMap& active_authenticators() { return active_authenticators_; }
   std::vector<std::unique_ptr<FidoDiscovery>>& discoveries() {
     return discoveries_;
-  }
-  TransportAvailabilityInfo& transport_availability_info() {
-    return transport_availability_info_;
   }
   TransportAvailabilityObserver* observer() const { return observer_; }
 

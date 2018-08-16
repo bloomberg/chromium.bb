@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -62,7 +63,7 @@ bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
              UvAvailability::kSupportedAndConfigured;
 }
 
-std::set<FidoTransportProtocol> GetValidTransportProtocols(
+base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
     const AuthenticatorSelectionCriteria& authenticator_selection_criteria) {
   using AttachmentType =
       AuthenticatorSelectionCriteria::AuthenticatorAttachment;
@@ -77,27 +78,28 @@ std::set<FidoTransportProtocol> GetValidTransportProtocols(
               FidoTransportProtocol::kNearFieldCommunication,
               FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
     case AttachmentType::kAny:
-      return {FidoTransportProtocol::kInternal,
-              FidoTransportProtocol::kNearFieldCommunication,
+      // TODO(crbug.com/873710): Re-enable platform authenticators for kAny,
+      // once Touch ID is integrated into the UI.
+      return {FidoTransportProtocol::kNearFieldCommunication,
               FidoTransportProtocol::kUsbHumanInterfaceDevice,
               FidoTransportProtocol::kBluetoothLowEnergy,
               FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
   }
 
   NOTREACHED();
-  return std::set<FidoTransportProtocol>();
+  return base::flat_set<FidoTransportProtocol>();
 }
 
 }  // namespace
 
 MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     service_manager::Connector* connector,
-    const base::flat_set<FidoTransportProtocol>& protocols,
+    const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapMakeCredentialRequest request,
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
     RegisterResponseCallback completion_callback)
     : MakeCredentialRequestHandler(connector,
-                                   protocols,
+                                   supported_transports,
                                    std::move(request),
                                    authenticator_selection_criteria,
                                    std::move(completion_callback),
@@ -105,23 +107,24 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
 
 MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     service_manager::Connector* connector,
-    const base::flat_set<FidoTransportProtocol>& protocols,
+    const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapMakeCredentialRequest request,
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
     RegisterResponseCallback completion_callback,
     AddPlatformAuthenticatorCallback add_platform_authenticator)
-    : FidoRequestHandler(connector,
-                         protocols,
-                         std::move(completion_callback),
-                         std::move(add_platform_authenticator)),
+    : FidoRequestHandler(
+          connector,
+          base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
+              supported_transports,
+              GetTransportsAllowedByRP(authenticator_selection_criteria)),
+          std::move(completion_callback),
+          std::move(add_platform_authenticator)),
       request_parameter_(std::move(request)),
       authenticator_selection_criteria_(
           std::move(authenticator_selection_criteria)),
       weak_factory_(this) {
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kMakeCredential;
-  transport_availability_info().available_transports =
-      GetValidTransportProtocols(authenticator_selection_criteria);
   Start();
 }
 

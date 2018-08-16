@@ -37,13 +37,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
  public:
   MakeCredentialRequestHandler(
       service_manager::Connector* connector,
-      const base::flat_set<FidoTransportProtocol>& protocols,
+      const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapMakeCredentialRequest request_parameter,
       AuthenticatorSelectionCriteria authenticator_criteria,
       RegisterResponseCallback completion_callback);
   MakeCredentialRequestHandler(
       service_manager::Connector* connector,
-      const base::flat_set<FidoTransportProtocol>& protocols,
+      const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapMakeCredentialRequest request_parameter,
       AuthenticatorSelectionCriteria authenticator_criteria,
       RegisterResponseCallback completion_callback,

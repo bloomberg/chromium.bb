@@ -21,10 +21,6 @@ namespace device {
 
 namespace {
 
-// Number of async calls we need to wait before notifying the embedder layer
-// of FidoUiAprioriData.
-constexpr size_t kNumAsyncTransportInfoCallbacks = 2;
-
 bool ShouldDeferRequestDispatchToUi(const FidoAuthenticator& authenticator) {
   // TODO(hongjunchoi): Change this to be dependent on authenticator transport
   // type once UI component is in place.
@@ -57,27 +53,44 @@ FidoRequestHandlerBase::TransportAvailabilityObserver::
 
 FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
-    const base::flat_set<FidoTransportProtocol>& transports)
+    const base::flat_set<FidoTransportProtocol>& available_transports)
     : FidoRequestHandlerBase(connector,
-                             transports,
+                             available_transports,
                              AddPlatformAuthenticatorCallback()) {}
 
 FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
-    const base::flat_set<FidoTransportProtocol>& transports,
+    const base::flat_set<FidoTransportProtocol>& available_transports,
     AddPlatformAuthenticatorCallback add_platform_authenticator)
     : add_platform_authenticator_(std::move(add_platform_authenticator)),
       weak_factory_(this) {
-  for (const auto transport : transports) {
+  // The number of times |notify_observer_callback_| needs to be invoked before
+  // Observer::OnTransportAvailabilityEnumerated is dispatched. Essentially this
+  // is used to wait until all the parts of |transport_availability_info_| are
+  // filled out; the |notify_observer_callback_| is invoked once for each part
+  // once that part is ready, namely:
+  //
+  //   1) Once the platform authenticator related fields are filled out.
+  //   2) [Optionally, if BLE enabled] Once BLE related fields are filled out.
+  //   3) [Optionally, if caBLE enabled] Once caBLE related fields are filled
+  //   out.
+  //
+  // On top of that, we wait for (4) an invocation that happens when the
+  // |observer_| is set, so that OnTransportAvailabilityEnumerated is never
+  // called before the observer is set.
+  size_t transport_info_callback_count = 1u + 0u + 0u + 1u;
+
+  for (const auto transport : available_transports) {
     // Construction of CaBleDiscovery is handled by the implementing class as it
     // requires an extension passed on from the relying party.
-    if (transport == FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)
+    if (transport == FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) {
+      ++transport_info_callback_count;
       continue;
+    }
 
     if (transport == FidoTransportProtocol::kInternal) {
       // Internal authenticators are injected through
       // AddPlatformAuthenticatorCallback.
-      NOTREACHED();
       continue;
     }
 
@@ -87,12 +100,17 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
       // HID transports are not configured.
       continue;
     }
+
+    if (transport == FidoTransportProtocol::kBluetoothLowEnergy)
+      ++transport_info_callback_count;
+
     discovery->set_observer(this);
     discoveries_.push_back(std::move(discovery));
   }
 
+  transport_availability_info_.available_transports = available_transports;
   notify_observer_callback_ = base::BarrierClosure(
-      kNumAsyncTransportInfoCallbacks,
+      transport_info_callback_count,
       base::BindOnce(&FidoRequestHandlerBase::NotifyObserverUiData,
                      weak_factory_.GetWeakPtr()));
 }
@@ -123,14 +141,14 @@ void FidoRequestHandlerBase::Start() {
 
 void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,
                                               bool success) {
-  if (discovery->transport() == FidoTransportProtocol::kBluetoothLowEnergy) {
-    // For FidoBleDiscovery, discovery is started with |success| set to true
-    // if device::BluetoothAdapter is present in the system.
+  if (discovery->transport() == FidoTransportProtocol::kBluetoothLowEnergy ||
+      discovery->transport() ==
+          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) {
+    // For FidoBleDiscovery and FidoCableDiscovery, discovery is started with
+    // |success| set to false if no BluetoothAdapter is present in the system.
     if (!success) {
       transport_availability_info_.available_transports.erase(
-          FidoTransportProtocol::kBluetoothLowEnergy);
-      transport_availability_info_.available_transports.erase(
-          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+          discovery->transport());
     }
 
     DCHECK(notify_observer_callback_);
@@ -191,8 +209,11 @@ void FidoRequestHandlerBase::AddAuthenticator(
 
 void FidoRequestHandlerBase::MaybeAddPlatformAuthenticator() {
   std::unique_ptr<FidoAuthenticator> authenticator;
-  if (add_platform_authenticator_)
+  if (add_platform_authenticator_ &&
+      base::ContainsKey(transport_availability_info_.available_transports,
+                        FidoTransportProtocol::kInternal)) {
     authenticator = std::move(add_platform_authenticator_).Run();
+  }
 
   if (authenticator) {
     AddAuthenticator(std::move(authenticator));
@@ -206,8 +227,7 @@ void FidoRequestHandlerBase::MaybeAddPlatformAuthenticator() {
 }
 
 void FidoRequestHandlerBase::NotifyObserverUiData() {
-  if (!observer_)
-    return;
+  DCHECK(observer_);
 
   observer_->OnTransportAvailabilityEnumerated(transport_availability_info_);
 }
