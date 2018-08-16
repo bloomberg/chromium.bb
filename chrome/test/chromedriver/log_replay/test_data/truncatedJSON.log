@@ -1,0 +1,3 @@
+[1533082321.495][DEBUG]: DevTools WebSocket Command: Target.setAutoAttach (id=3) {
+   "autoAttach": true,
+   "waitForDebuggerOnStart": false,

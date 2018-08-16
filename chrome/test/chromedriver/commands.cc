@@ -220,6 +220,8 @@ void ExecuteSessionCommandOnSessionThread(
   if (IsVLogOn(0)) {
     if (!session->driver_log ||
         session->driver_log->min_level() != Log::Level::kOff) {
+      // Note: ChromeDriver log-replay depends on the format of this logging.
+      // see chromedriver/log_replay/client_replay.py
       VLOG(0) << "[" << session->id << "] "
               << "COMMAND " << command_name << " "
               << FormatValueForDisplay(*params);
@@ -277,6 +279,8 @@ void ExecuteSessionCommandOnSessionThread(
       }
       if (!session->driver_log ||
           session->driver_log->min_level() != Log::Level::kOff) {
+        // Note: ChromeDriver log-replay depends on the format of this logging.
+        // see chromedriver/log_replay/client_replay.py
         VLOG(0) << "[" << session->id << "] "
                 << "RESPONSE " << command_name
                 << (result.length() ? " " + result : "");

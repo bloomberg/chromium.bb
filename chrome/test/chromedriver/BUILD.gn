@@ -150,6 +150,8 @@ source_set("automation_client_lib") {
     "chrome/web_view.h",
     "chrome/web_view_impl.cc",
     "chrome/web_view_impl.h",
+    "log_replay/devtools_log_reader.cc",
+    "log_replay/devtools_log_reader.h",
     "net/adb_client_socket.cc",
     "net/adb_client_socket.h",
     "net/net_util.cc",
@@ -386,6 +388,7 @@ test("chromedriver_unittests") {
     "chrome_launcher_unittest.cc",
     "command_listener_proxy_unittest.cc",
     "commands_unittest.cc",
+    "log_replay/devtools_log_reader_unittest.cc",
     "logging_unittest.cc",
     "net/adb_client_socket_unittest.cc",
     "net/timeout_unittest.cc",
@@ -402,6 +405,7 @@ test("chromedriver_unittests") {
 
   data = [
     "//chrome/test/data/chromedriver/",
+    "//chrome/test/chromedriver/log_replay/test_data",
   ]
 
   deps = [
