@@ -68,7 +68,6 @@ enum MountError {
   MOUNT_ERROR_UNKNOWN_FILESYSTEM = 101,
   MOUNT_ERROR_UNSUPPORTED_FILESYSTEM = 102,
   MOUNT_ERROR_INVALID_ARCHIVE = 201,
-  MOUNT_ERROR_PATH_UNMOUNTED = 901,
   // TODO(tbarzic): Add more error codes as they get added to cros-disks and
   // consider doing explicit translation from cros-disks error_types.
 };

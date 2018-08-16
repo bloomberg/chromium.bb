@@ -199,10 +199,6 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
       case 'unmount':
         var volumeId = event.volumeMetadata.volumeId;
         var status = event.status;
-        if (status === VolumeManagerCommon.VolumeError.PATH_UNMOUNTED) {
-          console.warn('Volume already unmounted: ', volumeId);
-          status = 'success';
-        }
         var requestKey = this.makeRequestKey_('unmount', volumeId);
         var requested = requestKey in this.requests_;
         var volumeInfoIndex =
