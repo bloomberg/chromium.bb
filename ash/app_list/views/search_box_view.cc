@@ -95,6 +95,8 @@ SearchBoxView::SearchBoxView(search_box::SearchBoxViewDelegate* delegate,
       view_delegate_(view_delegate),
       app_list_view_(app_list_view),
       is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()),
+      is_app_list_search_autocomplete_enabled_(
+          features::IsAppListSearchAutocompleteEnabled()),
       weak_ptr_factory_(this) {
   set_is_tablet_mode(app_list_view->is_tablet_mode());
   if (features::IsZeroStateSuggestionsEnabled())
@@ -359,6 +361,9 @@ void SearchBoxView::OnWallpaperColorsChanged() {
 }
 
 void SearchBoxView::ProcessAutocomplete() {
+  if (!is_app_list_search_autocomplete_enabled_)
+    return;
+
   // Current non-autocompleted text.
   const base::string16& user_typed_text =
       search_box()->text().substr(0, highlight_range_.start());
@@ -418,11 +423,17 @@ void SearchBoxView::OnWallpaperProminentColorsReceived(
 }
 
 void SearchBoxView::AcceptAutocompleteText() {
+  if (!is_app_list_search_autocomplete_enabled_)
+    return;
+
   if (highlight_range_.start() != search_box()->text().length())
     ContentsChanged(search_box(), search_box()->text());
 }
 
 void SearchBoxView::AcceptOneCharInAutocompleteText() {
+  if (!is_app_list_search_autocomplete_enabled_)
+    return;
+
   highlight_range_.set_start(highlight_range_.start() + 1);
   highlight_range_.set_end(search_box()->text().length());
   const base::string16 original_text = search_box()->text();
@@ -434,6 +445,9 @@ void SearchBoxView::AcceptOneCharInAutocompleteText() {
 }
 
 void SearchBoxView::ClearAutocompleteText() {
+  if (!is_app_list_search_autocomplete_enabled_)
+    return;
+
   search_box()->SetText(
       search_box()->text().substr(0, highlight_range_.start()));
 }
@@ -441,7 +455,8 @@ void SearchBoxView::ClearAutocompleteText() {
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
                                     const base::string16& new_contents) {
   // Update autocomplete text highlight range to track user typed text.
-  highlight_range_.set_start(search_box()->text().length());
+  if (is_app_list_search_autocomplete_enabled_)
+    highlight_range_.set_start(search_box()->text().length());
   search_box::SearchBoxViewBase::ContentsChanged(sender, new_contents);
   app_list_view_->SetStateFromSearchBoxView(
       IsSearchBoxTrimmedQueryEmpty(), true /*triggered_by_contents_change*/);
@@ -449,6 +464,9 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
 
 void SearchBoxView::SetAutocompleteText(
     const base::string16& autocomplete_text) {
+  if (!is_app_list_search_autocomplete_enabled_)
+    return;
+
   const base::string16& current_text = search_box()->text();
   // Currrent text is a prefix of autocomplete text.
   DCHECK(base::StartsWith(autocomplete_text, current_text,
@@ -469,7 +487,8 @@ void SearchBoxView::SetAutocompleteText(
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
   if (search_box()->HasFocus() && is_search_box_active() &&
-      !search_box()->text().empty()) {
+      !search_box()->text().empty() &&
+      is_app_list_search_autocomplete_enabled_) {
     // If the search box has no text in it currently, autocomplete should not
     // work.
     last_key_pressed_ = key_event.key_code();

@@ -3136,6 +3136,12 @@ const char kDisableTabletSplitViewName[] = "Disable split view in Tablet mode";
 const char kDisableTabletSplitViewDescription[] =
     "Disable split view for Chrome OS tablet mode.";
 
+const char kEnableAppListSearchAutocompleteName[] =
+    "App List Search Autocomplete";
+const char kEnableAppListSearchAutocompleteDescription[] =
+    "Allow App List search box to autocomplete queries for Google searches and "
+    "apps.";
+
 const char kEnableAppShortcutSearchName[] =
     "Enable app shortcut search in launcher";
 const char kEnableAppShortcutSearchDescription[] =

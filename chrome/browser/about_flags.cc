@@ -1668,6 +1668,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNotificationIndicatorName,
      flag_descriptions::kNotificationIndicatorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNotificationIndicator)},
+    {"enable-app-list-search-autocomplete",
+     flag_descriptions::kEnableAppListSearchAutocompleteName,
+     flag_descriptions::kEnableAppListSearchAutocompleteDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list::features::kEnableAppListSearchAutocomplete)},
     {
         "enable-pinch", flag_descriptions::kPinchScaleName,
         flag_descriptions::kPinchScaleDescription, kOsLinux | kOsWin | kOsCrOS,
