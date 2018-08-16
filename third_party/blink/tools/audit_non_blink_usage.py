@@ -260,9 +260,6 @@ _CONFIG = [
 
             # Blink uses UKM for logging e.g. always-on leak detection (crbug/757374)
             'ukm::.+',
-
-            # WebRTC classes
-            'webrtc::.+',
         ],
         'disallowed': ['.+'],
     },
@@ -395,6 +392,16 @@ _CONFIG = [
         ],
         'allowed': ['crypto::.+'],
     },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/peerconnection',
+            'third_party/blink/renderer/bindings/modules/v8/serialization',
+        ],
+        'allowed': [
+            'webrtc::.+',
+            'rtc::.+',
+        ]
+    }
 ]
 
 

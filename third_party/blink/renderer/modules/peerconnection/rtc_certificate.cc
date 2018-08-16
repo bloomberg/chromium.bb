@@ -36,29 +36,31 @@
 
 namespace blink {
 
-RTCCertificate::RTCCertificate(std::unique_ptr<WebRTCCertificate> certificate)
-    : certificate_(base::WrapUnique(certificate.release())) {}
-
-std::unique_ptr<WebRTCCertificate> RTCCertificate::CertificateShallowCopy()
-    const {
-  return certificate_->ShallowCopy();
-}
+RTCCertificate::RTCCertificate(
+    rtc::scoped_refptr<rtc::RTCCertificate> certificate)
+    : certificate_(std::move(certificate)) {}
 
 DOMTimeStamp RTCCertificate::expires() const {
   return static_cast<DOMTimeStamp>(certificate_->Expires());
 }
 
 HeapVector<RTCDtlsFingerprint> RTCCertificate::getFingerprints() {
-  WebVector<WebRTCDtlsFingerprint> web_fingerprints =
-      certificate_->GetFingerprints();
-  DCHECK(!web_fingerprints.IsEmpty());
-  HeapVector<RTCDtlsFingerprint> fingerprints(web_fingerprints.size());
-  for (size_t i = 0; i < fingerprints.size(); ++i) {
-    DCHECK(!web_fingerprints[i].Algorithm().IsEmpty());
-    DCHECK(!web_fingerprints[i].Value().IsEmpty());
-    fingerprints[i].setAlgorithm(web_fingerprints[i].Algorithm());
-    fingerprints[i].setValue(web_fingerprints[i].Value());
+  std::unique_ptr<rtc::SSLCertificateStats> first_certificate_stats =
+      certificate_->ssl_certificate().GetStats();
+
+  HeapVector<RTCDtlsFingerprint> fingerprints;
+  for (rtc::SSLCertificateStats* certificate_stats =
+           first_certificate_stats.get();
+       certificate_stats; certificate_stats = certificate_stats->issuer.get()) {
+    fingerprints.emplace_back();
+    auto& fingerprint = fingerprints.back();
+    fingerprint.setAlgorithm(WTF::String::FromUTF8(
+        certificate_stats->fingerprint_algorithm.c_str()));
+    fingerprint.setValue(
+        WTF::String::FromUTF8(certificate_stats->fingerprint.c_str())
+            .LowerASCII());
   }
+
   return fingerprints;
 }
 

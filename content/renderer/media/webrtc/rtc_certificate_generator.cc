@@ -12,7 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/rtc_certificate.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/media_buildflags.h"
 #include "third_party/webrtc/rtc_base/rtccertificate.h"
@@ -91,15 +90,12 @@ class RTCCertificateGeneratorRequest
     main_thread_->PostTask(
         FROM_HERE,
         base::BindOnce(&RTCCertificateGeneratorRequest::DoCallbackOnMainThread,
-                       this, std::move(observer),
-                       certificate
-                           ? std::make_unique<RTCCertificate>(certificate)
-                           : nullptr));
+                       this, std::move(observer), certificate));
   }
 
   void DoCallbackOnMainThread(
       CertificateCallbackPtr observer,
-      std::unique_ptr<blink::WebRTCCertificate> certificate) {
+      rtc::scoped_refptr<rtc::RTCCertificate> certificate) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(observer);
     if (certificate)
@@ -155,7 +151,7 @@ bool RTCCertificateGenerator::IsSupportedKeyParams(
   return WebRTCKeyParamsToKeyParams(key_params).IsValid();
 }
 
-std::unique_ptr<blink::WebRTCCertificate> RTCCertificateGenerator::FromPEM(
+rtc::scoped_refptr<rtc::RTCCertificate> RTCCertificateGenerator::FromPEM(
     blink::WebString pem_private_key,
     blink::WebString pem_certificate) {
   rtc::scoped_refptr<rtc::RTCCertificate> certificate =
@@ -163,7 +159,7 @@ std::unique_ptr<blink::WebRTCCertificate> RTCCertificateGenerator::FromPEM(
           pem_private_key.Utf8(), pem_certificate.Utf8()));
   if (!certificate)
     return nullptr;
-  return std::make_unique<RTCCertificate>(certificate);
+  return certificate;
 }
 
 }  // namespace content

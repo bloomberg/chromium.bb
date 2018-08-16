@@ -43,7 +43,6 @@
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
-#include "third_party/blink/public/platform/web_rtc_certificate.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_configuration.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_handler.h"
@@ -114,6 +113,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
 
 namespace blink {
 
@@ -241,7 +241,7 @@ class WebRTCCertificateObserver : public WebRTCCertificateCallback {
   explicit WebRTCCertificateObserver(ScriptPromiseResolver* resolver)
       : resolver_(resolver) {}
 
-  void OnSuccess(std::unique_ptr<WebRTCCertificate> certificate) override {
+  void OnSuccess(rtc::scoped_refptr<rtc::RTCCertificate> certificate) override {
     resolver_->Resolve(new RTCCertificate(std::move(certificate)));
   }
 
@@ -364,10 +364,10 @@ WebRTCConfiguration ParseConfiguration(ExecutionContext* context,
   if (configuration.hasCertificates()) {
     const HeapVector<Member<RTCCertificate>>& certificates =
         configuration.certificates();
-    WebVector<std::unique_ptr<WebRTCCertificate>> certificates_copy(
+    WebVector<rtc::scoped_refptr<rtc::RTCCertificate>> certificates_copy(
         certificates.size());
     for (size_t i = 0; i < certificates.size(); ++i) {
-      certificates_copy[i] = certificates[i]->CertificateShallowCopy();
+      certificates_copy[i] = certificates[i]->Certificate();
     }
     web_configuration.certificates = std::move(certificates_copy);
   }
@@ -496,7 +496,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
   // Make sure no certificates have expired.
   if (configuration.certificates.size() > 0) {
     DOMTimeStamp now = ConvertSecondsToDOMTimeStamp(CurrentTime());
-    for (const std::unique_ptr<WebRTCCertificate>& certificate :
+    for (const rtc::scoped_refptr<rtc::RTCCertificate>& certificate :
          configuration.certificates) {
       DOMTimeStamp expires = certificate->Expires();
       if (expires <= now) {
