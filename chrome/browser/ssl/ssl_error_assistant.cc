@@ -116,7 +116,8 @@ LoadDynamicInterstitialList(
         HashesFromDynamicInterstitial(entry), entry.issuer_common_name_regex(),
         entry.issuer_organization_regex(), entry.mitm_software_name(),
         entry.interstitial_type(), MapToCertStatus(entry.cert_error()),
-        GURL(entry.support_url())));
+        GURL(entry.support_url()),
+        entry.show_only_for_nonoverridable_errors()));
   }
 
   return dynamic_interstitial_list;
@@ -178,14 +179,17 @@ DynamicInterstitialInfo::DynamicInterstitialInfo(
     chrome_browser_ssl::DynamicInterstitial::InterstitialPageType
         interstitial_type,
     int cert_error,
-    const GURL& support_url)
+    const GURL& support_url,
+    bool show_only_for_nonoverridable_errors)
     : spki_hashes(spki_hashes),
       issuer_common_name_regex(issuer_common_name_regex),
       issuer_organization_regex(issuer_organization_regex),
       mitm_software_name(mitm_software_name),
       interstitial_type(interstitial_type),
       cert_error(cert_error),
-      support_url(support_url) {}
+      support_url(support_url),
+      show_only_for_nonoverridable_errors(show_only_for_nonoverridable_errors) {
+}
 
 DynamicInterstitialInfo::~DynamicInterstitialInfo() {}
 
@@ -210,7 +214,8 @@ bool SSLErrorAssistant::IsKnownCaptivePortalCertificate(
 }
 
 base::Optional<DynamicInterstitialInfo>
-SSLErrorAssistant::MatchDynamicInterstitial(const net::SSLInfo& ssl_info) {
+SSLErrorAssistant::MatchDynamicInterstitial(const net::SSLInfo& ssl_info,
+                                            bool is_overridable) {
   // Load the dynamic interstitial data from SSL error assistant proto if it's
   // not already loaded.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -241,6 +246,12 @@ SSLErrorAssistant::MatchDynamicInterstitial(const net::SSLInfo& ssl_info) {
     if (!data.issuer_organization_regex.empty() &&
         !RegexMatchesAny(ssl_info.cert->issuer().organization_names,
                          data.issuer_organization_regex)) {
+      continue;
+    }
+
+    // Don't match the entry if it's only intended for non-overridable
+    // errors, but the current error is overridable.
+    if (data.show_only_for_nonoverridable_errors && is_overridable) {
       continue;
     }
 

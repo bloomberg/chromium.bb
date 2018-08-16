@@ -41,7 +41,8 @@ struct DynamicInterstitialInfo {
       chrome_browser_ssl::DynamicInterstitial::InterstitialPageType
           interstitial_type,
       int cert_error,
-      const GURL& support_url);
+      const GURL& support_url,
+      bool show_only_for_nonoverridable_errors);
 
   DynamicInterstitialInfo(const DynamicInterstitialInfo& other);
 
@@ -55,6 +56,7 @@ struct DynamicInterstitialInfo {
       interstitial_type;
   const int cert_error;
   const GURL support_url;
+  bool show_only_for_nonoverridable_errors;
 };
 
 // Helper class for SSLErrorHandler. This class is responsible for reading in
@@ -80,7 +82,8 @@ class SSLErrorAssistant {
   // matches with |ssl_info|. If there is no match, returns null. Loads
   // |dynamic_interstitial_list_| on the first use.
   base::Optional<DynamicInterstitialInfo> MatchDynamicInterstitial(
-      const net::SSLInfo& ssl_info);
+      const net::SSLInfo& ssl_info,
+      bool is_overridable = false);
 
   void SetErrorAssistantProto(
       std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> proto);
