@@ -112,7 +112,6 @@ public abstract class org.chromium.net.ICronetEngineBuilder {
   public abstract java.lang.String getDefaultUserAgent();
   public abstract org.chromium.net.ExperimentalCronetEngine build();
   public org.chromium.net.ICronetEngineBuilder enableNetworkQualityEstimator(boolean);
-  public org.chromium.net.ICronetEngineBuilder setCertVerifierData(java.lang.String);
   public org.chromium.net.ICronetEngineBuilder setThreadPriority(int);
 }
 public final class org.chromium.net.InlineExecutionProhibitedException extends java.util.concurrent.RejectedExecutionException {
@@ -295,4 +294,4 @@ public abstract class org.chromium.net.UrlResponseInfo {
   public abstract java.lang.String getProxyServer();
   public abstract long getReceivedByteCount();
 }
-Stamp: f4909b6572d83edd28472e7087b0e6f2
+Stamp: fadacc3f49758e52a33a1ae7f032ec97
