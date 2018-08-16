@@ -359,6 +359,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       WebContents* outer_web_contents,
       RenderFrameHost* outer_contents_frame) override;
   WebContentsImpl* GetOuterWebContents() override;
+  WebContentsImpl* GetOutermostWebContents() override;
   void DidChangeVisibleSecurityState() override;
   void NotifyPreferencesChanged() override;
 
@@ -1254,9 +1255,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Returns true if |this| is the focused WebContents or an ancestor of the
   // focused WebContents.
   bool ContainsOrIsFocusedWebContents();
-
-  // Returns the root of the WebContents tree.
-  WebContentsImpl* GetOutermostWebContents();
 
   // Walks up the outer WebContents chain and focuses the FrameTreeNode where
   // each inner WebContents is attached.
