@@ -8,6 +8,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
 from v8_globals import includes
+import v8_types
 
 CALLBACK_FUNCTION_H_INCLUDES = frozenset([
     'platform/bindings/callback_function_base.h',
@@ -45,16 +46,9 @@ def callback_function_context(callback_function):
         'forward_declarations': sorted(forward_declarations(callback_function)),
         'header_includes': sorted(CALLBACK_FUNCTION_H_INCLUDES),
         'idl_type': idl_type_str,
+        'native_value_traits_tag': v8_types.idl_type_to_native_value_traits_tag(idl_type),
         'return_cpp_type': idl_type.cpp_type,
     }
-
-    if idl_type_str != 'void':
-        context.update({
-            'return_value_conversion': idl_type.v8_value_to_local_cpp_value(
-                callback_function.extended_attributes,
-                'call_result', 'native_result', isolate='GetIsolate()',
-                bailout_return_value='v8::Nothing<%s>()' % context['return_cpp_type']),
-        })
 
     context.update(arguments_context(callback_function.arguments))
     return context

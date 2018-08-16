@@ -1116,6 +1116,25 @@ IdlUnionType.literal_cpp_value = union_literal_cpp_value
 IdlArrayOrSequenceType.literal_cpp_value = array_or_sequence_literal_cpp_value
 
 
+_IDL_TYPE_TO_NATIVE_VALUE_TRAITS_TAG_MAP = {
+    'DOMString': 'IDLString',
+    'any': 'ScriptValue',
+    'boolean': 'IDLBoolean',
+    'long': 'IDLLong',
+    'sequence<DOMString>': 'IDLSequence<IDLString>',
+    'unsigned short': 'IDLUnsignedShort',
+    'void': None,
+}
+
+
+def idl_type_to_native_value_traits_tag(idl_type):
+    idl_type_str = str(idl_type)
+    if idl_type_str in _IDL_TYPE_TO_NATIVE_VALUE_TRAITS_TAG_MAP:
+        return _IDL_TYPE_TO_NATIVE_VALUE_TRAITS_TAG_MAP[idl_type_str]
+    else:
+        raise Exception("Type `%s' is not supported." % idl_type_str)
+
+
 ################################################################################
 # Utility properties for nullable types
 ################################################################################
