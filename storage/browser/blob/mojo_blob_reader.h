@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/net_errors.h"
@@ -38,7 +39,7 @@ class STORAGE_EXPORT MojoBlobReader {
    public:
     enum RequestSideData { REQUEST_SIDE_DATA, DONT_REQUEST_SIDE_DATA };
 
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
 
     // Called when the blob being read has been fully constructed and its size
     // is known. |total_size| is the total size of the blob, while
@@ -99,7 +100,7 @@ class STORAGE_EXPORT MojoBlobReader {
   void OnResponseBodyStreamClosed(MojoResult result);
   void OnResponseBodyStreamReady(MojoResult result);
 
-  std::unique_ptr<Delegate> delegate_;
+  const std::unique_ptr<Delegate> delegate_;
 
   // The range of the blob that should be read. Could be unbounded if the entire
   // blob is being read.
@@ -129,6 +130,8 @@ class STORAGE_EXPORT MojoBlobReader {
   // Set to true when the delegate's OnComplete has been called. Used to make
   // sure OnComplete isn't called more than once.
   bool notified_completed_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<MojoBlobReader> weak_factory_;
 
