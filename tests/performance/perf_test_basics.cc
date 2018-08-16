@@ -18,7 +18,6 @@
 #if defined(__native_client__)
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #endif
-#include "native_client/tests/performance/perf_test_compat_osx.h"
 #include "native_client/tests/performance/perf_test_runner.h"
 
 
