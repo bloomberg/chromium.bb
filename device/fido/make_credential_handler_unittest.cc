@@ -30,9 +30,10 @@ namespace device {
 
 namespace {
 
-using TestMakeCredentialRequestCallback = test::StatusAndValueCallbackReceiver<
+using TestMakeCredentialRequestCallback = test::StatusAndValuesCallbackReceiver<
     FidoReturnCode,
-    base::Optional<AuthenticatorMakeCredentialResponse>>;
+    base::Optional<AuthenticatorMakeCredentialResponse>,
+    FidoTransportProtocol>;
 
 }  // namespace
 

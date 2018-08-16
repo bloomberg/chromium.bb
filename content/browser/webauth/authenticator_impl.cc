@@ -646,7 +646,8 @@ void AuthenticatorImpl::DidFinishNavigation(
 // Callback to handle the async registration response from a U2fDevice.
 void AuthenticatorImpl::OnRegisterResponse(
     device::FidoReturnCode status_code,
-    base::Optional<device::AuthenticatorMakeCredentialResponse> response_data) {
+    base::Optional<device::AuthenticatorMakeCredentialResponse> response_data,
+    device::FidoTransportProtocol transport_used) {
   if (!request_) {
     // Either the callback was called immediately and |request_| has not yet
     // been assigned (this is a bug), or a navigation caused the request to be
@@ -676,6 +677,7 @@ void AuthenticatorImpl::OnRegisterResponse(
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
+      request_delegate_->UpdateLastTransportUsed(transport_used);
 
       if (attestation_preference_ !=
           blink::mojom::AttestationConveyancePreference::NONE) {
@@ -752,7 +754,8 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
 
 void AuthenticatorImpl::OnSignResponse(
     device::FidoReturnCode status_code,
-    base::Optional<device::AuthenticatorGetAssertionResponse> response_data) {
+    base::Optional<device::AuthenticatorGetAssertionResponse> response_data,
+    device::FidoTransportProtocol transport_used) {
   if (!request_) {
     // Either the callback was called immediately and |request_| has not yet
     // been assigned (this is a bug), or a navigation caused the request to be
@@ -779,6 +782,8 @@ void AuthenticatorImpl::OnSignResponse(
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
+      request_delegate_->UpdateLastTransportUsed(transport_used);
+
       base::Optional<bool> echo_appid_extension;
       if (alternative_application_parameter_) {
         echo_appid_extension = (response_data->GetRpIdHash() ==

@@ -27,7 +27,8 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
  public:
   using CompletionCallback =
       base::OnceCallback<void(FidoReturnCode status_code,
-                              base::Optional<Response> response_data)>;
+                              base::Optional<Response> response_data,
+                              FidoTransportProtocol transport_used)>;
 
   FidoRequestHandler(service_manager::Connector* connector,
                      const base::flat_set<FidoTransportProtocol>& transports,
@@ -78,7 +79,9 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
     // Once response has been passed to the relying party, cancel all other on
     // going requests.
     CancelOngoingTasks(authenticator->GetId());
-    std::move(completion_callback_).Run(*return_code, std::move(response_data));
+    std::move(completion_callback_)
+        .Run(*return_code, std::move(response_data),
+             authenticator->AuthenticatorTransport());
   }
 
  private:

@@ -25,9 +25,10 @@ namespace device {
 
 namespace {
 
-using TestGetAssertionRequestCallback = test::StatusAndValueCallbackReceiver<
+using TestGetAssertionRequestCallback = test::StatusAndValuesCallbackReceiver<
     FidoReturnCode,
-    base::Optional<AuthenticatorGetAssertionResponse>>;
+    base::Optional<AuthenticatorGetAssertionResponse>,
+    FidoTransportProtocol>;
 
 }  // namespace
 
@@ -96,7 +97,7 @@ TEST_F(FidoGetAssertionHandlerTest, CtapRequestOnSingleDevice) {
   get_assertion_callback().WaitForCallback();
 
   EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
-  EXPECT_TRUE(get_assertion_callback().value());
+  EXPECT_TRUE(get_assertion_callback().value<0>());
   EXPECT_TRUE(request_handler->is_complete());
 }
 
@@ -116,7 +117,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestU2fSign) {
   discovery()->AddDevice(std::move(device));
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
-  EXPECT_TRUE(get_assertion_callback().value());
+  EXPECT_TRUE(get_assertion_callback().value<0>());
   EXPECT_TRUE(request_handler->is_complete());
 }
 
@@ -139,7 +140,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestU2fSignWithoutCtapFlag) {
   discovery()->AddDevice(std::move(device));
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
-  EXPECT_TRUE(get_assertion_callback().value());
+  EXPECT_TRUE(get_assertion_callback().value<0>());
   EXPECT_TRUE(request_handler->is_complete());
 }
 
