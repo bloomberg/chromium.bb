@@ -33,6 +33,7 @@ class DrmOverlayValidator;
 class HardwareDisplayController;
 struct OverlayCheck_Params;
 struct OverlayCheckReturn_Params;
+class DrmFramebufferGenerator;
 class ScreenManager;
 
 // The GPU object representing a window.
@@ -54,7 +55,7 @@ class DrmWindow {
 
   gfx::Rect bounds() const { return bounds_; }
 
-  void Initialize();
+  void Initialize(DrmFramebufferGenerator* buffer_generator);
 
   void Shutdown();
 

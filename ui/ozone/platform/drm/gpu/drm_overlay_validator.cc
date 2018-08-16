@@ -10,10 +10,10 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
-#include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_framebuffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 
@@ -25,6 +25,7 @@ scoped_refptr<DrmFramebuffer> GetBufferForPageFlipTest(
     const scoped_refptr<DrmDevice>& drm_device,
     const gfx::Size& size,
     uint32_t format,
+    DrmFramebufferGenerator* buffer_generator,
     std::vector<scoped_refptr<DrmFramebuffer>>* reusable_buffers) {
   // Check if we can re-use existing buffers.
   for (const auto& buffer : *reusable_buffers) {
@@ -34,24 +35,22 @@ scoped_refptr<DrmFramebuffer> GetBufferForPageFlipTest(
     }
   }
 
-  // TODO(dcastagna): use the right modifiers.
-  std::unique_ptr<GbmBuffer> buffer =
-      drm_device->gbm_device()->CreateBuffer(format, size, GBM_BO_USE_SCANOUT);
-  if (!buffer)
-    return nullptr;
-
+  const std::vector<uint64_t>
+      modifiers;  // TODO(dcastagna): use the right modifiers.
   scoped_refptr<DrmFramebuffer> drm_framebuffer =
-      DrmFramebuffer::AddFramebuffer(drm_device, buffer.get());
-  if (!drm_framebuffer)
-    return nullptr;
+      buffer_generator->Create(drm_device, format, modifiers, size);
+  if (drm_framebuffer)
+    reusable_buffers->push_back(drm_framebuffer);
 
-  reusable_buffers->push_back(drm_framebuffer);
   return drm_framebuffer;
 }
 
 }  // namespace
 
-DrmOverlayValidator::DrmOverlayValidator(DrmWindow* window) : window_(window) {}
+DrmOverlayValidator::DrmOverlayValidator(
+    DrmWindow* window,
+    DrmFramebufferGenerator* buffer_generator)
+    : window_(window), buffer_generator_(buffer_generator) {}
 
 DrmOverlayValidator::~DrmOverlayValidator() {}
 
@@ -83,7 +82,8 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
 
     scoped_refptr<DrmFramebuffer> buffer = GetBufferForPageFlipTest(
         drm, params[i].buffer_size,
-        GetFourCCFormatFromBufferFormat(params[i].format), &reusable_buffers);
+        GetFourCCFormatFromBufferFormat(params[i].format), buffer_generator_,
+        &reusable_buffers);
 
     DrmOverlayPlane plane(buffer, params[i].plane_z_order, params[i].transform,
                           params[i].display_rect, params[i].crop_rect,

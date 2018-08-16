@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gpu_fence.h"
-#include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
@@ -20,7 +19,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_gbm_device.h"
+#include "ui/ozone/platform/drm/gpu/mock_drm_framebuffer_generator.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace ui {
@@ -57,36 +56,20 @@ class ScreenManagerTest : public testing::Test {
   }
 
   void SetUp() override {
-    auto gbm = std::make_unique<ui::MockGbmDevice>();
-    drm_ = new ui::MockDrmDevice(std::move(gbm));
+    drm_ = new ui::MockDrmDevice;
     device_manager_.reset(new ui::DrmDeviceManager(nullptr));
-    screen_manager_.reset(new ui::ScreenManager());
+    buffer_generator_.reset(new ui::MockDrmFramebufferGenerator());
+    screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
   }
   void TearDown() override {
     screen_manager_.reset();
     drm_ = nullptr;
   }
 
-  scoped_refptr<DrmFramebuffer> CreateBuffer(uint32_t format,
-                                             const gfx::Size& size) {
-    return CreateBufferWithModifier(format, DRM_FORMAT_MOD_NONE, size);
-  }
-
-  scoped_refptr<DrmFramebuffer> CreateBufferWithModifier(
-      uint32_t format,
-      uint64_t format_modifier,
-      const gfx::Size& size) {
-    std::vector<uint64_t> modifiers;
-    if (format_modifier != DRM_FORMAT_MOD_NONE)
-      modifiers.push_back(format_modifier);
-    auto buffer = drm_->gbm_device()->CreateBufferWithModifiers(
-        format, size, GBM_BO_USE_SCANOUT, modifiers);
-    return DrmFramebuffer::AddFramebuffer(drm_, buffer.get());
-  }
-
  protected:
   scoped_refptr<ui::MockDrmDevice> drm_;
   std::unique_ptr<ui::DrmDeviceManager> device_manager_;
+  std::unique_ptr<ui::MockDrmFramebufferGenerator> buffer_generator_;
   std::unique_ptr<ui::ScreenManager> screen_manager_;
 
  private:
@@ -377,9 +360,7 @@ TEST_F(ScreenManagerTest, CheckMirrorModeAfterBeginReEnabled) {
 
 TEST_F(ScreenManagerTest,
        CheckProperConfigurationWithDifferentDeviceAndSameCrtc) {
-  auto gbm_device = std::make_unique<ui::MockGbmDevice>();
-  scoped_refptr<ui::MockDrmDevice> drm2 =
-      new ui::MockDrmDevice(std::move(gbm_device));
+  scoped_refptr<ui::MockDrmDevice> drm2 = new ui::MockDrmDevice;
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
   screen_manager_->AddDisplayController(drm2, kPrimaryCrtc, kPrimaryConnector);
@@ -404,7 +385,7 @@ TEST_F(ScreenManagerTest,
 TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithSameBounds) {
   std::unique_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(1, std::move(window));
 
@@ -422,7 +403,7 @@ TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithSameBounds) {
 TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithDifferentBounds) {
   std::unique_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   gfx::Rect new_bounds = GetPrimaryBounds();
   new_bounds.Inset(0, 0, 1, 1);
   window->SetBounds(new_bounds);
@@ -445,7 +426,7 @@ TEST_F(ScreenManagerTest,
   for (size_t i = 1; i < kWindowCount + 1; ++i) {
     std::unique_ptr<ui::DrmWindow> window(
         new ui::DrmWindow(i, device_manager_.get(), screen_manager_.get()));
-    window->Initialize();
+    window->Initialize(buffer_generator_.get());
     window->SetBounds(GetPrimaryBounds());
     screen_manager_->AddWindow(i, std::move(window));
   }
@@ -470,7 +451,7 @@ TEST_F(ScreenManagerTest, ShouldDissociateWindowOnControllerRemoval) {
   gfx::AcceleratedWidget window_id = 1;
   std::unique_ptr<ui::DrmWindow> window(new ui::DrmWindow(
       window_id, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(window_id, std::move(window));
 
@@ -492,7 +473,7 @@ TEST_F(ScreenManagerTest, ShouldDissociateWindowOnControllerRemoval) {
 TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasNoBuffer) {
   std::unique_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(1, std::move(window));
 
@@ -521,10 +502,11 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasNoBuffer) {
 TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   std::unique_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
-  scoped_refptr<DrmFramebuffer> buffer =
-      CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
+
+  scoped_refptr<ui::DrmFramebuffer> buffer = buffer_generator_->Create(
+      drm_, DRM_FORMAT_XRGB8888, {}, GetPrimaryBounds().size());
   ui::DrmOverlayPlaneList planes;
   planes.push_back(ui::DrmOverlayPlane(buffer, nullptr));
   window->SchedulePageFlip(std::move(planes), base::DoNothing(),
@@ -546,10 +528,13 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
 TEST_F(ScreenManagerTest, DISABLED_RejectBufferWithIncompatibleModifiers) {
   std::unique_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
-  auto buffer = CreateBufferWithModifier(
-      DRM_FORMAT_XRGB8888, I915_FORMAT_MOD_X_TILED, GetPrimaryBounds().size());
+  scoped_refptr<ui::DrmFramebuffer> buffer =
+      buffer_generator_->CreateWithModifier(drm_, DRM_FORMAT_XRGB8888,
+                                            I915_FORMAT_MOD_X_TILED,
+                                            GetPrimaryBounds().size());
+
   ui::DrmOverlayPlaneList planes;
   planes.push_back(ui::DrmOverlayPlane(buffer, nullptr));
   window->SchedulePageFlip(std::move(planes), base::DoNothing(),
@@ -573,14 +558,11 @@ TEST_F(ScreenManagerTest, DISABLED_RejectBufferWithIncompatibleModifiers) {
 }
 
 TEST(ScreenManagerTest2, ShouldNotHardwareMirrorDifferentDrmDevices) {
-  auto gbm_device1 = std::make_unique<MockGbmDevice>();
-  auto drm_device1 =
-      base::MakeRefCounted<MockDrmDevice>(std::move(gbm_device1));
-  auto gbm_device2 = std::make_unique<MockGbmDevice>();
-  auto drm_device2 =
-      base::MakeRefCounted<MockDrmDevice>(std::move(gbm_device2));
+  auto drm_device1 = base::MakeRefCounted<MockDrmDevice>();
+  auto drm_device2 = base::MakeRefCounted<MockDrmDevice>();
   DrmDeviceManager drm_device_manager(nullptr);
-  ScreenManager screen_manager;
+  MockDrmFramebufferGenerator buffer_generator;
+  ScreenManager screen_manager(&buffer_generator);
 
   constexpr uint32_t kCrtc19 = 19;
   constexpr uint32_t kConnector28 = 28;
@@ -599,7 +581,7 @@ TEST(ScreenManagerTest2, ShouldNotHardwareMirrorDifferentDrmDevices) {
   {
     auto window1 =
         std::make_unique<DrmWindow>(1, &drm_device_manager, &screen_manager);
-    window1->Initialize();
+    window1->Initialize(&buffer_generator);
     screen_manager.AddWindow(1, std::move(window1));
     screen_manager.GetWindow(1)->SetBounds(gfx::Rect(0, 0, 1920, 1080));
     screen_manager.AddDisplayController(drm_device1, kCrtc19, kConnector28);
@@ -611,7 +593,7 @@ TEST(ScreenManagerTest2, ShouldNotHardwareMirrorDifferentDrmDevices) {
                                               Mode(1920, 1080));
     auto window2 =
         std::make_unique<DrmWindow>(2, &drm_device_manager, &screen_manager);
-    window2->Initialize();
+    window2->Initialize(&buffer_generator);
     screen_manager.AddWindow(2, std::move(window2));
     screen_manager.GetWindow(2)->SetBounds(gfx::Rect(0, 1140, 1920, 1080));
   }
@@ -657,7 +639,7 @@ TEST(ScreenManagerTest2, ShouldNotHardwareMirrorDifferentDrmDevices) {
                                               Mode(1920, 1080));
     auto window3 =
         std::make_unique<DrmWindow>(3, &drm_device_manager, &screen_manager);
-    window3->Initialize();
+    window3->Initialize(&buffer_generator);
     screen_manager.AddWindow(3, std::move(window3));
     screen_manager.GetWindow(3)->SetBounds(gfx::Rect(0, 0, 1920, 1080));
     screen_manager.GetWindow(1)->SetBounds(gfx::Rect(0, 1140, 1920, 1080));
