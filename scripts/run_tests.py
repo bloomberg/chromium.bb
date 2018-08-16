@@ -461,10 +461,9 @@ def ChrootAvailable():
   If we try to run unittests in the buildtools group, we won't be able to
   create one.
   """
-  ret = cros_build_lib.RunCommand(
-      ['repo', 'list'], capture_output=True, error_code_ok=True,
-      combine_stdout_stderr=True, debug_level=logging.DEBUG)
-  return 'chromiumos-overlay' in ret.output
+  # The chromiumos-overlay project isn't in the buildtools group.
+  path = os.path.join(constants.SOURCE_ROOT, constants.CHROMIUMOS_OVERLAY_DIR)
+  return os.path.exists(path)
 
 
 def _ReExecuteIfNeeded(argv, network):
