@@ -626,10 +626,6 @@ bool TestRunnerForSpecificView::FindString(
       find_options.forward = false;
     else if (option == "StartInSelection")
       find_options.find_next = false;
-    else if (option == "AtWordStarts")
-      find_options.word_start = true;
-    else if (option == "TreatMedialCapitalAsWordStart")
-      find_options.medial_capital_as_word_start = true;
     else if (option == "WrapAround")
       wrap_around = true;
   }

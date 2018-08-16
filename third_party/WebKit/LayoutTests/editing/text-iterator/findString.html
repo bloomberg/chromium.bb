@@ -45,35 +45,15 @@
     testFindString("Lorem ipsum dolor sit amet", "O", ["CaseInsensitive"], [[1, 2], [13, 14], [15, 16]]);
 
     testFindString("insurmountable mountain", "mount", [], [[5, 10], [15, 20], []]);
-    testFindString("insurmountable mountain", "mount", ["AtWordStarts"], [[15, 20], []]);
 
     testFindString("cocoa", "co", [], [[0, 2], [2, 4], []]);
-    testFindString("cocoa", "co", ["AtWordStarts"], [[0, 2], []]);
 
-    testFindString("webkit.org", "org", ["AtWordStarts"], [[7, 10]]);
-    testFindString("webkit.org", ".org", ["AtWordStarts"], [[6, 10], []]);
+    testFindString("webkit.org", "org", [], [[7, 10]]);
+    testFindString("webkit.org", ".org", [], [[6, 10], []]);
 
-    testFindString("webkit.org", "rg", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[]]);
-    testFindString("webkit.org", "org", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[7, 10], []]);
-    testFindString("webkit.org", ".org", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[6, 10], []]);
-    testFindString("webkit.org", "t.org", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[]]);
-
-    testFindString("WebKit", "it", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[]]);
-    testFindString("WebKit", "Kit", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[3, 6], []]);
-    testFindString("WebKit", "bKit", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[]]);
-
-    testFindString("XMLHTTPRequest", "equest", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[]]);
-    testFindString("XMLHTTPRequest", "Request", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[7, 14], []]);
-    testFindString("XMLHTTPRequest", "PRequest", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[]]);
-
-    testFindString("LP64", "64", ["AtWordStarts"], [[]]);
-    testFindString("LP64", "4", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[]]);
-    testFindString("LP64", "64", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[2, 4], []]);
-    testFindString("LP64", "P64", ["AtWordStarts", "TreatMedialCapitalAsWordStart"], [[]]);
-
-    testFindString("\u8d77\u52d5\u6226\u58eb", "\u52d5\u6226\u58eb", ["AtWordStarts"], [[1, 4], []]);
-    testFindString("\u8d77\u52d5\u6226\u58eb", "\u6226\u58eb", ["AtWordStarts"], [[2, 4], []]);
-    testFindString("\u8d77\u52d5\u6226\u58eb", "\u58eb", ["AtWordStarts"], [[3, 4], []]);
+    testFindString("\u8d77\u52d5\u6226\u58eb", "\u52d5\u6226\u58eb", [], [[1, 4], []]);
+    testFindString("\u8d77\u52d5\u6226\u58eb", "\u6226\u58eb", [], [[2, 4], []]);
+    testFindString("\u8d77\u52d5\u6226\u58eb", "\u58eb", [], [[3, 4], []]);
 
     const searchBufferSize = 8192;
     const searchBufferOverlapSize = searchBufferSize / 4;
@@ -83,7 +63,8 @@
         bufferSizedString += bufferSizedString;
     bufferSizedString = bufferSizedString.substring(0, searchBufferSize);
 
-    testFindString(bufferSizedString.substring(0, searchBufferUnoverlappedSize - 2) + " ba a" + bufferSizedString, "a", ["AtWordStarts"], [[searchBufferUnoverlappedSize + 2, searchBufferUnoverlappedSize + 3], []]);
+    testFindString(bufferSizedString.substring(0, searchBufferUnoverlappedSize - 2) + " ba a" + bufferSizedString, "a", [],
+                   [[searchBufferUnoverlappedSize, searchBufferUnoverlappedSize+1], [searchBufferUnoverlappedSize + 2, searchBufferUnoverlappedSize + 3], []]);
 
     var thaiWords = [
         "\u0e01\u0e23",
@@ -95,19 +76,14 @@
     ];
 
     testFindString(thaiWords.join(""), thaiWords[0], [], [[0, 2], [10, 12], [12, 14], []]);
-    testFindString(thaiWords.join(""), thaiWords[0], ["AtWordStarts"], [[0, 2], [12, 14], []]);
 
     testFindString(thaiWords.join(""), thaiWords[2], [], [[6, 8], [8, 10], [14, 16], [18, 20], []]);
-    testFindString(thaiWords.join(""), thaiWords[2], ["AtWordStarts"], [[6, 8], [8, 10], []]);
 
     testFindString(bufferSizedString.substring(0, searchBufferUnoverlappedSize) + thaiWords.join("") + bufferSizedString, thaiWords[0], [], [[searchBufferUnoverlappedSize, searchBufferUnoverlappedSize + 2], [searchBufferUnoverlappedSize + 10, searchBufferUnoverlappedSize + 12], [searchBufferUnoverlappedSize + 12, searchBufferUnoverlappedSize + 14], []]);
-    testFindString(bufferSizedString.substring(0, searchBufferUnoverlappedSize) + thaiWords.join("") + bufferSizedString, thaiWords[0], ["AtWordStarts"], [[searchBufferUnoverlappedSize + 12, searchBufferUnoverlappedSize + 14], []]);
-    testFindString(bufferSizedString.substring(0, searchBufferUnoverlappedSize - 1) + " " + thaiWords.join("") + bufferSizedString, thaiWords[0], ["AtWordStarts"], [[searchBufferUnoverlappedSize, searchBufferUnoverlappedSize + 2], [searchBufferUnoverlappedSize + 12, searchBufferUnoverlappedSize + 14], []]);
-    testFindString(bufferSizedString.substring(0, searchBufferUnoverlappedSize - 3) + " " + thaiWords[4] + bufferSizedString, thaiWords[2], ["AtWordStarts"], [[]]);
-
-    testFindString("Spaces, the final frontier", " ", ["AtWordStarts"], [[7, 8], [11, 12], [17, 18], []]);
-    testFindString("Use an @import rule", "@", ["AtWordStarts"], [[7, 8], []]);
-    testFindString("If ((x + 5) * 2) = 14, then x = 2", "(x", ["AtWordStarts"], [[4, 6], []]);
+  
+    testFindString("Spaces, the final frontier", " ", [], [[7, 8], [11, 12], [17, 18], []]);
+    testFindString("Use an @import rule", "@", [], [[7, 8], []]);
+    testFindString("If ((x + 5) * 2) = 14, then x = 2", "(x", [], [[4, 6], []]);
 
     testFindString("hello<img src='../resources/abe.png'>world", "lowo", [], [[3, 2], []]);
 

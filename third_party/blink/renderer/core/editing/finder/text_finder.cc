@@ -164,9 +164,6 @@ bool TextFinder::Find(int identifier,
       (options.forward ? 0 : kBackwards) |
       (options.match_case ? 0 : kCaseInsensitive) |
       (wrap_within_frame ? kWrapAround : 0) |
-      (options.word_start ? kAtWordStarts : 0) |
-      (options.medial_capital_as_word_start ? kTreatMedialCapitalAsWordStart
-                                            : 0) |
       (options.find_next ? 0 : kStartInSelection);
   active_match_ = Editor::FindRangeOfString(
       *OwnerFrame().GetFrame()->GetDocument(), search_text,

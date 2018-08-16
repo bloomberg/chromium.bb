@@ -891,7 +891,7 @@ bool LocalDOMWindow::find(const String& string,
   // FIXME (13016): Support searchInFrames and showDialog
   FindOptions options =
       (backwards ? kBackwards : 0) | (case_sensitive ? 0 : kCaseInsensitive) |
-      (wrap ? kWrapAround : 0) | (whole_word ? kWholeWord | kAtWordStarts : 0);
+      (wrap ? kWrapAround : 0) | (whole_word ? kWholeWord : 0);
   return Editor::FindString(*GetFrame(), string, options);
 }
 

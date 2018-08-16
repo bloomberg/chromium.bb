@@ -30,18 +30,13 @@ namespace blink {
 
 enum FindOptionFlag {
   kCaseInsensitive = 1 << 0,
-  kAtWordStarts = 1 << 1,
-  // When combined with AtWordStarts, accepts a match in the middle of a word if
-  // the match begins with an uppercase letter followed by a lowercase or
-  // non-letter. Accepts several other intra-word matches.
-  kTreatMedialCapitalAsWordStart = 1 << 2,
-  kBackwards = 1 << 3,
-  kWrapAround = 1 << 4,
-  kStartInSelection = 1 << 5,
-  kWholeWord = 1 << 6,  // WholeWord should imply AtWordStarts
+  kBackwards = 1 << 1,
+  kWrapAround = 1 << 2,
+  kStartInSelection = 1 << 3,
+  kWholeWord = 1 << 4,
   // TODO(yosin) Once find UI works on flat tree and it doesn't use
   // |rangeOfString()|, we should get rid of |FindAPICall| enum member.
-  kFindAPICall = 1 << 7,  // Used for Window.find or execCommand('find')
+  kFindAPICall = 1 << 5,  // Used for Window.find or execCommand('find')
 };
 
 typedef unsigned FindOptions;

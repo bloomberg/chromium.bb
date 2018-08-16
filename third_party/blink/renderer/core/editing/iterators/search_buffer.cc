@@ -56,7 +56,7 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
       prefix_length_(0),
       number_of_characters_just_appended_(0),
       at_break_(true),
-      needs_more_context_(options & kAtWordStarts),
+      needs_more_context_(options & kWholeWord),
       target_requires_kana_workaround_(ContainsKanaLetters(target)) {
   DCHECK(!target.IsEmpty()) << target;
   target.AppendTo(target_);
@@ -72,14 +72,14 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
       std::max(target_length * 8, kMinimumSearchBufferSize));
   overlap_ = buffer_.capacity() / 4;
 
-  if ((options_ & kAtWordStarts) && target_length) {
+  if ((options_ & kWholeWord) && target_length) {
     const UChar32 target_first_character =
         GetCodePointAt(target_.data(), 0, target_length);
     // Characters in the separator category never really occur at the beginning
     // of a word, so if the target begins with such a character, we just ignore
     // the AtWordStart option.
     if (IsSeparator(target_first_character)) {
-      options_ &= ~kAtWordStarts;
+      options_ &= ~kWholeWord;
       needs_more_context_ = false;
     }
   }
@@ -176,7 +176,7 @@ inline bool SearchBuffer::IsBadMatch(const UChar* match,
 }
 
 inline bool SearchBuffer::IsWordStartMatch(size_t start, size_t length) const {
-  DCHECK(options_ & kAtWordStarts);
+  DCHECK(options_ & kWholeWord);
 
   if (!start)
     return true;
@@ -184,41 +184,6 @@ inline bool SearchBuffer::IsWordStartMatch(size_t start, size_t length) const {
   int size = buffer_.size();
   int offset = start;
   UChar32 first_character = GetCodePointAt(buffer_.data(), offset, size);
-
-  if (options_ & kTreatMedialCapitalAsWordStart) {
-    UChar32 previous_character;
-    U16_PREV(buffer_.data(), 0, offset, previous_character);
-
-    if (IsSeparator(first_character)) {
-      // The start of a separator run is a word start (".org" in "webkit.org").
-      if (!IsSeparator(previous_character))
-        return true;
-    } else if (IsASCIIUpper(first_character)) {
-      // The start of an uppercase run is a word start ("Kit" in "WebKit").
-      if (!IsASCIIUpper(previous_character))
-        return true;
-      // The last character of an uppercase run followed by a non-separator,
-      // non-digit is a word start ("Request" in "XMLHTTPRequest").
-      offset = start;
-      U16_FWD_1(buffer_.data(), offset, size);
-      UChar32 next_character = 0;
-      if (offset < size)
-        next_character = GetCodePointAt(buffer_.data(), offset, size);
-      if (!IsASCIIUpper(next_character) && !IsASCIIDigit(next_character) &&
-          !IsSeparator(next_character))
-        return true;
-    } else if (IsASCIIDigit(first_character)) {
-      // The start of a digit run is a word start ("2" in "WebKit2").
-      if (!IsASCIIDigit(previous_character))
-        return true;
-    } else if (IsSeparator(previous_character) ||
-               IsASCIIDigit(previous_character)) {
-      // The start of a non-separator, non-uppercase, non-digit run is a word
-      // start, except after an uppercase. ("org" in "webkit.org", but not "ore"
-      // in "WebCore").
-      return true;
-    }
-  }
 
   // Chinese and Japanese lack word boundary marks, and there is no clear
   // agreement on what constitutes a word, so treat the position before any CJK
@@ -264,7 +229,7 @@ nextMatch:
   // possibly including a combining character that's not yet in the buffer.
   if (!at_break_ && match.start >= size - overlap_) {
     size_t overlap = overlap_;
-    if (options_ & kAtWordStarts) {
+    if (options_ & kWholeWord) {
       // Ensure that there is sufficient context before matchStart the next time
       // around for determining if it is at a word boundary.
       int word_boundary_context_start = match.start;
@@ -285,7 +250,7 @@ nextMatch:
 
   // If this match is "bad", move on to the next match.
   if (IsBadMatch(buffer_.data() + match.start, match.length) ||
-      ((options_ & kAtWordStarts) &&
+      ((options_ & kWholeWord) &&
        !IsWordStartMatch(match.start, match.length))) {
     goto nextMatch;
   }

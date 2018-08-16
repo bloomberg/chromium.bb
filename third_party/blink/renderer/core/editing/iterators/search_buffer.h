@@ -45,9 +45,7 @@ class TextSearcherICU;
 // Keeps enough of the previous text to be able to search in the future, but no
 // more. Non-breaking spaces are always equal to normal spaces. Case folding is
 // also done if the CaseInsensitive option is specified. Matches are further
-// filtered if the AtWordStarts option is specified, although some matches
-// inside a word are permitted if TreatMedialCapitalAsWordStart is specified as
-// well.
+// filtered if it should be starting at a word start (WholeWord is set).
 class SearchBuffer {
   STACK_ALLOCATED();
 
