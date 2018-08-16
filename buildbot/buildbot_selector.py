@@ -38,7 +38,7 @@ BOT_ASSIGNMENT = {
     'linux_64-newlib-dbg-asan':
         python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
     'mac-newlib-dbg-asan':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib --asan',
+        python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
 
     # Sanitizer Pnacl toolchain buildbot.
     'asan':
@@ -104,7 +104,7 @@ BOT_ASSIGNMENT = {
     'nacl-precise_64-newlib-dbg-asan':
         python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
     'nacl-mac-newlib-dbg-asan':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib --asan',
+        python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
     # Pnacl main trybots
     'nacl-precise_64-newlib-arm_qemu-pnacl':
         bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu arm',
@@ -259,7 +259,7 @@ for platform in [
       arch_flags += ' --no-goma'
     if arch == '':
       arch_part = ''
-      real_arch = '32'
+      real_arch = '64'
     # Test with Breakpad tools only on basic Linux builds.
     if sys.platform.startswith('linux'):
       arch_flags += ' --use-breakpad-tools'
