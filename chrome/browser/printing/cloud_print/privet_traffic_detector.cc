@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
@@ -17,8 +15,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "net/base/address_family.h"
 #include "net/base/ip_address.h"
-#include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/mdns_client.h"
@@ -26,22 +24,20 @@
 namespace {
 
 const int kMaxRestartAttempts = 10;
-const char kPrivetDeviceTypeDnsString[] = "\x07_privet";
 
 void GetNetworkListInBackground(
-    const base::Callback<void(const net::NetworkInterfaceList&)> callback) {
+    base::OnceCallback<void(net::NetworkInterfaceList)> callback) {
   base::AssertBlockingAllowed();
   net::NetworkInterfaceList networks;
   if (!GetNetworkList(&networks, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
     return;
 
   net::NetworkInterfaceList ip4_networks;
-  for (size_t i = 0; i < networks.size(); ++i) {
-    net::AddressFamily address_family =
-        net::GetAddressFamily(networks[i].address);
+  for (const auto& network : networks) {
+    net::AddressFamily address_family = net::GetAddressFamily(network.address);
     if (address_family == net::ADDRESS_FAMILY_IPV4 &&
-        networks[i].prefix_length >= 24) {
-      ip4_networks.push_back(networks[i]);
+        network.prefix_length >= 24) {
+      ip4_networks.push_back(network);
     }
   }
 
@@ -54,8 +50,9 @@ void GetNetworkListInBackground(
                             localhost_prefix,
                             8,
                             net::IP_ADDRESS_ATTRIBUTE_NONE));
-  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                   base::BindOnce(callback, ip4_networks));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(ip4_networks)));
 }
 
 }  // namespace
@@ -63,16 +60,15 @@ void GetNetworkListInBackground(
 namespace cloud_print {
 
 PrivetTrafficDetector::PrivetTrafficDetector(
-    net::AddressFamily address_family,
     content::BrowserContext* profile,
-    const base::Closure& on_traffic_detected)
+    const base::RepeatingClosure& on_traffic_detected)
     : on_traffic_detected_(on_traffic_detected),
-      callback_runner_(base::ThreadTaskRunnerHandle::Get()),
-      address_family_(address_family),
       restart_attempts_(kMaxRestartAttempts),
       receiver_binding_(this),
       profile_(profile),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
 
 PrivetTrafficDetector::~PrivetTrafficDetector() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -108,14 +104,14 @@ void PrivetTrafficDetector::ScheduleRestart() {
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&GetNetworkListInBackground,
-                     base::Bind(&PrivetTrafficDetector::Restart,
-                                weak_ptr_factory_.GetWeakPtr())),
+                     base::BindOnce(&PrivetTrafficDetector::Restart,
+                                    weak_ptr_factory_.GetWeakPtr())),
       base::TimeDelta::FromSeconds(3));
 }
 
-void PrivetTrafficDetector::Restart(const net::NetworkInterfaceList& networks) {
+void PrivetTrafficDetector::Restart(net::NetworkInterfaceList networks) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  networks_ = networks;
+  networks_ = std::move(networks);
   Bind();
 }
 
@@ -136,7 +132,8 @@ void PrivetTrafficDetector::Bind() {
       base::BindOnce(&PrivetTrafficDetector::CreateUDPSocketOnUIThread, this,
                      mojo::MakeRequest(&socket_), std::move(receiver_ptr)));
 
-  net::IPEndPoint multicast_addr = net::GetMDnsIPEndPoint(address_family_);
+  net::IPEndPoint multicast_addr =
+      net::GetMDnsIPEndPoint(net::ADDRESS_FAMILY_IPV4);
   net::IPEndPoint bind_endpoint(
       net::IPAddress::AllZeros(multicast_addr.address().size()),
       multicast_addr.port());
@@ -166,21 +163,22 @@ void PrivetTrafficDetector::OnBindComplete(
     int rv,
     const base::Optional<net::IPEndPoint>& ip_endpoint) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (rv != net::OK) {
-    if ((restart_attempts_--) > 0)
-      ScheduleRestart();
-  } else {
+  if (rv == net::OK) {
     socket_->JoinGroup(
         multicast_addr.address(),
         base::BindOnce(&PrivetTrafficDetector::OnJoinGroupComplete, this));
+    return;
   }
+
+  if (restart_attempts_-- > 0)
+    ScheduleRestart();
 }
 
 bool PrivetTrafficDetector::IsSourceAcceptable() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  for (size_t i = 0; i < networks_.size(); ++i) {
-    if (net::IPAddressMatchesPrefix(recv_addr_.address(), networks_[i].address,
-                                    networks_[i].prefix_length)) {
+  for (const auto& network : networks_) {
+    if (net::IPAddressMatchesPrefix(recv_addr_.address(), network.address,
+                                    network.prefix_length)) {
       return true;
     }
   }
@@ -202,6 +200,8 @@ bool PrivetTrafficDetector::IsPrivetPacket(
   // Check if response packet.
   if (!(header->flags & base::HostToNet16(net::dns_protocol::kFlagResponse)))
     return false;
+
+  static const char kPrivetDeviceTypeDnsString[] = "\x07_privet";
   const char* substring_begin = kPrivetDeviceTypeDnsString;
   const char* substring_end = substring_begin +
                               arraysize(kPrivetDeviceTypeDnsString) - 1;
@@ -212,14 +212,15 @@ bool PrivetTrafficDetector::IsPrivetPacket(
 
 void PrivetTrafficDetector::OnJoinGroupComplete(int rv) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (rv != net::OK) {
-    if ((restart_attempts_--) > 0)
-      ScheduleRestart();
-  } else {
+  if (rv == net::OK) {
     // Reset on success.
     restart_attempts_ = kMaxRestartAttempts;
     socket_->ReceiveMoreWithBufferSize(1, net::dns_protocol::kMaxMulticastSize);
+    return;
   }
+
+  if (restart_attempts_-- > 0)
+    ScheduleRestart();
 }
 
 void PrivetTrafficDetector::ResetConnection() {
@@ -250,7 +251,8 @@ void PrivetTrafficDetector::OnReceived(
   recv_addr_ = src_addr.value();
   if (IsPrivetPacket(data.value())) {
     ResetConnection();
-    callback_runner_->PostTask(FROM_HERE, on_traffic_detected_);
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     on_traffic_detected_);
     base::TimeDelta time_delta = base::Time::Now() - start_time_;
     UMA_HISTOGRAM_LONG_TIMES("LocalDiscovery.DetectorTriggerTime", time_delta);
   } else {
