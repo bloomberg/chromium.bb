@@ -108,16 +108,6 @@ bool ClientDiscardableHandle::CanBeReUsed() const {
   return kHandleDeleted == base::subtle::Acquire_Load(AsAtomic());
 }
 
-// Creates an Id which is guaranteed to be unique among all live handles in a
-// ShareGroup. Created from the shared memory offset/id backing this handle.
-ClientDiscardableHandle::Id ClientDiscardableHandle::GetId() const {
-  DCHECK_GE(shm_id(), 0);
-
-  // This will never generate invalid (max uint64_t), as shm_id is signed.
-  return Id::FromUnsafeValue(static_cast<uint64_t>(shm_id()) << 32 |
-                             static_cast<uint64_t>(byte_offset()));
-}
-
 ServiceDiscardableHandle::ServiceDiscardableHandle()
     : DiscardableHandleBase(nullptr, 0, 0) {}
 

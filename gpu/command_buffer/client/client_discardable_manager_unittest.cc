@@ -168,11 +168,19 @@ TEST(ClientDiscardableManagerTest, FreeDeleted) {
   FakeCommandBuffer command_buffer;
   ClientDiscardableManager manager;
   manager.SetElementCountForTesting(4);
+
+  // Track seen IDs, we should never see an ID again, even when re-using a
+  // handle.
+  std::set<ClientDiscardableHandle::Id> seen_ids;
+
   // Fill our allocation with unlocked handles.
   std::vector<ClientDiscardableHandle::Id> handle_ids;
   for (int i = 0; i < 4; ++i) {
     ClientDiscardableHandle::Id handle_id =
         manager.CreateHandle(&command_buffer);
+    EXPECT_EQ(0u, seen_ids.count(handle_id));
+    seen_ids.insert(handle_id);
+
     ClientDiscardableHandle handle = manager.GetHandle(handle_id);
     EXPECT_TRUE(handle.IsLockedForTesting());
     EXPECT_EQ(handle.shm_id(), 1);
@@ -183,6 +191,9 @@ TEST(ClientDiscardableManagerTest, FreeDeleted) {
   {
     ClientDiscardableHandle::Id handle_id =
         manager.CreateHandle(&command_buffer);
+    EXPECT_EQ(0u, seen_ids.count(handle_id));
+    seen_ids.insert(handle_id);
+
     ClientDiscardableHandle handle = manager.GetHandle(handle_id);
     EXPECT_TRUE(handle.IsLockedForTesting());
     EXPECT_EQ(handle.shm_id(), 2);
@@ -195,6 +206,9 @@ TEST(ClientDiscardableManagerTest, FreeDeleted) {
   {
     ClientDiscardableHandle::Id handle_id =
         manager.CreateHandle(&command_buffer);
+    EXPECT_EQ(0u, seen_ids.count(handle_id));
+    seen_ids.insert(handle_id);
+
     ClientDiscardableHandle handle = manager.GetHandle(handle_id);
     EXPECT_TRUE(handle.IsLockedForTesting());
     EXPECT_EQ(handle.shm_id(), 1);
