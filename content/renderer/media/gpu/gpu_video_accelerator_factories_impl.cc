@@ -31,6 +31,7 @@
 #include "media/video/video_encode_accelerator.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "third_party/skia/include/core/SkPostConfig.h"
 
 namespace content {
 
@@ -348,6 +349,15 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
       return media::GpuVideoAcceleratorFactories::OutputFormat::I420;
     return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
   }
+
+  if (pixel_format == media::PIXEL_FORMAT_I420A) {
+#if SK_PMCOLOR_BYTE_ORDER(B, G, R, A)
+    return media::GpuVideoAcceleratorFactories::OutputFormat::BGRA;
+#elif SK_PMCOLOR_BYTE_ORDER(R, G, B, A)
+    return media::GpuVideoAcceleratorFactories::OutputFormat::RGBA;
+#endif
+  }
+
   if (capabilities.image_ycbcr_420v &&
       !capabilities.image_ycbcr_420v_disabled_for_video_frames) {
     return media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB;

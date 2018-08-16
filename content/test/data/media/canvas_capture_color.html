@@ -87,6 +87,11 @@ function isPixelColor(pixel, color, alphaContext) {
   var checkLength = alphaContext ? color.length : color.length - 1;
   expectedColor[expectedColor.length - 1] *= MAX_ALPHA;
   for (var i = 0; i < checkLength; i++) {
+    // When |alphaContext| is true we have an alpha channel; premultiply the RGB
+    // channel values that are defined in this file unpremultiplied.
+    if (alphaContext)
+      expectedColor[i] *= expectedColor[-1];
+
     if (Math.abs(pixel[i] - expectedColor[i]) > TOLERANCE) {
       console.log('Expected ' + expectedColor + ', got ' + pixel);
       return false;
