@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/assistant_optin/confirm_reject_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/get_more_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/ready_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/third_party_screen_handler.h"
@@ -50,8 +49,6 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
 
   AddScreenHandler(std::make_unique<ValuePropScreenHandler>(
       base::BindOnce(&AssistantOptInUI::OnExit, weak_factory_.GetWeakPtr())));
-  AddScreenHandler(std::make_unique<ConfirmRejectScreenHandler>(
-      base::BindOnce(&AssistantOptInUI::OnExit, weak_factory_.GetWeakPtr())));
   AddScreenHandler(std::make_unique<ThirdPartyScreenHandler>(
       base::BindOnce(&AssistantOptInUI::OnExit, weak_factory_.GetWeakPtr())));
   AddScreenHandler(std::make_unique<GetMoreScreenHandler>(
@@ -85,16 +82,10 @@ void AssistantOptInUI::AddScreenHandler(
 void AssistantOptInUI::OnExit(AssistantOptInScreenExitCode exit_code) {
   switch (exit_code) {
     case AssistantOptInScreenExitCode::VALUE_PROP_SKIPPED:
-      assistant_handler_->ShowNextScreen();
+      assistant_handler_->OnActivityControlOptInResult(false);
       break;
     case AssistantOptInScreenExitCode::VALUE_PROP_ACCEPTED:
       assistant_handler_->OnActivityControlOptInResult(true);
-      break;
-    case AssistantOptInScreenExitCode::CONFIRM_ACCEPTED:
-      assistant_handler_->OnActivityControlOptInResult(true);
-      break;
-    case AssistantOptInScreenExitCode::CONFIRM_REJECTED:
-      assistant_handler_->OnActivityControlOptInResult(false);
       break;
     case AssistantOptInScreenExitCode::THIRD_PARTY_CONTINUED:
       assistant_handler_->ShowNextScreen();

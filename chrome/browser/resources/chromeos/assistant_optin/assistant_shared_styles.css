@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 a {
-  color: var(--google-blue-500);
+  color: var(--google-blue-600);
   font-weight: 400;
   text-decoration: none;
 }
@@ -17,25 +17,27 @@ a {
 }
 
 .line {
-  background-color: rgba(0, 0, 0, .14);
+  background-color: rgb(218, 220, 224);
   height: 1px;
   margin: 8px 0 8px 0;
 }
 
 .title {
-  font: 28px 'Google Sans', sans-serif;
-  font-weight: 500;
+  color: var(--google-grey-900);
+  font-family: 'Google Sans', Roboto, sans-serif;
+  font-size: 28px;
   padding: 32px 0 16px 0;
 }
 
 .sub-title {
+  color: var(--google-grey-900);
   font: 13px Roboto, sans-serif;
-  font-weight: 400;
 }
 
 .content {
-  color: rgba(0, 0, 0, .54);
-  font-size: 13px;
+  color: var(--google-grey-700);
+  font: 13px Roboto, sans-serif;
+  line-height: 16px;
 }
 
 #logo {
@@ -44,5 +46,5 @@ a {
 }
 
 #next-button {
-  margin-inline-end: 18px;
+  margin-inline-end: 0;
 }

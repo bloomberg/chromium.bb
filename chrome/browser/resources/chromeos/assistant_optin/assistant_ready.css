@@ -4,7 +4,11 @@
 
 #ready-img {
   display: block;
-  height: 180px;
+  height: 186px;
   margin: auto;
-  padding: 72px 0 0 32px;
+  padding: 110px 0 0 72px;
+}
+
+#button-text {
+  padding: 0 10px 0 10px;
 }

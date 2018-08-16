@@ -1920,8 +1920,6 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/assistant_optin/assistant_optin_screen_exit_code.h",
       "webui/chromeos/assistant_optin/assistant_optin_ui.cc",
       "webui/chromeos/assistant_optin/assistant_optin_ui.h",
-      "webui/chromeos/assistant_optin/confirm_reject_screen_handler.cc",
-      "webui/chromeos/assistant_optin/confirm_reject_screen_handler.h",
       "webui/chromeos/assistant_optin/get_more_screen_handler.cc",
       "webui/chromeos/assistant_optin/get_more_screen_handler.h",
       "webui/chromeos/assistant_optin/ready_screen_handler.cc",

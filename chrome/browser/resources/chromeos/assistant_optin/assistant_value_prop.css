@@ -8,8 +8,8 @@
   margin: auto;
 }
 
-.sub-title {
-  padding-bottom: 16px;
+#intro-text {
+  padding: 0 8px 16px 0;
 }
 
 #value-prop-container {
@@ -17,35 +17,45 @@
 }
 
 #consents-container {
-  border-left: 1px solid rgba(0, 0, 0, .14);
+  border-left: 1px solid rgb(218, 220, 224);
   padding-left: 24px;
   width: 50%;
 }
 
 #user-name {
+  color: #757575;
   padding-left: 8px;
 }
 
 #footer-text {
+  color: #757575;
   padding-top: 16px;
 }
 
 #user-image {
   border-radius: 50%;
-  height: 24px;
+  height: 20px;
 }
 
 .oobe-popup {
   border-radius: 8px;
   box-shadow: unset;
+  width: 512px;
 }
 
 #overlay-text {
   box-sizing: border-box;
+  font-size: 13px;
   margin: auto;
   min-height: 200px;
-  padding: 24px 24px 16px 24px;
+  padding: 16px;
   width: 100%;
+}
+
+#overlay-additional-info-text {
+  color: rgb(128, 134, 139);
+  line-height: 20px;
+  padding-top: 20px;
 }
 
 #overlay-close-top {
@@ -68,8 +78,16 @@
   background-image: url(chrome://theme/IDR_CLOSE_DIALOG_P);
 }
 
+#overlay-close-bottom {
+  margin-right: 0;
+}
+
+#close-button-text {
+  padding: 0 16px 0 16px;
+}
+
 .button-strip {
   display: flex;
   justify-content: flex-end;
-  margin: 8px;
+  margin: 16px;
 }

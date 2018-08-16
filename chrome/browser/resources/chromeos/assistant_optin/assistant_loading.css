@@ -2,11 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#retry-button {
+oobe-text-button {
   display: none;
 }
 
-.error #retry-button {
+.error oobe-text-button {
   display: block;
 }
 
@@ -20,14 +20,16 @@
   visibility: visible;
 }
 
-.loading #retry-button {
+.loading oobe-text-button {
   pointer-events: none;
 }
 
 #loading-message {
-  color: rgba(0, 0, 0, .54);
-  font-size: 13px;
-  padding: 210px 0 0 0;
+  padding-top: 240px;
+}
+
+#retry-button {
+  margin-inline-end: 0;
 }
 
 paper-progress {

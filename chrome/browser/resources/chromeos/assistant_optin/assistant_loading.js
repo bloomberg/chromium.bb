@@ -55,6 +55,15 @@ Polymer({
   },
 
   /**
+   * On-tap event handler for skip button.
+   *
+   * @private
+   */
+  onSkipTap_: function() {
+    chrome.send('dialogClose');
+  },
+
+  /**
    * Add class to the list of classes of root elements.
    * @param {string} className class to add
    *

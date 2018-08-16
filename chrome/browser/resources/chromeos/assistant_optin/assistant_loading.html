@@ -20,7 +20,7 @@
           </div>
         </div>
         <div class="container" id="loading-container">
-          <div id="loading-message">
+          <div id="loading-message" class="content">
             <div i18n-content="assistantOptinLoading"></div>
           </div>
           <paper-progress class="slow" indeterminate></paper-progress>
@@ -28,6 +28,10 @@
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
+        <oobe-text-button id="skip-button" on-tap="onSkipTap_"
+            disabled="[[buttonsDisabled]]">
+          <div i18n-content="assistantOptinSkipButton"></div>
+        </oobe-text-button>
         <oobe-text-button id="retry-button" inverse android
             on-tap="onRetryTap_" disabled="[[buttonsDisabled]]">
           <div i18n-content="assistantOptinRetryButton"></div>

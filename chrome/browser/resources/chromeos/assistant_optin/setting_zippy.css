@@ -2,36 +2,41 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#setting_zippy {
-  padding-bottom: 14px;
+#container[popupStyle] {
+  padding-top: 8px;
+}
+
+#container:not([popupStyle]) {
+  align-items: center;
+  height: 48px;
 }
 
 .content {
-  padding: 6px 0 6px 0;
-}
-
-.content[toggleStyle] {
-  padding-bottom: 0;
+  padding-top: 4px;
 }
 
 .content[popupStyle] {
-  padding-bottom: 24px;
+  padding: 4px 0 16px 0;
 }
 
 .icon {
-  min-width: 38px;
+  min-width: 36px;
 }
 
 .icon-view {
   display: block;
-  height: 24px;
-  width: 24px;
+  height: 20px;
+  width: 20px;
+}
+
+cr-expand-button {
+  padding-right: 8px;
 }
 
 .toggle {
-  padding-top: 9px;
+  padding-right: 20px;
 }
 
 .indent {
-  padding: 6px 0 0 38px;
+  padding-left: 36px;
 }
