@@ -36,9 +36,11 @@ source_set("omnibox_popup_shared") {
 }
 
 source_set("omnibox_util") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
   sources = [
-    "omnibox_util.cc",
     "omnibox_util.h",
+    "omnibox_util.mm",
   ]
   deps = [
     "//base",

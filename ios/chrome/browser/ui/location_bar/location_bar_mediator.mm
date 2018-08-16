@@ -11,7 +11,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -216,12 +216,8 @@
     return [self imageForOfflinePage];
   }
 
-  return [self imageForSecurityLevel:self.toolbarModel->GetSecurityLevel(true)];
-}
-
-- (UIImage*)imageForSecurityLevel:(security_state::SecurityLevel)level {
-  base::string16 iconName = GetUIRefreshIconNameForSecurityState(level);
-  return [UIImage imageNamed:base::SysUTF16ToNSString(iconName)];
+  return GetLocationBarSecurityIconForSecurityState(
+      self.toolbarModel->GetSecurityLevel(true));
 }
 
 // Returns a location icon for offline pages.
