@@ -52,6 +52,10 @@ void MultideviceHandler::RegisterMessages() {
       base::BindRepeating(&MultideviceHandler::HandleGetPageContent,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "setFeatureEnabledState",
+      base::BindRepeating(&MultideviceHandler::HandleSetFeatureEnabledState,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "retryPendingHostSetup",
       base::BindRepeating(&MultideviceHandler::HandleRetryPendingHostSetup,
                           base::Unretained(this)));
@@ -131,6 +135,29 @@ void MultideviceHandler::HandleGetPageContent(const base::ListValue* args) {
                      callback_weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
+void MultideviceHandler::HandleSetFeatureEnabledState(
+    const base::ListValue* args) {
+  std::string callback_id;
+  bool result = args->GetString(0, &callback_id);
+  DCHECK(result);
+
+  int feature_as_int;
+  result = args->GetInteger(1, &feature_as_int);
+  DCHECK(result);
+
+  auto feature = static_cast<multidevice_setup::mojom::Feature>(feature_as_int);
+  DCHECK(multidevice_setup::mojom::IsKnownEnumValue(feature));
+
+  bool enabled;
+  result = args->GetBoolean(2, &enabled);
+  DCHECK(result);
+
+  multidevice_setup_client_->SetFeatureEnabledState(
+      feature, enabled,
+      base::BindOnce(&MultideviceHandler::OnSetFeatureStateEnabledResult,
+                     callback_weak_ptr_factory_.GetWeakPtr(), callback_id));
+}
+
 void MultideviceHandler::HandleRetryPendingHostSetup(
     const base::ListValue* args) {
   DCHECK(args->empty());
@@ -152,6 +179,12 @@ void MultideviceHandler::OnFeatureStatesFetched(
         feature_states_map) {
   last_feature_states_update_ = feature_states_map;
   AttemptGetPageContentResponse(js_callback_id);
+}
+
+void MultideviceHandler::OnSetFeatureStateEnabledResult(
+    const std::string& js_callback_id,
+    bool success) {
+  ResolveJavascriptCallback(base::Value(js_callback_id), base::Value(success));
 }
 
 std::unique_ptr<base::DictionaryValue>

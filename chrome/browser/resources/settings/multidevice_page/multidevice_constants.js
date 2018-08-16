@@ -19,6 +19,19 @@ cr.define('settings', function() {
   };
 
   /**
+   * Enum of MultiDevice features. Note that this is copied from (and must
+   * include an analog of all values in) the Feature enum in
+   * //chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.
+   * @enum {number}
+   */
+  MultiDeviceFeature = {
+    BETTER_TOGETHER_SUITE: 0,
+    INSTANT_TETHERING: 1,
+    MESSAGES: 2,
+    SMART_LOCK: 3,
+  };
+
+  /**
    * Possible states of MultiDevice features. Note that this is copied from (and
    * must include an analog of all values in) the FeatureState enum in
    * //chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.
@@ -36,6 +49,7 @@ cr.define('settings', function() {
 
   return {
     MultiDeviceSettingsMode: MultiDeviceSettingsMode,
+    MultiDeviceFeature: MultiDeviceFeature,
     MultiDeviceFeatureState: MultiDeviceFeatureState,
   };
 });

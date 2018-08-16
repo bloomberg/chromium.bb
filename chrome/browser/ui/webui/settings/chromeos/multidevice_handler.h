@@ -53,6 +53,7 @@ class MultideviceHandler
 
   void HandleShowMultiDeviceSetupDialog(const base::ListValue* args);
   void HandleGetPageContent(const base::ListValue* args);
+  void HandleSetFeatureEnabledState(const base::ListValue* args);
   void HandleRetryPendingHostSetup(const base::ListValue* args);
 
   void OnHostStatusFetched(
@@ -63,6 +64,8 @@ class MultideviceHandler
       const std::string& js_callback_id,
       const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
           feature_states_map);
+  void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
+                                      bool success);
 
   // Returns null if requisite data has not yet been fetched (i.e., if one or
   // both of |last_host_status_update_| and |last_feature_states_update_| is
