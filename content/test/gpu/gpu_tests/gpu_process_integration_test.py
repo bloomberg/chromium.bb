@@ -167,6 +167,17 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
             (sys.platform.startswith('linux') and
              not self._RunningOnAndroid()))
 
+  def _AlwaysRunsGpuProcess(self):
+    # With VizDisplayCompositor enabled we always run a GPU process for the
+    # display compositor, except on Windows where the display compositor will
+    # run in the browser process if GPU and SwiftShader are disabled.
+    system_info = self.browser.GetSystemInfo()
+    if not system_info:
+      self.fail("Browser doesn't support GetSystemInfo")
+
+    viz_status = system_info.gpu.feature_status.get('viz_display_compositor')
+    return viz_status == 'enabled_on' and sys.platform != 'win32'
+
   @staticmethod
   def _Filterer(workaround):
     # Filter all entries starting with "disabled_extension_" and
@@ -376,6 +387,11 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       # Chrome on Android doesn't support software fallback, skip it.
       # TODO(zmo): If this test runs on ChromeOS, we also need to skip it.
       return
+
+    if self._AlwaysRunsGpuProcess():
+      # The current configuration will always launch a GPU process, skip test.
+      return
+
     self.RestartBrowserIfNecessaryWithArgs([
       '--disable-gpu',
       '--disable-software-rasterizer'])
