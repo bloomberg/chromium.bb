@@ -15,6 +15,18 @@ FragmentData::RareData::RareData() : unique_id(NewUniqueObjectId()) {}
 
 FragmentData::RareData::~RareData() = default;
 
+void FragmentData::DestroyTail() {
+  while (next_fragment_) {
+    // Take the following (next-next) fragment, clearing
+    // |next_fragment_->next_fragment_|.
+    std::unique_ptr<FragmentData> next =
+        std::move(next_fragment_->next_fragment_);
+    // Point |next_fragment_| to the following fragment and destroy
+    // the current |next_fragment_|.
+    next_fragment_ = std::move(next);
+  }
+}
+
 FragmentData& FragmentData::EnsureNextFragment() {
   if (!next_fragment_)
     next_fragment_ = std::make_unique<FragmentData>();

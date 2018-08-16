@@ -21,7 +21,7 @@ class CORE_EXPORT FragmentData {
  public:
   FragmentData* NextFragment() const { return next_fragment_.get(); }
   FragmentData& EnsureNextFragment();
-  void ClearNextFragment() { next_fragment_.reset(); }
+  void ClearNextFragment() { DestroyTail(); }
 
   // Visual offset of this fragment's top-left position from the
   // "paint offset root" which is the containing root PaintLayer of the root
@@ -209,8 +209,15 @@ class CORE_EXPORT FragmentData {
   const EffectPaintPropertyNode* PreEffect() const;
   const EffectPaintPropertyNode* PreFilter() const;
 
+  ~FragmentData() {
+    if (next_fragment_)
+      DestroyTail();
+  }
+
  private:
   friend class FragmentDataTest;
+
+  void DestroyTail();
 
   // Contains rare data that that is not needed on all fragments.
   struct RareData {
