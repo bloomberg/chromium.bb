@@ -8,10 +8,14 @@
 #include <stdint.h>
 
 #include <iosfwd>
+#include <tuple>
 #include <type_traits>
+#include <utility>
 
 #include "base/base_export.h"
+#include "base/logging.h"
 #include "base/task/task_traits_details.h"
+#include "base/task/task_traits_extension.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -149,33 +153,58 @@ class BASE_EXPORT TaskTraits {
   // constexpr base::TaskTraits other_user_visible_may_block_traits = {
   //     base::MayBlock(), base::TaskPriority::USER_VISIBLE};
   template <class... ArgTypes,
-            class CheckArgumentsAreValid = internal::InitTypes<
-                decltype(ValidTrait(std::declval<ArgTypes>()))...>>
+            class CheckArgumentsAreValidBaseTraits = std::enable_if_t<
+                trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   constexpr TaskTraits(ArgTypes... args)
       : priority_set_explicitly_(
-            internal::HasArgOfType<TaskPriority, ArgTypes...>::value),
-        priority_(internal::GetValueFromArgList(
-            internal::EnumArgGetter<TaskPriority, TaskPriority::USER_VISIBLE>(),
+            trait_helpers::HasArgOfType<TaskPriority, ArgTypes...>::value),
+        priority_(trait_helpers::GetValueFromArgList(
+            trait_helpers::EnumArgGetter<TaskPriority,
+                                         TaskPriority::USER_VISIBLE>(),
             args...)),
         shutdown_behavior_set_explicitly_(
-            internal::HasArgOfType<TaskShutdownBehavior, ArgTypes...>::value),
-        shutdown_behavior_(internal::GetValueFromArgList(
-            internal::EnumArgGetter<TaskShutdownBehavior,
-                                    TaskShutdownBehavior::SKIP_ON_SHUTDOWN>(),
+            trait_helpers::HasArgOfType<TaskShutdownBehavior,
+                                        ArgTypes...>::value),
+        shutdown_behavior_(trait_helpers::GetValueFromArgList(
+            trait_helpers::EnumArgGetter<
+                TaskShutdownBehavior,
+                TaskShutdownBehavior::SKIP_ON_SHUTDOWN>(),
             args...)),
-        may_block_(internal::GetValueFromArgList(
-            internal::BooleanArgGetter<MayBlock>(),
+        may_block_(trait_helpers::GetValueFromArgList(
+            trait_helpers::BooleanArgGetter<MayBlock>(),
             args...)),
-        with_base_sync_primitives_(internal::GetValueFromArgList(
-            internal::BooleanArgGetter<WithBaseSyncPrimitives>(),
+        with_base_sync_primitives_(trait_helpers::GetValueFromArgList(
+            trait_helpers::BooleanArgGetter<WithBaseSyncPrimitives>(),
             args...)) {}
+
+  // Construct TaskTraits with extension traits. See task_traits_extension.h.
+  template <class... ArgTypes,
+            class AvoidConstructorRedeclaration = void,
+            class CheckArgsContainNonBaseTrait = std::enable_if_t<
+                !trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
+  constexpr TaskTraits(ArgTypes... args)
+      // Select those arguments that are valid base TaskTraits and forward them
+      // to the above constructor via a helper constructor.
+      : TaskTraits(std::forward_as_tuple(args...),
+                   trait_helpers::SelectIndices<
+                       trait_helpers::ValidTraitTester<ValidTrait>::IsValid,
+                       ArgTypes...>{}) {
+    // Select all other arguments and try to create an extension with them.
+    extension_ = MakeTaskTraitsExtensionHelper(
+        std::forward_as_tuple(args...),
+        trait_helpers::SelectIndices<
+            trait_helpers::ValidTraitTester<ValidTrait>::IsInvalid,
+            ArgTypes...>{});
+  }
 
   constexpr TaskTraits(const TaskTraits& other) = default;
   TaskTraits& operator=(const TaskTraits& other) = default;
 
   // Returns TaskTraits constructed by combining |left| and |right|. If a trait
   // is specified in both |left| and |right|, the returned TaskTraits will have
-  // the value from |right|.
+  // the value from |right|. Note that extension traits are not merged: any
+  // extension traits in |left| are discarded if extension traits are present in
+  // |right|.
   static constexpr TaskTraits Override(const TaskTraits& left,
                                        const TaskTraits& right) {
     return TaskTraits(left, right);
@@ -207,6 +236,16 @@ class BASE_EXPORT TaskTraits {
     return with_base_sync_primitives_;
   }
 
+  uint8_t extension_id() const { return extension_.extension_id; }
+
+  // Access the extension data by parsing it into the provided extension type.
+  // See task_traits_extension.h for requirements on the extension type.
+  template <class TaskTraitsExtension>
+  const TaskTraitsExtension GetExtension() const {
+    DCHECK_EQ(TaskTraitsExtension::kExtensionId, extension_.extension_id);
+    return TaskTraitsExtension::Parse(extension_);
+  }
+
  private:
   constexpr TaskTraits(const TaskTraits& left, const TaskTraits& right)
       : priority_set_explicitly_(left.priority_set_explicitly_ ||
@@ -221,7 +260,21 @@ class BASE_EXPORT TaskTraits {
                                : left.shutdown_behavior_),
         may_block_(left.may_block_ || right.may_block_),
         with_base_sync_primitives_(left.with_base_sync_primitives_ ||
-                                   right.with_base_sync_primitives_) {}
+                                   right.with_base_sync_primitives_),
+        extension_(right.extension_.extension_id !=
+                           TaskTraitsExtensionStorage::kInvalidExtensionId
+                       ? right.extension_
+                       : left.extension_) {}
+
+  // Helper constructor which selects those arguments from |args| that are
+  // indicated by the index_sequence and forwards them to the public
+  // constructor. Due to filtering, the indices may be non-contiguous.
+  template <class... ArgTypes, std::size_t... Indices>
+  constexpr TaskTraits(std::tuple<ArgTypes...> args,
+                       std::index_sequence<Indices...>)
+      : TaskTraits(
+            std::get<Indices>(std::forward<std::tuple<ArgTypes...>>(args))...) {
+  }
 
   bool priority_set_explicitly_;
   TaskPriority priority_;
@@ -229,6 +282,8 @@ class BASE_EXPORT TaskTraits {
   TaskShutdownBehavior shutdown_behavior_;
   bool may_block_;
   bool with_base_sync_primitives_;
+
+  TaskTraitsExtensionStorage extension_;
 };
 
 // Returns string literals for the enums defined in this file. These methods

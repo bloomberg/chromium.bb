@@ -5,11 +5,12 @@
 #ifndef BASE_TASK_TASK_TRAITS_DETAILS_H_
 #define BASE_TASK_TASK_TRAITS_DETAILS_H_
 
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
 namespace base {
-namespace internal {
+namespace trait_helpers {
 
 // HasArgOfType<CheckedType, ArgTypes...>::value is true iff a type in ArgTypes
 // matches CheckedType.
@@ -116,13 +117,89 @@ struct EnumArgGetter {
   constexpr ValueType GetDefaultValue() const { return DefaultValue; }
 };
 
-// Allows instantiation of multiple types in one statement. Used to prevent
-// instantiation of the constructor of TaskTraits with inappropriate argument
-// types.
-template <class...>
-struct InitTypes {};
+// Tests whether a given trait type is valid or invalid by testing whether it is
+// convertible to the provided ValidTraits type. To use, define a ValidTraits
+// type like this:
+//
+// struct ValidTraits {
+//   ValidTraits(MyTrait) {}
+//   ...
+// };
+template <class ValidTraits>
+struct ValidTraitTester {
+  template <class TraitType>
+  struct IsValid : std::is_convertible<TraitType, ValidTraits> {};
 
-}  // namespace internal
+  template <class TraitType>
+  struct IsInvalid
+      : std::conditional_t<std::is_convertible<TraitType, ValidTraits>::value,
+                           std::false_type,
+                           std::true_type> {};
+};
+
+// Tests if a given trait type is valid according to the provided ValidTraits.
+template <class ValidTraits, class TraitType>
+struct IsValidTrait
+    : ValidTraitTester<ValidTraits>::template IsValid<TraitType> {};
+
+// Tests whether multiple given traits types are all valid according to the
+// provided ValidTraits.
+template <class ValidTraits, class...>
+struct AreValidTraits : std::true_type {};
+
+template <class ValidTraits, class NextType, class... Rest>
+struct AreValidTraits<ValidTraits, NextType, Rest...>
+    : std::conditional<IsValidTrait<ValidTraits, NextType>::value,
+                       AreValidTraits<ValidTraits, Rest...>,
+                       std::false_type>::type {};
+
+// Helper struct that recursively builds up an index_sequence containing all
+// those indexes of elements in Args for which the |Predicate<Arg>::value| is
+// true.
+template <template <class> class Predicate,
+          std::size_t CurrentIndex,
+          class Output,
+          class... Args>
+struct SelectIndicesHelper;
+
+template <template <class> class Predicate,
+          std::size_t CurrentIndex,
+          std::size_t... Indices,
+          class First,
+          class... Rest>
+struct SelectIndicesHelper<Predicate,
+                           CurrentIndex,
+                           std::index_sequence<Indices...>,
+                           First,
+                           Rest...>
+    : std::conditional_t<
+          Predicate<First>::value,
+          // Push the index into the sequence and recurse.
+          SelectIndicesHelper<Predicate,
+                              CurrentIndex + 1,
+                              std::index_sequence<Indices..., CurrentIndex>,
+                              Rest...>,
+          // Skip the index and recurse.
+          SelectIndicesHelper<Predicate,
+                              CurrentIndex + 1,
+                              std::index_sequence<Indices...>,
+                              Rest...>> {};
+
+template <template <class> class Predicate,
+          std::size_t CurrentIndex,
+          class Sequence>
+struct SelectIndicesHelper<Predicate, CurrentIndex, Sequence> {
+  using type = Sequence;
+};
+
+// Selects the indices of elements in the |Args| list for which
+// |Predicate<Arg>::value| is |true|.
+template <template <class> class Predicate, class... Args>
+using SelectIndices =
+    typename SelectIndicesHelper<Predicate, 0, std::index_sequence<>, Args...>::
+        type;
+
+}  // namespace trait_helpers
 }  // namespace base
 
 #endif  // BASE_TASK_TASK_TRAITS_DETAILS_H_
