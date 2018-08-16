@@ -2066,6 +2066,18 @@
           "release_builder_test_pool": "bvt"
         },
         {
+          "board_name": "octopus",
+          "name": "fleex",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "grabbiter",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
           "board_name": "meep",
           "name": "meep",
           "test_suites": [
@@ -2090,6 +2102,12 @@
             "bvt-cq",
             "bvt-perbuild"
           ],
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "orbatrix",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -2130,6 +2148,24 @@
         {
           "board_name": "octopus",
           "name": "sparky360",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "unprovisioned_bobba",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "unprovisioned_fleex",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
+          "name": "unprovisioned_phaser",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
