@@ -114,7 +114,7 @@ const size_t kMaxFolderPages = 3;
 const size_t kMaxFolderItemsPerPage = 16;
 
 // Maximum length of the folder name in chars.
-const size_t kMaxFolderNameChars = 80;
+const size_t kMaxFolderNameChars = 28;
 
 // Font style for app item labels.
 const ui::ResourceBundle::FontStyle kItemTextFontStyle =
