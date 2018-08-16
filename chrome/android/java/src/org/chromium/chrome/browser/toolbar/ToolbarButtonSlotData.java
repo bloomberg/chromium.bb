@@ -5,7 +5,10 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.View.OnClickListener;
 
 import org.chromium.chrome.R;
@@ -34,42 +37,52 @@ class ToolbarButtonSlotData {
      * buttons when entering or leaving tab switching mode.
      */
     static class ToolbarButtonData {
-        private final int mDrawableResId;
-        // TODO(amaralp): Add incognito accessibility string.
-        private final CharSequence mAccessibilityStringResId;
+        private final Drawable mDrawable;
+        private final CharSequence mLightAccessibilityString;
+        private final CharSequence mDarkAccessibilityString;
         private final OnClickListener mOnClickListener;
-        private final boolean mShouldTint;
+
+        private final ColorStateList mLightTint;
+        private final ColorStateList mDarkTint;
 
         /**
-         * @param drawableResId The drawable's resource id.
-         * @param accessibilityStringResId The accessibility's resource id.
-         * @param onClickListener An {@link OnClickListener} that is triggered when this button is
-         *                        clicked.
-         * @param shouldTint Whether the button should be tinted.
-         * @param context The {@link Context} used to get the drawable and accessibility string
-         *                resources.
+         * @param drawable The {@link Drawable} that will be shown in the button slot.
+         * @param lightAccessibilityString The accessibility string to be used in light mode.
+         * @param darkAccessibilityString The accessibility string to be used in dark mode.
+         * @param onClickListener The listener that will be fired when this button is clicked.
+         * @param context The {@link Context} that is used to obtain tinting information.
          */
-        ToolbarButtonData(int drawableResId, int accessibilityStringResId,
-                OnClickListener onClickListener, boolean shouldTint, Context context) {
-            mAccessibilityStringResId = context.getString(accessibilityStringResId);
+        ToolbarButtonData(Drawable drawable, CharSequence lightAccessibilityString,
+                CharSequence darkAccessibilityString, OnClickListener onClickListener,
+                Context context) {
+            mLightTint = AppCompatResources.getColorStateList(context, R.color.light_mode_tint);
+            mDarkTint = AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
+
+            mDrawable = drawable;
+            mLightAccessibilityString = lightAccessibilityString;
+            mDarkAccessibilityString = darkAccessibilityString;
             mOnClickListener = onClickListener;
-            mDrawableResId = drawableResId;
-            mShouldTint = shouldTint;
         }
 
         /**
          * @param imageButton The {@link TintedImageButton} this button data will fill.
+         * @param isLight Whether or not to use light mode.
          */
-        void updateButton(TintedImageButton imageButton) {
+        void updateButton(TintedImageButton imageButton, boolean isLight) {
             imageButton.setOnClickListener(mOnClickListener);
-            imageButton.setImageResource(mDrawableResId);
-            imageButton.setContentDescription(mAccessibilityStringResId);
-            if (mShouldTint) {
-                imageButton.setImageTintList(ContextCompat.getColorStateList(
-                        imageButton.getContext(), R.color.dark_mode_tint));
-            } else {
-                imageButton.setImageTintList(null);
-            }
+            updateButtonDrawable(imageButton, isLight);
+        }
+
+        /**
+         * @param imageButton The {@link TintedImageButton} this button data will fill.
+         * @param isLight Whether or not to use light mode.
+         */
+        void updateButtonDrawable(TintedImageButton imageButton, boolean isLight) {
+            DrawableCompat.setTintList(mDrawable, isLight ? mLightTint : mDarkTint);
+            imageButton.setImageDrawable(mDrawable);
+            imageButton.setContentDescription(
+                    isLight ? mLightAccessibilityString : mDarkAccessibilityString);
+            imageButton.invalidate();
         }
     }
 }

@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.ScrollingBottomViewSce
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonSlotData.ToolbarButtonData;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 
 /**
@@ -89,21 +90,40 @@ public class BottomToolbarViewBinder
                     model.getValue(BottomToolbarModel.TOOLBAR_SWIPE_HANDLER));
         } else if (BottomToolbarModel.FIRST_BUTTON_DATA == propertyKey) {
             updateButton(view.firstTintedImageButton,
-                    model.getValue(BottomToolbarModel.FIRST_BUTTON_DATA));
+                    model.getValue(BottomToolbarModel.FIRST_BUTTON_DATA), useLightIcons(model));
         } else if (BottomToolbarModel.SECOND_BUTTON_DATA == propertyKey) {
             updateButton(view.secondTintedImageButton,
-                    model.getValue(BottomToolbarModel.SECOND_BUTTON_DATA));
+                    model.getValue(BottomToolbarModel.SECOND_BUTTON_DATA), useLightIcons(model));
+        } else if (BottomToolbarModel.PRIMARY_COLOR == propertyKey) {
+            final boolean useLightIcons = useLightIcons(model);
+            view.toolbarRoot.findViewById(R.id.bottom_sheet_toolbar)
+                    .setBackgroundColor(model.getValue(BottomToolbarModel.PRIMARY_COLOR));
+            updateButtonDrawable(view.firstTintedImageButton,
+                    model.getValue(BottomToolbarModel.FIRST_BUTTON_DATA), useLightIcons);
+            updateButtonDrawable(view.secondTintedImageButton,
+                    model.getValue(BottomToolbarModel.SECOND_BUTTON_DATA), useLightIcons);
         } else {
             assert false : "Unhandled property detected in BottomToolbarViewBinder!";
         }
     }
 
-    private static void updateButton(TintedImageButton button, ToolbarButtonData buttonData) {
+    private static boolean useLightIcons(BottomToolbarModel model) {
+        return ColorUtils.shouldUseLightForegroundOnBackground(
+                model.getValue(BottomToolbarModel.PRIMARY_COLOR));
+    }
+
+    private static void updateButton(
+            TintedImageButton button, ToolbarButtonData buttonData, boolean useLightIcons) {
         if (buttonData == null) {
             button.setVisibility(View.INVISIBLE);
         } else {
-            buttonData.updateButton(button);
+            buttonData.updateButton(button, useLightIcons);
             button.setVisibility(View.VISIBLE);
         }
+    }
+
+    private static void updateButtonDrawable(
+            TintedImageButton button, ToolbarButtonData buttonData, boolean useLightIcons) {
+        if (buttonData != null) buttonData.updateButtonDrawable(button, useLightIcons);
     }
 }

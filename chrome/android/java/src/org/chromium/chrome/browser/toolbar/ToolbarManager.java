@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.toolbar;
 
-import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -14,6 +13,8 @@ import android.os.SystemClock;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
+import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.View;
@@ -642,9 +643,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     public void enableBottomToolbar() {
         if (FeatureUtilities.isBottomToolbarEnabled()) {
             final ToolbarButtonSlotData firstButtonSlot =
-                    new ToolbarButtonSlotData(createHomeButton(mActivity));
+                    new ToolbarButtonSlotData(createHomeButton());
             final ToolbarButtonSlotData secondButtonSlot =
-                    new ToolbarButtonSlotData(createSearchAccelerator(mActivity));
+                    new ToolbarButtonSlotData(createSearchAccelerator());
             mBottomToolbarCoordinator = new BottomToolbarCoordinator(
                     mActivity.getFullscreenManager(), mActivity.findViewById(R.id.coordinator),
                     firstButtonSlot, secondButtonSlot);
@@ -672,38 +673,54 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         };
     }
 
-    private ToolbarButtonData createHomeButton(Context context) {
+    private ToolbarButtonData createHomeButton() {
         final OnClickListener homeButtonListener = v -> {
             recordBottomToolbarUseForIPH();
             openHomepage();
         };
-        return new ToolbarButtonData(R.drawable.btn_toolbar_home,
-                R.string.accessibility_toolbar_btn_home, homeButtonListener, true, context);
+        final Drawable drawable = ContextCompat.getDrawable(mActivity, R.drawable.btn_toolbar_home);
+        final CharSequence accessibilityString =
+                mActivity.getString(R.string.accessibility_toolbar_btn_home);
+        return new ToolbarButtonData(
+                drawable, accessibilityString, accessibilityString, homeButtonListener, mActivity);
     }
 
-    private ToolbarButtonData createNewTabButton(
-            OnClickListener newTabClickListener, Context context) {
-        return new ToolbarButtonData(R.drawable.btn_new_tab_white_normal,
-                R.string.accessibility_toolbar_btn_new_tab, newTabClickListener, false, context);
+    private ToolbarButtonData createNewTabButton(OnClickListener newTabClickListener) {
+        final CharSequence normalAccessibilityString =
+                mActivity.getString(R.string.accessibility_toolbar_btn_new_tab);
+        final CharSequence incognitoAccessibilityString =
+                mActivity.getString(R.string.accessibility_toolbar_btn_new_incognito_tab);
+
+        final Drawable drawable = VectorDrawableCompat.create(
+                mActivity.getResources(), R.drawable.new_tab_icon, mActivity.getTheme());
+        return new ToolbarButtonData(drawable, normalAccessibilityString,
+                incognitoAccessibilityString, newTabClickListener, mActivity);
     }
 
-    private ToolbarButtonData createSearchAccelerator(Context context) {
+    private ToolbarButtonData createSearchAccelerator() {
         final OnClickListener searchAcceleratorListener = v -> {
             recordBottomToolbarUseForIPH();
             recordOmniboxFocusReason(OmniboxFocusReason.ACCELERATOR_TAP);
             ACCELERATOR_BUTTON_TAP_ACTION.record();
             setUrlBarFocus(true);
         };
-        return new ToolbarButtonData(R.drawable.ic_search,
-                R.string.accessibility_toolbar_btn_search_accelerator, searchAcceleratorListener,
-                true, context);
+        final Drawable drawable = ContextCompat.getDrawable(mActivity, R.drawable.ic_search);
+        final CharSequence accessibilityString =
+                mActivity.getString(R.string.accessibility_toolbar_btn_search_accelerator);
+        return new ToolbarButtonData(drawable, accessibilityString, accessibilityString,
+                searchAcceleratorListener, mActivity);
     }
 
     private ToolbarButtonData createIncognitoToggleButton(
-            OnClickListener incognitoToggleClickHandler, Context context) {
-        return new ToolbarButtonData(R.drawable.btn_tabstrip_switch_normal,
-                R.string.accessibility_tabstrip_btn_incognito_toggle_standard,
-                incognitoToggleClickHandler, false, context);
+            OnClickListener incognitoToggleClickHandler) {
+        final CharSequence normalAccessibilityString =
+                mActivity.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_standard);
+        final CharSequence incognitoAccessibilityString =
+                mActivity.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_incognito);
+        final Drawable drawable =
+                ContextCompat.getDrawable(mActivity, R.drawable.incognito_statusbar);
+        return new ToolbarButtonData(drawable, normalAccessibilityString,
+                incognitoAccessibilityString, incognitoToggleClickHandler, mActivity);
     }
 
     /**
@@ -831,8 +848,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     && PrefServiceBridge.getInstance().isIncognitoModeEnabled();
             final ToolbarButtonData firstSlotTabSwitcherButtonData = showIncognitoToggleButton
                     ? createIncognitoToggleButton(
-                              wrapBottomToolbarClickListenerForIPH(incognitoClickHandler),
-                              mActivity)
+                              wrapBottomToolbarClickListenerForIPH(incognitoClickHandler))
                     : null;
             mAppMenuButtonHelper.setOnClickRunnable(() -> recordBottomToolbarUseForIPH());
             mBottomToolbarCoordinator.initializeWithNative(
@@ -842,8 +858,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     mAppMenuButtonHelper, mTabModelSelector, mOverviewModeBehavior,
                     mActivity.getContextualSearchManager(), mActivity.getWindowAndroid(),
                     firstSlotTabSwitcherButtonData,
-                    createNewTabButton(
-                            wrapBottomToolbarClickListenerForIPH(newTabClickHandler), mActivity));
+                    createNewTabButton(wrapBottomToolbarClickListenerForIPH(newTabClickHandler)));
 
             Tab currentTab = tabModelSelector.getCurrentTab();
             maybeShowDuetHelpBubble(currentTab);
@@ -1288,6 +1303,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mCurrentThemeColor = color;
         mToolbarModel.setPrimaryColor(color);
         mToolbar.onPrimaryColorChanged(shouldAnimate);
+
+        if (mBottomToolbarCoordinator != null) {
+            mBottomToolbarCoordinator.setPrimaryColor(color);
+        }
     }
 
     /**

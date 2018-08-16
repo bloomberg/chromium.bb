@@ -47,10 +47,13 @@ public class BottomToolbarModel extends PropertyModel {
     public static final ObjectPropertyKey<ToolbarButtonData> SECOND_BUTTON_DATA =
             new ObjectPropertyKey<>();
 
+    /** Primary color of bottom toolbar. */
+    public static final IntPropertyKey PRIMARY_COLOR = new IntPropertyKey();
+
     /** Default constructor. */
     public BottomToolbarModel() {
         super(Y_OFFSET, ANDROID_VIEW_VISIBLE, COMPOSITED_VIEW_VISIBLE, LAYOUT_MANAGER,
                 TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, TOOLBAR_SWIPE_HANDLER, FIRST_BUTTON_DATA,
-                SECOND_BUTTON_DATA);
+                SECOND_BUTTON_DATA, PRIMARY_COLOR);
     }
 }
