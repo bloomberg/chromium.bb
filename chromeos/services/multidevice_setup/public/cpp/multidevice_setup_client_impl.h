@@ -28,7 +28,8 @@ namespace multidevice_setup {
 
 // Concrete implementation of MultiDeviceSetupClient.
 class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
-                                   public mojom::HostStatusObserver {
+                                   public mojom::HostStatusObserver,
+                                   public mojom::FeatureStateObserver {
  public:
   class Factory {
    public:
@@ -51,6 +52,13 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
       mojom::MultiDeviceSetup::SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
   void GetHostStatus(GetHostStatusCallback callback) override;
+  void SetFeatureEnabledState(
+      mojom::Feature feature,
+      bool enabled,
+      mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback)
+      override;
+  void GetFeatureStates(
+      mojom::MultiDeviceSetup::GetFeatureStatesCallback callback) override;
   void RetrySetHostNow(
       mojom::MultiDeviceSetup::RetrySetHostNowCallback callback) override;
   void TriggerEventForDebugging(
@@ -62,6 +70,10 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
   void OnHostStatusChanged(
       mojom::HostStatus host_status,
       const base::Optional<cryptauth::RemoteDevice>& host_device) override;
+
+  // mojom::FeatureStateObserver:
+  void OnFeatureStatesChanged(
+      const FeatureStatesMap& feature_states_map) override;
 
  private:
   friend class MultiDeviceSetupClientImplTest;
@@ -76,12 +88,14 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
       mojom::HostStatus host_status,
       const base::Optional<cryptauth::RemoteDevice>& host_device);
 
-  mojom::HostStatusObserverPtr GenerateInterfacePtr();
+  mojom::HostStatusObserverPtr GenerateHostStatusObserverInterfacePtr();
+  mojom::FeatureStateObserverPtr GenerateFeatureStatesObserverInterfacePtr();
 
   void FlushForTesting();
 
   mojom::MultiDeviceSetupPtr multidevice_setup_ptr_;
-  mojo::Binding<mojom::HostStatusObserver> binding_;
+  mojo::Binding<mojom::HostStatusObserver> host_status_observer_binding_;
+  mojo::Binding<mojom::FeatureStateObserver> feature_state_observer_binding_;
   std::unique_ptr<cryptauth::RemoteDeviceCache> remote_device_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupClientImpl);

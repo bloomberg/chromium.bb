@@ -47,11 +47,15 @@ MultiDeviceSetupClientImpl::Factory::BuildInstance(
 
 MultiDeviceSetupClientImpl::MultiDeviceSetupClientImpl(
     service_manager::Connector* connector)
-    : binding_(this),
+    : host_status_observer_binding_(this),
+      feature_state_observer_binding_(this),
       remote_device_cache_(
           cryptauth::RemoteDeviceCache::Factory::Get()->BuildInstance()) {
   connector->BindInterface(mojom::kServiceName, &multidevice_setup_ptr_);
-  multidevice_setup_ptr_->AddHostStatusObserver(GenerateInterfacePtr());
+  multidevice_setup_ptr_->AddHostStatusObserver(
+      GenerateHostStatusObserverInterfacePtr());
+  multidevice_setup_ptr_->AddFeatureStateObserver(
+      GenerateFeatureStatesObserverInterfacePtr());
 }
 
 MultiDeviceSetupClientImpl::~MultiDeviceSetupClientImpl() = default;
@@ -79,6 +83,19 @@ void MultiDeviceSetupClientImpl::GetHostStatus(GetHostStatusCallback callback) {
                      base::Unretained(this), std::move(callback)));
 }
 
+void MultiDeviceSetupClientImpl::SetFeatureEnabledState(
+    mojom::Feature feature,
+    bool enabled,
+    mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback) {
+  multidevice_setup_ptr_->SetFeatureEnabledState(feature, enabled,
+                                                 std::move(callback));
+}
+
+void MultiDeviceSetupClientImpl::GetFeatureStates(
+    mojom::MultiDeviceSetup::GetFeatureStatesCallback callback) {
+  multidevice_setup_ptr_->GetFeatureStates(std::move(callback));
+}
+
 void MultiDeviceSetupClientImpl::RetrySetHostNow(
     mojom::MultiDeviceSetup::RetrySetHostNowCallback callback) {
   multidevice_setup_ptr_->RetrySetHostNow(std::move(callback));
@@ -100,6 +117,11 @@ void MultiDeviceSetupClientImpl::OnHostStatusChanged(
   } else {
     NotifyHostStatusChanged(host_status, base::nullopt);
   }
+}
+
+void MultiDeviceSetupClientImpl::OnFeatureStatesChanged(
+    const FeatureStatesMap& feature_states_map) {
+  NotifyFeatureStateChanged(feature_states_map);
 }
 
 void MultiDeviceSetupClientImpl::OnGetEligibleHostDevicesCompleted(
@@ -132,9 +154,16 @@ void MultiDeviceSetupClientImpl::OnGetHostStatusCompleted(
 }
 
 mojom::HostStatusObserverPtr
-MultiDeviceSetupClientImpl::GenerateInterfacePtr() {
+MultiDeviceSetupClientImpl::GenerateHostStatusObserverInterfacePtr() {
   mojom::HostStatusObserverPtr interface_ptr;
-  binding_.Bind(mojo::MakeRequest(&interface_ptr));
+  host_status_observer_binding_.Bind(mojo::MakeRequest(&interface_ptr));
+  return interface_ptr;
+}
+
+mojom::FeatureStateObserverPtr
+MultiDeviceSetupClientImpl::GenerateFeatureStatesObserverInterfacePtr() {
+  mojom::FeatureStateObserverPtr interface_ptr;
+  feature_state_observer_binding_.Bind(mojo::MakeRequest(&interface_ptr));
   return interface_ptr;
 }
 

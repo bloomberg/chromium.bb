@@ -8,6 +8,7 @@
 #include <memory>
 #include <queue>
 #include <string>
+#include <tuple>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -33,6 +34,12 @@ class FakeMultiDeviceSetupClient : public MultiDeviceSetupClient {
   void InvokePendingGetHostStatusCallback(
       mojom::HostStatus host_status,
       const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
+  void InvokePendingSetFeatureEnabledStateCallback(
+      mojom::Feature expected_feature,
+      bool expected_enabled,
+      bool success);
+  void InvokePendingGetFeatureStatesCallback(
+      const FeatureStatesMap& feature_states_map);
   void InvokePendingRetrySetHostNowCallback(bool success);
   void InvokePendingTriggerEventForDebuggingCallback(
       mojom::EventTypeForDebugging expected_type,
@@ -43,6 +50,7 @@ class FakeMultiDeviceSetupClient : public MultiDeviceSetupClient {
   }
 
   using MultiDeviceSetupClient::NotifyHostStatusChanged;
+  using MultiDeviceSetupClient::NotifyFeatureStateChanged;
 
  private:
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
@@ -51,6 +59,13 @@ class FakeMultiDeviceSetupClient : public MultiDeviceSetupClient {
       mojom::MultiDeviceSetup::SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
   void GetHostStatus(GetHostStatusCallback callback) override;
+  void SetFeatureEnabledState(
+      mojom::Feature feature,
+      bool enabled,
+      mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback)
+      override;
+  void GetFeatureStates(
+      mojom::MultiDeviceSetup::GetFeatureStatesCallback callback) override;
   void RetrySetHostNow(
       mojom::MultiDeviceSetup::RetrySetHostNowCallback callback) override;
   void TriggerEventForDebugging(
@@ -66,6 +81,13 @@ class FakeMultiDeviceSetupClient : public MultiDeviceSetupClient {
       std::pair<std::string, mojom::MultiDeviceSetup::SetHostDeviceCallback>>
       set_host_device_id_and_callback_queue_;
   std::queue<GetHostStatusCallback> get_host_status_callback_queue_;
+  std::queue<
+      std::tuple<mojom::Feature,
+                 bool,
+                 mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback>>
+      set_feature_enabled_state_args_queue_;
+  std::queue<mojom::MultiDeviceSetup::GetFeatureStatesCallback>
+      get_feature_states_args_queue_;
   std::queue<mojom::MultiDeviceSetup::RetrySetHostNowCallback>
       retry_set_host_now_callback_queue_;
   std::queue<

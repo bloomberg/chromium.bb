@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -22,6 +23,8 @@ namespace multidevice_setup {
 // Provides clients access to the MultiDeviceSetup API.
 class MultiDeviceSetupClient {
  public:
+  using FeatureStatesMap = base::flat_map<mojom::Feature, mojom::FeatureState>;
+
   class Observer {
    public:
     // Called whenever the host status changes. If the host status is
@@ -29,7 +32,11 @@ class MultiDeviceSetupClient {
     // HostStatus::kEligibleHostExistsButNoHostSet, |host_device| is null.
     virtual void OnHostStatusChanged(
         mojom::HostStatus host_status,
-        const base::Optional<cryptauth::RemoteDeviceRef>& host_device) = 0;
+        const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {}
+
+    // Called whenever the state of any feature has changed.
+    virtual void OnFeatureStatesChanged(
+        const FeatureStatesMap& feature_states_map) {}
 
    protected:
     virtual ~Observer() = default;
@@ -54,6 +61,12 @@ class MultiDeviceSetupClient {
       mojom::MultiDeviceSetup::SetHostDeviceCallback callback) = 0;
   virtual void RemoveHostDevice() = 0;
   virtual void GetHostStatus(GetHostStatusCallback callback) = 0;
+  virtual void SetFeatureEnabledState(
+      mojom::Feature feature,
+      bool enabled,
+      mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback) = 0;
+  virtual void GetFeatureStates(
+      mojom::MultiDeviceSetup::GetFeatureStatesCallback callback) = 0;
   virtual void RetrySetHostNow(
       mojom::MultiDeviceSetup::RetrySetHostNowCallback callback) = 0;
   virtual void TriggerEventForDebugging(
@@ -64,6 +77,7 @@ class MultiDeviceSetupClient {
   void NotifyHostStatusChanged(
       mojom::HostStatus host_status,
       const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
+  void NotifyFeatureStateChanged(const FeatureStatesMap& feature_states_map);
 
  private:
   base::ObserverList<Observer> observer_list_;
