@@ -1104,22 +1104,25 @@ enum class AttestationType {
 class TestAuthenticatorRequestDelegate
     : public AuthenticatorRequestClientDelegate {
  public:
-  TestAuthenticatorRequestDelegate(RenderFrameHost* render_frame_host,
-                                   base::OnceClosure did_start_request_callback,
-                                   IndividualAttestation individual_attestation,
-                                   AttestationConsent attestation_consent,
-                                   bool is_focused)
-      : did_start_request_callback_(std::move(did_start_request_callback)),
+  TestAuthenticatorRequestDelegate(
+      RenderFrameHost* render_frame_host,
+      base::OnceClosure action_callbacks_registered_callback,
+      IndividualAttestation individual_attestation,
+      AttestationConsent attestation_consent,
+      bool is_focused)
+      : action_callbacks_registered_callback_(
+            std::move(action_callbacks_registered_callback)),
         individual_attestation_(individual_attestation),
         attestation_consent_(attestation_consent),
         is_focused_(is_focused) {}
   ~TestAuthenticatorRequestDelegate() override {}
 
-  void DidStartRequest(base::OnceClosure cancel_callback,
-                       device::FidoRequestHandlerBase::RequestCallback
-                           request_callback) override {
-    ASSERT_TRUE(did_start_request_callback_) << "DidStartRequest called twice.";
-    std::move(did_start_request_callback_).Run();
+  void RegisterActionCallbacks(base::OnceClosure cancel_callback,
+                               device::FidoRequestHandlerBase::RequestCallback
+                                   request_callback) override {
+    ASSERT_TRUE(action_callbacks_registered_callback_)
+        << "RegisterActionCallbacks called twice.";
+    std::move(action_callbacks_registered_callback_).Run();
   }
 
   bool ShouldPermitIndividualAttestation(
@@ -1136,7 +1139,7 @@ class TestAuthenticatorRequestDelegate
 
   bool IsFocused() override { return is_focused_; }
 
-  base::OnceClosure did_start_request_callback_;
+  base::OnceClosure action_callbacks_registered_callback_;
   const IndividualAttestation individual_attestation_;
   const AttestationConsent attestation_consent_;
   const bool is_focused_;
@@ -1154,8 +1157,9 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
       return nullptr;
     return std::make_unique<TestAuthenticatorRequestDelegate>(
         render_frame_host,
-        request_started_callback ? std::move(request_started_callback)
-                                 : base::DoNothing(),
+        action_callbacks_registered_callback
+            ? std::move(action_callbacks_registered_callback)
+            : base::DoNothing(),
         individual_attestation, attestation_consent, is_focused);
   }
 
@@ -1169,7 +1173,7 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
 
   // If set, this closure will be called when the subsequently constructed
   // delegate is informed that the request has started.
-  base::OnceClosure request_started_callback;
+  base::OnceClosure action_callbacks_registered_callback;
 
   IndividualAttestation individual_attestation =
       IndividualAttestation::NOT_REQUESTED;
@@ -1567,7 +1571,8 @@ TEST_F(AuthenticatorContentBrowserClientTest,
       GetTestPublicKeyCredentialCreationOptions();
 
   TestRequestStartedCallback request_started;
-  test_client_.request_started_callback = request_started.callback();
+  test_client_.action_callbacks_registered_callback =
+      request_started.callback();
   authenticator->MakeCredential(std::move(options), base::DoNothing());
   request_started.WaitForCallback();
 }
@@ -1582,7 +1587,8 @@ TEST_F(AuthenticatorContentBrowserClientTest,
       GetTestPublicKeyCredentialRequestOptions();
 
   TestRequestStartedCallback request_started;
-  test_client_.request_started_callback = request_started.callback();
+  test_client_.action_callbacks_registered_callback =
+      request_started.callback();
   authenticator->GetAssertion(std::move(options), base::DoNothing());
   request_started.WaitForCallback();
 }
@@ -1603,7 +1609,8 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
 
     TestMakeCredentialCallback cb;
     TestRequestStartedCallback request_started;
-    test_client_.request_started_callback = request_started.callback();
+    test_client_.action_callbacks_registered_callback =
+        request_started.callback();
 
     authenticator->MakeCredential(std::move(options), cb.callback());
     cb.WaitForCallback();
@@ -1629,7 +1636,8 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
 
     TestGetAssertionCallback cb;
     TestRequestStartedCallback request_started;
-    test_client_.request_started_callback = request_started.callback();
+    test_client_.action_callbacks_registered_callback =
+        request_started.callback();
 
     authenticator->GetAssertion(std::move(options), cb.callback());
     cb.WaitForCallback();

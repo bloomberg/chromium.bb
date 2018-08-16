@@ -494,7 +494,7 @@ void AuthenticatorImpl::MakeCredential(
       base::BindOnce(&AuthenticatorImpl::CreatePlatformAuthenticatorIfAvailable,
                      base::Unretained(this)));
 
-  request_delegate_->DidStartRequest(
+  request_delegate_->RegisterActionCallbacks(
       base::BindOnce(&AuthenticatorImpl::Cancel,
                      weak_factory_.GetWeakPtr()) /* cancel_callback */,
       base::BindRepeating(
@@ -577,7 +577,7 @@ void AuthenticatorImpl::GetAssertion(
       base::BindOnce(&AuthenticatorImpl::CreatePlatformAuthenticatorIfAvailable,
                      base::Unretained(this)));
 
-  request_delegate_->DidStartRequest(
+  request_delegate_->RegisterActionCallbacks(
       base::BindOnce(&AuthenticatorImpl::Cancel,
                      weak_factory_.GetWeakPtr()) /* cancel_callback */,
       base::BindRepeating(

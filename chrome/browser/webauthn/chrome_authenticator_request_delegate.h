@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEBAUTHN_CHROME_AUTHENTICATOR_REQUEST_DELEGATE_H_
 #define CHROME_BROWSER_WEBAUTHN_CHROME_AUTHENTICATOR_REQUEST_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -63,9 +64,9 @@ class ChromeAuthenticatorRequestDelegate
   content::BrowserContext* browser_context() const;
 
   // content::AuthenticatorRequestClientDelegate:
-  void DidStartRequest(base::OnceClosure cancel_callback,
-                       device::FidoRequestHandlerBase::RequestCallback
-                           request_callback) override;
+  void RegisterActionCallbacks(base::OnceClosure cancel_callback,
+                               device::FidoRequestHandlerBase::RequestCallback
+                                   request_callback) override;
   bool ShouldPermitIndividualAttestation(
       const std::string& relying_party_id) override;
   void ShouldReturnAttestation(
@@ -76,6 +77,8 @@ class ChromeAuthenticatorRequestDelegate
       device::FidoTransportProtocol transport) override;
 
   // device::FidoRequestHandlerBase::TransportAvailabilityObserver:
+  void OnTransportAvailabilityEnumerated(
+      device::FidoRequestHandlerBase::TransportAvailabilityInfo data) override;
   void FidoAuthenticatorAdded(const device::FidoAuthenticator& authenticator,
                               bool* hold_off_request) override;
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
@@ -86,6 +89,13 @@ class ChromeAuthenticatorRequestDelegate
 
   content::RenderFrameHost* const render_frame_host_;
   AuthenticatorRequestDialogModel* weak_dialog_model_ = nullptr;
+  // Holds ownership of AuthenticatorRequestDialogModel until
+  // OnTransportAvailabilityEnumerated() is invoked, at which point the
+  // ownership of the model is transferred to AuthenticatorRequestDialogView and
+  // |this| instead holds weak pointer of the model via above
+  // |weak_dialog_model_|.
+  std::unique_ptr<AuthenticatorRequestDialogModel>
+      transient_dialog_model_holder_;
   base::OnceClosure cancel_callback_;
   device::FidoRequestHandlerBase::RequestCallback request_callback_;
 

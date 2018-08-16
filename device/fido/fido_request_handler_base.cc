@@ -101,8 +101,9 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
   transport_availability_info_.available_transports = available_transports;
   notify_observer_callback_ = base::BarrierClosure(
       transport_info_callback_count,
-      base::BindOnce(&FidoRequestHandlerBase::NotifyObserverUiData,
-                     weak_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &FidoRequestHandlerBase::NotifyObserverTransportAvailability,
+          weak_factory_.GetWeakPtr()));
 }
 
 FidoRequestHandlerBase::~FidoRequestHandlerBase() = default;
@@ -243,9 +244,8 @@ void FidoRequestHandlerBase::MaybeAddPlatformAuthenticator() {
   notify_observer_callback_.Run();
 }
 
-void FidoRequestHandlerBase::NotifyObserverUiData() {
+void FidoRequestHandlerBase::NotifyObserverTransportAvailability() {
   DCHECK(observer_);
-
   observer_->OnTransportAvailabilityEnumerated(transport_availability_info_);
 }
 

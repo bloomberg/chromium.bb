@@ -149,26 +149,11 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
       ->GetBrowserContext();
 }
 
-void ChromeAuthenticatorRequestDelegate::DidStartRequest(
+void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
     device::FidoRequestHandlerBase::RequestCallback request_callback) {
-#if !defined(OS_ANDROID)
   request_callback_ = request_callback;
-
-  if (!IsWebAuthnUiEnabled())
-    return;
-
-  auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>();
-  weak_dialog_model_ = dialog_model.get();
-  SetInitialUiModelBasedOnPreviouslyUsedTransport(weak_dialog_model_,
-                                                  GetLastTransportUsed());
   cancel_callback_ = std::move(cancel_callback);
-  weak_dialog_model_->AddObserver(this);
-
-  ShowAuthenticatorRequestDialog(
-      content::WebContents::FromRenderFrameHost(render_frame_host()),
-      std::move(dialog_model));
-#endif
 }
 
 bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
@@ -274,6 +259,22 @@ void ChromeAuthenticatorRequestDelegate::UpdateLastTransportUsed(
       Profile::FromBrowserContext(browser_context())->GetPrefs();
   prefs->SetString(kWebAuthnLastTransportUsedPrefName,
                    device::ToString(transport));
+}
+
+void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
+    device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
+#if !defined(OS_ANDROID)
+  if (!IsWebAuthnUiEnabled())
+    return;
+
+  weak_dialog_model_ = transient_dialog_model_holder_.get();
+  SetInitialUiModelBasedOnPreviouslyUsedTransport(weak_dialog_model_,
+                                                  GetLastTransportUsed());
+  weak_dialog_model_->AddObserver(this);
+  ShowAuthenticatorRequestDialog(
+      content::WebContents::FromRenderFrameHost(render_frame_host()),
+      std::move(transient_dialog_model_holder_));
+#endif
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(

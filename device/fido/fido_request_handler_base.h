@@ -61,6 +61,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
         const TransportAvailabilityInfo& other);
     ~TransportAvailabilityInfo();
 
+    // TODO(hongjunchoi): Factor |rp_id| and |request_type| from
+    // TransportAvailabilityInfo.
+    // See: https://crbug.com/875011
+    std::string rp_id;
     RequestType request_type = RequestType::kMakeCredential;
 
     // The intersection of transports supported by the client and allowed by the
@@ -155,7 +159,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   void AddAuthenticator(std::unique_ptr<FidoAuthenticator> authenticator);
   void MaybeAddPlatformAuthenticator();
-  void NotifyObserverUiData();
+  void NotifyObserverTransportAvailability();
 
   AuthenticatorMap active_authenticators_;
   std::vector<std::unique_ptr<FidoDiscovery>> discoveries_;
