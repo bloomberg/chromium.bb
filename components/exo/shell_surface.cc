@@ -71,6 +71,56 @@ ShellSurface::ScopedAnimationsDisabled::~ScopedAnimationsDisabled() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ShellSurface, Config:
+
+// Surface state associated with each configure request.
+struct ShellSurface::Config {
+  Config(uint32_t serial,
+         const gfx::Vector2d& origin_offset,
+         int resize_component,
+         std::unique_ptr<ui::CompositorLock> compositor_lock);
+  ~Config() = default;
+
+  uint32_t serial;
+  gfx::Vector2d origin_offset;
+  int resize_component;
+  std::unique_ptr<ui::CompositorLock> compositor_lock;
+};
+
+ShellSurface::Config::Config(
+    uint32_t serial,
+    const gfx::Vector2d& origin_offset,
+    int resize_component,
+    std::unique_ptr<ui::CompositorLock> compositor_lock)
+    : serial(serial),
+      origin_offset(origin_offset),
+      resize_component(resize_component),
+      compositor_lock(std::move(compositor_lock)) {}
+
+////////////////////////////////////////////////////////////////////////////////
+// ShellSurface, ScopedConfigure:
+
+ShellSurface::ScopedConfigure::ScopedConfigure(ShellSurface* shell_surface,
+                                               bool force_configure)
+    : shell_surface_(shell_surface), force_configure_(force_configure) {
+  // ScopedConfigure instances cannot be nested.
+  DCHECK(!shell_surface_->scoped_configure_);
+  shell_surface_->scoped_configure_ = this;
+}
+
+ShellSurface::ScopedConfigure::~ScopedConfigure() {
+  DCHECK_EQ(shell_surface_->scoped_configure_, this);
+  shell_surface_->scoped_configure_ = nullptr;
+  if (needs_configure_ || force_configure_)
+    shell_surface_->Configure();
+  // ScopedConfigure instance might have suppressed a widget bounds update.
+  if (shell_surface_->widget_) {
+    shell_surface_->UpdateWidgetBounds();
+    shell_surface_->UpdateShadow();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, public:
 
 ShellSurface::ShellSurface(Surface* surface,
@@ -88,8 +138,37 @@ ShellSurface::ShellSurface(Surface* surface)
                        ash::kShellWindowId_DefaultContainer) {}
 
 ShellSurface::~ShellSurface() {
+  DCHECK(!scoped_configure_);
   if (widget_)
     ash::wm::GetWindowState(widget_->GetNativeWindow())->RemoveObserver(this);
+}
+
+void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
+  TRACE_EVENT1("exo", "ShellSurface::AcknowledgeConfigure", "serial", serial);
+
+  // Apply all configs that are older or equal to |serial|. The result is that
+  // the origin of the main surface will move and the resize direction will
+  // change to reflect the acknowledgement of configure request with |serial|
+  // at the next call to Commit().
+  while (!pending_configs_.empty()) {
+    std::unique_ptr<Config> config = std::move(pending_configs_.front());
+    pending_configs_.pop_front();
+
+    // Add the config offset to the accumulated offset that will be applied when
+    // Commit() is called.
+    pending_origin_offset_ += config->origin_offset;
+
+    // Set the resize direction that will be applied when Commit() is called.
+    pending_resize_component_ = config->resize_component;
+
+    if (config->serial == serial)
+      break;
+  }
+
+  if (widget_) {
+    UpdateWidgetBounds();
+    UpdateShadow();
+  }
 }
 
 void ShellSurface::SetParent(ShellSurface* parent) {
@@ -176,11 +255,106 @@ void ShellSurface::StartResize(int component) {
   AttemptToStartDrag(component);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// ShellSurfaceBase overrides:
+
 void ShellSurface::InitializeWindowState(ash::wm::WindowState* window_state) {
   window_state->AddObserver(this);
   window_state->set_allow_set_bounds_direct(false);
   widget_->set_movement_disabled(movement_disabled_);
   window_state->set_ignore_keyboard_bounds_change(movement_disabled_);
+}
+
+base::Optional<gfx::Rect> ShellSurface::GetWidgetBounds() const {
+  // Defer if configure requests are pending.
+  if (!pending_configs_.empty() || scoped_configure_)
+    return base::nullopt;
+
+  gfx::Rect visible_bounds = GetVisibleBounds();
+  gfx::Rect new_widget_bounds =
+      widget_->non_client_view()
+          ? widget_->non_client_view()->GetWindowBoundsForClientBounds(
+                visible_bounds)
+          : visible_bounds;
+
+  if (movement_disabled_) {
+    new_widget_bounds.set_origin(origin_);
+  } else if (resize_component_ == HTCAPTION) {
+    // Preserve widget position.
+    new_widget_bounds.set_origin(widget_->GetWindowBoundsInScreen().origin());
+  } else {
+    // Compute widget origin using surface origin if the current location of
+    // surface is being anchored to one side of the widget as a result of a
+    // resize operation.
+    gfx::Rect visible_bounds = GetVisibleBounds();
+    gfx::Point origin = GetSurfaceOrigin() + visible_bounds.OffsetFromOrigin();
+    wm::ConvertPointToScreen(widget_->GetNativeWindow(), &origin);
+    new_widget_bounds.set_origin(origin);
+  }
+  return new_widget_bounds;
+}
+
+gfx::Point ShellSurface::GetSurfaceOrigin() const {
+  DCHECK(!movement_disabled_ || resize_component_ == HTCAPTION);
+
+  gfx::Rect visible_bounds = GetVisibleBounds();
+  gfx::Rect client_bounds = GetClientViewBounds();
+
+  switch (resize_component_) {
+    case HTCAPTION:
+      return gfx::Point() + origin_offset_ - visible_bounds.OffsetFromOrigin();
+    case HTBOTTOM:
+    case HTRIGHT:
+    case HTBOTTOMRIGHT:
+      return gfx::Point() - visible_bounds.OffsetFromOrigin();
+    case HTTOP:
+    case HTTOPRIGHT:
+      return gfx::Point(0, client_bounds.height() - visible_bounds.height()) -
+             visible_bounds.OffsetFromOrigin();
+    case HTLEFT:
+    case HTBOTTOMLEFT:
+      return gfx::Point(client_bounds.width() - visible_bounds.width(), 0) -
+             visible_bounds.OffsetFromOrigin();
+    case HTTOPLEFT:
+      return gfx::Point(client_bounds.width() - visible_bounds.width(),
+                        client_bounds.height() - visible_bounds.height()) -
+             visible_bounds.OffsetFromOrigin();
+    default:
+      NOTREACHED();
+      return gfx::Point();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// aura::WindowObserver overrides:
+
+void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
+                                         const gfx::Rect& old_bounds,
+                                         const gfx::Rect& new_bounds,
+                                         ui::PropertyChangeReason reason) {
+  if (!widget_ || !root_surface() || ignore_window_bounds_changes_)
+    return;
+
+  if (window == widget_->GetNativeWindow()) {
+    if (new_bounds.size() == old_bounds.size())
+      return;
+
+    // If size changed then give the client a chance to produce new contents
+    // before origin on screen is changed. Retain the old origin by reverting
+    // the origin delta until the next configure is acknowledged.
+    gfx::Vector2d delta = new_bounds.origin() - old_bounds.origin();
+    origin_offset_ -= delta;
+    pending_origin_offset_accumulator_ += delta;
+
+    UpdateSurfaceBounds();
+
+    // The shadow size may be updated to match the widget. Change it back
+    // to the shadow content size. Note that this relies on wm::ShadowController
+    // being notified of the change before |this|.
+    UpdateShadow();
+
+    Configure();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -249,12 +423,87 @@ void ShellSurface::OnPreWidgetCommit() {
 
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
   }
+
+  // Apply the accumulated pending origin offset to reflect acknowledged
+  // configure requests.
+  origin_offset_ += pending_origin_offset_;
+  pending_origin_offset_ = gfx::Vector2d();
+
+  // Update resize direction to reflect acknowledged configure requests.
+  resize_component_ = pending_resize_component_;
 }
 
 void ShellSurface::OnPostWidgetCommit() {}
 
 ////////////////////////////////////////////////////////////////////////////////
+// wm::ActivationChangeObserver overrides:
+
+void ShellSurface::OnWindowActivated(ActivationReason reason,
+                                     aura::Window* gained_active,
+                                     aura::Window* lost_active) {
+  ShellSurfaceBase::OnWindowActivated(reason, gained_active, lost_active);
+
+  if (!widget_)
+    return;
+
+  if (gained_active == widget_->GetNativeWindow() ||
+      lost_active == widget_->GetNativeWindow()) {
+    Configure();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:
+
+void ShellSurface::Configure() {
+  // Delay configure callback if |scoped_configure_| is set.
+  if (scoped_configure_) {
+    scoped_configure_->set_needs_configure();
+    return;
+  }
+
+  gfx::Vector2d origin_offset = pending_origin_offset_accumulator_;
+  pending_origin_offset_accumulator_ = gfx::Vector2d();
+
+  int resize_component = HTCAPTION;
+  if (widget_) {
+    ash::wm::WindowState* window_state =
+        ash::wm::GetWindowState(widget_->GetNativeWindow());
+
+    // If surface is being resized, save the resize direction.
+    if (window_state->is_dragged())
+      resize_component = window_state->drag_details()->window_component;
+  }
+
+  uint32_t serial = 0;
+  if (!configure_callback_.is_null()) {
+    if (widget_) {
+      serial = configure_callback_.Run(
+          GetClientViewBounds().size(),
+          ash::wm::GetWindowState(widget_->GetNativeWindow())->GetStateType(),
+          IsResizing(), widget_->IsActive(), origin_offset);
+    } else {
+      serial = configure_callback_.Run(gfx::Size(),
+                                       ash::mojom::WindowStateType::NORMAL,
+                                       false, false, origin_offset);
+    }
+  }
+
+  if (!serial) {
+    pending_origin_offset_ += origin_offset;
+    pending_resize_component_ = resize_component;
+    return;
+  }
+
+  // Apply origin offset and resize component at the first Commit() after this
+  // configure request has been acknowledged.
+  pending_configs_.push_back(
+      std::make_unique<Config>(serial, origin_offset, resize_component,
+                               std::move(configure_compositor_lock_)));
+  LOG_IF(WARNING, pending_configs_.size() > 100)
+      << "Number of pending configure acks for shell surface has reached: "
+      << pending_configs_.size();
+}
 
 void ShellSurface::AttemptToStartDrag(int component) {
   ash::wm::WindowState* window_state =
