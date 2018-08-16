@@ -46,7 +46,7 @@ This is a reasonable option when you can guarantee that all interconnected
 process binaries are linking against precisely the same revision of Mojo Core.
 To support other scenarios, use dynamic linking.
 
-## Dynamic Linking
+### Dynamic Linking
 On some platforms, it's also possible for applications to rely on a
 dynamically-linked Mojo Core library (`libmojo_core.so` or `mojo_core.dll`)
 instead of statically linking against Mojo Core.
