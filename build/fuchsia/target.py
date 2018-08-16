@@ -134,10 +134,8 @@ class Target(object):
 
   def _GetTargetSdkArch(self):
     """Returns the Fuchsia SDK architecture name for the target CPU."""
-    if self._target_cpu == 'arm64':
-      return 'aarch64'
-    elif self._target_cpu == 'x64':
-      return 'x86_64'
+    if self._target_cpu == 'arm64' or self._target_cpu == 'x64':
+      return self._target_cpu
     raise FuchsiaTargetException('Unknown target_cpu:' + self._target_cpu)
 
   def _AssertIsStarted(self):
@@ -162,7 +160,9 @@ class Target(object):
   def _GetSshConfigPath(self, path):
     raise NotImplementedError
 
-  def _GetTargetSdkArch(self):
+  # TODO: remove this once all instances of architecture names have been
+  # converted to the new naming pattern.
+  def _GetTargetSdkLegacyArch(self):
     """Returns the Fuchsia SDK architecture name for the target CPU."""
     if self._target_cpu == 'arm64':
       return 'aarch64'
