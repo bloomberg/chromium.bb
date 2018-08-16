@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Delete) {
 
 // https://crbug.com/874929, flaky on all platform.
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
-                       MAYBE_SetPassphraseAndThenSetupSync) {
+                       DISABLED_SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients());
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
