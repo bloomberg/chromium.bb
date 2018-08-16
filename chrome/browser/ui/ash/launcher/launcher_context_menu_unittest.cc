@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
@@ -79,10 +78,6 @@ class LauncherContextMenuTest : public ash::AshTestBase {
     tablet_mode_client_ = std::make_unique<TabletModeClient>();
     tablet_mode_client_->InitForTesting(
         fake_tablet_mode_controller_.CreateInterfacePtr());
-
-    // Disable safe icon decoding to ensure ArcAppShortcutRequests returns in
-    // the test environment.
-    arc::IconDecodeRequest::DisableSafeDecodingForTesting();
   }
 
   std::unique_ptr<LauncherContextMenu> CreateLauncherContextMenu(
@@ -351,7 +346,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   }
 }
 
-TEST_F(LauncherContextMenuTest, ArcLauncherSuspendAppMenu) {
+TEST_F(LauncherContextMenuTest, ArcLauncherSuspenedAppMenu) {
   arc::mojom::AppInfo app = arc_test().fake_apps()[0];
   app.suspended = true;
   arc_test().app_instance()->RefreshAppList();
@@ -441,7 +436,7 @@ TEST_F(LauncherContextMenuTest, CommandIdsMatchEnumsForHistograms) {
 }
 
 TEST_F(LauncherContextMenuTest, ArcContextMenuOptions) {
-  // Tests that there are 8 ARC app context menu options. If you're
+  // Tests that there are 4 ARC app context menu options. If you're
   // adding a context menu option ensure that you have added the enum to
   // tools/metrics/enums.xml and that you haven't modified the order of the
   // existing enums.
@@ -462,8 +457,8 @@ TEST_F(LauncherContextMenuTest, ArcContextMenuOptions) {
   std::unique_ptr<ui::MenuModel> menu =
       GetContextMenu(item_delegate, primary_id);
 
-  // Test that there are 8 items in an ARC app context menu.
-  EXPECT_EQ(8, menu->GetItemCount());
+  // Test that there are 4 items in an ARC app context menu.
+  EXPECT_EQ(4, menu->GetItemCount());
 }
 
 // Tests that the context menu of internal app  is correct.
@@ -515,7 +510,7 @@ TEST_F(LauncherContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
     std::unique_ptr<ui::MenuModel> menu =
         GetContextMenu(item_delegate, primary_id);
 
-    const int expected_options_num = internal_app.show_in_launcher ? 2 : 1;
+    const int expected_options_num = internal_app.show_in_launcher ? 4 : 2;
     EXPECT_EQ(expected_options_num, menu->GetItemCount());
   }
 }

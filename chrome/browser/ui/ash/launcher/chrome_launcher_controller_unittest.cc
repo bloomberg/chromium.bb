@@ -3530,25 +3530,25 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {
       model_->GetShelfItemDelegate(gmail_id);
   ASSERT_TRUE(item_delegate);
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  // Execute the second item in the menu, after the title,
+  // Execute the second item in the menu, after the title and two separators,
   // this shouldn't do anything since that item is already the active tab.
   {
     ash::ShelfApplicationMenuModel menu(
         base::string16(),
         launcher_controller_->GetAppMenuItemsForTesting(item_gmail),
         item_delegate);
-    menu.ActivatedAt(2);
+    menu.ActivatedAt(4);
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
-  // Execute the first item in the menu, after the title,
+  // Execute the first item in the menu, after the title and two separators,
   // this should activate the other tab.
   {
     ash::ShelfApplicationMenuModel menu(
         base::string16(),
         launcher_controller_->GetAppMenuItemsForTesting(item_gmail),
         item_delegate);
-    menu.ActivatedAt(1);
+    menu.ActivatedAt(3);
   }
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
 }
@@ -3558,6 +3558,7 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuDeletionExecution) {
   InitLauncherControllerWithBrowser();
 
   // Add |extension3_| to the launcher and add two items.
+  GURL gmail = GURL("https://mail.google.com/mail/u");
   const ash::ShelfID gmail_id(extension3_->id());
   extension_service_->AddExtension(extension3_.get());
   launcher_controller_->SetRefocusURLPatternForTest(gmail_id, GURL(kGmailUrl));
