@@ -2596,6 +2596,26 @@
             ]
         }
     ],
+    "NewPasswordFormParsing": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "new-password-form-parsing"
+                    ]
+                }
+            ]
+        }
+    ],
     "NewPrintPreview": [
         {
             "platforms": [

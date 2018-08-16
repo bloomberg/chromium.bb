@@ -105,6 +105,12 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   void PermanentlyBlacklist() override;
   void OnPasswordsRevealed() override;
 
+#if defined(UNIT_TEST)
+  static void set_wait_for_server_predictions_for_filling(bool value) {
+    wait_for_server_predictions_for_filling_ = value;
+  }
+#endif
+
  protected:
   // FormFetcher::Consumer:
   void ProcessMatches(
@@ -232,6 +238,9 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   // of times that Chrome will autofill to avoid being stuck in an infinite
   // loop.
   int autofills_left_ = kMaxTimesAutofill;
+
+  // Controls whether to wait or not server before filling. It is used in tests.
+  static bool wait_for_server_predictions_for_filling_;
 
   // Used for comparison metrics.
   // TODO(https://crbug.com/831123): Remove it when the old form parsing is
