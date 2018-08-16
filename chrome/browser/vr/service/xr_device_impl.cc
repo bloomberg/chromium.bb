@@ -249,7 +249,12 @@ void XRDeviceImpl::ExitPresent() {
 void XRDeviceImpl::SetListeningForActivate(
     device::mojom::VRDisplayClientPtr client) {
   client_ = std::move(client);
-  if (immersive_runtime_ && client) {
+  if (!immersive_runtime_) {
+    // This function sets the runtimes.
+    GetCurrentVRDisplayInfo();
+  }
+
+  if (immersive_runtime_ && client_) {
     immersive_runtime_->UpdateListeningForActivate(this);
   }
 }
@@ -265,6 +270,7 @@ void XRDeviceImpl::GetImmersiveVRDisplayInfo(
 
 void XRDeviceImpl::SetInFocusedFrame(bool in_focused_frame) {
   in_focused_frame_ = in_focused_frame;
+
   if (ListeningForActivate() && immersive_runtime_) {
     // No change, except focus.
     immersive_runtime_->UpdateListeningForActivate(this);
