@@ -1211,18 +1211,17 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
   SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
   EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
+
+  // Flush CookieStore. The CookieStore batches disk operations, so may not have
+  // written the cookie to disk yet.
+  base::RunLoop run_loop;
+  network::mojom::CookieManagerPtr cookie_manager;
+  network_context()->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  cookie_manager->FlushCookieStore(run_loop.QuitClosure());
+  run_loop.Run();
 }
 
-#if defined(OS_MACOSX)
-// Disable the test on Mac OSX since it fails on the bot.
-// (https://crbug.com/847555)
-#define MAYBE_CookiesEnabled DISABLED_CookiesEnabled
-#else
-#define MAYBE_CookiesEnabled CookiesEnabled
-#endif
-
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
-                       MAYBE_CookiesEnabled) {
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookiesEnabled) {
   // Check that the cookie from the first stage of the test was / was not
   // preserved between browser restarts, as expected.
   bool has_cookies = !GetCookies(embedded_test_server()->base_url()).empty();
