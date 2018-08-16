@@ -72,6 +72,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
       icon_view_(nullptr),
       secondary_icon_view_(nullptr),
       listener_(button_listener) {
+  SetInstallFocusRingOnFocus(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetFocusPainter(nullptr);
 
