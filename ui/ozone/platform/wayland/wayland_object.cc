@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
+#include <linux-dmabuf-unstable-v1-client-protocol.h>
 #include <wayland-client.h>
 #include <xdg-shell-unstable-v5-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
@@ -125,6 +126,11 @@ void (*ObjectTraits<xdg_surface>::deleter)(xdg_surface*) = &xdg_surface_destroy;
 
 const wl_interface* ObjectTraits<xdg_popup>::interface = &xdg_popup_interface;
 void (*ObjectTraits<xdg_popup>::deleter)(xdg_popup*) = &xdg_popup_destroy;
+
+const wl_interface* ObjectTraits<zwp_linux_dmabuf_v1>::interface =
+    &zwp_linux_dmabuf_v1_interface;
+void (*ObjectTraits<zwp_linux_dmabuf_v1>::deleter)(zwp_linux_dmabuf_v1*) =
+    &zwp_linux_dmabuf_v1_destroy;
 
 const wl_interface* ObjectTraits<zxdg_shell_v6>::interface =
     &zxdg_shell_v6_interface;

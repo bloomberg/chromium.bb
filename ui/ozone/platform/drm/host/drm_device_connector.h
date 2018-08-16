@@ -39,7 +39,8 @@ class DrmDeviceConnector : public GpuPlatformSupportHost {
   void OnGpuServiceLaunched(
       scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-      GpuHostBindInterfaceCallback binder) override;
+      GpuHostBindInterfaceCallback binder,
+      GpuHostTerminateCallback terminate_callback) override;
 
   // BindInterface arranges for the drm_device_ptr to be connected.
   void BindInterfaceDrmDevice(
