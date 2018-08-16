@@ -55,12 +55,6 @@ class PrivetTrafficDetector
   void ScheduleRestart();
   void Restart(net::NetworkInterfaceList networks);
   void Bind();
-
-  // Called on the UI thread.
-  void CreateUDPSocketOnUIThread(
-      network::mojom::UDPSocketRequest request,
-      network::mojom::UDPSocketReceiverPtr receiver_ptr);
-
   void OnBindComplete(net::IPEndPoint multicast_addr,
                       int rv,
                       const base::Optional<net::IPEndPoint>& ip_address);
@@ -92,7 +86,8 @@ class PrivetTrafficDetector
   // Initialized on the UI thread, but only accessed on the IO thread.
   mojo::Binding<network::mojom::UDPSocketReceiver> receiver_binding_;
 
-  // Only accessed on the UI thread
+  // Initialized on the UI thread, but only accessed on the IO thread for the
+  // purpose of passing it back to the UI thread. Safe because it is const.
   content::BrowserContext* const profile_;
 
   base::WeakPtrFactory<PrivetTrafficDetector> weak_ptr_factory_;

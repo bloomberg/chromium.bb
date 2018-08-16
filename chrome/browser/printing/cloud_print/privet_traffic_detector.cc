@@ -55,6 +55,17 @@ void GetNetworkListInBackground(
       base::BindOnce(std::move(callback), std::move(ip4_networks)));
 }
 
+void CreateUDPSocketOnUIThread(
+    content::BrowserContext* profile,
+    network::mojom::UDPSocketRequest request,
+    network::mojom::UDPSocketReceiverPtr receiver_ptr) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  network::mojom::NetworkContext* network_context =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetNetworkContext();
+  network_context->CreateUDPSocket(std::move(request), std::move(receiver_ptr));
+}
+
 }  // namespace
 
 namespace cloud_print {
@@ -129,7 +140,7 @@ void PrivetTrafficDetector::Bind() {
   receiver_binding_.Bind(std::move(receiver_request));
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&PrivetTrafficDetector::CreateUDPSocketOnUIThread, this,
+      base::BindOnce(&CreateUDPSocketOnUIThread, profile_,
                      mojo::MakeRequest(&socket_), std::move(receiver_ptr)));
 
   net::IPEndPoint multicast_addr =
@@ -146,16 +157,6 @@ void PrivetTrafficDetector::Bind() {
   socket_->Bind(bind_endpoint, std::move(socket_options),
                 base::BindOnce(&PrivetTrafficDetector::OnBindComplete, this,
                                multicast_addr));
-}
-
-void PrivetTrafficDetector::CreateUDPSocketOnUIThread(
-    network::mojom::UDPSocketRequest request,
-    network::mojom::UDPSocketReceiverPtr receiver_ptr) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  network::mojom::NetworkContext* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
-          ->GetNetworkContext();
-  network_context->CreateUDPSocket(std::move(request), std::move(receiver_ptr));
 }
 
 void PrivetTrafficDetector::OnBindComplete(
