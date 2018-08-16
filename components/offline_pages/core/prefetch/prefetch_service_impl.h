@@ -33,13 +33,18 @@ class PrefetchServiceImpl : public PrefetchService {
 
   ~PrefetchServiceImpl() override;
 
+  // PrefetchService implementation:
+  // Externally used functions.
   void SetContentSuggestionsService(
       ntp_snippets::ContentSuggestionsService* content_suggestions) override;
-
-  // PrefetchService implementation:
+  void SetSuggestionProvider(
+      SuggestionsProvider* suggestions_provider) override;
+  void NewSuggestionsAvailable() override;
+  void RemoveSuggestion(GURL url) override;
+  PrefetchGCMHandler* GetPrefetchGCMHandler() override;
+  // Internal usage only functions.
   OfflineMetricsCollector* GetOfflineMetricsCollector() override;
   PrefetchDispatcher* GetPrefetchDispatcher() override;
-  PrefetchGCMHandler* GetPrefetchGCMHandler() override;
   PrefetchNetworkRequestFactory* GetPrefetchNetworkRequestFactory() override;
   OfflinePageModel* GetOfflinePageModel() override;
   PrefetchStore* GetPrefetchStore() override;
