@@ -660,6 +660,7 @@ public class CustomTabActivity extends ChromeActivity {
         }
 
         if (mTrustedWebActivityUi != null) {
+            mTrustedWebActivityUi.attemptVerificationForInitialUrl(url, getActivityTab());
             mTrustedWebActivityUi.initialShowSnackbarIfNeeded();
         }
 
