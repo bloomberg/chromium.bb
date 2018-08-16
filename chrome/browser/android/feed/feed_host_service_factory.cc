@@ -15,6 +15,7 @@
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/channel_info.h"
+#include "components/feed/core/feed_content_database.h"
 #include "components/feed/core/feed_host_service.h"
 #include "components/feed/core/feed_image_manager.h"
 #include "components/feed/core/feed_networking_host.h"
@@ -90,9 +91,12 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
 
   auto storage_database = std::make_unique<FeedStorageDatabase>(feed_dir);
 
+  auto content_database = std::make_unique<FeedContentDatabase>(feed_dir);
+
   return new FeedHostService(
       std::move(image_manager), std::move(networking_host),
-      std::move(scheduler_host), std::move(storage_database));
+      std::move(scheduler_host), std::move(storage_database),
+      std::move(content_database));
 }
 
 content::BrowserContext* FeedHostServiceFactory::GetBrowserContextToUse(

@@ -54,7 +54,7 @@ public class FeedContentStorageTest {
     public static final byte[] CONTENT_DATA3 = "CONTENT_DATA_3".getBytes(Charset.forName("UTF-8"));
 
     @Mock
-    private FeedStorageBridge mBridge;
+    private FeedContentBridge mBridge;
     @Mock
     private Consumer<CommitResult> mBooleanConsumer;
     @Mock
@@ -74,13 +74,13 @@ public class FeedContentStorageTest {
     @Captor
     private ArgumentCaptor<List<String>> mStringListArgument;
     @Captor
-    private ArgumentCaptor<String[]> mStringArrayArgument;
+    private ArgumentCaptor<ContentMutation> mContentMutationArgument;
     @Captor
     private ArgumentCaptor<byte[][]> mByteArrayOfArrayArgument;
     @Captor
     private ArgumentCaptor<Callback<Boolean>> mBooleanCallbackArgument;
     @Captor
-            private ArgumentCaptor < Callback < List<String>>> mStringListCallbackArgument;
+    private ArgumentCaptor<Callback<String[]>> mArrayOfStringCallbackArgument;
     @Captor
             private ArgumentCaptor < Callback < Map<String, byte[]>>> mMapCallbackArgument;
 
@@ -96,11 +96,11 @@ public class FeedContentStorageTest {
         };
     }
 
-    private Answer<Void> createStringListAnswer(List<String> stringList) {
+    private Answer<Void> createArrayOfStringAnswer(String[] arrayOfString) {
         return new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) {
-                mStringListCallbackArgument.getValue().onResult(stringList);
+                mArrayOfStringCallbackArgument.getValue().onResult(arrayOfString);
                 return null;
             }
         };
@@ -129,11 +129,12 @@ public class FeedContentStorageTest {
         }
     }
 
-    private void verifyStringListResult(
-            List<String> expectedList, boolean expectedBoolean, Result<List<String>> actualResult) {
+    private void verifyArrayOfStringResult(
+            String[] expectedArray, boolean expectedBoolean, Result<List<String>> actualResult) {
         assertEquals(expectedBoolean, actualResult.isSuccessful());
         if (!expectedBoolean) return;
 
+        List<String> expectedList = Arrays.asList(expectedArray);
         List<String> actualList = actualResult.getValue();
         assertEquals(expectedList.size(), actualList.size());
         for (String expectedString : expectedList) {
@@ -186,40 +187,24 @@ public class FeedContentStorageTest {
     @Test
     @SmallTest
     public void getAllKeysTest() {
-        List<String> answerStrings = Arrays.asList(CONTENT_KEY1, CONTENT_KEY2, CONTENT_KEY3);
-        Answer<Void> answer = createStringListAnswer(answerStrings);
-        doAnswer(answer).when(mBridge).loadAllContentKeys(mStringListCallbackArgument.capture());
+        String[] answerStrings = {CONTENT_KEY1, CONTENT_KEY2, CONTENT_KEY3};
+        Answer<Void> answer = createArrayOfStringAnswer(answerStrings);
+        doAnswer(answer).when(mBridge).loadAllContentKeys(mArrayOfStringCallbackArgument.capture());
 
         mContentStorage.getAllKeys(mListConsumer);
-        verify(mBridge, times(1)).loadAllContentKeys(mStringListCallbackArgument.capture());
+        verify(mBridge, times(1)).loadAllContentKeys(mArrayOfStringCallbackArgument.capture());
         verify(mListConsumer, times(1)).accept(mStringListCaptor.capture());
-        verifyStringListResult(answerStrings, true, mStringListCaptor.getValue());
+        verifyArrayOfStringResult(answerStrings, true, mStringListCaptor.getValue());
     }
 
     @Test
     @SmallTest
     public void commitTest() {
-        Answer<Void> answerSaveContent = createBooleanAnswer(true);
-        doAnswer(answerSaveContent)
+        Answer<Void> answerCommitContent = createBooleanAnswer(true);
+        doAnswer(answerCommitContent)
                 .when(mBridge)
-                .saveContent(mStringArrayArgument.capture(), mByteArrayOfArrayArgument.capture(),
-                        mBooleanCallbackArgument.capture());
-
-        Answer<Void> answerDeleteContent = createBooleanAnswer(true);
-        doAnswer(answerDeleteContent)
-                .when(mBridge)
-                .deleteContent(mStringListArgument.capture(), mBooleanCallbackArgument.capture());
-
-        Answer<Void> answerDeleteContentByPrefix = createBooleanAnswer(true);
-        doAnswer(answerDeleteContentByPrefix)
-                .when(mBridge)
-                .deleteContentByPrefix(
-                        mStringArgument.capture(), mBooleanCallbackArgument.capture());
-
-        Answer<Void> answerDeleteAllContent = createBooleanAnswer(true);
-        doAnswer(answerDeleteAllContent)
-                .when(mBridge)
-                .deleteAllContent(mBooleanCallbackArgument.capture());
+                .commitContentMutation(
+                        mContentMutationArgument.capture(), mBooleanCallbackArgument.capture());
 
         mContentStorage.commit(new ContentMutation.Builder()
                                        .upsert(CONTENT_KEY1, CONTENT_DATA1)
@@ -229,14 +214,8 @@ public class FeedContentStorageTest {
                                        .build(),
                 mBooleanConsumer);
         verify(mBridge, times(1))
-                .saveContent(mStringArrayArgument.capture(), mByteArrayOfArrayArgument.capture(),
-                        mBooleanCallbackArgument.capture());
-        verify(mBridge, times(1))
-                .deleteContent(mStringListArgument.capture(), mBooleanCallbackArgument.capture());
-        verify(mBridge, times(1))
-                .deleteContentByPrefix(
-                        mStringArgument.capture(), mBooleanCallbackArgument.capture());
-        verify(mBridge, times(1)).deleteAllContent(mBooleanCallbackArgument.capture());
+                .commitContentMutation(
+                        mContentMutationArgument.capture(), mBooleanCallbackArgument.capture());
 
         verify(mBooleanConsumer, times(1)).accept(mCommitResultCaptor.capture());
         CommitResult commitResult = mCommitResultCaptor.getValue();

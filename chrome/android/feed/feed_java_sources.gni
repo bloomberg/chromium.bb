@@ -10,6 +10,7 @@ if (enable_feed_in_chrome) {
 
   feed_java_sources = [
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedBasicLogging.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentStorage.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedEventReporter.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedImageLoader.java",
