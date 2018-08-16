@@ -106,6 +106,10 @@ message DynamicInterstitial {
 
   // The support URL that will be displayed on the interstitial.
   optional string support_url = 7;
+
+  // If true, dynamic interstitials will be displayed only for non-overridable
+  // errors.
+  optional bool show_only_for_nonoverridable_errors = 8;
 }
 
 message SSLErrorAssistantConfig {

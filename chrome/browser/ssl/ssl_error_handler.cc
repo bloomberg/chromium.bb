@@ -216,7 +216,8 @@ class ConfigSingleton {
   // Returns a DynamicInterstitialInfo that matches with |ssl_info|. If is no
   // match, return null.
   base::Optional<DynamicInterstitialInfo> MatchDynamicInterstitial(
-      const net::SSLInfo& ssl_info);
+      const net::SSLInfo& ssl_info,
+      bool is_overridable);
 
   // Testing methods:
   void ResetForTesting();
@@ -407,8 +408,10 @@ const std::string ConfigSingleton::MatchKnownMITMSoftware(
 }
 
 base::Optional<DynamicInterstitialInfo>
-ConfigSingleton::MatchDynamicInterstitial(const net::SSLInfo& ssl_info) {
-  return ssl_error_assistant_->MatchDynamicInterstitial(ssl_info);
+ConfigSingleton::MatchDynamicInterstitial(const net::SSLInfo& ssl_info,
+                                          bool is_overridable) {
+  return ssl_error_assistant_->MatchDynamicInterstitial(ssl_info,
+                                                        is_overridable);
 }
 
 class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
@@ -760,7 +763,8 @@ void SSLErrorHandler::StartHandlingError() {
   }
 
   base::Optional<DynamicInterstitialInfo> dynamic_interstitial =
-      g_config.Pointer()->MatchDynamicInterstitial(ssl_info_);
+      g_config.Pointer()->MatchDynamicInterstitial(
+          ssl_info_, delegate_->IsErrorOverridable());
   if (dynamic_interstitial) {
     ShowDynamicInterstitial(dynamic_interstitial.value());
     return;

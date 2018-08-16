@@ -7331,9 +7331,11 @@ class SSLUIDynamicInterstitialTest : public CertVerifierBrowserTest {
 
   // Adds a dynamic interstitial to |config_proto| and returns it. All of the
   // fields in the dynamic intersitial matches with |https_server_|'s
-  // SSL info.
+  // SSL info. Optionally set the flag for triggering dynamic interstitials
+  // only on non-overridable errors.
   chrome_browser_ssl::DynamicInterstitial* AddMatchingDynamicInterstitial(
-      chrome_browser_ssl::SSLErrorAssistantConfig* config_proto) {
+      chrome_browser_ssl::SSLErrorAssistantConfig* config_proto,
+      bool show_only_for_nonoverridable_errors = false) {
     chrome_browser_ssl::DynamicInterstitial* filter =
         config_proto->add_dynamic_interstitial();
     filter->set_interstitial_type(chrome_browser_ssl::DynamicInterstitial::
@@ -7356,6 +7358,10 @@ class SSLUIDynamicInterstitialTest : public CertVerifierBrowserTest {
     filter->set_mitm_software_name(kTestMITMSoftwareName);
 
     filter->set_support_url("https://google.com");
+
+    filter->set_show_only_for_nonoverridable_errors(
+        show_only_for_nonoverridable_errors);
+
     return filter;
   }
 
@@ -7615,6 +7621,39 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
     chrome_browser_ssl::DynamicInterstitial* match =
         AddMatchingDynamicInterstitial(config_proto.get());
     match->set_issuer_organization_regex("honeycreeper");
+
+    SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
+                0);
+
+    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    WaitForInterstitial(tab);
+
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    ASSERT_TRUE(interstitial_page);
+    EXPECT_NE(CaptivePortalBlockingPage::kTypeForTesting,
+              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchWhenOverridable) {
+  ASSERT_TRUE(https_server()->Start());
+
+  SetUpCertVerifier();
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  {
+    std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto =
+        CreateSSLErrorAssistantConfig();
+    AddMismatchDynamicInterstitial(config_proto.get());
+
+    // Add a matching dynamic interstitial, except for the
+    // show_only_for_nonoverridable_errors flag is set to true.
+    chrome_browser_ssl::DynamicInterstitial* match =
+        AddMatchingDynamicInterstitial(config_proto.get(), true);
+    match->set_cert_error(
+        chrome_browser_ssl::DynamicInterstitial::UNKNOWN_CERT_ERROR);
 
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
     ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
