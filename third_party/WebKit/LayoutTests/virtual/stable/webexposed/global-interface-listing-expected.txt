@@ -4811,6 +4811,8 @@ interface RTCIceCandidate
 interface RTCPeerConnection : EventTarget
     static method generateCertificate
     attribute @@toStringTag
+    getter currentLocalDescription
+    getter currentRemoteDescription
     getter iceConnectionState
     getter iceGatheringState
     getter localDescription
@@ -4823,6 +4825,8 @@ interface RTCPeerConnection : EventTarget
     getter onremovestream
     getter onsignalingstatechange
     getter ontrack
+    getter pendingLocalDescription
+    getter pendingRemoteDescription
     getter remoteDescription
     getter signalingState
     method addIceCandidate
@@ -8343,6 +8347,8 @@ interface webkitMediaStream : EventTarget
 interface webkitRTCPeerConnection : EventTarget
     static method generateCertificate
     attribute @@toStringTag
+    getter currentLocalDescription
+    getter currentRemoteDescription
     getter iceConnectionState
     getter iceGatheringState
     getter localDescription
@@ -8355,6 +8361,8 @@ interface webkitRTCPeerConnection : EventTarget
     getter onremovestream
     getter onsignalingstatechange
     getter ontrack
+    getter pendingLocalDescription
+    getter pendingRemoteDescription
     getter remoteDescription
     getter signalingState
     method addIceCandidate

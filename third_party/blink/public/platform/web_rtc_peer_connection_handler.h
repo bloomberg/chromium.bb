@@ -82,6 +82,10 @@ class WebRTCPeerConnectionHandler {
                                     const WebRTCSessionDescription&) = 0;
   virtual WebRTCSessionDescription LocalDescription() = 0;
   virtual WebRTCSessionDescription RemoteDescription() = 0;
+  virtual WebRTCSessionDescription CurrentLocalDescription() = 0;
+  virtual WebRTCSessionDescription CurrentRemoteDescription() = 0;
+  virtual WebRTCSessionDescription PendingLocalDescription() = 0;
+  virtual WebRTCSessionDescription PendingRemoteDescription() = 0;
   virtual webrtc::RTCErrorType SetConfiguration(const WebRTCConfiguration&) = 0;
 
   // DEPRECATED

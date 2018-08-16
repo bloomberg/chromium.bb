@@ -34,6 +34,10 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
                             const WebRTCSessionDescription&) override;
   WebRTCSessionDescription LocalDescription() override;
   WebRTCSessionDescription RemoteDescription() override;
+  WebRTCSessionDescription CurrentLocalDescription() override;
+  WebRTCSessionDescription CurrentRemoteDescription() override;
+  WebRTCSessionDescription PendingLocalDescription() override;
+  WebRTCSessionDescription PendingRemoteDescription() override;
   webrtc::RTCErrorType SetConfiguration(const WebRTCConfiguration&) override;
   void GetStats(const WebRTCStatsRequest&) override;
   void GetStats(std::unique_ptr<WebRTCStatsReportCallback>) override;

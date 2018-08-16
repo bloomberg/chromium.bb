@@ -132,6 +132,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   blink::WebRTCSessionDescription LocalDescription() override;
   blink::WebRTCSessionDescription RemoteDescription() override;
+  blink::WebRTCSessionDescription CurrentLocalDescription() override;
+  blink::WebRTCSessionDescription CurrentRemoteDescription() override;
+  blink::WebRTCSessionDescription PendingLocalDescription() override;
+  blink::WebRTCSessionDescription PendingRemoteDescription() override;
 
   webrtc::RTCErrorType SetConfiguration(
       const blink::WebRTCConfiguration& configuration) override;
@@ -237,6 +241,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const std::string& type,
       webrtc::SdpParseError* error);
 
+  blink::WebRTCSessionDescription GetWebRTCSessionDescriptionOnSignalingThread(
+      base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
+          description_cb,
+      const char* log_text);
+
   // Report to UMA whether an IceConnectionState has occurred. It only records
   // the first occurrence of a given state.
   void ReportICEState(
@@ -295,6 +304,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   void RunSynchronousClosureOnSignalingThread(const base::Closure& closure,
                                               const char* trace_event_name);
+  void RunSynchronousOnceClosureOnSignalingThread(base::OnceClosure closure,
+                                                  const char* trace_event_name);
 
   // Corresponds to the experimental RTCPeerConnection.id read-only attribute.
   const std::string id_;
