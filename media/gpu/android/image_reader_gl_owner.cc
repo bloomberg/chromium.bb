@@ -61,10 +61,13 @@ ImageReaderGLOwner::ImageReaderGLOwner(GLuint texture_id)
   int32_t width = 1, height = 1, max_images = 3;
   AIMAGE_FORMATS format = AIMAGE_FORMAT_YUV_420_888;
   AImageReader* reader = nullptr;
+  // The usage flag below should be used when the buffer will be read from by
+  // the GPU as a texture.
+  const uint64_t usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
 
   // Create a new reader for images of the desired size and format.
-  media_status_t return_code =
-      loader_.AImageReader_new(width, height, format, max_images, &reader);
+  media_status_t return_code = loader_.AImageReader_newWithUsage(
+      width, height, format, usage, max_images, &reader);
   if (return_code != AMEDIA_OK) {
     LOG(ERROR) << " Image reader creation failed.";
     if (return_code == AMEDIA_ERROR_INVALID_PARAMETER)
