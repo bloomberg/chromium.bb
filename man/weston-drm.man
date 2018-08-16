@@ -1,4 +1,4 @@
-.TH WESTON-DRM 7 "2012-11-27" "Weston __version__"
+.TH WESTON-DRM 7 "2012-11-27" "Weston @version@"
 .SH NAME
 weston-drm \- the DRM backend for Weston
 .SH SYNOPSIS

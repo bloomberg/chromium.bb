@@ -1592,14 +1592,14 @@ man_MANS += weston-rdp.7
 endif
 
 MAN_SUBSTS =								\
-	-e 's|__weston_native_backend__|$(WESTON_NATIVE_BACKEND)|g'	\
-	-e 's|__weston_modules_dir__|$(moduledir)|g'			\
-	-e 's|__libweston_modules_dir__|$(libweston_moduledir)|g'	\
-	-e 's|__weston_shell_client__|$(WESTON_SHELL_CLIENT)|g'		\
-	-e 's|__weston_libexecdir__|$(libexecdir)|g' 			\
-	-e 's|__weston_bindir__|$(bindir)|g' 				\
-	-e 's|__xserver_path__|$(XSERVER_PATH)|g'			\
-	-e 's|__version__|$(PACKAGE_VERSION)|g'
+	-e 's|@weston_native_backend@|$(WESTON_NATIVE_BACKEND)|g'	\
+	-e 's|@weston_modules_dir@|$(moduledir)|g'			\
+	-e 's|@libweston_modules_dir@|$(libweston_moduledir)|g'	\
+	-e 's|@weston_shell_client@|$(WESTON_SHELL_CLIENT)|g'		\
+	-e 's|@weston_libexecdir@|$(libexecdir)|g' 			\
+	-e 's|@weston_bindir@|$(bindir)|g' 				\
+	-e 's|@xserver_path@|$(XSERVER_PATH)|g'			\
+	-e 's|@version@|$(PACKAGE_VERSION)|g'
 
 SUFFIXES = .1 .5 .7 .man
 

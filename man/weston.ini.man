@@ -1,6 +1,6 @@
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH weston.ini 5 "2013-01-17" "Weston __version__"
+.TH weston.ini 5 "2013-01-17" "Weston @version@"
 .SH NAME
 weston.ini \- configuration file for
 .B Weston
@@ -97,7 +97,7 @@ section is used to select the startup compositor modules and general options.
 specifies a shell to load (string). This can be used to load your own
 implemented shell or one with Weston as default. Available shells
 in the
-.IR "__weston_modules_dir__"
+.IR "@weston_modules_dir@"
 directory are:
 .PP
 .RS 10
@@ -112,7 +112,7 @@ ask Weston to load the XWayland module (boolean).
 .TP 7
 .BI "modules=" cms-colord.so,screen-share.so
 specifies the modules to load (string). Available modules in the
-.IR "__weston_modules_dir__"
+.IR "@weston_modules_dir@"
 directory are:
 .PP
 .RS 10
@@ -124,7 +124,7 @@ directory are:
 .TP 7
 .BI "backend=" headless-backend.so
 overrides defaults backend. Available backend modules in the
-.IR "__libweston_modules_dir__"
+.IR "@libweston_modules_dir@"
 directory are:
 .PP
 .RS 10
@@ -252,7 +252,7 @@ The entries that can appear in this section are:
 .TP 7
 .BI "client=" file
 sets the path for the shell client to run. If not specified
-.I __weston_shell_client__
+.I @weston_shell_client@
 is launched (string).
 .TP 7
 .BI "background-image=" file
@@ -457,7 +457,7 @@ present. This seat can be constrained like any other.
 .RE
 .SH "INPUT-METHOD SECTION"
 .TP 7
-.BI "path=" "__weston_libexecdir__/weston-keyboard"
+.BI "path=" "@weston_libexecdir@/weston-keyboard"
 sets the path of the on screen keyboard input method (string).
 .RE
 .RE
@@ -540,13 +540,13 @@ The terminal shell (string). Sets the $TERM variable.
 .RE
 .SH "XWAYLAND SECTION"
 .TP 7
-.BI "path=" "__xserver_path__"
+.BI "path=" "@xserver_path@"
 sets the path to the xserver to run (string).
 .RE
 .RE
 .SH "SCREEN-SHARE SECTION"
 .TP 7
-.BI "command=" "__weston_bindir__/weston --backend=rdp-backend.so \
+.BI "command=" "@weston_bindir@/weston --backend=rdp-backend.so \
 --shell=fullscreen-shell.so --no-clients-resize"
 sets the command to start a fullscreen-shell server for screen sharing (string).
 .RE

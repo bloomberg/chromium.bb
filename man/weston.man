@@ -1,4 +1,4 @@
-.TH WESTON 1 "2012-11-27" "Weston __version__"
+.TH WESTON 1 "2012-11-27" "Weston @version@"
 .SH NAME
 weston \- the reference Wayland server
 .SH SYNOPSIS
@@ -115,9 +115,9 @@ and
 Load
 .I backend.so
 instead of the default backend. The file is searched for in
-.IR "__weston_modules_dir__" ,
+.IR "@weston_modules_dir@" ,
 or you can pass an absolute path. The default backend is
-.I __weston_native_backend__
+.I @weston_native_backend@
 unless the environment suggests otherwise, see
 .IR DISPLAY " and " WAYLAND_DISPLAY .
 .TP
@@ -159,7 +159,7 @@ Ask Weston to load the XWayland module.
 \fB\-\-modules\fR=\fImodule1.so,module2.so\fR
 Load the comma-separated list of modules. Only used by the test
 suite. The file is searched for in
-.IR "__weston_modules_dir__" ,
+.IR "@weston_modules_dir@" ,
 or you can pass an absolute path.
 .TP
 .BR \-\-no-config

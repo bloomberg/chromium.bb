@@ -1,4 +1,4 @@
-.TH WESTON-RDP 7 "2017-12-14" "Weston __version__"
+.TH WESTON-RDP 7 "2017-12-14" "Weston @version@"
 .SH NAME
 weston-rdp \- the RDP backend for Weston
 .SH SYNOPSIS
