@@ -92,9 +92,7 @@ bool SelectToSpeakEventHandler::IsSelectToSpeakEnabled() {
 }
 
 void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
-  if (!IsSelectToSpeakEnabled())
-    return;
-
+  DCHECK(IsSelectToSpeakEnabled());
   DCHECK(event);
 
   // We can only call TtsController on the UI thread, make sure we
@@ -163,9 +161,7 @@ void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void SelectToSpeakEventHandler::OnMouseEvent(ui::MouseEvent* event) {
-  if (!IsSelectToSpeakEnabled())
-    return;
-
+  DCHECK(IsSelectToSpeakEnabled());
   DCHECK(event);
   if (state_ == INACTIVE) {
     if (event->type() == ui::ET_MOUSE_PRESSED) {
@@ -209,9 +205,7 @@ void SelectToSpeakEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void SelectToSpeakEventHandler::OnTouchEvent(ui::TouchEvent* event) {
-  if (!IsSelectToSpeakEnabled())
-    return;
-
+  DCHECK(IsSelectToSpeakEnabled());
   DCHECK(event);
 
   if (state_ == INACTIVE && event->type() == ui::ET_TOUCH_PRESSED) {
