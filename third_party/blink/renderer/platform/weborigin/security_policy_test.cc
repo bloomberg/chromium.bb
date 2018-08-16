@@ -356,9 +356,8 @@ TEST_F(SecurityPolicyAccessTest, IsAccessWhiteListed) {
   EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
                                                    http_example_origin()));
 
-  // Removing the entry should revoke access.
-  SecurityPolicy::RemoveOriginAccessWhitelistEntry(
-      *https_chromium_origin(), "https", "example.com", false);
+  // Clearing the map should revoke all special access.
+  SecurityPolicy::ResetOriginAccessWhitelists();
   EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
                                                    https_example_origin()));
   EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
@@ -374,15 +373,6 @@ TEST_F(SecurityPolicyAccessTest, IsAccessWhiteListed) {
                                                   https_example_origin()));
   EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
                                                   https_sub_example_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   http_example_origin()));
-
-  // Clearing the map should revoke all special access.
-  SecurityPolicy::ResetOriginAccessWhitelists();
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   https_example_origin()));
-  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
-                                                   https_sub_example_origin()));
   EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
                                                    http_example_origin()));
 }
