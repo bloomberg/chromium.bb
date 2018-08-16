@@ -13,7 +13,6 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/interfaces/ime_info.mojom.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/hash.h"

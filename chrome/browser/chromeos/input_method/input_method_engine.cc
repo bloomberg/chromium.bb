@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -331,10 +330,13 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
   if (event->key_code() == ui::VKEY_UNKNOWN)
     event->set_key_code(ui::DomKeycodeToKeyboardCode(code));
 
-  ui::EventSink* sink =
-      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_sink();
-  ui::EventDispatchDetails details = sink->OnEventFromSource(event);
-  return !details.dispatcher_destroyed;
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context)
+    return false;
+
+  input_context->SendKeyEvent(event);
+  return true;
 }
 
 }  // namespace chromeos
