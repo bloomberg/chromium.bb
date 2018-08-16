@@ -12,9 +12,7 @@
 #include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
-#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
-#include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
@@ -40,11 +38,10 @@ CSSValueList* CssValueListForPropertyID(CSSPropertyID property_id) {
 
 const CSSValue* StyleValueToCSSValue(
     const CSSProperty& property,
-    const PropertyRegistration* registration,
     const CSSStyleValue& style_value,
     const ExecutionContext& execution_context) {
   const CSSPropertyID property_id = property.PropertyID();
-  if (!CSSOMTypes::PropertyCanTake(property_id, registration, style_value))
+  if (!CSSOMTypes::PropertyCanTake(property_id, style_value))
     return nullptr;
 
   if (style_value.GetType() == CSSStyleValue::kUnknownType) {
@@ -57,17 +54,6 @@ const CSSValue* StyleValueToCSSValue(
   // TODO(https://crbug.com/545324): Move this into a method on
   // CSSProperty when there are more of these cases.
   switch (property_id) {
-    case CSSPropertyVariable:
-      if (registration &&
-          style_value.GetType() != CSSStyleValue::kUnparsedType) {
-        CSSTokenizer tokenizer(style_value.toString());
-        CSSParserTokenRange range(tokenizer.TokenizeToEOF());
-        CSSParserContext* context = CSSParserContext::Create(execution_context);
-        scoped_refptr<CSSVariableData> variable_data = CSSVariableData::Create(
-            range, false, false, context->BaseURL(), context->Charset());
-        return CSSVariableReferenceValue::Create(variable_data, *context);
-      }
-      break;
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius:
     case CSSPropertyBorderTopLeftRadius:
@@ -193,7 +179,6 @@ const CSSValue* StyleValueToCSSValue(
 
 const CSSValue* CoerceStyleValueOrString(
     const CSSProperty& property,
-    const PropertyRegistration* registration,
     const CSSStyleValueOrString& value,
     const ExecutionContext& execution_context) {
   DCHECK(!property.IsRepeated());
@@ -202,8 +187,8 @@ const CSSValue* CoerceStyleValueOrString(
     if (!value.GetAsCSSStyleValue())
       return nullptr;
 
-    return StyleValueToCSSValue(property, registration,
-                                *value.GetAsCSSStyleValue(), execution_context);
+    return StyleValueToCSSValue(property, *value.GetAsCSSStyleValue(),
+                                execution_context);
   } else {
     DCHECK(value.IsString());
     const auto values = StyleValueFactory::FromString(
@@ -212,8 +197,7 @@ const CSSValue* CoerceStyleValueOrString(
     if (values.size() != 1U)
       return nullptr;
 
-    return StyleValueToCSSValue(property, registration, *values[0],
-                                execution_context);
+    return StyleValueToCSSValue(property, *values[0], execution_context);
   }
 }
 
@@ -234,7 +218,7 @@ const CSSValue* CoerceStyleValuesOrStrings(
         return nullptr;
 
       css_values.push_back(StyleValueToCSSValue(
-          property, nullptr, *value.GetAsCSSStyleValue(), execution_context));
+          property, *value.GetAsCSSStyleValue(), execution_context));
     } else {
       DCHECK(value.IsString());
       if (!parser_context)
@@ -247,8 +231,8 @@ const CSSValue* CoerceStyleValuesOrStrings(
 
       for (const auto& subvalue : subvalues) {
         DCHECK(subvalue);
-        css_values.push_back(StyleValueToCSSValue(property, nullptr, *subvalue,
-                                                  execution_context));
+        css_values.push_back(
+            StyleValueToCSSValue(property, *subvalue, execution_context));
       }
     }
   }
@@ -289,10 +273,8 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
     String css_text;
     if (values[0].IsCSSStyleValue()) {
       CSSStyleValue* style_value = values[0].GetAsCSSStyleValue();
-      if (style_value &&
-          CSSOMTypes::PropertyCanTake(property_id, nullptr, *style_value)) {
+      if (style_value && CSSOMTypes::PropertyCanTake(property_id, *style_value))
         css_text = style_value->toString();
-      }
     } else {
       css_text = values[0].GetAsString();
     }
@@ -305,23 +287,11 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
     return;
   }
 
-  const PropertyRegistration* registration = nullptr;
-
-  if (property_id == CSSPropertyVariable && execution_context->IsDocument()) {
-    const PropertyRegistry* registry =
-        ToDocument(*execution_context).GetPropertyRegistry();
-    if (registry) {
-      registration = registry->Registration(AtomicString(property_name));
-    }
-  }
-
   const CSSValue* result = nullptr;
-  if (property.IsRepeated()) {
+  if (property.IsRepeated())
     result = CoerceStyleValuesOrStrings(property, values, *execution_context);
-  } else if (values.size() == 1U) {
-    result = CoerceStyleValueOrString(property, registration, values[0],
-                                      *execution_context);
-  }
+  else if (values.size() == 1U)
+    result = CoerceStyleValueOrString(property, values[0], *execution_context);
 
   if (!result) {
     exception_state.ThrowTypeError("Invalid type for property");
