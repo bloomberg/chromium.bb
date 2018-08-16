@@ -4896,11 +4896,6 @@ crbug.com/871578 [ Mac ] external/wpt/xhr/timeout-multiple-fetches.html [ Failur
 crbug.com/871578 [ Mac ] virtual/outofblink-cors/external/wpt/xhr/timeout-multiple-fetches.html [ Failure Pass ]
 crbug.com/871578 [ Mac ] virtual/outofblink-cors-ns/external/wpt/xhr/timeout-multiple-fetches.html [ Failure Pass ]
 
-# Flaky on various bots
-crbug.com/869470 external/wpt/background-fetch/fetch.https.window.html [ Pass Failure ]
-crbug.com/869470 external/wpt/background-fetch/get.https.window.html [ Pass Failure ]
-crbug.com/869470 external/wpt/background-fetch/get-ids.https.window.html [ Pass Failure Crash ]
-
 # Flaky middleClinkAutoscroll increased flakiness on Mac
 crbug.com/851090 [ Mac ] fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
 crbug.com/851090 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs.html [ Failure Pass Timeout ]
