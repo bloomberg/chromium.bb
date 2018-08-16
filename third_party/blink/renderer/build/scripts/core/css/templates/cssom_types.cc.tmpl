@@ -7,75 +7,71 @@
 
 #include "third_party/blink/renderer/core/css/cssom/cssom_types.h"
 
+#include "third_party/blink/renderer/core/css/cssom/cssom_keywords.h"
 #include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unsupported_style_value.h"
-#include "third_party/blink/renderer/core/css/cssom/cssom_keywords.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
-#include "third_party/blink/renderer/core/css/property_registration.h"
 
 namespace blink {
 
-bool CSSOMTypes::IsCSSStyleValueLength(const CSSStyleValue& value) {
+namespace {
+
+bool IsCSSStyleValueLength(const CSSStyleValue& value) {
   if (!value.IsNumericValue())
     return false;
   return static_cast<const CSSNumericValue&>(value).Type().
     MatchesBaseType(CSSNumericValueType::BaseType::kLength);
 }
 
-bool CSSOMTypes::IsCSSStyleValueNumber(const CSSStyleValue& value) {
+bool IsCSSStyleValueNumber(const CSSStyleValue& value) {
   if (!value.IsNumericValue())
     return false;
   return static_cast<const CSSNumericValue&>(value).Type().
     MatchesNumber();
 }
 
-bool CSSOMTypes::IsCSSStyleValueTime(const CSSStyleValue& value) {
+bool IsCSSStyleValueTime(const CSSStyleValue& value) {
   if (!value.IsNumericValue())
     return false;
   return static_cast<const CSSNumericValue&>(value).Type().
     MatchesBaseType(CSSNumericValueType::BaseType::kTime);
 }
 
-bool CSSOMTypes::IsCSSStyleValueAngle(const CSSStyleValue& value) {
+bool IsCSSStyleValueAngle(const CSSStyleValue& value) {
   if (!value.IsNumericValue())
     return false;
   return static_cast<const CSSNumericValue&>(value).Type().
     MatchesBaseType(CSSNumericValueType::BaseType::kAngle);
 }
 
-bool CSSOMTypes::IsCSSStyleValuePercentage(const CSSStyleValue& value) {
+bool IsCSSStyleValuePercentage(const CSSStyleValue& value) {
   if (!value.IsNumericValue())
     return false;
   return static_cast<const CSSNumericValue&>(value).Type().
     MatchesPercentage();
 }
 
-bool CSSOMTypes::IsCSSStyleValueResolution(const CSSStyleValue& value) {
-  if (!value.IsNumericValue())
-    return false;
-  return static_cast<const CSSNumericValue&>(value).Type().
-    MatchesBaseType(CSSNumericValueType::BaseType::kResolution);
-}
-
-bool CSSOMTypes::IsCSSStyleValueFlex(const CSSStyleValue& value) {
+bool IsCSSStyleValueFlex(const CSSStyleValue& value) {
   if (!value.IsNumericValue())
     return false;
   return static_cast<const CSSNumericValue&>(value).Type().
     MatchesBaseType(CSSNumericValueType::BaseType::kFlex);
 }
 
-bool CSSOMTypes::IsCSSStyleValueImage(const CSSStyleValue& value) {
+bool IsCSSStyleValueImage(const CSSStyleValue& value) {
   return value.GetType() == CSSStyleValue::kURLImageType;
 }
 
-bool CSSOMTypes::IsCSSStyleValueTransform(const CSSStyleValue& value) {
+bool IsCSSStyleValueTransform(const CSSStyleValue& value) {
   return value.GetType() == CSSStyleValue::kTransformType;
 }
 
-bool CSSOMTypes::IsCSSStyleValuePosition(const CSSStyleValue& value) {
+bool IsCSSStyleValuePosition(const CSSStyleValue& value) {
   return value.GetType() == CSSStyleValue::kPositionType;
+}
+
 }
 
 bool CSSOMTypes::IsPropertySupported(CSSPropertyID id) {
@@ -91,13 +87,7 @@ bool CSSOMTypes::IsPropertySupported(CSSPropertyID id) {
 }
 
 bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
-                                 const PropertyRegistration* registration,
                                  const CSSStyleValue& value) {
-
-  if (id == CSSPropertyVariable && registration) {
-    return registration->Syntax().CanTake(value);
-  }
-
   if (value.GetType() == CSSStyleValue::kKeywordType) {
     return CSSOMKeywords::ValidKeywordForProperty(
         id, ToCSSKeywordValue(value));
@@ -117,7 +107,7 @@ bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
     case {{property.property_id}}:
       return (
           {% for type in property.typedom_types if type != 'Keyword' %}
-          {{ "|| " if not loop.first }}CSSOMTypes::IsCSSStyleValue{{type}}(value)
+          {{ "|| " if not loop.first }}IsCSSStyleValue{{type}}(value)
           {% endfor %}
       );
     {% endif %}
