@@ -48,11 +48,61 @@ class JavaScriptDialogTabHelper
 #endif
       public content::WebContentsUserData<JavaScriptDialogTabHelper> {
  public:
+  enum class DismissalCause {
+    // This is used for a UMA histogram. Please never alter existing values,
+    // only append new ones.
+
+    // The tab helper is destroyed. By current design, the dialog is always torn
+    // down before the tab helper is destroyed, so we never see the
+    // |kTabHelperDestroyed| enum. However, that might not always be the case.
+    // It's better to have a simple rule in the code of "when you close a dialog
+    // you must provide a UMA enum reason why" and have some enums that never
+    // happen than have haphazard code that enforces no rules.
+    kTabHelperDestroyed = 0,
+
+    // Subsequent dialog pops up.
+    kSubsequentDialogShown = 1,
+
+    // HandleJavaScriptDialog() is called. In practice, this can happen whenever
+    // browser choose to accept/cancel the dialog without user's interaction.
+    kHandleDialogCalled = 2,
+
+    // CancelDialogs() is called. In practice, this can happen whenever browser
+    // choose to close the dialog without user's interaction. Besides, this can
+    // also happen when tab is closed by user on a Mac platform.
+    kCancelDialogsCalled = 3,
+
+    // Tab is made hidden by opening a new tab, switching to another tab, etc.
+    // Note that only Prompt() and Confirm() can be dismissed for this cause;
+    // it won't affect Alert().
+    kTabHidden = 4,
+
+    // Another browser instance is made active.
+    kBrowserSwitched = 5,
+
+    // Accept/Cancel button is clicked by user.
+    kDialogButtonClicked = 6,
+
+    // Navigation occurs.
+    kTabNavigated = 7,
+
+    // TabReplacedAt() is called.
+    kTabSwitchedOut = 8,
+
+    // CloseDialog() is called. In practice, this happens when tab is closed by
+    // user on a non-Mac platform.
+    kDialogClosed = 9,
+
+    kMaxValue = kDialogClosed,
+  };
+
   explicit JavaScriptDialogTabHelper(content::WebContents* web_contents);
   ~JavaScriptDialogTabHelper() override;
 
   void SetDialogShownCallbackForTesting(base::OnceClosure callback);
   bool IsShowingDialogForTesting() const;
+  void ClickDialogButtonForTesting(bool accept,
+                                   const base::string16& user_input);
 
   // JavaScriptDialogManager:
   void RunJavaScriptDialog(content::WebContents* web_contents,
@@ -96,7 +146,6 @@ class JavaScriptDialogTabHelper
 
  private:
   friend class content::WebContentsUserData<JavaScriptDialogTabHelper>;
-  enum class DismissalCause;
 
   // Logs the cause of a dialog dismissal in UMA.
   void LogDialogDismissalCause(DismissalCause cause);
