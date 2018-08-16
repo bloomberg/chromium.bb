@@ -512,6 +512,7 @@ void NavigationSimulator::Commit() {
   params.origin = url::Origin::Create(navigation_url_);
   params.referrer = referrer_;
   params.transition = transition_;
+  params.redirects.push_back(navigation_url_);
   params.should_update_history = true;
   params.did_create_new_entry = DidCreateNewEntry();
   params.gesture =

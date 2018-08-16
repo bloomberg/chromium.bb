@@ -1138,22 +1138,35 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // If the entry has an instance already we should use it, unless it is no
   // longer suitable.
   if (dest_instance) {
-    SiteInstanceImpl* dest_instance_impl =
-        static_cast<SiteInstanceImpl*>(dest_instance);
-    // TODO(nasko,creis): The check whether data: or about: URLs are allowed
-    // to commit in the current process should be in HasWrongProcessForURL.
-    // However, making this change has further implications and needs more
-    // investigation of what behavior changes. For now, use a conservative
-    // approach and explicitly check before calling HasWrongProcessForURL.
-    if (IsDataOrAbout(dest_url) ||
-        !dest_instance_impl->HasWrongProcessForURL(dest_url)) {
-      // If we are forcing a swap, this should be in a different
-      // BrowsingInstance.
-      if (force_browsing_instance_swap) {
-        CHECK(!dest_instance->IsRelatedSiteInstance(
-            render_frame_host_->GetSiteInstance()));
+    // When error page isolation is enabled, don't reuse |dest_instance| if it's
+    // an error page SiteInstance, but the navigation will no longer fail.
+    // Similarly, don't reuse |dest_instance| if it's not an error page
+    // SiteInstance but the navigation will fail and actually need an error page
+    // SiteInstance.
+    // Note: The later call to HasWrongProcessForURL does not have context about
+    // error page navigaions, so we cannot rely on it to return correct value
+    // when error pages are involved.
+    if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+            frame_tree_node_->IsMainFrame()) ||
+        ((dest_instance->GetSiteURL() == GURL(kUnreachableWebDataURL)) ==
+         is_failure)) {
+      // TODO(nasko,creis): The check whether data: or about: URLs are allowed
+      // to commit in the current process should be in HasWrongProcessForURL.
+      // However, making this change has further implications and needs more
+      // investigation of what behavior changes. For now, use a conservative
+      // approach and explicitly check before calling HasWrongProcessForURL.
+      SiteInstanceImpl* dest_instance_impl =
+          static_cast<SiteInstanceImpl*>(dest_instance);
+      if (IsDataOrAbout(dest_url) ||
+          !dest_instance_impl->HasWrongProcessForURL(dest_url)) {
+        // If we are forcing a swap, this should be in a different
+        // BrowsingInstance.
+        if (force_browsing_instance_swap) {
+          CHECK(!dest_instance->IsRelatedSiteInstance(
+              render_frame_host_->GetSiteInstance()));
+        }
+        return SiteInstanceDescriptor(dest_instance);
       }
-      return SiteInstanceDescriptor(dest_instance);
     }
   }
 

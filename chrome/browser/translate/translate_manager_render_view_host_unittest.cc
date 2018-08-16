@@ -69,6 +69,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace {
@@ -423,8 +424,9 @@ class TranslateManagerRenderViewHostTest
     // Ensures it is really handled a reload.
     const content::LoadCommittedDetails& nav_details =
         nav_observer.load_committed_details();
-    EXPECT_TRUE(nav_details.entry != NULL);  // There was a navigation.
-    EXPECT_EQ(content::NAVIGATION_TYPE_EXISTING_PAGE, nav_details.type);
+    EXPECT_TRUE(nav_details.entry);  // There was a navigation.
+    EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
+        ui::PAGE_TRANSITION_RELOAD, nav_details.entry->GetTransitionType()));
 
     // The TranslateManager class processes the navigation entry committed
     // notification in a posted task; process that task.
