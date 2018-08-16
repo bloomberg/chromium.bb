@@ -8,7 +8,15 @@ import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_types.mojom";
 
+// Maps to net::RuleBasedHostResolverProc::Rule::ResolverType.
+enum ResolverType {
+  kResolverTypeFail,
+  kResolverTypeSystem,
+  kResolverTypeIPLiteral,
+};
+
 struct Rule {
+  ResolverType resolver_type;
   string host_pattern;
   string replacement;
 };
