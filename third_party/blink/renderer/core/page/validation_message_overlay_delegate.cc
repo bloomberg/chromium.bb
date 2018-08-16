@@ -118,7 +118,7 @@ void ValidationMessageOverlayDelegate::UpdateFrameViewState(
 
   // This manual invalidation is necessary to avoid a DCHECK failure in
   // FindVisualRectNeedingUpdateScopeBase::CheckVisualRect().
-  FrameView().GetLayoutView()->SetMayNeedPaintInvalidationSubtree();
+  FrameView().GetLayoutView()->SetSubtreeShouldCheckForPaintInvalidation();
 
   FrameView().UpdateAllLifecyclePhases();
 }

@@ -480,7 +480,7 @@ void LocalFrameView::SetFrameRect(const IntRect& unclamped_frame_rect) {
   FrameRectsChanged();
 
   if (auto* layout_view = GetLayoutView())
-    layout_view->SetMayNeedPaintInvalidation();
+    layout_view->SetShouldCheckForPaintInvalidation();
 
   if (width_changed || height_changed) {
     ViewportSizeChanged(width_changed, height_changed);
@@ -758,7 +758,7 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
         // LayoutView for paint invalidation. This simplifies our code as we
         // just always do a full tree walk.
         if (LayoutObject* container = root->Container())
-          container->SetMayNeedPaintInvalidation();
+          container->SetShouldCheckForPaintInvalidation();
       }
       layout_subtree_root_list_.Clear();
     } else {
@@ -1391,7 +1391,7 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
     // If the layer has no visible content, then we shouldn't invalidate; but
     // if we're not compositing-inputs-clean, then we can't query
     // layer->SubtreeIsInvisible() here.
-    layout_object->SetMayNeedPaintInvalidationSubtree();
+    layout_object->SetSubtreeShouldCheckForPaintInvalidation();
     if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
         !layer->NeedsRepaint()) {
       // Paint properties of the layer relative to its containing graphics
@@ -2567,7 +2567,7 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
       // PrePaintTreeWalk can reach this frame.
       frame_view.SetNeedsPaintPropertyUpdate();
       if (auto* owner = frame_view.GetFrame().OwnerLayoutObject())
-        owner->SetMayNeedPaintInvalidation();
+        owner->SetShouldCheckForPaintInvalidation();
     }
   });
 
@@ -4201,7 +4201,7 @@ void LocalFrameView::BeginLifecycleUpdates() {
     return;
   lifecycle_updates_throttled_ = false;
   if (auto* owner = GetFrame().OwnerLayoutObject())
-    owner->SetMayNeedPaintInvalidation();
+    owner->SetShouldCheckForPaintInvalidation();
 
   LayoutView* layout_view = GetLayoutView();
   bool layout_view_is_empty = layout_view && !layout_view->FirstChild();

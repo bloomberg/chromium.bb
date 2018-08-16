@@ -319,10 +319,10 @@ TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   object->SetShouldDoFullPaintInvalidation();
   EXPECT_TRUE(object->ShouldDoFullPaintInvalidation());
   EXPECT_TRUE(object->NeedsPaintOffsetAndVisualRectUpdate());
-  object->SetMayNeedPaintInvalidation();
-  EXPECT_TRUE(object->MayNeedPaintInvalidation());
-  object->SetMayNeedPaintInvalidationSubtree();
-  EXPECT_TRUE(object->MayNeedPaintInvalidationSubtree());
+  object->SetShouldCheckForPaintInvalidation();
+  EXPECT_TRUE(object->ShouldCheckForPaintInvalidation());
+  object->SetSubtreeShouldCheckForPaintInvalidation();
+  EXPECT_TRUE(object->SubtreeShouldCheckForPaintInvalidation());
   object->SetMayNeedPaintInvalidationAnimatedBackgroundImage();
   EXPECT_TRUE(object->MayNeedPaintInvalidationAnimatedBackgroundImage());
   object->SetShouldInvalidateSelection();
@@ -339,8 +339,8 @@ TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   object->GetMutableForPainting().ClearPaintFlags();
 
   EXPECT_FALSE(object->ShouldDoFullPaintInvalidation());
-  EXPECT_FALSE(object->MayNeedPaintInvalidation());
-  EXPECT_FALSE(object->MayNeedPaintInvalidationSubtree());
+  EXPECT_FALSE(object->ShouldCheckForPaintInvalidation());
+  EXPECT_FALSE(object->SubtreeShouldCheckForPaintInvalidation());
   EXPECT_FALSE(object->MayNeedPaintInvalidationAnimatedBackgroundImage());
   EXPECT_FALSE(object->ShouldInvalidateSelection());
   EXPECT_FALSE(object->BackgroundChangedSinceLastPaintInvalidation());
@@ -369,55 +369,55 @@ TEST_F(LayoutObjectTest, NeedsPaintOffsetAndVisualRectUpdate) {
   object->SetShouldDoFullPaintInvalidation();
   EXPECT_TRUE(object->ShouldDoFullPaintInvalidation());
   EXPECT_TRUE(object->NeedsPaintOffsetAndVisualRectUpdate());
-  EXPECT_TRUE(parent->MayNeedPaintInvalidation());
+  EXPECT_TRUE(parent->ShouldCheckForPaintInvalidation());
   EXPECT_TRUE(parent->NeedsPaintOffsetAndVisualRectUpdate());
   object->ClearPaintInvalidationFlags();
   EXPECT_FALSE(object->ShouldDoFullPaintInvalidation());
   EXPECT_FALSE(object->NeedsPaintOffsetAndVisualRectUpdate());
   parent->ClearPaintInvalidationFlags();
-  EXPECT_FALSE(parent->MayNeedPaintInvalidation());
+  EXPECT_FALSE(parent->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(parent->NeedsPaintOffsetAndVisualRectUpdate());
 
-  object->SetMayNeedPaintInvalidation();
-  EXPECT_TRUE(object->MayNeedPaintInvalidation());
+  object->SetShouldCheckForPaintInvalidation();
+  EXPECT_TRUE(object->ShouldCheckForPaintInvalidation());
   EXPECT_TRUE(object->NeedsPaintOffsetAndVisualRectUpdate());
-  EXPECT_TRUE(parent->MayNeedPaintInvalidation());
+  EXPECT_TRUE(parent->ShouldCheckForPaintInvalidation());
   EXPECT_TRUE(parent->NeedsPaintOffsetAndVisualRectUpdate());
   object->ClearPaintInvalidationFlags();
-  EXPECT_FALSE(object->MayNeedPaintInvalidation());
+  EXPECT_FALSE(object->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(object->NeedsPaintOffsetAndVisualRectUpdate());
   parent->ClearPaintInvalidationFlags();
-  EXPECT_FALSE(parent->MayNeedPaintInvalidation());
+  EXPECT_FALSE(parent->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(parent->NeedsPaintOffsetAndVisualRectUpdate());
 
   object->SetShouldDoFullPaintInvalidationWithoutGeometryChange();
   EXPECT_TRUE(object->ShouldDoFullPaintInvalidation());
   EXPECT_FALSE(object->NeedsPaintOffsetAndVisualRectUpdate());
-  EXPECT_TRUE(parent->MayNeedPaintInvalidation());
+  EXPECT_TRUE(parent->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(parent->NeedsPaintOffsetAndVisualRectUpdate());
-  object->SetMayNeedPaintInvalidation();
+  object->SetShouldCheckForPaintInvalidation();
   EXPECT_TRUE(object->NeedsPaintOffsetAndVisualRectUpdate());
   EXPECT_TRUE(parent->NeedsPaintOffsetAndVisualRectUpdate());
   object->ClearPaintInvalidationFlags();
-  EXPECT_FALSE(object->MayNeedPaintInvalidation());
+  EXPECT_FALSE(object->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(object->NeedsPaintOffsetAndVisualRectUpdate());
   parent->ClearPaintInvalidationFlags();
-  EXPECT_FALSE(parent->MayNeedPaintInvalidation());
+  EXPECT_FALSE(parent->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(parent->NeedsPaintOffsetAndVisualRectUpdate());
 
-  object->SetMayNeedPaintInvalidationWithoutGeometryChange();
-  EXPECT_TRUE(object->MayNeedPaintInvalidation());
+  object->SetShouldCheckForPaintInvalidationWithoutGeometryChange();
+  EXPECT_TRUE(object->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(object->NeedsPaintOffsetAndVisualRectUpdate());
-  EXPECT_TRUE(parent->MayNeedPaintInvalidation());
+  EXPECT_TRUE(parent->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(parent->NeedsPaintOffsetAndVisualRectUpdate());
-  object->SetMayNeedPaintInvalidation();
+  object->SetShouldCheckForPaintInvalidation();
   EXPECT_TRUE(object->NeedsPaintOffsetAndVisualRectUpdate());
   EXPECT_TRUE(parent->NeedsPaintOffsetAndVisualRectUpdate());
   object->ClearPaintInvalidationFlags();
-  EXPECT_FALSE(object->MayNeedPaintInvalidation());
+  EXPECT_FALSE(object->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(object->NeedsPaintOffsetAndVisualRectUpdate());
   parent->ClearPaintInvalidationFlags();
-  EXPECT_FALSE(parent->MayNeedPaintInvalidation());
+  EXPECT_FALSE(parent->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(parent->NeedsPaintOffsetAndVisualRectUpdate());
 }
 

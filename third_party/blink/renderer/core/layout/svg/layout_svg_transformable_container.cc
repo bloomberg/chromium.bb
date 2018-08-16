@@ -68,7 +68,6 @@ bool LayoutSVGTransformableContainer::IsChildAllowed(
 }
 
 void LayoutSVGTransformableContainer::SetNeedsTransformUpdate() {
-  SetMayNeedPaintInvalidationSubtree();
   // The transform paint property relies on the SVG transform being up-to-date
   // (see: PaintPropertyTreeBuilder::updateTransformForNonRootSVG).
   SetNeedsPaintPropertyUpdate();

@@ -1955,7 +1955,7 @@ void LayoutBlockFlow::LayoutInlineChildren(bool relayout_children,
       if (o->IsAtomicInlineLevel() || o->IsFloating() ||
           o->IsOutOfFlowPositioned()) {
         LayoutBox* box = ToLayoutBox(o);
-        box->SetMayNeedPaintInvalidation();
+        box->SetShouldCheckForPaintInvalidation();
 
         UpdateBlockChildDirtyBitsBeforeLayout(relayout_children, *box);
 

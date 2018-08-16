@@ -239,10 +239,11 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
   }
 
   SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-      defer == CanDeferInvalidation::kYes && ImageResource() &&
-              ImageResource()->MaybeAnimated()
-          ? PaintInvalidationReason::kDelayedFull
-          : PaintInvalidationReason::kImage);
+      PaintInvalidationReason::kImage);
+
+  if (defer == CanDeferInvalidation::kYes && ImageResource() &&
+      ImageResource()->MaybeAnimated())
+    SetShouldDelayFullPaintInvalidation();
 
   // Tell any potential compositing layers that the image needs updating.
   ContentChanged(kImageChanged);

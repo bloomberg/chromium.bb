@@ -356,8 +356,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
       const LayoutRect& container_rect,
       TouchAction container_whitelisted_touch_action) const override;
 
-  PaintInvalidationReason InvalidatePaint(
-      const PaintInvalidatorContext&) const override;
+  void InvalidatePaint(const PaintInvalidatorContext&) const override;
 
   LayoutSize OffsetFromContainerInternal(
       const LayoutObject*,

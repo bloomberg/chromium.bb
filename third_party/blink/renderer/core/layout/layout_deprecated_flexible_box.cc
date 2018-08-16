@@ -1260,7 +1260,7 @@ void LayoutDeprecatedFlexibleBox::PlaceChild(LayoutBox* child,
                                              const LayoutPoint& location) {
   // FIXME Investigate if this can be removed based on other flags.
   // crbug.com/370010
-  child->SetMayNeedPaintInvalidation();
+  child->SetShouldCheckForPaintInvalidation();
 
   // Place the child.
   child->SetLocation(location);

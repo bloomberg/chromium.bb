@@ -14,9 +14,8 @@
 
 namespace blink {
 
-PaintInvalidationReason TablePaintInvalidator::InvalidatePaint() {
-  PaintInvalidationReason reason =
-      BoxPaintInvalidator(table_, context_).InvalidatePaint();
+void TablePaintInvalidator::InvalidatePaint() {
+  BoxPaintInvalidator(table_, context_).InvalidatePaint();
 
   // If any col changed background, we need to invalidate all sections because
   // col background paints into section's background display item.
@@ -29,7 +28,7 @@ PaintInvalidationReason TablePaintInvalidator::InvalidatePaint() {
       // LayoutTableCol uses the table's localVisualRect(). Should check column
       // for paint invalidation when table's visual rect changed.
       if (visual_rect_changed)
-        col->SetMayNeedPaintInvalidation();
+        col->SetShouldCheckForPaintInvalidation();
       // This ensures that the backgroundChangedSinceLastPaintInvalidation flag
       // is up-to-date.
       col->EnsureIsReadyForPaintInvalidation();
@@ -52,8 +51,6 @@ PaintInvalidationReason TablePaintInvalidator::InvalidatePaint() {
               *section, PaintInvalidationReason::kStyle);
     }
   }
-
-  return reason;
 }
 
 }  // namespace blink
