@@ -40,7 +40,7 @@ TEST_F(LayoutTreeBuilderTraversalTest, pseudos) {
   const char* const kHtml =
       "<style>"
       "#top::before { content: \"foo\"; }"
-      "#top::before { content: \"bar\"; }"
+      "#top::after { content: \"bar\"; }"
       "</style>"
       "<div id='top'></div>";
   SetupSampleHTML(kHtml);
@@ -51,6 +51,10 @@ TEST_F(LayoutTreeBuilderTraversalTest, pseudos) {
   EXPECT_EQ(before, LayoutTreeBuilderTraversal::Next(*top, nullptr));
   EXPECT_EQ(after, LayoutTreeBuilderTraversal::NextSibling(*before));
   EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::PreviousSibling(*before));
+  EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::NextSibling(*after));
+  EXPECT_EQ(before, LayoutTreeBuilderTraversal::PreviousSibling(*after));
+  EXPECT_EQ(before, LayoutTreeBuilderTraversal::FirstChild(*top));
+  EXPECT_EQ(after, LayoutTreeBuilderTraversal::LastChild(*top));
 }
 
 TEST_F(LayoutTreeBuilderTraversalTest, emptyDisplayContents) {
