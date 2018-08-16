@@ -3663,6 +3663,159 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="8" label="Unknown or unhandler error"/>
 </enum>
 
+<enum name="BluetoothSocketServiceHash">
+  <summary>
+    31-bit hash of the service UUID. Values here are populated from
+    https://www.bluetooth.com/specifications/assigned-numbers/service-discovery
+  </summary>
+  <int value="27577045"
+      label="SIM_Access; 0000112d-0000-1000-8000-00805f9b34fb"/>
+  <int value="46048502"
+      label="VideoSink; 00001304-0000-1000-8000-00805f9b34fb"/>
+  <int value="53242880"
+      label="3D Glasses; 00001138-0000-1000-8000-00805f9b34fb"/>
+  <int value="80025460"
+      label="AdvancedAudioDistribution; 0000110d-0000-1000-8000-00805f9b34fb"/>
+  <int value="80662886"
+      label="A/V_RemoteControlTarget; 0000110c-0000-1000-8000-00805f9b34fb"/>
+  <int value="89015451"
+      label="HDP Source; 00001401-0000-1000-8000-00805f9b34fb"/>
+  <int value="93024408"
+      label="ReferencePrinting; 00001119-0000-1000-8000-00805f9b34fb"/>
+  <int value="134662076" label="GN; 00001117-0000-1000-8000-00805f9b34fb"/>
+  <int value="153517886"
+      label="DirectPrintingReferenceObjectsService;
+             00001120-0000-1000-8000-00805f9b34fb"/>
+  <int value="164698689"
+      label="DirectPrinting; 00001118-0000-1000-8000-00805f9b34fb"/>
+  <int value="181138738" label="WAP; 00001113-0000-1000-8000-00805f9b34fb"/>
+  <int value="191537385"
+      label="BasicPrinting; 00001122-0000-1000-8000-00805f9b34fb"/>
+  <int value="219461847"
+      label="Basic Imaging Profile; 0000111a-0000-1000-8000-00805f9b34fb"/>
+  <int value="223205883"
+      label="HCR_Scan; 00001127-0000-1000-8000-00805f9b34fb"/>
+  <int value="230869022"
+      label="ESDP_UPNP_IP_LAP; 00001301-0000-1000-8000-00805f9b34fb"/>
+  <int value="237750726"
+      label="AudioSource; 0000110a-0000-1000-8000-00805f9b34fb"/>
+  <int value="270998158"
+      label="OBEXFileTransfer; 00001106-0000-1000-8000-00805f9b34fb"/>
+  <int value="308706592"
+      label="Handsfree; 0000111e-0000-1000-8000-00805f9b34fb"/>
+  <int value="312472359"
+      label="ESDP_UPNP_L2CAP; 00001302-0000-1000-8000-00805f9b34fb"/>
+  <int value="325643766"
+      label="CTN Notification Service; 0000113d-0000-1000-8000-00805f9b34fb"/>
+  <int value="414065238"
+      label="Headset - HS; 00001131-0000-1000-8000-00805f9b34fb"/>
+  <int value="414260640"
+      label="UPNP_IP_Service; 00001206-0000-1000-8000-00805f9b34fb"/>
+  <int value="474133479"
+      label="Message Access Server; 00001132-0000-1000-8000-00805f9b34fb"/>
+  <int value="481017904"
+      label="GenericNetworking; 00001201-0000-1000-8000-00805f9b34fb"/>
+  <int value="488312511"
+      label="Phonebook Access - PCE; 0000112e-0000-1000-8000-00805f9b34fb"/>
+  <int value="556074802"
+      label="3D Display; 00001137-0000-1000-8000-00805f9b34fb"/>
+  <int value="559272304"
+      label="GenericFileTransfer; 00001202-0000-1000-8000-00805f9b34fb"/>
+  <int value="575067238"
+      label="AudioSink; 0000110b-0000-1000-8000-00805f9b34fb"/>
+  <int value="579644444"
+      label="PnPInformation; 00001200-0000-1000-8000-00805f9b34fb"/>
+  <int value="618213861"
+      label="HCR_Print; 00001126-0000-1000-8000-00805f9b34fb"/>
+  <int value="687640090"
+      label="HardcopyCableReplacement; 00001125-0000-1000-8000-00805f9b34fb"/>
+  <int value="690920522"
+      label="HumanInterfaceDeviceService;
+             00001124-0000-1000-8000-00805f9b34fb"/>
+  <int value="726709874"
+      label="MPS SC UUID; 0000113b-0000-1000-8000-00805f9b34fb"/>
+  <int value="772096015" label="GNSS; 00001135-0000-1000-8000-00805f9b34fb"/>
+  <int value="788291396"
+      label="ImagingResponder; 0000111b-0000-1000-8000-00805f9b34fb"/>
+  <int value="826986046"
+      label="GenericAudio; 00001203-0000-1000-8000-00805f9b34fb"/>
+  <int value="917447240"
+      label="GenericTelephony; 00001204-0000-1000-8000-00805f9b34fb"/>
+  <int value="932610720"
+      label="HDP Sink; 00001402-0000-1000-8000-00805f9b34fb"/>
+  <int value="1048137004"
+      label="Common_ISDN_Access; 00001128-0000-1000-8000-00805f9b34fb"/>
+  <int value="1089394723"
+      label="ReflectedUI; 00001121-0000-1000-8000-00805f9b34fb"/>
+  <int value="1173742133"
+      label="Phonebook Access; 00001130-0000-1000-8000-00805f9b34fb"/>
+  <int value="1185226354"
+      label="ImagingReferencedObjects; 0000111d-0000-1000-8000-00805f9b34fb"/>
+  <int value="1269421948" label="NAP; 00001116-0000-1000-8000-00805f9b34fb"/>
+  <int value="1297730173"
+      label="PrintingStatus; 00001123-0000-1000-8000-00805f9b34fb"/>
+  <int value="1322541006"
+      label="CTN Access Service; 0000113c-0000-1000-8000-00805f9b34fb"/>
+  <int value="1346822007"
+      label="A/V_RemoteControl; 0000110e-0000-1000-8000-00805f9b34fb"/>
+  <int value="1353247390"
+      label="IrMCSync; 00001104-0000-1000-8000-00805f9b34fb"/>
+  <int value="1391113544"
+      label="Intercom; 00001110-0000-1000-8000-00805f9b34fb"/>
+  <int value="1406818563"
+      label="MPS Profile UUID; 0000113a-0000-1000-8000-00805f9b34fb"/>
+  <int value="1416242305"
+      label="3D Synchronization; 00001139-0000-1000-8000-00805f9b34fb"/>
+  <int value="1539513745"
+      label="CTN Profile; 0000113e-0000-1000-8000-00805f9b34fb"/>
+  <int value="1559400847"
+      label="Phonebook Access - PSE; 0000112f-0000-1000-8000-00805f9b34fb"/>
+  <int value="1563279259"
+      label="GNSS_Server; 00001136-0000-1000-8000-00805f9b34fb"/>
+  <int value="1564925248"
+      label="LANAccessUsingPPP; 00001102-0000-1000-8000-00805f9b34fb"/>
+  <int value="1603721693"
+      label="ESDP_UPNP_IP_PAN; 00001300-0000-1000-8000-00805f9b34fb"/>
+  <int value="1608206008"
+      label="A/V_RemoteControlController;
+             0000110f-0000-1000-8000-00805f9b34fb"/>
+  <int value="1608308139"
+      label="UPNP_Service; 00001205-0000-1000-8000-00805f9b34fb"/>
+  <int value="1621920090"
+      label="ImagingAutomaticArchive; 0000111c-0000-1000-8000-00805f9b34fb"/>
+  <int value="1642311038"
+      label="HandsfreeAudioGateway; 0000111f-0000-1000-8000-00805f9b34fb"/>
+  <int value="1665040985"
+      label="Message Access Profile; 00001134-0000-1000-8000-00805f9b34fb"/>
+  <int value="1679985708"
+      label="SerialPort; 00001101-0000-1000-8000-00805f9b34fb"/>
+  <int value="1684180024"
+      label="Headset - Audio Gateway (AG);
+             00001112-0000-1000-8000-00805f9b34fb"/>
+  <int value="1686752071"
+      label="WAP_CLIENT; 00001114-0000-1000-8000-00805f9b34fb"/>
+  <int value="1692867207"
+      label="IrMCSyncCommand; 00001107-0000-1000-8000-00805f9b34fb"/>
+  <int value="1857661865" label="HDP; 00001400-0000-1000-8000-00805f9b34fb"/>
+  <int value="1914606342"
+      label="VideoSource; 00001303-0000-1000-8000-00805f9b34fb"/>
+  <int value="1917084049" label="PANU; 00001115-0000-1000-8000-00805f9b34fb"/>
+  <int value="1923026611"
+      label="OBEXObjectPush; 00001105-0000-1000-8000-00805f9b34fb"/>
+  <int value="1931905004"
+      label="Message Notification Server;
+             00001133-0000-1000-8000-00805f9b34fb"/>
+  <int value="1979370118"
+      label="DialupNetworking; 00001103-0000-1000-8000-00805f9b34fb"/>
+  <int value="2002893898"
+      label="Headset; 00001108-0000-1000-8000-00805f9b34fb"/>
+  <int value="2035822117" label="Fax; 00001111-0000-1000-8000-00805f9b34fb"/>
+  <int value="2039617417"
+      label="VideoDistribution; 00001305-0000-1000-8000-00805f9b34fb"/>
+  <int value="2060171182"
+      label="CordlessTelephony; 00001109-0000-1000-8000-00805f9b34fb"/>
+</enum>
+
 <enum name="BluetoothStatus">
   <int value="0" label="Disabled"/>
   <int value="1" label="Enabled"/>
