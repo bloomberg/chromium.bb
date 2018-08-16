@@ -910,6 +910,7 @@ jumbo_component("base") {
     "task/task_traits.cc",
     "task/task_traits.h",
     "task/task_traits_details.h",
+    "task/task_traits_extension.h",
     "task_runner.cc",
     "task_runner.h",
     "task_runner_util.h",
@@ -2186,6 +2187,17 @@ if (is_fuchsia) {
   }
 }
 
+source_set("base_unittests_tasktraits") {
+  testonly = true
+  sources = [
+    "task/test_task_traits_extension.cc",
+    "task/test_task_traits_extension.h",
+  ]
+  deps = [
+    ":base",
+  ]
+}
+
 test("base_unittests") {
   sources = [
     "allocator/allocator_interception_mac_unittest.mm",
@@ -2430,6 +2442,7 @@ test("base_unittests") {
     "task/task_scheduler/test_utils.cc",
     "task/task_scheduler/test_utils.h",
     "task/task_scheduler/tracked_ref_unittest.cc",
+    "task/task_traits_extension_unittest.cc",
     "task/task_traits_unittest.cc",
     "task_runner_util_unittest.cc",
     "template_util_unittest.cc",
@@ -2530,6 +2543,7 @@ test("base_unittests") {
 
   deps = [
     ":base",
+    ":base_unittests_tasktraits",
     ":i18n",
     "//base/allocator:buildflags",
     "//base/test:native_library_test_utils",
@@ -2777,12 +2791,14 @@ if (enable_nocompile_tests) {
       "metrics/histogram_unittest.nc",
       "optional_unittest.nc",
       "strings/string16_unittest.nc",
+      "task/task_traits_extension_unittest.nc",
       "task/task_traits_unittest.nc",
       "thread_annotations_unittest.nc",
     ]
 
     deps = [
       ":base",
+      ":base_unittests_tasktraits",
       "//base/test:run_all_unittests",
       "//testing/gtest",
     ]
