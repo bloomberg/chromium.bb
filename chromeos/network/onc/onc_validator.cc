@@ -394,8 +394,8 @@ bool Validator::FieldExistsAndIsNotInRange(const base::DictionaryValue& object,
   msg << "Found value '" << actual_value
       << "', but expected a value in the range [" << lower_bound << ", "
       << upper_bound << "] (boundaries inclusive)";
-  path_.pop_back();
   AddValidationIssue(true /* is_error */, msg.str());
+  path_.pop_back();
   return true;
 }
 
@@ -421,8 +421,8 @@ bool Validator::FieldExistsAndIsEmpty(const base::DictionaryValue& object,
   path_.push_back(field_name);
   std::ostringstream msg;
   msg << "Found an empty string, but expected a non-empty string.";
-  path_.pop_back();
   AddValidationIssue(true /* is_error */, msg.str());
+  path_.pop_back();
   return true;
 }
 
@@ -473,15 +473,16 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
     path_.push_back(::onc::wifi::kSSID);
     std::ostringstream msg;
     msg << kInvalidLength;
-    path_.pop_back();
     // If the HexSSID field is present, ignore errors in SSID because these
     // might be caused by the usage of a non-UTF-8 encoding when the SSID
     // field was automatically added (see FillInHexSSIDField).
     if (!object->HasKey(::onc::wifi::kHexSSID)) {
       AddValidationIssue(true /* is_error */, msg.str());
+      path_.pop_back();
       return false;
     }
     AddValidationIssue(false /* is_error */, msg.str());
+    path_.pop_back();
   }
 
   // Check HexSSID validity.
@@ -493,8 +494,8 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
       path_.push_back(::onc::wifi::kHexSSID);
       std::ostringstream msg;
       msg << "Not a valid hex representation: '" << hex_ssid_string << "'";
-      path_.pop_back();
       AddValidationIssue(true /* is_error */, msg.str());
+      path_.pop_back();
       return false;
     }
     if (decoded_ssid.size() <= 0 ||
@@ -502,8 +503,8 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
       path_.push_back(::onc::wifi::kHexSSID);
       std::ostringstream msg;
       msg << kInvalidLength;
-      path_.pop_back();
       AddValidationIssue(true /* is_error */, msg.str());
+      path_.pop_back();
       return false;
     }
 
@@ -518,8 +519,8 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
         std::ostringstream msg;
         msg << "Fields '" << ::onc::wifi::kSSID << "' and '"
             << ::onc::wifi::kHexSSID << "' contain inconsistent values.";
-        path_.pop_back();
         AddValidationIssue(false /* is_error */, msg.str());
+        path_.pop_back();
         object->RemoveWithoutPathExpansion(::onc::wifi::kSSID, nullptr);
       }
     }
@@ -547,8 +548,8 @@ bool Validator::CheckGuidIsUniqueAndAddToSet(const base::DictionaryValue& dict,
       path_.push_back(key_guid);
       std::ostringstream msg;
       msg << "Found a duplicate GUID '" << guid << "'.";
-      path_.pop_back();
       AddValidationIssue(true /* is_error */, msg.str());
+      path_.pop_back();
       return false;
     }
     guids->insert(guid);
@@ -1033,8 +1034,8 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
     path_.push_back(::onc::kRemove);
     std::ostringstream msg;
     msg << "Removal of certificates is not supported.";
-    path_.pop_back();
     AddValidationIssue(true /* is_error */, msg.str());
+    path_.pop_back();
     return false;
   }
 
