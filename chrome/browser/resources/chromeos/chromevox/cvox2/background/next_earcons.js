@@ -56,7 +56,8 @@ NextEarcons.prototype = {
     if (!cvox.AbstractEarcons.enabled) {
       return;
     }
-    console.log('Earcon ' + earcon);
+    if (localStorage['enableEarconLogging'] == 'true')
+      console.log('Earcon ' + earcon);
     if (ChromeVoxState.instance.currentRange &&
         ChromeVoxState.instance.currentRange.isValid()) {
       var node = ChromeVoxState.instance.currentRange.start.node;
