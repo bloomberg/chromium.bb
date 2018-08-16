@@ -503,18 +503,15 @@ Polymer({
     // We only care about: PageUp, PageDown, Left, Up, Right, Down.
     // If the user is holding a modifier key, ignore.
     if (!this.pluginProxy_.pluginReady() ||
-        !arrayContains(
-            [
-              'PageUp', 'PageDown', 'ArrowLeft', 'ArrowRight', 'ArrowUp',
-              'ArrowDown'
-            ],
-            e.code) ||
+        !['PageUp', 'PageDown', 'ArrowLeft', 'ArrowRight', 'ArrowUp',
+          'ArrowDown']
+             .includes(e.code) ||
         hasKeyModifiers(e)) {
       return;
     }
 
     // Don't handle the key event for these elements.
-    const tagName = e.path[0].tagName;
+    const tagName = e.composedPath()[0].tagName;
     if (['INPUT', 'SELECT', 'EMBED'].includes(tagName))
       return;
 
@@ -523,13 +520,13 @@ Polymer({
     // element, and work up the DOM tree to see if any element has a
     // scrollbar. If there exists a scrollbar, do not handle the key event
     // here.
-    let element = e.target;
-    while (element) {
-      if (element.scrollHeight > element.clientHeight ||
-          element.scrollWidth > element.clientWidth) {
+    const isEventHorizontal = ['ArrowLeft', 'ArrowRight'].includes(e.code);
+    for (let i = 0; i < e.composedPath().length; i++) {
+      const element = e.composedPath()[i];
+      if (element.scrollHeight > element.clientHeight && !isEventHorizontal ||
+          element.scrollWidth > element.clientWidth && isEventHorizontal) {
         return;
       }
-      element = element.parentElement;
     }
 
     // No scroll bar anywhere, or the active element is something else, like a
