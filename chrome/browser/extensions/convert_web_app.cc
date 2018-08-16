@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
@@ -45,28 +46,9 @@ namespace extensions {
 
 namespace keys = manifest_keys;
 
-
 namespace {
-
 const char kIconsDirName[] = "icons";
 const char kScopeUrlHandlerId[] = "scope";
-
-// Create the public key for the converted web app.
-//
-// Web apps are not signed, but the public key for an extension doubles as
-// its unique identity, and we need one of those. A web app's unique identity
-// is its manifest URL, so we hash that to create a public key. There will be
-// no corresponding private key, which means that these extensions cannot be
-// auto-updated using ExtensionUpdater.
-std::string GenerateKey(const GURL& app_url) {
-  char raw[crypto::kSHA256Length] = {0};
-  std::string key;
-  crypto::SHA256HashString(app_url.spec().c_str(), raw,
-                           crypto::kSHA256Length);
-  base::Base64Encode(base::StringPiece(raw, crypto::kSHA256Length), &key);
-  return key;
-}
-
 }  // namespace
 
 std::unique_ptr<base::DictionaryValue> CreateURLHandlersForBookmarkApp(
@@ -159,7 +141,8 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
 
   // Create the manifest
   std::unique_ptr<base::DictionaryValue> root(new base::DictionaryValue);
-  root->SetString(keys::kPublicKey, GenerateKey(web_app.app_url));
+  root->SetString(keys::kPublicKey,
+                  web_app::GenerateExtensionKeyFromURL(web_app.app_url));
   root->SetString(keys::kName, base::UTF16ToUTF8(web_app.title));
   root->SetString(keys::kVersion, ConvertTimeToExtensionVersion(create_time));
   root->SetString(keys::kDescription, base::UTF16ToUTF8(web_app.description));

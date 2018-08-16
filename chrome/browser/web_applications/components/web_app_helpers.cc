@@ -4,7 +4,10 @@
 
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
+#include "base/base64.h"
 #include "base/strings/strcat.h"
+#include "components/crx_file/id_util.h"
+#include "crypto/sha2.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -32,6 +35,31 @@ std::string GetAppIdFromApplicationName(const std::string& app_name) {
   if (app_name.substr(0, prefix.length()) != prefix)
     return std::string();
   return app_name.substr(prefix.length());
+}
+
+static std::string GenerateExtensionHashFromURL(const GURL& url) {
+  return crypto::SHA256HashString(url.spec());
+}
+
+std::string GenerateExtensionIdFromURL(const GURL& url) {
+  return crx_file::id_util::GenerateId(GenerateExtensionHashFromURL(url));
+}
+
+// Generate the public key for the fake extension that we synthesize to contain
+// a web app.
+//
+// Web apps are not signed, but the public key for an extension doubles as
+// its unique identity, and we need one of those. A web app's unique identity
+// is its manifest URL, so we hash that (*) to create a public key. There will
+// be no corresponding private key, which means that these extensions cannot be
+// auto-updated using ExtensionUpdater.
+//
+// (*) The comment above says that we hash the manifest URL, but in practice,
+// it seems that we hash the start URL.
+std::string GenerateExtensionKeyFromURL(const GURL& url) {
+  std::string key;
+  base::Base64Encode(GenerateExtensionHashFromURL(url), &key);
+  return key;
 }
 
 }  // namespace web_app
