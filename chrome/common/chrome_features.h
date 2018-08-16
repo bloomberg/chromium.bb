@@ -353,6 +353,8 @@ extern const base::Feature kCrOSEnableUSMUserService;
 extern const base::Feature kMachineLearningService;
 
 extern const base::Feature kUsbguard;
+
+extern const base::Feature kShillSandboxing;
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)

@@ -656,6 +656,10 @@ const base::Feature kMachineLearningService{"MachineLearningService",
 // Enable USBGuard at the lockscreen on Chrome OS.
 // TODO(crbug.com/874630): Remove this kill-switch
 const base::Feature kUsbguard{"USBGuard", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable running shill in a minijail sandbox on Chrome OS.
+const base::Feature kShillSandboxing{"ShillSandboxing",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
