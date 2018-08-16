@@ -241,12 +241,12 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
 bool DevToolsHttpClient::FetchUrlAndLog(const std::string& url,
                                         URLRequestContextGetter* getter,
                                         std::string* response) {
-  VLOG(1) << "DevTools request: " << url;
+  VLOG(1) << "DevTools HTTP Request: " << url;
   bool ok = FetchUrl(url, getter, response);
   if (ok) {
-    VLOG(1) << "DevTools response: " << *response;
+    VLOG(1) << "DevTools HTTP Response: " << *response;
   } else {
-    VLOG(1) << "DevTools request failed";
+    VLOG(1) << "DevTools HTTP Request failed";
   }
   return ok;
 }
