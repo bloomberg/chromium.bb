@@ -21,7 +21,6 @@ enum CacheStorageError {
   kErrorQueryTooLarge = 6,
   // TODO(cmumford): kErrorNotImplemented is deprecated. Remove use in code.
   kErrorNotImplemented = 7,
-  kErrorDuplicateOperation = 8,
   // Add new values here.
 };
 

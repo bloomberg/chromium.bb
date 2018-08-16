@@ -168,63 +168,6 @@ bool VaryMatches(const ServiceWorkerHeaderMap& request,
   return true;
 }
 
-// Check batch operation list for duplicate entries.
-bool HasDuplicateOperations(
-    const std::vector<blink::mojom::BatchOperationPtr>& operations) {
-  using blink::mojom::BatchOperation;
-
-  if (operations.size() < 2) {
-    return false;
-  }
-
-  // Create a temporary sorted vector of the operations to support quickly
-  // finding potentially duplicate entries.  Multiple entries may have the
-  // same URL, but differ by VARY header, so a sorted list is easier to
-  // work with than a map.
-  //
-  // Note, this will use 512 bytes of stack space on 64-bit devices.  The
-  // static size attempts to accommodate most typical Cache.addAll() uses in
-  // service worker install events while not blowing up the stack too much.
-  base::StackVector<BatchOperation*, 64> sorted;
-  sorted->reserve(operations.size());
-  for (const auto& op : operations) {
-    sorted->push_back(op.get());
-  }
-  std::sort(sorted->begin(), sorted->end(),
-            [](BatchOperation* left, BatchOperation* right) {
-              return left->request.url < right->request.url;
-            });
-
-  // Check each entry in the sorted vector for any duplicates.  Since the
-  // list is sorted we only need to inspect the immediate neighbors that
-  // have the same URL.  This results in an average complexity of O(n log n).
-  // If the entire list has entries with the same URL and different VARY
-  // headers then this devolves into O(n^2).
-  for (auto outer = sorted->cbegin(); outer != sorted->cend(); ++outer) {
-    const BatchOperation* outer_op = *outer;
-    for (auto inner = std::next(outer); inner != sorted->cend(); ++inner) {
-      const BatchOperation* inner_op = *inner;
-      // Since the list is sorted we can stop looking at neighbors after
-      // the first different URL.
-      if (outer_op->request.url != inner_op->request.url) {
-        break;
-      }
-      // VaryMatches() is asymmetric since the operation depends on the VARY
-      // header in the target response.  Since we only visit each pair of
-      // entries once we need to perform the VaryMatches() call in both
-      // directions.
-      if (VaryMatches(outer_op->request.headers, inner_op->request.headers,
-                      inner_op->response->headers) ||
-          VaryMatches(outer_op->request.headers, inner_op->request.headers,
-                      outer_op->response->headers)) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
 GURL RemoveQueryParam(const GURL& url) {
   url::Replacements<char> replacements;
   replacements.ClearQuery();
@@ -598,26 +541,6 @@ void CacheStorageCache::BatchOperation(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), CacheStorageError::kErrorStorage));
-    return;
-  }
-
-  // From BatchCacheOperations:
-  //
-  //   https://w3c.github.io/ServiceWorker/#batch-cache-operations-algorithm
-  //
-  // "If the result of running Query Cache with operation’s request,
-  //  operation’s options, and addedItems is not empty, throw an
-  //  InvalidStateError DOMException."
-  //
-  // Note, the spec checks CacheQueryOptions like ignoreSearch, etc, but
-  // currently there is no way for script to trigger a batch operation with
-  // those set.  The only exposed API is addAll() which does not allow
-  // options to be passed.  Therefore, assume default options below.  This
-  // is enforced in the mojo interface by not passing any options arguments.
-  if (HasDuplicateOperations(operations)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  CacheStorageError::kErrorDuplicateOperation));
     return;
   }
 
