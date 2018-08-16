@@ -635,6 +635,7 @@ Document::Document(const DocumentInit& initializer,
       contains_plugins_(false),
       ignore_destructive_write_count_(0),
       throw_on_dynamic_markup_insertion_count_(0),
+      ignore_opens_during_unload_count_(0),
       markers_(new DocumentMarkerController(*this)),
       update_focus_appearance_timer_(
           GetTaskRunner(TaskType::kInternalUserInteraction),
@@ -3051,17 +3052,22 @@ void Document::open(Document* entered_document,
   open();
 }
 
+// https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#document-open-steps
 void Document::open() {
   DCHECK(!ImportLoader());
 
   if (frame_) {
-    // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#document-open-steps
     // If |document| has an active parser whose script nesting level is greater
     // than 0, then return |document|.
     if (ScriptableDocumentParser* parser = GetScriptableDocumentParser()) {
       if (parser->IsParsing() && parser->IsExecutingScript())
         return;
     }
+
+    // Similarly, if |document|'s ignore-opens-during-unload counter is greater
+    // than 0, then return |document|.
+    if (ignore_opens_during_unload_count_)
+      return;
 
     if (frame_->Loader().HasProvisionalNavigation()) {
       frame_->Loader().StopAllLoaders();
@@ -3776,19 +3782,22 @@ void Document::write(const String& text,
 
   bool has_insertion_point = parser_ && parser_->HasInsertionPoint();
 
-  if (!has_insertion_point && ignore_destructive_write_count_) {
-    AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                               ExceptionMessages::FailedToExecute(
-                                   "write", "Document",
-                                   "It isn't possible to write into a document "
-                                   "from an asynchronously-loaded external "
-                                   "script unless it is explicitly opened.")));
-    return;
-  }
+  if (!has_insertion_point) {
+    if (ignore_destructive_write_count_) {
+      AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel,
+          ExceptionMessages::FailedToExecute(
+              "write", "Document",
+              "It isn't possible to write into a document "
+              "from an asynchronously-loaded external "
+              "script unless it is explicitly opened.")));
+      return;
+    }
+    if (ignore_opens_during_unload_count_)
+      return;
 
-  if (!has_insertion_point)
     open(entered_document, ASSERT_NO_EXCEPTION);
+  }
 
   DCHECK(parser_);
   PerformanceMonitor::ReportGenericViolation(

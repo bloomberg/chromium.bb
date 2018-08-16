@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -382,6 +383,10 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
   // child frame during or after detaching children results in an attached
   // frame on a detached DOM tree, which is bad.
   SubframeLoadingDisabler disabler(document);
+  // https://html.spec.whatwg.org/C/browsing-the-web.html#unload-a-document
+  // The ignore-opens-during-unload counter of the parent Document must be
+  // incremented when unloading its descendants.
+  IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(document);
   frame_->DetachChildren();
 
   // detachChildren() potentially detaches or navigates this frame. The load
@@ -1163,6 +1168,11 @@ bool FrameLoader::PrepareForCommit() {
   // child frame during or after detaching children results in an attached frame
   // on a detached DOM tree, which is bad.
   SubframeLoadingDisabler disabler(frame_->GetDocument());
+  // https://html.spec.whatwg.org/C/browsing-the-web.html#unload-a-document
+  // The ignore-opens-during-unload counter of a Document must be incremented
+  // both when unloading itself and when unloading its descendants.
+  IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
+      frame_->GetDocument());
   if (document_loader_) {
     Client()->DispatchWillCommitProvisionalLoad();
     DispatchUnloadEvent();
@@ -1445,37 +1455,52 @@ bool FrameLoader::ShouldClose(bool is_reload) {
   if (!page || !page->GetChromeClient().CanOpenBeforeUnloadConfirmPanel())
     return true;
 
-  // Store all references to each subframe in advance since beforeunload's event
-  // handler may modify frame
-  HeapVector<Member<LocalFrame>> target_frames;
-  target_frames.push_back(frame_);
+  HeapVector<Member<LocalFrame>> descendant_frames;
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().TraverseNext(frame_)) {
     // FIXME: There is not yet any way to dispatch events to out-of-process
     // frames.
     if (child->IsLocalFrame())
-      target_frames.push_back(ToLocalFrame(child));
+      descendant_frames.push_back(ToLocalFrame(child));
   }
 
-  bool should_close = false;
   {
     NavigationDisablerForBeforeUnload navigation_disabler;
-    size_t i;
-
     bool did_allow_navigation = false;
-    for (i = 0; i < target_frames.size(); i++) {
-      if (!target_frames[i]->Tree().IsDescendantOf(frame_))
-        continue;
-      if (!target_frames[i]->GetDocument()->DispatchBeforeUnloadEvent(
-              page->GetChromeClient(), is_reload, did_allow_navigation))
-        break;
-    }
 
-    if (i == target_frames.size())
-      should_close = true;
+    // https://html.spec.whatwg.org/C/browsing-the-web.html#prompt-to-unload-a-document
+
+    // First deal with this frame.
+    IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
+        frame_->GetDocument());
+    if (!frame_->GetDocument()->DispatchBeforeUnloadEvent(
+            page->GetChromeClient(), is_reload, did_allow_navigation))
+      return false;
+
+    // Then deal with descendent frames.
+    for (Member<LocalFrame>& descendant_frame : descendant_frames) {
+      if (!descendant_frame->Tree().IsDescendantOf(frame_))
+        continue;
+
+      // There is some confusion in the spec around what counters should be
+      // incremented for a descendant browsing context:
+      // https://github.com/whatwg/html/issues/3899
+      //
+      // Here for implementation ease, we use the current spec behavior, which
+      // is to increment only the counter of the Document on which this is
+      // called, and that of the Document we are firing the beforeunload event
+      // on -- not any intermediate Documents that may be the parent of the
+      // frame being unloaded but is not root Document.
+      IgnoreOpensDuringUnloadCountIncrementer
+          ignore_opens_during_unload_descendant(
+              descendant_frame->GetDocument());
+      if (!descendant_frame->GetDocument()->DispatchBeforeUnloadEvent(
+              page->GetChromeClient(), is_reload, did_allow_navigation))
+        return false;
+    }
   }
 
-  return should_close;
+  return true;
 }
 
 void FrameLoader::ClientDroppedNavigation() {

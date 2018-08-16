@@ -139,6 +139,7 @@
 #include "third_party/blink/renderer/core/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/icon_url.h"
+#include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -662,6 +663,11 @@ void WebLocalFrameImpl::DispatchUnloadEvent() {
   if (!GetFrame())
     return;
   SubframeLoadingDisabler disabler(GetFrame()->GetDocument());
+  // https://html.spec.whatwg.org/C/browsing-the-web.html#unload-a-document
+  // The ignore-opens-during-unload counter of a Document must be incremented
+  // when unloading itself.
+  IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
+      GetFrame()->GetDocument());
   GetFrame()->Loader().DispatchUnloadEvent();
 }
 

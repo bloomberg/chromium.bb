@@ -151,6 +151,7 @@ blink_core_sources("dom") {
     "id_target_observer_registry.h",
     "idle_deadline.cc",
     "idle_deadline.h",
+    "ignore_opens_during_unload_count_incrementer.h",
     "increment_load_event_delay_count.cc",
     "increment_load_event_delay_count.h",
     "iterator.h",
