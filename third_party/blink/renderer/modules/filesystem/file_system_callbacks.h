@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_entry_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_error_callback.h"
@@ -43,7 +44,6 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/filesystem/entry_heap_vector.h"
 #include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
-#include "third_party/blink/renderer/platform/file_system_type.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -232,16 +232,16 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
       OnDidOpenFileSystemCallback*,
       ErrorCallbackBase*,
       ExecutionContext*,
-      FileSystemType);
+      mojom::blink::FileSystemType);
   void DidOpenFileSystem(const String& name, const KURL& root_url) override;
 
  private:
   FileSystemCallbacks(OnDidOpenFileSystemCallback*,
                       ErrorCallbackBase*,
                       ExecutionContext*,
-                      FileSystemType);
+                      mojom::blink::FileSystemType);
   Persistent<OnDidOpenFileSystemCallback> success_callback_;
-  FileSystemType type_;
+  mojom::blink::FileSystemType type_;
 };
 
 class ResolveURICallbacks final : public FileSystemCallbacksBase {
@@ -253,7 +253,7 @@ class ResolveURICallbacks final : public FileSystemCallbacksBase {
   Create(OnDidGetEntryCallback*, ErrorCallbackBase*, ExecutionContext*);
   void DidResolveURL(const String& name,
                      const KURL& root_url,
-                     FileSystemType,
+                     mojom::blink::FileSystemType,
                      const String& file_path,
                      bool is_directry) override;
 

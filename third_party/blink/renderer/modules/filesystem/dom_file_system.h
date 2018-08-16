@@ -55,7 +55,7 @@ class MODULES_EXPORT DOMFileSystem final
  public:
   static DOMFileSystem* Create(ExecutionContext*,
                                const String& name,
-                               FileSystemType,
+                               mojom::blink::FileSystemType,
                                const KURL& root_url);
 
   // Creates a new isolated file system for the given filesystemId.
@@ -93,7 +93,7 @@ class MODULES_EXPORT DOMFileSystem final
  private:
   DOMFileSystem(ExecutionContext*,
                 const String& name,
-                FileSystemType,
+                mojom::blink::FileSystemType,
                 const KURL& root_url);
 
   static String TaskNameForInstrumentation() { return "FileSystem"; }

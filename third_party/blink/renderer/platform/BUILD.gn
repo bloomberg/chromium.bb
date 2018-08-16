@@ -598,7 +598,6 @@ jumbo_component("platform") {
     "feature_policy/feature_policy.h",
     "file_metadata.cc",
     "file_metadata.h",
-    "file_system_type.h",
     "fonts/alternate_font_family.h",
     "fonts/android/font_cache_android.cc",
     "fonts/bitmap_glyphs_blacklist.cc",

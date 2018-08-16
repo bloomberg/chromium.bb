@@ -31,12 +31,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_FILE_SYSTEM_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_FILE_SYSTEM_BASE_H_
 
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_flags.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/file_system_type.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -81,7 +81,7 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
   virtual void ReportError(ErrorCallbackBase*, FileError::ErrorCode) = 0;
 
   const String& name() const { return name_; }
-  FileSystemType GetType() const { return type_; }
+  mojom::blink::FileSystemType GetType() const { return type_; }
   KURL RootURL() const { return filesystem_root_url_; }
   WebFileSystem* FileSystem() const;
   const SecurityOrigin* GetSecurityOrigin() const;
@@ -92,20 +92,21 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
   void MakeClonable() { clonable_ = true; }
   bool Clonable() const { return clonable_; }
 
-  static bool IsValidType(FileSystemType);
-  static KURL CreateFileSystemRootURL(const String& origin, FileSystemType);
+  static bool IsValidType(mojom::blink::FileSystemType);
+  static KURL CreateFileSystemRootURL(const String& origin,
+                                      mojom::blink::FileSystemType);
   bool SupportsToURL() const;
   KURL CreateFileSystemURL(const EntryBase*) const;
   KURL CreateFileSystemURL(const String& full_path) const;
-  static bool PathToAbsolutePath(FileSystemType,
+  static bool PathToAbsolutePath(mojom::blink::FileSystemType,
                                  const EntryBase*,
                                  String path,
                                  String& absolute_path);
   static bool PathPrefixToFileSystemType(const String& path_prefix,
-                                         FileSystemType&);
+                                         mojom::blink::FileSystemType&);
   static File* CreateFile(const FileMetadata&,
                           const KURL& file_system_url,
-                          FileSystemType,
+                          mojom::blink::FileSystemType,
                           const String name);
 
   // Actual FileSystem API implementations. All the validity checks on virtual
@@ -161,7 +162,7 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
  protected:
   DOMFileSystemBase(ExecutionContext*,
                     const String& name,
-                    FileSystemType,
+                    mojom::blink::FileSystemType,
                     const KURL& root_url);
 
   friend class DOMFileSystemBaseTest;
@@ -169,7 +170,7 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
 
   Member<ExecutionContext> context_;
   String name_;
-  FileSystemType type_;
+  mojom::blink::FileSystemType type_;
   KURL filesystem_root_url_;
   bool clonable_;
 };

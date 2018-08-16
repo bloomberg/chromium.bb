@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/v8_script_value_deserializer_for_modules.h"
 
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
@@ -13,7 +14,6 @@
 #include "third_party/blink/renderer/modules/crypto/crypto_key.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
-#include "third_party/blink/renderer/platform/file_system_type.h"
 
 namespace blink {
 
@@ -32,12 +32,14 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       uint32_t raw_type;
       String name;
       String root_url;
-      if (!ReadUint32(&raw_type) || raw_type > kFileSystemTypeLast ||
+      if (!ReadUint32(&raw_type) ||
+          raw_type >
+              static_cast<int32_t>(mojom::blink::FileSystemType::kMaxValue) ||
           !ReadUTF8String(&name) || !ReadUTF8String(&root_url))
         return nullptr;
-      return DOMFileSystem::Create(ExecutionContext::From(GetScriptState()),
-                                   name, static_cast<FileSystemType>(raw_type),
-                                   KURL(root_url));
+      return DOMFileSystem::Create(
+          ExecutionContext::From(GetScriptState()), name,
+          static_cast<mojom::blink::FileSystemType>(raw_type), KURL(root_url));
     }
     case kRTCCertificateTag: {
       String pem_private_key;

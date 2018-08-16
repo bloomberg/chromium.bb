@@ -139,9 +139,9 @@ void WebFileSystemCallbacks::DidResolveURL(const WebString& name,
                                            const WebString& file_path,
                                            bool is_directory) {
   DCHECK(!private_.IsNull());
-  private_->Callbacks()->DidResolveURL(name, root_url,
-                                       static_cast<FileSystemType>(type),
-                                       file_path, is_directory);
+  private_->Callbacks()->DidResolveURL(
+      name, root_url, static_cast<mojom::blink::FileSystemType>(type),
+      file_path, is_directory);
   private_.Reset();
 }
 

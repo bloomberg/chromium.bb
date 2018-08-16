@@ -239,7 +239,7 @@ std::unique_ptr<AsyncFileSystemCallbacks> FileSystemCallbacks::Create(
     OnDidOpenFileSystemCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
-    FileSystemType type) {
+    mojom::blink::FileSystemType type) {
   return base::WrapUnique(
       new FileSystemCallbacks(success_callback, error_callback, context, type));
 }
@@ -248,7 +248,7 @@ FileSystemCallbacks::FileSystemCallbacks(
     OnDidOpenFileSystemCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
-    FileSystemType type)
+    mojom::blink::FileSystemType type)
     : FileSystemCallbacksBase(error_callback, nullptr, context),
       success_callback_(success_callback),
       type_(type) {}
@@ -284,7 +284,7 @@ ResolveURICallbacks::ResolveURICallbacks(
 
 void ResolveURICallbacks::DidResolveURL(const String& name,
                                         const KURL& root_url,
-                                        FileSystemType type,
+                                        mojom::blink::FileSystemType type,
                                         const String& file_path,
                                         bool is_directory) {
   DOMFileSystem* filesystem =

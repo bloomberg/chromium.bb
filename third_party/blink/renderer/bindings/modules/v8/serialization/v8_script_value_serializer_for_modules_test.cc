@@ -891,7 +891,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
 
   DOMFileSystem* fs = DOMFileSystem::Create(
       scope.GetExecutionContext(), "http_example.com_0:Persistent",
-      kFileSystemTypePersistent,
+      mojom::blink::FileSystemType::kPersistent,
       KURL("filesystem:http://example.com/persistent/"));
   // At time of writing, this can only happen for filesystems from PPAPI.
   fs->MakeClonable();
@@ -901,7 +901,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
   ASSERT_TRUE(V8DOMFileSystem::hasInstance(result, scope.GetIsolate()));
   DOMFileSystem* new_fs = V8DOMFileSystem::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("http_example.com_0:Persistent", new_fs->name());
-  EXPECT_EQ(kFileSystemTypePersistent, new_fs->GetType());
+  EXPECT_EQ(mojom::blink::FileSystemType::kPersistent, new_fs->GetType());
   EXPECT_EQ("filesystem:http://example.com/persistent/",
             new_fs->RootURL().GetString());
 }
@@ -914,7 +914,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystemNotClonable) {
 
   DOMFileSystem* fs = DOMFileSystem::Create(
       scope.GetExecutionContext(), "http_example.com_0:Persistent",
-      kFileSystemTypePersistent,
+      mojom::blink::FileSystemType::kPersistent,
       KURL("filesystem:http://example.com/persistent/0/"));
   ASSERT_FALSE(fs->Clonable());
   v8::Local<v8::Value> wrapper = ToV8(fs, scope.GetScriptState());
@@ -944,7 +944,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeDOMFileSystem) {
   ASSERT_TRUE(V8DOMFileSystem::hasInstance(result, scope.GetIsolate()));
   DOMFileSystem* new_fs = V8DOMFileSystem::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("http_example.com_0:Persistent", new_fs->name());
-  EXPECT_EQ(kFileSystemTypePersistent, new_fs->GetType());
+  EXPECT_EQ(mojom::blink::FileSystemType::kPersistent, new_fs->GetType());
   EXPECT_EQ("filesystem:http://example.com/persistent/",
             new_fs->RootURL().GetString());
 }

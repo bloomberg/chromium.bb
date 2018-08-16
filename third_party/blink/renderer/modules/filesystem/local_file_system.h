@@ -32,10 +32,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_LOCAL_FILE_SYSTEM_H_
 
 #include <memory>
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/file_system_type.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -68,7 +68,7 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                   const KURL&,
                   std::unique_ptr<AsyncFileSystemCallbacks>);
   void RequestFileSystem(ExecutionContext*,
-                         FileSystemType,
+                         mojom::blink::FileSystemType,
                          long long size,
                          std::unique_ptr<AsyncFileSystemCallbacks>);
 
@@ -88,7 +88,7 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                                        base::OnceClosure denied);
   void FileSystemNotAllowedInternal(ExecutionContext*, CallbackWrapper*);
   void FileSystemAllowedInternal(ExecutionContext*,
-                                 FileSystemType,
+                                 mojom::blink::FileSystemType,
                                  CallbackWrapper*);
   void ResolveURLInternal(ExecutionContext*, const KURL&, CallbackWrapper*);
 
