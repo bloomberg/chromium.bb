@@ -355,12 +355,3 @@ crbug.com/853945 fast/block/positioning/vertical-rl/002.html [ Failure ]
 crbug.com/854192 fast/multicol/composited-layer-nested.html [ Failure ]
 crbug.com/854192 fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
 crbug.com/854192 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
-
-# Paint invalidation test failures. Needs investigation.
-crbug.com/854196 paint/invalidation/compositing/clipping-should-not-repaint-composited-descendants.html [ Failure ]
-crbug.com/854196 paint/invalidation/compositing/overlap-test-with-filter.html [ Failure ]
-crbug.com/854196 paint/invalidation/compositing/repaint-overflow-scrolled-squashed-content.html [ Failure ]
-crbug.com/854196 paint/invalidation/compositing/should-not-repaint-composited-descendants-on-overflow-change.html [ Failure ]
-crbug.com/854196 paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Failure ]
-crbug.com/854196 paint/invalidation/scroll/overflow-scroll-composited-non-stacking-child.html [ Failure ]
-crbug.com/854196 paint/invalidation/scroll/repaint-composited-child-in-scrolled-container.html [ Failure ]
