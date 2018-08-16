@@ -105,6 +105,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -226,6 +227,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   ChromeBrowsingDataRemoverDelegateFactory::GetInstance();
 #if defined(OS_CHROMEOS)
   chromeos::ChromeCryptAuthServiceFactory::GetInstance();
+  chromeos::android_sms::AndroidSmsServiceFactory::GetInstance();
 #endif
   ChromeSigninClientFactory::GetInstance();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
