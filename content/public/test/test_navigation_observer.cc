@@ -5,8 +5,8 @@
 #include "content/public/test/test_navigation_observer.h"
 
 #include "base/bind.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -186,6 +186,8 @@ void TestNavigationObserver::OnDidFinishNavigation(
   last_navigation_url_ = navigation_handle->GetURL();
   last_navigation_succeeded_ = !navigation_handle->IsErrorPage();
   last_net_error_code_ = navigation_handle->GetNetErrorCode();
+  last_navigation_type_ =
+      static_cast<NavigationHandleImpl*>(navigation_handle)->navigation_type();
 
   if (wait_event_ == WaitEvent::kNavigationFinished)
     EventTriggered();

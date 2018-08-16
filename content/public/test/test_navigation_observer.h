@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "content/public/browser/navigation_type.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
@@ -68,6 +69,8 @@ class TestNavigationObserver {
 
   net::Error last_net_error_code() const { return last_net_error_code_; }
 
+  NavigationType last_navigation_type() const { return last_navigation_type_; }
+
  protected:
   // Register this TestNavigationObserver as an observer of the |web_contents|.
   void RegisterAsObserver(WebContents* web_contents);
@@ -122,6 +125,9 @@ class TestNavigationObserver {
 
   // The net error code of the last navigation.
   net::Error last_net_error_code_;
+
+  // The NavigationType of the last navigation.
+  NavigationType last_navigation_type_;
 
   // The MessageLoopRunner used to spin the message loop.
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
