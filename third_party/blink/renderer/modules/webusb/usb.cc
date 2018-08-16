@@ -61,11 +61,10 @@ USB::USB(ExecutionContext& context)
     : ContextLifecycleObserver(&context), client_binding_(this) {}
 
 USB::~USB() {
-  // |service_| and |chooser_service_| may still be valid but there
-  // should be no more outstanding requests to them because each holds a
-  // persistent handle to this object.
-  DCHECK(service_requests_.IsEmpty());
-  DCHECK(chooser_service_requests_.IsEmpty());
+  // |service_| may still be valid but there should be no more outstanding
+  // requests to them because each holds a persistent handle to this object.
+  DCHECK(get_devices_requests_.IsEmpty());
+  DCHECK(get_permission_requests_.IsEmpty());
 }
 
 void USB::Dispose() {
@@ -88,7 +87,7 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
 
   EnsureServiceConnection();
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  service_requests_.insert(resolver);
+  get_devices_requests_.insert(resolver);
   service_->GetDevices(WTF::Bind(&USB::OnGetDevices, WrapPersistent(this),
                                  WrapPersistent(resolver)));
   return resolver->Promise();
@@ -109,12 +108,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
                                            kFeaturePolicyBlocked));
   }
 
-  if (!chooser_service_) {
-    GetFrame()->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&chooser_service_));
-    chooser_service_.set_connection_error_handler(WTF::Bind(
-        &USB::OnChooserServiceConnectionError, WrapWeakPersistent(this)));
-  }
+  EnsureServiceConnection();
 
   if (!Frame::HasTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
@@ -132,9 +126,9 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  chooser_service_requests_.insert(resolver);
-  chooser_service_->GetPermission(
-      std::move(filters), WTF::Bind(&USB::OnGetPermission, WrapPersistent(this),
+  get_permission_requests_.insert(resolver);
+  service_->GetPermission(std::move(filters),
+                          WTF::Bind(&USB::OnGetPermission, WrapPersistent(this),
                                     WrapPersistent(resolver)));
   return resolver->Promise();
 }
@@ -149,9 +143,8 @@ const AtomicString& USB::InterfaceName() const {
 
 void USB::ContextDestroyed(ExecutionContext*) {
   service_.reset();
-  service_requests_.clear();
-  chooser_service_.reset();
-  chooser_service_requests_.clear();
+  get_devices_requests_.clear();
+  get_permission_requests_.clear();
 }
 
 USBDevice* USB::GetOrCreateDevice(UsbDeviceInfoPtr device_info) {
@@ -169,24 +162,18 @@ USBDevice* USB::GetOrCreateDevice(UsbDeviceInfoPtr device_info) {
 
 void USB::OnGetDevices(ScriptPromiseResolver* resolver,
                        Vector<UsbDeviceInfoPtr> device_infos) {
-  auto request_entry = service_requests_.find(resolver);
-  if (request_entry == service_requests_.end())
-    return;
-  service_requests_.erase(request_entry);
+  DCHECK(get_devices_requests_.Contains(resolver));
 
   HeapVector<Member<USBDevice>> devices;
   for (auto& device_info : device_infos)
     devices.push_back(GetOrCreateDevice(std::move(device_info)));
   resolver->Resolve(devices);
-  service_requests_.erase(resolver);
+  get_devices_requests_.erase(resolver);
 }
 
 void USB::OnGetPermission(ScriptPromiseResolver* resolver,
                           UsbDeviceInfoPtr device_info) {
-  auto request_entry = chooser_service_requests_.find(resolver);
-  if (request_entry == chooser_service_requests_.end())
-    return;
-  chooser_service_requests_.erase(request_entry);
+  DCHECK(get_permission_requests_.Contains(resolver));
 
   EnsureServiceConnection();
 
@@ -196,6 +183,7 @@ void USB::OnGetPermission(ScriptPromiseResolver* resolver,
     resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
                                           kNoDeviceSelected));
   }
+  get_permission_requests_.erase(resolver);
 }
 
 void USB::OnDeviceAdded(UsbDeviceInfoPtr device_info) {
@@ -221,18 +209,15 @@ void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
 void USB::OnServiceConnectionError() {
   service_.reset();
   client_binding_.Close();
-  for (ScriptPromiseResolver* resolver : service_requests_)
+  for (ScriptPromiseResolver* resolver : get_devices_requests_)
     resolver->Resolve(HeapVector<Member<USBDevice>>(0));
-  service_requests_.clear();
-}
+  get_devices_requests_.clear();
 
-void USB::OnChooserServiceConnectionError() {
-  chooser_service_.reset();
-  for (ScriptPromiseResolver* resolver : chooser_service_requests_) {
+  for (ScriptPromiseResolver* resolver : get_permission_requests_) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
                                           kNoDeviceSelected));
   }
-  chooser_service_requests_.clear();
+  get_permission_requests_.clear();
 }
 
 void USB::AddedEventListener(const AtomicString& event_type,
@@ -290,8 +275,8 @@ bool USB::IsFeatureEnabled() const {
 }
 
 void USB::Trace(blink::Visitor* visitor) {
-  visitor->Trace(service_requests_);
-  visitor->Trace(chooser_service_requests_);
+  visitor->Trace(get_devices_requests_);
+  visitor->Trace(get_permission_requests_);
   visitor->Trace(device_cache_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

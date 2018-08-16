@@ -248,7 +248,6 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "device/usb/public/mojom/chooser_service.mojom.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -4562,32 +4561,6 @@ void ChromeContentBrowserClient::CreateWebUsbService(
   UsbTabHelper* tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
   tab_helper->CreateWebUsbService(render_frame_host, std::move(request));
-}
-
-void ChromeContentBrowserClient::CreateUsbChooserService(
-    content::RenderFrameHost* render_frame_host,
-    device::mojom::UsbChooserServiceRequest request) {
-  if (!base::FeatureList::IsEnabled(features::kWebUsb))
-    return;
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // WebUSB is not supported in Apps/Extensions. https://crbug.com/770896
-  if (render_frame_host->GetSiteInstance()->GetSiteURL().SchemeIs(
-          extensions::kExtensionScheme)) {
-    return;
-  }
-#endif
-
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host);
-  if (!web_contents) {
-    NOTREACHED();
-    return;
-  }
-
-  UsbTabHelper* tab_helper =
-      UsbTabHelper::GetOrCreateForWebContents(web_contents);
-  tab_helper->CreateChooserService(render_frame_host, std::move(request));
 }
 
 std::unique_ptr<content::AuthenticatorRequestClientDelegate>

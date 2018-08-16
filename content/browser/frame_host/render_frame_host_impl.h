@@ -112,7 +112,7 @@ struct WebScrollIntoViewParams;
 namespace mojom {
 class WebUsbService;
 }
-}
+}  // namespace blink
 
 namespace gfx {
 class Range;
@@ -1095,7 +1095,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Creates connections to WebUSB interfaces bound to this frame.
   void CreateWebUsbService(
       mojo::InterfaceRequest<blink::mojom::WebUsbService> request);
-  void CreateUsbChooserService(device::mojom::UsbChooserServiceRequest request);
 
   void CreateAudioInputStreamFactory(
       mojom::RendererAudioInputStreamFactoryRequest request);

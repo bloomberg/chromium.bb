@@ -738,10 +738,6 @@ void ContentBrowserClient::CreateWebUsbService(
     RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<blink::mojom::WebUsbService> request) {}
 
-void ContentBrowserClient::CreateUsbChooserService(
-    RenderFrameHost* render_frame_host,
-    device::mojom::UsbChooserServiceRequest request) {}
-
 bool ContentBrowserClient::ShowPaymentHandlerWindow(
     content::BrowserContext* browser_context,
     const GURL& url,

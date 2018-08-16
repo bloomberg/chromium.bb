@@ -31,7 +31,6 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.mojom.h"
-#include "device/usb/public/mojom/chooser_service.mojom.h"
 #include "media/base/video_codecs.h"
 #include "media/cdm/cdm_proxy.h"
 #include "media/media_buildflags.h"
@@ -1226,10 +1225,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void CreateWebUsbService(
       RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<blink::mojom::WebUsbService> request);
-
-  virtual void CreateUsbChooserService(
-      RenderFrameHost* render_frame_host,
-      device::mojom::UsbChooserServiceRequest request);
 
   // Attempt to open the Payment Handler window inside its corresponding
   // PaymentRequest UI surface. Returns true if the ContentBrowserClient

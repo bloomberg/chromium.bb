@@ -50,7 +50,7 @@ class WebUsbServiceImplTest : public testing::Test {
  protected:
   WebUsbServicePtr ConnectToService() {
     WebUsbServicePtr service;
-    WebUsbServiceImpl::Create(permission_provider_.GetWeakPtr(),
+    WebUsbServiceImpl::Create(permission_provider_.GetWeakPtr(), nullptr,
                               mojo::MakeRequest(&service));
     return service;
   }

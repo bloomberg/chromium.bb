@@ -34,6 +34,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/web_contents_tester.h"
+#include "device/base/mock_device_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -415,11 +416,13 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardWebUsbConnectionsOpen) {
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
                                                    LoadingState::LOADED);
 
+  // Make sure there is a DeviceClient instance.
+  device::MockDeviceClient device_client;
   UsbTabHelper* usb_tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents_);
-  usb_tab_helper->CreateChooserService(
+  usb_tab_helper->CreateWebUsbService(
       web_contents_->GetMainFrame(),
-      mojo::InterfaceRequest<device::mojom::UsbChooserService>());
+      mojo::InterfaceRequest<blink::mojom::WebUsbService>());
 
   // Page could be intending to use the WebUSB API, but there's no connection
   // open yet, so it can still be discarded/frozen.

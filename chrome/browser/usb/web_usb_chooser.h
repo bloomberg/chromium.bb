@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_USB_WEB_USB_CHOOSER_SERVICE_H_
-#define CHROME_BROWSER_USB_WEB_USB_CHOOSER_SERVICE_H_
+#ifndef CHROME_BROWSER_USB_WEB_USB_CHOOSER_H_
+#define CHROME_BROWSER_USB_WEB_USB_CHOOSER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/bubble/bubble_reference.h"
-#include "device/usb/public/mojom/chooser_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 
 namespace content {
 class RenderFrameHost;
@@ -19,32 +21,29 @@ class RenderFrameHost;
 
 class UsbChooserController;
 
-// Implementation of the public device::usb::ChooserService interface.
 // This interface can be used by a webpage to request permission from user
 // to access a certain device.
-class WebUsbChooserService : public device::mojom::UsbChooserService {
+class WebUsbChooser {
  public:
-  explicit WebUsbChooserService(content::RenderFrameHost* render_frame_host);
+  explicit WebUsbChooser(content::RenderFrameHost* render_frame_host);
 
-  ~WebUsbChooserService() override;
+  virtual ~WebUsbChooser();
 
-  // device::mojom::UsbChooserService implementation
   void GetPermission(
       std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
-      GetPermissionCallback callback) override;
-
-  void Bind(device::mojom::UsbChooserServiceRequest request);
+      blink::mojom::WebUsbService::GetPermissionCallback callback);
 
   virtual void ShowChooser(
       std::unique_ptr<UsbChooserController> controller) = 0;
+
+  virtual base::WeakPtr<WebUsbChooser> GetWeakPtr() = 0;
 
   content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
 
  private:
   content::RenderFrameHost* const render_frame_host_;
-  mojo::BindingSet<device::mojom::UsbChooserService> bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebUsbChooserService);
+  DISALLOW_COPY_AND_ASSIGN(WebUsbChooser);
 };
 
-#endif  // CHROME_BROWSER_USB_WEB_USB_CHOOSER_SERVICE_H_
+#endif  // CHROME_BROWSER_USB_WEB_USB_CHOOSER_H_

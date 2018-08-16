@@ -18,6 +18,15 @@ interface WebUsbService {
   // Requests a device by guid.
   GetDevice(string guid, device.mojom.UsbDevice& device_requestd);
 
+  // Get permission from user to use a device.
+  //
+  // |device_filters| filters the available devices and the filtered
+  // devices will be listed for user to grant permission.
+  //
+  // |result| is the device that user grants permission to use.
+  GetPermission(array<device.mojom.UsbDeviceFilter> device_filters)
+      => (device.mojom.UsbDeviceInfo? result);
+
   // Sets the client for this WebUsbService.
   SetClient(device.mojom.UsbDeviceManagerClient client);
 };

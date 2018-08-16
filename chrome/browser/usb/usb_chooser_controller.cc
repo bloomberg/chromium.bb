@@ -69,7 +69,7 @@ base::string16 FormatUsbDeviceName(scoped_refptr<device::UsbDevice> device) {
 UsbChooserController::UsbChooserController(
     RenderFrameHost* render_frame_host,
     std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
-    device::mojom::UsbChooserService::GetPermissionCallback callback)
+    blink::mojom::WebUsbService::GetPermissionCallback callback)
     : ChooserController(render_frame_host,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_ORIGIN,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
