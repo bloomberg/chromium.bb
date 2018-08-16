@@ -86,11 +86,15 @@ void OperationManager::StartWriteFromUrl(
     return;
   }
 
+  network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_info;
+  content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+      ->GetURLLoaderFactoryForBrowserProcess()
+      ->Clone(mojo::MakeRequest(&url_loader_factory_info));
+
   scoped_refptr<Operation> operation(new WriteFromUrlOperation(
       weak_factory_.GetWeakPtr(), CreateConnector(), extension_id,
-      content::BrowserContext::GetDefaultStoragePartition(browser_context_)
-          ->GetURLRequestContext(),
-      url, hash, device_path, GetAssociatedDownloadFolder()));
+      std::move(url_loader_factory_info), url, hash, device_path,
+      GetAssociatedDownloadFolder()));
   operations_[extension_id] = operation;
   operation->PostTask(base::BindOnce(&Operation::Start, operation));
 

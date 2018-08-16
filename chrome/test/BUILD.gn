@@ -3777,6 +3777,7 @@ test("unit_tests") {
       "//extensions/strings",
       "//google_apis",
       "//media/cast:test_support",
+      "//services/network/public/mojom",
 
       # This will add all of the unit tests for the schema compiler to this
       # target.

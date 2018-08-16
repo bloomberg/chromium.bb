@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/url_request/test_url_request_interceptor.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -35,16 +36,17 @@ typedef net::LocalHostTestURLRequestInterceptor GetInterceptor;
 // the current path to the image file.
 class WriteFromUrlOperationForTest : public WriteFromUrlOperation {
  public:
-  WriteFromUrlOperationForTest(base::WeakPtr<OperationManager> manager,
-                               const ExtensionId& extension_id,
-                               net::URLRequestContextGetter* request_context,
-                               GURL url,
-                               const std::string& hash,
-                               const std::string& storage_unit_id)
+  WriteFromUrlOperationForTest(
+      base::WeakPtr<OperationManager> manager,
+      const ExtensionId& extension_id,
+      network::mojom::URLLoaderFactoryPtrInfo factory_info,
+      GURL url,
+      const std::string& hash,
+      const std::string& storage_unit_id)
       : WriteFromUrlOperation(manager,
                               /*connector=*/nullptr,
                               extension_id,
-                              request_context,
+                              std::move(factory_info),
                               url,
                               hash,
                               storage_unit_id,
@@ -112,10 +114,15 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
   scoped_refptr<WriteFromUrlOperationForTest> CreateOperation(
       const GURL& url,
       const std::string& hash) {
+    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
+    content::BrowserContext::GetDefaultStoragePartition(&test_profile_)
+        ->GetURLLoaderFactoryForBrowserProcess()
+        ->Clone(mojo::MakeRequest(&url_loader_factory_ptr_info));
+
     scoped_refptr<WriteFromUrlOperationForTest> operation(
         new WriteFromUrlOperationForTest(
             manager_.AsWeakPtr(), kDummyExtensionId,
-            test_profile_.GetRequestContext(), url, hash,
+            std::move(url_loader_factory_ptr_info), url, hash,
             test_utils_.GetDevicePath().AsUTF8Unsafe()));
     operation->Start();
     return operation;
@@ -180,10 +187,6 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
                                              &download_target_path));
   operation->SetImagePath(download_target_path);
 
-  EXPECT_CALL(
-      manager_,
-      OnProgress(kDummyExtensionId, image_writer_api::STAGE_DOWNLOAD, _))
-      .Times(AtLeast(1));
   EXPECT_CALL(
       manager_,
       OnProgress(kDummyExtensionId, image_writer_api::STAGE_DOWNLOAD, 0))
