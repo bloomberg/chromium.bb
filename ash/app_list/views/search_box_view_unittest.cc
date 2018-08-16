@@ -17,6 +17,7 @@
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/chromeos/search_box/search_box_view_delegate.h"
 #include "ui/gfx/image/image_skia.h"
@@ -286,9 +287,40 @@ TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineNotGoogle) {
                                          *actual_icon.bitmap()));
 }
 
+class SearchBoxViewAutocompleteTest
+    : public SearchBoxViewTest,
+      public ::testing::WithParamInterface<ui::KeyboardCode> {
+ public:
+  SearchBoxViewAutocompleteTest() = default;
+  ~SearchBoxViewAutocompleteTest() override = default;
+
+  // Overridden from testing::Test
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kEnableAppListSearchAutocomplete}, {});
+    SearchBoxViewTest::SetUp();
+  }
+
+  ui::KeyboardCode key_code() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxViewAutocompleteTest);
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        SearchBoxViewAutocompleteTest,
+                        ::testing::Values(ui::VKEY_TAB,
+                                          ui::VKEY_LEFT,
+                                          ui::VKEY_RIGHT,
+                                          ui::VKEY_UP,
+                                          ui::VKEY_DOWN));
+
 // Tests that autocomplete suggestions are consistent with top SearchResult list
 // titles.
-TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopListResultTitle) {
+TEST_F(SearchBoxViewAutocompleteTest,
+       SearchBoxAutocompletesTopListResultTitle) {
   // Add two SearchResults, one with higher ranking. Initialize their title
   // field to a non-empty string.
   CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
@@ -307,7 +339,8 @@ TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopListResultTitle) {
 
 // Tests that autocomplete suggestions are consistent with top SearchResult tile
 // titles.
-TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopTileResultTitle) {
+TEST_F(SearchBoxViewAutocompleteTest,
+       SearchBoxAutocompletesTopTileResultTitle) {
   // Add two SearchResults, one with higher ranking. Initialize their title
   // field to a non-empty string.
   CreateSearchResult(ash::SearchResultDisplayType::kTile, 1.0,
@@ -326,7 +359,8 @@ TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopTileResultTitle) {
 
 // Tests that autocomplete suggestions are consistent with top SearchResult list
 // details.
-TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopListResultDetails) {
+TEST_F(SearchBoxViewAutocompleteTest,
+       SearchBoxAutocompletesTopListResultDetails) {
   // Add two SearchResults, one with higher ranking. Initialize their details
   // field to a non-empty string.
   CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0, base::string16(),
@@ -345,7 +379,8 @@ TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopListResultDetails) {
 
 // Tests that autocomplete suggestions are consistent with top SearchResult tile
 // details.
-TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopTileResultDetails) {
+TEST_F(SearchBoxViewAutocompleteTest,
+       SearchBoxAutocompletesTopTileResultDetails) {
   // Add two SearchResults, one with higher ranking. Initialize their details
   // field to a non-empty string.
   CreateSearchResult(ash::SearchResultDisplayType::kTile, 1.0, base::string16(),
@@ -364,7 +399,8 @@ TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopTileResultDetails) {
 
 // Tests that SearchBoxView's textfield text does not autocomplete if the top
 // result title or details do not have a matching prefix.
-TEST_F(SearchBoxViewTest, SearchBoxDoesNotAutocompleteWrongCharacter) {
+TEST_F(SearchBoxViewAutocompleteTest,
+       SearchBoxDoesNotAutocompleteWrongCharacter) {
   // Add a search result with non-empty details and title fields.
   CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
                      base::ASCIIToUTF16("title"),
@@ -379,7 +415,7 @@ TEST_F(SearchBoxViewTest, SearchBoxDoesNotAutocompleteWrongCharacter) {
 
 // Tests that autocomplete suggestion will remain if next key in the suggestion
 // is typed.
-TEST_F(SearchBoxViewTest, SearchBoxAutocompletesAcceptsNextChar) {
+TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesAcceptsNextChar) {
   // Add a search result with a non-empty title field.
   CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
                      base::ASCIIToUTF16("hello world!"), base::string16());
@@ -403,7 +439,8 @@ TEST_F(SearchBoxViewTest, SearchBoxAutocompletesAcceptsNextChar) {
 
 // Tests that only the autocomplete suggestion text is deleted after hitting
 // backspace.
-TEST_F(SearchBoxViewTest, SearchBoxDeletesAutocompleteTextOnlyAfterBackspace) {
+TEST_F(SearchBoxViewAutocompleteTest,
+       SearchBoxDeletesAutocompleteTextOnlyAfterBackspace) {
   // Add a search result with a non-empty title field.
   CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
                      base::ASCIIToUTF16("hello world!"), base::string16());
@@ -421,26 +458,6 @@ TEST_F(SearchBoxViewTest, SearchBoxDeletesAutocompleteTextOnlyAfterBackspace) {
   // The autocomplete suggestion should still not be present.
   EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("he"));
 }
-
-class SearchBoxViewAutocompleteTest
-    : public SearchBoxViewTest,
-      public ::testing::WithParamInterface<ui::KeyboardCode> {
- public:
-  SearchBoxViewAutocompleteTest() = default;
-  ~SearchBoxViewAutocompleteTest() = default;
-  ui::KeyboardCode key_code() const { return GetParam(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SearchBoxViewAutocompleteTest);
-};
-
-INSTANTIATE_TEST_CASE_P(,
-                        SearchBoxViewAutocompleteTest,
-                        ::testing::Values(ui::VKEY_TAB,
-                                          ui::VKEY_LEFT,
-                                          ui::VKEY_RIGHT,
-                                          ui::VKEY_UP,
-                                          ui::VKEY_DOWN));
 
 // Tests that autocomplete suggestion is accepted and displayed in SearchModel
 // after hitting certain control keys.

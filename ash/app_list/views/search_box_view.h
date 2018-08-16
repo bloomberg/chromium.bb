@@ -146,6 +146,9 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // True if new style launcher feature is enabled.
   const bool is_new_style_launcher_enabled_;
 
+  // True if app list search autocomplete is enabled.
+  const bool is_app_list_search_autocomplete_enabled_;
+
   base::WeakPtrFactory<SearchBoxView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxView);

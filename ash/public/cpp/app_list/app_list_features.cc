@@ -31,6 +31,8 @@ const base::Feature kEnableContinueReading{"EnableContinueReading",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableZeroStateSuggestions{
     "EnableZeroStateSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAppListSearchAutocomplete{
+    "EnableAppListSearchAutocomplete", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -72,6 +74,10 @@ bool IsContinueReadingEnabled() {
 
 bool IsZeroStateSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(kEnableZeroStateSuggestions);
+}
+
+bool IsAppListSearchAutocompleteEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAppListSearchAutocomplete);
 }
 
 std::string AnswerServerUrl() {
