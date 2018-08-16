@@ -389,9 +389,8 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
 
     request_->SetExtraRequestHeaders(extra_request_headers);
     request_->SetLoadFlags(request_->load_flags() | LOAD_DISABLE_CACHE |
-                           LOAD_BYPASS_PROXY | LOAD_DO_NOT_SEND_COOKIES |
-                           LOAD_DO_NOT_SAVE_COOKIES |
-                           LOAD_DO_NOT_SEND_AUTH_DATA);
+                           LOAD_BYPASS_PROXY);
+    request_->set_allow_credentials(false);
   }
 
   // DnsAttempt overrides.

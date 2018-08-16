@@ -118,9 +118,8 @@ void IntranetRedirectDetector::FinishSleep() {
     resource_request->url = random_url;
     resource_request->method = "HEAD";
     // We don't want these fetches to affect existing state in the profile.
-    resource_request->load_flags =
-        net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SAVE_COOKIES |
-        net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA;
+    resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+    resource_request->allow_credentials = false;
     network::mojom::URLLoaderFactory* loader_factory =
         g_browser_process->system_network_context_manager()
             ->GetURLLoaderFactory();

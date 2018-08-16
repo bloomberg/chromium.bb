@@ -365,6 +365,16 @@ URLLoader::URLLoader(
   }
 
   url_request_->SetLoadFlags(request.load_flags);
+
+  // Use allow credentials unless credential load flags have been explicitly
+  // set.
+  if (!request.allow_credentials) {
+    DCHECK((request.load_flags &
+            (net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
+             net::LOAD_DO_NOT_SEND_AUTH_DATA)) == 0);
+    url_request_->set_allow_credentials(false);
+  }
+
   if (report_raw_headers_) {
     url_request_->SetRequestHeadersCallback(
         base::Bind(&net::HttpRawRequestHeaders::Assign,

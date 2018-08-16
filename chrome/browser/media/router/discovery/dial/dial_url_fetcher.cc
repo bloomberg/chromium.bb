@@ -111,12 +111,8 @@ void DialURLFetcher::Start(const GURL& url,
   // net::LOAD_BYPASS_PROXY: Proxies almost certainly hurt more cases than they
   //     help.
   // net::LOAD_DISABLE_CACHE: The request should not touch the cache.
-  // net::LOAD_DO_NOT_{SAVE,SEND}_COOKIES: The request should not touch cookies.
-  // net::LOAD_DO_NOT_SEND_AUTH_DATA: The request should not send auth data.
-  request->load_flags = net::LOAD_BYPASS_PROXY | net::LOAD_DISABLE_CACHE |
-                        net::LOAD_DO_NOT_SAVE_COOKIES |
-                        net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  request->load_flags = net::LOAD_BYPASS_PROXY | net::LOAD_DISABLE_CACHE;
+  request->allow_credentials = false;
 
   loader_ = network::SimpleURLLoader::Create(std::move(request),
                                              kDialUrlFetcherTrafficAnnotation);

@@ -200,9 +200,7 @@ void NetMetricsLogUploader::UploadLogToURL(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
   // Drop cookies and auth data.
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                                 net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->allow_credentials = false;
   resource_request->method = "POST";
 
   std::string reporting_info_string = SerializeReportingInfo(reporting_info);

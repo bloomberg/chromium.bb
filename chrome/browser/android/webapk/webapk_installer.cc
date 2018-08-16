@@ -647,8 +647,7 @@ void WebApkInstaller::SendRequest(
       net::URLFetcher::Create(server_url_, net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(GetRequestContext(browser_context_));
   url_fetcher_->SetUploadData(kProtoMimeType, *serialized_proto);
-  url_fetcher_->SetLoadFlags(
-      net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SEND_COOKIES |
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  url_fetcher_->SetAllowCredentials(false);
   url_fetcher_->Start();
 }

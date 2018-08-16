@@ -573,10 +573,8 @@ void ServicesCustomizationDocument::DoStartFileFetch() {
   url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(g_browser_process->system_request_context());
   url_fetcher_->AddExtraRequestHeader("Accept: application/json");
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DISABLE_CACHE |
-                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  url_fetcher_->SetAllowCredentials(false);
   url_fetcher_->Start();
 }
 

@@ -254,10 +254,8 @@ void ExpectCTReporter::SendPreflight(const GURL& report_uri,
   std::unique_ptr<net::URLRequest> url_request =
       request_context_->CreateRequest(report_uri, net::DEFAULT_PRIORITY, this,
                                       kExpectCTReporterTrafficAnnotation);
-  url_request->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-                            net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                            net::LOAD_DO_NOT_SEND_COOKIES |
-                            net::LOAD_DO_NOT_SAVE_COOKIES);
+  url_request->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE);
+  url_request->set_allow_credentials(false);
   url_request->set_method("OPTIONS");
 
   net::HttpRequestHeaders extra_headers;
