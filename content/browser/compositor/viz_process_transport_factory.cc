@@ -286,6 +286,8 @@ VizProcessTransportFactory::GetContextFactoryPrivate() {
 }
 
 void VizProcessTransportFactory::OnContextLost() {
+  // PostTask to avoid destroying |main_context_provider_| while it's still
+  // informing observers about the context loss.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&VizProcessTransportFactory::OnLostMainThreadSharedContext,
@@ -301,18 +303,17 @@ void VizProcessTransportFactory::DisableGpuCompositing(
 
   compositing_mode_reporter_->SetUsingSoftwareCompositing();
 
-  // Consumers of the shared main thread context aren't CompositingModeWatchers,
-  // so inform them about the compositing mode switch by acting like the context
-  // was lost. This also destroys the contexts since they aren't created when
-  // gpu compositing isn't being used.
-  OnLostMainThreadSharedContext();
-
   // Drop our reference on the gpu contexts for the compositors.
-  worker_context_provider_ = nullptr;
+  worker_context_provider_.reset();
   if (main_context_provider_) {
     main_context_provider_->RemoveObserver(this);
-    main_context_provider_ = nullptr;
+    main_context_provider_.reset();
   }
+
+  // Consumers of the shared main thread context aren't CompositingModeWatchers,
+  // so inform them about the context loss due to switching to software
+  // compositing.
+  OnLostMainThreadSharedContext();
 
   // Reemove the FrameSink from every compositor that needs to fall back to
   // software compositing.
@@ -400,7 +401,7 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
 
   if (worker_context_provider_ &&
       IsWorkerContextLost(worker_context_provider_.get()))
-    worker_context_provider_ = nullptr;
+    worker_context_provider_.reset();
 
   if (!worker_context_provider_) {
     constexpr bool kSharedWorkerContextSupportsLocking = true;
@@ -422,14 +423,14 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
     // when recreating LayerTreeFrameSink(s).
     auto context_result = worker_context_provider_->BindToCurrentThread();
     if (context_result != gpu::ContextResult::kSuccess) {
-      worker_context_provider_ = nullptr;
+      worker_context_provider_.reset();
       return context_result;
     }
   }
 
   if (main_context_provider_ && IsContextLost(main_context_provider_.get())) {
     main_context_provider_->RemoveObserver(this);
-    main_context_provider_ = nullptr;
+    main_context_provider_.reset();
   }
 
   if (!main_context_provider_) {
@@ -447,8 +448,7 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
 
     auto context_result = main_context_provider_->BindToCurrentThread();
     if (context_result != gpu::ContextResult::kSuccess) {
-      worker_context_provider_ = nullptr;
-      main_context_provider_ = nullptr;
+      main_context_provider_.reset();
       return context_result;
     }
 
@@ -463,7 +463,7 @@ void VizProcessTransportFactory::OnLostMainThreadSharedContext() {
   // OnEstablishedGpuChannel(), so check if it's lost before resetting here.
   if (main_context_provider_ && IsContextLost(main_context_provider_.get())) {
     main_context_provider_->RemoveObserver(this);
-    main_context_provider_ = nullptr;
+    main_context_provider_.reset();
   }
 
   for (auto& observer : observer_list_)
