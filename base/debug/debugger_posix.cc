@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/test/clang_coverage.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -246,6 +247,10 @@ void DebugBreak() {
 #endif
 
 void BreakDebugger() {
+#if defined(CLANG_COVERAGE)
+  WriteClangCoverageProfile();
+#endif
+
   // NOTE: This code MUST be async-signal safe (it's used by in-process
   // stack dumping signal handler). NO malloc or stdio is allowed here.
 
