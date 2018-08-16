@@ -113,11 +113,15 @@ class CastDialogViewTest : public ChromeViewsTestBase {
   void SelectSinkAtIndex(int index) {
     ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0),
                                gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
-    dialog_->ButtonPressed(dialog_->sink_buttons_for_test()[1], mouse_event);
+    dialog_->ButtonPressed(sink_buttons().at(index), mouse_event);
   }
 
   size_t selected_sink_index() {
     return dialog_->selected_sink_index_for_test();
+  }
+
+  const std::vector<CastDialogSinkButton*>& sink_buttons() {
+    return dialog_->sink_buttons_for_test();
   }
 
   views::ScrollView* scroll_view() { return dialog_->scroll_view_for_test(); }
@@ -226,7 +230,7 @@ TEST_F(CastDialogViewTest, UpdateModel) {
   dialog_->Accept();
 }
 
-TEST_F(CastDialogViewTest, ShowAlternativeSources) {
+TEST_F(CastDialogViewTest, ShowSourcesMenu) {
   std::vector<UIMediaSink> media_sinks = {CreateAvailableSink()};
   media_sinks[0].cast_modes = {TAB_MIRROR, PRESENTATION, DESKTOP_MIRROR};
   CastDialogModel model = CreateModelWithSinks(media_sinks);
@@ -239,10 +243,8 @@ TEST_F(CastDialogViewTest, ShowAlternativeSources) {
   EXPECT_EQ(PRESENTATION | TAB_MIRROR, sources_menu_model()->GetCommandIdAt(0));
   EXPECT_EQ(DESKTOP_MIRROR, sources_menu_model()->GetCommandIdAt(1));
 
-  // When there are no alternative sources, the sources button should be
-  // disabled.
-  media_sinks[0].cast_modes = {TAB_MIRROR};
-  model.set_media_sinks(std::move(media_sinks));
+  // When there are no sinks, the sources button should be disabled.
+  model.set_media_sinks({});
   dialog_->OnModelUpdated(model);
   EXPECT_FALSE(sources_button()->enabled());
 }
@@ -267,19 +269,29 @@ TEST_F(CastDialogViewTest, CastToAlternativeSources) {
   dialog_->Accept();
 }
 
-TEST_F(CastDialogViewTest, DisableAlternativeSourcesPicker) {
-  CastDialogModel model;
+TEST_F(CastDialogViewTest, DisableUnsupportedSinks) {
+  std::vector<UIMediaSink> media_sinks = {CreateAvailableSink(),
+                                          CreateAvailableSink()};
+  media_sinks[1].id = "sink_2";
+  media_sinks[0].cast_modes = {TAB_MIRROR};
+  media_sinks[1].cast_modes = {PRESENTATION, DESKTOP_MIRROR};
+  CastDialogModel model = CreateModelWithSinks(std::move(media_sinks));
   InitializeDialogWithModel(model);
-  // The picker should be disabled when there are no sinks.
-  EXPECT_FALSE(sources_button()->enabled());
 
-  std::vector<UIMediaSink> media_sinks = {CreateConnectedSink()};
-  media_sinks[0].cast_modes = {TAB_MIRROR, PRESENTATION};
-  model.set_media_sinks(std::move(media_sinks));
-  dialog_->OnModelUpdated(model);
-  // The picker should be disabled if the selected sink doesn't support non-tab
-  // sources.
-  EXPECT_FALSE(sources_button()->enabled());
+  dialog_->ButtonPressed(sources_button(), CreateMouseEvent());
+  EXPECT_EQ(DESKTOP_MIRROR, sources_menu_model()->GetCommandIdAt(1));
+  sources_menu_model()->ActivatedAt(1);
+  // Sink at index 0 doesn't support desktop mirroring, so it should be
+  // disabled.
+  EXPECT_FALSE(sink_buttons().at(0)->enabled());
+  EXPECT_TRUE(sink_buttons().at(1)->enabled());
+
+  dialog_->ButtonPressed(sources_button(), CreateMouseEvent());
+  EXPECT_EQ(PRESENTATION | TAB_MIRROR, sources_menu_model()->GetCommandIdAt(0));
+  sources_menu_model()->ActivatedAt(0);
+  // Both sinks support tab or presentation casting, so they should be enabled.
+  EXPECT_TRUE(sink_buttons().at(0)->enabled());
+  EXPECT_TRUE(sink_buttons().at(1)->enabled());
 }
 
 TEST_F(CastDialogViewTest, ShowNoDeviceView) {

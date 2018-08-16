@@ -107,9 +107,13 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
+  views::StyledLabel* title() const { return title_; }
+  views::View* icon_view() const { return icon_view_; }
+
  private:
   views::StyledLabel* title_;
   views::Label* subtitle_;
+  views::View* icon_view_;
   views::View* secondary_icon_view_;
 
   // The horizontal space the padding and icon take up. Used for calculating the
