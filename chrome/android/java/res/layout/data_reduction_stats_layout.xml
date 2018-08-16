@@ -18,7 +18,6 @@
         android:layout_marginTop="8dp"
         android:gravity="center_horizontal"
         android:drawablePadding="3dp"
-        android:drawableTop="@drawable/data_reduction_big"
         android:text="@string/data_reduction_initial_title"
         android:textAppearance="@style/BlackDisabledText1" />
 
