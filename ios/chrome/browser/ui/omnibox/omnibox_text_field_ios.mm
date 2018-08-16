@@ -927,6 +927,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   [_selection setTextColor:_displayedTextColor];
   [_selection setOpaque:NO];
   [_selection setBackgroundColor:[UIColor clearColor]];
+  _selection.lineBreakMode = NSLineBreakByClipping;
   [self addSubview:_selection];
   [self hideTextAndCursor];
 }
