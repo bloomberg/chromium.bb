@@ -46,16 +46,16 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   bool IsSupported() override;
 
  private:
-  struct DecodeRequest;
-
   // Notifies the client that an error has occurred and decoding cannot
   // continue.
   void NotifyError(int32_t bitstream_buffer_id, Error error);
   void NotifyErrorFromDecoderThread(int32_t bitstream_buffer_id, Error error);
   void VideoFrameReady(int32_t bitstream_buffer_id);
 
-  // Processes one decode |request|.
-  void DecodeTask(std::unique_ptr<DecodeRequest> request);
+  // Processes one decode request.
+  void DecodeTask(int32_t bitstream_buffer_id,
+                  std::unique_ptr<UnalignedSharedMemory> shm,
+                  scoped_refptr<VideoFrame> video_frame);
 
   // Puts contents of |va_surface| into given |video_frame|, releases the
   // surface and passes the |input_buffer_id| of the resulting picture to

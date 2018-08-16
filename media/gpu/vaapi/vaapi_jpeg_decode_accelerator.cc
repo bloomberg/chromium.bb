@@ -80,22 +80,6 @@ static unsigned int VaSurfaceFormatForJpeg(
 
 }  // namespace
 
-// An input buffer and the corresponding output video frame awaiting
-// consumption, provided by the client.
-struct VaapiJpegDecodeAccelerator::DecodeRequest {
-  DecodeRequest(int32_t bitstream_buffer_id,
-                std::unique_ptr<UnalignedSharedMemory> shm,
-                const scoped_refptr<VideoFrame>& video_frame)
-      : bitstream_buffer_id(bitstream_buffer_id),
-        shm(std::move(shm)),
-        video_frame(video_frame) {}
-  ~DecodeRequest() = default;
-
-  int32_t bitstream_buffer_id;
-  std::unique_ptr<UnalignedSharedMemory> shm;
-  scoped_refptr<VideoFrame> video_frame;
-};
-
 void VaapiJpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
                                              Error error) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -239,18 +223,18 @@ bool VaapiJpegDecodeAccelerator::OutputPicture(
 }
 
 void VaapiJpegDecodeAccelerator::DecodeTask(
-    std::unique_ptr<DecodeRequest> request) {
+    int32_t bitstream_buffer_id,
+    std::unique_ptr<UnalignedSharedMemory> shm,
+    scoped_refptr<VideoFrame> video_frame) {
   DVLOGF(4);
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("jpeg", "DecodeTask");
 
   JpegParseResult parse_result;
-  if (!ParseJpegPicture(
-          reinterpret_cast<const uint8_t*>(request->shm->memory()),
-          request->shm->size(), &parse_result)) {
+  if (!ParseJpegPicture(reinterpret_cast<const uint8_t*>(shm->memory()),
+                        shm->size(), &parse_result)) {
     VLOGF(1) << "ParseJpegPicture failed";
-    NotifyErrorFromDecoderThread(request->bitstream_buffer_id,
-                                 PARSE_JPEG_FAILED);
+    NotifyErrorFromDecoderThread(bitstream_buffer_id, PARSE_JPEG_FAILED);
     return;
   }
 
@@ -258,8 +242,7 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
       VaSurfaceFormatForJpeg(parse_result.frame_header);
   if (!new_va_rt_format) {
     VLOGF(1) << "Unsupported subsampling";
-    NotifyErrorFromDecoderThread(request->bitstream_buffer_id,
-                                 UNSUPPORTED_JPEG);
+    NotifyErrorFromDecoderThread(bitstream_buffer_id, UNSUPPORTED_JPEG);
     return;
   }
 
@@ -276,8 +259,7 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
     if (!vaapi_wrapper_->CreateSurfaces(va_rt_format_, new_coded_size, 1,
                                         &va_surfaces)) {
       VLOGF(1) << "Create VA surface failed";
-      NotifyErrorFromDecoderThread(request->bitstream_buffer_id,
-                                   PLATFORM_FAILURE);
+      NotifyErrorFromDecoderThread(bitstream_buffer_id, PLATFORM_FAILURE);
       return;
     }
     va_surface_id_ = va_surfaces[0];
@@ -287,16 +269,13 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
   if (!VaapiJpegDecoder::Decode(vaapi_wrapper_.get(), parse_result,
                                 va_surface_id_)) {
     VLOGF(1) << "Decode JPEG failed";
-    NotifyErrorFromDecoderThread(request->bitstream_buffer_id,
-                                 PLATFORM_FAILURE);
+    NotifyErrorFromDecoderThread(bitstream_buffer_id, PLATFORM_FAILURE);
     return;
   }
 
-  if (!OutputPicture(va_surface_id_, request->bitstream_buffer_id,
-                     request->video_frame)) {
+  if (!OutputPicture(va_surface_id_, bitstream_buffer_id, video_frame)) {
     VLOGF(1) << "Output picture failed";
-    NotifyErrorFromDecoderThread(request->bitstream_buffer_id,
-                                 PLATFORM_FAILURE);
+    NotifyErrorFromDecoderThread(bitstream_buffer_id, PLATFORM_FAILURE);
     return;
   }
 }
@@ -326,13 +305,10 @@ void VaapiJpegDecodeAccelerator::Decode(
     return;
   }
 
-  std::unique_ptr<DecodeRequest> request(
-      new DecodeRequest(bitstream_buffer.id(), std::move(shm), video_frame));
-
   decoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VaapiJpegDecodeAccelerator::DecodeTask,
-                     base::Unretained(this), base::Passed(std::move(request))));
+      FROM_HERE, base::BindOnce(&VaapiJpegDecodeAccelerator::DecodeTask,
+                                base::Unretained(this), bitstream_buffer.id(),
+                                std::move(shm), std::move(video_frame)));
 }
 
 bool VaapiJpegDecodeAccelerator::IsSupported() {
