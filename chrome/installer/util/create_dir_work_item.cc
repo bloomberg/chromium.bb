@@ -35,9 +35,12 @@ bool CreateDirWorkItem::DoImpl() {
   if (top_path_.empty())
     return true;
 
-  VLOG(1) << "top directory that needs to be created: " << top_path_.value();
+  VLOG(1) << "Top directory that needs to be created: " << top_path_.value();
   bool result = base::CreateDirectory(path_);
-  VLOG(1) << "directory creation result: " << result;
+  if (result)
+    VLOG(1) << "Created directory";
+  else
+    PLOG(ERROR) << "Failed to create directory " << top_path_.value();
 
   rollback_needed_ = true;
 

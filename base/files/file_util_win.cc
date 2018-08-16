@@ -598,8 +598,8 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   AssertBlockingAllowed();
 
   // If the path exists, we've succeeded if it's a directory, failed otherwise.
-  const wchar_t* full_path_str = full_path.value().c_str();
-  DWORD fileattr = ::GetFileAttributes(full_path_str);
+  const wchar_t* const full_path_str = full_path.value().c_str();
+  const DWORD fileattr = ::GetFileAttributes(full_path_str);
   if (fileattr != INVALID_FILE_ATTRIBUTES) {
     if ((fileattr & FILE_ATTRIBUTE_DIRECTORY) != 0) {
       DVLOG(1) << "CreateDirectory(" << full_path_str << "), "
@@ -608,9 +608,9 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
     }
     DLOG(WARNING) << "CreateDirectory(" << full_path_str << "), "
                   << "conflicts with existing file.";
-    if (error) {
+    if (error)
       *error = File::FILE_ERROR_NOT_A_DIRECTORY;
-    }
+    ::SetLastError(ERROR_FILE_EXISTS);
     return false;
   }
 
@@ -621,37 +621,33 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   // directories starting with the highest-level missing parent.
   FilePath parent_path(full_path.DirName());
   if (parent_path.value() == full_path.value()) {
-    if (error) {
+    if (error)
       *error = File::FILE_ERROR_NOT_FOUND;
-    }
+    ::SetLastError(ERROR_FILE_NOT_FOUND);
     return false;
   }
   if (!CreateDirectoryAndGetError(parent_path, error)) {
     DLOG(WARNING) << "Failed to create one of the parent directories.";
-    if (error) {
-      DCHECK(*error != File::FILE_OK);
-    }
+    DCHECK(!error || *error != File::FILE_OK);
     return false;
   }
 
-  if (!::CreateDirectory(full_path_str, NULL)) {
-    DWORD error_code = ::GetLastError();
-    if (error_code == ERROR_ALREADY_EXISTS && DirectoryExists(full_path)) {
-      // This error code ERROR_ALREADY_EXISTS doesn't indicate whether we
-      // were racing with someone creating the same directory, or a file
-      // with the same path.  If DirectoryExists() returns true, we lost the
-      // race to create the same directory.
-      return true;
-    } else {
-      if (error)
-        *error = File::OSErrorToFileError(error_code);
-      DLOG(WARNING) << "Failed to create directory " << full_path_str
-                    << ", last error is " << error_code << ".";
-      return false;
-    }
-  } else {
+  if (::CreateDirectory(full_path_str, NULL))
+    return true;
+
+  const DWORD error_code = ::GetLastError();
+  if (error_code == ERROR_ALREADY_EXISTS && DirectoryExists(full_path)) {
+    // This error code ERROR_ALREADY_EXISTS doesn't indicate whether we were
+    // racing with someone creating the same directory, or a file with the same
+    // path.  If DirectoryExists() returns true, we lost the race to create the
+    // same directory.
     return true;
   }
+  if (error)
+    *error = File::OSErrorToFileError(error_code);
+  ::SetLastError(error_code);
+  DPLOG(WARNING) << "Failed to create directory " << full_path_str;
+  return false;
 }
 
 bool NormalizeFilePath(const FilePath& path, FilePath* real_path) {
