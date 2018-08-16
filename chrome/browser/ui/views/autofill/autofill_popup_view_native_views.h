@@ -89,9 +89,6 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   AutofillPopupController* controller() { return controller_; }
 
  private:
-  // views::View:
-  void VisibilityChanged(View* starting_from, bool is_visible) override;
-
   void OnSelectedRowChanged(base::Optional<int> previous_row_selection,
                             base::Optional<int> current_row_selection) override;
   void OnSuggestionsChanged() override;

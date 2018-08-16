@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -199,7 +200,10 @@ void PasswordGenerationPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 
 void PasswordGenerationPopupViewViews::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  node_data->SetName(controller_->SuggestedText());
+  node_data->SetName(
+      base::JoinString({controller_->SuggestedText(), controller_->password()},
+                       base::ASCIIToUTF16(" ")));
+  node_data->SetDescription(controller_->HelpText());
   node_data->role = ax::mojom::Role::kMenuItem;
 }
 
