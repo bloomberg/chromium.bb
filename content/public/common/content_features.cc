@@ -271,6 +271,13 @@ const base::Feature kMojoVideoCapture {
 #endif
 };
 
+// A secondary switch used in combination with kMojoVideoCapture.
+// This is intended as a kill switch to allow disabling the service on
+// particular groups of devices even if they forcibly enable kMojoVideoCapture
+// via a command-line argument.
+const base::Feature kMojoVideoCaptureSecondary{
+    "MojoVideoCaptureSecondary", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess{"NetworkServiceInProcess",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -691,8 +698,13 @@ enum class VideoCaptureServiceConfiguration {
   kDisabled
 };
 
+bool ShouldEnableVideoCaptureService() {
+  return base::FeatureList::IsEnabled(features::kMojoVideoCapture) &&
+         base::FeatureList::IsEnabled(features::kMojoVideoCaptureSecondary);
+}
+
 VideoCaptureServiceConfiguration GetVideoCaptureServiceConfiguration() {
-  if (!base::FeatureList::IsEnabled(features::kMojoVideoCapture))
+  if (!ShouldEnableVideoCaptureService())
     return VideoCaptureServiceConfiguration::kDisabled;
 
 #if defined(OS_ANDROID)
