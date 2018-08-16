@@ -133,7 +133,7 @@ PairwiseInterpolationValue CSSShadowListInterpolationType::MaybeMergeSingles(
   return ListInterpolationFunctions::MaybeMergeSingles(
       std::move(start), std::move(end),
       ListInterpolationFunctions::LengthMatchingStrategy::kPadToLargest,
-      ShadowInterpolationFunctions::MaybeMergeSingles);
+      WTF::BindRepeating(ShadowInterpolationFunctions::MaybeMergeSingles));
 }
 
 InterpolationValue
@@ -151,8 +151,9 @@ void CSSShadowListInterpolationType::Composite(
   ListInterpolationFunctions::Composite(
       underlying_value_owner, underlying_fraction, *this, value,
       ListInterpolationFunctions::LengthMatchingStrategy::kPadToLargest,
-      ShadowInterpolationFunctions::NonInterpolableValuesAreCompatible,
-      ShadowInterpolationFunctions::Composite);
+      WTF::BindRepeating(
+          ShadowInterpolationFunctions::NonInterpolableValuesAreCompatible),
+      WTF::BindRepeating(ShadowInterpolationFunctions::Composite));
 }
 
 static scoped_refptr<ShadowList> CreateShadowList(
