@@ -28,8 +28,10 @@ constexpr const char* const kRendererServices[] = {
 SandboxPolicyFuchsia::SandboxPolicyFuchsia() = default;
 
 SandboxPolicyFuchsia::~SandboxPolicyFuchsia() {
-  service_directory_task_runner_->DeleteSoon(FROM_HERE,
-                                             std::move(service_directory_));
+  if (service_directory_) {
+    service_directory_task_runner_->DeleteSoon(FROM_HERE,
+                                               std::move(service_directory_));
+  }
 }
 
 void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
