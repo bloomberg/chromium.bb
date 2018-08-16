@@ -4804,6 +4804,18 @@ TEST_P(QuicStreamFactoryTest, NewConnectionAfterHandshakeTimeout) {
       quic::QUIC_HANDSHAKE_TIMEOUT);
 }
 
+// Sets up a test to verify that a new connection will be created on the
+// alternate network after the initial connection fails before handshake with
+// signals delivered in the following order (alternate network is available):
+// - the default network is not able to complete crypto handshake;
+// - the original connection is closed with |quic_error|;
+// - a new connection is created on the alternate network and is able to finish
+//   crypto handshake;
+// - the new session on the alternate network attempts to migrate back to the
+//   default network by sending probes;
+// - default network being disconnected is delivered: session will stop probing
+//   the original network.
+// - alternate network is made by default.
 void QuicStreamFactoryTestBase::
     TestNewConnectionOnAlternateNetworkBeforeHandshake(
         quic::QuicErrorCode quic_error) {
@@ -4844,9 +4856,16 @@ void QuicStreamFactoryTestBase::
   socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data2.AddWrite(SYNCHRONOUS,
                         client_maker_.MakeAckAndRstPacket(
-                            4, false, GetNthClientInitiatedStreamId(0),
+                            5, false, GetNthClientInitiatedStreamId(0),
                             quic::QUIC_STREAM_CANCELLED, 1, 1, 1, true));
   socket_data2.AddSocketDataToFactory(socket_factory_.get());
+
+  // Socket data for probing on the default network.
+  MockQuicData probing_data;
+  probing_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
+  probing_data.AddWrite(SYNCHRONOUS,
+                        client_maker_.MakeConnectivityProbingPacket(4, false));
+  probing_data.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -4912,6 +4931,30 @@ void QuicStreamFactoryTestBase::
   // Read the response.
   EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_EQ(200, response.headers->response_code());
+
+  // There should be a new task posted to migrate back to the default network.
+  EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
+  base::TimeDelta next_task_delay = task_runner->NextPendingTaskDelay();
+  EXPECT_EQ(base::TimeDelta::FromSeconds(kMinRetryTimeForDefaultNetworkSecs),
+            next_task_delay);
+  task_runner->FastForwardBy(next_task_delay);
+
+  // There should be two tasks posted. One will retry probing and the other
+  // will retry migrate back.
+  EXPECT_EQ(2u, task_runner->GetPendingTaskCount());
+  next_task_delay = task_runner->NextPendingTaskDelay();
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2 * kDefaultRTTMilliSecs),
+            next_task_delay);
+
+  // Deliver the signal that the default network is disconnected.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
+  // Verify no connectivity probes will be sent as probing will be cancelled.
+  task_runner->FastForwardUntilNoTasksRemain();
+  // Deliver the signal that the alternate network is made default.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkMadeDefault(kNewNetworkForTests);
+  EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
 
   stream.reset();
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
