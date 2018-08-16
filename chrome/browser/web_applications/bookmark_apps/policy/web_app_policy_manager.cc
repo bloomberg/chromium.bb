@@ -54,7 +54,8 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
             ? PendingAppManager::LaunchContainer::kWindow
             : PendingAppManager::LaunchContainer::kTab);
   }
-  pending_app_manager_->ProcessAppOperations(std::move(apps_to_install));
+  pending_app_manager_->InstallApps(std::move(apps_to_install),
+                                    base::DoNothing());
 }
 
 }  // namespace web_app

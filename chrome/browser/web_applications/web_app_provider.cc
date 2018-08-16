@@ -104,7 +104,7 @@ void WebAppProvider::ScanForExternalWebApps() {
 void WebAppProvider::ScanForExternalWebAppsCallback(
     std::vector<web_app::PendingAppManager::AppInfo> app_infos) {
 #if defined(OS_CHROMEOS)
-  pending_app_manager_->ProcessAppOperations(std::move(app_infos));
+  pending_app_manager_->InstallApps(std::move(app_infos), base::DoNothing());
 #endif
 }
 

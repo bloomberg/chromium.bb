@@ -27,6 +27,7 @@ namespace {
 
 const char kFooWebAppUrl[] = "https://foo.example";
 const char kBarWebAppUrl[] = "https://bar.example";
+const char kQuxWebAppUrl[] = "https://qux.example";
 
 const char kWrongUrl[] = "https://foobar.example";
 
@@ -38,6 +39,12 @@ web_app::PendingAppManager::AppInfo GetFooAppInfo() {
 web_app::PendingAppManager::AppInfo GetBarAppInfo() {
   return web_app::PendingAppManager::AppInfo(
       GURL(kBarWebAppUrl),
+      web_app::PendingAppManager::LaunchContainer::kWindow);
+}
+
+web_app::PendingAppManager::AppInfo GetQuxAppInfo() {
+  return web_app::PendingAppManager::AppInfo(
+      GURL(kQuxWebAppUrl),
       web_app::PendingAppManager::LaunchContainer::kWindow);
 }
 
@@ -148,6 +155,11 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
     return manager;
   }
 
+  void SuccessfullyLoad(const GURL& url) {
+    web_contents_tester_->NavigateAndCommit(url);
+    web_contents_tester_->TestDidFinishLoad(url);
+  }
+
   content::WebContentsTester* web_contents_tester() {
     return web_contents_tester_;
   }
@@ -176,8 +188,8 @@ TEST_F(PendingBookmarkAppManagerTest, Install_Succeeds) {
                      base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
-  web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
   EXPECT_TRUE(install_succeeded());
   EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
 }
@@ -190,8 +202,8 @@ TEST_F(PendingBookmarkAppManagerTest, Install_SucceedsTwice) {
                      base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
-  web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
   EXPECT_TRUE(install_succeeded());
   EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
   ResetResults();
@@ -202,13 +214,13 @@ TEST_F(PendingBookmarkAppManagerTest, Install_SucceedsTwice) {
                      base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
-  web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+
   EXPECT_TRUE(install_succeeded());
   EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
 }
 
-TEST_F(PendingBookmarkAppManagerTest, Install_PendingSuccessfulTask) {
+TEST_F(PendingBookmarkAppManagerTest, Install_ConcurrentCalls) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
   pending_app_manager->Install(
       GetFooAppInfo(),
@@ -219,18 +231,47 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingSuccessfulTask) {
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
                      base::Unretained(this)));
 
+  // The last call to Install gets higher priority.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  ResetResults();
+
+  // Then the first call to Install gets processed.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, Install_PendingSuccessfulTask) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+  pending_app_manager->Install(
+      GetFooAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+  // Make sure the installation has started.
+  base::RunLoop().RunUntilIdle();
+
+  pending_app_manager->Install(
+      GetBarAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+
   // Finish the first install.
   base::RunLoop().RunUntilIdle();
-  web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
   EXPECT_TRUE(install_succeeded());
   EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
   ResetResults();
 
   // Finish the second install.
   base::RunLoop().RunUntilIdle();
-  web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+
   EXPECT_TRUE(install_succeeded());
   EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
 }
@@ -241,6 +282,9 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingFailingTask) {
       GetFooAppInfo(),
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
                      base::Unretained(this)));
+  // Make sure the installation has started.
+  base::RunLoop().RunUntilIdle();
+
   pending_app_manager->Install(
       GetBarAppInfo(),
       base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
@@ -248,16 +292,16 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingFailingTask) {
 
   // Fail the first install.
   base::RunLoop().RunUntilIdle();
-  web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
+  SuccessfullyLoad(GURL(kWrongUrl));
+
   EXPECT_FALSE(install_succeeded());
   EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
   ResetResults();
 
   // Finish the second install.
   base::RunLoop().RunUntilIdle();
-  web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+
   EXPECT_TRUE(install_succeeded());
   EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
 }
@@ -275,17 +319,18 @@ TEST_F(PendingBookmarkAppManagerTest, Install_ReentrantCallback) {
                 base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
                                base::Unretained(this)));
           }));
+
   // Finish the first install.
   base::RunLoop().RunUntilIdle();
-  web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
   EXPECT_TRUE(install_succeeded());
   EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
   ResetResults();
 
   base::RunLoop().RunUntilIdle();
-  web_contents_tester()->NavigateAndCommit(GURL(kBarWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kBarWebAppUrl));
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+
   EXPECT_TRUE(install_succeeded());
   EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
 }
@@ -309,8 +354,8 @@ TEST_F(PendingBookmarkAppManagerTest, Install_FailsSameInstallPending) {
 
   // The original install should still be able to succeed.
   base::RunLoop().RunUntilIdle();
-  web_contents_tester()->NavigateAndCommit(GURL(kFooWebAppUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kFooWebAppUrl));
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
   EXPECT_TRUE(install_succeeded());
   EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
 }
@@ -323,10 +368,193 @@ TEST_F(PendingBookmarkAppManagerTest, Install_FailsLoadIncorrectURL) {
                      base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
-  web_contents_tester()->NavigateAndCommit(GURL(kWrongUrl));
-  web_contents_tester()->TestDidFinishLoad(GURL(kWrongUrl));
+  SuccessfullyLoad(GURL(kWrongUrl));
   EXPECT_FALSE(install_succeeded());
   EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, InstallApps_Succeeds) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+  std::vector<web_app::PendingAppManager::AppInfo> apps_to_install;
+  apps_to_install.push_back(GetFooAppInfo());
+
+  pending_app_manager->InstallApps(
+      std::move(apps_to_install),
+      base::BindRepeating(&PendingBookmarkAppManagerTest::InstallCallback,
+                          base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, InstallApps_Fails) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+  std::vector<web_app::PendingAppManager::AppInfo> apps_to_install;
+  apps_to_install.push_back(GetFooAppInfo());
+
+  pending_app_manager->InstallApps(
+      std::move(apps_to_install),
+      base::BindRepeating(&PendingBookmarkAppManagerTest::InstallCallback,
+                          base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kWrongUrl));
+
+  EXPECT_FALSE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, InstallApps_Multiple) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+
+  std::vector<web_app::PendingAppManager::AppInfo> apps_to_install;
+  apps_to_install.push_back(GetFooAppInfo());
+  apps_to_install.push_back(GetBarAppInfo());
+
+  pending_app_manager->InstallApps(
+      std::move(apps_to_install),
+      base::BindRepeating(&PendingBookmarkAppManagerTest::InstallCallback,
+                          base::Unretained(this)));
+
+  // Finish the first install.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+  ResetResults();
+
+  // Finish the second install.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, InstallApps_PendingInstallApps) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+
+  {
+    std::vector<web_app::PendingAppManager::AppInfo> apps_to_install;
+    apps_to_install.push_back(GetFooAppInfo());
+
+    pending_app_manager->InstallApps(
+        std::move(apps_to_install),
+        base::BindRepeating(&PendingBookmarkAppManagerTest::InstallCallback,
+                            base::Unretained(this)));
+  }
+
+  {
+    std::vector<web_app::PendingAppManager::AppInfo> apps_to_install;
+    apps_to_install.push_back(GetBarAppInfo());
+
+    pending_app_manager->InstallApps(
+        std::move(apps_to_install),
+        base::BindRepeating(&PendingBookmarkAppManagerTest::InstallCallback,
+                            base::Unretained(this)));
+  }
+
+  // Finish the first install.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+  ResetResults();
+
+  // Finish the second install.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, Install_PendingMulitpleInstallApps) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+
+  std::vector<web_app::PendingAppManager::AppInfo> apps_to_install;
+  apps_to_install.push_back(GetFooAppInfo());
+  apps_to_install.push_back(GetBarAppInfo());
+
+  // Queue through InstallApps.
+  pending_app_manager->InstallApps(
+      std::move(apps_to_install),
+      base::BindRepeating(&PendingBookmarkAppManagerTest::InstallCallback,
+                          base::Unretained(this)));
+
+  // Queue through Install.
+  pending_app_manager->Install(
+      GetQuxAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+
+  // The install request from Install should be processed first.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kQuxWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kQuxWebAppUrl), install_callback_url());
+  ResetResults();
+
+  // The install requests from InstallApps should be processed next.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+  ResetResults();
+
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, InstallApps_PendingInstall) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+  // Queue through Install.
+  pending_app_manager->Install(
+      GetQuxAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+
+  // Queue through InstallApps.
+  std::vector<web_app::PendingAppManager::AppInfo> apps_to_install;
+  apps_to_install.push_back(GetFooAppInfo());
+  apps_to_install.push_back(GetBarAppInfo());
+
+  pending_app_manager->InstallApps(
+      std::move(apps_to_install),
+      base::BindRepeating(&PendingBookmarkAppManagerTest::InstallCallback,
+                          base::Unretained(this)));
+
+  // The install request from Install should be processed first.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kQuxWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kQuxWebAppUrl), install_callback_url());
+  ResetResults();
+
+  // The install requests from InstallApps should be processed next.
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+  ResetResults();
+
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
 }
 
 }  // namespace extensions
