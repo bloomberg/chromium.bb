@@ -23,7 +23,20 @@ import test_results
 
 
 def RunCommand(command: List[str], msg: str) -> str:
-  "One-shot start and complete command with useful default kwargs"
+  """Runs a command and returns the standard output.
+
+  Args:
+    command (List[str]): The list of command chunks to use in subprocess.run.
+        ex: ['git', 'grep', 'cat'] to find all instances of cat in a repo.
+    msg (str): An error message in case the subprocess fails for some reason.
+
+  Raises:
+    subprocess.SubprocessError: Raises this with the command that failed in the
+        event that the return code of the process is non-zero.
+
+  Returns:
+    str: the standard output of the subprocess.
+  """
   command = [piece for piece in command if piece != ""]
   proc = subprocess.run(
       command,
@@ -42,6 +55,16 @@ def RunCommand(command: List[str], msg: str) -> str:
 
 # TODO(crbug.com/848465): replace with --test-launcher-filter-file directly
 def ParseFilterFile(filepath: str) -> str:
+  """Takes a path to a filter file, parses it, and constructs a gtest_filter
+  string for test execution.
+
+  Args:
+    filepath (str): The path to the filter file to be parsed into a
+        --gtest_filter flag.
+
+  Returns:
+    str: The properly-joined together gtest_filter flag.
+  """
   positive_filters = []
   negative_filters = []
   with open(filepath, "r") as file:
@@ -77,14 +100,36 @@ class TestTarget(object):
       self._filter_flag = ParseFilterFile(self._filter_file)
 
   def ExecFuchsia(self, out_dir: str, run_locally: bool) -> str:
+    """Execute this test target's test on Fuchsia, either with QEMU or on actual
+    hardware.
+
+    Args:
+      out_dir (str): The Fuchsia output directory.
+      run_locally (bool): Whether to use QEMU(true) or a physical device(false)
+
+    Returns:
+      str: The standard output of the test process.
+    """
+
     runner_name = "{}/bin/run_{}".format(out_dir, self._name)
     command = [runner_name, self._filter_flag, "--exclude-system-logs"]
     if not run_locally:
       command.append("-d")
     return RunCommand(command,
-                      "Test {} failed on fuchsia!".format(self._target))
+                      "Test {} failed on Fuchsia!".format(self._target))
 
   def ExecLinux(self, out_dir: str, run_locally: bool) -> str:
+    """Execute this test target's test on Linux, either with QEMU or on actual
+    hardware.
+
+    Args:
+      out_dir (str): The Linux output directory.
+      run_locally (bool): Whether to use the host machine(true) or a physical
+          device(false)
+
+    Returns:
+      str: The standard output of the test process.
+    """
     command = []  # type: List[str]
     user = target_spec.linux_device_user
     ip = target_spec.linux_device_ip
@@ -102,6 +147,14 @@ class TestTarget(object):
     return RunCommand(command, "Test {} failed on linux!".format(self._target))
 
   def TransferDependencies(self, out_dir: str, host: str):
+    """Transfer the dependencies of this target to the machine to execute the
+    test.
+
+    Args:
+      out_dir (str): The output directory to find the dependencies in.
+      host (str): The IP address of the host to receive the dependencies.
+    """
+
     gn_desc = ["gn", "desc", out_dir, self._target, "runtime_deps"]
     out = RunCommand(
         gn_desc, "Failed to get dependencies of target {}".format(self._target))
@@ -152,6 +205,17 @@ class TestTarget(object):
 
 
 def RunTest(target: TestTarget, run_locally: bool = False) -> None:
+  """Run the given TestTarget on both Linux and Fuchsia
+
+  Args:
+    target (TestTarget): The TestTarget to run.
+    run_locally (bool, optional): Defaults to False. Whether the test should be
+        run on the host machine, or sent to remote devices for execution.
+
+  Returns:
+    None: Technically an IO (), as it writes to the results files
+  """
+
   linux_out = target.ExecLinux(target_spec.linux_out_dir, run_locally)
   linux_result = test_results.TargetResultFromStdout(linux_out.splitlines(),
                                                      target._name)
@@ -168,6 +232,19 @@ def RunTest(target: TestTarget, run_locally: bool = False) -> None:
 
 
 def RunGnForDirectory(dir_name: str, target_os: str, is_debug: bool) -> None:
+  """Create the output directory for test builds for an operating system.
+
+  Args:
+    dir_name (str): The name to use for the output directory. This will be
+        created if it does not exist.
+    target_os (str): The operating system to initialize this directory for.
+    is_debug (bool): Whether or not this is a debug build of the tests in
+        question.
+
+  Returns:
+    None: It has a side effect of replacing args.gn
+  """
+
   if not os.path.exists(dir_name):
     os.makedirs(dir_name)
 
@@ -185,6 +262,16 @@ def RunGnForDirectory(dir_name: str, target_os: str, is_debug: bool) -> None:
 
 def GenerateTestData(do_config: bool, do_build: bool, num_reps: int,
                      is_debug: bool):
+  """Initializes directories, builds test targets, and repeatedly executes them
+  on both operating systems
+
+  Args:
+    do_config (bool): Whether or not to run GN for the output directories
+    do_build (bool): Whether or not to run ninja for the test targets.
+    num_reps (int): How many times to run each test on a given device.
+    is_debug (bool): Whether or not this should be a debug build of the tests.
+  """
+
   DIR_SOURCE_ROOT = os.path.abspath(
       os.path.join(os.path.dirname(__file__), *([os.pardir] * 3)))
   os.chdir(DIR_SOURCE_ROOT)

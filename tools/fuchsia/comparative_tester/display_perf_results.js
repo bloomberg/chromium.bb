@@ -7,6 +7,7 @@ const headers = ["Test", "Line", "Units", "Fuchsia Avg", "Fuchsia Dev",
                        "F-L Avgs"];
 
 function generateHeader() {
+  // Generates the header for a table of statistics.
   let header_row = document.createElement("tr");
   for (let i = 0; i < headers.length; i++){
     let header = document.createElement("th");
@@ -17,6 +18,8 @@ function generateHeader() {
 }
 
 function generateTableHtmlFromOutputRows(output_rows) {
+  // Takes a list of rows of data, and collects them together into a single
+  // table.
   let table = document.createElement("table");
   table.appendChild(generateHeader());
   output_rows.forEach(function(row){
@@ -32,6 +35,7 @@ function generateTableHtmlFromOutputRows(output_rows) {
 }
 
 function extractStats(line) {
+  // Deconstructs the JSON file given into a list of the relevant values.
   return [line.fuchsia_avg,
           line.fuchsia_dev,
           line.fuchsia_cv,
@@ -42,6 +46,8 @@ function extractStats(line) {
 }
 
 function renderTable(obj_dict) {
+  // Returns an HTML table object by taking the TargetResults JSON and using it
+  // to populate a table of statistics.
   let rows = []
 
   const name = obj_dict['name']
@@ -64,6 +70,8 @@ function renderTable(obj_dict) {
 }
 
 function loadTable() {
+  // Reads the result files, and adds the tables generated to the table_div HTML
+  // object as they finish loading.
   let files = document.getElementById('files').files;
   let table_div = document.getElementById('stats_div');
   // Clear the table div of all prior stats tables
