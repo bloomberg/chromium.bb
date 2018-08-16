@@ -21,6 +21,5 @@
 
     <instrumentation android:name="org.chromium.base.test.BaseChromiumAndroidJUnitRunner"
         android:targetPackage="org.chromium.webview_shell"
-        android:label="Page cycler for org.chromium.webview_shell"
-        chromium-junit4="true"/>
+        android:label="Page cycler for org.chromium.webview_shell"/>
 </manifest>

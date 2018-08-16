@@ -568,15 +568,15 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._test_package = self._test_apk.GetPackageName()
     all_instrumentations = self._test_apk.GetAllInstrumentations()
     all_junit3_runner_classes = [
-        x for x in all_instrumentations if ('0xffffffff' not in x.get(
-            'chromium-junit4', ''))]
-    all_junit4_test_runner_classes = [
         x for x in all_instrumentations if ('0xffffffff' in x.get(
-            'chromium-junit4', ''))]
+            'chromium-junit3', ''))]
+    all_junit4_runner_classes = [
+        x for x in all_instrumentations if ('0xffffffff' not in x.get(
+            'chromium-junit3', ''))]
 
     if len(all_junit3_runner_classes) > 1:
       logging.warning('This test apk has more than one JUnit3 instrumentation')
-    if len(all_junit4_test_runner_classes) > 1:
+    if len(all_junit4_runner_classes) > 1:
       logging.warning('This test apk has more than one JUnit4 instrumentation')
 
     self._junit3_runner_class = (
@@ -584,8 +584,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       if all_junit3_runner_classes else self.test_apk.GetInstrumentationName())
 
     self._junit4_runner_class = (
-      all_junit4_test_runner_classes[0]['android:name']
-      if all_junit4_test_runner_classes else None)
+      all_junit4_runner_classes[0]['android:name']
+      if all_junit4_runner_classes else None)
 
     if self._junit4_runner_class:
       if self._test_apk_incremental_install_json:

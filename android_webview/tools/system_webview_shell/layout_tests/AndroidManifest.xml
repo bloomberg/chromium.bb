@@ -32,6 +32,5 @@
 
     <instrumentation android:name="android.support.test.runner.AndroidJUnitRunner"
         android:targetPackage="org.chromium.webview_shell"
-        android:label="Layout tests for org.chromium.webview_shell"
-        chromium-junit4="true"/>
+        android:label="Layout tests for org.chromium.webview_shell"/>
 </manifest>

@@ -7,8 +7,7 @@
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="23" />
     <instrumentation android:name="org.chromium.base.test.BaseChromiumAndroidJUnitRunner"
         android:targetPackage="org.chromium.android_webview.shell"
-        android:label="Tests for org.chromium.android_webview"
-        chromium-junit4="true"/>
+        android:label="Tests for org.chromium.android_webview"/>
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
     <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
     <uses-permission android:name="android.permission.READ_LOGS"/>
