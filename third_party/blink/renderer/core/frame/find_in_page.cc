@@ -321,12 +321,6 @@ void FindInPage::ContextDestroyed(ExecutionContext* context) {
   binding_.Close();
 }
 
-void WebLocalFrameImpl::ReportFindInPageMatchCount(int request_id,
-                                                   int count,
-                                                   bool final_update) {
-  find_in_page_->ReportFindInPageMatchCount(request_id, count, final_update);
-}
-
 void FindInPage::ReportFindInPageMatchCount(int request_id,
                                             int count,
                                             bool final_update) {
@@ -337,15 +331,6 @@ void FindInPage::ReportFindInPageMatchCount(int request_id,
       request_id, count,
       final_update ? mojom::blink::FindMatchUpdateType::kFinalUpdate
                    : mojom::blink::FindMatchUpdateType::kMoreUpdatesComing);
-}
-
-void WebLocalFrameImpl::ReportFindInPageSelection(
-    int request_id,
-    int active_match_ordinal,
-    const blink::WebRect& selection_rect,
-    bool final_update) {
-  find_in_page_->ReportFindInPageSelection(request_id, active_match_ordinal,
-                                           selection_rect, final_update);
 }
 
 void FindInPage::ReportFindInPageSelection(int request_id,

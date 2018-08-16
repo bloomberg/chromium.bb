@@ -148,6 +148,10 @@ class CORE_EXPORT WebPluginContainerImpl final
   void SetPlugin(WebPlugin*) override;
 
   void UsePluginAsFindHandler() override;
+  void ReportFindInPageMatchCount(int identifier,
+                                  int total,
+                                  bool final_update) override;
+  void ReportFindInPageSelection(int identifier, int index) override;
 
   float DeviceScaleFactor() override;
   float PageScaleFactor() override;

@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -597,7 +598,7 @@ void TextFinder::IncreaseMatchCount(int identifier, int count) {
   total_match_count_ += count;
 
   // Update the UI with the latest findings.
-  OwnerFrame().ReportFindInPageMatchCount(
+  OwnerFrame().GetFindInPage()->ReportFindInPageMatchCount(
       identifier, total_match_count_, !frame_scoping_ || !total_match_count_);
 }
 
@@ -605,9 +606,9 @@ void TextFinder::ReportFindInPageSelection(const WebRect& selection_rect,
                                            int active_match_ordinal,
                                            int identifier) {
   // Update the UI with the latest selection rect.
-  OwnerFrame().ReportFindInPageSelection(identifier, active_match_ordinal,
-                                         selection_rect,
-                                         false /* final_update */);
+  OwnerFrame().GetFindInPage()->ReportFindInPageSelection(
+      identifier, active_match_ordinal, selection_rect,
+      false /* final_update */);
   // Update accessibility too, so if the user commits to this query
   // we can move accessibility focus to this result.
   ReportFindInPageResultToAccessibility(identifier);
