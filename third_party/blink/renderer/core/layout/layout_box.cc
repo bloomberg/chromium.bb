@@ -2184,7 +2184,9 @@ InlineBox* LayoutBox::CreateInlineBox() {
 }
 
 void LayoutBox::DirtyLineBoxes(bool full_layout) {
-  if (inline_box_wrapper_) {
+  if (IsInLayoutNGInlineFormattingContext()) {
+    first_paint_fragment_ = nullptr;
+  } else if (inline_box_wrapper_) {
     if (full_layout) {
       inline_box_wrapper_->Destroy();
       inline_box_wrapper_ = nullptr;
@@ -2192,6 +2194,19 @@ void LayoutBox::DirtyLineBoxes(bool full_layout) {
       inline_box_wrapper_->DirtyLineBoxes();
     }
   }
+}
+
+void LayoutBox::SetFirstInlineFragment(NGPaintFragment* fragment) {
+  CHECK(IsInLayoutNGInlineFormattingContext()) << *this;
+  first_paint_fragment_ = fragment;
+}
+
+void LayoutBox::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
+  DeleteLineBoxWrapper();
+
+  // Because |first_paint_fragment_| and |inline_box_wrapper_| are union, when
+  // one is deleted, the other should be initialized to nullptr.
+  DCHECK(new_value ? !first_paint_fragment_ : !inline_box_wrapper_);
 }
 
 void LayoutBox::PositionLineBox(InlineBox* box) {
@@ -2242,7 +2257,9 @@ void LayoutBox::MoveWithEdgeOfInlineContainerIfNecessary(bool is_horizontal) {
 }
 
 void LayoutBox::DeleteLineBoxWrapper() {
-  if (inline_box_wrapper_) {
+  if (IsInLayoutNGInlineFormattingContext()) {
+    first_paint_fragment_ = nullptr;
+  } else if (inline_box_wrapper_) {
     if (!DocumentBeingDestroyed())
       inline_box_wrapper_->Remove();
     inline_box_wrapper_->Destroy();
