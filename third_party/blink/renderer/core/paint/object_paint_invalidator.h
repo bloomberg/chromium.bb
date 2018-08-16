@@ -56,17 +56,16 @@ class ObjectPaintInvalidatorWithContext : public ObjectPaintInvalidator {
                                     const PaintInvalidatorContext& context)
       : ObjectPaintInvalidator(object), context_(context) {}
 
-  PaintInvalidationReason InvalidatePaint() {
-    return InvalidatePaintWithComputedReason(ComputePaintInvalidationReason());
+  void InvalidatePaint() {
+    InvalidatePaintWithComputedReason(ComputePaintInvalidationReason());
   }
 
   PaintInvalidationReason ComputePaintInvalidationReason();
-  PaintInvalidationReason InvalidatePaintWithComputedReason(
-      PaintInvalidationReason);
+  void InvalidatePaintWithComputedReason(PaintInvalidationReason);
 
  private:
-  void InvalidateSelection(PaintInvalidationReason);
-  void InvalidatePartialRect(PaintInvalidationReason);
+  PaintInvalidationReason InvalidateSelection(PaintInvalidationReason);
+  PaintInvalidationReason InvalidatePartialRect(PaintInvalidationReason);
 
   const PaintInvalidatorContext& context_;
 };

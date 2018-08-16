@@ -73,6 +73,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   void UpdateLayout() override;
   void PaintReplaced(const PaintInfo&,
                      const LayoutPoint& paint_offset) const override;
+  void InvalidatePaint(const PaintInvalidatorContext&) const final;
   CursorDirective GetCursor(const LayoutPoint&, Cursor&) const final;
 
   bool CanBeSelectionLeafInternal() const final { return true; }

@@ -501,27 +501,22 @@ void PaintInvalidator::InvalidatePaint(
       UpdateVisualRect(object, *fragment_data, context);
     }
 
-    PaintInvalidationReason reason = object.InvalidatePaint(context);
-    switch (reason) {
-      case PaintInvalidationReason::kDelayedFull:
-        pending_delayed_paint_invalidations_.push_back(&object);
-        break;
-      case PaintInvalidationReason::kSubtree:
-        context.subtree_flags |=
-            (PaintInvalidatorContext::kSubtreeFullInvalidation |
-             PaintInvalidatorContext::
-                 kSubtreeFullInvalidationForStackedContents);
-        break;
-      case PaintInvalidationReason::kSVGResource:
-        context.subtree_flags |=
-            PaintInvalidatorContext::kSubtreeSVGResourceChange;
-        break;
-      default:
-        break;
-    }
+    object.InvalidatePaint(context);
   }
 
-  if (object.MayNeedPaintInvalidationSubtree()) {
+  auto reason = static_cast<const DisplayItemClient&>(object)
+                    .GetPaintInvalidationReason();
+  if (object.ShouldDelayFullPaintInvalidation() &&
+      !IsFullPaintInvalidationReason(reason))
+    pending_delayed_paint_invalidations_.push_back(&object);
+
+  if (object.SubtreeShouldDoFullPaintInvalidation()) {
+    context.subtree_flags |=
+        PaintInvalidatorContext::kSubtreeFullInvalidation |
+        PaintInvalidatorContext::kSubtreeFullInvalidationForStackedContents;
+  }
+
+  if (object.SubtreeShouldCheckForPaintInvalidation()) {
     context.subtree_flags |=
         PaintInvalidatorContext::kSubtreeInvalidationChecking;
   }
@@ -547,16 +542,13 @@ void PaintInvalidator::InvalidatePaint(
   // TODO(wangxianzhu): Do we need this for SPv2?
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       !context.paint_invalidation_container->IsPaintInvalidationContainer() &&
-      object.GetPaintInvalidationReason() != PaintInvalidationReason::kNone)
+      reason != PaintInvalidationReason::kNone)
     InvalidateChromeClient(*context.paint_invalidation_container);
 }
 
 void PaintInvalidator::ProcessPendingDelayedPaintInvalidations() {
-  for (auto* target : pending_delayed_paint_invalidations_) {
-    target->GetMutableForPainting()
-        .SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-            PaintInvalidationReason::kDelayedFull);
-  }
+  for (auto* target : pending_delayed_paint_invalidations_)
+    target->GetMutableForPainting().SetShouldDelayFullPaintInvalidation();
 }
 
 }  // namespace blink

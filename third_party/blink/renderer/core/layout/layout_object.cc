@@ -170,7 +170,9 @@ LayoutObject::SetLayoutNeededForbiddenScope::~SetLayoutNeededForbiddenScope() {
 #endif
 
 struct SameSizeAsLayoutObject : DisplayItemClient {
-  ~SameSizeAsLayoutObject() override = default;  // Allocate vtable pointer.
+  // Normally this field uses the gap between DisplayItemClient and
+  // LayoutObject's other fields.
+  uint8_t paint_invalidation_reason_;
   void* pointers[5];
   Member<void*> members[1];
 #if DCHECK_IS_ON()
@@ -178,7 +180,6 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
 #endif
   unsigned bitfields_;
   unsigned bitfields2_;
-  unsigned bitfields3_;
   // The following fields are in FragmentData.
   LayoutRect visual_rect_;
   LayoutPoint paint_offset_;
@@ -277,7 +278,8 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
 }
 
 LayoutObject::LayoutObject(Node* node)
-    : style_(nullptr),
+    : full_paint_invalidation_reason_(PaintInvalidationReason::kNone),
+      style_(nullptr),
       node_(node),
       parent_(nullptr),
       previous_(nullptr),
@@ -1535,7 +1537,7 @@ void LayoutObject::InvalidatePaintRectangle(const LayoutRect& dirty_rect) {
   // Not using the WithoutGeometryChange version because we need to map the
   // partial invalidated rect to visual rect in backing or the containing
   // transform node.
-  SetMayNeedPaintInvalidation();
+  SetShouldCheckForPaintInvalidation();
 }
 
 LayoutRect LayoutObject::AbsoluteSelectionRect() const {
@@ -1550,9 +1552,9 @@ LayoutRect LayoutObject::AbsoluteSelectionRect() const {
 }
 
 DISABLE_CFI_PERF
-PaintInvalidationReason LayoutObject::InvalidatePaint(
+void LayoutObject::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
-  return ObjectPaintInvalidatorWithContext(*this, context).InvalidatePaint();
+  ObjectPaintInvalidatorWithContext(*this, context).InvalidatePaint();
 }
 
 void LayoutObject::AdjustVisualRectForCompositedScrolling(
@@ -1952,7 +1954,7 @@ void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
 void LayoutObject::SetNeedsOverflowRecalcAfterStyleChange() {
   bool needed_recalc = NeedsOverflowRecalcAfterStyleChange();
   SetSelfNeedsOverflowRecalcAfterStyleChange();
-  SetMayNeedPaintInvalidation();
+  SetShouldCheckForPaintInvalidation();
   if (!needed_recalc)
     MarkContainerChainForOverflowRecalcIfNeeded();
 }
@@ -2057,7 +2059,7 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
 
   if (diff.NeedsPaintInvalidationSubtree() ||
       updated_diff.NeedsPaintInvalidationSubtree()) {
-    SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+    SetSubtreeShouldDoFullPaintInvalidation();
   } else if (diff.NeedsPaintInvalidationObject() ||
              updated_diff.NeedsPaintInvalidationObject()) {
     // TODO(wangxianzhu): For now LayoutSVGRoot::localVisualRect() depends on
@@ -2074,7 +2076,7 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
     InvalidateClipPathCache();
 
   if (diff.NeedsVisualRectUpdate())
-    SetMayNeedPaintInvalidation();
+    SetShouldCheckForPaintInvalidation();
 
   // Text nodes share style with their parents but the paint properties don't
   // apply to them, hence the !isText() check. If property nodes are added or
@@ -3783,6 +3785,35 @@ bool LayoutObject::IsRelayoutBoundaryForInspector() const {
   return ObjectIsRelayoutBoundary(this);
 }
 
+inline void LayoutObject::MarkAncestorsForPaintInvalidation() {
+  for (LayoutObject* parent = ParentCrossingFrames();
+       parent && !parent->ShouldCheckForPaintInvalidation();
+       parent = parent->ParentCrossingFrames())
+    parent->bitfields_.SetShouldCheckForPaintInvalidation(true);
+}
+
+inline void LayoutObject::SetNeedsPaintOffsetAndVisualRectUpdate() {
+  DCHECK(ShouldCheckForPaintInvalidation());
+  for (auto* object = this;
+       object && !object->NeedsPaintOffsetAndVisualRectUpdate();
+       object = object->ParentCrossingFrames()) {
+    object->bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(true);
+  }
+}
+
+void LayoutObject::SetShouldInvalidateSelection() {
+  if (!CanUpdateSelectionOnRootLineBoxes())
+    return;
+  bitfields_.SetShouldInvalidateSelection(true);
+  SetShouldCheckForPaintInvalidation();
+}
+
+void LayoutObject::SetShouldDoFullPaintInvalidation(
+    PaintInvalidationReason reason) {
+  SetShouldDoFullPaintInvalidationWithoutGeometryChange(reason);
+  SetNeedsPaintOffsetAndVisualRectUpdate();
+}
+
 static PaintInvalidationReason DocumentLifecycleBasedPaintInvalidationReason(
     const DocumentLifecycle& document_lifecycle) {
   switch (document_lifecycle.GetState()) {
@@ -3799,85 +3830,70 @@ static PaintInvalidationReason DocumentLifecycleBasedPaintInvalidationReason(
   }
 }
 
-inline void LayoutObject::MarkAncestorsForPaintInvalidation() {
-  for (LayoutObject* parent = ParentCrossingFrames();
-       parent && !parent->ShouldCheckForPaintInvalidation();
-       parent = parent->ParentCrossingFrames())
-    parent->bitfields_.SetMayNeedPaintInvalidation(true);
-}
-
-inline void LayoutObject::SetNeedsPaintOffsetAndVisualRectUpdate() {
-  for (auto* object = this;
-       object && !object->NeedsPaintOffsetAndVisualRectUpdate();
-       object = object->ParentCrossingFrames()) {
-    object->bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(true);
-  }
-}
-
-void LayoutObject::SetShouldInvalidateSelection() {
-  if (!CanUpdateSelectionOnRootLineBoxes())
-    return;
-  bitfields_.SetShouldInvalidateSelection(true);
-  SetMayNeedPaintInvalidation();
-  GetFrameView()->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
-}
-
-void LayoutObject::SetShouldDoFullPaintInvalidation(
-    PaintInvalidationReason reason) {
-  SetNeedsPaintOffsetAndVisualRectUpdate();
-  SetShouldDoFullPaintInvalidationWithoutGeometryChange(reason);
-}
-
 void LayoutObject::SetShouldDoFullPaintInvalidationWithoutGeometryChange(
     PaintInvalidationReason reason) {
   // Only full invalidation reasons are allowed.
   DCHECK(IsFullPaintInvalidationReason(reason));
+  // This is before the early return to ensure visual update is always scheduled
+  // in case that this is called not during a document lifecycle update.
+  SetShouldCheckForPaintInvalidationWithoutGeometryChange();
 
-  bool is_upgrading_delayed_full_to_full =
-      bitfields_.FullPaintInvalidationReason() ==
-          PaintInvalidationReason::kDelayedFull &&
-      reason != PaintInvalidationReason::kDelayedFull;
-
-  if (bitfields_.FullPaintInvalidationReason() ==
-          PaintInvalidationReason::kNone ||
-      is_upgrading_delayed_full_to_full) {
-    if (reason == PaintInvalidationReason::kFull) {
-      reason = DocumentLifecycleBasedPaintInvalidationReason(
-          GetDocument().Lifecycle());
-    }
-    bitfields_.SetFullPaintInvalidationReason(reason);
-    if (!is_upgrading_delayed_full_to_full)
-      MarkAncestorsForPaintInvalidation();
+  if (ShouldDoFullPaintInvalidation())
+    return;
+  if (reason == PaintInvalidationReason::kFull) {
+    reason = DocumentLifecycleBasedPaintInvalidationReason(
+        GetDocument().Lifecycle());
   }
-
-  GetFrameView()->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
+  full_paint_invalidation_reason_ = reason;
+  bitfields_.SetShouldDelayFullPaintInvalidation(false);
 }
 
-void LayoutObject::SetMayNeedPaintInvalidation() {
+void LayoutObject::SetShouldCheckForPaintInvalidation() {
+  SetShouldCheckForPaintInvalidationWithoutGeometryChange();
   SetNeedsPaintOffsetAndVisualRectUpdate();
-  SetMayNeedPaintInvalidationWithoutGeometryChange();
 }
 
-void LayoutObject::SetMayNeedPaintInvalidationWithoutGeometryChange() {
-  if (MayNeedPaintInvalidation())
-    return;
-  bitfields_.SetMayNeedPaintInvalidation(true);
-  MarkAncestorsForPaintInvalidation();
+void LayoutObject::SetShouldCheckForPaintInvalidationWithoutGeometryChange() {
+  // This is before the early return to ensure visual update is always scheduled
+  // in case that this is called not during a document lifecycle update.
   GetFrameView()->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
+
+  if (ShouldCheckForPaintInvalidation())
+    return;
+  bitfields_.SetShouldCheckForPaintInvalidation(true);
+  MarkAncestorsForPaintInvalidation();
 }
 
-void LayoutObject::SetMayNeedPaintInvalidationSubtree() {
-  if (MayNeedPaintInvalidationSubtree())
+void LayoutObject::SetSubtreeShouldCheckForPaintInvalidation() {
+  if (SubtreeShouldCheckForPaintInvalidation()) {
+    DCHECK(ShouldCheckForPaintInvalidation());
     return;
-  bitfields_.SetMayNeedPaintInvalidationSubtree(true);
-  SetMayNeedPaintInvalidation();
+  }
+  SetShouldCheckForPaintInvalidation();
+  bitfields_.SetSubtreeShouldCheckForPaintInvalidation(true);
 }
 
 void LayoutObject::SetMayNeedPaintInvalidationAnimatedBackgroundImage() {
   if (MayNeedPaintInvalidationAnimatedBackgroundImage())
     return;
   bitfields_.SetMayNeedPaintInvalidationAnimatedBackgroundImage(true);
-  SetMayNeedPaintInvalidationWithoutGeometryChange();
+  SetShouldCheckForPaintInvalidationWithoutGeometryChange();
+}
+
+void LayoutObject::SetShouldDelayFullPaintInvalidation() {
+  // Should have already set a full paint invalidation reason.
+  DCHECK(IsFullPaintInvalidationReason(full_paint_invalidation_reason_));
+
+  bitfields_.SetShouldDelayFullPaintInvalidation(true);
+  if (!ShouldCheckForPaintInvalidation()) {
+    // This will also schedule a visual update.
+    SetShouldCheckForPaintInvalidationWithoutGeometryChange();
+  } else {
+    // Schedule visual update for the next document cycle in which we will
+    // check if the delayed invalidation should be promoted to a real
+    // invalidation.
+    GetFrameView()->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
+  }
 }
 
 void LayoutObject::ClearPaintInvalidationFlags() {
@@ -3887,25 +3903,37 @@ void LayoutObject::ClearPaintInvalidationFlags() {
   DCHECK(!ShouldCheckForPaintInvalidation() || PaintInvalidationStateIsDirty());
 #endif
   fragment_.SetPartialInvalidationLocalRect(LayoutRect());
-  ClearShouldDoFullPaintInvalidation();
-  bitfields_.SetMayNeedPaintInvalidation(false);
-  bitfields_.SetMayNeedPaintInvalidationSubtree(false);
+  if (!ShouldDelayFullPaintInvalidation())
+    full_paint_invalidation_reason_ = PaintInvalidationReason::kNone;
+  bitfields_.SetShouldCheckForPaintInvalidation(false);
+  bitfields_.SetSubtreeShouldCheckForPaintInvalidation(false);
+  bitfields_.SetSubtreeShouldDoFullPaintInvalidation(false);
   bitfields_.SetMayNeedPaintInvalidationAnimatedBackgroundImage(false);
   bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(false);
   bitfields_.SetShouldInvalidateSelection(false);
   bitfields_.SetBackgroundChangedSinceLastPaintInvalidation(false);
 }
 
+#if DCHECK_IS_ON()
+bool LayoutObject::PaintInvalidationStateIsDirty() const {
+  return BackgroundChangedSinceLastPaintInvalidation() ||
+         ShouldCheckForPaintInvalidation() || ShouldInvalidateSelection() ||
+         NeedsPaintOffsetAndVisualRectUpdate() ||
+         ShouldDoFullPaintInvalidation() ||
+         SubtreeShouldDoFullPaintInvalidation() ||
+         MayNeedPaintInvalidationAnimatedBackgroundImage() ||
+         !fragment_.PartialInvalidationLocalRect().IsEmpty();
+}
+#endif
+
 bool LayoutObject::IsAllowedToModifyLayoutTreeStructure(Document& document) {
   return document.Lifecycle().StateAllowsLayoutTreeMutations();
 }
 
-void LayoutObject::
-    SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants() {
-  // Clear first because PaintInvalidationSubtree overrides other full paint
-  // invalidation reasons.
-  ClearShouldDoFullPaintInvalidation();
-  SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kSubtree);
+void LayoutObject::SetSubtreeShouldDoFullPaintInvalidation(
+    PaintInvalidationReason reason) {
+  SetShouldDoFullPaintInvalidation(reason);
+  bitfields_.SetSubtreeShouldDoFullPaintInvalidation(true);
 }
 
 void LayoutObject::SetIsBackgroundAttachmentFixedObject(
@@ -3974,7 +4002,7 @@ void LayoutObject::MarkEffectiveWhitelistedTouchActionChanged() {
 void LayoutObject::InvalidateIfControlStateChanged(ControlState control_state) {
   if (LayoutTheme::GetTheme().ControlStateChanged(GetNode(), StyleRef(),
                                                   control_state)) {
-    SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+    SetSubtreeShouldDoFullPaintInvalidation();
   }
 }
 

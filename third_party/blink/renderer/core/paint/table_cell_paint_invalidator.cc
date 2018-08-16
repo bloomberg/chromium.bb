@@ -16,12 +16,16 @@
 
 namespace blink {
 
+static bool DisplayItemClientIsFullyInvalidated(
+    const DisplayItemClient& client) {
+  return IsFullPaintInvalidationReason(client.GetPaintInvalidationReason());
+}
+
 void TableCellPaintInvalidator::InvalidateContainerForCellGeometryChange(
     const LayoutObject& container,
     const PaintInvalidatorContext& container_context) {
   // We only need to do this if the container hasn't been fully invalidated.
-  DCHECK(
-      !IsFullPaintInvalidationReason(container.GetPaintInvalidationReason()));
+  DCHECK(!DisplayItemClientIsFullyInvalidated(container));
 
   // At this time we have already walked the container for paint invalidation,
   // so we should invalidate the container immediately here instead of setting
@@ -30,7 +34,7 @@ void TableCellPaintInvalidator::InvalidateContainerForCellGeometryChange(
   container.InvalidateDisplayItemClients(PaintInvalidationReason::kGeometry);
 }
 
-PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
+void TableCellPaintInvalidator::InvalidatePaint() {
   // The cell's containing row and section paint backgrounds behind the cell,
   // and the row or table paints collapsed borders. If the cell's geometry
   // changed and the containers which will paint backgrounds and/or collapsed
@@ -40,7 +44,7 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
     const auto& row = *cell_.Row();
     const auto& section = *row.Section();
     const auto& table = *section.Table();
-    if (!IsFullPaintInvalidationReason(row.GetPaintInvalidationReason()) &&
+    if (!DisplayItemClientIsFullyInvalidated(row) &&
         (row.StyleRef().HasBackground() ||
          (table.HasCollapsedBorders() &&
           LIKELY(!table.ShouldPaintAllCollapsedBorders())))) {
@@ -48,13 +52,13 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
     }
 
     if (UNLIKELY(table.ShouldPaintAllCollapsedBorders()) &&
-        !IsFullPaintInvalidationReason(table.GetPaintInvalidationReason())) {
+        !DisplayItemClientIsFullyInvalidated(table)) {
       DCHECK(table.HasCollapsedBorders());
       InvalidateContainerForCellGeometryChange(
           table, *context_.ParentContext()->ParentContext()->ParentContext());
     }
 
-    if (!IsFullPaintInvalidationReason(section.GetPaintInvalidationReason())) {
+    if (!DisplayItemClientIsFullyInvalidated(section)) {
       bool section_paints_background = section.StyleRef().HasBackground();
       if (!section_paints_background) {
         auto col_and_colgroup = section.Table()->ColElementAtAbsoluteColumn(
@@ -72,7 +76,7 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
     }
   }
 
-  return BlockPaintInvalidator(cell_).InvalidatePaint(context_);
+  BlockPaintInvalidator(cell_).InvalidatePaint(context_);
 }
 
 }  // namespace blink

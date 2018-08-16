@@ -25,7 +25,7 @@ class CORE_EXPORT BoxPaintInvalidator {
 
   static void BoxWillBeDestroyed(const LayoutBox&);
 
-  PaintInvalidationReason InvalidatePaint();
+  void InvalidatePaint();
 
  private:
   friend class BoxPaintInvalidatorTest;

@@ -287,7 +287,7 @@ void LayoutBlock::UpdateFromStyle() {
   if (should_clip_overflow != HasOverflowClip()) {
     if (!should_clip_overflow)
       GetScrollableArea()->InvalidateAllStickyConstraints();
-    SetMayNeedPaintInvalidationSubtree();
+    SetSubtreeShouldCheckForPaintInvalidation();
     // The overflow clip paint property depends on whether overflow clip is
     // present so we need to update paint properties if this changes.
     SetNeedsPaintPropertyUpdate();
@@ -790,7 +790,7 @@ void LayoutBlock::LayoutPositionedObjects(bool relayout_children,
 void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
                                          bool relayout_children,
                                          PositionedLayoutBehavior info) {
-  positioned_object->SetMayNeedPaintInvalidation();
+  positioned_object->SetShouldCheckForPaintInvalidation();
 
   SubtreeLayoutScope layout_scope(*positioned_object);
   // If positionedObject is fixed-positioned and moves with an absolute-
@@ -950,9 +950,9 @@ void LayoutBlock::RemovePositionedObject(LayoutBox* o) {
     parent->MarkContainerNeedsCollectInlines();
 }
 
-PaintInvalidationReason LayoutBlock::InvalidatePaint(
+void LayoutBlock::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
-  return BlockPaintInvalidator(*this).InvalidatePaint(context);
+  BlockPaintInvalidator(*this).InvalidatePaint(context);
 }
 
 void LayoutBlock::ClearPreviousVisualRects() {

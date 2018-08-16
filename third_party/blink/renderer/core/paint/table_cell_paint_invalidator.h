@@ -22,7 +22,7 @@ class TableCellPaintInvalidator {
                             const PaintInvalidatorContext& context)
       : cell_(cell), context_(context) {}
 
-  PaintInvalidationReason InvalidatePaint();
+  void InvalidatePaint();
 
  private:
   void InvalidateContainerForCellGeometryChange(
