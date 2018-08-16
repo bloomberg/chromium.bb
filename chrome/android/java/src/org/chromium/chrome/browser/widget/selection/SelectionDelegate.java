@@ -21,6 +21,7 @@ public class SelectionDelegate<E> {
 
     /**
      * Observer interface to be notified of selection changes.
+     * @param <E> The type of the selectable items this delegate interacts with.
      */
     public interface SelectionObserver<E> {
         /**
@@ -57,6 +58,15 @@ public class SelectionDelegate<E> {
         notifyObservers();
 
         return isItemSelected(item);
+    }
+
+    /**
+     * Initializes the selected item list with a new set (clears previous selection).
+     * @param items The items to set as selected.
+     */
+    public void setSelectedItems(Set<E> items) {
+        mSelectedItems = items;
+        notifyObservers();
     }
 
     /**
