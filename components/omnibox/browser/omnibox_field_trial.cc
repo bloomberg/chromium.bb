@@ -106,6 +106,11 @@ const base::Feature kUIExperimentMaxAutocompleteMatches{
     "OmniboxUIExperimentMaxAutocompleteMatches",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to display the search terms instead of the URL in the Omnibox
+// when the user is on the search results page of the default search provider.
+const base::Feature kQueryInOmnibox{"QueryInOmnibox",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used for eliding the suggestion URL after the host as a UI
 // experiment.
 const base::Feature kUIExperimentElideSuggestionUrlAfterHost{

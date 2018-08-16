@@ -75,7 +75,6 @@ extern const base::Feature kPayWithGoogleV1;
 extern const base::Feature kProgressBarThrottleFeature;
 extern const base::Feature kPwaImprovedSplashScreen;
 extern const base::Feature kPwaPersistentNotification;
-extern const base::Feature kQueryInOmnibox;
 extern const base::Feature kReaderModeInCCT;
 extern const base::Feature kSimplifiedNTP;
 extern const base::Feature kSoleIntegration;
