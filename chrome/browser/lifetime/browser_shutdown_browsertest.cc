@@ -79,25 +79,12 @@ IN_PROC_BROWSER_TEST_F(BrowserShutdownBrowserTest,
   histogram_tester_.ExpectTotalCount("Shutdown.window_close.time_per_process",
                                      1);
 }
-#endif  // !defined(OS_CHROMEOS)
-
-// EventGenerator doesn't work on Mac. See https://crbug.com/814675
-// Flaking on Windows. See https://crbug.com/874370
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_ShutdownConfirmation DISABLED_ShutdownConfirmation
 #else
-#define MAYBE_ShutdownConfirmation ShutdownConfirmation
-#endif
-
 // On Chrome OS, the shutdown accelerator is handled by Ash and requires
 // confirmation, so Chrome shouldn't try to shut down after it's been hit one
 // time. Regression test for crbug.com/834092
-IN_PROC_BROWSER_TEST_F(BrowserShutdownBrowserTest, MAYBE_ShutdownConfirmation) {
-#if defined(OS_MACOSX)
-  const int modifiers = ui::EF_COMMAND_DOWN;
-#else
+IN_PROC_BROWSER_TEST_F(BrowserShutdownBrowserTest, ShutdownConfirmation) {
   const int modifiers = ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN;
-#endif
 
   ui::test::EventGenerator generator(browser()->window()->GetNativeWindow());
 
@@ -106,9 +93,6 @@ IN_PROC_BROWSER_TEST_F(BrowserShutdownBrowserTest, MAYBE_ShutdownConfirmation) {
   generator.ReleaseKey(ui::VKEY_Q, modifiers);
   base::RunLoop().RunUntilIdle();
 
-#if defined(OS_CHROMEOS)
   EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
-#else
-  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
-#endif
 }
+#endif  // !defined(OS_CHROMEOS)

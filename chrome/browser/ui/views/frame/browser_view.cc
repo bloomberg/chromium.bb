@@ -71,7 +71,6 @@
 #include "chrome/browser/ui/views/autofill/save_card_sign_in_promo_bubble_views.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
-#include "chrome/browser/ui/views/confirm_quit_bubble_controller.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
@@ -92,6 +91,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
+#include "chrome/browser/ui/views/quit_instruction_bubble_controller.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -1156,7 +1156,7 @@ void BrowserView::RotatePaneFocus(bool forwards) {
 void BrowserView::DestroyBrowser() {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   GetWidget()->GetNativeView()->RemovePreTargetHandler(
-      ConfirmQuitBubbleController::GetInstance());
+      QuitInstructionBubbleController::GetInstance());
 #endif
 
   // After this returns other parts of Chrome are going to be shutdown. Close
@@ -2258,7 +2258,7 @@ void BrowserView::InitViews() {
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   GetWidget()->GetNativeView()->AddPreTargetHandler(
-      ConfirmQuitBubbleController::GetInstance());
+      QuitInstructionBubbleController::GetInstance());
 #endif
 
 #if defined(USE_AURA)
