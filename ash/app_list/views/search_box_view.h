@@ -46,6 +46,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void UpdateModel(bool initiated_by_user) override;
   void UpdateSearchIcon() override;
   void UpdateSearchBoxBorder() override;
+  void SetupAssistantButton() override;
   void SetupCloseButton() override;
   void SetupBackButton() override;
   void RecordSearchBoxActivationHistogram(ui::EventType event_type) override;
@@ -127,6 +128,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void SelectionModelChanged() override;
   void Update() override;
   void SearchEngineChanged() override;
+  void ShowAssistantChanged() override;
 
   // The range of highlighted text for autocomplete.
   gfx::Range highlight_range_;

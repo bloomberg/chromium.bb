@@ -28,6 +28,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
@@ -190,6 +191,11 @@ void AppListMainView::ActiveChanged(search_box::SearchBoxViewBase* sender) {
     if (query.empty())
       search_box_view_->ShowZeroStateSuggestions();
   }
+}
+
+void AppListMainView::AssistantButtonPressed() {
+  DCHECK(chromeos::switches::IsAssistantEnabled());
+  delegate_->StartAssistant();
 }
 
 void AppListMainView::BackButtonPressed() {

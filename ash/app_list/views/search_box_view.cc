@@ -23,9 +23,11 @@
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
@@ -59,6 +61,7 @@ constexpr SkColor kSearchBoxBorderColor =
     SkColorSetARGB(0x3D, 0xFF, 0xFF, 0xFF);
 
 constexpr int kSearchBoxBorderCornerRadiusSearchResult = 4;
+constexpr int kAssistantIconSize = 24;
 constexpr int kCloseIconSize = 24;
 constexpr int kSearchBoxFocusBorderCornerRadius = 28;
 
@@ -75,6 +78,12 @@ int GetBoxLayoutPaddingForState(ash::AppListState state) {
   if (state == ash::AppListState::kStateSearchResults)
     return kPaddingSearchResult;
   return search_box::kPadding;
+}
+
+float GetAssistantButtonOpacityForState(ash::AppListState state) {
+  if (state == ash::AppListState::kStateSearchResults)
+    return .0f;
+  return 1.f;
 }
 
 }  // namespace
@@ -130,6 +139,7 @@ void SearchBoxView::ModelChanged() {
 
   HintTextChanged();
   OnWallpaperColorsChanged();
+  ShowAssistantChanged();
 }
 
 void SearchBoxView::UpdateKeyboardVisibility() {
@@ -276,9 +286,16 @@ void SearchBoxView::UpdateLayout(double progress,
                                  ash::AppListState current_state,
                                  ash::AppListState target_state) {
   box_layout()->set_inside_border_insets(
-      gfx::Insets(0, gfx::Tween::LinearIntValueBetween(
-                         progress, GetBoxLayoutPaddingForState(current_state),
-                         GetBoxLayoutPaddingForState(target_state))));
+      gfx::Insets(0,
+                  gfx::Tween::LinearIntValueBetween(
+                      progress, GetBoxLayoutPaddingForState(current_state),
+                      GetBoxLayoutPaddingForState(target_state)),
+                  0, 0));
+  if (show_assistant_button()) {
+    assistant_button()->layer()->SetOpacity(gfx::Tween::LinearIntValueBetween(
+        progress, GetAssistantButtonOpacityForState(current_state),
+        GetAssistantButtonOpacityForState(target_state)));
+  }
   InvalidateLayout();
 }
 
@@ -537,12 +554,33 @@ void SearchBoxView::SelectionModelChanged() {
 
 void SearchBoxView::Update() {
   search_box()->SetText(search_model_->search_box()->text());
-  UpdateCloseButtonVisisbility();
+  UpdateButtonsVisisbility();
   NotifyQueryChanged();
 }
 
 void SearchBoxView::SearchEngineChanged() {
   UpdateSearchIcon();
+}
+
+void SearchBoxView::ShowAssistantChanged() {
+  if (search_model_) {
+    SetShowAssistantButton(
+        search_model_->search_box()->show_assistant_button());
+  }
+}
+
+void SearchBoxView::SetupAssistantButton() {
+  if (search_model_ && !search_model_->search_box()->show_assistant_button()) {
+    return;
+  }
+
+  views::ImageButton* assistant = assistant_button();
+  assistant->SetImage(
+      views::ImageButton::STATE_NORMAL,
+      gfx::CreateVectorIcon(ash::kAssistantIcon, kAssistantIconSize,
+                            search_box_color()));
+  assistant->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_APP_LIST_START_ASSISTANT));
 }
 
 }  // namespace app_list

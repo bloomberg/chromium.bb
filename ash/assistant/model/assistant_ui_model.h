@@ -21,6 +21,7 @@ enum class AssistantSource {
   kLongPressLauncher,
   kSetup,
   kStylus,
+  kLauncherSearchBox,
 };
 
 // Enumeration of Assistant UI modes.

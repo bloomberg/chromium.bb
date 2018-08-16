@@ -1108,6 +1108,8 @@ void Shell::Init(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
   accelerator_controller_ = std::make_unique<AcceleratorController>(nullptr);
+  voice_interaction_controller_ =
+      std::make_unique<VoiceInteractionController>();
 
   // |app_list_controller_| is put after |tablet_mode_controller_| as the former
   // uses the latter in constructor.
@@ -1185,8 +1187,6 @@ void Shell::Init(
   laser_pointer_controller_.reset(new LaserPointerController());
   partial_magnification_controller_.reset(new PartialMagnificationController());
   highlighter_controller_.reset(new HighlighterController());
-  voice_interaction_controller_ =
-      std::make_unique<VoiceInteractionController>();
 
   assistant_controller_ = chromeos::switches::IsAssistantEnabled()
                               ? std::make_unique<AssistantController>()

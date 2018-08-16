@@ -151,6 +151,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     last_query_ = sender->search_box()->text();
   }
 
+  void AssistantButtonPressed() override {}
   void BackButtonPressed() override {}
   void ActiveChanged(search_box::SearchBoxViewBase* sender) override {}
 

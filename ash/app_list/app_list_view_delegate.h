@@ -32,6 +32,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // owned by the delegate, or owned elsewhere (e.g. a profile keyed service).
   virtual SearchModel* GetSearchModel() = 0;
 
+  // Invoked to start a new Google Assistant session.
+  virtual void StartAssistant() = 0;
+
   // Invoked to start a new search. This collects a list of search results
   // matching the raw query, which is an unhandled string typed into the search
   // box by the user.

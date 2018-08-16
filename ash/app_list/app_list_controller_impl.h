@@ -18,6 +18,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
@@ -48,7 +49,8 @@ class ASH_EXPORT AppListControllerImpl
       public ash::ShellObserver,
       public TabletModeObserver,
       public keyboard::KeyboardControllerObserver,
-      public WallpaperControllerObserver {
+      public WallpaperControllerObserver,
+      public mojom::VoiceInteractionObserver {
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
   using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
@@ -137,6 +139,7 @@ class ASH_EXPORT AppListControllerImpl
   // app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
   app_list::SearchModel* GetSearchModel() override;
+  void StartAssistant() override;
   void StartSearch(const base::string16& raw_query) override;
   void OpenSearchResult(const std::string& result_id, int event_flags) override;
   void InvokeSearchResultAction(const std::string& result_id,
@@ -185,6 +188,16 @@ class ASH_EXPORT AppListControllerImpl
   void OnWallpaperPreviewStarted() override;
   void OnWallpaperPreviewEnded() override;
 
+  // mojom::VoiceInteractionObserver:
+  void OnVoiceInteractionStatusChanged(
+      mojom::VoiceInteractionState state) override {}
+  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
+  void OnVoiceInteractionContextEnabled(bool enabled) override {}
+  void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
+  void OnVoiceInteractionSetupCompleted(bool completed) override {}
+  void OnAssistantFeatureAllowedChanged(
+      mojom::AssistantAllowedState state) override;
+
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
   // Returns true if the home launcher is enabled in tablet mode.
@@ -199,6 +212,9 @@ class ASH_EXPORT AppListControllerImpl
   // Update the visibility of the home launcher based on e.g. if the device is
   // in overview mode.
   void UpdateHomeLauncherVisibility();
+
+  // Update the visibility of Assistant functionality.
+  void UpdateAssistantVisibility();
 
   base::string16 last_raw_query_;
 
@@ -231,6 +247,8 @@ class ASH_EXPORT AppListControllerImpl
   // Whether the wallpaper is being previewed. The home launcher (if enabled)
   // should be hidden during wallpaper preview.
   bool in_wallpaper_preview_ = false;
+
+  mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImpl);
 };

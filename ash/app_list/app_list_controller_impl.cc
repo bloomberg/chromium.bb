@@ -13,11 +13,14 @@
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
@@ -40,7 +43,8 @@ namespace ash {
 
 AppListControllerImpl::AppListControllerImpl()
     : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
-      is_home_launcher_enabled_(app_list::features::IsHomeLauncherEnabled()) {
+      is_home_launcher_enabled_(app_list::features::IsHomeLauncherEnabled()),
+      voice_interaction_binding_(this) {
   model_.AddObserver(this);
 
   // Create only for non-mash. Mash uses window tree embed API to get a
@@ -62,6 +66,10 @@ AppListControllerImpl::AppListControllerImpl()
   Shell::Get()->wallpaper_controller()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
+
+  mojom::VoiceInteractionObserverPtr ptr;
+  voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
+  Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
 }
 
 AppListControllerImpl::~AppListControllerImpl() {
@@ -524,6 +532,15 @@ void AppListControllerImpl::OnWallpaperPreviewEnded() {
   UpdateHomeLauncherVisibility();
 }
 
+void AppListControllerImpl::OnVoiceInteractionSettingsEnabled(bool enabled) {
+  UpdateAssistantVisibility();
+}
+
+void AppListControllerImpl::OnAssistantFeatureAllowedChanged(
+    mojom::AssistantAllowedState state) {
+  UpdateAssistantVisibility();
+}
+
 bool AppListControllerImpl::IsHomeLauncherEnabledInTabletMode() const {
   return is_home_launcher_enabled_ && Shell::Get()
                                           ->tablet_mode_controller()
@@ -532,6 +549,14 @@ bool AppListControllerImpl::IsHomeLauncherEnabledInTabletMode() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Methods of |client_|:
+
+void AppListControllerImpl::StartAssistant() {
+  if (!IsHomeLauncherEnabledInTabletMode())
+    DismissAppList();
+
+  ash::Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
+      ash::AssistantSource::kLauncherSearchBox);
+}
 
 void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
   last_raw_query_ = raw_query;
@@ -732,6 +757,13 @@ void AppListControllerImpl::UpdateHomeLauncherVisibility() {
     presenter_.GetWindow()->Hide();
   else
     presenter_.GetWindow()->Show();
+}
+
+void AppListControllerImpl::UpdateAssistantVisibility() {
+  auto* controller = Shell::Get()->voice_interaction_controller();
+  GetSearchModel()->search_box()->SetShowAssistantButton(
+      controller->settings_enabled() &&
+      controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED);
 }
 
 }  // namespace ash

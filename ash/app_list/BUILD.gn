@@ -101,6 +101,7 @@ component("app_list") {
     "//ash/app_menu",
     "//ash/assistant/ui:constants",
     "//ash/public/cpp/app_list/vector_icons",
+    "//ash/public/cpp/vector_icons",
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",

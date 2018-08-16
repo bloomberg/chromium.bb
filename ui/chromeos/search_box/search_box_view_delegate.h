@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHOMEOS_SEARCH_BOX_SEARCH_BOX_VIEW_DELEGATE_H_
-#define UI_CHOMEOS_SEARCH_BOX_SEARCH_BOX_VIEW_DELEGATE_H_
+#ifndef UI_CHROMEOS_SEARCH_BOX_SEARCH_BOX_VIEW_DELEGATE_H_
+#define UI_CHROMEOS_SEARCH_BOX_SEARCH_BOX_VIEW_DELEGATE_H_
 
 #include "ui/chromeos/search_box/search_box_export.h"
 
@@ -17,6 +17,9 @@ class SEARCH_BOX_EXPORT SearchBoxViewDelegate {
   virtual void QueryChanged(SearchBoxViewBase* sender) = 0;
 
   // Invoked when the back button has been pressed.
+  virtual void AssistantButtonPressed() = 0;
+
+  // Invoked when the back button has been pressed.
   virtual void BackButtonPressed() = 0;
 
   // Invoked when search box active status has changed.
@@ -28,4 +31,4 @@ class SEARCH_BOX_EXPORT SearchBoxViewDelegate {
 
 }  // namespace search_box
 
-#endif  // UI_CHOMEOS_SEARCH_BOX_SEARCH_BOX_VIEW_DELEGATE_H_
+#endif  // UI_CHROMEOS_SEARCH_BOX_SEARCH_BOX_VIEW_DELEGATE_H_

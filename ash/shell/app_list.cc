@@ -235,6 +235,8 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     NOTIMPLEMENTED();
   }
 
+  void StartAssistant() override { NOTIMPLEMENTED(); }
+
   void StartSearch(const base::string16& raw_query) override {
     base::string16 query;
     base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);

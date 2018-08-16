@@ -90,6 +90,7 @@ class APP_LIST_EXPORT AppListMainView
 
   // Overridden from SearchBoxViewDelegate:
   void QueryChanged(search_box::SearchBoxViewBase* sender) override;
+  void AssistantButtonPressed() override;
   void BackButtonPressed() override;
   void ActiveChanged(search_box::SearchBoxViewBase* sender) override;
 
