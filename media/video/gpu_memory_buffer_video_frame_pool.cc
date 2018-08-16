@@ -251,6 +251,12 @@ gfx::BufferFormat GpuMemoryBufferFormat(
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
       DCHECK_EQ(0u, plane);
       return gfx::BufferFormat::RGBX_1010102;
+    case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
+      DCHECK_EQ(0u, plane);
+      return gfx::BufferFormat::RGBA_8888;
+    case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
+      DCHECK_EQ(0u, plane);
+      return gfx::BufferFormat::BGRA_8888;
     case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
       break;
@@ -279,6 +285,12 @@ unsigned ImageInternalFormat(GpuVideoAcceleratorFactories::OutputFormat format,
       // Technically speaking we should say GL_RGB10_EXT, but that format is not
       // supported in OpenGLES.
       return GL_RGB10_A2_EXT;
+    case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
+      DCHECK_EQ(0u, plane);
+      return GL_RGBA;
+    case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
+      DCHECK_EQ(0u, plane);
+      return GL_BGRA_EXT;
     case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
       break;
@@ -291,6 +303,8 @@ size_t PlanesPerCopy(GpuVideoAcceleratorFactories::OutputFormat format) {
   switch (format) {
     case GpuVideoAcceleratorFactories::OutputFormat::I420:
     case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
+    case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
+    case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
       return 1;
     case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
     case GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB:
@@ -318,6 +332,8 @@ VideoPixelFormat VideoFormat(
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
       return PIXEL_FORMAT_ARGB;
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
+    case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
+    case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
       return PIXEL_FORMAT_RGB32;
     case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
@@ -339,6 +355,9 @@ size_t NumGpuMemoryBuffers(GpuVideoAcceleratorFactories::OutputFormat format) {
       return 1;
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
+      return 1;
+    case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
+    case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
       return 1;
     case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       NOTREACHED();
@@ -414,7 +433,8 @@ void CopyRowsToNV12Buffer(int first_row,
   DCHECK_LE(bytes_per_row, std::abs(dest_stride_y));
   DCHECK_LE(bytes_per_row, std::abs(dest_stride_uv));
   DCHECK_EQ(0, first_row % 2);
-
+  DCHECK(source_frame->format() == PIXEL_FORMAT_I420 ||
+         source_frame->format() == PIXEL_FORMAT_YV12);
   libyuv::I420ToNV12(
       source_frame->visible_data(VideoFrame::kYPlane) +
           first_row * source_frame->stride(VideoFrame::kYPlane),
@@ -447,6 +467,8 @@ void CopyRowsToUYVYBuffer(int first_row,
   DCHECK_NE(dest_stride, 0);
   DCHECK_LE(width, std::abs(dest_stride / 2));
   DCHECK_EQ(0, first_row % 2);
+  DCHECK(source_frame->format() == PIXEL_FORMAT_I420 ||
+         source_frame->format() == PIXEL_FORMAT_YV12);
   libyuv::I420ToUYVY(
       source_frame->visible_data(VideoFrame::kYPlane) +
           first_row * source_frame->stride(VideoFrame::kYPlane),
@@ -477,6 +499,7 @@ void CopyRowsToRGB10Buffer(bool is_argb,
   DCHECK_NE(dest_stride, 0);
   DCHECK_LE(width, std::abs(dest_stride / 2));
   DCHECK_EQ(0, first_row % 2);
+  DCHECK_EQ(source_frame->format(), PIXEL_FORMAT_YUV420P10);
 
   const uint16_t* y_plane = reinterpret_cast<const uint16_t*>(
       source_frame->visible_data(VideoFrame::kYPlane) +
@@ -518,6 +541,46 @@ void CopyRowsToRGB10Buffer(bool is_argb,
   }
 }
 
+void CopyRowsToRGBABuffer(bool is_rgba,
+                          int first_row,
+                          int rows,
+                          int width,
+                          const scoped_refptr<VideoFrame>& source_frame,
+                          uint8_t* output,
+                          int dest_stride,
+                          base::OnceClosure done) {
+  base::ScopedClosureRunner done_runner(std::move(done));
+  TRACE_EVENT2("media", "CopyRowsToRGBABuffer", "bytes_per_row", width * 2,
+               "rows", rows);
+
+  if (!output)
+    return;
+
+  DCHECK_NE(dest_stride, 0);
+  DCHECK_LE(width, std::abs(dest_stride / 2));
+  DCHECK_EQ(0, first_row % 2);
+  DCHECK_EQ(source_frame->format(), PIXEL_FORMAT_I420A);
+
+  // libyuv uses little-endian for RGBx formats, whereas here we use big endian.
+  auto* func_ptr = is_rgba ? libyuv::I420AlphaToABGR : libyuv::I420AlphaToARGB;
+
+  func_ptr(source_frame->visible_data(VideoFrame::kYPlane) +
+               first_row * source_frame->stride(VideoFrame::kYPlane),
+           source_frame->stride(VideoFrame::kYPlane),
+           source_frame->visible_data(VideoFrame::kUPlane) +
+               first_row / 2 * source_frame->stride(VideoFrame::kUPlane),
+           source_frame->stride(VideoFrame::kUPlane),
+           source_frame->visible_data(VideoFrame::kVPlane) +
+               first_row / 2 * source_frame->stride(VideoFrame::kVPlane),
+           source_frame->stride(VideoFrame::kVPlane),
+           source_frame->visible_data(VideoFrame::kAPlane) +
+               first_row * source_frame->stride(VideoFrame::kAPlane),
+           source_frame->stride(VideoFrame::kAPlane),
+           output + first_row * dest_stride, dest_stride, width, rows,
+           // Textures are expected to be premultiplied by GL and compositors.
+           1 /* attenuate, meaning premultiply */);
+}
+
 gfx::Size CodedSize(const scoped_refptr<VideoFrame>& video_frame,
                     GpuVideoAcceleratorFactories::OutputFormat output_format) {
   DCHECK(gfx::Rect(video_frame->coded_size())
@@ -535,6 +598,8 @@ gfx::Size CodedSize(const scoped_refptr<VideoFrame>& video_frame,
     case GpuVideoAcceleratorFactories::OutputFormat::UYVY:
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
+    case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
+    case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
       output = gfx::Size((video_frame->visible_rect().width() + 1) & ~1,
                          video_frame->visible_rect().height());
       break;
@@ -577,9 +642,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV420P10:
     case PIXEL_FORMAT_YUV420P12:
+    case PIXEL_FORMAT_I420A:
       break;
     // Unsupported cases.
-    case PIXEL_FORMAT_I420A:
     case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_I444:
     case PIXEL_FORMAT_NV12:
@@ -820,6 +885,20 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
                              buffer->stride(0), barrier));
           break;
         }
+
+        case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
+        case GpuVideoAcceleratorFactories::OutputFormat::BGRA: {
+          const bool is_rgba = output_format_ ==
+                               GpuVideoAcceleratorFactories::OutputFormat::RGBA;
+          worker_task_runner_->PostTask(
+              FROM_HERE,
+              base::BindOnce(&CopyRowsToRGBABuffer, is_rgba, row, rows_to_copy,
+                             coded_size.width(), video_frame,
+                             static_cast<uint8_t*>(buffer->memory(0)),
+                             buffer->stride(0), barrier));
+          break;
+        }
+
         case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
           NOTREACHED();
       }
@@ -918,7 +997,11 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
       // libyuv or find a way for later passes to make up the difference.
       frame->set_color_space(video_frame->ColorSpace().GetAsRGB());
       break;
-    default:
+    case GpuVideoAcceleratorFactories::OutputFormat::RGBA:
+    case GpuVideoAcceleratorFactories::OutputFormat::BGRA:
+      allow_overlay = true;
+      break;
+    case GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED:
       break;
   }
 
