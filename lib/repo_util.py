@@ -94,6 +94,8 @@ class Repository(object):
     if mirror:
       cmd += ['--mirror']
     if reference is not None:
+      if isinstance(reference, Repository):
+        reference = reference.root
       cmd += ['--reference', reference]
     if depth is not None:
       cmd += ['--depth', str(depth)]
@@ -170,11 +172,12 @@ class Repository(object):
                                      capture_output=capture_output,
                                      debug_level=logging.DEBUG)
 
-  def Sync(self, projects=None, jobs=None, cwd=None):
+  def Sync(self, projects=None, current_branch=False, jobs=None, cwd=None):
     """Run `repo sync`.
 
     Args:
       projects: A list of project names to sync.
+      current_branch: Fetch only the current branch.
       jobs: Number of projects to sync in parallel.
       cwd: The path to run the command in. Defaults to Repository root.
 
@@ -183,6 +186,8 @@ class Repository(object):
       RunCommandError: if the command failed.
     """
     args = _ListArg(projects)
+    if current_branch:
+      args += ['--current-branch']
     if jobs is not None:
       args += ['--jobs', str(jobs)]
     self._Run(['sync'] + args, cwd=cwd)
