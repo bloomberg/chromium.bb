@@ -6,8 +6,11 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_add_account_item.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_header_item.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_item.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_view_controller_presentation_delegate.h"
+#import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,6 +18,7 @@
 #endif
 
 namespace {
+
 const CGFloat kViewControllerWidth = 312.;
 const CGFloat kViewControllerHeight = 230.;
 // Header height for identity section.
@@ -23,6 +27,16 @@ const CGFloat kHeaderHeight = 49.;
 const CGFloat kRowHeight = 54.;
 // Footer height for "Add Account…" section.
 const CGFloat kFooterHeight = 17.;
+
+typedef NS_ENUM(NSInteger, SectionIdentifier) {
+  IdentitiesSectionIdentifier = kSectionIdentifierEnumZero,
+};
+
+typedef NS_ENUM(NSInteger, ItemType) {
+  IdentityItemType = kItemTypeEnumZero,
+  AddAccountItemType,
+};
+
 }  // namespace
 
 @implementation IdentityChooserViewController
@@ -39,15 +53,11 @@ const CGFloat kFooterHeight = 17.;
   // Setting -UITableView.rowHeight is required for iOS 10. On iOS 11, the row
   // height is automatically set.
   self.tableView.estimatedRowHeight = kRowHeight;
+  self.tableView.estimatedSectionHeaderHeight = kHeaderHeight;
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
   [self.presentationDelegate identityChooserViewControllerDidDisappear:self];
-}
-
-- (CGFloat)tableView:(UITableView*)tableView
-    heightForHeaderInSection:(NSInteger)section {
-  return (section == 0) ? kHeaderHeight : 0;
 }
 
 - (void)tableView:(UITableView*)tableView
@@ -75,7 +85,56 @@ const CGFloat kFooterHeight = 17.;
   }
 }
 
-#pragma mark UIAccessibilityAction
+#pragma mark - IdentityChooserConsumer
+
+- (void)setIdentityItems:(NSArray<TableViewItem*>*)items {
+  [self loadModel];
+
+  TableViewModel* tableViewModel = self.tableViewModel;
+  if ([tableViewModel
+          hasSectionForSectionIdentifier:IdentitiesSectionIdentifier]) {
+    [tableViewModel removeSectionWithIdentifier:IdentitiesSectionIdentifier];
+  }
+  [tableViewModel addSectionWithIdentifier:IdentitiesSectionIdentifier];
+  // Create the header item.
+  [tableViewModel setHeader:[[IdentityChooserHeaderItem alloc] init]
+      forSectionWithIdentifier:IdentitiesSectionIdentifier];
+  // Insert the items.
+  for (TableViewItem* item in items) {
+    item.type = IdentityItemType;
+    [tableViewModel addItem:item
+        toSectionWithIdentifier:IdentitiesSectionIdentifier];
+  }
+  // Insert "Add Account" item.
+  IdentityChooserAddAccountItem* addAccountItem =
+      [[IdentityChooserAddAccountItem alloc] initWithType:AddAccountItemType];
+  [tableViewModel addItem:addAccountItem
+      toSectionWithIdentifier:IdentitiesSectionIdentifier];
+
+  [self.tableView reloadData];
+}
+
+- (void)itemHasChanged:(TableViewItem*)changedItem {
+  if (![self.tableViewModel hasItem:changedItem])
+    return;
+
+  [self reconfigureCellsForItems:@[ changedItem ]];
+}
+
+- (IdentityChooserItem*)identityChooserItemWithGaiaID:(NSString*)gaiaID {
+  for (IdentityChooserItem* item in [self.tableViewModel
+           itemsInSectionWithIdentifier:IdentitiesSectionIdentifier]) {
+    if (item.type != IdentityItemType)
+      continue;
+    IdentityChooserItem* identityItem =
+        base::mac::ObjCCastStrict<IdentityChooserItem>(item);
+    if ([identityItem.gaiaID isEqualToString:gaiaID])
+      return identityItem;
+  }
+  return nil;
+}
+
+#pragma mark - UIAccessibilityAction
 
 - (BOOL)accessibilityPerformEscape {
   [self dismissViewControllerAnimated:YES completion:nil];

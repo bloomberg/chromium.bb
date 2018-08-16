@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @class ChromeIdentity;
-@class IdentityChooserViewController;
+@protocol IdentityChooserConsumer;
 
 // A mediator object that monitors updates of chrome identities, and updates the
 // IdentityChooserViewController.
@@ -17,8 +17,7 @@
 // Selected Chrome identity.
 @property(nonatomic, strong) ChromeIdentity* selectedIdentity;
 // View controller.
-@property(nonatomic, weak)
-    IdentityChooserViewController* identityChooserViewController;
+@property(nonatomic, weak) id<IdentityChooserConsumer> consumer;
 
 // Starts this mediator.
 - (void)start;

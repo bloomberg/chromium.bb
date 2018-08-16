@@ -7,32 +7,14 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_add_account_item.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_header_item.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_consumer.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_item.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_view_controller.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  IdentitiesSectionIdentifier = kSectionIdentifierEnumZero,
-  AddAccountSectionIdentifier,
-};
-
-typedef NS_ENUM(NSInteger, ItemType) {
-  IdentityItemType = kItemTypeEnumZero,
-  AddAccountItemType,
-};
-
-}  // namespace
 
 @interface IdentityChooserMediator ()<ChromeIdentityServiceObserver,
                                       ChromeBrowserProviderObserver> {
@@ -48,43 +30,32 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation IdentityChooserMediator
 
-@synthesize identityChooserViewController = _identityChooserViewController;
+@synthesize consumer = _consumer;
 @synthesize selectedIdentity = _selectedIdentity;
 
 - (void)start {
-  [self.identityChooserViewController loadModel];
   _identityServiceObserver =
       std::make_unique<ChromeIdentityServiceObserverBridge>(self);
   _browserProviderObserver =
       std::make_unique<ChromeBrowserProviderObserverBridge>(self);
-  TableViewModel* tableViewModel =
-      self.identityChooserViewController.tableViewModel;
   [self loadIdentitySection];
-  [tableViewModel addSectionWithIdentifier:AddAccountSectionIdentifier];
-  IdentityChooserAddAccountItem* addAccountItem =
-      [[IdentityChooserAddAccountItem alloc] initWithType:AddAccountItemType];
-  [tableViewModel addItem:addAccountItem
-      toSectionWithIdentifier:AddAccountSectionIdentifier];
-  [self.identityChooserViewController.tableView reloadData];
 }
 
 - (void)setSelectedIdentity:(ChromeIdentity*)selectedIdentity {
   if (_selectedIdentity == selectedIdentity)
     return;
-  IdentityChooserItem* previousSelectedItem =
-      [self identityChooserItemWithGaiaID:self.selectedIdentity.gaiaID];
+  IdentityChooserItem* previousSelectedItem = [self.consumer
+      identityChooserItemWithGaiaID:self.selectedIdentity.gaiaID];
   if (previousSelectedItem) {
     previousSelectedItem.selected = NO;
-    [self.identityChooserViewController
-        reconfigureCellsForItems:@[ previousSelectedItem ]];
+    [self.consumer itemHasChanged:previousSelectedItem];
   }
   _selectedIdentity = selectedIdentity;
-  IdentityChooserItem* selectedItem =
-      [self identityChooserItemWithGaiaID:self.selectedIdentity.gaiaID];
+  IdentityChooserItem* selectedItem = [self.consumer
+      identityChooserItemWithGaiaID:self.selectedIdentity.gaiaID];
   DCHECK(selectedItem);
   selectedItem.selected = YES;
-  [self.identityChooserViewController
-      reconfigureCellsForItems:@[ selectedItem ]];
+  [self.consumer itemHasChanged:selectedItem];
 }
 
 - (void)selectIdentityWithGaiaID:(NSString*)gaiaID {
@@ -96,41 +67,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Private
 
-// Returns an IdentityChooserItem based on a gaia ID.
-- (IdentityChooserItem*)identityChooserItemWithGaiaID:(NSString*)gaiaID {
-  for (IdentityChooserItem* item in
-       [self.identityChooserViewController.tableViewModel
-           itemsInSectionWithIdentifier:IdentitiesSectionIdentifier]) {
-    if ([item.gaiaID isEqualToString:gaiaID])
-      return item;
-  }
-  return nil;
-}
-
 // Creates the identity section with its header item, and all the identity items
 // based on the ChromeIdentity.
 - (void)loadIdentitySection {
-  TableViewModel* tableViewModel =
-      self.identityChooserViewController.tableViewModel;
-  DCHECK(![tableViewModel
-      hasSectionForSectionIdentifier:IdentitiesSectionIdentifier]);
-  // Create the section.
-  [tableViewModel insertSectionWithIdentifier:IdentitiesSectionIdentifier
-                                      atIndex:0];
-  // Create the header item.
-  [tableViewModel setHeader:[[IdentityChooserHeaderItem alloc] init]
-      forSectionWithIdentifier:IdentitiesSectionIdentifier];
   // Create all the identity items.
   NSArray<ChromeIdentity*>* identities =
       self.chromeIdentityService->GetAllIdentitiesSortedForDisplay();
+  NSMutableArray<IdentityChooserItem*>* items = [NSMutableArray array];
   for (ChromeIdentity* identity in identities) {
-    IdentityChooserItem* item =
-        [[IdentityChooserItem alloc] initWithType:IdentityItemType];
+    IdentityChooserItem* item = [[IdentityChooserItem alloc] initWithType:0];
     [self updateIdentityChooserItem:item withChromeIdentity:identity];
-    [self.identityChooserViewController.tableViewModel
-                        addItem:item
-        toSectionWithIdentifier:IdentitiesSectionIdentifier];
+    [items addObject:item];
   }
+
+  [self.consumer setIdentityItems:items];
 }
 
 // Updates an IdentityChooserItem based on a ChromeIdentity.
@@ -143,12 +93,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.selectedIdentity.gaiaID isEqualToString:identity.gaiaID];
   __weak __typeof(self) weakSelf = self;
   ios::GetAvatarCallback callback = ^(UIImage* identityAvatar) {
-    if (![weakSelf.identityChooserViewController.tableViewModel hasItem:item]) {
-      // Make sure the item is still displayed.
-      return;
-    }
     item.avatar = identityAvatar;
-    [weakSelf.identityChooserViewController reconfigureCellsForItems:@[ item ]];
+    [weakSelf.consumer itemHasChanged:item];
   };
   self.chromeIdentityService->GetAvatarForIdentity(identity, callback);
 }
@@ -161,11 +107,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - ChromeIdentityServiceObserver
 
 - (void)identityListChanged {
-  TableViewModel* tableViewModel =
-      self.identityChooserViewController.tableViewModel;
-  [tableViewModel removeSectionWithIdentifier:IdentitiesSectionIdentifier];
   [self loadIdentitySection];
-  [self.identityChooserViewController.tableView reloadData];
   // Updates the selection.
   NSArray* allIdentities =
       self.chromeIdentityService->GetAllIdentitiesSortedForDisplay();
@@ -176,7 +118,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)profileUpdate:(ChromeIdentity*)identity {
   IdentityChooserItem* item =
-      [self identityChooserItemWithGaiaID:identity.gaiaID];
+      [self.consumer identityChooserItemWithGaiaID:identity.gaiaID];
   [self updateIdentityChooserItem:item withChromeIdentity:identity];
 }
 

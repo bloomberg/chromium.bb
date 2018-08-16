@@ -77,8 +77,7 @@ typedef NS_ENUM(NSInteger, IdentityChooserCoordinatorState) {
 
   // Creates the mediator.
   self.identityChooserMediator = [[IdentityChooserMediator alloc] init];
-  self.identityChooserMediator.identityChooserViewController =
-      self.identityChooserViewController;
+  self.identityChooserMediator.consumer = self.identityChooserViewController;
   // Setups.
   self.identityChooserViewController.presentationDelegate = self;
   // Starts.
