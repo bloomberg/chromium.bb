@@ -10803,6 +10803,19 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
   const int rows = block_size_high[bsize];
   const int cols = block_size_wide[bsize];
   const int num_planes = av1_num_planes(cm);
+  const int skip_ctx = av1_get_skip_context(xd);
+
+  int known_rate = intra_mode_cost[mbmi->mode];
+  known_rate += ref_frame_cost;
+  if (mbmi->mode != DC_PRED && mbmi->mode != PAETH_PRED)
+    known_rate += intra_cost_penalty;
+  known_rate += AOMMIN(x->skip_cost[skip_ctx][0], x->skip_cost[skip_ctx][1]);
+  const int64_t known_rd = RDCOST(x->rdmult, known_rate, 0);
+  if (known_rd > search_state->best_rd) {
+    search_state->skip_intra_modes = 1;
+    return INT64_MAX;
+  }
+
   TX_SIZE uv_tx;
   int is_directional_mode = av1_is_directional_mode(mbmi->mode);
   if (is_directional_mode && av1_use_angle_delta(bsize)) {
@@ -10906,8 +10919,8 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
   if (num_planes > 1) {
     uv_tx = av1_get_tx_size(AOM_PLANE_U, xd);
     if (search_state->rate_uv_intra[uv_tx] == INT_MAX) {
-      int rate_y = rd_stats_y->skip ? x->skip_cost[av1_get_skip_context(xd)][1]
-                                    : rd_stats_y->rate;
+      int rate_y =
+          rd_stats_y->skip ? x->skip_cost[skip_ctx][1] : rd_stats_y->rate;
       const int64_t rdy =
           RDCOST(x->rdmult, rate_y + mode_cost_y, rd_stats_y->dist);
       if (search_state->best_rd < (INT64_MAX / 2) &&
@@ -10922,6 +10935,14 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
           &search_state->mode_uv[uv_tx]);
       if (try_palette) search_state->pmi_uv[uv_tx] = *pmi;
       search_state->uv_angle_delta[uv_tx] = mbmi->angle_delta[PLANE_TYPE_UV];
+
+      const int uv_rate = search_state->rate_uv_tokenonly[uv_tx];
+      const int64_t uv_dist = search_state->dist_uvs[uv_tx];
+      const int64_t uv_rd = RDCOST(x->rdmult, uv_rate, uv_dist);
+      if (uv_rd > search_state->best_rd) {
+        search_state->skip_intra_modes = 1;
+        return INT64_MAX;
+      }
     }
 
     rd_stats_uv->rate = search_state->rate_uv_tokenonly[uv_tx];
@@ -10965,10 +10986,10 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
     rd_stats_y->rate = 0;
     rd_stats_uv->rate = 0;
     // Cost the skip mb case
-    rd_stats->rate += x->skip_cost[av1_get_skip_context(xd)][1];
+    rd_stats->rate += x->skip_cost[skip_ctx][1];
   } else {
     // Add in the cost of the no skip flag.
-    rd_stats->rate += x->skip_cost[av1_get_skip_context(xd)][0];
+    rd_stats->rate += x->skip_cost[skip_ctx][0];
   }
   // Calculate the final RD estimate for this mode.
   const int64_t this_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
