@@ -162,6 +162,8 @@
                                 handler:^(UIAlertAction* _Nonnull action) {
                                   [_autofillController fillSuggestion:suggestion
                                                     completionHandler:nil];
+                                  [UIApplication.sharedApplication.keyWindow
+                                      endEditing:YES];
                                 }];
 }
 
