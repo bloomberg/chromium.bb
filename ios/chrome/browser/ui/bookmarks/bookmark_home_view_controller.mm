@@ -1380,17 +1380,17 @@ const CGFloat kShadowRadius = 12.0f;
                            target:nil
                            action:nil];
 
-  // Set Select button.
-  titleString = l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_SELECT);
-  UIBarButtonItem* selectButton =
+  // Set Edit button.
+  titleString = l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_EDIT);
+  UIBarButtonItem* editButton =
       [[UIBarButtonItem alloc] initWithTitle:titleString
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(trailingButtonClicked)];
-  selectButton.accessibilityIdentifier = kBookmarkHomeTrailingButtonIdentifier;
-  selectButton.enabled = [self hasBookmarksOrFolders];
+  editButton.accessibilityIdentifier = kBookmarkHomeTrailingButtonIdentifier;
+  editButton.enabled = [self hasBookmarksOrFolders];
 
-  [self setToolbarItems:@[ newFolderButton, spaceButton, selectButton ]
+  [self setToolbarItems:@[ newFolderButton, spaceButton, editButton ]
                animated:NO];
 }
 
