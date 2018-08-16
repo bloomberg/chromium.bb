@@ -1972,8 +1972,6 @@ test("browser_tests") {
         "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm",
         "../browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm",
         "../browser/ui/cocoa/dev_tools_controller_browsertest.mm",
-        "../browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h",
-        "../browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm",
         "../browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_browsertest.mm",
         "../browser/ui/cocoa/find_bar/find_bar_browsertest.mm",
         "../browser/ui/cocoa/location_bar/content_setting_decoration_browsertest.mm",
@@ -1998,8 +1996,6 @@ test("browser_tests") {
         ## not compile and should be removed (along with test file) when the
         ## corresponding release code is deleted.
         # "../browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm",
-        # "../browser/ui/cocoa/extensions/extension_install_dialog_controller_browsertest.mm",
-        # "../browser/ui/cocoa/extensions/windowed_install_dialog_controller_browsertest.mm",
         # "../browser/ui/cocoa/page_info/page_info_bubble_views_mac_browsertest.mm",
       ]
     }
@@ -4160,10 +4156,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/draggable_button_unittest.mm",
         "../browser/ui/cocoa/extensions/browser_actions_container_view_unittest.mm",
         "../browser/ui/cocoa/extensions/chooser_dialog_cocoa_controller_unittest.mm",
-        "../browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h",
-        "../browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm",
-        "../browser/ui/cocoa/extensions/extension_install_view_controller_unittest.mm",
-        "../browser/ui/cocoa/extensions/extension_installed_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_unittest.mm",
         "../browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac_unittest.mm",
         "../browser/ui/cocoa/find_bar/find_bar_bridge_unittest.mm",
@@ -4264,8 +4256,6 @@ test("unit_tests") {
     if (mac_views_browser) {
       sources -= [
         "../browser/ui/cocoa/extensions/chooser_dialog_cocoa_controller_unittest.mm",
-        "../browser/ui/cocoa/extensions/extension_install_view_controller_unittest.mm",
-        "../browser/ui/cocoa/extensions/extension_installed_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_unittest.mm",
         "../browser/ui/cocoa/page_info/page_info_bubble_controller_unittest.mm",
       ]

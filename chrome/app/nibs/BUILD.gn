@@ -20,13 +20,7 @@ translated_xibs = [
 ]
 
 if (!mac_views_browser) {
-  translated_xibs += [
-    "ExtensionInstallPrompt.xib",
-    "ExtensionInstallPromptNoWarnings.xib",
-    "ExtensionInstallPromptWebstoreData.xib",
-    "ExtensionInstalledBubble.xib",
-    "HttpAuthLoginSheet.xib",
-  ]
+  translated_xibs += [ "HttpAuthLoginSheet.xib" ]
 }
 
 untranslated_xibs = [
