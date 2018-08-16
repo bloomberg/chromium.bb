@@ -56,6 +56,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -3245,9 +3246,14 @@ TEST_F(OverflowButtonActiveInkDropTest, MouseDragOutAndBack) {
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 }
 
+#if defined(OS_LINUX)
+#define MAYBE_MouseContextMenu DISABLED_MouseContextMenu
+#else
+#define MAYBE_MouseContextMenu MouseContextMenu
+#endif
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user right clicks on the button to show the context menu.
-TEST_F(OverflowButtonActiveInkDropTest, MouseContextMenu) {
+TEST_F(OverflowButtonActiveInkDropTest, MAYBE_MouseContextMenu) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
 
