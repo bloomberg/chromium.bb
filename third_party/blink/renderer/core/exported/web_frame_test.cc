@@ -40,6 +40,7 @@
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/layer_tree_host.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
@@ -5033,24 +5034,37 @@ TEST_F(WebFrameTest, ExecuteScriptDuringDidCreateScriptContext) {
   FrameTestHelpers::ReloadFrame(web_view_helper.GetWebView()->MainFrameImpl());
 }
 
-class FindUpdateWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+class TestFindInPageClient : public mojom::blink::FindInPageClient {
  public:
-  FindUpdateWebFrameClient()
-      : find_results_are_ready_(false), count_(-1), active_index_(-1) {}
-  ~FindUpdateWebFrameClient() override = default;
+  TestFindInPageClient()
+      : find_results_are_ready_(false),
+        count_(-1),
+        active_index_(-1),
+        binding_(this) {}
 
-  // FrameTestHelpers::TestWebFrameClient:
-  void SendFindReply(int request_id,
-                     int match_count,
-                     int ordinal,
-                     const WebRect& selection_rect,
-                     bool final_status_update) override {
-    if (match_count != -1)
-      count_ = match_count;
-    if (ordinal != -1)
-      active_index_ = ordinal;
-    if (final_status_update)
-      find_results_are_ready_ = true;
+  ~TestFindInPageClient() override = default;
+
+  void SetFrame(WebLocalFrameImpl* frame) {
+    mojom::blink::FindInPageClientPtr client;
+    binding_.Bind(MakeRequest(&client));
+    frame->GetFindInPage()->SetClient(std::move(client));
+  }
+  void SetNumberOfMatches(
+      int request_id,
+      unsigned int current_number_of_matches,
+      mojom::blink::FindMatchUpdateType final_update) final {
+    count_ = current_number_of_matches;
+    find_results_are_ready_ =
+        (final_update == mojom::blink::FindMatchUpdateType::kFinalUpdate);
+  }
+
+  void SetActiveMatch(int request_id,
+                      const WebRect& active_match_rect,
+                      int active_match_ordinal,
+                      mojom::blink::FindMatchUpdateType final_update) final {
+    active_index_ = active_match_ordinal;
+    find_results_are_ready_ =
+        (final_update == mojom::blink::FindMatchUpdateType::kFinalUpdate);
   }
 
   bool FindResultsAreReady() const { return find_results_are_ready_; }
@@ -5061,15 +5075,16 @@ class FindUpdateWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
   bool find_results_are_ready_;
   int count_;
   int active_index_;
+  mojo::Binding<mojom::blink::FindInPageClient> binding_;
 };
 
 TEST_F(WebFrameTest, FindInPageMatchRects) {
   RegisterMockedHttpURLLoad("find_in_page_frame.html");
 
-  FindUpdateWebFrameClient client;
+  FrameTestHelpers::TestWebFrameClient frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "find_in_page_frame.html",
-                                    &client);
+                                    &frame_client);
   web_view_helper.Resize(WebSize(640, 480));
   web_view_helper.GetWebView()->SetMaximumLegibleScale(1.f);
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
@@ -5085,6 +5100,8 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
   WebFindOptions options;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
+  TestFindInPageClient find_in_page_client;
+  find_in_page_client.SetFrame(main_frame);
   EXPECT_TRUE(main_frame->Find(kFindIdentifier, search_text, options, false));
 
   main_frame->EnsureTextFinder().ResetMatchCount();
@@ -5096,7 +5113,7 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
   }
 
   RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
 
   WebVector<WebFloatRect> web_match_rects =
       main_frame->EnsureTextFinder().FindMatchRects();
@@ -5140,10 +5157,10 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
 TEST_F(WebFrameTest, FindInPageActiveIndex) {
   RegisterMockedHttpURLLoad("find_match_count.html");
 
-  FindUpdateWebFrameClient client;
+  FrameTestHelpers::TestWebFrameClient frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "find_match_count.html",
-                                    &client);
+                                    &frame_client);
   web_view_helper.GetWebView()->Resize(WebSize(640, 480));
   RunPendingTasks();
 
@@ -5154,6 +5171,9 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   WebFindOptions options;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
+  TestFindInPageClient find_in_page_client;
+  find_in_page_client.SetFrame(main_frame);
+
   EXPECT_TRUE(main_frame->Find(kFindIdentifier, search_text, options, false));
   main_frame->EnsureTextFinder().ResetMatchCount();
 
@@ -5175,8 +5195,8 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   }
 
   RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
-  EXPECT_EQ(kActiveIndex, client.ActiveIndex());
+  EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
+  EXPECT_EQ(kActiveIndex, find_in_page_client.ActiveIndex());
 
   const char* kFindStringNew = "e";
   WebString search_text_new = WebString::FromUTF8(kFindStringNew);
@@ -5192,17 +5212,18 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   }
 
   RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
-  EXPECT_EQ(kActiveIndex, client.ActiveIndex());
+  EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
+  EXPECT_EQ(kActiveIndex, find_in_page_client.ActiveIndex());
 }
 
 TEST_F(WebFrameTest, FindOnDetachedFrame) {
   RegisterMockedHttpURLLoad("find_in_page.html");
   RegisterMockedHttpURLLoad("find_in_page_frame.html");
 
-  FindUpdateWebFrameClient client;
+  FrameTestHelpers::TestWebFrameClient frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "find_in_page.html", &client);
+  web_view_helper.InitializeAndLoad(base_url_ + "find_in_page.html",
+                                    &frame_client);
   web_view_helper.Resize(WebSize(640, 480));
   RunPendingTasks();
 
@@ -5212,6 +5233,9 @@ TEST_F(WebFrameTest, FindOnDetachedFrame) {
   WebFindOptions options;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
+  TestFindInPageClient main_find_in_page_client;
+  main_find_in_page_client.SetFrame(main_frame);
+
   WebLocalFrameImpl* second_frame =
       ToWebLocalFrameImpl(main_frame->TraverseNext());
 
@@ -5223,7 +5247,7 @@ TEST_F(WebFrameTest, FindOnDetachedFrame) {
       second_frame->Find(kFindIdentifier, search_text, options, false));
 
   RunPendingTasks();
-  EXPECT_FALSE(client.FindResultsAreReady());
+  EXPECT_FALSE(main_find_in_page_client.FindResultsAreReady());
 
   main_frame->EnsureTextFinder().ResetMatchCount();
 
@@ -5234,16 +5258,17 @@ TEST_F(WebFrameTest, FindOnDetachedFrame) {
   }
 
   RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_TRUE(main_find_in_page_client.FindResultsAreReady());
 }
 
 TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings) {
   RegisterMockedHttpURLLoad("find_in_page.html");
   RegisterMockedHttpURLLoad("find_in_page_frame.html");
 
-  FindUpdateWebFrameClient client;
+  FrameTestHelpers::TestWebFrameClient frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "find_in_page.html", &client);
+  web_view_helper.InitializeAndLoad(base_url_ + "find_in_page.html",
+                                    &frame_client);
   web_view_helper.Resize(WebSize(640, 480));
   RunPendingTasks();
 
@@ -5253,6 +5278,8 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings) {
   WebFindOptions options;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
+  TestFindInPageClient find_in_page_client;
+  find_in_page_client.SetFrame(main_frame);
 
   for (WebFrame* frame = main_frame; frame; frame = frame->TraverseNext()) {
     EXPECT_TRUE(frame->ToWebLocalFrame()->Find(kFindIdentifier, search_text,
@@ -5260,7 +5287,7 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings) {
   }
 
   RunPendingTasks();
-  EXPECT_FALSE(client.FindResultsAreReady());
+  EXPECT_FALSE(find_in_page_client.FindResultsAreReady());
 
   // Detach the frame between finding and scoping.
   RemoveElementById(main_frame, "frame");
@@ -5274,16 +5301,17 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings) {
   }
 
   RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
 }
 
 TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   RegisterMockedHttpURLLoad("find_in_page.html");
   RegisterMockedHttpURLLoad("find_in_page_frame.html");
 
-  FindUpdateWebFrameClient client;
+  FrameTestHelpers::TestWebFrameClient frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "find_in_page.html", &client);
+  web_view_helper.InitializeAndLoad(base_url_ + "find_in_page.html",
+                                    &frame_client);
   web_view_helper.Resize(WebSize(640, 480));
   RunPendingTasks();
 
@@ -5293,6 +5321,8 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   WebFindOptions options;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
+  TestFindInPageClient find_in_page_client;
+  find_in_page_client.SetFrame(main_frame);
 
   for (WebFrame* frame = main_frame; frame; frame = frame->TraverseNext()) {
     EXPECT_TRUE(frame->ToWebLocalFrame()->Find(kFindIdentifier, search_text,
@@ -5300,7 +5330,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   }
 
   RunPendingTasks();
-  EXPECT_FALSE(client.FindResultsAreReady());
+  EXPECT_FALSE(find_in_page_client.FindResultsAreReady());
 
   main_frame->EnsureTextFinder().ResetMatchCount();
 
@@ -5315,16 +5345,16 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   RemoveElementById(main_frame, "frame");
 
   RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
 }
 
 TEST_F(WebFrameTest, ResetMatchCount) {
   RegisterMockedHttpURLLoad("find_in_generated_frame.html");
 
-  FindUpdateWebFrameClient client;
+  FrameTestHelpers::TestWebFrameClient frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "find_in_generated_frame.html",
-                                    &client);
+                                    &frame_client);
   web_view_helper.Resize(WebSize(640, 480));
   RunPendingTasks();
 
@@ -5334,6 +5364,8 @@ TEST_F(WebFrameTest, ResetMatchCount) {
   WebFindOptions options;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
+  TestFindInPageClient find_in_page_client;
+  find_in_page_client.SetFrame(main_frame);
 
   // Check that child frame exists.
   EXPECT_TRUE(!!main_frame->TraverseNext());
@@ -5344,7 +5376,7 @@ TEST_F(WebFrameTest, ResetMatchCount) {
   }
 
   RunPendingTasks();
-  EXPECT_FALSE(client.FindResultsAreReady());
+  EXPECT_FALSE(find_in_page_client.FindResultsAreReady());
 
   main_frame->EnsureTextFinder().ResetMatchCount();
 }
@@ -5352,9 +5384,9 @@ TEST_F(WebFrameTest, ResetMatchCount) {
 TEST_F(WebFrameTest, SetTickmarks) {
   RegisterMockedHttpURLLoad("find.html");
 
-  FindUpdateWebFrameClient client;
+  FrameTestHelpers::TestWebFrameClient frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "find.html", &client);
+  web_view_helper.InitializeAndLoad(base_url_ + "find.html", &frame_client);
   web_view_helper.Resize(WebSize(640, 480));
   RunPendingTasks();
 
@@ -5364,6 +5396,8 @@ TEST_F(WebFrameTest, SetTickmarks) {
   WebFindOptions options;
   WebString search_text = WebString::FromUTF8(kFindString);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
+  TestFindInPageClient find_in_page_client;
+  find_in_page_client.SetFrame(main_frame);
   EXPECT_TRUE(main_frame->Find(kFindIdentifier, search_text, options, false));
 
   main_frame->EnsureTextFinder().ResetMatchCount();
@@ -5371,7 +5405,7 @@ TEST_F(WebFrameTest, SetTickmarks) {
       kFindIdentifier, search_text, options);
 
   RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
 
   // Get the tickmarks for the original find request.
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
@@ -5405,13 +5439,16 @@ TEST_F(WebFrameTest, SetTickmarks) {
 TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOM) {
   RegisterMockedHttpURLLoad("find.html");
 
-  FindUpdateWebFrameClient client;
+  FrameTestHelpers::TestWebFrameClient frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "find.html", &client);
+  web_view_helper.InitializeAndLoad(base_url_ + "find.html", &frame_client);
   web_view_helper.Resize(WebSize(640, 480));
   RunPendingTasks();
 
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
+  TestFindInPageClient find_in_page_client;
+  find_in_page_client.SetFrame(frame);
+
   const int kFindIdentifier = 12345;
   static const char* kFindString = "foo";
   WebString search_text = WebString::FromUTF8(kFindString);
@@ -5422,7 +5459,7 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOM) {
   frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                       search_text, options);
   RunPendingTasks();
-  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
 
   // Find in a <div> element.
   options.find_next = true;
@@ -5481,9 +5518,9 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
       "bar foo bar foo bar foo bar foo bar foo bar foo bar foo bar foo bar foo "
       "bar foo bar foo abc bar <div id='new_text'></div>";
 
-  FindUpdateWebFrameClient client;
+  FrameTestHelpers::TestWebFrameClient frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(&client);
+  web_view_helper.Initialize(&frame_client);
 
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   FrameTestHelpers::LoadHTMLString(frame, html,
@@ -5492,30 +5529,35 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
   web_view_helper.GetWebView()->SetFocus(true);
   RunPendingTasks();
 
+  TestFindInPageClient find_in_page_client;
+  find_in_page_client.SetFrame(frame);
   const int kFindIdentifier = 12345;
-  WebFindOptions options;
 
+  mojom::blink::FindOptionsPtr options(mojom::blink::FindOptions::New());
+  options->find_next = false;
+  options->forward = true;
   // The first search that will start the scoping process.
-  frame->RequestFind(kFindIdentifier, search_pattern, options);
-  EXPECT_FALSE(client.FindResultsAreReady());
-  EXPECT_EQ(1, client.Count());
+  frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
+                               std::move(options));
+  EXPECT_FALSE(find_in_page_client.FindResultsAreReady());
   EXPECT_TRUE(frame->EnsureTextFinder().ScopingInProgress());
-
   // The scoping won't find all the entries on the first run due to the fake
   // timer.
   while (frame->EnsureTextFinder().ScopingInProgress())
     RunPendingTasks();
 
-  EXPECT_EQ(2, client.Count());
-  EXPECT_EQ(1, client.ActiveIndex());
-
-  options.find_next = true;
-
+  EXPECT_EQ(2, find_in_page_client.Count());
+  EXPECT_EQ(1, find_in_page_client.ActiveIndex());
+  mojom::blink::FindOptionsPtr options2(mojom::blink::FindOptions::New());
+  options2->find_next = true;
+  options2->forward = true;
   // The second search will jump to the next match without any scoping.
-  frame->RequestFind(kFindIdentifier, search_pattern, options);
-
-  EXPECT_EQ(2, client.Count());
-  EXPECT_EQ(2, client.ActiveIndex());
+  frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
+                               std::move(options2));
+  // Run pending tasks to make sure IncreaseMatchCount calls passes.
+  RunPendingTasks();
+  EXPECT_EQ(2, find_in_page_client.Count());
+  EXPECT_EQ(2, find_in_page_client.ActiveIndex());
   EXPECT_FALSE(frame->EnsureTextFinder().ScopingInProgress());
 
   // Insert new text, which contains occurence of |searchText|.
@@ -5523,16 +5565,20 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
       WebScriptSource("var textDiv = document.getElementById('new_text');"
                       "textDiv.innerHTML = 'foo abc';"));
 
+  mojom::blink::FindOptionsPtr options3(mojom::blink::FindOptions::New());
+  options3->find_next = true;
+  options3->forward = true;
   // The third search will find a new match and initiate a new scoping.
-  frame->RequestFind(kFindIdentifier, search_pattern, options);
+  frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
+                               std::move(options3));
 
   EXPECT_TRUE(frame->EnsureTextFinder().ScopingInProgress());
 
   while (frame->EnsureTextFinder().ScopingInProgress())
     RunPendingTasks();
 
-  EXPECT_EQ(3, client.Count());
-  EXPECT_EQ(3, client.ActiveIndex());
+  EXPECT_EQ(3, find_in_page_client.Count());
+  EXPECT_EQ(3, find_in_page_client.ActiveIndex());
 }
 
 TEST_F(WebFrameTest, FindInPageStopFindActionKeepSelectionInAnotherDocument) {

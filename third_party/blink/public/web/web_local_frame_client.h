@@ -696,14 +696,6 @@ class BLINK_EXPORT WebLocalFrameClient {
       WebScrollDirection direction,
       WebScrollGranularity granularity) {}
 
-  // Find-in-page notifications ------------------------------------------
-
-  virtual void SendFindReply(int request_id,
-                             int match_count,
-                             int ordinal,
-                             const WebRect& selection_rect,
-                             bool final_status_update) {}
-
   // MediaStream -----------------------------------------------------
 
   // A new WebRTCPeerConnectionHandler is created.

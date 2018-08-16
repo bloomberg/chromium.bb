@@ -288,49 +288,11 @@ void FindRequestManager::StopFinding(StopFindAction action) {
 #endif
 }
 
-void FindRequestManager::OnFindReply(RenderFrameHostImpl* rfh,
-                                     int request_id,
-                                     int number_of_matches,
-                                     const gfx::Rect& selection_rect,
-                                     int active_match_ordinal,
-                                     bool final_update) {
+bool FindRequestManager::ShouldIgnoreReply(RenderFrameHostImpl* rfh,
+                                           int request_id) {
   // Ignore stale replies from abandoned find sessions or dead frames.
-  if (current_session_id_ == kInvalidId ||
-      request_id < current_session_id_ ||
-      !CheckFrame(rfh)) {
-    return;
-  }
-
-  // Update the stored find results.
-
-  DCHECK_GE(number_of_matches, -1);
-  DCHECK_GE(active_match_ordinal, -1);
-
-  // Check for an update to the selection rect.
-  if (!selection_rect.IsEmpty())
-    SetActiveMatchRect(selection_rect);
-
-  // Check for an update to the active match ordinal.
-  if (active_match_ordinal > 0)
-    SetActiveMatchOrdinal(rfh, request_id, active_match_ordinal);
-
-  if (number_of_matches != -1) {
-    auto client_it = find_in_page_clients_.find(rfh);
-    client_it->second->SetNumberOfMatches(
-        request_id, number_of_matches,
-        final_update ? blink::mojom::FindMatchUpdateType::kFinalUpdate
-                     : blink::mojom::FindMatchUpdateType::kMoreUpdatesComing);
-    // Since |final_update| is handled already in SetNumberOfMatches, we should
-    // return.
-    // TODO(rakina): Remove this confusing part when mojoifying FindInPage::Find
-    return;
-  }
-
-  if (!final_update) {
-    NotifyFindReply(request_id, false /* final_update */);
-    return;
-  }
-  HandleFinalUpdateForFrame(rfh, request_id);
+  return current_session_id_ == kInvalidId ||
+         request_id < current_session_id_ || !CheckFrame(rfh);
 }
 
 void FindRequestManager::HandleFinalUpdateForFrame(RenderFrameHostImpl* rfh,
@@ -379,6 +341,16 @@ void FindRequestManager::SetActiveMatchRect(
 void FindRequestManager::SetActiveMatchOrdinal(RenderFrameHostImpl* rfh,
                                                int request_id,
                                                int active_match_ordinal) {
+  if (active_match_ordinal > 0) {
+    // Call SetFocusedFrame on the WebContents associated with |rfh| (which
+    // might not be the same as |contents_|, as a WebContents might have
+    // inner WebContents). We need to focus on the frame where the active
+    // match is in, which should be in the |rfh|'s associated WebContents.
+    WebContentsImpl* web_contents =
+        static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh));
+    web_contents->GetFocusedWebContents()->SetFocusedFrame(
+        rfh->frame_tree_node(), rfh->GetSiteInstance());
+  }
   if (rfh == active_frame_) {
     active_match_ordinal_ +=
         active_match_ordinal - relative_active_match_ordinal_;
@@ -589,7 +561,7 @@ void FindRequestManager::FindInternal(const FindRequest& request) {
     if (!target_rfh || !CheckFrame(target_rfh))
       target_rfh = GetInitialFrame(request.options.forward);
 
-    SendFindIPC(request, target_rfh);
+    SendFindRequest(request, target_rfh);
     current_request_ = request;
     pending_active_match_ordinal_ = true;
     return;
@@ -616,8 +588,8 @@ void FindRequestManager::AdvanceQueue(int request_id) {
     FindInternal(find_request_queue_.front());
 }
 
-void FindRequestManager::SendFindIPC(const FindRequest& request,
-                                     RenderFrameHost* rfh) {
+void FindRequestManager::SendFindRequest(const FindRequest& request,
+                                         RenderFrameHost* rfh) {
   DCHECK(CheckFrame(rfh));
   DCHECK(rfh->IsRenderFrameLive());
 
@@ -626,8 +598,16 @@ void FindRequestManager::SendFindIPC(const FindRequest& request,
   else
     pending_initial_replies_.insert(rfh);
 
-  rfh->Send(new FrameMsg_Find(rfh->GetRoutingID(), request.id,
-                              request.search_text, request.options));
+  blink::mojom::FindOptionsPtr options(blink::mojom::FindOptions::New());
+  options->forward = request.options.forward;
+  options->match_case = request.options.match_case;
+  options->find_next = request.options.find_next;
+  options->word_start = request.options.word_start;
+  options->medial_capital_as_word_start =
+      request.options.medial_capital_as_word_start;
+  options->force = request.options.force;
+  static_cast<RenderFrameHostImpl*>(rfh)->GetFindInPage()->Find(
+      request.id, base::UTF16ToUTF8(request.search_text), std::move(options));
 }
 
 void FindRequestManager::NotifyFindReply(int request_id, bool final_update) {
@@ -697,7 +677,7 @@ void FindRequestManager::AddFrame(RenderFrameHost* rfh, bool force) {
   request.id = current_session_id_;
   request.options.find_next = false;
   request.options.force = force;
-  SendFindIPC(request, rfh);
+  SendFindRequest(request, rfh);
 }
 
 bool FindRequestManager::CheckFrame(RenderFrameHost* rfh) const {
@@ -777,7 +757,7 @@ void FindRequestManager::FinalUpdateReceived(int request_id,
   NotifyFindReply(request_id, false /* final_update */);
 
   current_request_.options.find_next = true;
-  SendFindIPC(current_request_, target_rfh);
+  SendFindRequest(current_request_, target_rfh);
 }
 
 #if defined(OS_ANDROID)
