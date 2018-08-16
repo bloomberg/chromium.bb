@@ -265,7 +265,7 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
     ServiceWorkerIdentifier sw_identifier;
     sw_identifier.scope = context->service_worker_scope();
-    sw_identifier.thread_id = content::WorkerThread::GetCurrentId(),
+    sw_identifier.thread_id = content::WorkerThread::GetCurrentId();
     dispatcher_->Send(new ExtensionHostMsg_AddFilteredListener(
         context->GetExtensionID(), event_name, sw_identifier, filter, is_lazy));
   }
@@ -278,7 +278,7 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
     ServiceWorkerIdentifier sw_identifier;
     sw_identifier.scope = context->service_worker_scope();
-    sw_identifier.thread_id = content::WorkerThread::GetCurrentId(),
+    sw_identifier.thread_id = content::WorkerThread::GetCurrentId();
     dispatcher_->Send(new ExtensionHostMsg_RemoveFilteredListener(
         context->GetExtensionID(), event_name, sw_identifier, filter,
         remove_lazy_listener));
