@@ -6521,9 +6521,19 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     int id = ite % 2;  // Even iterations search in the first reference frame,
                        // odd iterations search in the second. The predictor
                        // found for the 'other' reference frame is factored in.
-    if (ite >= 2 && cur_mv[0].as_int == init_mv[0].as_int &&
-        cur_mv[1].as_int == init_mv[1].as_int) {
-      break;
+    if (ite >= 2 && cur_mv[!id].as_int == init_mv[!id].as_int) {
+      if (cur_mv[id].as_int == init_mv[id].as_int) {
+        break;
+      } else {
+        int_mv cur_int_mv, init_int_mv;
+        cur_int_mv.as_mv.col = cur_mv[id].as_mv.col >> 3;
+        cur_int_mv.as_mv.row = cur_mv[id].as_mv.col >> 3;
+        init_int_mv.as_mv.row = init_mv[id].as_mv.row >> 3;
+        init_int_mv.as_mv.col = init_mv[id].as_mv.col >> 3;
+        if (cur_int_mv.as_int == init_int_mv.as_int) {
+          break;
+        }
+      }
     }
     for (ref = 0; ref < 2; ++ref) {
       ref_mv[ref] = av1_get_ref_mv(x, ref);
