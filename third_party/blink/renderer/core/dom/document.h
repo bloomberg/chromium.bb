@@ -1483,6 +1483,7 @@ class CORE_EXPORT Document : public ContainerNode,
  private:
   friend class IgnoreDestructiveWriteCountIncrementer;
   friend class ThrowOnDynamicMarkupInsertionCountIncrementer;
+  friend class IgnoreOpensDuringUnloadCountIncrementer;
   friend class NthIndexCache;
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextSubresourceFilterTest,
                            DuringOnFreeze);
@@ -1708,10 +1709,12 @@ class CORE_EXPORT Document : public ContainerNode,
   bool contains_validity_style_rules_;
   bool contains_plugins_;
 
-  // http://www.whatwg.org/specs/web-apps/current-work/#ignore-destructive-writes-counter
+  // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#ignore-destructive-writes-counter
   unsigned ignore_destructive_write_count_;
-  // https://html.spec.whatwg.org/#throw-on-dynamic-markup-insertion-counter
+  // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#throw-on-dynamic-markup-insertion-counter
   unsigned throw_on_dynamic_markup_insertion_count_;
+  // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#ignore-opens-during-unload-counter
+  unsigned ignore_opens_during_unload_count_;
 
   String title_;
   String raw_title_;

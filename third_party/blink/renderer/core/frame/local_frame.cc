@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -309,6 +310,11 @@ void LocalFrame::Detach(FrameDetachType type) {
   // child frame during or after detaching children results in an attached
   // frame on a detached DOM tree, which is bad.
   SubframeLoadingDisabler disabler(*GetDocument());
+  // https://html.spec.whatwg.org/C/browsing-the-web.html#unload-a-document
+  // The ignore-opens-during-unload counter of a Document must be incremented
+  // both when unloading itself and when unloading its descendants.
+  IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
+      GetDocument());
   loader_.DispatchUnloadEvent();
   DetachChildren();
 
