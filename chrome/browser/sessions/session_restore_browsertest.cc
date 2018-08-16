@@ -24,11 +24,13 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sessions/session_restore.h"
+#include "chrome/browser/resource_coordinator/session_restore_policy.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
+#include "chrome/browser/sessions/tab_loader_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -207,11 +209,33 @@ class SessionRestoreTest : public InProcessBrowserTest {
   const BrowserList* active_browser_list_;
 };
 
+// SessionRestorePolicy that always allow tabs to load.
+class TestSessionRestorePolicy
+    : public resource_coordinator::SessionRestorePolicy {
+ public:
+  // Always allow tabs to load so we can test the behavior of SessionRestore
+  // independently from the policy logic.
+  bool ShouldLoad(content::WebContents* contents) const override {
+    return true;
+  }
+};
+
 // Activates the smart restore behaviour and tracks the loading of tabs.
 class SmartSessionRestoreTest : public SessionRestoreTest,
                                       public content::NotificationObserver {
  public:
   SmartSessionRestoreTest() {}
+
+  void SetUp() override {
+    TabLoaderDelegate::SetSessionRestorePolicyForTesting(&test_policy_);
+    SessionRestoreTest::SetUp();
+  }
+
+  void TearDown() override {
+    TabLoaderDelegate::SetSessionRestorePolicyForTesting(nullptr);
+    SessionRestoreTest::TearDown();
+  }
+
   void StartObserving(size_t num_tabs) {
     // Start by clearing everything so it can be reused in the same test.
     web_contents_.clear();
@@ -253,6 +277,7 @@ class SmartSessionRestoreTest : public SessionRestoreTest,
   std::vector<content::WebContents*> web_contents_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   size_t num_tabs_;
+  TestSessionRestorePolicy test_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(SmartSessionRestoreTest);
 };

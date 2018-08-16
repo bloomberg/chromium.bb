@@ -13,6 +13,10 @@ namespace content {
 class WebContents;
 }
 
+namespace resource_coordinator {
+class SessionRestorePolicy;
+}
+
 class TabLoaderCallback {
  public:
   // This function will get called to suppress and to allow tab loading. Tab
@@ -51,6 +55,10 @@ class TabLoaderDelegate {
 
   // Notifies the delegate that a tab load has been initiated.
   virtual void NotifyTabLoadStarted() = 0;
+
+  // Testing seam to inject a custom SessionRestorePolicy.
+  static void SetSessionRestorePolicyForTesting(
+      resource_coordinator::SessionRestorePolicy* policy);
 
  protected:
   // The delegate should only be created via the factory function.

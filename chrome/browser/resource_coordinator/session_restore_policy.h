@@ -32,7 +32,9 @@ class SessionRestorePolicy {
   // session restore. If this returns false then session restore should mark the
   // tab load as deferred and move onto the next tab to restore. Note that this
   // always returns true if the policy logic is disabled.
-  bool ShouldLoad(content::WebContents* contents) const;
+  //
+  // Virtual for testing.
+  virtual bool ShouldLoad(content::WebContents* contents) const;
 
   // Intended to be called by the policy client whenever a tab load has been
   // initiated.

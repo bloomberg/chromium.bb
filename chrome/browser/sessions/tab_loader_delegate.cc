@@ -28,6 +28,8 @@ static const int kInitialDelayTimerMS = 1500;
 // first paint and interactivity of the foreground tab.
 static const int kFirstTabLoadTimeoutMS = 60000;
 
+resource_coordinator::SessionRestorePolicy* g_testing_policy = nullptr;
+
 class TabLoaderDelegateImpl
     : public TabLoaderDelegate,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {
@@ -47,23 +49,28 @@ class TabLoaderDelegateImpl
 
   // TabLoaderDelegate:
   size_t GetMaxSimultaneousTabLoads() const override {
-    return policy_.simultaneous_tab_loads();
+    return policy_->simultaneous_tab_loads();
   }
 
   // TabLoaderDelegate:
   bool ShouldLoad(content::WebContents* contents) const override {
-    return policy_.ShouldLoad(contents);
+    return policy_->ShouldLoad(contents);
   }
 
   // TabLoaderDelegate:
-  void NotifyTabLoadStarted() override { policy_.NotifyTabLoadStarted(); }
+  void NotifyTabLoadStarted() override { policy_->NotifyTabLoadStarted(); }
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
  private:
-  // The policy engine used to implement ShouldLoad.
-  resource_coordinator::SessionRestorePolicy policy_;
+  // The default policy engine used to implement ShouldLoad.
+  resource_coordinator::SessionRestorePolicy default_policy_;
+
+  // The policy engine used to implement ShouldLoad. By default this is simply
+  // a pointer to |default_policy_|, but it can also point to externally
+  // injected policy engine for testing.
+  resource_coordinator::SessionRestorePolicy* policy_;
 
   // The function to call when the connection type changes.
   TabLoaderCallback* callback_;
@@ -78,7 +85,7 @@ class TabLoaderDelegateImpl
 };
 
 TabLoaderDelegateImpl::TabLoaderDelegateImpl(TabLoaderCallback* callback)
-    : callback_(callback), weak_factory_(this) {
+    : policy_(&default_policy_), callback_(callback), weak_factory_(this) {
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   auto type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
   content::GetNetworkConnectionTracker()->GetConnectionType(
@@ -94,6 +101,11 @@ TabLoaderDelegateImpl::TabLoaderDelegateImpl(TabLoaderCallback* callback)
 
   first_timeout_ = base::TimeDelta::FromMilliseconds(kFirstTabLoadTimeoutMS);
   timeout_ = base::TimeDelta::FromMilliseconds(kInitialDelayTimerMS);
+
+  // Override |policy_| if a testing policy has been set.
+  if (g_testing_policy) {
+    policy_ = g_testing_policy;
+  }
 }
 
 TabLoaderDelegateImpl::~TabLoaderDelegateImpl() {
@@ -113,4 +125,10 @@ std::unique_ptr<TabLoaderDelegate> TabLoaderDelegate::Create(
     TabLoaderCallback* callback) {
   return std::unique_ptr<TabLoaderDelegate>(
       new TabLoaderDelegateImpl(callback));
+}
+
+// static
+void TabLoaderDelegate::SetSessionRestorePolicyForTesting(
+    resource_coordinator::SessionRestorePolicy* policy) {
+  g_testing_policy = policy;
 }
