@@ -88,6 +88,7 @@ static_library("prefetch") {
     "store/prefetch_store_utils.h",
     "suggested_articles_observer.cc",
     "suggested_articles_observer.h",
+    "suggestions_provider.h",
     "thumbnail_fetcher.h",
   ]
 

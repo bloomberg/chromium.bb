@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "components/offline_pages/core/client_id.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
@@ -19,6 +20,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
+#include "components/offline_pages/core/prefetch/suggestions_provider.h"
 #include "components/offline_pages/core/prefetch/thumbnail_fetcher.h"
 
 namespace offline_pages {
@@ -67,6 +69,22 @@ void PrefetchServiceImpl::SetContentSuggestionsService(
   suggested_articles_observer_->SetContentSuggestionsServiceAndObserve(
       content_suggestions);
   thumbnail_fetcher_->SetContentSuggestionsService(content_suggestions);
+}
+
+void PrefetchServiceImpl::SetSuggestionProvider(
+    SuggestionsProvider* suggestions_provider) {
+  // TODO(https://crbug.com/841516): to be implemented soon.
+  NOTIMPLEMENTED();
+}
+
+void PrefetchServiceImpl::NewSuggestionsAvailable() {
+  // TODO(https://crbug.com/841516): to be implemented soon.
+  NOTIMPLEMENTED();
+}
+
+void PrefetchServiceImpl::RemoveSuggestion(GURL url) {
+  // TODO(https://crbug.com/841516): to be implemented soon.
+  NOTIMPLEMENTED();
 }
 
 OfflineMetricsCollector* PrefetchServiceImpl::GetOfflineMetricsCollector() {
