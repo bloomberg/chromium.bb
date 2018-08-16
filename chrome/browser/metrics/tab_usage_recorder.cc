@@ -101,12 +101,18 @@ void TabUsageRecorder::OnTabReactivated(content::WebContents* contents) {
   GetWebContentsData(contents)->RecordTabReactivation();
 }
 
-void TabUsageRecorder::TabInsertedAt(TabStripModel* tab_strip_model,
-                                     content::WebContents* contents,
-                                     int index,
-                                     bool foreground) {
-  // Set the initial pin state.
-  TabPinnedStateChanged(tab_strip_model, contents, index);
+void TabUsageRecorder::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() != TabStripModelChange::kInserted)
+    return;
+
+  for (const auto& delta : change.deltas()) {
+    // Set the initial pin state.
+    TabPinnedStateChanged(tab_strip_model, delta.insert.contents,
+                          delta.insert.index);
+  }
 }
 
 void TabUsageRecorder::TabPinnedStateChanged(TabStripModel* tab_strip_model,
