@@ -71,8 +71,8 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root) {
   ChromeLauncherController::instance()->FlushForTesting();
 
   // Move the cursor up to the "New window" menu option - assumes menu content.
-  generator.MoveMouseBy(
-      0, -3 * views::MenuConfig::instance().touchable_menu_height);
+  generator.MoveMouseBy(0, -5 * views::MenuConfig::instance().item_min_height -
+                               views::MenuConfig::instance().separator_height);
   generator.ReleaseRightButton();
 
   // Ash notifies Chrome's ShelfItemDelegate that the menu item was selected.
