@@ -472,14 +472,7 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kDefaultAudioCaptureDevice, prefs::kDefaultVideoCaptureDevice,
     prefs::kMediaDeviceIdSalt, prefs::kMediaStorageIdSalt,
 
-    prefs::kPrintPreviewStickySettings, prefs::kCloudPrintRoot,
-    prefs::kCloudPrintProxyEnabled, prefs::kCloudPrintProxyId,
-    prefs::kCloudPrintAuthToken, prefs::kCloudPrintEmail,
-    prefs::kCloudPrintPrintSystemSettings, prefs::kCloudPrintEnableJobPoll,
-    prefs::kCloudPrintRobotRefreshToken, prefs::kCloudPrintRobotEmail,
-    prefs::kCloudPrintConnectNewPrinters, prefs::kCloudPrintXmppPingEnabled,
-    prefs::kCloudPrintXmppPingTimeout, prefs::kCloudPrintPrinters,
-    prefs::kCloudPrintSubmitEnabled, prefs::kCloudPrintUserSettings,
+    prefs::kPrintPreviewStickySettings,
 
     prefs::kMaxConnectionsPerProxy,
 
