@@ -818,17 +818,13 @@ class ChromeSDKCommand(command.CliCommand):
     env['AR_host'] = os.path.join(binutils_path, 'ar')
     env['NM_host'] = os.path.join(binutils_path, 'nm')
 
-  def _RelativizeToolchainPath(self, compiler, tc_path=None):
+  def _RelativizeToolchainPath(self, compiler):
     """Relativize toolchain path for GN."""
     args = []
-    for i, v in enumerate(compiler.split()):
-      if v.startswith('-B'):
-        v = '-B' + os.path.relpath(v[len('-B'):], self._BuildDir())
-      elif os.path.isabs(v):
-        v = os.path.relpath(v, self._BuildDir())
-      elif i == 0 and os.path.basename(v) == v:
-        v = os.path.relpath(os.path.join(tc_path, 'bin', v), self._BuildDir())
-      args.append(v)
+    for i in compiler.split():
+      if i.startswith('-B'):
+        i = '-B' + os.path.relpath(i[len('-B'):], self._BuildDir())
+      args.append(i)
     return ' '.join(args)
 
   def _SetupEnvironment(self, board, sdk_ctx, options, goma_dir=None,
@@ -929,24 +925,19 @@ class ChromeSDKCommand(command.CliCommand):
     # See crosbug/618346.
     gn_args['cros_v8_snapshot_is_clang'] = True
     #
-    target_tc_path = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
-    gn_args['cros_target_cc'] = self._RelativizeToolchainPath(
-        env['CC'], target_tc_path)
-    gn_args['cros_target_cxx'] = self._RelativizeToolchainPath(
-        env['CXX'], target_tc_path)
+    gn_args['cros_target_cc'] = self._RelativizeToolchainPath(env['CC'])
+    gn_args['cros_target_cxx'] = self._RelativizeToolchainPath(env['CXX'])
     gn_args['cros_target_ld'] = env['LD']
     gn_args['cros_target_nm'] = env['NM']
     gn_args['cros_target_extra_cflags'] = env.get('CFLAGS', '')
     gn_args['cros_target_extra_cxxflags'] = env.get('CXXFLAGS', '')
-    gn_args['cros_host_cc'] = self._RelativizeToolchainPath(env['CC_host'])
-    gn_args['cros_host_cxx'] = self._RelativizeToolchainPath(env['CXX_host'])
+    gn_args['cros_host_cc'] = env['CC_host']
+    gn_args['cros_host_cxx'] = env['CXX_host']
     gn_args['cros_host_ld'] = env['LD_host']
     gn_args['cros_host_nm'] = env['NM_host']
     gn_args['cros_host_ar'] = env['AR_host']
-    gn_args['cros_v8_snapshot_cc'] = self._RelativizeToolchainPath(
-        env['CC_host'])
-    gn_args['cros_v8_snapshot_cxx'] = self._RelativizeToolchainPath(
-        env['CXX_host'])
+    gn_args['cros_v8_snapshot_cc'] = env['CC_host']
+    gn_args['cros_v8_snapshot_cxx'] = env['CXX_host']
     gn_args['cros_v8_snapshot_ld'] = env['LD_host']
     gn_args['cros_v8_snapshot_nm'] = env['NM_host']
     gn_args['cros_v8_snapshot_ar'] = env['AR_host']
