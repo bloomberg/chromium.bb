@@ -884,7 +884,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, UrgentFastShutdownSharedTabProcess) {
       "TabManager.Discarding.DiscardedTabCouldFastShutdown", false, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(TabManagerTest, ProactiveFastShutdownWithUnloadHandler) {
+IN_PROC_BROWSER_TEST_F(TabManagerTest,
+                       DISABLED_ProactiveFastShutdownWithUnloadHandler) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Disable the protection of recent tabs.
   OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
