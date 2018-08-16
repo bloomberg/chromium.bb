@@ -134,13 +134,13 @@ class WebContentsTextObserver : public content::WebContentsObserver {
       [[NSCandidateListTouchBarItem alloc]
           initWithIdentifier:kTextSuggestionsItemsTouchId];
 
-  [candidateListItem setCandidates:suggestions_
-                  forSelectedRange:selectionRange_
-                          inString:text_];
-
   candidateListItem.delegate = self;
   if (selectionRange_.length)
     candidateListItem.collapsed = YES;
+
+  [candidateListItem setCandidates:suggestions_
+                  forSelectedRange:selectionRange_
+                          inString:text_];
 
   return candidateListItem;
 }
@@ -234,8 +234,11 @@ class WebContentsTextObserver : public content::WebContentsObserver {
                       completionHandler:^(
                           NSInteger sequenceNumber,
                           NSArray<NSTextCheckingResult*>* candidates) {
-                        suggestions_.reset([candidates copy]);
-                        [controller_ invalidateTouchBar];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                          suggestions_.reset([candidates copy]);
+                          [controller_ invalidateTouchBar];
+                        });
+
                       }];
 }
 
