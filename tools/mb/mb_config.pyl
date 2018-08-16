@@ -277,8 +277,8 @@
     'chromium.infra.codesearch': {
       'codesearch-gen-chromium-android': 'codesearch_gen_chromium_android_bot',
       'codesearch-gen-chromium-chromiumos': 'codesearch_gen_chromium_chromiumos_bot',
-      'codesearch-gen-chromium-linux': 'codesearch_gen_chromium_linux_bot',
-      'codesearch-gen-chromium-win': 'codesearch_gen_chromium_win_bot',
+      'codesearch-gen-chromium-linux': 'codesearch_gen_chromium_bot',
+      'codesearch-gen-chromium-win': 'codesearch_gen_chromium_bot',
     },
 
     'chromium.linux': {
@@ -1119,19 +1119,15 @@
     ],
 
     'codesearch_gen_chromium_android_bot': [
-      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'arm', 'android_without_codecs',
+      'codesearch', 'android_without_codecs',
     ],
 
     'codesearch_gen_chromium_chromiumos_bot': [
-      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'x64', 'chromeos',
+      'codesearch', 'chromeos',
     ],
 
-    'codesearch_gen_chromium_linux_bot': [
-      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'x64',
-    ],
-
-    'codesearch_gen_chromium_win_bot': [
-      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'x64',
+    'codesearch_gen_chromium_bot': [
+      'codesearch',
     ],
 
     # The 'cros_chrome_sdk_* configs are placeholders that indicate
@@ -1729,6 +1725,12 @@
 
     'use_cxx11': {
       'gn_args': 'use_cxx11=true',
+    },
+
+    # Settings used by the codesearch builders to generate cross-references.
+    'codesearch': {
+      'gn_args': 'clang_use_chrome_plugins=false',
+      'mixins': ['goma', 'clang', 'shared', 'debug', 'minimal_symbols'],
     },
 
     'compile_only': {
