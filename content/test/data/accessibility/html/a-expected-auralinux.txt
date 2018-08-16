@@ -1,4 +1,4 @@
-[document web] enabled focusable focused sensitive showing visible<newline>
-++[panel] enabled sensitive showing visible<newline>
-++++[link] name='normal link' enabled focusable sensitive showing visible<newline>
-++++++[text] name='normal link' enabled sensitive showing visible<newline>
+[document web] focusable focused
+++[section]
+++++[link] name='normal link' focusable
+++++++[text] name='normal link'

@@ -454,6 +454,7 @@ AccessibilityRole AXNodeObject::NativeAccessibilityRoleIgnoringAria() const {
   if (GetNode()->HasTagName(sectionTag))
     return kRegionRole;
 
+  // TODO(accessibility): http://crbug.com/873118
   if (GetNode()->HasTagName(addressTag))
     return kContentInfoRole;
 
