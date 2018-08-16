@@ -44,6 +44,7 @@
 
     <color name="modern_light_grey">#F1F3F4</color>
     <color name="modern_grey_800">#3C4043</color>
+    <color name="modern_grey_700">#5F6368</color>
     <color name="modern_grey_500">#9AA0A6</color>
 
     <!-- Old color palette -->
@@ -56,7 +57,6 @@
     <color name="google_grey_200">#EEEEEE</color>
     <color name="google_grey_300">#E0E0E0</color>
     <color name="google_grey_400">#BDBDBD</color>
-    <color name="google_grey_500">#9E9E9E</color>
     <color name="google_grey_600">#757575</color>
     <color name="light_grey">#CCCCCC</color>
 
@@ -221,7 +221,7 @@
     <color name="toolbar_shadow_color">@color/black_alpha_11</color>
     <color name="bottom_system_nav_color">@android:color/white</color>
     <color name="bottom_system_nav_divider_color">@color/black_alpha_12</color>
-    <color name="search_box_hint">@color/black_alpha_54</color>
+    <color name="search_box_hint">@color/modern_grey_700</color>
     <color name="placeholder_thumbnail_bg_color">#DADCE0</color>
     <color name="clear_browsing_data_selected_tab_color">@color/modern_blue_600</color>
 

@@ -249,7 +249,7 @@ public class SearchWidgetProviderTest {
                     // Confirm that the string is correct.
                     TextView titleView = (TextView) view.findViewById(R.id.title);
                     Assert.assertEquals(View.VISIBLE, titleView.getVisibility());
-                    Assert.assertEquals(expectedString, titleView.getText());
+                    Assert.assertEquals(expectedString, titleView.getHint());
 
                     // Confirm the visibility of the microphone.
                     View microphoneView = view.findViewById(R.id.microphone_icon);

@@ -43,10 +43,6 @@
     <!-- Payments UI -->
     <dimen name="payments_ui_max_dialog_width">600dp</dimen>
 
-    <!-- Search widget dimensions -->
-    <dimen name="search_activity_location_bar_margin_start">0dp</dimen>
-    <dimen name="search_activity_location_bar_margin_end">4dp</dimen>
-
     <!-- Clear browsing data preferences dimensions -->
     <dimen name="clear_browsing_data_button_margin">16dp</dimen>
 
