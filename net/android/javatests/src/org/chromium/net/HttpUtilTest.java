@@ -28,7 +28,9 @@ public class HttpUtilTest {
     private static final List<String> UNALLOWED_HEADER_NAMES = Arrays.asList(
             "accept-encoding",  // Unsafe header.
             "ACCEPT-ENCODING",  // Unsafe header.
+            "referer ",  // Unsafe header.
             "referer",  // Unsafe header.
+            " referer",  // Unsafe header.
             "",  // Badly formed header.
             "ref(erer",  // Badly formed header.
             "ref\nerer"  // Badly formed header.
