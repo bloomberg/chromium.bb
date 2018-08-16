@@ -141,7 +141,6 @@ source_set("blink_headers") {
     "platform/modules/indexeddb/web_idb_key_range.h",
     "platform/modules/indexeddb/web_idb_metadata.h",
     "platform/modules/indexeddb/web_idb_observation.h",
-    "platform/modules/indexeddb/web_idb_types.h",
     "platform/modules/indexeddb/web_idb_value.h",
     "platform/modules/installedapp/web_related_application.h",
     "platform/modules/installedapp/web_related_apps_fetcher.h",

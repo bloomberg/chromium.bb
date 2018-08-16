@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_H_
-#define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_KEY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_KEY_H_
 
 #include <stddef.h>
 
@@ -12,12 +12,12 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "content/common/content_export.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
-namespace content {
+namespace blink {
 
-class CONTENT_EXPORT IndexedDBKey {
+class BLINK_COMMON_EXPORT IndexedDBKey {
  public:
   typedef std::vector<IndexedDBKey> KeyArray;
 
@@ -76,6 +76,6 @@ class CONTENT_EXPORT IndexedDBKey {
 // An index id, and corresponding set of keys to insert.
 using IndexedDBIndexKeys = std::pair<int64_t, std::vector<IndexedDBKey>>;
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_KEY_H_

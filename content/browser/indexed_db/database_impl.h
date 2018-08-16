@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -66,15 +68,16 @@ class DatabaseImpl : public ::indexed_db::mojom::Database {
       ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
   void Put(int64_t transaction_id,
            int64_t object_store_id,
-           ::indexed_db::mojom::ValuePtr value,
-           const IndexedDBKey& key,
+           ::blink::mojom::IDBValuePtr value,
+           const blink::IndexedDBKey& key,
            blink::WebIDBPutMode mode,
-           const std::vector<IndexedDBIndexKeys>& index_keys,
+           const std::vector<blink::IndexedDBIndexKeys>& index_keys,
            ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks) override;
-  void SetIndexKeys(int64_t transaction_id,
-                    int64_t object_store_id,
-                    const IndexedDBKey& primary_key,
-                    const std::vector<IndexedDBIndexKeys>& index_keys) override;
+  void SetIndexKeys(
+      int64_t transaction_id,
+      int64_t object_store_id,
+      const blink::IndexedDBKey& primary_key,
+      const std::vector<blink::IndexedDBIndexKeys>& index_keys) override;
   void SetIndexesReady(int64_t transaction_id,
                        int64_t object_store_id,
                        const std::vector<int64_t>& index_ids) override;

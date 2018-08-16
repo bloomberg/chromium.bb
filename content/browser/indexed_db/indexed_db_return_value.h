@@ -7,8 +7,8 @@
 
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/content_export.h"
-#include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 
 namespace content {
 
@@ -18,7 +18,8 @@ namespace content {
 // database, so they are kept separately, and sent back with the original data
 // so that the render process can amend the returned object.
 struct CONTENT_EXPORT IndexedDBReturnValue : public IndexedDBValue {
-  IndexedDBKey primary_key;  // primary key (only when using key generator)
+  blink::IndexedDBKey
+      primary_key;  // primary key (only when using key generator)
   IndexedDBKeyPath key_path;
 };
 

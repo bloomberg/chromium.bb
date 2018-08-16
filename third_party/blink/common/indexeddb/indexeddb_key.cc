@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/indexed_db/indexed_db_key.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 
 #include <string>
 
-namespace content {
+namespace blink {
 
 using blink::WebIDBKeyType;
 using blink::kWebIDBKeyTypeArray;
@@ -30,7 +30,7 @@ static size_t CalculateArraySize(const IndexedDBKey::KeyArray& keys) {
   return size;
 }
 
-template<typename T>
+template <typename T>
 int Compare(const T& a, const T& b) {
   // Using '<' for both comparisons here is as generic as possible (for e.g.
   // objects which only define operator<() and not operator>() or operator==())
@@ -140,4 +140,4 @@ int IndexedDBKey::CompareTo(const IndexedDBKey& other) const {
   }
 }
 
-}  // namespace content
+}  // namespace blink

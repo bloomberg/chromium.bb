@@ -6,103 +6,17 @@
 
 #include "base/stl_util.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_struct_traits.h"
 
-using content::IndexedDBKey;
+using blink::IndexedDBKey;
+using blink::IndexedDBIndexKeys;
 using content::IndexedDBKeyPath;
 using content::IndexedDBKeyRange;
-using indexed_db::mojom::CursorDirection;
-using indexed_db::mojom::DataLoss;
-using indexed_db::mojom::OperationType;
 using indexed_db::mojom::PutMode;
 using indexed_db::mojom::TaskType;
 using indexed_db::mojom::TransactionMode;
 
 namespace mojo {
-
-// static
-indexed_db::mojom::KeyDataPtr
-StructTraits<indexed_db::mojom::KeyDataView, IndexedDBKey>::data(
-    const IndexedDBKey& key) {
-  auto data = indexed_db::mojom::KeyData::New();
-  switch (key.type()) {
-    case blink::kWebIDBKeyTypeInvalid:
-      data->set_other(indexed_db::mojom::DatalessKeyType::Invalid);
-      return data;
-    case blink::kWebIDBKeyTypeArray:
-      data->set_key_array(key.array());
-      return data;
-    case blink::kWebIDBKeyTypeBinary:
-      data->set_binary(std::vector<uint8_t>(
-          key.binary().data(), key.binary().data() + key.binary().size()));
-      return data;
-    case blink::kWebIDBKeyTypeString:
-      data->set_string(key.string());
-      return data;
-    case blink::kWebIDBKeyTypeDate:
-      data->set_date(key.date());
-      return data;
-    case blink::kWebIDBKeyTypeNumber:
-      data->set_number(key.number());
-      return data;
-    case blink::kWebIDBKeyTypeNull:
-      data->set_other(indexed_db::mojom::DatalessKeyType::Null);
-      return data;
-    case blink::kWebIDBKeyTypeMin:
-      break;
-  }
-  NOTREACHED();
-  return data;
-}
-
-// static
-bool StructTraits<indexed_db::mojom::KeyDataView, IndexedDBKey>::Read(
-    indexed_db::mojom::KeyDataView data,
-    IndexedDBKey* out) {
-  indexed_db::mojom::KeyDataDataView data_view;
-  data.GetDataDataView(&data_view);
-
-  switch (data_view.tag()) {
-    case indexed_db::mojom::KeyDataDataView::Tag::KEY_ARRAY: {
-      std::vector<IndexedDBKey> array;
-      if (!data_view.ReadKeyArray(&array))
-        return false;
-      *out = IndexedDBKey(array);
-      return true;
-    }
-    case indexed_db::mojom::KeyDataDataView::Tag::BINARY: {
-      std::vector<uint8_t> binary;
-      if (!data_view.ReadBinary(&binary))
-        return false;
-      *out = IndexedDBKey(
-          std::string(binary.data(), binary.data() + binary.size()));
-      return true;
-    }
-    case indexed_db::mojom::KeyDataDataView::Tag::STRING: {
-      base::string16 string;
-      if (!data_view.ReadString(&string))
-        return false;
-      *out = IndexedDBKey(string);
-      return true;
-    }
-    case indexed_db::mojom::KeyDataDataView::Tag::DATE:
-      *out = IndexedDBKey(data_view.date(), blink::kWebIDBKeyTypeDate);
-      return true;
-    case indexed_db::mojom::KeyDataDataView::Tag::NUMBER:
-      *out = IndexedDBKey(data_view.number(), blink::kWebIDBKeyTypeNumber);
-      return true;
-    case indexed_db::mojom::KeyDataDataView::Tag::OTHER:
-      switch (data_view.other()) {
-        case indexed_db::mojom::DatalessKeyType::Invalid:
-          *out = IndexedDBKey(blink::kWebIDBKeyTypeInvalid);
-          return true;
-        case indexed_db::mojom::DatalessKeyType::Null:
-          *out = IndexedDBKey(blink::kWebIDBKeyTypeNull);
-          return true;
-      }
-  }
-
-  return false;
-}
 
 // static
 indexed_db::mojom::KeyPathDataPtr
@@ -171,10 +85,8 @@ bool StructTraits<indexed_db::mojom::KeyRangeDataView, IndexedDBKeyRange>::Read(
 }
 
 // static
-bool StructTraits<indexed_db::mojom::IndexKeysDataView,
-                  content::IndexedDBIndexKeys>::
-    Read(indexed_db::mojom::IndexKeysDataView data,
-         content::IndexedDBIndexKeys* out) {
+bool StructTraits<indexed_db::mojom::IndexKeysDataView, IndexedDBIndexKeys>::
+    Read(indexed_db::mojom::IndexKeysDataView data, IndexedDBIndexKeys* out) {
   out->first = data.index_id();
   return data.ReadIndexKeys(&out->second);
 }
@@ -243,114 +155,6 @@ bool StructTraits<indexed_db::mojom::DatabaseMetadataDataView,
       return false;
   }
   return true;
-}
-
-// static
-CursorDirection
-EnumTraits<CursorDirection, blink::WebIDBCursorDirection>::ToMojom(
-    blink::WebIDBCursorDirection input) {
-  switch (input) {
-    case blink::kWebIDBCursorDirectionNext:
-      return CursorDirection::Next;
-    case blink::kWebIDBCursorDirectionNextNoDuplicate:
-      return CursorDirection::NextNoDuplicate;
-    case blink::kWebIDBCursorDirectionPrev:
-      return CursorDirection::Prev;
-    case blink::kWebIDBCursorDirectionPrevNoDuplicate:
-      return CursorDirection::PrevNoDuplicate;
-  }
-  NOTREACHED();
-  return CursorDirection::Next;
-}
-
-// static
-bool EnumTraits<CursorDirection, blink::WebIDBCursorDirection>::FromMojom(
-    CursorDirection input,
-    blink::WebIDBCursorDirection* output) {
-  switch (input) {
-    case CursorDirection::Next:
-      *output = blink::kWebIDBCursorDirectionNext;
-      return true;
-    case CursorDirection::NextNoDuplicate:
-      *output = blink::kWebIDBCursorDirectionNextNoDuplicate;
-      return true;
-    case CursorDirection::Prev:
-      *output = blink::kWebIDBCursorDirectionPrev;
-      return true;
-    case CursorDirection::PrevNoDuplicate:
-      *output = blink::kWebIDBCursorDirectionPrevNoDuplicate;
-      return true;
-  }
-  return false;
-}
-
-// static
-DataLoss EnumTraits<DataLoss, blink::WebIDBDataLoss>::ToMojom(
-    blink::WebIDBDataLoss input) {
-  switch (input) {
-    case blink::kWebIDBDataLossNone:
-      return DataLoss::None;
-    case blink::kWebIDBDataLossTotal:
-      return DataLoss::Total;
-  }
-  NOTREACHED();
-  return DataLoss::None;
-}
-
-// static
-bool EnumTraits<DataLoss, blink::WebIDBDataLoss>::FromMojom(
-    DataLoss input,
-    blink::WebIDBDataLoss* output) {
-  switch (input) {
-    case DataLoss::None:
-      *output = blink::kWebIDBDataLossNone;
-      return true;
-    case DataLoss::Total:
-      *output = blink::kWebIDBDataLossTotal;
-      return true;
-  }
-  return false;
-}
-
-// static
-OperationType EnumTraits<OperationType, blink::WebIDBOperationType>::ToMojom(
-    blink::WebIDBOperationType input) {
-  switch (input) {
-    case blink::kWebIDBAdd:
-      return OperationType::Add;
-    case blink::kWebIDBPut:
-      return OperationType::Put;
-    case blink::kWebIDBDelete:
-      return OperationType::Delete;
-    case blink::kWebIDBClear:
-      return OperationType::Clear;
-    case blink::kWebIDBOperationTypeCount:
-      // WebIDBOperationTypeCount is not a valid option.
-      break;
-  }
-  NOTREACHED();
-  return OperationType::Add;
-}
-
-// static
-bool EnumTraits<OperationType, blink::WebIDBOperationType>::FromMojom(
-    OperationType input,
-    blink::WebIDBOperationType* output) {
-  switch (input) {
-    case OperationType::Add:
-      *output = blink::kWebIDBAdd;
-      return true;
-    case OperationType::Put:
-      *output = blink::kWebIDBPut;
-      return true;
-    case OperationType::Delete:
-      *output = blink::kWebIDBDelete;
-      return true;
-    case OperationType::Clear:
-      *output = blink::kWebIDBClear;
-      return true;
-  }
-  return false;
 }
 
 // static

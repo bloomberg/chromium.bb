@@ -15,7 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
-#include "content/common/indexed_db/indexed_db_key.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
@@ -37,8 +38,8 @@ class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
                 blink::WebIDBCallbacks* callback) override;
   void PostSuccessHandlerCallback() override;
 
-  void SetPrefetchData(const std::vector<IndexedDBKey>& keys,
-                       const std::vector<IndexedDBKey>& primary_keys,
+  void SetPrefetchData(const std::vector<blink::IndexedDBKey>& keys,
+                       const std::vector<blink::IndexedDBKey>& primary_keys,
                        std::vector<blink::WebIDBValue> values);
 
   void CachedAdvance(unsigned long count, blink::WebIDBCallbacks* callbacks);
@@ -69,8 +70,8 @@ class CONTENT_EXPORT WebIDBCursorImpl : public blink::WebIDBCursor {
   indexed_db::mojom::CursorAssociatedPtr cursor_;
 
   // Prefetch cache.
-  base::circular_deque<IndexedDBKey> prefetch_keys_;
-  base::circular_deque<IndexedDBKey> prefetch_primary_keys_;
+  base::circular_deque<blink::IndexedDBKey> prefetch_keys_;
+  base::circular_deque<blink::IndexedDBKey> prefetch_primary_keys_;
   base::circular_deque<blink::WebIDBValue> prefetch_values_;
 
   // Number of continue calls that would qualify for a pre-fetch.

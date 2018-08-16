@@ -7,6 +7,10 @@
 
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+
+using blink::IndexedDBKey;
 
 namespace blink {
 class WebIDBCallbacks;
@@ -25,7 +29,7 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
   enum : int64_t { kNoTransaction = -1 };
 
   static blink::WebIDBValue ConvertValue(
-      const indexed_db::mojom::ValuePtr& value);
+      const blink::mojom::IDBValuePtr& value);
 
   IndexedDBCallbacksImpl(std::unique_ptr<blink::WebIDBCallbacks> callbacks,
                          int64_t transaction_id,
@@ -48,15 +52,15 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
   void SuccessCursor(indexed_db::mojom::CursorAssociatedPtrInfo cursor,
                      const IndexedDBKey& key,
                      const IndexedDBKey& primary_key,
-                     indexed_db::mojom::ValuePtr value) override;
+                     blink::mojom::IDBValuePtr value) override;
   void SuccessValue(indexed_db::mojom::ReturnValuePtr value) override;
   void SuccessCursorContinue(const IndexedDBKey& key,
                              const IndexedDBKey& primary_key,
-                             indexed_db::mojom::ValuePtr value) override;
+                             blink::mojom::IDBValuePtr value) override;
   void SuccessCursorPrefetch(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primary_keys,
-      std::vector<indexed_db::mojom::ValuePtr> values) override;
+      std::vector<blink::mojom::IDBValuePtr> values) override;
   void SuccessArray(
       std::vector<indexed_db::mojom::ReturnValuePtr> values) override;
   void SuccessKey(const IndexedDBKey& key) override;

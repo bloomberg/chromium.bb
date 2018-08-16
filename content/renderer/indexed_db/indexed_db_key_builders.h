@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 
 namespace blink {
@@ -23,7 +23,7 @@ namespace content {
 
 class CONTENT_EXPORT IndexedDBKeyBuilder {
  public:
-  static IndexedDBKey Build(blink::WebIDBKeyView key);
+  static blink::IndexedDBKey Build(blink::WebIDBKeyView key);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBKeyBuilder);
@@ -31,7 +31,7 @@ class CONTENT_EXPORT IndexedDBKeyBuilder {
 
 class CONTENT_EXPORT WebIDBKeyBuilder {
  public:
-  static blink::WebIDBKey Build(const content::IndexedDBKey& key);
+  static blink::WebIDBKey Build(const blink::IndexedDBKey& key);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebIDBKeyBuilder);

@@ -11,13 +11,13 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
-#include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 
 // See leveldb_coding_scheme.md for detailed documentation of the coding
 // scheme implemented here.
 
 using base::StringPiece;
+using blink::IndexedDBKey;
 using blink::WebIDBKeyType;
 using blink::kWebIDBKeyTypeArray;
 using blink::kWebIDBKeyTypeBinary;

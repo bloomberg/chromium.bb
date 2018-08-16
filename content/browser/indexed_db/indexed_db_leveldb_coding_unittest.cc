@@ -14,12 +14,12 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
 using base::StringPiece;
+using blink::IndexedDBKey;
 using blink::kWebIDBKeyTypeDate;
 using blink::kWebIDBKeyTypeNumber;
 

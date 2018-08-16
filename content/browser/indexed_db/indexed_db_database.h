@@ -29,7 +29,8 @@
 #include "content/browser/indexed_db/list_set.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db_metadata.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
 namespace url {
 class Origin;
@@ -40,7 +41,6 @@ namespace content {
 class IndexedDBConnection;
 class IndexedDBDatabaseCallbacks;
 class IndexedDBFactory;
-class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
 class IndexedDBMetadataCoding;
@@ -167,14 +167,14 @@ class CONTENT_EXPORT IndexedDBDatabase
   void Put(IndexedDBTransaction* transaction,
            int64_t object_store_id,
            IndexedDBValue* value,
-           std::unique_ptr<IndexedDBKey> key,
+           std::unique_ptr<blink::IndexedDBKey> key,
            blink::WebIDBPutMode mode,
            scoped_refptr<IndexedDBCallbacks> callbacks,
-           const std::vector<IndexedDBIndexKeys>& index_keys);
+           const std::vector<blink::IndexedDBIndexKeys>& index_keys);
   void SetIndexKeys(IndexedDBTransaction* transaction,
                     int64_t object_store_id,
-                    std::unique_ptr<IndexedDBKey> primary_key,
-                    const std::vector<IndexedDBIndexKeys>& index_keys);
+                    std::unique_ptr<blink::IndexedDBKey> primary_key,
+                    const std::vector<blink::IndexedDBIndexKeys>& index_keys);
   void SetIndexesReady(IndexedDBTransaction* transaction,
                        int64_t object_store_id,
                        const std::vector<int64_t>& index_ids);

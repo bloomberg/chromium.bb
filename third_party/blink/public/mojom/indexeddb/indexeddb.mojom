@@ -1,0 +1,78 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
+import "third_party/blink/public/mojom/blob/blob.mojom";
+import "url/mojom/origin.mojom";
+
+enum IDBCursorDirection {
+  Next,
+  NextNoDuplicate,
+  Prev,
+  PrevNoDuplicate,
+};
+
+enum IDBDataLoss {
+  None,
+  Total,
+};
+
+// Represents key types that hold no data and so cannot be options in the
+// IDBKeyData union.
+// TODO(jsbell): These types should be cleaned up end-to-end, leaving only the
+// dataful options.
+enum IDBDatalessKeyType {
+  Invalid,
+  Null,
+};
+
+union IDBKeyData {
+  array<IDBKey> key_array;
+  array<uint8> binary;
+  mojo_base.mojom.String16 string;
+  double date;
+  double number;
+  IDBDatalessKeyType other;
+};
+
+// Defined as a structure so that it can by typemapped with StructTraits.
+struct IDBKey {
+  IDBKeyData data;
+};
+
+enum IDBOperationType {
+  Add,
+  Put,
+  Delete,
+  Clear,
+};
+
+struct IDBFileInfo {
+  mojo_base.mojom.FilePath path;
+  mojo_base.mojom.String16 name;
+  mojo_base.mojom.Time last_modified;
+};
+
+struct IDBBlobInfo {
+  blink.mojom.Blob blob;
+  string uuid;
+  mojo_base.mojom.String16 mime_type;
+  int64 size;
+  IDBFileInfo? file;
+};
+
+struct IDBValue {
+  string bits;
+  array<IDBBlobInfo> blob_or_file_info;
+};
+
+struct IDBObserverTransaction {
+  int64 id;
+  array<int64> scope;
+};

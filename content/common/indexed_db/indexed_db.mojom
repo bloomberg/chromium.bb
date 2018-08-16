@@ -13,42 +13,8 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
+import "third_party/blink/public/mojom/indexeddb/indexeddb.mojom";
 import "url/mojom/origin.mojom";
-
-enum CursorDirection {
-  Next,
-  NextNoDuplicate,
-  Prev,
-  PrevNoDuplicate,
-};
-
-enum DataLoss {
-  None,
-  Total,
-};
-
-// Represents key types that hold no data and so cannot be options in the
-// KeyData union.
-// TODO(jsbell): These types should be cleaned up end-to-end, leaving only the
-// dataful options.
-enum DatalessKeyType {
-  Invalid,
-  Null,
-};
-
-union KeyData {
-  array<Key> key_array;
-  array<uint8> binary;
-  mojo_base.mojom.String16 string;
-  double date;
-  double number;
-  DatalessKeyType other;
-};
-
-// Defined as a structure so that it can by typemapped with StructTraits.
-struct Key {
-  KeyData data;
-};
 
 // Represents WebIDBKeyPathTypeString and WebIDBKeyPathTypeArray in a key path.
 union KeyPathData {
@@ -62,17 +28,10 @@ struct KeyPath {
 };
 
 struct KeyRange {
-  Key lower;
-  Key upper;
+  blink.mojom.IDBKey lower;
+  blink.mojom.IDBKey upper;
   bool lower_open;
   bool upper_open;
-};
-
-enum OperationType {
-  Add,
-  Put,
-  Delete,
-  Clear,
 };
 
 enum PutMode {
@@ -128,49 +87,25 @@ struct DatabaseMetadata {
 
 struct IndexKeys {
   int64 index_id;
-  array<Key> index_keys;
-};
-
-struct FileInfo {
-  mojo_base.mojom.FilePath path;
-  mojo_base.mojom.String16 name;
-  mojo_base.mojom.Time last_modified;
-};
-
-struct BlobInfo {
-  blink.mojom.Blob blob;
-  string uuid;
-  mojo_base.mojom.String16 mime_type;
-  int64 size;
-  FileInfo? file;
-};
-
-struct Value {
-  string bits;
-  array<BlobInfo> blob_or_file_info;
+  array<blink.mojom.IDBKey> index_keys;
 };
 
 struct ReturnValue {
-  Value value;
-  Key primary_key;
+  blink.mojom.IDBValue value;
+  blink.mojom.IDBKey primary_key;
   KeyPath key_path;
 };
 
 struct Observation {
   int64 object_store_id;
-  OperationType type;
+  blink.mojom.IDBOperationType type;
   KeyRange key_range;
-  Value? value;
-};
-
-struct ObserverTransaction {
-  int64 id;
-  array<int64> scope;
+  blink.mojom.IDBValue? value;
 };
 
 struct ObserverChanges {
   map<int32, array<int32>> observation_index_map;
-  map<int32, ObserverTransaction> transaction_map;
+  map<int32, blink.mojom.IDBObserverTransaction> transaction_map;
   array<Observation> observations;
 };
 
@@ -191,32 +126,34 @@ interface Callbacks {
 
   // Factory::Open
   UpgradeNeeded(associated Database database, int64 old_version,
-                DataLoss data_loss, string data_loss_message,
+                blink.mojom.IDBDataLoss data_loss, string data_loss_message,
                 DatabaseMetadata db_metadata);
   SuccessDatabase(associated Database? database, DatabaseMetadata metadata);
 
   // Database::OpenCursor
   SuccessCursor(associated Cursor cursor,
-                Key key,
-                Key primary_key,
-                Value? value);
+                blink.mojom.IDBKey key,
+                blink.mojom.IDBKey primary_key,
+                blink.mojom.IDBValue? value);
 
   // Database::Get / Cursor::Advance
   SuccessValue(ReturnValue? value);
 
   // Cursor::Continue / Advance
-  SuccessCursorContinue(Key key, Key primary_key, Value? value);
+  SuccessCursorContinue(blink.mojom.IDBKey key,
+                        blink.mojom.IDBKey primary_key,
+                        blink.mojom.IDBValue? value);
 
   // Cursor::Prefetch
-  SuccessCursorPrefetch(array<Key> keys,
-                        array<Key> primary_keys,
-                        array<Value> values);
+  SuccessCursorPrefetch(array<blink.mojom.IDBKey> keys,
+                        array<blink.mojom.IDBKey> primary_keys,
+                        array<blink.mojom.IDBValue> values);
 
   // Database::GetAll
   SuccessArray(array<ReturnValue> values);
 
   // Database::Put / Cursor::Update
-  SuccessKey(Key key);
+  SuccessKey(blink.mojom.IDBKey key);
 
   // Database::Count / DeleteRange
   // Factory::DeleteDatabase
@@ -240,7 +177,9 @@ interface DatabaseCallbacks {
 
 interface Cursor {
   Advance(uint32 count, associated Callbacks callbacks);
-  Continue(Key key, Key primary_key, associated Callbacks callbacks);
+  Continue(blink.mojom.IDBKey key,
+           blink.mojom.IDBKey primary_key,
+           associated Callbacks callbacks);
   Prefetch(int32 count, associated Callbacks callbacks);
   PrefetchReset(int32 used_prefetches, int32 unused_prefetches);
 };
@@ -283,14 +222,14 @@ interface Database {
          associated Callbacks callbacks);
   Put(int64 transaction_id,
       int64 object_store_id,
-      Value value,
-      Key key,
+      blink.mojom.IDBValue value,
+      blink.mojom.IDBKey key,
       PutMode mode,
       array<IndexKeys> index_keys,
       associated Callbacks callbacks);
   SetIndexKeys(int64 transaction_id,
                int64 object_store_id,
-               Key primary_key,
+               blink.mojom.IDBKey primary_key,
                array<IndexKeys> index_keys);
   SetIndexesReady(int64 transaction_id,
                   int64 object_store_id,
@@ -299,7 +238,7 @@ interface Database {
              int64 object_store_id,
              int64 index_id,
              KeyRange key_range,
-             CursorDirection direction,
+             blink.mojom.IDBCursorDirection direction,
              bool key_only,
              TaskType task_type,
              associated Callbacks callbacks);

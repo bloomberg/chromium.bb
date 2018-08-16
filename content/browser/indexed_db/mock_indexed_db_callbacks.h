@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 
 namespace content {
 
@@ -25,7 +26,7 @@ class MockIndexedDBCallbacks : public IndexedDBCallbacks {
   void OnSuccess() override;
   void OnSuccess(int64_t result) override;
   void OnSuccess(const std::vector<base::string16>& result) override;
-  void OnSuccess(const IndexedDBKey& key) override;
+  void OnSuccess(const blink::IndexedDBKey& key) override;
   void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
                  const IndexedDBDatabaseMetadata& metadata) override;
   IndexedDBConnection* connection() { return connection_.get(); }

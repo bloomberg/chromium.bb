@@ -17,8 +17,8 @@
 #include "content/renderer/indexed_db/indexed_db_callbacks_impl.h"
 #include "content/renderer/indexed_db/indexed_db_database_callbacks_impl.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
 #include "url/origin.h"
 
 namespace content {

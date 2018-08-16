@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace base {
 class SequencedTaskRunner;

@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+
 #include <stddef.h>
 
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "content/common/indexed_db/indexed_db_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -55,4 +56,4 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
 
 }  // namespace
 
-}  // namespace content
+}  // namespace blink

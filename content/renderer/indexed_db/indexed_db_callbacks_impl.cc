@@ -79,7 +79,7 @@ WebIDBValue ConvertReturnValue(const indexed_db::mojom::ReturnValuePtr& value) {
 
 // static
 WebIDBValue IndexedDBCallbacksImpl::ConvertValue(
-    const indexed_db::mojom::ValuePtr& value) {
+    const blink::mojom::IDBValuePtr& value) {
   if (!value || value->bits.empty())
     return WebIDBValue(WebData(), WebVector<WebBlobInfo>());
 
@@ -169,7 +169,7 @@ void IndexedDBCallbacksImpl::SuccessCursor(
     indexed_db::mojom::CursorAssociatedPtrInfo cursor_info,
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
-    indexed_db::mojom::ValuePtr value) {
+    blink::mojom::IDBValuePtr value) {
   WebIDBCursorImpl* cursor =
       new WebIDBCursorImpl(std::move(cursor_info), transaction_id_);
   callbacks_->OnSuccess(cursor, WebIDBKeyBuilder::Build(key),
@@ -187,7 +187,7 @@ void IndexedDBCallbacksImpl::SuccessValue(
 void IndexedDBCallbacksImpl::SuccessCursorContinue(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
-    indexed_db::mojom::ValuePtr value) {
+    blink::mojom::IDBValuePtr value) {
   callbacks_->OnSuccess(WebIDBKeyBuilder::Build(key),
                         WebIDBKeyBuilder::Build(primary_key),
                         ConvertValue(value));
@@ -197,10 +197,10 @@ void IndexedDBCallbacksImpl::SuccessCursorContinue(
 void IndexedDBCallbacksImpl::SuccessCursorPrefetch(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
-    std::vector<indexed_db::mojom::ValuePtr> values) {
+    std::vector<blink::mojom::IDBValuePtr> values) {
   std::vector<WebIDBValue> web_values;
   web_values.reserve(values.size());
-  for (const indexed_db::mojom::ValuePtr& value : values)
+  for (const blink::mojom::IDBValuePtr& value : values)
     web_values.emplace_back(ConvertValue(value));
 
   if (cursor_) {

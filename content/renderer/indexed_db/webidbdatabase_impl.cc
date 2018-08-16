@@ -17,6 +17,7 @@
 #include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "content/renderer/indexed_db/indexed_db_key_builders.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
@@ -26,6 +27,8 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
+using blink::IndexedDBKey;
+using blink::IndexedDBIndexKeys;
 using blink::WebBlobInfo;
 using blink::WebIDBCallbacks;
 using blink::WebIDBDatabase;
@@ -44,15 +47,15 @@ namespace content {
 
 namespace {
 
-std::vector<content::IndexedDBIndexKeys> ConvertWebIndexKeys(
+std::vector<IndexedDBIndexKeys> ConvertWebIndexKeys(
     const WebVector<long long>& index_ids,
     const WebVector<WebIDBDatabase::WebIndexKeys>& index_keys) {
   DCHECK_EQ(index_ids.size(), index_keys.size());
-  std::vector<content::IndexedDBIndexKeys> result;
+  std::vector<IndexedDBIndexKeys> result;
   result.reserve(index_ids.size());
   for (size_t i = 0, len = index_ids.size(); i < len; ++i) {
-    result.emplace_back(index_ids[i], std::vector<content::IndexedDBKey>());
-    std::vector<content::IndexedDBKey>& result_keys = result.back().second;
+    result.emplace_back(index_ids[i], std::vector<IndexedDBKey>());
+    std::vector<IndexedDBKey>& result_keys = result.back().second;
     result_keys.reserve(index_keys[i].size());
     for (const WebIDBKey& index_key : index_keys[i])
       result_keys.emplace_back(IndexedDBKeyBuilder::Build(index_key.View()));
@@ -185,7 +188,7 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
   IndexedDBDispatcher::ThreadSpecificInstance()->ResetCursorPrefetchCaches(
       transaction_id, nullptr);
 
-  auto mojo_value = indexed_db::mojom::Value::New();
+  auto mojo_value = blink::mojom::IDBValue::New();
   DCHECK(mojo_value->bits.empty());
   mojo_value->bits.reserve(value.size());
   value.ForEachSegment([&mojo_value](const char* segment, size_t segment_size,
@@ -195,9 +198,9 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
   });
   mojo_value->blob_or_file_info.reserve(web_blob_info.size());
   for (const WebBlobInfo& info : web_blob_info) {
-    auto blob_info = indexed_db::mojom::BlobInfo::New();
+    auto blob_info = blink::mojom::IDBBlobInfo::New();
     if (info.IsFile()) {
-      blob_info->file = indexed_db::mojom::FileInfo::New();
+      blob_info->file = blink::mojom::IDBFileInfo::New();
       blob_info->file->path = blink::WebStringToFilePath(info.FilePath());
       blob_info->file->name = info.FileName().Utf16();
       blob_info->file->last_modified =

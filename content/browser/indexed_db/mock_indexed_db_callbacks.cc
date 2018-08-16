@@ -8,6 +8,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+using blink::IndexedDBKey;
+
 namespace content {
 
 MockIndexedDBCallbacks::MockIndexedDBCallbacks()

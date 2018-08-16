@@ -37,6 +37,7 @@
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/quota/quota_manager.h"
 
+using blink::IndexedDBKey;
 using indexed_db::mojom::CallbacksAssociatedPtrInfo;
 using std::swap;
 using storage::ShareableFileReference;
@@ -92,17 +93,17 @@ class SafeIOThreadCursorWrapper {
 
 void ConvertBlobInfo(
     const std::vector<IndexedDBBlobInfo>& blob_info,
-    std::vector<::indexed_db::mojom::BlobInfoPtr>* blob_or_file_info) {
+    std::vector<::blink::mojom::IDBBlobInfoPtr>* blob_or_file_info) {
   blob_or_file_info->reserve(blob_info.size());
   for (const auto& iter : blob_info) {
     if (!iter.mark_used_callback().is_null())
       iter.mark_used_callback().Run();
 
-    auto info = ::indexed_db::mojom::BlobInfo::New();
+    auto info = ::blink::mojom::IDBBlobInfo::New();
     info->mime_type = iter.type();
     info->size = iter.size();
     if (iter.is_file()) {
-      info->file = ::indexed_db::mojom::FileInfo::New();
+      info->file = ::blink::mojom::IDBFileInfo::New();
       info->file->name = iter.file_name();
       info->file->path = iter.file_path();
       info->file->last_modified = iter.last_modified();
@@ -115,7 +116,7 @@ void ConvertBlobInfo(
 ::indexed_db::mojom::ReturnValuePtr ConvertReturnValue(
     IndexedDBReturnValue* value) {
   auto mojo_value = ::indexed_db::mojom::ReturnValue::New();
-  mojo_value->value = ::indexed_db::mojom::Value::New();
+  mojo_value->value = ::blink::mojom::IDBValue::New();
   if (value->primary_key.IsValid()) {
     mojo_value->primary_key = value->primary_key;
     mojo_value->key_path = value->key_path;
@@ -150,19 +151,19 @@ class IndexedDBCallbacks::IOThreadHelper {
   void SendSuccessCursor(SafeIOThreadCursorWrapper cursor,
                          const IndexedDBKey& key,
                          const IndexedDBKey& primary_key,
-                         ::indexed_db::mojom::ValuePtr value,
+                         ::blink::mojom::IDBValuePtr value,
                          const std::vector<IndexedDBBlobInfo>& blob_info);
   void SendSuccessValue(::indexed_db::mojom::ReturnValuePtr value,
                         const std::vector<IndexedDBBlobInfo>& blob_info);
   void SendSuccessCursorContinue(
       const IndexedDBKey& key,
       const IndexedDBKey& primary_key,
-      ::indexed_db::mojom::ValuePtr value,
+      ::blink::mojom::IDBValuePtr value,
       const std::vector<IndexedDBBlobInfo>& blob_info);
   void SendSuccessCursorPrefetch(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primary_keys,
-      std::vector<::indexed_db::mojom::ValuePtr> mojo_values,
+      std::vector<::blink::mojom::IDBValuePtr> mojo_values,
       const std::vector<IndexedDBValue>& values);
   void SendSuccessArray(
       std::vector<::indexed_db::mojom::ReturnValuePtr> mojo_values,
@@ -175,7 +176,7 @@ class IndexedDBCallbacks::IOThreadHelper {
       const IndexedDBBlobInfo& blob_info);
   bool CreateAllBlobs(
       const std::vector<IndexedDBBlobInfo>& blob_info,
-      std::vector<::indexed_db::mojom::BlobInfoPtr>* blob_or_file_info);
+      std::vector<::blink::mojom::IDBBlobInfoPtr>* blob_or_file_info);
   void OnConnectionError();
 
  private:
@@ -188,9 +189,9 @@ class IndexedDBCallbacks::IOThreadHelper {
 };
 
 // static
-::indexed_db::mojom::ValuePtr IndexedDBCallbacks::ConvertAndEraseValue(
+::blink::mojom::IDBValuePtr IndexedDBCallbacks::ConvertAndEraseValue(
     IndexedDBValue* value) {
-  auto mojo_value = ::indexed_db::mojom::Value::New();
+  auto mojo_value = ::blink::mojom::IDBValue::New();
   if (!value->empty())
     swap(mojo_value->bits, value->bits);
   ConvertBlobInfo(value->blob_info, &mojo_value->blob_or_file_info);
@@ -340,7 +341,7 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
 
   DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
-  ::indexed_db::mojom::ValuePtr mojo_value;
+  ::blink::mojom::IDBValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
   if (value) {
     mojo_value = ConvertAndEraseValue(value);
@@ -367,7 +368,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
 
   DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
-  ::indexed_db::mojom::ValuePtr mojo_value;
+  ::blink::mojom::IDBValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
   if (value) {
     mojo_value = ConvertAndEraseValue(value);
@@ -394,7 +395,7 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
 
   DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
-  std::vector<::indexed_db::mojom::ValuePtr> mojo_values;
+  std::vector<::blink::mojom::IDBValuePtr> mojo_values;
   mojo_values.reserve(values->size());
   for (size_t i = 0; i < values->size(); ++i)
     mojo_values.push_back(ConvertAndEraseValue(&(*values)[i]));
@@ -598,7 +599,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessCursor(
     SafeIOThreadCursorWrapper cursor,
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
-    ::indexed_db::mojom::ValuePtr value,
+    ::blink::mojom::IDBValuePtr value,
     const std::vector<IndexedDBBlobInfo>& blob_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
@@ -660,7 +661,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessArray(
 void IndexedDBCallbacks::IOThreadHelper::SendSuccessCursorContinue(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
-    ::indexed_db::mojom::ValuePtr value,
+    ::blink::mojom::IDBValuePtr value,
     const std::vector<IndexedDBBlobInfo>& blob_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
@@ -677,7 +678,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessCursorContinue(
 void IndexedDBCallbacks::IOThreadHelper::SendSuccessCursorPrefetch(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
-    std::vector<::indexed_db::mojom::ValuePtr> mojo_values,
+    std::vector<::blink::mojom::IDBValuePtr> mojo_values,
     const std::vector<IndexedDBValue>& values) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(mojo_values.size(), values.size());
@@ -762,7 +763,7 @@ IndexedDBCallbacks::IOThreadHelper::CreateBlobData(
 
 bool IndexedDBCallbacks::IOThreadHelper::CreateAllBlobs(
     const std::vector<IndexedDBBlobInfo>& blob_info,
-    std::vector<::indexed_db::mojom::BlobInfoPtr>* blob_or_file_info) {
+    std::vector<::blink::mojom::IDBBlobInfoPtr>* blob_or_file_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!dispatcher_host_) {
     OnConnectionError();

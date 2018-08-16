@@ -6,24 +6,24 @@
 #define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_RANGE_H_
 
 #include "content/common/content_export.h"
-#include "content/common/indexed_db/indexed_db_key.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 
 namespace content {
 
 class CONTENT_EXPORT IndexedDBKeyRange {
  public:
   IndexedDBKeyRange();
-  explicit IndexedDBKeyRange(const IndexedDBKey& key);
-  IndexedDBKeyRange(const IndexedDBKey& lower,
-                    const IndexedDBKey& upper,
+  explicit IndexedDBKeyRange(const blink::IndexedDBKey& key);
+  IndexedDBKeyRange(const blink::IndexedDBKey& lower,
+                    const blink::IndexedDBKey& upper,
                     bool lower_open,
                     bool upper_open);
   IndexedDBKeyRange(const IndexedDBKeyRange& other);
   ~IndexedDBKeyRange();
   IndexedDBKeyRange& operator=(const IndexedDBKeyRange& other);
 
-  const IndexedDBKey& lower() const { return lower_; }
-  const IndexedDBKey& upper() const { return upper_; }
+  const blink::IndexedDBKey& lower() const { return lower_; }
+  const blink::IndexedDBKey& upper() const { return upper_; }
   bool lower_open() const { return lower_open_; }
   bool upper_open() const { return upper_open_; }
 
@@ -31,8 +31,8 @@ class CONTENT_EXPORT IndexedDBKeyRange {
   bool IsEmpty() const;
 
  private:
-  IndexedDBKey lower_ = IndexedDBKey(blink::kWebIDBKeyTypeNull);
-  IndexedDBKey upper_ = IndexedDBKey(blink::kWebIDBKeyTypeNull);
+  blink::IndexedDBKey lower_ = blink::IndexedDBKey(blink::kWebIDBKeyTypeNull);
+  blink::IndexedDBKey upper_ = blink::IndexedDBKey(blink::kWebIDBKeyTypeNull);
   bool lower_open_ = false;
   bool upper_open_ = false;
 };

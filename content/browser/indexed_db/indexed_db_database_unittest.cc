@@ -32,6 +32,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
+using blink::IndexedDBIndexKeys;
+using blink::IndexedDBKey;
 
 namespace {
 const int kFakeChildProcessId = 0;
