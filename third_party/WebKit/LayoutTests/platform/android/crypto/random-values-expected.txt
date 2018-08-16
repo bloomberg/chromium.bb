@@ -7,7 +7,6 @@ PASS 'crypto' in self is true
 PASS 'getRandomValues' in self.crypto is true
 PASS self.crypto.__proto__.hasOwnProperty('getRandomValues') is true
 PASS matchingBytes < 100 is true
-PASS crypto.getRandomValues(new Uint8Array(new SharedArrayBuffer(100))) threw exception TypeError: Failed to execute 'getRandomValues' on 'Crypto': The provided ArrayBufferView value must not be shared..
 PASS successfullyParsed is true
 
 TEST COMPLETE
