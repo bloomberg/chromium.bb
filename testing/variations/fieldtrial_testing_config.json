@@ -4711,6 +4711,22 @@
             ]
         }
     ],
+    "VizDisplayCompositor": [
+        {
+            "platforms": [
+                "windows",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "VizDisplayCompositor",
+                    "enable_features": [
+                        "VizDisplayCompositor"
+                    ]
+                }
+            ]
+        }
+    ],
     "VizHitTestDrawQuad": [
         {
             "platforms": [
