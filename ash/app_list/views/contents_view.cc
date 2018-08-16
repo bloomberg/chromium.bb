@@ -418,14 +418,22 @@ bool ContentsView::Back() {
     case ash::AppListState::kStateStart:
       // Close the app list when Back() is called from the start page.
       return false;
-    case ash::AppListState::kStateApps:
+    case ash::AppListState::kStateApps: {
+      PaginationModel* pagination_model =
+          GetAppsContainerView()->apps_grid_view()->pagination_model();
       if (GetAppsContainerView()->IsInFolderView()) {
         GetAppsContainerView()->app_list_folder_view()->CloseFolderPage();
+      } else if (app_list_view_->IsHomeLauncherEnabledInTabletMode() &&
+                 pagination_model->total_pages() > 0 &&
+                 pagination_model->selected_page() > 0) {
+        pagination_model->SelectPage(
+            0, !app_list_view_->ShortAnimationsForTesting());
       } else {
         // Close the app list when Back() is called from the apps page.
         return false;
       }
       break;
+    }
     case ash::AppListState::kStateSearchResults:
       GetSearchBoxView()->ClearSearch();
       GetSearchBoxView()->SetSearchBoxActive(false, ui::ET_UNKNOWN);

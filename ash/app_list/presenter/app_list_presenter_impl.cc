@@ -147,14 +147,14 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
 
-bool AppListPresenterImpl::Back() {
+bool AppListPresenterImpl::CloseOpenedPage() {
   if (!is_visible_)
     return false;
 
   // If the app list is currently visible, there should be an existing view.
   DCHECK(view_);
 
-  return view_->app_list_main_view()->contents_view()->Back();
+  return view_->CloseOpenedPage();
 }
 
 void AppListPresenterImpl::ToggleAppList(int64_t display_id,

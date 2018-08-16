@@ -58,9 +58,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // one AppListShowSource or focusing out side of the launcher.
   void Dismiss(base::TimeTicks event_time_stamp);
 
-  // Performs the 'back' action for the active page. Returns whether the action
-  // was handled.
-  bool Back();
+  // Closes opened folder or search result page if they are opened. Returns
+  // whether the action was handled.
+  bool CloseOpenedPage();
 
   // Show the app list if it is visible, hide it if it is hidden. If
   // |event_time_stamp| is not 0, it means |ToggleAppList()| was triggered by

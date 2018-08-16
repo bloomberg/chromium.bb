@@ -395,7 +395,18 @@ void AppListView::Dismiss() {
   GetWidget()->Deactivate();
 }
 
-void AppListView::ResetToInitialState() {
+bool AppListView::CloseOpenedPage() {
+  if (!app_list_main_view_)
+    return false;
+
+  if (app_list_main_view_->contents_view()->IsShowingSearchResults() ||
+      GetAppsContainerView()->IsInFolderView()) {
+    return app_list_main_view_->contents_view()->Back();
+  }
+  return false;
+}
+
+void AppListView::Back() {
   app_list_main_view_->contents_view()->Back();
 }
 

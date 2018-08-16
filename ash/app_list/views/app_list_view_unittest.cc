@@ -150,6 +150,7 @@ class AppListViewTest : public views::ViewsTestBase,
     params.is_tablet_mode = is_tablet_mode;
     params.is_side_shelf = is_side_shelf;
     view_->Initialize(params);
+    test_api_.reset(new AppsGridViewTestApi(apps_grid_view()));
     EXPECT_FALSE(view_->GetWidget()->IsVisible());
   }
 
@@ -200,8 +201,17 @@ class AppListViewTest : public views::ViewsTestBase,
     return view_->app_list_main_view()->search_box_view();
   }
 
+  ContentsView* contents_view() {
+    return view_->app_list_main_view()->contents_view();
+  }
+
+  AppsGridView* apps_grid_view() {
+    return contents_view()->GetAppsContainerView()->apps_grid_view();
+  }
+
   AppListView* view_ = nullptr;  // Owned by native widget.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
+  std::unique_ptr<AppsGridViewTestApi> test_api_;
 
   // Used by AppListFolderView::UpdatePreferredBounds.
   keyboard::KeyboardController keyboard_controller_;
@@ -246,11 +256,11 @@ class AppListViewFocusTest : public views::ViewsTestBase,
       is_new_style_launcher_enabled_ = GetParam().is_new_style_launcher_enabled;
     }
     if (is_new_style_launcher_enabled_) {
-      scoped_feature_list_.InitWithFeatures({features::kEnableNewStyleLauncher},
-                                            {});
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kEnableNewStyleLauncher);
     } else {
-      scoped_feature_list_.InitWithFeatures(
-          {}, {features::kEnableNewStyleLauncher});
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kEnableNewStyleLauncher);
     }
 
     views::ViewsTestBase::SetUp();
@@ -582,6 +592,24 @@ INSTANTIATE_TEST_CASE_P(,
                         AppListViewFocusTest,
                         testing::ValuesIn(kAppListViewFocusTestParams));
 
+// Test behaviors in tablet mode when homcher launcher feature is enabled.
+class AppListViewHomeLauncherTest : public AppListViewTest {
+ public:
+  AppListViewHomeLauncherTest() = default;
+  ~AppListViewHomeLauncherTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        app_list::features::kEnableHomeLauncher);
+    AppListViewTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListViewHomeLauncherTest);
+};
+
 // Test behaviors in tablet mode when homcher launcher feature is not enabled.
 class AppListViewNonHomeLauncherTest : public AppListViewTest {
  public:
@@ -589,8 +617,8 @@ class AppListViewNonHomeLauncherTest : public AppListViewTest {
   ~AppListViewNonHomeLauncherTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {}, {app_list::features::kEnableHomeLauncher});
+    scoped_feature_list_.InitAndDisableFeature(
+        app_list::features::kEnableHomeLauncher);
     AppListViewTest::SetUp();
   }
 
@@ -2019,6 +2047,57 @@ TEST_F(AppListViewNonHomeLauncherTest, LeaveTabletModeNoChange) {
   view_->OnTabletModeChanged(false);
 
   ASSERT_EQ(AppListViewState::FULLSCREEN_SEARCH, view_->app_list_state());
+}
+
+// Tests the back action in home launcher.
+TEST_F(AppListViewHomeLauncherTest, BackAction) {
+  // Put into fullscreen using tablet mode.
+  Initialize(0, true, false);
+
+  // Populate apps to fill up the first page and add a folder in the second
+  // page.
+  AppListTestModel* model = delegate_->GetTestModel();
+  const int kAppListItemNum = test_api_->TilesPerPage(0);
+  const int kItemNumInFolder = 5;
+  model->PopulateApps(kAppListItemNum);
+  model->CreateAndPopulateFolderWithApps(kItemNumInFolder);
+
+  // Show the app list
+  Show();
+  EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
+  EXPECT_EQ(2, apps_grid_view()->pagination_model()->total_pages());
+
+  // Select the second page and open the folder.
+  apps_grid_view()->pagination_model()->SelectPage(1, false);
+  test_api_->PressItemAt(kAppListItemNum);
+  EXPECT_TRUE(contents_view()->GetAppsContainerView()->IsInFolderView());
+  EXPECT_EQ(1, apps_grid_view()->pagination_model()->selected_page());
+
+  // Back action will first close the folder.
+  contents_view()->Back();
+  EXPECT_FALSE(contents_view()->GetAppsContainerView()->IsInFolderView());
+  EXPECT_EQ(1, apps_grid_view()->pagination_model()->selected_page());
+
+  // Back action will then select the first page.
+  contents_view()->Back();
+  EXPECT_FALSE(contents_view()->GetAppsContainerView()->IsInFolderView());
+  EXPECT_EQ(0, apps_grid_view()->pagination_model()->selected_page());
+
+  // Select the second page and open search results page.
+  apps_grid_view()->pagination_model()->SelectPage(1, false);
+  search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("A"));
+  EXPECT_EQ(AppListViewState::FULLSCREEN_SEARCH, view_->app_list_state());
+  EXPECT_EQ(1, apps_grid_view()->pagination_model()->selected_page());
+
+  // Back action will first close the search results page.
+  contents_view()->Back();
+  EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
+  EXPECT_EQ(1, apps_grid_view()->pagination_model()->selected_page());
+
+  // Back action will then select the first page.
+  contents_view()->Back();
+  EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
+  EXPECT_EQ(0, apps_grid_view()->pagination_model()->selected_page());
 }
 
 }  // namespace test
