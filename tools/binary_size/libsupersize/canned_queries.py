@@ -36,7 +36,7 @@ class _Grouper(object):
       self.groups.extend(others_by_path)
 
     logging.debug('Finalized')
-    return models.SymbolGroup(self.groups, is_sorted=True)
+    return models.SymbolGroup(self.groups)
 
 
 def _CategorizeByChromeComponent(symbols):
