@@ -452,7 +452,7 @@ RenderWidget::RenderWidget(
   }
 #if defined(USE_AURA)
   RendererWindowTreeClient::CreateIfNecessary(routing_id_);
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsUsingWindowService())
     RendererWindowTreeClient::Get(routing_id_)->SetVisible(!is_hidden_);
 #endif
 
@@ -2244,7 +2244,7 @@ void RenderWidget::SetHidden(bool hidden) {
   is_hidden_ = hidden;
 
 #if defined(USE_AURA)
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsUsingWindowService())
     RendererWindowTreeClient::Get(routing_id_)->SetVisible(!hidden);
 #endif
 

@@ -145,7 +145,7 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
 void BrowserPlugin::OnFirstSurfaceActivation(
     int browser_plugin_instance_id,
     const viz::SurfaceInfo& surface_info) {
-  if (!attached() || !features::IsAshInBrowserProcess())
+  if (!attached() || features::IsUsingWindowService())
     return;
 
   if (!enable_surface_synchronization_) {
@@ -320,7 +320,7 @@ void BrowserPlugin::SynchronizeVisualProperties() {
     sent_visual_properties_ = pending_visual_properties_;
 
 #if defined(USE_AURA)
-  if (!features::IsAshInBrowserProcess() && mus_embedded_frame_) {
+  if (features::IsUsingWindowService() && mus_embedded_frame_) {
     mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceId(),
                                          FrameRectInPixels());
   }
@@ -414,7 +414,7 @@ void BrowserPlugin::OnSetMouseLock(int browser_plugin_instance_id,
 void BrowserPlugin::OnSetMusEmbedToken(
     int instance_id,
     const base::UnguessableToken& embed_token) {
-  DCHECK(!features::IsAshInBrowserProcess());
+  DCHECK(features::IsUsingWindowService());
   if (!attached_) {
     pending_embed_token_ = embed_token;
   } else {
@@ -861,7 +861,7 @@ void BrowserPlugin::OnMusEmbeddedFrameSurfaceChanged(
 void BrowserPlugin::OnMusEmbeddedFrameSinkIdAllocated(
     const viz::FrameSinkId& frame_sink_id) {
   // RendererWindowTreeClient should only call this when mus is hosting viz.
-  DCHECK(!features::IsAshInBrowserProcess());
+  DCHECK(features::IsUsingWindowService());
   OnGuestReady(browser_plugin_instance_id_, frame_sink_id);
 }
 #endif

@@ -201,7 +201,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   // Early out because RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder
   // is no-op on mash and the test expects it call into FirstSurfaceActivation
   // of BrowserPluginGuest.
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsUsingWindowService())
     return;
 
   gfx::Size view_size(100, 100);

@@ -467,7 +467,7 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
                                          WebContentsViewDelegate* delegate)
     : is_mus_browser_plugin_guest_(web_contents->GetBrowserPluginGuest() !=
                                        nullptr &&
-                                   !features::IsAshInBrowserProcess()),
+                                   features::IsUsingWindowService()),
       web_contents_(web_contents),
       delegate_(delegate),
       current_drag_op_(blink::kWebDragOperationNone),
