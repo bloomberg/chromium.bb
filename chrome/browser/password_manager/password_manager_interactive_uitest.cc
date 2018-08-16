@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/browser_test_utils.h"
 
@@ -29,7 +30,13 @@ class PasswordManagerBrowserTestWithConditionalPopupViews
     : public PasswordManagerInteractiveTestBase,
       public ::testing::WithParamInterface<bool> {
  public:
-  PasswordManagerBrowserTestWithConditionalPopupViews() = default;
+  PasswordManagerBrowserTestWithConditionalPopupViews() {
+    // Turn off waiting for server predictions before filing. It makes filling
+    // behaviour more deterministic. Filling with server predictions is tested
+    // in NewPasswordFormManager unit tests.
+    password_manager::NewPasswordFormManager::
+        set_wait_for_server_predictions_for_filling(false);
+  }
   ~PasswordManagerBrowserTestWithConditionalPopupViews() override = default;
 
   void SetUp() override {

@@ -42,6 +42,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/login_model.h"
+#include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/version_info/version_info.h"
@@ -78,7 +79,13 @@ class PasswordManagerBrowserTestWithViewsFeature
     : public PasswordManagerBrowserTestBase,
       public ::testing::WithParamInterface<bool> {
  public:
-  PasswordManagerBrowserTestWithViewsFeature() = default;
+  PasswordManagerBrowserTestWithViewsFeature() {
+    // Turn off waiting for server predictions before filing. It makes filling
+    // behaviour more deterministic. Filling with server predictions is tested
+    // in NewPasswordFormManager unit tests.
+    password_manager::NewPasswordFormManager::
+        set_wait_for_server_predictions_for_filling(false);
+  }
   ~PasswordManagerBrowserTestWithViewsFeature() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1760,7 +1767,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 }
 
 // Test that if the same dynamic form is created multiple times then all of them
-// are autofilled and no unnecessary PasswordStore requests are fired.
+// are autofilled.
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        DuplicateFormsGetFilled) {
   // At first let us save a credential to the password store.
@@ -1783,9 +1790,14 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   WaitForJsElementValue("document.body.children[0].children[0]", "temp");
   WaitForJsElementValue("document.body.children[0].children[1]", "random");
 
-  // It's a trick. There should be no second request to the password store since
-  // the existing PasswordFormManager will manage the new form.
-  password_store->Clear();
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kNewPasswordFormParsing)) {
+    // It's a trick. There should be no second request to the password store
+    // since the existing PasswordFormManager will manage the new form. On other
+    // hand NewPasswordFormManager uses renderer ids for matching forms so a new
+    // NewPasswordFormManager is created for each DOM form object.
+    password_store->Clear();
+  }
   // Add one more form.
   ASSERT_TRUE(content::ExecuteScript(WebContents(), "addForm();"));
   // Wait until the username is filled, to make sure autofill kicked in.

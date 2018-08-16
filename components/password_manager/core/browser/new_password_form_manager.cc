@@ -29,6 +29,8 @@ using Logger = autofill::SavePasswordProgressLogger;
 
 namespace password_manager {
 
+bool NewPasswordFormManager::wait_for_server_predictions_for_filling_ = true;
+
 namespace {
 
 constexpr TimeDelta kMaxFillingDelayForServerPerdictions =
@@ -209,7 +211,7 @@ void NewPasswordFormManager::ProcessMatches(
 
   autofills_left_ = kMaxTimesAutofill;
 
-  if (predictions_) {
+  if (predictions_ || !wait_for_server_predictions_for_filling_) {
     ReportTimeBetweenStoreAndServerUMA();
     Fill();
   } else {
