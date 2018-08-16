@@ -793,6 +793,11 @@ function renderMaterialDesignTile(data) {
   mdTitle.className = CLASSES.MD_TITLE;
   mdTitle.innerText = data.title;
   mdTitle.style.direction = data.direction || 'ltr';
+  // Font weight on Mac and ChromeOS is heavier and needs to be reduced.
+  if (navigator.userAgent.indexOf('Mac') > -1 ||
+      navigator.userAgent.indexOf('CrOS') > -1) {
+    mdTitle.style.fontWeight = 400;
+  }
   mdTitleContainer.appendChild(mdTitle);
   mdTileInner.appendChild(mdTitleContainer);
   mdTile.appendChild(mdTileInner);
