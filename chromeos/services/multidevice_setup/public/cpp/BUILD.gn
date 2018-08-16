@@ -20,6 +20,16 @@ source_set("cpp") {
   ]
 }
 
+source_set("auth_token_validator") {
+  sources = [
+    "auth_token_validator.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
 source_set("prefs") {
   sources = [
     "prefs.cc",
@@ -36,6 +46,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_auth_token_validator.cc",
+    "fake_auth_token_validator.h",
     "fake_multidevice_setup.cc",
     "fake_multidevice_setup.h",
     "fake_multidevice_setup_client.cc",
@@ -43,6 +55,7 @@ static_library("test_support") {
   ]
 
   public_deps = [
+    ":auth_token_validator",
     ":cpp",
     "//chromeos/services/multidevice_setup",
     "//chromeos/services/multidevice_setup/public/mojom",
