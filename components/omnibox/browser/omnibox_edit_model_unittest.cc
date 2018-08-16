@@ -261,3 +261,38 @@ TEST_F(OmniboxEditModelTest, IgnoreInvalidSavedFocusStates) {
   EXPECT_TRUE(model()->has_focus());
   EXPECT_TRUE(model()->is_caret_visible());
 }
+
+// Tests ConsumeCtrlKey() consumes ctrl key when down, but does not affect ctrl
+// state otherwise.
+TEST_F(OmniboxEditModelTest, ConsumeCtrlKey) {
+  model()->control_key_state_ = TestOmniboxEditModel::UP;
+  model()->ConsumeCtrlKey();
+  EXPECT_EQ(model()->control_key_state_, TestOmniboxEditModel::UP);
+  model()->control_key_state_ = TestOmniboxEditModel::DOWN;
+  model()->ConsumeCtrlKey();
+  EXPECT_EQ(model()->control_key_state_,
+            TestOmniboxEditModel::DOWN_AND_CONSUMED);
+  model()->ConsumeCtrlKey();
+  EXPECT_EQ(model()->control_key_state_,
+            TestOmniboxEditModel::DOWN_AND_CONSUMED);
+}
+
+// Tests ctrl_key_state_ is set consumed if the ctrl key is down on focus.
+TEST_F(OmniboxEditModelTest, ConsumeCtrlKeyOnRequestFocus) {
+  model()->control_key_state_ = TestOmniboxEditModel::DOWN;
+  model()->OnSetFocus(false);
+  EXPECT_EQ(model()->control_key_state_, TestOmniboxEditModel::UP);
+  model()->OnSetFocus(true);
+  EXPECT_EQ(model()->control_key_state_,
+            TestOmniboxEditModel::DOWN_AND_CONSUMED);
+}
+
+// Tests the ctrl key is consumed on a ctrl-action (e.g. ctrl-c to copy)
+TEST_F(OmniboxEditModelTest, ConsumeCtrlKeyOnCtrlAction) {
+  model()->control_key_state_ = TestOmniboxEditModel::DOWN;
+  OmniboxView::StateChanges state_changes{nullptr, nullptr, 0,     0,
+                                          false,   false,   false, false};
+  model()->OnAfterPossibleChange(state_changes, false);
+  EXPECT_EQ(model()->control_key_state_,
+            TestOmniboxEditModel::DOWN_AND_CONSUMED);
+}
