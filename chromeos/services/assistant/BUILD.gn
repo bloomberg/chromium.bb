@@ -69,7 +69,7 @@ source_set("lib") {
       "//chromeos/assistant/internal/proto/google3",
       "//libassistant/contrib/core",
       "//libassistant/contrib/platform/audio",
-      "//libassistant/shared/internal_api/c:api_wrappers_for_caller_no_chromium",
+      "//libassistant/shared/internal_api/c:api_wrappers_entrypoint",
       "//libassistant/shared/public",
       "//libassistant/shared/public:export",
       "//ui/base",
