@@ -246,11 +246,18 @@ cr.define('settings_people_page_quick_unlock', function() {
         CrSettingsPrefs.deferInitialization = true;
 
         // Build pref fakes.
-        const fakePrefs = [{
-          key: ENABLE_LOCK_SCREEN_PREF,
-          type: chrome.settingsPrivate.PrefType.BOOLEAN,
-          value: true
-        }];
+        const fakePrefs = [
+          {
+            key: ENABLE_LOCK_SCREEN_PREF,
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true
+          },
+          {
+            key: 'ash.message_center.lock_screen_mode',
+            type: chrome.settingsPrivate.PrefType.STRING,
+            value: 'hide'
+          }
+        ];
         fakeSettings = new settings.FakeSettingsPrivate(fakePrefs);
         fakeUma = new settings.FakeQuickUnlockUma();
         setLockScreenPref(true);
