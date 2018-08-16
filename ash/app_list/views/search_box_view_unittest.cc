@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/views/app_list_view.h"
@@ -67,7 +68,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     app_list_view_ = new AppListView(&view_delegate_);
     AppListView::InitParams params;
     params.parent = GetContext();
-    app_list_view()->Initialize(params);
+    app_list_view_->Initialize(params);
 
     widget_ = CreateTopLevelPlatformWidget();
     view_ =
@@ -91,6 +92,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   views::Widget* widget() { return widget_; }
   SearchBoxView* view() { return view_.get(); }
   AppListView* app_list_view() { return app_list_view_; }
+  AppListTestViewDelegate* view_delegate() { return &view_delegate_; }
 
   void SetSearchEngineIsGoogle(bool is_google) {
     view_delegate_.SetSearchEngineIsGoogle(is_google);
@@ -114,6 +116,18 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     }
   }
 
+  void CreateSearchResult(ash::SearchResultDisplayType display_type,
+                          double display_score,
+                          const base::string16& title,
+                          const base::string16& details) {
+    auto search_result = std::make_unique<SearchResult>();
+    search_result->set_display_type(display_type);
+    search_result->set_display_score(display_score);
+    search_result->set_title(title);
+    search_result->set_details(details);
+    results()->Add(std::move(search_result));
+  }
+
   std::string GetLastQueryAndReset() {
     base::string16 query = last_query_;
     last_query_.clear();
@@ -124,6 +138,10 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     int result = query_changed_count_;
     query_changed_count_ = 0;
     return result;
+  }
+
+  SearchModel::SearchResults* results() {
+    return view_delegate_.GetSearchModel()->results();
   }
 
  private:
@@ -265,6 +283,186 @@ TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineNotGoogle) {
 
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(*expected_icon.bitmap(),
                                          *actual_icon.bitmap()));
+}
+
+// Tests that autocomplete suggestions are consistent with top SearchResult list
+// titles.
+TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopListResultTitle) {
+  // Add two SearchResults, one with higher ranking. Initialize their title
+  // field to a non-empty string.
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
+                     base::ASCIIToUTF16("hello list"), base::string16());
+  CreateSearchResult(ash::SearchResultDisplayType::kTile, 0.5,
+                     base::ASCIIToUTF16("hello tile"), base::string16());
+
+  // Send H, E to the SearchBoxView textfield, then trigger an autocomplete.
+  KeyPress(ui::VKEY_H);
+  KeyPress(ui::VKEY_E);
+  view()->ProcessAutocomplete();
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello list"));
+  EXPECT_EQ(view()->search_box()->GetSelectedText(),
+            base::ASCIIToUTF16("llo list"));
+}
+
+// Tests that autocomplete suggestions are consistent with top SearchResult tile
+// titles.
+TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopTileResultTitle) {
+  // Add two SearchResults, one with higher ranking. Initialize their title
+  // field to a non-empty string.
+  CreateSearchResult(ash::SearchResultDisplayType::kTile, 1.0,
+                     base::ASCIIToUTF16("hello tile"), base::string16());
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 0.5,
+                     base::ASCIIToUTF16("hello list"), base::string16());
+
+  // Send H, E to the SearchBoxView textfield, then trigger an autocomplete.
+  KeyPress(ui::VKEY_H);
+  KeyPress(ui::VKEY_E);
+  view()->ProcessAutocomplete();
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello tile"));
+  EXPECT_EQ(view()->search_box()->GetSelectedText(),
+            base::ASCIIToUTF16("llo tile"));
+}
+
+// Tests that autocomplete suggestions are consistent with top SearchResult list
+// details.
+TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopListResultDetails) {
+  // Add two SearchResults, one with higher ranking. Initialize their details
+  // field to a non-empty string.
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0, base::string16(),
+                     base::ASCIIToUTF16("hello list"));
+  CreateSearchResult(ash::SearchResultDisplayType::kTile, 0.5, base::string16(),
+                     base::ASCIIToUTF16("hello tile"));
+
+  // Send H, E to the SearchBoxView textfield, then trigger an autocomplete.
+  KeyPress(ui::VKEY_H);
+  KeyPress(ui::VKEY_E);
+  view()->ProcessAutocomplete();
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello list"));
+  EXPECT_EQ(view()->search_box()->GetSelectedText(),
+            base::ASCIIToUTF16("llo list"));
+}
+
+// Tests that autocomplete suggestions are consistent with top SearchResult tile
+// details.
+TEST_F(SearchBoxViewTest, SearchBoxAutocompletesTopTileResultDetails) {
+  // Add two SearchResults, one with higher ranking. Initialize their details
+  // field to a non-empty string.
+  CreateSearchResult(ash::SearchResultDisplayType::kTile, 1.0, base::string16(),
+                     base::ASCIIToUTF16("hello tile"));
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 0.5, base::string16(),
+                     base::ASCIIToUTF16("hello list"));
+
+  // Send H, E to the SearchBoxView textfield, then trigger an autocomplete.
+  KeyPress(ui::VKEY_H);
+  KeyPress(ui::VKEY_E);
+  view()->ProcessAutocomplete();
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello tile"));
+  EXPECT_EQ(view()->search_box()->GetSelectedText(),
+            base::ASCIIToUTF16("llo tile"));
+}
+
+// Tests that SearchBoxView's textfield text does not autocomplete if the top
+// result title or details do not have a matching prefix.
+TEST_F(SearchBoxViewTest, SearchBoxDoesNotAutocompleteWrongCharacter) {
+  // Add a search result with non-empty details and title fields.
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
+                     base::ASCIIToUTF16("title"),
+                     base::ASCIIToUTF16("details"));
+
+  // Send Z to the SearchBoxView textfield, then trigger an autocomplete.
+  KeyPress(ui::VKEY_Z);
+  view()->ProcessAutocomplete();
+  // The text should not be autocompleted.
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("z"));
+}
+
+// Tests that autocomplete suggestion will remain if next key in the suggestion
+// is typed.
+TEST_F(SearchBoxViewTest, SearchBoxAutocompletesAcceptsNextChar) {
+  // Add a search result with a non-empty title field.
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
+                     base::ASCIIToUTF16("hello world!"), base::string16());
+
+  // Send H, E to the SearchBoxView textfield, then trigger an autocomplete.
+  KeyPress(ui::VKEY_H);
+  KeyPress(ui::VKEY_E);
+  view()->ProcessAutocomplete();
+  // Forward the next key in the autocomplete suggestion to HandleKeyEvent(). We
+  // use HandleKeyEvent() because KeyPress() will replace the existing
+  // highlighted text.
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_L, ui::EF_NONE);
+  static_cast<views::TextfieldController*>(view())->HandleKeyEvent(
+      view()->search_box(), event);
+  base::string16 selected_text = view()->search_box()->GetSelectedText();
+  // The autocomplete text should be preserved after hitting the next key in the
+  // suggestion.
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello world!"));
+  EXPECT_EQ(base::ASCIIToUTF16("lo world!"), selected_text);
+}
+
+// Tests that only the autocomplete suggestion text is deleted after hitting
+// backspace.
+TEST_F(SearchBoxViewTest, SearchBoxDeletesAutocompleteTextOnlyAfterBackspace) {
+  // Add a search result with a non-empty title field.
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
+                     base::ASCIIToUTF16("hello world!"), base::string16());
+
+  // Send H, E to the SearchBoxView textfield, trigger an autocomplete, then hit
+  // backspace.
+  KeyPress(ui::VKEY_H);
+  KeyPress(ui::VKEY_E);
+  view()->ProcessAutocomplete();
+  KeyPress(ui::VKEY_BACK);
+  // The autocomplete suggestion should be deleted.
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("he"));
+  // Don't autocomplete because the last pressed key was backspace.
+  view()->ProcessAutocomplete();
+  // The autocomplete suggestion should still not be present.
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("he"));
+}
+
+class SearchBoxViewAutocompleteTest
+    : public SearchBoxViewTest,
+      public ::testing::WithParamInterface<ui::KeyboardCode> {
+ public:
+  SearchBoxViewAutocompleteTest() = default;
+  ~SearchBoxViewAutocompleteTest() = default;
+  ui::KeyboardCode key_code() const { return GetParam(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxViewAutocompleteTest);
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        SearchBoxViewAutocompleteTest,
+                        ::testing::Values(ui::VKEY_TAB,
+                                          ui::VKEY_LEFT,
+                                          ui::VKEY_RIGHT,
+                                          ui::VKEY_UP,
+                                          ui::VKEY_DOWN));
+
+// Tests that autocomplete suggestion is accepted and displayed in SearchModel
+// after hitting certain control keys.
+TEST_P(SearchBoxViewAutocompleteTest,
+       SearchBoxAcceptsAutocompleteForLeftRightUpDownTab) {
+  // Add a search result with a non-empty title field.
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
+                     base::ASCIIToUTF16("hello world!"), base::string16());
+
+  // Send H, E to the SearchBoxView textfield, then trigger an autocomplete.
+  KeyPress(ui::VKEY_H);
+  KeyPress(ui::VKEY_E);
+  view()->ProcessAutocomplete();
+  // Forward the next parameter to HandleKeyEvent(). We use HandleKeyEvent()
+  // because KeyPress() will replace the existing highlighted text.
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code(), ui::EF_NONE);
+  static_cast<views::TextfieldController*>(view())->HandleKeyEvent(
+      view()->search_box(), event);
+  // Search box autocomplete suggestion is accepted and is reflected in
+  // SearchModel.
+  EXPECT_EQ(view()->search_box()->text(),
+            view_delegate()->GetSearchModel()->search_box()->text());
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello world!"));
 }
 
 }  // namespace test
