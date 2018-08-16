@@ -172,6 +172,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
           std::move(add_platform_authenticator)),
       request_(std::move(request)),
       weak_factory_(this) {
+  transport_availability_info().rp_id = request.rp_id();
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kGetAssertion;
 

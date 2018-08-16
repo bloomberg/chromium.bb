@@ -32,8 +32,10 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   AuthenticatorRequestClientDelegate();
   ~AuthenticatorRequestClientDelegate() override;
 
-  // Notifies the delegate that the request is actually starting.
-  virtual void DidStartRequest(
+  // Supplies callbacks that the embedder can invoke to initiate certain
+  // actions, namely: initiate BLE pairing process, cancel WebAuthN request, and
+  // dispatch request to connected authenticators.
+  virtual void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback);
 
