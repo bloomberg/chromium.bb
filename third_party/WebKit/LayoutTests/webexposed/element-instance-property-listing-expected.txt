@@ -863,6 +863,7 @@ html element param
     property valueType
 html element picture
 html element plaintext
+html element portal
 html element pre
     property width
 html element progress

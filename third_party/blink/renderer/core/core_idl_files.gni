@@ -278,6 +278,7 @@ core_idl_files =
                     "html/forms/validity_state.idl",
                     "html/media/html_audio_element.idl",
                     "html/media/media_error.idl",
+                    "html/portal/html_portal_element.idl",
                     "html/track/audio_track_list.idl",
                     "html/track/html_track_element.idl",
                     "html/track/text_track.idl",

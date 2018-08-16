@@ -3416,6 +3416,9 @@ interface HTMLParamElement : HTMLElement
 interface HTMLPictureElement : HTMLElement
     attribute @@toStringTag
     method constructor
+interface HTMLPortalElement : HTMLElement
+    attribute @@toStringTag
+    method constructor
 interface HTMLPreElement : HTMLElement
     attribute @@toStringTag
     getter width

@@ -498,6 +498,8 @@ blink_core_sources("html") {
     "media/picture_in_picture_interstitial.h",
     "plugin_document.cc",
     "plugin_document.h",
+    "portal/html_portal_element.cc",
+    "portal/html_portal_element.h",
     "rel_list.cc",
     "rel_list.h",
     "shadow/details_marker_control.cc",
