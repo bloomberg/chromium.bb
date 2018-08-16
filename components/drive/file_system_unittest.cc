@@ -337,6 +337,7 @@ class FileSystemTest : public testing::Test {
   bool SetupTeamDrives() {
     fake_drive_service_->AddTeamDrive("td_id_1", "team_drive_1", "");
     fake_drive_service_->AddTeamDrive("td_id_2", "team_drive_2", "");
+    fake_drive_service_->AddTeamDrive("td_id_2_2", "team_drive_2", "");
 
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
     std::unique_ptr<google_apis::FileResource> entry;
@@ -389,6 +390,15 @@ class FileSystemTest : public testing::Test {
     fake_drive_service_->AddNewFileWithResourceId(
         "dir_2_file_1_resource_id", "audio/mpeg", "dir2 file1 content.",
         "td_2_dir_2_resource_id", "File 2.txt",
+        false,  // shared_with_me
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    if (error != google_apis::HTTP_CREATED)
+      return false;
+
+    fake_drive_service_->AddNewFileWithResourceId(
+        "td_2_2_dir_1_resource_id", util::kDriveFolderMimeType, std::string(),
+        "td_id_2_2", "dir1",
         false,  // shared_with_me
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     base::RunLoop().RunUntilIdle();
@@ -802,7 +812,6 @@ TEST_F(FileSystemTest, ReadDirectory_Root) {
                     util::kDriveTeamDrivesDirName)));
 }
 
-// TODO(slamgley): Add more tests for team drives.
 TEST_F(FileSystemTest, ReadDirectory_TeamDrivesRoot) {
   ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
   ASSERT_TRUE(SetupTeamDrives());
@@ -815,17 +824,17 @@ TEST_F(FileSystemTest, ReadDirectory_TeamDrivesRoot) {
       ReadDirectorySync(base::FilePath::FromUTF8Unsafe("drive/team_drives")));
   // The root directory should be read correctly.
   ASSERT_TRUE(entries);
-  ASSERT_EQ(2U, entries->size());
+  ASSERT_EQ(3U, entries->size());
 
-  std::set<base::FilePath> found;
+  std::multiset<base::FilePath> found;
   for (size_t i = 0; i < entries->size(); ++i) {
     found.insert(base::FilePath::FromUTF8Unsafe((*entries)[i].title()));
   }
-  EXPECT_EQ(2U, found.size());
+  EXPECT_EQ(3U, found.size());
   EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe("team_drive_1")));
-  EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe("team_drive_2")));
+  EXPECT_EQ(2U, found.count(base::FilePath::FromUTF8Unsafe("team_drive_2")));
   EXPECT_EQ(1, fake_drive_service_->team_drive_list_load_count());
-  EXPECT_EQ(2, fake_drive_service_->file_list_load_count());
+  EXPECT_EQ(3, fake_drive_service_->file_list_load_count());
 
   // We should be able to read from drive/team_drives/team_drive_1
   std::unique_ptr<ResourceEntryVector> team_drive_1_entries(ReadDirectorySync(
@@ -898,11 +907,11 @@ TEST_F(FileSystemTest, AddTeamDriveInChangeList) {
       ReadDirectorySync(base::FilePath::FromUTF8Unsafe("drive/team_drives/")));
   // The root directory should be read correctly.
   ASSERT_TRUE(entries);
-  std::set<base::FilePath> found;
+  std::multiset<base::FilePath> found;
   for (size_t i = 0; i < entries->size(); ++i) {
     found.insert(base::FilePath::FromUTF8Unsafe((*entries)[i].title()));
   }
-  EXPECT_EQ(3U, found.size());
+  EXPECT_EQ(4U, found.size());
   EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe("team_drive_3")));
 
   // Add a new entry to drive/team_drives/team_drive_3
@@ -1337,24 +1346,32 @@ TEST_F(FileSystemTest, DebugMetadata) {
   EXPECT_LE(now, default_corpus_metadata.last_update_check_time);
   EXPECT_FALSE(default_corpus_metadata.refreshing);
   EXPECT_EQ(FILE_ERROR_OK, default_corpus_metadata.last_update_check_error);
-  EXPECT_EQ("654339", default_corpus_metadata.start_page_token);
+  EXPECT_EQ("654340", default_corpus_metadata.start_page_token);
 
-  EXPECT_EQ(2UL, team_drive_metadata.size());
+  EXPECT_EQ(3UL, team_drive_metadata.size());
   EXPECT_FALSE(team_drive_metadata["td_id_1"].refreshing);
   EXPECT_EQ(util::GetDriveTeamDrivesRootPath().Append("team_drive_1").value(),
             team_drive_metadata["td_id_1"].path);
   EXPECT_LE(now, team_drive_metadata["td_id_1"].last_update_check_time);
-  EXPECT_EQ("654344", team_drive_metadata["td_id_1"].start_page_token);
+  EXPECT_EQ("654345", team_drive_metadata["td_id_1"].start_page_token);
   EXPECT_EQ(FILE_ERROR_OK,
             team_drive_metadata["td_id_1"].last_update_check_error);
 
   EXPECT_FALSE(team_drive_metadata["td_id_2"].refreshing);
   EXPECT_EQ(util::GetDriveTeamDrivesRootPath().Append("team_drive_2").value(),
             team_drive_metadata["td_id_2"].path);
-  EXPECT_LE(now, team_drive_metadata["td_id_1"].last_update_check_time);
-  EXPECT_EQ("654345", team_drive_metadata["td_id_2"].start_page_token);
+  EXPECT_LE(now, team_drive_metadata["td_id_2"].last_update_check_time);
+  EXPECT_EQ("654346", team_drive_metadata["td_id_2"].start_page_token);
   EXPECT_EQ(FILE_ERROR_OK,
             team_drive_metadata["td_id_2"].last_update_check_error);
+
+  EXPECT_FALSE(team_drive_metadata["td_id_2_2"].refreshing);
+  EXPECT_EQ(util::GetDriveTeamDrivesRootPath().Append("team_drive_2").value(),
+            team_drive_metadata["td_id_2_2"].path);
+  EXPECT_LE(now, team_drive_metadata["td_id_2_2"].last_update_check_time);
+  EXPECT_EQ("654347", team_drive_metadata["td_id_2_2"].start_page_token);
+  EXPECT_EQ(FILE_ERROR_OK,
+            team_drive_metadata["td_id_2_2"].last_update_check_error);
 }
 
 }   // namespace drive

@@ -164,19 +164,42 @@ FileError ChangeListProcessor::ApplyUserChangeList(
     }
   }
 
+  // Update the resource ID of the entry, if required.
+
+  // Multiple team drives can have the same root_entry_path_, so try looking up
+  // via the team_drive_id first.
   ResourceEntry root;
-  // Update the resource ID of the entry for "My Drive" directory.
-  FileError error =
-      resource_metadata_->GetResourceEntryByPath(root_entry_path_, &root);
-  if (error != FILE_ERROR_OK) {
-    LOG(ERROR) << "Failed to get root entry: " << FileErrorToString(error);
-    return error;
+  FileError error = FILE_ERROR_OK;
+  if (!team_drive_id_.empty()) {
+    std::string local_id;
+    error = resource_metadata_->GetIdByResourceId(team_drive_id_, &local_id);
+    if (error != FILE_ERROR_OK) {
+      LOG(ERROR) << "Failed to get team drive local id: "
+                 << FileErrorToString(error);
+      return error;
+    }
+    error = resource_metadata_->GetResourceEntryById(local_id, &root);
+    if (error != FILE_ERROR_OK) {
+      LOG(ERROR) << "Failed to get team drive root entry: "
+                 << FileErrorToString(error);
+      return error;
+    }
+  } else {
+    error = resource_metadata_->GetResourceEntryByPath(root_entry_path_, &root);
+    if (error != FILE_ERROR_OK) {
+      LOG(ERROR) << "Failed to get root entry: " << FileErrorToString(error);
+      return error;
+    }
   }
-  root.set_resource_id(root_resource_id);
-  error = resource_metadata_->RefreshEntry(root);
-  if (error != FILE_ERROR_OK) {
-    LOG(ERROR) << "Failed to update root entry: " << FileErrorToString(error);
-    return error;
+  // Only update if the root resource id has changed. This will happen for the
+  // default corpus on the first load, as we obtain the resource id lazily.
+  if (root_resource_id != root.resource_id()) {
+    root.set_resource_id(root_resource_id);
+    error = resource_metadata_->RefreshEntry(root);
+    if (error != FILE_ERROR_OK) {
+      LOG(ERROR) << "Failed to update root entry: " << FileErrorToString(error);
+      return error;
+    }
   }
 
   ChangeListToEntryMapUMAStats uma_stats;
