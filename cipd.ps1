@@ -2,72 +2,117 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-$myPath = Split-Path $MyInvocation.MyCommand.Path -Parent
+Param(
+  # Path to download the CIPD binary to.
+  [parameter(Mandatory=$true)][string]$CipdBinary,
+  # E.g. "https://chrome-infra-packages.appspot.com".
+  [parameter(Mandatory=$true)][string]$BackendURL,
+  # Path to the cipd_client_version file with the client version.
+  [parameter(Mandatory=$true)][string]$VersionFile
+)
 
-function GetEnvVar([string] $key, [scriptblock] $defaultFn) {
-    if (Test-Path "Env:\$key") {
-        return (Get-ChildItem "Env:\$key").Value
-    }
-    return $defaultFn.Invoke()
-}
+$DepotToolsPath = Split-Path $MyInvocation.MyCommand.Path -Parent
 
-$cipdClientVer = GetEnvVar "CIPD_CLIENT_VER" {
-  Get-Content (Join-Path $myPath -ChildPath 'cipd_client_version') -TotalCount 1
-}
-$cipdClientSrv = GetEnvVar "CIPD_CLIENT_SRV" {
-  "https://chrome-infra-packages.appspot.com"
-}
-
-$plat="windows"
-if ([environment]::Is64BitOperatingSystem)  {
-  $arch="amd64"
+if ([System.IntPtr]::Size -eq 8)  {
+  $Platform = "windows-amd64"
 } else {
-  $arch="386"
+  $Platform = "windows-386"
 }
 
-$url = "$cipdClientSrv/client?platform=$plat-$arch&version=$cipdClientVer"
-$client = Join-Path $myPath -ChildPath ".cipd_client.exe"
-
+# Put depot_tool's git revision into the user agent string.
 try {
-  $depot_tools_version = &git -C $myPath rev-parse HEAD 2>&1
+  $DepotToolsVersion = &git -C $DepotToolsPath rev-parse HEAD 2>&1
   if ($LastExitCode -eq 0) {
-    $user_agent = "depot_tools/$depot_tools_version"
+    $UserAgent = "depot_tools/$DepotToolsVersion"
   } else {
-    $user_agent = "depot_tools/???"
+    $UserAgent = "depot_tools/???"
   }
 } catch [System.Management.Automation.CommandNotFoundException] {
-  $user_agent = "depot_tools/no_git/???"
+  $UserAgent = "depot_tools/no_git/???"
+}
+$Env:CIPD_HTTP_USER_AGENT_PREFIX = $UserAgent
+
+
+# Tries to delete the file, ignoring errors. Used for best-effort cleanups.
+function Delete-If-Possible($path) {
+  try {
+    [System.IO.File]::Delete($path)
+  } catch {
+    $err = $_.Exception.Message
+    echo "Warning: error when deleting $path - $err. Ignoring."
+  }
 }
 
-$Env:CIPD_HTTP_USER_AGENT_PREFIX = $user_agent
 
-# Use a lock fle to prevent simultaneous processes from stepping on each other.
-$cipd_lock = Join-Path $myPath -ChildPath '.cipd_client.lock'
-while ($true) {
-  $cipd_lock_file = $false
+# Returns the expected SHA256 hex digest for the given platform reading it from
+# *.digests file.
+function Get-Expected-SHA256($platform) {
+  $digestsFile = $VersionFile+".digests"
+  foreach ($line in Get-Content $digestsFile) {
+    if ($line -match "^([0-9a-z\-]+)\s+sha256\s+([0-9a-f]+)$") {
+      if ($Matches[1] -eq $platform) {
+        return $Matches[2]
+      }
+    }
+  }
+  throw "No SHA256 digests for $platform in $digestsFile"
+}
+
+
+# Returns SHA256 hex digest of a binary file at the given path.
+function Get-Actual-SHA256($path) {
+  # Note: we don't use Get-FileHash to be compatible with PowerShell v3.0
+  $file = [System.IO.File]::Open($path, [System.IO.FileMode]::Open)
   try {
-      $cipd_lock_file = [System.IO.File]::OpenWrite($cipd_lock)
+    $algo = New-Object System.Security.Cryptography.SHA256Managed
+    $hash = $algo.ComputeHash($file)
+  } finally {
+    $file.Close()
+  }
+  $hex = ""
+  foreach ($byte in $hash) {
+    $hex += $byte.ToString("x2")
+  }
+  return $hex
+}
 
-      echo "Bootstrapping cipd client for $plat-$arch from $url..."
-      $wc = (New-Object System.Net.WebClient)
-      $wc.Headers.add('User-Agent', $user_agent)
-      $wc.DownloadFile($url, $client)
-      break
+
+$ExpectedSHA256 = Get-Expected-SHA256 $Platform
+$Version = (Get-Content $VersionFile).Trim()
+$URL = "$BackendURL/client?platform=$Platform&version=$Version"
+
+
+# Use a lock file to prevent simultaneous processes from stepping on each other.
+$CipdLockPath = Join-Path $DepotToolsPath -ChildPath ".cipd_client.lock"
+$TmpPath = $CipdBinary + ".tmp"
+while ($true) {
+  $CipdLockFile = $null
+  try {
+    $CipdLockFile = [System.IO.File]::OpenWrite($CipdLockPath)
+
+    echo "Downloading CIPD client for $Platform from $URL..."
+    $wc = (New-Object System.Net.WebClient)
+    $wc.Headers.Add("User-Agent", $UserAgent)
+    $wc.DownloadFile($URL, $TmpPath)
+
+    $ActualSHA256 = Get-Actual-SHA256 $TmpPath
+    if ($ActualSHA256 -ne $ExpectedSHA256) {
+      throw "Invalid SHA256 digest: $ActualSHA256 != $ExpectedSHA256"
+    }
+
+    Move-Item -LiteralPath $TmpPath -Destination $CipdBinary -Force
+    break
 
   } catch [System.IO.IOException] {
-      echo "CIPD bootstrap lock is held, trying again after delay..."
-      Start-Sleep -s 1
+    echo "CIPD bootstrap lock is held, trying again after delay..."
+    Start-Sleep -s 1
   } catch {
-      $err = $_.Exception.Message
-      echo "CIPD bootstrap failed: $err"
-      throw $err
+    throw  # for some reason this is needed to exit while(...) loop on errors
   } finally {
-      if ($cipd_lock_file) {
-          $cipd_lock_file.Close()
-          $cipd_lock_file = $false
-          try {
-            [System.IO.File]::Delete($cipd_lock)
-          } catch {}
-      }
+    Delete-If-Possible $TmpPath
+    if ($CipdLockFile) {
+      $CipdLockFile.Close()
+      Delete-If-Possible $CipdLockPath
+    }
   }
 }

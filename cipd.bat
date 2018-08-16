@@ -5,15 +5,16 @@
 
 setlocal
 
-set CIPD_CLIENT_SRV=https://chrome-infra-packages.appspot.com
-for /f %%i in (%~dp0cipd_client_version) do set CIPD_CLIENT_VER=%%i
+set CIPD_BACKEND=https://chrome-infra-packages.appspot.com
+set VERSION_FILE="%~dp0cipd_client_version"
+set CIPD_BINARY="%~dp0.cipd_client.exe"
 
-if not exist "%~dp0.cipd_client.exe" (
+if not exist %CIPD_BINARY% (
   call :CLEAN_BOOTSTRAP
   goto :EXEC_CIPD
 )
 
-call :SELF_UPDATE
+call :SELF_UPDATE >nul 2>&1
 if %ERRORLEVEL% neq 0 (
   echo CIPD client self-update failed, trying to bootstrap it from scratch... 1>&2
   call :CLEAN_BOOTSTRAP
@@ -25,7 +26,7 @@ if %ERRORLEVEL% neq 0 (
   echo Failed to bootstrap or update CIPD client 1>&2
 )
 if %ERRORLEVEL% equ 0 (
-  "%~dp0.cipd_client.exe" %*
+  "%CIPD_BINARY%" %*
 )
 
 endlocal & (
@@ -46,7 +47,12 @@ exit /b %EXPORT_ERRORLEVEL%
 :: alternate data stream. This is equivalent to clicking the "Unblock" button
 :: in the file's properties dialog.
 echo.>%~dp0cipd.ps1:Zone.Identifier
-powershell -NoProfile -ExecutionPolicy RemoteSigned -Command "%~dp0cipd.ps1" < nul
+powershell -NoProfile -ExecutionPolicy RemoteSigned ^
+    -Command "%~dp0cipd.ps1" ^
+    -CipdBinary "%CIPD_BINARY%" ^
+    -BackendURL "%CIPD_BACKEND%" ^
+    -VersionFile "%VERSION_FILE%" ^
+  <nul
 if %ERRORLEVEL% equ 0 (
   :: Need to call SELF_UPDATE to setup .cipd_version file.
   call :SELF_UPDATE
@@ -55,5 +61,7 @@ exit /B %ERRORLEVEL%
 
 
 :SELF_UPDATE
-"%~dp0.cipd_client.exe" selfupdate -version "%CIPD_CLIENT_VER%" -service-url "%CIPD_CLIENT_SRV%"
+"%CIPD_BINARY%" selfupdate ^
+    -version-file "%VERSION_FILE%" ^
+    -service-url "%CIPD_BACKEND%"
 exit /B %ERRORLEVEL%
