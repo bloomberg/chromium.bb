@@ -35,11 +35,12 @@ class BASE_EXPORT AndroidImageReader {
                                           AHardwareBuffer** buffer);
   media_status_t AImage_getWidth(const AImage* image, int32_t* width);
   media_status_t AImage_getHeight(const AImage* image, int32_t* height);
-  media_status_t AImageReader_new(int32_t width,
-                                  int32_t height,
-                                  int32_t format,
-                                  int32_t maxImages,
-                                  AImageReader** reader);
+  media_status_t AImageReader_newWithUsage(int32_t width,
+                                           int32_t height,
+                                           int32_t format,
+                                           uint64_t usage,
+                                           int32_t maxImages,
+                                           AImageReader** reader);
   media_status_t AImageReader_setImageListener(
       AImageReader* reader,
       AImageReader_ImageListener* listener);
@@ -63,7 +64,7 @@ class BASE_EXPORT AndroidImageReader {
   pAImage_getHardwareBuffer AImage_getHardwareBuffer_;
   pAImage_getWidth AImage_getWidth_;
   pAImage_getHeight AImage_getHeight_;
-  pAImageReader_new AImageReader_new_;
+  pAImageReader_newWithUsage AImageReader_newWithUsage_;
   pAImageReader_setImageListener AImageReader_setImageListener_;
   pAImageReader_delete AImageReader_delete_;
   pAImageReader_getWindow AImageReader_getWindow_;

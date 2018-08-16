@@ -61,7 +61,7 @@ bool AndroidImageReader::LoadFunctions() {
   LOAD_FUNCTION(libmediandk, AImage_getHardwareBuffer);
   LOAD_FUNCTION(libmediandk, AImage_getWidth);
   LOAD_FUNCTION(libmediandk, AImage_getHeight);
-  LOAD_FUNCTION(libmediandk, AImageReader_new);
+  LOAD_FUNCTION(libmediandk, AImageReader_newWithUsage);
   LOAD_FUNCTION(libmediandk, AImageReader_setImageListener);
   LOAD_FUNCTION(libmediandk, AImageReader_delete);
   LOAD_FUNCTION(libmediandk, AImageReader_getWindow);
@@ -102,12 +102,15 @@ media_status_t AndroidImageReader::AImage_getHeight(const AImage* image,
   return AImage_getHeight_(image, height);
 }
 
-media_status_t AndroidImageReader::AImageReader_new(int32_t width,
-                                                    int32_t height,
-                                                    int32_t format,
-                                                    int32_t maxImages,
-                                                    AImageReader** reader) {
-  return AImageReader_new_(width, height, format, maxImages, reader);
+media_status_t AndroidImageReader::AImageReader_newWithUsage(
+    int32_t width,
+    int32_t height,
+    int32_t format,
+    uint64_t usage,
+    int32_t maxImages,
+    AImageReader** reader) {
+  return AImageReader_newWithUsage_(width, height, format, usage, maxImages,
+                                    reader);
 }
 
 media_status_t AndroidImageReader::AImageReader_setImageListener(
