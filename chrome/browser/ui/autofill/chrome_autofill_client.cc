@@ -25,6 +25,8 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_controller.h"
+#include "chrome/browser/ui/autofill/local_card_migration_dialog_factory.h"
+#include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
@@ -67,6 +69,7 @@
 #include "ui/android/window_android.h"
 #else  // !OS_ANDROID
 #include "chrome/browser/ui/autofill/local_card_migration_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/local_card_migration_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -195,15 +198,32 @@ void ChromeAutofillClient::OnUnmaskVerificationResult(
   unmask_controller_.OnVerificationResult(result);
 }
 
-void ChromeAutofillClient::ShowLocalCardMigrationPrompt(
-    base::OnceClosure closure) {
+void ChromeAutofillClient::ShowLocalCardMigrationDialog(
+    base::OnceClosure show_migration_dialog_closure) {
 #if !defined(OS_ANDROID)
   autofill::LocalCardMigrationBubbleControllerImpl::CreateForWebContents(
       web_contents());
   autofill::LocalCardMigrationBubbleControllerImpl* controller =
       autofill::LocalCardMigrationBubbleControllerImpl::FromWebContents(
           web_contents());
-  controller->ShowBubble(std::move(closure));
+  controller->ShowBubble(std::move(show_migration_dialog_closure));
+#endif
+}
+
+void ChromeAutofillClient::ConfirmMigrateLocalCardToCloud(
+    std::vector<MigratableCreditCard>& migratable_credit_cards,
+    base::OnceClosure start_migrating_cards_closure) {
+#if !defined(OS_ANDROID)
+  autofill::LocalCardMigrationDialogControllerImpl::CreateForWebContents(
+      web_contents());
+  autofill::LocalCardMigrationDialogControllerImpl* controller =
+      autofill::LocalCardMigrationDialogControllerImpl::FromWebContents(
+          web_contents());
+  controller->SetViewState(LocalCardMigrationDialogState::kOffered);
+  controller->SetCardList(migratable_credit_cards);
+  controller->ShowDialog(
+      CreateLocalCardMigrationDialogView(controller, web_contents()),
+      std::move(start_migrating_cards_closure));
 #endif
 }
 

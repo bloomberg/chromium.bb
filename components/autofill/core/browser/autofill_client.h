@@ -51,6 +51,7 @@ class AutofillWebDataService;
 class CardUnmaskDelegate;
 class CreditCard;
 class FormStructure;
+class MigratableCreditCard;
 class PersonalDataManager;
 struct Suggestion;
 
@@ -138,8 +139,16 @@ class AutofillClient : public RiskDataLoader {
                                 base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
   virtual void OnUnmaskVerificationResult(PaymentsRpcResult result) = 0;
 
-  // Runs |closure| if the user accepts the migration process.
-  virtual void ShowLocalCardMigrationPrompt(base::OnceClosure closure) = 0;
+  // Runs |closure| if the user accepts the card migration offer. This causes
+  // the card migration dialog to be shown.
+  virtual void ShowLocalCardMigrationDialog(
+      base::OnceClosure show_migration_dialog_closure) = 0;
+
+  // Runs |closure| if the user would like the selected
+  // |migratable_credit_cards| to be uploaded to cloud.
+  virtual void ConfirmMigrateLocalCardToCloud(
+      std::vector<MigratableCreditCard>& migratable_credit_cards,
+      base::OnceClosure start_migrating_cards_closure) = 0;
 
   // Runs |callback| if the |card| should be imported as personal data.
   // |metric_logger| can be used to log user actions.
