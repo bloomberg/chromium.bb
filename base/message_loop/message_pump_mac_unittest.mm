@@ -16,6 +16,14 @@
 - (void)runTestThenCloseAlert:(NSAlert*)alert;
 @end
 
+namespace {
+
+// Internal constants from message_pump_mac.mm.
+constexpr int kAllModesMask = 0xf;
+constexpr int kNSApplicationModalSafeModeMask = 0x3;
+
+}  // namespace
+
 namespace base {
 
 class TestMessagePumpCFRunLoopBase {
@@ -184,8 +192,7 @@ TEST(MessagePumpMacTest, ScopedPumpMessagesAttemptWithModalDialog) {
   {
     base::ScopedPumpMessagesInPrivateModes allow_private;
     // No modal window, so all modes should be pumped.
-    EXPECT_EQ(MessagePumpCFRunLoopBase::kAllModesMask,
-              allow_private.GetModeMaskForTest());
+    EXPECT_EQ(kAllModesMask, allow_private.GetModeMaskForTest());
   }
 
   base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
@@ -209,7 +216,7 @@ TEST(MessagePumpMacTest, ScopedPumpMessagesAttemptWithModalDialog) {
   {
     base::ScopedPumpMessagesInPrivateModes allow_private;
     // With a modal window, only safe modes should be pumped.
-    EXPECT_EQ(base::MessagePumpCFRunLoopBase::kNSApplicationModalSafeModeMask,
+    EXPECT_EQ(kNSApplicationModalSafeModeMask,
               allow_private.GetModeMaskForTest());
   }
   [[alert buttons][0] performClick:nil];
