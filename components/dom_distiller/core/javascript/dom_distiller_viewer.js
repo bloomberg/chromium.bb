@@ -204,8 +204,8 @@ var pincher = (function() {
   function restoreCenter() {
     var rect = focusElement.getBoundingClientRect();
     var targetTop = focusPos * (rect.bottom - rect.top) + rect.top +
-        document.body.scrollTop - (initClientMid.y + shiftY);
-    document.body.scrollTop = targetTop;
+        document.scrollingElement.scrollTop - (initClientMid.y + shiftY);
+    document.scrollingElement.scrollTop = targetTop;
   }
 
   function endPinch() {
