@@ -45,6 +45,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/display/display_switches.h"
 
 #if defined(USE_AURA)
@@ -754,6 +755,12 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPI) {
 #define MAYBE_TestWebRequestAPIWithHeaders TestWebRequestAPIWithHeaders
 #endif
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, MAYBE_TestWebRequestAPIWithHeaders) {
+#if defined(OS_LINUX)
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // Flaky on Linux, https://crbug.com/873792
+    return;
+  }
+#endif  // defined(OS_LINUX)
   std::string app_location = "web_view/apitest";
   StartTestServer(app_location);
   RunTest("testWebRequestAPIWithHeaders", app_location);
