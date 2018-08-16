@@ -247,4 +247,8 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
                     mSecondSlotData.tabSwitcherModeButtonData);
         }
     }
+
+    void setPrimaryColor(int color) {
+        mModel.setValue(BottomToolbarModel.PRIMARY_COLOR, color);
+    }
 }

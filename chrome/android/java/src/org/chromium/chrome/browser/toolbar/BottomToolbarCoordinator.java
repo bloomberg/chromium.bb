@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.content.res.ColorStateList;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
@@ -21,6 +23,7 @@ import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.BottomToolbarViewBinder.ViewHolder;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonSlotData.ToolbarButtonData;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -40,11 +43,17 @@ public class BottomToolbarCoordinator {
     /** The menu button that lives in the bottom toolbar. */
     private final MenuButton mMenuButton;
 
+    /** The light mode tint to be used in bottom toolbar buttons. */
+    private final ColorStateList mLightModeTint;
+
+    /** The dark mode tint to be used in bottom toolbar buttons. */
+    private final ColorStateList mDarkModeTint;
+
     /**
      * Build the coordinator that manages the bottom toolbar.
      * @param fullscreenManager A {@link ChromeFullscreenManager} to update the bottom controls
      *                          height for the renderer.
-     * @param root The root {@link ViewGroup} for locating the vies to inflate.
+     * @param root The root {@link ViewGroup} for locating the views to inflate.
      * @param firstSlotData The data required to fill in the leftmost bottom toolbar button slot.
      * @param secondSlotData The data required to fill in the second bottom toolbar button slot.
      */
@@ -71,6 +80,11 @@ public class BottomToolbarCoordinator {
 
         mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(toolbarRoot);
         mMenuButton = toolbarRoot.findViewById(R.id.menu_button_wrapper);
+
+        mLightModeTint =
+                AppCompatResources.getColorStateList(root.getContext(), R.color.light_mode_tint);
+        mDarkModeTint =
+                AppCompatResources.getColorStateList(root.getContext(), R.color.dark_mode_tint);
     }
 
     /**
@@ -147,6 +161,15 @@ public class BottomToolbarCoordinator {
 
     public View getMenuButton() {
         return mMenuButton.getMenuButton();
+    }
+
+    public void setPrimaryColor(int color) {
+        mMediator.setPrimaryColor(color);
+
+        final boolean useLight = ColorUtils.shouldUseLightForegroundOnBackground(color);
+        final ColorStateList tint = useLight ? mLightModeTint : mDarkModeTint;
+        mTabSwitcherButtonCoordinator.setTint(tint);
+        mMenuButton.setTint(tint);
     }
 
     /**

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.content.res.ColorStateList;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
@@ -119,6 +120,13 @@ public class TabSwitcherButtonCoordinator {
         };
 
         updateTabCount();
+    }
+
+    /**
+     * @param tint The {@ColorStateList} used to tint the button.
+     */
+    public void setTint(ColorStateList tint) {
+        mTabSwitcherButtonModel.setValue(TabSwitcherButtonProperties.TINT, tint);
     }
 
     public void destroy() {

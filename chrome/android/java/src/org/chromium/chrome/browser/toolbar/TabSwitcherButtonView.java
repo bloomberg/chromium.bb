@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
@@ -18,7 +19,7 @@ public class TabSwitcherButtonView extends ImageView {
     /**
      * A drawable for the tab switcher icon.
      */
-    private TabSwitcherDrawable mTabSwitcherButtonButtonDrawable;
+    private TabSwitcherDrawable mTabSwitcherButtonDrawable;
 
     public TabSwitcherButtonView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -28,9 +29,9 @@ public class TabSwitcherButtonView extends ImageView {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mTabSwitcherButtonButtonDrawable =
+        mTabSwitcherButtonDrawable =
                 TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), false);
-        setImageDrawable(mTabSwitcherButtonButtonDrawable);
+        setImageDrawable(mTabSwitcherButtonDrawable);
     }
 
     /**
@@ -41,6 +42,13 @@ public class TabSwitcherButtonView extends ImageView {
         setContentDescription(getResources().getQuantityString(
                 R.plurals.accessibility_toolbar_btn_tabswitcher_toggle, numberOfTabs,
                 numberOfTabs));
-        mTabSwitcherButtonButtonDrawable.updateForTabCount(numberOfTabs, false);
+        mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, false);
+    }
+
+    /**
+     * @param tint The {@ColorStateList} used to tint the button.
+     */
+    public void setTint(ColorStateList tint) {
+        mTabSwitcherButtonDrawable.setTint(tint);
     }
 }

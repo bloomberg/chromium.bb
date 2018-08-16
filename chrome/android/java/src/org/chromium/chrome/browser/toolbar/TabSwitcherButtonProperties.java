@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.content.res.ColorStateList;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 
@@ -26,6 +27,9 @@ public interface TabSwitcherButtonProperties {
     public static final ObjectPropertyKey<OnLongClickListener> ON_LONG_CLICK_LISTENER =
             new ObjectPropertyKey<>();
 
+    /** The button tint. */
+    public static final ObjectPropertyKey<ColorStateList> TINT = new ObjectPropertyKey<>();
+
     public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {NUMBER_OF_TABS, ON_CLICK_LISTENER, ON_LONG_CLICK_LISTENER};
+            new PropertyKey[] {NUMBER_OF_TABS, ON_CLICK_LISTENER, ON_LONG_CLICK_LISTENER, TINT};
 }
