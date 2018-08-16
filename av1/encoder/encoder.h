@@ -684,8 +684,6 @@ typedef struct AV1_COMP {
 
   search_site_config ss_cfg;
 
-  int multi_arf_allowed;
-
   TileDataEnc *tile_data;
   int allocated_tiles;  // Keep track of memory allocated for tiles.
 

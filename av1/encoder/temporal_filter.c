@@ -540,14 +540,6 @@ static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
     strength = group_boost / 300;
   }
 
-  // Adjustments for second level arf in multi arf case.
-  if (cpi->oxcf.pass == 2 && cpi->multi_arf_allowed) {
-    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-    if (gf_group->rf_level[gf_group->index] != GF_ARF_STD) {
-      strength >>= 1;
-    }
-  }
-
   *arnr_frames = frames;
   *arnr_strength = strength;
 }

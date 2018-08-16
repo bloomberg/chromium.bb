@@ -1083,6 +1083,11 @@ static void set_config_arg_ctrls(struct stream_config *config, int key,
   assert(j < (int)ARG_CTRL_CNT_MAX);
   config->arg_ctrls[j][0] = key;
   config->arg_ctrls[j][1] = arg_parse_enum_or_int(arg);
+
+  if (key == AOME_SET_ENABLEAUTOALTREF && config->arg_ctrls[j][1] > 1) {
+    warn("auto-alt-ref > 1 is deprecated... setting auto-alt-ref=1\n");
+    config->arg_ctrls[j][1] = 1;
+  }
   if (j == config->arg_ctrl_cnt) config->arg_ctrl_cnt++;
 }
 

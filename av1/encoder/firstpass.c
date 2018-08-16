@@ -2340,21 +2340,18 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     active_min_gf_interval = rc->min_gf_interval + AOMMIN(2, int_max_q / 200);
     if (active_min_gf_interval > rc->max_gf_interval)
       active_min_gf_interval = rc->max_gf_interval;
-    if (cpi->multi_arf_allowed) {
-      active_max_gf_interval = rc->max_gf_interval;
-    } else {
-      // The value chosen depends on the active Q range. At low Q we have
-      // bits to spare and are better with a smaller interval and smaller boost.
-      // At high Q when there are few bits to spare we are better with a longer
-      // interval to spread the cost of the GF.
-      active_max_gf_interval = 12 + AOMMIN(4, (int_lbq / 6));
 
-      // We have: active_min_gf_interval <= rc->max_gf_interval
-      if (active_max_gf_interval < active_min_gf_interval)
-        active_max_gf_interval = active_min_gf_interval;
-      else if (active_max_gf_interval > rc->max_gf_interval)
-        active_max_gf_interval = rc->max_gf_interval;
-    }
+    // The value chosen depends on the active Q range. At low Q we have
+    // bits to spare and are better with a smaller interval and smaller boost.
+    // At high Q when there are few bits to spare we are better with a longer
+    // interval to spread the cost of the GF.
+    active_max_gf_interval = 12 + AOMMIN(4, (int_lbq / 6));
+
+    // We have: active_min_gf_interval <= rc->max_gf_interval
+    if (active_max_gf_interval < active_min_gf_interval)
+      active_max_gf_interval = active_min_gf_interval;
+    else if (active_max_gf_interval > rc->max_gf_interval)
+      active_max_gf_interval = rc->max_gf_interval;
   }
 #endif  // !CONFIG_FIX_GF_LENGTH
   double avg_sr_coded_error = 0;

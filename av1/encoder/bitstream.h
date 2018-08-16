@@ -32,8 +32,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dest, size_t *size);
 
 static INLINE int av1_preserve_existing_gf(AV1_COMP *cpi) {
   // Do not swap gf and arf indices for internal overlay frames
-  return !cpi->multi_arf_allowed && cpi->rc.is_src_frame_alt_ref &&
-         !cpi->rc.is_src_frame_ext_arf;
+  return cpi->rc.is_src_frame_alt_ref && !cpi->rc.is_src_frame_ext_arf;
 }
 
 void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
