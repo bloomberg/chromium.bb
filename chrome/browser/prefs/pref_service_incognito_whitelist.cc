@@ -169,15 +169,6 @@ const char* const kPersistentPrefNames[] = {
 // audited, checked with owners, and removed or transfered to
 // |kPersistentPrefNames|.
 const char* const kTemporaryIncognitoWhitelist[] = {
-// ash/public/cpp/ash_pref_names.h
-#if defined(OS_CHROMEOS)
-    ash::prefs::kDetachableBaseDevices, ash::prefs::kEnableStylusTools,
-    ash::prefs::kHasSeenStylus,
-
-    // TODO(https://crbug.com/861722):  Check with mukai@ before removing.
-    ash::prefs::kTouchpadEnabled, ash::prefs::kTouchscreenEnabled,
-#endif  // defined(OS_CHROMEOS)
-
 // chrome/browser/accessibility/animation_policy_prefs.h
 #if !defined(OS_ANDROID)
     kAnimationPolicyAllowed, kAnimationPolicyOnce, kAnimationPolicyNone,
