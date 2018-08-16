@@ -75,6 +75,16 @@ void AccessibilityManager::HideHighlights() {
 
 void AccessibilityManager::SetScreenReader(bool enable) {
   touch_exploration_manager_->Enable(enable);
+
+  // TODO(rdaum): Until we can fix triple-tap and two finger gesture conflicts
+  // between TouchExplorationController, FullscreenMagnifier, and
+  // TripleTapDetector, we have to make sure magnification is not on while
+  // screenreader is active.
+  // The triple-tap gesture can still be enabled, but will not do anything until
+  // screenreader is disabled again.
+  if (enable) {
+    magnification_controller_->SetEnabled(false);
+  }
 }
 
 void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
