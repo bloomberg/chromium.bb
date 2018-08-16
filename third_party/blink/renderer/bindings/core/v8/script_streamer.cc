@@ -308,7 +308,9 @@ void ScriptStreamer::SuppressStreaming(NotStreamingReason reason) {
   suppressed_reason_ = reason;
 }
 
-static void RunScriptStreamingTask(
+namespace {
+
+void RunScriptStreamingTask(
     std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task,
     ScriptStreamer* streamer) {
   TRACE_EVENT1(
@@ -320,6 +322,23 @@ static void RunScriptStreamingTask(
   task->Run();
   streamer->StreamingCompleteOnBackgroundThread();
 }
+
+void RunBlockingScriptStreamingTask(
+    std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task,
+    ScriptStreamer* streamer,
+    std::atomic_flag* blocking_task_started_or_cancelled) {
+  if (!blocking_task_started_or_cancelled->test_and_set())
+    return;
+  RunScriptStreamingTask(std::move(task), streamer);
+}
+
+void RunNonBlockingScriptStreamingTask(
+    std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task,
+    ScriptStreamer* streamer) {
+  RunScriptStreamingTask(std::move(task), streamer);
+}
+
+}  // namespace
 
 bool ScriptStreamer::HasEnoughDataForStreaming(size_t resource_buffer_size) {
   if (RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled()) {
@@ -408,17 +427,24 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
     }
 
     if (RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled()) {
-      // Script streaming tasks are high priority, as they can block the
-      // parser, and they can (and probably will) block during their own
-      // execution as they wait for more input.
+      // Script streaming tasks are high priority, as they can block the parser,
+      // and they can (and probably will) block during their own execution as
+      // they wait for more input.
+      //
+      // Pass through the atomic cancellation token which is set to true by the
+      // task when it is started, or set to true by the streamer if it wants to
+      // cancel the task.
       //
       // TODO(leszeks): Decrease the priority of these tasks where possible.
       BackgroundScheduler::PostOnBackgroundThreadWithTraits(
           FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
-          CrossThreadBind(RunScriptStreamingTask,
+          CrossThreadBind(RunBlockingScriptStreamingTask,
                           WTF::Passed(std::move(script_streaming_task)),
-                          WrapCrossThreadPersistent(this)));
+                          WrapCrossThreadPersistent(this),
+                          WTF::CrossThreadUnretained(
+                              &blocking_task_started_or_cancelled_)));
     } else {
+      blocking_task_started_or_cancelled_.test_and_set();
       ScriptStreamerThread::Shared()->PostTask(
           CrossThreadBind(&ScriptStreamerThread::RunScriptStreamingTask,
                           WTF::Passed(std::move(script_streaming_task)),
@@ -440,8 +466,34 @@ void ScriptStreamer::NotifyFinished() {
     SuppressStreaming(kScriptTooSmall);
   }
 
-  if (stream_)
+  if (stream_) {
+    // If the corresponding blocking task hasn't started yet, cancel it and post
+    // a non-blocking task, since we know now that all the data is received and
+    // we will no longer block.
+    //
+    // TODO(874080): Once we have mutable task traits, simply unmark the
+    // existing task as no longer MayBlock.
+    if (RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled() &&
+        !blocking_task_started_or_cancelled_.test_and_set()) {
+      ScriptState::Scope scope(script_state_);
+      std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>
+          script_streaming_task(
+              base::WrapUnique(v8::ScriptCompiler::StartStreamingScript(
+                  script_state_->GetIsolate(), source_.get(),
+                  compile_options_)));
+
+      // The task creation shouldn't fail, since it didn't fail before during
+      // NotifyAppendData.
+      CHECK(script_streaming_task);
+      BackgroundScheduler::PostOnBackgroundThreadWithTraits(
+          FROM_HERE, {base::TaskPriority::USER_BLOCKING},
+          CrossThreadBind(RunNonBlockingScriptStreamingTask,
+                          WTF::Passed(std::move(script_streaming_task)),
+                          WrapCrossThreadPersistent(this)));
+    }
+
     stream_->DidFinishLoading();
+  }
   loading_finished_ = true;
 
   NotifyFinishedToClient();
