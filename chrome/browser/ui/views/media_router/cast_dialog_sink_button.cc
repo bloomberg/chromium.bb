@@ -92,6 +92,8 @@ std::unique_ptr<views::View> CreateSecondaryIconForSink(
 }
 
 base::string16 GetStatusTextForSink(const UIMediaSink& sink) {
+  if (sink.issue)
+    return base::UTF8ToUTF16(sink.issue->info().title);
   if (!sink.status_text.empty())
     return sink.status_text;
   switch (sink.state) {
