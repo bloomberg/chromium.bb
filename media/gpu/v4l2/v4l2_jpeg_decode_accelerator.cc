@@ -133,9 +133,8 @@ V4L2JpegDecodeAccelerator::JobRecord::JobRecord(
     const BitstreamBuffer& bitstream_buffer,
     scoped_refptr<VideoFrame> video_frame)
     : bitstream_buffer_id(bitstream_buffer.id()),
-      shm(bitstream_buffer.handle(),
-          bitstream_buffer.size(),
-          bitstream_buffer.offset()),
+      shm(bitstream_buffer.handle(), bitstream_buffer.size(), true),
+      offset(bitstream_buffer.offset()),
       out_frame(video_frame) {}
 
 V4L2JpegDecodeAccelerator::JobRecord::~JobRecord() {}
@@ -290,7 +289,7 @@ bool V4L2JpegDecodeAccelerator::IsSupported() {
 void V4L2JpegDecodeAccelerator::DecodeTask(
     std::unique_ptr<JobRecord> job_record) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
-  if (!job_record->shm.IsValid()) {
+  if (!job_record->shm.MapAt(job_record->offset, job_record->shm.size())) {
     VPLOGF(1) << "could not map bitstream_buffer";
     PostNotifyError(job_record->bitstream_buffer_id, UNREADABLE_INPUT);
     return;
