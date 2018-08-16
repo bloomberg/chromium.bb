@@ -50,16 +50,13 @@ class AudibleContentsTracker : public BrowserListObserver,
   void OnBrowserRemoved(Browser* browser) override;
 
   // TabStripModelObserver:
-  void TabClosingAt(TabStripModel* model,
-                    content::WebContents* web_contents,
-                    int index) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
   void TabChangedAt(content::WebContents* web_contents,
                     int index,
                     TabChangeType change_type) override;
-  void TabReplacedAt(TabStripModel* model,
-                     content::WebContents* old_web_contents,
-                     content::WebContents* new_web_contents,
-                     int index) override;
 
   // Used for managing audible_contents_, and invoking OnAudioStart and
   // OnAudioEnd callbacks.

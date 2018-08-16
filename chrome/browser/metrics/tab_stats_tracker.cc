@@ -240,15 +240,32 @@ void TabStatsTracker::OnBrowserRemoved(Browser* browser) {
   browser->tab_strip_model()->RemoveObserver(this);
 }
 
-void TabStatsTracker::TabInsertedAt(TabStripModel* model,
-                                    content::WebContents* web_contents,
-                                    int index,
-                                    bool foreground) {
+void TabStatsTracker::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  OnInitialOrInsertedTab(web_contents);
+  if (change.type() == TabStripModelChange::kInserted) {
+    for (const auto& delta : change.deltas())
+      OnInitialOrInsertedTab(delta.insert.contents);
 
-  tab_stats_data_store_->UpdateMaxTabsPerWindowIfNeeded(
-      static_cast<size_t>(model->count()));
+    tab_stats_data_store_->UpdateMaxTabsPerWindowIfNeeded(
+        static_cast<size_t>(tab_strip_model->count()));
+
+    return;
+  }
+
+  if (change.type() == TabStripModelChange::kReplaced) {
+    for (const auto& delta : change.deltas()) {
+      content::WebContents* old_contents = delta.replace.old_contents;
+      content::WebContents* new_contents = delta.replace.new_contents;
+      tab_stats_data_store_->OnTabReplaced(old_contents, new_contents);
+      web_contents_usage_observers_.insert(std::make_pair(
+          new_contents,
+          std::make_unique<WebContentsUsageObserver>(new_contents, this)));
+      web_contents_usage_observers_.erase(old_contents);
+    }
+  }
 }
 
 void TabStatsTracker::TabChangedAt(content::WebContents* web_contents,
@@ -260,18 +277,6 @@ void TabStatsTracker::TabChangedAt(content::WebContents* web_contents,
     return;
   if (web_contents->IsCurrentlyAudible())
     tab_stats_data_store_->OnTabAudible(web_contents);
-}
-
-void TabStatsTracker::TabReplacedAt(TabStripModel* tab_strip_model,
-                                    content::WebContents* old_contents,
-                                    content::WebContents* new_contents,
-                                    int index) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  tab_stats_data_store_->OnTabReplaced(old_contents, new_contents);
-  web_contents_usage_observers_.insert(std::make_pair(
-      new_contents,
-      std::make_unique<WebContentsUsageObserver>(new_contents, this)));
-  web_contents_usage_observers_.erase(old_contents);
 }
 
 void TabStatsTracker::OnResume() {
