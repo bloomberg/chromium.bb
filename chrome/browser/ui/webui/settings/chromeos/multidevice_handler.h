@@ -39,6 +39,17 @@ class MultideviceHandler
   void OnHostStatusChanged(
       multidevice_setup::mojom::HostStatus host_status,
       const base::Optional<cryptauth::RemoteDeviceRef>& host_device) override;
+  void OnFeatureStatesChanged(
+      const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+          feature_states_map) override;
+
+  // Attempts to send the most recent PageContentData dictionary to the WebUI
+  // page as a response to a getPageContent() request.
+  void AttemptGetPageContentResponse(const std::string& js_callback_id);
+
+  // Attempts to send the most recent PageContentData dictionary to the WebUI
+  // page as an update (e.g., not due to a getPageCOntent() request.
+  void AttemptUpdatePageContent();
 
   void HandleShowMultiDeviceSetupDialog(const base::ListValue* args);
   void HandleGetPageContent(const base::ListValue* args);
@@ -48,12 +59,27 @@ class MultideviceHandler
       const std::string& js_callback_id,
       multidevice_setup::mojom::HostStatus host_status,
       const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
+  void OnFeatureStatesFetched(
+      const std::string& js_callback_id,
+      const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+          feature_states_map);
+
+  // Returns null if requisite data has not yet been fetched (i.e., if one or
+  // both of |last_host_status_update_| and |last_feature_states_update_| is
+  // null).
+  std::unique_ptr<base::DictionaryValue> GeneratePageContentDataDictionary();
 
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
 
   ScopedObserver<multidevice_setup::MultiDeviceSetupClient,
                  multidevice_setup::MultiDeviceSetupClient::Observer>
       multidevice_setup_observer_;
+
+  base::Optional<std::pair<multidevice_setup::mojom::HostStatus,
+                           base::Optional<cryptauth::RemoteDeviceRef>>>
+      last_host_status_update_;
+  base::Optional<multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap>
+      last_feature_states_update_;
 
   // Used to cancel callbacks when JavaScript becomes disallowed.
   base::WeakPtrFactory<MultideviceHandler> callback_weak_ptr_factory_;
