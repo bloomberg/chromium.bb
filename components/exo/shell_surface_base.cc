@@ -725,42 +725,6 @@ void ShellSurfaceBase::OnSetFrameColors(SkColor active_color,
   }
 }
 
-void ShellSurfaceBase::OnSetParent(Surface* parent,
-                                   const gfx::Point& position) {
-  views::Widget* parent_widget =
-      parent ? views::Widget::GetTopLevelWidgetForNativeView(parent->window())
-             : nullptr;
-  if (parent_widget) {
-    // Set parent window if using default container and the container itself
-    // is not the parent.
-    if (container_ == ash::kShellWindowId_DefaultContainer)
-      SetParentWindow(parent_widget->GetNativeWindow());
-
-    origin_ = position;
-    views::View::ConvertPointToScreen(
-        parent_widget->widget_delegate()->GetContentsView(), &origin_);
-
-    if (!widget_)
-      return;
-
-    ash::wm::WindowState* window_state =
-        ash::wm::GetWindowState(widget_->GetNativeWindow());
-    if (window_state->is_dragged())
-      return;
-
-    gfx::Rect widget_bounds = widget_->GetWindowBoundsInScreen();
-    gfx::Rect new_widget_bounds(origin_, widget_bounds.size());
-    if (new_widget_bounds != widget_bounds) {
-      base::AutoReset<bool> auto_ignore_window_bounds_changes(
-          &ignore_window_bounds_changes_, true);
-      widget_->SetBounds(new_widget_bounds);
-      UpdateSurfaceBounds();
-    }
-  } else {
-    SetParentWindow(nullptr);
-  }
-}
-
 void ShellSurfaceBase::OnSetStartupId(const char* startup_id) {
   SetStartupId(startup_id);
 }
@@ -1092,18 +1056,8 @@ void ShellSurfaceBase::UpdateWidgetBounds() {
   if (!new_widget_bounds)
     return;
 
-  // Set |ignore_window_bounds_changes_| as this change to window bounds
-  // should not result in a configure request.
-  DCHECK(!ignore_window_bounds_changes_);
-  ignore_window_bounds_changes_ = true;
   if (*new_widget_bounds != widget_->GetWindowBoundsInScreen())
     SetWidgetBounds(*new_widget_bounds);
-  ignore_window_bounds_changes_ = false;
-}
-
-void ShellSurfaceBase::SetWidgetBounds(const gfx::Rect& bounds) {
-  widget_->SetBounds(bounds);
-  UpdateSurfaceBounds();
 }
 
 void ShellSurfaceBase::UpdateSurfaceBounds() {
