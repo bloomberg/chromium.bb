@@ -65,7 +65,6 @@ KeyboardHandler.prototype = {
     for (let command of this.switchAccess_.getCommands()) {
       if (this.keyCodeFor_(command) === event.keyCode) {
         let key = event.key.toUpperCase();
-        console.log('\'' + key + '\' pressed for command: ' + command);
         this.switchAccess_.runCommand(command);
         this.switchAccess_.performedUserAction();
         return;

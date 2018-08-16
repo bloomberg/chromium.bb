@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+let StateType = chrome.automation.StateType;
+let RoleType = chrome.automation.RoleType;
+
 /**
  * Class containing predicates for the chrome automation API. Each predicate
  * can be run on one or more AutomationNodes and returns a boolean value.
@@ -61,7 +64,7 @@ SwitchAccessPredicate.root = function(scope) {
  */
 SwitchAccessPredicate.visit = function(scope) {
   return function(node) {
-    return node.role !== chrome.automation.RoleType.DESKTOP &&
+    return node.role !== RoleType.DESKTOP &&
         SwitchAccessPredicate.isSubtreeLeaf(node, scope);
   }.bind(scope);
 };
@@ -98,8 +101,8 @@ SwitchAccessPredicate.isGroup = function(node, scope) {
   // Work around for client nested in client. No need to have user select both
   // clients for a window. Once locations for outer client updates correctly,
   // this won't be needed.
-  if (node.role === chrome.automation.RoleType.CLIENT &&
-      node.role === scope.role && node !== scope)
+  if (node.role === RoleType.CLIENT && node.role === scope.role &&
+      node !== scope)
     return false;
 
   let interestingBranches = 0;
@@ -154,28 +157,22 @@ SwitchAccessPredicate.isActionable = function(node) {
   let role = node.role;
   let state = node.state;
 
-  // TODO(elichtenberg): Define shorthand for chrome.automation.RoleType and
-  // StateType.
-
   // Skip things that are offscreen
-  if (state[chrome.automation.StateType.OFFSCREEN] || loc.top < 0 ||
-      loc.left < 0)
+  if (state[StateType.OFFSCREEN] || loc.top < 0 || loc.left < 0)
     return false;
 
   // Should just leave these as groups
-  if (role === chrome.automation.RoleType.WEB_VIEW ||
-      role === chrome.automation.RoleType.ROOT_WEB_AREA)
+  if (role === RoleType.WEB_VIEW || role === RoleType.ROOT_WEB_AREA)
     return false;
 
   if (parent) {
     // crbug.com/710559
     // Work around for browser tabs
-    if (role === chrome.automation.RoleType.TAB &&
-        parent.role === chrome.automation.RoleType.TAB_LIST &&
-        root.role === chrome.automation.RoleType.DESKTOP)
+    if (role === RoleType.TAB && parent.role === RoleType.TAB_LIST &&
+        root.role === RoleType.DESKTOP)
       return true;
   }
 
   // The general rule that applies to everything.
-  return state[chrome.automation.StateType.FOCUSABLE] === true;
+  return state[StateType.FOCUSABLE];
 };

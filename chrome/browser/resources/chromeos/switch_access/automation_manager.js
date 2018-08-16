@@ -64,15 +64,9 @@ AutomationManager.Color = {
 
 AutomationManager.prototype = {
   /**
-   * Set this.node_, this.root_, and this.desktop_ to the desktop node, and
-   * creates an initial tree walker.
-   *
    * @private
    */
   init_: function() {
-    console.log('AutomationNode for desktop is loaded');
-    this.printNode_(this.node_);
-
     this.desktop_.addEventListener(
         chrome.automation.EventType.FOCUS, this.handleFocusChange_.bind(this),
         false);
@@ -95,7 +89,6 @@ AutomationManager.prototype = {
   handleFocusChange_: function(event) {
     if (this.node_ === event.target)
       return;
-    console.log('Focus changed');
 
     // Rebuild scope stack and set scope for focused node.
     this.buildScopeStack_(event.target);
@@ -104,10 +97,9 @@ AutomationManager.prototype = {
     this.node_ = event.target;
 
     // In case the node that gained focus is not a subtreeLeaf.
-    if (SwitchAccessPredicate.isSubtreeLeaf(this.node_, this.scope_)) {
-      this.printNode_(this.node_);
+    if (SwitchAccessPredicate.isSubtreeLeaf(this.node_, this.scope_))
       this.updateFocusRing_();
-    } else
+    else
       this.moveForward();
   },
 
@@ -163,7 +155,6 @@ AutomationManager.prototype = {
     if (!removedByRWA && treeChange.target !== this.node_)
       return;
 
-    console.log('Node removed');
     chrome.accessibilityPrivate.setFocusRing([]);
 
     // Current node not invalid until after treeChange callback, so move to
@@ -247,7 +238,6 @@ AutomationManager.prototype = {
    */
   setCurrentNode_: function(node) {
     this.node_ = node;
-    this.printNode_(this.node_);
     this.updateFocusRing_();
   },
 
@@ -258,7 +248,6 @@ AutomationManager.prototype = {
     this.node_ = this.scope_;
     this.visitingScopeAsActionable_ = true;
 
-    this.printNode_(this.node_);
     this.updateFocusRing_(AutomationManager.Color.LEAF);
   },
 
@@ -292,22 +281,17 @@ AutomationManager.prototype = {
       } while (!this.scope_.role && this.scopeStack_.length > 0);
 
       this.updateFocusRing_();
-      console.log('Moved to previous scope');
-      this.printNode_(this.node_);
       return;
     }
 
     if (SwitchAccessPredicate.isGroup(this.node_, this.scope_)) {
       this.scopeStack_.push(this.scope_);
       this.scope_ = this.node_;
-      console.log('Entered scope');
       this.moveForward();
       return;
     }
 
     this.node_.doDefault();
-    console.log('Performed default action');
-    console.log('\n');
   },
 
   /**
@@ -341,7 +325,6 @@ AutomationManager.prototype = {
   startAtValidNode_: function() {
     if (this.node_.role)
       return;
-    console.log('Finding new valid node');
 
     // Current node is invalid, but current scope is still valid, so set node
     // to the current scope.
