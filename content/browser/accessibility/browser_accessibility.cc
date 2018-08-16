@@ -691,20 +691,24 @@ bool BrowserAccessibility::HasAction(ax::mojom::Action action_enum) const {
   return GetData().HasAction(action_enum);
 }
 
-bool BrowserAccessibility::HasCaret() const {
-  if (IsPlainTextField() &&
-      HasIntAttribute(ax::mojom::IntAttribute::kTextSelStart) &&
-      HasIntAttribute(ax::mojom::IntAttribute::kTextSelEnd)) {
-    return true;
-  }
-
-  // The caret is always at the focus of the selection.
+bool BrowserAccessibility::HasVisibleCaretOrSelection() const {
   int32_t focus_id = manager()->GetTreeData().sel_focus_object_id;
   BrowserAccessibility* focus_object = manager()->GetFromID(focus_id);
   if (!focus_object)
     return false;
 
-  return focus_object->IsDescendantOf(this);
+  // Selection or caret will be visible in a focused editable area.
+  if (HasState(ax::mojom::State::kEditable)) {
+    return IsPlainTextField() ? focus_object == this
+                              : focus_object->IsDescendantOf(this);
+  }
+
+  // The selection will be visible in non-editable content only if it is not
+  // collapsed into a caret.
+  return (focus_id != manager()->GetTreeData().sel_anchor_object_id ||
+          manager()->GetTreeData().sel_focus_offset !=
+              manager()->GetTreeData().sel_anchor_offset) &&
+         focus_object->IsDescendantOf(this);
 }
 
 bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
