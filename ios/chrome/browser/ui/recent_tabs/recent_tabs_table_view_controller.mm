@@ -90,9 +90,6 @@ int const kNumberOfSectionsBeforeSessions = 1;
 const CGFloat kEstimatedRowHeight = 56;
 // Separation space between sections.
 const CGFloat kSeparationSpaceBetweenSections = 9;
-// The UI displays relative time for up to this number of hours and then
-// switches to absolute values.
-const int kRelativeTimeMaxHours = 4;
 // Section index for recently closed tabs.
 const int kRecentlyClosedTabsSectionIndex = 0;
 
@@ -832,16 +829,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
   if (last_used_delta.InMicroseconds() < base::Time::kMicrosecondsPerMinute) {
     timeString = l10n_util::GetNSString(IDS_IOS_OPEN_TABS_RECENTLY_SYNCED);
-    // This will return something similar to "Seconds ago mm/dd/yy"
-    return [NSString stringWithFormat:@"%@ %@", timeString, dateString];
-  }
-
-  if (last_used_delta.InHours() < kRelativeTimeMaxHours) {
-    timeString = base::SysUTF16ToNSString(
-        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
-                               ui::TimeFormat::LENGTH_SHORT, last_used_delta));
-    // This will return something similar to "1 min/hour ago mm/dd/yy"
-    return [NSString stringWithFormat:@"%@ %@", timeString, dateString];
+    // This will return something similar to "Seconds ago"
+    return [NSString stringWithFormat:@"%@", timeString];
   }
 
   NSDate* date = [NSDate dateWithTimeIntervalSince1970:time.ToTimeT()];
@@ -849,6 +838,26 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       [NSDateFormatter localizedStringFromDate:date
                                      dateStyle:NSDateFormatterNoStyle
                                      timeStyle:NSDateFormatterShortStyle];
+
+  NSInteger today = [[NSCalendar currentCalendar] component:NSCalendarUnitDay
+                                                   fromDate:[NSDate date]];
+  NSInteger dateDay =
+      [[NSCalendar currentCalendar] component:NSCalendarUnitDay fromDate:date];
+
+  if (today == dateDay) {
+    timeString = base::SysUTF16ToNSString(
+        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
+                               ui::TimeFormat::LENGTH_SHORT, last_used_delta));
+    // This will return something similar to "1 min/hour ago"
+    return [NSString stringWithFormat:@"%@", timeString];
+  }
+
+  if (today - dateDay == 1) {
+    dateString = l10n_util::GetNSString(IDS_IOS_OPEN_TABS_SYNCED_YESTERDAY);
+    // This will return something similar to "H:MM Yesterday"
+    return [NSString stringWithFormat:@"%@ %@", timeString, dateString];
+  }
+
   // This will return something similar to "H:MM mm/dd/yy"
   return [NSString stringWithFormat:@"%@ %@", timeString, dateString];
 }
