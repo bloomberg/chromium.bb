@@ -33,13 +33,70 @@ NetworkProcessPolicy::NetworkProcessPolicy() {}
 NetworkProcessPolicy::~NetworkProcessPolicy() {}
 
 ResultExpr NetworkProcessPolicy::EvaluateSyscall(int sysno) const {
-  auto* broker_process = SandboxLinux::GetInstance()->broker_process();
-  if (broker_process->IsSyscallAllowed(sysno)) {
-    return Trap(BrokerProcess::SIGSYS_Handler, broker_process);
+  switch (sysno) {
+#if defined(__NR_access)
+    case __NR_access:
+#endif
+#if defined(__NR_faccessat)
+    case __NR_faccessat:
+#endif
+#if defined(__NR_mkdir)
+    case __NR_mkdir:
+#endif
+#if defined(__NR_mkdirat)
+    case __NR_mkdirat:
+#endif
+#if defined(__NR_open)
+    case __NR_open:
+#endif
+#if defined(__NR_openat)
+    case __NR_openat:
+#endif
+#if defined(__NR_readlink)
+    case __NR_readlink:
+#endif
+#if defined(__NR_readlinkat)
+    case __NR_readlinkat:
+#endif
+#if defined(__NR_rmdir)
+    case __NR_rmdir:
+#endif
+#if defined(__NR_rename)
+    case __NR_rename:
+#endif
+#if defined(__NR_renameat)
+    case __NR_renameat:
+#endif
+#if defined(__NR_stat)
+    case __NR_stat:
+#endif
+#if defined(__NR_stat64)
+    case __NR_stat64:
+#endif
+#if defined(__NR_lstat)
+    case __NR_lstat:
+#endif
+#if defined(__NR_lstat64)
+    case __NR_lstat64:
+#endif
+#if defined(__NR_fstatat)
+    case __NR_fstatat:
+#endif
+#if defined(__NR_newfstatat)
+    case __NR_newfstatat:
+#endif
+#if defined(__NR_unlink)
+    case __NR_unlink:
+#endif
+#if defined(__NR_unlinkat)
+    case __NR_unlinkat:
+#endif
+      return Trap(BrokerProcess::SIGSYS_Handler,
+                  SandboxLinux::GetInstance()->broker_process());
+    default:
+      // TODO(tsepez): FIX this.
+      return Allow();
   }
-
-  // TODO(tsepez): FIX this.
-  return Allow();
 }
 
 }  // namespace service_manager
