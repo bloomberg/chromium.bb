@@ -3879,11 +3879,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kOobeRecommendAppsScreen)},
 #endif  // OS_CHROMEOS
 
-#if defined(OS_ANDROID)
     {"enable-query-in-omnibox", flag_descriptions::kQueryInOmniboxName,
-     flag_descriptions::kQueryInOmniboxDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kQueryInOmnibox)},
-#endif  // OS_ANDROID
+     flag_descriptions::kQueryInOmniboxDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kQueryInOmnibox)},
 
     {"enable-viz-hit-test-draw-quad",
      flag_descriptions::kVizHitTestDrawQuadName,
