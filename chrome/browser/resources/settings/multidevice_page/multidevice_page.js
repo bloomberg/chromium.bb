@@ -49,8 +49,7 @@ Polymer({
    * @private
    */
   getLabelText_: function() {
-    return !!this.pageContentData.hostDevice ?
-        this.pageContentData.hostDevice.name :
+    return this.pageContentData.hostDeviceName ||
         this.i18n('multideviceSetupItemHeading');
   },
 

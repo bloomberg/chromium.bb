@@ -19,70 +19,47 @@ cr.define('settings', function() {
   };
 
   /**
-   * MultiDevice software features. Note that this is copied from (and must
-   * include an analog of all values in) the enum of the same name in
-   * //components/cryptauth/proto/cryptauth_api.proto.
+   * Possible states of MultiDevice features. Note that this is copied from (and
+   * must include an analog of all values in) the FeatureState enum in
+   * //chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.
    * @enum {number}
    */
-  MultiDeviceSoftwareFeature = {
-    UNKNOWN_FEATURE: 0,
-    BETTER_TOGETHER_HOST: 1,
-    BETTER_TOGETHER_CLIENT: 2,
-    EASY_UNLOCK_HOST: 3,
-    EASY_UNLOCK_CLIENT: 4,
-    MAGIC_TETHER_HOST: 5,
-    MAGIC_TETHER_CLIENT: 6,
-    SMS_CONNECT_HOST: 7,
-    SMS_CONNECT_CLIENT: 8,
-  };
-
-  /**
-   * Possible states of MultiDevice software features. Note that this is based
-   * on (and must include an analog of all values in) the enum of the same name
-   * in //components/cryptauth/software_feature_state.h.
-   * @enum {number}
-   */
-  MultiDeviceSoftwareFeatureState = {
-    NOT_SUPPORTED: 0,
-    SUPPORTED: 1,
-    ENABLED: 2,
+  MultiDeviceFeatureState = {
+    DISABLED_BY_POLICY: 0,
+    DISABLED_BY_USER: 1,
+    ENABLED_BY_USER: 2,
+    NOT_SUPPORTED_BY_CHROMEBOOK: 3,
+    NOT_SUPPORTED_BY_PHONE: 4,
+    UNAVAILABLE_NO_VERIFIED_HOST: 5,
+    UNAVAILABLE_INSUFFICIENT_SECURITY: 6,
   };
 
   return {
     MultiDeviceSettingsMode: MultiDeviceSettingsMode,
-    MultiDeviceSoftwareFeature: MultiDeviceSoftwareFeature,
-    MultiDeviceSoftwareFeatureState: MultiDeviceSoftwareFeatureState,
+    MultiDeviceFeatureState: MultiDeviceFeatureState,
   };
 });
 
 /**
- * Represents a multidevice host, i.e. a phone set by the user to connect to
- * their Chromebook(s). The type is a subset of the RemoteDevice structure
- * defined by CryptAuth (components/cryptauth/remote_device.h). It contains the
- * host device's name (e.g. Pixel, Nexus 5) and the map softwareFeatures
- * sending each MultiDevice feature to the host device's state with regards to
- * that feature.
- *
- * @typedef {{
- *   name: string,
- *   softwareFeatures:
- *       !Object<settings.MultiDeviceSoftwareFeature,
- *           settings.MultiDeviceSoftwareFeatureState>
- * }}
- */
-let RemoteDevice;
-
-/**
  * Container for the initial data that the page requires in order to display
  * the correct content. It is also used for receiving status updates during
- * use. Note that the host may be verified (enabled or disabled), awaiting
- * verification, or it may have failed setup because it was not able to connect
- * to the server. If the property is null or undefined, then no host has been
- * set up, although there may be potential hosts on the account.
+ * use. Note that the host device may be verified (enabled or disabled),
+ * awaiting verification, or it may have failed setup because it was not able
+ * to connect to the server.
+ *
+ * For each MultiDevice feature (including the "suite" feature, which acts as a
+ * gatekeeper for the others), the corresponding *State property is an enum
+ * containing the data necessary to display it. Note that hostDeviceName should
+ * be undefined if and only if no host has been set up, regardless of whether
+ * there are potential hosts on the account.
  *
  * @typedef {{
  *   mode: !settings.MultiDeviceSettingsMode,
- *   hostDevice: (RemoteDevice|undefined)
+ *   hostDeviceName: (string|undefined),
+ *   betterTogetherState: !settings.MultiDeviceFeatureState,
+ *   instantTetheringState: !settings.MultiDeviceFeatureState,
+ *   messagesState: !settings.MultiDeviceFeatureState,
+ *   smartLockState: !settings.MultiDeviceFeatureState,
  * }}
  */
 let MultiDevicePageContentData;

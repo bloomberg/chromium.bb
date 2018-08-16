@@ -36,7 +36,7 @@ suite('Multidevice', function() {
   function getFakePageContentData(mode) {
     return {
       mode: mode,
-      hostDevice: HOST_SET_MODES.includes(mode) ? {name: 'Pixel XL'} : null,
+      hostDeviceName: HOST_SET_MODES.includes(mode) ? 'Pixel XL' : undefined,
     };
   }
 
