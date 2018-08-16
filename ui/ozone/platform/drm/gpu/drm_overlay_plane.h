@@ -39,6 +39,9 @@ struct DrmOverlayPlane {
   DrmOverlayPlane(DrmOverlayPlane&& other);
   DrmOverlayPlane& operator=(DrmOverlayPlane&& other);
 
+  // Returns DrmOverlayPlane will null |buffer| for use as error.
+  static DrmOverlayPlane Error();
+
   bool operator<(const DrmOverlayPlane& plane) const;
 
   ~DrmOverlayPlane();

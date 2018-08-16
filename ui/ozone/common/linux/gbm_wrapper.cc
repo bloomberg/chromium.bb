@@ -167,6 +167,8 @@ class Device final : public ui::GbmDevice {
       const gfx::Size& size,
       uint32_t flags,
       const std::vector<uint64_t>& modifiers) override {
+    if (modifiers.empty())
+      return CreateBuffer(format, size, flags);
     struct gbm_bo* bo = gbm_bo_create_with_modifiers(
         device_, size.width(), size.height(), format, modifiers.data(),
         modifiers.size());
