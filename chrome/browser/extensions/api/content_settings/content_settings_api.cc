@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -31,6 +32,7 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
@@ -271,6 +273,18 @@ ContentSettingsContentSettingSetFunction::Run() {
       !Profile::FromBrowserContext(browser_context())
            ->HasOffTheRecordProfile()) {
     return RespondNow(Error(pref_keys::kIncognitoSessionOnlyErrorMessage));
+  }
+
+  size_t num_values = 0;
+  int histogram_value =
+      ContentSettingTypeToHistogramValue(content_type, &num_values);
+  if (primary_pattern != secondary_pattern &&
+      secondary_pattern != ContentSettingsPattern::Wildcard()) {
+    UMA_HISTOGRAM_EXACT_LINEAR("ContentSettings.ExtensionEmbeddedSettingSet",
+                               histogram_value, num_values);
+  } else {
+    UMA_HISTOGRAM_EXACT_LINEAR("ContentSettings.ExtensionNonEmbeddedSettingSet",
+                               histogram_value, num_values);
   }
 
   scoped_refptr<ContentSettingsStore> store =
