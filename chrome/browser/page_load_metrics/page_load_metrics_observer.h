@@ -428,6 +428,12 @@ class PageLoadMetricsObserver {
   virtual void OnDataUseObserved(int64_t received_data_length,
                                  int64_t data_reduction_proxy_bytes_saved) {}
 
+  // Invoked when there is data use for loading a resource on the page
+  // acrosss all frames. This only contains resources that have had new
+  // data use since the last callback.
+  virtual void OnResourceDataUseObserved(
+      const std::vector<mojom::ResourceDataUpdatePtr>& resources) {}
+
   // Invoked when a media element starts playing.
   virtual void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,

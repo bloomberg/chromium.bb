@@ -40,6 +40,12 @@ class PageLoadMetricsTestWaiter
   // Add a subframe-level expectation.
   void AddSubFrameExpectation(TimingField field);
 
+  // Add completed resource expectation
+  void AddCompleteResourcesExpectation(int expected_minimum_complete_resources);
+
+  // Add aggregate received resource bytes expectation
+  void AddMinimumResourceBytesExpectation(int expected_minimum_resource_bytes);
+
   // Add a data use expectation
   void AddMinimumPageLoadDataUseExpectation(
       int expected_minimum_page_load_data_use);
@@ -55,6 +61,8 @@ class PageLoadMetricsTestWaiter
   int64_t current_page_load_data_use() const {
     return current_page_load_data_use_;
   }
+
+  int64_t current_resource_bytes() const { return current_resource_bytes_; }
 
  private:
   // PageLoadMetricsObserver used by the PageLoadMetricsTestWaiter to observe
@@ -78,6 +86,10 @@ class PageLoadMetricsTestWaiter
 
     void OnDataUseObserved(int64_t received_data_length,
                            int64_t data_reduction_proxy_bytes_saved) override;
+
+    void OnResourceDataUseObserved(
+        const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+            resources) override;
 
    private:
     const base::WeakPtr<PageLoadMetricsTestWaiter> waiter_;
@@ -139,11 +151,22 @@ class PageLoadMetricsTestWaiter
   void OnDataUseObserved(int64_t received_data_length,
                          int64_t data_reduction_proxy_bytes_saved);
 
+  // Updates resource map and associated data counters as updates are received
+  // from a resource load. Stops waiting if expectations are satisfied after
+  // update.
+  void OnResourceDataUseObserved(
+      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+          resources);
+
   void OnTrackerCreated(page_load_metrics::PageLoadTracker* tracker) override;
 
   void OnCommit(page_load_metrics::PageLoadTracker* tracker) override;
 
-  bool expectations_satisfied() const;
+  bool ResourceUseExpectationsSatisfied() const;
+
+  bool DataUseExpectationsSatisfied() const;
+
+  virtual bool ExpectationsSatisfied() const;
 
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -154,9 +177,18 @@ class PageLoadMetricsTestWaiter
 
   int64_t expected_minimum_page_load_data_use_ = 0;
   int64_t current_page_load_data_use_ = 0;
+  int current_complete_resources_ = 0;
+  int64_t current_resource_bytes_ = 0;
+  int expected_num_complete_resources_ = 0;
+  int expected_minimum_resource_bytes_ = 0;
 
   bool attach_on_tracker_creation_ = false;
   bool did_add_observer_ = false;
+
+  // Map of all resources loaded by the page, keyed by resource request id.
+  // Contains ongoing and completed resources. Contains only the most recent
+  // update (version) of the resource.
+  std::map<int, page_load_metrics::mojom::ResourceDataUpdate*> page_resources_;
 
   base::WeakPtrFactory<PageLoadMetricsTestWaiter> weak_factory_;
 };

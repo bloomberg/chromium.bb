@@ -61,8 +61,9 @@ PageTimingMetricsSender::~PageTimingMetricsSender() {
 
 void PageTimingMetricsSender::DidObserveLoadingBehavior(
     blink::WebLoadingBehaviorFlag behavior) {
-  if (behavior & metadata_->behavior_flags)
+  if (behavior & metadata_->behavior_flags) {
     return;
+  }
   metadata_->behavior_flags |= behavior;
   EnsureSendTimer();
 }
@@ -70,8 +71,9 @@ void PageTimingMetricsSender::DidObserveLoadingBehavior(
 void PageTimingMetricsSender::DidObserveNewFeatureUsage(
     blink::mojom::WebFeature feature) {
   int32_t feature_id = static_cast<int32_t>(feature);
-  if (features_sent_.test(feature_id))
+  if (features_sent_.test(feature_id)) {
     return;
+  }
   features_sent_.set(feature_id);
   new_features_->features.push_back(feature);
   EnsureSendTimer();
@@ -109,11 +111,13 @@ void PageTimingMetricsSender::DidReceiveTransferSizeUpdate(
 
   // It is possible that resources are not in the map, if response headers were
   // not received or for failed/cancelled resources.
-  if (resource_it == page_resource_data_use_.end())
+  if (resource_it == page_resource_data_use_.end()) {
     return;
+  }
 
   resource_it->second.DidReceiveTransferSizeUpdate(received_data_length,
                                                    new_data_use_.get());
+  modified_resources_.insert(&resource_it->second);
   EnsureSendTimer();
 }
 
@@ -132,17 +136,24 @@ void PageTimingMetricsSender::DidCompleteResponse(
     resource_it = new_resource_it.first;
   }
 
-  if (resource_it->second.DidCompleteResponse(status, new_data_use_.get()))
+  if (resource_it->second.DidCompleteResponse(status, new_data_use_.get())) {
     EnsureSendTimer();
+  }
+  modified_resources_.insert(&resource_it->second);
 }
 
 void PageTimingMetricsSender::DidCancelResponse(int resource_id) {
-  page_resource_data_use_.erase(resource_id);
+  auto resource_it = page_resource_data_use_.find(resource_id);
+  if (resource_it == page_resource_data_use_.end()) {
+    return;
+  }
+  resource_it->second.DidCancelResponse();
 }
 
 void PageTimingMetricsSender::Send(mojom::PageLoadTimingPtr timing) {
-  if (last_timing_->Equals(*timing))
+  if (last_timing_->Equals(*timing)) {
     return;
+  }
 
   // We want to make sure that each PageTimingMetricsSender is associated
   // with a distinct page navigation. Because we reset the object on commit,
@@ -170,10 +181,18 @@ void PageTimingMetricsSender::EnsureSendTimer() {
 
 void PageTimingMetricsSender::SendNow() {
   have_sent_ipc_ = true;
+  std::vector<mojom::ResourceDataUpdatePtr> resources;
+  for (auto* resource : modified_resources_) {
+    resources.push_back(resource->GetResourceDataUpdate());
+    if (resource->IsFinishedLoading()) {
+      page_resource_data_use_.erase(resource->resource_id());
+    }
+  }
   sender_->SendTiming(last_timing_, metadata_, std::move(new_features_),
-                      std::move(new_data_use_));
+                      std::move(new_data_use_), std::move(resources));
   new_features_ = mojom::PageLoadFeatures::New();
   new_data_use_ = mojom::PageLoadDataUse::New();
+  modified_resources_.clear();
 }
 
 }  // namespace page_load_metrics

@@ -651,4 +651,11 @@ void PageLoadTracker::UpdateDataUse(
   }
 }
 
+void PageLoadTracker::UpdateResourceDataUse(
+    const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
+  for (const auto& observer : observers_) {
+    observer->OnResourceDataUseObserved(resources);
+  }
+}
+
 }  // namespace page_load_metrics
