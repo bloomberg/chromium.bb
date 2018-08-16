@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/input_event.h"
-#include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/render_info.h"
@@ -155,10 +154,9 @@ void UiInputManager::SendFlingCancel(InputEventList* input_event_list,
   fling_target_id_ = 0;
 }
 
-void UiInputManager::SendScrollEnd(
-    InputEventList* input_event_list,
-    const gfx::PointF& target_point,
-    PlatformController::ButtonState button_state) {
+void UiInputManager::SendScrollEnd(InputEventList* input_event_list,
+                                   const gfx::PointF& target_point,
+                                   ControllerModel::ButtonState button_state) {
   if (!in_scroll_) {
     return;
   }
@@ -166,7 +164,7 @@ void UiInputManager::SendScrollEnd(
   UiElement* element = scene_->GetUiElementById(input_capture_element_id_);
 
   if (previous_button_state_ != button_state &&
-      button_state == PlatformController::ButtonState::kDown) {
+      button_state == ControllerModel::ButtonState::kDown) {
     DCHECK_GT(input_event_list->size(), 0LU);
     DCHECK_EQ(input_event_list->front()->type(), InputEvent::kScrollEnd);
   }
@@ -245,10 +243,10 @@ void UiInputManager::SendHoverMove(UiElement* target,
 }
 
 void UiInputManager::SendButtonUp(const gfx::PointF& target_point,
-                                  PlatformController::ButtonState button_state,
+                                  ControllerModel::ButtonState button_state,
                                   base::TimeTicks timestamp) {
   if (!in_click_ || previous_button_state_ == button_state ||
-      button_state != PlatformController::ButtonState::kUp) {
+      button_state != ControllerModel::ButtonState::kUp) {
     return;
   }
   in_click_ = false;
@@ -265,13 +263,12 @@ void UiInputManager::SendButtonUp(const gfx::PointF& target_point,
   input_capture_element_id_ = 0;
 }
 
-void UiInputManager::SendButtonDown(
-    UiElement* target,
-    const gfx::PointF& target_point,
-    PlatformController::ButtonState button_state,
-    base::TimeTicks timestamp) {
+void UiInputManager::SendButtonDown(UiElement* target,
+                                    const gfx::PointF& target_point,
+                                    ControllerModel::ButtonState button_state,
+                                    base::TimeTicks timestamp) {
   if (previous_button_state_ == button_state ||
-      button_state != PlatformController::ButtonState::kDown) {
+      button_state != ControllerModel::ButtonState::kDown) {
     return;
   }
   in_click_ = true;

@@ -6,7 +6,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/time/time.h"
-#include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/platform_input_handler.h"
 
 namespace vr {

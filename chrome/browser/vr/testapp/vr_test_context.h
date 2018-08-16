@@ -120,7 +120,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   CompositorDelegate* compositor_delegate_;
   TestKeyboardDelegate* keyboard_delegate_;
 
-  PlatformController::Handedness handedness_ = PlatformController::kRightHanded;
+  ControllerModel::Handedness handedness_ = ControllerModel::kRightHanded;
 
   std::queue<InputEventList> input_event_lists_;
 

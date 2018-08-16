@@ -35,10 +35,9 @@ namespace vr {
 
 namespace {
 
-constexpr PlatformController::ButtonState kUp =
-    PlatformController::ButtonState::kUp;
-constexpr PlatformController::ButtonState kDown =
-    PlatformController::ButtonState::kDown;
+constexpr ControllerModel::ButtonState kUp = ControllerModel::ButtonState::kUp;
+constexpr ControllerModel::ButtonState kDown =
+    ControllerModel::ButtonState::kDown;
 
 constexpr gfx::Size kWindowSize = {1280, 720};
 
@@ -118,13 +117,13 @@ class UiInputManagerTest : public testing::Test {
   }
 
   void HandleInput(const gfx::Vector3dF& laser_direction,
-                   PlatformController::ButtonState button_state) {
+                   ControllerModel::ButtonState button_state) {
     HandleInput({0, 0, 0}, laser_direction, button_state);
   }
 
   void HandleInput(const gfx::Point3F& laser_origin,
                    const gfx::Vector3dF& laser_direction,
-                   PlatformController::ButtonState button_state) {
+                   ControllerModel::ButtonState button_state) {
     RenderInfo render_info;
     controller_model_.laser_direction = laser_direction;
     controller_model_.laser_origin = laser_origin;
@@ -504,8 +503,7 @@ TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
   ControllerModel controller_model;
   controller_model.laser_direction = content_quad_center - origin;
   controller_model.laser_origin = origin;
-  controller_model.touchpad_button_state =
-      PlatformController::ButtonState::kDown;
+  controller_model.touchpad_button_state = ControllerModel::ButtonState::kDown;
   ReticleModel reticle_model;
   InputEventList input_event_list;
   input_manager_->HandleInput(MsToTicks(1), RenderInfo(), controller_model,
@@ -536,8 +534,7 @@ TEST_F(UiInputManagerContentTest, AudioPermissionPromptHitTesting) {
   ControllerModel controller_model;
   controller_model.laser_direction = url_bar_center - origin;
   controller_model.laser_origin = origin;
-  controller_model.touchpad_button_state =
-      PlatformController::ButtonState::kDown;
+  controller_model.touchpad_button_state = ControllerModel::ButtonState::kDown;
   ReticleModel reticle_model;
   InputEventList input_event_list;
   input_manager_->HandleInput(MsToTicks(1), RenderInfo(), controller_model,
@@ -563,8 +560,7 @@ TEST_F(UiInputManagerContentTest, TreeVsZOrder) {
   ControllerModel controller_model;
   controller_model.laser_direction = content_quad_center - origin;
   controller_model.laser_origin = origin;
-  controller_model.touchpad_button_state =
-      PlatformController::ButtonState::kDown;
+  controller_model.touchpad_button_state = ControllerModel::ButtonState::kDown;
   ReticleModel reticle_model;
   InputEventList input_event_list;
   input_manager_->HandleInput(MsToTicks(1), RenderInfo(), controller_model,

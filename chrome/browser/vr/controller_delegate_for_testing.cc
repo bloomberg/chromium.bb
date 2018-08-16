@@ -57,23 +57,23 @@ void ControllerDelegateForTesting::QueueControllerActionForTesting(
     case VrControllerTestAction::kClick:
       // Add in the button down action.
       controller_model.touchpad_button_state =
-          PlatformController::ButtonState::kDown;
+          ControllerModel::ButtonState::kDown;
       controller_model_queue_.push(controller_model);
       // Add in the button up action.
       controller_model.touchpad_button_state =
-          PlatformController::ButtonState::kUp;
+          ControllerModel::ButtonState::kUp;
       controller_model_queue_.push(controller_model);
       break;
     case VrControllerTestAction::kHover:
       FALLTHROUGH;
     case VrControllerTestAction::kClickUp:
       controller_model.touchpad_button_state =
-          PlatformController::ButtonState::kUp;
+          ControllerModel::ButtonState::kUp;
       controller_model_queue_.push(controller_model);
       break;
     case VrControllerTestAction::kClickDown:
       controller_model.touchpad_button_state =
-          PlatformController::ButtonState::kDown;
+          ControllerModel::ButtonState::kDown;
       controller_model_queue_.push(controller_model);
       break;
     case VrControllerTestAction::kMove:

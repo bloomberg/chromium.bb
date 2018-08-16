@@ -251,14 +251,13 @@ void UiTest::ClickElement(UiElement* element) {
   controller_model.laser_direction = direction;
   controller_model.laser_origin = origin;
 
-  controller_model.touchpad_button_state =
-      PlatformController::ButtonState::kDown;
+  controller_model.touchpad_button_state = ControllerModel::ButtonState::kDown;
   ui_instance_->input_manager()->HandleInput(current_time_, render_info,
                                              controller_model, &reticle_model,
                                              &input_event_list);
   OnBeginFrame();
 
-  controller_model.touchpad_button_state = PlatformController::ButtonState::kUp;
+  controller_model.touchpad_button_state = ControllerModel::ButtonState::kUp;
   ui_instance_->input_manager()->HandleInput(current_time_, render_info,
                                              controller_model, &reticle_model,
                                              &input_event_list);

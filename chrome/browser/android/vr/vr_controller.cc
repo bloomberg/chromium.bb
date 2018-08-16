@@ -153,10 +153,10 @@ base::TimeTicks VrController::GetLastButtonTimestamp() const {
   return last_button_timestamp_;
 }
 
-PlatformController::Handedness VrController::GetHandedness() const {
+ControllerModel::Handedness VrController::GetHandedness() const {
   return handedness_ == GVR_CONTROLLER_RIGHT_HANDED
-             ? PlatformController::kRightHanded
-             : PlatformController::kLeftHanded;
+             ? ControllerModel::kRightHanded
+             : ControllerModel::kLeftHanded;
 }
 
 bool VrController::GetRecentered() const {
