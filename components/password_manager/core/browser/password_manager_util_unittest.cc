@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -17,6 +19,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -219,6 +222,92 @@ TEST(PasswordManagerUtil, RemoveBlacklistedDuplicatesWithCredentials) {
   password_store->ShutdownOnUIThread();
   scoped_task_environment.RunUntilIdle();
 }
+
+#if !defined(OS_IOS)
+TEST(PasswordManagerUtil, ReportHttpMigrationMetrics) {
+  for (bool is_hsts_enabled : {false, true}) {
+    base::test::ScopedTaskEnvironment scoped_task_environment;
+    auto request_context =
+        base::MakeRefCounted<net::TestURLRequestContextGetter>(
+            base::ThreadTaskRunnerHandle::Get());
+
+    net::TransportSecurityState* state =
+        request_context->GetURLRequestContext()->transport_security_state();
+    const base::Time expiry = base::Time::Max();
+    const bool include_subdomains = false;
+
+    auto password_store =
+        base::MakeRefCounted<password_manager::TestPasswordStore>();
+    ASSERT_TRUE(password_store->Init(syncer::SyncableService::StartSyncFlare(),
+                                     nullptr));
+
+    autofill::PasswordForm hsts_host_1;
+    hsts_host_1.origin = GURL("http://hsts-host-1/");
+    hsts_host_1.username_value = base::ASCIIToUTF16(kTestUsername);
+    hsts_host_1.password_value = base::ASCIIToUTF16(kTestPassword);
+    password_store->AddLogin(hsts_host_1);
+
+    autofill::PasswordForm hsts_host_1_https;
+    hsts_host_1_https.origin = GURL("https://hsts-host-1/");
+    hsts_host_1_https.username_value = base::ASCIIToUTF16(kTestUsername);
+    hsts_host_1_https.password_value = base::ASCIIToUTF16(kTestPassword);
+    password_store->AddLogin(hsts_host_1_https);
+
+    autofill::PasswordForm hsts_host_2;
+    hsts_host_2.origin = GURL("http://hsts-host-2/");
+    hsts_host_2.username_value = base::ASCIIToUTF16(kTestUsername2);
+    hsts_host_2.password_value = base::ASCIIToUTF16(kTestPassword);
+    password_store->AddLogin(hsts_host_2);
+
+    autofill::PasswordForm hsts_host_2_https;
+    hsts_host_2_https.origin = GURL("https://hsts-host-2/");
+    hsts_host_2_https.username_value = base::ASCIIToUTF16(kTestUsername2);
+    hsts_host_2_https.password_value = base::ASCIIToUTF16("different_password");
+    password_store->AddLogin(hsts_host_2_https);
+
+    // HTTPS version is not in Password Store.
+    autofill::PasswordForm hsts_host_3;
+    hsts_host_3.origin = GURL("http://hsts-host-3/");
+    password_store->AddLogin(hsts_host_3);
+
+    if (is_hsts_enabled) {
+      state->AddHSTS(hsts_host_1.origin.host(), expiry, include_subdomains);
+      state->AddHSTS(hsts_host_2.origin.host(), expiry, include_subdomains);
+      state->AddHSTS(hsts_host_3.origin.host(), expiry, include_subdomains);
+    }
+    scoped_task_environment.RunUntilIdle();
+
+    base::HistogramTester histogram_tester;
+    ReportHttpMigrationMetrics(password_store, std::move(request_context));
+    scoped_task_environment.RunUntilIdle();
+
+    for (bool test_hsts_enabled : {false, true}) {
+      std::string suffix =
+          (test_hsts_enabled ? "WithHSTSEnabled" : "HSTSNotEnabled");
+
+      // hsts_host_1
+      histogram_tester.ExpectUniqueSample(
+          "PasswordManager.HttpCredentialsWithEquivalentHttpsCredential." +
+              suffix,
+          (test_hsts_enabled == is_hsts_enabled), 1);
+
+      // hsts_host_2
+      histogram_tester.ExpectUniqueSample(
+          "PasswordManager.HttpCredentialsWithConflictingHttpsCredential." +
+              suffix,
+          (test_hsts_enabled == is_hsts_enabled), 1);
+
+      // hsts_host_3
+      histogram_tester.ExpectUniqueSample(
+          "PasswordManager.HttpCredentialsWithoutMatchingHttpsCredential." +
+              suffix,
+          (test_hsts_enabled == is_hsts_enabled), 1);
+    }
+    password_store->ShutdownOnUIThread();
+    scoped_task_environment.RunUntilIdle();
+  }
+}
+#endif  // !defined(OS_IOS)
 
 TEST(PasswordManagerUtil, FindBestMatches) {
   const int kNotFound = -1;
