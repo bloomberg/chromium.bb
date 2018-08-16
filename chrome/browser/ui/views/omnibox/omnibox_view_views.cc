@@ -317,6 +317,11 @@ void OmniboxViewViews::SetFocus() {
   // OmniboxEditModel::OnSetFocus(), which handles restoring visibility when the
   // omnibox regains focus after losing focus.
   model()->SetCaretVisibility(true);
+  // If the user attempts to focus the omnibox, and the ctrl key is pressed, we
+  // want to prevent ctrl-enter behavior until the ctrl key is released and
+  // re-pressed. This occurs even if the omnibox is already focused and we
+  // re-request focus (e.g. pressing ctrl-l twice).
+  model()->ConsumeCtrlKey();
 }
 
 int OmniboxViewViews::GetTextWidth() const {

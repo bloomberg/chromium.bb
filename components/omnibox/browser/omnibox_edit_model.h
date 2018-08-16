@@ -290,6 +290,10 @@ class OmniboxEditModel {
   // switching tabs.
   void SetCaretVisibility(bool visible);
 
+  // If the ctrl key is down, marks it as consumed to prevent it from triggering
+  // ctrl-enter behavior unless it is released and re-pressed.
+  void ConsumeCtrlKey();
+
   // Sent before |OnKillFocus| and before the popup is closed.
   void OnWillKillFocus();
 
@@ -360,6 +364,9 @@ class OmniboxEditModel {
 
  private:
   friend class OmniboxControllerTest;
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKey);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKeyOnRequestFocus);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKeyOnCtrlAction);
 
   enum PasteState {
     NONE,           // Most recent edit was not a paste.
@@ -373,17 +380,14 @@ class OmniboxEditModel {
   };
 
   enum ControlKeyState {
-    UP,                   // The control key is not depressed.
-    DOWN_WITHOUT_CHANGE,  // The control key is depressed, and the edit's
-                          // contents/selection have not changed since it was
-                          // depressed.  This is the only state in which we
-                          // do the "ctrl-enter" behavior when the user hits
-                          // enter.
-    DOWN_WITH_CHANGE,     // The control key is depressed, and the edit's
-                          // contents/selection have changed since it was
-                          // depressed.  If the user now hits enter, we assume
-                          // they simply haven't released the key, rather than
-                          // that they intended to hit "ctrl-enter".
+    UP,                // The control key is not depressed.
+    DOWN,              // The control key is depressed and should trigger the
+                       // "ctrl-enter" behavior when the user hits enter.
+    DOWN_AND_CONSUMED  // The control key is depressed, but has been consumed
+                       // and should not trigger the "ctrl-enter" behavior.
+                       // The control key becomes consumed if it has been used
+                       // for another action such as focusing the location bar
+                       // with ctrl-l or copying the selected text with ctrl-c.
   };
 
   // Returns true if a query to an autocomplete provider is currently
