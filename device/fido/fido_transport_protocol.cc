@@ -12,6 +12,14 @@ const char kBluetoothLowEnergy[] = "ble";
 const char kCloudAssistedBluetoothLowEnergy[] = "cable";
 const char kInternal[] = "internal";
 
+base::flat_set<FidoTransportProtocol> GetAllTransportProtocols() {
+  return {FidoTransportProtocol::kUsbHumanInterfaceDevice,
+          FidoTransportProtocol::kBluetoothLowEnergy,
+          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+          FidoTransportProtocol::kNearFieldCommunication,
+          FidoTransportProtocol::kInternal};
+}
+
 base::Optional<FidoTransportProtocol> ConvertToFidoTransportProtocol(
     base::StringPiece protocol) {
   if (protocol == kUsbHumanInterfaceDevice)

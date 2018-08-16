@@ -261,6 +261,7 @@ std::vector<PublicKeyCredentialDescriptorPtr> GetTestAllowCredentials() {
   std::vector<uint8_t> id(32, 0x0A);
   credential->id = id;
   credential->transports.push_back(AuthenticatorTransport::USB);
+  credential->transports.push_back(AuthenticatorTransport::BLE);
   descriptors.push_back(std::move(credential));
   return descriptors;
 }

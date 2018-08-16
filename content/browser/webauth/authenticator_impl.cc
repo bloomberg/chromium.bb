@@ -331,6 +331,7 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
   DCHECK(timer_);
 
   protocols_.insert(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
+  protocols_.insert(device::FidoTransportProtocol::kInternal);
   if (base::FeatureList::IsEnabled(features::kWebAuthBle)) {
     protocols_.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
   }

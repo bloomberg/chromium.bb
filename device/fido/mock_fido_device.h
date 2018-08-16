@@ -23,7 +23,7 @@
 
 namespace device {
 
-class MockFidoDevice : public FidoDevice {
+class MockFidoDevice : public ::testing::StrictMock<FidoDevice> {
  public:
   // MakeU2f returns a fully initialized U2F device. This represents the state
   // after |DiscoverSupportedProtocolAndDeviceInfo| has been called by the

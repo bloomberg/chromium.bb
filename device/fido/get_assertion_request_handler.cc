@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/fido_authenticator.h"
@@ -116,53 +117,67 @@ bool CheckUserVerificationCompatible(FidoAuthenticator* authenticator,
   return false;
 }
 
-std::set<FidoTransportProtocol> GetAllowedTransports(
+base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
     const CtapGetAssertionRequest& request) {
+  const base::flat_set<FidoTransportProtocol> kAllTransports = {
+      FidoTransportProtocol::kInternal,
+      FidoTransportProtocol::kNearFieldCommunication,
+      FidoTransportProtocol::kUsbHumanInterfaceDevice,
+      FidoTransportProtocol::kBluetoothLowEnergy,
+      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+
+  // TODO(https://crbug.com/874479): |allowed_list| will |has_value| even if the
+  // WebAuthn request has `allowCredential` undefined.
   const auto& allowed_list = request.allow_list();
-  if (!allowed_list) {
-    return {FidoTransportProtocol::kInternal,
-            FidoTransportProtocol::kNearFieldCommunication,
-            FidoTransportProtocol::kUsbHumanInterfaceDevice,
-            FidoTransportProtocol::kBluetoothLowEnergy,
-            FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+  if (!allowed_list || allowed_list->empty()) {
+    return kAllTransports;
   }
 
-  std::set<FidoTransportProtocol> protocols;
+  base::flat_set<FidoTransportProtocol> transports;
   for (const auto credential : *allowed_list) {
-    protocols.insert(credential.transports().begin(),
-                     credential.transports().end());
+    if (credential.transports().empty())
+      return kAllTransports;
+    transports.insert(credential.transports().begin(),
+                      credential.transports().end());
   }
 
-  return protocols;
+  return transports;
 }
 
 }  // namespace
 
 GetAssertionRequestHandler::GetAssertionRequestHandler(
     service_manager::Connector* connector,
-    const base::flat_set<FidoTransportProtocol>& protocols,
+    const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
     SignResponseCallback completion_callback)
     : GetAssertionRequestHandler(connector,
-                                 protocols,
+                                 supported_transports,
                                  std::move(request),
                                  std::move(completion_callback),
                                  AddPlatformAuthenticatorCallback()) {}
 
 GetAssertionRequestHandler::GetAssertionRequestHandler(
     service_manager::Connector* connector,
-    const base::flat_set<FidoTransportProtocol>& protocols,
+    const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
     SignResponseCallback completion_callback,
     AddPlatformAuthenticatorCallback add_platform_authenticator)
-    : FidoRequestHandler(connector,
-                         protocols,
-                         std::move(completion_callback),
-                         std::move(add_platform_authenticator)),
+    : FidoRequestHandler(
+          connector,
+          base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
+              supported_transports,
+              GetTransportsAllowedByRP(request)),
+          std::move(completion_callback),
+          std::move(add_platform_authenticator)),
       request_(std::move(request)),
       weak_factory_(this) {
+  transport_availability_info().request_type =
+      FidoRequestHandlerBase::RequestType::kGetAssertion;
+
   if (base::ContainsKey(
-          protocols, FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) &&
+          transport_availability_info().available_transports,
+          FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) &&
       request_.cable_extension()) {
     auto discovery =
         std::make_unique<FidoCableDiscovery>(*request_.cable_extension());
@@ -170,10 +185,6 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     discoveries().push_back(std::move(discovery));
   }
 
-  transport_availability_info().request_type =
-      FidoRequestHandlerBase::RequestType::kGetAssertion;
-  transport_availability_info().available_transports =
-      GetAllowedTransports(request_);
   Start();
 }
 

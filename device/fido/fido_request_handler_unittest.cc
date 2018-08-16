@@ -45,6 +45,44 @@ enum class FakeTaskResponse : uint8_t {
   kProcessingError = 0x02,
 };
 
+class TestTransportAvailabilityObserver
+    : public FidoRequestHandlerBase::TransportAvailabilityObserver {
+ public:
+  using TransportAvailabilityNotificationReceiver = test::TestCallbackReceiver<
+      FidoRequestHandlerBase::TransportAvailabilityInfo>;
+
+  TestTransportAvailabilityObserver() {}
+  ~TestTransportAvailabilityObserver() override {}
+
+  void WaitForAndExpectAvailableTransportsAre(
+      base::flat_set<FidoTransportProtocol> expected_transports) {
+    transport_availability_notification_receiver_.WaitForCallback();
+    auto result =
+        std::get<0>(*transport_availability_notification_receiver_.result());
+    EXPECT_THAT(result.available_transports,
+                ::testing::UnorderedElementsAreArray(expected_transports));
+  }
+
+ protected:
+  // FidoRequestHandlerBase::TransportAvailabilityObserver:
+  void OnTransportAvailabilityEnumerated(
+      FidoRequestHandlerBase::TransportAvailabilityInfo data) override {
+    transport_availability_notification_receiver_.callback().Run(
+        std::move(data));
+  }
+
+  void BluetoothAdapterPowerChanged(bool is_powered_on) override {}
+  void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator) override {
+  }
+  void FidoAuthenticatorRemoved(base::StringPiece device_id) override {}
+
+ private:
+  TransportAvailabilityNotificationReceiver
+      transport_availability_notification_receiver_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTransportAvailabilityObserver);
+};
+
 // Fake FidoTask implementation that sends an empty byte array to the device
 // when StartTask() is invoked.
 class FakeFidoTask : public FidoTask {
@@ -151,13 +189,15 @@ class FidoRequestHandlerTest : public ::testing::Test {
  public:
   void ForgeNextHidDiscovery() {
     discovery_ = scoped_fake_discovery_factory_.ForgeNextHidDiscovery();
+    ble_discovery_ = scoped_fake_discovery_factory_.ForgeNextBleDiscovery();
   }
 
   std::unique_ptr<FakeFidoRequestHandler> CreateFakeHandler() {
     ForgeNextHidDiscovery();
     return std::make_unique<FakeFidoRequestHandler>(
         base::flat_set<FidoTransportProtocol>(
-            {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
+            {FidoTransportProtocol::kUsbHumanInterfaceDevice,
+             FidoTransportProtocol::kBluetoothLowEnergy}),
         cb_.callback());
   }
 
@@ -166,11 +206,13 @@ class FidoRequestHandlerTest : public ::testing::Test {
       FidoRequestHandlerBase::AddPlatformAuthenticatorCallback
           add_platform_authenticator) {
     return std::make_unique<FakeFidoRequestHandler>(
-        base::flat_set<FidoTransportProtocol>(), cb_.callback(),
-        std::move(add_platform_authenticator));
+        base::flat_set<FidoTransportProtocol>(
+            {FidoTransportProtocol::kInternal}),
+        cb_.callback(), std::move(add_platform_authenticator));
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
+  test::FakeFidoDiscovery* ble_discovery() const { return ble_discovery_; }
   FakeHandlerCallbackReceiver& callback() { return cb_; }
 
  protected:
@@ -178,6 +220,7 @@ class FidoRequestHandlerTest : public ::testing::Test {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeFidoDiscovery* discovery_;
+  test::FakeFidoDiscovery* ble_discovery_;
   FakeHandlerCallbackReceiver cb_;
 };
 
@@ -373,13 +416,70 @@ TEST_F(FidoRequestHandlerTest, TestPlatformAuthenticatorCallback) {
             return std::make_unique<FakeFidoAuthenticator>(device);
           },
           device.get());
+
+  TestTransportAvailabilityObserver observer;
   auto request_handler = CreateFakeHandlerWithPlatformAuthenticatorCallback(
       std::move(make_platform_authenticator));
+  request_handler->set_observer(&observer);
 
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  observer.WaitForAndExpectAvailableTransportsAre(
+      {FidoTransportProtocol::kInternal});
+
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+}
+
+TEST_F(FidoRequestHandlerTest,
+       InternalTransportDisallowedIfFactoryYieldsNoAuthenticator) {
+  TestTransportAvailabilityObserver observer;
+  auto request_handler =
+      CreateFakeHandlerWithPlatformAuthenticatorCallback(base::BindOnce(
+          []() -> std::unique_ptr<FidoAuthenticator> { return nullptr; }));
+  request_handler->set_observer(&observer);
+  observer.WaitForAndExpectAvailableTransportsAre({});
+}
+
+TEST_F(FidoRequestHandlerTest,
+       BleTransportAllowedIfDiscoveryStartsSuccessfully) {
+  TestTransportAvailabilityObserver observer;
+  auto request_handler = CreateFakeHandler();
+  request_handler->set_observer(&observer);
+
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  observer.WaitForAndExpectAvailableTransportsAre(
+      {FidoTransportProtocol::kUsbHumanInterfaceDevice,
+       FidoTransportProtocol::kBluetoothLowEnergy});
+}
+
+TEST_F(FidoRequestHandlerTest, BleTransportDisallowedIfDiscoveryFails) {
+  TestTransportAvailabilityObserver observer;
+  auto request_handler = CreateFakeHandler();
+  request_handler->set_observer(&observer);
+
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  ble_discovery()->WaitForCallToStart();
+  ble_discovery()->SimulateStarted(false /* success */);
+
+  observer.WaitForAndExpectAvailableTransportsAre(
+      {FidoTransportProtocol::kUsbHumanInterfaceDevice});
+}
+
+TEST_F(FidoRequestHandlerTest,
+       TransportAvailabilityNotificationOnObserverSetLate) {
+  TestTransportAvailabilityObserver observer;
+  auto request_handler = CreateFakeHandler();
+
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+
+  request_handler->set_observer(&observer);
+  observer.WaitForAndExpectAvailableTransportsAre(
+      {FidoTransportProtocol::kUsbHumanInterfaceDevice,
+       FidoTransportProtocol::kBluetoothLowEnergy});
 }
 
 }  // namespace device

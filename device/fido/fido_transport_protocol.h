@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 
@@ -29,6 +30,9 @@ extern const char kNearFieldCommunication[];
 extern const char kBluetoothLowEnergy[];
 extern const char kCloudAssistedBluetoothLowEnergy[];
 extern const char kInternal[];
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+base::flat_set<FidoTransportProtocol> GetAllTransportProtocols();
 
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<FidoTransportProtocol> ConvertToFidoTransportProtocol(

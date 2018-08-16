@@ -30,20 +30,23 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
                               base::Optional<Response> response_data,
                               FidoTransportProtocol transport_used)>;
 
-  FidoRequestHandler(service_manager::Connector* connector,
-                     const base::flat_set<FidoTransportProtocol>& transports,
-                     CompletionCallback completion_callback)
+  // The |available_transports| should be the intersection of transports
+  // supported by the client and allowed by the relying party.
+  FidoRequestHandler(
+      service_manager::Connector* connector,
+      const base::flat_set<FidoTransportProtocol>& available_transports,
+      CompletionCallback completion_callback)
       : FidoRequestHandler(connector,
-                           transports,
+                           available_transports,
                            std::move(completion_callback),
                            AddPlatformAuthenticatorCallback()) {}
   FidoRequestHandler(
       service_manager::Connector* connector,
-      const base::flat_set<FidoTransportProtocol>& transports,
+      const base::flat_set<FidoTransportProtocol>& available_transports,
       CompletionCallback completion_callback,
       AddPlatformAuthenticatorCallback add_platform_authenticator)
       : FidoRequestHandlerBase(connector,
-                               transports,
+                               available_transports,
                                std::move(add_platform_authenticator)),
         completion_callback_(std::move(completion_callback)) {}
   ~FidoRequestHandler() override {
