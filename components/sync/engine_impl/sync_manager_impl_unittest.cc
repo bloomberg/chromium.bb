@@ -980,9 +980,8 @@ class SyncManagerTest : public testing::Test,
 
     if (initialization_succeeded_) {
       ModelTypeSet enabled_types = GetEnabledTypes();
-      for (auto it = enabled_types.First(); it.Good(); it.Inc()) {
-        type_roots_[it.Get()] =
-            MakeTypeRoot(sync_manager_.GetUserShare(), it.Get());
+      for (ModelType type : enabled_types) {
+        type_roots_[type] = MakeTypeRoot(sync_manager_.GetUserShare(), type);
       }
     }
 
@@ -2578,12 +2577,12 @@ TEST_F(SyncManagerTest, IncrementTransactionVersion) {
   {
     ReadTransaction read_trans(FROM_HERE, sync_manager_.GetUserShare());
     ModelTypeSet enabled_types = GetEnabledTypes();
-    for (auto it = enabled_types.First(); it.Good(); it.Inc()) {
+    for (ModelType type : enabled_types) {
       // Transaction version is incremented when SyncManagerTest::SetUp()
       // creates a node of each type.
-      EXPECT_EQ(1,
-                sync_manager_.GetUserShare()->directory->GetTransactionVersion(
-                    it.Get()));
+      EXPECT_EQ(
+          1,
+          sync_manager_.GetUserShare()->directory->GetTransactionVersion(type));
     }
   }
 
@@ -2598,10 +2597,10 @@ TEST_F(SyncManagerTest, IncrementTransactionVersion) {
   {
     ReadTransaction read_trans(FROM_HERE, sync_manager_.GetUserShare());
     ModelTypeSet enabled_types = GetEnabledTypes();
-    for (auto it = enabled_types.First(); it.Good(); it.Inc()) {
-      EXPECT_EQ(it.Get() == BOOKMARKS ? 2 : 1,
-                sync_manager_.GetUserShare()->directory->GetTransactionVersion(
-                    it.Get()));
+    for (ModelType type : enabled_types) {
+      EXPECT_EQ(
+          type == BOOKMARKS ? 2 : 1,
+          sync_manager_.GetUserShare()->directory->GetTransactionVersion(type));
     }
   }
 }
@@ -2722,9 +2721,8 @@ TEST_F(SyncManagerTestWithMockScheduler, PurgeDisabledTypes) {
   ModelTypeSet disabled_types = Difference(ModelTypeSet::All(), enabled_types);
   // Set data for all types.
   ModelTypeSet protocol_types = ProtocolTypes();
-  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
-       iter.Inc()) {
-    SetProgressMarkerForType(iter.Get(), true);
+  for (ModelType type : protocol_types) {
+    SetProgressMarkerForType(type, true);
   }
 
   sync_manager_.PurgeDisabledTypes(disabled_types, ModelTypeSet(),
@@ -2833,9 +2831,8 @@ TEST_F(SyncManagerTest, PurgeDisabledTypes) {
 
   // Set progress markers for all types.
   ModelTypeSet protocol_types = ProtocolTypes();
-  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
-       iter.Inc()) {
-    SetProgressMarkerForType(iter.Get(), true);
+  for (ModelType type : protocol_types) {
+    SetProgressMarkerForType(type, true);
   }
 
   // Verify all the enabled types remain after cleanup, and all the disabled
@@ -2875,9 +2872,8 @@ TEST_F(SyncManagerTest, PurgeUnappliedTypes) {
 
   // Set progress markers for all types.
   ModelTypeSet protocol_types = ProtocolTypes();
-  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
-       iter.Inc()) {
-    SetProgressMarkerForType(iter.Get(), true);
+  for (ModelType type : protocol_types) {
+    SetProgressMarkerForType(type, true);
   }
 
   // Add the following kinds of items:

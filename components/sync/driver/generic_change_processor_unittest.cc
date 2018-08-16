@@ -71,8 +71,8 @@ class SyncGenericChangeProcessorTest : public testing::Test {
             sync_merge_result_.get());
 
     ModelTypeSet types = ProtocolTypes();
-    for (ModelTypeSet::Iterator iter = types.First(); iter.Good(); iter.Inc()) {
-      TestUserShare::CreateRoot(iter.Get(), test_user_share_->user_share());
+    for (ModelType type : types) {
+      TestUserShare::CreateRoot(type, test_user_share_->user_share());
     }
     test_user_share_->encryption_handler()->Init();
     ConstructGenericChangeProcessor(type);

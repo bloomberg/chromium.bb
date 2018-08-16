@@ -77,9 +77,8 @@ void FakeSyncManager::Init(InitArgs* args) {
 
   test_user_share_.SetUp();
   UserShare* share = test_user_share_.user_share();
-  for (ModelTypeSet::Iterator it = initial_sync_ended_types_.First(); it.Good();
-       it.Inc()) {
-    TestUserShare::CreateRoot(it.Get(), share);
+  for (ModelType type : initial_sync_ended_types_) {
+    TestUserShare::CreateRoot(type, share);
   }
 
   for (auto& observer : observers_) {
@@ -102,10 +101,9 @@ ModelTypeSet FakeSyncManager::GetTypesWithEmptyProgressMarkerToken(
 
 void FakeSyncManager::PurgePartiallySyncedTypes() {
   ModelTypeSet partial_types;
-  for (ModelTypeSet::Iterator i = progress_marker_types_.First(); i.Good();
-       i.Inc()) {
-    if (!initial_sync_ended_types_.Has(i.Get()))
-      partial_types.Put(i.Get());
+  for (ModelType type : progress_marker_types_) {
+    if (!initial_sync_ended_types_.Has(type))
+      partial_types.Put(type);
   }
   progress_marker_types_.RemoveAll(partial_types);
   purged_types_.PutAll(partial_types);
@@ -158,10 +156,10 @@ void FakeSyncManager::ConfigureSyncer(
 
   // Update our fake directory by clearing and fake-downloading as necessary.
   UserShare* share = GetUserShare();
-  for (ModelTypeSet::Iterator it = success_types.First(); it.Good(); it.Inc()) {
+  for (ModelType type : success_types) {
     // We must be careful to not create the same root node twice.
-    if (!initial_sync_ended_types_.Has(it.Get())) {
-      TestUserShare::CreateRoot(it.Get(), share);
+    if (!initial_sync_ended_types_.Has(type)) {
+      TestUserShare::CreateRoot(type, share);
     }
   }
 

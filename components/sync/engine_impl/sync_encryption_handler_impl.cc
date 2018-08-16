@@ -804,14 +804,12 @@ void SyncEncryptionHandlerImpl::RestoreNigori(
 void SyncEncryptionHandlerImpl::ReEncryptEverything(WriteTransaction* trans) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(UnlockVault(trans->GetWrappedTrans()).cryptographer.is_ready());
-  for (ModelTypeSet::Iterator iter =
-           UnlockVault(trans->GetWrappedTrans()).encrypted_types.First();
-       iter.Good(); iter.Inc()) {
-    if (iter.Get() == PASSWORDS || IsControlType(iter.Get()))
+  for (ModelType type : UnlockVault(trans->GetWrappedTrans()).encrypted_types) {
+    if (type == PASSWORDS || IsControlType(type))
       continue;  // These types handle encryption differently.
 
     ReadNode type_root(trans);
-    if (type_root.InitTypeRoot(iter.Get()) != BaseNode::INIT_OK)
+    if (type_root.InitTypeRoot(type) != BaseNode::INIT_OK)
       continue;  // Don't try to reencrypt if the type's data is unavailable.
 
     // Iterate through all children of this datatype.

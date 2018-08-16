@@ -52,12 +52,12 @@ void SyncBackendRegistrar::SetInitialTypes(ModelTypeSet initial_types) {
   // Set our initial state to reflect the current status of the sync directory.
   // This will ensure that our calculations in ConfigureDataTypes() will always
   // return correct results.
-  for (ModelTypeSet::Iterator it = initial_types.First(); it.Good(); it.Inc()) {
+  for (ModelType type : initial_types) {
     // If this type is also registered as NonBlocking, assume that it shouldn't
     // be registered as passive. The NonBlocking path will eventually take care
     // of adding to routing_info_ later on.
-    if (!non_blocking_types_.Has(it.Get())) {
-      routing_info_[it.Get()] = GROUP_PASSIVE;
+    if (!non_blocking_types_.Has(type)) {
+      routing_info_[type] = GROUP_PASSIVE;
     }
   }
 
@@ -108,18 +108,16 @@ ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
 
   base::AutoLock lock(lock_);
   ModelTypeSet newly_added_types;
-  for (ModelTypeSet::Iterator it = filtered_types_to_add.First(); it.Good();
-       it.Inc()) {
+  for (ModelType type : filtered_types_to_add) {
     // Add a newly specified data type corresponding initial group into the
     // routing_info, if it does not already exist.
-    if (routing_info_.count(it.Get()) == 0) {
-      routing_info_[it.Get()] = GetInitialGroupForType(it.Get());
-      newly_added_types.Put(it.Get());
+    if (routing_info_.count(type) == 0) {
+      routing_info_[type] = GetInitialGroupForType(type);
+      newly_added_types.Put(type);
     }
   }
-  for (ModelTypeSet::Iterator it = types_to_remove.First(); it.Good();
-       it.Inc()) {
-    routing_info_.erase(it.Get());
+  for (ModelType type : types_to_remove) {
+    routing_info_.erase(type);
   }
 
   // TODO(akalin): Use SVLOG/SLOG if we add any more logging.

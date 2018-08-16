@@ -31,10 +31,9 @@ namespace {
 DataTypeStatusTable::TypeErrorMap GenerateCryptoErrorsForTypes(
     ModelTypeSet encrypted_types) {
   DataTypeStatusTable::TypeErrorMap crypto_errors;
-  for (ModelTypeSet::Iterator iter = encrypted_types.First(); iter.Good();
-       iter.Inc()) {
-    crypto_errors[iter.Get()] =
-        SyncError(FROM_HERE, SyncError::CRYPTO_ERROR, "", iter.Get());
+  for (ModelType type : encrypted_types) {
+    crypto_errors[type] =
+        SyncError(FROM_HERE, SyncError::CRYPTO_ERROR, "", type);
   }
   return crypto_errors;
 }
@@ -163,9 +162,8 @@ void DataTypeManagerImpl::ConfigureImpl(ModelTypeSet desired_types,
 }
 
 void DataTypeManagerImpl::RegisterTypesWithBackend() {
-  for (auto type_iter = last_enabled_types_.First(); type_iter.Good();
-       type_iter.Inc()) {
-    const auto& dtc_iter = controllers_->find(type_iter.Get());
+  for (ModelType type : last_enabled_types_) {
+    const auto& dtc_iter = controllers_->find(type);
     if (dtc_iter == controllers_->end())
       continue;
     DataTypeController* dtc = dtc_iter->second.get();
@@ -198,8 +196,8 @@ ModelTypeSet DataTypeManagerImpl::GetDataTypesInState(
 void DataTypeManagerImpl::SetDataTypesState(DataTypeConfigState state,
                                             ModelTypeSet types,
                                             DataTypeConfigStateMap* state_map) {
-  for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
-    (*state_map)[it.Get()] = state;
+  for (ModelType type : types) {
+    (*state_map)[type] = state;
   }
 }
 
@@ -259,11 +257,10 @@ void DataTypeManagerImpl::Restart() {
   if (reason == CONFIGURE_REASON_RECONFIGURATION ||
       reason == CONFIGURE_REASON_NEW_CLIENT ||
       reason == CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE) {
-    for (ModelTypeSet::Iterator iter = last_requested_types_.First();
-         iter.Good(); iter.Inc()) {
+    for (ModelType type : last_requested_types_) {
       // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureDataTypes",
-                                ModelTypeToHistogramInt(iter.Get()),
+                                ModelTypeToHistogramInt(type),
                                 static_cast<int>(MODEL_TYPE_COUNT));
     }
   }
@@ -354,24 +351,23 @@ TypeSetPriorityList DataTypeManagerImpl::PrioritizeTypes(
 
 void DataTypeManagerImpl::UpdateUnreadyTypeErrors(
     const ModelTypeSet& desired_types) {
-  for (ModelTypeSet::Iterator type = desired_types.First(); type.Good();
-       type.Inc()) {
-    const auto& iter = controllers_->find(type.Get());
+  for (ModelType type : desired_types) {
+    const auto& iter = controllers_->find(type);
     if (iter == controllers_->end())
       continue;
     const DataTypeController* dtc = iter->second.get();
     bool unready_status =
-        data_type_status_table_.GetUnreadyErrorTypes().Has(type.Get());
+        data_type_status_table_.GetUnreadyErrorTypes().Has(type);
     if (dtc->ReadyForStart() != (unready_status == false)) {
       // Adjust data_type_status_table_ if unready state in it doesn't match
       // DataTypeController::ReadyForStart().
       if (dtc->ReadyForStart()) {
-        data_type_status_table_.ResetUnreadyErrorFor(type.Get());
+        data_type_status_table_.ResetUnreadyErrorFor(type);
       } else {
         SyncError error(FROM_HERE, SyncError::UNREADY_ERROR,
-                        "Datatype not ready at config time.", type.Get());
+                        "Datatype not ready at config time.", type);
         std::map<ModelType, SyncError> errors;
-        errors[type.Get()] = error;
+        errors[type] = error;
         data_type_status_table_.UpdateFailedDataTypes(errors);
       }
     }
@@ -428,11 +424,10 @@ void DataTypeManagerImpl::DownloadReady(
 
   if (!failed_configuration_types.Empty()) {
     DataTypeStatusTable::TypeErrorMap errors;
-    for (ModelTypeSet::Iterator iter = failed_configuration_types.First();
-         iter.Good(); iter.Inc()) {
+    for (ModelType type : failed_configuration_types) {
       SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
-                      "Backend failed to download type.", iter.Get());
-      errors[iter.Get()] = error;
+                      "Backend failed to download type.", type);
+      errors[type] = error;
     }
     data_type_status_table_.UpdateFailedDataTypes(errors);
     needs_reconfigure_ = true;

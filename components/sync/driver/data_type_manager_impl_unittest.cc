@@ -44,26 +44,21 @@ DataTypeStatusTable BuildStatusTable(ModelTypeSet crypto_errors,
                                      ModelTypeSet unready_errors,
                                      ModelTypeSet unrecoverable_errors) {
   DataTypeStatusTable::TypeErrorMap error_map;
-  for (ModelTypeSet::Iterator iter = crypto_errors.First(); iter.Good();
-       iter.Inc()) {
-    error_map[iter.Get()] = SyncError(FROM_HERE, SyncError::CRYPTO_ERROR,
-                                      "crypto error expected", iter.Get());
+  for (ModelType type : crypto_errors) {
+    error_map[type] = SyncError(FROM_HERE, SyncError::CRYPTO_ERROR,
+                                "crypto error expected", type);
   }
-  for (ModelTypeSet::Iterator iter = association_errors.First(); iter.Good();
-       iter.Inc()) {
-    error_map[iter.Get()] = SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
-                                      "association error expected", iter.Get());
+  for (ModelType type : association_errors) {
+    error_map[type] = SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
+                                "association error expected", type);
   }
-  for (ModelTypeSet::Iterator iter = unready_errors.First(); iter.Good();
-       iter.Inc()) {
-    error_map[iter.Get()] = SyncError(FROM_HERE, SyncError::UNREADY_ERROR,
-                                      "unready error expected", iter.Get());
+  for (ModelType type : unready_errors) {
+    error_map[type] = SyncError(FROM_HERE, SyncError::UNREADY_ERROR,
+                                "unready error expected", type);
   }
-  for (ModelTypeSet::Iterator iter = unrecoverable_errors.First(); iter.Good();
-       iter.Inc()) {
-    error_map[iter.Get()] =
-        SyncError(FROM_HERE, SyncError::UNRECOVERABLE_ERROR,
-                  "unrecoverable error expected", iter.Get());
+  for (ModelType type : unrecoverable_errors) {
+    error_map[type] = SyncError(FROM_HERE, SyncError::UNRECOVERABLE_ERROR,
+                                "unrecoverable error expected", type);
   }
   DataTypeStatusTable status_table;
   status_table.UpdateFailedDataTypes(error_map);

@@ -114,9 +114,9 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
 
   // Only keep types that have controllers.
   desired_types_.Clear();
-  for (ModelTypeSet::Iterator it = desired_types.First(); it.Good(); it.Inc()) {
-    if (controllers_->find(it.Get()) != controllers_->end())
-      desired_types_.Put(it.Get());
+  for (ModelType type : desired_types) {
+    if (controllers_->find(type) != controllers_->end())
+      desired_types_.Put(type);
   }
 
   DVLOG(1) << "ModelAssociationManager: Initializing for "
@@ -174,8 +174,8 @@ void ModelAssociationManager::StopDatatype(
 }
 
 void ModelAssociationManager::LoadEnabledTypes() {
-  for (auto it = desired_types_.First(); it.Good(); it.Inc()) {
-    auto dtc_iter = controllers_->find(it.Get());
+  for (ModelType type : desired_types_) {
+    auto dtc_iter = controllers_->find(type);
     DCHECK(dtc_iter != controllers_->end());
     DataTypeController* dtc = dtc_iter->second.get();
     if (dtc->state() == DataTypeController::NOT_RUNNING) {

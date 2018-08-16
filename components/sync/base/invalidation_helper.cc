@@ -23,10 +23,10 @@ bool RealModelTypeToObjectId(ModelType model_type,
 
 ObjectIdSet ModelTypeSetToObjectIdSet(ModelTypeSet model_types) {
   ObjectIdSet ids;
-  for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
+  for (ModelType type : model_types) {
     invalidation::ObjectId model_type_as_id;
-    if (!RealModelTypeToObjectId(it.Get(), &model_type_as_id)) {
-      DLOG(WARNING) << "Invalid model type " << it.Get();
+    if (!RealModelTypeToObjectId(type, &model_type_as_id)) {
+      DLOG(WARNING) << "Invalid model type " << type;
       continue;
     }
     ids.insert(model_type_as_id);

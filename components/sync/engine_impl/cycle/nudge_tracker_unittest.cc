@@ -853,16 +853,14 @@ TEST_F(NudgeTrackerTest, NoTypesShorterThanDefault) {
 
   std::map<ModelType, base::TimeDelta> delay_map;
   ModelTypeSet protocol_types = ProtocolTypes();
-  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
-       iter.Inc()) {
-    delay_map[iter.Get()] = base::TimeDelta();
+  for (ModelType type : protocol_types) {
+    delay_map[type] = base::TimeDelta();
   }
   nudge_tracker_.OnReceivedCustomNudgeDelays(delay_map);
 
   // All types should still have a nudge greater than or equal to the minimum.
-  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
-       iter.Inc()) {
-    EXPECT_GE(nudge_tracker_.RecordLocalChange(ModelTypeSet(iter.Get())),
+  for (ModelType type : protocol_types) {
+    EXPECT_GE(nudge_tracker_.RecordLocalChange(ModelTypeSet(type)),
               base::TimeDelta::FromMilliseconds(500));
   }
 }

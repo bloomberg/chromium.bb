@@ -50,9 +50,8 @@ std::unique_ptr<SyncScheduler> EngineComponentsFactoryImpl::BuildScheduler(
     // Only protocol types can have their delay customized.
     ModelTypeSet protocol_types = syncer::ProtocolTypes();
     std::map<ModelType, base::TimeDelta> nudge_delays;
-    for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
-         it.Inc()) {
-      nudge_delays[it.Get()] =
+    for (ModelType type : protocol_types) {
+      nudge_delays[type] =
           TimeDelta::FromMilliseconds(kShortNudgeDelayDurationMS);
     }
     scheduler->OnReceivedCustomNudgeDelays(nudge_delays);

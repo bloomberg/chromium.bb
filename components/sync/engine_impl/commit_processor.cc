@@ -28,12 +28,11 @@ void CommitProcessor::GatherCommitContributions(
     bool cookie_jar_empty,
     Commit::ContributionMap* contributions) {
   size_t num_entries = 0;
-  for (ModelTypeSet::Iterator it = commit_types.First(); it.Good(); it.Inc()) {
-    CommitContributorMap::iterator cm_it =
-        commit_contributor_map_->find(it.Get());
+  for (ModelType type : commit_types) {
+    CommitContributorMap::iterator cm_it = commit_contributor_map_->find(type);
     if (cm_it == commit_contributor_map_->end()) {
-      DLOG(ERROR) << "Could not find requested type "
-                  << ModelTypeToString(it.Get()) << " in contributor map.";
+      DLOG(ERROR) << "Could not find requested type " << ModelTypeToString(type)
+                  << " in contributor map.";
       continue;
     }
     size_t spaces_remaining = max_entries - num_entries;
@@ -41,9 +40,9 @@ void CommitProcessor::GatherCommitContributions(
         cm_it->second->GetContribution(spaces_remaining);
     if (contribution) {
       num_entries += contribution->GetNumEntries();
-      contributions->insert(std::make_pair(it.Get(), std::move(contribution)));
+      contributions->insert(std::make_pair(type, std::move(contribution)));
 
-      if (it.Get() == SESSIONS) {
+      if (type == SESSIONS) {
         UMA_HISTOGRAM_BOOLEAN("Sync.CookieJarMatchOnNavigation",
                               !cookie_jar_mismatch);
         if (cookie_jar_mismatch) {

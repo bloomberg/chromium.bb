@@ -178,8 +178,8 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Add some directory types.
-  for (auto it = directory_types.First(); it.Good(); it.Inc())
-    registry()->RegisterDirectoryType(it.Get(), GROUP_PASSIVE);
+  for (ModelType type : directory_types)
+    registry()->RegisterDirectoryType(type, GROUP_PASSIVE);
   current_types.PutAll(directory_types);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
@@ -196,8 +196,8 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Clear all directory types.
-  for (auto it = directory_types.First(); it.Good(); it.Inc())
-    registry()->UnregisterDirectoryType(it.Get());
+  for (ModelType type : directory_types)
+    registry()->UnregisterDirectoryType(type);
   current_types.RemoveAll(directory_types);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 }

@@ -207,10 +207,9 @@ TEST_P(SyncPrefsDataTypesTest, PreferredTypesKeepEverythingSynced) {
   const ModelTypeSet user_types = UserTypes();
   EXPECT_EQ(user_types, GetPreferredDataTypes(user_types));
   const ModelTypeSet user_visible_types = UserSelectableTypes();
-  for (ModelTypeSet::Iterator it = user_visible_types.First(); it.Good();
-       it.Inc()) {
+  for (ModelType type : user_visible_types) {
     ModelTypeSet preferred_types;
-    preferred_types.Put(it.Get());
+    preferred_types.Put(type);
     SetPreferredDataTypes(user_types, preferred_types);
     EXPECT_EQ(user_types, GetPreferredDataTypes(user_types));
   }
@@ -222,32 +221,31 @@ TEST_P(SyncPrefsDataTypesTest, PreferredTypesNotKeepEverythingSynced) {
   const ModelTypeSet user_types = UserTypes();
   EXPECT_NE(user_types, GetPreferredDataTypes(user_types));
   const ModelTypeSet user_visible_types = UserSelectableTypes();
-  for (ModelTypeSet::Iterator it = user_visible_types.First(); it.Good();
-       it.Inc()) {
+  for (ModelType type : user_visible_types) {
     ModelTypeSet preferred_types;
-    preferred_types.Put(it.Get());
+    preferred_types.Put(type);
     ModelTypeSet expected_preferred_types(preferred_types);
-    if (it.Get() == AUTOFILL) {
+    if (type == AUTOFILL) {
       expected_preferred_types.Put(AUTOFILL_PROFILE);
       expected_preferred_types.Put(AUTOFILL_WALLET_DATA);
       expected_preferred_types.Put(AUTOFILL_WALLET_METADATA);
     }
-    if (it.Get() == PREFERENCES) {
+    if (type == PREFERENCES) {
       expected_preferred_types.Put(DICTIONARY);
       expected_preferred_types.Put(PRIORITY_PREFERENCES);
       expected_preferred_types.Put(SEARCH_ENGINES);
     }
-    if (it.Get() == APPS) {
+    if (type == APPS) {
       expected_preferred_types.Put(APP_LIST);
       expected_preferred_types.Put(APP_NOTIFICATIONS);
       expected_preferred_types.Put(APP_SETTINGS);
       expected_preferred_types.Put(ARC_PACKAGE);
       expected_preferred_types.Put(READING_LIST);
     }
-    if (it.Get() == EXTENSIONS) {
+    if (type == EXTENSIONS) {
       expected_preferred_types.Put(EXTENSION_SETTINGS);
     }
-    if (it.Get() == TYPED_URLS) {
+    if (type == TYPED_URLS) {
       expected_preferred_types.Put(HISTORY_DELETE_DIRECTIVES);
       expected_preferred_types.Put(SESSIONS);
       expected_preferred_types.Put(FAVICON_IMAGES);
@@ -256,7 +254,7 @@ TEST_P(SyncPrefsDataTypesTest, PreferredTypesNotKeepEverythingSynced) {
         expected_preferred_types.Put(USER_EVENTS);
       }
     }
-    if (it.Get() == PROXY_TABS) {
+    if (type == PROXY_TABS) {
       expected_preferred_types.Put(SESSIONS);
       expected_preferred_types.Put(FAVICON_IMAGES);
       expected_preferred_types.Put(FAVICON_TRACKING);

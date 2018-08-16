@@ -27,10 +27,9 @@ void SyncManagerForProfileSyncTest::NotifyInitializationSuccess() {
   ModelTypeSet early_download_types;
   early_download_types.PutAll(ControlTypes());
   early_download_types.PutAll(PriorityUserTypes());
-  for (ModelTypeSet::Iterator it = early_download_types.First(); it.Good();
-       it.Inc()) {
-    if (!directory->InitialSyncEndedForType(it.Get())) {
-      TestUserShare::CreateRoot(it.Get(), user_share);
+  for (ModelType type : early_download_types) {
+    if (!directory->InitialSyncEndedForType(type)) {
+      TestUserShare::CreateRoot(type, user_share);
     }
   }
 
