@@ -413,7 +413,7 @@ gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
       kSearchBoxBottomPadding;
   if (drag_amount <= (peeking_height - shelf_height)) {
     // App list is dragged from collapsed to peeking, which moved up at most
-    // |peeking_height - kShelfSize| (272px). The top padding of apps
+    // |peeking_height - shelf_size| (272px). The top padding of apps
     // container view changes from |-kSearchBoxFullscreenBottomPadding| to
     // |kSearchBoxPeekingTopPadding + kSearchBoxPreferredHeight +
     // kSearchBoxPeekingBottomPadding - kSearchBoxFullscreenBottomPadding|.

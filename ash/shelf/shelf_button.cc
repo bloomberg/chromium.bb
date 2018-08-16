@@ -36,10 +36,8 @@
 
 namespace {
 
-constexpr int kIconSize = 32;
 constexpr int kStatusIndicatorAttentionThrobDurationMS = 800;
 constexpr int kStatusIndicatorMaxAnimationSeconds = 10;
-constexpr int kStatusIndicatorOffsetFromBottom = 3;
 constexpr int kStatusIndicatorRadiusDip = 2;
 constexpr int kStatusIndicatorMaxSize = 10;
 constexpr int kStatusIndicatorActiveSize = 8;
@@ -51,11 +49,6 @@ constexpr SkColor kIndicatorColor = SK_ColorWHITE;
 // Shelf item ripple constants.
 constexpr int kInkDropSmallSize = 48;
 constexpr int kInkDropLargeSize = 60;
-
-// Padding from the edge of the shelf to the application icon when the shelf
-// is horizontally and vertically aligned, respectively.
-constexpr int kIconPaddingHorizontal = 7;
-constexpr int kIconPaddingVertical = 8;
 
 // The time threshold before an item can be dragged.
 constexpr int kDragTimeThresholdMs = 300;
@@ -377,13 +370,20 @@ void ShelfButton::SetImage(const gfx::ImageSkia& image) {
     return;
   }
 
+  const int icon_size = ShelfConstants::button_icon_size();
+
+  if (icon_size > image.width() || icon_size > image.height()) {
+    LOG(WARNING) << "An icon of size " << image.width() << "x" << image.height()
+                 << "is being scaled up and will look blurry.";
+  }
+
   // Resize the image maintaining our aspect ratio.
   float aspect_ratio =
       static_cast<float>(image.width()) / static_cast<float>(image.height());
-  int height = kIconSize;
+  int height = icon_size;
   int width = static_cast<int>(aspect_ratio * height);
-  if (width > kIconSize) {
-    width = kIconSize;
+  if (width > icon_size) {
+    width = icon_size;
     height = static_cast<int>(width / aspect_ratio);
   }
 
@@ -530,21 +530,28 @@ void ShelfButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void ShelfButton::Layout() {
+  // TODO: Find out why there is an extra pixel of padding between each item
+  // and the inner side of the shelf.
+  int icon_padding =
+      (ShelfConstants::shelf_size() - ShelfConstants::button_icon_size()) / 2 -
+      1;
+  const int icon_size = ShelfConstants::button_icon_size();
+  const int status_indicator_offet_from_shelf_edge =
+      ShelfConstants::status_indicator_offset_from_edge();
+
   const gfx::Rect button_bounds(GetContentsBounds());
   Shelf* shelf = shelf_view_->shelf();
   const bool is_horizontal_shelf = shelf->IsHorizontalAlignment();
-  const int icon_pad =
-      is_horizontal_shelf ? kIconPaddingHorizontal : kIconPaddingVertical;
-  int x_offset = is_horizontal_shelf ? 0 : icon_pad;
-  int y_offset = is_horizontal_shelf ? icon_pad : 0;
+  int x_offset = is_horizontal_shelf ? 0 : icon_padding;
+  int y_offset = is_horizontal_shelf ? icon_padding : 0;
 
-  int icon_width = std::min(kIconSize, button_bounds.width() - x_offset);
-  int icon_height = std::min(kIconSize, button_bounds.height() - y_offset);
+  int icon_width = std::min(icon_size, button_bounds.width() - x_offset);
+  int icon_height = std::min(icon_size, button_bounds.height() - y_offset);
 
   // If on the left or top 'invert' the inset so the constant gap is on
   // the interior (towards the center of display) edge of the shelf.
   if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
-    x_offset = button_bounds.width() - (kIconSize + icon_pad);
+    x_offset = button_bounds.width() - (icon_size + icon_padding);
 
   // Center icon with respect to the secondary axis.
   if (is_horizontal_shelf)
@@ -577,24 +584,24 @@ void ShelfButton::Layout() {
   // Icon size has been incorrect when running
   // PanelLayoutManagerTest.PanelAlignmentSecondDisplay on valgrind bot, see
   // http://crbug.com/234854.
-  DCHECK_LE(icon_width, kIconSize);
-  DCHECK_LE(icon_height, kIconSize);
+  DCHECK_LE(icon_width, icon_size);
+  DCHECK_LE(icon_height, icon_size);
 
   switch (shelf->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       indicator_midpoint.set_y(button_bounds.bottom() -
                                kStatusIndicatorRadiusDip -
-                               kStatusIndicatorOffsetFromBottom);
+                               status_indicator_offet_from_shelf_edge);
       break;
     case SHELF_ALIGNMENT_LEFT:
       indicator_midpoint.set_x(button_bounds.x() + kStatusIndicatorRadiusDip +
-                               kStatusIndicatorOffsetFromBottom);
+                               status_indicator_offet_from_shelf_edge);
       break;
     case SHELF_ALIGNMENT_RIGHT:
       indicator_midpoint.set_x(button_bounds.right() -
                                kStatusIndicatorRadiusDip -
-                               kStatusIndicatorOffsetFromBottom);
+                               status_indicator_offet_from_shelf_edge);
       break;
   }
 

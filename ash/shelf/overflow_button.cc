@@ -155,7 +155,7 @@ void OverflowButton::NotifyClick(const ui::Event& event) {
 std::unique_ptr<views::InkDropMask> OverflowButton::CreateInkDropMask() const {
   gfx::Insets insets = GetLocalBounds().InsetsFrom(CalculateButtonBounds());
   return std::make_unique<views::RoundRectInkDropMask>(
-      size(), insets, kOverflowButtonCornerRadius);
+      size(), insets, ShelfConstants::overflow_button_corner_radius());
 }
 
 void OverflowButton::PaintButtonContents(gfx::Canvas* canvas) {
@@ -169,7 +169,8 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas,
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setColor(background_color_);
-  canvas->DrawRoundRect(bounds, kOverflowButtonCornerRadius, flags);
+  canvas->DrawRoundRect(bounds, ShelfConstants::overflow_button_corner_radius(),
+                        flags);
 }
 
 void OverflowButton::PaintForeground(gfx::Canvas* canvas,
@@ -187,16 +188,17 @@ void OverflowButton::PaintForeground(gfx::Canvas* canvas,
 }
 
 gfx::Rect OverflowButton::CalculateButtonBounds() const {
+  const int overflow_button_size = ShelfConstants::overflow_button_size();
   ShelfAlignment alignment = shelf_->alignment();
   gfx::Rect content_bounds = GetContentsBounds();
   // Align the button to the top of a bottom-aligned shelf, to the right edge
   // a left-aligned shelf, and to the left edge of a right-aligned shelf.
-  const int inset = (kShelfSize - kOverflowButtonSize) / 2;
+  const int inset = (ShelfConstants::shelf_size() - overflow_button_size) / 2;
   const int x = alignment == SHELF_ALIGNMENT_LEFT
-                    ? content_bounds.right() - inset - kOverflowButtonSize
+                    ? content_bounds.right() - inset - overflow_button_size
                     : content_bounds.x() + inset;
-  return gfx::Rect(x, content_bounds.y() + inset, kOverflowButtonSize,
-                   kOverflowButtonSize);
+  return gfx::Rect(x, content_bounds.y() + inset, overflow_button_size,
+                   overflow_button_size);
 }
 
 }  // namespace ash

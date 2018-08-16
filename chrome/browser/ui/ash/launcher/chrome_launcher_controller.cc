@@ -1125,25 +1125,25 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
   // if the icon cache gets deleted upon user switch.
   std::unique_ptr<AppIconLoader> chrome_app_icon_loader =
       std::make_unique<extensions::ChromeAppIconLoader>(
-          profile_, extension_misc::EXTENSION_ICON_SMALL, this);
+          profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
   app_icon_loaders_.push_back(std::move(chrome_app_icon_loader));
 
   if (arc::IsArcAllowedForProfile(profile_)) {
     std::unique_ptr<AppIconLoader> arc_app_icon_loader =
         std::make_unique<ArcAppIconLoader>(
-            profile_, extension_misc::EXTENSION_ICON_SMALL, this);
+            profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
     app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
   }
 
   std::unique_ptr<AppIconLoader> internal_app_icon_loader =
       std::make_unique<InternalAppIconLoader>(
-          profile_, extension_misc::EXTENSION_ICON_SMALL, this);
+          profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
   app_icon_loaders_.push_back(std::move(internal_app_icon_loader));
 
   if (IsCrostiniUIAllowedForProfile(profile_)) {
     std::unique_ptr<AppIconLoader> crostini_app_icon_loader =
         std::make_unique<CrostiniAppIconLoader>(
-            profile_, extension_misc::EXTENSION_ICON_SMALL, this);
+            profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
     app_icon_loaders_.push_back(std::move(crostini_app_icon_loader));
   }
 

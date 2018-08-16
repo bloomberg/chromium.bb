@@ -366,15 +366,16 @@ void TrayBackgroundView::PaintButtonContents(gfx::Canvas* canvas) {
   // underneath the items instead.
   const gfx::Rect local_bounds = GetLocalBounds();
   const SkColor color = SkColorSetA(SK_ColorWHITE, 0x4D);
+  const int shelf_size = ShelfConstants::shelf_size();
 
   if (shelf_->IsHorizontalAlignment()) {
     const gfx::PointF point(
         base::i18n::IsRTL() ? 0 : (local_bounds.width() - kSeparatorWidth),
-        (kShelfSize - kTrayItemSize) / 2);
+        (shelf_size - kTrayItemSize) / 2);
     const gfx::Vector2dF vector(0, kTrayItemSize);
     canvas->Draw1pxLine(point, point + vector, color);
   } else {
-    const gfx::PointF point((kShelfSize - kTrayItemSize) / 2,
+    const gfx::PointF point((shelf_size - kTrayItemSize) / 2,
                             local_bounds.height() - kSeparatorWidth);
     const gfx::Vector2dF vector(kTrayItemSize, 0);
     canvas->Draw1pxLine(point, point + vector, color);
