@@ -694,18 +694,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kClipboardLastModifiedTime,
 #endif
 
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-    prefs::kOfflinePrefetchBackoff, prefs::kOfflineUsageStartObserved,
-    prefs::kOfflineUsageOnlineObserved, prefs::kOfflineUsageOfflineObserved,
-    prefs::kPrefetchUsageEnabledObserved, prefs::kPrefetchUsageFetchObserved,
-    prefs::kPrefetchUsageOpenObserved, prefs::kOfflineUsageTrackingDay,
-    prefs::kOfflineUsageUnusedCount, prefs::kOfflineUsageStartedCount,
-    prefs::kOfflineUsageOfflineCount, prefs::kOfflineUsageOnlineCount,
-    prefs::kOfflineUsageMixedCount, prefs::kPrefetchUsageEnabledCount,
-    prefs::kPrefetchUsageFetchedCount, prefs::kPrefetchUsageOpenedCount,
-    prefs::kPrefetchUsageMixedCount,
-#endif
-
     prefs::kMediaEngagementSchemaVersion,
 
     // Preferences for recording metrics about tab and window usage.
