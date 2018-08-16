@@ -6,9 +6,12 @@ import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 
 jumbo_source_set("common") {
+  # No target should directly depend on this target since this is just the
+  # source set rather than the actual component that can be linked to.
+  # Dependencies instead should be to //third_party/blink/public/common:common.
   visibility = [
-    "//third_party/blink/*",
-    ":*",
+    "//third_party/blink/public/common",
+    "//third_party/blink/public:all_blink",
   ]
 
   defines = [ "BLINK_COMMON_IMPLEMENTATION=1" ]
@@ -129,6 +132,5 @@ jumbo_source_set("common_unittests_sources") {
       "font_unique_name_lookup/font_table_matcher_unittest.cc",
       "font_unique_name_lookup/icu_fold_case_util_unittest.cc",
     ]
-    deps += [ ":common" ]
   }
 }
