@@ -81,11 +81,11 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView,
     static GradientParams BuildForStyle(LoginDisplayStyle style);
 
     // Start color for drawing linear gradient.
-    SkColor color_from;
+    SkColor color_from = SK_ColorTRANSPARENT;
     // End color for drawing linear gradient.
-    SkColor color_to;
+    SkColor color_to = SK_ColorTRANSPARENT;
     // Height of linear gradient.
-    SkScalar height;
+    SkScalar height = 0;
   };
 
   // Updates visibility of scroll bar thumb. Called when hover state changes.
