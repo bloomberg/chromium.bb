@@ -1328,15 +1328,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
   RunTest(ShowPressHasTouchID);
 }
 
-#if defined(OS_CHROMEOS)
-// Flaky: https://crbug.com/833380
-#define MAYBE_EmulatedTouchScrollBubbles DISABLED_EmulatedTouchScrollBubbles
-#else
-#define MAYBE_EmulatedTouchScrollBubbles EmulatedTouchScrollBubbles
-#endif
-
 IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
-                       MAYBE_EmulatedTouchScrollBubbles) {
+                       EmulatedTouchScrollBubbles) {
   RunTest(ScrollBubbling);
 }
 
@@ -1345,15 +1338,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
   RunTest(PinchGoesToMainFrame);
 }
 
-#if defined(OS_CHROMEOS)
-// Flaky timeouts: https://crbug.com/833380
-#define MAYBE_EmulatedGestureScrollBubbles DISABLED_EmulatedGestureScrollBubbles
-#else
-#define MAYBE_EmulatedGestureScrollBubbles EmulatedGestureScrollBubbles
-#endif
-
 IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
-                       MAYBE_EmulatedGestureScrollBubbles) {
+                       EmulatedGestureScrollBubbles) {
   RunTest(TouchActionBubbling);
 }
 
