@@ -26,16 +26,13 @@ namespace {
 // activity.
 const char kIdlenessCutoffFieldName[] = "idlenessCutoffSec";
 
-// Parameters that are directly passed to CRD Host.
-const char kDirectoryBotJIDFieldName[] = "directoryBotJID";
-
 // Result payload fields:
 
 // Integer value containing DeviceCommandStartCRDSessionJob::ResultCode
 const char kResultCodeFieldName[] = "resultCode";
 
-// CRD Auth Code if job was completed successfully
-const char kResultAuthCodeFieldName[] = "authCode";
+// CRD Access Code if job was completed successfully
+const char kResultAccessCodeFieldName[] = "accessCode";
 
 // Optional detailed error message for error result codes.
 const char kResultMessageFieldName[] = "message";
@@ -50,13 +47,13 @@ class DeviceCommandStartCRDSessionJob::ResultPayload
     : public RemoteCommandJob::ResultPayload {
  public:
   ResultPayload(ResultCode result_code,
-                const base::Optional<std::string>& auth_code,
+                const base::Optional<std::string>& access_code,
                 const base::Optional<base::TimeDelta>& time_delta,
                 const base::Optional<std::string>& error_message);
   ~ResultPayload() override {}
 
   static std::unique_ptr<ResultPayload> CreateSuccessPayload(
-      const std::string& auth_code);
+      const std::string& access_code);
   static std::unique_ptr<ResultPayload> CreateNonIdlePayload(
       const base::TimeDelta& time_delta);
   static std::unique_ptr<ResultPayload> CreateErrorPayload(
@@ -72,15 +69,15 @@ class DeviceCommandStartCRDSessionJob::ResultPayload
 
 DeviceCommandStartCRDSessionJob::ResultPayload::ResultPayload(
     ResultCode result_code,
-    const base::Optional<std::string>& auth_code,
+    const base::Optional<std::string>& access_code,
     const base::Optional<base::TimeDelta>& time_delta,
     const base::Optional<std::string>& error_message) {
   base::Value value(base::Value::Type::DICTIONARY);
   value.SetKey(kResultCodeFieldName, base::Value(result_code));
   if (error_message && !error_message.value().empty())
     value.SetKey(kResultMessageFieldName, base::Value(error_message.value()));
-  if (auth_code)
-    value.SetKey(kResultAuthCodeFieldName, base::Value(auth_code.value()));
+  if (access_code)
+    value.SetKey(kResultAccessCodeFieldName, base::Value(access_code.value()));
   if (time_delta) {
     value.SetKey(kResultLastActivityFieldName,
                  base::Value(static_cast<int>(time_delta.value().InSeconds())));
@@ -90,8 +87,8 @@ DeviceCommandStartCRDSessionJob::ResultPayload::ResultPayload(
 
 std::unique_ptr<DeviceCommandStartCRDSessionJob::ResultPayload>
 DeviceCommandStartCRDSessionJob::ResultPayload::CreateSuccessPayload(
-    const std::string& auth_code) {
-  return std::make_unique<ResultPayload>(ResultCode::SUCCESS, auth_code,
+    const std::string& access_code) {
+  return std::make_unique<ResultPayload>(ResultCode::SUCCESS, access_code,
                                          base::nullopt /*time_delta*/,
                                          base::nullopt /* error_message */);
 }
@@ -100,7 +97,7 @@ std::unique_ptr<DeviceCommandStartCRDSessionJob::ResultPayload>
 DeviceCommandStartCRDSessionJob::ResultPayload::CreateNonIdlePayload(
     const base::TimeDelta& time_delta) {
   return std::make_unique<ResultPayload>(
-      ResultCode::FAILURE_NOT_IDLE, base::nullopt /* auth_code */, time_delta,
+      ResultCode::FAILURE_NOT_IDLE, base::nullopt /* access_code */, time_delta,
       base::nullopt /* error_message */);
 }
 
@@ -111,8 +108,8 @@ DeviceCommandStartCRDSessionJob::ResultPayload::CreateErrorPayload(
   DCHECK(result_code != ResultCode::SUCCESS);
   DCHECK(result_code != ResultCode::FAILURE_NOT_IDLE);
   return std::make_unique<ResultPayload>(
-      result_code, base::nullopt /* auth_code */, base::nullopt /*time_delta*/,
-      error_message);
+      result_code, base::nullopt /* access_code */,
+      base::nullopt /*time_delta*/, error_message);
 }
 
 std::unique_ptr<std::string>
@@ -150,12 +147,6 @@ bool DeviceCommandStartCRDSessionJob::ParseCommandPayload(
   } else {
     idleness_cutoff_ = base::TimeDelta::FromSeconds(0);
   }
-
-  base::Value* directory_jid_value =
-      root->FindKeyOfType(kDirectoryBotJIDFieldName, base::Value::Type::STRING);
-  if (!directory_jid_value)
-    return false;
-  directory_bot_jid_ = directory_jid_value->GetString();
 
   return true;
 }
@@ -230,21 +221,21 @@ void DeviceCommandStartCRDSessionJob::OnICEConfigReceived(
     base::Value ice_config) {
   ice_config_ = std::move(ice_config);
   delegate_->StartCRDHostAndGetCode(
-      directory_bot_jid_, oauth_token_, std::move(ice_config_),
-      base::BindOnce(&DeviceCommandStartCRDSessionJob::OnAuthCodeReceived,
+      oauth_token_, std::move(ice_config_),
+      base::BindOnce(&DeviceCommandStartCRDSessionJob::OnAccessCodeReceived,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&DeviceCommandStartCRDSessionJob::FinishWithError,
                      weak_factory_.GetWeakPtr()));
 }
 
-void DeviceCommandStartCRDSessionJob::OnAuthCodeReceived(
-    const std::string& auth_code) {
+void DeviceCommandStartCRDSessionJob::OnAccessCodeReceived(
+    const std::string& access_code) {
   if (!succeeded_callback_)
     return;  // Task was terminated.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(succeeded_callback_),
-                     ResultPayload::CreateSuccessPayload(auth_code)));
+                     ResultPayload::CreateSuccessPayload(access_code)));
 }
 
 void DeviceCommandStartCRDSessionJob::TerminateImpl() {

@@ -29,25 +29,21 @@ namespace {
 
 constexpr char kResultCodeFieldName[] = "resultCode";
 constexpr char kResultMessageFieldName[] = "message";
-constexpr char kResultAuthCodeFieldName[] = "authCode";
+constexpr char kResultAccessCodeFieldName[] = "accessCode";
 constexpr char kResultLastActivityFieldName[] = "lastActivitySec";
 
 constexpr RemoteCommandJob::UniqueIDType kUniqueID = 123456789;
 
-constexpr char kTestDirectoryBotJID[] = "remote@bot.jabber.nowhere.org";
-
 constexpr char kTestOAuthToken[] = "test-oauth-token";
-constexpr char kTestAuthCode[] = "1111-2222-3333";
+constexpr char kTestAccessCode[] = "111122223333";
 constexpr char kTestNoOAuthTokenReason[] = "oops-no-oauth-token";
 constexpr char kTestNoICEConfigReason[] = "oops-no-ice-config";
 
 constexpr char kIdlenessCutoffFieldName[] = "idlenessCutoffSec";
-constexpr char kDirectoryBotJIDFieldName[] = "directoryBotJID";
 
 em::RemoteCommand GenerateCommandProto(RemoteCommandJob::UniqueIDType unique_id,
                                        base::TimeDelta age_of_command,
-                                       base::TimeDelta idleness_cutoff,
-                                       const std::string& directory_bot_jid) {
+                                       base::TimeDelta idleness_cutoff) {
   em::RemoteCommand command_proto;
   command_proto.set_type(
       enterprise_management::RemoteCommand_Type_DEVICE_START_CRD_SESSION);
@@ -58,7 +54,6 @@ em::RemoteCommand GenerateCommandProto(RemoteCommandJob::UniqueIDType unique_id,
   base::Value root_dict(base::Value::Type::DICTIONARY);
   root_dict.SetKey(kIdlenessCutoffFieldName,
                    base::Value((int)idleness_cutoff.InSeconds()));
-  root_dict.SetKey(kDirectoryBotJIDFieldName, base::Value(directory_bot_jid));
   base::JSONWriter::Write(root_dict, &payload);
   command_proto.set_payload(payload);
   return command_proto;
@@ -72,7 +67,7 @@ class StubCRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate {
                       base::TimeDelta idleness_period,
                       bool oauth_token_success,
                       bool ice_config_success,
-                      bool auth_code_success);
+                      bool access_code_success);
   ~StubCRDHostDelegate() override;
 
   bool HasActiveSession() const override;
@@ -92,10 +87,9 @@ class StubCRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate {
       DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) override;
 
   void StartCRDHostAndGetCode(
-      const std::string& directory_bot_jid,
       const std::string& oauth_token,
       base::Value ice_config,
-      DeviceCommandStartCRDSessionJob::AuthCodeCallback success_callback,
+      DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
       DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) override;
 
  private:
@@ -105,7 +99,7 @@ class StubCRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate {
   base::TimeDelta idleness_period_;
   bool oauth_token_success_;
   bool ice_config_success_;
-  bool auth_code_success_;
+  bool access_code_success_;
 
   DISALLOW_COPY_AND_ASSIGN(StubCRDHostDelegate);
 };
@@ -116,14 +110,14 @@ StubCRDHostDelegate::StubCRDHostDelegate(bool has_active_session,
                                          base::TimeDelta idleness_period,
                                          bool oauth_token_success,
                                          bool ice_config_success,
-                                         bool auth_code_success)
+                                         bool access_code_success)
     : has_active_session_(has_active_session),
       are_services_ready_(are_services_ready),
       is_running_kiosk_(is_running_kiosk),
       idleness_period_(idleness_period),
       oauth_token_success_(oauth_token_success),
       ice_config_success_(ice_config_success),
-      auth_code_success_(auth_code_success) {}
+      access_code_success_(access_code_success) {}
 
 StubCRDHostDelegate::~StubCRDHostDelegate() {}
 
@@ -175,13 +169,12 @@ void StubCRDHostDelegate::FetchICEConfig(
 }
 
 void StubCRDHostDelegate::StartCRDHostAndGetCode(
-    const std::string& directory_bot_jid,
     const std::string& oauth_token,
     base::Value ice_config,
-    DeviceCommandStartCRDSessionJob::AuthCodeCallback success_callback,
+    DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
     DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) {
-  if (auth_code_success_) {
-    std::move(success_callback).Run(kTestAuthCode);
+  if (access_code_success_) {
+    std::move(success_callback).Run(kTestAccessCode);
   } else {
     std::move(error_callback)
         .Run(DeviceCommandStartCRDSessionJob::FAILURE_CRD_HOST_ERROR,
@@ -206,10 +199,9 @@ class DeviceCommandStartCRDSessionJobTest : public testing::Test {
   void InitializeJob(RemoteCommandJob* job,
                      RemoteCommandJob::UniqueIDType unique_id,
                      base::TimeTicks issued_time,
-                     base::TimeDelta idleness_cutoff,
-                     const std::string& directory_bot_jid);
+                     base::TimeDelta idleness_cutoff);
 
-  std::string CreateSuccessPayload(const std::string& auth_code);
+  std::string CreateSuccessPayload(const std::string& access_code);
   std::string CreateErrorPayload(
       DeviceCommandStartCRDSessionJob::ResultCode result_code,
       const std::string& error_message);
@@ -234,24 +226,23 @@ void DeviceCommandStartCRDSessionJobTest::InitializeJob(
     RemoteCommandJob* job,
     RemoteCommandJob::UniqueIDType unique_id,
     base::TimeTicks issued_time,
-    base::TimeDelta idleness_cutoff,
-    const std::string& directory_bot_jid) {
+    base::TimeDelta idleness_cutoff) {
   EXPECT_TRUE(job->Init(
       base::TimeTicks::Now(),
       GenerateCommandProto(unique_id, base::TimeTicks::Now() - issued_time,
-                           idleness_cutoff, directory_bot_jid)));
+                           idleness_cutoff)));
 
   EXPECT_EQ(unique_id, job->unique_id());
   EXPECT_EQ(RemoteCommandJob::NOT_STARTED, job->status());
 }
 
 std::string DeviceCommandStartCRDSessionJobTest::CreateSuccessPayload(
-    const std::string& auth_code) {
+    const std::string& access_code) {
   std::string payload;
   base::Value root(base::Value::Type::DICTIONARY);
   root.SetKey(kResultCodeFieldName,
               base::Value(DeviceCommandStartCRDSessionJob::SUCCESS));
-  root.SetKey(kResultAuthCodeFieldName, base::Value(auth_code));
+  root.SetKey(kResultAccessCodeFieldName, base::Value(access_code));
   base::JSONWriter::Write(root, &payload);
   return payload;
 }
@@ -297,18 +288,18 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, Success) {
       true /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
       true /* oauth_token_success */, true /* ice_config_success */,
-      true /* auth_code_success */);
+      true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
   InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
+                base::TimeDelta::FromSeconds(30));
   bool success = job->Run(
       base::TimeTicks::Now(),
       base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
                      base::Unretained(this), base::Unretained(job.get()),
                      RemoteCommandJob::SUCCEEDED,
-                     CreateSuccessPayload(kTestAuthCode)));
+                     CreateSuccessPayload(kTestAccessCode)));
   EXPECT_TRUE(success);
   run_loop_.Run();
 }
@@ -319,18 +310,18 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, SuccessOldSessionWasRunning) {
       true /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
       true /* oauth_token_success */, true /* ice_config_success */,
-      true /* auth_code_success */);
+      true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
   InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
+                base::TimeDelta::FromSeconds(30));
   bool success = job->Run(
       base::TimeTicks::Now(),
       base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
                      base::Unretained(this), base::Unretained(job.get()),
                      RemoteCommandJob::SUCCEEDED,
-                     CreateSuccessPayload(kTestAuthCode)));
+                     CreateSuccessPayload(kTestAccessCode)));
   EXPECT_TRUE(success);
   run_loop_.Run();
 }
@@ -341,12 +332,12 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureServicesAreNotReady) {
       true /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
       true /* oauth_token_success */, true /* ice_config_success */,
-      true /* auth_code_success */);
+      true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
   InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
+                base::TimeDelta::FromSeconds(30));
   bool success = job->Run(
       base::TimeTicks::Now(),
       base::BindOnce(
@@ -366,12 +357,12 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureNotAKiosk) {
       false /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
       true /* oauth_token_success */, true /* ice_config_success */,
-      true /* auth_code_success */);
+      true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
   InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
+                base::TimeDelta::FromSeconds(30));
   bool success = job->Run(
       base::TimeTicks::Now(),
       base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
@@ -390,12 +381,12 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureNotIdle) {
       true /* is_running_kiosk */,
       base::TimeDelta::FromSeconds(1) /* idleness_period */,
       true /* oauth_token_success */, true /* ice_config_success */,
-      true /* auth_code_success */);
+      true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
   InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
+                base::TimeDelta::FromSeconds(30));
   bool success = job->Run(
       base::TimeTicks::Now(),
       base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
@@ -412,12 +403,12 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, TestNoOauthToken) {
       true /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
       false /* oauth_token_success */, true /* ice_config_success */,
-      true /* auth_code_success */);
+      true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
   InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
+                base::TimeDelta::FromSeconds(30));
   bool success =
       job->Run(base::TimeTicks::Now(),
                base::BindOnce(
@@ -437,12 +428,12 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, TestNoICEConfig) {
       true /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
       true /* oauth_token_success */, false /* ice_config_success */,
-      true /* auth_code_success */);
+      true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
   InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
+                base::TimeDelta::FromSeconds(30));
   bool success = job->Run(
       base::TimeTicks::Now(),
       base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
@@ -461,12 +452,12 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, TestErrorRunningCRDHost) {
       true /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
       true /* oauth_token_success */, true /* ice_config_success */,
-      false /* auth_code_success */);
+      false /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
   InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30), kTestDirectoryBotJID);
+                base::TimeDelta::FromSeconds(30));
   bool success =
       job->Run(base::TimeTicks::Now(),
                base::BindOnce(
