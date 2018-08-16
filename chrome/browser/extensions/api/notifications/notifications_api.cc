@@ -287,6 +287,9 @@ bool NotificationsApiFunction::CreateNotification(
   if (options->event_time.get())
     optional_fields.timestamp = base::Time::FromJsTime(*options->event_time);
 
+  if (options->silent)
+    optional_fields.silent = *options->silent;
+
   if (options->buttons.get()) {
     // Currently we allow up to 2 buttons.
     size_t number_of_buttons = options->buttons->size();
@@ -445,6 +448,9 @@ bool NotificationsApiFunction::UpdateNotification(
 
   if (options->event_time)
     notification->set_timestamp(base::Time::FromJsTime(*options->event_time));
+
+  if (options->silent)
+    notification->set_silent(*options->silent);
 
   if (options->buttons) {
     // Currently we allow up to 2 buttons.

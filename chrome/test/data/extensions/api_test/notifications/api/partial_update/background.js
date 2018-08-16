@@ -119,6 +119,7 @@ function testPartialUpdate() {
     title: "Basic title",
     message: "Basic message",
     iconUrl: red_dot,
+    silent: false,
     buttons: [{title: "Button"}]
   };
 
@@ -128,7 +129,8 @@ function testPartialUpdate() {
       .then(function() {
         return update("testId", {
           title: "Changed!",
-          message: "Too late! The show ended yesterday"
+          message: "Too late! The show ended yesterday",
+          silent: true
         });
       })
       // Then update a few more items

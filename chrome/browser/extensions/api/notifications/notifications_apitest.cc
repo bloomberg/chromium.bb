@@ -292,6 +292,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
   EXPECT_EQ(base::ASCIIToUTF16(kNewTitle), notification->title());
   EXPECT_EQ(base::ASCIIToUTF16(kNewMessage), notification->message());
   EXPECT_EQ(kNewPriority, notification->priority());
+  EXPECT_TRUE(notification->silent());
   EXPECT_EQ(1u, notification->buttons().size());
   EXPECT_EQ(base::ASCIIToUTF16(kButtonTitle), notification->buttons()[0].title);
 }
