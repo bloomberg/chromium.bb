@@ -137,6 +137,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // item.
   bool IsNewSelectorItemWindow(aura::Window* window) const;
 
+  // Returns the selector item that accociates with |new_selector_item_widget_|.
+  // Returns nullptr if overview does not have the new selector item.
+  WindowSelectorItem* GetNewSelectorItem();
+
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
   // TODO(flackr): Handle window bounds changed in WindowSelectorItem.

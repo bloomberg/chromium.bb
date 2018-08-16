@@ -5,12 +5,12 @@
 #ifndef ASH_WM_OVERVIEW_OVERVIEW_UTILS_H_
 #define ASH_WM_OVERVIEW_OVERVIEW_UTILS_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_type.h"
-
-#include <memory>
 
 namespace aura {
 class Window;

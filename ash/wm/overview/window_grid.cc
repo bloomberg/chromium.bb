@@ -212,6 +212,28 @@ std::unique_ptr<views::Widget> CreateNewSelectorItemWidget(
   return widget;
 }
 
+// Gets the expected grid bounds according the current |indicator_state| during
+// window dragging.
+gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
+                                              IndicatorState indicator_state) {
+  switch (indicator_state) {
+    case IndicatorState::kPreviewAreaLeft:
+      return Shell::Get()
+          ->split_view_controller()
+          ->GetSnappedWindowBoundsInScreen(dragged_window,
+                                           SplitViewController::RIGHT);
+    case IndicatorState::kPreviewAreaRight:
+      return Shell::Get()
+          ->split_view_controller()
+          ->GetSnappedWindowBoundsInScreen(dragged_window,
+                                           SplitViewController::LEFT);
+    default:
+      return Shell::Get()
+          ->split_view_controller()
+          ->GetDisplayWorkAreaBoundsInScreen(dragged_window);
+  }
+}
+
 }  // namespace
 
 // ShieldView contains the background for overview mode. It also contains text
@@ -585,6 +607,31 @@ void WindowGrid::OnWindowDragContinued(aura::Window* dragged_window,
                                        const gfx::Point& location_in_screen,
                                        IndicatorState indicator_state) {
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
+
+  // Adjust the window grid's bounds and the new selector item's visibility
+  // according to |indicator_state| if split view is not active at the moment.
+  if (!Shell::Get()->split_view_controller()->IsSplitViewModeActive()) {
+    WindowSelectorItem* new_selector_item = GetNewSelectorItem();
+    const bool should_visible =
+        (indicator_state != IndicatorState::kPreviewAreaLeft &&
+         indicator_state != IndicatorState::kPreviewAreaRight);
+    if (new_selector_item) {
+      const bool visible = new_selector_item_widget_->IsVisible();
+      if (should_visible != visible) {
+        new_selector_item_widget_->GetLayer()->SetVisible(should_visible);
+        new_selector_item->SetOpacity(should_visible ? 1.f : 0.f);
+      }
+    }
+
+    // Update the grid's bounds.
+    const gfx::Rect expected_bounds =
+        GetGridBoundsInScreenDuringDragging(dragged_window, indicator_state);
+    if (bounds_ != expected_bounds) {
+      SetBoundsAndUpdatePositionsIgnoringWindow(
+          expected_bounds, should_visible ? nullptr : new_selector_item);
+    }
+  }
+
   // Find the window selector item that contains |location_in_screen|.
   auto iter = std::find_if(
       window_list_.begin(), window_list_.end(),
@@ -676,6 +723,15 @@ void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
 bool WindowGrid::IsNewSelectorItemWindow(aura::Window* window) const {
   return new_selector_item_widget_ &&
          new_selector_item_widget_->GetNativeWindow() == window;
+}
+
+WindowSelectorItem* WindowGrid::GetNewSelectorItem() {
+  if (!new_selector_item_widget_ || window_list_.empty())
+    return nullptr;
+
+  WindowSelectorItem* first_item = window_list_.front().get();
+  return IsNewSelectorItemWindow(first_item->GetWindow()) ? first_item
+                                                          : nullptr;
 }
 
 void WindowGrid::OnWindowDestroying(aura::Window* window) {
