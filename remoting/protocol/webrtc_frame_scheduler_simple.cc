@@ -27,6 +27,14 @@ constexpr base::TimeDelta kTargetFrameInterval =
 // Target quantizer at which stop the encoding top-off.
 const int kTargetQuantizerForVp8TopOff = 30;
 
+// Maximum quantizer at which to encode frames. Lowering this value will
+// improve image quality (in cases of low-bandwidth or large frames) at the
+// cost of latency. Increasing the value will improve latency (in these cases)
+// at the cost of image quality, resulting in longer top-off times.
+// TODO(lambroslambrou): Move this, and any other encoder-specific parameters
+// into the WebrtcVideoEncoderXXX implementations.
+const int kMaxQuantizer = 50;
+
 const int64_t kPixelsPerMegapixel = 1000000;
 
 // Threshold in number of updated pixels used to detect "big" frames. These
@@ -178,7 +186,8 @@ bool WebrtcFrameSchedulerSimple::OnFrameCaptured(
   // If bandwidth is being underutilized then libvpx is likely to choose the
   // minimum allowed quantizer value, which means that encoded frame size may
   // be significantly bigger than the bandwidth allows. Detect this case and set
-  // vpx_min_quantizer to 60. The quality will be topped off later.
+  // vpx_min_quantizer to the maximum value. The quality will be topped off
+  // later.
   if (updated_area - updated_region_area_.Max() > kBigFrameThresholdPixels) {
     int expected_frame_size =
         updated_area * kEstimatedBytesPerMegapixel / kPixelsPerMegapixel;
@@ -186,13 +195,13 @@ bool WebrtcFrameSchedulerSimple::OnFrameCaptured(
         base::Time::kMicrosecondsPerSecond * expected_frame_size /
         pacing_bucket_.rate());
     if (expected_send_delay > kTargetFrameInterval) {
-      params_out->vpx_min_quantizer = 60;
+      params_out->vpx_min_quantizer = kMaxQuantizer;
     }
   }
 
   updated_region_area_.Record(updated_area);
 
-  params_out->vpx_max_quantizer = 63;
+  params_out->vpx_max_quantizer = kMaxQuantizer;
 
   params_out->clear_active_map = !top_off_is_active_;
 
