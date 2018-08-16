@@ -361,15 +361,7 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
 
   std::string GetTestClientDataJSON(std::string type) {
     return AuthenticatorImpl::SerializeCollectedClientDataToJson(
-        std::move(type), GetTestOrigin(), GetTestChallengeBytes(),
-        base::nullopt);
-  }
-
-  std::string GetTokenBindingTestClientDataJSON(
-      base::Optional<base::span<const uint8_t>> token_binding) {
-    return AuthenticatorImpl::SerializeCollectedClientDataToJson(
-        client_data::kGetType, GetTestOrigin(), GetTestChallengeBytes(),
-        token_binding);
+        std::move(type), GetTestOrigin(), GetTestChallengeBytes());
   }
 
   AuthenticatorStatus TryAuthenticationWithAppId(const std::string& origin,
@@ -609,34 +601,6 @@ TEST_F(AuthenticatorImplTest, TestSerializedRegisterClientData) {
 TEST_F(AuthenticatorImplTest, TestSerializedSignClientData) {
   CheckJSONIsSubsetOfJSON(kTestSignClientDataJsonString,
                           GetTestClientDataJSON(client_data::kGetType));
-}
-
-TEST_F(AuthenticatorImplTest, TestTokenBindingClientData) {
-  const std::vector<
-      std::pair<base::Optional<std::vector<uint8_t>>, const char*>>
-      kTestCases = {
-          std::make_pair(base::nullopt, ""),
-          std::make_pair(std::vector<uint8_t>{},
-                         R"({"tokenBinding":{"status":"supported"}})"),
-          std::make_pair(
-              std::vector<uint8_t>{1, 2, 3, 4},
-              R"({"tokenBinding":{"status":"present","id":"AQIDBA"}})"),
-      };
-
-  for (const auto& test : kTestCases) {
-    const auto& token_binding = test.first;
-    const std::string expected_json_subset = test.second;
-    SCOPED_TRACE(expected_json_subset);
-    const std::string client_data =
-        GetTokenBindingTestClientDataJSON(token_binding);
-
-    if (!expected_json_subset.empty()) {
-      CheckJSONIsSubsetOfJSON(expected_json_subset, client_data);
-    } else {
-      EXPECT_TRUE(client_data.find("tokenBinding") == std::string::npos)
-          << client_data;
-    }
-  }
 }
 
 TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
