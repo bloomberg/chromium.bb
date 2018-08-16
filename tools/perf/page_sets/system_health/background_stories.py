@@ -30,6 +30,7 @@ class _BackgroundStory(system_health_story.SystemHealthStory):
 class BackgroundGoogleStory(_BackgroundStory):
   NAME = 'background:search:google'
   URL = 'https://www.google.co.uk/#q=tom+cruise+movies'
+  TAGS = [story_tags.HEALTH_CHECK]
 
   def _DidLoadDocument(self, action_runner):
     # Activte the immersive movie browsing experience
@@ -79,11 +80,13 @@ class BackgroundImgurMobileStory(_BackgroundStory):
   NAME = 'background:media:imgur'
   URL = 'http://imgur.com/gallery/hUita'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK]
 
 
 class BackgroundGmailMobileStory(LoadGmailMobileStory):
   NAME = 'background:tools:gmail'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK]
 
   def _Measure(self, action_runner):
     action_runner.tab.browser.Background()
