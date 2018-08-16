@@ -1257,9 +1257,6 @@ TEST(TimeDelta, Magnitude) {
   static_assert(TimeDelta::FromMicroseconds(max_int64_minus_one) ==
                     TimeDelta::FromMicroseconds(min_int64_plus_two).magnitude(),
                 "");
-
-  static_assert(TimeDelta::Max() == TimeDelta::Max().magnitude(), "");
-  static_assert(TimeDelta::Max() == TimeDelta::Min().magnitude(), "");
 }
 
 TEST(TimeDelta, ZeroMinMax) {
@@ -1452,104 +1449,6 @@ TEST(TimeDelta, NumericOperators) {
             (2 * TimeDelta::FromMilliseconds(1000)));
 }
 
-TEST(TimeDelta, NumericOperatorsSaturated) {
-  // Anything + positive-infinity == positive-infinity.
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::Max() + TimeDelta::Max());
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::Max() + TimeDelta::FromSeconds(10));
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::Max() + TimeDelta::FromSeconds(-10));
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::FromSeconds(10) + TimeDelta::Max());
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::FromSeconds(-10) + TimeDelta::Max());
-
-  // Anything + negative-infinity == negative-infinity.
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::Min() + TimeDelta::Min());
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::Min() + TimeDelta::FromSeconds(10));
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::Min() + TimeDelta::FromSeconds(-10));
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::FromSeconds(10) + TimeDelta::Min());
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::FromSeconds(-10) + TimeDelta::Min());
-
-  // positive-infinity - anything == positive infinity, and
-  // anything - negative-infinity == positive infinity.
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::Max() - TimeDelta::FromSeconds(10));
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::Max() - TimeDelta::FromSeconds(-10));
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::FromSeconds(10) - TimeDelta::Min());
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::FromSeconds(-10) - TimeDelta::Min());
-
-  // negative-infinity - anything == negative infinity, and
-  // anything - positive-infinity == negative infinity.
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::Min() - TimeDelta::FromSeconds(10));
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::Min() - TimeDelta::FromSeconds(-10));
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::FromSeconds(10) - TimeDelta::Max());
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::FromSeconds(-10) - TimeDelta::Max());
-
-  // Negation.
-  static_assert(-TimeDelta::Max() == TimeDelta::Min(), "");
-  static_assert(-TimeDelta::Min() == TimeDelta::Max(), "");
-
-  // positive-infinity * positive == positive-infinity
-  // positive-infinity * negative == negative-infinity
-  // negative-infinity * positive == negative-infinity
-  // negative-infinity * negative == positive-infinity
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::Max() * 150);
-  EXPECT_EQ(TimeDelta::Max(),
-            TimeDelta::Max() * std::numeric_limits<int64_t>::max());
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::Max() * -150);
-  EXPECT_EQ(TimeDelta::Min(),
-            TimeDelta::Max() * std::numeric_limits<int64_t>::min());
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::Min() * 150);
-  EXPECT_EQ(TimeDelta::Min(),
-            TimeDelta::Min() * std::numeric_limits<int64_t>::max());
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::Min() * -150);
-  EXPECT_EQ(TimeDelta::Max(),
-            TimeDelta::Min() * std::numeric_limits<int64_t>::min());
-
-  // positive-infinity / positive == positive-infinity
-  // positive-infinity / negative == negative-infinity
-  // negative-infinity / positive == negative-infinity
-  // negative-infinity / negative == positive-infinity
-  // positive-infinity / 0 == positive-infinity
-  // negative-infinity / 0 == negative-infinity
-  // +finite / 0 == positive-infinity
-  // -finite / 0 == negative-infinity
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::Max() / 150);
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::Max() / -150);
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::Min() / 150);
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::Min() / -150);
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::Max() / 0);
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::Min() / 0);
-  EXPECT_EQ(TimeDelta::Max(), TimeDelta::FromSeconds(10) / 0);
-  EXPECT_EQ(TimeDelta::Min(), TimeDelta::FromSeconds(-10) / 0);
-
-  // Special case operator/ for TimeDelta.
-  // positive-infinity / positive == positive-infinity
-  // positive-infinity / negative == negative-infinity
-  // negative-infinity / positive == negative-infinity
-  // negative-infinity / negative == positive-infinity
-  // positive-infinity / 0 == positive-infinity
-  // negative-infinity / 0 == negative-infinity
-  // anything / positive-infinity == 0
-  // anything / negative-infinity == 0
-  EXPECT_EQ(std::numeric_limits<int64_t>::max(),
-            TimeDelta::Max() / base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(std::numeric_limits<int64_t>::min(),
-            TimeDelta::Max() / base::TimeDelta::FromSeconds(-10));
-  EXPECT_EQ(std::numeric_limits<int64_t>::min(),
-            TimeDelta::Min() / base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(std::numeric_limits<int64_t>::max(),
-            TimeDelta::Min() / base::TimeDelta::FromSeconds(-10));
-  EXPECT_EQ(std::numeric_limits<int64_t>::max(),
-            TimeDelta::Max() / TimeDelta());
-  EXPECT_EQ(std::numeric_limits<int64_t>::min(),
-            TimeDelta::Min() / TimeDelta());
-  EXPECT_EQ(0, TimeDelta::FromSeconds(10) / TimeDelta::Max());
-  EXPECT_EQ(0, TimeDelta::FromSeconds(10) / TimeDelta::Min());
-
-  // x % positive-infinity == x
-  // x % negative-infinity == x
-  const TimeDelta kTenSeconds = TimeDelta::FromSeconds(10);
-  EXPECT_EQ(kTenSeconds, kTenSeconds % TimeDelta::Max());
-  EXPECT_EQ(kTenSeconds, kTenSeconds % TimeDelta::Min());
-}
-
 // Basic test of operators between TimeDeltas (without overflow -- next test
 // handles overflow).
 TEST(TimeDelta, TimeDeltaOperators) {
@@ -1571,10 +1470,10 @@ TEST(TimeDelta, Overflows) {
   // evaluation at the same time.
   static_assert(TimeDelta::Max().is_max(), "");
   static_assert(-TimeDelta::Max() < TimeDelta(), "");
+  static_assert(-TimeDelta::Max() > TimeDelta::Min(), "");
   static_assert(TimeDelta() > -TimeDelta::Max(), "");
 
-  TimeDelta large_delta =
-      TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::max() - 1);
+  TimeDelta large_delta = TimeDelta::Max() - TimeDelta::FromMilliseconds(1);
   TimeDelta large_negative = -large_delta;
   EXPECT_GT(TimeDelta(), large_negative);
   EXPECT_FALSE(large_delta.is_max());
