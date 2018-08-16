@@ -28,6 +28,11 @@ constexpr base::TimeDelta kTargetWritePeriod =
 // MixerOutputStreamFuchsia::Write().
 constexpr int kMaxOutputBufferSizeFrames = 4096;
 
+// Current AudioOut implementation allows only one buffer with id=0.
+// TODO(sergeyu): Replace with an incrementing buffer id once AddPayloadBuffer()
+// and RemovePayloadBuffer() are implemented properly in AudioOut.
+const uint32_t kBufferId = 0;
+
 // static
 std::unique_ptr<MixerOutputStream> MixerOutputStream::Create() {
   return std::make_unique<MixerOutputStreamFuchsia>();
@@ -37,7 +42,7 @@ MixerOutputStreamFuchsia::MixerOutputStreamFuchsia() = default;
 MixerOutputStreamFuchsia::~MixerOutputStreamFuchsia() = default;
 
 bool MixerOutputStreamFuchsia::Start(int requested_sample_rate, int channels) {
-  DCHECK(!audio_renderer_);
+  DCHECK(!audio_out_);
   DCHECK(reference_time_.is_null());
 
   sample_rate_ = requested_sample_rate;
@@ -45,12 +50,12 @@ bool MixerOutputStreamFuchsia::Start(int requested_sample_rate, int channels) {
   target_packet_size_ = ::media::AudioTimestampHelper::TimeToFrames(
       kTargetWritePeriod, sample_rate_);
 
-  // Connect |audio_renderer_|.
+  // Connect |audio_out_|.
   fuchsia::media::AudioPtr audio_server =
       base::fuchsia::ComponentContext::GetDefault()
           ->ConnectToService<fuchsia::media::Audio>();
-  audio_server->CreateAudioRenderer2(audio_renderer_.NewRequest());
-  audio_renderer_.set_error_handler(
+  audio_server->CreateAudioOut(audio_out_.NewRequest());
+  audio_out_.set_error_handler(
       fit::bind_member(this, &MixerOutputStreamFuchsia::OnRendererError));
 
   // Configure the renderer.
@@ -58,13 +63,13 @@ bool MixerOutputStreamFuchsia::Start(int requested_sample_rate, int channels) {
   format.sample_format = fuchsia::media::AudioSampleFormat::FLOAT;
   format.channels = channels_;
   format.frames_per_second = sample_rate_;
-  audio_renderer_->SetPcmStreamType(std::move(format));
+  audio_out_->SetPcmStreamType(std::move(format));
 
   // Use number of samples to specify media position.
-  audio_renderer_->SetPtsUnits(sample_rate_, 1);
+  audio_out_->SetPtsUnits(sample_rate_, 1);
 
-  audio_renderer_->EnableMinLeadTimeEvents(true);
-  audio_renderer_.events().OnMinLeadTimeChanged =
+  audio_out_->EnableMinLeadTimeEvents(true);
+  audio_out_.events().OnMinLeadTimeChanged =
       fit::bind_member(this, &MixerOutputStreamFuchsia::OnMinLeadTimeChanged);
 
   return true;
@@ -93,7 +98,7 @@ int MixerOutputStreamFuchsia::OptimalWriteFramesCount() {
 bool MixerOutputStreamFuchsia::Write(const float* data,
                                      int data_size,
                                      bool* out_playback_interrupted) {
-  if (!audio_renderer_)
+  if (!audio_out_)
     return false;
 
   DCHECK_EQ(data_size % channels_, 0);
@@ -125,12 +130,13 @@ bool MixerOutputStreamFuchsia::Write(const float* data,
          data, packet_size);
 
   // Send a new packet.
-  fuchsia::media::AudioPacket packet;
-  packet.timestamp = stream_position_samples_;
+  fuchsia::media::StreamPacket packet;
+  packet.pts = stream_position_samples_;
+  packet.payload_buffer_id = kBufferId;
   packet.payload_offset = payload_buffer_pos_;
   packet.payload_size = packet_size;
   packet.flags = 0;
-  audio_renderer_->SendPacketNoReply(std::move(packet));
+  audio_out_->SendPacketNoReply(std::move(packet));
 
   // Update stream position.
   int frames = data_size / channels_;
@@ -139,8 +145,8 @@ bool MixerOutputStreamFuchsia::Write(const float* data,
 
   if (reference_time_.is_null()) {
     reference_time_ = now + min_lead_time_;
-    audio_renderer_->PlayNoReply(reference_time_.ToZxTime(),
-                                 stream_position_samples_ - frames);
+    audio_out_->PlayNoReply(reference_time_.ToZxTime(),
+                            stream_position_samples_ - frames);
   } else {
     // Block the thread to limit amount of buffered data. Currently
     // MixerOutputStreamAlsa uses blocking Write() and StreamMixer relies on
@@ -162,7 +168,7 @@ bool MixerOutputStreamFuchsia::Write(const float* data,
 
 void MixerOutputStreamFuchsia::Stop() {
   reference_time_ = base::TimeTicks();
-  audio_renderer_.Unbind();
+  audio_out_.Unbind();
 }
 
 size_t MixerOutputStreamFuchsia::GetMinBufferSize() {
@@ -184,8 +190,8 @@ bool MixerOutputStreamFuchsia::InitializePayloadBuffer() {
   }
 
   payload_buffer_pos_ = 0;
-  audio_renderer_->SetPayloadBuffer(
-      zx::vmo(payload_buffer_.handle().Duplicate().GetHandle()));
+  audio_out_->AddPayloadBuffer(
+      kBufferId, zx::vmo(payload_buffer_.handle().Duplicate().GetHandle()));
 
   return true;
 }

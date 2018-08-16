@@ -41,11 +41,14 @@ class AudioOutputStreamFuchsia : public AudioOutputStream {
 
   base::TimeTicks GetCurrentStreamTime();
 
-  // Event handler for |audio_renderer_|.
+  // Event handler for |audio_out_|.
   void OnMinLeadTimeChanged(int64_t min_lead_time);
 
-  // Error handler for |audio_renderer_|.
+  // Error handler for |audio_out_|.
   void OnRendererError();
+
+  // Resets internal state and reports an error to |callback_|.
+  void ReportError();
 
   // Requests data from AudioSourceCallback, passes it to the mixer and
   // schedules |timer_| for the next call.
@@ -58,8 +61,7 @@ class AudioOutputStreamFuchsia : public AudioOutputStream {
   AudioManagerFuchsia* manager_;
   AudioParameters parameters_;
 
-  // Audio renderer connection.
-  fuchsia::media::AudioRenderer2Ptr audio_renderer_;
+  fuchsia::media::AudioOutPtr audio_out_;
 
   // |audio_bus_| is used only in PumpSamples(). It is kept here to avoid
   // reallocating the memory every time.
