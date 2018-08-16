@@ -472,9 +472,8 @@ void NetworkTimeTracker::CheckTime() {
   resource_request->url = url;
   // Not expecting any cookies, but just in case.
   resource_request->load_flags =
-      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
-      net::LOAD_DO_NOT_SEND_AUTH_DATA;
+      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
+  resource_request->allow_credentials = false;
   // This cancels any outstanding fetch.
   time_fetcher_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                    traffic_annotation);

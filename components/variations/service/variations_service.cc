@@ -516,9 +516,7 @@ bool VariationsService::DoFetchFromURL(const GURL& url, bool is_http_retry) {
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->allow_credentials = false;
   bool enable_deltas = false;
   std::string serial_number =
       field_trial_creator_.seed_store()->GetLatestSerialNumber();

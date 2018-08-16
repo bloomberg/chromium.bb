@@ -141,10 +141,8 @@ void ConnectivityChecker::StartAsyncCheck() {
   url_fetcher_->SetStopOnRedirect(true);
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);
   url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(0);
-  url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE);
+  url_fetcher_->SetAllowCredentials(false);
   url_fetcher_->Start();
   expiration_timer_.reset(new base::OneShotTimer());
   expiration_timer_->Start(FROM_HERE, timeout_, this,

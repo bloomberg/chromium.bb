@@ -113,9 +113,8 @@ void RlzPingHandler::Ping(
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = request_url;
-  resource_request->load_flags =
-      net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SEND_AUTH_DATA |
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  resource_request->allow_credentials = false;
 
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
