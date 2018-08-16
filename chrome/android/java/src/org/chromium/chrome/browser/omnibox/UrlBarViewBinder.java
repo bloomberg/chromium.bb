@@ -43,7 +43,10 @@ class UrlBarViewBinder {
         } else if (UrlBarProperties.FOCUS_CHANGE_CALLBACK.equals(propertyKey)) {
             final Callback<Boolean> focusChangeCallback =
                     model.getValue(UrlBarProperties.FOCUS_CHANGE_CALLBACK);
-            view.setOnFocusChangeListener((v, focused) -> focusChangeCallback.onResult(focused));
+            view.setOnFocusChangeListener((v, focused) -> {
+                if (focused) view.setIgnoreTextChangesForAutocomplete(false);
+                focusChangeCallback.onResult(focused);
+            });
         } else if (UrlBarProperties.SHOW_CURSOR.equals(propertyKey)) {
             view.setCursorVisible(model.getValue(UrlBarProperties.SHOW_CURSOR));
         } else if (UrlBarProperties.TEXT_CONTEXT_MENU_DELEGATE.equals(propertyKey)) {
