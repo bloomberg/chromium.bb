@@ -932,8 +932,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, UrgentFastShutdownWithUnloadHandler) {
 #endif  // OS_CHROMEOS
 }
 
+// https://crbug.com/874915, flaky on all platform
 IN_PROC_BROWSER_TEST_F(TabManagerTest,
-                       ProactiveFastShutdownWithBeforeunloadHandler) {
+                       DISABLED_ProactiveFastShutdownWithBeforeunloadHandler) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Disable the protection of recent tabs.
   OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
