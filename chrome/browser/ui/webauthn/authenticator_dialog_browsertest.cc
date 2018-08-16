@@ -64,6 +64,8 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "ble_activate") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBleActivate);
+    } else if (name == "touchid") {
+      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::kTouchId);
     }
 
     ShowAuthenticatorRequestDialog(
@@ -127,5 +129,9 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_verifying) {
 }
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_activate) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_touchid) {
   ShowAndVerifyUi();
 }

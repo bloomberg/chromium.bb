@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -353,4 +354,31 @@ base::string16 AuthenticatorBleActivateSheetModel::GetStepTitle() const {
 
 base::string16 AuthenticatorBleActivateSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_ACTIVATE_DESCRIPTION);
+}
+
+// AuthenticatorTouchIdSheetModel -----------------------------------------
+
+gfx::ImageSkia* AuthenticatorTouchIdSheetModel::GetStepIllustration() const {
+#if defined(OS_MACOSX)
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_TOUCHID_1X);
+#else
+  // Avoid bundling the PNG on platforms where it's not needed.
+  return nullptr;
+#endif  // defined(OS_MACOSX)
+}
+
+base::string16 AuthenticatorTouchIdSheetModel::GetStepTitle() const {
+#if defined(OS_MACOSX)
+  // TODO(martinkr): Insert actual domain name from model to
+  // |application_name|.
+  base::string16 application_name = base::UTF8ToUTF16("example.com");
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_TITLE,
+                                    application_name);
+#else
+  return base::string16();
+#endif  // defined(OS_MACOSX)
+}
+
+base::string16 AuthenticatorTouchIdSheetModel::GetStepDescription() const {
+  return base::string16();
 }

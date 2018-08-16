@@ -82,9 +82,11 @@
         <include name="IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH_1X" file="resources\webauthn\error_bt.png" type="BINDATA" />
         <include name="IDR_WEBAUTHN_ILLUSTRATION_ERROR_TIMEOUT_1X" file="resources\webauthn\error_timeout.png" type="BINDATA" />
         <include name="IDR_WEBAUTHN_ILLUSTRATION_PHONE_1X" file="resources\webauthn\phone.png" type="BINDATA" />
-        <include name="IDR_WEBAUTHN_ILLUSTRATION_TOUCHID_1X" file="resources\webauthn\touchid.png" type="BINDATA" />
         <include name="IDR_WEBAUTHN_ILLUSTRATION_USB_1X" file="resources\webauthn\usb.png" type="BINDATA" />
         <include name="IDR_WEBAUTHN_ILLUSTRATION_WELCOME_1X" file="resources\webauthn\welcome.png" type="BINDATA" />
+      </if>
+      <if expr="is_macosx">
+        <include name="IDR_WEBAUTHN_ILLUSTRATION_TOUCHID_1X" file="resources\webauthn\touchid.png" type="BINDATA" />
       </if>
       <if expr="is_win">
         <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\conflicts\about_conflicts.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

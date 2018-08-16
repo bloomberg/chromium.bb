@@ -42,6 +42,9 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
     case AuthenticatorTransport::kBluetoothLowEnergy:
       SetCurrentStep(Step::kBlePowerOnManual);
       break;
+    case AuthenticatorTransport::kInternal:
+      SetCurrentStep(Step::kTouchId);
+      break;
     default:
       break;
   }
@@ -71,6 +74,10 @@ void AuthenticatorRequestDialogModel::FinishPairingWithPin(
 
 void AuthenticatorRequestDialogModel::TryUsbDevice() {
   DCHECK_EQ(current_step(), Step::kUsbInsertAndActivateOnRegister);
+}
+
+void AuthenticatorRequestDialogModel::TryTouchId() {
+  DCHECK_EQ(current_step(), Step::kTouchId);
 }
 
 void AuthenticatorRequestDialogModel::Cancel() {
