@@ -19,14 +19,6 @@ specific_include_rules = {
     "+ash/shell.h",
     "+ash/wm/window_util.h",
   ],
-  # TODO(mash): Fix these. https://crbug.com/756059
-  "input_method_engine\.cc": [
-    "+ash/shell.h",
-  ],
-  "mode_indicator_controller\.cc": [
-    "+ash/shell.h",
-    "+ash/wm/window_util.h",
-  ],
 
   # TODO(erikwright): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,

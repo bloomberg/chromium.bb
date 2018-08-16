@@ -10,6 +10,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/events/event.h"
 
 namespace ui {
 class InputMethod;
@@ -60,6 +61,10 @@ class UI_BASE_IME_EXPORT MockIMEInputContextHandler
     return last_delete_surrounding_text_arg_;
   }
 
+  const ui::KeyEvent& last_sent_key_event() const {
+    return last_sent_key_event_;
+  }
+
   // Resets all call count.
   void Reset();
 
@@ -68,6 +73,7 @@ class UI_BASE_IME_EXPORT MockIMEInputContextHandler
   int update_preedit_text_call_count_;
   int delete_surrounding_text_call_count_;
   std::string last_commit_text_;
+  ui::KeyEvent last_sent_key_event_;
   UpdateCompositionTextArg last_update_composition_arg_;
   DeleteSurroundingTextArg last_delete_surrounding_text_arg_;
 };
