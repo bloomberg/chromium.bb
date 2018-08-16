@@ -6,6 +6,7 @@
 
 import codecs
 import collections
+import itertools
 import json
 import logging
 import os
@@ -13,6 +14,7 @@ import os
 import archive
 import diff
 import models
+import path_util
 
 
 _SYMBOL_TYPE_VTABLE = 'v'
@@ -42,7 +44,14 @@ _SMALL_SYMBOL_DESCRIPTIONS = {
   'o': 'Other small entries',
 }
 
-_DEFAULT_SYMBOL_COUNT = 250000
+# Always emit this many distict symbols (if present), even when small.
+# No need to optimize file size at this point).
+_MIN_SYMBOL_COUNT = 1000
+# Small symbols grouped into "other" symbols may not comprise more than this
+# fraction of total size.
+_MAX_OTHER_SYMBOL_COVERAGE = .05
+# Don't insert "other" symbols smaller than this (just noise at this point).
+_MIN_OTHER_PSS = 1
 
 
 def _GetSymbolType(symbol):
@@ -54,11 +63,10 @@ def _GetSymbolType(symbol):
   return symbol_type
 
 
-def _GetOrAddFileNode(symbol, file_nodes, components):
-  path = symbol.source_path or symbol.object_path
+def _GetOrAddFileNode(path, component, file_nodes, components):
   file_node = file_nodes.get(path)
   if file_node is None:
-    component_index = components.GetOrAdd(symbol.component)
+    component_index = components.GetOrAdd(component)
     file_node = {
       _COMPACT_FILE_PATH_KEY: path,
       _COMPACT_FILE_COMPONENT_INDEX_KEY: component_index,
@@ -88,6 +96,29 @@ class IndexedSet(object):
     return index
 
 
+def _PartitionSymbols(symbols):
+  # Dex methods (type "m") are whitelisted for the method_count mode on the
+  # UI. It's important to see details on all the methods.
+  dex_symbols = symbols.WhereIsDex()
+  ordered_symbols = dex_symbols.Inverted().Sorted()
+
+  abs_pss_target = (1 - _MAX_OTHER_SYMBOL_COVERAGE) * sum(
+      abs(s.pss) for s in ordered_symbols)
+  running_abs_pss = 0
+  ordered_count = 0
+  for ordered_count, s in enumerate(ordered_symbols):
+    running_abs_pss += abs(s.pss)
+    if running_abs_pss > abs_pss_target and ordered_count >= _MIN_SYMBOL_COUNT:
+      break
+
+  main_symbols = itertools.chain(dex_symbols, ordered_symbols[:ordered_count])
+  extra_symbols = ordered_symbols[ordered_count:]
+
+  logging.info('Found %d large symbols, %s small symbols',
+               len(dex_symbols) + ordered_count, len(extra_symbols))
+  return main_symbols, extra_symbols
+
+
 def _MakeTreeViewList(symbols, include_all_symbols):
   """Builds JSON data of the symbols for the tree view HTML report.
 
@@ -100,27 +131,18 @@ def _MakeTreeViewList(symbols, include_all_symbols):
   """
   file_nodes = {}
   components = IndexedSet()
+  # Dict of path -> type -> accumulated pss.
+  small_symbol_pss = collections.defaultdict(
+      lambda: collections.defaultdict(float))
 
-  # Build a container for symbols smaller than min_symbol_size
-  small_symbols = collections.defaultdict(dict)
-
-  # Dex methods (type "m") are whitelisted for the method_count mode on the
-  # UI. It's important to see details on all the methods.
-  dex_symbols = symbols.WhereIsDex()
-  ordered_symbols = dex_symbols.Inverted().Sorted()
   if include_all_symbols:
-    symbol_count = len(ordered_symbols)
+    main_symbols, extra_symbols = symbols, []
   else:
-    symbol_count = max(_DEFAULT_SYMBOL_COUNT - len(dex_symbols), 0)
+    logging.info('Partitioning symbols...')
+    main_symbols, extra_symbols = _PartitionSymbols(symbols)
 
-  main_symbols = dex_symbols + ordered_symbols[:symbol_count]
-  extra_symbols = ordered_symbols[symbol_count:]
-
-  logging.info('Found %d large symbols, %s small symbols',
-               len(main_symbols), len(extra_symbols))
-
-  # Bundle symbols by the file they belong to,
-  # and add all the file buckets into file_nodes
+  # Bundle symbols by the file they belong to.
+  # Add all the file buckets into file_nodes.
   for symbol in main_symbols:
     symbol_type = _GetSymbolType(symbol)
     symbol_size = round(symbol.pss, 2)
@@ -130,7 +152,9 @@ def _MakeTreeViewList(symbols, include_all_symbols):
     if symbol.IsDelta() and symbol.diff_status == models.DIFF_STATUS_REMOVED:
       symbol_count = -1
 
-    file_node = _GetOrAddFileNode(symbol, file_nodes, components)
+    path = symbol.source_path or symbol.object_path
+    file_node = _GetOrAddFileNode(
+        path, symbol.component, file_nodes, components)
 
     is_dex_method = symbol_type == _SYMBOL_TYPE_DEX_METHOD
     symbol_entry = {
@@ -149,23 +173,37 @@ def _MakeTreeViewList(symbols, include_all_symbols):
       symbol_entry[_COMPACT_SYMBOL_FLAGS_KEY] = symbol.flags
     file_node[_COMPACT_FILE_SYMBOLS_KEY].append(symbol_entry)
 
+  # Collect small symbols into a per-path dict.
   for symbol in extra_symbols:
     symbol_type = _GetSymbolType(symbol)
+    path = symbol.source_path or symbol.object_path
+    tup = (path, symbol.component)
+    small_symbol_pss[tup][symbol_type] += symbol.pss
 
-    file_node = _GetOrAddFileNode(symbol, file_nodes, components)
-    path = file_node[_COMPACT_FILE_PATH_KEY]
-
-    small_type_symbol = small_symbols[path].get(symbol_type)
-    if small_type_symbol is None:
-      small_type_symbol = {
-        _COMPACT_SYMBOL_NAME_KEY: _SMALL_SYMBOL_DESCRIPTIONS[symbol_type],
-        _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
-        _COMPACT_SYMBOL_BYTE_SIZE_KEY: 0,
-      }
-      small_symbols[path][symbol_type] = small_type_symbol
-      file_node[_COMPACT_FILE_SYMBOLS_KEY].append(small_type_symbol)
-
-    small_type_symbol[_COMPACT_SYMBOL_BYTE_SIZE_KEY] += symbol.pss
+  # Insert small symbols.
+  inserted_smalls_count = 0
+  inserted_smalls_abs_pss = 0
+  skipped_smalls_count = 0
+  skipped_smalls_abs_pss = 0
+  for tup, type_to_pss in small_symbol_pss.iteritems():
+    path, component = tup
+    for symbol_type, pss in type_to_pss.iteritems():
+      if abs(pss) < _MIN_OTHER_PSS:
+        skipped_smalls_count += 1
+        skipped_smalls_abs_pss += abs(pss)
+      else:
+        inserted_smalls_count += 1
+        inserted_smalls_abs_pss += abs(pss)
+        file_node = _GetOrAddFileNode(path, component, file_nodes, components)
+        file_node[_COMPACT_FILE_SYMBOLS_KEY].append({
+          _COMPACT_SYMBOL_NAME_KEY: _SMALL_SYMBOL_DESCRIPTIONS[symbol_type],
+          _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
+          _COMPACT_SYMBOL_BYTE_SIZE_KEY: pss,
+        })
+  logging.debug(
+      'Created %d "other" symbols with PSS=%.1f. Omitted %d with PSS=%.1f',
+      inserted_smalls_count, inserted_smalls_abs_pss, skipped_smalls_count,
+      skipped_smalls_abs_pss)
 
   meta = {
     'components': components.value_list,
@@ -200,7 +238,6 @@ def BuildReport(out_file, size_file, before_size_file=(None, None),
   else:
     symbols = size_info.raw_symbols
 
-  logging.info('Creating JSON objects')
   meta, tree_nodes = _MakeTreeViewList(symbols, all_symbols)
   meta.update({
     'diff_mode': diff_mode,
@@ -242,9 +279,9 @@ def _MakeDirIfDoesNotExist(rel_path):
 
 
 def AddArguments(parser):
-  parser.add_argument('input_file',
+  parser.add_argument('input_size_file',
                       help='Path to input .size file.')
-  parser.add_argument('--report-file', metavar='PATH', required=True,
+  parser.add_argument('output_report_file',
                       help='Write generated data to the specified '
                            '.ndjson file.')
   parser.add_argument('--all-symbols', action='store_true',
@@ -255,22 +292,23 @@ def AddArguments(parser):
 
 
 def Run(args, parser):
-  if not args.input_file.endswith('.size'):
+  if not args.input_size_file.endswith('.size'):
     parser.error('Input must end with ".size"')
   if args.diff_with and not args.diff_with.endswith('.size'):
     parser.error('Diff input must end with ".size"')
-  if not args.report_file.endswith('.ndjson'):
+  if not args.output_report_file.endswith('.ndjson'):
     parser.error('Output must end with ".ndjson"')
 
-  with codecs.open(args.report_file, 'w', encoding='ascii') as out_file:
+  with codecs.open(args.output_report_file, 'w', encoding='ascii') as out_file:
     BuildReport(
       out_file,
-      size_file=(args.input_file, None),
+      size_file=(args.input_size_file, None),
       before_size_file=(args.diff_with, None),
       all_symbols=args.all_symbols
     )
 
-  logging.warning('Report saved to %s', args.report_file)
-  logging.warning('Open server by running: \n'
-                  'tools/binary_size/supersize start_server %s',
-                  args.report_file)
+  logging.warning('Report saved to %s', args.output_report_file)
+  supersize_path = os.path.relpath(os.path.join(
+      path_util.SRC_ROOT, 'tools', 'binary_size', 'supersize'))
+  logging.warning('Open server by running: \n    %s start_server %s',
+                  supersize_path, args.output_report_file)
