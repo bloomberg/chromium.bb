@@ -1,6 +1,10 @@
+## Blink architecture overview
+
+See [this "How Blink works" document](https://docs.google.com/document/d/1aitSOucL0VHZa9Z2vbRJSyAIsAz24kX8LFByQ5xQnUg/edit#).
+
 ## `blink/renderer` directory structure
 
-This document describes a high-level architecture of `blink/renderer`,
+This section describes a high-level architecture of `blink/renderer`,
 which contains most of the Web Platform implementation, and runs exclusively
 in the renderer process.
 On the other hand, [`common/`](../common) and [`public/common`](../public/common)
