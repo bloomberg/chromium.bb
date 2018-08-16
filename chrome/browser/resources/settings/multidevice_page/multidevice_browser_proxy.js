@@ -10,6 +10,14 @@ cr.define('settings', function() {
     /** @return {!Promise<!MultiDevicePageContentData>} */
     getPageContentData() {}
 
+    /**
+     * @param {!settings.MultiDeviceFeature} feature The feature whose state
+     *     should be set.
+     * @param {boolean} enabled Whether the feature should be turned off or on.
+     * @return {!Promise<boolean>} Whether the operation was successful.
+     */
+    setFeatureEnabledState(feature, enabled) {}
+
     retryPendingHostSetup() {}
   }
 
@@ -25,6 +33,11 @@ cr.define('settings', function() {
     /** @override */
     getPageContentData() {
       return cr.sendWithPromise('getPageContentData');
+    }
+
+    /** @override */
+    setFeatureEnabledState(feature, enabled) {
+      return cr.sendWithPromise('setFeatureEnabledState');
     }
 
     /** @override */

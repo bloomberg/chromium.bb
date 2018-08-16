@@ -192,6 +192,33 @@ class MultideviceHandlerTest : public testing::Test {
         success);
   }
 
+  void CallSetFeatureEnabledState(multidevice_setup::mojom::Feature feature,
+                                  bool enabled,
+                                  bool success) {
+    size_t call_data_count_before_call = test_web_ui()->call_data().size();
+
+    base::ListValue args;
+    args.AppendString("handlerFunctionName");
+    args.AppendInteger(static_cast<int>(feature));
+    args.AppendBoolean(enabled);
+
+    base::ListValue empty_args;
+    test_web_ui()->HandleReceivedMessage("setFeatureEnabledState", &args);
+    fake_multidevice_setup_client()
+        ->InvokePendingSetFeatureEnabledStateCallback(
+            feature /* expected_feature */, enabled /* expected_enabled */,
+            success);
+
+    EXPECT_EQ(call_data_count_before_call + 1u,
+              test_web_ui()->call_data().size());
+    const content::TestWebUI::CallData& call_data =
+        CallDataAtIndex(call_data_count_before_call);
+    EXPECT_EQ("cr.webUIResponse", call_data.function_name());
+    EXPECT_EQ("handlerFunctionName", call_data.arg1()->GetString());
+    EXPECT_TRUE(call_data.arg2()->GetBool());
+    EXPECT_EQ(success, call_data.arg3()->GetBool());
+  }
+
   const content::TestWebUI::CallData& CallDataAtIndex(size_t index) {
     return *test_web_ui_->call_data()[index];
   }
@@ -269,6 +296,18 @@ TEST_F(MultideviceHandlerTest, PageContentData) {
 TEST_F(MultideviceHandlerTest, RetryPendingHostSetup) {
   CallRetryPendingHostSetup(true /* success */);
   CallRetryPendingHostSetup(false /* success */);
+}
+
+TEST_F(MultideviceHandlerTest, SetFeatureEnabledState) {
+  CallSetFeatureEnabledState(
+      multidevice_setup::mojom::Feature::kBetterTogetherSuite,
+      true /* enabled */, true /* success */);
+  CallSetFeatureEnabledState(
+      multidevice_setup::mojom::Feature::kBetterTogetherSuite,
+      false /* enabled */, false /* success */);
+  CallSetFeatureEnabledState(
+      multidevice_setup::mojom::Feature::kBetterTogetherSuite,
+      false /* enabled */, true /* success */);
 }
 
 }  // namespace settings
