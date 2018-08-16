@@ -66,11 +66,7 @@ void TextMetrics::Update(const Font& font,
   FloatRect bbox = font.BoundingBox(text_run);
   const FontMetrics& font_metrics = font_data->GetFontMetrics();
 
-  Vector<CharacterRange> ranges = font.IndividualCharacterRanges(text_run);
-  advances_.resize(ranges.size());
-  for (unsigned i = 0; i < ranges.size(); i++) {
-    advances_[i] = ranges[i].start;
-  }
+  advances_ = font.IndividualCharacterAdvances(text_run);
 
   // x direction
   width_ = bbox.Width();

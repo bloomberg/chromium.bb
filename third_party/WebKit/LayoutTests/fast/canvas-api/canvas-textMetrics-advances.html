@@ -22,11 +22,11 @@ const kTexts = [
   { text: "ليس في اسمنا", rtl: true },
   { text: "\u202EHello", rtl: true },
   { text: "\u202EHello World", rtl: true },
-  // TODO(davidqu): Fix the following edge cases:
-  //{ text: "الله", rtl: true }, // Special ligatures.
-  //{ text: "🏁", rtl: false }, // One glyph with two "characters".
-  //{ text: "एक आम भाषा", rtl: false }, // Special post-modifying characters.
-  //{ text: "a\u0301", rtl: true }, // Combining diacritical marks
+  { text: "الله", rtl: true }, // Special ligatures.
+  { text: "اين المكتبة؟", rtl: true }, // Special ligatures.
+  { text: "🏁🎶🏁", rtl: false }, // One glyph with two "characters".
+  { text: "एक आम भाषा", rtl: false }, // Special post-modifying characters.
+  { text: "a\u0301", rtl: false }, // Combining diacritical marks
 ]
 
 function forEachExample(fn) {
@@ -75,7 +75,7 @@ function testAllPositive(ctx) {
   });
 }
 
-function testNonIncreasing(ctx) {
+function testNonIncreasingForRtl(ctx) {
   forEachExample((ex, align) => {
       if (ex.rtl) {
         const tm = getTextMetrics(ctx, ex.text, align, ex.rtl ? "rtl" : "ltr");
@@ -85,9 +85,9 @@ function testNonIncreasing(ctx) {
   });
 }
 
-function testNonDecreasing(ctx) {
+function testNonDecreasingForLtr(ctx) {
   forEachExample((ex, align) => {
-      if (ex.ltr) {
+      if (! ex.rtl) {
         const tm = getTextMetrics(ctx, ex.text, align, ex.rtl ? "rtl" : "ltr");
         assert_true(isNonDecreasing(tm.advances),
          "LTR advances must be non-decreasing (" + ex.text + ")");
@@ -106,7 +106,8 @@ function testLastAdvanceLessThanWith(ctx) {
 function testAdvances(ctx) {
   testEmptyStringReturnsEmptyAdvances(ctx);
   testAllPositive(ctx);
-  testNonDecreasing(ctx);
+  testNonIncreasingForRtl(ctx);
+  testNonDecreasingForLtr(ctx);
   testLastAdvanceLessThanWith(ctx);
 }
 

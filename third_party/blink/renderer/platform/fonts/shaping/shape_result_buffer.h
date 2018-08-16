@@ -44,6 +44,9 @@ class PLATFORM_EXPORT ShapeResultBuffer {
                                    unsigned to) const;
   Vector<CharacterRange> IndividualCharacterRanges(TextDirection,
                                                    float total_width) const;
+  Vector<double> IndividualCharacterAdvances(const StringView&,
+                                             TextDirection,
+                                             float total_width) const;
 
   static CharacterRange GetCharacterRange(scoped_refptr<const ShapeResult>,
                                           const StringView& text,
@@ -68,6 +71,9 @@ class PLATFORM_EXPORT ShapeResultBuffer {
       unsigned from,
       unsigned to);
 
+  static void AddRunInfoAdvances(const ShapeResult::RunInfo& run_info,
+                                 float offset,
+                                 Vector<double>& advances);
   static void AddRunInfoRanges(const ShapeResult::RunInfo&,
                                float offset,
                                Vector<CharacterRange>&);
