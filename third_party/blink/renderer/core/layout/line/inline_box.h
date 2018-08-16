@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box_model.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
-#include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/platform/fonts/font_vertical_position_type.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -308,7 +307,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
   virtual void DirtyLineBoxes();
 
-  virtual SelectionState GetSelectionState() const;
+  virtual bool IsSelected() const;
 
   virtual bool CanAccommodateEllipsis(bool ltr,
                                       LayoutUnit block_edge,

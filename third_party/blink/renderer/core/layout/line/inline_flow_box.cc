@@ -1423,10 +1423,6 @@ InlineBox* InlineFlowBox::LastLeafChild() const {
   return leaf;
 }
 
-SelectionState InlineFlowBox::GetSelectionState() const {
-  return SelectionState::kNone;
-}
-
 bool InlineFlowBox::CanAccommodateEllipsis(bool ltr,
                                            LayoutUnit block_edge,
                                            LayoutUnit ellipsis_width) const {

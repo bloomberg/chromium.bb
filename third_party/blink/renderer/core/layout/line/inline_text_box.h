@@ -171,11 +171,12 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   void AttachLine() final;
 
  public:
-  SelectionState GetSelectionState() const final;
+  bool IsSelected() const final;
   bool HasWrappedSelectionNewline() const;
   float NewlineSpaceWidth() const;
 
  private:
+  SelectionState GetSelectionState() const;
   void SetTruncation(unsigned);
 
   void ClearTruncation() final;

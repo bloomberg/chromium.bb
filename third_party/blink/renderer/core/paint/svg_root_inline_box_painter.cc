@@ -23,8 +23,7 @@ void SVGRootInlineBoxPainter::Paint(const PaintInfo& paint_info,
          paint_info.phase == PaintPhase::kSelection);
 
   bool has_selection =
-      !paint_info.IsPrinting() &&
-      svg_root_inline_box_.GetSelectionState() != SelectionState::kNone;
+      !paint_info.IsPrinting() && svg_root_inline_box_.IsSelected();
 
   PaintInfo paint_info_before_filtering(paint_info);
   if (has_selection && !DrawingRecorder::UseCachedDrawingIfPossible(
