@@ -589,7 +589,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
   }
 
   blink::WebFloatPoint position_in_widget = wheel_event.PositionInWidget();
-  if (input_handler_->HasWheelEventHandlerAt(
+  if (input_handler_->HasBlockingWheelEventHandlerAt(
           gfx::Point(position_in_widget.x, position_in_widget.y))) {
     result = DID_NOT_HANDLE;
   } else {
