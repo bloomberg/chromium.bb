@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/testapp/test_keyboard_delegate.h"
 
 #include <memory>
+#include <string>
 
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,6 +25,10 @@ TestKeyboardDelegate::TestKeyboardDelegate()
     : renderer_(std::make_unique<TestKeyboardRenderer>()) {}
 
 TestKeyboardDelegate::~TestKeyboardDelegate() {}
+
+void TestKeyboardDelegate::SetUiInterface(KeyboardUiInterface* ui) {
+  ui_interface_ = ui;
+}
 
 void TestKeyboardDelegate::ShowKeyboard() {
   editing_ = true;

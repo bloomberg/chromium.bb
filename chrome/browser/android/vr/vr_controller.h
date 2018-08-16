@@ -27,6 +27,7 @@ class Transform;
 
 namespace gvr {
 class ControllerState;
+class GvrApi;
 }
 
 namespace vr {
@@ -37,7 +38,7 @@ constexpr float kErgoAngleOffset = 0.26f;
 class VrController : public PlatformController {
  public:
   // Controller API entry point.
-  explicit VrController(gvr_context* gvr_context);
+  explicit VrController(gvr::GvrApi* gvr_api);
   ~VrController() override;
 
   // Must be called when the Activity gets OnResume().
@@ -97,7 +98,7 @@ class VrController : public PlatformController {
   // The last controller state (updated once per frame).
   std::unique_ptr<gvr::ControllerState> controller_state_;
 
-  std::unique_ptr<gvr::GvrApi> gvr_api_;
+  gvr::GvrApi* gvr_api_;
 
   std::unique_ptr<GestureDetector> gesture_detector_;
 

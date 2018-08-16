@@ -11,6 +11,10 @@
 #include "chrome/browser/android/vr/vr_controller.h"
 #include "chrome/browser/vr/controller_delegate.h"
 
+namespace gvr {
+class GvrApi;
+}
+
 namespace vr {
 
 class GestureDetector;
@@ -18,8 +22,7 @@ class GlBrowserInterface;
 
 class GvrControllerDelegate : public ControllerDelegate {
  public:
-  GvrControllerDelegate(std::unique_ptr<VrController> controller,
-                        GlBrowserInterface* browser);
+  GvrControllerDelegate(gvr::GvrApi* gvr_api, GlBrowserInterface* browser);
   ~GvrControllerDelegate() override;
 
   // ControllerDelegate implementation.

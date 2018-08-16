@@ -20,10 +20,6 @@ namespace vr {
 
 namespace {
 
-void OnPresentedFrame(const gfx::PresentationFeedback& feedback) {
-  // Do nothing for now.
-}
-
 bool ClearGlErrors() {
   bool errors = false;
   while (glGetError() != GL_NO_ERROR)
@@ -33,22 +29,14 @@ bool ClearGlErrors() {
 
 }  // namespace
 
-GlRenderer::GlRenderer(const scoped_refptr<gl::GLSurface>& surface,
-                       vr::VrTestContext* vr)
-    : surface_(surface), vr_(vr), weak_ptr_factory_(this) {}
+GlRenderer::GlRenderer() : weak_ptr_factory_(this) {}
 
 GlRenderer::~GlRenderer() {}
 
-bool GlRenderer::Initialize() {
-  std::unique_ptr<CompositorDelegate> compositor_delegate =
-      std::make_unique<BaseCompositorDelegate>();
-  if (!compositor_delegate->Initialize(surface_)) {
+bool GlRenderer::Initialize(const scoped_refptr<gl::GLSurface>& surface) {
+  if (!BaseCompositorDelegate::Initialize(surface))
     return false;
-  }
-
-  vr_->OnGlInitialized(std::move(compositor_delegate));
-
-  PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
+  PostRenderFrameTask();
   return true;
 }
 
@@ -61,15 +49,15 @@ void GlRenderer::RenderFrame() {
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  vr_->DrawFrame();
+  vr_context_->DrawFrame();
 
   DCHECK(!ClearGlErrors());
 
-  PostRenderFrameTask(
-      surface_->SwapBuffers(base::BindRepeating(&OnPresentedFrame)));
+  SwapSurfaceBuffers();
+  PostRenderFrameTask();
 }
 
-void GlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
+void GlRenderer::PostRenderFrameTask() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&GlRenderer::RenderFrame, weak_ptr_factory_.GetWeakPtr()),

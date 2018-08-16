@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <queue>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -50,16 +51,16 @@ class VR_UI_EXPORT Ui : public UiInterface {
  public:
   Ui(UiBrowserInterface* browser,
      PlatformInputHandler* content_input_forwarder,
-     KeyboardDelegate* keyboard_delegate,
-     TextInputDelegate* text_input_delegate,
-     AudioDelegate* audio_delegate,
+     std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+     std::unique_ptr<TextInputDelegate> text_input_delegate,
+     std::unique_ptr<AudioDelegate> audio_delegate,
      const UiInitialState& ui_initial_state);
 
   Ui(UiBrowserInterface* browser,
      std::unique_ptr<ContentInputDelegate> content_input_delegate,
-     KeyboardDelegate* keyboard_delegate,
-     TextInputDelegate* text_input_delegate,
-     AudioDelegate* audio_delegate,
+     std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+     std::unique_ptr<TextInputDelegate> text_input_delegate,
+     std::unique_ptr<AudioDelegate> audio_delegate,
      const UiInitialState& ui_initial_state);
 
   ~Ui() override;
@@ -189,15 +190,14 @@ class VR_UI_EXPORT Ui : public UiInterface {
       const FovRectangle& fov_recommended_right,
       float z_near) override;
 
-  void RequestFocus(int element_id) override;
-  void RequestUnfocus(int element_id) override;
-
   // KeyboardUiInterface
   void OnInputEdited(const EditedText& info) override;
   void OnInputCommitted(const EditedText& info) override;
   void OnKeyboardHidden() override;
 
  private:
+  void RequestFocus(int element_id);
+  void RequestUnfocus(int element_id);
   void OnMenuButtonClicked();
   void OnSpeechRecognitionEnded();
   void InitializeModel(const UiInitialState& ui_initial_state);
@@ -222,7 +222,9 @@ class VR_UI_EXPORT Ui : public UiInterface {
   // frame.
   ContentElement* content_element_ = nullptr;
 
-  AudioDelegate* audio_delegate_ = nullptr;
+  std::unique_ptr<KeyboardDelegate> keyboard_delegate_;
+  std::unique_ptr<TextInputDelegate> text_input_delegate_;
+  std::unique_ptr<AudioDelegate> audio_delegate_;
 
   base::WeakPtrFactory<Ui> weak_ptr_factory_;
 

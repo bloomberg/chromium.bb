@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/android/vr/gl_browser_interface.h"
+#include "chrome/browser/android/vr/vr_controller.h"
 #include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/pose_util.h"
@@ -18,10 +19,9 @@ constexpr gfx::Vector3dF kForwardVector = {0.0f, 0.0f, -1.0f};
 
 namespace vr {
 
-GvrControllerDelegate::GvrControllerDelegate(
-    std::unique_ptr<VrController> controller,
-    GlBrowserInterface* browser)
-    : controller_(std::move(controller)), browser_(browser) {}
+GvrControllerDelegate::GvrControllerDelegate(gvr::GvrApi* gvr_api,
+                                             GlBrowserInterface* browser)
+    : controller_(std::make_unique<VrController>(gvr_api)), browser_(browser) {}
 
 GvrControllerDelegate::~GvrControllerDelegate() = default;
 

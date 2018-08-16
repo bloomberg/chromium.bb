@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/vr/controller_delegate.h"
 #include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/vr_export.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -22,6 +21,7 @@ namespace vr {
 
 enum class VrUiTestActivityResult;
 class CompositorDelegate;
+class ControllerDelegate;
 class RenderLoopBrowserInterface;
 class UiInterface;
 struct ControllerTestInput;
@@ -38,10 +38,11 @@ class VR_EXPORT RenderLoop {
  public:
   enum FrameType { kUiFrame, kWebXrFrame };
 
-  explicit RenderLoop(std::unique_ptr<UiInterface> ui,
-                      RenderLoopBrowserInterface* browser,
-                      CompositorDelegate* compositor_delegate,
-                      size_t sliding_time_size);
+  RenderLoop(std::unique_ptr<UiInterface> ui,
+             CompositorDelegate* compositor_delegate,
+             std::unique_ptr<ControllerDelegate> controller_delegate,
+             RenderLoopBrowserInterface* browser,
+             size_t sliding_time_size);
   virtual ~RenderLoop();
 
   virtual void OnPause();
@@ -52,10 +53,6 @@ class VR_EXPORT RenderLoop {
       UiTestActivityExpectation ui_expectation);
 
  protected:
-  void set_controller_delegate(std::unique_ptr<ControllerDelegate> delegate) {
-    controller_delegate_ = std::move(delegate);
-  }
-
   // Position, hide and/or show UI elements, process input and update textures.
   // Returns true if the scene changed.
   void UpdateUi(const RenderInfo& render_info,
@@ -83,12 +80,12 @@ class VR_EXPORT RenderLoop {
                                 bool ui_updated);
   void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
 
-  RenderLoopBrowserInterface* browser_;
-
   CompositorDelegate* compositor_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_for_testing_;
   bool using_controller_delegate_for_testing_ = false;
+
+  RenderLoopBrowserInterface* browser_;
 
   std::unique_ptr<UiTestState> ui_test_state_;
   SlidingTimeDeltaAverage ui_processing_time_;

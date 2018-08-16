@@ -101,7 +101,9 @@ InputEventList CreateScrollGestureEventList(InputEvent::Type type,
 
 }  // namespace
 
-VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
+VrTestContext::VrTestContext(CompositorDelegate* compositor_delegate)
+    : view_scale_factor_(kDefaultViewScaleFactor),
+      compositor_delegate_(compositor_delegate) {
   base::FilePath pak_path;
   base::PathService::Get(base::DIR_MODULE, &pak_path);
   ui::ResourceBundle::InitSharedInstanceWithPakPath(
@@ -109,26 +111,21 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
 
   base::i18n::InitializeICU();
 
-  text_input_delegate_ = std::make_unique<TextInputDelegate>();
-  keyboard_delegate_ = std::make_unique<TestKeyboardDelegate>();
+  auto text_input_delegate = std::make_unique<TextInputDelegate>();
+  auto keyboard_delegate = std::make_unique<TestKeyboardDelegate>();
+  keyboard_delegate_ = keyboard_delegate.get();
+  text_input_delegate->SetUpdateInputCallback(
+      base::BindRepeating(&TestKeyboardDelegate::UpdateInput,
+                          base::Unretained(keyboard_delegate.get())));
 
   UiInitialState ui_initial_state;
   ui_initial_state.create_tabs_view = true;
-  ui_instance_ = std::make_unique<Ui>(this, nullptr, keyboard_delegate_.get(),
-                                      text_input_delegate_.get(), nullptr,
-                                      ui_initial_state);
+  ui_instance_ = std::make_unique<Ui>(
+      this, nullptr, std::move(keyboard_delegate),
+      std::move(text_input_delegate), nullptr, ui_initial_state);
   ui_ = ui_instance_.get();
 
   LoadAssets();
-
-  text_input_delegate_->SetRequestFocusCallback(base::BindRepeating(
-      &vr::UiInterface::RequestFocus, base::Unretained(ui_)));
-  text_input_delegate_->SetRequestUnfocusCallback(base::BindRepeating(
-      &vr::UiInterface::RequestUnfocus, base::Unretained(ui_)));
-  text_input_delegate_->SetUpdateInputCallback(
-      base::BindRepeating(&TestKeyboardDelegate::UpdateInput,
-                          base::Unretained(keyboard_delegate_.get())));
-  keyboard_delegate_->SetUiInterface(ui_instance_.get());
 
   touchpad_touch_position_ = kInitialTouchPosition;
 
@@ -158,9 +155,22 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
     ui_->AddOrUpdateTab(tab_id_++, true,
                         base::UTF8ToUTF16("VR - Google Search"));
   }
+
+  InitializeGl();
 }
 
 VrTestContext::~VrTestContext() = default;
+
+void VrTestContext::InitializeGl() {
+  unsigned int content_texture_id = CreateTexture(0xFF000080);
+  unsigned int ui_texture_id = CreateTexture(0xFF008000);
+  ui_->OnGlInitialized(content_texture_id, kGlTextureLocationLocal,
+                       content_texture_id, kGlTextureLocationLocal,
+                       ui_texture_id);
+  keyboard_delegate_->Initialize(
+      ui_instance_->scene()->SurfaceProviderForTesting(),
+      ui_instance_->ui_element_renderer());
+}
 
 void VrTestContext::DrawFrame() {
   base::TimeTicks current_time = base::TimeTicks::Now();
@@ -453,21 +463,6 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
   ui_->OnControllerUpdated(controller_model, reticle_model);
 
   return controller_model;
-}
-
-void VrTestContext::OnGlInitialized(
-    std::unique_ptr<CompositorDelegate> compositor_delegate) {
-  compositor_delegate_ = std::move(compositor_delegate);
-  unsigned int content_texture_id = CreateTexture(0xFF000080);
-  unsigned int ui_texture_id = CreateTexture(0xFF008000);
-
-  ui_->OnGlInitialized(content_texture_id, kGlTextureLocationLocal,
-                       content_texture_id, kGlTextureLocationLocal,
-                       ui_texture_id);
-
-  keyboard_delegate_->Initialize(
-      ui_instance_->scene()->SurfaceProviderForTesting(),
-      ui_instance_->ui_element_renderer());
 }
 
 unsigned int VrTestContext::CreateTexture(SkColor color) {

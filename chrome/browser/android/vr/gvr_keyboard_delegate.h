@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_GVR_KEYBOARD_DELEGATE_H_
 #define CHROME_BROWSER_ANDROID_VR_GVR_KEYBOARD_DELEGATE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
@@ -13,8 +15,6 @@
 
 namespace vr {
 
-struct TextInputInfo;
-
 class GvrKeyboardDelegate : public KeyboardDelegate {
  public:
   // Constructs a GvrKeyboardDelegate by dynamically loading the GVR keyboard
@@ -22,12 +22,11 @@ class GvrKeyboardDelegate : public KeyboardDelegate {
   static std::unique_ptr<GvrKeyboardDelegate> Create();
   ~GvrKeyboardDelegate() override;
 
-  void SetUiInterface(KeyboardUiInterface* ui);
-
   typedef int32_t EventType;
   typedef base::RepeatingCallback<void(EventType)> OnEventCallback;
 
   // KeyboardDelegate implementation.
+  void SetUiInterface(KeyboardUiInterface* ui) override;
   void OnBeginFrame() override;
   void ShowKeyboard() override;
   void HideKeyboard() override;
@@ -41,9 +40,8 @@ class GvrKeyboardDelegate : public KeyboardDelegate {
   bool SupportsSelection() override;
   void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
-
   // Called to update GVR keyboard with the given text input info.
-  void UpdateInput(const TextInputInfo& info);
+  void UpdateInput(const TextInputInfo& info) override;
 
  private:
   GvrKeyboardDelegate();
