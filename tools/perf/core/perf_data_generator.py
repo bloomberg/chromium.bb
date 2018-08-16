@@ -160,6 +160,25 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         'device_os': 'O',
         'device_os_flavor': 'google',
       },
+    },
+    'android-go_webview-perf': {
+      'tests': [
+        {
+          'isolate': 'performance_webview_test_suite',
+          'extra_args': [
+              '--test-shard-map-filename=android_go_webview_shard_map.json',
+          ],
+          'num_shards': 25
+        }
+      ],
+      'platform': 'android-webview',
+      'dimension': {
+        'pool': 'chrome.tests.perf-webview',
+        'os': 'Android',
+        'device_type': 'gobo',
+        'device_os': 'O',
+        'device_os_flavor': 'google',
+      },
     }
   }
 }
