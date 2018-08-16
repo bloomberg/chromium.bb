@@ -226,7 +226,7 @@ class CORE_EXPORT WorkerGlobalScope
   int last_pending_error_event_id_ = 0;
 
   Member<OffscreenFontSelector> font_selector_;
-  Member<WorkerAnimationFrameProvider> animation_frame_provider_;
+  TraceWrapperMember<WorkerAnimationFrameProvider> animation_frame_provider_;
 
   service_manager::InterfaceProvider interface_provider_;
 
