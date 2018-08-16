@@ -32,6 +32,7 @@
 
 #include "third_party/blink/public/web/web_file_chooser_completion.h"
 #include "third_party/blink/public/web/web_file_chooser_params.h"
+#include "third_party/blink/renderer/core/page/popup_opening_observer.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -63,11 +64,11 @@ struct FileChooserFileInfo {
   const FileMetadata metadata;
 };
 
-class FileChooserClient : public GarbageCollectedMixin {
+class FileChooserClient : public PopupOpeningObserver {
  public:
   virtual void FilesChosen(const Vector<FileChooserFileInfo>&) = 0;
   virtual LocalFrame* FrameOrNull() const = 0;
-  virtual ~FileChooserClient();
+  ~FileChooserClient() override;
 
  protected:
   FileChooser* NewFileChooser(const WebFileChooserParams&);

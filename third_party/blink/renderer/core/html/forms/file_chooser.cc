@@ -76,6 +76,7 @@ bool FileChooser::OpenFileChooser(ChromeClientImpl& chrome_client_impl) {
 
   // Should be released on file choosing.
   AddRef();
+  chrome_client_impl.RegisterPopupOpeningObserver(client_);
   return true;
 }
 
@@ -127,8 +128,11 @@ void FileChooser::ChooseFiles(const Vector<FileChooserFileInfo>& files) {
 }
 
 void FileChooser::DidCloseChooser() {
-  if (chrome_client_impl_)
+  if (chrome_client_impl_) {
     chrome_client_impl_->DidCompleteFileChooser(*this);
+    if (client_)
+      chrome_client_impl_->UnregisterPopupOpeningObserver(client_);
+  }
   Release();
 }
 

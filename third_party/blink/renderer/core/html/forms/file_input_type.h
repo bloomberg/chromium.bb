@@ -47,8 +47,7 @@ class FileList;
 
 class CORE_EXPORT FileInputType final : public InputType,
                                         public KeyboardClickableInputTypeView,
-                                        private FileChooserClient,
-                                        private PopupOpeningObserver {
+                                        private FileChooserClient {
   USING_GARBAGE_COLLECTED_MIXIN(FileInputType);
 
  public:
