@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+struct ResourceResponseHead;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace extensions {
 namespace image_writer {
@@ -22,12 +22,12 @@ namespace image_writer {
 class OperationManager;
 
 // Encapsulates a write of an image accessed via URL.
-class WriteFromUrlOperation : public Operation, public net::URLFetcherDelegate {
+class WriteFromUrlOperation : public Operation {
  public:
   WriteFromUrlOperation(base::WeakPtr<OperationManager> manager,
                         std::unique_ptr<service_manager::Connector> connector,
                         const ExtensionId& extension_id,
-                        net::URLRequestContextGetter* request_context,
+                        network::mojom::URLLoaderFactoryPtrInfo factory_info,
                         GURL url,
                         const std::string& hash,
                         const std::string& storage_unit_id,
@@ -52,33 +52,24 @@ class WriteFromUrlOperation : public Operation, public net::URLFetcherDelegate {
   void VerifyDownload(base::OnceClosure continuation);
 
  private:
-  // Destroys the URLFetcher.  The URLFetcher needs to be destroyed on the same
-  // thread it was created on.  The Operation may be deleted on the UI thread
-  // and so we must first delete the URLFetcher on the FILE thread.
-  void DestroyUrlFetcher();
-
-  // URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64_t current,
-                                  int64_t total,
-                                  int64_t current_network_bytes) override;
-  void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                int64_t current,
-                                int64_t total) override;
-
+  void DestroySimpleURLLoader();
+  void OnResponseStarted(const GURL& final_url,
+                         const network::ResourceResponseHead& response_head);
+  void OnDataDownloaded(uint64_t current);
+  void OnSimpleLoaderComplete(base::FilePath file_path);
   void VerifyDownloadCompare(base::OnceClosure continuation,
                              const std::string& download_hash);
   void VerifyDownloadComplete(base::OnceClosure continuation);
 
   // Arguments
-  net::URLRequestContextGetter* request_context_;
+  network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info_;
   GURL url_;
   const std::string hash_;
 
   // Local state
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
   base::OnceClosure download_continuation_;
+  int total_response_bytes_ = -1;
 };
 
 } // namespace image_writer
