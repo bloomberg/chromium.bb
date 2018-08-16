@@ -164,10 +164,8 @@ void PendingProfiles::ResetToDefaultStateForTesting() {
 // CallStackProfileMetricsProvider.
 PendingProfiles::PendingProfiles() : collection_enabled_(true) {}
 
-// Functions to process completed profile ------------------------------------
-
 // Invoked on an arbitrary thread. Ignores the provided profile.
-void IgnoreCompletedProfile(SampledProfile profile) {}
+void IgnoreCompletedProfile(SampledProfile /*profile*/) {}
 
 }  // namespace
 
