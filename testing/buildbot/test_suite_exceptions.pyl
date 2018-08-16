@@ -1622,18 +1622,13 @@
       },
       'Mac10.13 Tests': {
         # TODO(crbug.com/853356): Switch this to 10.13.
-        'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [{
-          'gpu': '8086:0a2e',
-          'os': 'Mac-10.12.6',
-        }],
-
         # TODO(kbr): if the Swarming dimensions were explicitly specified for
         # all jobs then this wouldn't be needed.
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Mac-10.13',
+              'gpu': '8086:0a2e',
+              'os': 'Mac-10.12.6',
             },
           ],
           'shards': 12,
