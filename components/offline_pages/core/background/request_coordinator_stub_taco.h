@@ -13,7 +13,10 @@
 #include "components/offline_pages/core/background/request_queue.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/scheduler.h"
-#include "net/nqe/network_quality_estimator.h"
+
+namespace network {
+class NetworkQualityTracker;
+}
 
 namespace offline_pages {
 
@@ -38,8 +41,7 @@ class RequestCoordinatorStubTaco {
   void SetOffliner(std::unique_ptr<Offliner> offliner);
   void SetScheduler(std::unique_ptr<Scheduler> scheduler);
   void SetNetworkQualityProvider(
-      std::unique_ptr<net::NetworkQualityEstimator::NetworkQualityProvider>
-      network_quality_provider);
+      std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker);
   void SetOfflinePagesUkmReporter(
       std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter);
 
@@ -61,8 +63,7 @@ class RequestCoordinatorStubTaco {
   std::unique_ptr<RequestQueue> queue_;
   std::unique_ptr<Offliner> offliner_;
   std::unique_ptr<Scheduler> scheduler_;
-  std::unique_ptr<net::NetworkQualityEstimator::NetworkQualityProvider>
-      network_quality_provider_;
+  std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_;
   std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter_;
 
   std::unique_ptr<RequestCoordinator> request_coordinator_;

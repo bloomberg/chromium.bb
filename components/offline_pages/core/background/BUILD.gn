@@ -67,6 +67,7 @@ static_library("background_offliner") {
     "//components/offline_pages/core",
     "//components/offline_pages/core:switches",
     "//net",
+    "//services/network/public/cpp",
     "//sql:sql",
     "//url",
   ]
@@ -75,8 +76,6 @@ static_library("background_offliner") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "network_quality_provider_stub.cc",
-    "network_quality_provider_stub.h",
     "offliner_stub.cc",
     "offliner_stub.h",
     "request_coordinator_stub_taco.cc",
@@ -93,6 +92,8 @@ static_library("test_support") {
     "//components/offline_items_collection/core/test_support",
     "//components/offline_pages/core",
     "//net",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
   ]
 }
 
@@ -125,6 +126,8 @@ source_set("unit_tests") {
     "//components/offline_items_collection/core",
     "//components/offline_pages/core",
     "//components/offline_pages/core:switches",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
     "//sql:sql",
     "//testing/gtest",
     "//url",

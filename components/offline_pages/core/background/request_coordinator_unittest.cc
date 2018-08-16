@@ -22,7 +22,6 @@
 #include "base/time/time.h"
 #include "components/offline_items_collection/core/pending_state.h"
 #include "components/offline_pages/core/background/device_conditions.h"
-#include "components/offline_pages/core/background/network_quality_provider_stub.h"
 #include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/offliner_stub.h"
@@ -33,6 +32,7 @@
 #include "components/offline_pages/core/background/scheduler.h"
 #include "components/offline_pages/core/background/scheduler_stub.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -198,7 +198,7 @@ class RequestCoordinatorTest : public testing::Test {
   }
 
   void SetEffectiveConnectionTypeForTest(net::EffectiveConnectionType type) {
-    network_quality_provider_->SetEffectiveConnectionTypeForTest(type);
+    network_quality_tracker_->ReportEffectiveConnectionTypeForTesting(type);
   }
 
   void SetNetworkConnected(bool connected) {
@@ -344,7 +344,7 @@ class RequestCoordinatorTest : public testing::Test {
   std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-  NetworkQualityProviderStub* network_quality_provider_;
+  network::NetworkQualityTracker* network_quality_tracker_;
   std::unique_ptr<RequestCoordinatorStubTaco> coordinator_taco_;
   OfflinerStub* offliner_;
   base::WaitableEvent waiter_;
@@ -384,12 +384,12 @@ void RequestCoordinatorTest::SetUp() {
   offliner_ = offliner.get();
   coordinator_taco_->SetOffliner(std::move(offliner));
 
-  std::unique_ptr<NetworkQualityProviderStub> network_quality_provider =
-      std::make_unique<NetworkQualityProviderStub>();
+  std::unique_ptr<network::NetworkQualityTracker> test_network_quality_tracker(
+      std::make_unique<network::TestNetworkQualityTracker>());
   // Save raw pointer for use by the tests.
-  network_quality_provider_ = network_quality_provider.get();
+  network_quality_tracker_ = test_network_quality_tracker.get();
   coordinator_taco_->SetNetworkQualityProvider(
-      std::move(network_quality_provider));
+      std::move(test_network_quality_tracker));
 
   coordinator_taco_->CreateRequestCoordinator();
 

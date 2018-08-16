@@ -4,7 +4,6 @@
 
 #include "components/offline_pages/core/background/request_coordinator_stub_taco.h"
 
-#include "components/offline_pages/core/background/network_quality_provider_stub.h"
 #include "components/offline_pages/core/background/offliner_stub.h"
 #include "components/offline_pages/core/background/request_queue.h"
 #include "components/offline_pages/core/background/request_queue_in_memory_store.h"
@@ -12,6 +11,7 @@
 #include "components/offline_pages/core/background/scheduler.h"
 #include "components/offline_pages/core/background/scheduler_stub.h"
 #include "components/offline_pages/core/offline_pages_ukm_reporter_stub.h"
+#include "services/network/test/test_network_quality_tracker.h"
 
 namespace offline_pages {
 
@@ -21,7 +21,8 @@ RequestCoordinatorStubTaco::RequestCoordinatorStubTaco() {
       std::make_unique<RequestQueueInMemoryStore>());
   offliner_ = std::make_unique<OfflinerStub>();
   scheduler_ = std::make_unique<SchedulerStub>();
-  network_quality_provider_ = std::make_unique<NetworkQualityProviderStub>();
+  network_quality_tracker_ =
+      std::make_unique<network::TestNetworkQualityTracker>();
   ukm_reporter_ = std::make_unique<OfflinePagesUkmReporterStub>();
 }
 
@@ -61,10 +62,9 @@ void RequestCoordinatorStubTaco::SetScheduler(
 }
 
 void RequestCoordinatorStubTaco::SetNetworkQualityProvider(
-    std::unique_ptr<net::NetworkQualityEstimator::NetworkQualityProvider>
-    network_quality_provider) {
+    std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker) {
   CHECK(!request_coordinator_);
-  network_quality_provider_ = std::move(network_quality_provider);
+  network_quality_tracker_ = std::move(network_quality_tracker);
 }
 
 void RequestCoordinatorStubTaco::SetOfflinePagesUkmReporter(
@@ -75,7 +75,7 @@ void RequestCoordinatorStubTaco::SetOfflinePagesUkmReporter(
 void RequestCoordinatorStubTaco::CreateRequestCoordinator() {
   request_coordinator_ = std::make_unique<RequestCoordinator>(
       std::move(policy_), std::move(offliner_), std::move(queue_),
-      std::move(scheduler_), network_quality_provider_.get(),
+      std::move(scheduler_), network_quality_tracker_.get(),
       std::move(ukm_reporter_));
 }
 
