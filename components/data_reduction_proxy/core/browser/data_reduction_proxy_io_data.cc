@@ -98,6 +98,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     Client client,
     PrefService* prefs,
     net::NetLog* net_log,
+    network::NetworkConnectionTracker* network_connection_tracker,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     bool enabled,
@@ -105,6 +106,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     const std::string& channel)
     : client_(client),
       net_log_(net_log),
+      network_connection_tracker_(network_connection_tracker),
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
       data_use_observer_(nullptr),
@@ -131,20 +133,22 @@ DataReductionProxyIOData::DataReductionProxyIOData(
         std::make_unique<DataReductionProxyMutableConfigValues>();
     raw_mutable_config = mutable_config.get();
     config_.reset(new DataReductionProxyConfig(
-        io_task_runner, net_log, std::move(mutable_config), configurator_.get(),
-        event_creator_.get()));
+        io_task_runner, net_log, network_connection_tracker_,
+        std::move(mutable_config), configurator_.get(), event_creator_.get()));
   } else {
     config_.reset(new DataReductionProxyConfig(
-        io_task_runner, net_log, std::move(params), configurator_.get(),
-        event_creator_.get()));
+        io_task_runner, net_log, network_connection_tracker_, std::move(params),
+        configurator_.get(), event_creator_.get()));
   }
 
   // It is safe to use base::Unretained here, since it gets executed
   // synchronously on the IO thread, and |this| outlives the caller (since the
   // caller is owned by |this|.
   bypass_stats_.reset(new DataReductionProxyBypassStats(
-      config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
-                                base::Unretained(this))));
+      config_.get(),
+      base::BindRepeating(&DataReductionProxyIOData::SetUnreachable,
+                          base::Unretained(this)),
+      network_connection_tracker_));
   request_options_.reset(
       new DataReductionProxyRequestOptions(client_, config_.get()));
   request_options_->Init();
@@ -162,13 +166,14 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     config_client_.reset(new DataReductionProxyConfigServiceClient(
         std::move(params), GetBackoffPolicy(), request_options_.get(),
         raw_mutable_config, config_.get(), event_creator_.get(), this, net_log_,
+        network_connection_tracker_,
         base::Bind(&DataReductionProxyIOData::StoreSerializedConfig,
                    base::Unretained(this))));
   }
 
   proxy_delegate_.reset(new DataReductionProxyDelegate(
       config_.get(), configurator_.get(), event_creator_.get(),
-      bypass_stats_.get(), net_log_));
+      bypass_stats_.get(), net_log_, network_connection_tracker_));
   network_properties_manager_.reset(new NetworkPropertiesManager(
       base::DefaultClock::GetInstance(), prefs, ui_task_runner_));
 }
@@ -179,6 +184,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : client_(Client::UNKNOWN),
       net_log_(nullptr),
+      network_connection_tracker_(nullptr),
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
       url_request_context_getter_(nullptr),
@@ -291,7 +297,7 @@ DataReductionProxyIOData::CreateProxyDelegate() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return std::make_unique<DataReductionProxyDelegate>(
       config_.get(), configurator_.get(), event_creator_.get(),
-      bypass_stats_.get(), net_log_);
+      bypass_stats_.get(), net_log_, network_connection_tracker_);
 }
 
 // TODO(kundaji): Rename this method to something more descriptive.

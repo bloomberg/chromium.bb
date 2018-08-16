@@ -31,6 +31,7 @@
 #include "net/base/proxy_server.h"
 #include "net/log/test_net_log.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class GURL;
@@ -108,11 +109,12 @@ class TestDataReductionProxyConfigServiceClient
       DataReductionProxyEventCreator* event_creator,
       DataReductionProxyIOData* io_data,
       net::NetLog* net_log,
+      network::NetworkConnectionTracker* network_connection_tracker,
       ConfigStorer config_storer);
 
   ~TestDataReductionProxyConfigServiceClient() override;
 
-  using DataReductionProxyConfigServiceClient::OnNetworkChanged;
+  using DataReductionProxyConfigServiceClient::OnConnectionChanged;
 
   void SetNow(const base::Time& time);
 
@@ -222,6 +224,7 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
       std::unique_ptr<TestDataReductionProxyRequestOptions> request_options,
       std::unique_ptr<DataReductionProxyConfigurator> configurator,
       net::NetLog* net_log,
+      network::NetworkConnectionTracker* network_connection_tracker,
       bool enabled);
   ~TestDataReductionProxyIOData() override;
 
@@ -459,6 +462,11 @@ class DataReductionProxyTestContext {
     return net_log_.get();
   }
 
+  network::TestNetworkConnectionTracker* test_network_connection_tracker()
+      const {
+    return test_network_connection_tracker_.get();
+  }
+
   net::URLRequestContextGetter* request_context_getter() const {
     return request_context_getter_.get();
   }
@@ -515,6 +523,8 @@ class DataReductionProxyTestContext {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       std::unique_ptr<TestingPrefServiceSimple> simple_pref_service,
       std::unique_ptr<net::TestNetLog> net_log,
+      std::unique_ptr<network::TestNetworkConnectionTracker>
+          test_network_connection_tracker,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       net::MockClientSocketFactory* mock_socket_factory,
       std::unique_ptr<TestDataReductionProxyIOData> io_data,
@@ -533,6 +543,8 @@ class DataReductionProxyTestContext {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<TestingPrefServiceSimple> simple_pref_service_;
   std::unique_ptr<net::TestNetLog> net_log_;
+  std::unique_ptr<network::TestNetworkConnectionTracker>
+      test_network_connection_tracker_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   // Non-owned pointer. Will be NULL if |this| was built without specifying a
   // |net::MockClientSocketFactory|.

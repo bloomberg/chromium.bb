@@ -39,14 +39,16 @@ DataReductionProxyDelegate::DataReductionProxyDelegate(
     const DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator,
     DataReductionProxyBypassStats* bypass_stats,
-    net::NetLog* net_log)
+    net::NetLog* net_log,
+    network::NetworkConnectionTracker* network_connection_tracker)
     : config_(config),
       configurator_(configurator),
       event_creator_(event_creator),
       bypass_stats_(bypass_stats),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       io_data_(nullptr),
-      net_log_(net_log) {
+      net_log_(net_log),
+      network_connection_tracker_(network_connection_tracker) {
   DCHECK(config_);
   DCHECK(configurator_);
   DCHECK(event_creator_);
@@ -58,14 +60,14 @@ DataReductionProxyDelegate::DataReductionProxyDelegate(
 
 DataReductionProxyDelegate::~DataReductionProxyDelegate() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
 void DataReductionProxyDelegate::InitializeOnIOThread(
     DataReductionProxyIOData* io_data) {
   DCHECK(io_data);
   DCHECK(thread_checker_.CalledOnValidThread());
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
   io_data_ = io_data;
 }
 
@@ -238,11 +240,11 @@ void DataReductionProxyDelegate::RecordQuicProxyStatus(
                             QUIC_PROXY_STATUS_BOUNDARY);
 }
 
-void DataReductionProxyDelegate::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void DataReductionProxyDelegate::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+  if (type == network::mojom::ConnectionType::CONNECTION_NONE)
     return;
 
   last_network_change_time_ = tick_clock_->NowTicks();

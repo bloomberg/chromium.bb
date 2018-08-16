@@ -132,7 +132,18 @@ void RecordWarmupURLFetchAttemptEvent(
                             WarmupURLFetchAttemptEvent::kCount);
 }
 
-std::string DoGetCurrentNetworkID() {
+// Returns the current connection type if known, otherwise returns
+// CONNECTION_UNKNOWN.
+network::mojom::ConnectionType GetConnectionType(
+    network::NetworkConnectionTracker* network_connection_tracker) {
+  auto connection_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  network_connection_tracker->GetConnectionType(&connection_type,
+                                                base::DoNothing());
+  return connection_type;
+}
+
+std::string DoGetCurrentNetworkID(
+    network::NetworkConnectionTracker* network_connection_tracker) {
   // It is possible that the connection type changed between when
   // GetConnectionType() was called and when the API to determine the
   // network name was called. Check if that happened and retry until the
@@ -141,38 +152,38 @@ std::string DoGetCurrentNetworkID() {
   // (that are approximate to begin with).
 
   while (true) {
-    net::NetworkChangeNotifier::ConnectionType connection_type =
-        net::NetworkChangeNotifier::GetConnectionType();
+    auto connection_type = GetConnectionType(network_connection_tracker);
     std::string ssid_mccmnc;
 
     switch (connection_type) {
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN:
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE:
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_BLUETOOTH:
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET:
+      case network::mojom::ConnectionType::CONNECTION_UNKNOWN:
+      case network::mojom::ConnectionType::CONNECTION_NONE:
+      case network::mojom::ConnectionType::CONNECTION_BLUETOOTH:
+      case network::mojom::ConnectionType::CONNECTION_ETHERNET:
         break;
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI:
+      case network::mojom::ConnectionType::CONNECTION_WIFI:
 #if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_WIN)
         ssid_mccmnc = net::GetWifiSSID();
 #endif
         break;
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_2G:
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G:
-      case net::NetworkChangeNotifier::ConnectionType::CONNECTION_4G:
+      case network::mojom::ConnectionType::CONNECTION_2G:
+      case network::mojom::ConnectionType::CONNECTION_3G:
+      case network::mojom::ConnectionType::CONNECTION_4G:
 #if defined(OS_ANDROID)
         ssid_mccmnc = net::android::GetTelephonyNetworkOperator();
 #endif
         break;
     }
 
-    if (connection_type == net::NetworkChangeNotifier::GetConnectionType()) {
-      if (connection_type >= net::NetworkChangeNotifier::CONNECTION_2G &&
-          connection_type <= net::NetworkChangeNotifier::CONNECTION_4G) {
+    if (connection_type == GetConnectionType(network_connection_tracker)) {
+      if (connection_type >= network::mojom::ConnectionType::CONNECTION_2G &&
+          connection_type <= network::mojom::ConnectionType::CONNECTION_4G) {
         // No need to differentiate cellular connections by the exact
         // connection type.
         return "cell," + ssid_mccmnc;
       }
-      return base::IntToString(connection_type) + "," + ssid_mccmnc;
+      return base::IntToString(static_cast<int>(connection_type)) + "," +
+             ssid_mccmnc;
     }
   }
   NOTREACHED();
@@ -185,6 +196,7 @@ namespace data_reduction_proxy {
 DataReductionProxyConfig::DataReductionProxyConfig(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     net::NetLog* net_log,
+    network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
@@ -193,21 +205,24 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       config_values_(std::move(config_values)),
       io_task_runner_(io_task_runner),
       net_log_(net_log),
+      network_connection_tracker_(network_connection_tracker),
       configurator_(configurator),
       event_creator_(event_creator),
-      connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
+      connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
       ignore_long_term_black_list_rules_(false),
       network_properties_manager_(nullptr),
       weak_factory_(this) {
   DCHECK(io_task_runner_);
+  DCHECK(network_connection_tracker_);
   DCHECK(configurator);
   DCHECK(event_creator);
+
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }
 
 DataReductionProxyConfig::~DataReductionProxyConfig() {
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
 void DataReductionProxyConfig::InitializeOnIOThread(
@@ -232,7 +247,12 @@ void DataReductionProxyConfig::InitializeOnIOThread(
 
   if (ShouldAddDefaultProxyBypassRules())
     AddDefaultProxyBypassRules();
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
+  network_connection_tracker_->GetConnectionType(
+      &connection_type_,
+      base::BindOnce(&DataReductionProxyConfig::OnConnectionChanged,
+                     weak_factory_.GetWeakPtr()));
 }
 
 bool DataReductionProxyConfig::ShouldAddDefaultProxyBypassRules() const {
@@ -624,8 +644,8 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
   }
 }
 
-void DataReductionProxyConfig::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void DataReductionProxyConfig::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   connection_type_ = type;
@@ -635,7 +655,8 @@ void DataReductionProxyConfig::OnNetworkChanged(
   if (get_network_id_asynchronously_) {
     base::PostTaskAndReplyWithResult(
         g_get_network_id_task_runner.Get().get(), FROM_HERE,
-        base::BindOnce(&DoGetCurrentNetworkID),
+        base::BindOnce(&DoGetCurrentNetworkID,
+                       base::Unretained(network_connection_tracker_)),
         base::BindOnce(&DataReductionProxyConfig::ContinueNetworkChanged,
                        weak_factory_.GetWeakPtr()));
     return;
@@ -720,7 +741,7 @@ void DataReductionProxyConfig::FetchWarmupProbeURL() {
     return;
   }
 
-  if (connection_type_ == net::NetworkChangeNotifier::CONNECTION_NONE) {
+  if (connection_type_ == network::mojom::ConnectionType::CONNECTION_NONE) {
     RecordWarmupURLFetchAttemptEvent(
         WarmupURLFetchAttemptEvent::kConnectionTypeNone);
     return;
@@ -836,7 +857,7 @@ DataReductionProxyConfig::GetProxiesForHttp() const {
 
 std::string DataReductionProxyConfig::GetCurrentNetworkID() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return DoGetCurrentNetworkID();
+  return DoGetCurrentNetworkID(network_connection_tracker_);
 }
 
 const NetworkPropertiesManager&
