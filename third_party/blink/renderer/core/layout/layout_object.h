@@ -72,7 +72,6 @@ class LayoutGeometryMap;
 class LayoutMultiColumnSpannerPlaceholder;
 class LayoutView;
 class LocalFrameView;
-class NGPaintFragment;
 class NGPhysicalBoxFragment;
 class PaintLayer;
 class PseudoStyleRequest;
@@ -843,9 +842,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsText() const { return bitfields_.IsText(); }
   bool IsBox() const { return bitfields_.IsBox(); }
   bool IsInline() const { return bitfields_.IsInline(); }  // inline object
-  bool IsInLayoutNGInlineFormattingContext() const {
-    return bitfields_.IsInLayoutNGInlineFormattingContext();
-  }
   bool IsAtomicInlineLevel() const { return bitfields_.IsAtomicInlineLevel(); }
   bool IsHorizontalWritingMode() const {
     return bitfields_.HorizontalWritingMode();
@@ -1125,10 +1121,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void SetFloating(bool is_floating) { bitfields_.SetFloating(is_floating); }
   void SetInline(bool is_inline) { bitfields_.SetIsInline(is_inline); }
-
-  void SetIsInLayoutNGInlineFormattingContext(bool);
-  virtual NGPaintFragment* FirstInlineFragment() const { return nullptr; }
-  virtual void SetFirstInlineFragment(NGPaintFragment*) {}
 
   void SetHasBoxDecorationBackground(bool);
 
@@ -2159,8 +2151,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // changes at all).
   virtual bool AnonymousHasStylePropagationOverride() { return false; }
 
-  virtual void InLayoutNGInlineFormattingContextWillChange(bool) {}
-
   // A fast path for MapToVisualRectInAncestorSpace for when GeometryMapper
   // can be used. |intersects| is set to whether the input rect intersected
   // (see documentation of return value of MapToVisualRectInAncestorSpace).
@@ -2408,7 +2398,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           is_text_(false),
           is_box_(false),
           is_inline_(true),
-          is_in_layout_ng_inline_formatting_context_(false),
           is_atomic_inline_level_(false),
           horizontal_writing_mode_(true),
           has_layer_(false),
@@ -2535,12 +2524,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // unset, the box is 'block-level' and thus stack on top of its
     // siblings (think of paragraphs).
     ADD_BOOLEAN_BITFIELD(is_inline_, IsInline);
-
-    // This boolean is set when this LayoutObject is in LayoutNG inline
-    // formatting context. Note, this LayoutObject itself may be laid out by
-    // legacy.
-    ADD_BOOLEAN_BITFIELD(is_in_layout_ng_inline_formatting_context_,
-                         IsInLayoutNGInlineFormattingContext);
 
     // This boolean is set if the element is an atomic inline-level box.
     //
@@ -2898,14 +2881,6 @@ inline void LayoutObject::SetNeedsPositionedMovementLayout() {
 #endif
   if (!already_needed_layout)
     MarkContainerChainForLayout();
-}
-
-inline void LayoutObject::SetIsInLayoutNGInlineFormattingContext(
-    bool new_value) {
-  if (IsInLayoutNGInlineFormattingContext() == new_value)
-    return;
-  InLayoutNGInlineFormattingContextWillChange(new_value);
-  bitfields_.SetIsInLayoutNGInlineFormattingContext(new_value);
 }
 
 inline void LayoutObject::SetHasBoxDecorationBackground(bool b) {

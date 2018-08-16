@@ -116,10 +116,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
  public:
   explicit LayoutInline(Element*);
 
-#if DCHECK_IS_ON()
-  ~LayoutInline() override;
-#endif
-
   static LayoutInline* CreateAnonymous(Document*);
 
   LayoutObject* FirstChild() const {
@@ -162,16 +158,11 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   void DirtyLineBoxes(bool full_layout);
 
-  // LineBoxes() and FirstInlineFragment() are mutually exclusive,
-  // depends on IsInLayoutNGInlineFormattingContext().
-  const LineBoxList* LineBoxes() const {
-    return IsInLayoutNGInlineFormattingContext() ? &LineBoxList::Empty()
-                                                 : &line_boxes_;
-  }
-  LineBoxList* MutableLineBoxes();
+  LineBoxList* LineBoxes() { return &line_boxes_; }
+  const LineBoxList* LineBoxes() const { return &line_boxes_; }
 
-  InlineFlowBox* FirstLineBox() const { return LineBoxes()->First(); }
-  InlineFlowBox* LastLineBox() const { return LineBoxes()->Last(); }
+  InlineFlowBox* FirstLineBox() const { return line_boxes_.First(); }
+  InlineFlowBox* LastLineBox() const { return line_boxes_.Last(); }
   InlineBox* FirstLineBoxIncludingCulling() const {
     return AlwaysCreateLineBoxes() ? FirstLineBox()
                                    : CulledInlineFirstLineBox();
@@ -179,9 +170,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   InlineBox* LastLineBoxIncludingCulling() const {
     return AlwaysCreateLineBoxes() ? LastLineBox() : CulledInlineLastLineBox();
   }
-
-  NGPaintFragment* FirstInlineFragment() const final;
-  void SetFirstInlineFragment(NGPaintFragment*) final;
 
   LayoutBoxModelObject* VirtualContinuation() const final {
     return Continuation();
@@ -240,10 +228,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
  protected:
   void WillBeDestroyed() override;
-
-  void InLayoutNGInlineFormattingContextWillChange(bool) final;
-
-  void DeleteLineBoxes();
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
@@ -369,27 +353,10 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LayoutBoxModelObject* ContinuationBefore(LayoutObject* before_child);
 
   LayoutObjectChildList children_;
-
-  union {
-    // All of the line boxes created for this inline flow. For example,
-    // <i>Hello<br>world.</i> will have two <i> line boxes.
-    // Valid only when !IsInLayoutNGInlineFormattingContext().
-    LineBoxList line_boxes_;
-    // The first fragment of inline boxes associated with this object.
-    // Valid only when IsInLayoutNGInlineFormattingContext().
-    NGPaintFragment* first_paint_fragment_;
-  };
+  // All of the line boxes created for this inline flow. For example,
+  // <i>Hello<br>world.</i> will have two <i> line boxes.
+  LineBoxList line_boxes_;
 };
-
-inline LineBoxList* LayoutInline::MutableLineBoxes() {
-  CHECK(!IsInLayoutNGInlineFormattingContext());
-  return &line_boxes_;
-}
-
-inline NGPaintFragment* LayoutInline::FirstInlineFragment() const {
-  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_
-                                               : nullptr;
-}
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutInline, IsLayoutInline());
 

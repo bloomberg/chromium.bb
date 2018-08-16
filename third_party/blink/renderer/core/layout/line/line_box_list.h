@@ -54,9 +54,7 @@ class InlineBoxList {
   InlineBoxList() : first_(nullptr), last_(nullptr) {}
 
 #if DCHECK_IS_ON()
-  // Owners should check this on destructor. This class does not implement
-  // destructor to be part of a union.
-  void AssertIsEmpty();
+  ~InlineBoxList();
 #endif
 
   InlineBoxType* First() const { return first_; }
@@ -141,10 +139,8 @@ class InlineBoxList {
 extern template class CORE_EXTERN_TEMPLATE_EXPORT InlineBoxList<InlineFlowBox>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT InlineBoxList<InlineTextBox>;
 
-class CORE_EXPORT LineBoxList : public InlineBoxList<InlineFlowBox> {
+class LineBoxList : public InlineBoxList<InlineFlowBox> {
  public:
-  static const LineBoxList& Empty();
-
   void DeleteLineBoxTree();
 
   void DirtyLineBoxes();
@@ -173,10 +169,7 @@ class CORE_EXPORT LineBoxList : public InlineBoxList<InlineFlowBox> {
                            const LayoutPoint&) const;
 };
 
-class CORE_EXPORT InlineTextBoxList : public InlineBoxList<InlineTextBox> {
- public:
-  static const InlineTextBoxList& Empty();
-};
+class InlineTextBoxList : public InlineBoxList<InlineTextBox> {};
 
 }  // namespace blink
 

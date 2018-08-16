@@ -48,25 +48,20 @@ unsigned EstimateInlineItemsCount(const LayoutBlockFlow& block) {
   return count * 4;
 }
 
-// Ensure this LayoutObject IsInLayoutNGInlineFormattingContext and does not
-// have associated NGPaintFragment.
-void ClearInlineFragment(LayoutObject* object) {
-  object->SetIsInLayoutNGInlineFormattingContext(true);
-  object->SetFirstInlineFragment(nullptr);
-}
-
-void ClearNeedsLayout(LayoutObject* object) {
-  object->ClearNeedsLayout();
-  object->ClearNeedsCollectInlines();
-
-  ClearInlineFragment(object);
-
+// Templated helper function for CollectInlinesInternal().
+template <typename OffsetMappingBuilder>
+void ClearNeedsLayoutIfUpdatingLayout(LayoutObject* node) {
+  node->ClearNeedsLayout();
+  node->ClearNeedsCollectInlines();
   // Reset previous items if they cannot be reused to prevent stale items
   // for subsequent layouts. Items that can be reused have already been
   // added to the builder.
-  if (object->IsLayoutNGText())
-    ToLayoutNGText(object)->ClearInlineItems();
+  if (node->IsLayoutNGText())
+    ToLayoutNGText(node)->ClearInlineItems();
 }
+
+template <>
+void ClearNeedsLayoutIfUpdatingLayout<NGOffsetMappingBuilder>(LayoutObject*) {}
 
 // The function is templated to indicate the purpose of collected inlines:
 // - With EmptyOffsetMappingBuilder: updating layout;
@@ -82,8 +77,7 @@ template <typename OffsetMappingBuilder>
 void CollectInlinesInternal(
     LayoutBlockFlow* block,
     NGInlineItemsBuilderTemplate<OffsetMappingBuilder>* builder,
-    String* previous_text,
-    bool update_layout) {
+    String* previous_text) {
   builder->EnterBlock(block->Style());
   LayoutObject* node = GetLayoutObjectForFirstChildNode(block);
 
@@ -115,8 +109,7 @@ void CollectInlinesInternal(
       if (symbol == layout_text)
         builder->SetIsSymbolMarker(true);
 
-      if (update_layout)
-        ClearNeedsLayout(layout_text);
+      ClearNeedsLayoutIfUpdatingLayout<OffsetMappingBuilder>(layout_text);
 
     } else if (node->IsFloating()) {
       // Add floats and positioned objects in the same way as atomic inlines.
@@ -140,9 +133,6 @@ void CollectInlinesInternal(
         // signal the presence of a non-text object to the unicode bidi
         // algorithm.
         builder->AppendAtomicInline(node->Style(), node);
-
-        if (update_layout)
-          ClearInlineFragment(node);
       }
 
     } else {
@@ -157,13 +147,13 @@ void CollectInlinesInternal(
       if (LayoutObject* child = node->SlowFirstChild()) {
         node = child;
         continue;
+
+      } else {
+        // An empty inline node.
+        ClearNeedsLayoutIfUpdatingLayout<OffsetMappingBuilder>(node);
       }
 
-      // An empty inline node.
       builder->ExitInline(node);
-
-      if (update_layout)
-        ClearNeedsLayout(node);
     }
 
     // Find the next sibling, or parent, until we reach |block|.
@@ -180,9 +170,7 @@ void CollectInlinesInternal(
       }
       DCHECK(node->IsInline());
       builder->ExitInline(node);
-
-      if (update_layout)
-        ClearNeedsLayout(node);
+      ClearNeedsLayoutIfUpdatingLayout<OffsetMappingBuilder>(node);
     }
   }
   builder->ExitBlock();
@@ -305,9 +293,7 @@ const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() {
     Vector<NGInlineItem> items;
     items.ReserveCapacity(EstimateInlineItemsCount(*GetLayoutBlockFlow()));
     NGInlineItemsBuilderForOffsetMapping builder(&items);
-    const bool update_layout = false;
-    CollectInlinesInternal(GetLayoutBlockFlow(), &builder, nullptr,
-                           update_layout);
+    CollectInlinesInternal(GetLayoutBlockFlow(), &builder, nullptr);
     String text = builder.ToString();
     DCHECK_EQ(data->text_content, text);
 
@@ -337,8 +323,7 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
       previous_data ? &previous_data->text_content : nullptr;
   data->items.ReserveCapacity(EstimateInlineItemsCount(*block));
   NGInlineItemsBuilder builder(&data->items);
-  const bool update_layout = true;
-  CollectInlinesInternal(block, &builder, previous_text, update_layout);
+  CollectInlinesInternal(block, &builder, previous_text);
   data->text_content = builder.ToString();
 
   // Set |is_bidi_enabled_| for all UTF-16 strings for now, because at this
@@ -663,42 +648,13 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) {
   }
 }
 
-// Clear associated fragments for all LayoutObjects. They are associated when
-// NGPaintFragment is constructed.
-void NGInlineNode::ClearAssociatedFragments(NGInlineBreakToken* break_token) {
-  if (!IsPrepareLayoutFinished())
-    return;
-
-  LayoutObject* last_object = nullptr;
-  const Vector<NGInlineItem>& items = Data().items;
-  for (unsigned i = break_token ? break_token->ItemIndex() : 0;
-       i < items.size(); i++) {
-    const NGInlineItem& item = items[i];
-    if (item.Type() == NGInlineItem::kFloating ||
-        item.Type() == NGInlineItem::kOutOfFlowPositioned ||
-        item.Type() == NGInlineItem::kListMarker)
-      continue;
-    LayoutObject* object = item.GetLayoutObject();
-    if (!object || object == last_object)
-      continue;
-    object->SetFirstInlineFragment(nullptr);
-    last_object = object;
-  }
-}
-
 scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
     const NGConstraintSpace& constraint_space,
     NGBreakToken* break_token) {
-  bool needs_clear_fragments = IsPrepareLayoutFinished();
   PrepareLayoutIfNeeded();
 
-  NGInlineBreakToken* inline_break_token = ToNGInlineBreakToken(break_token);
-  if (needs_clear_fragments && !constraint_space.IsIntermediateLayout()) {
-    ClearAssociatedFragments(inline_break_token);
-  }
-
   NGInlineLayoutAlgorithm algorithm(*this, constraint_space,
-                                    inline_break_token);
+                                    ToNGInlineBreakToken(break_token));
   return algorithm.Layout();
 }
 

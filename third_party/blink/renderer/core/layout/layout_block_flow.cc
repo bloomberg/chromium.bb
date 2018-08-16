@@ -274,13 +274,7 @@ LayoutBlockFlow::LayoutBlockFlow(ContainerNode* node) : LayoutBlock(node) {
   SetChildrenInline(true);
 }
 
-#if DCHECK_IS_ON()
-LayoutBlockFlow::~LayoutBlockFlow() {
-  line_boxes_.AssertIsEmpty();
-}
-#else
 LayoutBlockFlow::~LayoutBlockFlow() = default;
-#endif
 
 LayoutBlockFlow* LayoutBlockFlow::CreateAnonymous(
     Document* document,
