@@ -6,6 +6,7 @@ module network.mojom;
 
 import "net/interfaces/address_list.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "services/network/public/mojom/url_loader.mojom";
 
 // Control handle used to control outstanding NetworkContext::ResolveHost
 // requests. Handle is optional for all requests, and may be closed at any time
@@ -31,6 +32,31 @@ interface ResolveHostClient {
   OnComplete(int32 result, net.interfaces.AddressList? resolved_addresses);
 };
 
+// Parameter-grouping struct for additional optional parameters for
+// HostResolver::CreateRequest() calls. All fields are optional and have a
+// reasonable default.
+struct ResolveHostParameters {
+  // DNS query type for a ResolveHostRequest.
+  // See:
+  // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
+  enum DnsQueryType {
+    UNSPECIFIED,
+    A,
+    AAAA,
+  };
+
+  // Requested DNS query type. If UNSPECIFIED, resolver will pick A or AAAA (or
+  // both) based on IPv4/IPv6 settings.
+  DnsQueryType dns_query_type = DnsQueryType.UNSPECIFIED;
+
+  // The initial net priority for the host resolution request.
+  RequestPriority initial_priority = RequestPriority.kLowest;
+
+  // If set, the outstanding request can be controlled, eg cancelled, via the
+  // handle.
+  ResolveHostHandle&? control_handle;
+};
+
 // Interface that can be passed to code/processes without direct access to
 // NetworkContext to make ResolveHost requests. If destroyed, all outstanding
 // ResolveHost requests from the destroyed interface will be cancelled.
@@ -39,11 +65,13 @@ interface HostResolver {
   // error code, and on success (network error code OK), an AddressList. All
   // results are sent via the passed |response_client|.
   //
+  // Additional optional parameters may be set using |optional_parameters|. If
+  // unset, reasonable defaults will be used, equivalent to using a
+  // ResolveHostParameters struct without changing any fields from their default
+  // values.
+  //
   // Results in ERR_NAME_NOT_RESOLVED if hostname is invalid, or if it is an
   // incompatible IP literal (e.g. IPv6 is disabled and it is an IPv6 literal).
-  //
-  // If passed an optional |control_handle|, the outstanding request can be
-  // controlled, eg cancelled, via the handle.
   //
   // All outstanding requests are cancelled if the HostResolver or parent
   // NetworkContext are destroyed. Such requests will receive ERR_FAILED via
@@ -52,6 +80,6 @@ interface HostResolver {
   // TODO(crbug.com/821021): Implement more complex functionality to meet full
   // capabilities of Resolve() and DnsClient/MDnsClient functionality.
   ResolveHost(HostPortPair host,
-              ResolveHostHandle&? control_handle,
+              ResolveHostParameters? optional_parameters,
               ResolveHostClient response_client);
 };

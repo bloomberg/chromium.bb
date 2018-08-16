@@ -96,12 +96,15 @@ TEST_F(HostResolverTest, Sync) {
   HostResolver resolver(inner_resolver.get(), &net_log);
 
   base::RunLoop run_loop;
+  mojom::ResolveHostHandlePtr control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);
 
-  mojom::ResolveHostHandlePtr control_handle;
   resolver.ResolveHost(net::HostPortPair("localhost", 160),
-                       mojo::MakeRequest(&control_handle),
+                       std::move(optional_parameters),
                        std::move(response_client_ptr));
   run_loop.Run();
 
@@ -109,6 +112,7 @@ TEST_F(HostResolverTest, Sync) {
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
               testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 160)));
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
+  EXPECT_EQ(net::DEFAULT_PRIORITY, inner_resolver->last_request_priority());
 }
 
 TEST_F(HostResolverTest, Async) {
@@ -119,12 +123,15 @@ TEST_F(HostResolverTest, Async) {
   HostResolver resolver(inner_resolver.get(), &net_log);
 
   base::RunLoop run_loop;
+  mojom::ResolveHostHandlePtr control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);
 
-  mojom::ResolveHostHandlePtr control_handle;
   resolver.ResolveHost(net::HostPortPair("localhost", 160),
-                       mojo::MakeRequest(&control_handle),
+                       std::move(optional_parameters),
                        std::move(response_client_ptr));
 
   bool control_handle_closed = false;
@@ -138,6 +145,57 @@ TEST_F(HostResolverTest, Async) {
               testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 160)));
   EXPECT_TRUE(control_handle_closed);
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
+  EXPECT_EQ(net::DEFAULT_PRIORITY, inner_resolver->last_request_priority());
+}
+
+TEST_F(HostResolverTest, DnsQueryType) {
+  net::NetLog net_log;
+  std::unique_ptr<net::HostResolver> inner_resolver =
+      net::HostResolver::CreateDefaultResolver(&net_log);
+
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->dns_query_type = net::HostResolver::DnsQueryType::AAAA;
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
+  resolver.ResolveHost(net::HostPortPair("localhost", 160),
+                       std::move(optional_parameters),
+                       std::move(response_client_ptr));
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  EXPECT_THAT(response_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint("::1", 160)));
+}
+
+TEST_F(HostResolverTest, InitialPriority) {
+  auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  net::NetLog net_log;
+
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->initial_priority = net::HIGHEST;
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
+  resolver.ResolveHost(net::HostPortPair("localhost", 80),
+                       std::move(optional_parameters),
+                       std::move(response_client_ptr));
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  EXPECT_THAT(response_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 80)));
+  EXPECT_EQ(net::HIGHEST, inner_resolver->last_request_priority());
 }
 
 TEST_F(HostResolverTest, Failure_Sync) {
@@ -149,12 +207,15 @@ TEST_F(HostResolverTest, Failure_Sync) {
   HostResolver resolver(inner_resolver.get(), &net_log);
 
   base::RunLoop run_loop;
+  mojom::ResolveHostHandlePtr control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);
 
-  mojom::ResolveHostHandlePtr control_handle;
   resolver.ResolveHost(net::HostPortPair("example.com", 160),
-                       mojo::MakeRequest(&control_handle),
+                       std::move(optional_parameters),
                        std::move(response_client_ptr));
   run_loop.Run();
 
@@ -172,12 +233,15 @@ TEST_F(HostResolverTest, Failure_Async) {
   HostResolver resolver(inner_resolver.get(), &net_log);
 
   base::RunLoop run_loop;
+  mojom::ResolveHostHandlePtr control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);
 
-  mojom::ResolveHostHandlePtr control_handle;
   resolver.ResolveHost(net::HostPortPair("example.com", 160),
-                       mojo::MakeRequest(&control_handle),
+                       std::move(optional_parameters),
                        std::move(response_client_ptr));
 
   bool control_handle_closed = false;
@@ -192,7 +256,7 @@ TEST_F(HostResolverTest, Failure_Async) {
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
 }
 
-TEST_F(HostResolverTest, NoControlHandle) {
+TEST_F(HostResolverTest, NoOptionalParameters) {
   net::NetLog net_log;
   std::unique_ptr<net::HostResolver> inner_resolver =
       net::HostResolver::CreateDefaultResolver(&net_log);
@@ -217,6 +281,34 @@ TEST_F(HostResolverTest, NoControlHandle) {
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
 }
 
+TEST_F(HostResolverTest, NoControlHandle) {
+  net::NetLog net_log;
+  std::unique_ptr<net::HostResolver> inner_resolver =
+      net::HostResolver::CreateDefaultResolver(&net_log);
+
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
+  // Resolve "localhost" because it should always resolve fast and locally, even
+  // when using a real HostResolver.
+  resolver.ResolveHost(net::HostPortPair("localhost", 80),
+                       std::move(optional_parameters),
+                       std::move(response_client_ptr));
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  EXPECT_THAT(
+      response_client.result_addresses().value().endpoints(),
+      testing::UnorderedElementsAre(CreateExpectedEndPoint("127.0.0.1", 80),
+                                    CreateExpectedEndPoint("::1", 80)));
+  EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
+}
+
 TEST_F(HostResolverTest, CloseControlHandle) {
   net::NetLog net_log;
   std::unique_ptr<net::HostResolver> inner_resolver =
@@ -225,14 +317,17 @@ TEST_F(HostResolverTest, CloseControlHandle) {
   HostResolver resolver(inner_resolver.get(), &net_log);
 
   base::RunLoop run_loop;
+  mojom::ResolveHostHandlePtr control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);
 
   // Resolve "localhost" because it should always resolve fast and locally, even
   // when using a real HostResolver.
-  mojom::ResolveHostHandlePtr control_handle;
   resolver.ResolveHost(net::HostPortPair("localhost", 160),
-                       mojo::MakeRequest(&control_handle),
+                       std::move(optional_parameters),
                        std::move(response_client_ptr));
   control_handle = nullptr;
   run_loop.Run();
@@ -256,12 +351,15 @@ TEST_F(HostResolverTest, Cancellation) {
   ASSERT_EQ(0, inner_resolver->num_cancellations());
 
   base::RunLoop run_loop;
+  mojom::ResolveHostHandlePtr control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);
 
-  mojom::ResolveHostHandlePtr control_handle;
   resolver.ResolveHost(net::HostPortPair("localhost", 80),
-                       mojo::MakeRequest(&control_handle),
+                       std::move(optional_parameters),
                        std::move(response_client_ptr));
   bool control_handle_closed = false;
   auto connection_error_callback =
@@ -288,12 +386,15 @@ TEST_F(HostResolverTest, Cancellation_SubsequentRequest) {
   HostResolver resolver(inner_resolver.get(), &net_log);
 
   base::RunLoop run_loop;
+  mojom::ResolveHostHandlePtr control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, nullptr);
 
-  mojom::ResolveHostHandlePtr control_handle;
   resolver.ResolveHost(net::HostPortPair("localhost", 80),
-                       mojo::MakeRequest(&control_handle),
+                       std::move(optional_parameters),
                        std::move(response_client_ptr));
 
   control_handle->Cancel(net::ERR_ABORTED);
@@ -333,12 +434,15 @@ TEST_F(HostResolverTest, DestroyResolver) {
   ASSERT_EQ(0, inner_resolver->num_cancellations());
 
   base::RunLoop run_loop;
+  mojom::ResolveHostHandlePtr control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);
 
-  mojom::ResolveHostHandlePtr control_handle;
   resolver->ResolveHost(net::HostPortPair("localhost", 80),
-                        mojo::MakeRequest(&control_handle),
+                        std::move(optional_parameters),
                         std::move(response_client_ptr));
   bool control_handle_closed = false;
   auto connection_error_callback =
@@ -367,12 +471,15 @@ TEST_F(HostResolverTest, CloseClient) {
   ASSERT_EQ(0, inner_resolver->num_cancellations());
 
   base::RunLoop run_loop;
+  mojom::ResolveHostHandlePtr control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);
 
-  mojom::ResolveHostHandlePtr control_handle;
   resolver.ResolveHost(net::HostPortPair("localhost", 80),
-                       mojo::MakeRequest(&control_handle),
+                       std::move(optional_parameters),
                        std::move(response_client_ptr));
   bool control_handle_closed = false;
   auto connection_error_callback =
@@ -401,7 +508,6 @@ TEST_F(HostResolverTest, CloseClient_SubsequentRequest) {
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, nullptr);
 
-  mojom::ResolveHostHandlePtr control_handle;
   resolver.ResolveHost(net::HostPortPair("localhost", 80), nullptr,
                        std::move(response_client_ptr));
 
@@ -446,13 +552,17 @@ TEST_F(HostResolverTest, Binding) {
                         &net_log);
 
   base::RunLoop run_loop;
+  mojom::ResolveHostHandlePtr control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
   // Resolve "localhost" because it should always resolve fast and locally, even
   // when using a real HostResolver.
-  mojom::ResolveHostHandlePtr control_handle;
   resolver_ptr->ResolveHost(net::HostPortPair("localhost", 160),
-                            mojo::MakeRequest(&control_handle),
+                            std::move(optional_parameters),
                             std::move(response_client_ptr));
   run_loop.Run();
 
@@ -484,11 +594,14 @@ TEST_F(HostResolverTest, CloseBinding) {
   ASSERT_EQ(0, inner_resolver->num_cancellations());
 
   base::RunLoop run_loop;
+  mojom::ResolveHostHandlePtr control_handle;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);
-  mojom::ResolveHostHandlePtr control_handle;
   resolver_ptr->ResolveHost(net::HostPortPair("localhost", 160),
-                            mojo::MakeRequest(&control_handle),
+                            std::move(optional_parameters),
                             std::move(response_client_ptr));
   bool control_handle_closed = false;
   auto connection_error_callback =

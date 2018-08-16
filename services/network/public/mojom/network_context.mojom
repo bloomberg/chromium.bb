@@ -555,7 +555,7 @@ interface NetworkContext {
   // through CreateHostResolver, but most likely most usage except proxy
   // resolver will directly use this method.
   ResolveHost(HostPortPair host,
-              ResolveHostHandle&? control_handle,
+              ResolveHostParameters? optional_parameters,
               ResolveHostClient response_client);
 
   // Creates a HostResolver interface that can be passed to code/processes
