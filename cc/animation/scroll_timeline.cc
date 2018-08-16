@@ -40,15 +40,18 @@ double ScrollTimeline::CurrentTime(const ScrollTree& scroll_tree,
 
   // The scroller may not be in the ScrollTree if it is not currently scrollable
   // (e.g. has overflow: visible). By the spec, return an unresolved time value.
-  if (!scroll_tree.FindNodeFromElementId(scroller_id))
+  const ScrollNode* scroll_node =
+      scroll_tree.FindNodeFromElementId(scroller_id);
+  if (!scroll_node)
     return std::numeric_limits<double>::quiet_NaN();
 
-  gfx::ScrollOffset offset = scroll_tree.current_scroll_offset(scroller_id);
+  gfx::ScrollOffset offset =
+      scroll_tree.GetPixelSnappedScrollOffset(scroll_node->id);
   DCHECK_GE(offset.x(), 0);
   DCHECK_GE(offset.y(), 0);
 
-  gfx::ScrollOffset scroll_dimensions = scroll_tree.MaxScrollOffset(
-      scroll_tree.FindNodeFromElementId(scroller_id)->id);
+  gfx::ScrollOffset scroll_dimensions =
+      scroll_tree.MaxScrollOffset(scroll_node->id);
 
   double current_offset = (orientation_ == Vertical) ? offset.y() : offset.x();
   double max_offset = (orientation_ == Vertical) ? scroll_dimensions.y()

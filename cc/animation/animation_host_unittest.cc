@@ -13,6 +13,7 @@
 #include "cc/test/animation_timelines_test_common.h"
 #include "cc/test/mock_layer_tree_mutator.h"
 #include "cc/trees/scroll_node.h"
+#include "cc/trees/transform_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -258,14 +259,39 @@ bool Animation1TimeEquals20(MutatorInputState* input) {
 
 void CreateScrollingNodeForElement(ElementId element_id,
                                    PropertyTrees* property_trees) {
-  ScrollNode node;
-  node.scrollable = true;
-  // Setup scroll dimention to be 100x100.
-  node.bounds = gfx::Size(200, 200);
-  node.container_bounds = gfx::Size(100, 100);
+  // A scrolling node in cc has a corresponding transform node (See
+  // |ScrollNode::transform_id|). This setup here creates both nodes and links
+  // them as they would normally be. This more complete setup is necessary here
+  // because ScrollTimelin depends on both nodes for its calculations.
+  TransformNode transform_node;
+  transform_node.scrolls = true;
+  transform_node.source_node_id = TransformTree::kRootNodeId;
+  int transform_node_id =
+      property_trees->transform_tree.Insert(transform_node, 0);
+  property_trees->element_id_to_transform_node_index[element_id] =
+      transform_node_id;
 
-  int node_id = property_trees->scroll_tree.Insert(node, 0);
-  property_trees->element_id_to_scroll_node_index[element_id] = node_id;
+  ScrollNode scroll_node;
+  scroll_node.scrollable = true;
+  // Setup scroll dimention to be 100x100.
+  scroll_node.bounds = gfx::Size(200, 200);
+  scroll_node.container_bounds = gfx::Size(100, 100);
+  scroll_node.element_id = element_id;
+  scroll_node.transform_id = transform_node_id;
+
+  int scroll_node_id = property_trees->scroll_tree.Insert(scroll_node, 0);
+  property_trees->element_id_to_scroll_node_index[element_id] = scroll_node_id;
+}
+
+void SetScrollOffset(PropertyTrees* property_trees,
+                     ElementId element_id,
+                     gfx::ScrollOffset offset) {
+  // Update both scroll and transform trees
+  property_trees->scroll_tree.SetScrollOffset(element_id, offset);
+  TransformNode* transform_node =
+      property_trees->transform_tree.FindNodeFromElementId(element_id);
+  transform_node->scroll_offset = offset;
+  transform_node->needs_local_transform_update = true;
 }
 
 TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
@@ -281,20 +307,18 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
 
   PropertyTrees property_trees;
   property_trees.is_main_thread = false;
+  property_trees.is_active = true;
   CreateScrollingNodeForElement(element_id, &property_trees);
 
-  ScrollTree& scroll_tree = property_trees.scroll_tree;
   // Set an initial scroll value.
-  scroll_tree.SetScrollOffsetDeltaForTesting(element_id,
-                                             gfx::Vector2dF(10, 10));
+  SetScrollOffset(&property_trees, element_id, gfx::ScrollOffset(10, 10));
 
   scoped_refptr<MockAnimation> mock_scroll_animation(
       new MockAnimation(animation_id1));
   EXPECT_CALL(*mock_scroll_animation, Tick(_))
       .WillOnce(InvokeWithoutArgs([&]() {
         // Scroll to 20% of the max value.
-        scroll_tree.SetScrollOffsetDeltaForTesting(element_id,
-                                                   gfx::Vector2dF(20, 20));
+        SetScrollOffset(&property_trees, element_id, gfx::ScrollOffset(20, 20));
       }));
 
   // Ensure scroll animation is ticking.
@@ -326,7 +350,8 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
   // Ticking host should cause scroll animation to scroll which should also be
   // reflected in the input of the layer tree mutator in the same animation
   // frame.
-  host_impl_->TickAnimations(base::TimeTicks(), scroll_tree, false);
+  host_impl_->TickAnimations(base::TimeTicks(), property_trees.scroll_tree,
+                             false);
 }
 
 }  // namespace
