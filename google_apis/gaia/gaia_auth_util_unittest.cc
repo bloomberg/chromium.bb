@@ -14,6 +14,14 @@ TEST(GaiaAuthUtilTest, EmailAddressNoOp) {
   EXPECT_EQ(lower_case, CanonicalizeEmail(lower_case));
 }
 
+TEST(GaiaAuthUtilTest, InvalidEmailAddress) {
+  const char invalid_email1[] = "user";
+  const char invalid_email2[] = "user@@what.com";
+  EXPECT_EQ(invalid_email1, CanonicalizeEmail(invalid_email1));
+  EXPECT_EQ(invalid_email2, CanonicalizeEmail(invalid_email2));
+  EXPECT_EQ("user", CanonicalizeEmail("USER"));
+}
+
 TEST(GaiaAuthUtilTest, EmailAddressIgnoreCaps) {
   EXPECT_EQ(CanonicalizeEmail("user@what.com"),
             CanonicalizeEmail("UsEr@what.com"));
@@ -37,6 +45,11 @@ TEST(GaiaAuthUtilTest, EmailAddressMatchWithOneUsernameDot) {
 TEST(GaiaAuthUtilTest, EmailAddressIgnoreOneUsernameDot) {
   EXPECT_EQ(CanonicalizeEmail("us.er@gmail.com"),
             CanonicalizeEmail("UsEr@gmail.com"));
+}
+
+TEST(GaiaAuthUtilTest, EmailAddressIgnoreOneUsernameDotAndIgnoreCaps) {
+  EXPECT_EQ(CanonicalizeEmail("user@gmail.com"),
+            CanonicalizeEmail("US.ER@GMAIL.COM"));
 }
 
 TEST(GaiaAuthUtilTest, EmailAddressIgnoreManyUsernameDots) {

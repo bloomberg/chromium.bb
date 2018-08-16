@@ -36,6 +36,8 @@ struct ListedAccount {
 
 // Perform basic canonicalization of |email_address|, taking into account that
 // gmail does not consider '.' or caps inside a username to matter.
+// If |email_address| is not a valid, returns it in lower case without
+// additional canonicalization.
 std::string CanonicalizeEmail(const std::string& email_address);
 
 // Returns the canonical form of the given domain.
