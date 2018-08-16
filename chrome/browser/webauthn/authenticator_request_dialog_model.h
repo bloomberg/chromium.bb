@@ -44,6 +44,9 @@ class AuthenticatorRequestDialogModel {
 
     kBleActivate,
     kBleVerifying,
+
+    // Touch ID.
+    kTouchId,
   };
 
   // Encapsulates information about authenticators that have been found but are
@@ -122,6 +125,12 @@ class AuthenticatorRequestDialogModel {
   //
   // Valid action when at step: kUsbInsert.
   void TryUsbDevice();
+
+  // Tries to use Touch ID -- either because the request requires it or because
+  // the user told us to.
+  //
+  // Valid action when at step: kTouchId.
+  void TryTouchId();
 
   // Cancels the flow as a result of the user clicking `Cancel` on the UI.
   //

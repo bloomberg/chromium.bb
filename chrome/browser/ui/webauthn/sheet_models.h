@@ -208,4 +208,15 @@ class AuthenticatorBleActivateSheetModel : public AuthenticatorSheetModelBase {
   base::string16 GetStepDescription() const override;
 };
 
+class AuthenticatorTouchIdSheetModel : public AuthenticatorSheetModelBase {
+ public:
+  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+};
+
 #endif  // CHROME_BROWSER_UI_WEBAUTHN_SHEET_MODELS_H_

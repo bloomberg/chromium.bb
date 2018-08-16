@@ -9131,6 +9131,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
         To use most keys, simply press the button
      </message>
    </if>
+   <if expr="is_macosx">
+     <message name="IDS_WEBAUTHN_TOUCH_ID_TITLE" desc="Title of the dialog shown when the user tries to sign in with Touch ID." meaning="'Touch ID' is the fingerprint recognition feature in macOS. Try to refer Apple support documentation in the target language for the appropriate product name translation.">
+       Use Touch ID with <ph name="APP_NAME">$1<ex>example.com</ex></ph>
+     </message>
+   </if>
   </messages>
  </release>
 </grit>
