@@ -22,6 +22,8 @@ source_set("platform_apps") {
     "browser_context_keyed_service_factories.h",
     "install_chrome_app.cc",
     "install_chrome_app.h",
+    "platform_app_launch.cc",
+    "platform_app_launch.h",
     "platform_app_navigation_redirector.cc",
     "platform_app_navigation_redirector.h",
     "shortcut_manager.cc",
