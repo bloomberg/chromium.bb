@@ -300,6 +300,11 @@ bool MediaControlOverlayPlayButtonElement::IsMouseEventOnInternalButton(
   if (!mouse_event.HasPosition())
     return true;
 
+  // TODO(https://crbug.com/873839): In what cases do we hit this?
+  // If the internal button or computed style are unavailable, default to yes.
+  if (!internal_button_ || !GetComputedStyle())
+    return true;
+
   // Find the zoom-adjusted internal button bounding box.
   DOMRect* box = internal_button_->getBoundingClientRect();
   float zoom = ComputedStyleRef().EffectiveZoom() /
