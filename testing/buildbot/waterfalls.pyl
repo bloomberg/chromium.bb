@@ -293,7 +293,6 @@
               'os': 'Android',
             },
           ],
-          'hard_timeout': 960,
         },
         'os_type': 'android',
       },
