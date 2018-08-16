@@ -29,10 +29,14 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
   static CallStackProfileBuilder::CompletedCallback
   GetProfilerCallbackForBrowserProcess();
 
-  // Provides completed stack profile to the metrics provider. Intended for use
-  // when receiving profiles over IPC. In-process StackSamplingProfiler users
-  // should instead use a variant of GetProfilerCallback*(). |profile| is not
-  // const& because it must be passed with std::move.
+  // Will be invoked on either the main thread or the profiler's thread.
+  // Provides the profile to PendingProfiles to append, if the collecting state
+  // allows.
+  //
+  // Intended for use when receiving profiles over IPC. In-process
+  // StackSamplingProfiler users should instead use
+  // GetProfilerCallbackForBrowserProcess(). |profile| is not const& because it
+  // must be passed with std::move.
   static void ReceiveCompletedProfile(base::TimeTicks profile_start_time,
                                       SampledProfile profile);
 

@@ -166,14 +166,6 @@ PendingProfiles::PendingProfiles() : collection_enabled_(true) {}
 
 // Functions to process completed profile ------------------------------------
 
-// Will be invoked on either the main thread or the profiler's thread. Provides
-// the profile to PendingProfiles to append, if the collecting state allows.
-void ReceiveCompletedProfileImpl(base::TimeTicks start_timestamp,
-                                 SampledProfile profile) {
-  PendingProfiles::GetInstance()->CollectProfilesIfCollectionEnabled(
-      ProfileState(start_timestamp, std::move(profile)));
-}
-
 // Invoked on an arbitrary thread. Ignores the provided profile.
 void IgnoreCompletedProfile(SampledProfile profile) {}
 
@@ -188,6 +180,7 @@ CallStackProfileMetricsProvider::CallStackProfileMetricsProvider() {}
 
 CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {}
 
+// static
 CallStackProfileBuilder::CompletedCallback
 CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess() {
   // Ignore the profile if the collection is disabled. If the collection state
@@ -196,15 +189,17 @@ CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess() {
   if (!PendingProfiles::GetInstance()->IsCollectionEnabled())
     return base::BindRepeating(&IgnoreCompletedProfile);
 
-  return base::BindRepeating(&ReceiveCompletedProfileImpl,
-                             base::TimeTicks::Now());
+  return base::BindRepeating(
+      &CallStackProfileMetricsProvider::ReceiveCompletedProfile,
+      base::TimeTicks::Now());
 }
 
 // static
 void CallStackProfileMetricsProvider::ReceiveCompletedProfile(
     base::TimeTicks profile_start_time,
     SampledProfile profile) {
-  ReceiveCompletedProfileImpl(profile_start_time, std::move(profile));
+  PendingProfiles::GetInstance()->CollectProfilesIfCollectionEnabled(
+      ProfileState(profile_start_time, std::move(profile)));
 }
 
 void CallStackProfileMetricsProvider::OnRecordingEnabled() {
