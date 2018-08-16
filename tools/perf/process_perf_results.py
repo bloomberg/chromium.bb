@@ -348,7 +348,9 @@ def _upload_individual(
       # It was only written to one shard, use that shards data
       results_filename = join(directories[0], 'perf_results.json')
 
-    print 'Uploading perf results from %s benchmark' % benchmark_name
+    results_size_in_mib = os.path.getsize(results_filename) / (2 ** 20)
+    print 'Uploading perf results from %s benchmark (size %s Mib)' % (
+        benchmark_name, results_size_in_mib)
     with open(output_json_file, 'w') as oj:
       upload_fail = _upload_perf_results(
         results_filename,
