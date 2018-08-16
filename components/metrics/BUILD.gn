@@ -261,6 +261,8 @@ source_set("call_stack_profile") {
   sources = [
     "call_stack_profile_builder.cc",
     "call_stack_profile_builder.h",
+    "call_stack_profile_encoding.cc",
+    "call_stack_profile_encoding.h",
     "call_stack_profile_params.h",
   ]
 
