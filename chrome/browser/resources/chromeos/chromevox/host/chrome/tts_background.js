@@ -267,6 +267,29 @@ cvox.TtsBackground.prototype.speak = function(
   // pattern causes ChromeVox to read numbers as digits rather than words.
   textString = this.getNumberAsDigits_(textString);
 
+  // TODO(dtseng): some TTS engines don't handle strings that don't produce any
+  // speech very well. Handle empty and whitespace only strings (including
+  // non-breaking space) here to mitigate the issue somewhat.
+  if (cvox.TtsBackground.SKIP_WHITESPACE_.test(textString)) {
+    // Explicitly call start and end callbacks before skipping this text.
+    if (properties['startCallback']) {
+      try {
+        properties['startCallback']();
+      } catch (e) {
+      }
+    }
+    if (properties['endCallback']) {
+      try {
+        properties['endCallback']();
+      } catch (e) {
+      }
+    }
+    if (queueMode === cvox.QueueMode.FLUSH) {
+      this.stop();
+    }
+    return this;
+  }
+
   var mergedProperties = this.mergeProperties(properties);
 
   if (this.currentVoice && this.currentVoice !== constants.SYSTEM_VOICE) {
@@ -759,3 +782,6 @@ cvox.TtsBackground.prototype.updateFromPrefs_ = function(announce, prefs) {
         cvox.AbstractTts.PERSONALITY_ANNOTATION);
   });
 };
+
+/** @private {RegExp} */
+cvox.TtsBackground.SKIP_WHITESPACE_ = /^[\s\u00a0]*$/;
