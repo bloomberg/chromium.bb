@@ -81,6 +81,9 @@ constexpr int kRipOffDistance = 48;
 constexpr int kSeparatorSize = 20;
 constexpr int kSeparatorThickness = 1;
 
+// The margin between the app list button and the first shelf item.
+constexpr int kAppListButtonMargin = 32;
+
 // White with ~20% opacity.
 constexpr SkColor kSeparatorColor = SkColorSetARGB(0x32, 0xFF, 0xFF, 0xFF);
 
@@ -903,11 +906,11 @@ int ShelfView::GetDimensionOfCenteredShelfItemsInNewUi() const {
   for (ShelfItem item : model_->items()) {
     if (item.type == TYPE_PINNED_APP || item.type == TYPE_APP ||
         item.type == TYPE_BROWSER_SHORTCUT) {
-      size += kShelfButtonSize;
+      size += ShelfConstants::button_size();
       added_items++;
     }
   }
-  size += (added_items - 1) * kShelfButtonSpacingNewUi;
+  size += (added_items - 1) * ShelfConstants::button_spacing();
   return size;
 }
 
@@ -939,9 +942,8 @@ void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
 void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
   DCHECK(model_->item_count() == view_model_->view_size());
 
-  const int button_spacing = chromeos::switches::ShouldUseShelfNewUi()
-                                 ? kShelfButtonSpacingNewUi
-                                 : kShelfButtonSpacing;
+  const int button_spacing = ShelfConstants::button_spacing();
+  const int button_size = ShelfConstants::button_size();
 
   const int available_size = shelf_->PrimaryAxisValue(width(), height());
   const int separator_index = GetSeparatorIndex();
@@ -954,8 +956,8 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
   int x = 0;
   int y = 0;
 
-  int w = shelf_->PrimaryAxisValue(kShelfButtonSize, width());
-  int h = shelf_->PrimaryAxisValue(height(), kShelfButtonSize);
+  int w = shelf_->PrimaryAxisValue(button_size, width());
+  int h = shelf_->PrimaryAxisValue(height(), button_size);
 
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
@@ -975,7 +977,8 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
           status_widget->GetWindowBoundsInScreen().height());
       int padding_for_centering =
           (available_size + status_widget_size - centered_shelf_items_size) / 2;
-      if (padding_for_centering > app_list_button_position + button_spacing) {
+      if (padding_for_centering >
+          app_list_button_position + kAppListButtonMargin) {
         // Only shift buttons to the right, never let them interfere with the
         // left-aligned system buttons.
         x = shelf_->PrimaryAxisValue(padding_for_centering, 0);
@@ -996,14 +999,22 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
     x = shelf_->PrimaryAxisValue(x + w + (i == 0 ? 0 : button_spacing), x);
     y = shelf_->PrimaryAxisValue(y, y + h + button_spacing);
 
-    if (i == kAppListButtonIndex)
+    if (i == kAppListButtonIndex) {
       app_list_button_position = shelf_->PrimaryAxisValue(x, y);
+      if (chromeos::switches::ShouldUseShelfNewUi()) {
+        // In the new UI, a larger minimum padding after the app list button
+        // is required: increment with the necessary extra amount.
+        x += shelf_->PrimaryAxisValue(kAppListButtonMargin - button_spacing, 0);
+        y += shelf_->PrimaryAxisValue(0, kAppListButtonMargin - button_spacing);
+      }
+    }
 
     if (i == separator_index) {
       // Place the separator halfway between the two icons it separates,
       // vertically centered.
       int half_space = button_spacing / 2;
-      int secondary_offset = (kShelfSize - kSeparatorSize) / 2;
+      int secondary_offset =
+          (ShelfConstants::shelf_size() - kSeparatorSize) / 2;
       x -= shelf_->PrimaryAxisValue(half_space, 0);
       y -= shelf_->PrimaryAxisValue(0, half_space);
       separator_->SetBounds(
@@ -1619,9 +1630,11 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
     }
 
     if (shelf_->IsHorizontalAlignment()) {
-      preferred_size = gfx::Size(last_button_bounds.right(), kShelfSize);
+      preferred_size =
+          gfx::Size(last_button_bounds.right(), ShelfConstants::shelf_size());
     } else {
-      preferred_size = gfx::Size(kShelfSize, last_button_bounds.bottom());
+      preferred_size =
+          gfx::Size(ShelfConstants::shelf_size(), last_button_bounds.bottom());
     }
   }
   gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
@@ -1687,12 +1700,13 @@ gfx::Size ShelfView::CalculatePreferredSize() const {
   const gfx::Rect last_button_bounds =
       last_button_index >= first_visible_index_
           ? view_model_->ideal_bounds(last_button_index)
-          : gfx::Rect(gfx::Size(kShelfSize, kShelfSize));
+          : gfx::Rect(gfx::Size(ShelfConstants::shelf_size(),
+                                ShelfConstants::shelf_size()));
 
   if (shelf_->IsHorizontalAlignment())
-    return gfx::Size(last_button_bounds.right(), kShelfSize);
+    return gfx::Size(last_button_bounds.right(), ShelfConstants::shelf_size());
 
-  return gfx::Size(kShelfSize, last_button_bounds.bottom());
+  return gfx::Size(ShelfConstants::shelf_size(), last_button_bounds.bottom());
 }
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -1724,6 +1738,7 @@ void ShelfView::OnPaint(gfx::Canvas* canvas) {
   if (overflow_mode_)
     return;
 
+  const int app_list_button_radius = ShelfConstants::app_list_button_radius();
   cc::PaintFlags flags;
   flags.setColor(shelf_item_background_color_);
   flags.setAntiAlias(true);
@@ -1736,20 +1751,22 @@ void ShelfView::OnPaint(gfx::Canvas* canvas) {
       gfx::Vector2d(GetAppListButton()->GetCenterPoint().x(),
                     GetAppListButton()->GetCenterPoint().y()));
   if (GetBackButton()->layer()->opacity() <= 0.f) {
-    canvas->DrawCircle(circle_center, kAppListButtonRadius, flags);
+    canvas->DrawCircle(circle_center, app_list_button_radius, flags);
     return;
   }
 
+  const int button_size = ShelfConstants::button_size();
   const gfx::PointF back_center(
-      GetMirroredRect(GetBackButton()->bounds()).x() + kShelfButtonSize / 2,
-      GetBackButton()->bounds().y() + kShelfButtonSize / 2);
+      GetMirroredRect(GetBackButton()->bounds()).x() + button_size / 2,
+      GetBackButton()->bounds().y() + button_size / 2);
   const gfx::RectF background_bounds(
-      std::min(back_center.x(), circle_center.x()) - kAppListButtonRadius,
-      back_center.y() - kAppListButtonRadius,
-      std::abs(circle_center.x() - back_center.x()) + 2 * kAppListButtonRadius,
-      2 * kAppListButtonRadius);
+      std::min(back_center.x(), circle_center.x()) - app_list_button_radius,
+      back_center.y() - app_list_button_radius,
+      std::abs(circle_center.x() - back_center.x()) +
+          2 * app_list_button_radius,
+      2 * app_list_button_radius);
 
-  canvas->DrawRoundRect(background_bounds, kAppListButtonRadius, flags);
+  canvas->DrawRoundRect(background_bounds, app_list_button_radius, flags);
 }
 
 views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {

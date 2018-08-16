@@ -202,12 +202,13 @@ bool ShelfLayoutManager::IsVisible() const {
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
+  const int shelf_size = ShelfConstants::shelf_size();
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
   gfx::Rect rect(screen_util::GetDisplayBoundsInParent(shelf_window));
   return SelectValueForShelfAlignment(
-      gfx::Rect(rect.x(), rect.bottom() - kShelfSize, rect.width(), kShelfSize),
-      gfx::Rect(rect.x(), rect.y(), kShelfSize, rect.height()),
-      gfx::Rect(rect.right() - kShelfSize, rect.y(), kShelfSize,
+      gfx::Rect(rect.x(), rect.bottom() - shelf_size, rect.width(), shelf_size),
+      gfx::Rect(rect.x(), rect.y(), shelf_size, rect.height()),
+      gfx::Rect(rect.right() - shelf_size, rect.y(), shelf_size,
                 rect.height()));
 }
 
@@ -746,7 +747,7 @@ void ShelfLayoutManager::StopAnimating() {
 
 void ShelfLayoutManager::CalculateTargetBounds(const State& state,
                                                TargetBounds* target_bounds) {
-  int shelf_size = kShelfSize;
+  int shelf_size = ShelfConstants::shelf_size();
   if (state.visibility_state == SHELF_AUTO_HIDE &&
       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
     // Auto-hidden shelf always starts with the default size. If a gesture-drag
@@ -779,9 +780,9 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   gfx::Size status_size(
       shelf_widget_->status_area_widget()->GetWindowBoundsInScreen().size());
   if (shelf_->IsHorizontalAlignment())
-    status_size.set_height(kShelfSize);
+    status_size.set_height(shelf_size);
   else
-    status_size.set_width(kShelfSize);
+    status_size.set_width(shelf_size);
 
   gfx::Point status_origin = SelectValueForShelfAlignment(
       gfx::Point(0, 0),
@@ -856,7 +857,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     // changed since then, e.g. because the tray-menu was shown because of the
     // drag), then allow the drag some resistance-free region at first to make
     // sure the shelf sticks with the finger until the shelf is visible.
-    resistance_free_region = kShelfSize - kShelfAutoHideSize;
+    resistance_free_region = ShelfConstants::shelf_size() - kShelfAutoHideSize;
   }
 
   bool resist = SelectValueForShelfAlignment(
@@ -905,7 +906,8 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       target_bounds->status_bounds_in_shelf.set_x(0);
     } else {
       target_bounds->status_bounds_in_shelf.set_x(
-          target_bounds->shelf_bounds_in_root.width() - kShelfSize);
+          target_bounds->shelf_bounds_in_root.width() -
+          ShelfConstants::shelf_size());
     }
   }
 }
@@ -1345,13 +1347,14 @@ float ShelfLayoutManager::GetAppListBackgroundOpacityOnShelfOpacity() {
   float shelf_opacity = shelf_widget_->GetBackgroundAlphaValue(
                             shelf_background_type_before_drag_) /
                         static_cast<float>(ShelfBackgroundAnimator::kMaxAlpha);
-  if (launcher_above_shelf_bottom_amount_ < kShelfSize)
+  const int shelf_size = ShelfConstants::shelf_size();
+  if (launcher_above_shelf_bottom_amount_ < shelf_size)
     return shelf_opacity;
   float launcher_above_shelf_amount =
-      std::max(0.f, launcher_above_shelf_bottom_amount_ - kShelfSize);
+      std::max(0.f, launcher_above_shelf_bottom_amount_ - shelf_size);
   float coefficient =
       std::min(launcher_above_shelf_amount /
-                   (app_list::AppListView::kNumOfShelfSize * kShelfSize),
+                   (app_list::AppListView::kNumOfShelfSize * shelf_size),
                1.0f);
   float app_list_view_opacity =
       is_background_blur_enabled_

@@ -70,6 +70,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
 
+  const int shelf_size = ShelfConstants::shelf_size();
   mojom::VoiceInteractionObserverPtr ptr;
   voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
   Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
@@ -78,7 +79,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
-  SetSize(gfx::Size(kShelfSize, kShelfSize));
+  SetSize(gfx::Size(shelf_size, shelf_size));
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
   set_notify_action(Button::NOTIFY_ON_PRESS);
 
@@ -200,10 +201,11 @@ void AppListButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
     const {
+  const int app_list_button_radius = ShelfConstants::app_list_button_radius();
   gfx::Point center = GetCenterPoint();
-  gfx::Rect bounds(center.x() - kAppListButtonRadius,
-                   center.y() - kAppListButtonRadius, 2 * kAppListButtonRadius,
-                   2 * kAppListButtonRadius);
+  gfx::Rect bounds(center.x() - app_list_button_radius,
+                   center.y() - app_list_button_radius,
+                   2 * app_list_button_radius, 2 * app_list_button_radius);
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetLocalBounds().InsetsFrom(bounds),
       GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
@@ -232,8 +234,8 @@ std::unique_ptr<views::InkDrop> AppListButton::CreateInkDrop() {
 }
 
 std::unique_ptr<views::InkDropMask> AppListButton::CreateInkDropMask() const {
-  return std::make_unique<views::CircleInkDropMask>(size(), GetCenterPoint(),
-                                                    kAppListButtonRadius);
+  return std::make_unique<views::CircleInkDropMask>(
+      size(), GetCenterPoint(), ShelfConstants::app_list_button_radius());
 }
 
 void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
