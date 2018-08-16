@@ -121,6 +121,7 @@ cvox.OptionsPage.init = function() {
         if (!enable) {
           $('developerDescription').hidden = true;
           $('developerSpeechLogging').hidden = true;
+          $('developerEarconLogging').hidden = true;
           $('developerEventStream').hidden = true;
           return;
         }

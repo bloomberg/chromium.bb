@@ -72,6 +72,7 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   // should just store in local storage.
   'currentKeyMap': cvox.KeyMap.DEFAULT_KEYMAP,
   'cvoxKey': '',
+  'enableEarconLogging': true,
   'enableSpeechLogging': true,
   'earcons': true,
   'enableEventStreamLogging': false,
