@@ -19,6 +19,10 @@ struct PasswordForm;
 class AutofillClient;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace password_manager {
 class PasswordManagerClient;
 class PasswordStore;
@@ -90,6 +94,12 @@ void UserTriggeredManualGenerationFromContextMenu(
 void CleanBlacklistedCredentials(password_manager::PasswordStore* store,
                                  PrefService* prefs,
                                  int delay_in_seconds);
+
+// Report metrics about HTTP to HTTPS migration process. This function cannot be
+// used on iOS platform because the HSTS query is not supported.
+void ReportHttpMigrationMetrics(
+    scoped_refptr<password_manager::PasswordStore> store,
+    scoped_refptr<net::URLRequestContextGetter> request_context);
 
 // Given all non-blacklisted |matches|, finds and populates
 // |best_matches_|, |preferred_match_| and |non_best_matches_| accordingly.

@@ -5,15 +5,18 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 
 #include <algorithm>
-#include <set>
 #include <string>
+#include <utility>
 
+#include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -116,7 +119,136 @@ bool IsBetterMatch(const PasswordForm* lhs, const PasswordForm* rhs) {
          std::make_pair(!rhs->is_public_suffix_match, rhs->preferred);
 }
 
+// This class is responsible for reporting metrics about HTTP to HTTPS
+// migration.
+class HttpMetricsMigrationReporter
+    : public password_manager::PasswordStoreConsumer {
+ public:
+  HttpMetricsMigrationReporter(
+      password_manager::PasswordStore* store,
+      scoped_refptr<net::URLRequestContextGetter> request_context)
+      : request_context_(std::move(request_context)) {
+    store->GetAutofillableLogins(this);
+  }
+
+ private:
+  // This type define a subset of PasswordForm where first argument is the host
+  // and the second argument is the username of the form.
+  typedef std::pair<std::string, base::string16> FormKey;
+
+  // This overrides the PasswordStoreConsumer method.
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+
+  void OnHSTSQueryResult(FormKey key,
+                         base::string16 password_value,
+                         bool is_hsts);
+
+  void ReportMetrics();
+
+  std::map<FormKey, base::flat_set<base::string16>> https_credentials_map_;
+  const scoped_refptr<net::URLRequestContextGetter> request_context_;
+  size_t processed_results_ = 0;
+
+  // The next three counters are in pairs where [0] component means that HSTS is
+  // not enabled and [1] component means that HSTS is enabled for that HTTP type
+  // of credentials.
+
+  // Number of HTTP credentials for which no HTTPS credential for the same
+  // username exists.
+  size_t https_credential_not_found_[2] = {0, 0};
+
+  // Number of HTTP credentials for which an equivalent (i.e. same host,
+  // username and password) HTTPS credential exists.
+  size_t same_password_[2] = {0, 0};
+
+  // Number of HTTP credentials for which a conflicting (i.e. same host and
+  // username, but different password) HTTPS credential exists.
+  size_t different_password_[2] = {0, 0};
+
+  // Number of HTTP credentials from the Password Store.
+  size_t total_http_credentials_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(HttpMetricsMigrationReporter);
+};
+
+void HttpMetricsMigrationReporter::OnGetPasswordStoreResults(
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  for (auto& form : results) {
+    FormKey form_key({form->origin.host(), form->username_value});
+    if (form->origin.SchemeIs(url::kHttpScheme)) {
+      password_manager::PostHSTSQueryForHostAndRequestContext(
+          form->origin, request_context_,
+          base::Bind(&HttpMetricsMigrationReporter::OnHSTSQueryResult,
+                     base::Unretained(this), form_key, form->password_value));
+      ++total_http_credentials_;
+    } else if (form->origin.SchemeIs(url::kHttpsScheme)) {
+      https_credentials_map_[form_key].insert(form->password_value);
+    }
+  }
+  ReportMetrics();
+}
+
+// |key| and |password_value| was created from the same form.
+void HttpMetricsMigrationReporter::OnHSTSQueryResult(
+    FormKey key,
+    base::string16 password_value,
+    bool is_hsts) {
+  ++processed_results_;
+  base::ScopedClosureRunner report(base::BindOnce(
+      &HttpMetricsMigrationReporter::ReportMetrics, base::Unretained(this)));
+  auto user_it = https_credentials_map_.find(key);
+  if (user_it == https_credentials_map_.end()) {
+    // Credentials are not migrated yet.
+    ++https_credential_not_found_[is_hsts];
+    return;
+  }
+  if (base::ContainsKey(user_it->second, password_value)) {
+    // The password store contains the same credentials (username and
+    // password) on HTTP version of the form.
+    ++same_password_[is_hsts];
+  } else {
+    ++different_password_[is_hsts];
+  }
+}
+
+void HttpMetricsMigrationReporter::ReportMetrics() {
+  // The metrics have to be recorded after all requests are done.
+  if (processed_results_ != total_http_credentials_)
+    return;
+
+  for (bool is_hsts_enabled : {false, true}) {
+    std::string suffix = (is_hsts_enabled ? std::string("WithHSTSEnabled")
+                                          : std::string("HSTSNotEnabled"));
+
+    base::UmaHistogramCounts1000(
+        "PasswordManager.HttpCredentialsWithEquivalentHttpsCredential." +
+            suffix,
+        same_password_[is_hsts_enabled]);
+
+    base::UmaHistogramCounts1000(
+        "PasswordManager.HttpCredentialsWithConflictingHttpsCredential." +
+            suffix,
+        different_password_[is_hsts_enabled]);
+
+    base::UmaHistogramCounts1000(
+        "PasswordManager.HttpCredentialsWithoutMatchingHttpsCredential." +
+            suffix,
+        https_credential_not_found_[is_hsts_enabled]);
+  }
+  delete this;
+}
+
 }  // namespace
+
+#if !defined(OS_IOS)
+void ReportHttpMigrationMetrics(
+    scoped_refptr<password_manager::PasswordStore> store,
+    scoped_refptr<net::URLRequestContextGetter> request_context) {
+  // The object will delete itself once the metrics are recorded.
+  new HttpMetricsMigrationReporter(store.get(), std::move(request_context));
+}
+#endif  // !defined(OS_IOS)
 
 // Update |credential| to reflect usage.
 void UpdateMetadataForUsage(PasswordForm* credential) {

@@ -282,6 +282,11 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
   password_manager_util::CleanBlacklistedCredentials(ps.get(),
                                                      profile->GetPrefs(), 60);
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&password_manager_util::ReportHttpMigrationMetrics, ps,
+                     base::WrapRefCounted(profile->GetRequestContext())),
+      base::TimeDelta::FromSeconds(60));
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
