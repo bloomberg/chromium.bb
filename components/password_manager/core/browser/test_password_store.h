@@ -35,6 +35,8 @@ class TestPasswordStore : public PasswordStore {
   // have entries of size 0.
   bool IsEmpty() const;
 
+  int fill_matching_logins_calls() const { return fill_matching_logins_calls_; }
+
  protected:
   ~TestPasswordStore() override;
 
@@ -85,6 +87,9 @@ class TestPasswordStore : public PasswordStore {
 
  private:
   PasswordMap stored_passwords_;
+
+  // Number of calls of FillMatchingLogins() method.
+  int fill_matching_logins_calls_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestPasswordStore);
 };

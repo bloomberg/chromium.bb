@@ -669,6 +669,10 @@ void PasswordManager::CreatePendingLoginManagers(
     if (base::EndsWith(iter->signon_realm, kSpdyProxyRealm,
                        base::CompareCase::SENSITIVE))
       continue;
+
+    if (iter->is_gaia_with_skip_save_password_form)
+      continue;
+
     bool old_manager_found = false;
     for (const auto& old_manager : pending_login_managers_) {
       if (old_manager->DoesManage(*iter, driver) !=
@@ -718,6 +722,8 @@ void PasswordManager::CreateFormManagers(
   // Find new forms.
   std::vector<const PasswordForm*> new_forms;
   for (const PasswordForm& form : forms) {
+    if (form.is_gaia_with_skip_save_password_form)
+      continue;
     auto form_it =
         std::find_if(form_managers_.begin(), form_managers_.end(),
                      [&form, driver](const auto& form_manager) {

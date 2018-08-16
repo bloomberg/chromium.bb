@@ -844,6 +844,13 @@ bool GetPasswordForm(
   return true;
 }
 
+bool HasGaiaSchemeAndHost(const WebFormElement& form) {
+  GURL form_url = form.GetDocument().Url();
+  GURL gaia_url = GaiaUrls::GetInstance()->gaia_url();
+  return form_url.scheme() == gaia_url.scheme() &&
+         form_url.host() == gaia_url.host();
+}
+
 }  // namespace
 
 AutocompleteFlag AutocompleteFlagForElement(const WebInputElement& element) {
@@ -864,10 +871,8 @@ re2::RE2* CreateMatcher(void* instance, const char* pattern) {
 }
 
 bool IsGaiaReauthenticationForm(const blink::WebFormElement& form) {
-  if (GURL(form.GetDocument().Url()).GetOrigin() !=
-      GaiaUrls::GetInstance()->gaia_url().GetOrigin()) {
+  if (!HasGaiaSchemeAndHost(form))
     return false;
-  }
 
   bool has_rart_field = false;
   bool has_continue_field = false;
@@ -895,16 +900,14 @@ bool IsGaiaReauthenticationForm(const blink::WebFormElement& form) {
       has_continue_field = true;
     }
   }
-
   return has_rart_field && has_continue_field;
 }
 
 bool IsGaiaWithSkipSavePasswordForm(const blink::WebFormElement& form) {
-  GURL url(form.GetDocument().Url());
-  if (url.GetOrigin() != GaiaUrls::GetInstance()->gaia_url().GetOrigin()) {
+  if (!HasGaiaSchemeAndHost(form))
     return false;
-  }
 
+  GURL url(form.GetDocument().Url());
   std::string should_skip_password;
   if (!net::GetValueForKeyInQuery(url, "ssp", &should_skip_password))
     return false;
