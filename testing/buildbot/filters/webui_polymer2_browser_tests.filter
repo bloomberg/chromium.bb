@@ -317,6 +317,7 @@ PrintPreviewPagesSettingsTest.*
 PrintPreviewPreviewGenerationTest.*
 PrintPreviewPrintButtonTest.*
 PrintPreviewRestoreStateTest.*
+PrintPreviewSelectBehaviorTest.*
 PrintPreviewSettingsSectionsTest.*
 PrintPreviewSettingsSelectTest.*
 PrintPreviewSystemDialogBrowserTest.*

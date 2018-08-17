@@ -13,7 +13,8 @@
     <print-preview-settings-section>
       <span id="margins-label" slot="title">$i18n{marginsLabel}</span>
       <div slot="controls">
-        <select aria-labelledby="margins-label" disabled$="[[disabled]]">
+        <select aria-labelledby="margins-label" disabled$="[[disabled]]"
+            value="{{selectedValue::change}}">
           <!-- The order of these options must match the natural order of their
           values, which come from
           print_preview.ticket_items.MarginsTypeValue. -->

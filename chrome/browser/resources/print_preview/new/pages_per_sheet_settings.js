@@ -14,11 +14,11 @@ Polymer({
   observers: ['onPagesPerSheetSettingChange_(settings.pagesPerSheet.value)'],
 
   /**
-   * @param {*} value The new value of the pages per sheet setting.
+   * @param {*} newValue The new value of the pages per sheet setting.
    * @private
    */
-  onPagesPerSheetSettingChange_: function(value) {
-    this.$$('select').value = /** @type {number} */ (value).toString();
+  onPagesPerSheetSettingChange_: function(newValue) {
+    this.selectedValue = /** @type {number} */ (newValue).toString();
   },
 
   /** @param {string} value The new select value. */

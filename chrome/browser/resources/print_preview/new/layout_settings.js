@@ -14,12 +14,12 @@ Polymer({
   observers: ['onLayoutSettingChange_(settings.layout.value)'],
 
   /**
-   * @param {*} value The new value of the layout setting.
+   * @param {*} newValue The new value of the layout setting.
    * @private
    */
-  onLayoutSettingChange_: function(value) {
-    this.$$('select').value =
-        /** @type {boolean} */ (value) ? 'landscape' : 'portrait';
+  onLayoutSettingChange_: function(newValue) {
+    this.selectedValue =
+        /** @type {boolean} */ (newValue) ? 'landscape' : 'portrait';
   },
 
   /** @param {string} value The new select value. */

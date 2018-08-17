@@ -26,13 +26,6 @@ Polymer({
     settingName: String,
 
     disabled: Boolean,
-
-    /** @private {string} */
-    selectedValue_: {
-      type: String,
-      notify: true,
-      value: '',
-    },
   },
 
   /**
@@ -41,13 +34,13 @@ Polymer({
    * @private
    */
   isSelected_: function(option) {
-    return this.getValue_(option) == this.selectedValue_ ||
-        (!!option.is_default && this.selectedValue_ == '');
+    return this.getValue_(option) == this.selectedValue ||
+        (!!option.is_default && this.selectedValue == '');
   },
 
   /** @param {string} value The value to select. */
   selectValue: function(value) {
-    this.selectedValue_ = value;
+    this.selectedValue = value;
   },
 
   /**

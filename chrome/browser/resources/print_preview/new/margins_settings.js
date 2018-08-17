@@ -14,11 +14,13 @@ Polymer({
   observers: ['onMarginsSettingChange_(settings.margins.value)'],
 
   /**
-   * @param {*} value The new value of the margins setting.
+   * @param {*} newValue The new value of the margins setting.
    * @private
    */
-  onMarginsSettingChange_: function(value) {
-    this.$$('select').value = /** @type {string} */ (value).toString();
+  onMarginsSettingChange_: function(newValue) {
+    this.selectedValue =
+        /** @type {!print_preview.ticket_items.MarginsTypeValue} */ (newValue)
+            .toString();
   },
 
   /** @param {string} value The new select value. */

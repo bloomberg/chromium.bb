@@ -10,9 +10,9 @@
   <template>
     <style include="print-preview-shared select">
     </style>
-    <select disabled$="[[disabled]]">
+    <select disabled$="[[disabled]]" value="{{selectedValue::change}}">
       <template is="dom-repeat" items="[[capability.option]]">
-        <option selected="[[isSelected_(item, selectedValue_)]]"
+        <option selected="[[isSelected_(item, selectedValue)]]"
             value="[[getValue_(item)]]">
           [[getDisplayName_(item)]]
         </option>
