@@ -173,6 +173,11 @@ class WebContentsTextObserver : public content::WebContentsObserver {
       return;
     }
 
+    if (!range.IsValid()) {
+      [self updateTextSelection:base::string16() range:gfx::Range() offset:0];
+      return;
+    }
+
     text_.reset([base::SysUTF16ToNSString(text) retain]);
     selectionRange_ =
         NSMakeRange(range.start() - offset, range.end() - range.start());
@@ -270,10 +275,8 @@ class WebContentsTextObserver : public content::WebContentsObserver {
       webContents_->GetTopLevelRenderWidgetHostView()->GetSelectedRange();
   const size_t offset = webContents_->GetTopLevelRenderWidgetHostView()
                             ->GetOffsetForSurroundingText();
-  if (range.IsValid())
-    [self updateTextSelection:text range:range offset:offset];
-  else
-    [self updateTextSelection:base::string16() range:gfx::Range() offset:0];
+
+  [self updateTextSelection:text range:range offset:offset];
 }
 
 - (content::WebContents*)webContents {
