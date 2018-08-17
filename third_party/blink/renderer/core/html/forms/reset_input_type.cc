@@ -51,11 +51,11 @@ bool ResetInputType::SupportsValidation() const {
   return false;
 }
 
-void ResetInputType::HandleDOMActivateEvent(Event* event) {
+void ResetInputType::HandleDOMActivateEvent(Event& event) {
   if (GetElement().IsDisabledFormControl() || !GetElement().Form())
     return;
   GetElement().Form()->reset();
-  event->SetDefaultHandled();
+  event.SetDefaultHandled();
 }
 
 String ResetInputType::DefaultLabel() const {

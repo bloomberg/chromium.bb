@@ -113,12 +113,12 @@ String DateTimeNumericFieldElement::FormatValue(int value) const {
 }
 
 void DateTimeNumericFieldElement::HandleKeyboardEvent(
-    KeyboardEvent* keyboard_event) {
+    KeyboardEvent& keyboard_event) {
   DCHECK(!IsDisabled());
-  if (keyboard_event->type() != EventTypeNames::keypress)
+  if (keyboard_event.type() != EventTypeNames::keypress)
     return;
 
-  UChar char_code = static_cast<UChar>(keyboard_event->charCode());
+  UChar char_code = static_cast<UChar>(keyboard_event.charCode());
   String number =
       LocaleForOwner().ConvertFromLocalizedNumber(String(&char_code, 1));
   const int digit = number[0] - '0';
@@ -147,7 +147,7 @@ void DateTimeNumericFieldElement::HandleKeyboardEvent(
       new_value * 10 > range_.maximum)
     FocusOnNextField();
 
-  keyboard_event->SetDefaultHandled();
+  keyboard_event.SetDefaultHandled();
 }
 
 bool DateTimeNumericFieldElement::HasValue() const {

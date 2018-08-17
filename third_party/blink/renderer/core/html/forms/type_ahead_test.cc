@@ -51,7 +51,7 @@ TEST_F(TypeAheadTest, HasActiveSessionAtStart) {
       WebInputEvent::kChar, 0,
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(500));
   web_event.text[0] = ' ';
-  KeyboardEvent* event = KeyboardEvent::Create(web_event, nullptr);
+  auto& event = *KeyboardEvent::Create(web_event, nullptr);
 
   EXPECT_FALSE(type_ahead_.HasActiveSession(event));
 }
@@ -62,7 +62,7 @@ TEST_F(TypeAheadTest, HasActiveSessionAfterHandleEvent) {
         WebInputEvent::kChar, 0,
         base::TimeTicks() + base::TimeDelta::FromMilliseconds(500));
     web_event.text[0] = ' ';
-    KeyboardEvent* event = KeyboardEvent::Create(web_event, nullptr);
+    auto& event = *KeyboardEvent::Create(web_event, nullptr);
     type_ahead_.HandleEvent(
         event, TypeAhead::kMatchPrefix | TypeAhead::kCycleFirstChar);
 
@@ -76,7 +76,7 @@ TEST_F(TypeAheadTest, HasActiveSessionAfterHandleEvent) {
         WebInputEvent::kChar, 0,
         base::TimeTicks() + base::TimeDelta::FromMilliseconds(1500));
     web_event.text[0] = ' ';
-    KeyboardEvent* event = KeyboardEvent::Create(web_event, nullptr);
+    auto& event = *KeyboardEvent::Create(web_event, nullptr);
     EXPECT_TRUE(type_ahead_.HasActiveSession(event));
   }
 
@@ -86,7 +86,7 @@ TEST_F(TypeAheadTest, HasActiveSessionAfterHandleEvent) {
         WebInputEvent::kChar, 0,
         base::TimeTicks() + base::TimeDelta::FromMilliseconds(1501));
     web_event.text[0] = ' ';
-    KeyboardEvent* event = KeyboardEvent::Create(web_event, nullptr);
+    auto& event = *KeyboardEvent::Create(web_event, nullptr);
     EXPECT_FALSE(type_ahead_.HasActiveSession(event));
   }
 }
@@ -96,7 +96,7 @@ TEST_F(TypeAheadTest, HasActiveSessionAfterResetSession) {
       WebInputEvent::kChar, 0,
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(500));
   web_event.text[0] = ' ';
-  KeyboardEvent* event = KeyboardEvent::Create(web_event, nullptr);
+  auto& event = *KeyboardEvent::Create(web_event, nullptr);
   type_ahead_.HandleEvent(event,
                           TypeAhead::kMatchPrefix | TypeAhead::kCycleFirstChar);
 

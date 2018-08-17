@@ -61,12 +61,12 @@ bool SubmitInputType::SupportsRequired() const {
   return false;
 }
 
-void SubmitInputType::HandleDOMActivateEvent(Event* event) {
+void SubmitInputType::HandleDOMActivateEvent(Event& event) {
   if (GetElement().IsDisabledFormControl() || !GetElement().Form())
     return;
   GetElement().Form()->PrepareForSubmission(
       event, &GetElement());  // Event handlers can run.
-  event->SetDefaultHandled();
+  event.SetDefaultHandled();
 }
 
 bool SubmitInputType::CanBeSuccessfulSubmitButton() {

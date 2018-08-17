@@ -62,7 +62,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
 
   ~TextControlElement() override;
 
-  void ForwardEvent(Event*);
+  void ForwardEvent(Event&);
 
   void SetFocused(bool, WebFocusType) override;
 

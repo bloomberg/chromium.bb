@@ -401,8 +401,8 @@ void MultipleFieldsTemporalInputTypeView::DestroyShadowSubtree() {
   is_destroying_shadow_subtree_ = false;
 }
 
-void MultipleFieldsTemporalInputTypeView::HandleClickEvent(MouseEvent* event) {
-  if (!event->isTrusted()) {
+void MultipleFieldsTemporalInputTypeView::HandleClickEvent(MouseEvent& event) {
+  if (!event.isTrusted()) {
     UseCounter::Count(GetElement().GetDocument(),
                       WebFeature::kTemporalInputTypeIgnoreUntrustedClick);
   }
@@ -426,15 +426,15 @@ void MultipleFieldsTemporalInputTypeView::HandleFocusInEvent(
   }
 }
 
-void MultipleFieldsTemporalInputTypeView::ForwardEvent(Event* event) {
+void MultipleFieldsTemporalInputTypeView::ForwardEvent(Event& event) {
   if (SpinButtonElement* element = GetSpinButtonElement()) {
     element->ForwardEvent(event);
-    if (event->DefaultHandled())
+    if (event.DefaultHandled())
       return;
   }
 
   if (DateTimeEditElement* edit = GetDateTimeEditElement())
-    edit->DefaultEventHandler(*event);
+    edit->DefaultEventHandler(event);
 }
 
 void MultipleFieldsTemporalInputTypeView::DisabledAttributeChanged() {
@@ -449,16 +449,16 @@ void MultipleFieldsTemporalInputTypeView::RequiredAttributeChanged() {
 }
 
 void MultipleFieldsTemporalInputTypeView::HandleKeydownEvent(
-    KeyboardEvent* event) {
+    KeyboardEvent& event) {
   if (!GetElement().IsFocused())
     return;
   if (picker_indicator_is_visible_ &&
-      ((event->key() == "ArrowDown" && event->getModifierState("Alt")) ||
+      ((event.key() == "ArrowDown" && event.getModifierState("Alt")) ||
        (LayoutTheme::GetTheme().ShouldOpenPickerWithF4Key() &&
-        event->key() == "F4"))) {
+        event.key() == "F4"))) {
     if (PickerIndicatorElement* element = GetPickerIndicatorElement())
       element->OpenPopup();
-    event->SetDefaultHandled();
+    event.SetDefaultHandled();
   } else {
     ForwardEvent(event);
   }

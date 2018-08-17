@@ -52,7 +52,7 @@ class TextFieldInputType : public InputType,
   TextFieldInputType(HTMLInputElement&);
   ~TextFieldInputType() override;
   bool CanSetSuggestedValue() override;
-  void HandleKeydownEvent(KeyboardEvent*) override;
+  void HandleKeydownEvent(KeyboardEvent&) override;
 
   void CreateShadowSubtree() override;
   void DestroyShadowSubtree() override;
@@ -73,7 +73,7 @@ class TextFieldInputType : public InputType,
   virtual String ConvertFromVisibleValue(const String&) const;
   virtual void DidSetValueByUserEdit();
 
-  void HandleKeydownEventForSpinButton(KeyboardEvent*);
+  void HandleKeydownEventForSpinButton(KeyboardEvent&);
   bool ShouldHaveSpinButton() const;
   Element* ContainerElement() const;
 
@@ -83,9 +83,9 @@ class TextFieldInputType : public InputType,
   bool MayTriggerVirtualKeyboard() const final;
   bool IsTextField() const final;
   bool ValueMissing(const String&) const override;
-  void HandleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) override;
-  void ForwardEvent(Event*) final;
-  bool ShouldSubmitImplicitly(Event*) final;
+  void HandleBeforeTextInsertedEvent(BeforeTextInsertedEvent&) override;
+  void ForwardEvent(Event&) final;
+  bool ShouldSubmitImplicitly(const Event&) final;
   bool ShouldRespectListAttribute() override;
   void ListAttributeTargetChanged() override;
   void UpdatePlaceholderText() final;

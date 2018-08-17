@@ -51,12 +51,13 @@ static String StripLeadingWhiteSpace(const String& string) {
   return string.Substring(i, length - i);
 }
 
-int TypeAhead::HandleEvent(KeyboardEvent* event, MatchModeFlags match_mode) {
+int TypeAhead::HandleEvent(const KeyboardEvent& event,
+                           MatchModeFlags match_mode) {
   if (last_type_time_) {
-    if (event->PlatformTimeStamp() < *last_type_time_)
+    if (event.PlatformTimeStamp() < *last_type_time_)
       return -1;
 
-    if (event->PlatformTimeStamp() - *last_type_time_ > kTypeAheadTimeout)
+    if (event.PlatformTimeStamp() - *last_type_time_ > kTypeAheadTimeout)
       buffer_.Clear();
   } else {
     // If |last_type_time_| is null, there should be no type ahead session in
@@ -64,9 +65,9 @@ int TypeAhead::HandleEvent(KeyboardEvent* event, MatchModeFlags match_mode) {
     // empty.
     DCHECK(buffer_.IsEmpty());
   }
-  last_type_time_ = event->PlatformTimeStamp();
+  last_type_time_ = event.PlatformTimeStamp();
 
-  UChar c = event->charCode();
+  UChar c = event.charCode();
   buffer_.Append(c);
 
   int option_count = data_source_->OptionCount();
@@ -119,10 +120,10 @@ int TypeAhead::HandleEvent(KeyboardEvent* event, MatchModeFlags match_mode) {
   return -1;
 }
 
-bool TypeAhead::HasActiveSession(KeyboardEvent* event) {
+bool TypeAhead::HasActiveSession(const KeyboardEvent& event) {
   if (!last_type_time_)
     return false;
-  TimeDelta delta = event->PlatformTimeStamp() - *last_type_time_;
+  TimeDelta delta = event.PlatformTimeStamp() - *last_type_time_;
   return delta <= kTypeAheadTimeout;
 }
 

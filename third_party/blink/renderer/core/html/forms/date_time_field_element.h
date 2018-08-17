@@ -83,7 +83,7 @@ class DateTimeFieldElement : public HTMLSpanElement {
  protected:
   DateTimeFieldElement(Document&, FieldOwner&);
   void FocusOnNextField();
-  virtual void HandleKeyboardEvent(KeyboardEvent*) = 0;
+  virtual void HandleKeyboardEvent(KeyboardEvent&) = 0;
   void Initialize(const AtomicString& pseudo,
                   const String& ax_help_text,
                   int ax_minimum,
@@ -98,7 +98,7 @@ class DateTimeFieldElement : public HTMLSpanElement {
   void SetFocused(bool, WebFocusType) override;
 
  private:
-  void DefaultKeyboardEventHandler(KeyboardEvent*);
+  void DefaultKeyboardEventHandler(KeyboardEvent&);
   bool IsDateTimeFieldElement() const final;
   bool IsFieldOwnerDisabled() const;
   bool IsFieldOwnerReadOnly() const;

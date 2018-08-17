@@ -65,8 +65,8 @@ String RadioInputType::ValueMissingText() const {
       WebLocalizedString::kValidationValueMissingForRadio);
 }
 
-void RadioInputType::HandleClickEvent(MouseEvent* event) {
-  event->SetDefaultHandled();
+void RadioInputType::HandleClickEvent(MouseEvent& event) {
+  event.SetDefaultHandled();
 }
 
 HTMLInputElement* RadioInputType::FindNextFocusableRadioButtonInGroup(
@@ -82,19 +82,19 @@ HTMLInputElement* RadioInputType::FindNextFocusableRadioButtonInGroup(
   return nullptr;
 }
 
-void RadioInputType::HandleKeydownEvent(KeyboardEvent* event) {
+void RadioInputType::HandleKeydownEvent(KeyboardEvent& event) {
   // TODO(tkent): We should return more earlier.
   if (!GetElement().GetLayoutObject())
     return;
   BaseCheckableInputType::HandleKeydownEvent(event);
-  if (event->DefaultHandled())
+  if (event.DefaultHandled())
     return;
-  const String& key = event->key();
+  const String& key = event.key();
   if (key != "ArrowUp" && key != "ArrowDown" && key != "ArrowLeft" &&
       key != "ArrowRight")
     return;
 
-  if (event->ctrlKey() || event->metaKey() || event->altKey())
+  if (event.ctrlKey() || event.metaKey() || event.altKey())
     return;
 
   // Left and up mean "previous radio button".
@@ -132,15 +132,14 @@ void RadioInputType::HandleKeydownEvent(KeyboardEvent* event) {
     document.SetFocusedElement(input_element,
                                FocusParams(SelectionBehaviorOnFocus::kRestore,
                                            kWebFocusTypeNone, nullptr));
-    input_element->DispatchSimulatedClick(event, kSendNoEvents);
-    event->SetDefaultHandled();
+    input_element->DispatchSimulatedClick(&event, kSendNoEvents);
+    event.SetDefaultHandled();
     return;
   }
 }
 
-void RadioInputType::HandleKeyupEvent(KeyboardEvent* event) {
-  const String& key = event->key();
-  if (key != " ")
+void RadioInputType::HandleKeyupEvent(KeyboardEvent& event) {
+  if (event.key() != " ")
     return;
   // If an unselected radio is tabbed into (because the entire group has nothing
   // checked, or because of some explicit .focus() call), then allow space to

@@ -52,7 +52,7 @@ class ImageInputType final : public BaseButtonInputType {
   String ResultForDialogSubmit() const override;
   bool SupportsValidation() const override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&) const override;
-  void HandleDOMActivateEvent(Event*) override;
+  void HandleDOMActivateEvent(Event&) override;
   void AltAttributeChanged() override;
   void SrcAttributeChanged() override;
   void ValueAttributeChanged() override;

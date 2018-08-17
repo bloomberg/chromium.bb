@@ -127,11 +127,11 @@ void TextControlElement::DefaultEventHandler(Event& event) {
   HTMLFormControlElementWithState::DefaultEventHandler(event);
 }
 
-void TextControlElement::ForwardEvent(Event* event) {
-  if (event->type() == EventTypeNames::blur ||
-      event->type() == EventTypeNames::focus)
+void TextControlElement::ForwardEvent(Event& event) {
+  if (event.type() == EventTypeNames::blur ||
+      event.type() == EventTypeNames::focus)
     return;
-  InnerEditorElement()->DefaultEventHandler(*event);
+  InnerEditorElement()->DefaultEventHandler(event);
 }
 
 String TextControlElement::StrippedPlaceholder() const {

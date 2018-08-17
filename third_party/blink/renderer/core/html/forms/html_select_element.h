@@ -219,7 +219,7 @@ class CORE_EXPORT HTMLSelectElement final
   void RecalcListItems() const;
   enum ResetReason { kResetReasonSelectedOptionRemoved, kResetReasonOthers };
   void ResetToDefaultSelection(ResetReason = kResetReasonOthers);
-  void TypeAheadFind(KeyboardEvent*);
+  void TypeAheadFind(const KeyboardEvent&);
   void SaveLastSelection();
   void SaveListboxActiveSelection();
   // Returns the first selected OPTION, or nullptr.
@@ -244,11 +244,11 @@ class CORE_EXPORT HTMLSelectElement final
   void ParseMultipleAttribute(const AtomicString&);
   HTMLOptionElement* LastSelectedOption() const;
   void UpdateSelectedState(HTMLOptionElement*, bool multi, bool shift);
-  void MenuListDefaultEventHandler(Event*);
-  void HandlePopupOpenKeyboardEvent(Event*);
-  bool ShouldOpenPopupForKeyDownEvent(KeyboardEvent*);
-  bool ShouldOpenPopupForKeyPressEvent(KeyboardEvent*);
-  void ListBoxDefaultEventHandler(Event*);
+  void MenuListDefaultEventHandler(Event&);
+  void HandlePopupOpenKeyboardEvent(Event&);
+  bool ShouldOpenPopupForKeyDownEvent(const KeyboardEvent&);
+  bool ShouldOpenPopupForKeyPressEvent(const KeyboardEvent&);
+  void ListBoxDefaultEventHandler(Event&);
   void SetOptionsChangedOnLayoutObject();
   size_t SearchOptionsForValue(const String&,
                                size_t list_index_start,

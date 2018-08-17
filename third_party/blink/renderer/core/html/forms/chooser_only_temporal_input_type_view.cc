@@ -58,7 +58,7 @@ void ChooserOnlyTemporalInputTypeView::Trace(blink::Visitor* visitor) {
   DateTimeChooserClient::Trace(visitor);
 }
 
-void ChooserOnlyTemporalInputTypeView::HandleDOMActivateEvent(Event* event) {
+void ChooserOnlyTemporalInputTypeView::HandleDOMActivateEvent(Event& event) {
   Document& document = GetElement().GetDocument();
   if (GetElement().IsDisabledOrReadOnly() || !GetElement().GetLayoutObject() ||
       !Frame::HasTransientUserActivation(document.GetFrame()) ||
@@ -74,7 +74,7 @@ void ChooserOnlyTemporalInputTypeView::HandleDOMActivateEvent(Event* event) {
     return;
   UseCounter::Count(
       document,
-      (event->UnderlyingEvent() && event->UnderlyingEvent()->isTrusted())
+      (event.UnderlyingEvent() && event.UnderlyingEvent()->isTrusted())
           ? WebFeature::kTemporalInputTypeChooserByTrustedClick
           : WebFeature::kTemporalInputTypeChooserByUntrustedClick);
   date_time_chooser_ =

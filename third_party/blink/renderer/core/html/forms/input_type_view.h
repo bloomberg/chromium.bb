@@ -78,24 +78,24 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
 
   // Event handling functions
 
-  virtual void HandleClickEvent(MouseEvent*);
-  virtual void HandleMouseDownEvent(MouseEvent*);
+  virtual void HandleClickEvent(MouseEvent&);
+  virtual void HandleMouseDownEvent(MouseEvent&);
   virtual ClickHandlingState* WillDispatchClick();
   virtual void DidDispatchClick(Event*, const ClickHandlingState&);
-  virtual void HandleKeydownEvent(KeyboardEvent*);
-  virtual void HandleKeypressEvent(KeyboardEvent*);
-  virtual void HandleKeyupEvent(KeyboardEvent*);
-  virtual void HandleBeforeTextInsertedEvent(BeforeTextInsertedEvent*);
-  virtual void ForwardEvent(Event*);
-  virtual bool ShouldSubmitImplicitly(Event*);
+  virtual void HandleKeydownEvent(KeyboardEvent&);
+  virtual void HandleKeypressEvent(KeyboardEvent&);
+  virtual void HandleKeyupEvent(KeyboardEvent&);
+  virtual void HandleBeforeTextInsertedEvent(BeforeTextInsertedEvent&);
+  virtual void ForwardEvent(Event&);
+  virtual bool ShouldSubmitImplicitly(const Event&);
   virtual HTMLFormElement* FormForSubmission() const;
   virtual bool HasCustomFocusLogic() const;
   virtual void HandleFocusInEvent(Element* old_focused_element, WebFocusType);
   virtual void HandleBlurEvent();
-  virtual void HandleDOMActivateEvent(Event*);
+  virtual void HandleDOMActivateEvent(Event&);
   virtual void AccessKeyAction(bool send_mouse_events);
   virtual void Blur();
-  void DispatchSimulatedClickIfActive(KeyboardEvent*) const;
+  void DispatchSimulatedClickIfActive(KeyboardEvent&) const;
 
   virtual void SubtreeHasChanged();
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&) const;

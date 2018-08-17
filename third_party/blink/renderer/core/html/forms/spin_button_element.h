@@ -72,7 +72,7 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
   bool WillRespondToMouseMoveEvents() override;
   bool WillRespondToMouseClickEvents() override;
 
-  void ForwardEvent(Event*);
+  void ForwardEvent(Event&);
 
   void Trace(blink::Visitor*) override;
 

@@ -266,7 +266,7 @@ void HTMLTextAreaElement::DefaultEventHandler(Event& event) {
   if (GetLayoutObject() && (event.IsMouseEvent() || event.IsDragEvent() ||
                             event.HasInterface(EventNames::WheelEvent) ||
                             event.type() == EventTypeNames::blur)) {
-    ForwardEvent(&event);
+    ForwardEvent(event);
   } else if (GetLayoutObject() && event.IsBeforeTextInsertedEvent()) {
     HandleBeforeTextInsertedEvent(
         static_cast<BeforeTextInsertedEvent*>(&event));

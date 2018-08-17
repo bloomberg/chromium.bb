@@ -65,9 +65,8 @@ void BaseCheckableInputType::AppendToFormData(FormData& form_data) const {
     form_data.AppendFromElement(GetElement().GetName(), GetElement().value());
 }
 
-void BaseCheckableInputType::HandleKeydownEvent(KeyboardEvent* event) {
-  const String& key = event->key();
-  if (key == " ") {
+void BaseCheckableInputType::HandleKeydownEvent(KeyboardEvent& event) {
+  if (event.key() == " ") {
     GetElement().SetActive(true);
     // No setDefaultHandled(), because IE dispatches a keypress in this case
     // and the caller will only dispatch a keypress if we don't call
@@ -75,10 +74,10 @@ void BaseCheckableInputType::HandleKeydownEvent(KeyboardEvent* event) {
   }
 }
 
-void BaseCheckableInputType::HandleKeypressEvent(KeyboardEvent* event) {
-  if (event->charCode() == ' ') {
+void BaseCheckableInputType::HandleKeypressEvent(KeyboardEvent& event) {
+  if (event.charCode() == ' ') {
     // Prevent scrolling down the page.
-    event->SetDefaultHandled();
+    event.SetDefaultHandled();
   }
 }
 

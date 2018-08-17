@@ -74,15 +74,15 @@ float DateTimeSymbolicFieldElement::MaximumWidth(const ComputedStyle& style) {
 }
 
 void DateTimeSymbolicFieldElement::HandleKeyboardEvent(
-    KeyboardEvent* keyboard_event) {
-  if (keyboard_event->type() != EventTypeNames::keypress)
+    KeyboardEvent& keyboard_event) {
+  if (keyboard_event.type() != EventTypeNames::keypress)
     return;
 
-  const UChar char_code = WTF::Unicode::ToLower(keyboard_event->charCode());
+  const UChar char_code = WTF::Unicode::ToLower(keyboard_event.charCode());
   if (char_code < ' ')
     return;
 
-  keyboard_event->SetDefaultHandled();
+  keyboard_event.SetDefaultHandled();
 
   int index = type_ahead_.HandleEvent(
       keyboard_event, TypeAhead::kMatchPrefix | TypeAhead::kCycleFirstChar |

@@ -145,7 +145,7 @@ void ColorInputType::DidSetValue(const String&, bool value_changed) {
     chooser_->SetSelectedColor(ValueAsColor());
 }
 
-void ColorInputType::HandleDOMActivateEvent(Event* event) {
+void ColorInputType::HandleDOMActivateEvent(Event& event) {
   if (GetElement().IsDisabledFormControl())
     return;
 
@@ -157,14 +157,14 @@ void ColorInputType::HandleDOMActivateEvent(Event* event) {
   if (chrome_client && !chooser_) {
     UseCounter::Count(
         document,
-        (event->UnderlyingEvent() && event->UnderlyingEvent()->isTrusted())
+        (event.UnderlyingEvent() && event.UnderlyingEvent()->isTrusted())
             ? WebFeature::kColorInputTypeChooserByTrustedClick
             : WebFeature::kColorInputTypeChooserByUntrustedClick);
     chooser_ = chrome_client->OpenColorChooser(document.GetFrame(), this,
                                                ValueAsColor());
   }
 
-  event->SetDefaultHandled();
+  event.SetDefaultHandled();
 }
 
 void ColorInputType::ClosePopupView() {

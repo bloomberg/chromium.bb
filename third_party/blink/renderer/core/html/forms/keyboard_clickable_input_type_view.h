@@ -43,9 +43,9 @@ class CORE_EXPORT KeyboardClickableInputTypeView : public InputTypeView {
       : InputTypeView(element) {}
 
  protected:
-  void HandleKeydownEvent(KeyboardEvent*) override;
-  void HandleKeypressEvent(KeyboardEvent*) override;
-  void HandleKeyupEvent(KeyboardEvent*) override;
+  void HandleKeydownEvent(KeyboardEvent&) override;
+  void HandleKeypressEvent(KeyboardEvent&) override;
+  void HandleKeyupEvent(KeyboardEvent&) override;
   void AccessKeyAction(bool send_mouse_events) override;
 };
 
