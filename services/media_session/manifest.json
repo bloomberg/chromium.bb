@@ -1,0 +1,19 @@
+{
+  "name": "media_session",
+  "display_name": "Media Session Service",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "app": [
+          "media_session.mojom.AudioFocus"
+        ],
+        "tests": [ "*" ]
+      },
+      "requires": {
+        "service_manager": [
+          "service_manager:all_users"
+        ]
+      }
+    }
+  }
+}
