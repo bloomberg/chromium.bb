@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 
@@ -36,10 +37,6 @@ constexpr base::FilePath::CharType kPreInstalledDemoResourcesComponentPath[] =
     FILE_PATH_LITERAL(
         "/mnt/stateful_partition/unencrypted/demo_mode_resources");
 
-// Can be set in test to override location of preinstalled offline resources
-// component path.
-const base::FilePath* g_pre_installed_demo_resources_path_override = nullptr;
-
 // Path relative to the path at which offline demo resources are loaded that
 // contains image with demo Android apps.
 constexpr base::FilePath::CharType kDemoAppsPath[] =
@@ -49,6 +46,7 @@ constexpr base::FilePath::CharType kExternalExtensionsPrefsPath[] =
     FILE_PATH_LITERAL("demo_extensions.json");
 
 bool IsDemoModeOfflineEnrolled() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(DemoSession::IsDeviceInDemoMode());
   return DemoSession::GetEnrollmentType() ==
          DemoSession::EnrollmentType::kOffline;
@@ -57,20 +55,8 @@ bool IsDemoModeOfflineEnrolled() {
 }  // namespace
 
 // static
-base::FilePath DemoSession::GetPreInstalledDemoResourcesPath() {
-  if (g_pre_installed_demo_resources_path_override)
-    return *g_pre_installed_demo_resources_path_override;
-  return base::FilePath(kPreInstalledDemoResourcesComponentPath);
-}
-
-// static
-void DemoSession::OverridePreInstalledDemoResourcesPathForTesting(
-    base::FilePath* overriden_path) {
-  g_pre_installed_demo_resources_path_override = overriden_path;
-}
-
-// static
 bool DemoSession::IsDeviceInDemoMode() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const EnrollmentType enrollment_type = GetEnrollmentType();
   return enrollment_type != EnrollmentType::kNone &&
          enrollment_type != EnrollmentType::kUnenrolled;
@@ -91,6 +77,7 @@ DemoSession::EnrollmentType DemoSession::GetEnrollmentType() {
 // static
 void DemoSession::SetDemoModeEnrollmentTypeForTesting(
     EnrollmentType enrollment_type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   g_force_enrollment_type = enrollment_type;
 }
 
@@ -180,7 +167,8 @@ void DemoSession::InstalledComponentLoaded(
   chromeos::DBusThreadManager::Get()
       ->GetImageLoaderClient()
       ->LoadComponentAtPath(
-          kDemoResourcesComponentName, GetPreInstalledDemoResourcesPath(),
+          kDemoResourcesComponentName,
+          base::FilePath(kPreInstalledDemoResourcesComponentPath),
           base::BindOnce(&DemoSession::OnOfflineResourcesLoaded,
                          weak_ptr_factory_.GetWeakPtr()));
 }
