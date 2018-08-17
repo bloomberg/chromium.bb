@@ -16,6 +16,8 @@ namespace offline_pages {
 // Data struct for a suggestion of an article to be prefetched.
 struct PrefetchSuggestion {
   PrefetchSuggestion();
+  PrefetchSuggestion(const PrefetchSuggestion&);
+  PrefetchSuggestion(PrefetchSuggestion&&);
   ~PrefetchSuggestion();
 
   // The URL of the suggested article. It acts as a unique key for the
