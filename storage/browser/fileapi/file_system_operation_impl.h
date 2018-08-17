@@ -198,7 +198,6 @@ class STORAGE_EXPORT FileSystemOperationImpl : public FileSystemOperation {
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;
 
-  base::WeakPtr<FileSystemOperationImpl> weak_ptr_;
   base::WeakPtrFactory<FileSystemOperationImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImpl);

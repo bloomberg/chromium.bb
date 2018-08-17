@@ -825,14 +825,12 @@ ExtensionFunction::ResponseAction FileSystemRetainEntryFunction::Run() {
             ->CreateVirtualRootPath(filesystem_id)
             .Append(base::FilePath::FromUTF8Unsafe(filesystem_path)));
 
-    // It is safe to use base::Unretained() for operation_runner(), since it
-    // is owned by |context| which will delete it on the IO thread.
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             base::IgnoreResult(
                 &storage::FileSystemOperationRunner::GetMetadata),
-            base::Unretained(context->operation_runner()), url,
+            context->operation_runner()->AsWeakPtr(), url,
             storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY,
             base::Bind(
                 &PassFileInfoToUIThread,
