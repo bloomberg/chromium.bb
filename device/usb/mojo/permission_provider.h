@@ -5,11 +5,11 @@
 #ifndef DEVICE_USB_MOJO_PERMISSION_PROVIDER_H_
 #define DEVICE_USB_MOJO_PERMISSION_PROVIDER_H_
 
-#include "base/memory/ref_counted.h"
-
 namespace device {
 
-class UsbDevice;
+namespace mojom {
+class UsbDeviceInfo;
+}
 
 namespace usb {
 
@@ -21,7 +21,7 @@ class PermissionProvider {
   virtual ~PermissionProvider();
 
   virtual bool HasDevicePermission(
-      scoped_refptr<const UsbDevice> device) const = 0;
+      const mojom::UsbDeviceInfo& device_info) const = 0;
   virtual void IncrementConnectionCount() = 0;
   virtual void DecrementConnectionCount() = 0;
 };

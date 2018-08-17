@@ -23,8 +23,9 @@ MockPermissionProvider::MockPermissionProvider() : weak_factory_(this) {}
 MockPermissionProvider::~MockPermissionProvider() = default;
 
 bool MockPermissionProvider::HasDevicePermission(
-    scoped_refptr<const UsbDevice> device) const {
-  return device->serial_number() == base::ASCIIToUTF16(kRestrictedSerialNumber)
+    const mojom::UsbDeviceInfo& device_info) const {
+  return device_info.serial_number ==
+                 base::ASCIIToUTF16(kRestrictedSerialNumber)
              ? false
              : true;
 }

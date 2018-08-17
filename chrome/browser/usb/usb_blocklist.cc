@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "components/variations/variations_associated_data.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_device.h"
 
 namespace {
@@ -127,6 +128,15 @@ bool UsbBlocklist::IsExcluded(
     const scoped_refptr<const device::UsbDevice>& device) const {
   return IsExcluded(Entry(device->vendor_id(), device->product_id(),
                           device->device_version()));
+}
+
+bool UsbBlocklist::IsExcluded(
+    const device::mojom::UsbDeviceInfo& device_info) const {
+  uint16_t device_version = device_info.device_version_major << 8 |
+                            device_info.device_version_minor << 4 |
+                            device_info.device_version_subminor;
+  return IsExcluded(
+      Entry(device_info.vendor_id, device_info.product_id, device_version));
 }
 
 void UsbBlocklist::ResetToDefaultValuesForTest() {

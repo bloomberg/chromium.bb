@@ -22,7 +22,6 @@
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/mojo/device_impl.h"
-#include "device/usb/mojo/mock_permission_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,15 +55,13 @@ class USBDeviceManagerImplTest : public testing::Test {
  protected:
   UsbDeviceManagerPtr ConnectToDeviceManager() {
     UsbDeviceManagerPtr device_manager;
-    DeviceManagerImpl::Create(permission_provider_.GetWeakPtr(),
-                              mojo::MakeRequest(&device_manager));
+    DeviceManagerImpl::Create(mojo::MakeRequest(&device_manager));
     return device_manager;
   }
 
   MockDeviceClient device_client_;
 
  private:
-  MockPermissionProvider permission_provider_;
   std::unique_ptr<base::MessageLoop> message_loop_;
 };
 

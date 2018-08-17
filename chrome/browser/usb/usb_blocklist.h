@@ -15,6 +15,10 @@
 
 namespace device {
 class UsbDevice;
+
+namespace mojom {
+class UsbDeviceInfo;
+}
 }
 
 class UsbBlocklist final {
@@ -43,6 +47,7 @@ class UsbBlocklist final {
   // Returns if a device is excluded from access.
   bool IsExcluded(const Entry& entry) const;
   bool IsExcluded(const scoped_refptr<const device::UsbDevice>& device) const;
+  bool IsExcluded(const device::mojom::UsbDeviceInfo& device_info) const;
 
   // Size of the blocklist.
   size_t GetDynamicEntryCountForTest() const { return dynamic_entries_.size(); }

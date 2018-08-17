@@ -34,8 +34,7 @@ WebUsbServiceImpl::WebUsbServiceImpl(
   // Bind |device_manager_| to UsbDeviceManager and set error handler.
   // TODO(donna.wu@intel.com): Request UsbDeviceManagerPtr from the Device
   // Service after moving //device/usb to //services/device.
-  device::usb::DeviceManagerImpl::Create(permission_provider_,
-                                         mojo::MakeRequest(&device_manager_));
+  device::usb::DeviceManagerImpl::Create(mojo::MakeRequest(&device_manager_));
   device_manager_.set_connection_error_handler(base::BindOnce(
       &WebUsbServiceImpl::OnConnectionError, base::Unretained(this)));
   // Listen for add/remove device events from UsbService.
@@ -52,14 +51,30 @@ WebUsbServiceImpl::WebUsbServiceImpl(
 WebUsbServiceImpl::~WebUsbServiceImpl() = default;
 
 void WebUsbServiceImpl::GetDevices(GetDevicesCallback callback) {
-  device_manager_->GetDevices(nullptr, std::move(callback));
+  device_manager_->GetDevices(
+      nullptr, base::BindOnce(&WebUsbServiceImpl::OnGetDevices,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebUsbServiceImpl::OnGetDevices(
+    GetDevicesCallback callback,
+    std::vector<device::mojom::UsbDeviceInfoPtr> device_info_list) {
+  std::vector<device::mojom::UsbDeviceInfoPtr> device_infos;
+  for (auto& device_info : device_info_list) {
+    if (device_info && permission_provider_ &&
+        permission_provider_->HasDevicePermission(*device_info)) {
+      device_infos.push_back(device_info.Clone());
+    }
+  }
+  std::move(callback).Run(std::move(device_infos));
 }
 
 void WebUsbServiceImpl::GetDevice(
     const std::string& guid,
     device::mojom::UsbDeviceRequest device_request) {
   // Try to bind with the new device to be created for DeviceOpened/Closed
-  // events.
+  // events. It is safe to pass this request directly to |device_manager_|
+  // because |guid| is unguessable.
   device::mojom::UsbDeviceClientPtr device_client;
   device_client_bindings_.AddBinding(this, mojo::MakeRequest(&device_client));
   device_manager_->GetDevice(guid, std::move(device_request),
@@ -81,17 +96,21 @@ void WebUsbServiceImpl::SetClient(
 }
 
 void WebUsbServiceImpl::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
   if (client_ && permission_provider_ &&
-      permission_provider_->HasDevicePermission(device)) {
-    client_->OnDeviceAdded(device::mojom::UsbDeviceInfo::From(*device));
+      permission_provider_->HasDevicePermission(*device_info)) {
+    client_->OnDeviceAdded(std::move(device_info));
   }
 }
 
 void WebUsbServiceImpl::OnDeviceRemoved(
     scoped_refptr<device::UsbDevice> device) {
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
   if (client_ && permission_provider_ &&
-      permission_provider_->HasDevicePermission(device)) {
-    client_->OnDeviceRemoved(device::mojom::UsbDeviceInfo::From(*device));
+      permission_provider_->HasDevicePermission(*device_info)) {
+    client_->OnDeviceRemoved(std::move(device_info));
   }
 }
 
