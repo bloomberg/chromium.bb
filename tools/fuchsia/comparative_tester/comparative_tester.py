@@ -54,19 +54,23 @@ def RunCommand(command: List[str], msg: str) -> str:
 
 
 # TODO(crbug.com/848465): replace with --test-launcher-filter-file directly
-def ParseFilterFile(filepath: str) -> str:
+def ParseFilterFile(filepath: str,
+                    p_filts: List[str],
+                    n_filts: List[str]) -> str:
   """Takes a path to a filter file, parses it, and constructs a gtest_filter
   string for test execution.
 
   Args:
     filepath (str): The path to the filter file to be parsed into a
         --gtest_filter flag.
+    p_filts (List[str]): An initial set of positive filters passed in a flag.
+    n_filts (List[str]): An initial set of negative filters passed in a flag.
 
   Returns:
     str: The properly-joined together gtest_filter flag.
   """
-  positive_filters = []
-  negative_filters = []
+  positive_filters = p_filts
+  negative_filters = n_filts
   with open(filepath, "r") as file:
     for line in file:
       # Only take the part of a line before a # sign
@@ -88,7 +92,7 @@ class TestTarget(object):
   Linux and Fuchsia.
   """
 
-  def __init__(self, target: str) -> None:
+  def __init__(self, target: str, p_filts: List[str], n_filts: List[str]):
     self._target = target
     self._name = target.split(":")[-1]
     self._filter_file = "testing/buildbot/filters/fuchsia.{}.filter".format(
@@ -97,7 +101,7 @@ class TestTarget(object):
       self._filter_flag = ""
       self._filter_file = ""
     else:
-      self._filter_flag = ParseFilterFile(self._filter_file)
+      self._filter_flag = ParseFilterFile(self._filter_file, p_filts, n_filts)
 
   def ExecFuchsia(self, out_dir: str, run_locally: bool) -> str:
     """Execute this test target's test on Fuchsia, either with QEMU or on actual
@@ -261,7 +265,7 @@ def RunGnForDirectory(dir_name: str, target_os: str, is_debug: bool) -> None:
 
 
 def GenerateTestData(do_config: bool, do_build: bool, num_reps: int,
-                     is_debug: bool):
+                     is_debug: bool, filter_flag: str):
   """Initializes directories, builds test targets, and repeatedly executes them
   on both operating systems
 
@@ -270,20 +274,28 @@ def GenerateTestData(do_config: bool, do_build: bool, num_reps: int,
     do_build (bool): Whether or not to run ninja for the test targets.
     num_reps (int): How many times to run each test on a given device.
     is_debug (bool): Whether or not this should be a debug build of the tests.
+    filter_flag (str): The --gtest_filter flag, to be parsed as such.
   """
-
+  # Find and make the necessary directories
   DIR_SOURCE_ROOT = os.path.abspath(
       os.path.join(os.path.dirname(__file__), *([os.pardir] * 3)))
   os.chdir(DIR_SOURCE_ROOT)
   os.makedirs(target_spec.results_dir, exist_ok=True)
   os.makedirs(target_spec.raw_linux_dir, exist_ok=True)
   os.makedirs(target_spec.raw_fuchsia_dir, exist_ok=True)
+
   # Grab parameters from config file.
   linux_dir = target_spec.linux_out_dir
   fuchsia_dir = target_spec.fuchsia_out_dir
+
+  # Parse filters passed in by flag
+  pos_filter_chunk, neg_filter_chunk = filter_flag.split("-", 1)
+  pos_filters = pos_filter_chunk.split(":")
+  neg_filters = neg_filter_chunk.split(":")
+
   test_input = []  # type: List[TestTarget]
   for target in target_spec.test_targets:
-    test_input.append(TestTarget(target))
+    test_input.append(TestTarget(target, pos_filters, neg_filters))
   print("Test targets collected:\n{}".format(",".join(
       [test._target for test in test_input])))
   if do_config:
@@ -335,9 +347,15 @@ def main() -> int:
       type=int,
       default=1,
       help="The number of times to execute each test target.")
+  cmd_flags.add_argument(
+      "--gtest_filter",
+      type=str,
+      default="",
+  )
   cmd_flags.parse_args()
   GenerateTestData(cmd_flags.do_config, cmd_flags.do_build,
-                   cmd_flags.num_repetitions, cmd_flags.is_debug)
+                   cmd_flags.num_repetitions, cmd_flags.is_debug,
+                   cmd_flags.gtest_filter)
   return 0
 
 

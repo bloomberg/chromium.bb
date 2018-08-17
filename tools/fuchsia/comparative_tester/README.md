@@ -57,6 +57,13 @@ This is where tests are actually executed. It has four flags of note:
   * `--num-repetitions`: tells the script how many times to run each test in the
         battery of tests specified in `target_spec.py`. By default, this is one,
         so tests will only be executed one time each.
+  * `--gtest_filter`: Works just like it does on the tests. Positive filters go
+        before the '-' and negative ones after. All individual filters are
+        separated from each other via a ':'. Support globbing.
+      * Ex: `--gtest_filter=TestFoo.Case1:TestBar.*-TestBaz.*:TestQuux.Case2`
+            filters out all cases in TestBaz, Case2 of TestQuux, and only runs
+            TestFoo.Case1, and all cases in TestBar.
+
 More complex configuration options are present in `target_spec.py.`
 
 ### generate_perf_report.py
