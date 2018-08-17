@@ -731,11 +731,6 @@ FakeCryptohomeClient::GetTpmAttestationDeviceKeyPayload(
                                              : base::make_optional(it->second);
 }
 
-void FakeCryptohomeClient::NotifyLowDiskSpace(uint64_t disk_free_bytes) {
-  for (auto& observer : observer_list_)
-    observer.LowDiskSpace(disk_free_bytes);
-}
-
 // static
 std::vector<uint8_t> FakeCryptohomeClient::GetStubSystemSalt() {
   const char kStubSystemSalt[] = "stub_system_salt";
@@ -817,6 +812,11 @@ void FakeCryptohomeClient::NotifyAsyncCallStatusWithData(
     const std::string& data) {
   for (auto& observer : observer_list_)
     observer.AsyncCallStatusWithData(async_id, return_status, data);
+}
+
+void FakeCryptohomeClient::NotifyLowDiskSpace(uint64_t disk_free_bytes) {
+  for (auto& observer : observer_list_)
+    observer.LowDiskSpace(disk_free_bytes);
 }
 
 void FakeCryptohomeClient::NotifyDircryptoMigrationProgress(
