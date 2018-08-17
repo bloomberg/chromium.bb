@@ -3380,13 +3380,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
         site_config.templates.depthcharge_full_firmware,
         board_configs[board],
         site_config.templates.no_vmtest_builder,
-        active_waterfall=waterfall.WATERFALL_SWARMING,
     )
-
-  site_config['link-depthcharge-full-firmware'].apply(
-      active_waterfall=waterfall.WATERFALL_SWARMING,
-      schedule='with 12h interval',
-  )
 
   site_config.AddWithoutTemplate(
       'prototype-firmwarebranch',
