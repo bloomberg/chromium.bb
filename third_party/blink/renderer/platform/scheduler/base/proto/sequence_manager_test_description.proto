@@ -21,7 +21,7 @@ message SequenceManagerTestDescription {
   }
 
   message Action {
-    // NEXT ID = 11
+    // NEXT ID = 12
 
     optional uint64 action_id = 1;
 
@@ -35,6 +35,7 @@ message SequenceManagerTestDescription {
       CreateQueueVoterAction create_queue_voter = 8;
       InsertFenceAction insert_fence = 9;
       RemoveFenceAction remove_fence = 10;
+      CreateThreadAction create_thread = 11;
     }
   }
 
@@ -145,5 +146,19 @@ message SequenceManagerTestDescription {
     optional uint64 task_queue_id = 2;
   }
 
-  repeated Action initial_actions = 1;
+  message CreateThreadAction {
+    // NEXT ID = 2
+
+    repeated Action initial_thread_actions = 1;
+  }
+
+  message InitialThread {
+    // NEXT ID = 3
+
+    optional uint64 action_id = 1;
+
+    required CreateThreadAction create_thread = 2;
+  }
+
+  repeated InitialThread main_thread_actions = 1;
 }

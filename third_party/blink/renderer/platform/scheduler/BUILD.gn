@@ -245,6 +245,12 @@ source_set("scheduler_fuzzer_tests") {
       "base/sequence_manager_fuzzer_processor.cc",
       "base/sequence_manager_fuzzer_processor.h",
       "base/sequence_manager_fuzzer_processor_unittest.cc",
+      "base/simple_thread_impl.cc",
+      "base/simple_thread_impl.h",
+      "base/thread_data.cc",
+      "base/thread_data.h",
+      "base/thread_pool_manager.cc",
+      "base/thread_pool_manager.h",
     ]
 
     deps += [
@@ -261,6 +267,12 @@ fuzzer_test("sequence_manager_fuzzer") {
     "base/sequence_manager_fuzzer.cc",
     "base/sequence_manager_fuzzer_processor.cc",
     "base/sequence_manager_fuzzer_processor.h",
+    "base/simple_thread_impl.cc",
+    "base/simple_thread_impl.h",
+    "base/thread_data.cc",
+    "base/thread_data.h",
+    "base/thread_pool_manager.cc",
+    "base/thread_pool_manager.h",
   ]
 
   deps = [
