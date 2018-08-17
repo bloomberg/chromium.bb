@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
@@ -409,6 +410,8 @@ void ComponentInstaller::FinishRegistration(
   crx.installer_attributes = installer_policy_->GetInstallerAttributes();
   crx.requires_network_encryption =
       installer_policy_->RequiresNetworkEncryption();
+  crx.crx_format_requirement =
+      crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
   crx.handled_mime_types = installer_policy_->GetMimeTypes();
   crx.supports_group_policy_enable_component_updates =
       installer_policy_->SupportsGroupPolicyEnabledComponentUpdates();

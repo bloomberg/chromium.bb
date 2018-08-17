@@ -25,6 +25,7 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/component_updater_service_internal.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/test_configurator.h"
@@ -241,7 +242,8 @@ void ComponentInstallerTest::Unpack(const base::FilePath& crx_path) {
   auto config = base::MakeRefCounted<TestConfigurator>();
   auto component_unpacker = base::MakeRefCounted<ComponentUnpacker>(
       std::vector<uint8_t>(std::begin(kSha256Hash), std::end(kSha256Hash)),
-      crx_path, nullptr, config->CreateServiceManagerConnector());
+      crx_path, nullptr, config->CreateServiceManagerConnector(),
+      crx_file::VerifierFormat::CRX2_OR_CRX3);
   component_unpacker->Unpack(base::BindOnce(
       &ComponentInstallerTest::UnpackComplete, base::Unretained(this)));
   RunThreads();

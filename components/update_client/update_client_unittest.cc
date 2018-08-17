@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/crx_update_item.h"
@@ -222,6 +223,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
       crx.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx.version = base::Version("0.9");
       crx.installer = base::MakeRefCounted<TestInstaller>();
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
       std::vector<base::Optional<CrxComponent>> component = {crx};
       return component;
     }
@@ -332,12 +334,14 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       crx1.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx1.version = base::Version("0.9");
       crx1.installer = base::MakeRefCounted<TestInstaller>();
+      crx1.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
 
       CrxComponent crx2;
       crx2.name = "test_abag";
       crx2.pk_hash.assign(abag_hash, abag_hash + base::size(abag_hash));
       crx2.version = base::Version("2.2");
       crx2.installer = base::MakeRefCounted<TestInstaller>();
+      crx2.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
 
       return {crx1, crx2};
     }
@@ -548,12 +552,14 @@ TEST_F(UpdateClientTest, TwoCrxUpdateFirstServerIgnoresSecond) {
       crx1.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx1.version = base::Version("0.9");
       crx1.installer = base::MakeRefCounted<TestInstaller>();
+      crx1.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
 
       CrxComponent crx2;
       crx2.name = "test_abag";
       crx2.pk_hash.assign(abag_hash, abag_hash + base::size(abag_hash));
       crx2.version = base::Version("2.2");
       crx2.installer = base::MakeRefCounted<TestInstaller>();
+      crx2.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
 
       return {crx1, crx2};
     }
@@ -763,6 +769,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentData) {
       crx.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx.version = base::Version("0.9");
       crx.installer = base::MakeRefCounted<TestInstaller>();
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
       return {crx, base::nullopt};
     }
   };
@@ -1050,12 +1057,14 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       crx1.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx1.version = base::Version("0.9");
       crx1.installer = base::MakeRefCounted<TestInstaller>();
+      crx1.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
 
       CrxComponent crx2;
       crx2.name = "test_ihfo";
       crx2.pk_hash.assign(ihfo_hash, ihfo_hash + base::size(ihfo_hash));
       crx2.version = base::Version("0.8");
       crx2.installer = base::MakeRefCounted<TestInstaller>();
+      crx2.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
 
       return {crx1, crx2};
     }
@@ -1326,6 +1335,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       crx.name = "test_ihfo";
       crx.pk_hash.assign(ihfo_hash, ihfo_hash + base::size(ihfo_hash));
       crx.installer = installer;
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
       if (num_calls == 1) {
         crx.version = base::Version("0.8");
       } else if (num_calls == 2) {
@@ -1664,6 +1674,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       crx.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx.version = base::Version("0.9");
       crx.installer = installer;
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
 
       return {crx};
     }
@@ -1849,6 +1860,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       crx.name = "test_ihfo";
       crx.pk_hash.assign(ihfo_hash, ihfo_hash + base::size(ihfo_hash));
       crx.installer = installer;
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
       if (num_calls == 1) {
         crx.version = base::Version("0.8");
       } else if (num_calls == 2) {
@@ -2157,6 +2169,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
       crx.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx.version = base::Version("0.9");
       crx.installer = base::MakeRefCounted<TestInstaller>();
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
       return {crx};
     }
   };
@@ -2276,6 +2289,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       crx.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx.version = base::Version("0.0");
       crx.installer = base::MakeRefCounted<TestInstaller>();
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
       return {crx};
     }
   };
@@ -2558,6 +2572,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
       crx.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx.version = base::Version("0.0");
       crx.installer = base::MakeRefCounted<TestInstaller>();
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
       return {crx};
     }
   };
@@ -2822,6 +2837,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
       crx.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx.version = base::Version("0.9");
       crx.installer = base::MakeRefCounted<TestInstaller>();
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
       return {crx};
     }
   };
@@ -3014,6 +3030,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
       crx1.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx1.version = base::Version("0.9");
       crx1.installer = base::MakeRefCounted<TestInstaller>();
+      crx1.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
       crx1.supports_group_policy_enable_component_updates = true;
 
       CrxComponent crx2;
@@ -3021,6 +3038,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
       crx2.pk_hash.assign(ihfo_hash, ihfo_hash + base::size(ihfo_hash));
       crx2.version = base::Version("0.8");
       crx2.installer = base::MakeRefCounted<TestInstaller>();
+      crx2.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
 
       return {crx1, crx2};
     }
@@ -3269,6 +3287,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
       crx.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
       crx.version = base::Version("0.9");
       crx.installer = base::MakeRefCounted<TestInstaller>();
+      crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
       return {crx};
     }
   };
@@ -3379,6 +3398,7 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
         crx.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
         crx.version = base::Version("0.9");
         crx.installer = base::MakeRefCounted<TestInstaller>();
+        crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
         component.push_back(crx);
       }
       {
@@ -3387,6 +3407,7 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
         crx.pk_hash.assign(abag_hash, abag_hash + base::size(abag_hash));
         crx.version = base::Version("0.1");
         crx.installer = base::MakeRefCounted<TestInstaller>();
+        crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
         component.push_back(crx);
       }
       {
@@ -3395,6 +3416,7 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
         crx.pk_hash.assign(ihfo_hash, ihfo_hash + base::size(ihfo_hash));
         crx.version = base::Version("0.2");
         crx.installer = base::MakeRefCounted<TestInstaller>();
+        crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
         component.push_back(crx);
       }
       {
@@ -3403,6 +3425,7 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
         crx.pk_hash.assign(gjpm_hash, gjpm_hash + base::size(gjpm_hash));
         crx.version = base::Version("0.3");
         crx.installer = base::MakeRefCounted<TestInstaller>();
+        crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
         component.push_back(crx);
       }
       return component;
@@ -3724,6 +3747,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
         crx.pk_hash.assign(gjpm_hash, gjpm_hash + base::size(gjpm_hash));
         crx.version = base::Version("0.0");
         crx.installer = base::MakeRefCounted<VersionedTestInstaller>();
+        crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
         return std::vector<base::Optional<CrxComponent>>{crx};
       }),
       base::BindOnce(
@@ -3828,7 +3852,8 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
     auto component_unpacker = base::MakeRefCounted<ComponentUnpacker>(
         std::vector<uint8_t>(std::begin(gjpm_hash), std::end(gjpm_hash)),
         TestFilePath("runaction_test_win.crx3"), nullptr,
-        config->CreateServiceManagerConnector());
+        config->CreateServiceManagerConnector(),
+        crx_file::VerifierFormat::CRX2_OR_CRX3);
 
     component_unpacker->Unpack(base::BindOnce(
         [](base::FilePath* unpack_path, base::OnceClosure quit_closure,
@@ -3871,6 +3896,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
             crx.version = base::Version("1.0");
             crx.installer =
                 base::MakeRefCounted<ReadOnlyTestInstaller>(unpack_path);
+            crx.crx_format_requirement = crx_file::VerifierFormat::CRX2_OR_CRX3;
             return std::vector<base::Optional<CrxComponent>>{crx};
           },
           unpack_path),

@@ -30,6 +30,7 @@ static_library("component_updater") {
 
   deps = [
     "//base",
+    "//components/crx_file",
     "//components/update_client",
     "//components/version_info",
     "//third_party/boringssl:boringssl",
@@ -76,6 +77,7 @@ source_set("unit_tests") {
     ":component_updater",
     "//base",
     "//base/test:test_support",
+    "//components/crx_file",
     "//components/update_client:test_support",
     "//services/service_manager/public/cpp",
     "//testing/gmock",

@@ -149,9 +149,10 @@ void StartInstallOnBlockingTaskRunner(
     const std::string& fingerprint,
     scoped_refptr<CrxInstaller> installer,
     std::unique_ptr<service_manager::Connector> connector,
+    crx_file::VerifierFormat crx_format,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
   auto unpacker = base::MakeRefCounted<ComponentUnpacker>(
-      pk_hash, crx_path, installer, std::move(connector));
+      pk_hash, crx_path, installer, std::move(connector), crx_format);
 
   unpacker->Unpack(base::BindOnce(&UnpackCompleteOnBlockingTaskRunner,
                                   main_task_runner, crx_path, fingerprint,
@@ -658,6 +659,7 @@ void Component::StateUpdatingDiff::DoHandle() {
               component.crx_component()->pk_hash, component.crx_path_,
               component.next_fp_, component.crx_component()->installer,
               std::move(connector),
+              component.crx_component()->crx_format_requirement,
               base::BindOnce(&Component::StateUpdatingDiff::InstallComplete,
                              base::Unretained(this))));
 }
@@ -721,6 +723,7 @@ void Component::StateUpdating::DoHandle() {
                      component.crx_component()->pk_hash, component.crx_path_,
                      component.next_fp_, component.crx_component()->installer,
                      std::move(connector),
+                     component.crx_component()->crx_format_requirement,
                      base::BindOnce(&Component::StateUpdating::InstallComplete,
                                     base::Unretained(this))));
 }

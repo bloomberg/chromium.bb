@@ -34,6 +34,7 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/pref_names.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/update_client.h"
@@ -302,6 +303,8 @@ void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
                           &kRecoverySha2Hash[sizeof(kRecoverySha2Hash)]);
   recovery.supports_group_policy_enable_component_updates = true;
   recovery.requires_network_encryption = false;
+  recovery.crx_format_requirement =
+      crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
   if (!cus->RegisterComponent(recovery)) {
     NOTREACHED() << "Recovery component registration failed.";
   }
