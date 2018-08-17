@@ -42,6 +42,13 @@ void AssistantScriptExecutor::ClickElement(
                                                        std::move(callback));
 }
 
+void AssistantScriptExecutor::ElementExists(
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(bool)> callback) {
+  delegate_->GetAssistantWebController()->ElementExists(selectors,
+                                                        std::move(callback));
+}
+
 void AssistantScriptExecutor::OnGetAssistantActions(
     bool result,
     const std::string& response) {

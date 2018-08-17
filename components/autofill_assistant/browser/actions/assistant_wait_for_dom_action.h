@@ -10,7 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 namespace autofill_assistant {
 // An action to ask Chrome to wait for a DOM element to process next action.
@@ -29,8 +31,19 @@ class AssistantWaitForDomAction : public AssistantAction {
                      ProcessActionCallback callback) override;
 
  private:
-  std::vector<std::string> target_element_selectors_;
+  void CheckElementExists(AssistantActionDelegate* delegate,
+                          int rounds,
+                          ProcessActionCallback callback);
+  void OnCheckElementExists(AssistantActionDelegate* delegate,
+                            int rounds,
+                            ProcessActionCallback callback,
+                            bool result);
 
+  int timeout_ms_;
+  std::vector<std::string> target_element_selectors_;
+  bool for_absence_;
+
+  base::WeakPtrFactory<AssistantWaitForDomAction> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(AssistantWaitForDomAction);
 };
 

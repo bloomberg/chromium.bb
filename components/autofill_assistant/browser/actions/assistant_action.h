@@ -17,6 +17,7 @@ class AssistantAction {
   virtual ~AssistantAction() = default;
 
   // Callback returns whether process action is succeed or not.
+  // Delegate should outlive this object.
   using ProcessActionCallback = base::OnceCallback<void(bool)>;
   virtual void ProcessAction(AssistantActionDelegate* delegate,
                              ProcessActionCallback callback) = 0;

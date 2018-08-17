@@ -29,6 +29,8 @@ class AssistantScriptExecutor : public AssistantActionDelegate {
   void ShowStatusMessage(const std::string& message) override;
   void ClickElement(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;
+  void ElementExists(const std::vector<std::string>& selectors,
+                     base::OnceCallback<void(bool)> callback) override;
 
  private:
   void OnGetAssistantActions(bool result, const std::string& response);
