@@ -199,9 +199,14 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
                                                            bool is_bookmark,
                                                            bool is_tab_match) {
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   const bool is_refresh_ui = ui::MaterialDesignController::IsRefreshUi();
   const bool is_touch_ui =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+#else
+  const bool is_refresh_ui = false;
+  const bool is_touch_ui = false;
+#endif
 
   if (is_bookmark) {
     if (is_refresh_ui || is_touch_ui)
