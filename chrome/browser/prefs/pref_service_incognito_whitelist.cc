@@ -22,15 +22,9 @@
 #include "components/rappor/rappor_pref_names.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "components/suggestions/suggestions_pref_names.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/variations/pref_names.h"
 #include "components/web_resource/web_resource_pref_names.h"
-
-#if defined(OS_ANDROID)
-#include "components/feed/buildflags.h"
-#include "components/feed/core/pref_names.h"
-#endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/accessibility/animation_policy_prefs.h"
@@ -433,13 +427,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kSuppressUnsupportedOSWarning, prefs::kWasRestarted,
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
-    prefs::kContentSuggestionsNotificationsEnabled,
-    prefs::kContentSuggestionsConsecutiveIgnoredPrefName,
-    prefs::kContentSuggestionsNotificationsSentDay,
-    prefs::kContentSuggestionsNotificationsSentCount,
-#endif  // defined(OS_ANDROID)
-
     prefs::kDevToolsAdbKey, prefs::kDevToolsAvailability,
     prefs::kDevToolsDiscoverUsbDevicesEnabled, prefs::kDevToolsEditedFiles,
     prefs::kDevToolsFileSystemPaths, prefs::kDevToolsPortForwardingEnabled,
@@ -703,17 +690,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     dom_distiller::prefs::kFontScale,
     dom_distiller::prefs::kReaderForAccessibility,
 
-// components/feed/core/pref_names.h
-#if defined(OS_ANDROID)
-#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
-    feed::prefs::kBackgroundRefreshPeriod, feed::prefs::kLastFetchAttemptTime,
-    feed::prefs::kUserClassifierAverageNTPOpenedPerHour,
-    feed::prefs::kUserClassifierAverageSuggestionsUsedPerHour,
-    feed::prefs::kUserClassifierLastTimeToOpenNTP,
-    feed::prefs::kUserClassifierLastTimeToUseSuggestions,
-#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
-#endif  // defined(OS_ANDROID)
-
     // components/flags_ui/flags_ui_pref_names.h
     flags_ui::prefs::kEnabledLabsExperiments,
 
@@ -743,10 +719,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kSyncedDefaultSearchProviderGUID,
     prefs::kDefaultSearchProviderEnabled, prefs::kSearchProviderOverrides,
     prefs::kSearchProviderOverridesVersion, prefs::kCountryIDAtInstall,
-
-    // components/suggestions/suggestions_pref_names.h
-    suggestions::prefs::kSuggestionsBlacklist,
-    suggestions::prefs::kSuggestionsData,
 
     // components/web_resource/web_resource_pref_names.h
     prefs::kEulaAccepted,
