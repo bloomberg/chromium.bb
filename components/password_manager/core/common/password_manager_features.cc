@@ -22,7 +22,7 @@ const base::Feature kAutofillHome = {"AutofillHome",
 // Deletes entries from local database on Mac which cannot be decrypted when
 // merging data with Sync.
 const base::Feature kDeleteUndecryptableLogins = {
-    "DeleteUndecryptableLogins", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DeleteUndecryptableLogins", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use HTML based username detector.
 const base::Feature kHtmlBasedUsernameDetector = {
