@@ -2856,6 +2856,9 @@
                     "enable_features": [
                         "OmniboxBreakWordsAtUnderscores",
                         "OmniboxDisplayTitleForCurrentUrl",
+                        "OmniboxNewAnswerLayout",
+                        "OmniboxRichEntitySuggestions",
+                        "OmniboxTabSwitchSuggestions",
                         "OmniboxTailSuggestions",
                         "OmniboxUIExperimentShowSuggestionFavicons",
                         "OmniboxUIExperimentSwapTitleAndUrl",
