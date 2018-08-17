@@ -203,7 +203,8 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderAdapterTest);
 };
 
-TEST_F(RTCVideoDecoderAdapterTest, Lifecycle) {
+// Crashing on various platforms. See https://crbug.com/875278.
+TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Lifecycle) {
   ASSERT_TRUE(BasicSetup());
   ASSERT_TRUE(BasicTeardown());
 }
