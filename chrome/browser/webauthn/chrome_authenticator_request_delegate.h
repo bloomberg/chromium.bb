@@ -81,7 +81,7 @@ class ChromeAuthenticatorRequestDelegate
       device::FidoRequestHandlerBase::TransportAvailabilityInfo data) override;
   void FidoAuthenticatorAdded(const device::FidoAuthenticator& authenticator,
                               bool* hold_off_request) override;
-  void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
+  void FidoAuthenticatorRemoved(base::StringPiece authenticator_id) override;
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;

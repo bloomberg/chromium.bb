@@ -65,9 +65,13 @@ bool IsWebAuthnUiEnabled() {
 
 bool ShouldDispatchRequestImmediately(
     const device::FidoAuthenticator& authenticator) {
-  // TODO(hongjunchoi): Change this so that requests for BLE and platform
-  // authenticators are not dispatched immediately if WebAuthN UI is enabled.
-  return true;
+  // TODO(hongjunchoi): Change this so that requests for BLE authenticators are
+  // not dispatched immediately if WebAuthN UI is enabled.
+  if (!IsWebAuthnUiEnabled())
+    return true;
+
+  return authenticator.AuthenticatorTransport() !=
+         device::FidoTransportProtocol::kInternal;
 }
 
 }  // namespace
@@ -137,6 +141,7 @@ void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
 
   transient_dialog_model_holder_ =
       std::make_unique<AuthenticatorRequestDialogModel>();
+  transient_dialog_model_holder_->SetRequestCallback(request_callback);
   weak_dialog_model_ = transient_dialog_model_holder_.get();
   weak_dialog_model_->AddObserver(this);
 }
@@ -279,7 +284,7 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
-    base::StringPiece device_id) {
+    base::StringPiece authenticator_id) {
   if (!IsWebAuthnUiEnabled())
     return;
 
@@ -289,8 +294,9 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
   auto& saved_authenticators = weak_dialog_model_->saved_authenticators();
   saved_authenticators.erase(
       std::remove_if(saved_authenticators.begin(), saved_authenticators.end(),
-                     [device_id](const auto& authenticator_reference) {
-                       return authenticator_reference.device_id == device_id;
+                     [authenticator_id](const auto& authenticator_reference) {
+                       return authenticator_reference.authenticator_id ==
+                              authenticator_id;
                      }),
       saved_authenticators.end());
 }
