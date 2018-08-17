@@ -322,8 +322,7 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
   zip_file.writestr(zipinfo, data, compress_type)
 
 
-def DoZip(inputs, output, base_dir=None, compress_fn=None,
-          zip_prefix_path=None):
+def DoZip(inputs, output, base_dir=None, compress_fn=None):
   """Creates a zip file from a list of files.
 
   Args:
@@ -332,7 +331,6 @@ def DoZip(inputs, output, base_dir=None, compress_fn=None,
     base_dir: Prefix to strip from inputs.
     compress_fn: Applied to each input to determine whether or not to compress.
         By default, items will be |zipfile.ZIP_STORED|.
-    zip_prefix_path: Path prepended to file path in zip file.
   """
   input_tuples = []
   for tup in inputs:
@@ -344,13 +342,11 @@ def DoZip(inputs, output, base_dir=None, compress_fn=None,
   input_tuples.sort(key=lambda tup: tup[0])
   with zipfile.ZipFile(output, 'w') as outfile:
     for zip_path, fs_path in input_tuples:
-      if zip_prefix_path:
-        zip_path = os.path.join(zip_prefix_path, zip_path)
       compress = compress_fn(zip_path) if compress_fn else None
       AddToZipHermetic(outfile, zip_path, src_path=fs_path, compress=compress)
 
 
-def ZipDir(output, base_dir, compress_fn=None, zip_prefix_path=None):
+def ZipDir(output, base_dir, compress_fn=None):
   """Creates a zip file from a directory."""
   inputs = []
   for root, _, files in os.walk(base_dir):
@@ -358,8 +354,7 @@ def ZipDir(output, base_dir, compress_fn=None, zip_prefix_path=None):
       inputs.append(os.path.join(root, f))
 
   with AtomicOutput(output) as f:
-    DoZip(inputs, f, base_dir, compress_fn=compress_fn,
-          zip_prefix_path=zip_prefix_path)
+    DoZip(inputs, f, base_dir, compress_fn=compress_fn)
 
 
 def MatchesGlob(path, filters):
