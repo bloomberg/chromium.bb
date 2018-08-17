@@ -123,8 +123,6 @@ SLOW_TESTS = {
     'lib/cgroups_unittest': SKIP,
     # cros_sdk_unittest runs cros_sdk a lot, so is slow.
     'scripts/cros_sdk_unittest': SKIP,
-    # This involves multiprocess timeout testing.
-    'lib/workqueue/tasks_unittest': SKIP,
 }
 
 
