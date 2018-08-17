@@ -605,7 +605,7 @@ class ServiceManager::Instance
         return mojom::ConnectResult::INVALID_ARGUMENT;
       }
       if (service_manager_->GetExistingInstance(target)) {
-        LOG(ERROR) << "Cannot client process matching existing identity:"
+        LOG(ERROR) << "Cannot find a client process matching existing identity:"
                    << "Name: " << target.name() << " User: "
                    << target.user_id() << " Instance: " << target.instance();
         return mojom::ConnectResult::INVALID_ARGUMENT;
