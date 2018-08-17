@@ -90,7 +90,7 @@ class LoadingPredictor : public KeyedService,
   // May start preconnect and preresolve jobs according to |requests| for |url|
   // with a given hint |origin|.
   void MaybeAddPreconnect(const GURL& url,
-                          std::vector<PreconnectRequest>&& requests,
+                          std::vector<PreconnectRequest> requests,
                           HintOrigin origin);
   // If a preconnect exists for |url|, stop it.
   void MaybeRemovePreconnect(const GURL& url);

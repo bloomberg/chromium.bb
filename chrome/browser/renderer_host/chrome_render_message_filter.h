@@ -106,15 +106,18 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
   const int render_process_id_;
 
-  // The Profile associated with our renderer process.  This should only be
+  // The Profile associated with our renderer process. This must only be
   // accessed on the UI thread!
   Profile* profile_;
   // The Predictor for the associated Profile. It is stored so that it can be
   // used on the IO thread.
   chrome_browser_net::Predictor* predictor_;
-  // The PreconnectManager for the associated Profile. It is stored so that it
-  // can be used on the IO thread.
-  predictors::PreconnectManager* preconnect_manager_;
+  // The PreconnectManager for the associated Profile. This must only be
+  // accessed on the UI thread.
+  base::WeakPtr<predictors::PreconnectManager> preconnect_manager_;
+  // Allows to check on the IO thread whether the PreconnectManager was
+  // initialized.
+  bool preconnect_manager_initialized_;
 
   // Used to look up permissions at database creation time.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;

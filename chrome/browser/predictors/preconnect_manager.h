@@ -14,11 +14,17 @@
 #include "base/containers/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
-#include "net/dns/host_resolver.h"
-#include "net/http/http_request_info.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "chrome/browser/predictors/resolve_host_client_impl.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "url/gurl.h"
+
+class Profile;
+
+namespace network {
+namespace mojom {
+class NetworkContext;
+}
+}  // namespace network
 
 namespace predictors {
 
@@ -83,7 +89,7 @@ struct PreresolveJob {
   // context and PreresolveInfo lifetime is tied to PreconnectManager.
   // May be equal to nullptr in case of detached job.
   PreresolveInfo* info;
-  std::unique_ptr<net::HostResolver::Request> request;
+  std::unique_ptr<ResolveHostClientImpl> resolve_host_client;
 
   DISALLOW_COPY_AND_ASSIGN(PreresolveJob);
 };
@@ -97,8 +103,7 @@ struct PreresolveJob {
 //  number of speculative dns requests in flight.
 //  - When stopped, waits for the pending preresolve requests to finish without
 //  issuing preconnects for them.
-//  - All methods of the class except the constructor must be called on the IO
-//  thread. The constructor must be called on the UI thread.
+//  - All methods of the class must be called on the UI thread.
 class PreconnectManager {
  public:
   class Delegate {
@@ -114,13 +119,11 @@ class PreconnectManager {
 
   static const size_t kMaxInflightPreresolves = 3;
 
-  PreconnectManager(base::WeakPtr<Delegate> delegate,
-                    scoped_refptr<net::URLRequestContextGetter> context_getter);
+  PreconnectManager(base::WeakPtr<Delegate> delegate, Profile* profile);
   virtual ~PreconnectManager();
 
   // Starts preconnect and preresolve jobs keyed by |url|.
-  virtual void Start(const GURL& url,
-                     std::vector<PreconnectRequest>&& requests);
+  virtual void Start(const GURL& url, std::vector<PreconnectRequest> requests);
 
   // Starts special preconnect and preresolve jobs that are not cancellable and
   // don't report about their completion. They are considered more important
@@ -132,32 +135,43 @@ class PreconnectManager {
   // No additional jobs keyed by the |url| will be queued after this.
   virtual void Stop(const GURL& url);
 
-  // Public for mocking in unit tests. Don't use, internal only.
-  virtual void PreconnectUrl(const GURL& url,
-                             const GURL& site_for_cookies,
-                             int num_sockets,
-                             bool allow_credentials) const;
-  virtual std::pair<int, std::unique_ptr<net::HostResolver::Request>>
-  PreresolveUrl(const GURL& url, const net::CompletionCallback& callback) const;
+  base::WeakPtr<PreconnectManager> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  void SetNetworkContextForTesting(
+      network::mojom::NetworkContext* network_context) {
+    network_context_ = network_context;
+  }
 
  private:
   using PreresolveJobMap = base::IDMap<std::unique_ptr<PreresolveJob>>;
   using PreresolveJobId = PreresolveJobMap::KeyType;
   friend class PreconnectManagerTest;
 
+  void PreconnectUrl(const GURL& url,
+                     const GURL& site_for_cookies,
+                     int num_sockets,
+                     bool allow_credentials) const;
+  std::unique_ptr<ResolveHostClientImpl> PreresolveUrl(
+      const GURL& url,
+      ResolveHostCallback callback) const;
+
   void TryToLaunchPreresolveJobs();
-  void OnPreresolveFinished(PreresolveJobId job_id, int result);
+  void OnPreresolveFinished(PreresolveJobId job_id, bool success);
   void FinishPreresolve(PreresolveJobId job_id, bool found, bool cached);
   void AllPreresolvesForUrlFinished(PreresolveInfo* info);
-  GURL GetHSTSRedirect(const GURL& url) const;
-  bool WouldLikelyProxyURL(const GURL& url) const;
+  network::mojom::NetworkContext* GetNetworkContext() const;
 
   base::WeakPtr<Delegate> delegate_;
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  Profile* const profile_;
   std::list<PreresolveJobId> queued_jobs_;
   PreresolveJobMap preresolve_jobs_;
   std::map<std::string, std::unique_ptr<PreresolveInfo>> preresolve_info_;
   size_t inflight_preresolves_count_ = 0;
+
+  // Only used in tests.
+  network::mojom::NetworkContext* network_context_ = nullptr;
 
   base::WeakPtrFactory<PreconnectManager> weak_factory_;
 

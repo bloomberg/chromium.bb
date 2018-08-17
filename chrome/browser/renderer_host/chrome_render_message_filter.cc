@@ -56,12 +56,13 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(int render_process_id,
       render_process_id_(render_process_id),
       profile_(profile),
       predictor_(profile_->GetNetworkPredictor()),
-      preconnect_manager_(nullptr),
+      preconnect_manager_initialized_(false),
       cookie_settings_(CookieSettingsFactory::GetForProfile(profile)) {
   auto* loading_predictor =
       predictors::LoadingPredictorFactory::GetForProfile(profile);
-  if (loading_predictor) {
-    preconnect_manager_ = loading_predictor->preconnect_manager();
+  if (loading_predictor && loading_predictor->preconnect_manager()) {
+    preconnect_manager_ = loading_predictor->preconnect_manager()->GetWeakPtr();
+    preconnect_manager_initialized_ = true;
   }
 }
 
@@ -106,10 +107,14 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
 
 void ChromeRenderMessageFilter::OnDnsPrefetch(
     const network_hints::LookupRequest& request) {
-  if (preconnect_manager_)
-    preconnect_manager_->StartPreresolveHosts(request.hostname_list);
-  else if (predictor_)
+  if (preconnect_manager_initialized_) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&predictors::PreconnectManager::StartPreresolveHosts,
+                       preconnect_manager_, request.hostname_list));
+  } else if (predictor_) {
     predictor_->DnsPrefetchList(request.hostname_list);
+  }
 }
 
 void ChromeRenderMessageFilter::OnPreconnect(const GURL& url,
@@ -126,8 +131,11 @@ void ChromeRenderMessageFilter::OnPreconnect(const GURL& url,
     return;
   }
 
-  if (preconnect_manager_) {
-    preconnect_manager_->StartPreconnectUrl(url, allow_credentials);
+  if (preconnect_manager_initialized_) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&predictors::PreconnectManager::StartPreconnectUrl,
+                       preconnect_manager_, url, allow_credentials));
   } else if (predictor_) {
     predictor_->PreconnectUrl(url, GURL(),
                               chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
