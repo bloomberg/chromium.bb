@@ -38,9 +38,14 @@ void ClockModel::SetUse24HourClock(bool use_24_hour) {
   NotifyDateFormatChanged();
 }
 
-bool ClockModel::IsLoggedIn() {
+bool ClockModel::IsLoggedIn() const {
   return Shell::Get()->session_controller()->login_status() !=
          LoginStatus::NOT_LOGGED_IN;
+}
+
+bool ClockModel::IsSettingsAvailable() const {
+  return Shell::Get()->session_controller()->ShouldEnableSettings() ||
+         can_set_time();
 }
 
 void ClockModel::ShowDateSettings() {

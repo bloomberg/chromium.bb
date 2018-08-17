@@ -94,6 +94,8 @@ DateView::DateView(UnifiedSystemTrayController* controller)
 
   Shell::Get()->system_tray_model()->clock()->AddObserver(this);
   TrayPopupUtils::ConfigureTrayPopupButton(this);
+
+  SetEnabled(Shell::Get()->system_tray_model()->clock()->IsSettingsAvailable());
 }
 
 DateView::~DateView() {
