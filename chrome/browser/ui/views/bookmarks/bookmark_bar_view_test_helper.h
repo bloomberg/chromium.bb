@@ -24,6 +24,10 @@ class BookmarkBarViewTestHelper {
 
   views::MenuButton* overflow_button() { return bbv_->overflow_button_; }
 
+  views::MenuButton* managed_bookmarks_button() {
+    return bbv_->managed_bookmarks_button_;
+  }
+
  private:
   BookmarkBarView* bbv_;
 

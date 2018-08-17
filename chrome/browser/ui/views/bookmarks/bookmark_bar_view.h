@@ -388,6 +388,14 @@ class BookmarkBarView : public views::AccessiblePaneView,
     SchedulePaint();
   }
 
+  // Inserts |button| in logical position |index| in the bar, maintaining
+  // correct focus traversal order.
+  void InsertBookmarkButtonAtIndex(views::View* button, int index);
+
+  // Returns the model index for the bookmark associated with |button|,
+  // or -1 if |button| is not a bookmark button from this bar.
+  int GetIndexForButton(views::View* button);
+
   int GetPreferredHeight() const;
 
   // Needed to react to kShowAppsShortcutInBookmarkBar changes.
@@ -430,6 +438,9 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // Visible if not all the bookmark buttons fit.
   views::MenuButton* overflow_button_;
+
+  // The individual bookmark buttons.
+  std::vector<views::LabelButton*> bookmark_buttons_;
 
   // Shows a text and a link to import bookmarks if there are no bookmarks in
   // the Bookmarks Bar.

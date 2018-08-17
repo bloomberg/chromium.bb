@@ -726,7 +726,7 @@ const BookmarkNode* BookmarkBarView::GetNodeForButtonAtModelIndex(
 
   // Then check the bookmark buttons.
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
-    views::View* child = child_at(i);
+    views::View* child = GetBookmarkButton(i);
     if (!child->visible())
       break;
     if (child->bounds().Contains(adjusted_loc))
@@ -760,7 +760,7 @@ views::MenuButton* BookmarkBarView::GetMenuButtonForNode(
   int index = model_->bookmark_bar_node()->GetIndexOf(node);
   if (index == -1 || !node->is_folder())
     return nullptr;
-  return static_cast<views::MenuButton*>(child_at(index));
+  return static_cast<views::MenuButton*>(GetBookmarkButton(index));
 }
 
 views::LabelButton* BookmarkBarView::GetBookmarkButtonForNode(
@@ -1007,11 +1007,11 @@ void BookmarkBarView::Layout() {
         if (!last_visible || !model_->loaded() ||
             model_->bookmark_bar_node()->child_count() <= button_count)
           break;
-        AddChildViewAt(
+        InsertBookmarkButtonAtIndex(
             CreateBookmarkButton(model_->bookmark_bar_node()->GetChild(i)), i);
         button_count = GetBookmarkButtonCount();
       }
-      views::View* child = child_at(i);
+      views::View* child = GetBookmarkButton(i);
       gfx::Size pref = child->GetPreferredSize();
       int next_x = x + pref.width() + bookmark_bar_button_padding;
       last_visible = next_x < max_x;
@@ -1389,8 +1389,10 @@ void BookmarkBarView::BookmarkAllUserNodesRemoved(
   StopThrobbing(true);
 
   // Remove the existing buttons.
-  while (GetBookmarkButtonCount())
-    delete GetBookmarkButton(0);
+  for (views::LabelButton* button : bookmark_buttons_) {
+    delete button;
+  }
+  bookmark_buttons_.clear();
 
   LayoutAndPaint();
 }
@@ -1406,12 +1408,14 @@ void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
     return;  // We only care about reordering of the bookmark bar node.
 
   // Remove the existing buttons.
-  while (GetBookmarkButtonCount())
-    delete child_at(0);
+  for (views::LabelButton* button : bookmark_buttons_) {
+    delete button;
+  }
+  bookmark_buttons_.clear();
 
   // Create the new buttons.
   for (int i = 0, child_count = node->child_count(); i < child_count; ++i)
-    AddChildViewAt(CreateBookmarkButton(node->GetChild(i)), i);
+    InsertBookmarkButtonAtIndex(CreateBookmarkButton(node->GetChild(i)), i);
 
   LayoutAndPaint();
 }
@@ -1511,7 +1515,7 @@ void BookmarkBarView::OnMenuButtonClicked(views::MenuButton* view,
     node = model_->bookmark_bar_node();
     start_index = GetFirstHiddenNodeIndex();
   } else {
-    int button_index = GetIndexOf(view);
+    int button_index = GetIndexForButton(view);
     DCHECK_NE(-1, button_index);
     node = model_->bookmark_bar_node()->GetChild(button_index);
   }
@@ -1549,7 +1553,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  int index = GetIndexOf(sender);
+  int index = GetIndexForButton(sender);
   DCHECK_NE(-1, index);
   const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(index);
   DCHECK(page_navigator_);
@@ -1588,7 +1592,7 @@ void BookmarkBarView::ShowContextMenuForView(views::View* source,
     // User clicked on one of the bookmark buttons, find which one they
     // clicked on, except for the apps page shortcut, which must behave as if
     // the user clicked on the bookmark bar background.
-    int bookmark_button_index = GetIndexOf(source);
+    int bookmark_button_index = GetIndexForButton(source);
     DCHECK(bookmark_button_index != -1 &&
            bookmark_button_index < GetBookmarkButtonCount());
     const BookmarkNode* node =
@@ -1618,6 +1622,14 @@ void BookmarkBarView::Init() {
 
   // Child views are traversed in the order they are added. Make sure the order
   // they are added matches the visual order.
+  apps_page_shortcut_ = CreateAppsPageShortcutButton();
+  AddChildView(apps_page_shortcut_);
+
+  managed_bookmarks_button_ = CreateManagedBookmarksButton();
+  // Also re-enabled when the model is loaded.
+  managed_bookmarks_button_->SetEnabled(false);
+  AddChildView(managed_bookmarks_button_);
+
   overflow_button_ = CreateOverflowButton();
   AddChildView(overflow_button_);
 
@@ -1626,13 +1638,6 @@ void BookmarkBarView::Init() {
   other_bookmarks_button_->SetEnabled(false);
   AddChildView(other_bookmarks_button_);
 
-  managed_bookmarks_button_ = CreateManagedBookmarksButton();
-  // Also re-enabled when the model is loaded.
-  managed_bookmarks_button_->SetEnabled(false);
-  AddChildView(managed_bookmarks_button_);
-
-  apps_page_shortcut_ = CreateAppsPageShortcutButton();
-  AddChildView(apps_page_shortcut_);
   profile_pref_registrar_.Init(browser_->profile()->GetPrefs());
   profile_pref_registrar_.Add(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
@@ -1666,16 +1671,13 @@ void BookmarkBarView::Init() {
 }
 
 int BookmarkBarView::GetBookmarkButtonCount() const {
-  // We contain seven non-bookmark button views: managed bookmarks, other
-  // bookmarks, bookmarks separator, chevrons (for overflow), apps page, and the
-  // instruction label.
-  return child_count() - 6;
+  return bookmark_buttons_.size();
 }
 
 views::LabelButton* BookmarkBarView::GetBookmarkButton(int index) {
   // CHECK as otherwise we may do the wrong cast.
   CHECK(index >= 0 && index < GetBookmarkButtonCount());
-  return static_cast<views::LabelButton*>(child_at(index));
+  return bookmark_buttons_[index];
 }
 
 BookmarkLaunchLocation BookmarkBarView::GetBookmarkLaunchLocation() const {
@@ -1729,15 +1731,15 @@ MenuButton* BookmarkBarView::CreateOverflowButton() {
 }
 
 views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
+  int index = node->parent()->GetIndexOf(node);
+  views::LabelButton* button = nullptr;
   if (node->is_url()) {
-    BookmarkButton* button =
-        new BookmarkButton(this, node->url(), node->GetTitle());
-    ConfigureButton(node, button);
-    return button;
+    button = new BookmarkButton(this, node->url(), node->GetTitle());
+  } else {
+    button = new BookmarkFolderButton(node->GetTitle(), this, false);
   }
-  views::MenuButton* button =
-      new BookmarkFolderButton(node->GetTitle(), this, false);
   ConfigureButton(node, button);
+  bookmark_buttons_.insert(bookmark_buttons_.cbegin() + index, button);
   return button;
 }
 
@@ -1815,7 +1817,7 @@ bool BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
     return needs_layout_and_paint;
   if (index < GetBookmarkButtonCount()) {
     const BookmarkNode* node = parent->GetChild(index);
-    AddChildViewAt(CreateBookmarkButton(node), index);
+    InsertBookmarkButtonAtIndex(CreateBookmarkButton(node), index);
     return true;
   }
   // If the new node was added after the last button we've created we may be
@@ -1840,7 +1842,9 @@ bool BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
   if (index >= GetBookmarkButtonCount())
     return needs_layout;
 
-  delete child_at(index);
+  views::LabelButton* button = GetBookmarkButton(index);
+  bookmark_buttons_.erase(bookmark_buttons_.cbegin() + index);
+  delete button;
   return true;
 }
 
@@ -2045,7 +2049,7 @@ void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
       // Node is hidden, animate the overflow button.
       throbbing_view_ = overflow_button_;
     } else if (!overflow_only) {
-      throbbing_view_ = static_cast<Button*>(child_at(index));
+      throbbing_view_ = static_cast<Button*>(GetBookmarkButton(index));
     }
   } else if (bookmarks::IsDescendantOf(node, managed_->managed_node())) {
     throbbing_view_ = managed_bookmarks_button_;
@@ -2077,7 +2081,7 @@ views::Button* BookmarkBarView::DetermineViewToThrobFromRemove(
       // Node is hidden, animate the overflow button.
       return overflow_button_;
     }
-    return static_cast<Button*>(child_at(old_index_on_bb));
+    return static_cast<Button*>(GetBookmarkButton(old_index_on_bb));
   }
   if (bookmarks::IsDescendantOf(parent, managed_->managed_node()))
     return managed_bookmarks_button_;
@@ -2162,4 +2166,36 @@ void BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged() {
 void BookmarkBarView::OnShowManagedBookmarksPrefChanged() {
   if (UpdateOtherAndManagedButtonsVisibility())
     LayoutAndPaint();
+}
+
+void BookmarkBarView::InsertBookmarkButtonAtIndex(views::View* button,
+                                                  int index) {
+  int offset = GetIndexOf(managed_bookmarks_button_) + 1;
+// All of the secondary buttons are always in the view hierarchy, even if
+// they're not visible. The order should be: [Apps shortcut] [Managed bookmark
+// button] ..bookmark buttons.. [Overflow chevron] [Other bookmarks]
+#ifndef NDEBUG
+  int view_index = 0;
+  DCHECK_EQ(child_at(view_index++), apps_page_shortcut_);
+  DCHECK_EQ(child_at(view_index++), managed_bookmarks_button_);
+  views::View* child = nullptr;
+  do {
+    child = child_at(view_index++);
+  } while ((child->GetClassName() == BookmarkButton::kViewClassName ||
+            child->GetClassName() == BookmarkFolderButton::kViewClassName)
+           // Overflow and Other Bookmarks are folder buttons
+           && (child != overflow_button_ && child != other_bookmarks_button_));
+  DCHECK_EQ(child, overflow_button_);
+  DCHECK_EQ(child_at(view_index++), other_bookmarks_button_);
+#endif
+  AddChildViewAt(button, offset + index);
+}
+
+int BookmarkBarView::GetIndexForButton(views::View* button) {
+  auto it =
+      std::find(bookmark_buttons_.cbegin(), bookmark_buttons_.cend(), button);
+  if (it == bookmark_buttons_.cend())
+    return -1;
+
+  return it - bookmark_buttons_.cbegin();
 }
