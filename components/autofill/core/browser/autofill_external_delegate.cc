@@ -434,14 +434,19 @@ void AutofillExternalDelegate::InsertDataListValues(
 
 base::string16 AutofillExternalDelegate::GetSettingsSuggestionValue()
     const {
-  if (GetPopupType() == PopupType::kAddresses)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_ADDRESSES);
+  switch (GetPopupType()) {
+    case PopupType::kAddresses:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_ADDRESSES);
 
-  if (GetPopupType() == PopupType::kCreditCards)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_PAYMENT_METHODS);
+    case PopupType::kCreditCards:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_PAYMENT_METHODS);
 
-  DCHECK_EQ(GetPopupType(), PopupType::kPersonalInformation);
-  return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE);
+    case PopupType::kPersonalInformation:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE);
+
+    default:
+      return base::string16();
+  }
 }
 
 }  // namespace autofill
