@@ -20,10 +20,12 @@
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/socket.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/socket/tcp_client_socket.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 
@@ -37,7 +39,6 @@ class BrowserContext;
 
 namespace net {
 class IOBuffer;
-class URLRequestContextGetter;
 }
 
 namespace extensions {
@@ -146,7 +147,9 @@ class SocketAsyncApiFunction : public AsyncApiFunction {
   std::unique_ptr<SocketResourceManagerInterface> manager_;
 };
 
-class SocketExtensionWithDnsLookupFunction : public SocketAsyncApiFunction {
+class SocketExtensionWithDnsLookupFunction
+    : public SocketAsyncApiFunction,
+      public network::mojom::ResolveHostClient {
  protected:
   SocketExtensionWithDnsLookupFunction();
   ~SocketExtensionWithDnsLookupFunction() override;
@@ -159,12 +162,18 @@ class SocketExtensionWithDnsLookupFunction : public SocketAsyncApiFunction {
 
   net::AddressList addresses_;
 
-  std::unique_ptr<net::HostResolver::Request> request_;
-
  private:
-  void OnDnsLookup(int resolve_result);
+  // network::mojom::ResolveHostClient implementation:
+  void OnComplete(
+      int result,
+      const base::Optional<net::AddressList>& resolved_addresses) override;
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  network::mojom::HostResolverPtrInfo host_resolver_info_;
+  network::mojom::HostResolverPtr host_resolver_;
+
+  // A reference to |this| must be taken while the request is being made on this
+  // binding so the object is alive when the request completes.
+  mojo::Binding<network::mojom::ResolveHostClient> binding_;
 };
 
 class SocketCreateFunction : public SocketAsyncApiFunction {

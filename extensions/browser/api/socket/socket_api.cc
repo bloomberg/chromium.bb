@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/socket/socket.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "extensions/browser/api/socket/tls_socket.h"
@@ -30,8 +29,6 @@
 #include "net/base/network_interfaces.h"
 #include "net/base/url_util.h"
 #include "net/log/net_log_with_source.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace extensions {
 
@@ -178,7 +175,8 @@ void SocketAsyncApiFunction::OnFirewallHoleOpened(
 
 #endif  // OS_CHROMEOS
 
-SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction() {}
+SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction()
+    : binding_(this) {}
 
 SocketExtensionWithDnsLookupFunction::~SocketExtensionWithDnsLookupFunction() {
 }
@@ -186,36 +184,43 @@ SocketExtensionWithDnsLookupFunction::~SocketExtensionWithDnsLookupFunction() {
 bool SocketExtensionWithDnsLookupFunction::PrePrepare() {
   if (!SocketAsyncApiFunction::PrePrepare())
     return false;
-  url_request_context_getter_ =
-      content::BrowserContext::GetDefaultStoragePartition(browser_context())
-          ->GetURLRequestContext();
+  content::BrowserContext::GetDefaultStoragePartition(browser_context())
+      ->GetNetworkContext()
+      ->CreateHostResolver(mojo::MakeRequest(&host_resolver_info_));
   return true;
 }
 
 void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
     const net::HostPortPair& host_port_pair) {
-  net::HostResolver* host_resolver =
-      HostResolverWrapper::GetInstance()->GetHostResolver(
-          url_request_context_getter_.get());
-  DCHECK(host_resolver);
+  DCHECK(host_resolver_info_);
+  DCHECK(!binding_);
+  network::mojom::ResolveHostClientPtr client_ptr;
+  binding_.Bind(mojo::MakeRequest(&client_ptr));
+  binding_.set_connection_error_handler(
+      base::BindOnce(&SocketExtensionWithDnsLookupFunction::OnComplete,
+                     base::Unretained(this), net::ERR_FAILED, base::nullopt));
+  host_resolver_ =
+      network::mojom::HostResolverPtr(std::move(host_resolver_info_));
+  host_resolver_->ResolveHost(host_port_pair, nullptr, std::move(client_ptr));
 
-  net::HostResolver::RequestInfo request_info(host_port_pair);
-  int resolve_result = host_resolver->Resolve(
-      request_info, net::DEFAULT_PRIORITY, &addresses_,
-      base::Bind(&SocketExtensionWithDnsLookupFunction::OnDnsLookup, this),
-      &request_, net::NetLogWithSource());
-
-  if (resolve_result != net::ERR_IO_PENDING)
-    OnDnsLookup(resolve_result);
+  // Balanced in OnComplete().
+  AddRef();
 }
 
-void SocketExtensionWithDnsLookupFunction::OnDnsLookup(int resolve_result) {
-  if (resolve_result == net::OK) {
-    DCHECK(!addresses_.empty());
+void SocketExtensionWithDnsLookupFunction::OnComplete(
+    int result,
+    const base::Optional<net::AddressList>& resolved_addresses) {
+  host_resolver_.reset();
+  binding_.Close();
+  if (result == net::OK) {
+    DCHECK(resolved_addresses && !resolved_addresses->empty());
+    addresses_ = resolved_addresses.value();
   } else {
     error_ = kDnsLookupFailedError;
   }
-  AfterDnsLookup(resolve_result);
+  AfterDnsLookup(result);
+
+  Release();  // Added in StartDnsLookup().
 }
 
 SocketCreateFunction::SocketCreateFunction()

@@ -62,8 +62,6 @@ jumbo_static_library("test_support") {
   sources = [
     "browser/api/declarative/test_rules_registry.cc",
     "browser/api/declarative/test_rules_registry.h",
-    "browser/api/dns/mock_host_resolver_creator.cc",
-    "browser/api/dns/mock_host_resolver_creator.h",
     "browser/api/storage/settings_test_util.cc",
     "browser/api/storage/settings_test_util.h",
     "browser/api_test_utils.cc",

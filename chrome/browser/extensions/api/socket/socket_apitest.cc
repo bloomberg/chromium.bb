@@ -9,8 +9,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "extensions/browser/api/dns/host_resolver_wrapper.h"
-#include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api/socket/socket_api.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -22,35 +20,15 @@ using extensions::ResultCatcher;
 
 namespace {
 
-const char kHostname[] = "127.0.0.1";
+const char kHostname[] = "www.foo.com";
 const int kPort = 8888;
 
 class SocketApiTest : public extensions::ExtensionApiTest {
  public:
-  SocketApiTest()
-      : resolver_event_(base::WaitableEvent::ResetPolicy::MANUAL,
-                        base::WaitableEvent::InitialState::NOT_SIGNALED),
-        resolver_creator_(new extensions::MockHostResolverCreator()) {}
-
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
-    extensions::HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
-        resolver_creator_->CreateMockHostResolver());
+    host_resolver()->AddRule(kHostname, "127.0.0.1");
   }
-
-  void TearDownOnMainThread() override {
-    extensions::HostResolverWrapper::GetInstance()->
-        SetHostResolverForTesting(NULL);
-    resolver_creator_->DeleteMockHostResolver();
-  }
-
- private:
-  base::WaitableEvent resolver_event_;
-
-  // The MockHostResolver asserts that it's used on the same thread on which
-  // it's created, which is actually a stronger rule than its real counterpart.
-  // But that's fine; it's good practice.
-  scoped_refptr<extensions::MockHostResolverCreator> resolver_creator_;
 };
 
 }  // namespace
@@ -67,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
   ASSERT_GT(port, 0);
 
   // Test that sendTo() is properly resolving hostnames.
-  host_port_pair.set_host("LOCALhost");
+  host_port_pair.set_host(kHostname);
 
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
@@ -115,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerExtension) {
   ExtensionTestMessageListener listener("info_please", true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("socket/api")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(base::StringPrintf("tcp_server:%s:%d", kHostname, kPort));
+  listener.Reply(base::StringPrintf("tcp_server:127.0.0.1:%d", kPort));
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

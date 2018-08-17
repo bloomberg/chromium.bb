@@ -12,8 +12,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/network_service_test_helper.h"
-#include "extensions/browser/api/dns/host_resolver_wrapper.h"
-#include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api/sockets_tcp/sockets_tcp_api.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/extension.h"
@@ -30,11 +28,11 @@
 
 namespace extensions {
 
-const std::string kHostname = "127.0.0.1";
+const char kHostname[] = "www.foo.com";
 
 class SocketsTcpApiTest : public ShellApiTest {
  public:
-  SocketsTcpApiTest() : resolver_creator_(new MockHostResolverCreator()) {
+  SocketsTcpApiTest() {
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
           switches::kUseMockCertVerifierForTesting);
@@ -43,25 +41,8 @@ class SocketsTcpApiTest : public ShellApiTest {
 
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
-
-    // TODO(xunjieli): Figure out what to do with this in-process host resolver
-    // which doesn't work with the out-of-process network service.
-    HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
-        resolver_creator_->CreateMockHostResolver());
+    host_resolver()->AddRule(kHostname, "127.0.0.1");
   }
-
-  void TearDownOnMainThread() override {
-    HostResolverWrapper::GetInstance()->SetHostResolverForTesting(NULL);
-    resolver_creator_->DeleteMockHostResolver();
-
-    ShellApiTest::TearDownOnMainThread();
-  }
-
- private:
-  // The MockHostResolver asserts that it's used on the same thread on which
-  // it's created, which is actually a stronger rule than its real counterpart.
-  // But that's fine; it's good practice.
-  scoped_refptr<MockHostResolverCreator> resolver_creator_;
 };
 
 IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketsTcpCreateGood) {
@@ -96,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtension) {
   ASSERT_TRUE(port > 0);
 
   // Test that connect() is properly resolving hostnames.
-  host_port_pair.set_host("lOcAlHoSt");
+  host_port_pair.set_host(kHostname);
 
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser_context());

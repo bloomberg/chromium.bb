@@ -6,8 +6,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
-#include "extensions/browser/api/dns/host_resolver_wrapper.h"
-#include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api/sockets_tcp_server/sockets_tcp_server_api.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -19,38 +17,9 @@
 
 namespace extensions {
 
-const std::string kHostname = "127.0.0.1";
 const int kPort = 8888;
 
-class SocketsTcpServerApiTest : public ShellApiTest {
- public:
-  SocketsTcpServerApiTest()
-      : resolver_event_(base::WaitableEvent::ResetPolicy::MANUAL,
-                        base::WaitableEvent::InitialState::NOT_SIGNALED),
-        resolver_creator_(new MockHostResolverCreator()) {}
-
-  void SetUpOnMainThread() override {
-    ShellApiTest::SetUpOnMainThread();
-
-    HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
-        resolver_creator_->CreateMockHostResolver());
-  }
-
-  void TearDownOnMainThread() override {
-    HostResolverWrapper::GetInstance()->SetHostResolverForTesting(NULL);
-    resolver_creator_->DeleteMockHostResolver();
-
-    ShellApiTest::TearDownOnMainThread();
-  }
-
- private:
-  base::WaitableEvent resolver_event_;
-
-  // The MockHostResolver asserts that it's used on the same thread on which
-  // it's created, which is actually a stronger rule than its real counterpart.
-  // But that's fine; it's good practice.
-  scoped_refptr<MockHostResolverCreator> resolver_creator_;
-};
+class SocketsTcpServerApiTest : public ShellApiTest {};
 
 IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPCreateGood) {
   scoped_refptr<api::SocketsTcpServerCreateFunction> socket_create_function(
@@ -77,8 +46,7 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPServerExtension) {
   ExtensionTestMessageListener listener("info_please", true);
   ASSERT_TRUE(LoadApp("sockets_tcp_server/api"));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(
-      base::StringPrintf("tcp_server:%s:%d", kHostname.c_str(), kPort));
+  listener.Reply(base::StringPrintf("tcp_server:127.0.0.1:%d", kPort));
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
