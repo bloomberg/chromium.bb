@@ -7,17 +7,14 @@
 
 #include <stdint.h>
 
+#include "base/metrics/ukm_source_id.h"
 #include "services/metrics/public/cpp/metrics_export.h"
 
 namespace ukm {
 
 typedef int64_t SourceId;
 
-enum class SourceIdType : int64_t {
-  UKM = 0,
-  NAVIGATION_ID = 1,
-  APP_ID = 2,
-};
+using SourceIdType = base::UkmSourceId::Type;
 
 const SourceId kInvalidSourceId = 0;
 

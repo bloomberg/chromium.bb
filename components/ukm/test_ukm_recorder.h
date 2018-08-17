@@ -36,6 +36,7 @@ class TestUkmRecorder : public UkmRecorderImpl {
   size_t entries_count() const { return entries().size(); }
 
   using UkmRecorderImpl::UpdateSourceURL;
+  using UkmRecorderImpl::RecordOtherURL;
 
   // Gets all recorded UkmSource data.
   const std::map<ukm::SourceId, std::unique_ptr<UkmSource>>& GetSources()
