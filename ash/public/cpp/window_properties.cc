@@ -78,6 +78,16 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       kHideShelfWhenFullscreenKey, mojom::kHideShelfWhenFullscreen_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
+      kIsDeferredTabDraggingTargetWindowKey,
+      mojom::kIsDeferredTabDraggingTargetWindow_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
+      kIsDraggingTabsKey, mojom::kIsDraggingTabs_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
+      kIsShowingInOverviewKey, mojom::kIsShowingInOverview_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
       kPanelAttachedKey, ui::mojom::WindowManager::kPanelAttached_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(

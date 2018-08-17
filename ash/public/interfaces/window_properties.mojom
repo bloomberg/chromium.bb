@@ -51,6 +51,20 @@ const string kHideCaptionButtonsInTabletMode_Property =
 const string kHideShelfWhenFullscreen_Property =
   "ash:hide-shelf-when-fullscreen";
 
+// If true, the window is the target window for the tab-dragged window. The
+// key is used by overview to show a highlight indication to indicate which
+// overview window the dragged tabs will merge into when the user releases the
+// pointer.
+const string kIsDeferredTabDraggingTargetWindow_Property =
+    "ash:is-deferred-tab-dragging-target-window";
+
+// If true, the window is a browser window and its tab(s) are currently being
+// dragged.
+const string kIsDraggingTabs_Property = "ash:is-dragging-tabs";
+
+// If true, the window is currently showing in overview mode.
+const string kIsShowingInOverview_Property = "ash:is-showing-in-overview";
+
 // This is put on windows to indicate that ash should perform auto management of
 // window positions; when you open a second browser, ash will move the two to
 // minimize overlap.
