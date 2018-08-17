@@ -2891,6 +2891,35 @@ TEST_F(HostResolverImplTest, InputObjectsBoundToCallback_Async) {
   EXPECT_TRUE(result_request);
 }
 
+TEST_F(HostResolverImplTest, IsSpeculative_ResolveHost) {
+  proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
+  proc_->SignalMultiple(1u);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.is_speculative = true;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("just.testing", 80), NetLogWithSource(), parameters));
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_FALSE(response.request()->GetAddressResults());
+
+  ASSERT_EQ(1u, proc_->GetCaptureList().size());
+  EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
+
+  // Reresolve without the |is_speculative| flag should immediately return from
+  // cache.
+  ResolveHostResponseHelper response2(resolver_->CreateRequest(
+      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt));
+
+  EXPECT_THAT(response2.result_error(), IsOk());
+  EXPECT_THAT(response2.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("192.168.1.42", 80)));
+
+  EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
+  EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No increase.
+}
+
 DnsConfig CreateValidDnsConfig() {
   IPAddress dns_ip(192, 168, 1, 0);
   DnsConfig config;

@@ -31,6 +31,7 @@ ConvertOptionalParameters(
   net::HostResolver::ResolveHostParameters parameters;
   parameters.dns_query_type = mojo_parameters->dns_query_type;
   parameters.initial_priority = mojo_parameters->initial_priority;
+  parameters.is_speculative = mojo_parameters->is_speculative;
   return parameters;
 }
 }  // namespace

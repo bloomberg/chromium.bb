@@ -196,6 +196,12 @@ class NET_EXPORT HostResolver {
 
     // The initial net priority for the host resolution request.
     RequestPriority initial_priority = RequestPriority::DEFAULT_PRIORITY;
+
+    // Set |true| iff the host resolve request is only being made speculatively
+    // to fill the cache and the result addresses will not be used. The request
+    // will receive special logging/observer treatment, and the result addresses
+    // will always be |base::nullopt|.
+    bool is_speculative = false;
   };
 
   // Set Options.max_concurrent_resolves to this to select a default level

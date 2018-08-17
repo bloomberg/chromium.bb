@@ -618,14 +618,12 @@ class HostResolverImpl::RequestImpl
   RequestImpl(const NetLogWithSource& source_net_log,
               const HostPortPair& request_host,
               const base::Optional<ResolveHostParameters>& optional_parameters,
-              bool is_speculative,
               base::WeakPtr<HostResolverImpl> resolver)
       : RequestImpl(source_net_log,
                     request_host,
                     optional_parameters,
                     0 /* host_resolver_flags */,
                     true /* allow_cached_response */,
-                    is_speculative,
                     resolver) {}
 
   // Overload for use by the legacy Resolve() API. Has more advanced parameters
@@ -635,13 +633,11 @@ class HostResolverImpl::RequestImpl
               const base::Optional<ResolveHostParameters>& optional_parameters,
               HostResolverFlags host_resolver_flags,
               bool allow_cached_response,
-              bool is_speculative,
               base::WeakPtr<HostResolverImpl> resolver)
       : source_net_log_(source_net_log),
         request_host_(request_host),
         host_resolver_flags_(host_resolver_flags),
         allow_cached_response_(allow_cached_response),
-        is_speculative_(is_speculative),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
         priority_(parameters_.initial_priority),
@@ -684,6 +680,7 @@ class HostResolverImpl::RequestImpl
     // completed.
     DCHECK(!complete_);
     DCHECK(!address_results_);
+    DCHECK(!parameters_.is_speculative);
 
     address_results_ = address_results;
   }
@@ -733,8 +730,6 @@ class HostResolverImpl::RequestImpl
 
   bool allow_cached_response() const { return allow_cached_response_; }
 
-  bool is_speculative() const { return is_speculative_; }
-
   const ResolveHostParameters& parameters() const { return parameters_; }
 
   RequestPriority priority() const { return priority_; }
@@ -758,7 +753,6 @@ class HostResolverImpl::RequestImpl
   const HostPortPair request_host_;
   const HostResolverFlags host_resolver_flags_;
   const bool allow_cached_response_;
-  const bool is_speculative_;
   const ResolveHostParameters parameters_;
 
   RequestPriority priority_;
@@ -827,7 +821,7 @@ class HostResolverImpl::LegacyRequestImpl : public HostResolver::Request {
     // Must call AssignCallback() before async results.
     DCHECK(callback_);
 
-    if (error == OK) {
+    if (error == OK && !inner_request_->parameters().is_speculative) {
       // Legacy API does not allow non-address results (eg TXT), so AddressList
       // is always expected to be present on OK.
       DCHECK(inner_request_->GetAddressResults());
@@ -1456,7 +1450,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         base::Bind(&NetLogJobAttachCallback, request->source_net_log().source(),
                    priority()));
 
-    if (!request->is_speculative())
+    if (!request->parameters().is_speculative)
       had_non_speculative_request_ = true;
 
     requests_.Append(request);
@@ -1954,10 +1948,11 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       LogFinishRequest(req->source_net_log(), entry.error());
       if (did_complete) {
         // Record effective total time from creation to completion.
-        RecordTotalTime(req->is_speculative(), false /* from_cache */,
+        RecordTotalTime(req->parameters().is_speculative,
+                        false /* from_cache */,
                         tick_clock_->NowTicks() - req->request_time());
       }
-      if (entry.error() == OK) {
+      if (entry.error() == OK && !req->parameters().is_speculative) {
         req->set_address_results(EnsurePortOnAddressList(
             entry.addresses(), req->request_host().port()));
       }
@@ -2145,7 +2140,6 @@ HostResolverImpl::CreateRequest(
     const NetLogWithSource& net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   return std::make_unique<RequestImpl>(net_log, host, optional_parameters,
-                                       false /* is_speculative */,
                                        weak_ptr_factory_.GetWeakPtr());
 }
 
@@ -2164,13 +2158,13 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
       source_net_log, info.host_port_pair(),
       RequestInfoToResolveHostParameters(info, priority),
       info.host_resolver_flags(), info.allow_cached_response(),
-      info.is_speculative(), weak_ptr_factory_.GetWeakPtr());
+      weak_ptr_factory_.GetWeakPtr());
   auto wrapped_request =
       std::make_unique<LegacyRequestImpl>(std::move(request));
 
   int rv = wrapped_request->Start();
 
-  if (rv == OK) {
+  if (rv == OK && !info.is_speculative()) {
     DCHECK(wrapped_request->inner_request().GetAddressResults());
     *addresses = wrapped_request->inner_request().GetAddressResults().value();
   } else if (rv == ERR_IO_PENDING) {
@@ -2357,13 +2351,13 @@ int HostResolverImpl::Resolve(RequestImpl* request) {
       request->host_resolver_flags(), request->allow_cached_response(),
       false /* allow_stale */, nullptr /* stale_info */,
       request->source_net_log(), &addresses, &key);
-  if (rv == OK) {
+  if (rv == OK && !request->parameters().is_speculative) {
     request->set_address_results(
         EnsurePortOnAddressList(addresses, request->request_host().port()));
   }
   if (rv != ERR_DNS_CACHE_MISS) {
     LogFinishRequest(request->source_net_log(), rv);
-    RecordTotalTime(request->is_speculative(), true /* from_cache */,
+    RecordTotalTime(request->parameters().is_speculative, true /* from_cache */,
                     base::TimeDelta());
     return rv;
   }

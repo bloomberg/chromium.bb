@@ -671,5 +671,30 @@ TEST_F(HostResolverTest, CloseBinding_SubsequentRequest) {
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
 }
 
+TEST_F(HostResolverTest, IsSpeculative) {
+  net::NetLog net_log;
+  std::unique_ptr<net::HostResolver> inner_resolver =
+      net::HostResolver::CreateDefaultResolver(&net_log);
+
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+  mojom::ResolveHostParametersPtr parameters =
+      mojom::ResolveHostParameters::New();
+  parameters->is_speculative = true;
+
+  // Resolve "localhost" because it should always resolve fast and locally, even
+  // when using a real HostResolver.
+  resolver.ResolveHost(net::HostPortPair("localhost", 80),
+                       std::move(parameters), std::move(response_client_ptr));
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  EXPECT_FALSE(response_client.result_addresses());
+  EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
+}
+
 }  // namespace
 }  // namespace network
