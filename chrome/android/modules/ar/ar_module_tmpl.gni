@@ -8,9 +8,10 @@ import("//device/vr/buildflags/buildflags.gni")
 assert(enable_arcore)
 
 template("ar_module_tmpl") {
-  _manifest = "$target_gen_dir/AndroidManifest.xml"
   assert(defined(invoker.manifest_package))
+  assert(defined(invoker.module_name))
 
+  _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
   _manifest_target = "${target_name}__manifest"
   jinja_template(_manifest_target) {
     input = "//chrome/android/modules/ar/AndroidManifest.xml"
@@ -22,7 +23,7 @@ template("ar_module_tmpl") {
   }
 
   android_app_bundle_module(target_name) {
-    module_name = "ArModule"
+    module_name = invoker.module_name
     android_manifest = _manifest
     android_manifest_dep = ":$_manifest_target"
     deps = [
