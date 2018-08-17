@@ -66,9 +66,7 @@ AppListConfig::AppListConfig()
     grid_focus_corner_radius_ = 12;
     app_title_max_line_height_ = 20;
     app_title_font_ =
-        ui::ResourceBundle::GetSharedInstance()
-            .GetFontList(ui::ResourceBundle::LargeFont)
-            .DeriveWithHeightUpperBound(app_title_max_line_height_);
+        ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(1);
     peeking_app_list_height_ = 284;
     search_box_closed_top_padding_ = 0;
     search_box_peeking_top_padding_ = 84;
