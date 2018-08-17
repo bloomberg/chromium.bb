@@ -236,6 +236,7 @@ public class PrefetchBackgroundTaskTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/875433")
     public void testReschedule() throws Exception {
         PrefetchBackgroundTask.skipConditionCheckingForTesting();
         scheduleTask(0);
