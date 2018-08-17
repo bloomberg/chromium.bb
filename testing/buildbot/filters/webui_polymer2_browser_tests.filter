@@ -40,6 +40,9 @@
 -PrintPreviewDestinationListTest.FireDestinationSelected
 -SettingsAdvancedPageBrowserTest.Load
 
+# Mac only failure. See crbug.com/874976
+-MaterialHistoryItemTest.All
+
 # Tests that fail only on official builds.
 -CrSettingsChromeCleanupPageTest.All
 -CrSettingsIncompatibleApplicationsPageTest.All
