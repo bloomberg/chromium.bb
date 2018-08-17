@@ -1998,9 +1998,40 @@ TEST_F(ShelfViewTest, TabletModeStartAndEndClosesContextMenu) {
 TEST_F(ShelfViewTest, AppListButtonShowsContextMenu) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   AppListButton* app_list_button = shelf_view_->GetAppListButton();
+
   generator->MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
   generator->PressRightButton();
+
   EXPECT_TRUE(test_api_->CloseMenu());
+}
+
+// Tests that the back button does not show a context menu.
+TEST_F(ShelfViewTest, NoContextMenuOnBackButton) {
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Enable tablet mode to show the back button. Wait for tablet mode animations
+  // to finish in order for the BackButton to move out from under the
+  // AppListButton.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+
+  views::View* back_button = shelf_view_->GetBackButton();
+  generator->MoveMouseTo(back_button->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
+
+  EXPECT_FALSE(test_api_->CloseMenu());
+}
+
+// Tests that the overflow button does not show a context menu.
+TEST_F(ShelfViewTest, NoContextMenuOnOverflowButton) {
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  AddButtonsUntilOverflow();
+  views::View* overflow_button = test_api_->overflow_button();
+
+  generator->MoveMouseTo(overflow_button->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
+
+  EXPECT_FALSE(test_api_->CloseMenu());
 }
 
 // Tests that a ShelfButton ink drop highlight is set to ACTIVATED when a menu
@@ -3036,35 +3067,6 @@ TEST_F(OverflowButtonInkDropTest, TouchDragOutAndBack) {
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 }
 
-// Tests ink drop state transitions for the overflow button when the user long
-// presses on the button to show the context menu.
-TEST_F(OverflowButtonInkDropTest, TouchContextMenu) {
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(GetScreenPointInsideOverflowButton());
-  base::ScopedMockTimeMessageLoopTaskRunner mock_task_runner;
-
-  generator->PressTouch();
-  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-            overflow_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-              ElementsAre(views::InkDropState::ACTION_PENDING));
-
-  mock_task_runner->FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(views::InkDropState::HIDDEN,
-            overflow_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-              ElementsAre(views::InkDropState::ALTERNATE_ACTION_PENDING,
-                          views::InkDropState::HIDDEN));
-
-  generator->ReleaseTouch();
-  EXPECT_EQ(views::InkDropState::HIDDEN,
-            overflow_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
-
-  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
-}
-
 // Test fixture to run overflow button tests for LTR and RTL directions.
 class OverflowButtonTextDirectionTest
     : public OverflowButtonInkDropTest,
@@ -3246,27 +3248,6 @@ TEST_F(OverflowButtonActiveInkDropTest, MouseDragOutAndBack) {
 }
 
 // Tests ink drop state transitions for the overflow button when it is active
-// and the user right clicks on the button to show the context menu.
-TEST_F(OverflowButtonActiveInkDropTest, MouseContextMenu) {
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->MoveMouseTo(GetScreenPointInsideOverflowButton());
-
-  generator->PressRightButton();
-  EXPECT_EQ(views::InkDropState::ACTIVATED,
-            overflow_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
-
-  generator->ReleaseRightButton();
-  EXPECT_EQ(views::InkDropState::ACTIVATED,
-            overflow_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
-
-  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
-}
-
-// Tests ink drop state transitions for the overflow button when it is active
 // and the user taps on it.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDeactivate) {
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -3334,34 +3315,6 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDragOutAndBack) {
               IsEmpty());
 
   generator->MoveTouch(GetScreenPointInsideOverflowButton());
-  EXPECT_EQ(views::InkDropState::ACTIVATED,
-            overflow_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
-
-  generator->ReleaseTouch();
-  EXPECT_EQ(views::InkDropState::ACTIVATED,
-            overflow_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
-
-  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
-}
-
-// Tests ink drop state transitions for the overflow button when it is active
-// and the user long presses on the button to show the context menu.
-TEST_F(OverflowButtonActiveInkDropTest, TouchContextMenu) {
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->set_current_location(GetScreenPointInsideOverflowButton());
-  base::ScopedMockTimeMessageLoopTaskRunner mock_task_runner;
-
-  generator->PressTouch();
-  EXPECT_EQ(views::InkDropState::ACTIVATED,
-            overflow_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
-
-  mock_task_runner->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             overflow_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),

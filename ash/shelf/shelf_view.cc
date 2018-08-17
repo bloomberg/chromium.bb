@@ -371,7 +371,6 @@ void ShelfView::Init() {
     AddChildView(child);
   }
   overflow_button_ = new OverflowButton(this, shelf_);
-  overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
   UpdateBackButton();
@@ -1138,7 +1137,9 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
       return nullptr;
   }
 
-  view->set_context_menu_controller(this);
+  if (item.type != TYPE_BACK_BUTTON)
+    view->set_context_menu_controller(this);
+
   ConfigureChildView(view);
   return view;
 }
