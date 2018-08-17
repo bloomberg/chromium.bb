@@ -98,7 +98,6 @@ void CrxUpdateService::Start() {
       base::TimeDelta::FromSeconds(config_->NextCheckDelay()),
       base::Bind(base::IgnoreResult(&CrxUpdateService::CheckForUpdates),
                  base::Unretained(this)),
-      // TODO: Stop component update if requested.
       base::DoNothing());
 }
 
@@ -200,7 +199,7 @@ std::unique_ptr<ComponentInfo> CrxUpdateService::GetComponentForMimeType(
   const auto it = component_ids_by_mime_type_.find(mime_type);
   if (it == component_ids_by_mime_type_.end())
     return nullptr;
-  auto* const component = GetComponent(it->second);
+  const auto component = GetComponent(it->second);
   if (!component)
     return nullptr;
   return std::make_unique<ComponentInfo>(
@@ -224,11 +223,13 @@ OnDemandUpdater& CrxUpdateService::GetOnDemandUpdater() {
   return *this;
 }
 
-const CrxComponent* CrxUpdateService::GetComponent(
+base::Optional<CrxComponent> CrxUpdateService::GetComponent(
     const std::string& id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const auto it(components_.find(id));
-  return it != components_.end() ? &(it->second) : nullptr;
+  const auto it = components_.find(id);
+  if (it != components_.end())
+    return it->second;
+  return base::nullopt;
 }
 
 const CrxUpdateItem* CrxUpdateService::GetComponentState(
@@ -328,7 +329,7 @@ bool CrxUpdateService::CheckForUpdates(
   for (const auto id : components_order_) {
     DCHECK(components_.find(id) != components_.end());
 
-    auto* component(GetComponent(id));
+    const auto component = GetComponent(id);
     if (!component || component->requires_network_encryption)
       secure_ids.push_back(id);
     else
@@ -392,16 +393,12 @@ bool CrxUpdateService::GetComponentDetails(const std::string& id,
   return false;
 }
 
-std::vector<std::unique_ptr<CrxComponent>> CrxUpdateService::GetCrxComponents(
+std::vector<base::Optional<CrxComponent>> CrxUpdateService::GetCrxComponents(
     const std::vector<std::string>& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<std::unique_ptr<CrxComponent>> components;
-  for (const auto& id : ids) {
-    const auto* registered_component = GetComponent(id);
-    components.push_back(registered_component ? std::make_unique<CrxComponent>(
-                                                    *registered_component)
-                                              : nullptr);
-  }
+  std::vector<base::Optional<CrxComponent>> components;
+  for (const auto& id : ids)
+    components.push_back(GetComponent(id));
   return components;
 }
 
@@ -420,7 +417,7 @@ void CrxUpdateService::OnUpdateComplete(Callback callback,
 
   for (const auto id : components_pending_unregistration_) {
     if (!update_client_->IsUpdating(id)) {
-      const auto* component = GetComponent(id);
+      const auto component = GetComponent(id);
       if (component)
         DoUnregisterComponent(*component);
     }
@@ -451,16 +448,16 @@ void CrxUpdateService::OnEvent(Events event, const std::string& id) {
     return;
 
   // Update the state of the item.
-  auto it = component_states_.find(id);
-  DCHECK(it != component_states_.end());
-  it->second = update_item;
+  const auto it = component_states_.find(id);
+  if (it != component_states_.end())
+    it->second = update_item;
 
   // Update the component registration with the new version.
   if (event == Observer::Events::COMPONENT_UPDATED) {
-    auto* component(const_cast<CrxComponent*>(GetComponent(id)));
-    if (component) {
-      component->version = update_item.next_version;
-      component->fingerprint = update_item.next_fp;
+    const auto it = components_.find(id);
+    if (it != components_.end()) {
+      it->second.version = update_item.next_version;
+      it->second.fingerprint = update_item.next_fp;
     }
   }
 }

@@ -256,7 +256,7 @@ void Component::Uninstall(const base::Version& version, int reason) {
 
   DCHECK_EQ(ComponentState::kNew, state());
 
-  crx_component_ = std::make_unique<CrxComponent>();
+  crx_component_ = CrxComponent();
   crx_component_->version = version;
 
   previous_version_ = version;

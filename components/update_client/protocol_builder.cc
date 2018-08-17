@@ -336,7 +336,7 @@ std::string BuildUpdateCheckRequest(
     DCHECK_EQ(1u, components.count(id));
     const auto& component = *components.at(id);
     const auto& component_id = component.id();
-    const auto* crx_component = component.crx_component();
+    const auto crx_component = component.crx_component();
 
     DCHECK(crx_component);
 

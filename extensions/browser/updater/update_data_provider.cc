@@ -72,24 +72,25 @@ void UpdateDataProvider::Shutdown() {
   browser_context_ = nullptr;
 }
 
-std::vector<std::unique_ptr<update_client::CrxComponent>>
+std::vector<base::Optional<update_client::CrxComponent>>
 UpdateDataProvider::GetData(bool install_immediately,
                             const ExtensionUpdateDataMap& update_crx_component,
                             const std::vector<std::string>& ids) {
-  std::vector<std::unique_ptr<update_client::CrxComponent>> data;
+  std::vector<base::Optional<update_client::CrxComponent>> data;
   if (!browser_context_)
     return data;
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
   const ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser_context_);
   for (const auto& id : ids) {
     const Extension* extension = registry->GetInstalledExtension(id);
-    data.push_back(extension ? std::make_unique<update_client::CrxComponent>()
-                             : nullptr);
+    data.push_back(extension
+                       ? base::make_optional<update_client::CrxComponent>()
+                       : base::nullopt);
     if (!extension)
       continue;
     DCHECK_NE(0u, update_crx_component.count(id));
     const ExtensionUpdateData& extension_data = update_crx_component.at(id);
-    update_client::CrxComponent* crx_component = data.back().get();
+    auto& crx_component = data.back();
     std::string pubkey_bytes;
     base::Base64Decode(extension->public_key(), &pubkey_bytes);
     crx_component->pk_hash.resize(crypto::kSHA256Length, 0);

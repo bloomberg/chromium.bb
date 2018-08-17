@@ -311,7 +311,8 @@ TEST_F(ComponentInstallerTest, RegisterComponent) {
 
   CrxUpdateItem item;
   EXPECT_TRUE(component_updater()->GetComponentDetails(id, &item));
-  const CrxComponent& component(item.component);
+  ASSERT_TRUE(item.component);
+  const CrxComponent& component = *item.component;
 
   update_client::InstallerAttributes expected_attrs;
   expected_attrs["ap"] = "fake-ap";
