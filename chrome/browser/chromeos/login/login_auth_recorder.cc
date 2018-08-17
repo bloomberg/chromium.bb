@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/login_auth_recorder.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "components/session_manager/core/session_manager.h"
 
@@ -101,8 +100,6 @@ AuthMethodSwitchType FindSwitchType(AuthMethod previous, AuthMethod current) {
 
 LoginAuthRecorder::LoginAuthRecorder() {
   session_manager::SessionManager::Get()->AddObserver(this);
-  UMA_HISTOGRAM_BOOLEAN("Fingerprint.UnlockEnabled",
-                        chromeos::quick_unlock::IsFingerprintEnabled());
 }
 
 LoginAuthRecorder::~LoginAuthRecorder() {
