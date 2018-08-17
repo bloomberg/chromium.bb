@@ -818,10 +818,10 @@ void WindowSelectorItem::ActivateDraggedWindow() {
 }
 
 void WindowSelectorItem::ResetDraggedWindowGesture() {
-  OnSelectorItemDragEnded();
   if (!IsDragItem())
     return;
 
+  OnSelectorItemDragEnded();
   window_selector_->ResetDraggedWindowGesture();
 }
 
