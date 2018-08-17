@@ -6,11 +6,10 @@
 
 #include "base/command_line.h"
 #include "content/browser/media/session/audio_focus_manager.h"
+#include "content/browser/media/session/audio_focus_type.h"
 #include "media/base/media_switches.h"
 
 namespace content {
-
-using AudioFocusType = AudioFocusManager::AudioFocusType;
 
 namespace {
 
@@ -22,8 +21,7 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
   ~AudioFocusDelegateDefault() override;
 
   // AudioFocusDelegate implementation.
-  bool RequestAudioFocus(
-      AudioFocusManager::AudioFocusType audio_focus_type) override;
+  bool RequestAudioFocus(AudioFocusType audio_focus_type) override;
   void AbandonAudioFocus() override;
 
  private:
@@ -40,7 +38,7 @@ AudioFocusDelegateDefault::AudioFocusDelegateDefault(
 AudioFocusDelegateDefault::~AudioFocusDelegateDefault() = default;
 
 bool AudioFocusDelegateDefault::RequestAudioFocus(
-    AudioFocusManager::AudioFocusType audio_focus_type) {
+    AudioFocusType audio_focus_type) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAudioFocus)) {
     return true;

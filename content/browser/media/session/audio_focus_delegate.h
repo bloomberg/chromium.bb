@@ -9,6 +9,7 @@
 
 namespace content {
 
+enum class AudioFocusType;
 class MediaSessionImpl;
 
 // AudioFocusDelegate is an interface abstracting audio focus handling for the
@@ -21,8 +22,7 @@ class AudioFocusDelegate {
 
   virtual ~AudioFocusDelegate() = default;
 
-  virtual bool RequestAudioFocus(
-      AudioFocusManager::AudioFocusType audio_focus_type) = 0;
+  virtual bool RequestAudioFocus(AudioFocusType audio_focus_type) = 0;
   virtual void AbandonAudioFocus() = 0;
 };
 

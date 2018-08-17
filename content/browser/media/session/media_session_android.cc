@@ -6,6 +6,7 @@
 
 #include "base/android/jni_array.h"
 #include "base/time/time.h"
+#include "content/browser/media/session/audio_focus_type.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -167,7 +168,7 @@ void MediaSessionAndroid::RequestSystemAudioFocus(
     const base::android::JavaParamRef<jobject>& j_obj) {
   DCHECK(media_session());
   static_cast<MediaSessionImpl*>(media_session())
-      ->RequestSystemAudioFocus(AudioFocusManager::AudioFocusType::Gain);
+      ->RequestSystemAudioFocus(AudioFocusType::Gain);
 }
 
 WebContentsAndroid* MediaSessionAndroid::GetWebContentsAndroid() {

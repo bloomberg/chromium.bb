@@ -14,21 +14,22 @@
 
 namespace content {
 
+enum class AudioFocusType;
+class AudioFocusObserver;
 class MediaSessionImpl;
 
 class CONTENT_EXPORT AudioFocusManager {
  public:
-  enum class AudioFocusType {
-    Gain,
-    GainTransientMayDuck,
-  };
-
   // Returns Chromium's internal AudioFocusManager.
   static AudioFocusManager* GetInstance();
 
   void RequestAudioFocus(MediaSessionImpl* media_session, AudioFocusType type);
 
   void AbandonAudioFocus(MediaSessionImpl* media_session);
+
+  // Adds/removes audio focus observers.
+  void AddObserver(AudioFocusObserver*);
+  void RemoveObserver(AudioFocusObserver*);
 
  private:
   friend struct base::DefaultSingletonTraits<AudioFocusManager>;
@@ -39,8 +40,12 @@ class CONTENT_EXPORT AudioFocusManager {
 
   void MaybeRemoveFocusEntry(MediaSessionImpl* media_session);
 
+  // Weak reference of managed observers. Observers are expected to remove
+  // themselves before being destroyed.
+  std::list<AudioFocusObserver*> audio_focus_observers_;
+
   // Weak reference of managed MediaSessions. A MediaSession must abandon audio
-  // foucs before its destruction.
+  // focus before its destruction.
   std::list<MediaSessionImpl*> audio_focus_stack_;
 };
 
