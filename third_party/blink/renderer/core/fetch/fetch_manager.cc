@@ -66,6 +66,44 @@ namespace blink {
 
 namespace {
 
+class EmptyDataHandle final : public WebDataConsumerHandle {
+ private:
+  class EmptyDataReader final : public WebDataConsumerHandle::Reader {
+   public:
+    explicit EmptyDataReader(
+        WebDataConsumerHandle::Client* client,
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+        : factory_(this) {
+      task_runner->PostTask(
+          FROM_HERE, WTF::Bind(&EmptyDataReader::Notify, factory_.GetWeakPtr(),
+                               WTF::Unretained(client)));
+    }
+
+   private:
+    Result BeginRead(const void** buffer,
+                     WebDataConsumerHandle::Flags,
+                     size_t* available) override {
+      *available = 0;
+      *buffer = nullptr;
+      return kDone;
+    }
+    Result EndRead(size_t) override {
+      return WebDataConsumerHandle::kUnexpectedError;
+    }
+    void Notify(WebDataConsumerHandle::Client* client) {
+      client->DidGetReadable();
+    }
+    base::WeakPtrFactory<EmptyDataReader> factory_;
+  };
+
+  std::unique_ptr<Reader> ObtainReader(
+      Client* client,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
+    return std::make_unique<EmptyDataReader>(client, std::move(task_runner));
+  }
+  const char* DebugName() const override { return "EmptyDataHandle"; }
+};
+
 bool HasNonEmptyLocationHeader(const FetchHeaderList* headers) {
   String value;
   if (!headers->Get(HTTPNames::Location, value))
@@ -377,8 +415,34 @@ void FetchManager::Loader::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 
-bool FetchManager::Loader::WillFollowRedirect(const KURL& url,
-                                              const ResourceResponse&) {
+bool FetchManager::Loader::WillFollowRedirect(
+    const KURL& url,
+    const ResourceResponse& response) {
+  const auto redirect_mode = fetch_request_data_->Redirect();
+  if (redirect_mode == network::mojom::FetchRedirectMode::kError) {
+    DidFailRedirectCheck();
+    Dispose();
+    return false;
+  }
+
+  if (redirect_mode == network::mojom::FetchRedirectMode::kManual) {
+    const unsigned long unused = 0;
+    // There is no need to read the body of redirect response because there is
+    // no way to read the body of opaque-redirect filtered response's internal
+    // response.
+    // TODO(horo): If we support any API which expose the internal body, we
+    // will have to read the body. And also HTTPCache changes will be needed
+    // because it doesn't store the body of redirect responses.
+    DidReceiveResponse(unused, response, std::make_unique<EmptyDataHandle>());
+
+    if (threadable_loader_)
+      NotifyFinished();
+
+    Dispose();
+    return false;
+  }
+
+  DCHECK_EQ(redirect_mode, network::mojom::FetchRedirectMode::kFollow);
   url_list_.push_back(url);
   return true;
 }

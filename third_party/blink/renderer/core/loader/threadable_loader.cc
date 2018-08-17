@@ -109,44 +109,6 @@ AtomicString CreateAccessControlRequestHeadersHeader(
   return header_buffer.ToAtomicString();
 }
 
-class EmptyDataHandle final : public WebDataConsumerHandle {
- private:
-  class EmptyDataReader final : public WebDataConsumerHandle::Reader {
-   public:
-    explicit EmptyDataReader(
-        WebDataConsumerHandle::Client* client,
-        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-        : factory_(this) {
-      task_runner->PostTask(
-          FROM_HERE, WTF::Bind(&EmptyDataReader::Notify, factory_.GetWeakPtr(),
-                               WTF::Unretained(client)));
-    }
-
-   private:
-    Result BeginRead(const void** buffer,
-                     WebDataConsumerHandle::Flags,
-                     size_t* available) override {
-      *available = 0;
-      *buffer = nullptr;
-      return kDone;
-    }
-    Result EndRead(size_t) override {
-      return WebDataConsumerHandle::kUnexpectedError;
-    }
-    void Notify(WebDataConsumerHandle::Client* client) {
-      client->DidGetReadable();
-    }
-    base::WeakPtrFactory<EmptyDataReader> factory_;
-  };
-
-  std::unique_ptr<Reader> ObtainReader(
-      Client* client,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
-    return std::make_unique<EmptyDataReader>(client, std::move(task_runner));
-  }
-  const char* DebugName() const override { return "EmptyDataHandle"; }
-};
-
 }  // namespace
 
 // DetachedClient is a ThreadableLoaderClient for a "detached"
@@ -626,8 +588,10 @@ bool ThreadableLoader::RedirectReceived(
     const KURL& new_url = new_request.Url();
     const KURL& original_url = redirect_response.Url();
 
+    if (out_of_blink_cors_)
+      return client_->WillFollowRedirect(new_url, redirect_response);
+
     if (!actual_request_.IsNull()) {
-      DCHECK(!out_of_blink_cors_);
       ReportResponseReceived(resource->Identifier(), redirect_response);
 
       HandlePreflightFailure(
@@ -637,36 +601,29 @@ bool ThreadableLoader::RedirectReceived(
       return false;
     }
 
-    if (redirect_mode_ == network::mojom::FetchRedirectMode::kManual) {
-      // We use |redirect_mode_| to check the original redirect mode.
-      // |new_request| is a new request for redirect. So we don't set the
-      // redirect mode of it in WebURLLoaderImpl::Context::OnReceivedRedirect().
-      DCHECK(new_request.UseStreamOnResponse());
-      // There is no need to read the body of redirect response because there is
-      // no way to read the body of opaque-redirect filtered response's internal
-      // response.
-      // TODO(horo): If we support any API which expose the internal body, we
-      // will have to read the body. And also HTTPCache changes will be needed
-      // because it doesn't store the body of redirect responses.
-      ResponseReceived(resource, redirect_response,
-                       std::make_unique<EmptyDataHandle>());
-
-      if (client_) {
-        DCHECK(actual_request_.IsNull());
-        NotifyFinished(resource);
+    if (cors_flag_) {
+      if (const auto error_status = CORS::CheckAccess(
+              original_url, redirect_response.HttpStatusCode(),
+              redirect_response.HttpHeaderFields(),
+              new_request.GetFetchCredentialsMode(), *GetSecurityOrigin())) {
+        DispatchDidFail(ResourceError(original_url, *error_status));
+        return false;
       }
-      return false;
     }
 
     if (redirect_mode_ == network::mojom::FetchRedirectMode::kError) {
-      ThreadableLoaderClient* client = client_;
-      Clear();
-      client->DidFailRedirectCheck();
+      bool follow = client_->WillFollowRedirect(new_url, redirect_response);
+      DCHECK(!follow);
       return false;
     }
 
-    if (out_of_blink_cors_)
-      return client_->WillFollowRedirect(new_url, redirect_response);
+    if (redirect_mode_ == network::mojom::FetchRedirectMode::kManual) {
+      bool follow = client_->WillFollowRedirect(new_url, redirect_response);
+      DCHECK(!follow);
+      return false;
+    }
+
+    DCHECK_EQ(redirect_mode_, network::mojom::FetchRedirectMode::kFollow);
 
     if (redirect_limit_ <= 0) {
       ThreadableLoaderClient* client = client_;
@@ -693,19 +650,6 @@ bool ThreadableLoader::RedirectReceived(
             cors_flag_ ? CORSFlag::Set : CORSFlag::Unset)) {
       DispatchDidFail(ResourceError(original_url, *error_status));
       return false;
-    }
-
-    if (cors_flag_) {
-      // The redirect response must pass the access control check if the CORS
-      // flag is set.
-      base::Optional<network::CORSErrorStatus> access_error = CORS::CheckAccess(
-          original_url, redirect_response.HttpStatusCode(),
-          redirect_response.HttpHeaderFields(),
-          new_request.GetFetchCredentialsMode(), *GetSecurityOrigin());
-      if (access_error) {
-        DispatchDidFail(ResourceError(original_url, *access_error));
-        return false;
-      }
     }
 
     if (!client_->WillFollowRedirect(new_url, redirect_response))
