@@ -30,6 +30,8 @@ SUPPORTED_JSON_RESULT_FORMATS = {
                  'a test. This is the format used by tests that use '
                  '//testing/perf/perf_test.h'),
 }
+# The revision that changed the way perf tests are run on swarming.
+PERF_FORMAT_CHANGE_REVISION = '0d271f583489024e3c163f0538d1ec29097b3615'
 
 
 class TempDir():
@@ -78,7 +80,8 @@ def ParseArgsAndAssertValid():
 
   # Arguments related to the actual bisection
   parser.add_argument_group('bisect arguments')
-  parser.add_argument('--binary-bisect', action='store_true', default=False,
+  parser.add_argument('--binary-size-bisect', action='store_true',
+                      default=False,
                       help='Bisect a binary size regression instead of a '
                            'regular perf regression.')
   parser.add_argument('--good-revision', required=True,
@@ -153,6 +156,12 @@ def ParseArgsAndAssertValid():
                            'commits it, and syncs to the new revision during '
                            'each iteration. Primary use case for this is '
                            'fixing bad DEPS entries in the revision range.')
+  parser.add_argument('--benchmark',
+                      help='The benchmark to run when bisecting a perf test. '
+                           'This will be automatically translated to the '
+                           'correct format and passed to the test, as the '
+                           'format is different depending on when the '
+                           'regression occured.')
 
   parser.add_argument_group('swarming arguments')
   parser.add_argument('--swarming-server',
@@ -180,12 +189,13 @@ def ParseArgsAndAssertValid():
                            'Assumes that gn args have already been generated '
                            'for the provided directory. Must be relative to '
                            'the Chromium src/ directory, e.g. out/Release. '
-                           'When using --binary-bisect, this should be the '
-                           'output directory for the base build.')
+                           'When using --binary-size-bisect, this should be '
+                           'the output directory for the base build.')
   parser.add_argument('--diff-build-output-dir',
                       default=os.path.join('out', 'Release_diff'),
-                      help='Only used when --binary-bisect is set. The same as '
-                           '--build-output-dir, but for the diff build.')
+                      help='Only used when --binary-size-bisect is set. The '
+                           'same as --build-output-dir, but for the diff '
+                           'build.')
   parser.add_argument('--regenerate-args-after-sync', action='store_true',
                       default=False,
                       help='Causes the build output directory to be deleted '
@@ -196,27 +206,31 @@ def ParseArgsAndAssertValid():
   parser.add_argument('--build-target', required=True,
                       help='The target to build for testing')
   parser.add_argument('--apk-name',
-                      help='Only used when --binary-bisect is set. The name of '
-                           'the APK that will be diffed.')
+                      help='Only used when --binary-size-bisect is set. The '
+                            'name of the APK that will be diffed.')
 
   args, unknown_args = parser.parse_known_args()
 
-  if args.binary_bisect:
+  if args.binary_size_bisect:
     if not args.apk_name:
-      raise RuntimeError('--apk-name must be set when using --binary-bisect.')
+      raise RuntimeError(
+          '--apk-name must be set when using --binary-size-bisect.')
 
     if not args.diff_build_output_dir:
       raise RuntimeError('--diff-build-output-dir must be set when using '
-                         '--binary-bisect.')
+                         '--binary-size-bisect.')
 
   else:
-    # Set defaults
+    # Set defaults.
     if not args.isolate_target:
       args.isolate_target = args.build_target
 
-    # Make sure we have at least one swarming dimension
+    # Make sure we have at least one swarming dimension.
     if len(args.dimensions) == 0:
       raise RuntimeError('No swarming dimensions provided')
+
+    if not args.benchmark:
+      raise RuntimeError('No benchmark provided with --benchmark')
 
     # Make sure we have all the information we need in order to run on Swarming.
     if not (args.swarming_server and args.isolate_server):
@@ -262,11 +276,13 @@ def VerifyInput(args, unknown_args):
            'will not be run, so ensure you are synced to the correct revision '
            'and any patches, etc. you need are applied before running.' %
            args.bisect_repo)
-  if args.binary_bisect:
+  if args.binary_size_bisect:
     print 'Script is running in binary size bisect mode.'
   print 'This will start a bisect for a for:'
   print 'Metric: %s' % args.metric
   print 'Story: %s' % args.story
+  if args.benchmark:
+    print 'In the benchmark %s' % args.benchmark
   if args.good_value == None and args.bad_value == None:
     print 'The good and bad values at %s and %s will be determined' % (
         args.good_revision, args.bad_revision)
@@ -295,7 +311,7 @@ def VerifyInput(args, unknown_args):
       args.expected_json_result_format,
       SUPPORTED_JSON_RESULT_FORMATS[args.expected_json_result_format])
   print '======'
-  if args.binary_bisect:
+  if args.binary_size_bisect:
     print '%s will be built in both %s and %s' % (args.build_target,
                                                   args.build_output_dir,
                                                   args.diff_build_output_dir)
@@ -307,7 +323,7 @@ def VerifyInput(args, unknown_args):
   if args.regenerate_args_after_sync:
     print 'The build output directory will be recreated after each sync'
   print '======'
-  if not args.binary_bisect:
+  if not args.binary_size_bisect:
     print 'The target %s will be isolated and uploaded to %s' % (
         args.isolate_target, args.isolate_server)
     print 'The test will be triggered on %s with the following dimensions:' % (
@@ -347,13 +363,15 @@ def SetupBisect(args):
   return revision
 
 
-def RunTestOnSwarming(args, unknown_args, output_dir):
+def RunTestOnSwarming(args, unknown_args, output_dir, use_new_perf_format):
   """Isolates the test target and runs it on swarming to get perf results.
 
   Args:
     args: The known args parsed by the argument parser
     unknown_args: The unknown args parsed by the argument parser
     output_dir: The directory to save swarming results to
+    use_new_perf_format: Whether to use the new perf format that came with
+        revision 0d271f583489024e3c163f0538d1ec29097b3615 or not.
   """
   print "=== Isolating and running target %s ===" % args.isolate_target
   print 'Isolating'
@@ -410,6 +428,26 @@ def RunTestOnSwarming(args, unknown_args, output_dir):
   ])
 
   swarming_args.append('--')
+  # Determine how we're supposed to pass the benchmark to run to the test
+  if use_new_perf_format:
+    # Telemetry tests in the new format use --benchmarks, non-Telemetry use
+    # --gtest-benchmark-name. Non-Telemetry tests need to have --non-telemetry
+    # passed to them in order to work, so check for the presence of that flag.
+    is_non_telemetry = False
+    for arg in unknown_args:
+      if '--non-telemetry' in arg:
+        is_non_telemetry = True
+        break
+    if is_non_telemetry:
+      swarming_args.append('--gtest-benchmark-name=%s' % args.benchmark)
+    else:
+      swarming_args.append('--benchmarks=%s' % args.benchmark)
+
+  else:
+    # The old perf format simply passed the benchmark to run as the first
+    # positional argument
+    swarming_args.append(args.benchmark)
+
   swarming_args.extend(unknown_args)
   swarming_args.extend([
       '--isolated-script-test-output',
@@ -418,7 +456,8 @@ def RunTestOnSwarming(args, unknown_args, output_dir):
       '${ISOLATED_OUTDIR}/perftest-output.json',
       '--output-format', 'chartjson',
       '--chromium-output-directory', args.build_output_dir])
-  print 'Running test'
+  print 'Running test %s' % (
+      '(new format)' if use_new_perf_format else '(old format)')
   subprocess.check_output(swarming_args)
 
 
@@ -442,18 +481,22 @@ def RunBinarySizeDiff(args, output_dir):
        '--output-dir', output_dir])
 
 
-def GetSwarmingResult(args, output_dir):
+def GetSwarmingResult(args, output_dir, use_new_perf_format):
   """Extracts the value for the story/metric combo of interest from swarming.
 
   Args:
     args: The known args parsed from the argument parser
     output_dir: The directory where swarming results have been saved to
+    use_new_perf_format: Whether to use the new perf format that came with
+        revision 0d271f583489024e3c163f0538d1ec29097b3615 or not.
 
   Returns:
     The value for the story/metric combo that the last swarming run produced
   """
-  return _GetResultsFromJson(args, os.path.join(output_dir, '0',
-                                                'perftest-output.json'))
+  outfile = os.path.join(output_dir, '0', 'perftest-output.json')
+  if use_new_perf_format:
+    outfile = os.path.join(output_dir, '0', args.benchmark, 'perf_results.json')
+  return _GetResultsFromJson(args, outfile)
 
 
 def GetBinarySizeResult(args, output_dir):
@@ -553,7 +596,7 @@ def BuildTarget(args):
   subprocess.check_output(['ninja', '-C', args.build_output_dir,
                            '-j', str(args.parallel_jobs),
                            '-l', str(args.load_limit), args.build_target])
-  if args.binary_bisect:
+  if args.binary_size_bisect:
     subprocess.check_output(['ninja', '-C', args.diff_build_output_dir,
                              '-j', str(args.parallel_jobs),
                              '-l', str(args.load_limit), args.build_target])
@@ -562,7 +605,7 @@ def BuildTarget(args):
 def RegenerateGnArgs(args):
   """Recreates the build output directory using existing GN args."""
   directories = [args.build_output_dir]
-  if args.binary_bisect:
+  if args.binary_size_bisect:
     directories.append(args.diff_build_output_dir)
   for d in directories:
     with open(os.path.join(d, 'args.gn'), 'r') as args_file:
@@ -688,12 +731,43 @@ def GetValueAtRevision(args, unknown_args, revision, output_dir, sync=True):
     BuildTarget(args)
   elif sync:
     SyncAndBuild(args, unknown_args, revision)
-  if args.binary_bisect:
+  if args.binary_size_bisect:
     RunBinarySizeDiff(args, output_dir)
     return GetBinarySizeResult(args, output_dir)
   else:
-    RunTestOnSwarming(args, unknown_args, output_dir)
-    return GetSwarmingResult(args, output_dir)
+    use_new_perf_format = _IsCurrentRevisionAfterFormatChange(revision)
+    RunTestOnSwarming(args, unknown_args, output_dir, use_new_perf_format)
+    return GetSwarmingResult(args, output_dir, use_new_perf_format)
+
+
+def _IsCurrentRevisionAfterFormatChange(revision):
+  """Determines whether we need to use the new or old perf format.
+
+  With commit 0d271f583489024e3c163f0538d1ec29097b3615, the VR perf tests moved
+  to use the newer run_performance_tests.py script. This changed the output
+  file name and the way which benchmark to run is specified, so we need to
+  know where we are in relation to that commit in order to know how to run
+  tests.
+
+  Args:
+    revision: The currently synced revision
+
+  Returns:
+    True if the current revision comes after the commit that changed how perf
+    tests are run, False otherwise
+  """
+  if revision == PERF_FORMAT_CHANGE_REVISION:
+    return True
+  # Check how many revisions after the format change revision we are - if it's
+  # non-zero, we're at some point after the format got changed, otherwise we're
+  # before.
+  num_revisions_after = subprocess.check_output(
+      ['git',
+       'rev-list',
+       '%s..%s' % (PERF_FORMAT_CHANGE_REVISION, revision),
+       '--count'])
+  return int(num_revisions_after) > 0
+
 
 def main():
   VerifyCwd()
