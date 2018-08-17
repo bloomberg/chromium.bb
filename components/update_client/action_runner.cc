@@ -44,7 +44,7 @@ void ActionRunner::Run(Callback run_complete) {
 
 void ActionRunner::Unpack(
     std::unique_ptr<service_manager::Connector> connector) {
-  const auto& installer = component_.crx_component()->installer;
+  const auto installer = component_.crx_component()->installer;
 
   base::FilePath file_path;
   installer->GetInstalledFile(component_.action_run(), &file_path);

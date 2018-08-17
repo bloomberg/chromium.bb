@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
@@ -103,7 +104,7 @@ void UpdateEngine::Update(bool is_foreground,
 
   // Calls out to get the corresponding CrxComponent data for the CRXs in this
   // update context.
-  std::vector<std::unique_ptr<CrxComponent>> crx_components =
+  const auto crx_components =
       std::move(update_context->crx_data_callback).Run(update_context->ids);
   DCHECK_EQ(update_context->ids.size(), crx_components.size());
 
@@ -112,12 +113,12 @@ void UpdateEngine::Update(bool is_foreground,
 
     DCHECK(update_context->components[id]->state() == ComponentState::kNew);
 
-    auto& crx_component = crx_components[i];
+    const auto crx_component = crx_components[i];
     if (crx_component) {
       // This component can be checked for updates.
       DCHECK_EQ(id, GetCrxComponentID(*crx_component));
       auto& component = update_context->components[id];
-      component->set_crx_component(std::move(crx_component));
+      component->set_crx_component(*crx_component);
       component->set_previous_version(component->crx_component()->version);
       component->set_previous_fp(component->crx_component()->fingerprint);
       update_context->components_to_check_for_updates.push_back(id);
@@ -379,7 +380,7 @@ bool UpdateEngine::GetUpdateState(const std::string& id,
   for (const auto& context : update_contexts_) {
     const auto& components = context.second->components;
     const auto it = components.find(id);
-    if (it != components.end() && it->second->crx_component()) {
+    if (it != components.end()) {
       *update_item = it->second->GetCrxUpdateItem();
       return true;
     }

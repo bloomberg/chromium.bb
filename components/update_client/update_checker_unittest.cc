@@ -227,17 +227,16 @@ scoped_refptr<UpdateContext> UpdateCheckerTest::MakeMockUpdateContext() const {
 }
 
 std::unique_ptr<Component> UpdateCheckerTest::MakeComponent() const {
-  std::unique_ptr<CrxComponent> crx_component =
-      std::make_unique<CrxComponent>();
-  crx_component->name = "test_jebg";
-  crx_component->pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
-  crx_component->installer = nullptr;
-  crx_component->version = base::Version("0.9");
-  crx_component->fingerprint = "fp1";
+  CrxComponent crx_component;
+  crx_component.name = "test_jebg";
+  crx_component.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
+  crx_component.installer = nullptr;
+  crx_component.version = base::Version("0.9");
+  crx_component.fingerprint = "fp1";
 
   auto component = std::make_unique<Component>(*update_context_, kUpdateItemId);
   component->state_ = std::make_unique<Component::StateNew>(component.get());
-  component->crx_component_ = std::move(crx_component);
+  component->crx_component_ = crx_component;
 
   return component;
 }
@@ -621,7 +620,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
   components[kUpdateItemId] = MakeComponent();
 
   auto& component = components[kUpdateItemId];
-  auto* crx_component = const_cast<CrxComponent*>(component->crx_component());
+  auto crx_component = component->crx_component();
 
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
@@ -652,6 +651,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
   update_context_->is_foreground = false;
   crx_component->install_source = "webstore";
   crx_component->install_location = "external";
+  component->set_crx_component(*crx_component);
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
@@ -668,6 +668,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
   update_context_->is_foreground = true;
   crx_component->install_source = "sideload";
   crx_component->install_location = "policy";
+  component->set_crx_component(*crx_component);
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
@@ -689,7 +690,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   components[kUpdateItemId] = MakeComponent();
 
   auto& component = components[kUpdateItemId];
-  auto* crx_component = const_cast<CrxComponent*>(component->crx_component());
+  auto crx_component = component->crx_component();
 
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
@@ -705,6 +706,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   EXPECT_THAT(body0, testing::Not(testing::HasSubstr("<disabled")));
 
   crx_component->disabled_reasons = {};
+  component->set_crx_component(*crx_component);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
@@ -720,6 +722,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   EXPECT_THAT(body1, testing::Not(testing::HasSubstr("<disabled")));
 
   crx_component->disabled_reasons = {0};
+  component->set_crx_component(*crx_component);
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
@@ -734,6 +737,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   EXPECT_THAT(body2, testing::HasSubstr(R"(<disabled reason="0")"));
 
   crx_component->disabled_reasons = {1};
+  component->set_crx_component(*crx_component);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
@@ -749,6 +753,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   EXPECT_THAT(body3, testing::HasSubstr(R"(<disabled reason="1")"));
 
   crx_component->disabled_reasons = {4, 8, 16};
+  component->set_crx_component(*crx_component);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
@@ -766,6 +771,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
   EXPECT_THAT(body4, testing::HasSubstr(R"(<disabled reason="16")"));
 
   crx_component->disabled_reasons = {0, 4, 8, 16};
+  component->set_crx_component(*crx_component);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
@@ -792,14 +798,14 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   components[kUpdateItemId] = MakeComponent();
 
   auto& component = components[kUpdateItemId];
+  auto crx_component = component->crx_component();
 
   // Tests the scenario where:
   //  * the component does not support group policies.
   //  * the component updates are disabled.
   // Expects the group policy to be ignored and the update check to not
   // include the "updatedisabled" attribute.
-  EXPECT_FALSE(component->crx_component_
-                   ->supports_group_policy_enable_component_updates);
+  EXPECT_FALSE(crx_component->supports_group_policy_enable_component_updates);
 
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
@@ -818,8 +824,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   //  * the component supports group policies.
   //  * the component updates are disabled.
   // Expects the update check to include the "updatedisabled" attribute.
-  component->crx_component_->supports_group_policy_enable_component_updates =
-      true;
+  crx_component->supports_group_policy_enable_component_updates = true;
+  component->set_crx_component(*crx_component);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
@@ -839,8 +845,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   //  * the component does not support group policies.
   //  * the component updates are enabled.
   // Expects the update check to not include the "updatedisabled" attribute.
-  component->crx_component_->supports_group_policy_enable_component_updates =
-      false;
+  crx_component->supports_group_policy_enable_component_updates = false;
+  component->set_crx_component(*crx_component);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),
@@ -859,8 +865,8 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   //  * the component supports group policies.
   //  * the component updates are enabled.
   // Expects the update check to not include the "updatedisabled" attribute.
-  component->crx_component_->supports_group_policy_enable_component_updates =
-      true;
+  crx_component->supports_group_policy_enable_component_updates = true;
+  component->set_crx_component(*crx_component);
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       std::make_unique<PartialMatch>("updatecheck"),

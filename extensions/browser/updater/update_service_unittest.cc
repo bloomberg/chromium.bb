@@ -10,6 +10,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -49,7 +50,7 @@ class FakeUpdateClient : public update_client::UpdateClient {
 
   // Returns the data we've gotten from the CrxDataCallback for ids passed to
   // the Update function.
-  std::vector<std::unique_ptr<update_client::CrxComponent>>* data() {
+  std::vector<base::Optional<update_client::CrxComponent>>* data() {
     return &data_;
   }
 
@@ -123,7 +124,7 @@ class FakeUpdateClient : public update_client::UpdateClient {
   friend class base::RefCounted<FakeUpdateClient>;
   ~FakeUpdateClient() override {}
 
-  std::vector<std::unique_ptr<update_client::CrxComponent>> data_;
+  std::vector<base::Optional<update_client::CrxComponent>> data_;
   std::vector<UninstallPing> uninstall_pings_;
   std::vector<Observer*> observers_;
 

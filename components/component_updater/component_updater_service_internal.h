@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "components/component_updater/update_scheduler.h"
 
@@ -77,11 +78,11 @@ class CrxUpdateService : public ComponentUpdateService,
 
   bool DoUnregisterComponent(const CrxComponent& component);
 
-  const CrxComponent* GetComponent(const std::string& id) const;
+  base::Optional<CrxComponent> GetComponent(const std::string& id) const;
 
   const CrxUpdateItem* GetComponentState(const std::string& id) const;
 
-  std::vector<std::unique_ptr<CrxComponent>> GetCrxComponents(
+  std::vector<base::Optional<CrxComponent>> GetCrxComponents(
       const std::vector<std::string>& ids);
   void OnUpdateComplete(Callback callback,
                         const base::TimeTicks& start_time,
