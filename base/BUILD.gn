@@ -181,6 +181,7 @@ jumbo_component("base") {
     "android/content_uri_utils.h",
     "android/cpu_features.cc",
     "android/early_trace_event_binding.cc",
+    "android/early_trace_event_binding.h",
     "android/event_log.cc",
     "android/event_log.h",
     "android/field_trial_list.cc",

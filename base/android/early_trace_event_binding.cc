@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/android/early_trace_event_binding.h"
+
 #include <stdint.h>
 
 #include "base/android/jni_string.h"
@@ -61,6 +63,18 @@ static void JNI_EarlyTraceEvent_RecordEarlyFinishAsyncEvent(
   TRACE_EVENT_COPY_ASYNC_END_WITH_TIMESTAMP0(
       kEarlyJavaCategory, name.c_str(), id,
       base::TimeTicks() + base::TimeDelta::FromMicroseconds(timestamp_us));
+}
+
+bool GetBackgroundStartupTracingFlag() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return base::android::Java_EarlyTraceEvent_getBackgroundStartupTracingFlag(
+      env);
+}
+
+void SetBackgroundStartupTracingFlag(bool enabled) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::Java_EarlyTraceEvent_setBackgroundStartupTracingFlag(env,
+                                                                      enabled);
 }
 
 }  // namespace android

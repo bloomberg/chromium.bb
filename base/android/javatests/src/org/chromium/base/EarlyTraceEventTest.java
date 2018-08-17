@@ -269,4 +269,37 @@ public class EarlyTraceEventTest {
         EarlyTraceEvent.Event event = EarlyTraceEvent.sCompletedEvents.get(0);
         Assert.assertEquals(threadId[0], event.mThreadId);
     }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testEnableAtStartup() {
+        ThreadUtils.setThreadAssertsDisabledForTesting(true);
+        EarlyTraceEvent.maybeEnable();
+        Assert.assertFalse(EarlyTraceEvent.enabled());
+        EarlyTraceEvent.setBackgroundStartupTracingFlag(false);
+        Assert.assertFalse(EarlyTraceEvent.enabled());
+
+        EarlyTraceEvent.setBackgroundStartupTracingFlag(true);
+        EarlyTraceEvent.maybeEnable();
+        Assert.assertTrue(EarlyTraceEvent.getBackgroundStartupTracingFlag());
+        Assert.assertTrue(EarlyTraceEvent.enabled());
+        EarlyTraceEvent.disable();
+        EarlyTraceEvent.setBackgroundStartupTracingFlag(false);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testUserOverrideBackgroundTracing() {
+        ThreadUtils.setThreadAssertsDisabledForTesting(true);
+        // Setting command line should disable the background tracing flag.
+        CommandLine.getInstance().appendSwitch("trace-startup");
+        EarlyTraceEvent.setBackgroundStartupTracingFlag(true);
+        EarlyTraceEvent.maybeEnable();
+        Assert.assertFalse(EarlyTraceEvent.getBackgroundStartupTracingFlag());
+        Assert.assertTrue(EarlyTraceEvent.enabled());
+        EarlyTraceEvent.disable();
+        EarlyTraceEvent.setBackgroundStartupTracingFlag(false);
+    }
 }
