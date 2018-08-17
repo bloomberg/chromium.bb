@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
+#import "ios/chrome/browser/ui/activity_services/activities/copy_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/find_in_page_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/print_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/reading_list_activity.h"
@@ -151,9 +152,10 @@ NSString* const kActivityServicesSnackbarCategory =
   // Reading List and Print activities refer to iOS' version of these.
   // Chrome-specific implementations of these two activities are provided below
   // in applicationActivitiesForData:dispatcher:bookmarkModel:
+  // The "Copy" action is also provided by chrome in order to change its icon.
   NSArray* excludedActivityTypes = @[
-    UIActivityTypeAddToReadingList, UIActivityTypePrint,
-    UIActivityTypeSaveToCameraRoll
+    UIActivityTypeAddToReadingList, UIActivityTypeCopyToPasteboard,
+    UIActivityTypePrint, UIActivityTypeSaveToCameraRoll
   ];
   [activityViewController_ setExcludedActivityTypes:excludedActivityTypes];
 
@@ -251,6 +253,10 @@ NSString* const kActivityServicesSnackbarCategory =
                            bookmarkModel:
                                (bookmarks::BookmarkModel*)bookmarkModel {
   NSMutableArray* applicationActivities = [NSMutableArray array];
+
+  [applicationActivities
+      addObject:[[CopyActivity alloc] initWithURL:data.shareURL]];
+
   if (data.shareURL.SchemeIsHTTPOrHTTPS()) {
     ReadingListActivity* readingListActivity =
         [[ReadingListActivity alloc] initWithURL:data.shareURL
