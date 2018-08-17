@@ -137,8 +137,8 @@ def SetupTestServer(target, test_concurrency):
   logging.debug('Starting test server.')
   spawning_server = chrome_test_server_spawner.SpawningServer(
       0, SSHPortForwarder(target), test_concurrency)
-  forwarded_port = _ConnectPortForwardingTask(
-      target, spawning_server.server_port)
+  scheme = ForwardingScheme(spawning_server.server_port, 0, True)
+  forwarded_port = _ConnectPortForwardingTask(target, scheme)
   spawning_server.Start()
 
   logging.debug('Test server listening for connections (port=%d)' %
