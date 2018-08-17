@@ -18,11 +18,12 @@ namespace test {
 
 void GetTestFile(const char* file_name, base::File* file) {
   base::FilePath test_data;
-  ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
 
-  base::FilePath path = test_data.AppendASCII("chrome")
-      .AppendASCII("safe_browsing_dmg")
-      .AppendASCII(file_name);
+  base::FilePath path = test_data.AppendASCII("safe_browsing")
+                            .AppendASCII("dmg")
+                            .AppendASCII("data")
+                            .AppendASCII(file_name);
 
   *file = base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_TRUE(file->IsValid());

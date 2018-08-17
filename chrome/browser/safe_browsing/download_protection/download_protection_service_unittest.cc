@@ -1467,9 +1467,10 @@ TEST_F(DownloadProtectionServiceTest,
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath unsigned_dmg;
-  EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &unsigned_dmg));
-  unsigned_dmg = unsigned_dmg.AppendASCII("chrome")
-                     .AppendASCII("safe_browsing_dmg")
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &unsigned_dmg));
+  unsigned_dmg = unsigned_dmg.AppendASCII("safe_browsing")
+                     .AppendASCII("dmg")
+                     .AppendASCII("data")
                      .AppendASCII("mach_o_in_dmg.dmg");
 
   NiceMockDownloadItem item;
@@ -1503,9 +1504,10 @@ TEST_F(DownloadProtectionServiceTest,
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath test_data;
-  EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
-  test_data = test_data.AppendASCII("chrome")
-                  .AppendASCII("safe_browsing_dmg")
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+  test_data = test_data.AppendASCII("safe_browsing")
+                  .AppendASCII("dmg")
+                  .AppendASCII("data")
                   .AppendASCII("mach_o_in_dmg.txt");
 
   NiceMockDownloadItem item;
@@ -1536,9 +1538,10 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportDmgWithoutKoly) {
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath test_data;
-  EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
-  test_data = test_data.AppendASCII("chrome")
-                  .AppendASCII("safe_browsing_dmg")
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+  test_data = test_data.AppendASCII("safe_browsing")
+                  .AppendASCII("dmg")
+                  .AppendASCII("data")
                   .AppendASCII("mach_o_in_dmg_no_koly_signature.txt");
 
   NiceMockDownloadItem item;
@@ -1569,9 +1572,10 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportLargeDmg) {
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath unsigned_dmg;
-  EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &unsigned_dmg));
-  unsigned_dmg = unsigned_dmg.AppendASCII("chrome")
-                     .AppendASCII("safe_browsing_dmg")
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &unsigned_dmg));
+  unsigned_dmg = unsigned_dmg.AppendASCII("safe_browsing")
+                     .AppendASCII("dmg")
+                     .AppendASCII("data")
                      .AppendASCII("mach_o_in_dmg.dmg");
 
   NiceMockDownloadItem item;
@@ -1606,9 +1610,10 @@ TEST_F(DownloadProtectionServiceTest, DMGAnalysisEndToEnd) {
                   net::URLRequestStatus::SUCCESS);
 
   base::FilePath dmg;
-  EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &dmg));
-  dmg = dmg.AppendASCII("chrome")
-            .AppendASCII("safe_browsing_dmg")
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &dmg));
+  dmg = dmg.AppendASCII("safe_browsing")
+            .AppendASCII("dmg")
+            .AppendASCII("data")
             .AppendASCII("mach_o_in_dmg.dmg");
 
   NiceMockDownloadItem item;
