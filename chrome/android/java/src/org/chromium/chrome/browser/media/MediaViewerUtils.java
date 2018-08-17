@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.media;
 
 import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -79,10 +80,15 @@ public class MediaViewerUtils {
         }
 
         // Create a PendingIntent that shares the file with external apps.
-        PendingIntent pendingShareIntent = PendingIntent.getActivity(context, 0,
-                createShareIntent(contentUri, mimeType), PendingIntent.FLAG_CANCEL_CURRENT);
-        builder.setActionButton(
-                shareIcon, context.getString(R.string.share), pendingShareIntent, true);
+        // If the URI is a file URI and the Android version is N or later, this will throw a
+        // FileUriExposedException. In this case, we just don't add the share button.
+        if (!contentUri.getScheme().equals(ContentResolver.SCHEME_FILE)
+                || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            PendingIntent pendingShareIntent = PendingIntent.getActivity(context, 0,
+                    createShareIntent(contentUri, mimeType), PendingIntent.FLAG_CANCEL_CURRENT);
+            builder.setActionButton(
+                    shareIcon, context.getString(R.string.share), pendingShareIntent, true);
+        }
 
         // The color of the media viewer is dependent on the file type.
         int backgroundRes;
