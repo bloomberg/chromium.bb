@@ -60,7 +60,7 @@ bool IsImplemented(const String& name) {
 }  // namespace
 
 // https://github.com/drufball/layered-apis/blob/master/spec.md#user-content-layered-api-fetching-url
-KURL ResolveFetchingURL(const KURL& url, const KURL& base_url) {
+KURL ResolveFetchingURL(const KURL& url) {
   // <spec step="1">If url's scheme is not "std", return url.</spec>
   if (!url.ProtocolIs(kStdScheme))
     return url;
@@ -68,39 +68,18 @@ KURL ResolveFetchingURL(const KURL& url, const KURL& base_url) {
   // <spec step="2">Let path be url's path[0].</spec>
   const String path = url.GetPath();
 
-  // <spec step="3">Let identifier be the portion of path before the first
-  // U+007C (|), or all of path if no U+007C is present.</spec>
-  //
-  // <spec step="4">Let fallback be the portion of path after the first U+007C,
-  // or null if no U+007C is present.</spec>
-  String identifier;
-  String fallback;
-  const size_t separator_position = path.find('|');
-  if (separator_position != WTF::kNotFound) {
-    identifier = path.Substring(0, separator_position);
-    fallback = path.Substring(separator_position + 1);
-  } else {
-    identifier = path;
-  }
-
   // <spec step="5">If the layered API identified by path is implemented by this
   // user agent, return the result of parsing the concatenation of "std:" with
   // identifier.</spec>
-  if (IsImplemented(identifier)) {
+  if (IsImplemented(path)) {
     StringBuilder url_string;
     url_string.Append(kStdScheme);
     url_string.Append(":");
-    url_string.Append(identifier);
+    url_string.Append(path);
     return KURL(NullURL(), url_string.ToString());
   }
 
-  // <spec step="6">If fallback is null, return failure.</spec>
-  if (fallback.IsNull())
-    return NullURL();
-
-  // <spec step="7">Return the result of parsing fallback with the base URL
-  // baseURLForFallback.</spec>
-  return KURL(base_url, fallback);
+  return NullURL();
 }
 
 KURL GetInternalURL(const KURL& url) {
