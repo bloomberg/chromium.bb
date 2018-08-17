@@ -209,7 +209,8 @@ TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Lifecycle) {
   ASSERT_TRUE(BasicTeardown());
 }
 
-TEST_F(RTCVideoDecoderAdapterTest, InitializationFailure) {
+// See https://crbug.com/875301.
+TEST_F(RTCVideoDecoderAdapterTest, DISABLED_InitializationFailure) {
   ASSERT_FALSE(CreateAndInitialize(false));
 }
 
