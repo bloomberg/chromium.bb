@@ -14,8 +14,13 @@ namespace scheduler {
 class MainThreadSchedulerImpl;
 }  // namespace scheduler
 
-// A move only RAII style helper which makes it easier for subsystems to pause
-// virtual time while performing an asynchronous operation.
+// VirtualTime is a headless feature which is intended to make renders (more)
+// deterministic by pausing task execution in the Blink main thread (and pausing
+// the clock) while certain asynchronous operations are pending, e.g. fetching
+// resources. Generally new instances of WebScopedVirtualTimePauser should only
+// be added if there are determinism problems with renders on certain pages.
+// The WebScopedVirtualTimePauser itself is a move only RAII style helper which
+// makes it easier for subsystems to robustly pause and unpause virtual time.
 class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
  public:
   enum class VirtualTaskDuration {
@@ -25,6 +30,11 @@ class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
 
   // Note simply creating a WebScopedVirtualTimePauser doesn't cause VirtualTime
   // to pause, instead you need to call PauseVirtualTime.
+  // By default VirtualTaskDuration::kInstant should be used unless there is a
+  // risk of virtual time getting stalled (e.g. if a page requests a
+  // non-existent resource and it has an error handler which always fetches
+  // another non-existent resource, then there is a risk that virtual time will
+  // be blocked forever unless we use VirtualTaskDuration::kNonInstant).
   WebScopedVirtualTimePauser(scheduler::MainThreadSchedulerImpl*,
                              VirtualTaskDuration,
                              const WebString& debug_name);
