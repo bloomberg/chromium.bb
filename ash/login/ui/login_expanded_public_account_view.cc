@@ -220,8 +220,7 @@ class RightPaneView : public NonAccessibleView,
   explicit RightPaneView(const base::RepeatingClosure& on_learn_more_tapped)
       : language_menu_(std::make_unique<LoginBubble>()),
         keyboard_menu_(std::make_unique<LoginBubble>()),
-        on_learn_more_tapped_(on_learn_more_tapped),
-        weak_factory_(this) {
+        on_learn_more_tapped_(on_learn_more_tapped) {
     SetPreferredSize(
         gfx::Size(kExpandedViewWidthDp / 2, kExpandedViewHeightDp));
     SetBorder(views::CreateEmptyBorder(gfx::Insets(kRightPaneMarginDp)));
@@ -528,7 +527,7 @@ class RightPaneView : public NonAccessibleView,
 
   base::RepeatingClosure on_learn_more_tapped_;
 
-  base::WeakPtrFactory<RightPaneView> weak_factory_;
+  base::WeakPtrFactory<RightPaneView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RightPaneView);
 };
@@ -564,8 +563,7 @@ LoginExpandedPublicAccountView::TestApi::learn_more_label() {
 LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
     const OnPublicSessionViewDismissed& on_dismissed)
     : NonAccessibleView(kLoginExpandedPublicAccountViewClassName),
-      on_dismissed_(on_dismissed),
-      weak_factory_(this) {
+      on_dismissed_(on_dismissed) {
   Shell::Get()->AddPreTargetHandler(this);
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));

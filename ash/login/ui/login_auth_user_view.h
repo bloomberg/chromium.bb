@@ -163,9 +163,6 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   // bool has_tap = HasAuthMethod(AUTH_TAP).
   bool HasAuthMethod(AuthMethods auth_method) const;
 
-  // Update UI for the online sign-in message.
-  void DecorateOnlineSignInMessage();
-
   AuthMethods auth_methods_ = AUTH_NONE;
   // True if the user's password might be a PIN. PIN is hashed differently from
   // password. The PIN keyboard may not always be visible even when the user

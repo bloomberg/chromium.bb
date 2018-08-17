@@ -113,9 +113,7 @@ class PassthroughAnimationDecoder
 class LoginUserView::UserImage : public NonAccessibleView {
  public:
   UserImage(int size)
-      : NonAccessibleView(kLoginUserImageClassName),
-        size_(size),
-        weak_factory_(this) {
+      : NonAccessibleView(kLoginUserImageClassName), size_(size) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
     image_ = new AnimatedRoundedImageView(gfx::Size(size_, size_), size_ / 2);
@@ -162,7 +160,7 @@ class LoginUserView::UserImage : public NonAccessibleView {
   AnimatedRoundedImageView* image_ = nullptr;
   int size_;
 
-  base::WeakPtrFactory<UserImage> weak_factory_;
+  base::WeakPtrFactory<UserImage> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserImage);
 };

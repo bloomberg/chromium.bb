@@ -126,6 +126,22 @@ class ClearPasswordAnimationObserver : public ui::ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(ClearPasswordAnimationObserver);
 };
 
+void DecorateOnlineSignInMessage(views::LabelButton* label_button) {
+  label_button->SetPaintToLayer();
+  label_button->layer()->SetFillsBoundsOpaquely(false);
+  label_button->SetImage(
+      views::Button::STATE_NORMAL,
+      CreateVectorIcon(kLockScreenAlertIcon, kOnlineSignInMessageColor));
+  label_button->SetTextSubpixelRenderingEnabled(false);
+  label_button->SetTextColor(views::Button::STATE_NORMAL,
+                             kOnlineSignInMessageColor);
+  label_button->SetTextColor(views::Button::STATE_HOVERED,
+                             kOnlineSignInMessageColor);
+  label_button->SetTextColor(views::Button::STATE_PRESSED,
+                             kOnlineSignInMessageColor);
+  label_button->SetBorder(views::CreateEmptyBorder(gfx::Insets(9, 0)));
+}
+
 }  // namespace
 
 // Consists of fingerprint icon view and a label.
@@ -311,12 +327,6 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
 };
 
 struct LoginAuthUserView::AnimationState {
-  int non_pin_y_start_in_screen = 0;
-  gfx::Point pin_start_in_screen;
-  bool had_pin = false;
-  bool had_password = false;
-  bool had_fingerprint = false;
-
   explicit AnimationState(LoginAuthUserView* view) {
     non_pin_y_start_in_screen = view->GetBoundsInScreen().y();
     pin_start_in_screen = view->pin_view_->GetBoundsInScreen().origin();
@@ -327,6 +337,12 @@ struct LoginAuthUserView::AnimationState {
     had_fingerprint =
         (view->auth_methods() & LoginAuthUserView::AUTH_FINGERPRINT) != 0;
   }
+
+  int non_pin_y_start_in_screen = 0;
+  gfx::Point pin_start_in_screen;
+  bool had_pin = false;
+  bool had_password = false;
+  bool had_fingerprint = false;
 };
 
 LoginAuthUserView::TestApi::TestApi(LoginAuthUserView* view) : view_(view) {}
@@ -407,7 +423,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
 
   online_sign_in_message_ = new views::LabelButton(
       this, base::UTF8ToUTF16(user->basic_user_info->display_name));
-  DecorateOnlineSignInMessage();
+  DecorateOnlineSignInMessage(online_sign_in_message_);
 
   disabled_auth_message_ = new DisabledAuthMessageView();
 
@@ -811,23 +827,6 @@ void LoginAuthUserView::OnOnlineSignInMessageTap() {
 
 bool LoginAuthUserView::HasAuthMethod(AuthMethods auth_method) const {
   return (auth_methods_ & auth_method) != 0;
-}
-
-void LoginAuthUserView::DecorateOnlineSignInMessage() {
-  online_sign_in_message_->SetPaintToLayer();
-  online_sign_in_message_->layer()->SetFillsBoundsOpaquely(false);
-  online_sign_in_message_->SetImage(
-      views::Button::STATE_NORMAL,
-      CreateVectorIcon(kLockScreenAlertIcon, kOnlineSignInMessageColor));
-  online_sign_in_message_->SetTextSubpixelRenderingEnabled(false);
-  online_sign_in_message_->SetTextColor(views::Button::STATE_NORMAL,
-                                        kOnlineSignInMessageColor);
-  online_sign_in_message_->SetTextColor(views::Button::STATE_HOVERED,
-                                        kOnlineSignInMessageColor);
-  online_sign_in_message_->SetTextColor(views::Button::STATE_PRESSED,
-                                        kOnlineSignInMessageColor);
-  online_sign_in_message_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(9, 0)));
 }
 
 }  // namespace ash

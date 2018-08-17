@@ -95,8 +95,8 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
 
   bool is_shown_ = false;
 
-  ScopedObserver<TrayAction, TrayActionObserver> tray_action_observer_;
-  ScopedSessionObserver session_observer_;
+  ScopedObserver<TrayAction, TrayActionObserver> tray_action_observer_{this};
+  ScopedSessionObserver session_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LockScreen);
 };

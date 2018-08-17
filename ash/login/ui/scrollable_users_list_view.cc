@@ -212,7 +212,7 @@ ScrollableUsersListView::ScrollableUsersListView(
     const std::vector<mojom::LoginUserInfoPtr>& users,
     const ActionWithUser& on_tap_user,
     LoginDisplayStyle display_style)
-    : display_style_(display_style), observer_(this) {
+    : display_style_(display_style) {
   auto layout_params = BuildLayoutForStyle(display_style);
   gradient_params_ = GradientParams::BuildForStyle(display_style);
 

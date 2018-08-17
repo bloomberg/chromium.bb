@@ -109,7 +109,8 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView,
 
   GradientParams gradient_params_;
 
-  ScopedObserver<WallpaperController, WallpaperControllerObserver> observer_;
+  ScopedObserver<WallpaperController, WallpaperControllerObserver> observer_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ScrollableUsersListView);
 };

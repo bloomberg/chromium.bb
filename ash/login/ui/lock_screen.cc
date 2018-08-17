@@ -43,8 +43,7 @@ LockContentsView* LockScreen::TestApi::contents_view() const {
   return lock_screen_->contents_view_;
 }
 
-LockScreen::LockScreen(ScreenType type)
-    : type_(type), tray_action_observer_(this), session_observer_(this) {
+LockScreen::LockScreen(ScreenType type) : type_(type) {
   tray_action_observer_.Add(ash::Shell::Get()->tray_action());
 }
 

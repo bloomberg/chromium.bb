@@ -22,7 +22,6 @@ class LoginDetachableBaseModelImpl : public LoginDetachableBaseModel,
   LoginDetachableBaseModelImpl(DetachableBaseHandler* detachable_base_handler,
                                LoginDataDispatcher* login_data_dispatcher)
       : detachable_base_handler_(detachable_base_handler),
-        detachable_base_observer_(this),
         login_data_dispatcher_(login_data_dispatcher) {
     detachable_base_observer_.Add(detachable_base_handler);
   }
@@ -52,7 +51,7 @@ class LoginDetachableBaseModelImpl : public LoginDetachableBaseModel,
  private:
   DetachableBaseHandler* detachable_base_handler_;
   ScopedObserver<DetachableBaseHandler, DetachableBaseObserver>
-      detachable_base_observer_;
+      detachable_base_observer_{this};
   LoginDataDispatcher* login_data_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDetachableBaseModelImpl);
