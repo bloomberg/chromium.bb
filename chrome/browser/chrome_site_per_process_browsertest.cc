@@ -376,6 +376,42 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_EQ(expected_url, new_contents->GetLastCommittedURL());
 }
 
+namespace {
+
+// This class observes a WebContents for a navigation to an extension scheme to
+// finish.
+class NavigationToExtensionSchemeObserver
+    : public content::WebContentsObserver {
+ public:
+  explicit NavigationToExtensionSchemeObserver(content::WebContents* contents)
+      : content::WebContentsObserver(contents),
+        extension_loaded_(contents->GetLastCommittedURL().SchemeIs(
+            extensions::kExtensionScheme)) {}
+
+  void Wait() {
+    if (extension_loaded_)
+      return;
+    message_loop_runner_ = new content::MessageLoopRunner();
+    message_loop_runner_->Run();
+  }
+
+ private:
+  void DidFinishNavigation(content::NavigationHandle* handle) override {
+    if (!handle->GetURL().SchemeIs(extensions::kExtensionScheme) ||
+        !handle->HasCommitted() || handle->IsErrorPage())
+      return;
+    extension_loaded_ = true;
+    message_loop_runner_->Quit();
+  }
+
+  bool extension_loaded_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationToExtensionSchemeObserver);
+};
+
+}  // namespace
+
 class ChromeSitePerProcessPDFTest : public ChromeSitePerProcessTest {
  public:
   ChromeSitePerProcessPDFTest() : test_guest_view_manager_(nullptr) {}
@@ -397,6 +433,34 @@ class ChromeSitePerProcessPDFTest : public ChromeSitePerProcessTest {
   }
 
   void ResendGestureToEmbedder(const std::string& host_name) {
+    content::WebContents* guest_web_contents = SetupGuestWebContents(host_name);
+    blink::WebGestureEvent event(blink::WebInputEvent::kGestureScrollUpdate,
+                                 blink::WebInputEvent::kNoModifiers,
+                                 ui::EventTimeForNow(),
+                                 blink::kWebGestureDeviceTouchscreen);
+    // This should not crash.
+    content::ResendGestureScrollUpdateToEmbedder(guest_web_contents, event);
+  }
+
+  void SendSyntheticTapGesture(const std::string& host_name) {
+    content::WebContents* guest_web_contents = SetupGuestWebContents(host_name);
+    // Observe navigations in guest to find out when navigation to the (PDF)
+    // extension commits. It will be used as an indicator that BrowserPlugin
+    // has attached.
+    NavigationToExtensionSchemeObserver navigation_observer(guest_web_contents);
+
+    // Before sending the mouse clicks, we need to make sure the BrowserPlugin
+    // has attached, which happens before navigating the guest to the PDF
+    // extension. When attached, the window rects are updated and the context
+    // menu position can be properly calculated.
+    navigation_observer.Wait();
+
+    // This should not crash
+    MaybeSendSyntheticTapGesture(guest_web_contents);
+  }
+
+ private:
+  content::WebContents* SetupGuestWebContents(const std::string& host_name) {
     // Navigate to a page with an <iframe>.
     GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
     ui_test_utils::NavigateToURL(browser(), main_url);
@@ -420,15 +484,9 @@ class ChromeSitePerProcessPDFTest : public ChromeSitePerProcessTest {
     ResetTouchAction(
         guest_view::GuestViewBase::FromWebContents(guest_web_contents)
             ->GetOwnerRenderWidgetHost());
-    blink::WebGestureEvent event(blink::WebInputEvent::kGestureScrollUpdate,
-                                 blink::WebInputEvent::kNoModifiers,
-                                 ui::EventTimeForNow(),
-                                 blink::kWebGestureDeviceTouchscreen);
-    // This should not crash.
-    content::ResendGestureScrollUpdateToEmbedder(guest_web_contents, event);
+    return guest_web_contents;
   }
 
- private:
   guest_view::TestGuestViewManagerFactory factory_;
   guest_view::TestGuestViewManager* test_guest_view_manager_;
 
@@ -447,6 +505,19 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
                        ResendGestureToEmbedderNonOOPIF) {
   ResendGestureToEmbedder("a.com");
+}
+
+// Regression test for https://crbug.com/873211. MaybeSendSyntheticTapGesture
+// can be called with no touch action set in TouchActionFilter and results in
+// a crash.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
+                       SendSyntheticTapGestureOOPIF) {
+  SendSyntheticTapGesture("b.com");
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
+                       SendSyntheticTapGestureNonOOPIF) {
+  SendSyntheticTapGesture("a.com");
 }
 
 // This test verifies that when navigating an OOPIF to a page with <embed>-ed
