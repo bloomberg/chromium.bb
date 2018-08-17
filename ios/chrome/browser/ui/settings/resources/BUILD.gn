@@ -67,6 +67,15 @@ imageset("settings_article_suggestions") {
   ]
 }
 
+imageset("settings_autofill_forms") {
+  sources = [
+    "settings_autofill_forms.imageset/Contents.json",
+    "settings_autofill_forms.imageset/settings_autofill_forms.png",
+    "settings_autofill_forms.imageset/settings_autofill_forms@2x.png",
+    "settings_autofill_forms.imageset/settings_autofill_forms@3x.png",
+  ]
+}
+
 imageset("settings_bandwidth") {
   sources = [
     "settings_bandwidth.imageset/Contents.json",
@@ -100,24 +109,6 @@ imageset("settings_passwords") {
     "settings_passwords.imageset/settings_passwords.png",
     "settings_passwords.imageset/settings_passwords@2x.png",
     "settings_passwords.imageset/settings_passwords@3x.png",
-  ]
-}
-
-imageset("settings_payment_methods") {
-  sources = [
-    "settings_payment_methods.imageset/Contents.json",
-    "settings_payment_methods.imageset/payment_methods.png",
-    "settings_payment_methods.imageset/payment_methods@2x.png",
-    "settings_payment_methods.imageset/payment_methods@3x.png",
-  ]
-}
-
-imageset("settings_addresses") {
-  sources = [
-    "settings_addresses.imageset/Contents.json",
-    "settings_addresses.imageset/addresses.png",
-    "settings_addresses.imageset/addresses@2x.png",
-    "settings_addresses.imageset/addresses@3x.png",
   ]
 }
 
