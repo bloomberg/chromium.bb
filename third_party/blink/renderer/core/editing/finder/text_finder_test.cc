@@ -80,7 +80,7 @@ TEST_F(TextFinderTest, FindTextSimple) {
 
   int identifier = 0;
   WebString search_text(String("FindMe"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
   bool wrap_within_frame = true;
 
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
@@ -153,7 +153,7 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
 
   int identifier = 0;
   WebString search_text(String("FindMe"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
   bool wrap_within_frame = true;
 
   // Set viewport scale to 20 in order to simulate zoom-in
@@ -193,7 +193,7 @@ TEST_F(TextFinderTest, FindTextNotFound) {
 
   int identifier = 0;
   WebString search_text(String("Boo"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
   bool wrap_within_frame = true;
 
   EXPECT_FALSE(GetTextFinder().Find(identifier, search_text, find_options,
@@ -214,7 +214,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
 
   int identifier = 0;
   WebString search_text(String("foo"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
   bool wrap_within_frame = true;
 
   // TextIterator currently returns the matches in the flat treeorder, so
@@ -310,13 +310,12 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
 
   int identifier = 0;
   WebString search_text(String("FindMe"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
+  find_options.run_synchronously_for_testing = true;
 
   GetTextFinder().ResetMatchCount();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
 
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
   WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
@@ -344,15 +343,14 @@ TEST_F(TextFinderTest, ScopeTextMatchesRepeated) {
   int identifier = 0;
   WebString search_text1(String("XFindMe"));
   WebString search_text2(String("FindMe"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
+  find_options.run_synchronously_for_testing = true;
 
   GetTextFinder().ResetMatchCount();
   GetTextFinder().StartScopingStringMatches(identifier, search_text1,
                                             find_options);
   GetTextFinder().StartScopingStringMatches(identifier, search_text2,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
 
   // Only searchText2 should be highlighted.
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
@@ -375,13 +373,12 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
 
   int identifier = 0;
   WebString search_text(String("fOO"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
+  find_options.run_synchronously_for_testing = true;
 
   GetTextFinder().ResetMatchCount();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
 
   // TextIterator currently returns the matches in the flat tree order,
   // so in this case the matches will be returned in the order of
@@ -405,13 +402,12 @@ TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
 
   int identifier = 0;
   WebString search_text(String("ab ab"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
+  find_options.run_synchronously_for_testing = true;
 
   GetTextFinder().ResetMatchCount();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
 
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
   WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
@@ -428,13 +424,12 @@ TEST_F(TextFinderTest, OverlappingMatches) {
 
   int identifier = 0;
   WebString search_text(String("aba"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
+  find_options.run_synchronously_for_testing = true;
 
   GetTextFinder().ResetMatchCount();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
 
   // We shouldn't find overlapped matches.
   EXPECT_EQ(1, GetTextFinder().TotalMatchCount());
@@ -451,13 +446,12 @@ TEST_F(TextFinderTest, SequentialMatches) {
 
   int identifier = 0;
   WebString search_text(String("ab"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
+  find_options.run_synchronously_for_testing = true;
 
   GetTextFinder().ResetMatchCount();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
 
   EXPECT_EQ(3, GetTextFinder().TotalMatchCount());
   WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
@@ -473,15 +467,14 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
 
   int identifier = 0;
   WebString search_text(String("FindMe"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
+  find_options.run_synchronously_for_testing = true;
   bool wrap_within_frame = true;
   bool active_now;
 
   GetTextFinder().ResetMatchCount();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
 
   find_options.find_next = true;
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
@@ -511,8 +504,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   GetTextFinder().CancelPendingScopingEffort();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
+
   EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
 
   WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
@@ -531,15 +523,14 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
 
   int identifier = 0;
   WebString search_text(String("FindMe"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
+  find_options.run_synchronously_for_testing = true;
   bool wrap_within_frame = true;
   bool active_now = false;
 
   GetTextFinder().ResetMatchCount();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
 
   find_options.find_next = true;
   ASSERT_FALSE(GetTextFinder().Find(identifier, search_text, find_options,
@@ -566,8 +557,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
   GetTextFinder().CancelPendingScopingEffort();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
+
   EXPECT_EQ(1, GetTextFinder().TotalMatchCount());
 
   WebVector<WebFloatRect> match_rects = GetTextFinder().FindMatchRects();
@@ -615,7 +605,8 @@ TEST_F(TextFinderFakeTimerTest, ScopeWithTimeouts) {
   GetDocument().UpdateStyleAndLayout();
 
   int identifier = 0;
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
+  find_options.run_synchronously_for_testing = true;
 
   GetTextFinder().ResetMatchCount();
 
@@ -623,8 +614,6 @@ TEST_F(TextFinderFakeTimerTest, ScopeWithTimeouts) {
   // of the TimeProxyPlatform timer is greater than timeout threshold.
   GetTextFinder().StartScopingStringMatches(identifier, search_pattern,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
 
   EXPECT_EQ(4, GetTextFinder().TotalMatchCount());
 }

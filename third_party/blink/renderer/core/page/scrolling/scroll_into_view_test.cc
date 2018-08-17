@@ -488,6 +488,7 @@ TEST_F(ScrollIntoViewTest, FindDoesNotScrollOverflowHidden) {
   ASSERT_EQ(container->scrollTop(), 0);
   const int kFindIdentifier = 12345;
   WebFindOptions options;
+  options.run_synchronously_for_testing = true;
   MainFrame().Find(kFindIdentifier, WebString::FromUTF8("hello"), options,
                    false);
   ASSERT_EQ(container->scrollTop(), 0);

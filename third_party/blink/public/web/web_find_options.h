@@ -50,11 +50,16 @@ struct WebFindOptions {
   // after the frame navigates.
   bool force;
 
+  // Signifies whether we should force text scoping to happen immediately
+  // or not. Only used for testing purposes.
+  bool run_synchronously_for_testing;
+
   WebFindOptions()
       : forward(true),
         match_case(false),
         find_next(false),
-        force(false) {}
+        force(false),
+        run_synchronously_for_testing(false) {}
 };
 
 }  // namespace blink

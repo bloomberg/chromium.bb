@@ -345,7 +345,8 @@ int FindInPage(WebContents* tab,
                int* ordinal,
                gfx::Rect* selection_rect) {
   FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(tab);
-  find_tab_helper->StartFinding(search_string, forward, match_case);
+  find_tab_helper->StartFinding(search_string, forward, match_case,
+                                true /* run_synchronously_for_testing */);
   FindInPageNotificationObserver observer(tab);
   observer.Wait();
   if (ordinal)

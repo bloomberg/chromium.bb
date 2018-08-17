@@ -38,7 +38,9 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
+#include "third_party/blink/renderer/core/dom/idle_request_options.h"
 #include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -64,6 +66,10 @@
 
 namespace blink {
 
+namespace {
+constexpr TimeDelta kForcedInvocationDeadline = TimeDelta::FromSeconds(10);
+}
+
 TextFinder::FindMatch::FindMatch(Range* range, int ordinal)
     : range_(range), ordinal_(ordinal) {}
 
@@ -71,44 +77,53 @@ void TextFinder::FindMatch::Trace(blink::Visitor* visitor) {
   visitor->Trace(range_);
 }
 
-class TextFinder::DeferredScopeStringMatches
-    : public GarbageCollectedFinalized<TextFinder::DeferredScopeStringMatches> {
+class TextFinder::IdleScopeStringMatchesCallback
+    : public ScriptedIdleTaskController::IdleTask {
  public:
-  static DeferredScopeStringMatches* Create(TextFinder* text_finder,
-                                            int identifier,
-                                            const WebString& search_text,
-                                            const WebFindOptions& options) {
-    return new DeferredScopeStringMatches(text_finder, identifier, search_text,
-                                          options);
+  static IdleScopeStringMatchesCallback* Create(TextFinder* text_finder,
+                                                int identifier,
+                                                const WebString& search_text,
+                                                const WebFindOptions& options) {
+    return new IdleScopeStringMatchesCallback(text_finder, identifier,
+                                              search_text, options);
   }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(text_finder_); }
+  void Dispose() {
+    DCHECK_GT(callback_handle_, 0);
+    if (!text_finder_->GetFrame())
+      return;
+    Document* document = text_finder_->GetFrame()->GetDocument();
+    if (!document)
+      return;
+    document->CancelIdleCallback(callback_handle_);
+  }
 
-  void Dispose() { timer_.Stop(); }
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(text_finder_);
+    ScriptedIdleTaskController::IdleTask::Trace(visitor);
+  }
 
  private:
-  DeferredScopeStringMatches(TextFinder* text_finder,
-                             int identifier,
-                             const WebString& search_text,
-                             const WebFindOptions& options)
-      : timer_(text_finder->OwnerFrame().GetFrame()->GetTaskRunner(
-                   TaskType::kInternalDefault),
-               this,
-               &DeferredScopeStringMatches::DoTimeout),
-        text_finder_(text_finder),
+  IdleScopeStringMatchesCallback(TextFinder* text_finder,
+                                 int identifier,
+                                 const WebString& search_text,
+                                 const WebFindOptions& options)
+      : text_finder_(text_finder),
         identifier_(identifier),
         search_text_(search_text),
         options_(options) {
-    timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    callback_handle_ =
+        text_finder->GetFrame()->GetDocument()->RequestIdleCallback(
+            this, IdleRequestOptions());
   }
 
-  void DoTimeout(TimerBase*) {
-    text_finder_->ResumeScopingStringMatches(identifier_, search_text_,
-                                             options_);
+  void invoke(IdleDeadline* deadline) override {
+    text_finder_->ResumeScopingStringMatches(deadline, identifier_,
+                                             search_text_, options_);
   }
 
-  TaskRunnerTimer<DeferredScopeStringMatches> timer_;
   Member<TextFinder> text_finder_;
+  int callback_handle_ = 0;
   const int identifier_;
   const WebString search_text_;
   const WebFindOptions options_;
@@ -407,7 +422,8 @@ void TextFinder::StartScopingStringMatches(int identifier,
   ScopeStringMatchesSoon(identifier, search_text, options);
 }
 
-void TextFinder::ScopeStringMatches(int identifier,
+void TextFinder::ScopeStringMatches(IdleDeadline* deadline,
+                                    int identifier,
                                     const WebString& search_text,
                                     const WebFindOptions& options) {
   if (!ShouldScopeMatches(search_text, options)) {
@@ -435,14 +451,8 @@ void TextFinder::ScopeStringMatches(int identifier,
   // needs to be audited.  see http://crbug.com/590369 for more details.
   search_start.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  // This timeout controls how long we scope before releasing control. This
-  // value does not prevent us from running for longer than this, but it is
-  // periodically checked to see if we have exceeded our allocated time.
-  const double kMaxScopingDuration = 0.1;  // seconds
-
   int match_count = 0;
   bool full_range_searched = false;
-  double start_time = CurrentTime();
   PositionInFlatTree next_scoping_start;
   do {
     // Find next occurrence of the search string.
@@ -465,9 +475,10 @@ void TextFinder::ScopeStringMatches(int identifier,
       // resultRange will be collapsed if the matched text spans over multiple
       // TreeScopes.  FIXME: Show such matches to users.
       search_start = result.EndPosition();
-      continue;
+      if (deadline->timeRemaining() > 0)
+        continue;
+      break;
     }
-
     ++match_count;
 
     // Catch a special case where Find found something but doesn't know what
@@ -515,7 +526,7 @@ void TextFinder::ScopeStringMatches(int identifier,
     search_start = result.EndPosition();
 
     next_scoping_start = search_start;
-  } while (CurrentTime() - start_time < kMaxScopingDuration);
+  } while (deadline->timeRemaining() > 0);
 
   if (next_scoping_start.IsNotNull()) {
     resume_scoping_from_range_ =
@@ -575,9 +586,9 @@ void TextFinder::FinishCurrentScopingEffort(int identifier) {
 }
 
 void TextFinder::CancelPendingScopingEffort() {
-  if (deferred_scoping_work_) {
-    deferred_scoping_work_->Dispose();
-    deferred_scoping_work_.Clear();
+  if (idle_scoping_callback_) {
+    idle_scoping_callback_->Dispose();
+    idle_scoping_callback_.Clear();
   }
 
   active_match_index_ = -1;
@@ -863,17 +874,28 @@ bool TextFinder::ShouldScopeMatches(const String& search_text,
 void TextFinder::ScopeStringMatchesSoon(int identifier,
                                         const WebString& search_text,
                                         const WebFindOptions& options) {
-  DCHECK_EQ(deferred_scoping_work_, nullptr);
-  deferred_scoping_work_ = DeferredScopeStringMatches::Create(
-      this, identifier, search_text, options);
+  DCHECK_EQ(idle_scoping_callback_, nullptr);
+  // If it's for testing, run the scoping immediately.
+  // TODO(rakina): Change to use general solution when it's available.
+  // https://crbug.com/875203
+  if (options.run_synchronously_for_testing) {
+    ScopeStringMatches(
+        IdleDeadline::Create(CurrentTimeTicks() + kForcedInvocationDeadline,
+                             IdleDeadline::CallbackType::kCalledWhenIdle),
+        identifier, search_text, options);
+  } else {
+    idle_scoping_callback_ = IdleScopeStringMatchesCallback::Create(
+        this, identifier, search_text, options);
+  }
 }
 
-void TextFinder::ResumeScopingStringMatches(int identifier,
+void TextFinder::ResumeScopingStringMatches(IdleDeadline* deadline,
+                                            int identifier,
                                             const WebString& search_text,
                                             const WebFindOptions& options) {
-  deferred_scoping_work_.Clear();
+  idle_scoping_callback_.Clear();
 
-  ScopeStringMatches(identifier, search_text, options);
+  ScopeStringMatches(deadline, identifier, search_text, options);
 }
 
 void TextFinder::InvalidateIfNecessary() {
@@ -907,7 +929,7 @@ void TextFinder::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_frame_);
   visitor->Trace(active_match_);
   visitor->Trace(resume_scoping_from_range_);
-  visitor->Trace(deferred_scoping_work_);
+  visitor->Trace(idle_scoping_callback_);
   visitor->Trace(find_matches_cache_);
 }
 

@@ -57,6 +57,7 @@ class FindTrackingDelegate : public WebContentsDelegate {
     web_contents->SetDelegate(this);
 
     blink::WebFindOptions options;
+    options.run_synchronously_for_testing = true;
     options.match_case = false;
 
     web_contents->Find(global_request_id++, base::UTF8ToUTF16(search_),
