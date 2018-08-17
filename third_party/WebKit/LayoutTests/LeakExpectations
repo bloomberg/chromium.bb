@@ -82,6 +82,9 @@ crbug.com/862029 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-wi
 # Sheriff 2018-08-15
 crbug.com/874442 [ Linux ] svg/animations/mpath-remove-from-dependents-on-delete-crash.html [ Pass Crash ]
 
+# Sheriff 2018-08-17
+crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
