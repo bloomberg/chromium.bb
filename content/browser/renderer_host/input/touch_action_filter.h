@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_ACTION_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_ACTION_FILTER_H_
 
+#include <random>
+
 #include "base/macros.h"
 #include "base/optional.h"
 #include "cc/input/touch_action.h"
@@ -79,6 +81,9 @@ class CONTENT_EXPORT TouchActionFilter {
   void ReportTouchAction();
   void SetTouchAction(cc::TouchAction touch_action);
 
+  // Debugging only.
+  bool ShouldDump();
+
   // Whether scroll and pinch gestures should be discarded due to touch-action.
   bool suppress_manipulation_events_;
 
@@ -118,6 +123,7 @@ class CONTENT_EXPORT TouchActionFilter {
 
   // Debugging only.
   std::string gesture_sequence_;
+  std::default_random_engine gen_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchActionFilter);
 };

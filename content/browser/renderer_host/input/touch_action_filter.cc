@@ -44,6 +44,15 @@ TouchActionFilter::TouchActionFilter()
 
 TouchActionFilter::~TouchActionFilter() {}
 
+// In all the places that has DumpWithCrashing(), generate a report once every
+// 100 times.
+bool TouchActionFilter::ShouldDump() {
+  std::uniform_int_distribution<int> uniform_dist(0, 99);
+  if (uniform_dist(gen_) == 0)
+    return true;
+  return false;
+}
+
 FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     WebGestureEvent* gesture_event) {
   if (gesture_event->SourceDevice() != blink::kWebGestureDeviceTouchscreen)
@@ -59,10 +68,13 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       gesture_sequence_.append("B");
       // TODO(https://crbug.com/851644): Make sure the value is properly set.
       if (!scrolling_touch_action_.has_value()) {
-        static auto* crash_key = base::debug::AllocateCrashKeyString(
-            "scrollbegin-gestures", base::debug::CrashKeySize::Size256);
-        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        base::debug::DumpWithoutCrashing();
+        if (ShouldDump()) {
+          static auto* crash_key = base::debug::AllocateCrashKeyString(
+              "scrollbegin-gestures", base::debug::CrashKeySize::Size256);
+          base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+          base::debug::DumpWithoutCrashing();
+        }
+        gesture_sequence_.clear();
         SetTouchAction(cc::kTouchActionAuto);
       }
       suppress_manipulation_events_ =
@@ -135,10 +147,13 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
       // TODO(https://crbug.com/851644): Make sure the value is properly set.
       if (!scrolling_touch_action_.has_value()) {
-        static auto* crash_key = base::debug::AllocateCrashKeyString(
-            "tapunconfirmed-gestures", base::debug::CrashKeySize::Size256);
-        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        base::debug::DumpWithoutCrashing();
+        if (ShouldDump()) {
+          static auto* crash_key = base::debug::AllocateCrashKeyString(
+              "tapunconfirmed-gestures", base::debug::CrashKeySize::Size256);
+          base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+          base::debug::DumpWithoutCrashing();
+        }
+        gesture_sequence_.clear();
         SetTouchAction(cc::kTouchActionAuto);
       }
       allow_current_double_tap_event_ = (scrolling_touch_action_.value() &
@@ -168,10 +183,13 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       scrolling_touch_action_ = allowed_touch_action_;
       // TODO(https://crbug.com/851644): Make sure the value is properly set.
       if (!scrolling_touch_action_.has_value()) {
-        static auto* crash_key = base::debug::AllocateCrashKeyString(
-            "tapdown-gestures", base::debug::CrashKeySize::Size256);
-        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        base::debug::DumpWithoutCrashing();
+        if (ShouldDump()) {
+          static auto* crash_key = base::debug::AllocateCrashKeyString(
+              "tapdown-gestures", base::debug::CrashKeySize::Size256);
+          base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+          base::debug::DumpWithoutCrashing();
+        }
+        gesture_sequence_.clear();
         SetTouchAction(cc::kTouchActionAuto);
       }
       DCHECK(!drop_current_tap_ending_event_);
