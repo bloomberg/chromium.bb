@@ -10,6 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_score_predictor.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
@@ -25,7 +26,8 @@ namespace resource_coordinator {
 // events to determine the end state of each background tab.
 class TabActivityWatcher : public BrowserListObserver,
                            public TabStripModelObserver,
-                           public BrowserTabStripTrackerDelegate {
+                           public BrowserTabStripTrackerDelegate,
+                           public TabLifecycleObserver {
  public:
   TabActivityWatcher();
   ~TabActivityWatcher() override;
@@ -74,6 +76,12 @@ class TabActivityWatcher : public BrowserListObserver,
 
   // BrowserTabStripTrackerDelegate:
   bool ShouldTrackBrowser(Browser* browser) override;
+
+  // TabLifecycleObserver:
+  void OnDiscardedStateChange(content::WebContents* contents,
+                              bool is_discarded) override;
+  void OnAutoDiscardableStateChange(content::WebContents* contents,
+                                    bool is_auto_discardable) override;
 
   // Resets internal state.
   void ResetForTesting();

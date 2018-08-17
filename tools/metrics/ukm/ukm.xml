@@ -3632,6 +3632,12 @@ be describing additional metrics about the same event.
     Collects the duration in MS from when the tab is backgrounded to when it is
     brought to foreground or closed.
   </summary>
+  <metric name="IsDiscarded">
+    <summary>
+      Boolean value indicating whether or not the tab is discarded since it was
+      backgrounded.
+    </summary>
+  </metric>
   <metric name="IsForegrounded">
     <summary>
       Boolean value indicating whether or not it's triggered because the tab is
