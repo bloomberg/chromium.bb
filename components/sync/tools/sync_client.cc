@@ -441,8 +441,8 @@ int SyncClientMain(int argc, char* argv[]) {
   DCHECK(success);
   ModelTypeConnector* model_type_connector =
       sync_manager->GetModelTypeConnector();
-  for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
-    model_type_connector->RegisterDirectoryType(it.Get(), GROUP_PASSIVE);
+  for (ModelType type : model_types) {
+    model_type_connector->RegisterDirectoryType(type, GROUP_PASSIVE);
   }
 
   sync_manager->StartSyncingNormally(base::Time());

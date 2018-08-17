@@ -38,16 +38,16 @@ ModelTypeSet MultiGroupTypes(const SyncPrefs& sync_prefs,
   const ModelTypeSet selectable_types = UserSelectableTypes();
   ModelTypeSet seen;
   ModelTypeSet multi;
-  for (ModelTypeSet::Iterator si = selectable_types.First(); si.Good();
-       si.Inc()) {
+  // TODO(vitaliii): Do not use such short variable names here (and possibly
+  // elsewhere in the file).
+  for (ModelType st : selectable_types) {
     const ModelTypeSet grouped_types = sync_prefs.ResolvePrefGroups(
-        registered_types, ModelTypeSet(si.Get()), kUserEventsSeparatePrefGroup);
-    for (ModelTypeSet::Iterator gi = grouped_types.First(); gi.Good();
-         gi.Inc()) {
-      if (seen.Has(gi.Get())) {
-        multi.Put(gi.Get());
+        registered_types, ModelTypeSet(st), kUserEventsSeparatePrefGroup);
+    for (ModelType gt : grouped_types) {
+      if (seen.Has(gt)) {
+        multi.Put(gt);
       } else {
-        seen.Put(gi.Get());
+        seen.Put(gt);
       }
     }
   }
@@ -138,22 +138,17 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
   // Setup sync with no enabled types.
   SetupTest(/*all_types_enabled=*/false);
 
-  for (ModelTypeSet::Iterator si = selectable_types_.First(); si.Good();
-       si.Inc()) {
-    const ModelTypeSet grouped_types = ResolveGroup(si.Get());
+  for (ModelType st : selectable_types_) {
+    const ModelTypeSet grouped_types = ResolveGroup(st);
     const ModelTypeSet single_grouped_types = WithoutMultiTypes(grouped_types);
-    for (ModelTypeSet::Iterator sgi = single_grouped_types.First(); sgi.Good();
-         sgi.Inc()) {
-      ASSERT_FALSE(ModelTypeExists(sgi.Get()))
-          << " for " << ModelTypeToString(si.Get());
+    for (ModelType sgt : single_grouped_types) {
+      ASSERT_FALSE(ModelTypeExists(sgt)) << " for " << ModelTypeToString(st);
     }
 
-    EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(si.Get()));
+    EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(st));
 
-    for (ModelTypeSet::Iterator gi = grouped_types.First(); gi.Good();
-         gi.Inc()) {
-      EXPECT_TRUE(ModelTypeExists(gi.Get()))
-          << " for " << ModelTypeToString(si.Get());
+    for (ModelType gt : grouped_types) {
+      EXPECT_TRUE(ModelTypeExists(gt)) << " for " << ModelTypeToString(st);
     }
   }
 }
@@ -162,31 +157,24 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
   // Setup sync with no disabled types.
   SetupTest(/*all_types_enabled=*/true);
 
-  for (ModelTypeSet::Iterator si = selectable_types_.First(); si.Good();
-       si.Inc()) {
-    const ModelTypeSet grouped_types = ResolveGroup(si.Get());
-    for (ModelTypeSet::Iterator gi = grouped_types.First(); gi.Good();
-         gi.Inc()) {
-      ASSERT_TRUE(ModelTypeExists(gi.Get()))
-          << " for " << ModelTypeToString(si.Get());
+  for (ModelType st : selectable_types_) {
+    const ModelTypeSet grouped_types = ResolveGroup(st);
+    for (ModelType gt : grouped_types) {
+      ASSERT_TRUE(ModelTypeExists(gt)) << " for " << ModelTypeToString(st);
     }
 
-    EXPECT_TRUE(GetClient(0)->DisableSyncForDatatype(si.Get()));
+    EXPECT_TRUE(GetClient(0)->DisableSyncForDatatype(st));
 
     const ModelTypeSet single_grouped_types = WithoutMultiTypes(grouped_types);
-    for (ModelTypeSet::Iterator sgi = single_grouped_types.First(); sgi.Good();
-         sgi.Inc()) {
-      EXPECT_FALSE(ModelTypeExists(sgi.Get()))
-          << " for " << ModelTypeToString(si.Get());
+    for (ModelType sgt : single_grouped_types) {
+      EXPECT_FALSE(ModelTypeExists(sgt)) << " for " << ModelTypeToString(st);
     }
   }
 
   // Lastly make sure that all the multi grouped times are all gone, since we
   // did not check these after disabling inside the above loop.
-  for (ModelTypeSet::Iterator mgi = multi_grouped_types_.First(); mgi.Good();
-       mgi.Inc()) {
-    EXPECT_FALSE(ModelTypeExists(mgi.Get()))
-        << " for " << ModelTypeToString(mgi.Get());
+  for (ModelType mgt : multi_grouped_types_) {
+    EXPECT_FALSE(ModelTypeExists(mgt)) << " for " << ModelTypeToString(mgt);
   }
 }
 
@@ -195,34 +183,27 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   // Setup sync with no enabled types.
   SetupTest(/*all_types_enabled=*/false);
 
-  for (ModelTypeSet::Iterator si = selectable_types_.First(); si.Good();
-       si.Inc()) {
-    const ModelTypeSet grouped_types = ResolveGroup(si.Get());
+  for (ModelType st : selectable_types_) {
+    const ModelTypeSet grouped_types = ResolveGroup(st);
     const ModelTypeSet single_grouped_types = WithoutMultiTypes(grouped_types);
-    for (ModelTypeSet::Iterator sgi = single_grouped_types.First(); sgi.Good();
-         sgi.Inc()) {
-      ASSERT_FALSE(ModelTypeExists(sgi.Get()))
-          << " for " << ModelTypeToString(si.Get());
+    for (ModelType sgt : single_grouped_types) {
+      ASSERT_FALSE(ModelTypeExists(sgt)) << " for " << ModelTypeToString(st);
     }
 
     // Enable and then disable immediately afterwards, before the datatype has
     // had the chance to finish startup (which usually involves task posting).
-    EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(si.Get()));
-    EXPECT_TRUE(GetClient(0)->DisableSyncForDatatype(si.Get()));
+    EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(st));
+    EXPECT_TRUE(GetClient(0)->DisableSyncForDatatype(st));
 
-    for (ModelTypeSet::Iterator sgi = single_grouped_types.First(); sgi.Good();
-         sgi.Inc()) {
-      EXPECT_FALSE(ModelTypeExists(sgi.Get()))
-          << " for " << ModelTypeToString(si.Get());
+    for (ModelType sgt : single_grouped_types) {
+      EXPECT_FALSE(ModelTypeExists(sgt)) << " for " << ModelTypeToString(st);
     }
   }
 
   // Lastly make sure that all the multi grouped times are all gone, since we
   // did not check these after disabling inside the above loop.
-  for (ModelTypeSet::Iterator mgi = multi_grouped_types_.First(); mgi.Good();
-       mgi.Inc()) {
-    EXPECT_FALSE(ModelTypeExists(mgi.Get()))
-        << " for " << ModelTypeToString(mgi.Get());
+  for (ModelType mgt : multi_grouped_types_) {
+    EXPECT_FALSE(ModelTypeExists(mgt)) << " for " << ModelTypeToString(mgt);
   }
 }
 
@@ -231,24 +212,19 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   // Setup sync with no disabled types.
   SetupTest(/*all_types_enabled=*/true);
 
-  for (ModelTypeSet::Iterator si = selectable_types_.First(); si.Good();
-       si.Inc()) {
-    const ModelTypeSet grouped_types = ResolveGroup(si.Get());
-    for (ModelTypeSet::Iterator gi = grouped_types.First(); gi.Good();
-         gi.Inc()) {
-      ASSERT_TRUE(ModelTypeExists(gi.Get()))
-          << " for " << ModelTypeToString(si.Get());
+  for (ModelType st : selectable_types_) {
+    const ModelTypeSet grouped_types = ResolveGroup(st);
+    for (ModelType gt : grouped_types) {
+      ASSERT_TRUE(ModelTypeExists(gt)) << " for " << ModelTypeToString(st);
     }
 
     // Disable and then reenable immediately afterwards, before the datatype has
     // had the chance to stop fully (which usually involves task posting).
-    EXPECT_TRUE(GetClient(0)->DisableSyncForDatatype(si.Get()));
-    EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(si.Get()));
+    EXPECT_TRUE(GetClient(0)->DisableSyncForDatatype(st));
+    EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(st));
 
-    for (ModelTypeSet::Iterator gi = grouped_types.First(); gi.Good();
-         gi.Inc()) {
-      EXPECT_TRUE(ModelTypeExists(gi.Get()))
-          << " for " << ModelTypeToString(si.Get());
+    for (ModelType gt : grouped_types) {
+      EXPECT_TRUE(ModelTypeExists(gt)) << " for " << ModelTypeToString(st);
     }
   }
 }
@@ -258,26 +234,21 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   // Setup sync with no enabled types.
   SetupTest(/*all_types_enabled=*/false);
 
-  for (ModelTypeSet::Iterator si = selectable_types_.First(); si.Good();
-       si.Inc()) {
-    const ModelTypeSet grouped_types = ResolveGroup(si.Get());
+  for (ModelType st : selectable_types_) {
+    const ModelTypeSet grouped_types = ResolveGroup(st);
     const ModelTypeSet single_grouped_types = WithoutMultiTypes(grouped_types);
-    for (ModelTypeSet::Iterator sgi = single_grouped_types.First(); sgi.Good();
-         sgi.Inc()) {
-      ASSERT_FALSE(ModelTypeExists(sgi.Get()))
-          << " for " << ModelTypeToString(si.Get());
+    for (ModelType sgt : single_grouped_types) {
+      ASSERT_FALSE(ModelTypeExists(sgt)) << " for " << ModelTypeToString(st);
     }
 
     // Fast enable-disable-enable sequence, before the datatype has had the
     // chance to transition fully across states (usually involves task posting).
-    EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(si.Get()));
-    EXPECT_TRUE(GetClient(0)->DisableSyncForDatatype(si.Get()));
-    EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(si.Get()));
+    EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(st));
+    EXPECT_TRUE(GetClient(0)->DisableSyncForDatatype(st));
+    EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(st));
 
-    for (ModelTypeSet::Iterator sgi = single_grouped_types.First(); sgi.Good();
-         sgi.Inc()) {
-      EXPECT_TRUE(ModelTypeExists(sgi.Get()))
-          << " for " << ModelTypeToString(si.Get());
+    for (ModelType sgt : single_grouped_types) {
+      EXPECT_TRUE(ModelTypeExists(sgt)) << " for " << ModelTypeToString(st);
     }
   }
 }
@@ -291,10 +262,8 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableDisable) {
   GetClient(0)->EnableSyncForAllDatatypes();
   GetClient(0)->DisableSyncForAllDatatypes();
 
-  for (ModelTypeSet::Iterator si = selectable_types_.First(); si.Good();
-       si.Inc()) {
-    EXPECT_FALSE(ModelTypeExists(si.Get()))
-        << " for " << ModelTypeToString(si.Get());
+  for (ModelType st : selectable_types_) {
+    EXPECT_FALSE(ModelTypeExists(st)) << " for " << ModelTypeToString(st);
   }
 }
 
@@ -312,10 +281,8 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, FastEnableDisableEnable) {
   const ModelTypeSet non_proxy_types =
       Difference(selectable_types_, ProxyTypes());
 
-  for (ModelTypeSet::Iterator si = non_proxy_types.First(); si.Good();
-       si.Inc()) {
-    EXPECT_TRUE(ModelTypeExists(si.Get()))
-        << " for " << ModelTypeToString(si.Get());
+  for (ModelType type : non_proxy_types) {
+    EXPECT_TRUE(ModelTypeExists(type)) << " for " << ModelTypeToString(type);
   }
 }
 

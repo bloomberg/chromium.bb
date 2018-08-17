@@ -46,10 +46,9 @@ const base::FilePath::CharType Directory::kSyncDatabaseFilename[] =
 
 Directory::PersistedKernelInfo::PersistedKernelInfo() {
   ModelTypeSet protocol_types = ProtocolTypes();
-  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
-       iter.Inc()) {
-    ResetDownloadProgress(iter.Get());
-    transaction_version[iter.Get()] = 0;
+  for (ModelType type : protocol_types) {
+    ResetDownloadProgress(type);
+    transaction_version[type] = 0;
   }
 }
 
@@ -696,9 +695,8 @@ void Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
     ScopedKernelLock lock(this);
 
     bool found_progress = false;
-    for (ModelTypeSet::Iterator iter = disabled_types.First(); iter.Good();
-         iter.Inc()) {
-      if (!kernel_->persisted_info.HasEmptyDownloadProgress(iter.Get()))
+    for (ModelType type : disabled_types) {
+      if (!kernel_->persisted_info.HasEmptyDownloadProgress(type))
         found_progress = true;
     }
 
@@ -739,14 +737,13 @@ void Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
     delete_journal_->AddJournalBatch(&trans, entries_to_journal);
 
     // Ensure meta tracking for these data types reflects the purged state.
-    for (ModelTypeSet::Iterator it = disabled_types.First(); it.Good();
-         it.Inc()) {
-      kernel_->persisted_info.transaction_version[it.Get()] = 0;
+    for (ModelType type : disabled_types) {
+      kernel_->persisted_info.transaction_version[type] = 0;
 
       // Don't discard progress markers or context for unapplied types.
-      if (!types_to_unapply.Has(it.Get())) {
-        kernel_->persisted_info.ResetDownloadProgress(it.Get());
-        kernel_->persisted_info.datatype_context[it.Get()].Clear();
+      if (!types_to_unapply.Has(type)) {
+        kernel_->persisted_info.ResetDownloadProgress(type);
+        kernel_->persisted_info.datatype_context[type].Clear();
       }
     }
 
@@ -999,9 +996,9 @@ ModelTypeSet Directory::InitialSyncEndedTypes() {
   syncable::ReadTransaction trans(FROM_HERE, this);
   ModelTypeSet protocol_types = ProtocolTypes();
   ModelTypeSet initial_sync_ended_types;
-  for (ModelTypeSet::Iterator i = protocol_types.First(); i.Good(); i.Inc()) {
-    if (InitialSyncEndedForType(&trans, i.Get())) {
-      initial_sync_ended_types.Put(i.Get());
+  for (ModelType type : protocol_types) {
+    if (InitialSyncEndedForType(&trans, type)) {
+      initial_sync_ended_types.Put(type);
     }
   }
   return initial_sync_ended_types;

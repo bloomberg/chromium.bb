@@ -131,9 +131,8 @@ void SyncInternalsMessageHandler::HandleRequestListOfTypes(
   base::DictionaryValue event_details;
   std::unique_ptr<base::ListValue> type_list(new base::ListValue());
   ModelTypeSet protocol_types = syncer::ProtocolTypes();
-  for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
-       it.Inc()) {
-    type_list->AppendString(ModelTypeToString(it.Get()));
+  for (syncer::ModelType type : protocol_types) {
+    type_list->AppendString(ModelTypeToString(type));
   }
   event_details.Set(syncer::sync_ui_util::kTypes, std::move(type_list));
   web_ui()->CallJavascriptFunction(

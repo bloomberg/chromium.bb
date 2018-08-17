@@ -701,10 +701,9 @@ TEST_F(PeopleHandlerTest, EnterBlankExistingPassphrase) {
 // data type.
 TEST_F(PeopleHandlerTest, TestSyncIndividualTypes) {
   syncer::ModelTypeSet user_selectable_types = GetAllTypes();
-  syncer::ModelTypeSet::Iterator it;
-  for (it = user_selectable_types.First(); it.Good(); it.Inc()) {
+  for (syncer::ModelType type : user_selectable_types) {
     syncer::ModelTypeSet type_to_set;
-    type_to_set.Put(it.Get());
+    type_to_set.Put(type);
     std::string args = GetConfiguration(NULL,
                                         CHOOSE_WHAT_TO_SYNC,
                                         type_to_set,
@@ -846,8 +845,7 @@ TEST_F(PeopleHandlerTest, ShowSetupManuallySyncAll) {
 
 TEST_F(PeopleHandlerTest, ShowSetupSyncForAllTypesIndividually) {
   syncer::ModelTypeSet user_selectable_types = GetAllTypes();
-  syncer::ModelTypeSet::Iterator it;
-  for (it = user_selectable_types.First(); it.Good(); it.Inc()) {
+  for (syncer::ModelType type : user_selectable_types) {
     ON_CALL(*mock_pss_, IsPassphraseRequired()).WillByDefault(Return(false));
     ON_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
         .WillByDefault(Return(false));
@@ -856,7 +854,7 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     sync_prefs.SetKeepEverythingSynced(false);
     SetDefaultExpectationsForConfigPage();
     syncer::ModelTypeSet types;
-    types.Put(it.Get());
+    types.Put(type);
     ON_CALL(*mock_pss_, GetPreferredDataTypes()).WillByDefault(Return(types));
 
     // This should display the sync setup dialog (not login).

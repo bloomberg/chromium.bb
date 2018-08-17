@@ -218,9 +218,8 @@ void SyncInternalsMessageHandler::HandleRequestListOfTypes(
   DictionaryValue event_details;
   auto type_list = std::make_unique<ListValue>();
   ModelTypeSet protocol_types = syncer::ProtocolTypes();
-  for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
-       it.Inc()) {
-    type_list->AppendString(ModelTypeToString(it.Get()));
+  for (syncer::ModelType type : protocol_types) {
+    type_list->AppendString(ModelTypeToString(type));
   }
   event_details.Set(syncer::sync_ui_util::kTypes, std::move(type_list));
   DispatchEvent(syncer::sync_ui_util::kOnReceivedListOfTypes, event_details);

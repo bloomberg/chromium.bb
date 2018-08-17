@@ -177,10 +177,9 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
       sync_pb::ClientToServerResponse_Error* response_error =
           response.mutable_error();
       response_error->set_error_type(SyncEnums::THROTTLED);
-      for (ModelTypeSet::Iterator it = partial_failure_type_.First(); it.Good();
-           it.Inc()) {
+      for (ModelType type : partial_failure_type_) {
         response_error->add_error_data_type_ids(
-            GetSpecificsFieldNumberFromModelType(it.Get()));
+            GetSpecificsFieldNumberFromModelType(type));
       }
       throttling_ = false;
     }
@@ -189,10 +188,9 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
       sync_pb::ClientToServerResponse_Error* response_error =
           response.mutable_error();
       response_error->set_error_type(SyncEnums::PARTIAL_FAILURE);
-      for (ModelTypeSet::Iterator it = partial_failure_type_.First(); it.Good();
-           it.Inc()) {
+      for (ModelType type : partial_failure_type_) {
         response_error->add_error_data_type_ids(
-            GetSpecificsFieldNumberFromModelType(it.Get()));
+            GetSpecificsFieldNumberFromModelType(type));
       }
       partial_failure_ = false;
     }
