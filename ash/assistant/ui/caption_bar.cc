@@ -4,6 +4,8 @@
 
 #include "ash/assistant/ui/caption_bar.h"
 
+#include <memory>
+
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -19,8 +21,9 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kCaptionButtonSizeDip = 12;
+constexpr int kCaptionButtonSizeDip = 32;
 constexpr int kPreferredHeightDip = 32;
+constexpr int kVectorIconSizeDip = 12;
 
 // CaptionButton ---------------------------------------------------------------
 
@@ -29,9 +32,10 @@ class CaptionButton : public views::ImageButton {
   explicit CaptionButton(const gfx::VectorIcon& icon,
                          views::ButtonListener* listener)
       : views::ImageButton(listener) {
-    SetImage(views::Button::ButtonState::STATE_NORMAL,
-             gfx::CreateVectorIcon(icon, kCaptionButtonSizeDip,
-                                   gfx::kGoogleGrey700));
+    SetImage(
+        views::Button::ButtonState::STATE_NORMAL,
+        gfx::CreateVectorIcon(icon, kVectorIconSizeDip, gfx::kGoogleGrey700));
+    SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
   }
 
   ~CaptionButton() override = default;
@@ -66,8 +70,8 @@ int CaptionBar::GetHeightForWidth(int width) const {
 void CaptionBar::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(0, kPaddingDip), 2 * kSpacingDip));
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+          kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
