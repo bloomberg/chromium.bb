@@ -35,9 +35,8 @@ static const int32_t kConnectionTypeInvalid = -1;
 
 }  // namespace
 
-NetworkConnectionTracker::NetworkConnectionTracker(
-    base::RepeatingCallback<network::mojom::NetworkService*()> callback)
-    : get_network_service_callback_(callback),
+NetworkConnectionTracker::NetworkConnectionTracker(BindingCallback callback)
+    : bind_request_callback_(callback),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       connection_type_(kConnectionTypeInvalid),
       network_change_observer_list_(
@@ -156,14 +155,11 @@ void NetworkConnectionTracker::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!binding_.is_bound());
 
-  network::mojom::NetworkService* network_service =
-      get_network_service_callback_.Run();
-
   // Get NetworkChangeManagerPtr.
   network::mojom::NetworkChangeManagerPtr manager_ptr;
   network::mojom::NetworkChangeManagerRequest request(
       mojo::MakeRequest(&manager_ptr));
-  network_service->GetNetworkChangeManager(std::move(request));
+  bind_request_callback_.Run(std::move(request));
 
   // Request notification from NetworkChangeManagerPtr.
   network::mojom::NetworkChangeManagerClientPtr client_ptr;

@@ -181,14 +181,13 @@ class NetworkConnectionTrackerTest : public testing::Test {
     network_service_ =
         NetworkService::Create(std::move(network_service_request),
                                /*netlog=*/nullptr);
-    tracker_ = std::make_unique<NetworkConnectionTracker>(
-        base::BindRepeating(&NetworkConnectionTrackerTest::network_service,
-                            base::Unretained(this)));
+    tracker_ = std::make_unique<NetworkConnectionTracker>(base::BindRepeating(
+        &NetworkConnectionTrackerTest::BindRequest, base::Unretained(this)));
     observer_ = std::make_unique<TestNetworkConnectionObserver>(tracker_.get());
   }
 
-  network::mojom::NetworkService* network_service() {
-    return network_service_.get();
+  void BindRequest(network::mojom::NetworkChangeManagerRequest request) {
+    network_service_->GetNetworkChangeManager(std::move(request));
   }
 
   NetworkConnectionTracker* network_connection_tracker() {
@@ -322,10 +321,12 @@ TEST_F(NetworkConnectionTrackerTest, GetConnectionTypeUnavailable) {
 
   network::mojom::NetworkServiceRequest request =
       mojo::MakeRequest(network_service_ptr);
-  base::RepeatingCallback<network::mojom::NetworkService*()> callback =
-      base::BindRepeating(
-          [](network::mojom::NetworkService* service) { return service; },
-          base::Unretained(network_service_ptr->get()));
+  NetworkConnectionTracker::BindingCallback callback = base::BindRepeating(
+      [](network::mojom::NetworkService* service,
+         network::mojom::NetworkChangeManagerRequest request) {
+        return service->GetNetworkChangeManager(std::move(request));
+      },
+      base::Unretained(network_service_ptr->get()));
 
   auto tracker = std::make_unique<NetworkConnectionTracker>(callback);
   auto type = network::mojom::ConnectionType::CONNECTION_3G;

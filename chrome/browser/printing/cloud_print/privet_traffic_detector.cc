@@ -20,6 +20,7 @@
 #include "net/base/network_interfaces.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/mdns_client.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace {
 

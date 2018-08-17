@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/router/discovery/discovery_network_monitor_metric_observer.h"
+#include "net/base/network_change_notifier.h"
 
 namespace media_router {
 namespace {

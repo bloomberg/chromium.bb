@@ -16,8 +16,6 @@
 
 using testing::_;
 using testing::InSequence;
-using ConnectionTypeObserver =
-    net::NetworkChangeNotifier::ConnectionTypeObserver;
 using ConnectionType = network::mojom::ConnectionType;
 
 namespace download {
