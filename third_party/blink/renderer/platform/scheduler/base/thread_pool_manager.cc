@@ -1,0 +1,161 @@
+#include "third_party/blink/renderer/platform/scheduler/base/thread_pool_manager.h"
+
+#include <algorithm>
+
+#include "base/bind.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_fuzzer_processor.h"
+#include "third_party/blink/renderer/platform/scheduler/base/simple_thread_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/thread_data.h"
+
+namespace base {
+namespace sequence_manager {
+
+ThreadPoolManager::ThreadPoolManager(SequenceManagerFuzzerProcessor* processor)
+    : processor_(processor),
+      next_time_(TimeTicks::Max()),
+      ready_to_compute_time_(&lock_),
+      ready_to_advance_time_(&lock_),
+      ready_to_terminate_(&lock_),
+      ready_to_execute_threads_(&lock_),
+      ready_for_next_round_(&lock_),
+      threads_waiting_to_compute_time_(0),
+      threads_waiting_to_advance_time_(0),
+      threads_ready_for_next_round_(0),
+      threads_ready_to_terminate_(0),
+      all_threads_ready_(true),
+      initial_threads_created_(false) {
+  DCHECK(processor_);
+};
+
+ThreadPoolManager::~ThreadPoolManager() = default;
+
+void ThreadPoolManager::CreateThread(
+    const google::protobuf::RepeatedPtrField<
+        SequenceManagerTestDescription::Action>& initial_thread_actions,
+    TimeTicks time) {
+  SimpleThreadImpl* thread;
+  {
+    AutoLock lock(lock_);
+    threads_.push_back(std::make_unique<SimpleThreadImpl>(
+        BindOnce(&ThreadPoolManager::StartThread, Unretained(this),
+                 initial_thread_actions),
+        time));
+    thread = threads_.back().get();
+  }
+  thread->Start();
+}
+
+void ThreadPoolManager::StartThread(
+    const google::protobuf::RepeatedPtrField<
+        SequenceManagerTestDescription::Action>& initial_thread_actions,
+    ThreadData* thread_data) {
+  {
+    AutoLock lock(lock_);
+    while (!initial_threads_created_)
+      ready_to_execute_threads_.Wait();
+  }
+  processor_->ExecuteThread(thread_data, initial_thread_actions);
+}
+
+void ThreadPoolManager::AdvanceClockSynchronouslyByPendingTaskDelay(
+    ThreadData* thread_data) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_data->thread_checker_);
+
+  ThreadReadyToComputeTime();
+
+  {
+    AutoLock lock(lock_);
+    while (threads_waiting_to_compute_time_ != threads_.size())
+      ready_to_compute_time_.Wait();
+    next_time_ = std::min(
+        next_time_,
+        thread_data->test_task_runner_->GetMockTickClock()->NowTicks() +
+            std::max(TimeDelta::FromMilliseconds(0),
+                     thread_data->test_task_runner_->NextPendingTaskDelay()));
+    threads_waiting_to_advance_time_++;
+    if (threads_waiting_to_advance_time_ == threads_.size()) {
+      threads_waiting_to_compute_time_ = 0;
+      ready_to_advance_time_.Broadcast();
+    }
+  }
+
+  AdvanceThreadClock(thread_data);
+}
+
+void ThreadPoolManager::AdvanceClockSynchronouslyToTime(ThreadData* thread_data,
+                                                        TimeTicks time) {
+  ThreadReadyToComputeTime();
+  {
+    AutoLock lock(lock_);
+    while (threads_waiting_to_compute_time_ != threads_.size())
+      ready_to_compute_time_.Wait();
+    next_time_ = std::min(next_time_, time);
+    threads_waiting_to_advance_time_++;
+    if (threads_waiting_to_advance_time_ == threads_.size()) {
+      threads_waiting_to_compute_time_ = 0;
+      ready_to_advance_time_.Broadcast();
+    }
+  }
+  AdvanceThreadClock(thread_data);
+}
+
+void ThreadPoolManager::ThreadReadyToComputeTime() {
+  AutoLock lock(lock_);
+  while (!all_threads_ready_)
+    ready_for_next_round_.Wait();
+  threads_waiting_to_compute_time_++;
+  if (threads_waiting_to_compute_time_ == threads_.size()) {
+    all_threads_ready_ = false;
+    ready_to_compute_time_.Broadcast();
+  }
+}
+
+void ThreadPoolManager::AdvanceThreadClock(ThreadData* thread_data) {
+  AutoLock lock(lock_);
+  while (threads_waiting_to_advance_time_ != threads_.size())
+    ready_to_advance_time_.Wait();
+  thread_data->test_task_runner_->AdvanceMockTickClock(
+      next_time_ -
+      thread_data->test_task_runner_->GetMockTickClock()->NowTicks());
+  threads_ready_for_next_round_++;
+  if (threads_ready_for_next_round_ == threads_.size()) {
+    threads_waiting_to_advance_time_ = 0;
+    threads_ready_for_next_round_ = 0;
+    all_threads_ready_ = true;
+    next_time_ = TimeTicks::Max();
+    ready_for_next_round_.Broadcast();
+  }
+}
+
+void ThreadPoolManager::StartInitialThreads() {
+  {
+    AutoLock lock(lock_);
+    initial_threads_created_ = true;
+  }
+  ready_to_execute_threads_.Broadcast();
+}
+
+void ThreadPoolManager::WaitForAllThreads() {
+  if (threads_.empty())
+    return;
+  AutoLock lock(lock_);
+  while (threads_ready_to_terminate_ != threads_.size())
+    ready_to_terminate_.Wait();
+}
+
+void ThreadPoolManager::ThreadDone() {
+  AutoLock lock(lock_);
+  threads_ready_to_terminate_++;
+  if (threads_ready_to_terminate_ == threads_.size()) {
+    // Only the main thread waits for this event.
+    ready_to_terminate_.Signal();
+  }
+}
+
+const std::vector<std::unique_ptr<SimpleThreadImpl>>&
+ThreadPoolManager::threads() {
+  return threads_;
+}
+
+}  // namespace sequence_manager
+}  // namespace base

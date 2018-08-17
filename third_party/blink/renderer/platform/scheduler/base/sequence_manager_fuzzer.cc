@@ -12,9 +12,6 @@
 DEFINE_BINARY_PROTO_FUZZER(
     const base::sequence_manager::SequenceManagerTestDescription&
         fuzzer_input) {
-  // Dump code for debugging.
-  // TODO(farahcharab): Add code so that output looks more like the native
-  // function call.
   if (getenv("LPM_DUMP_NATIVE_INPUT")) {
     std::cout << fuzzer_input.DebugString() << std::endl;
   }
