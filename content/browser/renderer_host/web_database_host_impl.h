@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "storage/browser/database/database_tracker.h"
 #include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h"
@@ -18,10 +19,11 @@ class Origin;
 
 namespace content {
 
-class WebDatabaseHostImpl : public blink::mojom::WebDatabaseHost,
-                            public storage::DatabaseTracker::Observer {
+class CONTENT_EXPORT WebDatabaseHostImpl
+    : public blink::mojom::WebDatabaseHost,
+      public storage::DatabaseTracker::Observer {
  public:
-  WebDatabaseHostImpl(int proess_id,
+  WebDatabaseHostImpl(int process_id,
                       scoped_refptr<storage::DatabaseTracker> db_tracker);
   ~WebDatabaseHostImpl() override;
 
@@ -30,6 +32,9 @@ class WebDatabaseHostImpl : public blink::mojom::WebDatabaseHost,
                      blink::mojom::WebDatabaseHostRequest request);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseHostImplTest, BadMessagesUnauthorized);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseHostImplTest, BadMessagesInvalid);
+
   // blink::mojom::WebDatabaseHost:
   void OpenFile(const base::string16& vfs_file_name,
                 int32_t desired_flags,
@@ -84,6 +89,17 @@ class WebDatabaseHostImpl : public blink::mojom::WebDatabaseHost,
   // render process. Creates the WebDatabase connection if it does not already
   // exist.
   blink::mojom::WebDatabase& GetWebDatabase();
+
+  // Check that an IPC call has permission to access the passed origin. Must
+  // be called from within the context of a mojo call. Invalid calls will
+  // report a bad message, which will terminate the calling process. If this
+  // returns false, the caller should return immediately without invoking
+  // callbacks.
+  bool ValidateOrigin(const url::Origin& origin);
+
+  // As above, but for calls where the origin is embedded in a VFS filename.
+  // Empty filenames signalling a temp file are permitted.
+  bool ValidateOrigin(const base::string16& vfs_file_name);
 
   // Our render process host ID, used to bind to the correct render process.
   const int process_id_;
