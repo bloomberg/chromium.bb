@@ -122,6 +122,9 @@ const char* const kPersistentPrefNames[] = {
     metrics::prefs::kUninstallMetricsUptimeSec, metrics::prefs::kUkmCellDataUse,
     metrics::prefs::kUmaCellDataUse, metrics::prefs::kUserCellDataUse,
 
+    // Google URL prefs don't store user data and just keep track of the URL.
+    prefs::kLastKnownGoogleURL, prefs::kLastPromptedGoogleURL,
+
     // Rappor preferences are not used in incognito mode, but they are written
     // in startup if they don't exist. So if the startup would be in incognito,
     // they need to be persisted.
@@ -692,9 +695,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     // components/flags_ui/flags_ui_pref_names.h
     flags_ui::prefs::kEnabledLabsExperiments,
-
-    // components/google/core/browser/google_pref_names.h
-    prefs::kLastKnownGoogleURL, prefs::kLastPromptedGoogleURL,
 
     // components/invalidation/impl/invalidation_prefs.h
     invalidation::prefs::kInvalidatorClientId,
