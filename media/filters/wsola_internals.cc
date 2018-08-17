@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/math_constants.h"
+#include "build/build_config.h"
 #include "media/base/audio_bus.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
