@@ -422,7 +422,8 @@ String StylePropertySerializer::SerializeShorthand(
     case CSSPropertyBackground:
       return GetLayeredShorthandValue(backgroundShorthand());
     case CSSPropertyBorder:
-      return BorderPropertyValue();
+      return BorderPropertyValue(borderWidthShorthand(), borderStyleShorthand(),
+                                 borderColorShorthand());
     case CSSPropertyBorderImage:
       return BorderImagePropertyValue();
     case CSSPropertyBorderTop:
@@ -433,10 +434,30 @@ String StylePropertySerializer::SerializeShorthand(
       return GetShorthandValue(borderBottomShorthand());
     case CSSPropertyBorderLeft:
       return GetShorthandValue(borderLeftShorthand());
+    case CSSPropertyBorderBlock:
+      return BorderPropertyValue(borderBlockWidthShorthand(),
+                                 borderBlockStyleShorthand(),
+                                 borderBlockColorShorthand());
+    case CSSPropertyBorderBlockColor:
+      return Get2Values(borderBlockColorShorthand());
+    case CSSPropertyBorderBlockStyle:
+      return Get2Values(borderBlockStyleShorthand());
+    case CSSPropertyBorderBlockWidth:
+      return Get2Values(borderBlockWidthShorthand());
     case CSSPropertyBorderBlockStart:
       return GetShorthandValue(borderBlockStartShorthand());
     case CSSPropertyBorderBlockEnd:
       return GetShorthandValue(borderBlockEndShorthand());
+    case CSSPropertyBorderInline:
+      return BorderPropertyValue(borderInlineWidthShorthand(),
+                                 borderInlineStyleShorthand(),
+                                 borderInlineColorShorthand());
+    case CSSPropertyBorderInlineColor:
+      return Get2Values(borderInlineColorShorthand());
+    case CSSPropertyBorderInlineStyle:
+      return Get2Values(borderInlineStyleShorthand());
+    case CSSPropertyBorderInlineWidth:
+      return Get2Values(borderInlineWidthShorthand());
     case CSSPropertyBorderInlineStart:
       return GetShorthandValue(borderInlineStartShorthand());
     case CSSPropertyBorderInlineEnd:
@@ -465,6 +486,12 @@ String StylePropertySerializer::SerializeShorthand(
       return GetShorthandValue(gridAreaShorthand(), " / ");
     case CSSPropertyGap:
       return GetShorthandValue(gapShorthand());
+    case CSSPropertyInset:
+      return Get4Values(insetShorthand());
+    case CSSPropertyInsetBlock:
+      return Get2Values(insetBlockShorthand());
+    case CSSPropertyInsetInline:
+      return Get2Values(insetInlineShorthand());
     case CSSPropertyPlaceContent:
       return Get2Values(placeContentShorthand());
     case CSSPropertyPlaceItems:
@@ -477,6 +504,10 @@ String StylePropertySerializer::SerializeShorthand(
       return FontVariantValue();
     case CSSPropertyMargin:
       return Get4Values(marginShorthand());
+    case CSSPropertyMarginBlock:
+      return Get2Values(marginBlockShorthand());
+    case CSSPropertyMarginInline:
+      return Get2Values(marginInlineShorthand());
     case CSSPropertyOffset:
       return OffsetValue();
     case CSSPropertyWebkitMarginCollapse:
@@ -487,6 +518,10 @@ String StylePropertySerializer::SerializeShorthand(
       return GetShorthandValue(overscrollBehaviorShorthand());
     case CSSPropertyPadding:
       return Get4Values(paddingShorthand());
+    case CSSPropertyPaddingBlock:
+      return Get2Values(paddingBlockShorthand());
+    case CSSPropertyPaddingInline:
+      return Get2Values(paddingInlineShorthand());
     case CSSPropertyTextDecoration:
       return GetShorthandValue(textDecorationShorthand());
     case CSSPropertyTransition:
@@ -996,9 +1031,11 @@ String StylePropertySerializer::GetCommonValue(
   return res;
 }
 
-String StylePropertySerializer::BorderPropertyValue() const {
-  const StylePropertyShorthand properties[3] = {
-      borderWidthShorthand(), borderStyleShorthand(), borderColorShorthand()};
+String StylePropertySerializer::BorderPropertyValue(
+    const StylePropertyShorthand& width,
+    const StylePropertyShorthand& style,
+    const StylePropertyShorthand& color) const {
+  const StylePropertyShorthand properties[3] = {width, style, color};
   StringBuilder result;
   for (size_t i = 0; i < arraysize(properties); ++i) {
     String value = GetCommonValue(properties[i]);

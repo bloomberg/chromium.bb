@@ -1,5 +1,8 @@
 This is a testharness.js-based test.
 PASS Test that logical border-* properties are supported.
+PASS Test that border-inline shorthand sets longhands and serializes correctly.
+PASS Test that border-block shorthand sets longhands and serializes correctly.
+PASS Test that border shorthand sets longhands and serializes correctly.
 PASS Test that logical border-* properties share computed values with their physical associates, with 'writing-mode: horizontal-tb; direction: ltr; '.
 PASS Test that border-* shorthands set the computed value of both logical and physical longhands, with 'writing-mode: horizontal-tb; direction: ltr; '.
 PASS Test that border-* properties honor order of appearance when both logical and physical associates are declared, with 'writing-mode: horizontal-tb; direction: ltr; '.

@@ -1,5 +1,8 @@
 This is a testharness.js-based test.
 PASS Test that logical inset-* properties are supported.
+PASS Test that inset-inline shorthand sets longhands and serializes correctly.
+PASS Test that inset-block shorthand sets longhands and serializes correctly.
+PASS Test that inset shorthand sets longhands and serializes correctly.
 PASS Test that logical inset-* properties share computed values with their physical associates, with 'writing-mode: horizontal-tb; direction: ltr; '.
 PASS Test that inset-* shorthands set the computed value of both logical and physical longhands, with 'writing-mode: horizontal-tb; direction: ltr; '.
 PASS Test that inset-* properties honor order of appearance when both logical and physical associates are declared, with 'writing-mode: horizontal-tb; direction: ltr; '.

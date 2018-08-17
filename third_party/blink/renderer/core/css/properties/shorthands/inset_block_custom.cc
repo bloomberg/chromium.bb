@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/css/properties/shorthands/inset_block.h"
 
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
@@ -18,6 +20,17 @@ bool InsetBlock::ParseShorthand(
     HeapVector<CSSPropertyValue, 256>& properties) const {
   return CSSPropertyParserHelpers::ConsumeShorthandVia2Longhands(
       insetBlockShorthand(), important, context, range, properties);
+}
+
+const CSSValue* InsetBlock::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValuesForInlineBlockShorthand(
+      insetBlockShorthand(), style, layout_object, styled_node,
+      allow_visited_style);
 }
 
 }  // namespace CSSShorthand
