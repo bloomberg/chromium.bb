@@ -559,8 +559,7 @@ ServiceWorkerURLRequestJob::CreateResourceRequest() {
 
   for (net::HttpRequestHeaders::Iterator it(request_->extra_request_headers());
        it.GetNext();) {
-    if (!ServiceWorkerContext::IsExcludedHeaderNameForFetchEvent(it.name()))
-      request->headers.SetHeader(it.name(), it.value());
+    request->headers.SetHeader(it.name(), it.value());
   }
 
   request->referrer = GURL(request_->referrer());

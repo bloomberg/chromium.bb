@@ -15,7 +15,7 @@ class WebServiceWorkerResponse;
 
 namespace content {
 
-void GetServiceWorkerHeaderMapFromWebRequest(
+void CONTENT_EXPORT GetServiceWorkerHeaderMapFromWebRequest(
     const blink::WebServiceWorkerRequest& web_request,
     ServiceWorkerHeaderMap* headers);
 

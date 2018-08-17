@@ -14,8 +14,12 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/content_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
+#include "content/renderer/service_worker/service_worker_type_util.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/worker_thread_registry.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
@@ -359,8 +363,58 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent) {
   task_runner()->RunUntilIdle();
 
   ASSERT_EQ(1u, mock_proxy.fetch_events().size());
-  EXPECT_EQ(request->url,
+  EXPECT_EQ(expected_url,
             static_cast<GURL>(mock_proxy.fetch_events()[0].second.Url()));
+}
+
+class HeaderContentRendererClient : public ContentRendererClient {
+  bool IsExcludedHeaderForServiceWorkerFetchEvent(
+      const std::string& header_name) override {
+    return header_name == "x-bye-bye";
+  }
+};
+
+TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent_Headers) {
+  HeaderContentRendererClient header_client;
+  auto* old_client = SetRendererClientForTesting(&header_client);
+
+  ContextClientPipes pipes;
+  MockWebServiceWorkerContextProxy mock_proxy;
+  std::unique_ptr<ServiceWorkerContextClient> context_client =
+      CreateContextClient(&pipes, &mock_proxy);
+  context_client->DidEvaluateClassicScript(true /* success */);
+  task_runner()->RunUntilIdle();
+  EXPECT_TRUE(mock_proxy.fetch_events().empty());
+
+  const GURL expected_url("https://example.com/expected");
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = expected_url;
+  request->headers.SetHeader("x-bye-bye", "excluded");
+  request->headers.SetHeader("x-hi-hi", "present");
+  blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
+  blink::mojom::ServiceWorkerFetchResponseCallbackRequest
+      fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
+  auto params = blink::mojom::DispatchFetchEventParams::New();
+  params->request = *request;
+  pipes.service_worker->DispatchFetchEvent(
+      std::move(params), std::move(fetch_callback_ptr),
+      base::BindOnce(
+          [](blink::mojom::ServiceWorkerEventStatus, base::Time) {}));
+  task_runner()->RunUntilIdle();
+
+  ASSERT_EQ(1u, mock_proxy.fetch_events().size());
+  const blink::WebServiceWorkerRequest& received_request =
+      mock_proxy.fetch_events()[0].second;
+  ServiceWorkerHeaderMap header_map;
+  GetServiceWorkerHeaderMapFromWebRequest(received_request, &header_map);
+
+  EXPECT_EQ(expected_url, static_cast<GURL>(received_request.Url()));
+  EXPECT_TRUE(header_map.find("x-bye-bye") == header_map.end());
+  auto iter = header_map.find("x-hi-hi");
+  ASSERT_TRUE(iter != header_map.end());
+  EXPECT_EQ("present", iter->second);
+
+  SetRendererClientForTesting(old_client);
 }
 
 TEST_F(ServiceWorkerContextClientTest,

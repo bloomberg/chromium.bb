@@ -50,9 +50,6 @@ bool AppendVariationHeadersUnknownSignedIn(const GURL& url,
                                            InIncognito incognito,
                                            net::HttpRequestHeaders* headers);
 
-// Returns the HTTP header names which are added by AppendVariationHeaders().
-std::set<std::string> GetVariationHeaderNames();
-
 // Strips the variation header if |new_location| does not point to a location
 // that should receive it. This is being called by the ChromeNetworkDelegate.
 // Components calling AppendVariationsHeaders() don't need to take care of this.

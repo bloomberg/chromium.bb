@@ -40,10 +40,6 @@ namespace content {
 
 namespace {
 
-typedef std::set<std::string> HeaderNameSet;
-base::LazyInstance<HeaderNameSet>::DestructorAtExit g_excluded_header_name_set =
-    LAZY_INSTANCE_INITIALIZER;
-
 // Value used to set the timeout when starting a long running ServiceWorker. See
 // ServiceWorkerContextWrapper::StartServiceWorkerAndDispatchLongRunningMessage.
 const int kActiveWorkerTimeoutDays = 999;
@@ -165,22 +161,6 @@ void MessageFinishedSending(ServiceWorkerContext::ResultCallback callback,
 }
 
 }  // namespace
-
-// static
-void ServiceWorkerContext::AddExcludedHeadersForFetchEvent(
-    const std::set<std::string>& header_names) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  g_excluded_header_name_set.Get().insert(header_names.begin(),
-                                          header_names.end());
-}
-
-// static
-bool ServiceWorkerContext::IsExcludedHeaderNameForFetchEvent(
-    const std::string& header_name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return g_excluded_header_name_set.Get().find(header_name) !=
-         g_excluded_header_name_set.Get().end();
-}
 
 // static
 bool ServiceWorkerContext::ScopeMatches(const GURL& scope, const GURL& url) {

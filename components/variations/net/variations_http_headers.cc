@@ -141,18 +141,10 @@ bool AppendVariationHeadersUnknownSignedIn(const GURL& url,
   return AppendVariationHeaders(url, incognito, SignedIn::kNo, headers);
 }
 
-std::set<std::string> GetVariationHeaderNames() {
-  std::set<std::string> headers;
-  headers.insert(kClientDataHeader);
-  return headers;
-}
-
 void StripVariationHeaderIfNeeded(const GURL& new_location,
                                   net::URLRequest* request) {
-  if (!ShouldAppendVariationHeaders(new_location)) {
-    for (const std::string& header : GetVariationHeaderNames())
-      request->RemoveRequestHeaderByName(header);
-  }
+  if (!ShouldAppendVariationHeaders(new_location))
+    request->RemoveRequestHeaderByName(kClientDataHeader);
 }
 
 std::unique_ptr<network::SimpleURLLoader>

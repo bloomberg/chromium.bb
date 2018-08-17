@@ -197,6 +197,7 @@ class RegistrationDeletionListener
   scoped_refptr<ServiceWorkerRegistration> registration_;
   base::OnceClosure callback_;
 };
+
 }  // namespace
 
 const base::FilePath::CharType
