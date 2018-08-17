@@ -78,7 +78,18 @@ test(() => {
 test(() => {
   slot3.assign([child4]);
   assert_array_equals(slot3.assignedNodes(), []);
-}, 'Nodes that is not connected to host should not be assigned');
+
+  host.appendChild(child4);
+  assert_array_equals(slot3.assignedNodes(), [child4]);
+}, 'Nodes should be assigned to slot only when nodes are host\'s children');
+
+test(() => {
+  slot3.assign([child1]);
+  assert_array_equals(slot3.assignedNodes(), []);
+
+  shadow_root.insertBefore(slot3,slot1);
+  assert_array_equals(slot3.assignedNodes(), [child1]);
+}, 'Nodes should be assigned to a slot only when the slot is in host\'s shadowtree');
 
 test(() => {
   assert_array_equals(slot4.assignedElements(), [child5]);
@@ -88,6 +99,4 @@ test(() => {
   assert_array_equals(slot4.assignedElements(), [child5]);
   assert_equals(child5.assignedSlot, slot4);
 }, 'slotting API should not have any effect in auto mode');
-
-
 </script>
