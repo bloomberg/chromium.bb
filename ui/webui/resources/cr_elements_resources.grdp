@@ -228,6 +228,14 @@
                type="chrome_html"
                preprocess="true"
                compress="gzip" />
+     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_FINGERPRINT_PROGRESS_ARC_HTML"
+               file="cr_elements/chromeos/fingerprint/cr_fingerprint_progress_arc.html"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_FINGERPRINT_PROGRESS_ARC_JS"
+               file="cr_elements/chromeos/fingerprint/cr_fingerprint_progress_arc.js"
+               type="chrome_html"
+               compress="gzip" />
   </if>
   <structure name="IDR_CR_ELEMENTS_CR_POLICY_INDICATOR_HTML"
              file="cr_elements/policy/cr_policy_indicator.html"

@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/chromeos/fingerprint/cr_fingerprint_progress_arc.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -10,42 +11,15 @@
 <link rel="import" href="../icons.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="fingerprint_browser_proxy.html">
-<link rel="import" href="fingerprint_progress_arc.html">
 
 <dom-module id="settings-setup-fingerprint-dialog">
   <template>
     <style include="settings-shared">
-      #arc {
-        --canvas-height: 200px;
-        --canvas-width: 450px;
-      }
-
       #dialog {
         --cr-dialog-native: {
           min-width: 500px;
           width: 500px;
         };
-      }
-
-      #image {
-        height: 80px;
-        left: 185px;
-        min-height: 80px;
-        min-width: 80px;
-        position: relative;
-        top: -140px;
-        width: 80px;
-      }
-
-      #image[step='3'] {
-        --iron-icon-fill-color: var(--google-blue-700);
-      }
-
-      /* Put the image in a separate div with 0 height, otherwise the div will
-         take the height of the image, leaving us with a row of whitespace when
-         we position the #image to be inside #arc. */
-      #imageDiv {
-        height: 0;
       }
 
       /* Use this instead of hidden so that the dialog does not resize when the
@@ -62,12 +36,8 @@
         <div class="settings-box first">
           <span class="middle">[[getInstructionMessage_(step_)]]</span>
         </div>
-        <settings-fingerprint-progress-arc id="arc">
-        </settings-fingerprint-progress-arc>
-        <div id="imageDiv">
-          <iron-icon id="image" icon="settings:fingerprint" step$="[[step_]]">
-          </iron-icon>
-        </div>
+        <cr-fingerprint-progress-arc id="arc" circle-radius="100">
+        </cr-fingerprint-progress-arc>
         <div id="problemDiv" class="settings-box first"
             invisible$="[[!problemMessage_]]">
           <iron-icon icon="cr:warning"></iron-icon>

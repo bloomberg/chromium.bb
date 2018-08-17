@@ -14,7 +14,6 @@ js_type_check("closure_compile") {
     ":easy_unlock_turn_off_dialog",
     ":fingerprint_browser_proxy",
     ":fingerprint_list",
-    ":fingerprint_progress_arc",
     ":import_data_browser_proxy",
     ":import_data_dialog",
     ":lock_screen",
@@ -108,12 +107,6 @@ js_library("fingerprint_list") {
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list = [ "$externs_path/web_animations.js" ]
-}
-
-js_library("fingerprint_progress_arc") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
 }
 
 js_library("import_data_browser_proxy") {
@@ -216,7 +209,7 @@ js_library("profile_info_browser_proxy") {
 js_library("setup_fingerprint_dialog") {
   deps = [
     ":fingerprint_browser_proxy",
-    ":fingerprint_progress_arc",
+    "//ui/webui/resources/cr_elements/chromeos/fingerprint:cr_fingerprint_progress_arc",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]

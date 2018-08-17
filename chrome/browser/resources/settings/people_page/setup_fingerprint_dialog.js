@@ -17,13 +17,6 @@ settings.FingerprintSetupStep = {
 (function() {
 
 /**
- * The duration in ms of a fingerprint icon flash when a user touches the
- * fingerprint sensor during an enroll session.
- * @type {number}
- */
-const FLASH_DURATION_MS = 300;
-
-/**
  * The amount of milliseconds after a successful but not completed scan before a
  * message shows up telling the user to scan their finger again.
  * @type {number}
@@ -79,9 +72,7 @@ Polymer({
         'on-fingerprint-scan-received', this.onScanReceived_.bind(this));
     this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
 
-    this.$.arc.clearCanvas();
-    this.$.arc.drawBackgroundCircle();
-    this.$.arc.drawShadow(10, 0, 0);
+    this.$.arc.reset();
     this.browserProxy_.startEnroll();
     this.$.dialog.showModal();
   },
@@ -119,7 +110,7 @@ Polymer({
   reset_: function() {
     this.step_ = settings.FingerprintSetupStep.LOCATE_SCANNER;
     this.percentComplete_ = 0;
-    this.$.arc.clearCanvas();
+    this.$.arc.reset();
     this.clearSensorMessageTimeout_();
   },
 
@@ -143,35 +134,25 @@ Polymer({
       case settings.FingerprintSetupStep.LOCATE_SCANNER:
       case settings.FingerprintSetupStep.MOVE_FINGER:
         if (this.step_ == settings.FingerprintSetupStep.LOCATE_SCANNER) {
-          // Clear canvas because there will be shadows present at this step.
-          this.$.arc.clearCanvas();
-          this.$.arc.drawBackgroundCircle();
-
+          this.$.arc.reset();
           this.step_ = settings.FingerprintSetupStep.MOVE_FINGER;
           this.percentComplete_ = 0;
         }
-        const slice = 2 * Math.PI / 100;
         if (scan.isComplete) {
           this.problemMessage_ = '';
           this.step_ = settings.FingerprintSetupStep.READY;
-          this.$.arc.animateProgress(
-              this.percentComplete_ * slice, 2 * Math.PI);
+          this.$.arc.setProgress(
+              this.percentComplete_, 100 /*currPercentComplete*/,
+              true /*isComplete*/);
           this.clearSensorMessageTimeout_();
         } else {
           this.setProblem_(scan.result);
           if (scan.result == settings.FingerprintResultType.SUCCESS) {
             this.problemMessage_ = '';
-            // Flash the fingerprint icon blue so that users get some feedback
-            // when a successful scan has been registered.
-            this.$.image.animate(
-                {
-                  fill: ['var(--google-blue-700)', 'var(--google-grey-500)'],
-                  opacity: [0.7, 1.0],
-                },
-                FLASH_DURATION_MS);
             if (scan.percentComplete > this.percentComplete_) {
-              this.$.arc.animateProgress(
-                  this.percentComplete_ * slice, scan.percentComplete * slice);
+              this.$.arc.setProgress(
+                  this.percentComplete_, scan.percentComplete,
+                  false /*isComplete*/);
               this.percentComplete_ = scan.percentComplete;
             }
           }
@@ -285,8 +266,7 @@ Polymer({
   onAddAnotherFingerprint_: function() {
     this.fire('add-fingerprint');
     this.reset_();
-    this.$.arc.drawBackgroundCircle();
-    this.$.arc.drawShadow(10, 0, 0);
+    this.$.arc.reset();
     this.browserProxy_.startEnroll();
   },
 });
