@@ -18,6 +18,7 @@ class NGConstraintSpace;
 class NGFragmentBuilder;
 class NGLayoutResult;
 class NGPhysicalBoxFragment;
+class NGPhysicalContainerFragment;
 class NGPhysicalFragment;
 struct MinMaxSize;
 struct NGBaselineRequest;
@@ -100,6 +101,11 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // data to the layout box.
   void CopyFragmentDataToLayoutBox(const NGConstraintSpace&,
                                    const NGLayoutResult&);
+  void CopyFragmentDataToLayoutBoxForInlineChildren(
+      const NGPhysicalContainerFragment& container,
+      LayoutUnit initial_container_width,
+      bool initial_container_is_flipped,
+      NGPhysicalOffset offset = {});
   void PlaceChildrenInLayoutBox(const NGConstraintSpace&,
                                 const NGPhysicalBoxFragment&,
                                 const NGPhysicalOffset& offset_from_start);
