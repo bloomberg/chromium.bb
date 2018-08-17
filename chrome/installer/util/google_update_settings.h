@@ -177,14 +177,6 @@ class GoogleUpdateSettings {
   // google_brand::GetReactivationBrand().
   static bool GetReactivationBrand(base::string16* brand);
 
-  // Returns in |client| the google_update client field, which is currently
-  // used to track experiments. Returns false if the entry does not exist.
-  static bool GetClient(base::string16* client);
-
-  // Sets the google_update client field. Unlike GetClient() this is set only
-  // for the current user. Returns false if the operation failed.
-  static bool SetClient(const base::string16& client);
-
   // Returns in 'client' the RLZ referral available for some distribution
   // partners. This value does not exist for most chrome or chromium installs.
   static bool GetReferral(base::string16* referral);
@@ -243,23 +235,6 @@ class GoogleUpdateSettings {
   // and how many of those are signed-in.
   static void UpdateProfileCounts(size_t profiles_active,
                                   size_t profiles_signedin);
-
-  // For system-level installs, we need to be able to communicate the results
-  // of the Toast Experiments back to Google Update. The problem is just that
-  // the experiment is run in the context of the user, which doesn't have
-  // write access to the HKLM key that Google Update expects the results in.
-  // However, when we are about to switch contexts from system to user, we can
-  // duplicate the handle to the registry key and pass it (through handle
-  // inheritance) to the newly created child process that is launched as the
-  // user, allowing the child process to write to the key, with the
-  // WriteGoogleUpdateSystemClientKey function below.
-  static int DuplicateGoogleUpdateSystemClientKey();
-
-  // Takes a |handle| to a registry key and writes |value| string into the
-  // specified |key|. See DuplicateGoogleUpdateSystemClientKey for details.
-  static bool WriteGoogleUpdateSystemClientKey(int handle,
-                                               const base::string16& key,
-                                               const base::string16& value);
 
   // Returns the effective update policy for |app_guid| as dictated by
   // Group Policy settings.  |is_overridden|, if non-NULL, is populated with
