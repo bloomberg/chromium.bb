@@ -350,7 +350,8 @@ GaiaCookieManagerService::GaiaCookieManagerService(
     OAuth2TokenService* token_service,
     const std::string& source,
     SigninClient* signin_client)
-    : token_service_(token_service),
+    : OAuth2TokenService::Consumer("gaia_cookie_manager"),
+      token_service_(token_service),
       signin_client_(signin_client),
       external_cc_result_fetcher_(this),
       fetcher_backoff_(&kBackoffPolicy),
@@ -411,6 +412,10 @@ void GaiaCookieManagerService::SetAccountsInCookie(
         base::Bind(&GaiaCookieManagerService::StartFetchingAccesstokens,
                    base::Unretained(this)));
   }
+}
+
+void GaiaCookieManagerService::SetAccountsInCookieWithTokens() {
+  // TODO (valeriyas): map account_ids with tokens and call StartMultilogin...
 }
 
 void GaiaCookieManagerService::AddAccountToCookieInternal(
@@ -674,6 +679,32 @@ void GaiaCookieManagerService::OnUbertokenFailure(
   SignalComplete(account_id, error);
 }
 
+void GaiaCookieManagerService::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const std::string& access_token,
+    const base::Time& expiration_time) {
+  DCHECK(requests_.front().request_type() ==
+         GaiaCookieRequestType::SET_ACCOUNTS);
+  access_tokens_.insert(std::make_pair(request->GetAccountId(), access_token));
+  if (access_tokens_.size() == requests_.front().account_ids().size()) {
+    token_requests_.clear();
+    signin_client_->DelayNetworkCall(
+        base::Bind(&GaiaCookieManagerService::SetAccountsInCookieWithTokens,
+                   base::Unretained(this)));
+  }
+}
+
+void GaiaCookieManagerService::OnGetTokenFailure(
+    const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error) {
+  // TODO (valeriyas): Implement OnMultiloginFailure in this class and call it
+  // here.
+  token_requests_.clear();
+  VLOG(1) << "Failed to retrieve accesstoken"
+          << " account=" << request->GetAccountId()
+          << " error=" << error.ToString();
+}
+
 void GaiaCookieManagerService::OnMergeSessionSuccess(const std::string& data) {
   const std::string account_id = requests_.front().GetAccountID();
   VLOG(1) << "MergeSession successful account=" << account_id;
@@ -813,8 +844,14 @@ void GaiaCookieManagerService::OnLogOutFailure(
 }
 
 void GaiaCookieManagerService::StartFetchingAccesstokens() {
-  // TODO(valeriyas): Fetch access tokens and call SetAccountInCookiesWithTokens
-  // on success
+  VLOG(1) << "GaiaCookieManagerService::StartFetchingAccesstoken account_id ="
+          << base::JoinString(requests_.front().account_ids(), " ");
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert(GaiaConstants::kOAuth1LoginScope);
+  for (const std::string& account_id : requests_.front().account_ids()) {
+    token_requests_.push_back(
+        token_service_->StartRequest(account_id, scopes, this));
+  }
 }
 
 void GaiaCookieManagerService::StartFetchingUbertoken() {
@@ -894,7 +931,9 @@ void GaiaCookieManagerService::HandleNextRequest() {
         break;
       case GaiaCookieRequestType::SET_ACCOUNTS:
         DCHECK(!requests_.front().account_ids().empty());
-        // TODO(https://crbug.com/872725): StartFetchingAccessTokens...
+        signin_client_->DelayNetworkCall(
+            base::Bind(&GaiaCookieManagerService::StartFetchingAccesstokens,
+                       base::Unretained(this)));
         break;
       case GaiaCookieRequestType::LOG_OUT:
         DCHECK(requests_.front().account_ids().empty());
