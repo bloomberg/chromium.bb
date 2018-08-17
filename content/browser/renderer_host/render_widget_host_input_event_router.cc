@@ -1069,6 +1069,9 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
       if (target_allowed_touch_action.value() &
           cc::TouchAction::kTouchActionPinchZoom) {
         gesture_pinch_did_send_scroll_begin_ = true;
+        // The pinch gesture will be sent to the root view and it may not have a
+        // valid touch action yet. In this case, set the touch action to auto.
+        rwhi->input_router()->ForceSetTouchActionAuto();
         SendGestureScrollBegin(root_view, gesture_event);
       } else {
         // When target does not allow touch-action: pinch, instead of sending
