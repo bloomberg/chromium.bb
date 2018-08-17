@@ -2793,6 +2793,12 @@ const char kOmniboxRichEntitySuggestionsDescription[] =
     "either the #upcoming-ui-features flag is Enabled or the #top-chrome-md "
     "flag is set to Refresh or Touchable Refresh.";
 
+const char kOmniboxDriveSuggestionsName[] =
+    "Omnibox Google Drive Document suggestions";
+const char kOmniboxDriveSuggestionsDescriptions[] =
+    "Display suggestions for Google Drive documents in the omnibox when Google "
+    "is the default search engine.";
+
 const char kOmniboxNewAnswerLayoutName[] = "Omnibox new answer layout";
 const char kOmniboxNewAnswerLayoutDescription[] =
     "Display answers using an enhanced layout with larger images. Has no "
