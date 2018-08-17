@@ -980,8 +980,12 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (visibility_state != SHELF_AUTO_HIDE)
     return SHELF_AUTO_HIDE_HIDDEN;
 
-  if (shelf_widget_->IsShowingAppList())
+  if (shelf_widget_->IsShowingAppList() &&
+      !Shell::Get()
+           ->app_list_controller()
+           ->IsHomeLauncherEnabledInTabletMode()) {
     return SHELF_AUTO_HIDE_SHOWN;
+  }
 
   if (shelf_widget_->status_area_widget() &&
       shelf_widget_->status_area_widget()->ShouldShowShelf())

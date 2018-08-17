@@ -36,6 +36,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -500,6 +501,23 @@ TEST_F(AppListPresenterDelegateTest, ShelfBackgroundWithHomeLauncher) {
   auto window = CreateTestWindow();
   EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED,
             shelf_layout_manager->GetShelfBackgroundType());
+}
+
+// Tests that the bottom shelf is auto hidden when a window is fullscreened in
+// tablet mode (home launcher is shown behind).
+TEST_F(AppListPresenterDelegateTest, ShelfAutoHiddenWhenFullscreen) {
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  EnableTabletMode(true);
+  Shelf* shelf =
+      Shelf::ForWindow(Shell::GetRootWindowForDisplayId(GetPrimaryDisplayId()));
+  EXPECT_EQ(ShelfVisibilityState::SHELF_VISIBLE, shelf->GetVisibilityState());
+
+  // Create and fullscreen a window. The shelf should be auto hidden.
+  auto window = CreateTestWindow();
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  EXPECT_EQ(ShelfVisibilityState::SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(ShelfAutoHideState::SHELF_AUTO_HIDE_HIDDEN,
+            shelf->GetAutoHideState());
 }
 
 // Tests that the peeking app list closes if the user taps or clicks outside
