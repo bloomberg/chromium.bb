@@ -26,6 +26,8 @@ class SearchProvider {
 
   // Invoked to start a query.
   virtual void Start(const base::string16& query) = 0;
+  // Handles training signals if necessary.
+  virtual void Train(const std::string& id) {}
 
   void set_result_changed_callback(const ResultChangedCallback& callback) {
     result_changed_callback_ = callback;
