@@ -2613,6 +2613,9 @@ crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-re
 crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-report-to-overrides-report-uri-2.https.sub.html [ Skip ]
 crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-sends-reports-on-violation.https.sub.html [ Skip ]
 
+# Remove these from virtual tests when Network Error Logging is turned on by default
+crbug.com/748549 external/wpt/network-error-logging [ Skip ]
+
 crbug.com/863896 http/tests/permissions/test-query.html [ Timeout ]
 
 # This test requires enabling the flag CustomUserTiming in a virtual test.

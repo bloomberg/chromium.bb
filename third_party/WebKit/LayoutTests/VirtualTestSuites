@@ -597,6 +597,11 @@
     "args": ["--enable-features=Reporting"]
   },
   {
+    "prefix": "network-error-logging",
+    "base": "external/wpt/network-error-logging",
+    "args": ["--enable-features=Reporting,NetworkErrorLogging"]
+  },
+  {
     "prefix": "mouseevent_fractional",
     "base": "fast/events",
     "args": ["--enable-blink-features=FractionalMouseEvent"]
