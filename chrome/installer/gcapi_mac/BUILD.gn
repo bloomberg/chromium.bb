@@ -10,12 +10,12 @@ config("gcapi_config") {
   cflags = [
     "-isysroot",
     sysroot,
-    "-mmacosx-version-min=10.5",
+    "-mmacosx-version-min=10.6",
   ]
   ldflags = [
     "-isysroot",
     sysroot,
-    "-mmacosx-version-min=10.5",
+    "-mmacosx-version-min=10.6",
   ]
 }
 
