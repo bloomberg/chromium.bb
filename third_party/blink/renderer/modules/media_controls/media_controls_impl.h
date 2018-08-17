@@ -86,7 +86,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   // Node override.
   Node::InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   // MediaControls implementation.
   void MaybeShow() override;

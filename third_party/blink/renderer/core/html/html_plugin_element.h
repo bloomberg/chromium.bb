@@ -110,7 +110,7 @@ class CORE_EXPORT HTMLPlugInElement
                     PreferPlugInsForImagesOption);
 
   // Node functions:
-  void RemovedFrom(ContainerNode* insertion_point) override;
+  void RemovedFrom(ContainerNode& insertion_point) override;
   void DidMoveToNewDocument(Document& old_document) override;
   void AttachLayoutTree(AttachContext&) override;
 

@@ -128,7 +128,7 @@ Node::InsertionNotificationRequest PictureInPictureInterstitial::InsertedInto(
   return HTMLDivElement::InsertedInto(root);
 }
 
-void PictureInPictureInterstitial::RemovedFrom(ContainerNode*) {
+void PictureInPictureInterstitial::RemovedFrom(ContainerNode&) {
   DCHECK(!GetVideoElement().isConnected());
 
   if (resize_observer_) {

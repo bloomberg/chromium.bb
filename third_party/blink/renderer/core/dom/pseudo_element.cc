@@ -142,7 +142,7 @@ void PseudoElement::Dispose() {
   Element* parent = ParentOrShadowHostElement();
   GetDocument().AdoptIfNeeded(*this);
   SetParentOrShadowHostNode(nullptr);
-  RemovedFrom(parent);
+  RemovedFrom(*parent);
 }
 
 void PseudoElement::AttachLayoutTree(AttachContext& context) {

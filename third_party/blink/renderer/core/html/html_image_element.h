@@ -191,7 +191,7 @@ class CORE_EXPORT HTMLImageElement final
   bool draggable() const override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
   NamedItemType GetNamedItemType() const override {
     return NamedItemType::kNameOrIdWithName;
   }

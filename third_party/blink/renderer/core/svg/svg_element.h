@@ -230,7 +230,7 @@ class CORE_EXPORT SVGElement : public Element {
       MutableCSSPropertyValueSet*) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 
   static CSSPropertyID CssPropertyIdForSVGAttributeName(const QualifiedName&);

@@ -315,7 +315,7 @@ class CORE_EXPORT HTMLInputElement
   void WillChangeForm() final;
   void DidChangeForm() final;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) final;
+  void RemovedFrom(ContainerNode&) final;
   void DidMoveToNewDocument(Document& old_document) final;
   bool HasActivationBehavior() const override;
 

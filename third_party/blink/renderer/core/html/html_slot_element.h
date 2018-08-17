@@ -138,7 +138,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   HTMLSlotElement(Document&);
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) final;
-  void RemovedFrom(ContainerNode*) final;
+  void RemovedFrom(ContainerNode&) final;
   void DidRecalcStyle(StyleRecalcChange) final;
 
   void EnqueueSlotChangeEvent();

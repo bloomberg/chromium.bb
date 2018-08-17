@@ -88,9 +88,9 @@ void ListedElement::InsertedInto(ContainerNode& insertion_point) {
     ResetFormAttributeTargetObserver();
 }
 
-void ListedElement::RemovedFrom(ContainerNode* insertion_point) {
+void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement* element = ToHTMLElement(this);
-  if (insertion_point->isConnected() && element->FastHasAttribute(formAttr)) {
+  if (insertion_point.isConnected() && element->FastHasAttribute(formAttr)) {
     SetFormAttributeTargetObserver(nullptr);
     ResetFormOwner();
     return;

@@ -115,7 +115,7 @@ Node::InsertionNotificationRequest HTMLVideoElement::InsertedInto(
   return HTMLMediaElement::InsertedInto(insertion_point);
 }
 
-void HTMLVideoElement::RemovedFrom(ContainerNode* insertion_point) {
+void HTMLVideoElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLMediaElement::RemovedFrom(insertion_point);
 
   if (custom_controls_fullscreen_detector_)

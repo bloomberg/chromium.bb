@@ -119,7 +119,7 @@ void NotifyFormRemovedFromTree(const T& elements, Node& root) {
     element->FormRemovedFromTree(root);
 }
 
-void HTMLFormElement::RemovedFrom(ContainerNode* insertion_point) {
+void HTMLFormElement::RemovedFrom(ContainerNode& insertion_point) {
   // We don't need to take care of form association by 'form' content
   // attribute becuse IdTargetObserver handles it.
   if (has_elements_associated_by_parser_) {
@@ -130,7 +130,7 @@ void HTMLFormElement::RemovedFrom(ContainerNode* insertion_point) {
     } else {
       ListedElement::List elements;
       CollectListedElements(
-          NodeTraversal::HighestAncestorOrSelf(*insertion_point), elements);
+          NodeTraversal::HighestAncestorOrSelf(insertion_point), elements);
       NotifyFormRemovedFromTree(elements, root);
       CollectListedElements(root, elements);
       NotifyFormRemovedFromTree(elements, root);
@@ -142,7 +142,7 @@ void HTMLFormElement::RemovedFrom(ContainerNode* insertion_point) {
     } else {
       HeapVector<Member<HTMLImageElement>> images;
       CollectImageElements(
-          NodeTraversal::HighestAncestorOrSelf(*insertion_point), images);
+          NodeTraversal::HighestAncestorOrSelf(insertion_point), images);
       NotifyFormRemovedFromTree(images, root);
       CollectImageElements(root, images);
       NotifyFormRemovedFromTree(images, root);

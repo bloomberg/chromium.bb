@@ -243,10 +243,10 @@ Node::InsertionNotificationRequest V0InsertionPoint::InsertedInto(
   return kInsertionDone;
 }
 
-void V0InsertionPoint::RemovedFrom(ContainerNode* insertion_point) {
+void V0InsertionPoint::RemovedFrom(ContainerNode& insertion_point) {
   ShadowRoot* root = ContainingShadowRoot();
   if (!root)
-    root = insertion_point->ContainingShadowRoot();
+    root = insertion_point.ContainingShadowRoot();
 
   if (root &&
       !(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() && root->IsV1()))
@@ -257,7 +257,7 @@ void V0InsertionPoint::RemovedFrom(ContainerNode* insertion_point) {
   ClearDistribution();
 
   if (registered_with_shadow_root_ &&
-      insertion_point->GetTreeScope().RootNode() == root) {
+      insertion_point.GetTreeScope().RootNode() == root) {
     DCHECK(root);
     registered_with_shadow_root_ = false;
     root->V0().DidRemoveInsertionPoint(this);

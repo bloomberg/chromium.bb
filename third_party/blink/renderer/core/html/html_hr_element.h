@@ -47,7 +47,7 @@ class HTMLHRElement final : public HTMLElement {
       const AtomicString&,
       MutableCSSPropertyValueSet*) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 };
 
 }  // namespace blink

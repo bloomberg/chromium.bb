@@ -339,12 +339,12 @@ Node::InsertionNotificationRequest HTMLOptionElement::InsertedInto(
   return kInsertionDone;
 }
 
-void HTMLOptionElement::RemovedFrom(ContainerNode* insertion_point) {
-  if (auto* select = ToHTMLSelectElementOrNull(*insertion_point)) {
+void HTMLOptionElement::RemovedFrom(ContainerNode& insertion_point) {
+  if (auto* select = ToHTMLSelectElementOrNull(insertion_point)) {
     if (!parentNode() || IsHTMLOptGroupElement(*parentNode()))
       select->OptionRemoved(*this);
-  } else if (IsHTMLOptGroupElement(*insertion_point)) {
-    if (auto* select = ToHTMLSelectElementOrNull(insertion_point->parentNode()))
+  } else if (IsHTMLOptGroupElement(insertion_point)) {
+    if (auto* select = ToHTMLSelectElementOrNull(insertion_point.parentNode()))
       select->OptionRemoved(*this);
   }
   HTMLElement::RemovedFrom(insertion_point);

@@ -279,7 +279,7 @@ void HTMLPlugInElement::UpdatePlugin() {
   }
 }
 
-void HTMLPlugInElement::RemovedFrom(ContainerNode* insertion_point) {
+void HTMLPlugInElement::RemovedFrom(ContainerNode& insertion_point) {
   // If we've persisted the plugin and we're removed from the tree then
   // make sure we cleanup the persistance pointer.
   if (persisted_plugin_) {

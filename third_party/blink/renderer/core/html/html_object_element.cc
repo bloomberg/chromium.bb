@@ -295,7 +295,7 @@ Node::InsertionNotificationRequest HTMLObjectElement::InsertedInto(
   return kInsertionDone;
 }
 
-void HTMLObjectElement::RemovedFrom(ContainerNode* insertion_point) {
+void HTMLObjectElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLPlugInElement::RemovedFrom(insertion_point);
   ListedElement::RemovedFrom(insertion_point);
 }

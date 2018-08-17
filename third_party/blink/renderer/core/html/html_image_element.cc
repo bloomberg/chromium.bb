@@ -421,7 +421,7 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
   return HTMLElement::InsertedInto(insertion_point);
 }
 
-void HTMLImageElement::RemovedFrom(ContainerNode* insertion_point) {
+void HTMLImageElement::RemovedFrom(ContainerNode& insertion_point) {
   if (!form_ || NodeTraversal::HighestAncestorOrSelf(*form_.Get()) !=
                     NodeTraversal::HighestAncestorOrSelf(*this))
     ResetFormOwner();

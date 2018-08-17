@@ -165,7 +165,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   virtual void DisabledAttributeChanged();
   void AttachLayoutTree(AttachContext&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
   void WillChangeForm() override;
   void DidChangeForm() override;
   void DidMoveToNewDocument(Document& old_document) override;

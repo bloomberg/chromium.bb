@@ -60,7 +60,7 @@ Node::InsertionNotificationRequest DocumentType::InsertedInto(
   return kInsertionDone;
 }
 
-void DocumentType::RemovedFrom(ContainerNode* insertion_point) {
+void DocumentType::RemovedFrom(ContainerNode& insertion_point) {
   GetDocument().SetDoctype(nullptr);
   Node::RemovedFrom(insertion_point);
 }

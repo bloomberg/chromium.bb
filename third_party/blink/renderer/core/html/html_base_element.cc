@@ -55,9 +55,9 @@ Node::InsertionNotificationRequest HTMLBaseElement::InsertedInto(
   return kInsertionDone;
 }
 
-void HTMLBaseElement::RemovedFrom(ContainerNode* insertion_point) {
+void HTMLBaseElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
-  if (insertion_point->isConnected())
+  if (insertion_point.isConnected())
     GetDocument().ProcessBaseElement();
 }
 

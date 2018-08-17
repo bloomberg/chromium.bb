@@ -226,12 +226,12 @@ Node::InsertionNotificationRequest HTMLLinkElement::InsertedInto(
   return kInsertionDone;
 }
 
-void HTMLLinkElement::RemovedFrom(ContainerNode* insertion_point) {
+void HTMLLinkElement::RemovedFrom(ContainerNode& insertion_point) {
   // Store the result of isConnected() here before Node::removedFrom(..) clears
   // the flags.
   bool was_connected = isConnected();
   HTMLElement::RemovedFrom(insertion_point);
-  if (!insertion_point->isConnected())
+  if (!insertion_point.isConnected())
     return;
 
   link_loader_->Abort();
@@ -240,8 +240,8 @@ void HTMLLinkElement::RemovedFrom(ContainerNode* insertion_point) {
     DCHECK(!GetLinkStyle() || !GetLinkStyle()->HasSheet());
     return;
   }
-  GetDocument().GetStyleEngine().RemoveStyleSheetCandidateNode(
-      *this, *insertion_point);
+  GetDocument().GetStyleEngine().RemoveStyleSheetCandidateNode(*this,
+                                                               insertion_point);
   if (link_)
     link_->OwnerRemoved();
 }

@@ -130,7 +130,7 @@ class SVGSVGElement final : public SVGGraphicsElement,
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   void SvgAttributeChanged(const QualifiedName&) override;
 

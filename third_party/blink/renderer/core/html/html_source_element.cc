@@ -99,10 +99,10 @@ Node::InsertionNotificationRequest HTMLSourceElement::InsertedInto(
   return kInsertionDone;
 }
 
-void HTMLSourceElement::RemovedFrom(ContainerNode* removal_root) {
+void HTMLSourceElement::RemovedFrom(ContainerNode& removal_root) {
   Element* parent = parentElement();
-  if (!parent && removal_root->IsElementNode())
-    parent = ToElement(removal_root);
+  if (!parent && removal_root.IsElementNode())
+    parent = ToElement(&removal_root);
   if (auto* media = ToHTMLMediaElementOrNull(parent))
     media->SourceWasRemoved(this);
   if (auto* picture = ToHTMLPictureElementOrNull(parent)) {

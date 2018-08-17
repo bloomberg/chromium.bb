@@ -59,7 +59,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   // Node override.
   Node::InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   unsigned videoWidth() const;
   unsigned videoHeight() const;

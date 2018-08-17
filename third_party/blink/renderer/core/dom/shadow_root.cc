@@ -207,15 +207,15 @@ Node::InsertionNotificationRequest ShadowRoot::InsertedInto(
   return kInsertionDone;
 }
 
-void ShadowRoot::RemovedFrom(ContainerNode* insertion_point) {
-  if (insertion_point->isConnected()) {
+void ShadowRoot::RemovedFrom(ContainerNode& insertion_point) {
+  if (insertion_point.isConnected()) {
     if (NeedsSlotAssignmentRecalc())
       GetDocument().GetSlotAssignmentEngine().Disconnected(*this);
     GetDocument().GetStyleEngine().ShadowRootRemovedFromDocument(this);
     if (registered_with_parent_shadow_root_) {
       ShadowRoot* root = host().ContainingShadowRoot();
       if (!root)
-        root = insertion_point->ContainingShadowRoot();
+        root = insertion_point.ContainingShadowRoot();
       if (root)
         root->RemoveChildShadowRoot();
       registered_with_parent_shadow_root_ = false;

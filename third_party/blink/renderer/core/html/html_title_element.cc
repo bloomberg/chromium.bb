@@ -48,9 +48,9 @@ Node::InsertionNotificationRequest HTMLTitleElement::InsertedInto(
   return kInsertionDone;
 }
 
-void HTMLTitleElement::RemovedFrom(ContainerNode* insertion_point) {
+void HTMLTitleElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
-  if (insertion_point->IsInDocumentTree())
+  if (insertion_point.IsInDocumentTree())
     GetDocument().RemoveTitle(this);
 }
 

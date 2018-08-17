@@ -338,8 +338,8 @@ Node::InsertionNotificationRequest SVGSMILElement::InsertedInto(
   return kInsertionDone;
 }
 
-void SVGSMILElement::RemovedFrom(ContainerNode* root_parent) {
-  if (root_parent->isConnected()) {
+void SVGSMILElement::RemovedFrom(ContainerNode& root_parent) {
+  if (root_parent.isConnected()) {
     ClearResourceAndEventBaseReferences();
     ClearConditions();
     SetTargetElement(nullptr);

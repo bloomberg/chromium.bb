@@ -382,26 +382,26 @@ Node::InsertionNotificationRequest SVGElement::InsertedInto(
   return kInsertionDone;
 }
 
-void SVGElement::RemovedFrom(ContainerNode* root_parent) {
-  bool was_in_document = root_parent->isConnected();
+void SVGElement::RemovedFrom(ContainerNode& root_parent) {
+  bool was_in_document = root_parent.isConnected();
 
   if (was_in_document && HasRelativeLengths()) {
     // The root of the subtree being removed should take itself out from its
     // parent's relative length set. For the other nodes in the subtree we don't
     // need to do anything: they will get their own removedFrom() notification
     // and just clear their sets.
-    if (root_parent->IsSVGElement() && !parentNode()) {
+    if (root_parent.IsSVGElement() && !parentNode()) {
       DCHECK(ToSVGElement(root_parent)
-                 ->elements_with_relative_lengths_.Contains(this));
-      ToSVGElement(root_parent)->UpdateRelativeLengthsInformation(false, this);
+                 .elements_with_relative_lengths_.Contains(this));
+      ToSVGElement(root_parent).UpdateRelativeLengthsInformation(false, this);
     }
 
     elements_with_relative_lengths_.clear();
   }
 
-  SECURITY_DCHECK(!root_parent->IsSVGElement() ||
+  SECURITY_DCHECK(!root_parent.IsSVGElement() ||
                   !ToSVGElement(root_parent)
-                       ->elements_with_relative_lengths_.Contains(this));
+                       .elements_with_relative_lengths_.Contains(this));
 
   Element::RemovedFrom(root_parent);
 

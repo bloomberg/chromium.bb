@@ -38,12 +38,12 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
   return result;
 }
 
-void HTMLPortalElement::RemovedFrom(ContainerNode* node) {
+void HTMLPortalElement::RemovedFrom(ContainerNode& node) {
   HTMLFrameOwnerElement::RemovedFrom(node);
 
   Document& document = GetDocument();
 
-  if (node->IsInDocumentTree() && document.IsHTMLDocument()) {
+  if (node.IsInDocumentTree() && document.IsHTMLDocument()) {
     portal_ptr_.reset();
   }
 }

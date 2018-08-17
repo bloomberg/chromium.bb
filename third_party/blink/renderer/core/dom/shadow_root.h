@@ -109,7 +109,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   void SetNeedsAssignmentRecalc();
   bool NeedsSlotAssignmentRecalc() const;

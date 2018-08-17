@@ -437,7 +437,7 @@ Node::InsertionNotificationRequest HTMLSlotElement::InsertedInto(
   return kInsertionDone;
 }
 
-void HTMLSlotElement::RemovedFrom(ContainerNode* insertion_point) {
+void HTMLSlotElement::RemovedFrom(ContainerNode& insertion_point) {
   // `removedFrom` is called after the node is removed from the tree.
   // That means:
   // 1. If this slot is still in a tree scope, it means the slot has been in a
@@ -480,11 +480,11 @@ void HTMLSlotElement::RemovedFrom(ContainerNode* insertion_point) {
     } else {
       ClearDistribution();
     }
-  } else if (insertion_point->IsInV1ShadowTree()) {
+  } else if (insertion_point.IsInV1ShadowTree()) {
     // This slot was in a shadow tree and got disconnected from the shadow tree.
     // In the above example, (this slot == s1), (insertion point == d)
     // and (insertion_point->ContainingShadowRoot == sr1).
-    insertion_point->ContainingShadowRoot()->GetSlotAssignment().DidRemoveSlot(
+    insertion_point.ContainingShadowRoot()->GetSlotAssignment().DidRemoveSlot(
         *this);
     if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
       ClearAssignedNodesAndFlatTreeChildren();

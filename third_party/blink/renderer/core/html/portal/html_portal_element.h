@@ -34,7 +34,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
 
   // Node overrides
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   // HTMLFrameOwnerElement overrides
   ParsedFeaturePolicy ConstructContainerPolicy(Vector<String>*) const override {
