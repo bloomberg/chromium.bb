@@ -284,11 +284,9 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
                                         ? IDS_VERSION_UI_OFFICIAL
                                         : IDS_VERSION_UI_UNOFFICIAL),
           base::UTF8ToUTF16(chrome::GetChannelName()),
-#if defined(ARCH_CPU_64_BITS)
-          l10n_util::GetStringUTF16(IDS_VERSION_UI_64BIT)));
-#else
-          l10n_util::GetStringUTF16(IDS_VERSION_UI_32BIT)));
-#endif
+          l10n_util::GetStringUTF16(sizeof(void*) == 8
+                                        ? IDS_VERSION_UI_64BIT
+                                        : IDS_VERSION_UI_32BIT)));
 
   html_source->AddString(
       "aboutProductCopyright",

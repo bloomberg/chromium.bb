@@ -1826,7 +1826,7 @@ if (enable_resource_whitelist_generation) {
     deps = [
       "//chrome/android:libchrome",
     ]
-    input = "$root_out_dir/libchrome$shlib_extension.whitelist"
+    input = "$root_out_dir/lib.unstripped/libchrome$shlib_extension"
     output = chrome_resource_whitelist
   }
 }

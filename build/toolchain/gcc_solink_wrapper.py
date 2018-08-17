@@ -86,9 +86,6 @@ def main():
                       required=True,
                       help='Final output shared object file',
                       metavar='FILE')
-  parser.add_argument('--resource-whitelist',
-                      help='Merge all resource whitelists into a single file.',
-                      metavar='PATH')
   parser.add_argument('command', nargs='+',
                       help='Linking command')
   args = parser.parse_args()
@@ -96,11 +93,6 @@ def main():
   # Work-around for gold being slow-by-default. http://crbug.com/632230
   fast_env = dict(os.environ)
   fast_env['LC_ALL'] = 'C'
-
-  if args.resource_whitelist:
-    whitelist_candidates = wrapper_utils.ResolveRspLinks(args.command)
-    wrapper_utils.CombineResourceWhitelists(
-        whitelist_candidates, args.resource_whitelist)
 
   # First, run the actual link.
   command = wrapper_utils.CommandToRun(args.command)

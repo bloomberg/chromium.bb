@@ -69,13 +69,9 @@ web::WebUIIOSDataSource* CreateVersionUIDataSource() {
                                   version_info::IsOfficialBuild()
                                       ? IDS_VERSION_UI_OFFICIAL
                                       : IDS_VERSION_UI_UNOFFICIAL);
-#if defined(ARCH_CPU_64_BITS)
-  html_source->AddLocalizedString(version_ui::kVersionBitSize,
-                                  IDS_VERSION_UI_64BIT);
-#else
-  html_source->AddLocalizedString(version_ui::kVersionBitSize,
-                                  IDS_VERSION_UI_32BIT);
-#endif
+  html_source->AddLocalizedString(
+      version_ui::kVersionBitSize,
+      sizeof(void*) == 8 ? IDS_VERSION_UI_64BIT : IDS_VERSION_UI_32BIT);
   html_source->AddLocalizedString(version_ui::kUserAgentName,
                                   IDS_VERSION_UI_USER_AGENT);
   html_source->AddString(

@@ -14,7 +14,6 @@ import sys
 import threading
 
 _BAT_PREFIX = 'cmd /c call '
-_WHITELIST_RE = re.compile('whitelisted_resource_(?P<resource_id>[0-9]+)')
 
 
 def _GzipThenDelete(src_path, dest_path):
@@ -80,62 +79,6 @@ def RunLinkWithOptionalMapFile(command, env=None, map_file=None):
     os.unlink(tmp_map_path)
 
   return result
-
-
-def ResolveRspLinks(inputs):
-  """Return a list of files contained in a response file.
-
-  Args:
-    inputs: A command containing rsp files.
-
-  Returns:
-    A set containing the rsp file content."""
-  rspfiles = [a[1:] for a in inputs if a.startswith('@')]
-  resolved = set()
-  for rspfile in rspfiles:
-    with open(rspfile, 'r') as f:
-      resolved.update(shlex.split(f.read()))
-
-  return resolved
-
-
-def CombineResourceWhitelists(whitelist_candidates, outfile):
-  """Combines all whitelists for a resource file into a single whitelist.
-
-  Args:
-    whitelist_candidates: List of paths to rsp files containing all targets.
-    outfile: Path to save the combined whitelist.
-  """
-  whitelists = ('%s.whitelist' % candidate for candidate in whitelist_candidates
-                if os.path.exists('%s.whitelist' % candidate))
-
-  resources = set()
-  for whitelist in whitelists:
-    with open(whitelist, 'r') as f:
-      resources.update(f.readlines())
-
-  with open(outfile, 'w') as f:
-    f.writelines(resources)
-
-
-def ExtractResourceIdsFromPragmaWarnings(text):
-  """Returns set of resource IDs that are inside unknown pragma warnings.
-
-  Args:
-    text: The text that will be scanned for unknown pragma warnings.
-
-  Returns:
-    A set containing integers representing resource IDs.
-  """
-  used_resources = set()
-  lines = text.splitlines()
-  for ln in lines:
-    match = _WHITELIST_RE.search(ln)
-    if match:
-      resource_id = int(match.group('resource_id'))
-      used_resources.add(resource_id)
-
-  return used_resources
 
 
 def CaptureCommandStderr(command, env=None):

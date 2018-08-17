@@ -702,7 +702,7 @@
     ],
 
     'android_binary_size': [
-      'android', 'chrome_with_codecs', 'goma', 'no_symbols', 'official_optimize',
+      'android', 'chrome_with_codecs', 'goma', 'minimal_symbols', 'official_optimize',
     ],
 
     'android_cast_debug_static_bot': [
