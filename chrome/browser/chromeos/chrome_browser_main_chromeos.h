@@ -32,6 +32,7 @@ class AssistantClient;
 namespace chromeos {
 
 class ArcKioskAppManager;
+class DemoModeResourcesRemover;
 class EventRewriterDelegateImpl;
 class IdleActionWarningObserver;
 class LowDiskNotification;
@@ -132,6 +133,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
       adaptive_screen_brightness_manager_;
 
   std::unique_ptr<power::ml::UserActivityController> user_activity_controller_;
+
+  std::unique_ptr<DemoModeResourcesRemover> demo_mode_resources_remover_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };
