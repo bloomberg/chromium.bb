@@ -632,6 +632,7 @@
       'mac_chromium_compile_rel_ng': 'gpu_tests_release_trybot',
       'mac_chromium_dbg_ng': 'gpu_tests_debug_trybot',
       'mac_chromium_rel_ng': 'gpu_tests_release_trybot',
+      'mac-cocoa-rel': 'gpu_tests_release_trybot',
       'mac_nacl_sdk': 'release_bot',
       'mac_nacl_sdk_build': 'release_bot',
       'mac_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
