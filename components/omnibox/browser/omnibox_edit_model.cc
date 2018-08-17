@@ -222,6 +222,12 @@ AutocompleteMatch OmniboxEditModel::CurrentMatch(
 bool OmniboxEditModel::ResetDisplayUrls() {
   const base::string16 old_current_permanent_url = GetCurrentPermanentUrlText();
 
+  // Track if the user has modified the text. This is different from
+  // |user_input_in_progress_| because we care if the user has actually
+  // modified the text, while |user_input_in_progress_| may be true even if
+  // the user has merely made a partial selection.
+  bool user_has_modified_text = view_->GetText() != old_current_permanent_url;
+
   url_for_editing_ = controller()->GetToolbarModel()->GetFormattedFullURL();
   display_only_url_ =
       OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled()
@@ -239,7 +245,7 @@ bool OmniboxEditModel::ResetDisplayUrls() {
   // URL" (which sounds as if it might be persistent) from seeing just that URL
   // forever afterwards.
   return (GetCurrentPermanentUrlText() != old_current_permanent_url) &&
-         (!has_focus() || (!user_input_in_progress_ && !PopupIsOpen()));
+         (!has_focus() || (!user_has_modified_text && !PopupIsOpen()));
 }
 
 GURL OmniboxEditModel::PermanentURL() const {
