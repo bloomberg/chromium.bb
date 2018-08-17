@@ -228,7 +228,8 @@ TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Decode) {
   media_thread_.FlushForTesting();
 }
 
-TEST_F(RTCVideoDecoderAdapterTest, Decode_Error) {
+// Crashing. See https://crbug.com/875390.
+TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Decode_Error) {
   ASSERT_TRUE(BasicSetup());
 
   EXPECT_CALL(*video_decoder_, Decode(_, _))
