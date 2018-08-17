@@ -64,7 +64,8 @@ class MockAudioDeviceFactory : public AudioDeviceFactory {
   // Returns mock_capturer_source_ once. If called a second time, the process
   // will crash.
   scoped_refptr<media::AudioCapturerSource> CreateAudioCapturerSource(
-      int render_frame_id) override;
+      int render_frame_id,
+      const media::AudioSourceParameters& params) override;
 
  private:
   scoped_refptr<MockCapturerSource> mock_capturer_source_;

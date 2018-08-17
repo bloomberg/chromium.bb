@@ -66,7 +66,8 @@ bool LocalMediaStreamAudioSource::EnsureSourceIsStarted() {
           << GetAudioParameters().AsHumanReadableString() << "}.";
 
   source_ = AudioDeviceFactory::NewAudioCapturerSource(
-      consumer_render_frame_id_, device().session_id);
+      consumer_render_frame_id_,
+      media::AudioSourceParameters(device().session_id));
   source_->Initialize(GetAudioParameters(), this);
   source_->Start();
   return true;

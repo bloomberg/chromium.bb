@@ -80,8 +80,10 @@ class RendererWebAudioDeviceImplTest
     webaudio_device_->SetMediaTaskRunnerForTesting(message_loop_.task_runner());
   }
 
-  MOCK_METHOD1(CreateAudioCapturerSource,
-               scoped_refptr<media::AudioCapturerSource>(int));
+  MOCK_METHOD2(CreateAudioCapturerSource,
+               scoped_refptr<media::AudioCapturerSource>(
+                   int,
+                   const media::AudioSourceParameters&));
   MOCK_METHOD2(CreateFinalAudioRendererSink,
                scoped_refptr<media::AudioRendererSink>(
                    int,

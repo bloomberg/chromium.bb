@@ -10,6 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "media/audio/audio_source_parameters.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -43,7 +44,7 @@ class CONTENT_EXPORT AudioInputIPCFactory {
   // The returned object may only be used on io_task_runner().
   std::unique_ptr<media::AudioInputIPC> CreateAudioInputIPC(
       int frame_id,
-      int session_id) const;
+      const media::AudioSourceParameters& source_params) const;
 
  private:
   const scoped_refptr<base::SequencedTaskRunner> main_task_runner_;

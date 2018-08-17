@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_sink_parameters.h"
+#include "media/audio/audio_source_parameters.h"
 #include "media/base/audio_latency.h"
 #include "media/base/output_device_info.h"
 
@@ -86,7 +87,7 @@ class CONTENT_EXPORT AudioDeviceFactory {
   // consuming the audio.
   static scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
       int render_frame_id,
-      int session_id);
+      const media::AudioSourceParameters& params);
 
  protected:
   AudioDeviceFactory();
@@ -115,7 +116,8 @@ class CONTENT_EXPORT AudioDeviceFactory {
       const media::AudioSinkParameters& params) = 0;
 
   virtual scoped_refptr<media::AudioCapturerSource> CreateAudioCapturerSource(
-      int render_frame_id) = 0;
+      int render_frame_id,
+      const media::AudioSourceParameters& params) = 0;
 
  private:
   // The current globally registered factory. This is NULL when we should

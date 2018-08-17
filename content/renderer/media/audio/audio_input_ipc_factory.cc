@@ -20,31 +20,33 @@ namespace {
 
 void CreateMojoAudioInputStreamOnMainThread(
     int frame_id,
-    int32_t session_id,
+    const media::AudioSourceParameters& source_params,
     mojom::RendererAudioInputStreamFactoryClientPtr client,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
+  // TODO(ossu): Make an AudioProcessingConfig from params and send that along.
   RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(frame_id);
   if (frame) {
     frame->GetAudioInputStreamFactory()->CreateStream(
-        std::move(client), session_id, params, automatic_gain_control,
-        total_segments);
+        std::move(client), source_params.session_id, params,
+        automatic_gain_control, total_segments);
   }
 }
 
 void CreateMojoAudioInputStream(
     scoped_refptr<base::SequencedTaskRunner> main_task_runner,
     int frame_id,
-    int32_t session_id,
+    const media::AudioSourceParameters& source_params,
     mojom::RendererAudioInputStreamFactoryClientPtr client,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
   main_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&CreateMojoAudioInputStreamOnMainThread,
-                                frame_id, session_id, std::move(client), params,
-                                automatic_gain_control, total_segments));
+      FROM_HERE,
+      base::BindOnce(&CreateMojoAudioInputStreamOnMainThread, frame_id,
+                     source_params, std::move(client), params,
+                     automatic_gain_control, total_segments));
 }
 
 void AssociateInputAndOutputForAec(
@@ -86,11 +88,11 @@ AudioInputIPCFactory::~AudioInputIPCFactory() {
 
 std::unique_ptr<media::AudioInputIPC> AudioInputIPCFactory::CreateAudioInputIPC(
     int frame_id,
-    int session_id) const {
-  DCHECK_NE(0, session_id);
+    const media::AudioSourceParameters& source_params) const {
+  DCHECK_NE(0, source_params.session_id);
   return std::make_unique<MojoAudioInputIPC>(
       base::BindRepeating(&CreateMojoAudioInputStream, main_task_runner_,
-                          frame_id, session_id),
+                          frame_id, source_params),
       base::BindRepeating(&AssociateInputAndOutputForAec, main_task_runner_,
                           frame_id));
 }

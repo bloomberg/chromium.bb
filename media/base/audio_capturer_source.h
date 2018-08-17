@@ -14,6 +14,8 @@
 
 namespace media {
 
+class AudioProcessorControls;
+
 // AudioCapturerSource is an interface representing the source for
 // captured audio.  An implementation will periodically call Capture() on a
 // callback object.
@@ -44,6 +46,10 @@ class AudioCapturerSource
     // Signals the muted state has changed. May be called before
     // OnCaptureStarted.
     virtual void OnCaptureMuted(bool is_muted) = 0;
+
+    // For streams created with audio processing, signals that a controllable
+    // audio processor has been created.
+    virtual void OnCaptureProcessorCreated(AudioProcessorControls* controls) {}
 
    protected:
     virtual ~CaptureCallback() {}
