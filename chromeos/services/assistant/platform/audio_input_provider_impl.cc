@@ -137,6 +137,10 @@ void AudioInputImpl::RemoveObserver(
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(&AudioInputImpl::StopRecording,
                                           weak_factory_.GetWeakPtr()));
+
+    // Reset the sequence checker since assistant may call from different thread
+    // after restart.
+    DETACH_FROM_SEQUENCE(observer_sequence_checker_);
   }
 }
 
