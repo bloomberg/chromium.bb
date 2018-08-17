@@ -32,6 +32,8 @@ namespace autofill {
 
 struct PasswordForm;
 
+class FieldDataManager;
+
 enum UsernameDetectionMethod {
   NO_USERNAME_DETECTED,
   BASE_HEURISTIC,
@@ -64,26 +66,19 @@ bool IsGaiaReauthenticationForm(const blink::WebFormElement& form);
 // Tests whether the given form is a GAIA form with a skip password argument.
 bool IsGaiaWithSkipSavePasswordForm(const blink::WebFormElement& form);
 
-// TODO(https://crbug.com/849291): Create separate class for keeping information
-// from FieldValueAndPropertiesMaskMap.
-using FieldValueAndPropertiesMaskMap =
-    std::map<uint32_t,
-             std::pair<std::unique_ptr<base::string16>, FieldPropertiesMask>>;
-
 // Create a PasswordForm from DOM form. Webkit doesn't allow storing
 // custom metadata to DOM nodes, so we have to do this every time an event
 // happens with a given form and compare against previously Create'd forms
 // to identify..which sucks.
-// If an element of |form| has an entry in |nonscript_modified_values|, the
-// associated string is used instead of the element's value to create
-// the PasswordForm.
+// If an element of |form| has an entry in |field_data_manager|, the associated
+// string is used instead of the element's value to create the PasswordForm.
 // |form_predictions| is Autofill server response, if present it's used for
 // overwriting default username element selection.
 // |username_detector_cache| is used by the built-in HTML based username
 // detector to cache results. Can be null.
 std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     const blink::WebFormElement& form,
-    const FieldValueAndPropertiesMaskMap* nonscript_modified_values,
+    const FieldDataManager* field_data_manager,
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache);
 
@@ -91,7 +86,7 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
 // enclosed in <form> element.
 std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const blink::WebLocalFrame& frame,
-    const FieldValueAndPropertiesMaskMap* nonscript_modified_values,
+    const FieldDataManager* field_data_manager,
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache);
 

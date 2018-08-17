@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/autofill/content/renderer/field_data_manager.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_regexes.h"
@@ -1017,7 +1018,7 @@ void PreviewFormField(const FormFieldData& data,
 // [1, kMaxParseableFields].
 bool ExtractFieldsFromControlElements(
     const WebVector<WebFormControlElement>& control_elements,
-    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
+    const FieldDataManager* field_data_manager,
     ExtractMask extract_mask,
     std::vector<std::unique_ptr<FormFieldData>>* form_fields,
     std::vector<bool>* fields_extracted,
@@ -1034,8 +1035,7 @@ bool ExtractFieldsFromControlElements(
 
     // Create a new FormFieldData, fill it out and map it to the field's name.
     auto form_field = std::make_unique<FormFieldData>();
-    WebFormControlElementToFormField(control_element,
-                                     field_value_and_properties_map,
+    WebFormControlElementToFormField(control_element, field_data_manager,
                                      extract_mask, form_field.get());
     (*element_map)[control_element] = form_field.get();
     form_fields->push_back(std::move(form_field));
@@ -1122,7 +1122,7 @@ bool FormOrFieldsetsToFormData(
     const blink::WebFormControlElement* form_control_element,
     const std::vector<blink::WebElement>& fieldsets,
     const WebVector<WebFormControlElement>& control_elements,
-    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
+    const FieldDataManager* field_data_manager,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
@@ -1144,9 +1144,9 @@ bool FormOrFieldsetsToFormData(
   // requirements and thus will be in the resulting |form|.
   std::vector<bool> fields_extracted(control_elements.size(), false);
 
-  if (!ExtractFieldsFromControlElements(
-          control_elements, field_value_and_properties_map, extract_mask,
-          &form_fields, &fields_extracted, &element_map)) {
+  if (!ExtractFieldsFromControlElements(control_elements, field_data_manager,
+                                        extract_mask, &form_fields,
+                                        &fields_extracted, &element_map)) {
     return false;
   }
 
@@ -1227,7 +1227,7 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const blink::WebFormControlElement* element,
     const blink::WebDocument& document,
-    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
+    const FieldDataManager* field_data_manager,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
@@ -1241,9 +1241,9 @@ bool UnownedFormElementsAndFieldSetsToFormData(
 
   form->is_form_tag = false;
 
-  return FormOrFieldsetsToFormData(
-      nullptr, element, fieldsets, control_elements,
-      field_value_and_properties_map, extract_mask, form, field);
+  return FormOrFieldsetsToFormData(nullptr, element, fieldsets,
+                                   control_elements, field_data_manager,
+                                   extract_mask, form, field);
 }
 
 // Check if a script modified username is suitable for Password Manager to
@@ -1251,7 +1251,7 @@ bool UnownedFormElementsAndFieldSetsToFormData(
 bool ScriptModifiedUsernameAcceptable(
     const base::string16& value,
     const base::string16& typed_value,
-    const FieldValueAndPropertiesMaskMap& field_value_and_properties_map) {
+    const FieldDataManager* field_data_manager) {
   // The minimal size of a field value that will be substring-matched.
   constexpr size_t kMinMatchSize = 3u;
   const auto lowercase = base::i18n::ToLower(value);
@@ -1269,18 +1269,7 @@ bool ScriptModifiedUsernameAcceptable(
 
   // If the page-generated value comes from user typed or autofilled values in
   // other fields, that's also likely OK.
-  for (const auto& map_key : field_value_and_properties_map) {
-    const base::string16* typed_from_key = map_key.second.first.get();
-    if (!typed_from_key)
-      continue;
-    if (typed_from_key->size() >= kMinMatchSize &&
-        lowercase.find(base::i18n::ToLower(*typed_from_key)) !=
-            base::string16::npos) {
-      return true;
-    }
-  }
-
-  return false;
+  return field_data_manager->FindMachedValue(value);
 }
 
 }  // namespace
@@ -1477,7 +1466,7 @@ std::vector<WebFormControlElement> ExtractAutofillableElementsInForm(
 
 void WebFormControlElementToFormField(
     const WebFormControlElement& element,
-    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
+    const FieldDataManager* field_data_manager,
     ExtractMask extract_mask,
     FormFieldData* field) {
   DCHECK(field);
@@ -1512,12 +1501,10 @@ void WebFormControlElementToFormField(
   if (element.HasAttribute(kClass))
     field->css_classes = element.GetAttribute(kClass).Utf16();
 
-  if (field_value_and_properties_map) {
-    FieldValueAndPropertiesMaskMap::const_iterator it =
-        field_value_and_properties_map->find(
-            element.UniqueRendererFormControlId());
-    if (it != field_value_and_properties_map->end())
-      field->properties_mask = it->second.second;
+  if (field_data_manager &&
+      field_data_manager->HasFieldData(element.UniqueRendererFormControlId())) {
+    field->properties_mask = field_data_manager->GetFieldPropertiesMask(
+        element.UniqueRendererFormControlId());
   }
 
   if (!IsAutofillableElement(element))
@@ -1582,24 +1569,22 @@ void WebFormControlElementToFormField(
   field->value = value;
 
   // If the field was autofilled or the user typed into it, check the value
-  // stored in |field_value_and_properties_map| against the value property of
-  // the DOM element. If they differ, then the scripts on the website modified
-  // the value afterwards. Store the original value as the |typed_value|, unless
+  // stored in |field_data_manager| against the value property of the DOM
+  // element. If they differ, then the scripts on the website modified the
+  // value afterwards. Store the original value as the |typed_value|, unless
   // this is one of recognised situations when the site-modified value is more
   // useful for filling.
-  if (field_value_and_properties_map &&
+  if (field_data_manager &&
       field->properties_mask & (FieldPropertiesFlags::USER_TYPED |
                                 FieldPropertiesFlags::AUTOFILLED)) {
-    const base::string16 typed_value =
-        *field_value_and_properties_map
-             ->at(element.UniqueRendererFormControlId())
-             .first;
+    const base::string16 typed_value = field_data_manager->GetUserTypedValue(
+        element.UniqueRendererFormControlId());
 
     // The typed value is preserved for all passwords. It is also preserved for
     // potential usernames, as long as the |value| is not deemed acceptable.
     if (field->form_control_type == "password" ||
         !ScriptModifiedUsernameAcceptable(value, typed_value,
-                                          *field_value_and_properties_map)) {
+                                          field_data_manager)) {
       field->typed_value = typed_value;
     }
   }
@@ -1608,7 +1593,7 @@ void WebFormControlElementToFormField(
 bool WebFormElementToFormData(
     const blink::WebFormElement& form_element,
     const blink::WebFormControlElement& form_control_element,
-    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
+    const FieldDataManager* field_data_manager,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
@@ -1637,7 +1622,7 @@ bool WebFormElementToFormData(
   std::vector<blink::WebElement> dummy_fieldset;
   return FormOrFieldsetsToFormData(
       &form_element, &form_control_element, dummy_fieldset, control_elements,
-      field_value_and_properties_map, extract_mask, form, field);
+      field_data_manager, extract_mask, form, field);
 }
 
 std::vector<WebFormControlElement> GetUnownedFormFieldElements(
@@ -1771,13 +1756,13 @@ bool UnownedPasswordFormElementsAndFieldSetsToFormData(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const blink::WebFormControlElement* element,
     const blink::WebDocument& document,
-    const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
+    const FieldDataManager* field_data_manager,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
   return UnownedFormElementsAndFieldSetsToFormData(
-      fieldsets, control_elements, element, document,
-      field_value_and_properties_map, extract_mask, form, field);
+      fieldsets, control_elements, element, document, field_data_manager,
+      extract_mask, form, field);
 }
 
 

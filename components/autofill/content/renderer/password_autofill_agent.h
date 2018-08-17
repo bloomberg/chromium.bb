@@ -16,9 +16,9 @@
 #include "components/autofill/content/common/autofill_agent.mojom.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/field_data_manager.h"
 #include "components/autofill/content/renderer/form_tracker.h"
 #include "components/autofill/content/renderer/html_based_username_detector.h"
-#include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/content/renderer/provisionally_saved_password_form.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/password_form.h"
@@ -64,6 +64,7 @@ enum class PrefilledUsernameFillOutcome {
 extern const char kDebugAttributeForFormSignature[];
 extern const char kDebugAttributeForFieldSignature[];
 
+class FieldDataManager;
 class RendererSavePasswordProgressLogger;
 class PasswordGenerationAgent;
 
@@ -327,18 +328,17 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // This function attempts to fill |username_element| and |password_element|
   // with values from |fill_data|. The |username_element| and |password_element|
   // will only have the suggestedValue set. If a match is found, return true and
-  // |field_value_and_properties_map| will be modified with the autofilled
-  // credentials and |FieldPropertiesFlags::AUTOFILLED| flag.
+  // |field_data_manager| will be modified with the autofilled credentials and
+  // |FieldPropertiesFlags::AUTOFILLED| flag.
   // If |username_may_use_prefilled_placeholder| then this function may
   // overwrite the value of username field.
-  bool FillUserNameAndPassword(
-      blink::WebInputElement* username_element,
-      blink::WebInputElement* password_element,
-      const PasswordFormFillData& fill_data,
-      bool exact_username_match,
-      bool username_may_use_prefilled_placeholder,
-      FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
-      RendererSavePasswordProgressLogger* logger);
+  bool FillUserNameAndPassword(blink::WebInputElement* username_element,
+                               blink::WebInputElement* password_element,
+                               const PasswordFormFillData& fill_data,
+                               bool exact_username_match,
+                               bool username_may_use_prefilled_placeholder,
+                               FieldDataManager* field_data_manager,
+                               RendererSavePasswordProgressLogger* logger);
 
   // Logs whether a username value that was prefilled by the website was
   // overridden when trying to fill with an existing credential. This logs
@@ -351,12 +351,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // attempts to fill the password matching the already filled username, if
   // such a password exists. The |password_element| will have the
   // |suggestedValue| set. Returns true if the password is filled.
-  bool FillFormOnPasswordReceived(
-      const PasswordFormFillData& fill_data,
-      blink::WebInputElement username_element,
-      blink::WebInputElement password_element,
-      FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
-      RendererSavePasswordProgressLogger* logger);
+  bool FillFormOnPasswordReceived(const PasswordFormFillData& fill_data,
+                                  blink::WebInputElement username_element,
+                                  blink::WebInputElement password_element,
+                                  FieldDataManager* field_data_manager,
+                                  RendererSavePasswordProgressLogger* logger);
 
   // Helper function called when form submission is successful.
   void FireSubmissionIfFormDisappear(
@@ -408,7 +407,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // changes them.
   // 2) Field properties mask, i.e. whether the field was autofilled, modified
   // by user, etc. (see FieldPropertiesMask).
-  FieldValueAndPropertiesMaskMap field_value_and_properties_map_;
+  FieldDataManager field_data_manager_;
 
   PasswordValueGatekeeper gatekeeper_;
 
