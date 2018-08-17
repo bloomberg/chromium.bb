@@ -957,27 +957,12 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   referenced_surfaces_.insert(surface->surface_id());
   for (const auto& surface_info : child_surfaces) {
     if (will_draw) {
-      // We only pick a surface between primary and fallback if both SurfaceIds
-      // are provided and they have the same FrameSinkId and embed token,
-      // otherwise the only Surface other than fallback that can be shown is the
-      // primary.
-      if (!surface_info.surface_range.start() ||
-          surface_info.surface_range.start()->frame_sink_id() !=
-              surface_info.surface_range.end().frame_sink_id() ||
-          surface_info.surface_range.start()
-                  ->local_surface_id()
-                  .embed_token() != surface_info.surface_range.end()
-                                        .local_surface_id()
-                                        .embed_token()) {
-        damage_ranges_[surface_info.surface_range.end().frame_sink_id()] =
-            std::make_pair(surface_info.surface_range.end().local_surface_id(),
-                           surface_info.surface_range.end().local_surface_id());
-      } else if (surface_info.surface_range.start() !=
-                 surface_info.surface_range.end()) {
-        damage_ranges_[surface_info.surface_range.end().frame_sink_id()] =
-            std::make_pair(
-                surface_info.surface_range.start()->local_surface_id(),
-                surface_info.surface_range.end().local_surface_id());
+      const SurfaceRange& surface_range = surface_info.surface_range;
+      damage_ranges_[surface_range.end().frame_sink_id()].push_back(
+          surface_range);
+      if (surface_range.HasDifferentFrameSinkIds()) {
+        damage_ranges_[surface_range.start()->frame_sink_id()].push_back(
+            surface_range);
       }
     }
 
@@ -1276,11 +1261,12 @@ bool SurfaceAggregator::NotifySurfaceDamageAndCheckForDisplayDamage(
   if (it == damage_ranges_.end())
     return false;
 
-  const LocalSurfaceId& fallback = it->second.first;
-  const LocalSurfaceId& primary = it->second.second;
-  return (primary == surface_id.local_surface_id()) ||
-         (primary.IsNewerThan(surface_id.local_surface_id()) &&
-          surface_id.local_surface_id().IsNewerThan(fallback));
+  for (const SurfaceRange& surface_range : it->second) {
+    if (surface_range.IsInRangeInclusive(surface_id))
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace viz

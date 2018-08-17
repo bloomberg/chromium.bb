@@ -16,6 +16,7 @@
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/color_space.h"
 
@@ -276,10 +277,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // Tracks UMA stats for SurfaceDrawQuads during a call to Aggregate().
   SurfaceDrawQuadUmaStats uma_stats_;
 
-  // For each FrameSinkId, contains a range of LocalSurfaceIds that will damage
+  // For each FrameSinkId, contains a vector of SurfaceRanges that will damage
   // the display if they're damaged.
-  base::flat_map<FrameSinkId, std::pair<LocalSurfaceId, LocalSurfaceId>>
-      damage_ranges_;
+  base::flat_map<FrameSinkId, std::vector<SurfaceRange>> damage_ranges_;
 
   int32_t display_trace_id_ = -1;
 
