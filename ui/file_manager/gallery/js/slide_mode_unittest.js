@@ -9,17 +9,13 @@ function strf(id, var_args) {
   return `${id}-${Array.from(arguments).slice(1).join("-")}`;
 }
 
-var fallbackDir = {
-  fullPath: '/fallback'
-};
+const fallbackDir = /** @type{!DirectoryEntry} */ ({fullPath: '/fallback'});
 
 /**
  * Test case for writable format and writable volume.
  */
 function testGetEditorWarningMessageWritableFormatAndVolumeCase(callback) {
-  var item = {
-    isWritableFormat: () => true
-  };
+  const item = /** @type{!GalleryItem} */ ({isWritableFormat: () => true});
 
   reportPromise(SlideMode.getEditorWarningMessage(
       item, '', fallbackDir).then(function(message) {
@@ -31,9 +27,7 @@ function testGetEditorWarningMessageWritableFormatAndVolumeCase(callback) {
  * Test case for writable format and read only volume.
  */
 function testGetEditorWarningMessageWritableFormatReadOnlyCase(callback) {
-  var item = {
-    isWritableFormat: () => true
-  };
+  const item = /** @type{!GalleryItem} */ ({isWritableFormat: () => true});
 
   reportPromise(SlideMode.getEditorWarningMessage(
       item, 'NON_WRITABLE_VOLUME', fallbackDir).then(function(message) {
@@ -46,7 +40,7 @@ function testGetEditorWarningMessageWritableFormatReadOnlyCase(callback) {
  */
 function testGetEditorWarningMessageNonWritableFormatAndWritableVolumeCase(
     callback) {
-  var item = {
+  const item = /** @type{!GalleryItem} */ ({
     isWritableFormat: function() {
       return false;
     },
@@ -56,13 +50,13 @@ function testGetEditorWarningMessageNonWritableFormatAndWritableVolumeCase(
         getParent: function(callback) {
           callback({ fullPath: '/parent' });
         }
-      }
+      };
     },
     getCopyName: function(dirEntry) {
       assertEquals(dirEntry.fullPath, '/parent');
       return Promise.resolve('test - Edited.png');
     }
-  };
+  });
 
   reportPromise(SlideMode.getEditorWarningMessage(
       item, '', fallbackDir).then(function(message) {
@@ -75,7 +69,7 @@ function testGetEditorWarningMessageNonWritableFormatAndWritableVolumeCase(
  * Test case for non-writable format and read only volume.
  */
 function testGetEditorWarningMessageNonWritableFormatAndReadOnlyCase(callback) {
-  var item = {
+  const item = /** @type{!GalleryItem} */ ({
     isWritableFormat: function() {
       return false;
     },
@@ -83,7 +77,7 @@ function testGetEditorWarningMessageNonWritableFormatAndReadOnlyCase(callback) {
       assertEquals(dirEntry.fullPath, '/fallback');
       return Promise.resolve('test - Edited.png');
     }
-  };
+  });
 
   reportPromise(SlideMode.getEditorWarningMessage(
       item, 'NON_WRITABLE_VOLUME', fallbackDir).then(function(message) {
