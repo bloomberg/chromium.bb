@@ -750,27 +750,60 @@ TEST_F(AutofillDownloadManagerTest, CacheQueryTest) {
 
 namespace {
 
-class AutofillQueryTest : public AutofillDownloadManager::Observer,
-                          public testing::Test {
+enum ServerCommuncationMode {
+  DISABLED,
+  FINCHED_URL,
+  COMMAND_LINE_URL,
+  DEFAULT_URL
+};
+
+class AutofillServerCommunicationTest
+    : public AutofillDownloadManager::Observer,
+      public testing::TestWithParam<ServerCommuncationMode> {
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
+    testing::TestWithParam<ServerCommuncationMode>::SetUp();
+
+    scoped_feature_list_1_.InitAndEnableFeature(
         features::kAutofillCacheQueryResponses);
 
     // Setup the server.
-    server_.RegisterRequestHandler(base::BindRepeating(
-        &AutofillQueryTest::RequestHandler, base::Unretained(this)));
+    server_.RegisterRequestHandler(
+        base::BindRepeating(&AutofillServerCommunicationTest::RequestHandler,
+                            base::Unretained(this)));
     ASSERT_TRUE(server_.Start());
 
-    scoped_command_line_.GetProcessCommandLine()->AppendSwitchASCII(
-        switches::kAutofillServerURL,
-        server_.base_url().Resolve("/tbproxy/af/").spec().c_str());
+    GURL autofill_server_url(server_.base_url().Resolve("/tbproxy/af/"));
+    ASSERT_TRUE(autofill_server_url.is_valid());
 
     // Intialize the autofill driver.
     shared_url_loader_factory_ =
         base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
     driver_ = std::make_unique<TestAutofillDriver>();
     driver_->SetSharedURLLoaderFactory(shared_url_loader_factory_);
+
+    // Configure the autofill server communications channel.
+    switch (GetParam()) {
+      case DISABLED:
+        scoped_feature_list_2_.InitAndDisableFeature(
+            features::kAutofillServerCommunication);
+        break;
+      case FINCHED_URL:
+        scoped_feature_list_2_.InitAndEnableFeatureWithParameters(
+            features::kAutofillServerCommunication,
+            {{switches::kAutofillServerURL, autofill_server_url.spec()}});
+        break;
+      case COMMAND_LINE_URL:
+        scoped_command_line_.GetProcessCommandLine()->AppendSwitchASCII(
+            switches::kAutofillServerURL, autofill_server_url.spec());
+        FALLTHROUGH;
+      case DEFAULT_URL:
+        scoped_feature_list_2_.InitAndEnableFeature(
+            features::kAutofillServerCommunication);
+        break;
+      default:
+        ASSERT_TRUE(false);
+    }
   }
 
   void TearDown() override {
@@ -786,45 +819,78 @@ class AutofillQueryTest : public AutofillDownloadManager::Observer,
     run_loop_->QuitWhenIdle();
   }
 
+  void OnUploadedPossibleFieldTypes() override {
+    ASSERT_TRUE(run_loop_);
+    run_loop_->QuitWhenIdle();
+  }
+
   std::unique_ptr<HttpResponse> RequestHandler(const HttpRequest& request) {
     GURL absolute_url = server_.GetURL(request.relative_url);
     ++call_count_;
 
-    if (absolute_url.path() != "/tbproxy/af/query")
-      return nullptr;
+    if (absolute_url.path() == "/tbproxy/af/query") {
+      AutofillQueryResponseContents proto;
+      proto.add_field()->set_overall_type_prediction(NAME_FIRST);
 
-    AutofillQueryResponseContents proto;
-    proto.add_field()->set_overall_type_prediction(NAME_FIRST);
+      auto response = std::make_unique<BasicHttpResponse>();
+      response->set_code(net::HTTP_OK);
+      response->set_content(proto.SerializeAsString());
+      response->set_content_type("text/proto");
+      response->AddCustomHeader(
+          "Cache-Control",
+          base::StringPrintf("max-age=%" PRId64,
+                             base::TimeDelta::FromMilliseconds(
+                                 cache_expiration_in_milliseconds_)
+                                 .InSeconds()));
+      return response;
+    }
 
-    auto response = std::make_unique<BasicHttpResponse>();
-    response->set_code(net::HTTP_OK);
-    response->set_content(proto.SerializeAsString());
-    response->set_content_type("text/proto");
-    response->AddCustomHeader(
-        "Cache-Control",
-        base::StringPrintf(
-            "max-age=%" PRId64,
-            base::TimeDelta::FromMilliseconds(cache_expiration_in_milliseconds_)
-                .InSeconds()));
-    return response;
+    if (absolute_url.path() == "/tbproxy/af/upload") {
+      auto response = std::make_unique<BasicHttpResponse>();
+      response->set_code(net::HTTP_OK);
+      return response;
+    }
+
+    return nullptr;
   }
 
-  void SendQueryRequest(
+  bool SendQueryRequest(
       const std::vector<std::unique_ptr<FormStructure>>& form_structures) {
-    ASSERT_TRUE(run_loop_ == nullptr);
+    EXPECT_EQ(run_loop_, nullptr);
     run_loop_ = std::make_unique<base::RunLoop>();
 
     AutofillDownloadManager download_manager(driver_.get(), this);
-    ASSERT_TRUE(download_manager.StartQueryRequest(
-        ToRawPointerVector(form_structures)));
-    run_loop_->Run();
+    bool succeeded =
+        download_manager.StartQueryRequest(ToRawPointerVector(form_structures));
+    if (succeeded)
+      run_loop_->Run();
     run_loop_.reset();
+    return succeeded;
+  }
+
+  bool SendUploadRequest(const FormStructure& form,
+                         bool form_was_autofilled,
+                         const ServerFieldTypeSet& available_field_types,
+                         const std::string& login_form_signature,
+                         bool observed_submission) {
+    EXPECT_EQ(run_loop_, nullptr);
+    run_loop_ = std::make_unique<base::RunLoop>();
+
+    AutofillDownloadManager download_manager(driver_.get(), this);
+    bool succeeded = download_manager.StartUploadRequest(
+        form, form_was_autofilled, available_field_types, login_form_signature,
+        observed_submission);
+    if (succeeded)
+      run_loop_->Run();
+    run_loop_.reset();
+    return succeeded;
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::IO};
   base::test::ScopedCommandLine scoped_command_line_;
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_1_;
+  base::test::ScopedFeatureList scoped_feature_list_2_;
   EmbeddedTestServer server_;
   int cache_expiration_in_milliseconds_ = 100000;
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -835,7 +901,61 @@ class AutofillQueryTest : public AutofillDownloadManager::Observer,
 
 }  // namespace
 
-TEST_F(AutofillQueryTest, CacheableResponse) {
+TEST_P(AutofillServerCommunicationTest, IsEnabled) {
+  AutofillDownloadManager download_manager(driver_.get(), this);
+  EXPECT_EQ(download_manager.IsEnabled(), GetParam() != DISABLED);
+}
+
+TEST_P(AutofillServerCommunicationTest, Query) {
+  FormData form;
+  FormFieldData field;
+
+  field.label = ASCIIToUTF16("First Name:");
+  field.name = ASCIIToUTF16("firstname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  form_structures.push_back(std::make_unique<FormStructure>(form));
+
+  EXPECT_EQ(GetParam() != DISABLED, SendQueryRequest(form_structures));
+}
+
+TEST_P(AutofillServerCommunicationTest, Upload) {
+  FormData form;
+  FormFieldData field;
+
+  field.label = ASCIIToUTF16("First Name:");
+  field.name = ASCIIToUTF16("firstname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name:");
+  field.name = ASCIIToUTF16("lastname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email:");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  AutofillDownloadManager download_manager(driver_.get(), this);
+  EXPECT_EQ(GetParam() != DISABLED,
+            SendUploadRequest(FormStructure(form), true, {}, "", true));
+}
+
+// Note that we omit DEFAULT_URL from the test params. We don't actually want
+// the tests to hit the production server.
+INSTANTIATE_TEST_CASE_P(All,
+                        AutofillServerCommunicationTest,
+                        ::testing::Values(DISABLED,
+                                          FINCHED_URL,
+                                          COMMAND_LINE_URL));
+
+using AutofillQueryTest = AutofillServerCommunicationTest;
+
+TEST_P(AutofillQueryTest, CacheableResponse) {
   FormFieldData field;
   field.label = ASCIIToUTF16("First Name:");
   field.name = ASCIIToUTF16("firstname");
@@ -852,7 +972,7 @@ TEST_F(AutofillQueryTest, CacheableResponse) {
     SCOPED_TRACE("First Query");
     base::HistogramTester histogram;
     call_count_ = 0;
-    ASSERT_NO_FATAL_FAILURE(SendQueryRequest(form_structures));
+    ASSERT_TRUE(SendQueryRequest(form_structures));
     EXPECT_EQ(1u, call_count_);
     histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
                                 AutofillMetrics::QUERY_SENT, 1);
@@ -866,7 +986,7 @@ TEST_F(AutofillQueryTest, CacheableResponse) {
     SCOPED_TRACE("Second Query");
     base::HistogramTester histogram;
     call_count_ = 0;
-    ASSERT_NO_FATAL_FAILURE(SendQueryRequest(form_structures));
+    ASSERT_TRUE(SendQueryRequest(form_structures));
     EXPECT_EQ(0u, call_count_);
     histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
                                 AutofillMetrics::QUERY_SENT, 1);
@@ -875,7 +995,7 @@ TEST_F(AutofillQueryTest, CacheableResponse) {
   }
 }
 
-TEST_F(AutofillQueryTest, ExpiredCacheInResponse) {
+TEST_P(AutofillQueryTest, ExpiredCacheInResponse) {
   FormFieldData field;
   field.label = ASCIIToUTF16("First Name:");
   field.name = ASCIIToUTF16("firstname");
@@ -895,7 +1015,7 @@ TEST_F(AutofillQueryTest, ExpiredCacheInResponse) {
     SCOPED_TRACE("First Query");
     base::HistogramTester histogram;
     call_count_ = 0;
-    ASSERT_NO_FATAL_FAILURE(SendQueryRequest(form_structures));
+    ASSERT_TRUE(SendQueryRequest(form_structures));
     EXPECT_EQ(1u, call_count_);
     histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
                                 AutofillMetrics::QUERY_SENT, 1);
@@ -916,7 +1036,7 @@ TEST_F(AutofillQueryTest, ExpiredCacheInResponse) {
     SCOPED_TRACE("Second Query");
     base::HistogramTester histogram;
     call_count_ = 0;
-    ASSERT_NO_FATAL_FAILURE(SendQueryRequest(form_structures));
+    ASSERT_TRUE(SendQueryRequest(form_structures));
     EXPECT_EQ(1u, call_count_);
     histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
                                 AutofillMetrics::QUERY_SENT, 1);
@@ -924,5 +1044,12 @@ TEST_F(AutofillQueryTest, ExpiredCacheInResponse) {
     histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
   }
 }
+
+// Note that we omit DEFAULT_URL from the test params. We don't actually want
+// the tests to hit the production server. We also excluded DISABLED, since
+// these tests exercise "enabled" functionality.
+INSTANTIATE_TEST_CASE_P(All,
+                        AutofillQueryTest,
+                        ::testing::Values(FINCHED_URL, COMMAND_LINE_URL));
 
 }  // namespace autofill

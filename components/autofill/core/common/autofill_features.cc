@@ -108,6 +108,15 @@ const base::Feature kAutofillSendOnlyCountryInGetUploadDetails{
     "AutofillSendOnlyCountryInGetUploadDetails",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or Disables (mostly for hermetic testing) autofill server
+// communication. The URL of the autofill server can further be controlled via
+// the autofill-server-url param. The given URL should specify the complete
+// autofill server API url up to the parent "directory" of the "query" and
+// "upload" resources.
+// i.e., https://other.autofill.server:port/tbproxy/af/
+const base::Feature kAutofillServerCommunication{
+    "kAutofillServerCommunication", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether we show warnings in the Dev console for misused autocomplete
 // types.
 const base::Feature kAutofillShowAutocompleteConsoleWarnings{
