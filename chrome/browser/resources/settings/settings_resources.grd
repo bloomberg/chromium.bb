@@ -1492,12 +1492,6 @@
         <structure name="IDR_SETTINGS_PEOPLE_SETUP_FINGERPRINT_DIALOG_HTML"
                    file="people_page/setup_fingerprint_dialog.html"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_PEOPLE_FINGERPRINT_PROGRESS_ARC_JS"
-                   file="people_page/fingerprint_progress_arc.js"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_PEOPLE_FINGERPRINT_PROGRESS_ARC_HTML"
-                   file="people_page/fingerprint_progress_arc.html"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_PEOPLE_FINGERPRINT_BROWSER_PROXY_JS"
                    file="people_page/fingerprint_browser_proxy.js"
                    type="chrome_html" />
