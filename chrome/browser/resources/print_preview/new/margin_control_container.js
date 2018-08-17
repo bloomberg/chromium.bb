@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
-
-/** @const {number} */
-const MINIMUM_DISTANCE = 72;  // 1 inch
+cr.exportPath('print_preview_new');
 
 /**
  * @const {!Map<!print_preview.ticket_items.CustomMarginsOrientation, string>}
  */
-const MARGIN_KEY_MAP = new Map([
+print_preview_new.MARGIN_KEY_MAP = new Map([
   [print_preview.ticket_items.CustomMarginsOrientation.TOP, 'marginTop'],
   [print_preview.ticket_items.CustomMarginsOrientation.RIGHT, 'marginRight'],
   [print_preview.ticket_items.CustomMarginsOrientation.BOTTOM, 'marginBottom'],
   [print_preview.ticket_items.CustomMarginsOrientation.LEFT, 'marginLeft']
 ]);
+
+(function() {
+'use strict';
+
+/** @const {number} */
+const MINIMUM_DISTANCE = 72;  // 1 inch
 
 Polymer({
   is: 'print-preview-margin-control-container',
@@ -40,6 +42,12 @@ Polymer({
 
     /** @type {?print_preview.MeasurementSystem} */
     measurementSystem: Object,
+
+    /** @type {!print_preview_new.State} */
+    state: {
+      type: Number,
+      observer: 'onStateChanged_',
+    },
 
     /** @private {number} */
     scaleTransform_: {
@@ -107,6 +115,8 @@ Polymer({
 
   observers: [
     'onMarginSettingsChange_(settings.customMargins.value)',
+    'onMediaSizeOrLayoutChange_(' +
+        'settings.mediaSize.value, settings.layout.value)',
   ],
 
   /** @private {!print_preview.Coordinate2d} */
@@ -114,6 +124,9 @@ Polymer({
 
   /** @private {?print_preview.Coordinate2d} */
   marginStartPositionInPixels_: null,
+
+  /** @private {?boolean} */
+  resetMargins_: null,
 
   /**
    * @return {boolean}
@@ -128,20 +141,17 @@ Polymer({
 
   /** @private */
   onAvailableChange_: function() {
-    if (this.available_ && !!this.documentMargins) {
+    if (this.available_ && this.resetMargins_) {
+      // Set the custom margins values to the current document margins if the
+      // custom margins were reset.
       const newMargins = {};
-      // Track whether the margins have actually changed to avoid triggering the
-      // setting change if they are the same.
-      const oldMargins = this.getSettingValue('customMargins');
-      let change = false;
       for (let side of Object.values(
                print_preview.ticket_items.CustomMarginsOrientation)) {
-        const key = MARGIN_KEY_MAP.get(side);
+        const key = print_preview_new.MARGIN_KEY_MAP.get(side);
         newMargins[key] = this.documentMargins.get(side);
-        change = change || (newMargins[key] != oldMargins[key]);
       }
-      if (change)
-        this.setSetting('customMargins', newMargins);
+      this.setSetting('customMargins', newMargins);
+      this.resetMargins_ = false;
     }
     this.invisible_ = !this.available_;
   },
@@ -151,11 +161,42 @@ Polymer({
     const margins = this.getSettingValue('customMargins');
     this.shadowRoot.querySelectorAll('print-preview-margin-control')
         .forEach(control => {
-          const key = MARGIN_KEY_MAP.get(control.side);
+          const key = print_preview_new.MARGIN_KEY_MAP.get(control.side);
           const newValue = margins[key] || 0;
           control.setPositionInPts(newValue);
           control.setTextboxValue(this.serializeValueFromPts_(newValue));
         });
+  },
+
+  /** @private */
+  onMediaSizeOrLayoutChange_: function() {
+    // Reset the custom margins when the paper size changes. Don't do this if it
+    // is the first preview.
+    if (this.resetMargins_ === null)
+      return;
+
+    this.resetMargins_ = true;
+    const marginsSetting = this.getSetting('margins');
+    if (marginsSetting.value ==
+        print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+      // Set the margins value to default first.
+      this.setSetting(
+          'margins', print_preview.ticket_items.MarginsTypeValue.DEFAULT);
+    }
+    // Reset custom margins so that the sticky value is not restored for the new
+    // paper size.
+    this.setSetting('customMargins', {});
+  },
+
+  /** @private */
+  onStateChanged_: function() {
+    if (this.state == print_preview_new.State.READY &&
+        this.resetMargins_ === null) {
+      // Don't reset margins if there are sticky values. Otherwise, set them to
+      // the document margins when the user selects custom margins.
+      this.resetMargins_ =
+          this.getSettingValue('customMargins').marginTop === undefined;
+    }
   },
 
   /**
@@ -298,7 +339,7 @@ Polymer({
             side);
     const oldMargins = /** @type {print_preview.MarginsSetting} */ (
         this.getSettingValue('customMargins'));
-    const key = MARGIN_KEY_MAP.get(marginSide);
+    const key = print_preview_new.MARGIN_KEY_MAP.get(marginSide);
     if (oldMargins[key] == marginValue)
       return;
     const newMargins = Object.assign({}, oldMargins);

@@ -152,12 +152,7 @@ Polymer({
             key: 'marginsType',
           },
           customMargins: {
-            value: {
-              marginTop: 0,
-              marginRight: 0,
-              marginBottom: 0,
-              marginLeft: 0,
-            },
+            value: {},
             unavailableValue: {},
             valid: true,
             available: true,

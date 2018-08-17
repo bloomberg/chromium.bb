@@ -574,12 +574,28 @@ Polymer({
   onMarginsChanged_: function() {
     if (this.getSettingValue('margins') !=
         print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
-      this.lastCustomMargins_ = null;
       this.onSettingsChanged_();
     } else {
-      this.lastCustomMargins_ =
+      const customMargins =
           /** @type {!print_preview.MarginsSetting} */ (
               this.getSettingValue('customMargins'));
+
+      for (let side of Object.values(
+               print_preview.ticket_items.CustomMarginsOrientation)) {
+        const key = print_preview_new.MARGIN_KEY_MAP.get(side);
+        // If custom margins are undefined, return and wait for them to be set.
+        if (customMargins[key] === undefined || !this.documentInfo ||
+            !this.documentInfo.margins) {
+          return;
+        }
+
+        // Start a preview request if the margins actually changed.
+        if (this.documentInfo.margins.get(side) != customMargins[key]) {
+          this.onSettingsChanged_();
+          break;
+        }
+      }
+      this.lastCustomMargins_ = customMargins;
     }
   },
 
@@ -589,6 +605,7 @@ Polymer({
         /** @type {!print_preview.MarginsSetting} */ (
             this.getSettingValue('customMargins'));
     if (!!this.lastCustomMargins_ &&
+        this.lastCustomMargins_.marginTop !== undefined &&
         this.getSettingValue('margins') ==
             print_preview.ticket_items.MarginsTypeValue.CUSTOM &&
         (this.lastCustomMargins_.marginTop != newValue.marginTop ||
