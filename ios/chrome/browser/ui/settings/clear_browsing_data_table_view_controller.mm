@@ -56,6 +56,11 @@ class ChromeBrowserState;
 // Modal alert for Browsing history removed dialog.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 
+// The data manager might want to reload tableView cells before the tableView
+// has loaded, we need to prevent this kind of updates until the tableView
+// loads.
+@property(nonatomic, assign) BOOL suppressTableViewUpdates;
+
 @end
 
 @implementation ClearBrowsingDataTableViewController
@@ -66,6 +71,7 @@ class ChromeBrowserState;
 @synthesize dataManager = _dataManager;
 @synthesize dispatcher = _dispatcher;
 @synthesize localDispatcher = _localDispatcher;
+@synthesize suppressTableViewUpdates = _suppressTableViewUpdates;
 
 #pragma mark - ViewController Lifecycle.
 
@@ -106,7 +112,12 @@ class ChromeBrowserState;
   dismissButton.accessibilityIdentifier = kSettingsDoneButtonId;
   self.navigationItem.rightBarButtonItem = dismissButton;
 
+  // Do not allow any TableView updates until the model is fully loaded. The
+  // model might try re-loading some cells and the TableView might not be loaded
+  // at this point (https://crbug.com/873929).
+  self.suppressTableViewUpdates = YES;
   [self loadModel];
+  self.suppressTableViewUpdates = NO;
 }
 
 - (void)loadModel {
@@ -221,6 +232,9 @@ class ChromeBrowserState;
 #pragma mark - ClearBrowsingDataConsumer
 
 - (void)updateCellsForItem:(ListItem*)item {
+  if (self.suppressTableViewUpdates)
+    return;
+
   // Reload the item instead of reconfiguring it. This might update
   // TableViewTextLinkItems which which can have different number of lines,
   // thus the cell height needs to adapt accordingly.
