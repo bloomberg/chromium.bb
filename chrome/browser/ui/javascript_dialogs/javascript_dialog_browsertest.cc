@@ -4,11 +4,8 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
-#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -18,12 +15,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
-using DismissalCause = JavaScriptDialogTabHelper::DismissalCause;
-
-class JavaScriptDialogTest : public InProcessBrowserTest {
- private:
-  friend class JavaScriptDialogDismissalCauseTester;
-};
+using JavaScriptDialogTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, ReloadDoesntHang) {
   content::WebContents* tab =
@@ -198,145 +190,4 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, HandleJavaScriptDialog) {
   ASSERT_FALSE(js_helper->IsShowingDialogForTesting());
   ASSERT_TRUE(callback_helper.last_success());
   ASSERT_EQ(value1, callback_helper.last_input());
-}
-
-class JavaScriptDialogDismissalCauseTester {
- public:
-  explicit JavaScriptDialogDismissalCauseTester(JavaScriptDialogTest* test)
-      : tab_(test->browser()->tab_strip_model()->GetActiveWebContents()),
-        frame_(tab_->GetMainFrame()),
-        js_helper_(JavaScriptDialogTabHelper::FromWebContents(tab_)) {}
-
-  void PopupDialog(content::JavaScriptDialogType type) {
-    bool did_suppress = false;
-    js_helper_->RunJavaScriptDialog(
-        tab_, frame_, type, base::ASCIIToUTF16("Label"),
-        base::ASCIIToUTF16("abc"), {}, &did_suppress);
-  }
-
-  void ClickDialogButton(bool accept, const base::string16& user_input) {
-    EXPECT_TRUE(js_helper_->IsShowingDialogForTesting());
-    js_helper_->ClickDialogButtonForTesting(accept, user_input);
-  }
-
-  void Reload() {
-    tab_->GetController().Reload(content::ReloadType::NORMAL, false);
-    content::WaitForLoadStop(tab_);
-  }
-
-  void CallHandleDialog(bool accept, const base::string16* prompt_override) {
-    EXPECT_TRUE(js_helper_->IsShowingDialogForTesting());
-    js_helper_->HandleJavaScriptDialog(tab_, accept, prompt_override);
-  }
-
-  void CallCancelDialogs(bool reset_state) {
-    EXPECT_TRUE(js_helper_->IsShowingDialogForTesting());
-    js_helper_->CancelDialogs(tab_, reset_state);
-  }
-
- private:
-  content::WebContents* tab_;
-  content::RenderFrameHost* frame_;
-  JavaScriptDialogTabHelper* js_helper_;
-};
-
-IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, DismissalCausePromptAcceptButton) {
-  base::HistogramTester histogram_tester;
-  JavaScriptDialogDismissalCauseTester tester(this);
-  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_PROMPT);
-  tester.ClickDialogButton(true, base::string16());
-  histogram_tester.ExpectUniqueSample("JSDialogs.DismissalCause.Prompt",
-                                      DismissalCause::kDialogButtonClicked, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, DismissalCausePromptCancelButton) {
-  base::HistogramTester histogram_tester;
-  JavaScriptDialogDismissalCauseTester tester(this);
-  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_PROMPT);
-  tester.ClickDialogButton(false, base::string16());
-  histogram_tester.ExpectUniqueSample("JSDialogs.DismissalCause.Prompt",
-                                      DismissalCause::kDialogButtonClicked, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, DismissalCausePromptHandleDialog) {
-  base::HistogramTester histogram_tester;
-  JavaScriptDialogDismissalCauseTester tester(this);
-  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_PROMPT);
-  tester.CallHandleDialog(true, nullptr);
-  histogram_tester.ExpectUniqueSample("JSDialogs.DismissalCause.Prompt",
-                                      DismissalCause::kHandleDialogCalled, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
-                       DismissalCausePromptCancelDialogs) {
-  base::HistogramTester histogram_tester;
-  JavaScriptDialogDismissalCauseTester tester(this);
-  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_PROMPT);
-  tester.CallCancelDialogs(false);
-  histogram_tester.ExpectUniqueSample("JSDialogs.DismissalCause.Prompt",
-                                      DismissalCause::kCancelDialogsCalled, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
-                       DismissalCausePromptTabClosedByUser) {
-  base::HistogramTester histogram_tester;
-  JavaScriptDialogDismissalCauseTester tester(this);
-  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_PROMPT);
-  chrome::CloseTab(browser());
-// There are differences in the implementations of Views on different platforms
-// that cause different dismissal causes.
-#if defined(OS_MACOSX)
-  histogram_tester.ExpectUniqueSample("JSDialogs.DismissalCause.Prompt",
-                                      DismissalCause::kCancelDialogsCalled, 1);
-#else
-  histogram_tester.ExpectUniqueSample("JSDialogs.DismissalCause.Prompt",
-                                      DismissalCause::kDialogClosed, 1);
-#endif
-}
-
-IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, DismissalCausePromptTabHidden) {
-  base::HistogramTester histogram_tester;
-  JavaScriptDialogDismissalCauseTester tester(this);
-  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_PROMPT);
-  chrome::NewTab(browser());
-  histogram_tester.ExpectUniqueSample("JSDialogs.DismissalCause.Prompt",
-                                      DismissalCause::kTabHidden, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
-                       DismissalCausePromptBrowserSwitched) {
-  base::HistogramTester histogram_tester;
-  JavaScriptDialogDismissalCauseTester tester(this);
-  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_PROMPT);
-  chrome::NewEmptyWindow(browser()->profile());
-  histogram_tester.ExpectUniqueSample("JSDialogs.DismissalCause.Prompt",
-                                      DismissalCause::kBrowserSwitched, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, DismissalCausePromptTabNavigated) {
-  base::HistogramTester histogram_tester;
-  JavaScriptDialogDismissalCauseTester tester(this);
-  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_PROMPT);
-  tester.Reload();
-  histogram_tester.ExpectUniqueSample("JSDialogs.DismissalCause.Prompt",
-                                      DismissalCause::kTabNavigated, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
-                       DismissalCausePromptSubsequentDialogShown) {
-  base::HistogramTester histogram_tester;
-  JavaScriptDialogDismissalCauseTester tester(this);
-  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_PROMPT);
-  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_ALERT);
-  histogram_tester.ExpectUniqueSample("JSDialogs.DismissalCause.Prompt",
-                                      DismissalCause::kSubsequentDialogShown,
-                                      1);
-}
-
-IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, NoDismissalAlertTabHidden) {
-  base::HistogramTester histogram_tester;
-  JavaScriptDialogDismissalCauseTester tester(this);
-  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_ALERT);
-  chrome::NewTab(browser());
-  histogram_tester.ExpectTotalCount("JSDialogs.DismissalCause.Alert", 0);
 }
