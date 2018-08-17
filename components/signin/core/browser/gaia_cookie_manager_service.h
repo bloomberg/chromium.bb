@@ -306,6 +306,11 @@ class GaiaCookieManagerService : public KeyedService,
   // for the next account.  Virtual so that it can be overriden in tests.
   virtual void StartFetchingUbertoken();
 
+  // Starts the process of setting accounts in cookie. Virtual for testing
+  // purposes.
+  virtual void StartFetchingMultiLogin(
+      const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>& accounts);
+
   // Virtual for testing purposes.
   virtual void StartFetchingMergeSession();
 

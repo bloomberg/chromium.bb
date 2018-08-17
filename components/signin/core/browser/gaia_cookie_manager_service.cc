@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <queue>
+#include <set>
 
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
@@ -415,7 +416,24 @@ void GaiaCookieManagerService::SetAccountsInCookie(
 }
 
 void GaiaCookieManagerService::SetAccountsInCookieWithTokens() {
-  // TODO (valeriyas): map account_ids with tokens and call StartMultilogin...
+#ifndef NDEBUG
+  // Check that there is no duplicate accounts.
+  std::set<std::string> accounts_no_duplicates(
+      requests_.front().account_ids().begin(),
+      requests_.front().account_ids().end());
+  DCHECK_EQ(requests_.front().account_ids().size(),
+            accounts_no_duplicates.size());
+#endif
+
+  std::vector<GaiaAuthFetcher::MultiloginTokenIDPair> accounts =
+      std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>();
+  accounts.reserve(requests_.front().account_ids().size());
+  int i = 0;
+  for (const std::string& account_id : requests_.front().account_ids()) {
+    accounts.emplace_back(account_id, access_tokens_[account_id]);
+    ++i;
+  }
+  StartFetchingMultiLogin(accounts);
 }
 
 void GaiaCookieManagerService::AddAccountToCookieInternal(
@@ -868,6 +886,14 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
     uber_token_fetcher_->StartFetchingTokenWithAccessToken(account_id,
                                                            access_token_);
   }
+}
+
+void GaiaCookieManagerService::StartFetchingMultiLogin(
+    const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>& accounts) {
+  gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
+      this, GetSourceForRequest(requests_.front()), GetURLLoaderFactory());
+
+  gaia_auth_fetcher_->StartOAuthMultilogin(accounts);
 }
 
 void GaiaCookieManagerService::StartFetchingMergeSession() {

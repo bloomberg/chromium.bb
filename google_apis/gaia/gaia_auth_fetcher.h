@@ -39,6 +39,17 @@ class SharedURLLoaderFactory;
 
 class GaiaAuthFetcher {
  public:
+  struct MultiloginTokenIDPair {
+    std::string token_;
+    std::string gaia_id_;
+
+    MultiloginTokenIDPair(const std::string& gaia_id,
+                          const std::string& token) {
+      gaia_id_ = gaia_id;
+      token_ = token;
+    }
+  };
+
   // Magic string indicating that, while a second factor is still
   // needed to complete authentication, the user provided the right password.
   static const char kSecondFactor[];
@@ -165,6 +176,9 @@ class GaiaAuthFetcher {
   // the call will attempt to fetch uber auth token.
   void StartOAuthLogin(const std::string& access_token,
                        const std::string& service);
+
+  // Starts a request to get the cookie for list of accounts.
+  void StartOAuthMultilogin(const std::vector<MultiloginTokenIDPair>& accounts);
 
   // Starts a request to list the accounts in the GAIA cookie.
   void StartListAccounts();
