@@ -1522,8 +1522,15 @@ static void store_bitmask_other_info(AV1_COMMON *cm, int mi_row, int mi_col,
   const int col_start = mi_col % MI_SIZE_64X64;
   shift = get_index_shift(col_start, row_start, &index);
   if (is_horz_coding_block_border) {
-    const uint64_t top_edge_mask =
-        ((uint64_t)1 << (shift + mi_size_wide[bsize])) - ((uint64_t)1 << shift);
+    const int block_shift = shift + mi_size_wide[bsize];
+    assert(block_shift <= 64);
+    const uint64_t right_edge_shift =
+        (block_shift == 64) ? 0xffffffffffffffff : ((uint64_t)1 << block_shift);
+    const uint64_t left_edge_shift = (block_shift == 64)
+                                         ? (((uint64_t)1 << shift) - 1)
+                                         : ((uint64_t)1 << shift);
+    assert(right_edge_shift > left_edge_shift);
+    const uint64_t top_edge_mask = right_edge_shift - left_edge_shift;
     lfm->is_horz_border.bits[index] |= top_edge_mask;
   }
   if (is_vert_coding_block_border) {
