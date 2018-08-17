@@ -4995,3 +4995,8 @@ crbug.com/874703 [ Mac ] http/tests/devtools/extensions/extensions-panel.js [ Ti
 
 # This won't pass until the bug fixed.
 crbug.com/875287 fast/frames/crash-frameset-CSS-content-property.html [ Crash ]
+
+# Wake Lock api test timeouts
+crbug.com/872530 external/wpt/wake-lock/wakelock-applicability-manual.https.html [ Pass Timeout ]
+crbug.com/872530 external/wpt/wake-lock/wakelock-document-hidden.https.html [ Pass Timeout ]
+crbug.com/872535 external/wpt/wake-lock/wakelock-state-is-global.https.html [ Pass Timeout ]

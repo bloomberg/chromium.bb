@@ -48,6 +48,8 @@
     "modules/speech/SpeechSynthesis",
     "modules/speech/SpeechSynthesisUtterance",
     "modules/vr/VRDisplay",
+    "modules/wake_lock/WakeLock",
+    "modules/wake_lock/WakeLockRequest",
     "modules/webaudio/AudioContext",
     "modules/webaudio/AudioNode",
     "modules/webmidi/MIDIAccess",

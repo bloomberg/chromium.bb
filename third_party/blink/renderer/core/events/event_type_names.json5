@@ -26,6 +26,7 @@
     "activate",
     "activateinvisible",
     "active",
+    "activechange",
     "addsourcebuffer",
     "addstream",
     "addtrack",
