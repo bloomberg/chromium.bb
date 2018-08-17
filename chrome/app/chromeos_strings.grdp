@@ -178,7 +178,7 @@
     Better Together may:
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_AWM_DESCRIPTION" desc="Description of a feature that shows text messages received by the user's phone as notification on their Chromebook.">
-    Send you notifications from Android Web Messages
+    Send you notifications and default to remembering this computer for Messages
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_INSTALL_APPS_DESCRIPTION" desc="Tell the user that Better Together can install apps on their Chromebook">
     Install apps on your Chromebook
