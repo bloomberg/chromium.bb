@@ -4204,6 +4204,7 @@
     {
       name: "border-inline-start-color",
       property_methods: ["ParseSingleValue"],
+      valid_for_visited_link: true,
       direction_aware_options: {
         logical_side: "start",
         shorthand_for_physical_side: "borderColorShorthand",
@@ -4227,6 +4228,7 @@
     {
       name: "border-inline-end-color",
       property_methods: ["ParseSingleValue"],
+      valid_for_visited_link: true,
       direction_aware_options: {
         logical_side: "end",
         shorthand_for_physical_side: "borderColorShorthand",
@@ -4250,6 +4252,7 @@
     {
       name: "border-block-start-color",
       property_methods: ["ParseSingleValue"],
+      valid_for_visited_link: true,
       direction_aware_options: {
         logical_side: "before",
         shorthand_for_physical_side: "borderColorShorthand",
@@ -4273,6 +4276,7 @@
     {
       name: "border-block-end-color",
       property_methods: ["ParseSingleValue"],
+      valid_for_visited_link: true,
       direction_aware_options: {
         logical_side: "after",
         shorthand_for_physical_side: "borderColorShorthand",
