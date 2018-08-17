@@ -25,6 +25,21 @@
 
 namespace media {
 
+static bool IsFloatAudioSupported() {
+  const auto* build_info = base::android::BuildInfo::GetInstance();
+  if (build_info->sdk_int() < base::android::SDK_VERSION_LOLLIPOP)
+    return false;
+
+  // Vivo devices up until Lollipop used their own Audio Mixer which does not
+  // support float audio output. https://crbug.com/737188.
+  if (build_info->sdk_int() == base::android::SDK_VERSION_LOLLIPOP &&
+      base::EqualsCaseInsensitiveASCII(build_info->manufacturer(), "vivo")) {
+    return false;
+  }
+
+  return true;
+}
+
 OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
                                            const AudioParameters& params,
                                            SLint32 stream_type)
@@ -39,16 +54,8 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
       muted_(false),
       volume_(1.0),
       samples_per_second_(params.sample_rate()),
-      sample_format_(
-          (base::android::BuildInfo::GetInstance()->sdk_int() >=
-               base::android::SDK_VERSION_LOLLIPOP &&
-           // See http://crbug.com/737188; still shipping Lollipop in 2017, so
-           // no idea if later phones will be glitch free; thus blacklist all.
-           !base::EqualsCaseInsensitiveASCII(
-               base::android::BuildInfo::GetInstance()->manufacturer(),
-               "vivo"))
-              ? kSampleFormatF32
-              : kSampleFormatS16),
+      sample_format_(IsFloatAudioSupported() ? kSampleFormatF32
+                                             : kSampleFormatS16),
       bytes_per_frame_(params.GetBytesPerFrame(sample_format_)),
       buffer_size_bytes_(params.GetBytesPerBuffer(sample_format_)),
       performance_mode_(SL_ANDROID_PERFORMANCE_NONE),
