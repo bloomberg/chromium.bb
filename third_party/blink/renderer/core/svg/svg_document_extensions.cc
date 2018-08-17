@@ -127,11 +127,6 @@ void SVGDocumentExtensions::RemoveSVGRootWithRelativeLengthDescendents(
   relative_length_svg_roots_.erase(svg_root);
 }
 
-bool SVGDocumentExtensions::IsSVGRootWithRelativeLengthDescendents(
-    SVGSVGElement* svg_root) const {
-  return relative_length_svg_roots_.Contains(svg_root);
-}
-
 void SVGDocumentExtensions::InvalidateSVGRootsWithRelativeLengthDescendents(
     SubtreeLayoutScope* scope) {
 #if DCHECK_IS_ON()
