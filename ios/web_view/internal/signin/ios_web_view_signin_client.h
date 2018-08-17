@@ -28,8 +28,7 @@ class IOSWebViewSigninClient : public SigninClient,
       network::mojom::CookieManager* cookie_manager,
       SigninErrorController* signin_error_controller,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
-      scoped_refptr<HostContentSettingsMap> host_content_settings_map,
-      scoped_refptr<TokenWebData> token_web_data);
+      scoped_refptr<HostContentSettingsMap> host_content_settings_map);
 
   ~IOSWebViewSigninClient() override;
 
@@ -39,14 +38,11 @@ class IOSWebViewSigninClient : public SigninClient,
   // SigninClient implementation.
   std::string GetProductVersion() override;
   base::Time GetInstallDate() override;
-  scoped_refptr<TokenWebData> GetDatabase() override;
   PrefService* GetPrefs() override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network::mojom::CookieManager* GetCookieManager() override;
   void DoFinalInit() override;
-  bool CanRevokeCredentials() override;
-  std::string GetSigninScopedDeviceId() override;
   bool IsFirstRun() const override;
   bool AreSigninCookiesAllowed() override;
   void AddContentSettingsObserver(
@@ -59,14 +55,12 @@ class IOSWebViewSigninClient : public SigninClient,
       const std::string& source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       override;
+  void OnSignedOut() override;
 
   // SigninErrorController::Observer implementation.
   void OnErrorChanged() override;
 
  private:
-  // SigninClient private implementation.
-  void OnSignedOut() override;
-
   // Helper to delay callbacks until connection becomes online again.
   std::unique_ptr<WaitForNetworkCallbackHelper> network_callback_helper_;
   // The PrefService associated with this service.
@@ -81,8 +75,6 @@ class IOSWebViewSigninClient : public SigninClient,
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   // Used to add and remove content settings observers.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-  // The TokenWebData associated with this service.
-  scoped_refptr<TokenWebData> token_web_data_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSWebViewSigninClient);
 };

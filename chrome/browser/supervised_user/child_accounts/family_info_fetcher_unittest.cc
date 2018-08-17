@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
@@ -112,7 +113,8 @@ class FamilyInfoFetcherTest : public testing::Test,
                               public FamilyInfoFetcher::Consumer {
  public:
   FamilyInfoFetcherTest()
-      : fetcher_(
+      : token_service_(&pref_service_),
+        fetcher_(
             this,
             kAccountId,
             &token_service_,
@@ -165,6 +167,7 @@ class FamilyInfoFetcherTest : public testing::Test,
   }
 
   base::MessageLoop message_loop_;
+  TestingPrefServiceSimple pref_service_;
   FakeProfileOAuth2TokenService token_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   FamilyInfoFetcher fetcher_;

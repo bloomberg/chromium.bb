@@ -259,6 +259,7 @@ ProfileSyncServiceBundle::ProfileSyncServiceBundle()
                       &account_tracker_,
                       nullptr),
 #endif
+      auth_service_(&pref_service_),
       gaia_cookie_manager_service_(&auth_service_,
                                    "profile_sync_service_bundle",
                                    &signin_client_),

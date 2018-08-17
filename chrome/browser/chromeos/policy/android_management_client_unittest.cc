@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -42,7 +43,7 @@ MATCHER_P(MatchProto, expected, "matches protobuf") {
 
 class AndroidManagementClientTest : public testing::Test {
  protected:
-  AndroidManagementClientTest() {
+  AndroidManagementClientTest() : token_service_(&pref_service_) {
     android_management_request_.mutable_check_android_management_request();
     android_management_response_.mutable_check_android_management_response();
   }
@@ -63,6 +64,7 @@ class AndroidManagementClientTest : public testing::Test {
   em::DeviceManagementResponse android_management_response_;
 
   base::MessageLoop loop_;
+  TestingPrefServiceSimple pref_service_;
   MockDeviceManagementService service_;
   StrictMock<base::MockCallback<AndroidManagementClient::StatusCallback>>
       callback_observer_;

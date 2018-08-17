@@ -269,8 +269,8 @@ class AccountReconcilorTest : public ::testing::Test {
   base::MessageLoop loop;
   signin::AccountConsistencyMethod account_consistency_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  FakeProfileOAuth2TokenService token_service_;
   DiceTestSigninClient test_signin_client_;
+  FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
   FakeGaiaCookieManagerService cookie_manager_service_;
   FakeSigninManagerForTesting signin_manager_;
@@ -303,6 +303,7 @@ INSTANTIATE_TEST_CASE_P(Dice_Mirror,
 AccountReconcilorTest::AccountReconcilorTest()
     : account_consistency_(signin::AccountConsistencyMethod::kDisabled),
       test_signin_client_(&pref_service_),
+      token_service_(&pref_service_),
       cookie_manager_service_(&token_service_,
                               GaiaConstants::kChromeSource,
                               &test_signin_client_),

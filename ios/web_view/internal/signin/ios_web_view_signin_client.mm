@@ -5,6 +5,7 @@
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 
 #include "components/signin/core/browser/cookie_settings_util.h"
+#include "components/signin/core/browser/device_id_helper.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -19,8 +20,7 @@ IOSWebViewSigninClient::IOSWebViewSigninClient(
     network::mojom::CookieManager* cookie_manager,
     SigninErrorController* signin_error_controller,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
-    scoped_refptr<HostContentSettingsMap> host_content_settings_map,
-    scoped_refptr<TokenWebData> token_web_data)
+    scoped_refptr<HostContentSettingsMap> host_content_settings_map)
     : network_callback_helper_(
           std::make_unique<WaitForNetworkCallbackHelper>()),
       pref_service_(pref_service),
@@ -29,8 +29,7 @@ IOSWebViewSigninClient::IOSWebViewSigninClient(
       cookie_manager_(cookie_manager),
       signin_error_controller_(signin_error_controller),
       cookie_settings_(cookie_settings),
-      host_content_settings_map_(host_content_settings_map),
-      token_web_data_(token_web_data) {
+      host_content_settings_map_(host_content_settings_map) {
   signin_error_controller_->AddObserver(this);
 }
 
@@ -54,10 +53,6 @@ base::Time IOSWebViewSigninClient::GetInstallDate() {
   return base::Time::FromTimeT(0);
 }
 
-scoped_refptr<TokenWebData> IOSWebViewSigninClient::GetDatabase() {
-  return token_web_data_;
-}
-
 PrefService* IOSWebViewSigninClient::GetPrefs() {
   return pref_service_;
 }
@@ -76,14 +71,6 @@ network::mojom::CookieManager* IOSWebViewSigninClient::GetCookieManager() {
 }
 
 void IOSWebViewSigninClient::DoFinalInit() {}
-
-bool IOSWebViewSigninClient::CanRevokeCredentials() {
-  return true;
-}
-
-std::string IOSWebViewSigninClient::GetSigninScopedDeviceId() {
-  return GetOrCreateScopedDeviceIdPref(GetPrefs());
-}
 
 bool IOSWebViewSigninClient::IsFirstRun() const {
   return false;

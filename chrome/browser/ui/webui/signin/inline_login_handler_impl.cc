@@ -31,7 +31,7 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -716,10 +716,8 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
       AboutSigninInternalsFactory::GetForProfile(profile);
   about_signin_internals->OnAuthenticationResultReceived("Successful");
 
-  SigninClient* signin_client =
-      ChromeSigninClientFactory::GetForProfile(profile);
   std::string signin_scoped_device_id =
-      signin_client->GetSigninScopedDeviceId();
+      GetSigninScopedDeviceIdForProfile(profile);
   base::WeakPtr<InlineLoginHandlerImpl> handler_weak_ptr;
   if (params.handler)
     handler_weak_ptr = params.handler->GetWeakPtr();

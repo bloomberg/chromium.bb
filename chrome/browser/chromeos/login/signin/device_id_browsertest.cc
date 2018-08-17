@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
@@ -65,33 +65,31 @@ class DeviceIDTest : public OobeBaseTest,
     return user_manager::known_user::GetDeviceId(account_id);
   }
 
-  std::string GetDeviceIdFromSigninClient(const AccountId& account_id) {
-    return ChromeSigninClientFactory::GetForProfile(
-               ProfileHelper::Get()->GetProfileByUser(
-                   user_manager::UserManager::Get()->FindUser(account_id)))
-        ->GetSigninScopedDeviceId();
+  std::string GetDeviceIdFromProfile(const AccountId& account_id) {
+    return GetSigninScopedDeviceIdForProfile(
+        ProfileHelper::Get()->GetProfileByUser(
+            user_manager::UserManager::Get()->FindUser(account_id)));
   }
 
   std::string GetDeviceIdFromGAIA(const std::string& refresh_token) {
     return fake_gaia_->GetDeviceIdByRefreshToken(refresh_token);
   }
 
-  // Checks that user's device ID retrieved from UserManager and SigninClient
-  // are the same.
+  // Checks that user's device ID retrieved from UserManager and Profile are the
+  // same.
   // If |refresh_token| is not empty, checks that device ID associated with the
   // |refresh_token| in GAIA is the same as ID saved on device.
   void CheckDeviceIDIsConsistent(const AccountId& account_id,
                                  const std::string& refresh_token) {
-    const std::string device_id_in_signin_client =
-        GetDeviceIdFromSigninClient(account_id);
+    const std::string device_id_in_profile = GetDeviceIdFromProfile(account_id);
     const std::string device_id_in_local_state = GetDeviceId(account_id);
 
-    EXPECT_FALSE(device_id_in_signin_client.empty());
-    EXPECT_EQ(device_id_in_signin_client, device_id_in_local_state);
+    EXPECT_FALSE(device_id_in_profile.empty());
+    EXPECT_EQ(device_id_in_profile, device_id_in_local_state);
 
     if (!refresh_token.empty()) {
       const std::string device_id_in_gaia = GetDeviceIdFromGAIA(refresh_token);
-      EXPECT_EQ(device_id_in_signin_client, device_id_in_gaia);
+      EXPECT_EQ(device_id_in_profile, device_id_in_gaia);
     }
   }
 

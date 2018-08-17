@@ -50,8 +50,6 @@ void SigninManagerBase::RegisterProfilePrefs(
                                std::string());
   registry->RegisterStringPref(prefs::kGoogleServicesLastUsername,
                                std::string());
-  registry->RegisterStringPref(prefs::kGoogleServicesSigninScopedDeviceId,
-                               std::string());
   registry->RegisterStringPref(prefs::kGoogleServicesAccountId, std::string());
   registry->RegisterStringPref(prefs::kGoogleServicesUserAccountId,
                                std::string());

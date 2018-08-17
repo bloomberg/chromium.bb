@@ -26,7 +26,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -134,7 +134,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(BookmarkUndoServiceFactory::GetInstance());
   DependsOn(BookmarkSyncServiceFactory::GetInstance());
   DependsOn(browser_sync::UserEventServiceFactory::GetInstance());
-  DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(ConsentAuditorFactory::GetInstance());
   DependsOn(dom_distiller::DomDistillerServiceFactory::GetInstance());
   DependsOn(FaviconServiceFactory::GetInstance());
@@ -237,12 +236,8 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     init_params.signin_wrapper = std::make_unique<SigninManagerWrapper>(
         IdentityManagerFactory::GetForProfile(profile),
         SigninManagerFactory::GetForProfile(profile));
-    // Note: base::Unretained(signin_client) is safe because the SigninClient is
-    // guaranteed to outlive the PSS, per a DependsOn() above (and because PSS
-    // clears the callback in its Shutdown()).
-    init_params.signin_scoped_device_id_callback = base::BindRepeating(
-        &SigninClient::GetSigninScopedDeviceId,
-        base::Unretained(ChromeSigninClientFactory::GetForProfile(profile)));
+    init_params.signin_scoped_device_id_callback =
+        base::BindRepeating(&GetSigninScopedDeviceIdForProfile, profile);
     init_params.gaia_cookie_manager_service =
         GaiaCookieManagerServiceFactory::GetForProfile(profile);
 

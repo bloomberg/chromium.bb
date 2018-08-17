@@ -6,20 +6,22 @@
 
 #include <utility>
 
+#include "chrome/browser/profiles/profile.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 
-// TODO(blundell): Should these be namespaced?
 std::unique_ptr<KeyedService> BuildFakeProfileOAuth2TokenService(
     content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
   std::unique_ptr<FakeProfileOAuth2TokenService> service(
-      new FakeProfileOAuth2TokenService());
+      new FakeProfileOAuth2TokenService(profile->GetPrefs()));
   return std::move(service);
 }
 
 std::unique_ptr<KeyedService> BuildAutoIssuingFakeProfileOAuth2TokenService(
     content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
   std::unique_ptr<FakeProfileOAuth2TokenService> service(
-      new FakeProfileOAuth2TokenService());
+      new FakeProfileOAuth2TokenService(profile->GetPrefs()));
   service->set_auto_post_fetch_response_on_message_loop(true);
   return std::move(service);
 }

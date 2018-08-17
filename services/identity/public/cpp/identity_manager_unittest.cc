@@ -45,6 +45,9 @@ const char kTestEmailWithPeriod[] = "m.e@gmail.com";
 class CustomFakeProfileOAuth2TokenService
     : public FakeProfileOAuth2TokenService {
  public:
+  CustomFakeProfileOAuth2TokenService(PrefService* user_prefs)
+      : FakeProfileOAuth2TokenService(user_prefs) {}
+
   void set_on_access_token_invalidated_info(
       std::string expected_account_id_to_invalidate,
       std::set<std::string> expected_scopes_to_invalidate,
@@ -349,6 +352,7 @@ class IdentityManagerTest : public testing::Test {
  public:
   IdentityManagerTest()
       : signin_client_(&pref_service_),
+        token_service_(&pref_service_),
         gaia_cookie_manager_service_(&token_service_,
                                      "identity_manager_unittest",
                                      &signin_client_) {

@@ -15,6 +15,7 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
@@ -34,8 +35,10 @@ class MutableProfileOAuth2TokenServiceDelegate
       SigninClient* client,
       SigninErrorController* signin_error_controller,
       AccountTrackerService* account_tracker_service,
+      scoped_refptr<TokenWebData> token_web_data,
       signin::AccountConsistencyMethod account_consistency,
-      bool revoke_all_tokens_on_load = false);
+      bool revoke_all_tokens_on_load,
+      bool can_revoke_credentials);
   ~MutableProfileOAuth2TokenServiceDelegate() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -182,10 +185,6 @@ class MutableProfileOAuth2TokenServiceDelegate
                         const std::string& refresh_token,
                         const GoogleServiceAuthError& error);
 
-  // Creates a new device ID if there are no accounts, or if the current device
-  // ID is empty.
-  void RecreateDeviceIdIfNeeded();
-
   // Called at when tokens are loaded. Performs housekeeping tasks and notifies
   // the observers.
   void FinishLoadingCredentials();
@@ -221,12 +220,18 @@ class MutableProfileOAuth2TokenServiceDelegate
   SigninClient* client_;
   SigninErrorController* signin_error_controller_;
   AccountTrackerService* account_tracker_service_;
+  scoped_refptr<TokenWebData> token_web_data_;
   signin::AccountConsistencyMethod account_consistency_;
 
   // Revokes all the tokens after loading them. Secondary accounts will be
   // completely removed, and the primary account will be kept in authentication
   // error state.
   const bool revoke_all_tokens_on_load_;
+
+  // Supervised users cannot revoke credentials.
+  // TODO(droger): remove this when supervised users are no longer supported on
+  // any platform.
+  const bool can_revoke_credentials_;
 
   DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenServiceDelegate);
 };

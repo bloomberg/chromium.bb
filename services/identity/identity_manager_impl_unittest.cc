@@ -91,6 +91,7 @@ class IdentityManagerImplTest : public service_manager::test::ServiceTest {
   IdentityManagerImplTest()
       : ServiceTest("identity_unittests"),
         signin_client_(&pref_service_),
+        token_service_(&pref_service_),
 #if defined(OS_CHROMEOS)
         signin_manager_(&signin_client_, &account_tracker_) {
 #else
@@ -201,8 +202,8 @@ class IdentityManagerImplTest : public service_manager::test::ServiceTest {
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   AccountTrackerService account_tracker_;
   TestSigninClient signin_client_;
-  SigninManagerForTest signin_manager_;
   FakeProfileOAuth2TokenService token_service_;
+  SigninManagerForTest signin_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerImplTest);
 };

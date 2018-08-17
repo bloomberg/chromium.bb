@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -38,15 +37,6 @@ class TestSigninClient : public SigninClient {
   // NOTE: This should be changed to return a properly-initalized PrefService
   // once there is a unit test that requires it.
   PrefService* GetPrefs() override;
-
-  // Returns a pointer to a loaded database.
-  scoped_refptr<TokenWebData> GetDatabase() override;
-
-  // Returns true.
-  bool CanRevokeCredentials() override;
-
-  // Returns a dummy device ID.
-  std::string GetSigninScopedDeviceId() override;
 
   // Does nothing.
   void OnSignedOut() override;
@@ -106,16 +96,11 @@ class TestSigninClient : public SigninClient {
       override;
   void PreGaiaLogout(base::OnceClosure callback) override;
 
-  // Loads the token database.
-  void LoadTokenDatabase();
-
  private:
-  base::ScopedTempDir temp_dir_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 
-  scoped_refptr<TokenWebData> database_;
   PrefService* pref_service_;
   bool are_signin_cookies_allowed_;
   bool network_calls_delayed_;
