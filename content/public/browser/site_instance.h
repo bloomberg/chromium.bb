@@ -170,7 +170,9 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
                             const GURL& dest_url);
 
   // Returns the site for the given URL, which includes only the scheme and
-  // registered domain.  Returns an empty GURL if the URL has no host.
+  // registered domain.  Returns an empty GURL if the URL has no host. Prior to
+  // determining the site, |url| is resolved to an effective URL via
+  // ContentBrowserClient::GetEffectiveURL().
   static GURL GetSiteForURL(BrowserContext* context, const GURL& url);
 
  protected:
