@@ -14,8 +14,6 @@
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/mojom/sensor_provider.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/device_orientation/web_device_motion_listener.h"
-#include "third_party/blink/public/platform/modules/device_orientation/web_device_orientation_listener.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -23,7 +21,6 @@ namespace blink {
 
 class LocalFrame;
 
-template <typename ListenerType>
 class DeviceSensorEventPump {
  public:
   // Default rate for firing events.
@@ -55,10 +52,7 @@ class DeviceSensorEventPump {
     SUSPENDED
   };
 
-  // The default nullptr for listener is temporary until listener is eliminated
-  // TODO(crbug.com/861902)
-  virtual void Start(LocalFrame* frame,
-                     blink::WebPlatformEventListener* listener = nullptr) {
+  virtual void Start(LocalFrame* frame) {
     DVLOG(2) << "requested start";
 
     if (state_ != PumpState::STOPPED)
@@ -69,7 +63,6 @@ class DeviceSensorEventPump {
     state_ = PumpState::PENDING_START;
 
     DCHECK(!is_observing_);
-    listener_ = static_cast<ListenerType*>(listener);
     is_observing_ = true;
 
     SendStartMessage(frame);
@@ -88,7 +81,6 @@ class DeviceSensorEventPump {
       timer_.Stop();
 
     DCHECK(is_observing_);
-    listener_ = nullptr;
     is_observing_ = false;
 
     SendStopMessage();
@@ -135,8 +127,6 @@ class DeviceSensorEventPump {
   // Even though the TimerBase* parameter is not used, it is required by
   // TaskRunnerTimer class
   virtual void FireEvent(TimerBase*) = 0;
-
-  ListenerType* listener() { return listener_; }
 
   struct SensorEntry : public device::mojom::blink::SensorClient {
     SensorEntry(DeviceSensorEventPump* pump,
@@ -336,7 +326,6 @@ class DeviceSensorEventPump {
 
   PumpState state_;
   bool is_observing_ = false;
-  ListenerType* listener_ = nullptr;
   TaskRunnerTimer<DeviceSensorEventPump> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSensorEventPump);

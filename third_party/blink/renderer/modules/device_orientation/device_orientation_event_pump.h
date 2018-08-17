@@ -15,7 +15,7 @@ namespace blink {
 
 class MODULES_EXPORT DeviceOrientationEventPump
     : public GarbageCollectedFinalized<DeviceOrientationEventPump>,
-      public DeviceSensorEventPump<WebDeviceOrientationListener>,
+      public DeviceSensorEventPump,
       public PlatformEventDispatcher {
   USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationEventPump);
 
