@@ -161,6 +161,13 @@ class CONTENT_EXPORT ManifestParser {
   // Returns the parsed GURL if any, or an empty GURL if the parsing failed.
   GURL ParseShareTargetURLTemplate(const base::DictionaryValue& share_target);
 
+  // Parses the 'params' field of a Share Target, as defined in:
+  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
+  // Returns a parsed Manifest::ShareTargetParams, not all fields need to be
+  // populated.
+  blink::Manifest::ShareTargetParams ParseShareTargetParams(
+      const base::DictionaryValue& share_target_params);
+
   // Parses the 'share_target' field of a Manifest, as defined in:
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
   // Returns the parsed Web Share target. The returned Share Target is null if
