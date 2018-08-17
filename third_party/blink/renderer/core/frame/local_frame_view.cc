@@ -2774,17 +2774,7 @@ static void PaintGraphicsLayerRecursively(GraphicsLayer* layer) {
   layer->PaintRecursively();
 
 #if DCHECK_IS_ON()
-  if (VLOG_IS_ON(2)) {
-    DEFINE_STATIC_LOCAL(String, s_previous_tree, ());
-    LayerTreeFlags flags = VLOG_IS_ON(3) ? 0xffffffff : kOutputAsLayerTree;
-    String new_tree = GraphicsLayerTreeAsTextForTesting(layer, flags);
-    if (new_tree != s_previous_tree) {
-      VLOG(2) << "After GraphicsLayer::PaintRecursively()\n"
-              << "GraphicsLayer tree:\n"
-              << new_tree.Utf8().data();
-      s_previous_tree = new_tree;
-    }
-  }
+  VerboseLogGraphicsLayerTree(layer);
 #endif
 }
 

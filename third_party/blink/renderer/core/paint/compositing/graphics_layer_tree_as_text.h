@@ -21,6 +21,9 @@ std::unique_ptr<JSONObject> GraphicsLayerTreeAsJSON(const GraphicsLayer*,
 String CORE_EXPORT GraphicsLayerTreeAsTextForTesting(const GraphicsLayer*,
                                                      LayerTreeFlags);
 
+#if DCHECK_IS_ON()
+void CORE_EXPORT VerboseLogGraphicsLayerTree(const GraphicsLayer*);
+#endif
 }  // namespace blink
 
 #if DCHECK_IS_ON()
