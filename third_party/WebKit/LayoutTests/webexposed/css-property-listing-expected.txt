@@ -449,8 +449,12 @@ All changes to this list should go through Blink's feature review process: http:
         border-top-style
         border-top-width
     border-block
-        border-block-end
-        border-block-start
+        border-block-end-color
+        border-block-end-style
+        border-block-end-width
+        border-block-start-color
+        border-block-start-style
+        border-block-start-width
     border-block-color
         border-block-end-color
         border-block-start-color
@@ -484,8 +488,12 @@ All changes to this list should go through Blink's feature review process: http:
         border-image-source
         border-image-width
     border-inline
-        border-inline-end
-        border-inline-start
+        border-inline-end-color
+        border-inline-end-style
+        border-inline-end-width
+        border-inline-start-color
+        border-inline-start-style
+        border-inline-start-width
     border-inline-color
         border-inline-end-color
         border-inline-start-color

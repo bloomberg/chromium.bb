@@ -35,5 +35,23 @@ bool BorderBlock::ParseShorthand(
   return range.AtEnd();
 }
 
+const CSSValue* BorderBlock::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) const {
+  const CSSValue* value_start =
+      GetCSSPropertyBorderBlockStart().CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+  const CSSValue* value_end =
+      GetCSSPropertyBorderBlockEnd().CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+  if (!DataEquivalent(value_start, value_end)) {
+    return nullptr;
+  }
+  return value_start;
+}
+
 }  // namespace CSSShorthand
 }  // namespace blink
