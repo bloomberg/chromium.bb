@@ -7305,6 +7305,9 @@ interface TrustedTypePolicy
     attribute @@toStringTag
     getter name
     method constructor
+    method createHTML
+    method createScriptURL
+    method createURL
 interface TrustedTypePolicyFactory
     attribute @@toStringTag
     method constructor

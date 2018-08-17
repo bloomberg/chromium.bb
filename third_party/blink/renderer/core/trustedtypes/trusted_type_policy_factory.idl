@@ -8,5 +8,5 @@
     Exposed=(Window),
     RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedTypePolicyFactory {
-    [CallWith=ScriptState] Promise<TrustedTypePolicy> createPolicy(DOMString policyName);
+    [CallWith=ScriptState] Promise<TrustedTypePolicy> createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions);
 };

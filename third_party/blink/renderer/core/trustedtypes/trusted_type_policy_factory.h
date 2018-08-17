@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
@@ -24,7 +25,9 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
     return new TrustedTypePolicyFactory(frame);
   }
 
-  static ScriptPromise createPolicy(ScriptState*, const String&);
+  static ScriptPromise createPolicy(ScriptState*,
+                                    const String&,
+                                    const TrustedTypePolicyOptions&);
 
   void Trace(blink::Visitor*) override;
 
