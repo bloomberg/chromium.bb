@@ -7,19 +7,15 @@
 
 from __future__ import print_function
 
-import httplib
 import json
 import os
 import re
-import socket
 import urllib
-import urllib2
 
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import alerts
 from chromite.lib import cros_logging as logging
-from chromite.lib import osutils
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
