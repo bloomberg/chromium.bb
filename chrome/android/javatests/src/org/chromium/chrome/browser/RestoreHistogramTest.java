@@ -18,6 +18,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -97,6 +98,7 @@ public class RestoreHistogramTest {
      * @throws ProcessInitException
      */
     @Test
+    @DisabledTest(message = "Test is flaky. crbug.com/875372")
     @SmallTest
     public void testWritingHistogramAtStartup() throws InterruptedException, ProcessInitException {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
