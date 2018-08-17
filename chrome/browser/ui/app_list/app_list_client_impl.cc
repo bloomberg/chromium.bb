@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/app_sync_ui_state_watcher.h"
+#include "chrome/browser/ui/app_list/search/app_result.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
@@ -89,8 +90,16 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
   if (!search_controller_)
     return;
   ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
-  if (result)
+  if (result) {
     search_controller_->OpenResult(result, event_flags);
+
+    // Send training signal to search controller.
+    if (result->result_type() == ash::SearchResultType::kInstalledApp ||
+        result->result_type() == ash::SearchResultType::kInternalApp) {
+      search_controller_->Train(
+          static_cast<app_list::AppResult*>(result)->app_id());
+    }
+  }
 }
 
 void AppListClientImpl::InvokeSearchResultAction(const std::string& result_id,
@@ -153,6 +162,9 @@ void AppListClientImpl::ActivateItem(const std::string& id, int event_flags) {
   if (!model_updater_)
     return;
   model_updater_->ActivateChromeItem(id, event_flags);
+
+  // Send training signal to search controller.
+  search_controller_->Train(id);
 }
 
 void AppListClientImpl::GetContextMenuModel(

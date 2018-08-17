@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/app_list/search/crostini_app_result.h"
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -60,9 +61,6 @@
 using extensions::ExtensionRegistry;
 
 namespace {
-
-// The size of each step unlaunched apps should increase their relevance by.
-constexpr double kUnlaunchedAppRelevanceStepSize = 0.0001;
 
 // The minimum capacity we reserve in the Apps container which will be filled
 // with extensions and ARC apps, to avoid successive reallocation.
@@ -97,6 +95,18 @@ void MaybeAddResult(app_list::SearchProvider::Results* results,
   // list.
   seen_or_filtered_apps->insert(duplicate_app_ids.begin(),
                                 duplicate_app_ids.end());
+}
+
+// Linearly maps |score| to the range [min, max].
+// |score| is assumed to be within [0.0, 1.0]; if it's greater than 1.0
+// then max is returned; if it's less than 0.0, then min is returned.
+float ReRange(const float score, const float min, const float max) {
+  if (score >= 1.0f)
+    return max;
+  if (score <= 0.0f)
+    return min;
+
+  return min + score * (max - min);
 }
 
 }  // namespace
@@ -479,6 +489,7 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
       list_controller_(list_controller),
       model_updater_(model_updater),
       clock_(clock),
+      ranker_(std::make_unique<AppSearchResultRanker>(profile)),
       update_results_factory_(this) {
   data_sources_.emplace_back(
       std::make_unique<ExtensionDataSource>(profile, this));
@@ -505,6 +516,10 @@ void AppSearchProvider::Start(const base::string16& query) {
   UpdateResults();
 }
 
+void AppSearchProvider::Train(const std::string& id) {
+  ranker_->Train(id);
+}
+
 void AppSearchProvider::RefreshApps() {
   apps_.clear();
   apps_.reserve(kMinimumReservedAppsContainerCapacity);
@@ -518,6 +533,7 @@ void AppSearchProvider::UpdateRecommendedResults(
   std::set<std::string> seen_or_filtered_apps;
   const uint16_t apps_size = apps_.size();
   new_results.reserve(apps_size);
+  const auto& ranker_scores = ranker_->Rank();
 
   for (auto& app : apps_) {
     // Skip apps which cannot be shown as a suggested app.
@@ -536,28 +552,33 @@ void AppSearchProvider::UpdateRecommendedResults(
         app->data_source()->CreateResult(app->id(), list_controller_, true);
     result->SetTitle(title);
 
-    // Use the app list order to tiebreak apps that have never been
-    // launched. The apps that have been installed or launched recently
-    // should be more relevant than other apps.
-    // If it is |kInternalAppIdContinueReading|, always show it as the first
-    // result.
+    // Set app->relevance based on the following criteria.
+    const auto find_in_ranker = ranker_scores.find(app->id());
+    const auto find_in_app_list = id_to_app_list_index.find(app->id());
     const base::Time time = app->GetLastActivityTime();
-    if (time.is_null()) {
-      double relevance = 1.0;
-      if (app->id() != kInternalAppIdContinueReading) {
-        const auto& it = id_to_app_list_index.find(app->id());
-        // If it's in a folder, it won't be in |id_to_app_list_index|.
-        // Rank those as if they are at the end of the list.
-        const size_t app_list_index = (it == id_to_app_list_index.end())
-                                          ? apps_size
-                                          : std::min(apps_size, it->second);
-        relevance =
-            kUnlaunchedAppRelevanceStepSize * (apps_size - app_list_index);
-      }
-      result->set_relevance(relevance);
-    } else {
+
+    if (app->id() == kInternalAppIdContinueReading) {
+      // Case 1: if it's |kInternalAppIdContinueReading|, set relevance as 1.0
+      // (always show it as the first).
+      result->set_relevance(1.0);
+    } else if (find_in_ranker != ranker_scores.end()) {
+      // Case 2: if it's recommended by |ranker_|, set relevance as a score
+      // in [0.67, 0.99].
+      result->set_relevance(ReRange(find_in_ranker->second, 0.67, 0.99));
+    } else if (!time.is_null()) {
+      // Case 3: if it has last activity time or install time, set the relevance
+      // in [0.34, 0.66] based on the time.
       result->UpdateFromLastLaunchedOrInstalledTime(clock_->Now(), time);
+      result->set_relevance(ReRange(result->relevance(), 0.34, 0.66));
+    } else if (find_in_app_list != id_to_app_list_index.end()) {
+      // Case 4: if it's in the app_list_index, set the relevance in [0.1, 0.33]
+      result->set_relevance(
+          ReRange(1.0f / (1.0f + find_in_app_list->second), 0.1, 0.33));
+    } else {
+      // Case 5: otherwise set the relevance as 0.0f;
+      result->set_relevance(0.0f);
     }
+
     MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
   }
 

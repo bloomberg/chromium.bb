@@ -109,4 +109,9 @@ ChromeSearchResult* SearchController::GetResultByTitleForTest(
   return nullptr;
 }
 
+void SearchController::Train(const std::string& id) {
+  for (const auto& provider : providers_)
+    provider->Train(id);
+}
+
 }  // namespace app_list

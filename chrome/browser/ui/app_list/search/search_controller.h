@@ -48,6 +48,9 @@ class SearchController {
   ChromeSearchResult* FindSearchResult(const std::string& result_id);
   ChromeSearchResult* GetResultByTitleForTest(const std::string& title);
 
+  // Sends training signal to each |providers_|
+  void Train(const std::string& id);
+
  private:
   // Invoked when the search results are changed.
   void OnResultsChanged();

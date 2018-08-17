@@ -11,9 +11,11 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_constants.h"
@@ -139,6 +142,9 @@ class AppSearchProviderTest : public AppListTestBase {
 
   const SearchProvider::Results& results() { return app_search_->results(); }
   ArcAppTest& arc_test() { return arc_test_; }
+
+  // Train the |app_search| provider with id.
+  void Train(const std::string& id) { app_search_->Train(id); }
 
  private:
   base::SimpleTestClock clock_;
@@ -290,6 +296,53 @@ TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
   prefs->SetLastLaunchTime(kHostedAppId, base::Time::Now());
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(0));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(0));
+  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+            RunQuery(""));
+}
+
+TEST_F(AppSearchProviderTest, FetchRecommendationsFromRanker) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitWithFeatures(
+      {features::kEnableSearchResultRankerTrain,
+       features::kEnableSearchResultRankerInfer},
+      {});
+  CreateSearch();
+
+  extensions::ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs::Get(profile_.get());
+
+  prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(20));
+  prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
+  prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
+  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+            RunQuery(""));
+
+  Train(kPackagedApp2Id);
+  Train(kPackagedApp2Id);
+  Train(kPackagedApp1Id);
+  EXPECT_EQ("Packaged App 2,Packaged App 1,Hosted App,Settings,Camera",
+            RunQuery(""));
+}
+
+TEST_F(AppSearchProviderTest, RankerIsDisabledWithFlag) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitWithFeatures(
+      {features::kEnableSearchResultRankerTrain},
+      {features::kEnableSearchResultRankerInfer});
+  CreateSearch();
+
+  extensions::ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs::Get(profile_.get());
+
+  prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(20));
+  prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
+  prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
+  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+            RunQuery(""));
+
+  Train(kPackagedApp2Id);
+  Train(kPackagedApp2Id);
+  Train(kPackagedApp1Id);
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
             RunQuery(""));
 }
