@@ -56,10 +56,10 @@ class FeedUserClassifierTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FeedUserClassifierTest);
 };
 
-TEST_F(FeedUserClassifierTest, ShouldBeActiveNtpUserInitially) {
+TEST_F(FeedUserClassifierTest, ShouldBeActiveSuggestionsViewerInitially) {
   UserClassifier* user_classifier = CreateUserClassifier();
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveNtpUser));
+              Eq(UserClassifier::UserClass::kActiveSuggestionsViewer));
 }
 
 TEST_F(FeedUserClassifierTest,
@@ -69,7 +69,7 @@ TEST_F(FeedUserClassifierTest,
   // After one click still only an active user.
   user_classifier->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveNtpUser));
+              Eq(UserClassifier::UserClass::kActiveSuggestionsViewer));
 
   // After a few more clicks, become an active consumer.
   for (int i = 0; i < 5; i++) {
@@ -95,7 +95,7 @@ TEST_F(FeedUserClassifierTest,
   test_clock()->Advance(base::TimeDelta::FromHours(1));
   user_classifier->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveNtpUser));
+              Eq(UserClassifier::UserClass::kActiveSuggestionsViewer));
 
   // One more click to become an active consumer.
   test_clock()->Advance(base::TimeDelta::FromHours(1));
@@ -104,38 +104,39 @@ TEST_F(FeedUserClassifierTest,
               Eq(UserClassifier::UserClass::kActiveSuggestionsConsumer));
 }
 
-TEST_F(FeedUserClassifierTest, ShouldBecomeRareNtpUserByNoActivity) {
+TEST_F(FeedUserClassifierTest,
+       ShouldBecomeRareSuggestionsViewerUserByNoActivity) {
   UserClassifier* user_classifier = CreateUserClassifier();
 
   // After two days of waiting still an active user.
   test_clock()->Advance(base::TimeDelta::FromDays(2));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveNtpUser));
+              Eq(UserClassifier::UserClass::kActiveSuggestionsViewer));
 
   // Two more days to become a rare user.
   test_clock()->Advance(base::TimeDelta::FromDays(2));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kRareNtpUser));
+              Eq(UserClassifier::UserClass::kRareSuggestionsViewer));
 }
 
 TEST_F(FeedUserClassifierTest,
-       ShouldBecomeRareNtpUserByNoActivityWithDecreasedParam) {
+       ShouldBecomeRareSuggestionsViewerByNoActivityWithDecreasedParam) {
   // Decrease the param to one half.
   variations::testing::VariationParamsManager variation_params(
       kInterestFeedContentSuggestions.name,
-      {{"user_classifier_rare_user_opens_ntp_at_most_once_per_hours", "48"}},
+      {{"user_classifier_rare_user_views_at_most_once_per_hours", "48"}},
       {kInterestFeedContentSuggestions.name});
   UserClassifier* user_classifier = CreateUserClassifier();
 
   // After one days of waiting still an active user.
   test_clock()->Advance(base::TimeDelta::FromDays(1));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveNtpUser));
+              Eq(UserClassifier::UserClass::kActiveSuggestionsViewer));
 
   // One more day to become a rare user.
   test_clock()->Advance(base::TimeDelta::FromDays(1));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kRareNtpUser));
+              Eq(UserClassifier::UserClass::kRareSuggestionsViewer));
 }
 
 class FeedUserClassifierEventTest
@@ -300,7 +301,7 @@ INSTANTIATE_TEST_CASE_P(
        // distinguish the only instance we make here).
     FeedUserClassifierEventTest,
     testing::Values(
-        std::make_pair(UserClassifier::Event::kNtpOpened,
+        std::make_pair(UserClassifier::Event::kSuggestionsViewed,
                        "NewTabPage.UserClassifier.AverageHoursToOpenNTP"),
         std::make_pair(
             UserClassifier::Event::kSuggestionsUsed,

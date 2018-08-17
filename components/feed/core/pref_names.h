@@ -23,14 +23,15 @@ extern const char kThrottlerRequestsDay[];
 
 // The pref name for the discounted average number of browsing sessions per hour
 // that involve opening a new NTP.
-extern const char kUserClassifierAverageNTPOpenedPerHour[];
+extern const char kUserClassifierAverageSuggestionsViwedPerHour[];
 // The pref name for the discounted average number of browsing sessions per hour
 // that involve using content suggestions (i.e. opening one or clicking on the
 // "More" button).
 extern const char kUserClassifierAverageSuggestionsUsedPerHour[];
 
-// The pref name for the last time a new NTP was opened.
-extern const char kUserClassifierLastTimeToOpenNTP[];
+// The pref name for the last time a surface was shown that displayed
+// suggestions to the user.
+extern const char kUserClassifierLastTimeToViewSuggestions[];
 // The pref name for the last time content suggestions were used by the user.
 extern const char kUserClassifierLastTimeToUseSuggestions[];
 

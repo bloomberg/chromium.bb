@@ -45,11 +45,12 @@ const char kMinHoursParam[] = "user_classifier_min_hours";
 const double kActiveConsumerClicksAtLeastOncePerHours = 96;
 const char kActiveConsumerClicksAtLeastOncePerHoursParam[] =
     "user_classifier_active_consumer_clicks_at_least_once_per_hours";
-const double kRareUserOpensNTPAtMostOncePerHours = 96;
-const char kRareUserOpensNTPAtMostOncePerHoursParam[] =
-    "user_classifier_rare_user_opens_ntp_at_most_once_per_hours";
+const double kRareUserViewsAtMostOncePerHours = 96;
+const char kRareUserViewsAtMostOncePerHoursParam[] =
+    "user_classifier_rare_user_views_at_most_once_per_hours";
 
-// Histograms for logging the estimated average hours to next event.
+// Histograms for logging the estimated average hours to next event. During
+// launch these must match legacy histogram names.
 const char kHistogramAverageHoursToOpenNTP[] =
     "NewTabPage.UserClassifier.AverageHoursToOpenNTP";
 const char kHistogramAverageHoursToUseSuggestions[] =
@@ -57,18 +58,19 @@ const char kHistogramAverageHoursToUseSuggestions[] =
 
 // List of all Events used for iteration.
 const UserClassifier::Event kEvents[] = {
-    UserClassifier::Event::kNtpOpened, UserClassifier::Event::kSuggestionsUsed};
+    UserClassifier::Event::kSuggestionsViewed,
+    UserClassifier::Event::kSuggestionsUsed};
 
 // Arrays of pref names, indexed by Event's int value.
-const char* kRateKeys[] = {prefs::kUserClassifierAverageNTPOpenedPerHour,
+const char* kRateKeys[] = {prefs::kUserClassifierAverageSuggestionsViwedPerHour,
                            prefs::kUserClassifierAverageSuggestionsUsedPerHour};
-const char* kLastTimeKeys[] = {prefs::kUserClassifierLastTimeToOpenNTP,
+const char* kLastTimeKeys[] = {prefs::kUserClassifierLastTimeToViewSuggestions,
                                prefs::kUserClassifierLastTimeToUseSuggestions};
 
 // Default lengths of the intervals for new users for the events.
 const double kInitialHoursBetweenEvents[] = {24, 120};
 const char* kInitialHoursBetweenEventsParams[] = {
-    "user_classifier_default_interval_ntp_opened",
+    "user_classifier_default_interval_suggestions_viewed",
     "user_classifier_default_interval_suggestions_used"};
 
 // This verifies that each of the arrays has exactly the same number of values
@@ -185,11 +187,11 @@ UserClassifier::UserClassifier(PrefService* pref_service, base::Clock* clock)
               kInterestFeedContentSuggestions,
               kActiveConsumerClicksAtLeastOncePerHoursParam,
               kActiveConsumerClicksAtLeastOncePerHours)),
-      rare_user_opens_ntp_at_most_once_per_hours_(
+      rare_viewer_opens_surface_at_most_once_per_hours_(
           variations::GetVariationParamByFeatureAsDouble(
               kInterestFeedContentSuggestions,
-              kRareUserOpensNTPAtMostOncePerHoursParam,
-              kRareUserOpensNTPAtMostOncePerHours)) {
+              kRareUserViewsAtMostOncePerHoursParam,
+              kRareUserViewsAtMostOncePerHours)) {
   // The pref_service_ can be null in tests.
   if (!pref_service_) {
     return;
@@ -233,7 +235,7 @@ void UserClassifier::OnEvent(Event event) {
   // We use kMaxHours as the max value below as the maximum value for the
   // histograms must be constant.
   switch (event) {
-    case Event::kNtpOpened:
+    case Event::kSuggestionsViewed:
       UMA_HISTOGRAM_CUSTOM_COUNTS(kHistogramAverageHoursToOpenNTP, avg, 1,
                                   kMaxHours, 50);
       break;
@@ -253,12 +255,12 @@ double UserClassifier::GetEstimatedAvgTime(Event event) const {
 UserClassifier::UserClass UserClassifier::GetUserClass() const {
   // The pref_service_ can be null in tests.
   if (!pref_service_) {
-    return UserClass::kActiveNtpUser;
+    return UserClass::kActiveSuggestionsViewer;
   }
 
-  if (GetEstimatedAvgTime(Event::kNtpOpened) >=
-      rare_user_opens_ntp_at_most_once_per_hours_) {
-    return UserClass::kRareNtpUser;
+  if (GetEstimatedAvgTime(Event::kSuggestionsViewed) >=
+      rare_viewer_opens_surface_at_most_once_per_hours_) {
+    return UserClass::kRareSuggestionsViewer;
   }
 
   if (GetEstimatedAvgTime(Event::kSuggestionsUsed) <=
@@ -266,17 +268,17 @@ UserClassifier::UserClass UserClassifier::GetUserClass() const {
     return UserClass::kActiveSuggestionsConsumer;
   }
 
-  return UserClass::kActiveNtpUser;
+  return UserClass::kActiveSuggestionsViewer;
 }
 
 std::string UserClassifier::GetUserClassDescriptionForDebugging() const {
   switch (GetUserClass()) {
-    case UserClass::kRareNtpUser:
-      return "Rare user of the NTP";
-    case UserClass::kActiveNtpUser:
-      return "Active user of the NTP";
+    case UserClass::kRareSuggestionsViewer:
+      return "Rare viewer of Feed articles";
+    case UserClass::kActiveSuggestionsViewer:
+      return "Active viewer of Feed articles";
     case UserClass::kActiveSuggestionsConsumer:
-      return "Active consumer of NTP articles";
+      return "Active consumer of Feed articles";
   }
   NOTREACHED();
   return std::string();

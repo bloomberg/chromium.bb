@@ -30,7 +30,8 @@ class RefreshThrottlerTest : public testing::Test {
         {kInterestFeedContentSuggestions.name});
 
     throttler_ = std::make_unique<RefreshThrottler>(
-        UserClassifier::UserClass::kActiveNtpUser, &test_prefs_, &test_clock_);
+        UserClassifier::UserClass::kActiveSuggestionsViewer, &test_prefs_,
+        &test_clock_);
   }
 
  protected:

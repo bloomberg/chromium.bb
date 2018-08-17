@@ -47,7 +47,7 @@ const base::FeatureParam<std::string> kDisableTriggerTypes{
 // default value.
 ParamPair LookupParam(UserClass user_class, TriggerType trigger) {
   switch (user_class) {
-    case UserClass::kRareNtpUser:
+    case UserClass::kRareSuggestionsViewer:
       switch (trigger) {
         case TriggerType::kNtpShown:
           return {"ntp_shown_hours_rare_ntp_user", 4.0};
@@ -56,7 +56,7 @@ ParamPair LookupParam(UserClass user_class, TriggerType trigger) {
         case TriggerType::kFixedTimer:
           return {"fixed_timer_hours_rare_ntp_user", 96.0};
       }
-    case UserClass::kActiveNtpUser:
+    case UserClass::kActiveSuggestionsViewer:
       switch (trigger) {
         case TriggerType::kNtpShown:
           return {"ntp_shown_hours_active_ntp_user", 4.0};
@@ -119,9 +119,9 @@ void TryRun(base::OnceClosure closure) {
 // entries in histogram suffix "UserClasses".
 std::string UserClassToHistogramSuffix(UserClassifier::UserClass user_class) {
   switch (user_class) {
-    case UserClassifier::UserClass::kRareNtpUser:
+    case UserClassifier::UserClass::kRareSuggestionsViewer:
       return "RareNTPUser";
-    case UserClassifier::UserClass::kActiveNtpUser:
+    case UserClassifier::UserClass::kActiveSuggestionsViewer:
       return "ActiveNTPUser";
     case UserClassifier::UserClass::kActiveSuggestionsConsumer:
       return "ActiveSuggestionsConsumer";
@@ -159,14 +159,14 @@ FeedSchedulerHost::FeedSchedulerHost(PrefService* profile_prefs,
     eula_accepted_notifier_->Init(this);
   }
 
-  throttlers_.emplace(
-      UserClassifier::UserClass::kRareNtpUser,
-      std::make_unique<RefreshThrottler>(
-          UserClassifier::UserClass::kRareNtpUser, profile_prefs_, clock_));
-  throttlers_.emplace(
-      UserClassifier::UserClass::kActiveNtpUser,
-      std::make_unique<RefreshThrottler>(
-          UserClassifier::UserClass::kActiveNtpUser, profile_prefs_, clock_));
+  throttlers_.emplace(UserClassifier::UserClass::kRareSuggestionsViewer,
+                      std::make_unique<RefreshThrottler>(
+                          UserClassifier::UserClass::kRareSuggestionsViewer,
+                          profile_prefs_, clock_));
+  throttlers_.emplace(UserClassifier::UserClass::kActiveSuggestionsViewer,
+                      std::make_unique<RefreshThrottler>(
+                          UserClassifier::UserClass::kActiveSuggestionsViewer,
+                          profile_prefs_, clock_));
   throttlers_.emplace(UserClassifier::UserClass::kActiveSuggestionsConsumer,
                       std::make_unique<RefreshThrottler>(
                           UserClassifier::UserClass::kActiveSuggestionsConsumer,
@@ -243,7 +243,7 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
     }
   }
 
-  user_classifier_.OnEvent(UserClassifier::Event::kNtpOpened);
+  OnSuggestionsShown();
   DVLOG(2) << "Specifying NativeRequestBehavior of "
            << static_cast<int>(behavior);
   UMA_HISTOGRAM_ENUMERATION("Feed.Scheduler.RequestBehavior", behavior);
@@ -301,6 +301,10 @@ void FeedSchedulerHost::OnTaskReschedule() {
 
 void FeedSchedulerHost::OnSuggestionConsumed() {
   user_classifier_.OnEvent(UserClassifier::Event::kSuggestionsUsed);
+}
+
+void FeedSchedulerHost::OnSuggestionsShown() {
+  user_classifier_.OnEvent(UserClassifier::Event::kSuggestionsViewed);
 }
 
 void FeedSchedulerHost::OnHistoryCleared() {
