@@ -4,18 +4,15 @@
 # found in the LICENSE file.
 """Script to check validity of StoryExpectations."""
 
-import optparse
 import argparse
 import json
 import os
 
+from core import benchmark_utils
 from core import benchmark_finders
 from core import path_util
 path_util.AddTelemetryToPath()
 path_util.AddAndroidPylibToPath()
-
-
-from telemetry.internal.browser import browser_options
 
 
 CLUSTER_TELEMETRY_DIR = os.path.join(
@@ -33,19 +30,7 @@ def validate_story_names(benchmarks, raw_expectations_data):
       continue
     b = benchmark()
     b.AugmentExpectationsWithParser(raw_expectations_data)
-    options = browser_options.BrowserFinderOptions()
-
-    # Add default values for any extra commandline options
-    # provided by the benchmark.
-    parser = optparse.OptionParser()
-    before, _ = parser.parse_args([])
-    benchmark.AddBenchmarkCommandLineArgs(parser)
-    after, _ = parser.parse_args([])
-    for extra_option in dir(after):
-        if extra_option not in dir(before):
-            setattr(options, extra_option, getattr(after, extra_option))
-
-    story_set = b.CreateStorySet(options)
+    story_set = benchmark_utils.GetBenchmarkStorySet(b)
     failed_stories = b.GetBrokenExpectations(story_set)
     assert not failed_stories, 'Incorrect story names: %s' % str(failed_stories)
 

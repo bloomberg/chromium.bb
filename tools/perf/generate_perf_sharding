@@ -12,32 +12,12 @@ devices we shard to.
 Run -h to see available commands.
 """
 
-import optparse
 import sys
 
+from core import benchmark_utils
 from core import sharding_map_generator
 from core import perf_data_generator
 
-from telemetry.internal.browser import browser_options
-
-
-def _get_stories_for_benchmark(b):
-    story_list = []
-    benchmark = b()
-    options = browser_options.BrowserFinderOptions()
-    # Add default values for any extra commandline options
-    # provided by the benchmark.
-    parser = optparse.OptionParser()
-    before, _ = parser.parse_args([])
-    benchmark.AddBenchmarkCommandLineArgs(parser)
-    after, _ = parser.parse_args([])
-    for extra_option in dir(after):
-      if extra_option not in dir(before):
-        setattr(options, extra_option, getattr(after, extra_option))
-    for story in benchmark.CreateStorySet(options).stories:
-      if story.name not in story_list:
-        story_list.append(story.name)
-    return story_list
 
 
 def _include_benchmark(name, shorlist):
@@ -64,7 +44,7 @@ if __name__ == '__main__':
       continue
     benchmarks_data[b.Name()] = {
         'repeat':  b().options.get('pageset_repeat', 1),
-        'stories': _get_stories_for_benchmark(b)
+        'stories': benchmark_utils.GetStoriesForbenchmark(b)
     }
 
   sys.exit(sharding_map_generator.main(options, benchmarks_data))
