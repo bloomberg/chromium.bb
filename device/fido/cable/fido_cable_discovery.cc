@@ -27,42 +27,20 @@ namespace device {
 
 namespace {
 
-#if defined(OS_MACOSX)
-
-// Convert byte array into GUID formatted string as defined by RFC 4122.
-// As we are converting 128 bit UUID, |bytes| must be have length of 16.
-// https://tools.ietf.org/html/rfc4122
-std::string ConvertBytesToUuid(base::span<const uint8_t, 16> bytes) {
-  uint64_t most_significant_bytes = 0;
-  for (size_t i = 0; i < sizeof(uint64_t); i++) {
-    most_significant_bytes |= base::strict_cast<uint64_t>(bytes[i])
-                              << 8 * (7 - i);
-  }
-
-  uint64_t least_significant_bytes = 0;
-  for (size_t i = 0; i < sizeof(uint64_t); i++) {
-    least_significant_bytes |= base::strict_cast<uint64_t>(bytes[i + 8])
-                               << 8 * (7 - i);
-  }
-
-  return base::StringPrintf(
-      "%08x-%04x-%04x-%04x-%012llx",
-      static_cast<unsigned int>(most_significant_bytes >> 32),
-      static_cast<unsigned int>((most_significant_bytes >> 16) & 0x0000ffff),
-      static_cast<unsigned int>(most_significant_bytes & 0x0000ffff),
-      static_cast<unsigned int>(least_significant_bytes >> 48),
-      least_significant_bytes & 0x0000ffff'ffffffffULL);
+const BluetoothUUID& CableAdvertisementUUID128() {
+  static const BluetoothUUID service_uuid(kCableAdvertisementUUID128);
+  return service_uuid;
 }
 
-#endif
-
-const BluetoothUUID& CableAdvertisementUUID() {
-  static const BluetoothUUID service_uuid(kCableAdvertisementUUID);
+const BluetoothUUID& CableAdvertisementUUID16() {
+  static const BluetoothUUID service_uuid(kCableAdvertisementUUID16);
   return service_uuid;
 }
 
 bool IsCableDevice(const BluetoothDevice* device) {
-  return base::ContainsKey(device->GetServiceData(), CableAdvertisementUUID());
+  return base::ContainsKey(device->GetServiceData(),
+                           CableAdvertisementUUID128()) ||
+         base::ContainsKey(device->GetUUIDs(), CableAdvertisementUUID16());
 }
 
 // Construct advertisement data with different formats depending on client's
@@ -79,8 +57,8 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
 
 #if defined(OS_MACOSX)
   auto list = std::make_unique<BluetoothAdvertisement::UUIDList>();
-  list->emplace_back(kCableAdvertisementUUID);
-  list->emplace_back(ConvertBytesToUuid(client_eid));
+  list->emplace_back(kCableAdvertisementUUID16);
+  list->emplace_back(fido_parsing_utils::ConvertBytesToUuid(client_eid));
   advertisement_data->set_service_uuids(std::move(list));
 
 #elif defined(OS_WIN)
@@ -109,7 +87,8 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
   service_data_value[1] = version_number;
   std::copy(client_eid.begin(), client_eid.end(),
             service_data_value.begin() + 2);
-  service_data->emplace(kCableAdvertisementUUID, std::move(service_data_value));
+  service_data->emplace(kCableAdvertisementUUID128,
+                        std::move(service_data_value));
   advertisement_data->set_service_data(std::move(service_data));
 #endif
 
@@ -313,18 +292,35 @@ void FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage(
   if (!handshake_response)
     return;
 
-  if (!handshake_handler->ValidateAuthenticatorHandshakeMessage(
-          *handshake_response))
-    return;
-
-  AddDevice(std::move(cable_device));
+  if (handshake_handler->ValidateAuthenticatorHandshakeMessage(
+          *handshake_response)) {
+    DVLOG(2) << "Authenticator handshake validated";
+    AddDevice(std::move(cable_device));
+  } else {
+    DVLOG(2) << "Authenticator handshake invalid";
+  }
 }
 
 const FidoCableDiscovery::CableDiscoveryData*
 FidoCableDiscovery::GetFoundCableDiscoveryData(
     const BluetoothDevice* device) const {
+  const auto* discovery_data =
+      GetFoundCableDiscoveryDataFromServiceData(device);
+  if (discovery_data != nullptr) {
+    return discovery_data;
+  }
+
+  return GetFoundCableDiscoveryDataFromServiceUUIDs(device);
+}
+
+const FidoCableDiscovery::CableDiscoveryData*
+FidoCableDiscovery::GetFoundCableDiscoveryDataFromServiceData(
+    const BluetoothDevice* device) const {
   const auto* service_data =
-      device->GetServiceDataForUUID(CableAdvertisementUUID());
+      device->GetServiceDataForUUID(CableAdvertisementUUID128());
+  if (!service_data) {
+    return nullptr;
+  }
   DCHECK(service_data);
 
   // Received service data from authenticator must have a flag that signals that
@@ -347,6 +343,29 @@ FidoCableDiscovery::GetFoundCableDiscoveryData(
   return discovery_data_iterator != discovery_data_.end()
              ? &(*discovery_data_iterator)
              : nullptr;
+}
+
+const FidoCableDiscovery::CableDiscoveryData*
+FidoCableDiscovery::GetFoundCableDiscoveryDataFromServiceUUIDs(
+    const BluetoothDevice* device) const {
+  const auto service_uuids = device->GetUUIDs();
+  for (const auto& uuid : service_uuids) {
+    if (uuid == CableAdvertisementUUID128() ||
+        uuid == CableAdvertisementUUID16()) {
+      continue;
+    }
+    auto discovery_data_iterator = std::find_if(
+        discovery_data_.begin(), discovery_data_.end(),
+        [&uuid](const auto& data) {
+          std::string received_eid_string =
+              fido_parsing_utils::ConvertBytesToUuid(data.authenticator_eid);
+          return uuid == BluetoothUUID(received_eid_string);
+        });
+    if (discovery_data_iterator != discovery_data_.end()) {
+      return &(*discovery_data_iterator);
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace device

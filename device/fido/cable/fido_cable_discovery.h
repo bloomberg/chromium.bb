@@ -112,6 +112,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
 
   const CableDiscoveryData* GetFoundCableDiscoveryData(
       const BluetoothDevice* device) const;
+  const CableDiscoveryData* GetFoundCableDiscoveryDataFromServiceData(
+      const BluetoothDevice* device) const;
+  const CableDiscoveryData* GetFoundCableDiscoveryDataFromServiceUUIDs(
+      const BluetoothDevice* device) const;
 
   std::vector<CableDiscoveryData> discovery_data_;
   size_t advertisement_success_counter_ = 0;
