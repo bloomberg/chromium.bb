@@ -204,13 +204,6 @@ void MediaCodecVideoDecoder::Initialize(
     ExtractSpsAndPps(config.extra_data(), &csd0_, &csd1_);
 #endif
 
-  // Use the asynchronous API if we can.
-  if (first_init && device_info_->IsAsyncApiSupported()) {
-    on_buffers_available_cb_ = BindToCurrentLoop(
-        base::BindRepeating(&MediaCodecVideoDecoder::StartTimerOrPumpCodec,
-                            weak_factory_.GetWeakPtr()));
-  }
-
   // We only support setting CDM at first initialization. Even if the initial
   // config is clear, we'll still try to set CDM since we may switch to an
   // encrypted config later.
@@ -444,10 +437,13 @@ void MediaCodecVideoDecoder::CreateCodec() {
   config->initial_expected_coded_size = decoder_config_.coded_size();
   config->surface_bundle = target_surface_bundle_;
 
-  // TODO(dalecurtis): We should be able to bind the callback directly instead
-  // of storing it as a class member, but there's speculation that CreateCodec()
-  // is getting called on the wrong thread. https://crbug.com/873094.
-  config->on_buffers_available_cb = on_buffers_available_cb_;
+  // Use the asynchronous API if we can.
+  if (device_info_->IsAsyncApiSupported()) {
+    using_async_api_ = true;
+    config->on_buffers_available_cb = BindToCurrentLoop(
+        base::BindRepeating(&MediaCodecVideoDecoder::StartTimerOrPumpCodec,
+                            weak_factory_.GetWeakPtr()));
+  }
 
   // Note that this might be the same surface bundle that we've been using, if
   // we're reinitializing the codec without changing surfaces.  That's fine.
@@ -469,7 +465,7 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
 
   codec_ = std::make_unique<CodecWrapper>(
       CodecSurfacePair(std::move(codec), std::move(surface_bundle)),
-      base::BindRepeating(&OutputBufferReleased, !!on_buffers_available_cb_,
+      base::BindRepeating(&OutputBufferReleased, using_async_api_,
                           BindToCurrentLoop(base::BindRepeating(
                               &MediaCodecVideoDecoder::StartTimerOrPumpCodec,
                               weak_factory_.GetWeakPtr()))));
@@ -536,7 +532,7 @@ void MediaCodecVideoDecoder::PumpCodec(bool force_start_timer) {
       did_work = true;
   } while (did_input || did_output);
 
-  if (on_buffers_available_cb_)
+  if (using_async_api_)
     return;
 
   if (did_work || force_start_timer)
@@ -550,7 +546,7 @@ void MediaCodecVideoDecoder::StartTimerOrPumpCodec() {
   if (state_ != State::kRunning)
     return;
 
-  if (on_buffers_available_cb_) {
+  if (using_async_api_) {
     PumpCodec(false);
     return;
   }
@@ -572,7 +568,7 @@ void MediaCodecVideoDecoder::StartTimerOrPumpCodec() {
 
 void MediaCodecVideoDecoder::StopTimerIfIdle() {
   DVLOG(4) << __func__;
-  DCHECK(!on_buffers_available_cb_);
+  DCHECK(!using_async_api_);
 
   // Stop the timer if we've been idle for one second. Chosen arbitrarily.
   const auto kTimeout = base::TimeDelta::FromSeconds(1);
