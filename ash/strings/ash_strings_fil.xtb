@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">I-unlock gamit ang fingerprint</translation>
 <translation id="1919743966458266018">Napalitan na ang shortcut para sa pagbubukas sa task manager. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Iki-clear ang iyong session kapag nag-sign out ka. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Mga awtomatikong pag-click</translation>
 <translation id="1928739107511554905">Para makuha ang update, gamitin ang touchscreen para i-restart ang iyong Chromebook nang nakakabit ang keyboard.</translation>
 <translation id="1942830294380034169">Button na overflow</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">Tanggapin</translation>
 <translation id="4924411785043111640">I-restart at i-reset</translation>
 <translation id="4961318399572185831">I-cast ang screen</translation>
-<translation id="5069971504769299223">Maaaring masubaybayan ng manager ng device ang iyong aktibidad.</translation>
 <translation id="5083553833479578423">Mag-unlock ng higit pang feature ng Assistant.</translation>
 <translation id="5136175204352732067">Ibang keyboard ang nakakonekta</translation>
 <translation id="5168181903108465623">I-cast ang mga available na device</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">Maghanap+Shift+K</translation>
 <translation id="6650933572246256093">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
-<translation id="6687966522050791666">Pumili ng wika at input</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Nangangailangan ng mahalagang update ang iyong naaalis na keyboard</translation>
 <translation id="6700713906295497288">Button ng menu ng IME</translation>

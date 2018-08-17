@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Користите синхронизацију и све услуге</translation>
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="1323735185997015385">Избриши</translation>
-<translation id="132390688737681464">Чувај и уноси адресе</translation>
 <translation id="132683371494960526">Додирните двапут да бисте променили надређени директоријум.</translation>
 <translation id="1340643665687018190">Затвори мени</translation>
 <translation id="1375321115329958930">Сачуване лозинке</translation>
@@ -120,7 +119,6 @@
 <translation id="2870560284913253234">Сајт</translation>
 <translation id="2871695793448672541">Сакривена лозинка</translation>
 <translation id="2898963176829412617">Нови директоријум...</translation>
-<translation id="2903493209154104877">Адресе</translation>
 <translation id="2909437209446960244">Недавне картице</translation>
 <translation id="2916171785467530738">Аутоматски довршавај претраге и URL-ове</translation>
 <translation id="291754862089661335">Поставите QR или бар-код у овај оквир</translation>
@@ -244,7 +242,6 @@
 <translation id="5062321486222145940">Инсталирај Google диск</translation>
 <translation id="5083464117946352670">Није могуће утврдити величину датотеке.</translation>
 <translation id="5094827893301452931">Твит је довршен.</translation>
-<translation id="5123982333065001601">Чувај и уноси кредитне картице</translation>
 <translation id="5173593619615111996">Затвори све картице без архивирања</translation>
 <translation id="5181140330217080051">Преузимање</translation>
 <translation id="5186185447130319458">Приватно</translation>
@@ -252,7 +249,6 @@
 <translation id="5197255632782567636">Интернет</translation>
 <translation id="5228579091201413441">Омогући синхронизацију</translation>
 <translation id="5244474230056479698">Синхронизује се са <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Отворите картицу да бисте приватно прегледали веб.</translation>
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5317780077021120954">Сачувај</translation>
 <translation id="5327248766486351172">Назив</translation>
@@ -336,7 +332,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6464071786529933911">Отвори у новој картици без архивирања</translation>
 <translation id="6482629121755362506">Број избрисаних ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Претходни сат</translation>
-<translation id="6570040839871198836">Аутом. попуњ. образаца</translation>
 <translation id="6656103420185847513">Измена директоријума</translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="667999046851023355">Документ</translation>
@@ -426,7 +421,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8205564605687841303">Откажи</translation>
 <translation id="8225985093977202398">Кеширане слике и датотеке</translation>
 <translation id="8261506727792406068">Избриши</translation>
-<translation id="8272426682713568063">Кредитне картице</translation>
 <translation id="8281781826761538115">Подразумевано – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Затвори све</translation>
 <translation id="8381750437846184350">Контролишите како Google користи историју прегледања за персонализацију Претраге, огласа и других Google услуга</translation>

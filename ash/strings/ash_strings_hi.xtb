@@ -54,7 +54,6 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर मिरर कर रहा है</translation>
 <translation id="1885785240814121742">फ़िंगरप्रिंट से अनलॉक करें</translation>
 <translation id="1919743966458266018">काम के प्रबंधक को खोलने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
-<translation id="1923508880661655826">जब आप साइन आउट करेंगे तो आपका सत्र हटा दिया जाएगा. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">स्वत: क्‍लिक</translation>
 <translation id="1928739107511554905">अपडेट पाने के लिए, अटैच किए गए कीबोर्ड से अपने Chromebook को रीस्टार्ट करने के लिए टचस्क्रीन का इस्तेमाल करें.</translation>
 <translation id="1942830294380034169">ओवरफ़्लो बटन</translation>
@@ -225,7 +224,6 @@
 <translation id="4918086044614829423">स्वीकार करें</translation>
 <translation id="4924411785043111640">रीस्टार्ट करें और रीसेट करें</translation>
 <translation id="4961318399572185831">स्‍क्रीन कास्‍ट करें</translation>
-<translation id="5069971504769299223">डिवाइस का एडमिन आपकी गतिविधि मॉनीटर कर सकता है.</translation>
 <translation id="5083553833479578423">Assistant की और भी सुविधाओं के बारे में जानें.</translation>
 <translation id="5136175204352732067">अलग कीबोर्ड कनेक्ट किया गया</translation>
 <translation id="5168181903108465623">कास्ट डिवाइस उपलब्ध हैं</translation>
@@ -315,7 +313,6 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया डिवाइस पर यह पासकुंजी डालें: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
-<translation id="6687966522050791666">भाषा और इनपुट चुनें</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">आपके अलग किए जाने लायक कीबोर्ड में एक महत्वपूर्ण अपडेट ज़रूरी है</translation>
 <translation id="6700713906295497288">IME मेनू बटन</translation>

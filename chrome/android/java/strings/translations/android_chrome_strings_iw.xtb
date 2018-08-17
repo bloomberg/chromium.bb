@@ -81,7 +81,7 @@
 <translation id="1566400915470565838">כדי להשתמש ב-<ph name="APP_NAME" /> יש להתחבר לאינטרנט.</translation>
 <translation id="1569387923882100876">מכשיר מחובר</translation>
 <translation id="1571304935088121812">העתק שם משתמש</translation>
-<translation id="1576370611341449972">‏הורדה מתבצעת רק בחיבור Wi-Fi</translation>
+<translation id="1576370611341449972">‏הורדה רק בחיבור Wi-Fi</translation>
 <translation id="1612196535745283361">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. הגישה למיקום <ph name="BEGIN_LINK" />כבויה במכשיר הזה<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">‏הפעלת סינכרון, התאמה אישית ושירותים אחרים של Google</translation>
 <translation id="1620510694547887537">מצלמה</translation>
@@ -143,7 +143,6 @@
 <translation id="2021896219286479412">פקדי אתר במסך מלא</translation>
 <translation id="2038563949887743358">הפעל את 'בקש אתר עבור מחשב שולחני'</translation>
 <translation id="2045104531052923016">‏‎<ph name="GIGABYTES" /> GB ליישומים אחרים</translation>
-<translation id="2055670718290744343">האצת החיפוש</translation>
 <translation id="2063713494490388661">הקש כדי לחפש</translation>
 <translation id="2079545284768500474">בטל פעולה</translation>
 <translation id="2082238445998314030">תוצאה <ph name="RESULT_NUMBER" /> מתוך <ph name="TOTAL_RESULTS" /></translation>
@@ -643,7 +642,6 @@
 <translation id="6111020039983847643">נתונים שנצרכו</translation>
 <translation id="6112702117600201073">מרענן את הדף</translation>
 <translation id="6127379762771434464">הפריט הוסר</translation>
-<translation id="6138140242378429169">הפוך את הדף לידידותי לנייד</translation>
 <translation id="6140912465461743537">ארץ/אזור</translation>
 <translation id="6154478581116148741">יש להפעיל נעילת מסך ב'הגדרות' כדי לייצא את הסיסמאות מהמכשיר הזה</translation>
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>

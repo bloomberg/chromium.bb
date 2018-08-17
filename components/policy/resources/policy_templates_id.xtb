@@ -301,7 +301,7 @@
 
       Jika setelan ini diaktifkan atau tidak memiliki nilai, pengguna dapat mengontrol fitur IsiOtomatis untuk alamat di UI.</translation>
 <translation id="1960840544413786116">Apakah sertifikat yang dikeluarkan oleh sumber tepercaya setempat yang tidak menyertakan ekstensi subjectAlternativeName diizinkan atau tidak</translation>
-<translation id="1962273523772270623">Mengizinkan pengumpulan log peristiwa WebRTC dari layanan Google</translation>
+<translation id="1962273523772270623">Mengizinkan pengumpulan log aktivitas WebRTC dari layanan Google</translation>
 <translation id="1964634611280150550">Mode penyamaran dinonaktifkan</translation>
 <translation id="1964802606569741174">Kebijakan ini tidak memengaruhi aplikasi YouTube Android. Jika Mode Perlindungan di YouTube harus diterapkan, pemasangan aplikasi YouTube Android harus dilarang.</translation>
 <translation id="1969212217917526199">Menggantikan kebijakan pada versi Debug untuk host akses jarak jauh.
@@ -1837,7 +1837,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="637934607141010488">Melaporkan daftar pengguna perangkat yang saat ini masuk.
 
       Jika kebijakan disetel ke false, pengguna tidak akan dilaporkan.</translation>
-<translation id="6392973646875039351">Mengaktifkan fitur IsiOtomatis <ph name="PRODUCT_NAME" /> dan memungkinkan pengguna melengkapi formulir web secara otomatis menggunakan informasi yang tersimpan sebelumnya seperti alamat atau informasi kartu kredit. Jika Anda menonaktifkan setelan ini, IsiOtomatis tidak akan dapat diakses pengguna. Jika Anda mengaktifkan setelan ini atau tidak menyetel nilai, IsiOtomatis akan tetap berada di bawah kontrol pengguna. Cara ini akan memungkinkan pengguna mengonfigurasi profil IsiOtomatis dan mengaktifkan atau menonaktifkan IsiOtomatis sesuai keinginan mereka.</translation>
 <translation id="6394350458541421998">Kebijakan ini tidak lagi digunakan sejak <ph name="PRODUCT_OS_NAME" /> versi 29. Gunakan kebijakan PresentationScreenDimDelayScale sebagai gantinya.</translation>
 <translation id="6401669939808766804">Keluarkan pengguna</translation>
 <translation id="6426205278746959912">Anda tidak dapat memaksa aplikasi Android untuk menggunakan proxy. Bagian setelan proxy disediakan untuk aplikasi Android, yang dapat dipilih untuk dipatuhi secara sukarela:
@@ -2075,11 +2074,11 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="69525503251220566">Parameter menyediakan fitur telusuri pakai gambar untuk penyedia penelusuran default</translation>
 <translation id="6956272732789158625">Jangan izinkan situs apa pun menggunakan pembuatan kunci</translation>
 <translation id="6982028490425791294">
-      Jika kebijakan disetel ke true, <ph name="PRODUCT_NAME" /> diizinkan untuk mengumpulkan log peristiwa WebRTCdari layanan Google (mis., Google Meet), dan mengupload log tersebut ke Google.
+      Jika kebijakan disetel ke true, <ph name="PRODUCT_NAME" /> diizinkan untuk mengumpulkan log aktivitas WebRTC dari layanan Google (mis., Google Meet), dan mengupload log tersebut ke Google.
 
-      Jika kebijakan disetel ke false, atau tidak disetel, <ph name="PRODUCT_NAME" /> tidak boleh mengumpulkan atau mengupload log tersebut.
+      Jika kebijakan disetel ke false, atau tidak disetel, <ph name="PRODUCT_NAME" /> mungkin tidak mengumpulkan atau mengupload log tersebut.
 
-      Log ini berisi informasi seperti waktu dan ukuran paket RTP yang dikirim dan diterima, masukan tentang kemacetan di jaringan, dan metadata tentang waktu dan kualitas frame audio dan video. Informasi ini bermanfaat saat melakukan debug masalah pada panggilan audio atau video di Chrome, misalnya masalah perkiraan bandwidth, dll. Log tidak berisi konten audio atau video dari panggilan.
+      Log ini berisi informasi seperti waktu dan ukuran paket RTP yang dikirim dan diterima, masukan tentang kemacetan di jaringan, dan metadata tentang waktu dan kualitas frame audio dan video. Informasi ini bermanfaat saat melakukan debug masalah pada panggilan audio atau video di Chrome, misalnya masalah perkiraan bandwidth, dan lainnya. Log tidak berisi konten audio atau video dari panggilan telepon.
 
       Pengumpulan data ini hanya dapat dipicu oleh layanan web Google, seperti Google Hangouts atau Google Meet.
 

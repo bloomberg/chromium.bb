@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">משקף אל <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">ביטול נעילה עם טביעת אצבע</translation>
 <translation id="1919743966458266018">מקש הקיצור לפתיחת מנהל המשימות השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">הפעילות שלך תימחק אחרי היציאה. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">לחיצות אוטומטיות</translation>
 <translation id="1928739107511554905">‏כדי להתקין את העדכון, יש להשתמש במסך המגע ולהפעיל מחדש את ה-Chromebook כשהמקלדת מחוברת.</translation>
 <translation id="1942830294380034169">לחצן גלישה</translation>
@@ -224,8 +223,7 @@
 <translation id="4918086044614829423">אשר</translation>
 <translation id="4924411785043111640">הפעלה מחדש ואתחול</translation>
 <translation id="4961318399572185831">העברת מסך</translation>
-<translation id="5069971504769299223">מנהל המכשיר עשוי לעקוב אחרי הפעילות שלך.</translation>
-<translation id="5083553833479578423">‏יש לך אפשרות להפעיל תכונות Assistant נוספות.</translation>
+<translation id="5083553833479578423">‏אפשר להפעיל תכונות Assistant נוספות.</translation>
 <translation id="5136175204352732067">חוברה מקלדת אחרת</translation>
 <translation id="5168181903108465623">מכשירי העברה זמינים</translation>
 <translation id="5207949376430453814">הדגשה של סמן הטקסט</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">‏חיפוש+Shift‏+K</translation>
 <translation id="6650933572246256093">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לביצוע התאמה. הזן את מפתח הסיסמה הבא במכשיר הזה: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">סיסמה</translation>
-<translation id="6687966522050791666">בחירת שפה וקלט</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">המקלדת הניתנת לניתוק זקוקה לעדכון קריטי</translation>
 <translation id="6700713906295497288">‏לחצן תפריט IME</translation>

@@ -1912,11 +1912,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="637934607141010488">Iulat ang listahan ng mga user ng device na kamakailang nag-log in.
 
       Kung nakatakda sa false ang patakaran, hindi iuulat ang mga user.</translation>
-<translation id="6392973646875039351">Pinapagana ang AutoFill na tampok ng <ph name="PRODUCT_NAME" /> at binibigyang-daan ang mga user na mag-autocomplete ng mga form ng web gamit ang mga nakaraang inimbak na impormasyon gaya ng address o impormasyon ng credit card.
-
-      Kung hindi mo pinagana ang setting na ito, magiging hindi naa-access sa mga user ang AutoFill.
-
-      Kung pinagana mo ang setting na ito o hindi nagtakda ng halaga, mananatiling nasa ilalim ng kontrol ng user ang AutoFill. Bibigyang-daan sila nitong mag-configure ng mga profile ng AutoFill at i-on o i-off ang AutoFill ayon sa sarili nilang paghuhusga.</translation>
 <translation id="6394350458541421998">Hindi na ginagamit ang patakarang ito simula sa <ph name="PRODUCT_OS_NAME" /> bersyon 29. Sa halip, pakigamit ang patakaran ng PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">I-log out ang user</translation>
 <translation id="6426205278746959912">Hindi mo maaaring pwersahin ang mga Android app na gumamit ng proxy. Available para sa mga Android app ang isang subset ng mga setting ng proxy, na maaari nilang kusang-loob na piliing tanggapin:

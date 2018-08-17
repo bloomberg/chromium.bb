@@ -99,6 +99,7 @@
 <translation id="1559572115229829303">&lt;p&gt;A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.&lt;/p&gt;
 
       &lt;p&gt;Please adjust the date and time from the &lt;strong&gt;General&lt;/strong&gt; section of the &lt;strong&gt;Settings&lt;/strong&gt; app.&lt;/p&gt;</translation>
+<translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Something went wrong while displaying this web page.</translation>
 <translation id="1592005682883173041">Local Data Access</translation>
 <translation id="1594030484168838125">Choose</translation>
@@ -138,6 +139,7 @@
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
 <translation id="1826516787628120939">Checking</translation>
 <translation id="1834321415901700177">This site contains harmful programs</translation>
+<translation id="1839551713262164453">Validation of policy values has failed with errors</translation>
 <translation id="1840414022444569775">This card number is already used</translation>
 <translation id="1842969606798536927">Pay</translation>
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
@@ -208,6 +210,7 @@
 <translation id="2356070529366658676">Ask</translation>
 <translation id="2359629602545592467">Multiple</translation>
 <translation id="2359808026110333948">Continue</translation>
+<translation id="2360873523816792727">To use your cards on all devices, turn on sync.</translation>
 <translation id="2365563543831475020">Crash report captured on <ph name="CRASH_TIME" /> was not uploaded</translation>
 <translation id="2367567093518048410">Level</translation>
 <translation id="2378238891085281592">You’ve gone private</translation>
@@ -351,11 +354,13 @@
           <ph name="LIST_ITEM" />Cookies and site data
           <ph name="LIST_ITEM" />Information entered in forms
         <ph name="END_LIST" /></translation>
+<translation id="3366477098757335611">View cards</translation>
 <translation id="3369192424181595722">Clock error</translation>
 <translation id="337363190475750230">Deprovisioned</translation>
 <translation id="3377188786107721145">Policy parse error</translation>
 <translation id="3380365263193509176">Unknown error</translation>
 <translation id="3380864720620200369">Client ID:</translation>
+<translation id="3387261909427947069">Payment Methods</translation>
 <translation id="3391030046425686457">Delivery address</translation>
 <translation id="3395827396354264108">Pickup method</translation>
 <translation id="3399952811970034796">Delivery Address</translation>
@@ -452,6 +457,7 @@
 <translation id="4110652170750985508">Review your payment</translation>
 <translation id="4116663294526079822">Always allow on this site</translation>
 <translation id="4117700440116928470">Policy scope is not supported.</translation>
+<translation id="4119109454650683048">Please check the info below and fix any errors, if necessary</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 other}other{# others}}</translation>
 <translation id="4130226655945681476">Checking the network cables, modem and router</translation>
 <translation id="413544239732274901">Learn more</translation>
@@ -557,6 +563,7 @@
 <translation id="4854362297993841467">This delivery method isn’t available. Try a different method.</translation>
 <translation id="4858792381671956233">You asked your parents if it's OK to visit this site</translation>
 <translation id="4876305945144899064">No username</translation>
+<translation id="4879491255372875719">Automatic (default)</translation>
 <translation id="4880827082731008257">Search history</translation>
 <translation id="4881695831933465202">Open</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -622,6 +629,7 @@
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Show all saved passwords</translation>
 <translation id="5287240709317226393">Show cookies</translation>
+<translation id="5288108484102287882">Validation of policy values has raised warnings</translation>
 <translation id="5299298092464848405">Error parsing policy</translation>
 <translation id="5308380583665731573">Connect</translation>
 <translation id="5308689395849655368">Crash reporting is disabled.</translation>
@@ -634,6 +642,7 @@
 <translation id="536296301121032821">Failed to store policy settings</translation>
 <translation id="5371425731340848620">Update card</translation>
 <translation id="5377026284221673050">'Your clock is behind' or 'Your clock is ahead' or "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5384855140246857529">To get your cards on all devices, sign in and turn on sync.</translation>
 <translation id="5386426401304769735">The certificate chain for this site contains a certificate signed using SHA-1.</translation>
 <translation id="5387961145478138773">Get quick access to your favourite Google Apps</translation>
 <translation id="540969355065856584">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not valid at this time. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
@@ -709,6 +718,7 @@
 <translation id="5893752035575986141">Credit cards are accepted.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synced)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in use}other{# in use}}</translation>
+<translation id="5922853866070715753">Almost finished</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="5967592137238574583">Edit Contact Info</translation>
 <translation id="5967867314010545767">Remove from history</translation>
@@ -729,6 +739,7 @@
 <translation id="6051221802930200923">You cannot visit <ph name="SITE" /> right now because the website uses certificate pinning. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="6059925163896151826">USB devices</translation>
 <translation id="6071091556643036997">The policy type is invalid.</translation>
+<translation id="6078024795140153212">{NUM_CARDS,plural, =1{This card will be saved to your Google account for faster checkout across devices.}other{These cards will be saved to your Google account for faster checkout across devices.}}</translation>
 <translation id="6080696365213338172">You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN" /> can be intercepted by your administrator.</translation>
 <translation id="610911394827799129">Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{None}=1{1 password (synced)}other{# passwords (synced)}}</translation>
@@ -831,6 +842,7 @@
 <translation id="6965978654500191972">Device</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Both fixed proxy servers and a .pac script URL are specified.</translation>
+<translation id="6979440798594660689">Mute (default)</translation>
 <translation id="6984479912851154518">Leaving private mode to pay via an external application. Continue?</translation>
 <translation id="6989763994942163495">+ Show advanced settings</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -851,6 +863,7 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}other{<ph name="PAYMENT_METHOD_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}}</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}other{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}}</translation>
+<translation id="7179323680825933600">Save and fill payment methods</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7182878459783632708">No policies set</translation>
 <translation id="7186367841673660872">This page has been translated from<ph name="ORIGINAL_LANGUAGE" />to<ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -862,6 +875,9 @@
 <translation id="7220786058474068424">Processing</translation>
 <translation id="724691107663265825">The site ahead contains malware</translation>
 <translation id="724975217298816891">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /> to update your card details. Once you've confirmed, your card details will be shared with this site.</translation>
+<translation id="7251437084390964440">The network configuration doesn't comply to the ONC standard. Parts of the configuration may not be imported.
+Additional details:
+<ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your computer's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
 <translation id="7260504762447901703">Revoke access</translation>
 <translation id="7271803869921933038">Accepted Prepaid Cards</translation>
@@ -1039,6 +1055,9 @@
 <translation id="8398259832188219207">Crash report uploaded on <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Crashes (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">You must enter the same passphrase twice.</translation>
+<translation id="8416694386774425977">The network configuration is invalid and couldn't be imported.
+Additional details:
+<ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433057134996913067">This will sign you out of most websites.</translation>
@@ -1070,13 +1089,16 @@
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8728672262656704056">You’ve gone incognito</translation>
 <translation id="8730621377337864115">Done</translation>
+<translation id="8733831205558190772">All your cards in one place</translation>
 <translation id="8738058698779197622">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; could not be found. Diagnosing the problem.</translation>
 <translation id="874846938927089722">Accepted Credit and Prepaid Cards</translation>
 <translation id="8759274551635299824">This card has expired</translation>
 <translation id="8761567432415473239">Google Safe Browsing recently <ph name="BEGIN_LINK" />found harmful programs<ph name="END_LINK" /> on <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB device</translation>
+<translation id="8768895707659403558">To use your cards on all your devices, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Redo delete</translation>
+<translation id="8790803786526555470">{NUM_CARDS,plural, =1{This card has been added to your Google account. You can now use it from any signed-in device.}other{These cards have been added to your Google account. You can now use them from any signed-in device.}}</translation>
 <translation id="8792621596287649091">You could lose access to your <ph name="ORG_NAME" /> account or experience identity theft. Chromium recommends changing your password now.</translation>
 <translation id="8800988563907321413">Your nearby suggestions appear here</translation>
 <translation id="8820817407110198400">Bookmarks</translation>

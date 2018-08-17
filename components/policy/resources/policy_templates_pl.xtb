@@ -1830,7 +1830,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="637934607141010488">Zgłasza listę użytkowników urządzenia, którzy niedawno się zalogowali.
 
       Jeśli ta zasada ma wartość Fałsz, użytkownicy nie są zgłaszani.</translation>
-<translation id="6392973646875039351">Włącza funkcję autouzupełniania w <ph name="PRODUCT_NAME" /> i umożliwia użytkownikom automatyczne wypełnianie formularzy internetowych za pomocą zapisanych wcześniej informacji, takich jak np. adres czy dane karty kredytowej. Jeśli wyłączysz to ustawienie, autouzupełnianie będzie niedostępne dla użytkowników. Jeśli ustawienie jest włączone lub nieskonfigurowane, użytkownik zachowuje kontrolę nad autouzupełnianiem. Może wówczas konfigurować profile autouzupełniania oraz włączać i wyłączać tę funkcję według własnego uznania.</translation>
 <translation id="6394350458541421998">Ta zasada została wycofana w <ph name="PRODUCT_OS_NAME" /> w wersji 29. Zamiast niej użyj zasady PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Wyloguj użytkownika</translation>
 <translation id="6426205278746959912">Nie można wymusić używania serwera proxy przez aplikacje na Androida. Mają one dostęp do niektórych jego ustawień i mogą uwzględniać je dobrowolnie:

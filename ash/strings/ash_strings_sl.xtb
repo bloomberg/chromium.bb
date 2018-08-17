@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Zrcaljenje na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Odklepanje s prstnim odtisom</translation>
 <translation id="1919743966458266018">Bližnjica za odpiranje upravitelja opravil je spremenjena. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Seja bo počiščena, ko se odjavite. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Samodejni kliki</translation>
 <translation id="1928739107511554905">Če želite prejeti posodobitev, uporabite zaslon na dotik, da znova zaženete Chromebook s priklopljeno tipkovnico.</translation>
 <translation id="1942830294380034169">Gumb za meni z dodatnimi elementi</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">Sprejmi</translation>
 <translation id="4924411785043111640">Znova zaženi in ponastavi</translation>
 <translation id="4961318399572185831">Predvajanje zaslona</translation>
-<translation id="5069971504769299223">Upravitelj naprave lahko morda nadzira vašo dejavnost.</translation>
 <translation id="5083553833479578423">Odklenite več funkcij Pomočnika.</translation>
 <translation id="5136175204352732067">Priklopljena je druga tipkovnica</translation>
 <translation id="5168181903108465623">Naprave za predvajanje so na voljo</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">Tipka za iskanje + Shift + K</translation>
 <translation id="6650933572246256093">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi vaše dovoljenje za seznanjanje. V napravi vnesite to geslo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Geslo</translation>
-<translation id="6687966522050791666">Izberite jezik in vnos</translation>
 <translation id="6691659475504239918">Tipka za iskanje + Shift + H</translation>
 <translation id="6696025732084565524">Snemljiva tipkovnica potrebuje nujno posodobitev</translation>
 <translation id="6700713906295497288">Menijski gumb UNV-ja</translation>

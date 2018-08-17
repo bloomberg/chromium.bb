@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">Nakalimutan mo ba ang iyong password?</translation>
 <translation id="3132996321662585180">I-refresh araw-araw</translation>
 <translation id="3135204511829026971">I-rotate ang screen</translation>
-<translation id="313638818480447860">Nakakita kami ng <ph name="NUMBER_OF_APPS" /> (na) app na nakakonekta sa iyong account na naka-optimize para sa device na ito.</translation>
 <translation id="313963229645891001">Nagda-download, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Default na dilaw na avatar</translation>
 <translation id="3140353188828248647">Address bar sa pagtuon</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">I-unlock ang device at mag-sign in sa Google Account</translation>
 <translation id="3625258641415618104">Naka-disable ang mga screenshot</translation>
 <translation id="3625481642044239431">Invalid ang file na napili. Subukang muli.</translation>
-<translation id="3625538291267447988">Para ma-set up ang Smart Lock, ilagay ang iyong password</translation>
 <translation id="3625870480639975468">I-reset ang zoom</translation>
 <translation id="3626281679859535460">Tingkad</translation>
 <translation id="3627320433825461852">Wala nang 1 minuto ang natitira</translation>
@@ -2734,7 +2732,6 @@
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Isara ang tab</translation>
 <translation id="5213891612754844763">Ipakita ang mga setting ng proxy</translation>
-<translation id="5214416042594875361">I-access ang iyong Assistant anumang oras na sasabihin mo ang "OK Google" kapag naka-on ang iyong screen.</translation>
 <translation id="521582610500777512">Na-discard ang larawan</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="52232769093306234">Hindi nagtagumpay ang pag-pack.</translation>
@@ -3394,6 +3391,7 @@
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Palawakin lahat...</translation>
 <translation id="6164005077879661055">Permanenteng matatanggal ang lahat ng file at lokal na data na kaugnay ng pinangangasiwaang user sa oras na alisin ang pinangangasiwaang user na ito. Maaari pa ring makita ng manager ang mga nabisitang website at setting para sa pinangangasiwaang user na ito sa <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Matuto nang higit pa</translation>
 <translation id="6166185671393271715">Mag-import ng Mga Password sa Chrome</translation>
 <translation id="6169040057125497443">Pakisuri ang iyong mikropono.</translation>
 <translation id="6169666352732958425">Hindi ma-cast ang desktop.</translation>
@@ -4982,7 +4980,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8642947597466641025">Gawing Mas Malaki Ang Teksto</translation>
 <translation id="8643418457919840804">Para magpatuloy, pumili ng opsyon:</translation>
 <translation id="8645354835496065562">Patuloy na payagan ang access sa sensor</translation>
-<translation id="8647691362751835453">Pagtukoy ng "OK Google"</translation>
 <translation id="8647834505253004544">Di-wastong email address</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> o <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Bagama't hindi mo na maa-access ang iyong lumang profile, maaari mo pa rin itong alisin.</translation>

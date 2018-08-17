@@ -1430,7 +1430,6 @@ Pretende pará-lo?</translation>
 <translation id="313205617302240621">Esqueceu-se da palavra-passe?</translation>
 <translation id="3132996321662585180">Atualizar diariamente</translation>
 <translation id="3135204511829026971">Rodar ecrã</translation>
-<translation id="313638818480447860">Encontrámos <ph name="NUMBER_OF_APPS" /> aplicações associadas à sua conta que foram otimizadas para este dispositivo.</translation>
 <translation id="313963229645891001">A transferir… <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Avatar amarelo predefinido</translation>
 <translation id="3140353188828248647">Focar barra de endereço</translation>
@@ -1745,7 +1744,6 @@ Pretende pará-lo?</translation>
 <translation id="3624567683873126087">Desbloquear o dispositivo e iniciar sessão na Conta Google</translation>
 <translation id="3625258641415618104">Capturas de ecrã desativadas</translation>
 <translation id="3625481642044239431">Foi selecionado um ficheiro inválido. Tente novamente.</translation>
-<translation id="3625538291267447988">Para configurar o Smart Lock, introduza a sua palavra-passe.</translation>
 <translation id="3625870480639975468">Repor zoom</translation>
 <translation id="3626281679859535460">Brilho</translation>
 <translation id="3627320433825461852">Falta menos de 1 minuto</translation>
@@ -2735,7 +2733,6 @@ Pretende pará-lo?</translation>
 <translation id="5209518306177824490">Impressão digital SHA-1</translation>
 <translation id="5210365745912300556">Fechar separador</translation>
 <translation id="5213891612754844763">Mostrar definições de proxy</translation>
-<translation id="5214416042594875361">Aceda ao Assistente sempre que disser "Ok Google" quando o ecrã estiver ligado.</translation>
 <translation id="521582610500777512">A foto foi rejeitada</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
 <translation id="52232769093306234">Falha no acondicionamento.</translation>
@@ -3396,6 +3393,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Expandir tudo...</translation>
 <translation id="6164005077879661055">Todos os ficheiros e dados locais associados ao utilizador supervisionado serão definitivamente eliminados depois de este utilizador supervisionado ser removido. Os Sites visitados e as definições deste utilizador supervisionado poderão continuar visíveis para o gestor em <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6166185671393271715">Importar palavras-passe para o Chrome</translation>
 <translation id="6169040057125497443">Verifique o microfone.</translation>
 <translation id="6169666352732958425">Não é possível transmitir o ambiente de trabalho.</translation>
@@ -4983,7 +4981,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8642947597466641025">Aumentar o tamanho do texto</translation>
 <translation id="8643418457919840804">Para continuar, selecione uma opção:</translation>
 <translation id="8645354835496065562">Continuar a permitir o acesso aos sensores</translation>
-<translation id="8647691362751835453">Deteção de "Ok Google"</translation>
 <translation id="8647834505253004544">Não é um endereço Web válido</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> ou <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Embora já não possa aceder ao seu perfil antigo, pode removê-lo.</translation>

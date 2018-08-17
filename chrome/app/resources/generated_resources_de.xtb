@@ -1364,7 +1364,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3031557471081358569">Zu importierende Daten wählen:</translation>
 <translation id="3031601332414921114">Druckvorgang fortsetzen</translation>
 <translation id="303198083543495566">Längen- und Breitengrad</translation>
-<translation id="3033999583152214331">Führen Sie auf Ihrem Chromebook Linux-Tools, -Editoren und -IDEs aus. &lt;a target="_blank" href="<ph name="URL" />"&gt;Weitere Informationen&lt;/a&gt;</translation>
+<translation id="3033999583152214331">Linux-Tools, -Editoren und -IDEs auf Ihrem Chromebook ausführen &lt;a target="_blank" href="<ph name="URL" />"&gt;Weitere Informationen&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Flash aktivieren</translation>
 <translation id="3037754279345160234">Die Konfiguration zum Domainbeitritt kann nicht geparst werden. Bitte wenden Sie sich an Ihren Administrator.</translation>
 <translation id="3038612606416062604">Drucker manuell hinzufügen</translation>
@@ -1425,7 +1425,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="313205617302240621">Passwort vergessen?</translation>
 <translation id="3132996321662585180">Täglich aktualisieren</translation>
 <translation id="3135204511829026971">Bildschirm drehen</translation>
-<translation id="313638818480447860">Es wurden <ph name="NUMBER_OF_APPS" /> Apps gefunden, die mit Ihrem Konto verbunden und für dieses Gerät optimiert sind.</translation>
 <translation id="313963229645891001">Wird heruntergeladen, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Gelber Standardavatar</translation>
 <translation id="3140353188828248647">Adressleiste fokussieren</translation>
@@ -1740,7 +1739,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3624567683873126087">Gerät entsperren und im Google-Konto anmelden</translation>
 <translation id="3625258641415618104">Screenshot-Funktion deaktiviert</translation>
 <translation id="3625481642044239431">Ungültige Datei ausgewählt. Versuchen Sie es noch einmal.</translation>
-<translation id="3625538291267447988">Passwort eingeben, um Smart Lock einzurichten</translation>
 <translation id="3625870480639975468">Zoom zurücksetzen</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
 <translation id="3627320433825461852">Noch weniger als 1 Minute</translation>
@@ -1966,7 +1964,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <ph name="CONTROL_PANEL_APPLET_NAME" /> im Steuerfeld deinstalliert wird.
 
 Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
-<translation id="394183848452296464">Verknüpfung kann nicht erstellt werden</translation>
+<translation id="394183848452296464">Verknüpfung konnte nicht erstellt werden</translation>
 <translation id="3943582379552582368">&amp;Zurück</translation>
 <translation id="3943857333388298514">Einfügen</translation>
 <translation id="3948116654032448504">Mit <ph name="SEARCH_ENGINE" /> nach Bild &amp;suchen</translation>
@@ -2255,7 +2253,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4448844063988177157">Suche nach WLAN-Netzwerken läuft...</translation>
 <translation id="4449996769074858870">Auf diesem Tab wird Audio wiedergegeben.</translation>
 <translation id="4450974146388585462">Diagnose</translation>
-<translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> durchsuchen oder URL eingeben</translation>
+<translation id="4453946976636652378">Mit <ph name="SEARCH_ENGINE_NAME" /> suchen oder eine URL eingeben</translation>
 <translation id="4462159676511157176">Benutzerdefinierte Nameserver</translation>
 <translation id="4467100756425880649">Chrome Web Store-Galerie</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> maximieren</translation>
@@ -2730,7 +2728,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5209518306177824490">SHA-1-Fingerabdruck</translation>
 <translation id="5210365745912300556">Schließen</translation>
 <translation id="5213891612754844763">Proxyeinstellungen anzeigen</translation>
-<translation id="5214416042594875361">Bei eingeschaltetem Bildschirm steht Ihnen Google Assistant jederzeit zur Verfügung, wenn Sie "Ok Google" sagen.</translation>
 <translation id="521582610500777512">Das Foto wurde verworfen.</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="52232769093306234">Fehler bei der Paketerstellung.</translation>
@@ -3390,6 +3387,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Alle anzeigen...</translation>
 <translation id="6164005077879661055">Durch das Entfernen des betreuten Nutzers werden alle mit ihm verknüpften Dateien und lokalen Daten endgültig gelöscht. Besuchte Websites und Einstellungen des betreuten Nutzers kann der Manager möglicherweise weiterhin unter <ph name="MANAGEMENT_URL" /> einsehen.</translation>
+<translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6166185671393271715">Passwörter in Chrome importieren</translation>
 <translation id="6169040057125497443">Überprüfen Sie Ihr Mikrofon.</translation>
 <translation id="6169666352732958425">Der Desktop kann nicht übertragen werden</translation>
@@ -4978,7 +4976,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8642947597466641025">Schriftgrad vergrößern</translation>
 <translation id="8643418457919840804">Wählen Sie eine Option aus, um fortzufahren:</translation>
 <translation id="8645354835496065562">Zugriff auf Sensor weiterhin zulassen</translation>
-<translation id="8647691362751835453">"Ok Google"-Erkennung</translation>
 <translation id="8647834505253004544">Keine gültige Webadresse</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> oder <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Sie können zwar nicht mehr auf Ihr altes Profil zugreifen, aber Sie können es noch entfernen.</translation>

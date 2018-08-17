@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">ወደ <ph name="DISPLAY_NAME" /> በማንጸባረቅ ላይ</translation>
 <translation id="1885785240814121742">በጣት አሻራ ይክፈቱ</translation>
 <translation id="1919743966458266018">የተግባር መሪው የሚከፈትበት አቋራጭ ተቀይሯል። እባክዎ ከ<ph name="OLD_SHORTCUT" /> ይልቅ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
-<translation id="1923508880661655826">የእርስዎ ክፍለ ጊዜ ዘግተው ሲወጡ ይፈጠራል። <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">ራስ-ሰር ጠቅታዎች</translation>
 <translation id="1928739107511554905">ዝማኔውን ለማግኘት የእርስዎን Chromebook ከተያያዘው የቁልፍ ሰሌዳ ጋር እንደገና ለማስጀመር የንኪ ማያ ገጹን ይጠቀሙ።</translation>
 <translation id="1942830294380034169">የትርፍ ፍሰት አዝራር</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">ይቀበሉ</translation>
 <translation id="4924411785043111640">ዳግም ይጀምሩ እና ዳግም ያቀናብሩ</translation>
 <translation id="4961318399572185831">የCast ማያ ገጽ</translation>
-<translation id="5069971504769299223">የመሣሪያው አስተዳዳሪ የእርስዎን እንቅስቃሴ ሊከታተል ይችላል።</translation>
 <translation id="5083553833479578423">ተጨማሪ የረዳት ባህሪያትን ያስከፍቱ።</translation>
 <translation id="5136175204352732067">የተለየ የቁልፍ ሰሌዳ ተገናኝቷል</translation>
 <translation id="5168181903108465623">የCast መሣሪያዎች ይገኛሉ</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የይለፍ ቁልፍ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">የይለፍ ቃል፦</translation>
-<translation id="6687966522050791666">ቋንቋ እና ግቤት ይምረጡ</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">የእርስዎ ተነቃይ የቁልፍ ሰሌዳ ወሳኝ የሆነ ዝማኔ ያስፈልገዋል</translation>
 <translation id="6700713906295497288">የIME ምናሌ አዝራር</translation>

@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Uporaba sinhronizacije in vseh storitev</translation>
 <translation id="1272079795634619415">Ustavi</translation>
 <translation id="1323735185997015385">Izbriši</translation>
-<translation id="132390688737681464">Shranjevanje in izpolnjevanje naslovov</translation>
 <translation id="132683371494960526">Double tap to change the parent folder.</translation>
 <translation id="1340643665687018190">Close Menu</translation>
 <translation id="1375321115329958930">Shranjena gesla</translation>
@@ -120,7 +119,6 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="2870560284913253234">Spletno mesto</translation>
 <translation id="2871695793448672541">Skrito, geslo</translation>
 <translation id="2898963176829412617">Nova mapa …</translation>
-<translation id="2903493209154104877">Naslovi</translation>
 <translation id="2909437209446960244">Nedavni zavihki</translation>
 <translation id="2916171785467530738">Samodejno dokončanje iskanj in URL-jev</translation>
 <translation id="291754862089661335">Kodo QR ali črtno kodo postavite v ta okvir</translation>
@@ -242,7 +240,6 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5062321486222145940">Namesti Google Drive</translation>
 <translation id="5083464117946352670">Velikost datoteke ni mogoče določiti.</translation>
 <translation id="5094827893301452931">Tweet je dokončan.</translation>
-<translation id="5123982333065001601">Shranjevanje in izpolnjevanje kreditnih kartic</translation>
 <translation id="5173593619615111996">Close All Incognito Tabs</translation>
 <translation id="5181140330217080051">Prenos</translation>
 <translation id="5186185447130319458">Zasebno</translation>
@@ -250,7 +247,6 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Omogoči sinhronizacijo</translation>
 <translation id="5244474230056479698">Syncing to <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Open a tab to browse the web privately.</translation>
 <translation id="5300589172476337783">Pokaži</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5327248766486351172">Ime</translation>
@@ -334,7 +330,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
 <translation id="6482629121755362506">Št. izbrisanih elementov: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Past Hour</translation>
-<translation id="6570040839871198836">Obrazci s samod. izpolnj.</translation>
 <translation id="6656103420185847513">Urejanje mape</translation>
 <translation id="6657585470893396449">Geslo</translation>
 <translation id="667999046851023355">Dokument</translation>
@@ -424,7 +419,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8205564605687841303">Prekliči</translation>
 <translation id="8225985093977202398">Cached Images and Files</translation>
 <translation id="8261506727792406068">Izbriši</translation>
-<translation id="8272426682713568063">Kreditne kartice</translation>
 <translation id="8281781826761538115">Privzeto - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Zapri vse</translation>
 <translation id="8381750437846184350">Nadzirajte, kako Google na podlagi vaše zgodovine brskanja prilagaja Iskanje Google, oglase in druge Googlove storitve.</translation>

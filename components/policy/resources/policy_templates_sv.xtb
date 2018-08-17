@@ -1926,11 +1926,6 @@
 <translation id="637934607141010488">Rapportera en lista över enhetsanvändare som nyligen har loggat in.
 
       Om principen anges som False kommer användarna inte att redovisas.</translation>
-<translation id="6392973646875039351">Policyn aktiverar autofyllfunktionen i <ph name="PRODUCT_NAME" /> och gör att användarna kan fylla i webbformulär automatiskt med uppgifter som sparats tidigare som adress- och kreditkortsuppgifter.
-
-      Om du inaktiverar inställningen kan användarna inte använda autofyll.
-
-      Om du aktiverar inställningen eller inte anger något värde kan användarna styra autofyll. De kan konfigurera autofyllprofiler och aktivera och inaktivera autofyllfunktionen när de vill.</translation>
 <translation id="6394350458541421998">Den här principen finns inte med i <ph name="PRODUCT_OS_NAME" /> version 29 och senare. Använd principen PresentationScreenDimDelayScale i stället.</translation>
 <translation id="6401669939808766804">Logga ut användaren</translation>
 <translation id="6426205278746959912">Det går inte att göra det obligatoriskt för Android-appar att ansluta via en proxyserver. Android-appar har tillgång till ett urval av proxyinställningarna enligt nedan och kan, men måste inte, följa dem.

@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">باز کردن قفل با اثر انگشت</translation>
 <translation id="1919743966458266018">کلیدهای میان‌بر باز کردن مدیر فعالیت‌ها تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
-<translation id="1923508880661655826">وقتی از سیستم خارج شوید، جلسه‌تان پاک می‌شود. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">کلیک‌های خودکار</translation>
 <translation id="1928739107511554905">‏برای دریافت به‌روزرسانی، از صفحه لمسی برای بازراه‌اندازی Chromebook خود با صفحه‌کلید متصل استفاده کنید.</translation>
 <translation id="1942830294380034169">دکمه سرریز</translation>
@@ -225,7 +224,6 @@
 <translation id="4918086044614829423">می‌پذیرم</translation>
 <translation id="4924411785043111640">بازراه‌اندازی و بازنشانی</translation>
 <translation id="4961318399572185831">فرستادن صفحه</translation>
-<translation id="5069971504769299223">ممکن است مدیر دستگاه بر فعالیتتان نظارت داشته باشد.</translation>
 <translation id="5083553833479578423">باز کردن قفل ویژگی‌های بیشتری از «دستیار».</translation>
 <translation id="5136175204352732067">صفحه‌کلید دیگری متصل شد</translation>
 <translation id="5168181903108465623">دستگاه‌های فرستادن موجود هستند</translation>
@@ -315,7 +313,6 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلیدواژه را در آن دستگاه وارد کنید: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">گذرواژه</translation>
-<translation id="6687966522050791666">انتخاب زبان و ورودی</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">لازم است صفحه‌کلید قابل جدا شدن به‌روزرسانی ضروری شود</translation>
 <translation id="6700713906295497288">‏دکمه منو IME</translation>

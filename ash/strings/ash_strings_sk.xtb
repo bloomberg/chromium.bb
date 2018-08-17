@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Metódy vstupu sú nakonfigurované vaším správcom.</translation>
 <translation id="1747827819627189109">Klávesnica na obrazovke je povolená</translation>
 <translation id="1761222317188459878">Prepnúť sieťové pripojenie. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Čo je na obrazovke?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (načítava sa...)</translation>
 <translation id="1841545962859478868">Správca zariadenia môže monitorovať nasledovné:</translation>
@@ -54,7 +55,6 @@
 <translation id="1882897271359938046">Zrkadlenie na displej <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Odomykajte odtlačkom prsta</translation>
 <translation id="1919743966458266018">Skratka otvorenia správcu úloh bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Vaša relácia sa vymaže, keď sa odhlásite. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Automatické kliknutia</translation>
 <translation id="1928739107511554905">Ak chcete získať aktualizáciu, reštartuje Chromebook s pripojenou klávesnicou pomocou dotykovej obrazovky.</translation>
 <translation id="1942830294380034169">Tlačidlo Viac</translation>
@@ -123,6 +123,7 @@
 <translation id="2946119680249604491">Pridať pripojenie</translation>
 <translation id="2961963223658824723">Vyskytol sa problém. Skúste to znova o niekoľko minút.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Zobrazovať všetok obsah upozornení</translation>
 <translation id="2995447421581609334">Zobraziť zariadenia na prenos</translation>
 <translation id="2996462380875591307">Bola zapnutá ukotvená lupa. Vypnete ju opätovným stlačením kombinácie klávesov Ctrl+Hľadať+D.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> je verejná relácia spravovaná stránkami <ph name="DOMAIN" /></translation>
@@ -211,12 +212,14 @@
 <translation id="4628757576491864469">Zariadenia</translation>
 <translation id="4659419629803378708">Funkcia ChromeVox je povolená</translation>
 <translation id="4734965478015604180">Na šírku</translation>
+<translation id="476166673298332917">Správca tohto zariadenia má prístup k všetkým aktivitám vrátane hesiel a komunikácií.</translation>
 <translation id="4776917500594043016">Heslo pre účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Odpojiť</translation>
 <translation id="4849058404725798627">Zvýrazniť objekt so zameraním klávesnice</translation>
 <translation id="4872237917498892622">Alt + Hľadať alebo Shift</translation>
 <translation id="4890187583552566966">Asistenta Google deaktivoval váš správca.</translation>
+<translation id="4893522937062257019">Na uzamknutej obrazovke</translation>
 <translation id="4895488851634969361">Batéria je úplne nabitá.</translation>
 <translation id="490375751687810070">Na výšku</translation>
 <translation id="4905614135390995787">Skratka na prepnutie režimu vysokého kontrastu sa zmenila. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
@@ -224,7 +227,6 @@
 <translation id="4918086044614829423">Prijať</translation>
 <translation id="4924411785043111640">Reštartovať a resetovať</translation>
 <translation id="4961318399572185831">Prenášanie obrazovky</translation>
-<translation id="5069971504769299223">Správca zariadenia môže sledovať vašu aktivitu.</translation>
 <translation id="5083553833479578423">Odblokujte ďalšie funkcie Asistenta.</translation>
 <translation id="5136175204352732067">Bola pripojená iná klávesnica</translation>
 <translation id="5168181903108465623">Dostupné zariadenia na prenos</translation>
@@ -233,6 +235,7 @@
 <translation id="523505283826916779">Nastavenia zjednodušenia prístupu</translation>
 <translation id="5313326810920013265">Nastavenia Bluetooth</translation>
 <translation id="5331975486040154427">Zariadenie USB-C (port vľavo vzadu)</translation>
+<translation id="5379115545237091094">Príliš veľa pokusov</translation>
 <translation id="5397578532367286026">Aktivitu a históriu tohto používateľa môže skontrolovať správca (<ph name="MANAGER_EMAIL" />) na adrese chrome.com.</translation>
 <translation id="5430931332414098647">Dynamický tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -264,6 +267,7 @@
 <translation id="5895138241574237353">Reštartovať</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">Zobrazovač skratiek</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Zapnuté</translation>
 <translation id="592343074608792716">Tento Chromebook a váš telefón sa automaticky pripoja</translation>
 <translation id="5947494881799873997">Vrátiť</translation>
@@ -314,7 +318,6 @@
 <translation id="6627638273713273709">Hľadať+Shift+K</translation>
 <translation id="6650933572246256093">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Zadajte na danom zariadení tento prístupový kľúč: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Heslo</translation>
-<translation id="6687966522050791666">Vybrať jazyk a vstup</translation>
 <translation id="6691659475504239918">Hľadať+Shift+H</translation>
 <translation id="6696025732084565524">Odoberateľná klávesnica potrebuje kritickú aktualizáciu</translation>
 <translation id="6700713906295497288">Tlačidlo ponuky IME</translation>
@@ -334,6 +337,7 @@
 <translation id="6972754398087986839">Začať</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="698231206551913481">Všetky súbory a miestne údaje priradené k tomuto používateľovi budú po jeho odstránení natrvalo vymazané.</translation>
+<translation id="7007100238996585961">Odpoveď dostanete v inom zariadení</translation>
 <translation id="7015766095477679451">Vráťte sa späť o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Ukončiť reláciu</translation>
 <translation id="7037152028959403492">Stlačili ste skratku pre vysoký kontrast. Chcete ho zapnúť?</translation>
@@ -355,6 +359,7 @@
 <translation id="7398254312354928459">Prepnuté sieťové pripojenie</translation>
 <translation id="742594950370306541">Fotoaparát sa používa.</translation>
 <translation id="743058460480092004">Fotoaparát a mikrofón sa používajú.</translation>
+<translation id="7497767806359279797">Vybrať jazyk a klávesnicu</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Sieť môže byť sledovaná</translation>
 <translation id="7536035074519304529">Adresa IP: <ph name="ADDRESS" /></translation>
@@ -364,6 +369,7 @@
 <translation id="7569509451529460200">Funkcie Braille a ChromeVox sú povolené</translation>
 <translation id="7593891976182323525">Hľadať alebo Shift</translation>
 <translation id="7604942372593434070">Prístup k vašej aktivite prehliadania</translation>
+<translation id="7642778300616172920">Skryť citlivý obsah</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (vlastník)</translation>
 <translation id="7647488630410863958">Ak si chcete zobraziť upozornenia, odomknite zariadenie</translation>
 <translation id="7649070708921625228">Pomocník</translation>
@@ -379,6 +385,7 @@
 <translation id="7842211907556571265">Prebieha pripájanie k sieti <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Upozornenie: Experimentálna funkcia</translation>
 <translation id="7846634333498149051">Klávesnica</translation>
+<translation id="7886277072580235377">Vaša internetová relácia sa vymaže, keď sa odhlásite. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Manipulovať s nastaveniami týkajúcimi sa ochrany osobných údajov</translation>
 <translation id="7904094684485781019">Správca tohto účtu zakázal viacnásobné prihlásenie.</translation>
 <translation id="7933084174919150729">Asistent Google je k dispozícii iba pre primárny profil.</translation>
@@ -419,6 +426,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Opätovné pripájanie...</translation>
 <translation id="8513108775083588393">Automatické otáčanie</translation>
 <translation id="8517041960877371778">Vaše zariadenie <ph name="DEVICE_TYPE" /> sa nemusí nabíjať, keď je zapnuté.</translation>
+<translation id="8592141010104017453">Nezobrazovať upozornenia</translation>
 <translation id="8627191004499078455">Pripojené k zariadeniu <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931">Zostávajúca kapacita: <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Počúvanie vybraného textu</translation>

@@ -1425,7 +1425,6 @@
 <translation id="313205617302240621">Glemt passordet?</translation>
 <translation id="3132996321662585180">Oppdater daglig</translation>
 <translation id="3135204511829026971">Rotér skjermen</translation>
-<translation id="313638818480447860">Vi famt <ph name="NUMBER_OF_APPS" /> apper koblet til kontoen din som er optimalisert for denne enheten.</translation>
 <translation id="313963229645891001">Laster ned, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Gult standardbrukerbilde</translation>
 <translation id="3140353188828248647">Fokuser adressefelt</translation>
@@ -1505,7 +1504,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> vil koble til</translation>
 <translation id="3274763671541996799">Du bruker full skjerm.</translation>
 <translation id="3275778913554317645">Åpne som vindu</translation>
-<translation id="3278877214895457897">Når Chromebooken er konfigurert, trykker du på Assistent-knappen eller sier «Ok Google» for å snakke med assistenten når som helst.</translation>
+<translation id="3278877214895457897">Når Chromebooken er konfigurert, kan du trykke på Assistent-knappen eller si «Ok Google» for å få hjelp av assistenten når som helst.</translation>
 <translation id="3279230909244266691">Denne prosessen kan ta noen minutter. Starter den virtuelle maskinen.</translation>
 <translation id="3279741024917655738">Vis videoer i full skjerm på</translation>
 <translation id="3280237271814976245">L&amp;agre som...</translation>
@@ -1739,7 +1738,6 @@
 <translation id="3624567683873126087">Lås opp enheten og logg på Google-kontoen din</translation>
 <translation id="3625258641415618104">Skjermdumper er deaktivert</translation>
 <translation id="3625481642044239431">En ugyldig fil er valgt. Prøv på nytt.</translation>
-<translation id="3625538291267447988">Skriv inn passordet ditt for å konfigurere Smart Lock</translation>
 <translation id="3625870480639975468">Tilbakestill zoom</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
 <translation id="3627320433825461852">Mindre enn ett minutt igjen</translation>
@@ -2726,7 +2724,6 @@
 <translation id="5209518306177824490">SHA-1-fingeravtrykk</translation>
 <translation id="5210365745912300556">Lukk fanen</translation>
 <translation id="5213891612754844763">Vis innstillingene for proxy-tjener</translation>
-<translation id="5214416042594875361">Få tilgang til assistenten din ved å si «Ok Google» når skjermen er på.</translation>
 <translation id="521582610500777512">Bildet er forkastet</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="52232769093306234">Pakkingen mislyktes.</translation>
@@ -3386,6 +3383,7 @@
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Utvid alle</translation>
 <translation id="6164005077879661055">Alle filer og lokale data tilknyttet den administrerte brukeren slettes permanent når den administrerte brukeren fjernes. Besøkte nettsteder og innstillinger for denne administrerte brukeren kan fortsatt ses av administratoren på <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Les mer</translation>
 <translation id="6166185671393271715">Importér passord i Chrome</translation>
 <translation id="6169040057125497443">Sjekk mikrofonen din.</translation>
 <translation id="6169666352732958425">Kan ikke caste skrivebordet.</translation>
@@ -4970,7 +4968,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8642947597466641025">Forstørr teksten</translation>
 <translation id="8643418457919840804">Velg et alternativ for å fortsette:</translation>
 <translation id="8645354835496065562">Fortsett å tillate sensortilgang</translation>
-<translation id="8647691362751835453">«Ok Google»-gjenkjennelse</translation>
 <translation id="8647834505253004544">Ikke en gyldig nettadresse</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> eller <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Du kan fjerne den gamle profilen din selv om du ikke har tilgang til den lenger.</translation>

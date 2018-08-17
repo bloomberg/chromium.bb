@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Se oglindește pe <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Deblochează cu amprenta</translation>
 <translation id="1919743966458266018">Comanda rapidă pentru a deschide managerul de activități a fost modificată. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Sesiunea va fi anulată după ce te deconectezi. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Clicuri automate</translation>
 <translation id="1928739107511554905">Pentru a obține actualizarea, folosește ecranul tactil ca să repornești Chromebookul cu tastatura atașată.</translation>
 <translation id="1942830294380034169">Buton pentru meniul suplimentar</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4924411785043111640">Repornește și resetează</translation>
 <translation id="4961318399572185831">Proiectează ecranul</translation>
-<translation id="5069971504769299223">Managerul de dispozitiv poate să îți monitorizeze activitatea.</translation>
 <translation id="5083553833479578423">Deblochează mai multe funcții ale Asistentului.</translation>
 <translation id="5136175204352732067">Altă tastatură conectată</translation>
 <translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">Tasta de căutare + Shift + K</translation>
 <translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Parolă</translation>
-<translation id="6687966522050791666">Alege limba și modul de introducere</translation>
 <translation id="6691659475504239918">Tasta de căutare + Shift + H</translation>
 <translation id="6696025732084565524">Tastatura detașabilă necesită o actualizare esențială</translation>
 <translation id="6700713906295497288">Butonul de meniu IME</translation>

@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Odblokuj odciskiem palca</translation>
 <translation id="1919743966458266018">Zmieniliśmy skrót, który otwiera menedżera zadań. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Twoja sesja zostanie wyczyszczona, gdy się wylogujesz. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Automatyczne kliknięcia</translation>
 <translation id="1928739107511554905">Aby pobrać aktualizację, użyj ekranu dotykowego, by uruchomić Chromebooka ponownie z podłączoną klawiaturą.</translation>
 <translation id="1942830294380034169">Przycisk akcji</translation>
@@ -225,7 +224,6 @@
 <translation id="4918086044614829423">Akceptuj</translation>
 <translation id="4924411785043111640">Uruchom ponownie i zresetuj</translation>
 <translation id="4961318399572185831">Przesyłanie ekranu</translation>
-<translation id="5069971504769299223">Zarządzający urządzeniem może monitorować Twoją aktywność.</translation>
 <translation id="5083553833479578423">Odblokuj więcej funkcji Asystenta.</translation>
 <translation id="5136175204352732067">Podłączono inną klawiaturę</translation>
 <translation id="5168181903108465623">Dostępne są urządzenia przesyłające</translation>
@@ -315,7 +313,6 @@
 <translation id="6627638273713273709">Szukaj + Shift + K</translation>
 <translation id="6650933572246256093">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten klucz: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Hasło</translation>
-<translation id="6687966522050791666">Wybierz język i klawiaturę</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Odłączana klawiatura wymaga krytycznej aktualizacji</translation>
 <translation id="6700713906295497288">Przycisk menu IME</translation>
@@ -404,7 +401,7 @@
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8297006494302853456">Słaby</translation>
 <translation id="8308637677604853869">Poprzednie menu</translation>
-<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
+<translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Utwórz notatkę</translation>
 <translation id="8392451568018454956">Menu opcji dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupa pełnego ekranu</translation>

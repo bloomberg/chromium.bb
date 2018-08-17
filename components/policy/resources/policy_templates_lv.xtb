@@ -1918,11 +1918,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="637934607141010488">Parāda sarakstu ar ierīces lietotājiem, kuri nesen ir pieteikušies ierīcē.
 
       Ja šīs politikas iestatījums ir “False”, lietotāju saraksts netiks parādīts.</translation>
-<translation id="6392973646875039351">Iespējo <ph name="PRODUCT_NAME" /> funkciju Automātiskā aizpilde un ļauj lietotājiem automātiski aizpildīt tīmekļa veidlapas, izmantojot iepriekš saglabātos datus, piemēram, informāciju par adresi vai kredītkarti.
-
-      Ja šis iestatījums ir atspējots, lietotāji nevarēs piekļūt funkcijai Automātiskā aizpilde.
-
-      Ja šis iestatījums ir iespējots vai tam nav iestatīta vērtība, lietotāji varēs pārvaldīt funkcijas Automātiskā aizpilde lietošanu. Tādējādi lietotāji varēs konfigurēt funkcijas Automātiskā aizpilde profilus un pēc saviem ieskatiem ieslēgt/izslēgt funkciju Automātiskā aizpilde.</translation>
 <translation id="6394350458541421998">Šīs politikas darbība tika pārtraukta ar <ph name="PRODUCT_OS_NAME" /> versiju 29. Lūdzu, tās vietā izmantojiet politiku PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Atteikt lietotāju</translation>
 <translation id="6426205278746959912">Jūs nevarat piespiest Android lietotnēm izmantot starpniekserveri. Starpniekservera iestatījumu apakškopa ir padarīta pieejama Android lietotnēm, un tajās var brīvi izvēlēties izmantot šo apakškopu.

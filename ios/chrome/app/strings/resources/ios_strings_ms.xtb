@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Gunakan penyegerakan dan semua perkhidmatan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1323735185997015385">Padam</translation>
-<translation id="132390688737681464">Simpan dan Lengkapkan Alamat</translation>
 <translation id="132683371494960526">Ketik dua kali untuk menukar folder induk.</translation>
 <translation id="1340643665687018190">Tutup Menu</translation>
 <translation id="1375321115329958930">Kata Laluan Disimpan</translation>
@@ -120,7 +119,6 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2870560284913253234">Tapak</translation>
 <translation id="2871695793448672541">Disembunyikan, Kata Laluan</translation>
 <translation id="2898963176829412617">Folder Baharu…</translation>
-<translation id="2903493209154104877">Alamat</translation>
 <translation id="2909437209446960244">Tab Terbaharu</translation>
 <translation id="2916171785467530738">Autolengkap Carian dan URL</translation>
 <translation id="291754862089661335">Letakkan kod QR atau kod bar dalam bingkai ini</translation>
@@ -244,7 +242,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 <translation id="5062321486222145940">Pasang Google Drive</translation>
 <translation id="5083464117946352670">Tidak dapat menentukan saiz fail.</translation>
 <translation id="5094827893301452931">Tweet selesai.</translation>
-<translation id="5123982333065001601">Simpan dan Lengkapkan Kad Kredit</translation>
 <translation id="5173593619615111996">Tutup Semua Tab Inkognito</translation>
 <translation id="5181140330217080051">Memuat turun</translation>
 <translation id="5186185447130319458">Peribadi</translation>
@@ -252,7 +249,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Dayakan penyegerakan</translation>
 <translation id="5244474230056479698">Menyegerak ke <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Buka tab untuk menyemak imbas web secara sulit.</translation>
 <translation id="5300589172476337783">Paparkan</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5327248766486351172">Nama</translation>
@@ -336,7 +332,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6464071786529933911">Buka dalam Tab Inkognito Baharu</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dipadamkan</translation>
 <translation id="6541915733953096570">Sejam Yang Lalu</translation>
-<translation id="6570040839871198836">Auto Isi Borang</translation>
 <translation id="6656103420185847513">Edit Folder</translation>
 <translation id="6657585470893396449">Kata laluan</translation>
 <translation id="667999046851023355">Dokumen</translation>
@@ -426,7 +421,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8205564605687841303">Batal</translation>
 <translation id="8225985093977202398">Imej dan Fail Dicache</translation>
 <translation id="8261506727792406068">Padam</translation>
-<translation id="8272426682713568063">Kad Kredit</translation>
 <translation id="8281781826761538115">Lalai - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Tutup Semua</translation>
 <translation id="8381750437846184350">Kawal cara Google menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain</translation>

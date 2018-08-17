@@ -271,7 +271,7 @@
 <translation id="1397854323885047133">المزامنة والتخصيص</translation>
 <translation id="1398853756734560583">تكبير</translation>
 <translation id="1399511500114202393">لا توجد شهادة مستخدم.</translation>
-<translation id="1401165786814632797">‏يمكنك الوصول إلى "المساعد" في أي وقت تقول فيه "OK Google" عندما يكون جهازك نشطًا وتم إلغاء قفله.</translation>
+<translation id="1401165786814632797">‏يمكنك الوصول إلى "المساعد" في أي وقت تقول فيه "OK Google" عندما يكون جهازك نشطًا وقفله مفتوحًا.</translation>
 <translation id="140250605646987970">‏تم العثور على هاتفك. لكن لا يعمل Smart Lock إلا على الأجهزة التي تعمل بنظام تشغيل Android 5.0 أو اعلى. &lt;a&gt;‬‏‫مزيد من المعلومات&lt;/a&gt;</translation>
 <translation id="140520891692800925">(خاضع للإدارة) <ph name="PROFILE_DISPLAY_NAME" /></translation>
 <translation id="1405476660552109915">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> حفظ حسابك لهذا الموقع؟</translation>
@@ -1367,7 +1367,7 @@
 <translation id="3031557471081358569">اختيار العناصر المراد استيرادها:</translation>
 <translation id="3031601332414921114">استئناف الطباعة</translation>
 <translation id="303198083543495566">الجغرافيا</translation>
-<translation id="3033999583152214331">‏يمكنك تشغيل أدوات Linux، وأدوات التحرير وبرامج IDE على جهازChromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;مزيد من المعلومات&lt;/a&gt;</translation>
+<translation id="3033999583152214331">‏يمكنك تشغيل أدوات Linux وأدوات التحرير وبرامج IDE على جهازChromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;مزيد من المعلومات&lt;/a&gt;</translation>
 <translation id="3036546437875325427">‏تفعيل Flash</translation>
 <translation id="3037754279345160234">يتعذَّر تحليل الإعداد لضمّ النطاق. يُرجى الاتصال بمشرفك.</translation>
 <translation id="3038612606416062604">إضافة طابعة يدويًا</translation>
@@ -1428,7 +1428,6 @@
 <translation id="313205617302240621">هل نسيت كلمة المرور؟</translation>
 <translation id="3132996321662585180">التحديث يوميًا</translation>
 <translation id="3135204511829026971">تدوير الشاشة</translation>
-<translation id="313638818480447860">لقد عثرنا على <ph name="NUMBER_OF_APPS" /> من التطبيقات المرتبطة بحسابك التي تم تحسينها لهذا الجهاز.</translation>
 <translation id="313963229645891001">جارٍ التنزيل، <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">الصورة الرمزية التلقائية الصفراء</translation>
 <translation id="3140353188828248647">تركيز شريط العناوين</translation>
@@ -1508,7 +1507,7 @@
 <translation id="3271648667212143903">يريد <ph name="ORIGIN" /> الاتصال</translation>
 <translation id="3274763671541996799">تم الانتقال إلى وضع ملء الشاشة.</translation>
 <translation id="3275778913554317645">فتح كنافذة</translation>
-<translation id="3278877214895457897">‏عند إعداد جهاز Chromebook، يُرجى الضغط على زر "المساعد" أو قول "OK Google" للحصول على المساعدة من "المساعد" في أي وقت.</translation>
+<translation id="3278877214895457897">‏عند إعداد جهاز Chromebook، يُرجى الضغط على زر "مساعد Google" أو قول "OK Google" للاستعانة به في أي وقت.</translation>
 <translation id="3279230909244266691">قد تستغرق هذه العملية بضع دقائق. جارٍ بدء الآلة الافتراضية.</translation>
 <translation id="3279741024917655738">عرض الفيديوهات بملء الشاشة على</translation>
 <translation id="3280237271814976245">الحفظ &amp;باسم...</translation>
@@ -1742,7 +1741,6 @@
 <translation id="3624567683873126087">‏إلغاء قفل الجهاز وتسجيل الدخول إلى حساب Google</translation>
 <translation id="3625258641415618104">تم إيقاف لقطات الشاشة</translation>
 <translation id="3625481642044239431">تم اختيار ملف غير صالح. يرجى إعادة المحاولة.</translation>
-<translation id="3625538291267447988">‏لإعداد Smart Lock، يُرجى إدخال كلمة المرور.</translation>
 <translation id="3625870480639975468">إعادة تعيين التكبير/التصغير</translation>
 <translation id="3626281679859535460">السطوع</translation>
 <translation id="3627320433825461852">تتبقى أقل من دقيقة واحدة</translation>
@@ -2728,7 +2726,6 @@
 <translation id="5209518306177824490">‏بصمة أصبع SHA-1</translation>
 <translation id="5210365745912300556">إغلاق علامة التبويب</translation>
 <translation id="5213891612754844763">عرض إعدادات الخادم الوكيل</translation>
-<translation id="5214416042594875361">‏يمكنك الوصول إلى "المُساعِد" في أي وقت تقول فيه "OK Google" عندما تكون شاشتك في وضع التشغيل.</translation>
 <translation id="521582610500777512">تم تجاهل الصورة</translation>
 <translation id="5222676887888702881">الخروج</translation>
 <translation id="52232769093306234">تعذرت التعبئة.</translation>
@@ -3389,6 +3386,7 @@
 <translation id="6163522313638838258">توسيع الكل...</translation>
 <translation id="6164005077879661055">سيتم حذف جميع الملفات والبيانات المحلية المقترنة بالمستخدم الذي يخضع للإشراف نهائيًا بمجرد 
 إزالة هذا المستخدم الذي يخضع للإشراف. وقد تظل مواقع الويب التي تم الانتقال إليها والإعدادات التابعة للمستخدم الذي يخضع للإشراف مرئية للمدير على <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6166185671393271715">‏استيراد كلمات المرور إلى Chrome</translation>
 <translation id="6169040057125497443">الرجاء التحقق من الميكروفون.</translation>
 <translation id="6169666352732958425">تعذر إرسال سطح المكتب.</translation>
@@ -4977,7 +4975,6 @@
 <translation id="8642947597466641025">لتكبير النص</translation>
 <translation id="8643418457919840804">للاستمرار، يُرجى تحديد خيار:</translation>
 <translation id="8645354835496065562">مواصلة السماح بالوصول إلى أجهزة الاستشعار</translation>
-<translation id="8647691362751835453">‏رصْد عبارة "Ok Google"</translation>
 <translation id="8647834505253004544">ليس عنوان ويب صالحًا</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> أو <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">يمكنك إزالة ملفك الشخصي القديم حتى لو لم يعد بإمكانك الوصول إليه.</translation>

@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">የይለፍ ቃል ረሱ?</translation>
 <translation id="3132996321662585180">በየቀኑ ዳግም አድስ</translation>
 <translation id="3135204511829026971">ማያ ገጹን አዙር</translation>
-<translation id="313638818480447860">ለዚህ መሣሪያ የተቡ <ph name="NUMBER_OF_APPS" /> ከመለያዎ ጋር የተገናኙ መተግበሪያዎችን አግኝተናል።</translation>
 <translation id="313963229645891001">በማውረድ ላይ፣ <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">ነባሪ ቢጫ አምሳያ</translation>
 <translation id="3140353188828248647">የአድራሻ አሞሌ ላይ አተኩር</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">መሣሪያን ይክፈቱ እና ወደ Google በመለያ ይግቡ</translation>
 <translation id="3625258641415618104">ቅጽበታዊ-ገጽ እይታዎች ተሰናክለዋል</translation>
 <translation id="3625481642044239431">ልክ ያልሆነ ፋይል ተመርጧል። እንደገና ይሞክሩ።</translation>
-<translation id="3625538291267447988">Smart Lockን ለማቀናበር የእርስዎን የይለፍ ቃል ያስገቡ</translation>
 <translation id="3625870480639975468">አጒላን ዳግም ያስጀምሩት</translation>
 <translation id="3626281679859535460">ብሩህነት</translation>
 <translation id="3627320433825461852">ከ1 ደቂቃ በታች ይቀራል</translation>
@@ -2732,7 +2730,6 @@
 <translation id="5209518306177824490">SHA-1 የጣት አሻራ</translation>
 <translation id="5210365745912300556">ትር ዝጋ</translation>
 <translation id="5213891612754844763">የተኪ ቅንብሮችን አሳይ</translation>
-<translation id="5214416042594875361">የእርስዎ ማያ ገጽ በሚበራበት ጊዜ እርስዎ በማናቸውም ጊዜ «Ok Google» ሲሉ የእርስዎን ረዳት ይድረሱበት።</translation>
 <translation id="521582610500777512">ፎቶ ተጥሏል</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
 <translation id="52232769093306234">መጠቅለል አልተሳካም።</translation>
@@ -3391,6 +3388,7 @@
 <translation id="6163363155248589649">&amp;መደበኛ</translation>
 <translation id="6163522313638838258">ሁሉንም ዘርጋ...</translation>
 <translation id="6164005077879661055">ይህ ክትትል የሚደረግበት ተጠቃሚ አንዴ ከተወገደ በኋላ ሁሉም ከዚህ ክትትል የሚደረግበት ተጠቃሚ ጋር የተጎዳኙ ፋይሎች እና አካባቢያዊ ውሂብ እስከመጨረሻው ይሰረዛሉ። አስተዳዳሪው የዚህ ክትትል የሚደረግበት ተጠቃሚ የጎበኛቸው ድር ጣቢያዎች እና ቅንብሮች <ph name="MANAGEMENT_URL" /> ላይ ሊያዩት ይችላሉ።</translation>
+<translation id="6165508094623778733">ተጨማሪ ለመረዳት</translation>
 <translation id="6166185671393271715">የይለፍ ቃላትን ወደ Chrome ያስመጡ</translation>
 <translation id="6169040057125497443">እባክዎ ማይክሮፎንዎን ይፈትሹ።</translation>
 <translation id="6169666352732958425">ዴስክቶፕን cast ማድረግ አልተቻለም።</translation>
@@ -4983,7 +4981,6 @@ nil</translation>
 <translation id="8642947597466641025">ጽሑፍ አተልቅ</translation>
 <translation id="8643418457919840804">ለመቀጠል አንድ አማራጭ ይምረጡ፦</translation>
 <translation id="8645354835496065562">የዳሳሽ መዳረሻን መፍቀዱን ቀጥል</translation>
-<translation id="8647691362751835453">«Ok Google»ን ፈልጎ ማግኘት</translation>
 <translation id="8647834505253004544">የሚሰራ የድር አድራሻ አይደለም</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> ወይም <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">ምንም እንኳ ከእንግዲህ የድሮ መገለጫዎን መድረስ ባይችሉም አሁንም ሊያስወግዱት ይችላሉ።</translation>

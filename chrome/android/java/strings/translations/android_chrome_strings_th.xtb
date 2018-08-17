@@ -143,7 +143,6 @@
 <translation id="2021896219286479412">ส่วนควบคุมเว็บไซต์แบบเต็มหน้าจอ</translation>
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB จากแอปอื่นๆ</translation>
-<translation id="2055670718290744343">ตัวเร่งการค้นหา</translation>
 <translation id="2063713494490388661">แตะเพื่อค้นหา</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
@@ -643,7 +642,6 @@
 <translation id="6111020039983847643">อินเทอร์เน็ตที่ใช้</translation>
 <translation id="6112702117600201073">กำลังรีเฟรชหน้า</translation>
 <translation id="6127379762771434464">นำรายการออกแล้ว</translation>
-<translation id="6138140242378429169">ปรับการแสดงผลให้เหมาะกับอุปกรณ์เคลื่อนที่</translation>
 <translation id="6140912465461743537">ประเทศ/ภูมิภาค</translation>
 <translation id="6154478581116148741">เปิดล็อกหน้าจอใน "การตั้งค่า" เพื่อส่งออกรหัสผ่านจากอุปกรณ์นี้</translation>
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
@@ -790,7 +788,7 @@
 <translation id="7251326866581677552">บล็อกจากบางไซต์</translation>
 <translation id="7253272406652746122">เพิ่มบัญชี Google จากหน้า "บัญชี" ในแอปการตั้งค่าของอุปกรณ์</translation>
 <translation id="7274013316676448362">เว็บไซต์ที่ถูกบล็อก</translation>
-<translation id="72867290065237936">แตะเพื่อสลับระหว่างการแนะนำรหัสผ่านและแป้นพิมพ์</translation>
+<translation id="72867290065237936">แตะเพื่อสลับระหว่างคำแนะนำรหัสผ่านกับแป้นพิมพ์</translation>
 <translation id="729975465115245577">อุปกรณ์ของคุณไม่มีแอปไว้จัดเก็บไฟล์รหัสผ่าน</translation>
 <translation id="7302081693174882195">รายละเอียด: จัดเรียงตามปริมาณเน็ตมือถือที่ประหยัดได้</translation>
 <translation id="7333031090786104871">ยังเพิ่มไซต์ก่อนหน้าอยู่</translation>

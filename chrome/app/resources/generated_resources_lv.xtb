@@ -1429,7 +1429,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="313205617302240621">Vai aizmirsāt paroli?</translation>
 <translation id="3132996321662585180">Atsvaidzināt katru dienu</translation>
 <translation id="3135204511829026971">Pagriezt ekrānu</translation>
-<translation id="313638818480447860">Mēs atradām <ph name="NUMBER_OF_APPS" /> lietotni(-es), kas ir saistīta(-as) ar jūsu kontu un ir optimizēta(-as) šai ierīcei.</translation>
 <translation id="313963229645891001">Notiek lejupielāde: <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Noklusējuma iemiesojums dzeltenā krāsā</translation>
 <translation id="3140353188828248647">Iezīmēt adreses joslu</translation>
@@ -1744,7 +1743,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3624567683873126087">Atbloķēt ierīci un pierakstīties Google kontā</translation>
 <translation id="3625258641415618104">Ekrānuzņēmumi atspējoti</translation>
 <translation id="3625481642044239431">Atlasīts nederīgs fails. Mēģiniet vēlreiz.</translation>
-<translation id="3625538291267447988">Lai iestatītu Smart Lock, ievadiet paroli.</translation>
 <translation id="3625870480639975468">Atiestatīt tālummaiņu</translation>
 <translation id="3626281679859535460">Spilgtums</translation>
 <translation id="3627320433825461852">Atlikusi mazāk nekā 1 minūte</translation>
@@ -2734,7 +2732,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5209518306177824490">SHA-1 pirkstu nospiedums</translation>
 <translation id="5210365745912300556">Aizvērt cilni</translation>
 <translation id="5213891612754844763">Rādīt starpniekservera iestatījumus</translation>
-<translation id="5214416042594875361">Piekļūstiet savam Asistentam katru reizi, kad ekrāns ir ieslēgts un sakāt frāzi “Ok Google”.</translation>
 <translation id="521582610500777512">Fotoattēls tika noraidīts.</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
 <translation id="52232769093306234">Neizdevās izveidot pakotni.</translation>
@@ -3394,6 +3391,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6163363155248589649">Parasts</translation>
 <translation id="6163522313638838258">Izvērst visu...</translation>
 <translation id="6164005077879661055">Visi faili un lokālie dati, kas ir saistīti ar uzraudzīto lietotāju, tiks neatgriezeniski dzēsti, tiklīdz uzraudzītais lietotājs tiks noņemts. Iespējams, pārzinis joprojām varēs skatīt šī uzraudzītā lietotāja apmeklētās vietnes un iestatījumus (vietnē <ph name="MANAGEMENT_URL" />).</translation>
+<translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="6166185671393271715">Paroļu importēšana pārlūkā Chrome</translation>
 <translation id="6169040057125497443">Lūdzu, pārbaudiet savu mikrofonu.</translation>
 <translation id="6169666352732958425">Nevar apraidīt darbvirsmu.</translation>
@@ -4981,7 +4979,6 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8642947597466641025">Palielināt tekstu</translation>
 <translation id="8643418457919840804">Lai turpinātu, izvēlieties opciju:</translation>
 <translation id="8645354835496065562">Turpināt atļaut piekļuvi sensoriem</translation>
-<translation id="8647691362751835453">Īsinājumvārda “OK Google” atpazīšana</translation>
 <translation id="8647834505253004544">Nederīga tīmekļa adrese</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> vai <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Lai gan jūs vairs nevarat piekļūt savam iepriekšējam profilam, joprojām varat to noņemt.</translation>

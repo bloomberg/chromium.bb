@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Inaakisi kwenye <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Tumia alama ya kidole kufungua</translation>
 <translation id="1919743966458266018">Njia ya mkato ya kufungua kidhibiti cha shughuli kwenye Chrome imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Kipindi chako kitafutwa ukiondoka kwenye akaunti. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Mibofyo ya kiotomatiki</translation>
 <translation id="1928739107511554905">Ili usasishe, tumia skrini ya kugusa kuwasha Chromebook yako upya huku kibodi ikiwa imeunganishwa.</translation>
 <translation id="1942830294380034169">Kitufe cha ziada</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">Kubali</translation>
 <translation id="4924411785043111640">Zima kisha uwashe na uweke upya</translation>
 <translation id="4961318399572185831">Tuma skrini</translation>
-<translation id="5069971504769299223">Msimamizi wa kifaa hiki anaweza kufuatilia shughuli zako.</translation>
 <translation id="5083553833479578423">Fungua vipengele zaidi vya programu yako ya Mratibu.</translation>
 <translation id="5136175204352732067">Kibodi tofauti imeunganishwa</translation>
 <translation id="5168181903108465623">Vifaa vinavyorusha maudhui vinapatikana</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">Tafuta+Shift+K</translation>
 <translation id="6650933572246256093">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nenosiri hili kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Nenosiri</translation>
-<translation id="6687966522050791666">Chagua lugha na mbinu ya kuingiza data</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Kibodi unayoweza kutenganisha inahitaji sasisho muhimu</translation>
 <translation id="6700713906295497288">Kitufe cha menyu ya IME</translation>

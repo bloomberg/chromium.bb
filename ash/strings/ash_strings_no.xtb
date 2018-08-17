@@ -25,7 +25,7 @@
 <translation id="1346748346194534595">Høyre</translation>
 <translation id="1351937230027495976">Skjul menyen</translation>
 <translation id="1383876407941801731">Søk</translation>
-<translation id="1419738280318246476">Lås opp enheten for å utføre varselhandlinger</translation>
+<translation id="1419738280318246476">Lås opp enheten for å utføre varselhandlingen</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Appvelger</translation>
@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Speiler <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Lås opp med fingeravtrykk</translation>
 <translation id="1919743966458266018">Snarveien for å åpne oppgavebehandlingen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Økten din slettes når du logger av. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Automatiske klikk</translation>
 <translation id="1928739107511554905">For å laste ned oppdateringen, bruk berøringsskjermen til å starte Chromebooken på nytt med tastaturet tilkoblet.</translation>
 <translation id="1942830294380034169">Overflyt-knapp</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">Godta</translation>
 <translation id="4924411785043111640">Start på nytt og tilbakestill</translation>
 <translation id="4961318399572185831">Cast skjermen</translation>
-<translation id="5069971504769299223">Enhetsadministratoren kan muligens overvåke aktiviteten din.</translation>
 <translation id="5083553833479578423">Lås opp flere Assistent-funksjoner.</translation>
 <translation id="5136175204352732067">Et annet tastatur er koblet til</translation>
 <translation id="5168181903108465623">Cast-enheter er tilgjengelige</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">Søk + Shift + K</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Passord</translation>
-<translation id="6687966522050791666">Velg språk og inndata</translation>
 <translation id="6691659475504239918">Søk + Shift + H</translation>
 <translation id="6696025732084565524">Det avtakbare tastaturet trenger en kritisk oppdatering</translation>
 <translation id="6700713906295497288">IME-menyknappen</translation>
@@ -445,7 +442,7 @@
 <translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
 <translation id="8940956008527784070">Lavt batterinivå (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8984179138335769204">Hurtigtaster</translation>
-<translation id="899350903320462459">Lås opp enheter som <ph name="LOGIN_ID" /> for å utføre varselhandlinger</translation>
+<translation id="899350903320462459">Lås opp enheten som <ph name="LOGIN_ID" /> for å utføre varselhandlingen</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">En oppdatering av Adobe Flash Player er tilgjengelig</translation>
 <translation id="9056839673611986238">Enheten blir tilbakestilt til forrige versjon</translation>

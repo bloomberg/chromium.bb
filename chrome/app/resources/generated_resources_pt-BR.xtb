@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">Esqueceu a senha?</translation>
 <translation id="3132996321662585180">Atualizar diariamente</translation>
 <translation id="3135204511829026971">Girar tela</translation>
-<translation id="313638818480447860"><ph name="NUMBER_OF_APPS" /> apps conectados à sua conta são otimizados para este dispositivo.</translation>
 <translation id="313963229645891001">Fazendo o download, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Avatar amarelo padrão</translation>
 <translation id="3140353188828248647">Foco na barra de endereço</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">Desbloquear dispositivo e fazer login na Conta do Google</translation>
 <translation id="3625258641415618104">Capturas de tela desativadas</translation>
 <translation id="3625481642044239431">Arquivo inválido selecionado. Tente novamente.</translation>
-<translation id="3625538291267447988">Para configurar o Smart Lock, informe sua senha</translation>
 <translation id="3625870480639975468">Redefinir o zoom</translation>
 <translation id="3626281679859535460">Brilho</translation>
 <translation id="3627320433825461852">Menos de 1 minuto restante</translation>
@@ -2734,7 +2732,6 @@
 <translation id="5209518306177824490">Assinatura digital SHA-1</translation>
 <translation id="5210365745912300556">Fechar guia</translation>
 <translation id="5213891612754844763">Mostrar configurações de proxy</translation>
-<translation id="5214416042594875361">Acesse seu Assistente a qualquer momento, dizendo "Ok Google" quando a tela estiver ativada.</translation>
 <translation id="521582610500777512">A foto foi descartada.</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="52232769093306234">O empacotamento falhou.</translation>
@@ -3396,6 +3393,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6163522313638838258">Expandir tudo...</translation>
 <translation id="6164005077879661055">Todos os arquivos e dados locais associados ao usuário supervisionado serão
 permanentemente excluídos assim que esse usuário for removido. Os websites visitados por esse usuário supervisionado e suas configurações ainda poderão ser vistos pelo administrador em <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6166185671393271715">Importar senhas para o Chrome</translation>
 <translation id="6169040057125497443">Verifique seu microfone.</translation>
 <translation id="6169666352732958425">Não é possível transmitir a área de trabalho.</translation>
@@ -4984,7 +4982,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8642947597466641025">Aumentar o texto</translation>
 <translation id="8643418457919840804">Para continuar, escolha uma opção:</translation>
 <translation id="8645354835496065562">Continuar permitindo acesso ao sensor</translation>
-<translation id="8647691362751835453">Detecção de "Ok Google"</translation>
 <translation id="8647834505253004544">Não é um endereço da Web válido</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> ou <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Embora você não possa mais acessar seu perfil antigo, ainda é possível removê-lo.</translation>

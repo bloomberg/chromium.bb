@@ -1839,7 +1839,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="637934607141010488">Raporttiluettelo viime aikoina sisäänkirjautuneista laitteen käyttäjistä.
 
       Jos käytännön arvo on epätosi, käyttäjiä ei raportoida.</translation>
-<translation id="6392973646875039351">Ottaa käyttöön tuotteen <ph name="PRODUCT_NAME" /> automaattinen täyttö -ominaisuuden ja antaa käyttäjien täydentää verkkolomakkeita automaattisesti aiemmin tallennetuilla tiedoilla, kuten osoitteilla tai luottokorttitiedoilla. Jos poistat tämän asetuksen käytöstä, automaattista täyttöä ei voi käyttää. Jos otat asetuksen käyttöön tai et määritä asetusta, automaattinen täyttö pysyy käyttäjän hallinnassa. Käyttäjä voi tällöin määrittää automaattisen täytön profiileja ja ottaa halutessaan automaattisen täytön käyttöön tai poistaa sen käytöstä.</translation>
 <translation id="6394350458541421998">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_OS_NAME" /> versiosta 29 lähtien. Käytä sen sijaan PresentationScreenDimDelayScale-käytäntöä.</translation>
 <translation id="6401669939808766804">Kirjaa käyttäjä ulos</translation>
 <translation id="6426205278746959912">Et voi pakottaa Android-sovelluksia käyttämään välityspalvelinta. Android-sovellusten käytettävissä on joukko välityspalvelinasetuksia, joiden noudattaminen on vapaaehtoista:

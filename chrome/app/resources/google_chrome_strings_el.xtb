@@ -16,7 +16,7 @@
 <translation id="1312676208694947750">{0,plural, =0{Υπάρχει μια διαθέσιμη ενημέρωση του Chrome OS}=1{Υπάρχει μια διαθέσιμη ενημέρωση του Chrome OS}other{Υπάρχει μια διαθέσιμη ενημέρωση του Chrome OS για # ημέρες}}</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1393853151966637042">Λήψη βοήθειας σχετικά με τη χρήση του Chrome</translation>
-<translation id="1399397803214730675">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, καταργήστε την εγκατάσταση του Google Chrome και δοκιμάστε ξανά.</translation>
+<translation id="1399397803214730675">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, απεγκαταστήστε το Google Chrome και δοκιμάστε ξανά.</translation>
 <translation id="1434626383986940139">Εφαρμογές Chrome Canary</translation>
 <translation id="1457721931618994305">Ενημέρωση του Google Chrome…</translation>
 <translation id="1469002951682717133">Λειτουργία εκκίνησης εφαρμογών Chrome</translation>
@@ -53,7 +53,7 @@
 <translation id="225363235161345695">{0,plural, =1{Η επανεκκίνηση του Chrome θα γίνει σε μία ώρα}other{Η επανεκκίνηση του Chrome θα γίνει σε # ώρες}}</translation>
 <translation id="2286950485307333924">Έχετε συνδεθεί στο Chrome</translation>
 <translation id="2290014774651636340">Λείπουν κλειδιά του Google API. Ορισμένες λειτουργίες του Google Chrome θα απενεργοποιηθούν.</translation>
-<translation id="2290095356545025170">Είστε βέβαιοι ότι θέλετε να καταργήσετε την εγκατάσταση του Google Chrome;</translation>
+<translation id="2290095356545025170">Είστε βέβαιοι ότι θέλετε να απεγκαταστήσετε του Google Chrome;</translation>
 <translation id="2309047409763057870">Αυτή είναι μια δευτερεύουσα εγκατάσταση του Google Chrome και δεν μπορεί να γίνει το προεπιλεγμένο πρόγραμμα περιήγησης.</translation>
 <translation id="2334084861041072223">Πνευματικά δικαιώματα <ph name="YEAR" /> Google Inc. Με επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="2346876346033403680">Κάποιο άτομο συνδέθηκε προηγουμένως στο Chrome σε αυτόν τον υπολογιστή ως <ph name="ACCOUNT_EMAIL_LAST" />. Αν αυτός δεν είναι ο λογαριασμός σας, δημιουργήστε ένα νέο χρήστη του Chrome, για να παραμείνουν οι πληροφορίες σας ξεχωριστά
@@ -64,7 +64,7 @@
 <translation id="2429317896000329049">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας επειδή ο συγχρονισμός δεν είναι διαθέσιμος για τον τομέα σας.</translation>
 <translation id="2436117022029368436">Επικοινωνεί με την Google για τη βελτίωση της περιήγησης και του Chrome</translation>
 <translation id="2467438592969358367">Το Google Chrome θέλει να εξαγάγει τους κωδικούς πρόσβασής σας. Για να το επιτρέψετε αυτό, πληκτρολογήστε τον κωδικό πρόσβασης για τα Windows.</translation>
-<translation id="2485422356828889247">Κατάργηση Εγκατάστασης</translation>
+<translation id="2485422356828889247">Απεγκατάσταση</translation>
 <translation id="2534507159460261402">Google Pay (αντιγράφηκε στο Chrome)</translation>
 <translation id="2535429035253759792">Ο διαχειριστής σας ζητάει να επανεκκινήσετε το Chrome, προκειμένου να εφαρμοστεί αυτή η ενημέρωση</translation>
 <translation id="2580411288591421699">Δεν είναι δυνατή η εγκατάσταση της ίδιας έκδοσης του Google Chrome που εκτελείται αυτήν τη στιγμή. Κλείστε το Google Chrome και προσπαθήστε ξανά.</translation>

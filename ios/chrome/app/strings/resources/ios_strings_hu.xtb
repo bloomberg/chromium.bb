@@ -23,7 +23,6 @@
 <translation id="127138278192656016">A szinkronizálás és az összes szolgáltatás használata</translation>
 <translation id="1272079795634619415">Leállítás</translation>
 <translation id="1323735185997015385">Törlés</translation>
-<translation id="132390688737681464">Címek mentése és betöltése</translation>
 <translation id="132683371494960526">Koppintson duplán a szülőmappa módosításához.</translation>
 <translation id="1340643665687018190">Menü bezárása</translation>
 <translation id="1375321115329958930">Mentett jelszavak</translation>
@@ -120,7 +119,6 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2870560284913253234">Webhely</translation>
 <translation id="2871695793448672541">Jelszó (rejtett)</translation>
 <translation id="2898963176829412617">Új mappa...</translation>
-<translation id="2903493209154104877">Címek</translation>
 <translation id="2909437209446960244">Nemrég megnyitott lapok</translation>
 <translation id="2916171785467530738">Keresések és URL-címek automatikus kiegészítése</translation>
 <translation id="291754862089661335">Igazítsa a QR-kódot vagy vonalkódot ehhez a kerethez</translation>
@@ -244,7 +242,6 @@ Adatai az összetett szinkronizálási jelszavával vannak titkosítva. Írja be
 <translation id="5062321486222145940">Google Drive telepítése</translation>
 <translation id="5083464117946352670">A fájlméret ismeretlen.</translation>
 <translation id="5094827893301452931">A Tweet kész.</translation>
-<translation id="5123982333065001601">Hitelkártyák mentése és betöltése</translation>
 <translation id="5173593619615111996">Összes inkognitólap bezárása</translation>
 <translation id="5181140330217080051">Letöltés</translation>
 <translation id="5186185447130319458">Privát</translation>
@@ -252,7 +249,6 @@ Adatai az összetett szinkronizálási jelszavával vannak titkosítva. Írja be
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Szinkronizálás bekapcsolása</translation>
 <translation id="5244474230056479698">Szinkronizálás a következővel: <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Nyisson meg új lapot a privát böngészéshez.</translation>
 <translation id="5300589172476337783">Megjelenítés</translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="5327248766486351172">Név</translation>
@@ -336,7 +332,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6464071786529933911">Megnyitás új inkognitólapon</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem törölve</translation>
 <translation id="6541915733953096570">Elmúlt óra</translation>
-<translation id="6570040839871198836">Űrlapok automatikus kitöltése</translation>
 <translation id="6656103420185847513">Mappa szerkesztése</translation>
 <translation id="6657585470893396449">Jelszó</translation>
 <translation id="667999046851023355">Dokumentum</translation>
@@ -426,8 +421,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8205564605687841303">Mégse</translation>
 <translation id="8225985093977202398">A gyorsítótárban lévő képek és fájlok</translation>
 <translation id="8261506727792406068">Törlés</translation>
-<translation id="8272426682713568063">hitelkártyák
-</translation>
 <translation id="8281781826761538115">Alapértelmezett – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Összes bezárása</translation>
 <translation id="8381750437846184350">Annak szabályozása, hogy a Google hogyan használhatja fel az Ön böngészési előzményeit a Keresés, a hirdetések és más Google-szolgáltatások személyre szabására</translation>

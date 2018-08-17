@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Bruk synkronisering og alle tjenester</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1323735185997015385">Slett</translation>
-<translation id="132390688737681464">Lagre og fyll inn adresser</translation>
 <translation id="132683371494960526">Dobbelttrykk for å bytte overordnet mappe.</translation>
 <translation id="1340643665687018190">Lukk menyen</translation>
 <translation id="1375321115329958930">Lagrede passord</translation>
@@ -120,7 +119,6 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2870560284913253234">Nettsted</translation>
 <translation id="2871695793448672541">Skjult passord</translation>
 <translation id="2898963176829412617">Ny mappe</translation>
-<translation id="2903493209154104877">Adresser</translation>
 <translation id="2909437209446960244">Nylige faner</translation>
 <translation id="2916171785467530738">Autofullfør søk og nettadresser</translation>
 <translation id="291754862089661335">Plassér QR-/strekkoden i denne rammen.</translation>
@@ -167,7 +165,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="3588820906588687999">Åpne bildet i en ny fane</translation>
 <translation id="3603009562372709545">Kopiér linkadressen</translation>
 <translation id="3607167657931203000">Autofylldata</translation>
-<translation id="360930808415985584">Kontrollér synkronisering, personlig tilpasning med mer</translation>
+<translation id="360930808415985584">Kontrollér synkronisering, personlig tilpassing med mer</translation>
 <translation id="3609785682760573515">Synkroniserer …</translation>
 <translation id="3628119975092896051">Leselisten din er tilgjengelig uten nett. Du kan legge til sider i leselisten ved å trykke på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Last inn nettsider på forhånd</translation>
@@ -244,7 +242,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 <translation id="5062321486222145940">Installer Google Disk</translation>
 <translation id="5083464117946352670">Kan ikke fastslå filstørrelsen.</translation>
 <translation id="5094827893301452931">Twitter-meldingen er fullført.</translation>
-<translation id="5123982333065001601">Lagre og fyll inn kredittkort</translation>
 <translation id="5173593619615111996">Lukk alle inkognitofaner</translation>
 <translation id="5181140330217080051">Laster ned</translation>
 <translation id="5186185447130319458">Privat</translation>
@@ -252,7 +249,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 <translation id="5197255632782567636">Internett</translation>
 <translation id="5228579091201413441">Slå på synkronisering</translation>
 <translation id="5244474230056479698">Synkroniserer til <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Åpne en fane for å surfe privat på nettet.</translation>
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="5327248766486351172">Navn</translation>
@@ -336,7 +332,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6464071786529933911">Åpne i en ny inkognitofane</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementer slettet</translation>
 <translation id="6541915733953096570">Den siste timen</translation>
-<translation id="6570040839871198836">Fyll ut skjemaer automatisk</translation>
 <translation id="6656103420185847513">Mapperedigering</translation>
 <translation id="6657585470893396449">Passord</translation>
 <translation id="667999046851023355">Dokument</translation>
@@ -426,7 +421,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="8205564605687841303">Avbryt</translation>
 <translation id="8225985093977202398">Bufrede bilder og filer</translation>
 <translation id="8261506727792406068">Slett</translation>
-<translation id="8272426682713568063">Kredittkort</translation>
 <translation id="8281781826761538115">Standard – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Lukk alle</translation>
 <translation id="8381750437846184350">Kontrollér hvordan Google bruker nettlesingsloggen din for å gi Søk, annonser og andre Google-tjenester et personlig preg</translation>

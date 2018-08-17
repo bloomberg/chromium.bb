@@ -1426,7 +1426,6 @@
 <translation id="313205617302240621">שכחת את הסיסמה?</translation>
 <translation id="3132996321662585180">רענון מדי יום</translation>
 <translation id="3135204511829026971">סובב את המסך</translation>
-<translation id="313638818480447860">מצאנו <ph name="NUMBER_OF_APPS" /> אפליקציות שמחוברות לחשבון שלך ועברו אופטימיזציה למכשיר הזה.</translation>
 <translation id="313963229645891001">בהורדה, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">דמות ברירת מחדל צהובה</translation>
 <translation id="3140353188828248647">התמקד בסרגל הכתובות</translation>
@@ -1506,7 +1505,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> רוצה להתחבר אל</translation>
 <translation id="3274763671541996799">עברת למסך מלא.</translation>
 <translation id="3275778913554317645">פתח כחלון</translation>
-<translation id="3278877214895457897">‏אחרי הגדרת ה-Chromebook, כדי לקבל עזרה מה-Assistant אפשר ללחוץ על לחצן ה-Assistant או לומר "OK Google".</translation>
+<translation id="3278877214895457897">‏אחרי הגדרת ה-Chromebook, כדי לקבל עזרה מה-Assistant אפשר תמיד ללחוץ על לחצן ה-Assistant או לומר "OK Google".</translation>
 <translation id="3279230909244266691">הפעולה עשויה להימשך מספר דקות. מתבצעת הפעלה של המכונה הווירטואלית.</translation>
 <translation id="3279741024917655738">הצגת סרטונים במסך מלא פועלת</translation>
 <translation id="3280237271814976245">שמור &amp;בשם...</translation>
@@ -1741,7 +1740,6 @@
 <translation id="3624567683873126087">‏ביטול נעילת המכשיר וכניסה אל חשבון Google</translation>
 <translation id="3625258641415618104">צילומי מסך מושבתים</translation>
 <translation id="3625481642044239431">בחרת קובץ לא חוקי. יש לנסות שוב.</translation>
-<translation id="3625538291267447988">‏כדי להגדיר את Smart Lock צריך להזין את הסיסמה</translation>
 <translation id="3625870480639975468">אפס מרחק מתצוגה</translation>
 <translation id="3626281679859535460">בהירות</translation>
 <translation id="3627320433825461852">נותרה פחות מדקה אחת</translation>
@@ -2731,7 +2729,6 @@
 <translation id="5209518306177824490">‏טביעת אצבע SHA-1</translation>
 <translation id="5210365745912300556">סגור כרטיסייה</translation>
 <translation id="5213891612754844763">‏הצג את ההגדרות של שרת ה-proxy</translation>
-<translation id="5214416042594875361">‏גישה ל-Assistant בכל פעם שאומרים "OK Google" כשהמסך מופעל.</translation>
 <translation id="521582610500777512">התצלום נמחק</translation>
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="52232769093306234">האריזה נכשלה.</translation>
@@ -3392,6 +3389,7 @@
 <translation id="6163363155248589649">&amp;רגיל</translation>
 <translation id="6163522313638838258">הרחב את הכל...</translation>
 <translation id="6164005077879661055">כל הקבצים והנתונים המקומיים המשויכים למשתמש בפיקוח יימחקו לצמיתות לאחר שמשתמש בפיקוח זה יוסר. המנהל עדיין יוכל לראות את האתרים שבהם משתמש בפיקוח זה ביקר, ואת ההגדרות שלו, בכתובת <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6166185671393271715">‏ייבוא סיסמאות אל Chrome</translation>
 <translation id="6169040057125497443">יש לבדוק את המיקרופון.</translation>
 <translation id="6169666352732958425">לא ניתן להעביר מהמחשב השולחני.</translation>
@@ -4976,7 +4974,6 @@
 <translation id="8642947597466641025">הגדל טקסט</translation>
 <translation id="8643418457919840804">כדי להמשיך יש לבחור אפשרות:</translation>
 <translation id="8645354835496065562">המשך התרת הגישה לחיישנים</translation>
-<translation id="8647691362751835453">‏זיהוי של "OK Google"</translation>
 <translation id="8647834505253004544">כתובת האינטרנט לא חוקית</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> או <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">למרות שכבר אין לך גישה לפרופיל הישן, אפשר עדיין להסיר אותו.</translation>

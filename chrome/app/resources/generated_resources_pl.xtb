@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">Nie pamiętasz hasła?</translation>
 <translation id="3132996321662585180">Odświeżaj codziennie</translation>
 <translation id="3135204511829026971">Obróć ekran</translation>
-<translation id="313638818480447860">Znaleźliśmy następującą liczbę aplikacji połączonych z Twoim kontem, które są zoptymalizowane dla tego urządzenia <ph name="NUMBER_OF_APPS" />.</translation>
 <translation id="313963229645891001">Pobieram, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Domyślny żółty awatar</translation>
 <translation id="3140353188828248647">Zaznacz pasek adresu</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">Odblokuj urządzenie i zaloguj się na konto Google</translation>
 <translation id="3625258641415618104">Zrzuty ekranu wyłączone</translation>
 <translation id="3625481642044239431">Wybrany plik jest nieprawidłowy. Spróbuj ponownie.</translation>
-<translation id="3625538291267447988">Aby skonfigurować Smart Lock, wpisz hasło</translation>
 <translation id="3625870480639975468">Resetuj powiększenie</translation>
 <translation id="3626281679859535460">Jasność</translation>
 <translation id="3627320433825461852">Została mniej niż 1 minuta</translation>
@@ -2734,7 +2732,6 @@
 <translation id="5209518306177824490">Odcisk cyfrowy SHA-1</translation>
 <translation id="5210365745912300556">Zamknij kartę</translation>
 <translation id="5213891612754844763">Pokaż ustawienia serwera proxy</translation>
-<translation id="5214416042594875361">Uruchamiaj Asystenta, mówiąc „OK Google”, gdy ekran jest włączony.</translation>
 <translation id="521582610500777512">Zdjęcie zostało odrzucone</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
 <translation id="52232769093306234">Nie udało się spakować.</translation>
@@ -3394,6 +3391,7 @@
 <translation id="6163363155248589649">&amp;Normalny</translation>
 <translation id="6163522313638838258">Rozwiń wszystko...</translation>
 <translation id="6164005077879661055">W chwili usunięcia użytkownika nadzorowanego wszystkie powiązane z nim pliki i dane lokalne zostaną trwale usunięte. Lista stron, na które wszedł ten użytkownik, oraz jego ustawienia mogą być wciąż widoczne dla menedżera na <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6166185671393271715">Importowanie haseł do Chrome</translation>
 <translation id="6169040057125497443">Sprawdź mikrofon.</translation>
 <translation id="6169666352732958425">Nie można przesłać pulpitu.</translation>
@@ -4982,7 +4980,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8642947597466641025">Powiększ tekst</translation>
 <translation id="8643418457919840804">Aby kontynuować, wybierz opcję:</translation>
 <translation id="8645354835496065562">Nadal zezwalaj na dostęp do czujników</translation>
-<translation id="8647691362751835453">Wykrywanie „OK Google”</translation>
 <translation id="8647834505253004544">Nieprawidłowy adres internetowy</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> lub <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Chociaż nie możesz już używać swojego starego profilu, możesz go usunąć.</translation>

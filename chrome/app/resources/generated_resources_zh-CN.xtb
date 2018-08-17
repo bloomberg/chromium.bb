@@ -1425,7 +1425,6 @@
 <translation id="313205617302240621">忘记了密码？</translation>
 <translation id="3132996321662585180">每日刷新</translation>
 <translation id="3135204511829026971">旋转屏幕</translation>
-<translation id="313638818480447860">我们发现，有 <ph name="NUMBER_OF_APPS" /> 款与您帐号关联的应用已针对此设备进行了优化。</translation>
 <translation id="313963229645891001">正在下载，<ph name="STATUS" /></translation>
 <translation id="3139925690611372679">默认的黄色头像</translation>
 <translation id="3140353188828248647">将地址栏设为焦点</translation>
@@ -1738,7 +1737,6 @@
 <translation id="3624567683873126087">解锁设备并登录 Google 帐号</translation>
 <translation id="3625258641415618104">已停用屏幕截图</translation>
 <translation id="3625481642044239431">所选的文件无效。请重试。</translation>
-<translation id="3625538291267447988">要设置 Smart Lock，请输入您的密码</translation>
 <translation id="3625870480639975468">重置缩放</translation>
 <translation id="3626281679859535460">亮度</translation>
 <translation id="3627320433825461852">还剩不到 1 分钟</translation>
@@ -2726,7 +2724,6 @@
 <translation id="5209518306177824490">SHA-1 指纹</translation>
 <translation id="5210365745912300556">关闭标签页</translation>
 <translation id="5213891612754844763">显示代理设置</translation>
-<translation id="5214416042594875361">当屏幕处于开启状态时，您可以随时访问自己的 Google 助理，只需说“Ok Google”即可。</translation>
 <translation id="521582610500777512">照片已被舍弃</translation>
 <translation id="5222676887888702881">退出</translation>
 <translation id="52232769093306234">打包失败。</translation>
@@ -3381,6 +3378,7 @@
 <translation id="6163363155248589649">正常(&amp;N)</translation>
 <translation id="6163522313638838258">全部展开...</translation>
 <translation id="6164005077879661055">删除该受监管用户后，与其相关联的所有文件和本地数据都会被永久删除，但管理员仍可以在 <ph name="MANAGEMENT_URL" /> 上查看该用户的设置和访问过的网站。</translation>
+<translation id="6165508094623778733">了解详情</translation>
 <translation id="6166185671393271715">将密码导入到 Chrome 中</translation>
 <translation id="6169040057125497443">请检查您的麦克风。</translation>
 <translation id="6169666352732958425">无法投射桌面。</translation>
@@ -4965,7 +4963,6 @@
 <translation id="8642947597466641025">放大文字</translation>
 <translation id="8643418457919840804">要继续，请选择一个选项：</translation>
 <translation id="8645354835496065562">继续允许使用传感器</translation>
-<translation id="8647691362751835453">“Ok Google”启动指令检测</translation>
 <translation id="8647834505253004544">网址无效</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" />或<ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">既然您已无法再访问自己的旧个人资料，不妨将其移除。</translation>

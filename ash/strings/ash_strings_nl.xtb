@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Spiegelen naar <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Ontgrendelen met vingerafdruk</translation>
 <translation id="1919743966458266018">De sneltoets om Taakbeheer te openen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Je sessie wordt gewist wanneer je uitlogt. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Automatische klikken</translation>
 <translation id="1928739107511554905">Als je de update wilt downloaden, sluit je het toetsenbord aan en start je je Chromebook opnieuw op via het touchscreen.</translation>
 <translation id="1942830294380034169">Overloopknop</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">Accepteren</translation>
 <translation id="4924411785043111640">Opnieuw opstarten en resetten</translation>
 <translation id="4961318399572185831">Scherm casten</translation>
-<translation id="5069971504769299223">De beheerder van het apparaat kan je activiteit mogelijk bekijken.</translation>
 <translation id="5083553833479578423">Ontgrendel meer functies van de Assistent.</translation>
 <translation id="5136175204352732067">Ander toetsenbord aangesloten</translation>
 <translation id="5168181903108465623">Cast-apparaten beschikbaar</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">Zoeken+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Wachtwoord</translation>
-<translation id="6687966522050791666">Taal en invoer kiezen</translation>
 <translation id="6691659475504239918">Zoeken+Shift+H</translation>
 <translation id="6696025732084565524">Je afneembare toetsenbord heeft een essentiële update nodig</translation>
 <translation id="6700713906295497288">IME-menuknop</translation>

@@ -1849,7 +1849,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="637934607141010488">Comunicar lista de utilizadores do dispositivo que iniciaram sessão recentemente.
 
       Se a política estiver definida como "false", os utilizadores não serão comunicados.</translation>
-<translation id="6392973646875039351">Ativa a funcionalidade de Preenchimento Automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente formulários Web utilizando informações anteriormente armazenadas, como endereços ou dados de cartões de crédito. Se desativar esta definição, os utilizadores não poderão aceder à funcionalidade de Preenchimento Automático. Se ativar esta definição ou não definir qualquer valor, os utilizadores poderão controlar o Preenchimento Automático, o que lhes permitirá configurar perfis de Preenchimento Automático e ligar ou desligar esta funcionalidade conforme pretendam.</translation>
 <translation id="6394350458541421998">Esta política foi removida a partir da versão 29 do <ph name="PRODUCT_OS_NAME" />. Em vez disso, utilize a política PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Terminar a sessão do utilizador</translation>
 <translation id="6426205278746959912">Não pode forçar as aplicações para Android a utilizar um proxy. É disponibilizado um subconjunto de definições de proxy para aplicações para Android, que estas podem optar voluntariamente por aceitar:

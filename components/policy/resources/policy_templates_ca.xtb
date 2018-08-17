@@ -1826,7 +1826,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="637934607141010488">Mostra una llista dels usuaris que han iniciat la sessió recentment al dispositiu.
 
       Si la política s'estableix com a falsa, no es proporcionarà informació sobre els usuaris.</translation>
-<translation id="6392973646875039351">Activa la funció d'emplenament automàtic de <ph name="PRODUCT_NAME" /> i permet que els usuaris emplenin formularis web automàticament mitjançant informació emmagatzemada anteriorment, com ara l'adreça o la informació de la targeta de crèdit. Si desactiveu aquest paràmetre, els usuaris no podran accedir a l'emplenament automàtic. Tant si l'activeu com si no hi configureu cap valor, l'usuari podrà controlar l'emplenament automàtic. D'aquesta manera, podrà configurar perfils d'emplenament automàtic i activar o desactivar l'emplenament automàtic segons li convingui.</translation>
 <translation id="6394350458541421998">Aquesta política no està disponible des de la versió 29 de <ph name="PRODUCT_OS_NAME" />. Feu servir la política PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Tanca la sessió de l'usuari</translation>
 <translation id="6426205278746959912">No pots forçar que les aplicacions d'Android utilitzin un servidor intermediari. Les aplicacions per a Android tenen disponible un subconjunt d'opcions de configuració per al servidor intermediari, que poden decidir si respectar-les:

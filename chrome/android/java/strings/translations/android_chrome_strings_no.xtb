@@ -81,7 +81,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="1566400915470565838">Koble til Internett for å bruke <ph name="APP_NAME" />.</translation>
 <translation id="1569387923882100876">Tilkoblet enhet</translation>
 <translation id="1571304935088121812">Kopiér brukernavnet</translation>
-<translation id="1576370611341449972">Nedlastning kun når Wi-Fi er på</translation>
+<translation id="1576370611341449972">Nedlasting bare når Wi-Fi er på</translation>
 <translation id="1612196535745283361">Chrome trenger posisjonstilgang for å søke etter enheter. Posisjonstilgang er <ph name="BEGIN_LINK" />slått av for denne enheten<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">Slå på synkronisering, personlig tilpasning og andre Google-tjenester</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -143,7 +143,6 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="2021896219286479412">Navigering i full skjerm</translation>
 <translation id="2038563949887743358">Slå på Bruk skrivebordsversjon</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB andre apper</translation>
-<translation id="2055670718290744343">Søkeakselerator</translation>
 <translation id="2063713494490388661">Trykk for å søke</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
@@ -643,7 +642,6 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="6111020039983847643">data brukt</translation>
 <translation id="6112702117600201073">Oppdaterer siden.</translation>
 <translation id="6127379762771434464">Elementet ble fjernet</translation>
-<translation id="6138140242378429169">Gjør siden mobilvennlig</translation>
 <translation id="6140912465461743537">Land/område</translation>
 <translation id="6154478581116148741">Slå på skjermlåsen i Innstillinger for å eksportere passordene dine fra denne enheten</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> datasparing</translation>
@@ -790,7 +788,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7251326866581677552">Blokkert på noen nettsteder</translation>
 <translation id="7253272406652746122">Legg til en Google-konto på Kontoer-siden i Innstillinger-appen på enheten din.</translation>
 <translation id="7274013316676448362">Blokkert nettsted</translation>
-<translation id="72867290065237936">For å bytte mellom passordforslag og tastatur</translation>
+<translation id="72867290065237936">Trykk for å bytte mellom passordforslag og tastatur</translation>
 <translation id="729975465115245577">Enheten din har ingen app som kan lagre passordfilen.</translation>
 <translation id="7302081693174882195">Informasjon: Sortert etter mengden data som er lagret</translation>
 <translation id="7333031090786104871">Holder fortsatt på å legge til det forrige nettstedet</translation>

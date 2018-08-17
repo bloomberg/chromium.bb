@@ -54,7 +54,6 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
 <translation id="1885785240814121742">指紋でロックを解除する</translation>
 <translation id="1919743966458266018">タスク マネージャを起動するショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
-<translation id="1923508880661655826">ログアウトするとセッションは消去されます。<ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">自動クリック</translation>
 <translation id="1928739107511554905">アップデートを取得するには、キーボードが接続された状態で、タッチスクリーンを使って Chromebook を再起動してください。</translation>
 <translation id="1942830294380034169">オーバーフロー ボタン</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">承諾</translation>
 <translation id="4924411785043111640">再起動してリセット</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
-<translation id="5069971504769299223">端末の管理者によりアクティビティが監視される可能性があります。</translation>
 <translation id="5083553833479578423">さらに多くのアシスタント機能をぜひご活用ください。</translation>
 <translation id="5136175204352732067">別のキーボードが接続されています</translation>
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">検索+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">パスワード</translation>
-<translation id="6687966522050791666">言語と入力方法を選択</translation>
 <translation id="6691659475504239918">検索+Shift+H</translation>
 <translation id="6696025732084565524">お使いのキーボード（取り外し可能）に重要なアップデートを適用する必要があります</translation>
 <translation id="6700713906295497288">IME メニューボタン</translation>

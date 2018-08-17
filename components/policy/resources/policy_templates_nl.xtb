@@ -1906,11 +1906,6 @@
 <translation id="637934607141010488">Lijst melden met apparaatgebruikers die onlangs zijn ingelogd.
 
       Als het beleid is ingesteld op 'onwaar' (false), worden de gebruikers niet gemeld.</translation>
-<translation id="6392973646875039351">Hiermee wordt de functie Automatisch aanvullen van <ph name="PRODUCT_NAME" /> ingeschakeld en wordt gebruikers toegestaan webformulieren automatisch in te vullen met eerder opgeslagen informatie zoals adres- of creditcardgegevens.
-
-      Als je deze instelling uitschakelt, kunnen gebruikers de functie Automatisch aanvullen niet gebruiken.
-
-      Als je de instelling inschakelt of geen waarde instelt, kunnen gebruikers de opties voor Automatisch aanvullen zelf beheren. Zo kunnen ze profielen voor Automatisch aanvullen configureren en de functie naar wens in- of uitschakelen.</translation>
 <translation id="6394350458541421998">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_OS_NAME" /> versie 29. Gebruik het beleid PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">De gebruiker uitloggen</translation>
 <translation id="6426205278746959912">Je kunt Android-apps niet dwingen een proxy te gebruiken. Er is een subset met proxyinstellingen beschikbaar voor Android-apps. Deze kunnen ze op vrijwillige basis respecteren:

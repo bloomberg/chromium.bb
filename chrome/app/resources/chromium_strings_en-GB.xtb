@@ -120,6 +120,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5358375970380395591">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Updating Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">There is a new version of Chromium available.</translation>
+<translation id="5416696090975899932">Chromium cannot show the print preview when the built-in PDF viewer is missing.</translation>
 <translation id="5427571867875391349">Set Chromium as your default browser</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium updates automatically so you always have the freshest version. When this download completes, Chromium will restart and you'll be on your way.</translation>

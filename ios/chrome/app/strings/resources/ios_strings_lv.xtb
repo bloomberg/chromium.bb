@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Sinhronizēšanas un visu pakalpojumu izmantošana</translation>
 <translation id="1272079795634619415">Apturēt</translation>
 <translation id="1323735185997015385">Dzēst</translation>
-<translation id="132390688737681464">Saglabāt un aizpildīt adreses</translation>
 <translation id="132683371494960526">Veiciet dubultskārienu, lai mainītu vecākmapi.</translation>
 <translation id="1340643665687018190">Aizvērt izvēlni</translation>
 <translation id="1375321115329958930">Saglabātās paroles</translation>
@@ -120,7 +119,6 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="2870560284913253234">Vietne</translation>
 <translation id="2871695793448672541">Slēpta, parole</translation>
 <translation id="2898963176829412617">Jauna mape...</translation>
-<translation id="2903493209154104877">Adreses</translation>
 <translation id="2909437209446960244">Pēdējās cilnes</translation>
 <translation id="2916171785467530738">Automātiski pabeigt meklēšanas vaicājumus un vietrāžus URL</translation>
 <translation id="291754862089661335">Novietojiet QR kodu vai svītrkodu šajā ietvarā.</translation>
@@ -244,7 +242,6 @@ Jūsu dati ir šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi. Lai s�
 <translation id="5062321486222145940">Instalēt Google disku</translation>
 <translation id="5083464117946352670">Nevar noteikt faila lielumu.</translation>
 <translation id="5094827893301452931">Twitter ziņa izveidota.</translation>
-<translation id="5123982333065001601">Saglabāt un aizpildīt kredītkaršu informāciju</translation>
 <translation id="5173593619615111996">Aizvērt inkognito cilnes</translation>
 <translation id="5181140330217080051">Notiek lejupielāde</translation>
 <translation id="5186185447130319458">Privāti</translation>
@@ -252,7 +249,6 @@ Jūsu dati ir šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi. Lai s�
 <translation id="5197255632782567636">Internets</translation>
 <translation id="5228579091201413441">Iespējot sinhronizāciju</translation>
 <translation id="5244474230056479698">Sinhronizēšana ar <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Atveriet cilni, lai privāti pārlūkotu tīmekli.</translation>
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5327248766486351172">Nosaukums</translation>
@@ -336,7 +332,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="6464071786529933911">Atvērt jaunā inkogn. cilnē</translation>
 <translation id="6482629121755362506">Dzēsti vienumi: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Iepriekšējā stunda</translation>
-<translation id="6570040839871198836">Autom. aizpilde</translation>
 <translation id="6656103420185847513">Mapes rediģēšana</translation>
 <translation id="6657585470893396449">Parole</translation>
 <translation id="667999046851023355">Dokuments</translation>
@@ -426,7 +421,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8205564605687841303">Atcelt</translation>
 <translation id="8225985093977202398">Kešatmiņa</translation>
 <translation id="8261506727792406068">Dzēst</translation>
-<translation id="8272426682713568063">Kredītkartes</translation>
 <translation id="8281781826761538115">Noklusējuma — <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Aizvērt visu</translation>
 <translation id="8381750437846184350">Kontrolēt to, kā Google izmanto jūsu pārlūkošanas vēsturi, lai personalizētu Meklēšanu, reklāmas un citus Google pakalpojumus</translation>

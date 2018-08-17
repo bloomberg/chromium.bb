@@ -7,7 +7,7 @@
 <translation id="1013742170491673792">пошук</translation>
 <translation id="1022586497894531524">Уперше користуєтеся голосовими підказками ChromeVox? З цього посібника ви швидко дізнаєтеся про основні функції програми.</translation>
 <translation id="1023866615269196768">Розтягнута.</translation>
-<translation id="1025074108959230262">Закріплений режим вимкнено</translation>
+<translation id="1025074108959230262">Залипання клавіш вимкнено</translation>
 <translation id="1031961866430398710">тоді</translation>
 <translation id="1038643060055067718">Рядків:</translation>
 <translation id="1038795173450935438">Щоб переходити між елементами на сторінці, натискайте Search і стрілку вправо або вліво. Щоб переходити між рядками, натискайте Search і стрілку вгору або вниз. Щоб активувати вибраний елемент, натисніть Search і пробіл.</translation>
@@ -530,7 +530,7 @@
 <translation id="5302089807023311274">Посилання на бібліографію</translation>
 <translation id="5304943142864553931">вкладка <ph name="TITLE" /></translation>
 <translation id="5310788376443009632">видалено:</translation>
-<translation id="5320727453979144100">Закріплений режим увімкнено</translation>
+<translation id="5320727453979144100">Залипання клавіш увімкнено</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{кома}one{# кома}few{# коми}many{# ком}other{# commas}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, текстове поле</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, посилання</translation>

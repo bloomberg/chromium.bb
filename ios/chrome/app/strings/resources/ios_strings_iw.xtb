@@ -23,7 +23,6 @@
 <translation id="127138278192656016">שימוש בסינכרון ובכל השירותים</translation>
 <translation id="1272079795634619415">הפסק</translation>
 <translation id="1323735185997015385">מחק</translation>
-<translation id="132390688737681464">שמירה ומילוי של כתובות</translation>
 <translation id="132683371494960526">הקש פעמיים כדי לשנות את תיקיית האב.</translation>
 <translation id="1340643665687018190">סגור את התפריט</translation>
 <translation id="1375321115329958930">סיסמאות שמורות</translation>
@@ -120,7 +119,6 @@
 <translation id="2870560284913253234">אתר</translation>
 <translation id="2871695793448672541">נסתר, סיסמה</translation>
 <translation id="2898963176829412617">תיקייה חדשה…</translation>
-<translation id="2903493209154104877">כתובות</translation>
 <translation id="2909437209446960244">כרטיסיות אחרונות</translation>
 <translation id="2916171785467530738">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
 <translation id="291754862089661335">‏מקם את קוד ה-QR או הברקוד במסגרת זו</translation>
@@ -244,7 +242,6 @@
 <translation id="5062321486222145940">‏התקן את Google Drive</translation>
 <translation id="5083464117946352670">גודל הקובץ אינו ידוע.</translation>
 <translation id="5094827893301452931">הציוץ בוצע.</translation>
-<translation id="5123982333065001601">שמירה ומילוי של כרטיסי אשראי</translation>
 <translation id="5173593619615111996">סגור את כל כרטיסיות הגלישה בסתר</translation>
 <translation id="5181140330217080051">מוריד</translation>
 <translation id="5186185447130319458">פרטי</translation>
@@ -252,7 +249,6 @@
 <translation id="5197255632782567636">אינטרנט</translation>
 <translation id="5228579091201413441">הפעל סנכרון</translation>
 <translation id="5244474230056479698">מסנכרן ל-<ph name="EMAIL" /></translation>
-<translation id="527973086555161537">ניתן לפתוח כרטיסייה כדי לגלוש בפרטיות באינטרנט.</translation>
 <translation id="5300589172476337783">הצג</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5327248766486351172">שם</translation>
@@ -336,7 +332,6 @@
 <translation id="6464071786529933911">פתח בכרטיסיית גלישה בסתר חדשה</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים נמחקו</translation>
 <translation id="6541915733953096570">מהשעה האחרונה</translation>
-<translation id="6570040839871198836">מילוי אוטומטי של טפסים</translation>
 <translation id="6656103420185847513">ערוך תיקייה</translation>
 <translation id="6657585470893396449">סיסמה</translation>
 <translation id="667999046851023355">מסמך</translation>
@@ -426,7 +421,6 @@
 <translation id="8205564605687841303">בטל</translation>
 <translation id="8225985093977202398">תמונות וקבצים במטמון</translation>
 <translation id="8261506727792406068">מחיקה</translation>
-<translation id="8272426682713568063">כרטיסי אשראי</translation>
 <translation id="8281781826761538115">ברירת מחדל - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">סגור הכל</translation>
 <translation id="8381750437846184350">‏שלוט באופן שבו חברת Google משתמשת בהיסטוריית הגלישה שלך לצורך התאמה אישית של חיפוש Google, מודעות Google ושירותי Google אחרים</translation>

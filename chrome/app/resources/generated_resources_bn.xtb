@@ -1369,7 +1369,7 @@
 <translation id="3031557471081358569">আমদানির জন্য আইটেম বেছে নিন:</translation>
 <translation id="3031601332414921114">প্রিন্ট আবার শুরু করুন</translation>
 <translation id="303198083543495566">ভূগোল</translation>
-<translation id="3033999583152214331">আপনার Chromebook-এ Linux টুল, এডিটর, এবং IDEs চালান৷ &lt;a target="_blank" href="<ph name="URL" />"&gt;আরও জানুন&lt;/a&gt;</translation>
+<translation id="3033999583152214331">আপনার Chromebook-এ Linux টুল, এডিটর এবং IDEs চালান৷ &lt;a target="_blank" href="<ph name="URL" />"&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Flash সক্ষম করুন</translation>
 <translation id="3037754279345160234">ডোমেনে যোগ করার জন্য প্রয়োজনীয় কনফিগারেশন পার্স করা যাচ্ছে না। আপনার অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।</translation>
 <translation id="3038612606416062604">নিজ হাতে একটি প্রিন্টার যোগ করুন</translation>
@@ -1430,7 +1430,6 @@
 <translation id="313205617302240621">পাসওয়ার্ড ভুলে গেছেন?</translation>
 <translation id="3132996321662585180">প্রতিদিন রিফ্রেশ করুন</translation>
 <translation id="3135204511829026971">স্ক্রিন ঘোরান</translation>
-<translation id="313638818480447860">আমরা আপনার অ্যাকাউন্টের সাথে কানেক্ট করা <ph name="NUMBER_OF_APPS" />টি অ্যাপ পেয়েছি যা এই ডিভাইসের জন্য অপ্টিমাইজ করা হয়েছে।</translation>
 <translation id="313963229645891001">ডাউনলোড হচ্ছে: <ph name="STATUS" /> বাকি</translation>
 <translation id="3139925690611372679">ডিফল্ট হলুদ রঙের অবতার</translation>
 <translation id="3140353188828248647">ফোকাস ঠিকানা দণ্ড</translation>
@@ -1742,7 +1741,6 @@
 <translation id="3624567683873126087">ডিভাইস আনলক করে Google অ্যাকাউন্টে সাইন-ইন করুন</translation>
 <translation id="3625258641415618104">স্ক্রীনশট অক্ষম হয়েছে</translation>
 <translation id="3625481642044239431">ভুল ফাইল বেছে নেওয়া হয়েছে। আবার চেষ্টা করুন।</translation>
-<translation id="3625538291267447988">Smart Lock সেট-আপ করতে আপনার পাসওয়ার্ড লিখুন</translation>
 <translation id="3625870480639975468">জুম পুনরায় সেট করুন</translation>
 <translation id="3626281679859535460">উজ্জ্বলতা</translation>
 <translation id="3627320433825461852">1 মিনিটেরও কম সময় বাকি আছে</translation>
@@ -2730,7 +2728,6 @@
 <translation id="5209518306177824490">SHA-1 আঙুলের ছাপ</translation>
 <translation id="5210365745912300556">ট্যাব বন্ধ করুন</translation>
 <translation id="5213891612754844763">প্রক্সি সেটিংস দেখুন</translation>
-<translation id="5214416042594875361">আপনার স্ক্রিন চালু থাকাকালীন "OK Google" বলে যেকোনও সময়ে আপনার অ্যাসিস্ট্যান্ট অ্যাক্সেস করুন।</translation>
 <translation id="521582610500777512">ফটো বাতিল হয়েছে</translation>
 <translation id="5222676887888702881">প্রস্থান করুন</translation>
 <translation id="52232769093306234">প্যাকিং করা যায়নি।</translation>
@@ -3391,6 +3388,7 @@
 <translation id="6163522313638838258">সবকিছু বিস্তার করুন...</translation>
 <translation id="6164005077879661055">একবার এই তত্ত্বাবধানে থাকা ব্যবহারকারী সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং
 স্থানীয় ডেটা স্থায়ীভাবে মুছে ফেলা হবে৷ এই তত্ত্বাবধানে থাকা ব্যবহারকারীর জন্য পরিদর্শিত এবং সেটিংস <ph name="MANAGEMENT_URL" /> এ পরিচালকের কাছে এখনো দৃশ্যমান হতে পারে৷</translation>
+<translation id="6165508094623778733">আরও জানুন</translation>
 <translation id="6166185671393271715">Chrome এ পাসওয়ার্ড আমদানি করুন</translation>
 <translation id="6169040057125497443">অনুগ্রহ করে আপনার মাইক্রোফোন ভালকরে দেখে নিন।</translation>
 <translation id="6169666352732958425">ডেস্কটপ কাস্ট করতে ব্যর্থ হয়েছে।</translation>
@@ -4977,7 +4975,6 @@
 <translation id="8642947597466641025">পাঠ্যকে আরও বড় করুন</translation>
 <translation id="8643418457919840804">চালিয়ে যেতে, একটি বিকল্প বেছে নিন:</translation>
 <translation id="8645354835496065562">সেন্সর অ্যাক্সেস করার অনুমতি চালু রাখুন</translation>
-<translation id="8647691362751835453">"Ok Google" শনাক্তকরণ</translation>
 <translation id="8647834505253004544">ওয়েব ঠিকানাটি ভুল</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> অথবা <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">যদিও পুরনো প্রোফাইলটি আপনি আর অ্যাক্সেস করতে পারবেন না, আপনি সেটি সরিয়ে দিতে পারেন।</translation>

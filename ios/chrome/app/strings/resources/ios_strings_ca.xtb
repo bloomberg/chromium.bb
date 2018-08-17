@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Fes servir la sincronització i tots els serveis</translation>
 <translation id="1272079795634619415">Atura</translation>
 <translation id="1323735185997015385">Suprimeix</translation>
-<translation id="132390688737681464">Desa i emplena les adreces</translation>
 <translation id="132683371494960526">Feu doble toc per canviar la carpeta principal.</translation>
 <translation id="1340643665687018190">Tanca el menú</translation>
 <translation id="1375321115329958930">Contrasenyes desades</translation>
@@ -120,7 +119,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2870560284913253234">Lloc</translation>
 <translation id="2871695793448672541">Contrasenya amagada</translation>
 <translation id="2898963176829412617">Carpeta nova…</translation>
-<translation id="2903493209154104877">Adreces</translation>
 <translation id="2909437209446960244">Pestanyes recents</translation>
 <translation id="2916171785467530738">Completa automàticament les cerques i els URL</translation>
 <translation id="291754862089661335">Situa el codi QR o el codi de barres dins d'aquest marc</translation>
@@ -244,7 +242,6 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="5062321486222145940">Instal. de Google Drive</translation>
 <translation id="5083464117946352670">No es determina mida fitxer.</translation>
 <translation id="5094827893301452931">S'ha completat el tuit.</translation>
-<translation id="5123982333065001601">Desa i emplena les targetes de crèdit</translation>
 <translation id="5173593619615111996">Tanca pestanyes d'incògnit</translation>
 <translation id="5181140330217080051">S'està baixant</translation>
 <translation id="5186185447130319458">Privat</translation>
@@ -252,7 +249,6 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Activa la sincronització</translation>
 <translation id="5244474230056479698">S'està sincronitzant amb <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Obre una pestanya per navegar pel web de manera privada.</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5327248766486351172">Nom</translation>
@@ -336,7 +332,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6464071786529933911">Obre en una pestanya d'incògnit</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elements suprimits</translation>
 <translation id="6541915733953096570">L'última hora</translation>
-<translation id="6570040839871198836">Emplenament automàtic</translation>
 <translation id="6656103420185847513">Edició de la carpeta</translation>
 <translation id="6657585470893396449">Contrasenya</translation>
 <translation id="667999046851023355">Document</translation>
@@ -426,7 +421,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8205564605687841303">Cancel·la</translation>
 <translation id="8225985093977202398">Fitxers i imatges a memòria cau</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
-<translation id="8272426682713568063">Targetes de crèdit</translation>
 <translation id="8281781826761538115">Idioma predeterminat: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Tanca-ho tot</translation>
 <translation id="8381750437846184350">Controleu com utilitza Google el vostre historial de navegació per personalitzar la Cerca, els anuncis i altres serveis de Google</translation>
@@ -476,7 +470,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="9188680907066685419">Tanqueu la sessió del compte gestionat</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">L'informe d'error s'ha enviat.</translation>
-<translation id="932327136139879170">Pàgina d'inici</translation>
+<translation id="932327136139879170">Inici</translation>
 <translation id="935490618240037774">Les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració se sincronitzaran amb el teu compte de Google, perquè els puguis utilitzar en tots els dispositius</translation>
 <translation id="939598580284253335">Introduïu la frase de contrasenya</translation>
 <translation id="976982866697960176">Gestioneu les dades sincronitzades…</translation>

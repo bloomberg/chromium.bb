@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">Забули пароль?</translation>
 <translation id="3132996321662585180">Оновлювати щодня</translation>
 <translation id="3135204511829026971">Обертати екран</translation>
-<translation id="313638818480447860">Ми знайшли стільки зв’язаних з обліковим записом додатків, які оптимізовано для цього пристрою: <ph name="NUMBER_OF_APPS" />.</translation>
 <translation id="313963229645891001">Завантаження: <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Стандартний жовтий аватар</translation>
 <translation id="3140353188828248647">Активувати адресний рядок</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">Розблоковуйте пристрій і входьте в обліковий запис Google</translation>
 <translation id="3625258641415618104">Знімки екрана вимкнено</translation>
 <translation id="3625481642044239431">Вибрано недійсний файл. Повторіть спробу.</translation>
-<translation id="3625538291267447988">Щоб налаштувати Smart Lock, введіть пароль</translation>
 <translation id="3625870480639975468">Скинути масштабування</translation>
 <translation id="3626281679859535460">Яскравість</translation>
 <translation id="3627320433825461852">Залишилося менше 1 хв.</translation>
@@ -2734,7 +2732,6 @@
 <translation id="5209518306177824490">Відбиток SHA-1</translation>
 <translation id="5210365745912300556">Закрити вкладку</translation>
 <translation id="5213891612754844763">Показати налаштування проксі</translation>
-<translation id="5214416042594875361">Зв’яжіться з Асистентом, сказавши "Ok Google", коли екран увімкнено.</translation>
 <translation id="521582610500777512">Фотографію відхилено</translation>
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="52232769093306234">Помилка пакування.</translation>
@@ -3394,6 +3391,7 @@
 <translation id="6163363155248589649">&amp;Звичайний</translation>
 <translation id="6163522313638838258">Розгорнути все...</translation>
 <translation id="6164005077879661055">Усі файли та локальні дані, пов’язані з контрольованим користувачем, буде назавжди видалено, якщо вилучити цього контрольованого користувача. Менеджер усе одно може бачити веб-сайти, які відвідував цей контрольований користувач, і його налаштування на сторінці <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Докладніше</translation>
 <translation id="6166185671393271715">Імпортувати паролі в Chrome</translation>
 <translation id="6169040057125497443">Перевірте мікрофон.</translation>
 <translation id="6169666352732958425">Не вдається транслювати робочий стіл.</translation>
@@ -4981,7 +4979,6 @@
 <translation id="8642947597466641025">Збільшити розмір тексту</translation>
 <translation id="8643418457919840804">Щоб продовжити, виберіть опцію:</translation>
 <translation id="8645354835496065562">Дозволяти доступ до датчиків</translation>
-<translation id="8647691362751835453">Розпізнавання команди "Ok Google"</translation>
 <translation id="8647834505253004544">Недійсна веб-адреса</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> або <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Хоча у вас більше немає доступу до старого профілю, ви можете видалити його.</translation>

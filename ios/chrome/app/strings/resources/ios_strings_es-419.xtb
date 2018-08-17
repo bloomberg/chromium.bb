@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Usar la sincronización y todos los servicios</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1323735185997015385">Borrar</translation>
-<translation id="132390688737681464">Guardar y completar direcciones</translation>
 <translation id="132683371494960526">Presiona dos veces para cambiar la carpeta principal.</translation>
 <translation id="1340643665687018190">Cerrar menú</translation>
 <translation id="1375321115329958930">Contraseñas guardadas</translation>
@@ -120,7 +119,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2871695793448672541">Contraseña oculta</translation>
 <translation id="2898963176829412617">Nueva carpeta…</translation>
-<translation id="2903493209154104877">Direcciones</translation>
 <translation id="2909437209446960244">Pestañas recientes</translation>
 <translation id="2916171785467530738">Autocompletar búsquedas y URL</translation>
 <translation id="291754862089661335">Coloca el código QR o de barras en este recuadro</translation>
@@ -244,7 +242,6 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 <translation id="5062321486222145940">Instalar Google Drive</translation>
 <translation id="5083464117946352670">Tamaño de archivo desconocido</translation>
 <translation id="5094827893301452931">Tweet publicado</translation>
-<translation id="5123982333065001601">Guardar y completar tarjetas de crédito</translation>
 <translation id="5173593619615111996">Cerrar todas las pestañas de incógnito</translation>
 <translation id="5181140330217080051">Descargando...</translation>
 <translation id="5186185447130319458">Privado</translation>
@@ -252,7 +249,6 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Habilitar sincronización</translation>
 <translation id="5244474230056479698">Sincronizando con <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Abre una pestaña para navegar en la Web de forma privada.</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
@@ -336,7 +332,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6464071786529933911">Abrir en una pestaña de incógnito nueva</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
 <translation id="6541915733953096570">La última hora</translation>
-<translation id="6570040839871198836">Autocompletar</translation>
 <translation id="6656103420185847513">Editar carpeta</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="667999046851023355">Documento</translation>
@@ -426,7 +421,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8205564605687841303">Cancelar</translation>
 <translation id="8225985093977202398">Imágenes y archivos almacenados en caché</translation>
 <translation id="8261506727792406068">Borrar</translation>
-<translation id="8272426682713568063">Tarjetas de crédito</translation>
 <translation id="8281781826761538115">Predeterminado: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Cerrar todas</translation>
 <translation id="8381750437846184350">Controla la forma en que Google usa tu historial de navegación para personalizar Búsqueda, Ads y otros servicios de Google</translation>

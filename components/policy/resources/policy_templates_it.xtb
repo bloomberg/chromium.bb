@@ -500,7 +500,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Quando questa norma non è configurata o è impostata su True, gli utenti possono utilizzare la funzione Condivisioni file di rete.
 
-      Quando questa norma è impostata su False, gli utenti non possono utilizzare la funzione Network File Shares.</translation>
+      Quando questa norma è impostata su False, gli utenti non possono utilizzare la funzione Condivisioni file di rete.</translation>
 <translation id="2438609638493026652">Attiva la segnalazione di eventi chiave durante l'installazione di app Android a Google. Gli eventi vengono acquisiti solo per le app la cui installazione è stata lanciata tramite norma.
 
       Se la norma viene impostata su True, gli eventi saranno registrati.
@@ -1530,7 +1530,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se viene definito un valore per questa norma, gli aggiornamenti ignoreranno la norma <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> e seguiranno invece questa norma.
 
-      Se quest'elenco è vuoto, non viene eseguita alcuna gestione temporanea e gli aggiornamenti vengono applicati in base alle altre norme del dispositivo.
+      Se quest'elenco è vuoto, non verrà eseguita alcuna gestione temporanea e gli aggiornamenti verranno applicati in base alle altre norme del dispositivo.
 
       Questa norma non viene applicata agli switch del canale.</translation>
 <translation id="5523812257194833591">Una sessione pubblica a cui accedere automaticamente dopo un ritardo.
@@ -1803,7 +1803,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="6376659517206731212">Può essere obbligatoria</translation>
 <translation id="6378076389057087301">Specifica se l'attività audio incide sulla gestione dell'alimentazione</translation>
 <translation id="637934607141010488">Consente di indicare un elenco di utenti del dispositivo che hanno eseguito l'accesso di recente. Se la norma è impostata su False, gli utenti non vengono indicati.</translation>
-<translation id="6392973646875039351">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e di permettere agli utenti di eseguire il completamento automatico dei moduli web utilizzando informazioni memorizzate in precedenza, come l'indirizzo o i dati della carta di credito. Se disattivi questa impostazione, gli utenti non potranno utilizzare la funzione Compilazione automatica. Se attivi questa impostazione o non imposti un valore, la funzione Compilazione automatica potrà essere gestita dagli utenti. Gli utenti potranno quindi configurare i profili di Compilazione automatica e attivare o disattivare a propria scelta la funzione Compilazione automatica.</translation>
 <translation id="6394350458541421998">La norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_OS_NAME" />. Utilizza la norma PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Disconnetti l'utente</translation>
 <translation id="6426205278746959912">Non è possibile imporre l'utilizzo di un proxy alle app Android. Viene messo a disposizione un sottoinsieme di impostazioni proxy che le app Android possono decidere se rispettare o meno.

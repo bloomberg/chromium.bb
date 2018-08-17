@@ -23,7 +23,6 @@
 <translation id="127138278192656016">同期とすべてのサービスを使用する</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1323735185997015385">削除</translation>
-<translation id="132390688737681464">住所の保存と入力</translation>
 <translation id="132683371494960526">ダブルタップして親フォルダを変更。</translation>
 <translation id="1340643665687018190">メニューを閉じる</translation>
 <translation id="1375321115329958930">保存したパスワード</translation>
@@ -120,7 +119,6 @@
 <translation id="2870560284913253234">サイト</translation>
 <translation id="2871695793448672541">非表示のパスワード</translation>
 <translation id="2898963176829412617">新しいフォルダ...</translation>
-<translation id="2903493209154104877">住所</translation>
 <translation id="2909437209446960244">最近使ったタブ</translation>
 <translation id="2916171785467530738">検索語句や URL をオートコンプリートする</translation>
 <translation id="291754862089661335">QR コードまたはバーコードをこの枠に合わせてください</translation>
@@ -244,7 +242,6 @@
 <translation id="5062321486222145940">ドライブをインストール</translation>
 <translation id="5083464117946352670">ファイルサイズが不明です。</translation>
 <translation id="5094827893301452931">ツイートが完了しました。</translation>
-<translation id="5123982333065001601">クレジット カードの保存と入力</translation>
 <translation id="5173593619615111996">すべてのシークレット タブを閉じる</translation>
 <translation id="5181140330217080051">ダウンロードしています</translation>
 <translation id="5186185447130319458">プライベート接続</translation>
@@ -252,7 +249,6 @@
 <translation id="5197255632782567636">インターネット</translation>
 <translation id="5228579091201413441">同期を有効にする</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> に同期しています</translation>
-<translation id="527973086555161537">ウェブをシークレット モードで閲覧するにはタブを開きます。</translation>
 <translation id="5300589172476337783">表示</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名前</translation>
@@ -336,7 +332,6 @@
 <translation id="6464071786529933911">新しいシークレット タブで開く</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を削除しました</translation>
 <translation id="6541915733953096570">過去 1 時間</translation>
-<translation id="6570040839871198836">フォーム自動入力</translation>
 <translation id="6656103420185847513">フォルダの編集</translation>
 <translation id="6657585470893396449">パスワード</translation>
 <translation id="667999046851023355">ドキュメント</translation>
@@ -426,7 +421,6 @@
 <translation id="8205564605687841303">キャンセル</translation>
 <translation id="8225985093977202398">キャッシュされた画像とファイル</translation>
 <translation id="8261506727792406068">削除</translation>
-<translation id="8272426682713568063">クレジットカード</translation>
 <translation id="8281781826761538115">デフォルト - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">すべて閉じる</translation>
 <translation id="8381750437846184350">検索、広告、その他の Google サービスをカスタマイズするために Google が閲覧履歴をどのような方法で使用するかを設定します</translation>

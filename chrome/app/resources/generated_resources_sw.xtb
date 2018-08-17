@@ -1425,7 +1425,6 @@
 <translation id="313205617302240621">Je, umesahau nenosiri lako?</translation>
 <translation id="3132996321662585180">Onyesha upya kila siku</translation>
 <translation id="3135204511829026971">Zungusha skrini</translation>
-<translation id="313638818480447860">Tumepata programu <ph name="NUMBER_OF_APPS" /> zilizounganishwa kwenye akaunti yako, ambazo zimeboreshwa kwa ajili ya kifaa hiki.</translation>
 <translation id="313963229645891001">Inapakua, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Ishara chaguomsingi manjano</translation>
 <translation id="3140353188828248647">Lenga upau anwani</translation>
@@ -1737,7 +1736,6 @@
 <translation id="3624567683873126087">Fungua kifaa na uingie katika Akaunti ya Google</translation>
 <translation id="3625258641415618104">Picha za skrini zimezimwa</translation>
 <translation id="3625481642044239431">Umechagua faili ambayo si sahihi. Jaribu tena.</translation>
-<translation id="3625538291267447988">Ili uweke mipangilio ya Smart Lock, weka nenosiri lako</translation>
 <translation id="3625870480639975468">Weka upya ukuzaji</translation>
 <translation id="3626281679859535460">Ung'aavu</translation>
 <translation id="3627320433825461852">Imesalia chini ya dakika 1</translation>
@@ -2725,7 +2723,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5209518306177824490">Alama ya SHA-1</translation>
 <translation id="5210365745912300556">Funga kichupo</translation>
 <translation id="5213891612754844763">Onyesha mipangilio ya seva mbadala</translation>
-<translation id="5214416042594875361">Fikia programu yako ya Mratibu wakati wowote unaposema "OK Google" ukiwa umewasha skrini yako.</translation>
 <translation id="521582610500777512">Picha ilitupwa</translation>
 <translation id="5222676887888702881">Ondoka</translation>
 <translation id="52232769093306234">Imeshindwa kupakia faili.</translation>
@@ -3385,6 +3382,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6163363155248589649">&amp;Kawaida</translation>
 <translation id="6163522313638838258">Panua yote...</translation>
 <translation id="6164005077879661055">Faili zote na data ya ndani zinazohusishwa na mtumiaji anayesimamiwa zitafutwa kabisa mtumiaji huyu anayesimamiwa atakapoondolewa. Tovuti zilizotembelewa na mipangilio ya mtumiaji huyu anayesimamiwa inaweza bado kuonekana na msimamizi katika <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="6166185671393271715">Leta Manenosiri Kwenye Chrome</translation>
 <translation id="6169040057125497443">Tafadhali angalia maikrofoni yako.</translation>
 <translation id="6169666352732958425">Imeshindwa kutuma eneo-kazi.</translation>
@@ -4974,7 +4972,6 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8642947597466641025">Fanya Matini Kuwa Makubwa</translation>
 <translation id="8643418457919840804">Ili uendelee, teua chaguo moja:</translation>
 <translation id="8645354835496065562">Endelea kuruhusu ufikiaji wa vitambuzi</translation>
-<translation id="8647691362751835453">Utambuzi wa "OK Google"</translation>
 <translation id="8647834505253004544">Anwani ya wavuti si sahihi</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> au <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Ingawa huwezi kufikia tena wasifu wako wa awali, bado unaweza kuuondoa.</translation>

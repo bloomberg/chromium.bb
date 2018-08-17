@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">ลืมรหัสผ่าน</translation>
 <translation id="3132996321662585180">รีเฟรชทุกวัน</translation>
 <translation id="3135204511829026971">หมุนหน้าจอ</translation>
-<translation id="313638818480447860">เราพบแอป <ph name="NUMBER_OF_APPS" /> แอปที่เชื่อมต่ออยู่กับบัญชีของคุณซึ่งได้รับการปรับให้เหมาะกับอุปกรณ์นี้</translation>
 <translation id="313963229645891001">กำลังดาวน์โหลด <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">รูปโปรไฟล์เริ่มต้นสีเหลือง</translation>
 <translation id="3140353188828248647">โฟกัสแถบที่อยู่</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">ปลดล็อกอุปกรณ์และลงชื่อเข้าใช้บัญชี Google</translation>
 <translation id="3625258641415618104">ปิดใช้การจับภาพหน้าจอ</translation>
 <translation id="3625481642044239431">เลือกไฟล์ไม่ถูกต้อง โปรดลองอีกครั้ง</translation>
-<translation id="3625538291267447988">ป้อนรหัสผ่านเพื่อตั้งค่า Smart Lock</translation>
 <translation id="3625870480639975468">รีเซ็ตการซูม</translation>
 <translation id="3626281679859535460">ความสว่าง</translation>
 <translation id="3627320433825461852">เหลือเวลาน้อยกว่า 1 นาที</translation>
@@ -2734,7 +2732,6 @@
 <translation id="5209518306177824490">ลายนิ้วมือ SHA-1</translation>
 <translation id="5210365745912300556">ปิดแท็บ</translation>
 <translation id="5213891612754844763">แสดงการตั้งค่าพร็อกซี</translation>
-<translation id="5214416042594875361">เข้าถึง Assistant ได้ทุกเมื่อเพียงพูดว่า "Ok Google" เมื่อหน้าจอเปิดอยู่</translation>
 <translation id="521582610500777512">รูปภาพถูกยกเลิกแล้ว</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="52232769093306234">การบรรจุล้มเหลว</translation>
@@ -3394,6 +3391,7 @@
 <translation id="6163363155248589649">&amp;ปกติ</translation>
 <translation id="6163522313638838258">ขยายทั้งหมด...</translation>
 <translation id="6164005077879661055">ไฟล์และข้อมูลในตัวเครื่องทั้งหมดที่เกี่ยวข้องกับผู้ใช้ภายใต้การดูแลจะถูกลบออกอย่างถาวรเมื่อผู้ใช้ภายใต้การดูแลนี้ถูกลบ เว็บไซต์ที่เข้าชมและการตั้งค่าสำหรับผู้ใช้ภายใต้การดูแลนี้อาจจะยังคงมองเห็นได้โดยผู้จัดการที่ <ph name="MANAGEMENT_URL" /></translation>
+<translation id="6165508094623778733">ดูข้อมูลเพิ่มเติม</translation>
 <translation id="6166185671393271715">นำเข้ารหัสผ่านไปยัง Chrome</translation>
 <translation id="6169040057125497443">โปรดตรวจสอบไมโครโฟน</translation>
 <translation id="6169666352732958425">ไม่สามารถแคสต์เดสก์ท็อป</translation>
@@ -4981,7 +4979,6 @@
 <translation id="8642947597466641025">ทำให้ข้อความใหญ่ขึ้น</translation>
 <translation id="8643418457919840804">เลือกตัวเลือกใดก็ได้เพื่อดำเนินการต่อ</translation>
 <translation id="8645354835496065562">อนุญาตการเข้าถึงเซ็นเซอร์ต่อไป</translation>
-<translation id="8647691362751835453">การตรวจพบ "Ok Google"</translation>
 <translation id="8647834505253004544">ไม่ใช่ที่อยู่เว็บที่ถูกต้อง</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> หรือ <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">คุณยังคงนำโปรไฟล์เก่าออกได้ แม้จะเข้าถึงโปรไฟล์นั้นไม่ได้แล้วก็ตาม</translation>

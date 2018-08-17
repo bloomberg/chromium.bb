@@ -143,7 +143,6 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="2021896219286479412">Kiểm soát trang toàn màn hình</translation>
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
 <translation id="2045104531052923016">Các ứng dụng khác chiếm <ph name="GIGABYTES" /> GB</translation>
-<translation id="2055670718290744343">Trình tăng tốc tìm kiếm</translation>
 <translation id="2063713494490388661">Nhấn để tìm kiếm</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
@@ -557,7 +556,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5512137114520586844">Tài khoản này do <ph name="PARENT_NAME" /> quản lý.</translation>
 <translation id="5514904542973294328">Bị quản trị viên của thiết bị này vô hiệu hóa</translation>
 <translation id="5515439363601853141">Mở khóa để xem mật khẩu của bạn</translation>
-<translation id="5515716148775388141">Các biểu tượng đã di chuyển xuống cuối màn hình</translation>
+<translation id="5515716148775388141">Các biểu tượng của bạn đã di chuyển xuống cuối màn hình</translation>
 <translation id="5517095782334947753">Bạn có dấu trang, lịch sử, mật khẩu và các cài đặt khác từ <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Đã chặn chuyển hướng.</translation>
 <translation id="5527082711130173040">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK1" />Cập nhật quyền<ph name="END_LINK1" />. Tính năng truy cập vị trí cũng bị <ph name="BEGIN_LINK2" />tắt cho thiết bị này<ph name="END_LINK2" />.</translation>
@@ -643,7 +642,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6111020039983847643">dữ liệu đã dùng</translation>
 <translation id="6112702117600201073">Làm mới trang</translation>
 <translation id="6127379762771434464">Đã xóa mục</translation>
-<translation id="6138140242378429169">Đặt trang ở chế độ thân thiện với thiết bị di động</translation>
 <translation id="6140912465461743537">Quốc gia/Vùng</translation>
 <translation id="6154478581116148741">Bật khóa màn hình trong Cài đặt để xuất mật khẩu của bạn từ thiết bị này</translation>
 <translation id="6159335304067198720">Tiết kiệm <ph name="PERCENT" /> dữ liệu</translation>

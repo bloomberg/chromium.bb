@@ -23,7 +23,6 @@
 <translation id="127138278192656016">使用同步處理功能和所有服務</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1323735185997015385">刪除</translation>
-<translation id="132390688737681464">儲存及填入地址</translation>
 <translation id="132683371494960526">輕觸兩下即可變更上層資料夾。</translation>
 <translation id="1340643665687018190">關閉選單</translation>
 <translation id="1375321115329958930">已儲存的密碼</translation>
@@ -120,7 +119,6 @@
 <translation id="2870560284913253234">網站</translation>
 <translation id="2871695793448672541">目前為隱藏狀態的密碼</translation>
 <translation id="2898963176829412617">新資料夾…</translation>
-<translation id="2903493209154104877">地址</translation>
 <translation id="2909437209446960244">最近開啟的分頁</translation>
 <translation id="2916171785467530738">自動完成搜尋字詞與網址</translation>
 <translation id="291754862089661335">將這個方框對準 QR 圖碼或條碼</translation>
@@ -167,7 +165,7 @@
 <translation id="3588820906588687999">在新分頁中開啟圖片</translation>
 <translation id="3603009562372709545">複製連結網址</translation>
 <translation id="3607167657931203000">自動填入資料</translation>
-<translation id="360930808415985584">管理同步處理、個人化功能等更多設定</translation>
+<translation id="360930808415985584">管理同步處理、個人化功能與其他設定</translation>
 <translation id="3609785682760573515">同步處理中...</translation>
 <translation id="3628119975092896051">閱讀清單可供離線存取。如要將網頁加入閱讀清單，請輕觸 <ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="3638472932233958418">預先載入網頁</translation>
@@ -214,7 +212,7 @@
 <translation id="4508750114462689118">關閉登入提示</translation>
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
 <translation id="4536418791685807335">請嘗試重新登入。</translation>
-<translation id="4541241553780729349">同步處理至 Google 的資料和你所使用的功能不會有所改變</translation>
+<translation id="4541241553780729349">同步至 Google 的資料和你所使用的功能不會有所改變</translation>
 <translation id="457386861538956877">更多…</translation>
 <translation id="461440297010471931">目前的搜尋引擎是 Google</translation>
 <translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
@@ -244,7 +242,6 @@
 <translation id="5062321486222145940">安裝 Google 雲端硬碟</translation>
 <translation id="5083464117946352670">無法確定檔案大小。</translation>
 <translation id="5094827893301452931">已順利發佈到 Twitter。</translation>
-<translation id="5123982333065001601">儲存及填入信用卡資料</translation>
 <translation id="5173593619615111996">關閉所有無痕式分頁</translation>
 <translation id="5181140330217080051">下載中</translation>
 <translation id="5186185447130319458">私人</translation>
@@ -252,7 +249,6 @@
 <translation id="5197255632782567636">網際網路</translation>
 <translation id="5228579091201413441">啟用同步功能</translation>
 <translation id="5244474230056479698">同步到 <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">開啟無痕式分頁，以私密模式瀏覽網頁。</translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5327248766486351172">名稱</translation>
@@ -336,7 +332,6 @@
 <translation id="6464071786529933911">在新無痕式分頁中開啟</translation>
 <translation id="6482629121755362506">已刪除 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="6541915733953096570">過去 1 小時</translation>
-<translation id="6570040839871198836">自動填入表單</translation>
 <translation id="6656103420185847513">編輯資料夾</translation>
 <translation id="6657585470893396449">密碼</translation>
 <translation id="667999046851023355">文件</translation>
@@ -426,7 +421,6 @@
 <translation id="8205564605687841303">取消</translation>
 <translation id="8225985093977202398">快取圖片和檔案</translation>
 <translation id="8261506727792406068">刪除</translation>
-<translation id="8272426682713568063">信用卡</translation>
 <translation id="8281781826761538115">預設 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">關閉全部</translation>
 <translation id="8381750437846184350">控管 Google 使用您瀏覽記錄的方式，針對 Google 所提供的個人化搜尋服務、廣告內容和其他各項 Google 服務調整相關設定</translation>

@@ -23,7 +23,6 @@
 <translation id="127138278192656016">സമന്വയവും എല്ലാ സേവനങ്ങളും ഉപയോഗിക്കുക</translation>
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="1323735185997015385">ഇല്ലാതാക്കുക</translation>
-<translation id="132390688737681464">വിലാസങ്ങൾ സംരക്ഷിച്ച് സ്വമേധയാ പൂരിപ്പിക്കുക</translation>
 <translation id="132683371494960526">പാരന്റ് ഫോൾഡർ മാറ്റാൻ രണ്ടുതവണ ടാപ്പുചെയ്യുക.</translation>
 <translation id="1340643665687018190">മെനു അടയ്‌ക്കുക</translation>
 <translation id="1375321115329958930">സംരക്ഷിച്ച പാസ്‌വേഡുകള്‍</translation>
@@ -120,7 +119,6 @@
 <translation id="2870560284913253234">സൈറ്റ്</translation>
 <translation id="2871695793448672541">മറച്ചിരിക്കുന്ന പാസ്‌വേഡ്</translation>
 <translation id="2898963176829412617">പുതിയ ഫോൾഡർ…</translation>
-<translation id="2903493209154104877">വിലാസങ്ങള്‍‌</translation>
 <translation id="2909437209446960244">സമീപകാല ടാബുകൾ</translation>
 <translation id="2916171785467530738">സ്വമേധയായുള്ള തിരയലുകളും URL-കളും</translation>
 <translation id="291754862089661335">ഈ ഫ്രെയിമിൽ QR കോഡോ ബാർ‌കോഡോ സ്ഥാപിക്കുക</translation>
@@ -244,7 +242,6 @@
 <translation id="5062321486222145940">Google ഡ്രൈവ് ഇൻസ്‌റ്റാളുചെയ്യുക</translation>
 <translation id="5083464117946352670">ഫയൽ വലുപ്പം നിർണ്ണയിക്കാനാവില്ല.</translation>
 <translation id="5094827893301452931">Tweet പങ്കിടൽ പൂർത്തിയായി.</translation>
-<translation id="5123982333065001601">ക്രെഡിറ്റ് കാർഡുകൾ സംരക്ഷിച്ച് സ്വമേധയാ പൂരിപ്പിക്കുക</translation>
 <translation id="5173593619615111996">എല്ലാ ആൾമാറാട്ട ടാബുകളും അടയ്‌ക്കുക</translation>
 <translation id="5181140330217080051">ഡൗൺലോഡുചെയ്യുന്നു</translation>
 <translation id="5186185447130319458">സ്വകാര്യം</translation>
@@ -252,7 +249,6 @@
 <translation id="5197255632782567636">ഇന്‍റര്‍നെറ്റ്</translation>
 <translation id="5228579091201413441">സമന്വയം പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> ഇമെയിലിലേക്ക് സമന്വയിപ്പിക്കുന്നു</translation>
-<translation id="527973086555161537">സ്വകാര്യമായി വെബ് ബ്രൗസ് ചെയ്യാൻ ഒരു ടാബ് തുറക്കുക.</translation>
 <translation id="5300589172476337783">കാണിക്കുക</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
 <translation id="5327248766486351172">പേര്</translation>
@@ -336,7 +332,6 @@
 <translation id="6464071786529933911">പുതിയ ആൾമാറാട്ട ടാബിൽ തുറക്കുക</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ഇനങ്ങൾ ഇല്ലാതാക്കി</translation>
 <translation id="6541915733953096570">കഴിഞ്ഞ ഒരു മണിക്കൂറിലെ</translation>
-<translation id="6570040839871198836">ഓട്ടോഫിൽ ഫോമുകൾ</translation>
 <translation id="6656103420185847513">ഫോൾഡർ എഡിറ്റുചെയ്യുക</translation>
 <translation id="6657585470893396449">പാസ്‌വേഡ്</translation>
 <translation id="667999046851023355">പ്രമാണം</translation>
@@ -426,7 +421,6 @@
 <translation id="8205564605687841303">റദ്ദാക്കുക</translation>
 <translation id="8225985093977202398">കാഷെ ചെയ്‌ത ചിത്രങ്ങളും ഫയലുകളും</translation>
 <translation id="8261506727792406068">ഇല്ലാതാക്കുക</translation>
-<translation id="8272426682713568063">ക്രെഡിറ്റ് കാര്‍‌ഡുകള്‍‌</translation>
 <translation id="8281781826761538115">ഡിഫോൾട്ട് - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">എല്ലാം അടയ്‌ക്കുക</translation>
 <translation id="8381750437846184350">തിരയലും പരസ്യങ്ങളും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ, Google നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഉപയോഗിക്കുന്ന രീതി നിയന്ത്രിക്കുക</translation>

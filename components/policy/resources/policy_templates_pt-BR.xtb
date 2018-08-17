@@ -1829,7 +1829,6 @@
 <translation id="637934607141010488">Informa a lista de usuários do dispositivo que fizeram login recentemente.
 
       Se a política for definida como "False", os usuários não serão informados.</translation>
-<translation id="6392973646875039351">Ativa o recurso de Preenchimento automático do <ph name="PRODUCT_NAME" /> e permite aos usuários utilizarem o preenchimento automático em formulários da web, utlizando as informações previamente armazenadas, como endereço ou informações de cartão de crédito. Se desativar esta configuração, o Preenchimento automático ficará inacessível para os usuários. Se ativar esta configuração ou não configurar um valor, o Preenchimento automático permanecerá sob o controle do usuário. Isso permitirá que ele configure os perfis de Preenchimento automático e ative ou desative o Preenchimento automático como achar conveniente.</translation>
 <translation id="6394350458541421998">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_OS_NAME" />. Em vez dela, use a política PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Fazer logout do usuário</translation>
 <translation id="6426205278746959912">Não é possível forçar apps Android a usar um proxy. Um subconjunto de configurações de proxy é disponibilizado para apps Android, o qual eles podem optar por respeitar voluntariamente:

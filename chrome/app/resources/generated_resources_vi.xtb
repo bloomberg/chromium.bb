@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">Quên mật khẩu?</translation>
 <translation id="3132996321662585180">Làm mới hàng ngày</translation>
 <translation id="3135204511829026971">Xoay màn hình</translation>
-<translation id="313638818480447860">Chúng tôi đã tìm thấy <ph name="NUMBER_OF_APPS" /> ứng dụng kết nối với tài khoản của bạn được tối ưu hóa cho thiết bị này.</translation>
 <translation id="313963229645891001">Đang tải xuống, còn <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Hình đại diện màu vàng mặc định</translation>
 <translation id="3140353188828248647">Thanh địa chỉ chính</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">Mở khóa thiết bị và đăng nhập vào Tài khoản Google</translation>
 <translation id="3625258641415618104">Đã tắt chụp ảnh màn hình</translation>
 <translation id="3625481642044239431">Bạn đã chọn tệp không hợp lệ. Hãy thử lại.</translation>
-<translation id="3625538291267447988">Để thiết lập Smart Lock, hãy nhập mật khẩu của bạn</translation>
 <translation id="3625870480639975468">Đặt lại thu phóng</translation>
 <translation id="3626281679859535460">Độ sáng</translation>
 <translation id="3627320433825461852">Còn chưa đến 1 phút</translation>
@@ -2734,7 +2732,6 @@
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Đóng tab</translation>
 <translation id="5213891612754844763">Hiển thị cài đặt proxy</translation>
-<translation id="5214416042594875361">Nói "Ok Google" bất cứ lúc nào để sử dụng Trợ lý khi màn hình đang bật.</translation>
 <translation id="521582610500777512">Đã hủy ảnh</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="52232769093306234">Không đóng gói được.</translation>
@@ -3394,6 +3391,7 @@
 <translation id="6163363155248589649">Thườ&amp;ng</translation>
 <translation id="6163522313638838258">Mở rộng tất cả...</translation>
 <translation id="6164005077879661055">Tất cả các tệp và dữ liệu trên máy được liên kết với người dùng được giám sát sẽ vĩnh viễn bị xóa khi người dùng được giám sát này bị xóa. Các trang web đã truy cập và các cài đặt của người dùng được giám sát này có thể vẫn hiển thị với người quản lý tại <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6166185671393271715">Nhập mật khẩu vào Chrome</translation>
 <translation id="6169040057125497443">Vui lòng kiểm tra micrô của bạn.</translation>
 <translation id="6169666352732958425">Không thể truyền màn hình nền.</translation>
@@ -4981,7 +4979,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8642947597466641025">Phóng to Văn bản</translation>
 <translation id="8643418457919840804">Để tiếp tục, hãy chọn một tùy chọn:</translation>
 <translation id="8645354835496065562">Tiếp tục cho phép sử dụng cảm biến</translation>
-<translation id="8647691362751835453">Phát hiện "Ok Google"</translation>
 <translation id="8647834505253004544">Không phải địa chỉ web hợp lệ</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> hoặc <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Mặc dù không thể truy cập vào hồ sơ cũ của mình nữa, nhưng bạn vẫn có thể xóa hồ sơ đó.</translation>

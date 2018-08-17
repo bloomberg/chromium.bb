@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Κατοπτρισμός σε <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Ξεκλείδωμα με δακτυλικό αποτύπωμα</translation>
 <translation id="1919743966458266018">Η συντόμευση για το άνοιγμα της Διαχείρισης Εργασιών άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Η περίοδος λειτουργίας σας θα διαγραφεί, όταν αποσυνδεθείτε. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Αυτόματα κλικ</translation>
 <translation id="1928739107511554905">Για να λάβετε την ενημέρωση, χρησιμοποιήστε την οθόνη αφής για να επανεκκινήσετε το Chromebook με το συνδεδεμένο πληκτρολόγιο.</translation>
 <translation id="1942830294380034169">Κουμπί υπερχείλισης</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">Αποδοχή</translation>
 <translation id="4924411785043111640">Επανεκκίνηση και επαναφορά</translation>
 <translation id="4961318399572185831">Μετάδοση οθόνης</translation>
-<translation id="5069971504769299223">Ο διαχειριστής της συσκευής ίσως έχει τη δυνατότητα να παρακολουθεί τη δραστηριότητά σας.</translation>
 <translation id="5083553833479578423">Ξεκλειδώστε περισσότερες λειτουργίες του Βοηθού.</translation>
 <translation id="5136175204352732067">Συνδέθηκε διαφορετικό πληκτρολόγιο</translation>
 <translation id="5168181903108465623">Διαθέσιμες συσκευές μετάδοσης</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">Αναζήτηση+Shift+K</translation>
 <translation id="6650933572246256093">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτό το κλειδί πρόσβασης στη συγκεκριμένη συσκευή: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Κωδικός πρόσβασης</translation>
-<translation id="6687966522050791666">Επιλογή γλώσσας και εισόδου</translation>
 <translation id="6691659475504239918">Πλήκτρο αναζήτησης+Shift+H</translation>
 <translation id="6696025732084565524">Απαιτείται σημαντική ενημέρωση του αποσπώμενου πληκτρολογίου σας</translation>
 <translation id="6700713906295497288">Κουμπί μενού IME</translation>

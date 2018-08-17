@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Dubliuojama <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Atrakinimas kontroliniu kodu</translation>
 <translation id="1919743966458266018">Pakeistas užduočių tvarkytuvės atidarymo spartusis klavišas. Naudokite <ph name="NEW_SHORTCUT" /> vietoje <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Sesijos duomenys bus išvalyti, kai atsijungsite. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Automatiniai paspaudimai</translation>
 <translation id="1928739107511554905">Kad gautumėte naujinį, naudodami jutiklinį ekraną iš naujo paleiskite „Chromebook“ su prijungta klaviatūra.</translation>
 <translation id="1942830294380034169">Perpildymo mygtukas</translation>
@@ -225,7 +224,6 @@
 <translation id="4918086044614829423">Priimti</translation>
 <translation id="4924411785043111640">Paleisti ir nustatyti iš naujo</translation>
 <translation id="4961318399572185831">Perduoti ekraną</translation>
-<translation id="5069971504769299223">Įrenginio valdytojas gali stebėti jūsų veiklą.</translation>
 <translation id="5083553833479578423">Atrakinkite daugiau Padėjėjo funkcijų.</translation>
 <translation id="5136175204352732067">Prijungta kita klaviatūra</translation>
 <translation id="5168181903108465623">Pasiekiami perdavimo įrenginiai</translation>
@@ -315,7 +313,6 @@
 <translation id="6627638273713273709">Paieškos klavišas + „Shift“ + K</translation>
 <translation id="6650933572246256093">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti. Šiame įrenginyje įveskite šį slaptąjį raktą: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Slaptažodis</translation>
-<translation id="6687966522050791666">Pasirinkite kalbą ir įvestį</translation>
 <translation id="6691659475504239918">Paieškos klavišas + „Shift“ + H</translation>
 <translation id="6696025732084565524">Atjungiamai klaviatūrai reikia pritaikyti kritinį naujinį</translation>
 <translation id="6700713906295497288">IME meniu mygtukas</translation>

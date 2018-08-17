@@ -831,7 +831,7 @@
 <translation id="6965978654500191972">裝置</translation>
 <translation id="6970216967273061347">區</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
-<translation id="6984479912851154518">即將退出私密模式，改為使用外部應用程式付款，要繼續嗎？</translation>
+<translation id="6984479912851154518">即將離開私密模式，改為使用外部應用程式付款，要繼續嗎？</translation>
 <translation id="6989763994942163495">顯示進階設定...</translation>
 <translation id="7012363358306927923">中國銀聯</translation>
 <translation id="7016992613359344582">這些費用可能只收取一次，也可能週期性收取，而且您可能不會注意到這筆費用。</translation>
@@ -1082,7 +1082,7 @@
 <translation id="8820817407110198400">書籤</translation>
 <translation id="883848425547221593">其他書籤</translation>
 <translation id="884264119367021077">運送地址</translation>
-<translation id="8846319957959474018">輕鬆在應用程式中開啟書籤</translation>
+<translation id="8846319957959474018">使用書籤，輕鬆開啟應用程式</translation>
 <translation id="884923133447025588">未發現撤銷機制。</translation>
 <translation id="885730110891505394">與 Google 分享</translation>
 <translation id="8858065207712248076">如果你在其他網站上重複使用過你的 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 密碼，Chrome 會建議你重設密碼。</translation>

@@ -54,7 +54,6 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> वर मिरर करत आहे</translation>
 <translation id="1885785240814121742">फिंगरप्रिंटने अनलॉक करा</translation>
 <translation id="1919743966458266018">कार्य व्यवस्थापक उघडण्‍याचा शॉर्टकट बदलला आहे. कृपया <ph name="OLD_SHORTCUT" /> ऐवजी <ph name="NEW_SHORTCUT" /> वापरा.</translation>
-<translation id="1923508880661655826">तुम्ही साइन आउट केल्यावर तुमचे सेशन साफ केले जाईल. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">स्वयंचलित क्लिक</translation>
 <translation id="1928739107511554905">अपडेट करण्यासाठी, संलग्न केलेल्या कीबोर्डसह तुमचे Chromebook रीस्टार्ट करण्यासाठी टचस्क्रीन वापरा.</translation>
 <translation id="1942830294380034169">ओव्हरफ्लो बटण</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">स्वीकारा</translation>
 <translation id="4924411785043111640">रीस्टार्ट करा आणि रीसेट करा</translation>
 <translation id="4961318399572185831">स्क्रीन कास्ट करा</translation>
-<translation id="5069971504769299223">डिव्हाइस व्यवस्थापक कदाचित तुमच्या अॅक्टिव्हिटीचे परीक्षण करू शकेल.</translation>
 <translation id="5083553833479578423">असिस्टंटची आणखी वैशिष्ट्ये अनलॉक करा.</translation>
 <translation id="5136175204352732067">वेगळा कीबोर्ड कनेक्ट केला आहे</translation>
 <translation id="5168181903108465623">कास्‍ट डिव्‍हाइसेस उपलब्‍ध</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर ही पासकी एंटर करा: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
-<translation id="6687966522050791666">भाषा आणि इनपुट निवडा</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">तुमच्या वेगळ्या करण्यायोग्य कीबोर्डला गंभीर अपडेटची आवश्यकता आहे</translation>
 <translation id="6700713906295497288">IME मेनू बटण</translation>

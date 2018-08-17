@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Käytä synkronointia ja kaikkia palveluja</translation>
 <translation id="1272079795634619415">Pysäytä</translation>
 <translation id="1323735185997015385">Poista</translation>
-<translation id="132390688737681464">Tallenna ja täytä osoitteet</translation>
 <translation id="132683371494960526">Vaihda ylätason kansiota kaksoisnapauttamalla.</translation>
 <translation id="1340643665687018190">Sulje valikko</translation>
 <translation id="1375321115329958930">Tallennetut salasanat</translation>
@@ -120,7 +119,6 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2870560284913253234">Sivusto</translation>
 <translation id="2871695793448672541">Piilotettu salasana</translation>
 <translation id="2898963176829412617">Uusi kansio…</translation>
-<translation id="2903493209154104877">Osoitteet</translation>
 <translation id="2909437209446960244">Hiljattain suljetut välilehdet</translation>
 <translation id="2916171785467530738">Hakujen ja URL-osoitteiden automaattinen täydennys</translation>
 <translation id="291754862089661335">Aseta QR- tai viivakoodi tämän kehyksen sisälle.</translation>
@@ -244,7 +242,6 @@ Tietosi salataan synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antama
 <translation id="5062321486222145940">Asenna Google Drive</translation>
 <translation id="5083464117946352670">Tiedostokokoa ei voi määrittää</translation>
 <translation id="5094827893301452931">Tweet julkaistu.</translation>
-<translation id="5123982333065001601">Tallenna ja täytä luottokorttitiedot</translation>
 <translation id="5173593619615111996">Sulje incognito-välilehdet</translation>
 <translation id="5181140330217080051">Ladataan</translation>
 <translation id="5186185447130319458">Yksityinen</translation>
@@ -252,7 +249,6 @@ Tietosi salataan synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antama
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Ota synkronointi käyttöön</translation>
 <translation id="5244474230056479698">Synkronoidaan osoitteeseen <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Avaa välilehti yksityistä selailua varten.</translation>
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5327248766486351172">Nimi</translation>
@@ -336,7 +332,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="6464071786529933911">Avaa incognito-tilassa</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> kohdetta poistettu</translation>
 <translation id="6541915733953096570">Viimeisen tunnin ajalta</translation>
-<translation id="6570040839871198836">Autom. täyttö</translation>
 <translation id="6656103420185847513">Muokkaa kansiota</translation>
 <translation id="6657585470893396449">Salasana</translation>
 <translation id="667999046851023355">Dokumentti</translation>
@@ -426,7 +421,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8205564605687841303">Peruuta</translation>
 <translation id="8225985093977202398">Välimuistissa olevat kuvat ja tiedostot</translation>
 <translation id="8261506727792406068">Poista</translation>
-<translation id="8272426682713568063">Luottokortit</translation>
 <translation id="8281781826761538115">Oletus – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Sulje kaikki</translation>
 <translation id="8381750437846184350">Hallinnoi tapaa, jolla Google käyttää selaushistoriaasi haun, mainosten ja muiden Googlen palveluiden muokkaamiseen.</translation>

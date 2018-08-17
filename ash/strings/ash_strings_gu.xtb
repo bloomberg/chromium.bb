@@ -54,7 +54,6 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> પર પ્રતિબિંબિત થઈ રહ્યું છે</translation>
 <translation id="1885785240814121742">ફિંગરપ્રિન્ટથી અનલૉક કરો</translation>
 <translation id="1919743966458266018">Tasks સંચાલક ખોલવાનો શોર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="NEW_SHORTCUT" /> ની બદલે <ph name="OLD_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
-<translation id="1923508880661655826">જ્યારે તમે સાઇન આઉટ કરશો, ત્યારે તમારું સત્ર સાફ કરવામાં આવશે. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">આપમેળે ક્લિક્સ</translation>
 <translation id="1928739107511554905">અપડેટ મેળવવા માટે, તમારી Chromebookને જોડાયેલ કીબોર્ડ સાથે ફરીથી શરૂ કરવા માટે ટચસ્કીનનો ઉપયોગ કરો.</translation>
 <translation id="1942830294380034169">ઓવરફ્લો બટન</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">સ્વીકારો</translation>
 <translation id="4924411785043111640">ફરી શરૂ કરો અને રીસેટ કરો</translation>
 <translation id="4961318399572185831">સ્ક્રીનને કાસ્ટ કરો</translation>
-<translation id="5069971504769299223">ઉપકરણ મેનેજર તમારી પ્રવૃત્તિનું નિયમન કરી શકે છે.</translation>
 <translation id="5083553833479578423">આસિસ્ટંટની વધુ સુવિધાઓને અનલૉક કરો.</translation>
 <translation id="5136175204352732067">અલગ કીબોર્ડ કનેક્ટ કર્યું</translation>
 <translation id="5168181903108465623">Cast ઉપકરણો ઉપલબ્ધ</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">શોધ+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ઉપકરણ પર આ પાસકીને દાખલ કરો: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">પાસવર્ડ</translation>
-<translation id="6687966522050791666">ભાષા અને ઇનપુટ પસંદ કરો</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">અલગ પાડી શકાય તેવા તમારા કીબોર્ડ માટે મહત્ત્વપૂર્ણ અપડેટ જરૂરી છે</translation>
 <translation id="6700713906295497288">IME મેનૂ બટન</translation>

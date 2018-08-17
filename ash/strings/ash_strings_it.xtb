@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Mirroring su <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Sblocca con l'impronta digitale</translation>
 <translation id="1919743966458266018">La scorciatoia per aprire Task Manager è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">La sessione verrà cancellata al momento dell'uscita dall'account. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Clic automatici</translation>
 <translation id="1928739107511554905">Per scaricare l'aggiornamento, utilizza il touchscreen e riavvia il Chromebook con la tastiera collegata.</translation>
 <translation id="1942830294380034169">Pulsante Overflow</translation>
@@ -225,7 +224,6 @@
 <translation id="4918086044614829423">Accetto</translation>
 <translation id="4924411785043111640">Riavvia e reimposta</translation>
 <translation id="4961318399572185831">Trasmetti schermo</translation>
-<translation id="5069971504769299223">L'amministratore del dispositivo potrebbe essere in grado di monitorare le tue attività.</translation>
 <translation id="5083553833479578423">Sblocca altre funzioni dell'assistente.</translation>
 <translation id="5136175204352732067">Tastiera diversa collegata</translation>
 <translation id="5168181903108465623">Dispositivi di trasmissione disponibili</translation>
@@ -315,7 +313,6 @@
 <translation id="6627638273713273709">Tasto per la ricerca + MAIUSC + K</translation>
 <translation id="6650933572246256093">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questa passkey sul dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
-<translation id="6687966522050791666">Scegli la lingua e la modalità di immissione</translation>
 <translation id="6691659475504239918">Tasto per la ricerca + MAIUSC + H</translation>
 <translation id="6696025732084565524">La tastiera rimovibile richiede un aggiornamento critico</translation>
 <translation id="6700713906295497288">Pulsante di menu IME</translation>
@@ -377,7 +374,7 @@
 <translation id="7798302898096527229">Premi il tasto per la ricerca o MAIUSC per annullare.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Segnale forte</translation>
-<translation id="7842211907556571265">Connessione alla rete <ph name="NETWORK_NAME" />…</translation>
+<translation id="7842211907556571265">Connessione alla rete <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Avviso: funzione sperimentale</translation>
 <translation id="7846634333498149051">Tastiera</translation>
 <translation id="790040513076446191">Modifica delle impostazioni relative alla privacy</translation>
@@ -420,7 +417,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: riconnessione in corso...</translation>
 <translation id="8513108775083588393">Rotazione automatica</translation>
 <translation id="8517041960877371778">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso.</translation>
-<translation id="8627191004499078455">Collegato al dispositivo <ph name="DEVICE_NAME" /></translation>
+<translation id="8627191004499078455">Connesso a <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> rimanente</translation>
 <translation id="8649101189709089199">Seleziona per ascoltare</translation>
 <translation id="8652175077544655965">Chiudi impostazioni</translation>

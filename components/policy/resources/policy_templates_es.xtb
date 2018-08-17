@@ -608,7 +608,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2598508021807251719">Establece las configuraciones regionales en las que puede mostrarse <ph name="PRODUCT_OS_NAME" />.
 
       Si asigna a esta política una lista de configuraciones regionales, el usuario solo podrá mostrar <ph name="PRODUCT_OS_NAME" /> en una de esas configuraciones. Si no asigna ninguna configuración regional a esta política o le asigna una lista vacía, <ph name="PRODUCT_OS_NAME" /> se podrá mostrar en cualquier configuración de IU admitida. Si se asigna a esta política una lista con configuraciones regionales no válidas, los valores que no sean válidos se ignorarán. Si un usuario ya había configurado <ph name="PRODUCT_OS_NAME" /> anteriormente en un idioma no permitido por esta política, la configuración regional se cambiará a otra permitida la próxima vez que el usuario inicie sesión. Si el usuario había establecido configuraciones regionales de preferencia y una de ellas está permitida por esta política, <ph name="PRODUCT_OS_NAME" /> se mostrará en dicha configuración. De lo contrario, <ph name="PRODUCT_OS_NAME" /> se cambiará a la primera configuración regional válida especificada por esta política, o bien a una alternativa (actualmente en-US) si ninguna de las entradas de la política es válida.</translation>
-<translation id="2604182581880595781">Configura las políticas relacionadas con Uso compartido de archivos del sistema.</translation>
+<translation id="2604182581880595781">Configura las políticas relacionadas con el uso compartido de archivos del sistema.</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
@@ -696,7 +696,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2823870601012066791">Ubicación del registro de Windows para clientes de <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Habilitar modo de incógnito</translation>
 <translation id="2838830882081735096">No permitir la migración de datos ni ARC</translation>
-<translation id="2839294585867804686">Configuración de Uso compartido de archivos del sistema</translation>
+<translation id="2839294585867804686">Configuración de uso compartido de archivos del sistema</translation>
 <translation id="2840269525054388612">Especifica las impresoras que puede utilizar un usuario.
 
       Esta política solo se usará si se asigna <ph name="PRINTERS_WHITELIST" /> a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1193,7 +1193,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Si dejas esta política sin configurar, la recogida de datos anónima con clave de URL se habilitará, pero el usuario podrá cambiar la opción.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuración regional para la pantalla de inicio de sesión del dispositivo</translation>
-<translation id="4264607809747169568">Controla si Uso compartido de archivos del sistema estará disponible en Chrome OS</translation>
+<translation id="4264607809747169568">Controla si el uso compartido de archivos del sistema estará disponible en Chrome OS</translation>
 <translation id="427220754384423013">Especifica las impresoras que puede utilizar un usuario.
 
 
@@ -1925,11 +1925,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="637934607141010488">Permite informar sobre la lista de usuarios de dispositivos que han iniciado sesión recientemente.
 
 Si la política está establecida en False, no se informará sobre los usuarios.</translation>
-<translation id="6392973646875039351">Permite habilitar la función Autocompletar de <ph name="PRODUCT_NAME" /> y permite que los usuarios rellenen automáticamente los formularios web con información almacenada anteriormente, como la dirección o la información de la tarjeta de crédito.
-
-      Si inhabilitas esta opción, los usuarios no podrán acceder a la función Autocompletar.
-
-     Si habilitas esta opción o no estableces ningún valor, los usuarios podrán controlar la función Autocompletar para configurar los perfiles de Autocompletar y activar o desactivar esta función cuando lo deseen.</translation>
 <translation id="6394350458541421998">Esta política no está disponible desde la versión 29 de <ph name="PRODUCT_OS_NAME" />. Utiliza la política PresentationScreenDimDelayScale en su lugar.</translation>
 <translation id="6401669939808766804">Cerrar la sesión del usuario</translation>
 <translation id="6426205278746959912">No puedes forzar a las aplicaciones de Android para que utilicen un proxy. Hay un subconjunto de opciones de proxy disponibles para las aplicaciones de Android y estas pueden aceptarlas voluntariamente:
@@ -2169,15 +2164,15 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6956272732789158625">No permitir que los sitios web utilicen la generación de claves</translation>
 <translation id="6982028490425791294">
-      Si se le asigna el valor "True" a esta política", <ph name="PRODUCT_NAME" /> puede recoger registros de eventos WebRTC de los servicios de Google (p. ej., Google Meet) y subirlos a Google.
+      Si se le asigna el valor "True" a esta política", <ph name="PRODUCT_NAME" /> puede recopilar registros de eventos WebRTC de los servicios de Google (p. ej., Google Meet) y subirlos a Google.
 
-      Si se le asigna el valor "False" a esta política o no se le asigna ningún valor, <ph name="PRODUCT_NAME" /> no podrá recoger ni subir estos registros.
+      Si se le asigna el valor "False" a esta política o no se le asigna ningún valor, <ph name="PRODUCT_NAME" /> no podrá recopilar ni subir estos registros.
 
       Estos registros contienen información como la hora y el tamaño de los paquetes RTP recibidos, comentarios sobre la congestión de la red y metadatos sobre la hora y la calidad de los marcos de vídeo y audio. Esta información resulta útil para depurar problemas de las llamadas de audio o videollamadas de Chrome, como problemas de estimación del ancho de banda. Los registros no incluyen contenido de audio ni vídeo de las llamadas.
 
       Esta recogida de datos solo la pueden activar los servicios web de Google, como Hangouts o Google Meet.
 
-      Estos registros se pueden asociar, mediante un ID de sesión, a otros registros recogidos por el servicio de Google para facilitar la depuración.
+      Estos registros se pueden asociar, mediante un ID de sesión, a otros registros recopilados por el servicio de Google para facilitar la depuración.
       </translation>
 <translation id="6994082778848658360">Especifica cómo se puede utilizar el hardware del elemento seguro integrado para proporcionar una autenticación de dos factores si es compatible con esta función. El botón de encendido del ordenador se utiliza para detectar la presencia física del usuario.
 

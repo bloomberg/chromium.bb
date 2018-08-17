@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Desbloquear con huella digital</translation>
 <translation id="1919743966458266018">La combinación de teclas para abrir el Administrador de tareas ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Tu sesión se borrará cuando la cierres. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Clics automáticos</translation>
 <translation id="1928739107511554905">Para recibir la actualización, usa la pantalla táctil para reiniciar tu Chromebook con el teclado conectado.</translation>
 <translation id="1942830294380034169">Botón de menú adicional</translation>
@@ -225,7 +224,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="4924411785043111640">Reiniciar y restablecer</translation>
 <translation id="4961318399572185831">Enviar pantalla</translation>
-<translation id="5069971504769299223">Es posible que el administrador del dispositivo pueda supervisar tu actividad.</translation>
 <translation id="5083553833479578423">Descubre más funciones del Asistente.</translation>
 <translation id="5136175204352732067">Se ha conectado otro teclado</translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
@@ -315,7 +313,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6627638273713273709">Tecla de búsqueda + Mayús + K</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce la clave de contraseña <ph name="PASSKEY" /> en el dispositivo</translation>
 <translation id="6657585470893396449">Contraseña</translation>
-<translation id="6687966522050791666">Selecciona el idioma y el método de entrada</translation>
 <translation id="6691659475504239918">Tecla de búsqueda + Mayús + H</translation>
 <translation id="6696025732084565524">Tu teclado independiente necesita una actualización crítica</translation>
 <translation id="6700713906295497288">Botón de menú de IME</translation>
@@ -446,7 +443,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8938800817013097409">Dispositivo USB tipo C (puerto derecho situado en la parte trasera)</translation>
 <translation id="8940956008527784070">Poca batería (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Inicio rápido</translation>
-<translation id="899350903320462459">Desbloque el dispositivo como <ph name="LOGIN_ID" /> para hacer lo que indica la notificación</translation>
+<translation id="899350903320462459">Desbloquea el dispositivo como <ph name="LOGIN_ID" /> para hacer lo que indica la notificación</translation>
 <translation id="8995603266996330174">Administrado por <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Actualización de Adobe Flash Player disponible</translation>
 <translation id="9056839673611986238">Se va a instalar una versión anterior en el dispositivo</translation>

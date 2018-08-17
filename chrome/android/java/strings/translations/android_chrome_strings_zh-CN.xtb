@@ -143,7 +143,6 @@
 <translation id="2021896219286479412">全屏网站控件</translation>
 <translation id="2038563949887743358">开启“请求切换到桌面版网站”</translation>
 <translation id="2045104531052923016">其他应用已占用的空间：<ph name="GIGABYTES" /> GB</translation>
-<translation id="2055670718290744343">搜索加速器</translation>
 <translation id="2063713494490388661">点按搜索</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
@@ -643,7 +642,6 @@
 <translation id="6111020039983847643">已耗用的流量</translation>
 <translation id="6112702117600201073">正在刷新页面</translation>
 <translation id="6127379762771434464">该项已移除</translation>
-<translation id="6138140242378429169">使网页适合移动设备</translation>
 <translation id="6140912465461743537">国家/地区</translation>
 <translation id="6154478581116148741">需在“设置”部分中开启屏幕锁定功能，才能从此设备中导出您的密码</translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>

@@ -705,7 +705,7 @@
 <translation id="5866257070973731571">Legg til telefonnummer</translation>
 <translation id="5869405914158311789">Dette nettstedet er ikke tilgjengelig</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
-<translation id="5887400589839399685">Kort lagret</translation>
+<translation id="5887400589839399685">Kortet er lagret</translation>
 <translation id="5893752035575986141">Kredittkort godtas.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkronisert)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 er i bruk}other{# er i bruk}}</translation>
@@ -825,7 +825,7 @@
 <translation id="6948701128805548767">For å se hentemetoder og -krav, velg en adresse</translation>
 <translation id="6949872517221025916">Tilbakestill passordet</translation>
 <translation id="6950684638814147129">Feil under parsering av JSON-verdi: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Åpne siden i et nytt privatvindu</translation>
+<translation id="6957624206566198865">Åpne siden i en ny privat fane</translation>
 <translation id="6957887021205513506">Tjenersertifikatet ser ut til å være forfalsket.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Enhet</translation>

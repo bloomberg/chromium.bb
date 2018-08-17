@@ -53,7 +53,6 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />కు దర్పణం చేస్తోంది</translation>
 <translation id="1885785240814121742">వేలిముద్రతో అన్‌లాక్ చేయండి</translation>
 <translation id="1919743966458266018">విధి నిర్వాహికిని తెరిచే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
-<translation id="1923508880661655826">మీరు సైన్ అవుట్ చేసినప్పుడు మీ సెషన్ క్లియర్ చేయబడుతుంది. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">స్వయంచాలక క్లిక్‌లు</translation>
 <translation id="1928739107511554905">అప్‌డేట్‌ని పొందడానికి, కీబోర్డ్‌‌ని అలానే జోడించి ఉంచి మీ Chromebookని పునఃప్రారంభించడం కోసం టచ్‌స్క్రీన్‌ని ఉపయోగించండి.</translation>
 <translation id="1942830294380034169">నిండిపోయిన బటన్</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">ఆమోదించు</translation>
 <translation id="4924411785043111640">మళ్లీ ప్రారంభించి, రీసెట్ చేయండి</translation>
 <translation id="4961318399572185831">స్క్రీన్ ప్రసారం చేయండి</translation>
-<translation id="5069971504769299223">మీ కార్యకలాపాన్ని పరికర మేనేజర్ పర్యవేక్షించవచ్చు.</translation>
 <translation id="5136175204352732067">వేరే కీబోర్డ్ కనెక్ట్ చేయబడింది</translation>
 <translation id="5168181903108465623">Cast పరికరాలు అందుబాటులో ఉన్నాయి</translation>
 <translation id="5207949376430453814">వచన కర్సర్ గుర్తును హైలైట్ చేయి</translation>
@@ -312,7 +310,6 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది. దయచేసి ఆ పరికరంలో ఈ పాస్‌కీని నమోదు చేయండి: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">పాస్‌వర్డ్</translation>
-<translation id="6687966522050791666">భాష మరియు ఇన్‌పుట్‌ను ఎంచుకోండి</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">మీ తీసివేయగల కీబోర్డ్‌కి ఒక ముఖ్యమైన అప్‌డేట్ అవసరం</translation>
 <translation id="6700713906295497288">IME మెను బటన్</translation>

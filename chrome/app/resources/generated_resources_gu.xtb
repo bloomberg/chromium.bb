@@ -1425,7 +1425,6 @@
 <translation id="313205617302240621">પાસવર્ડ ભૂલી ગયા?</translation>
 <translation id="3132996321662585180">દરરોજ રિફ્રેશ કરો</translation>
 <translation id="3135204511829026971">સ્ક્રીન ફેરવો</translation>
-<translation id="313638818480447860">અમને તમારા એકાઉન્ટ સાથે કનેક્ટ કરેલી <ph name="NUMBER_OF_APPS" /> ઍપ મળી, જે આ ઉપકરણ માટે ઑપ્ટિમાઇઝ કરવામાં આવેલી છે.</translation>
 <translation id="313963229645891001">ડાઉનલોડ કરી રહ્યાં છીએ, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">ડિફોલ્ટ પીળો અવતાર</translation>
 <translation id="3140353188828248647">સરનામાં બાર પર ફોકસ કરો</translation>
@@ -1505,7 +1504,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" />, કનેક્ટ કરવા માગે છે</translation>
 <translation id="3274763671541996799">તમે પૂર્ણ સ્ક્રીન પર ગયા છો.</translation>
 <translation id="3275778913554317645">વિંડો તરીકે ખોલો</translation>
-<translation id="3278877214895457897">જ્યારે તમારી Chromebook સેટ અપ કરેલ હોય, ત્યારે કોઈપણ સમયે તમારા આસિસ્ટંટની સહાય મેળવવા માટે આસિસ્ટંટ બટન દબાવો અથવા "ઓકે Google" બોલો.</translation>
+<translation id="3278877214895457897">જ્યારે તમારી Chromebook સેટઅપ કરેલ હોય, ત્યારે કોઈપણ સમયે તમારા આસિસ્ટંટની સહાય મેળવવા માટે આસિસ્ટંટ બટન દબાવો અથવા "ઓકે Google" બોલો.</translation>
 <translation id="3279230909244266691">આ પ્રક્રિયામાં થોડો સમય લાગી શકે છે. વર્ચ્યુઅલ મશીન શરૂ કરી રહ્યાં છીએ.</translation>
 <translation id="3279741024917655738">આના પર પૂર્ણસ્ક્રીન વીડિઓ બતાવો</translation>
 <translation id="3280237271814976245">આ &amp;રૂપમાં સાચવો...</translation>
@@ -1740,7 +1739,6 @@
 <translation id="3624567683873126087">ઉપકરણ અનલૉક કરો અને Google એકાઉન્ટમાં સાઇન ઇન કરો</translation>
 <translation id="3625258641415618104">સ્ક્રીનશોટ્સ અક્ષમ કર્યા</translation>
 <translation id="3625481642044239431">અમાન્ય ફાઇલ પસંદ કરી. ફરી પ્રયાસ કરો.</translation>
-<translation id="3625538291267447988">Smart Lock સેટ અપ કરવા માટે, તમારો પાસવર્ડ દાખલ કરો</translation>
 <translation id="3625870480639975468">ઝૂમ ફરીથી સેટ કરો </translation>
 <translation id="3626281679859535460">તેજ</translation>
 <translation id="3627320433825461852">1 થી ઓછી મિનિટ બાકી</translation>
@@ -2730,7 +2728,6 @@
 <translation id="5209518306177824490">SHA-1 ફિંગરપ્રિંટ</translation>
 <translation id="5210365745912300556">ટૅબ બંધ કરો</translation>
 <translation id="5213891612754844763">પ્રૉક્સી સેટિંગ્સ બતાવો</translation>
-<translation id="5214416042594875361">તમારી સ્ક્રીન ચાલુ હોય ત્યારે તમે કોઈપણ સમયે "ઓકે Google" બોલીને તમારા આસિસ્ટંટને ઍક્સેસ કરો.</translation>
 <translation id="521582610500777512">ફોટો નિકાળવામાં આવ્યો હતો</translation>
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
 <translation id="52232769093306234">પૅકિંગ નિષ્ફળ થયું.</translation>
@@ -3392,6 +3389,7 @@
 <translation id="6163363155248589649">&amp;સામાન્ય</translation>
 <translation id="6163522313638838258">તમામ વિસ્તૃત કરો...</translation>
 <translation id="6164005077879661055">એકવાર આ નિરીક્ષણ કરેલ વપરાશકર્તાને દૂર કરવામાં આવે પછી નિરીક્ષણ કરેલ વપરાશકર્તા સાથે સંકળાયેલી બધી ફાઇલો અને સ્થાનિક ડેટા કાયમી રૂપે કાઢી નાંખવામાં આવશે. નિરીક્ષણ કરેલ વપરાશકર્તા માટે મુલાકાત લીધેલી વેબસાઇટ્સ અને સેટિંગ્સ <ph name="MANAGEMENT_URL" /> પરના સંચાલકને હજી પણ દૃશ્યમાન હોઈ શકે છે.</translation>
+<translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6166185671393271715">Chrome માં પાસવર્ડ્સને આયાત કરો</translation>
 <translation id="6169040057125497443">કૃપા કરીને તમારો માઇક્રોફોન તપાસો.</translation>
 <translation id="6169666352732958425">ડેસ્કટૉપને કાસ્ટ કરવામાં અસમર્થ.</translation>
@@ -4973,7 +4971,6 @@
 <translation id="8642947597466641025">ટેક્સ્ટ મોટો કરો</translation>
 <translation id="8643418457919840804">આગળ વધવા માટે, એક વિકલ્પ પસંદ કરો:</translation>
 <translation id="8645354835496065562">સેન્સરના ઍક્સેસની મંજૂરી ચાલુ રાખો</translation>
-<translation id="8647691362751835453">"ઓકે Google" શોધ</translation>
 <translation id="8647834505253004544">વેબ સરનામું માન્ય નથી</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> અથવા <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">જો કે તમે હવે તમારી જૂની પ્રોફાઇલ ઍક્સેસ કરી શકતા નથી, છતાં તમે તેને કાઢી નાખી શકો છો.</translation>

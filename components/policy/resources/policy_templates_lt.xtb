@@ -1923,11 +1923,6 @@
 <translation id="637934607141010488">Pateikti neseniai prisijungusių įrenginio naudotojų sąrašą.
 
       Jei politika nustatyta kaip „False“, naudotojų informacija nebus pateikta.</translation>
-<translation id="6392973646875039351">Įgalinama „<ph name="PRODUCT_NAME" />“ automatinio pildymo funkcija ir naudotojams leidžiama automatiškai pildyti žiniatinklio formas, naudojant anksčiau išsaugotą informaciją, pvz., adresą arba kredito kortelės informaciją.
-
-      Jei šio nustatymo neleisite, naudotojai negalės naudoti automatinio pildymo funkcijos.
-
-      Jei šį nustatymą įgalinsite arba vertės nenustatysite, naudotojai ir toliau galės valdyti automatinį pildymą. Taip jie galės sukonfigūruoti automatinio pildymo profilius ir savo nuožiūra įjungti arba išjungti automatinio pildymo funkciją.</translation>
 <translation id="6394350458541421998">Ši politika nebenaudojama 29 ir naujesnėse „<ph name="PRODUCT_OS_NAME" />“ versijose. Vietoje jos naudokite politiką „PresentationScreenDimDelayScale“.</translation>
 <translation id="6401669939808766804">Atjungti naudotoją</translation>
 <translation id="6426205278746959912">Negalite priversti „Android“ programų naudoti tarpinio serverio. „Android“ programos gali pasiekti dalį tarpinio serverio nustatymų, į kuriuos gali savanoriškai atsižvelgti.

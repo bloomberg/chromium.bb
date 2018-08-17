@@ -294,7 +294,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
       Falls diese Einstellung aktiviert ist oder keinen Wert hat, kann der Nutzer die AutoFill-Funktion in der UI für Adressen steuern.</translation>
 <translation id="1960840544413786116">Genehmigung von Zertifikaten, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
-<translation id="1962273523772270623">Speichern von WebRTC-Ereignisprotokollen von Google-Diensten zulassen</translation>
+<translation id="1962273523772270623">Speichern von WebRTC-Ereignisprotokollen aus Google-Diensten zulassen</translation>
 <translation id="1964634611280150550">Inkognitomodus deaktiviert</translation>
 <translation id="1964802606569741174">Diese Richtlinie hat keine Auswirkungen auf die Android YouTube App. Wenn der Sicherheitsmodus in YouTube erzwungen werden soll, darf das Installieren der Android YouTube App nicht zugelassen werden.</translation>
 <translation id="1969212217917526199">Überschreibt Richtlinien auf Fehlerbehebungs-Builds des Hosts für den Remotezugriff
@@ -1832,7 +1832,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="637934607141010488">Meldet eine Liste der Gerätenutzer, die sich kürzlich angemeldet haben
 
       Wird die Richtlinie auf "False" gesetzt, werden die Nutzer nicht gemeldet.</translation>
-<translation id="6392973646875039351">Aktiviert die AutoFill-Funktion von <ph name="PRODUCT_NAME" /> und ermöglicht es Nutzern, Web-Formulare automatisch mit zuvor gespeicherten Informationen (etwa Adresse oder Kreditkarteninformationen) ausfüllen zu lassen. Wenn Sie diese Einstellung deaktivieren, können Nutzer die AutoFill-Funktion nicht verwenden. Ist diese Einstellung aktiviert oder nicht konfiguriert, kann der Nutzer entscheiden, ob er AutoFill nutzen möchte. Er kann AutoFill-Profile konfigurieren und AutoFill nach eigenem Ermessen aktivieren und deaktivieren.</translation>
 <translation id="6394350458541421998">Diese Richtlinie ist ab <ph name="PRODUCT_OS_NAME" />-Version 29 nicht mehr vorhanden. Verwenden Sie stattdessen die Richtlinie "PresentationScreenDimDelayScale".</translation>
 <translation id="6401669939808766804">Nutzer abmelden</translation>
 <translation id="6426205278746959912">Android-Apps können nicht zur Verwendung eines Proxys gezwungen werden. 
@@ -1910,7 +1909,7 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
 
       Ist die Richtlinie auf "true" gesetzt, verhält sich die verwaltete Gastsitzung wie eine verwaltete Sitzung, bei der viele der Einschränkungen aufgehoben sind, die bei regulären öffentlichen Sitzungen gelten.
 
-      Sollte die Richtlinie festgelegt sein, kann sie vom Nutzer nicht geändert oder überschrieben werden.</translation>
+      Ist die Richtlinie festgelegt, kann sie vom Nutzer nicht geändert oder überschrieben werden.</translation>
 <translation id="6665670272107384733">Festlegen, wie oft der Nutzer das Passwort eingeben muss, um das schnelle Entsperren zu verwenden</translation>
 <translation id="6681229465468164801">Ermöglicht Ihnen die Erstellung einer Liste mit URL-Mustern. Den angegebenen Websites ist es nicht gestattet, Zugriff auf ein USB-Gerät anzufordern.
 
@@ -2072,15 +2071,15 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 <translation id="69525503251220566">Parameter für Funktion zur bildgesteuerten Suche für Standardsuchanbieter</translation>
 <translation id="6956272732789158625">Schlüsselgenerierung für keine Website zulassen</translation>
 <translation id="6982028490425791294">
-      Wenn diese Richtlinie auf "true" gesetzt ist, darf <ph name="PRODUCT_NAME" /> WebRTC-Ereignisprotokolle von Google-Diensten (z. B. Google Meet) speichern und die Protokolle bei Google hochladen.
+      Wenn diese Richtlinie auf "true" gesetzt ist, darf <ph name="PRODUCT_NAME" /> WebRTC-Ereignisprotokolle aus Google-Diensten (z. B. Google Meet) speichern und die Protokolle bei Google hochladen.
 
       Ist die Richtlinie auf "false" gesetzt oder nicht festgelegt, darf <ph name="PRODUCT_NAME" /> solche Protokolle nicht speichern oder hochladen.
 
-      Diese Protokolle enthalten z. B. Informationen dazu, wann RTP-Pakete gesendet und empfangen wurden und welche Größe sie haben, außerdem Feedback zur Auslastung des Netzwerks und Metadaten zur Länge und Qualität von Audio- und Videoframes. Diese Informationen können beim Lösen von Problemen mit Audio- und Videoanrufen in Chrome hilfreich sein, etwa wenn die Bandbreite nicht geschätzt werden kann. Die Protokolle enthalten keine Audio- oder Videoinhalte aus dem Anruf.
+      Diese Protokolle enthalten z. B. Informationen dazu, wann RTP-Pakete gesendet und empfangen wurden und welche Größe sie haben, außerdem Feedback zur Auslastung des Netzwerks und Metadaten zur Länge und Qualität von Audio- und Videoframes. Diese Informationen können helfen, Probleme bei Audio- und Videoanrufen in Chrome zu lösen – etwa wenn die Bandbreite nicht geschätzt werden kann. Die Protokolle enthalten keine Audio- oder Videoinhalte aus dem Anruf.
 
-      Das Erfassen dieser Daten kann nur von den Google-Webdiensten ausgelöst werden, etwa Google Hangouts oder Google Meet.
+      Das Erfassen dieser Daten kann nur von den Google-Webdiensten ausgelöst werden, etwa von Google Hangouts oder Google Meet.
 
-      Diese Protokolle können anhand einer Sitzungs-ID mit anderen Protokollen verknüpft sein, die vom Google-Dienst selbst erstellt wurden. Dies dient dazu, Fehler leichter beheben zu können.
+      Diese Protokolle können anhand einer Sitzungs-ID mit anderen Protokollen verknüpft sein, die vom Google-Dienst selbst erstellt wurden. Dies dient dazu, Fehler leichter zu beheben.
       </translation>
 <translation id="6994082778848658360">Hiermit wird angegeben, wie die integrierte Secure Element-Hardware zur Zwei-Faktor-Authentifizierung verwendet werden kann, wenn sie mit dieser Funktion kompatibel ist. Mithilfe der Ein-/Aus-Taste des Geräts wird die Anwesenheit des Nutzers ermittelt.
 

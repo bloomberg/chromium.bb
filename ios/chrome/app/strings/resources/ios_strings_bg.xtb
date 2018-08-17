@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Използване на синхронизиране и всички услуги</translation>
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="1323735185997015385">Изтриване</translation>
-<translation id="132390688737681464">Запазване и попълване на адреси</translation>
 <translation id="132683371494960526">Докоснете двукратно, за да промените главната папка.</translation>
 <translation id="1340643665687018190">Затваряне на менюто</translation>
 <translation id="1375321115329958930">Запазени пароли</translation>
@@ -120,7 +119,6 @@
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2871695793448672541">Скрита парола</translation>
 <translation id="2898963176829412617">Нова папка…</translation>
-<translation id="2903493209154104877">Адреси</translation>
 <translation id="2909437209446960244">Скорошни раздели</translation>
 <translation id="2916171785467530738">Автоматично довършване на заявки за търсене и URL адреси</translation>
 <translation id="291754862089661335">Поставете кода за бърза реакция или баркода в тази рамка</translation>
@@ -244,7 +242,6 @@
 <translation id="5062321486222145940">Инсталиране на Google Диск</translation>
 <translation id="5083464117946352670">Неизвестен файлов размер.</translation>
 <translation id="5094827893301452931">Съобщението в Twitter е завършено.</translation>
-<translation id="5123982333065001601">Запазване и попълване на кредитни карти</translation>
 <translation id="5173593619615111996">Раздели „инкогнито“: Затваряне</translation>
 <translation id="5181140330217080051">Изтегля се</translation>
 <translation id="5186185447130319458">Частно</translation>
@@ -252,7 +249,6 @@
 <translation id="5197255632782567636">Интернет</translation>
 <translation id="5228579091201413441">Активиране на синхронизирането</translation>
 <translation id="5244474230056479698">Синхронизира се със: <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Отворете раздел, за да сърфирате частно в мрежата.</translation>
 <translation id="5300589172476337783">Показване</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5327248766486351172">Име</translation>
@@ -336,7 +332,6 @@
 <translation id="6464071786529933911">Отв. в нов раздел „инкогнито“</translation>
 <translation id="6482629121755362506">Изтрихте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> елемента</translation>
 <translation id="6541915733953096570">Последния час</translation>
-<translation id="6570040839871198836">Авт. попълване</translation>
 <translation id="6656103420185847513">Редактиране на папката</translation>
 <translation id="6657585470893396449">Парола</translation>
 <translation id="667999046851023355">Документ</translation>
@@ -426,7 +421,6 @@
 <translation id="8205564605687841303">Отказ</translation>
 <translation id="8225985093977202398">Кеширани изображения и файлове</translation>
 <translation id="8261506727792406068">Изтриване</translation>
-<translation id="8272426682713568063">Кредитни карти</translation>
 <translation id="8281781826761538115">Стандартно – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Затваряне на всички</translation>
 <translation id="8381750437846184350">Контролирайте начина, по който използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google</translation>
