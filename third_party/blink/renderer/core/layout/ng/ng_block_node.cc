@@ -218,7 +218,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       if (!constraint_space.IsIntermediateLayout() && first_child &&
           first_child.IsInline()) {
         block_flow->UpdatePaintFragmentFromCachedLayoutResult(
-            layout_result->PhysicalFragment());
+            break_token, layout_result->PhysicalFragment());
       }
       return layout_result;
     }
@@ -261,7 +261,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
                                       layout_result);
     if (layout_result->Status() == NGLayoutResult::kSuccess &&
         !constraint_space.IsIntermediateLayout())
-      block_flow->ClearPaintFragment();
+      block_flow->SetPaintFragment(break_token, nullptr);
   }
 
   if (IsBlockLayoutComplete(constraint_space, *layout_result)) {
@@ -275,7 +275,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
               scrollbars.block_start,
           Style().IsFlippedBlocksWritingMode());
 
-      block_flow->SetPaintFragment(layout_result->PhysicalFragment());
+      block_flow->SetPaintFragment(break_token,
+                                   layout_result->PhysicalFragment());
     }
 
     // TODO(kojii): Even when we paint fragments, there seem to be some data we

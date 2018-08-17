@@ -460,10 +460,11 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                      NGBreakToken*,
                                      scoped_refptr<NGLayoutResult>);
   virtual void WillCollectInlines() {}
-  virtual void SetPaintFragment(scoped_refptr<const NGPhysicalFragment>);
+  virtual void SetPaintFragment(const NGBreakToken*,
+                                scoped_refptr<const NGPhysicalFragment>);
   virtual void UpdatePaintFragmentFromCachedLayoutResult(
+      const NGBreakToken*,
       scoped_refptr<const NGPhysicalFragment>);
-  virtual void ClearPaintFragment() {}
   virtual const NGPhysicalBoxFragment* CurrentFragment() const {
     return nullptr;
   }

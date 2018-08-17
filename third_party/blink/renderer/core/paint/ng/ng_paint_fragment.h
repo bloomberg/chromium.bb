@@ -49,6 +49,12 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   void UpdatePhysicalFragmentFromCachedLayoutResult(
       scoped_refptr<const NGPhysicalFragment>);
 
+  // Next/last fragment for  when this is fragmented.
+  NGPaintFragment* Next() { return next_fragmented_.get(); }
+  void SetNext(std::unique_ptr<NGPaintFragment>);
+  NGPaintFragment* Last();
+  NGPaintFragment* Last(const NGBreakToken&);
+
   // The parent NGPaintFragment. This is nullptr for a root; i.e., when parent
   // is not for NGPaint. In the first phase, this means that this is a root of
   // an inline formatting context.
@@ -236,6 +242,9 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
 
   NGPaintFragment* parent_;
   Vector<std::unique_ptr<NGPaintFragment>> children_;
+
+  // The next fragment for when this is fragmented.
+  std::unique_ptr<NGPaintFragment> next_fragmented_;
 
   NGPaintFragment* next_fragment_ = nullptr;
   NGPhysicalOffset inline_offset_to_container_box_;
