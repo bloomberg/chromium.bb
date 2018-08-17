@@ -57,7 +57,7 @@ class TextControlInnerEditorElement final : public HTMLDivElement {
  public:
   static TextControlInnerEditorElement* Create(Document&);
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 
   void SetVisibility(bool is_visible);
   scoped_refptr<ComputedStyle> CreateInnerEditorStyle() const;
@@ -74,7 +74,7 @@ class SearchFieldCancelButtonElement final : public HTMLDivElement {
  public:
   static SearchFieldCancelButtonElement* Create(Document&);
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
   bool WillRespondToMouseClickEvents() override;
 
  private:

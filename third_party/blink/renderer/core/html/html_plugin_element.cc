@@ -436,7 +436,7 @@ void HTMLPlugInElement::CollectStyleForPresentationAttribute(
   }
 }
 
-void HTMLPlugInElement::DefaultEventHandler(Event* event) {
+void HTMLPlugInElement::DefaultEventHandler(Event& event) {
   // Firefox seems to use a fake event listener to dispatch events to plugin
   // (tested with mouse events only). This is observable via different order
   // of events - in Firefox, event listeners specified in HTML attributes
@@ -457,8 +457,8 @@ void HTMLPlugInElement::DefaultEventHandler(Event* event) {
   WebPluginContainerImpl* plugin = OwnedPlugin();
   if (!plugin)
     return;
-  plugin->HandleEvent(event);
-  if (event->DefaultHandled())
+  plugin->HandleEvent(&event);
+  if (event.DefaultHandled())
     return;
   HTMLFrameOwnerElement::DefaultEventHandler(event);
 }

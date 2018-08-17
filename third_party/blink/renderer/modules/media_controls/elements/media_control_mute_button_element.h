@@ -26,7 +26,7 @@ class MediaControlMuteButtonElement final : public MediaControlInputElement {
   const char* GetNameForHistograms() const override;
 
  private:
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 };
 
 }  // namespace blink

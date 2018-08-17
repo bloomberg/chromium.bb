@@ -33,7 +33,7 @@ class MediaControlOverflowMenuListElement final
   };
   void MaybeRecordTimeTaken(TimeTakenHistogram);
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 
   TaskHandle current_task_handle_;
 

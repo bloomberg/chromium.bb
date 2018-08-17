@@ -137,23 +137,23 @@ DocumentParser* MediaDocument::CreateParser() {
   return MediaDocumentParser::Create(this);
 }
 
-void MediaDocument::DefaultEventHandler(Event* event) {
-  Node* target_node = event->target()->ToNode();
+void MediaDocument::DefaultEventHandler(Event& event) {
+  Node* target_node = event.target()->ToNode();
   if (!target_node)
     return;
 
-  if (event->type() == EventTypeNames::keydown && event->IsKeyboardEvent()) {
+  if (event.type() == EventTypeNames::keydown && event.IsKeyboardEvent()) {
     HTMLVideoElement* video =
         Traversal<HTMLVideoElement>::FirstWithin(*target_node);
     if (!video)
       return;
 
-    KeyboardEvent* keyboard_event = ToKeyboardEvent(event);
-    if (keyboard_event->key() == " " ||
-        keyboard_event->keyCode() == VKEY_MEDIA_PLAY_PAUSE) {
+    auto& keyboard_event = ToKeyboardEvent(event);
+    if (keyboard_event.key() == " " ||
+        keyboard_event.keyCode() == VKEY_MEDIA_PLAY_PAUSE) {
       // space or media key (play/pause)
       video->TogglePlayState();
-      event->SetDefaultHandled();
+      event.SetDefaultHandled();
     }
   }
 }

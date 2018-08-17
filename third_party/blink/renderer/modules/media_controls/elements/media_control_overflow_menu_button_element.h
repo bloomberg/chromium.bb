@@ -27,7 +27,7 @@ class MediaControlOverflowMenuButtonElement final
   void UpdateShownState() final;
 
  private:
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 };
 
 }  // namespace blink

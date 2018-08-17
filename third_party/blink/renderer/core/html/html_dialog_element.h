@@ -66,7 +66,7 @@ class HTMLDialogElement final : public HTMLElement {
   explicit HTMLDialogElement(Document&);
 
   bool IsPresentationAttribute(const QualifiedName&) const override;
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 
   void ForceLayoutForCentering();
 

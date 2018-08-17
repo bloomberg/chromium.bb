@@ -80,14 +80,14 @@ class DataListIndicatorElement final : public HTMLDivElement {
     return nullptr;
   }
 
-  void DefaultEventHandler(Event* event) override {
+  void DefaultEventHandler(Event& event) override {
     DCHECK(GetDocument().IsActive());
-    if (event->type() != EventTypeNames::click)
+    if (event.type() != EventTypeNames::click)
       return;
     HTMLInputElement* host = HostInput();
     if (host && !host->IsDisabledOrReadOnly()) {
       GetDocument().GetPage()->GetChromeClient().OpenTextDataListChooser(*host);
-      event->SetDefaultHandled();
+      event.SetDefaultHandled();
     }
   }
 

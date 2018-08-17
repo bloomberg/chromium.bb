@@ -262,13 +262,15 @@ void HTMLTextAreaElement::UpdateFocusAppearanceWithOptions(
   }
 }
 
-void HTMLTextAreaElement::DefaultEventHandler(Event* event) {
-  if (GetLayoutObject() && (event->IsMouseEvent() || event->IsDragEvent() ||
-                            event->HasInterface(EventNames::WheelEvent) ||
-                            event->type() == EventTypeNames::blur))
-    ForwardEvent(event);
-  else if (GetLayoutObject() && event->IsBeforeTextInsertedEvent())
-    HandleBeforeTextInsertedEvent(static_cast<BeforeTextInsertedEvent*>(event));
+void HTMLTextAreaElement::DefaultEventHandler(Event& event) {
+  if (GetLayoutObject() && (event.IsMouseEvent() || event.IsDragEvent() ||
+                            event.HasInterface(EventNames::WheelEvent) ||
+                            event.type() == EventTypeNames::blur)) {
+    ForwardEvent(&event);
+  } else if (GetLayoutObject() && event.IsBeforeTextInsertedEvent()) {
+    HandleBeforeTextInsertedEvent(
+        static_cast<BeforeTextInsertedEvent*>(&event));
+  }
 
   TextControlElement::DefaultEventHandler(event);
 }

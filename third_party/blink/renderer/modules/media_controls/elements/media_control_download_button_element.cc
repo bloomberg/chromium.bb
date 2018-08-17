@@ -69,9 +69,9 @@ void MediaControlDownloadButtonElement::UpdateShownState() {
   }
 }
 
-void MediaControlDownloadButtonElement::DefaultEventHandler(Event* event) {
+void MediaControlDownloadButtonElement::DefaultEventHandler(Event& event) {
   const KURL& url = MediaElement().currentSrc();
-  if (event->type() == EventTypeNames::click &&
+  if (event.type() == EventTypeNames::click &&
       !(url.IsNull() || url.IsEmpty())) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.Download"));

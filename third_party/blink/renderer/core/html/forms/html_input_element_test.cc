@@ -160,7 +160,7 @@ TEST_F(HTMLInputElementTest, RadioKeyDownDCHECKFailure) {
   radio2.setAttribute(HTMLNames::styleAttr, "position:fixed");
   KeyboardEventInit init;
   init.setKey("ArrowRight");
-  radio1.DefaultEventHandler(new KeyboardEvent("keydown", init));
+  radio1.DefaultEventHandler(*new KeyboardEvent("keydown", init));
   EXPECT_EQ(GetDocument().ActiveElement(), &radio2);
 }
 

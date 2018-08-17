@@ -42,7 +42,7 @@ class MODULES_EXPORT MediaControlDownloadButtonElement final
     kCount  // Keep last.
   };
 
-  void DefaultEventHandler(Event*) final;
+  void DefaultEventHandler(Event&) final;
 };
 
 }  // namespace blink

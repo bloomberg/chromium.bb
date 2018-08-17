@@ -434,7 +434,7 @@ void MultipleFieldsTemporalInputTypeView::ForwardEvent(Event* event) {
   }
 
   if (DateTimeEditElement* edit = GetDateTimeEditElement())
-    edit->DefaultEventHandler(event);
+    edit->DefaultEventHandler(*event);
 }
 
 void MultipleFieldsTemporalInputTypeView::DisabledAttributeChanged() {

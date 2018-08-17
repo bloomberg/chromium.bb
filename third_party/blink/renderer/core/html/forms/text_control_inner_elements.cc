@@ -106,13 +106,13 @@ TextControlInnerEditorElement* TextControlInnerEditorElement::Create(
   return new TextControlInnerEditorElement(document);
 }
 
-void TextControlInnerEditorElement::DefaultEventHandler(Event* event) {
+void TextControlInnerEditorElement::DefaultEventHandler(Event& event) {
   // FIXME: In the future, we should add a way to have default event listeners.
   // Then we would add one to the text field's inner div, and we wouldn't need
   // this subclass.
   // Or possibly we could just use a normal event listener.
-  if (event->IsBeforeTextInsertedEvent() ||
-      event->type() == EventTypeNames::webkitEditableContentChanged) {
+  if (event.IsBeforeTextInsertedEvent() ||
+      event.type() == EventTypeNames::webkitEditableContentChanged) {
     Element* shadow_ancestor = OwnerShadowHost();
     // A TextControlInnerTextElement can have no host if its been detached,
     // but kept alive by an EditCommand. In this case, an undo/redo can
@@ -122,7 +122,7 @@ void TextControlInnerEditorElement::DefaultEventHandler(Event* event) {
     if (shadow_ancestor)
       shadow_ancestor->DefaultEventHandler(event);
   }
-  if (!event->DefaultHandled())
+  if (!event.DefaultHandled())
     HTMLDivElement::DefaultEventHandler(event);
 }
 
@@ -239,25 +239,25 @@ void SearchFieldCancelButtonElement::DetachLayoutTree(
   HTMLDivElement::DetachLayoutTree(context);
 }
 
-void SearchFieldCancelButtonElement::DefaultEventHandler(Event* event) {
+void SearchFieldCancelButtonElement::DefaultEventHandler(Event& event) {
   // If the element is visible, on mouseup, clear the value, and set selection
   HTMLInputElement* input(ToHTMLInputElement(OwnerShadowHost()));
   if (!input || input->IsDisabledOrReadOnly()) {
-    if (!event->DefaultHandled())
+    if (!event.DefaultHandled())
       HTMLDivElement::DefaultEventHandler(event);
     return;
   }
 
-  if (event->type() == EventTypeNames::click && event->IsMouseEvent() &&
-      ToMouseEvent(event)->button() ==
+  if (event.type() == EventTypeNames::click && event.IsMouseEvent() &&
+      ToMouseEvent(event).button() ==
           static_cast<short>(WebPointerProperties::Button::kLeft)) {
     input->SetValueForUser("");
     input->SetAutofillState(WebAutofillState::kNotFilled);
     input->OnSearch();
-    event->SetDefaultHandled();
+    event.SetDefaultHandled();
   }
 
-  if (!event->DefaultHandled())
+  if (!event.DefaultHandled())
     HTMLDivElement::DefaultEventHandler(event);
 }
 

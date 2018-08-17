@@ -3509,7 +3509,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
   beforeunload_histogram.CountMicroseconds(beforeunload_event_end -
                                            beforeunload_event_start);
   if (!before_unload_event.defaultPrevented())
-    DefaultEventHandler(&before_unload_event);
+    DefaultEventHandler(before_unload_event);
 
   enum BeforeUnloadDialogHistogramEnum {
     kNoDialogNoText,

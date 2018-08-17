@@ -48,8 +48,8 @@ const char* MediaControlPlayButtonElement::GetNameForHistograms() const {
   return IsOverflowElement() ? "PlayPauseOverflowButton" : "PlayPauseButton";
 }
 
-void MediaControlPlayButtonElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::click) {
+void MediaControlPlayButtonElement::DefaultEventHandler(Event& event) {
+  if (event.type() == EventTypeNames::click) {
     if (MediaElement().paused()) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.Play"));
@@ -68,7 +68,7 @@ void MediaControlPlayButtonElement::DefaultEventHandler(Event* event) {
 
     MediaElement().TogglePlayState();
     UpdateDisplayType();
-    event->SetDefaultHandled();
+    event.SetDefaultHandled();
   }
   MediaControlInputElement::DefaultEventHandler(event);
 }

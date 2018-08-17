@@ -1475,12 +1475,12 @@ void Element::InvisibleAttributeChanged() {
       StyleChangeReasonForTracing::Create(StyleChangeReason::kInvisibleChange));
 }
 
-void Element::DefaultEventHandler(Event* event) {
+void Element::DefaultEventHandler(Event& event) {
   if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
-      event->type() == EventTypeNames::activateinvisible &&
-      event->target() == this) {
+      event.type() == EventTypeNames::activateinvisible &&
+      event.target() == this) {
     removeAttribute(invisibleAttr);
-    event->SetDefaultHandled();
+    event.SetDefaultHandled();
     return;
   }
   ContainerNode::DefaultEventHandler(event);

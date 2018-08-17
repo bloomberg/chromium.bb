@@ -142,20 +142,20 @@ void MediaControlPopupMenuElement::OnItemSelected() {
   SetIsWanted(false);
 }
 
-void MediaControlPopupMenuElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::pointermove) {
-    ToElement(event->target()->ToNode())->focus();
-  } else if (event->type() == EventTypeNames::focusout) {
+void MediaControlPopupMenuElement::DefaultEventHandler(Event& event) {
+  if (event.type() == EventTypeNames::pointermove) {
+    ToElement(event.target()->ToNode())->focus();
+  } else if (event.type() == EventTypeNames::focusout) {
     GetDocument()
         .GetTaskRunner(TaskType::kMediaElementEvent)
         ->PostTask(FROM_HERE,
                    WTF::Bind(&MediaControlPopupMenuElement::HideIfNotFocused,
                              WrapWeakPersistent(this)));
-  } else if (event->type() == EventTypeNames::click) {
+  } else if (event.type() == EventTypeNames::click) {
     OnItemSelected();
 
-    event->stopPropagation();
-    event->SetDefaultHandled();
+    event.stopPropagation();
+    event.SetDefaultHandled();
   }
 
   MediaControlDivElement::DefaultEventHandler(event);

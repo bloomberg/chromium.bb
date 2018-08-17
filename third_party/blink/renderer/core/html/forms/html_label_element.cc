@@ -137,18 +137,18 @@ bool HTMLLabelElement::IsInInteractiveContent(Node* node) const {
   return false;
 }
 
-void HTMLLabelElement::DefaultEventHandler(Event* evt) {
-  if (evt->type() == EventTypeNames::click && !processing_click_) {
+void HTMLLabelElement::DefaultEventHandler(Event& evt) {
+  if (evt.type() == EventTypeNames::click && !processing_click_) {
     HTMLElement* element = control();
 
     // If we can't find a control or if the control received the click
     // event, then there's no need for us to do anything.
     if (!element ||
-        (evt->target() && element->IsShadowIncludingInclusiveAncestorOf(
-                              evt->target()->ToNode())))
+        (evt.target() &&
+         element->IsShadowIncludingInclusiveAncestorOf(evt.target()->ToNode())))
       return;
 
-    if (evt->target() && IsInInteractiveContent(evt->target()->ToNode()))
+    if (evt.target() && IsInInteractiveContent(evt.target()->ToNode()))
       return;
 
     //   Behaviour of label element is as follows:
@@ -167,7 +167,7 @@ void HTMLLabelElement::DefaultEventHandler(Event* evt) {
     // click event to control element.
     // Note: check if it is a MouseEvent because a click event may
     // not be an instance of a MouseEvent if created by document.createEvent().
-    if (evt->IsMouseEvent() && ToMouseEvent(evt)->HasPosition()) {
+    if (evt.IsMouseEvent() && ToMouseEvent(evt).HasPosition()) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         // Check if there is a selection and click is not on the
         // selection.
@@ -178,7 +178,7 @@ void HTMLLabelElement::DefaultEventHandler(Event* evt) {
             !frame->GetEventHandler()
                  .GetSelectionController()
                  .MouseDownWasSingleClickInSelection() &&
-            evt->target()->ToNode()->CanStartSelection())
+            evt.target()->ToNode()->CanStartSelection())
           is_label_text_selected = true;
         // If selection is there and is single click i.e. text is
         // selected by dragging over label text, then return.
@@ -186,7 +186,7 @@ void HTMLLabelElement::DefaultEventHandler(Event* evt) {
         // should pass click event to control element.
         // Only in case of drag, *neither* we pass the click event,
         // *nor* we focus the control element.
-        if (is_label_text_selected && ToMouseEvent(evt)->ClickCount() == 1)
+        if (is_label_text_selected && ToMouseEvent(evt).ClickCount() == 1)
           return;
       }
     }
@@ -206,11 +206,11 @@ void HTMLLabelElement::DefaultEventHandler(Event* evt) {
     }
 
     // Click the corresponding control.
-    element->DispatchSimulatedClick(evt);
+    element->DispatchSimulatedClick(&evt);
 
     processing_click_ = false;
 
-    evt->SetDefaultHandled();
+    evt.SetDefaultHandled();
   }
 
   HTMLElement::DefaultEventHandler(evt);

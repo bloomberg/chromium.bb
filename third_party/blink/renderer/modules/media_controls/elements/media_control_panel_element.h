@@ -44,7 +44,7 @@ class MODULES_EXPORT MediaControlPanelElement final
   void EnsureTransitionEventListener();
   void DetachTransitionEventListener();
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
   bool KeepEventInNode(const Event&) const override;
 
   void DidBecomeVisible();

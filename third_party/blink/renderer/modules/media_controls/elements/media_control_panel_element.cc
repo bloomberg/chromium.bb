@@ -165,11 +165,11 @@ void MediaControlPanelElement::DetachTransitionEventListener() {
     event_listener_->Detach();
 }
 
-void MediaControlPanelElement::DefaultEventHandler(Event* event) {
+void MediaControlPanelElement::DefaultEventHandler(Event& event) {
   // Suppress the media element activation behavior (toggle play/pause) when
   // any part of the control panel is clicked.
-  if (event->type() == EventTypeNames::click) {
-    event->SetDefaultHandled();
+  if (event.type() == EventTypeNames::click) {
+    event.SetDefaultHandled();
     return;
   }
   HTMLDivElement::DefaultEventHandler(event);

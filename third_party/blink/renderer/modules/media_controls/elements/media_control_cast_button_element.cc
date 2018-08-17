@@ -92,8 +92,8 @@ const char* MediaControlCastButtonElement::GetNameForHistograms() const {
              : IsOverflowElement() ? "CastOverflowButton" : "CastButton";
 }
 
-void MediaControlCastButtonElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::click) {
+void MediaControlCastButtonElement::DefaultEventHandler(Event& event) {
+  if (event.type() == EventTypeNames::click) {
     if (is_overlay_button_) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.CastOverlay"));

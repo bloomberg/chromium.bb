@@ -101,40 +101,40 @@ bool HTMLSummaryElement::SupportsFocus() const {
   return IsMainSummary() || HTMLElement::SupportsFocus();
 }
 
-void HTMLSummaryElement::DefaultEventHandler(Event* event) {
+void HTMLSummaryElement::DefaultEventHandler(Event& event) {
   if (IsMainSummary()) {
-    if (event->type() == EventTypeNames::DOMActivate &&
-        !IsClickableControl(event->target()->ToNode())) {
+    if (event.type() == EventTypeNames::DOMActivate &&
+        !IsClickableControl(event.target()->ToNode())) {
       if (HTMLDetailsElement* details = DetailsElement())
         details->ToggleOpen();
-      event->SetDefaultHandled();
+      event.SetDefaultHandled();
       return;
     }
 
-    if (event->IsKeyboardEvent()) {
-      if (event->type() == EventTypeNames::keydown &&
-          ToKeyboardEvent(event)->key() == " ") {
+    if (event.IsKeyboardEvent()) {
+      if (event.type() == EventTypeNames::keydown &&
+          ToKeyboardEvent(event).key() == " ") {
         SetActive(true);
         // No setDefaultHandled() - IE dispatches a keypress in this case.
         return;
       }
-      if (event->type() == EventTypeNames::keypress) {
-        switch (ToKeyboardEvent(event)->charCode()) {
+      if (event.type() == EventTypeNames::keypress) {
+        switch (ToKeyboardEvent(event).charCode()) {
           case '\r':
-            DispatchSimulatedClick(event);
-            event->SetDefaultHandled();
+            DispatchSimulatedClick(&event);
+            event.SetDefaultHandled();
             return;
           case ' ':
             // Prevent scrolling down the page.
-            event->SetDefaultHandled();
+            event.SetDefaultHandled();
             return;
         }
       }
-      if (event->type() == EventTypeNames::keyup &&
-          ToKeyboardEvent(event)->key() == " ") {
+      if (event.type() == EventTypeNames::keyup &&
+          ToKeyboardEvent(event).key() == " ") {
         if (IsActive())
-          DispatchSimulatedClick(event);
-        event->SetDefaultHandled();
+          DispatchSimulatedClick(&event);
+        event.SetDefaultHandled();
         return;
       }
     }

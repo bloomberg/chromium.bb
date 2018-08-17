@@ -102,7 +102,7 @@ class CORE_EXPORT HTMLElement : public Element {
   virtual bool IsLabelable() const { return false; }
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#interactive-content
   virtual bool IsInteractiveContent() const;
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 
   static const AtomicString& EventNameForAttributeName(
       const QualifiedName& attr_name);

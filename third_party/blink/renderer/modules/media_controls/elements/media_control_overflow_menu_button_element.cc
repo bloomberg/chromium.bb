@@ -41,10 +41,10 @@ void MediaControlOverflowMenuButtonElement::UpdateShownState() {
   }
 }
 
-void MediaControlOverflowMenuButtonElement::DefaultEventHandler(Event* event) {
+void MediaControlOverflowMenuButtonElement::DefaultEventHandler(Event& event) {
   // Only respond to a click event if we are not disabled.
   if (!hasAttribute(HTMLNames::disabledAttr) &&
-      event->type() == EventTypeNames::click) {
+      event.type() == EventTypeNames::click) {
     if (GetMediaControls().OverflowMenuVisible()) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.OverflowClose"));
@@ -54,7 +54,7 @@ void MediaControlOverflowMenuButtonElement::DefaultEventHandler(Event* event) {
     }
 
     GetMediaControls().ToggleOverflowMenu();
-    event->SetDefaultHandled();
+    event.SetDefaultHandled();
   }
 
   MediaControlInputElement::DefaultEventHandler(event);
