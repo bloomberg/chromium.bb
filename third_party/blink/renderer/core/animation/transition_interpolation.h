@@ -76,9 +76,16 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
         end_(std::move(end)),
         merge_(type.MaybeMergeSingles(start_.Clone(), end_.Clone())),
         compositor_start_(std::move(compositor_start)),
-        compositor_end_(std::move(compositor_end)),
-        cached_interpolable_value_(merge_.start_interpolable_value->Clone()) {
-    DCHECK(merge_);
+        compositor_end_(std::move(compositor_end)) {
+    // Incredibly speculative CHECKs, to try and get any insight on
+    // crbug.com/826627. Somehow a crash is happening in this constructor, which
+    // we believe is based on |start_| having no interpolable value. However a
+    // CHECK added in TransitionKeyframe::SetValue isn't firing, so doing some
+    // speculation here to try and broaden our understanding.
+    // TODO(crbug.com/826627): Revert once bug is fixed.
+    CHECK(start_);
+    CHECK(merge_);
+    cached_interpolable_value_ = merge_.start_interpolable_value->Clone();
     DCHECK_EQ(compositor_start_ && compositor_end_,
               property_.GetCSSProperty().IsCompositableProperty());
   }
