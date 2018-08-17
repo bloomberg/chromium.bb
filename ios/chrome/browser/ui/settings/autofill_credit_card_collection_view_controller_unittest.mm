@@ -1,14 +1,13 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/autofill_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_credit_card_collection_view_controller.h"
 
 #include "base/guid.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
@@ -28,36 +27,37 @@
 
 namespace {
 
-class AutofillCollectionViewControllerTest
+class AutofillCreditCardCollectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
-  AutofillCollectionViewControllerTest() {
+  AutofillCreditCardCollectionViewControllerTest() {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
-    // Profile import requires a PersonalDataManager which itself needs the
+    // Credit card import requires a PersonalDataManager which itself needs the
     // WebDataService; this is not initialized on a TestChromeBrowserState by
     // default.
     chrome_browser_state_->CreateWebDataService();
   }
 
   CollectionViewController* InstantiateController() override {
-    return [[AutofillCollectionViewController alloc]
+    return [[AutofillCreditCardCollectionViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
-  void AddProfile(const std::string& origin,
-                  const std::string& name,
-                  const std::string& address) {
+  void AddCreditCard(const std::string& origin,
+                     const std::string& card_holder_name,
+                     const std::string& card_number) {
     autofill::PersonalDataManager* personal_data_manager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(
             chrome_browser_state_.get());
     PersonalDataManagerDataChangedObserver observer(personal_data_manager);
 
-    autofill::AutofillProfile autofill_profile(base::GenerateGUID(), origin);
-    autofill_profile.SetRawInfo(autofill::NAME_FULL, base::ASCIIToUTF16(name));
-    autofill_profile.SetRawInfo(autofill::ADDRESS_HOME_LINE1,
-                                base::ASCIIToUTF16(address));
-    personal_data_manager->SaveImportedProfile(autofill_profile);
+    autofill::CreditCard credit_card(base::GenerateGUID(), origin);
+    credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
+                           base::ASCIIToUTF16(card_holder_name));
+    credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
+                           base::ASCIIToUTF16(card_number));
+    personal_data_manager->OnAcceptedLocalCreditCardSave(credit_card);
     observer.Wait();  // Wait for completion of the asynchronous operation.
   }
 
@@ -66,66 +66,43 @@ class AutofillCollectionViewControllerTest
 };
 
 // Default test case of no addresses or credit cards.
-TEST_F(AutofillCollectionViewControllerTest, TestInitialization) {
+TEST_F(AutofillCreditCardCollectionViewControllerTest, TestInitialization) {
   CreateController();
   CheckController();
 
   // Expect one header section.
   EXPECT_EQ(1, NumberOfSections());
-  // Expect header section to contain three rows.
-  EXPECT_EQ(3, NumberOfItemsInSection(0));
-}
-
-// Adding a single address results in an address section.
-TEST_F(AutofillCollectionViewControllerTest, TestOneProfile) {
-  AddProfile("https://www.example.com/", "John Doe", "1 Main Street");
-  CreateController();
-  // Expect two sections (header and addresses section).
-  EXPECT_EQ(2, NumberOfSections());
-  // Expect header section to contain three rows.
-  EXPECT_EQ(3, NumberOfItemsInSection(0));
-  // Expect address section to contain 1 row (the address itself).
-  EXPECT_EQ(1, NumberOfItemsInSection(1));
+  // Expect header section to contain one row (the credit card Autofill toggle).
+  EXPECT_EQ(1, NumberOfItemsInSection(0));
 }
 
 // Adding a single credit card results in a credit card section.
-TEST_F(AutofillCollectionViewControllerTest, TestOneCreditCard) {
-  autofill::PersonalDataManager* personal_data_manager =
-      autofill::PersonalDataManagerFactory::GetForBrowserState(
-          chrome_browser_state_.get());
-  PersonalDataManagerDataChangedObserver observer(personal_data_manager);
-
-  autofill::CreditCard credit_card(base::GenerateGUID(),
-                                   "https://www.example.com/");
-  credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
-                         base::ASCIIToUTF16("Alan Smithee"));
-  credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
-                         base::ASCIIToUTF16("378282246310005"));
-  personal_data_manager->OnAcceptedLocalCreditCardSave(credit_card);
-  observer.Wait();  // Wait for completion of the asynchronous operation.
-
+TEST_F(AutofillCreditCardCollectionViewControllerTest, TestOneCreditCard) {
+  AddCreditCard("https://www.example.com/", "John Doe", "378282246310005");
   CreateController();
-  // Expect two sections (header and credit card section).
+  CheckController();
+
+  // Expect two sections (header and credit cards section).
   EXPECT_EQ(2, NumberOfSections());
-  // Expect header section to contain three rows.
-  EXPECT_EQ(3, NumberOfItemsInSection(0));
-  // Expect credit card section to contain 1 row (the credit card itself).
+  // Expect address section to contain one row (the credit card itself).
   EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
-// Deleting the only profile results in item deletion and section deletion.
-TEST_F(AutofillCollectionViewControllerTest, TestOneProfileItemDeleted) {
-  AddProfile("https://www.example.com/", "John Doe", "1 Main Street");
+// Deleting the only credit card results in item deletion and section deletion.
+TEST_F(AutofillCreditCardCollectionViewControllerTest,
+       TestOneCreditCardItemDeleted) {
+  AddCreditCard("https://www.example.com/", "John Doe", "378282246310005");
   CreateController();
-  // Expect two sections (header and addresses section).
+  CheckController();
+
+  // Expect two sections (header and credit cards section).
   EXPECT_EQ(2, NumberOfSections());
-  // Expect header section to contain three rows.
-  EXPECT_EQ(3, NumberOfItemsInSection(0));
-  // Expect address section to contain 1 row (the address itself).
+  // Expect address section to contain one row (the credit card itself).
   EXPECT_EQ(1, NumberOfItemsInSection(1));
 
-  AutofillCollectionViewController* view_controller =
-      base::mac::ObjCCastStrict<AutofillCollectionViewController>(controller());
+  AutofillCreditCardCollectionViewController* view_controller =
+      base::mac::ObjCCastStrict<AutofillCreditCardCollectionViewController>(
+          controller());
   // Put the collectionView in 'edit' mode.
   [view_controller editButtonPressed];
 
@@ -155,11 +132,8 @@ TEST_F(AutofillCollectionViewControllerTest, TestOneProfileItemDeleted) {
   // Exit 'edit' mode.
   [view_controller editButtonPressed];
 
-  // Verify the resulting UI.
-  // Expect one header section.
+  // Expect one header section only.
   EXPECT_EQ(1, NumberOfSections());
-  // Expect header section to contain three rows.
-  EXPECT_EQ(3, NumberOfItemsInSection(0));
 }
 
 }  // namespace
