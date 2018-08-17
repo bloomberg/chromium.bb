@@ -65,7 +65,7 @@ class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
   OnPublicSessionViewDismissed on_dismissed_;
   PublicAccountWarningDialog* warning_dialog_ = nullptr;
 
-  base::WeakPtrFactory<LoginExpandedPublicAccountView> weak_factory_;
+  base::WeakPtrFactory<LoginExpandedPublicAccountView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginExpandedPublicAccountView);
 };

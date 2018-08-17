@@ -367,8 +367,9 @@ class ASH_EXPORT LockContentsView
   // all actions are executed.
   std::vector<DisplayLayoutAction> layout_actions_;
 
-  ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
-  ScopedSessionObserver session_observer_;
+  ScopedObserver<display::Screen, display::DisplayObserver> display_observer_{
+      this};
+  ScopedSessionObserver session_observer_{this};
 
   // Bubbles for displaying authentication error.
   std::unique_ptr<LoginBubble> auth_error_bubble_;

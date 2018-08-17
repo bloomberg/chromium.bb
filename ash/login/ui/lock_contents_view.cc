@@ -342,9 +342,7 @@ LockContentsView::LockContentsView(
     : NonAccessibleView(kLockContentsViewName),
       screen_type_(screen_type),
       data_dispatcher_(data_dispatcher),
-      detachable_base_model_(std::move(detachable_base_model)),
-      display_observer_(this),
-      session_observer_(this) {
+      detachable_base_model_(std::move(detachable_base_model)) {
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
   Shell::Get()->login_screen_controller()->AddObserver(this);
