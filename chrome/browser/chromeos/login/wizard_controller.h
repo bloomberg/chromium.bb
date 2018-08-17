@@ -114,6 +114,12 @@ class WizardController : public BaseScreenDelegate,
   //    chromeos::OobeScreen::SCREEN_OOBE_DEMO_SETUP
   void StartDemoModeSetup();
 
+  // Starts derelict Demo Mode setup flow. This should only occur when the
+  // device has been idle on the Welcome screen.
+  // The device will auto-enroll into derelict Demo Mode with no user input
+  // required.
+  void StartDerelictDemoModeSetup();
+
   void SimulateDemoModeSetupForTesting();
 
   // Advances to login/update screen. Should be used in for testing only.

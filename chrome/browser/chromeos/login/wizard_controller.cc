@@ -1436,6 +1436,14 @@ void WizardController::StartDemoModeSetup() {
   ShowDemoModePreferencesScreen();
 }
 
+void WizardController::StartDerelictDemoModeSetup() {
+  DCHECK(!demo_setup_controller_);
+  demo_setup_controller_ = std::make_unique<DemoSetupController>();
+  demo_setup_controller_->set_enrollment_type(
+      DemoSetupController::EnrollmentType::kDerelictOffline);
+  ShowDemoModeSetupScreen();
+}
+
 void WizardController::SimulateDemoModeSetupForTesting() {
   demo_setup_controller_ = std::make_unique<DemoSetupController>();
 }
