@@ -38,7 +38,7 @@
     TestRunner.addResult('    Dumping breakpoints');
     for (var i = 0; i < breakpoints.length; ++i) {
       var breakpoint = breakpoints[i];
-      var uiSourceCode = breakpoint._primaryUISourceCode;
+      var uiSourceCode = breakpoint._defaultUILocation.uiSourceCode;
       var lineNumber = breakpoint.lineNumber();
       var url = uiSourceCode.url();
       var project = uiSourceCode.project();
