@@ -47,7 +47,7 @@ class SearchInputType final : public BaseTextInputType {
   const AtomicString& FormControlType() const override;
   bool NeedsContainer() const override;
   void CreateShadowSubtree() override;
-  void HandleKeydownEvent(KeyboardEvent*) override;
+  void HandleKeydownEvent(KeyboardEvent&) override;
   void DidSetValueByUserEdit() override;
   bool SupportsInputModeAttribute() const override;
   void UpdateView() override;

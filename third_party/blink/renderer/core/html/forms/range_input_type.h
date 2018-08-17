@@ -61,8 +61,8 @@ class RangeInputType final : public InputType, public InputTypeView {
   bool SupportsRequired() const override;
   StepRange CreateStepRange(AnyStepHandling) const override;
   bool IsSteppable() const override;
-  void HandleMouseDownEvent(MouseEvent*) override;
-  void HandleKeydownEvent(KeyboardEvent*) override;
+  void HandleMouseDownEvent(MouseEvent&) override;
+  void HandleKeydownEvent(KeyboardEvent&) override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&) const override;
   void CreateShadowSubtree() override;
   Decimal ParseToNumber(const String&, const Decimal&) const override;

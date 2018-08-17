@@ -59,14 +59,14 @@ void DateTimeFieldElement::DefaultEventHandler(Event& event) {
   if (event.IsKeyboardEvent()) {
     auto& keyboard_event = ToKeyboardEvent(event);
     if (!IsDisabled() && !IsFieldOwnerDisabled() && !IsFieldOwnerReadOnly()) {
-      HandleKeyboardEvent(&keyboard_event);
+      HandleKeyboardEvent(keyboard_event);
       if (keyboard_event.DefaultHandled()) {
         if (field_owner_)
           field_owner_->FieldDidChangeValueByKeyboard();
         return;
       }
     }
-    DefaultKeyboardEventHandler(&keyboard_event);
+    DefaultKeyboardEventHandler(keyboard_event);
     if (field_owner_)
       field_owner_->FieldDidChangeValueByKeyboard();
     if (keyboard_event.DefaultHandled())
@@ -77,14 +77,14 @@ void DateTimeFieldElement::DefaultEventHandler(Event& event) {
 }
 
 void DateTimeFieldElement::DefaultKeyboardEventHandler(
-    KeyboardEvent* keyboard_event) {
-  if (keyboard_event->type() != EventTypeNames::keydown)
+    KeyboardEvent& keyboard_event) {
+  if (keyboard_event.type() != EventTypeNames::keydown)
     return;
 
   if (IsDisabled() || IsFieldOwnerDisabled())
     return;
 
-  const String& key = keyboard_event->key();
+  const String& key = keyboard_event.key();
 
   if (key == "ArrowLeft") {
     if (!field_owner_)
@@ -92,7 +92,7 @@ void DateTimeFieldElement::DefaultKeyboardEventHandler(
     // FIXME: We'd like to use FocusController::advanceFocus(FocusDirectionLeft,
     // ...) but it doesn't work for shadow nodes. webkit.org/b/104650
     if (!LocaleForOwner().IsRTL() && field_owner_->FocusOnPreviousField(*this))
-      keyboard_event->SetDefaultHandled();
+      keyboard_event.SetDefaultHandled();
     return;
   }
 
@@ -103,7 +103,7 @@ void DateTimeFieldElement::DefaultKeyboardEventHandler(
     // FocusController::advanceFocus(FocusDirectionRight, ...)
     // but it doesn't work for shadow nodes. webkit.org/b/104650
     if (!LocaleForOwner().IsRTL() && field_owner_->FocusOnNextField(*this))
-      keyboard_event->SetDefaultHandled();
+      keyboard_event.SetDefaultHandled();
     return;
   }
 
@@ -111,21 +111,21 @@ void DateTimeFieldElement::DefaultKeyboardEventHandler(
     return;
 
   if (key == "ArrowDown") {
-    if (keyboard_event->getModifierState("Alt"))
+    if (keyboard_event.getModifierState("Alt"))
       return;
-    keyboard_event->SetDefaultHandled();
+    keyboard_event.SetDefaultHandled();
     StepDown();
     return;
   }
 
   if (key == "ArrowUp") {
-    keyboard_event->SetDefaultHandled();
+    keyboard_event.SetDefaultHandled();
     StepUp();
     return;
   }
 
   if (key == "Backspace" || key == "Delete") {
-    keyboard_event->SetDefaultHandled();
+    keyboard_event.SetDefaultHandled();
     SetEmptyValue(kDispatchEvent);
     return;
   }

@@ -60,8 +60,8 @@ class CORE_EXPORT TypeAhead {
   using MatchModeFlags = unsigned;
 
   // Returns the index for the matching option.
-  int HandleEvent(KeyboardEvent*, MatchModeFlags);
-  bool HasActiveSession(KeyboardEvent*);
+  int HandleEvent(const KeyboardEvent&, MatchModeFlags);
+  bool HasActiveSession(const KeyboardEvent&);
   void ResetSession();
 
  private:

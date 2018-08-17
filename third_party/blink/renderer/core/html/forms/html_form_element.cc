@@ -177,7 +177,7 @@ HTMLElement* HTMLFormElement::item(unsigned index) {
   return elements()->item(index);
 }
 
-void HTMLFormElement::SubmitImplicitly(Event* event,
+void HTMLFormElement::SubmitImplicitly(Event& event,
                                        bool from_implicit_submission_trigger) {
   int submission_trigger_count = 0;
   bool seen_default_button = false;
@@ -189,7 +189,7 @@ void HTMLFormElement::SubmitImplicitly(Event* event,
       if (from_implicit_submission_trigger)
         seen_default_button = true;
       if (control->IsSuccessfulSubmitButton()) {
-        control->DispatchSimulatedClick(event);
+        control->DispatchSimulatedClick(&event);
         return;
       }
       if (from_implicit_submission_trigger) {
@@ -249,7 +249,7 @@ bool HTMLFormElement::ValidateInteractively() {
 }
 
 void HTMLFormElement::PrepareForSubmission(
-    Event* event,
+    Event& event,
     HTMLFormControlElement* submit_button) {
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame || is_submitting_ || in_user_js_submit_event_)
@@ -296,7 +296,6 @@ void HTMLFormElement::PrepareForSubmission(
   }
 
   bool skip_validation = !GetDocument().GetPage() || NoValidate();
-  DCHECK(event);
   if (submit_button && submit_button->FormNoValidate())
     skip_validation = true;
 
@@ -316,7 +315,7 @@ void HTMLFormElement::PrepareForSubmission(
   }
   if (should_submit) {
     planned_navigation_ = nullptr;
-    Submit(event, submit_button);
+    Submit(&event, submit_button);
   }
   if (!planned_navigation_)
     return;

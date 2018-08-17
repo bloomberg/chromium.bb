@@ -144,11 +144,11 @@ void SpinButtonElement::WillOpenPopup() {
   up_down_state_ = kIndeterminate;
 }
 
-void SpinButtonElement::ForwardEvent(Event* event) {
+void SpinButtonElement::ForwardEvent(Event& event) {
   if (!GetLayoutBox())
     return;
 
-  if (!event->HasInterface(EventNames::WheelEvent))
+  if (!event.HasInterface(EventNames::WheelEvent))
     return;
 
   if (!spin_button_owner_)
@@ -157,8 +157,8 @@ void SpinButtonElement::ForwardEvent(Event* event) {
   if (!spin_button_owner_->ShouldSpinButtonRespondToWheelEvents())
     return;
 
-  DoStepAction(ToWheelEvent(event)->wheelDeltaY());
-  event->SetDefaultHandled();
+  DoStepAction(ToWheelEvent(event).wheelDeltaY());
+  event.SetDefaultHandled();
 }
 
 bool SpinButtonElement::WillRespondToMouseMoveEvents() {

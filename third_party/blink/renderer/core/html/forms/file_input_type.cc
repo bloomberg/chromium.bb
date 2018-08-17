@@ -144,7 +144,7 @@ String FileInputType::ValueMissingText() const {
           : WebLocalizedString::kValidationValueMissingForFile);
 }
 
-void FileInputType::HandleDOMActivateEvent(Event* event) {
+void FileInputType::HandleDOMActivateEvent(Event& event) {
   if (GetElement().IsDisabledFormControl())
     return;
 
@@ -172,7 +172,7 @@ void FileInputType::HandleDOMActivateEvent(Event* event) {
 
     chrome_client->OpenFileChooser(document.GetFrame(), NewFileChooser(params));
   }
-  event->SetDefaultHandled();
+  event.SetDefaultHandled();
 }
 
 LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle&) const {
@@ -434,26 +434,25 @@ void FileInputType::CopyNonAttributeProperties(const HTMLInputElement& source) {
     file_list_->Append(source_list->item(i)->Clone());
 }
 
-void FileInputType::HandleKeypressEvent(KeyboardEvent* event) {
+void FileInputType::HandleKeypressEvent(KeyboardEvent& event) {
   if (GetElement().FastHasAttribute(webkitdirectoryAttr)) {
     // Override to invoke the action on Enter key up (not press) to avoid
     // repeats committing the file chooser.
-    const String& key = event->key();
-    if (key == "Enter") {
-      event->SetDefaultHandled();
+    if (event.key() == "Enter") {
+      event.SetDefaultHandled();
       return;
     }
   }
   KeyboardClickableInputTypeView::HandleKeypressEvent(event);
 }
 
-void FileInputType::HandleKeyupEvent(KeyboardEvent* event) {
+void FileInputType::HandleKeyupEvent(KeyboardEvent& event) {
   if (GetElement().FastHasAttribute(webkitdirectoryAttr)) {
     // Override to invoke the action on Enter key up (not press) to avoid
     // repeats committing the file chooser.
-    if (event->key() == "Enter") {
-      GetElement().DispatchSimulatedClick(event);
-      event->SetDefaultHandled();
+    if (event.key() == "Enter") {
+      GetElement().DispatchSimulatedClick(&event);
+      event.SetDefaultHandled();
       return;
     }
   }

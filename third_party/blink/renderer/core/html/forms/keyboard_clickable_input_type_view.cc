@@ -38,9 +38,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-void KeyboardClickableInputTypeView::HandleKeydownEvent(KeyboardEvent* event) {
-  const String& key = event->key();
-  if (key == " ") {
+void KeyboardClickableInputTypeView::HandleKeydownEvent(KeyboardEvent& event) {
+  if (event.key() == " ") {
     GetElement().SetActive(true);
     // No setDefaultHandled(), because IE dispatches a keypress in this case
     // and the caller will only dispatch a keypress if we don't call
@@ -48,22 +47,21 @@ void KeyboardClickableInputTypeView::HandleKeydownEvent(KeyboardEvent* event) {
   }
 }
 
-void KeyboardClickableInputTypeView::HandleKeypressEvent(KeyboardEvent* event) {
-  const String& key = event->key();
+void KeyboardClickableInputTypeView::HandleKeypressEvent(KeyboardEvent& event) {
+  const String& key = event.key();
   if (key == "Enter") {
-    GetElement().DispatchSimulatedClick(event);
-    event->SetDefaultHandled();
+    GetElement().DispatchSimulatedClick(&event);
+    event.SetDefaultHandled();
     return;
   }
   if (key == " ") {
     // Prevent scrolling down the page.
-    event->SetDefaultHandled();
+    event.SetDefaultHandled();
   }
 }
 
-void KeyboardClickableInputTypeView::HandleKeyupEvent(KeyboardEvent* event) {
-  const String& key = event->key();
-  if (key != " ")
+void KeyboardClickableInputTypeView::HandleKeyupEvent(KeyboardEvent& event) {
+  if (event.key() != " ")
     return;
   // Simulate mouse click for spacebar for button types.
   DispatchSimulatedClickIfActive(event);

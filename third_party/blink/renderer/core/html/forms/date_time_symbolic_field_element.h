@@ -58,7 +58,7 @@ class DateTimeSymbolicFieldElement : public DateTimeFieldElement,
   }
 
   // DateTimeFieldElement functions.
-  void HandleKeyboardEvent(KeyboardEvent*) final;
+  void HandleKeyboardEvent(KeyboardEvent&) final;
   float MaximumWidth(const ComputedStyle&) override;
   String Placeholder() const override;
   void StepDown() final;

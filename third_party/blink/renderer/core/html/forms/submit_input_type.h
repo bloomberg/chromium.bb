@@ -44,7 +44,7 @@ class SubmitInputType final : public BaseButtonInputType {
   const AtomicString& FormControlType() const override;
   void AppendToFormData(FormData&) const override;
   bool SupportsRequired() const override;
-  void HandleDOMActivateEvent(Event*) override;
+  void HandleDOMActivateEvent(Event&) override;
   bool CanBeSuccessfulSubmitButton() override;
   String DefaultLabel() const override;
   bool IsTextButton() const override;

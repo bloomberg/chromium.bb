@@ -193,45 +193,45 @@ void TextFieldInputType::SetValue(const String& sanitized_value,
   }
 }
 
-void TextFieldInputType::HandleKeydownEvent(KeyboardEvent* event) {
+void TextFieldInputType::HandleKeydownEvent(KeyboardEvent& event) {
   if (!GetElement().IsFocused())
     return;
   if (ChromeClient* chrome_client = GetChromeClient()) {
-    chrome_client->HandleKeyboardEventOnTextField(GetElement(), *event);
+    chrome_client->HandleKeyboardEventOnTextField(GetElement(), event);
     return;
   }
-  event->SetDefaultHandled();
+  event.SetDefaultHandled();
 }
 
-void TextFieldInputType::HandleKeydownEventForSpinButton(KeyboardEvent* event) {
+void TextFieldInputType::HandleKeydownEventForSpinButton(KeyboardEvent& event) {
   if (GetElement().IsDisabledOrReadOnly())
     return;
-  const String& key = event->key();
+  const String& key = event.key();
   if (key == "ArrowUp")
     SpinButtonStepUp();
-  else if (key == "ArrowDown" && !event->altKey())
+  else if (key == "ArrowDown" && !event.altKey())
     SpinButtonStepDown();
   else
     return;
   GetElement().DispatchFormControlChangeEvent();
-  event->SetDefaultHandled();
+  event.SetDefaultHandled();
 }
 
-void TextFieldInputType::ForwardEvent(Event* event) {
+void TextFieldInputType::ForwardEvent(Event& event) {
   if (SpinButtonElement* spin_button = GetSpinButtonElement()) {
     spin_button->ForwardEvent(event);
-    if (event->DefaultHandled())
+    if (event.DefaultHandled())
       return;
   }
 
   if (GetElement().GetLayoutObject() &&
-      (event->IsMouseEvent() || event->IsDragEvent() ||
-       event->HasInterface(EventNames::WheelEvent) ||
-       event->type() == EventTypeNames::blur ||
-       event->type() == EventTypeNames::focus)) {
+      (event.IsMouseEvent() || event.IsDragEvent() ||
+       event.HasInterface(EventNames::WheelEvent) ||
+       event.type() == EventTypeNames::blur ||
+       event.type() == EventTypeNames::focus)) {
     LayoutTextControlSingleLine* layout_text_control =
         ToLayoutTextControlSingleLine(GetElement().GetLayoutObject());
-    if (event->type() == EventTypeNames::blur) {
+    if (event.type() == EventTypeNames::blur) {
       if (LayoutBox* inner_editor_layout_object =
               GetElement().InnerEditorElement()->GetLayoutBox()) {
         // FIXME: This class has no need to know about PaintLayer!
@@ -245,7 +245,7 @@ void TextFieldInputType::ForwardEvent(Event* event) {
       }
 
       layout_text_control->CapsLockStateMayHaveChanged();
-    } else if (event->type() == EventTypeNames::focus) {
+    } else if (event.type() == EventTypeNames::focus) {
       layout_text_control->CapsLockStateMayHaveChanged();
     }
 
@@ -260,10 +260,10 @@ void TextFieldInputType::HandleBlurEvent() {
     spin_button->ReleaseCapture();
 }
 
-bool TextFieldInputType::ShouldSubmitImplicitly(Event* event) {
-  return (event->type() == EventTypeNames::textInput &&
-          event->HasInterface(EventNames::TextEvent) &&
-          ToTextEvent(event)->data() == "\n") ||
+bool TextFieldInputType::ShouldSubmitImplicitly(const Event& event) {
+  return (event.type() == EventTypeNames::textInput &&
+          event.HasInterface(EventNames::TextEvent) &&
+          ToTextEvent(event).data() == "\n") ||
          InputTypeView::ShouldSubmitImplicitly(event);
 }
 
@@ -407,7 +407,7 @@ String TextFieldInputType::SanitizeValue(const String& proposed_value) const {
 }
 
 void TextFieldInputType::HandleBeforeTextInsertedEvent(
-    BeforeTextInsertedEvent* event) {
+    BeforeTextInsertedEvent& event) {
   // Make sure that the text to be inserted will not violate the maxLength.
 
   // We use HTMLInputElement::innerEditorValue() instead of
@@ -447,7 +447,7 @@ void TextFieldInputType::HandleBeforeTextInsertedEvent(
 
   // Truncate the inserted text to avoid violating the maxLength and other
   // constraints.
-  String event_text = event->GetText();
+  String event_text = event.GetText();
   unsigned text_length = event_text.length();
   while (text_length > 0 && IsASCIILineBreak(event_text[text_length - 1]))
     text_length--;
@@ -456,7 +456,7 @@ void TextFieldInputType::HandleBeforeTextInsertedEvent(
   event_text.Replace('\r', ' ');
   event_text.Replace('\n', ' ');
 
-  event->SetText(LimitLength(event_text, appendable_length));
+  event.SetText(LimitLength(event_text, appendable_length));
 }
 
 bool TextFieldInputType::ShouldRespectListAttribute() {

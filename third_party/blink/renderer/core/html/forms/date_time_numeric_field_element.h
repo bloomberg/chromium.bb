@@ -87,7 +87,7 @@ class DateTimeNumericFieldElement : public DateTimeFieldElement {
 
  private:
   // DateTimeFieldElement functions.
-  void HandleKeyboardEvent(KeyboardEvent*) final;
+  void HandleKeyboardEvent(KeyboardEvent&) final;
   float MaximumWidth(const ComputedStyle&) override;
   void StepDown() final;
   void StepUp() final;

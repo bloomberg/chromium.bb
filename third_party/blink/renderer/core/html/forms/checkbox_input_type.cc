@@ -55,9 +55,8 @@ String CheckboxInputType::ValueMissingText() const {
       WebLocalizedString::kValidationValueMissingForCheckbox);
 }
 
-void CheckboxInputType::HandleKeyupEvent(KeyboardEvent* event) {
-  const String& key = event->key();
-  if (key != " ")
+void CheckboxInputType::HandleKeyupEvent(KeyboardEvent& event) {
+  if (event.key() != " ")
     return;
   DispatchSimulatedClickIfActive(event);
 }

@@ -188,17 +188,17 @@ bool NumberInputType::IsSteppable() const {
   return true;
 }
 
-void NumberInputType::HandleKeydownEvent(KeyboardEvent* event) {
+void NumberInputType::HandleKeydownEvent(KeyboardEvent& event) {
   EventQueueScope scope;
   HandleKeydownEventForSpinButton(event);
-  if (!event->DefaultHandled())
+  if (!event.DefaultHandled())
     TextFieldInputType::HandleKeydownEvent(event);
 }
 
 void NumberInputType::HandleBeforeTextInsertedEvent(
-    BeforeTextInsertedEvent* event) {
-  event->SetText(GetLocale().StripInvalidNumberCharacters(event->GetText(),
-                                                          "0123456789.Ee-+"));
+    BeforeTextInsertedEvent& event) {
+  event.SetText(GetLocale().StripInvalidNumberCharacters(event.GetText(),
+                                                         "0123456789.Ee-+"));
 }
 
 Decimal NumberInputType::ParseToNumber(const String& src,

@@ -71,7 +71,7 @@ class ColorInputType final : public InputType,
   String SanitizeValue(const String&) const override;
   void CreateShadowSubtree() override;
   void DidSetValue(const String&, bool value_changed) override;
-  void HandleDOMActivateEvent(Event*) override;
+  void HandleDOMActivateEvent(Event&) override;
   void ClosePopupView() override;
   bool ShouldRespectListAttribute() override;
   bool TypeMismatchFor(const String&) const override;

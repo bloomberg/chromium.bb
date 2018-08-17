@@ -49,26 +49,26 @@ bool InputTypeView::SizeShouldIncludeDecoration(int,
   return false;
 }
 
-void InputTypeView::HandleClickEvent(MouseEvent*) {}
+void InputTypeView::HandleClickEvent(MouseEvent&) {}
 
-void InputTypeView::HandleMouseDownEvent(MouseEvent*) {}
+void InputTypeView::HandleMouseDownEvent(MouseEvent&) {}
 
-void InputTypeView::HandleKeydownEvent(KeyboardEvent*) {}
+void InputTypeView::HandleKeydownEvent(KeyboardEvent&) {}
 
-void InputTypeView::HandleKeypressEvent(KeyboardEvent*) {}
+void InputTypeView::HandleKeypressEvent(KeyboardEvent&) {}
 
-void InputTypeView::HandleKeyupEvent(KeyboardEvent*) {}
+void InputTypeView::HandleKeyupEvent(KeyboardEvent&) {}
 
-void InputTypeView::HandleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) {}
+void InputTypeView::HandleBeforeTextInsertedEvent(BeforeTextInsertedEvent&) {}
 
-void InputTypeView::HandleDOMActivateEvent(Event*) {}
+void InputTypeView::HandleDOMActivateEvent(Event&) {}
 
-void InputTypeView::ForwardEvent(Event*) {}
+void InputTypeView::ForwardEvent(Event&) {}
 
-void InputTypeView::DispatchSimulatedClickIfActive(KeyboardEvent* event) const {
+void InputTypeView::DispatchSimulatedClickIfActive(KeyboardEvent& event) const {
   if (GetElement().IsActive())
-    GetElement().DispatchSimulatedClick(event);
-  event->SetDefaultHandled();
+    GetElement().DispatchSimulatedClick(&event);
+  event.SetDefaultHandled();
 }
 
 void InputTypeView::AccessKeyAction(bool) {
@@ -76,10 +76,9 @@ void InputTypeView::AccessKeyAction(bool) {
                                  kWebFocusTypeNone, nullptr));
 }
 
-bool InputTypeView::ShouldSubmitImplicitly(Event* event) {
-  return event->IsKeyboardEvent() &&
-         event->type() == EventTypeNames::keypress &&
-         ToKeyboardEvent(event)->charCode() == '\r';
+bool InputTypeView::ShouldSubmitImplicitly(const Event& event) {
+  return event.IsKeyboardEvent() && event.type() == EventTypeNames::keypress &&
+         ToKeyboardEvent(event).charCode() == '\r';
 }
 
 HTMLFormElement* InputTypeView::FormForSubmission() const {

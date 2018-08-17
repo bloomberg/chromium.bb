@@ -86,22 +86,22 @@ bool ImageInputType::SupportsValidation() const {
   return false;
 }
 
-static IntPoint ExtractClickLocation(Event* event) {
-  if (!event->UnderlyingEvent() || !event->UnderlyingEvent()->IsMouseEvent())
+static IntPoint ExtractClickLocation(const Event& event) {
+  if (!event.UnderlyingEvent() || !event.UnderlyingEvent()->IsMouseEvent())
     return IntPoint();
-  MouseEvent* mouse_event = ToMouseEvent(event->UnderlyingEvent());
-  if (!mouse_event->HasPosition())
+  auto& mouse_event = *ToMouseEvent(event.UnderlyingEvent());
+  if (!mouse_event.HasPosition())
     return IntPoint();
-  return IntPoint(mouse_event->offsetX(), mouse_event->offsetY());
+  return IntPoint(mouse_event.offsetX(), mouse_event.offsetY());
 }
 
-void ImageInputType::HandleDOMActivateEvent(Event* event) {
+void ImageInputType::HandleDOMActivateEvent(Event& event) {
   if (GetElement().IsDisabledFormControl() || !GetElement().Form())
     return;
   click_location_ = ExtractClickLocation(event);
   GetElement().Form()->PrepareForSubmission(
       event, &GetElement());  // Event handlers can run.
-  event->SetDefaultHandled();
+  event.SetDefaultHandled();
 }
 
 LayoutObject* ImageInputType::CreateLayoutObject(
