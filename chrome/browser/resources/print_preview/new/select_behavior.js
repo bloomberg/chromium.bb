@@ -12,24 +12,29 @@ cr.define('print_preview_new', function() {
    * @polymerBehavior
    */
   const SelectBehavior = {
-    /** @private {string} */
-    lastValue_: '',
+    properties: {
+      selectedValue: {
+        type: String,
+        observer: 'onSelectedValueChange_',
+      },
+    },
 
     /**
-     * Timeout used to delay processing of the selection.
-     * @private {?number}
+     * @param {string} current
+     * @param {?string} previous
+     * @private
      */
-    timeout_: null,
+    onSelectedValueChange_: function(current, previous) {
+      // Don't trigger an extra preview request at startup.
+      if (previous === undefined)
+        return;
 
-    /** @override */
-    ready: function() {
-      assert(this.shadowRoot.querySelectorAll('select').length == 1);
-      this.$$('select').addEventListener('change', () => {
-        if (this.timeout_) {
-          clearTimeout(this.timeout_);
-        }
-        this.timeout_ = setTimeout(this.onTimeout_.bind(this), 100);
-      });
+      this.debounce('select-change', () => {
+        this.onProcessSelectChange(this.selectedValue);
+
+        // For testing only
+        this.fire('process-select-change');
+      }, 100);
     },
 
     /**
@@ -38,22 +43,6 @@ cr.define('print_preview_new', function() {
      * @param {string} value The new select value to process.
      */
     onProcessSelectChange: function(value) {},
-
-    /**
-     * Called after a timeout after user selects a new option.
-     * @private
-     */
-    onTimeout_: function() {
-      this.timeout_ = null;
-      const value = /** @type {!HTMLSelectElement} */ (this.$$('select')).value;
-      if (this.lastValue_ != value) {
-        this.lastValue_ = value;
-        this.onProcessSelectChange(value);
-
-        // For testing only
-        this.fire('process-select-change');
-      }
-    },
   };
 
   return {SelectBehavior: SelectBehavior};

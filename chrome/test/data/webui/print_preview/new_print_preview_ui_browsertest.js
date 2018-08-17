@@ -192,6 +192,30 @@ TEST_F('PrintPreviewSettingsSelectTest', 'CustomMediaNames', function() {
   this.runMochaTest(settings_select_test.TestNames.CustomMediaNames);
 });
 
+PrintPreviewSelectBehaviorTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/select_behavior.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'select_behavior_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return select_behavior_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewSelectBehaviorTest', 'CallProcessSelectChange', function() {
+  this.runMochaTest(select_behavior_test.TestNames.CallProcessSelectChange);
+});
+
 PrintPreviewNumberSettingsSectionTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {

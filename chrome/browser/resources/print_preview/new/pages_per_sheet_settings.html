@@ -15,7 +15,7 @@
       </span>
       <div slot="controls">
         <select aria-labelledby="pages-per-sheet-label"
-            disabled$="[[disabled]]">
+            value="{{selectedValue::change}}" disabled$="[[disabled]]">
           <option value="1" selected>1</option>
           <option value="2">2</option>
           <option value="4">4</option>
