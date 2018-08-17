@@ -205,12 +205,6 @@ void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,
                       WebFeature::kMetaSetCookieWhenCSPBlocksInlineScript);
   }
 
-  if (!RuntimeEnabledFeatures::BlockMetaSetCookieEnabled()) {
-    // Exception (for sandboxed documents) ignored.
-    document.setCookie(content, IGNORE_EXCEPTION_FOR_TESTING);
-    return;
-  }
-
   document.AddConsoleMessage(ConsoleMessage::Create(
       kSecurityMessageSource, kErrorMessageLevel,
       String::Format("Blocked setting the `%s` cookie from a `<meta>` tag.",
