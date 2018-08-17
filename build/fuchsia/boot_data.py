@@ -85,7 +85,7 @@ def _MakeQcowDisk(output_dir, disk_path):
   """Creates a QEMU copy-on-write version of |disk_path| in the output
   directory."""
 
-  qimg_path = os.path.join(common.SDK_ROOT, 'qemu', 'bin', 'qemu-img')
+  qimg_path = os.path.join(common.QEMU_ROOT, 'bin', 'qemu-img')
   output_path = os.path.join(output_dir,
                              os.path.basename(disk_path) + '.qcow2')
   subprocess.check_call([qimg_path, 'create', '-q', '-f', 'qcow2',

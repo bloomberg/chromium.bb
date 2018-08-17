@@ -14,7 +14,7 @@ import subprocess
 import sys
 import time
 
-from common import SDK_ROOT, EnsurePathExists
+from common import QEMU_ROOT, EnsurePathExists
 
 
 # Virtual networking configuration data for QEMU.
@@ -55,7 +55,7 @@ class QemuTarget(target.Target):
       self.Shutdown()
 
   def Start(self):
-    qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin',
+    qemu_path = os.path.join(QEMU_ROOT, 'bin',
                              'qemu-system-' + self._GetTargetSdkLegacyArch())
     kernel_args = boot_data.GetKernelArgs(self._output_dir)
 
