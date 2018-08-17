@@ -10,6 +10,7 @@ import android.os.Process;
 import android.os.StrictMode;
 import android.os.SystemClock;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 
@@ -100,6 +101,9 @@ public class EarlyTraceEvent {
     @VisibleForTesting static final int STATE_FINISHING = 2;
     @VisibleForTesting static final int STATE_FINISHED = 3;
 
+    private static final String BACKGROUND_STARTUP_TRACING_ENABLED_KEY = "bg_startup_tracing";
+    private static boolean sCachedBackgroundStartupTracingFlag = false;
+
     // Locks the fields below.
     private static final Object sLock = new Object();
 
@@ -115,6 +119,7 @@ public class EarlyTraceEvent {
      */
     static void maybeEnable() {
         ThreadUtils.assertOnUiThread();
+        if (sState != STATE_DISABLED) return;
         boolean shouldEnable = false;
         // Checking for the trace config filename touches the disk.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
@@ -126,6 +131,18 @@ public class EarlyTraceEvent {
                     shouldEnable = (new File(TRACE_CONFIG_FILENAME)).exists();
                 } catch (SecurityException e) {
                     // Access denied, not enabled.
+                }
+            }
+            if (ContextUtils.getAppSharedPreferences().getBoolean(
+                        BACKGROUND_STARTUP_TRACING_ENABLED_KEY, false)) {
+                if (shouldEnable) {
+                    // If user has enabled tracing, then force disable background tracing for this
+                    // session.
+                    setBackgroundStartupTracingFlag(false);
+                    sCachedBackgroundStartupTracingFlag = false;
+                } else {
+                    sCachedBackgroundStartupTracingFlag = true;
+                    shouldEnable = true;
                 }
             }
         } finally {
@@ -173,6 +190,28 @@ public class EarlyTraceEvent {
 
     static boolean enabled() {
         return sState == STATE_ENABLED;
+    }
+
+    /**
+     * Sets the background startup tracing enabled in app preferences for next startup.
+     */
+    @CalledByNative
+    static void setBackgroundStartupTracingFlag(boolean enabled) {
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putBoolean(BACKGROUND_STARTUP_TRACING_ENABLED_KEY, enabled)
+                .apply();
+    }
+
+    /**
+     * Returns true if the background startup tracing flag is set.
+     *
+     * This does not return the correct value if called before maybeEnable() was called. But that is
+     * called really early in startup.
+     */
+    @CalledByNative
+    public static boolean getBackgroundStartupTracingFlag() {
+        return sCachedBackgroundStartupTracingFlag;
     }
 
     /** @see {@link TraceEvent#begin()}. */
