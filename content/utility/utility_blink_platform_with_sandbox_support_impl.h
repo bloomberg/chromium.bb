@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "content/utility/utility_blink_platform_impl.h"
+#include "third_party/blink/public/platform/platform.h"
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "components/services/font/public/cpp/font_loader.h"  // nogncheck
@@ -28,8 +28,7 @@ namespace content {
 
 // This class extends from UtilityBlinkPlatformImpl with added blink web
 // sandbox support.
-class UtilityBlinkPlatformWithSandboxSupportImpl
-    : public UtilityBlinkPlatformImpl {
+class UtilityBlinkPlatformWithSandboxSupportImpl : public blink::Platform {
  public:
   UtilityBlinkPlatformWithSandboxSupportImpl() = delete;
   explicit UtilityBlinkPlatformWithSandboxSupportImpl(

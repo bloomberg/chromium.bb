@@ -13,7 +13,6 @@
 #include "services/data_decoder/image_decoder_impl.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -78,25 +77,19 @@ class Request {
 // image decoding call.
 class BlinkInitializer : public blink::Platform {
  public:
-  BlinkInitializer()
-      : main_thread_(
-            blink::scheduler::WebThreadBase::InitializeUtilityThread()) {
+  BlinkInitializer() {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
     gin::V8Initializer::LoadV8Natives();
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
     service_manager::BinderRegistry empty_registry;
-    blink::Initialize(this, &empty_registry, CurrentThread());
+    blink::CreateMainThreadAndInitialize(this, &empty_registry);
   }
 
   ~BlinkInitializer() override {}
 
-  blink::WebThread* CurrentThread() override { return main_thread_.get(); }
-
  private:
-  std::unique_ptr<blink::scheduler::WebThreadBase> main_thread_;
-
   DISALLOW_COPY_AND_ASSIGN(BlinkInitializer);
 };
 

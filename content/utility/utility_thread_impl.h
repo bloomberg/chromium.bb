@@ -14,9 +14,9 @@
 #include "content/public/utility/utility_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "third_party/blink/public/platform/platform.h"
 
 namespace content {
-class UtilityBlinkPlatformImpl;
 class UtilityServiceFactory;
 
 namespace mojom {
@@ -64,7 +64,7 @@ class UtilityThreadImpl : public UtilityThread,
       service_manager::mojom::ServiceFactoryRequest request);
 
   // blink::Platform implementation if needed.
-  std::unique_ptr<UtilityBlinkPlatformImpl> blink_platform_impl_;
+  std::unique_ptr<blink::Platform> blink_platform_impl_;
 
   // service_manager::mojom::ServiceFactory for service_manager::Service
   // hosting.

@@ -16,7 +16,6 @@
 #include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/utility/webthread_impl_for_utility_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/compositor_thread_scheduler.h"
 
 namespace blink {
@@ -122,10 +121,6 @@ std::unique_ptr<WebThreadBase> WebThreadBase::CreateWorkerThread(
 std::unique_ptr<WebThreadBase> WebThreadBase::CreateCompositorThread(
     const WebThreadCreationParams& params) {
   return std::make_unique<WebThreadForCompositor>(params);
-}
-
-std::unique_ptr<WebThreadBase> WebThreadBase::InitializeUtilityThread() {
-  return std::make_unique<WebThreadImplForUtilityThread>();
 }
 
 }  // namespace scheduler
