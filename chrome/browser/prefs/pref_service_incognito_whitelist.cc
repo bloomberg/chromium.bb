@@ -38,7 +38,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_pref_names.h"
-#include "chromeos/chromeos_pref_names.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -695,15 +694,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #if !defined(OS_ANDROID)
     prefs::kAutoplayAllowed, prefs::kAutoplayWhitelist,
 #endif
-
-// chromeos/chromeos_pref_names.h
-#if defined(OS_CHROMEOS)
-    chromeos::prefs::kAudioDevicesMute,
-    chromeos::prefs::kAudioDevicesVolumePercent, chromeos::prefs::kAudioMute,
-    chromeos::prefs::kAudioOutputAllowed, chromeos::prefs::kAudioVolumePercent,
-    chromeos::prefs::kAudioDevicesState,
-    chromeos::prefs::kQuirksClientLastServerCheck,
-#endif  // defined(OS_CHROMEOS)
 
     // components/consent_auditor/pref_names.h
     consent_auditor::prefs::kLocalConsentsDictionary,
