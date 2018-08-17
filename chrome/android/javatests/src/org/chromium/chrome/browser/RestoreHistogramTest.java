@@ -97,6 +97,7 @@ public class RestoreHistogramTest {
      * @throws ProcessInitException
      */
     @Test
+    @DisabledTest(message = "Test is flaky on. crbug.com/875372")
     @SmallTest
     public void testWritingHistogramAtStartup() throws InterruptedException, ProcessInitException {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
