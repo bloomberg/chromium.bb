@@ -187,23 +187,39 @@ class FragmentPaintPropertyTreeBuilder {
   bool property_added_or_removed_ = false;
 };
 
+static bool IsRootScroller(const LayoutBox& box) {
+  auto* scrollable_area = box.GetScrollableArea();
+  DCHECK(scrollable_area);
+  auto* layer = scrollable_area->Layer();
+  return layer &&
+         CompositingReasonFinder::RequiresCompositingForRootScroller(*layer);
+}
+
+static bool HasScrollsOverflow(const LayoutBox& box) {
+  // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
+  // main-thread AnimationWorklet and don't need to promote the scroll-source.
+  return box.GetScrollableArea()->ScrollsOverflow() ||
+         ScrollTimeline::HasActiveScrollTimeline(box.GetNode());
+}
+
 static bool NeedsScrollNode(const LayoutObject& object) {
   if (!object.HasOverflowClip())
     return false;
-  // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
-  // main-thread AnimationWorklet and don't need to promote the scroll-source.
-  return ToLayoutBox(object).GetScrollableArea()->ScrollsOverflow() ||
-         ScrollTimeline::HasActiveScrollTimeline(object.GetNode());
+  const LayoutBox& box = ToLayoutBox(object);
+  // TODO(pdr): SPV2 has invalidation issues (crbug.com/732611) as well as
+  // subpixel issues (crbug.com/693741) which prevent us from compositing the
+  // root scroller.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return HasScrollsOverflow(box);
+  return HasScrollsOverflow(box) || IsRootScroller(box);
 }
 
 static CompositingReasons CompositingReasonsForScroll(const LayoutBox& box) {
   CompositingReasons compositing_reasons = CompositingReason::kNone;
-  if (auto* scrollable_area = box.GetScrollableArea()) {
-    if (auto* layer = scrollable_area->Layer()) {
-      if (CompositingReasonFinder::RequiresCompositingForRootScroller(*layer))
-        compositing_reasons |= CompositingReason::kRootScroller;
-    }
-  }
+
+  if (IsRootScroller(box))
+    compositing_reasons |= CompositingReason::kRootScroller;
+
   // TODO(pdr): Set other compositing reasons for scroll here, see:
   // PaintLayerScrollableArea::ComputeNeedsCompositedScrolling.
   return compositing_reasons;
@@ -1449,10 +1465,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
 
   if (properties_->Scroll())
     context_.current.scroll = properties_->Scroll();
-  if (properties_->ScrollTranslation()) {
+  if (properties_->ScrollTranslation())
     context_.current.transform = properties_->ScrollTranslation();
-    context_.current.should_flatten_inherited_transform = false;
-  }
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {

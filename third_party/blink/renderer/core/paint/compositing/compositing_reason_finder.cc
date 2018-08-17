@@ -256,7 +256,11 @@ bool CompositingReasonFinder::RequiresCompositingForRootScroller(
     const PaintLayer& layer) {
   // The root scroller needs composited scrolling layers even if it doesn't
   // actually have scrolling since CC has these assumptions baked in for the
-  // viewport.
+  // viewport. Because this is only needed for CC, we can skip it if compositing
+  // is not enabled.
+  const auto& settings = *layer.GetLayoutObject().GetDocument().GetSettings();
+  if (!settings.GetAcceleratedCompositingEnabled())
+    return false;
   return RootScrollerUtil::IsGlobal(layer);
 }
 

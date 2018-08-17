@@ -4978,3 +4978,5 @@ crbug.com/869726 [ Mac ] virtual/scroll_customization/fast/events/touch/touch-la
 # Test frequently times out on Mac CQ bots.
 crbug.com/874703 [ Mac ] http/tests/devtools/extensions/extensions-panel.js [ Timeout Pass ]
 
+# This won't pass until the bug fixed.
+crbug.com/875287 fast/frames/crash-frameset-CSS-content-property.html [ Crash ]
