@@ -8,6 +8,7 @@
 #include <array>
 #include <string>
 
+#include "chrome/browser/vr/vr_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -22,27 +23,27 @@ class Transform;
 
 namespace vr {
 
-std::array<float, 16> MatrixToGLArray(const gfx::Transform& matrix);
+VR_EXPORT std::array<float, 16> MatrixToGLArray(const gfx::Transform& matrix);
 
 // Compile a shader.
-GLuint CompileShader(GLenum shader_type,
-                     const GLchar* shader_source,
-                     std::string& error);
+VR_EXPORT GLuint CompileShader(GLenum shader_type,
+                               const GLchar* shader_source,
+                               std::string& error);
 
 // Compile and link a program.
-GLuint CreateAndLinkProgram(GLuint vertex_shader_handle,
-                            GLuint fragment_shader_handle,
-                            std::string& error);
+VR_EXPORT GLuint CreateAndLinkProgram(GLuint vertex_shader_handle,
+                                      GLuint fragment_shader_handle,
+                                      std::string& error);
 
 // Sets default texture parameters given a texture type.
-void SetTexParameters(GLenum texture_type);
+VR_EXPORT void SetTexParameters(GLenum texture_type);
 
 // Sets color uniforms given an SkColor.
-void SetColorUniform(GLuint handle, SkColor c);
+VR_EXPORT void SetColorUniform(GLuint handle, SkColor c);
 
 // Sets color uniforms (but not alpha) given an SkColor. The alpha is assumed to
 // be 1.0 in this case.
-void SetOpaqueColorUniform(GLuint handle, SkColor c);
+VR_EXPORT void SetOpaqueColorUniform(GLuint handle, SkColor c);
 
 }  // namespace vr
 

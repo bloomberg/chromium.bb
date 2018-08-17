@@ -20,21 +20,6 @@ buildflag_header("vr_build_features") {
   flags = [ "USE_VR_ASSETS_COMPONENT=$use_vr_assets_component" ]
 }
 
-source_set("vr_gl_utils") {
-  sources = [
-    "vr_gl_util.cc",
-    "vr_gl_util.h",
-  ]
-
-  public_deps = [
-    "//ui/gl/init",
-  ]
-
-  deps = [
-    "//skia",
-  ]
-}
-
 component("vr_ui") {
   sources = [
     "animation.cc",
@@ -181,8 +166,6 @@ component("vr_ui") {
     "ui_scene.h",
     "ui_scene_creator.cc",
     "ui_scene_creator.h",
-    "ui_support.cc",
-    "ui_support.h",
     "vr_ui_export.h",
   ]
 
@@ -192,7 +175,6 @@ component("vr_ui") {
 
   deps = [
     ":vr_base",
-    ":vr_gl_utils",
     "//base",
     "//cc/animation",
     "//chrome/app:generated_resources",
@@ -252,11 +234,9 @@ component("vr_common") {
 
   public_deps = [
     ":vr_base",
-    "//ui/gl",
   ]
 
   deps = [
-    ":vr_gl_utils",
     ":vr_ui",
     "//base",
     "//cc/animation",
@@ -342,11 +322,15 @@ source_set("vr_base") {
     "ui_initial_state.cc",
     "ui_initial_state.h",
     "ui_interface.h",
+    "ui_support.cc",
+    "ui_support.h",
     "ui_test_input.h",
     "ui_unsupported_mode.h",
     "vr_export.h",
     "vr_geometry_util.cc",
     "vr_geometry_util.h",
+    "vr_gl_util.cc",
+    "vr_gl_util.h",
   ]
 
   defines = [
@@ -360,6 +344,7 @@ source_set("vr_base") {
     "//components/strings:components_strings_grit",
     "//content/public/common",
     "//ui/base",
+    "//ui/gl/init",
   ]
 
   deps = [

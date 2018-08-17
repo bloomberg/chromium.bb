@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VR_UI_SUPPORT_H_
 #define CHROME_BROWSER_VR_UI_SUPPORT_H_
 
-#include "chrome/browser/vr/vr_ui_export.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
@@ -19,7 +19,7 @@ namespace ui_support {
 // must supply wrappers for use by the module.  For libraries that require only
 // one or two methods, it's more efficient to make wrappers.
 
-VR_UI_EXPORT UScriptCode UScriptGetScript(UChar32 codepoint, UErrorCode* err);
+VR_EXPORT UScriptCode UScriptGetScript(UChar32 codepoint, UErrorCode* err);
 
 }  // namespace ui_support
 }  // namespace vr
