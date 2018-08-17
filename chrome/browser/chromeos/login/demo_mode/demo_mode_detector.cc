@@ -9,7 +9,6 @@
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -84,15 +83,7 @@ void DemoModeDetector::OnIdle() {
   if (demo_launched_)
     return;
   demo_launched_ = true;
-
-  // Offline demo mode can be only enabled when demo mode feature is enabled.
-  const auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDemoMode) &&
-      command_line->HasSwitch(switches::kEnableOfflineDemoMode)) {
-    WizardController::default_controller()->StartDerelictDemoModeSetup();
-  } else {
-    LoginDisplayHost::default_host()->StartDemoAppLaunch();
-  }
+  LoginDisplayHost::default_host()->StartDemoAppLaunch();
 }
 
 void DemoModeDetector::OnOobeTimerUpdate() {

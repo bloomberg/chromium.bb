@@ -31,11 +31,9 @@ constexpr char kOfflineDeviceLocalAccountPolicyFileName[] =
     "local_account_policy";
 
 // The policy blob data for offline demo-mode is embedded into the filesystem.
-// TODO(mukai, agawronska): fix these when switching to dm-verity image.
+// TODO(mukai, agawronska): fix this when switching to dm-verity image.
 constexpr const base::FilePath::CharType kOfflineDemoModeDir[] =
     FILE_PATH_LITERAL("/usr/share/demo_mode_resources/policy");
-constexpr const base::FilePath::CharType kDerelictOfflineDemoModeDir[] =
-    FILE_PATH_LITERAL("/usr/share/demo_mode_resources/derelict_policy");
 
 bool CheckOfflinePolicyFilesExist(const base::FilePath& policy_dir,
                                   std::string* message) {
@@ -132,12 +130,7 @@ DemoSetupController::~DemoSetupController() {
 }
 
 bool DemoSetupController::IsOfflineEnrollment() const {
-  return enrollment_type_ && *enrollment_type_ != EnrollmentType::kOnline;
-}
-
-bool DemoSetupController::IsDerelictOfflineEnrollment() const {
-  return enrollment_type_ &&
-         *enrollment_type_ == EnrollmentType::kDerelictOffline;
+  return enrollment_type_ && *enrollment_type_ == EnrollmentType::kOffline;
 }
 
 void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
@@ -150,21 +143,20 @@ void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
   on_setup_success_ = std::move(on_setup_success);
   on_setup_error_ = std::move(on_setup_error);
 
-  if (*enrollment_type_ == EnrollmentType::kOnline) {
-    EnrollOnline();
-    return;
+  switch (*enrollment_type_) {
+    case EnrollmentType::kOnline:
+      EnrollOnline();
+      return;
+    case EnrollmentType::kOffline: {
+      const base::FilePath offline_data_dir =
+          policy_dir_for_tests_.empty() ? base::FilePath(kOfflineDemoModeDir)
+                                        : policy_dir_for_tests_;
+      EnrollOffline(offline_data_dir);
+      return;
+    }
+    default:
+      NOTREACHED() << "Unknown demo mode enrollment type";
   }
-
-  base::FilePath offline_data_dir;
-  if (!policy_dir_for_tests_.empty()) {
-    offline_data_dir = policy_dir_for_tests_;
-  } else {
-    offline_data_dir =
-        base::FilePath(*enrollment_type_ == EnrollmentType::kOffline
-                           ? kOfflineDemoModeDir
-                           : kDerelictOfflineDemoModeDir);
-  }
-  EnrollOffline(offline_data_dir);
 }
 
 void DemoSetupController::EnrollOnline() {

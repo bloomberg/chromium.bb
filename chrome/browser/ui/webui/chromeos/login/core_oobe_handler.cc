@@ -650,9 +650,6 @@ void CoreOobeHandler::GetPrimaryDisplayNameCallback(
 }
 
 void CoreOobeHandler::HandleSetupDemoMode() {
-  // Stop idle detection for derelict demo mode.
-  StopDemoModeDetection();
-
   WizardController* wizard_controller = WizardController::default_controller();
   if (wizard_controller && !wizard_controller->login_screen_started()) {
     wizard_controller->StartDemoModeSetup();
