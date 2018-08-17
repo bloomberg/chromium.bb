@@ -18,9 +18,8 @@ class PrefRegistrySimple;
 
 namespace chromeos {
 
-// Helper for idle state and demo-mode detection. Will either enroll the device
-// into derelict offline Demo Mode or launch the old demo app in Kiosk mode,
-// depending on offline demo mode availability.
+// Helper for idle state and demo-mode detection.
+// Should be initialized on OOBE start.
 class DemoModeDetector {
  public:
   DemoModeDetector();

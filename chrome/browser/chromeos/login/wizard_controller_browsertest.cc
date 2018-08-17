@@ -43,7 +43,6 @@
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -2440,28 +2439,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, ArcTosBackPressed) {
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
-}
-
-IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
-                       DerelictOfflineDemoSetupFlowFinished) {
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
-  EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
-  WaitUntilJSIsReady();
-
-  EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull(), _)).Times(1);
-  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
-
-  WizardController::default_controller()->StartDerelictDemoModeSetup();
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
-  EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
-
-  OnExit(*mock_demo_setup_screen_, ScreenExitCode::DEMO_MODE_SETUP_FINISHED);
-
-  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
-  EXPECT_TRUE(ExistingUserController::current_controller());
-  EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
 }
 
 class WizardControllerOobeResumeTest : public WizardControllerTest {

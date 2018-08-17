@@ -382,26 +382,20 @@ class DemoSetupTest : public LoginManagerTest {
             OobeScreen::SCREEN_OOBE_DEMO_SETUP));
   }
 
-  // Simulates offline data directory.
-  void MockOfflinePolicyDir() {
+  void SimulateOfflineEnvironment() {
     DemoSetupController* controller =
         WizardController::default_controller()->demo_setup_controller();
 
+    // Simulate offline data directory.
     ASSERT_TRUE(SetupDummyOfflinePolicyDir("test", &fake_policy_dir_));
     controller->SetOfflineDataDirForTest(fake_policy_dir_.GetPath());
-  }
 
-  // Simulates policy store that loads or fails to load.
-  void MockOfflinePolicyStore(bool valid) {
     // Simulate policy store.
     EXPECT_CALL(mock_policy_store_, Store(testing::_))
         .WillRepeatedly(testing::InvokeWithoutArgs(
             &mock_policy_store_,
-            valid ? &policy::MockCloudPolicyStore::NotifyStoreLoaded
-                  : &policy::MockCloudPolicyStore::NotifyStoreError));
-    WizardController::default_controller()
-        ->demo_setup_controller()
-        ->SetDeviceLocalAccountPolicyStoreForTest(&mock_policy_store_);
+            &policy::MockCloudPolicyStore::NotifyStoreLoaded));
+    controller->SetDeviceLocalAccountPolicyStoreForTest(&mock_policy_store_);
   }
 
   // Simulates device being connected to the network.
@@ -635,8 +629,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
 
   // It needs to be done after demo setup controller was created (demo setup
   // flow was started).
-  MockOfflinePolicyDir();
-  MockOfflinePolicyStore(true /* valid */);
+  SimulateOfflineEnvironment();
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
@@ -680,8 +673,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowError) {
 
   // It needs to be done after demo setup controller was created (demo setup
   // flow was started).
-  MockOfflinePolicyDir();
-  MockOfflinePolicyStore(true /* valid */);
+  SimulateOfflineEnvironment();
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
@@ -713,87 +705,6 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowError) {
 
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
-}
-
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, DerelictOfflineSetupFlowSuccess) {
-  // Simulate offline setup success.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
-  SimulateNetworkDisconnected();
-
-  auto* const wizard_controller = WizardController::default_controller();
-  wizard_controller->StartDerelictDemoModeSetup();
-
-  EXPECT_TRUE(
-      wizard_controller->demo_setup_controller()->IsOfflineEnrollment());
-  EXPECT_TRUE(wizard_controller->demo_setup_controller()
-                  ->IsDerelictOfflineEnrollment());
-
-  // This needs to be done after demo setup controller was created (demo setup
-  // flow was started).
-  MockOfflinePolicyDir();
-  MockOfflinePolicyStore(true /* valid */);
-
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
-
-  // TODO(michaelpg): Progress dialog transition is async - extra work is
-  // needed to be able to check it reliably.
-
-  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, DerelictOfflineSetupFlowError) {
-  // Simulate offline setup error.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
-  SimulateNetworkDisconnected();
-
-  auto* const wizard_controller = WizardController::default_controller();
-  wizard_controller->StartDerelictDemoModeSetup();
-
-  EXPECT_TRUE(
-      wizard_controller->demo_setup_controller()->IsOfflineEnrollment());
-  EXPECT_TRUE(wizard_controller->demo_setup_controller()
-                  ->IsDerelictOfflineEnrollment());
-
-  // This needs to be done after demo setup controller was created (demo setup
-  // flow was started).
-  MockOfflinePolicyDir();
-  MockOfflinePolicyStore(true /* valid */);
-
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
-
-  // For derelict enrollment, a recoverable error returns the user to the
-  // Welcome screen.
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, DerelictOfflineSetupFlowFatalError) {
-  // Simulate offline setup success. The fatal error will come from the
-  // unreadable policy store.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
-  SimulateNetworkDisconnected();
-
-  auto* const wizard_controller = WizardController::default_controller();
-  wizard_controller->StartDerelictDemoModeSetup();
-
-  EXPECT_TRUE(
-      wizard_controller->demo_setup_controller()->IsOfflineEnrollment());
-  EXPECT_TRUE(wizard_controller->demo_setup_controller()
-                  ->IsDerelictOfflineEnrollment());
-
-  // This needs to be done after demo setup controller was created (demo setup
-  // flow was started).
-  MockOfflinePolicyDir();
-  MockOfflinePolicyStore(false /* valid */);
-
-  // On fatal error, stay on the Setup screen.
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP));
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, NextDisabledOnNetworkScreen) {
@@ -945,39 +856,6 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcUnsupportedTest, DoNotInvokeWithTaps) {
   InvokeDemoModeWithTaps();
 
   EXPECT_FALSE(IsConfirmationDialogShown());
-}
-
-class DemoSetupDerelictTest : public DemoSetupTest {
- protected:
-  DemoSetupDerelictTest() = default;
-  ~DemoSetupDerelictTest() override = default;
-
-  // DemoSetupTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DemoSetupTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kDerelictDetectionTimeout, "1");
-    command_line->AppendSwitchASCII(switches::kDerelictIdleTimeout, "1");
-    command_line->AppendSwitchASCII(switches::kOobeTimerInterval, "1");
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DemoSetupDerelictTest);
-};
-
-IN_PROC_BROWSER_TEST_F(DemoSetupDerelictTest, DerelictSetup) {
-  // Simulate offline setup error.
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
-  SimulateNetworkDisconnected();
-
-  // Demo setup starts automatically after idle detection timeouts.
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
-
-  // TODO(michaelpg): Mock policy directory and policy store so we can test
-  // enrollment success. Currently this must be done after the
-  // DemoSetupController is created, but policy install has already failed by
-  // this point.
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_WELCOME).Wait();
 }
 
 }  // namespace chromeos
