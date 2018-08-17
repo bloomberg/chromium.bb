@@ -296,10 +296,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     private ActivityTabStartupMetricsTracker mActivityTabStartupMetricsTracker;
 
-    /** Used to detect in {@link #postInflationStartup} if onStart was called in the mean time
-     * (while the inflation was being done on a background thread) and thus some onStart work that
-     * requires the UI to be inflated has to be done belatedly after inflation. */
-    private boolean mOnStartCalled;
+    /** Whether or not the activity is in started state. */
+    private boolean mStarted;
 
     /**
      * @param factory The {@link AppMenuHandlerFactory} for creating {@link #mAppMenuHandler}
@@ -403,7 +401,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
             // If onStart was called before postLayoutInflation (because inflation was done in a
             // background thread) then make sure to call the relevant methods belatedly.
-            if (mOnStartCalled) {
+            if (mStarted) {
                 mCompositorViewHolder.onStart();
                 mSnackbarManager.onStart();
             }
@@ -889,6 +887,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     private void createContextReporterIfNeeded() {
+        if (!mStarted) return; // Sync state reporting should work only in started state.
         if (mContextReporter != null || getActivityTab() == null) return;
 
         final SyncController syncController = SyncController.get(this);
@@ -976,13 +975,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         if (GSAState.getInstance(this).isGsaAvailable() && !SysUtils.isLowEndDevice()) {
             GSAAccountChangeListener.getInstance().disconnect();
-            if (mSyncStateChangedListener != null) {
-                ProfileSyncService syncService = ProfileSyncService.get();
-                if (syncService != null) {
-                    syncService.removeSyncStateChangedListener(mSyncStateChangedListener);
-                }
-                mSyncStateChangedListener = null;
+        }
+        if (mSyncStateChangedListener != null) {
+            ProfileSyncService syncService = ProfileSyncService.get();
+            if (syncService != null) {
+                syncService.removeSyncStateChangedListener(mSyncStateChangedListener);
             }
+            mSyncStateChangedListener = null;
         }
         if (mContextReporter != null) mContextReporter.disable();
 
@@ -1156,7 +1155,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
         mScreenWidthDp = config.screenWidthDp;
         mScreenHeightDp = config.screenHeightDp;
-        mOnStartCalled = true;
+        mStarted = true;
     }
 
     @Override
@@ -1171,7 +1170,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // If postInflationStartup hasn't been called yet (because inflation was done asynchronously
         // and has not yet completed), it no longer needs to do the belated onStart code since we
         // were stopped in the mean time.
-        mOnStartCalled = false;
+        mStarted = false;
     }
 
     @Override

@@ -438,6 +438,10 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
                     }
                 }
             }
+
+            synchronized (CLEAN_UP_TASK_LOCK) {
+                sCleanupTask = null;
+            }
         }
 
         private boolean shouldDeleteTabFile(int tabId, TabWindowManager tabWindowManager) {
@@ -469,6 +473,14 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
                         StreamUtil.closeQuietly(stream);
                     }
                 }
+            }
+        }
+
+        @Override
+        protected void onCancelled(Void result) {
+            super.onCancelled(result);
+            synchronized (CLEAN_UP_TASK_LOCK) {
+                sCleanupTask = null;
             }
         }
     }

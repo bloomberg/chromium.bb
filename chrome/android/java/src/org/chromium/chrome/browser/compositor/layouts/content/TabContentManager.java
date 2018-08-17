@@ -29,7 +29,6 @@ import java.util.List;
  */
 @JNINamespace("android")
 public class TabContentManager {
-    private final Context mContext;
     private final float mThumbnailScale;
     private final int mFullResThumbnailsMaxSize;
     private final ContentOffsetProvider mContentOffsetProvider;
@@ -75,32 +74,31 @@ public class TabContentManager {
      */
     public TabContentManager(Context context, ContentOffsetProvider contentOffsetProvider,
                 boolean snapshotsEnabled) {
-        mContext = context;
         mContentOffsetProvider = contentOffsetProvider;
         mSnapshotsEnabled = snapshotsEnabled;
 
         // Override the cache size on the command line with --thumbnails=100
-        int defaultCacheSize = getIntegerResourceWithOverride(mContext,
-                R.integer.default_thumbnail_cache_size, ChromeSwitches.THUMBNAILS);
+        int defaultCacheSize = getIntegerResourceWithOverride(
+                context, R.integer.default_thumbnail_cache_size, ChromeSwitches.THUMBNAILS);
 
         mFullResThumbnailsMaxSize = defaultCacheSize;
 
-        int compressionQueueMaxSize = mContext.getResources().getInteger(
-                R.integer.default_compression_queue_size);
-        int writeQueueMaxSize = mContext.getResources().getInteger(
-                R.integer.default_write_queue_size);
+        int compressionQueueMaxSize =
+                context.getResources().getInteger(R.integer.default_compression_queue_size);
+        int writeQueueMaxSize =
+                context.getResources().getInteger(R.integer.default_write_queue_size);
 
         // Override the cache size on the command line with
         // --approximation-thumbnails=100
-        int approximationCacheSize = getIntegerResourceWithOverride(mContext,
+        int approximationCacheSize = getIntegerResourceWithOverride(context,
                 R.integer.default_approximation_thumbnail_cache_size,
                 ChromeSwitches.APPROXIMATION_THUMBNAILS);
 
         float thumbnailScale = 1.f;
         boolean useApproximationThumbnails;
-        DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(mContext);
+        DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(context);
         float deviceDensity = display.getDipScale();
-        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)) {
+        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
             // Scale all tablets to MDPI.
             thumbnailScale = 1.f / deviceDensity;
             useApproximationThumbnails = false;
