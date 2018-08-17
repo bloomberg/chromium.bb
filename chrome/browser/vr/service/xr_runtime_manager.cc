@@ -153,8 +153,7 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
 }
 
 bool XRRuntimeManager::HasAnyRuntime() {
-  device::mojom::XRSessionOptions options = device::mojom::XRSessionOptions();
-  return GetRuntimeForOptions(&options) != nullptr;
+  return runtimes_.size() > 0;
 }
 
 bool XRRuntimeManager::HasInstance() {
