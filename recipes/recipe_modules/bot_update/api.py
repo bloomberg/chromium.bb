@@ -47,30 +47,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
   def last_returned_properties(self):
       return self._last_returned_properties
 
-  # DO NOT USE.
-  # TODO(tandrii): refactor this into tryserver.maybe_apply_patch
-  def apply_gerrit_ref(self, root, gerrit_no_reset=False,
-                       gerrit_no_rebase_patch_ref=False,
-                       gerrit_repo=None, gerrit_ref=None,
-                       step_name='apply_gerrit', **kwargs):
-    apply_gerrit_path = self.resource('apply_gerrit.py')
-    kwargs.setdefault('infra_step', True)
-    cmd = [
-        '--gerrit_repo', gerrit_repo or self._repository,
-        '--gerrit_ref', gerrit_ref or self._gerrit_ref or '',
-        '--root', str(root),
-    ]
-    if gerrit_no_reset:
-      cmd.append('--gerrit_no_reset')
-    if gerrit_no_rebase_patch_ref:
-      cmd.append('--gerrit_no_rebase_patch_ref')
-
-    env_prefixes = {
-        'PATH': [self.m.depot_tools.root],
-    }
-    with self.m.context(env_prefixes=env_prefixes):
-      return self.m.python(step_name, apply_gerrit_path, cmd, **kwargs)
-
   def ensure_checkout(self, gclient_config=None, suffix=None,
                       patch=True, update_presentation=True,
                       patch_root=None,
@@ -138,15 +114,13 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     # How to find the patch, if any
     if patch:
+      if self._repository and self._gerrit_ref:
+        flags.append(
+            ['--patch_ref', '%s@%s' % (self._repository, self._gerrit_ref)])
       if patch_refs:
         flags.extend(
             ['--patch_ref', patch_ref]
             for patch_ref in patch_refs)
-      elif self._repository and self._gerrit_ref:
-        flags.extend([
-            ['--gerrit_repo', self._repository],
-            ['--gerrit_ref', self._gerrit_ref],
-        ])
 
     # Compute requested revisions.
     revisions = {}

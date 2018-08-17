@@ -51,38 +51,21 @@ def RunSteps(api):
   manifest_name = api.properties.get('manifest_name')
   patch_refs = api.properties.get('patch_refs')
 
-  if api.properties.get('test_apply_gerrit_ref'):
-    prop2arg = {
-        'gerrit_custom_repo': 'gerrit_repo',
-        'gerrit_custom_ref': 'gerrit_ref',
-        'gerrit_custom_step_name': 'step_name',
-    }
-    kwargs = {
-        prop2arg[p]: api.properties.get(p)
-        for p in prop2arg if api.properties.get(p)
-    }
-    api.bot_update.apply_gerrit_ref(
-        root='/tmp/test/root',
-        gerrit_no_reset=gerrit_no_reset,
-        gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref,
-        **kwargs
-    )
-  else:
-    bot_update_step = api.bot_update.ensure_checkout(
-        patch=patch,
-        with_branch_heads=with_branch_heads,
-        with_tags=with_tags,
-        refs=refs,
-        clobber=clobber,
-        root_solution_revision=root_solution_revision,
-        suffix=suffix,
-        gerrit_no_reset=gerrit_no_reset,
-        gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref,
-        disable_syntax_validation=True,
-        manifest_name=manifest_name,
-        patch_refs=patch_refs)
-    if patch:
-      api.bot_update.deapply_patch(bot_update_step)
+  bot_update_step = api.bot_update.ensure_checkout(
+      patch=patch,
+      with_branch_heads=with_branch_heads,
+      with_tags=with_tags,
+      refs=refs,
+      clobber=clobber,
+      root_solution_revision=root_solution_revision,
+      suffix=suffix,
+      gerrit_no_reset=gerrit_no_reset,
+      gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref,
+      disable_syntax_validation=True,
+      manifest_name=manifest_name,
+      patch_refs=patch_refs)
+  if patch:
+    api.bot_update.deapply_patch(bot_update_step)
 
 
 def GenTests(api):
@@ -159,21 +142,6 @@ def GenTests(api):
   )
   yield api.test('gerrit_no_rebase_patch_ref') + api.properties(
       gerrit_no_rebase_patch_ref=True
-  )
-  yield api.test('apply_gerrit_ref') + api.properties(
-      repository='chromium',
-      gerrit_no_rebase_patch_ref=True,
-      gerrit_no_reset=1,
-      test_apply_gerrit_ref=True,
-  )
-  yield api.test('apply_gerrit_ref_custom') + api.properties(
-      repository='chromium',
-      gerrit_no_rebase_patch_ref=True,
-      gerrit_no_reset=1,
-      gerrit_custom_repo='https://custom/repo',
-      gerrit_custom_ref='refs/changes/custom/1234567/1',
-      gerrit_custom_step_name='Custom apply gerrit step',
-      test_apply_gerrit_ref=True,
   )
   yield api.test('tryjob_v8') + api.properties(
       issue=12345,
