@@ -620,6 +620,12 @@ RenderWidgetHostViewGuest::GetOwnerRenderWidgetHostView() const {
                 : nullptr;
 }
 
+void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGestureForTest(
+    const blink::WebFloatPoint& position,
+    const blink::WebFloatPoint& screenPosition) const {
+  MaybeSendSyntheticTapGesture(position, screenPosition);
+}
+
 // TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
 // http://crbug.com/533069
 void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGesture(
@@ -641,6 +647,13 @@ void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGesture(
     gesture_tap_event.SetPositionInWidget(
         blink::WebFloatPoint(position.x + offset.x(), position.y + offset.y()));
     gesture_tap_event.SetPositionInScreen(screenPosition);
+    // The touch action may not be set yet because this is still at the
+    // Pre-processing stage of a mouse or a touch event. In this case, set the
+    // touch action to Auto to prevent crashing.
+    static_cast<RenderWidgetHostImpl*>(
+        GetOwnerRenderWidgetHostView()->GetRenderWidgetHost())
+        ->input_router()
+        ->ForceSetTouchActionAuto();
     GetOwnerRenderWidgetHostView()->ProcessGestureEvent(
         gesture_tap_event, ui::LatencyInfo(ui::SourceEventType::TOUCH));
 
