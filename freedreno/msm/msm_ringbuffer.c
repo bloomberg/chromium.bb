@@ -103,46 +103,11 @@ static void msm_ringbuffer_ref(struct fd_ringbuffer *ring);
 #define INIT_SIZE 0x1000
 
 static pthread_mutex_t idx_lock = PTHREAD_MUTEX_INITIALIZER;
-drm_private extern pthread_mutex_t table_lock;
-
-static void ring_bo_del(struct fd_device *dev, struct fd_bo *bo)
-{
-	int ret;
-
-	assert(atomic_read(&bo->refcnt) == 1);
-
-	pthread_mutex_lock(&table_lock);
-	ret = fd_bo_cache_free(&to_msm_device(dev)->ring_cache, bo);
-	pthread_mutex_unlock(&table_lock);
-
-	if (ret == 0)
-		return;
-
-	fd_bo_del(bo);
-}
-
-static struct fd_bo * ring_bo_new(struct fd_device *dev, uint32_t size)
-{
-	struct fd_bo *bo;
-
-	bo = fd_bo_cache_alloc(&to_msm_device(dev)->ring_cache, &size, 0);
-	if (bo)
-		return bo;
-
-	bo = fd_bo_new(dev, size, 0);
-	if (!bo)
-		return NULL;
-
-	/* keep ringbuffer bo's out of the normal bo cache: */
-	bo->bo_reuse = FALSE;
-
-	return bo;
-}
 
 static void ring_cmd_del(struct msm_cmd *cmd)
 {
 	if (cmd->ring_bo)
-		ring_bo_del(cmd->ring->pipe->dev, cmd->ring_bo);
+		fd_bo_del(cmd->ring_bo);
 	list_del(&cmd->list);
 	to_msm_ringbuffer(cmd->ring)->cmd_count--;
 	free(cmd->relocs);
@@ -158,7 +123,7 @@ static struct msm_cmd * ring_cmd_new(struct fd_ringbuffer *ring, uint32_t size)
 		return NULL;
 
 	cmd->ring = ring;
-	cmd->ring_bo = ring_bo_new(ring->pipe->dev, size);
+	cmd->ring_bo = fd_bo_new_ring(ring->pipe->dev, size, 0);
 	if (!cmd->ring_bo)
 		goto fail;
 

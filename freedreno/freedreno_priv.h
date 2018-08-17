@@ -98,6 +98,7 @@ struct fd_device {
 	const struct fd_device_funcs *funcs;
 
 	struct fd_bo_cache bo_cache;
+	struct fd_bo_cache ring_cache;
 
 	int closefd;        /* call close(fd) upon destruction */
 
@@ -172,10 +173,18 @@ struct fd_bo {
 	atomic_t refcnt;
 	const struct fd_bo_funcs *funcs;
 
-	int bo_reuse;
+	enum {
+		NO_CACHE = 0,
+		BO_CACHE = 1,
+		RING_CACHE = 2,
+	} bo_reuse;
+
 	struct list_head list;   /* bucket-list entry */
 	time_t free_time;        /* time when added to bucket-list */
 };
+
+drm_private struct fd_bo *fd_bo_new_ring(struct fd_device *dev,
+		uint32_t size, uint32_t flags);
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 

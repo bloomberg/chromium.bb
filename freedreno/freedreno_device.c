@@ -82,6 +82,7 @@ out:
 	dev->handle_table = drmHashCreate();
 	dev->name_table = drmHashCreate();
 	fd_bo_cache_init(&dev->bo_cache, FALSE);
+	fd_bo_cache_init(&dev->ring_cache, TRUE);
 
 	return dev;
 }
