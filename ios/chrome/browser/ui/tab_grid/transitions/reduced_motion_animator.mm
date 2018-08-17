@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/tab_grid/transitions/reduced_motion_animator.h"
 
+#include "ios/chrome/browser/ui/ui_util.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -60,7 +62,7 @@
     finalAnimatingViewTransform = animatingView.transform;
     animatingView.transform =
         CGAffineTransformScale(finalAnimatingViewTransform, 0.75, 0.75);
-    finalAnimatingCornerRadius = 0;
+    finalAnimatingCornerRadius = DeviceCornerRadius();
     animatingView.layer.cornerRadius = 26.0;
   } else {
     // If dismissing, the disappearing view (the tab view) animates out
@@ -69,6 +71,7 @@
     finalAnimatingViewAlpha = 0;
     finalAnimatingViewTransform =
         CGAffineTransformScale(animatingView.transform, 0.75, 0.75);
+    animatingView.layer.cornerRadius = DeviceCornerRadius();
     finalAnimatingCornerRadius = 26.0;
   }
 

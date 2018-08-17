@@ -99,6 +99,10 @@ CGFloat StatusBarHeight() {
   return isCompactHeight ? 0 : 20;
 }
 
+CGFloat DeviceCornerRadius() {
+  return IsIPhoneX() ? 40.0 : 0.0;
+}
+
 CGFloat AlignValueToPixel(CGFloat value) {
   static CGFloat scale = [[UIScreen mainScreen] scale];
   return floor(value * scale) / scale;

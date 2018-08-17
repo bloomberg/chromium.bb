@@ -54,6 +54,9 @@ bool IsUIRefreshPhase1Enabled();
 // Returns the height of the status bar, accounting for orientation.
 CGFloat StatusBarHeight();
 
+// Returns the approximate corner radius of the current device.
+CGFloat DeviceCornerRadius();
+
 // Returns the closest pixel-aligned value less than |value|, taking the scale
 // factor into account. At a scale of 1, equivalent to floor().
 CGFloat AlignValueToPixel(CGFloat value);
