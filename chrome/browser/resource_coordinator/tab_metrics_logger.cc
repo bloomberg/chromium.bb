@@ -59,6 +59,7 @@ void LogBackgroundTabForegroundedOrClosed(
     base::TimeDelta inactive_duration,
     const tab_ranker::MRUFeatures& mru_features,
     bool is_foregrounded,
+    bool is_discarded,
     int sequence_id) {
   if (!ukm_source_id)
     return;
@@ -69,6 +70,7 @@ void LogBackgroundTabForegroundedOrClosed(
       .SetMRUIndex(mru_features.index)
       .SetTimeFromBackgrounded(inactive_duration.InMilliseconds())
       .SetTotalTabCount(mru_features.total)
+      .SetIsDiscarded(is_discarded)
       .Record(ukm::UkmRecorder::Get());
 }
 
@@ -217,19 +219,21 @@ void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
 void TabMetricsLogger::LogBackgroundTabShown(
     ukm::SourceId ukm_source_id,
     base::TimeDelta inactive_duration,
-    const tab_ranker::MRUFeatures& mru_features) {
+    const tab_ranker::MRUFeatures& mru_features,
+    const bool is_discarded) {
   LogBackgroundTabForegroundedOrClosed(ukm_source_id, inactive_duration,
                                        mru_features, true /* is_shown */,
-                                       ++sequence_id_);
+                                       is_discarded, ++sequence_id_);
 }
 
 void TabMetricsLogger::LogBackgroundTabClosed(
     ukm::SourceId ukm_source_id,
     base::TimeDelta inactive_duration,
-    const tab_ranker::MRUFeatures& mru_features) {
+    const tab_ranker::MRUFeatures& mru_features,
+    const bool is_discarded) {
   LogBackgroundTabForegroundedOrClosed(ukm_source_id, inactive_duration,
                                        mru_features, false /* is_shown */,
-                                       ++sequence_id_);
+                                       is_discarded, ++sequence_id_);
 }
 
 void TabMetricsLogger::LogTabLifetime(ukm::SourceId ukm_source_id,

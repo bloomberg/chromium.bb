@@ -70,6 +70,7 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
@@ -887,6 +888,10 @@ resource_coordinator::TabManager* BrowserProcessImpl::GetTabManager() {
             tab_manager_->intervention_policy_database(),
             tab_manager_->usage_clock());
     tab_lifecycle_unit_source_->AddObserver(tab_manager_.get());
+    // Add TabActivityWatcher to TabLifecycleObserver to track tab discards and
+    // reloads.
+    tab_lifecycle_unit_source_->AddTabLifecycleObserver(
+        resource_coordinator::TabActivityWatcher::GetInstance());
   }
   return tab_manager_.get();
 #endif  // defined(OS_ANDROID)
