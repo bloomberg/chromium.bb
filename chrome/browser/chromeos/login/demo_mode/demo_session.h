@@ -35,6 +35,12 @@ class DemoSession {
     kOffline,
   };
 
+  // Location on disk where pre-installed demo mode resources are expected to be
+  // found.
+  static base::FilePath GetPreInstalledDemoResourcesPath();
+  static void OverridePreInstalledDemoResourcesPathForTesting(
+      base::FilePath* overriden_path);
+
   // Whether the device is set up to run demo sessions.
   static bool IsDeviceInDemoMode();
 

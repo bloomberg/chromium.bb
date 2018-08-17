@@ -60,6 +60,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/logging.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_mode_resources_remover.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -995,6 +996,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   if (!user_manager::UserManager::Get()->IsLoggedInAsGuest())
     low_disk_notification_ = std::make_unique<LowDiskNotification>();
 
+  demo_mode_resources_remover_ = DemoModeResourcesRemover::CreateIfNeeded(
+      g_browser_process->local_state());
+
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }
 
@@ -1117,6 +1121,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   network_throttling_observer_.reset();
   ScreenLocker::ShutDownClass();
   low_disk_notification_.reset();
+  demo_mode_resources_remover_.reset();
   user_activity_controller_.reset();
   adaptive_screen_brightness_manager_.reset();
 

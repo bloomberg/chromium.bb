@@ -10071,6 +10071,20 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Encryption unavailable"/>
 </enum>
 
+<enum name="DemoModeResourcesRemovalReason">
+  <int value="0" label="Low available disk space"/>
+  <int value="1" label="Device enterprise enrolled"/>
+  <int value="2" label="Regular user activity detected"/>
+</enum>
+
+<enum name="DemoModeResourcesRemovalResult">
+  <int value="0" label="Successfully removed"/>
+  <int value="1" label="Not found on disk"/>
+  <int value="2" label="Removal not allowed (should not be reported)"/>
+  <int value="3" label="Resources already removed (should not be reported)"/>
+  <int value="4" label="Removal failed"/>
+</enum>
+
 <enum name="DeprecatedAcceleratorUsage">
   <int value="0" label="Deprecated key accelerator is used"/>
   <int value="1" label="New key accelerator is used"/>
