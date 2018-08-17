@@ -26,6 +26,11 @@ class ConnectionEstablisherImpl : public ConnectionEstablisher {
       content::ServiceWorkerContext* service_worker_context) override;
 
  private:
+  void SendStartStreamingMessage(
+      content::ServiceWorkerContext* service_worker_context);
+  void OnMessageDispatchResult(bool status);
+
+  bool is_connected_ = false;
   DISALLOW_COPY_AND_ASSIGN(ConnectionEstablisherImpl);
 };
 
