@@ -27,8 +27,10 @@ class UserClassifier {
   // Different groupings of usage. A user will belong to exactly one of these at
   // any given point in time. Can change at runtime.
   enum class UserClass {
-    kRareNtpUser,                // Almost never opens the NTP.
-    kActiveNtpUser,              // Uses NTP but not articles.
+    kRareSuggestionsViewer,      // Almost never opens surfaces that show
+                                 // suggestions, like the NTP.
+    kActiveSuggestionsViewer,    // Frequently shown suggestions, but does not
+                                 // usually open them.
     kActiveSuggestionsConsumer,  // Frequently opens news articles.
   };
 
@@ -44,10 +46,11 @@ class UserClassifier {
   // NOTE: if you add any element, add it also in the static arrays in .cc and
   // create another histogram.
   enum class Event {
-    kNtpOpened = 0,  // When the user opens a new NTP - this indicates potential
-                     // use of content suggestions.
-    kSuggestionsUsed = 1,  // When the user clicks on some suggestions or on
-                           // some "More" button.
+    kSuggestionsViewed = 0,  // When the user opens a surface that is showing
+                             // suggestions, such as the NTP. This indicates
+                             // potential use of content suggestions.
+    kSuggestionsUsed = 1,    // When the user clicks on some suggestions or on
+                             // the "More" button.
     kMaxValue = kSuggestionsUsed
   };
 
@@ -101,7 +104,7 @@ class UserClassifier {
 
   // Params of the classification.
   const double active_consumer_clicks_at_least_once_per_hours_;
-  const double rare_user_opens_ntp_at_most_once_per_hours_;
+  const double rare_viewer_opens_surface_at_most_once_per_hours_;
 
   DISALLOW_COPY_AND_ASSIGN(UserClassifier);
 };

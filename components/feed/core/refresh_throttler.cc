@@ -38,9 +38,9 @@ enum class RequestStatus {
 std::pair<std::string, int> GetThrottlerParams(
     UserClassifier::UserClass user_class) {
   switch (user_class) {
-    case UserClassifier::UserClass::kRareNtpUser:
+    case UserClassifier::UserClass::kRareSuggestionsViewer:
       return {"SuggestionFetcherRareNTPUser", 5};
-    case UserClassifier::UserClass::kActiveNtpUser:
+    case UserClassifier::UserClass::kActiveSuggestionsViewer:
       return {"SuggestionFetcherActiveNTPUser", 20};
     case UserClassifier::UserClass::kActiveSuggestionsConsumer:
       return {"SuggestionFetcherActiveSuggestionsConsumer", 20};

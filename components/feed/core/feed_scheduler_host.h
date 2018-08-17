@@ -104,9 +104,13 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // upgrades that change the way tasks are stored.
   void OnTaskReschedule();
 
-  // Called when a suggestion is consumed to update what kind of user the
-  // scheduler should be optimizing for.
+  // Should be called when a suggestion is consumed. This is a signal the
+  // scheduler users to track the kind of user, and optimize refresh frequency.
   void OnSuggestionConsumed();
+
+  // Should be called when suggestions are shown. This is a signal the scheduler
+  // users to track the kind of user, and optimize refresh frequency.
+  void OnSuggestionsShown();
 
   // When the user clears history, the scheduler will clear out some stored data
   // and stop requesting refreshes for a period of time.
