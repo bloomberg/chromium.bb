@@ -79,6 +79,12 @@ typedef std::
 std::unique_ptr<base::DictionaryValue> InvalidationObjectIdToValue(
     const invalidation::InvalidationObjectId& object_id);
 
+// TODO(melandory): figure out the security implications for such serialization.
+std::string SerializeInvalidationObjectId(
+    const invalidation::InvalidationObjectId& object_id);
+bool DeserializeInvalidationObjectId(const std::string& serialized,
+                                     invalidation::InvalidationObjectId* id);
+
 INVALIDATION_EXPORT std::string InvalidationObjectIdToString(
     const invalidation::InvalidationObjectId& object_id);
 

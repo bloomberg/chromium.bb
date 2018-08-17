@@ -152,11 +152,10 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredIds) {
   EXPECT_EQ(ids, per_user_topic_registration_manager->GetRegisteredIds());
 
   for (const auto& id : ids) {
-    std::string topic_name = id.name();
     const base::DictionaryValue* topics =
         pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
-    const base::Value* private_topic_value =
-        topics->FindKeyOfType(topic_name, base::Value::Type::STRING);
+    const base::Value* private_topic_value = topics->FindKeyOfType(
+        SerializeInvalidationObjectId(id), base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);
   }
 }
