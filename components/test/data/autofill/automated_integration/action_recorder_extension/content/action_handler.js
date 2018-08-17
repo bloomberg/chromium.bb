@@ -54,11 +54,13 @@
           // Disabled. Class list is simply too mutable, especially in the
           // case where an element changes class on hover or on focus.
           continue;
-        } else if (attr === 'title') {
-          // 'title' is an attribute inserted by Chrome Autofill to predict
-          // how the field should be filled. Since this attribute is inserted
-          // by Chrome, it may change from build to build. Skip this
-          // attribute.
+        } else if (attr === 'autofill-prediction' ||
+                   attr === 'field_signature' ||
+                   attr === 'pm_parser_annotation' ||
+                   attr === 'title') {
+          // These attributes are inserted by Chrome.
+          // Since Chrome sets these attributes, these attributes may change
+          // from build to build. Skip these attributes.
           continue;
         } else {
           attributes.push(`@${attr}`);
@@ -174,8 +176,8 @@
     return build(target);
   };
 
-  let autofillTriggerElementSelector = null;
-  let lastTypingEventTargetValue = null;
+  let autofillTriggerElementInfo = null;
+  let lastTypingEventInfo = null;
   let frameContext;
   let mutationObserver = null;
   let started = false;
@@ -195,6 +197,18 @@
 
   function isPasswordInputElement(element) {
     return element.getAttribute('type') === 'password';
+  }
+
+  function isChromeRecognizedPasswordField(element) {
+    const passwordManagerParserAnnotation =
+        element.getAttribute('pm_parser_annotation');
+    return passwordManagerParserAnnotation === 'password_element' ||
+           passwordManagerParserAnnotation === 'new_password_element' ||
+           passwordManagerParserAnnotation === 'confirmation_password_element';
+  }
+
+  function isChromeRecognizedUserNameField(element) {
+    return element.getAttribute('pm_parser_annotation') === 'username_element';
   }
 
   function canTriggerAutofill(element) {
@@ -288,7 +302,9 @@
         }
         addActionToRecipe(action);
       }
-    } else if (lastTypingEventTargetValue === event.target.value) {
+    } else if (lastTypingEventInfo &&
+               lastTypingEventInfo.target === event.target &&
+               lastTypingEventInfo.value === event.target.value) {
       console.log(`Typing detected on: ${selector}`);
 
       // Distinguish between typing inside password input fields and
@@ -317,11 +333,16 @@
     } else {
       // If the user has previously clicked on a field that can trigger
       // autofill, add a trigger autofill action.
-      if (autofillTriggerElementSelector !== null) {
-        console.log(`Triggered autofill on ${autofillTriggerElementSelector}`);
-        action.type = 'autofill';
-        addActionToRecipe(action);
-        autofillTriggerElementSelector = null;
+      if (autofillTriggerElementInfo !== null) {
+        console.log(`Triggered autofill on ${autofillTriggerElementInfo.selector}`);
+        let autofillAction = {
+          selector: autofillTriggerElementInfo.selector,
+          context: frameContext,
+          visibility: autofillTriggerElementInfo.visibility
+        };
+        autofillAction.type = 'autofill';
+        addActionToRecipe(autofillAction);
+        autofillTriggerElementInfo = null;
       }
       action.type = 'validateField';
       action.expectedValue = event.target.value;
@@ -367,7 +388,10 @@
         // the element selector path, as the user could have clicked
         // this element to trigger autofill.
         if (isAutofillableElement(element) && canTriggerAutofill(element)) {
-          autofillTriggerElementSelector = selector;
+          autofillTriggerElementInfo = {
+            selector: selector,
+            visibility: elementReadyState
+          }
         }
       } else {
         addActionToRecipe({
@@ -376,7 +400,7 @@
           context: frameContext,
           type: 'click'
         });
-        autofillTriggerElementSelector = null;
+        autofillTriggerElementInfo = null;
       }
     } else if (event.button === Buttons.RIGHT_BUTTON) {
       const element = event.target;
@@ -407,58 +431,53 @@
     }
 
     if (isEditableInputElement(event.target)) {
-      lastTypingEventTargetValue = event.target.value;
+      lastTypingEventInfo = {
+        target: event.target,
+        value: event.target.value
+      }
     } else {
-      lastTypingEventTargetValue = null;
+      lastTypingEventInfo = null;
     }
   }
 
-  function startRecording() {
-    const promise =
-      // First, obtain the current frame's context.
-      sendRuntimeMessageToBackgroundScript({
-          type: RecorderMsgEnum.GET_FRAME_CONTEXT,
-          location: location})
-      .then((context) => {
-        frameContext = context;
-        // Register on change listeners on all the input elements.
-        registerOnInputChangeActionListener(document);
-        // Register a mouse up listener on the entire document.
-        //
-        // The content script registers a 'Mouse Up' listener rather than a
-        // 'Mouse Down' to correctly handle the following scenario:
-        //
-        // A user types inside a search box, then clicks the search button.
-        //
-        // The following events will fire in quick chronological succession:
-        // * Mouse down on the search button.
-        // * Change on the search input box.
-        // * Mouse up on the search button.
-        //
-        // To capture the correct sequence of actions, the content script
-        // should tie left mouse click actions to the mouseup event.
-        document.addEventListener('mouseup', onClickActionHander);
-        // Register a key press listener on the entire document.
-        document.addEventListener('keyup', onKeyUpActionHandler);
-        // Setup mutation observer to listen for event on nodes added after
-        // recording starts.
-        mutationObserver = new MutationObserver((mutations) => {
-          mutations.forEach(mutation => {
-            mutation.addedNodes.forEach(node => {
-              if (node.nodeType === Node.ELEMENT_NODE) {
-                // Add the onchange listener on any new input elements. This
-                // way the recorder can record user interactions with new
-                // elements.
-                registerOnInputChangeActionListener(node);
-              }
-            });
+  function startRecording(context) {
+      frameContext = context;
+      // Register on change listeners on all the input elements.
+      registerOnInputChangeActionListener(document);
+      // Register a mouse up listener on the entire document.
+      //
+      // The content script registers a 'Mouse Up' listener rather than a
+      // 'Mouse Down' to correctly handle the following scenario:
+      //
+      // A user types inside a search box, then clicks the search button.
+      //
+      // The following events will fire in quick chronological succession:
+      // * Mouse down on the search button.
+      // * Change on the search input box.
+      // * Mouse up on the search button.
+      //
+      // To capture the correct sequence of actions, the content script
+      // should tie left mouse click actions to the mouseup event.
+      document.addEventListener('mouseup', onClickActionHander);
+      // Register a key press listener on the entire document.
+      document.addEventListener('keyup', onKeyUpActionHandler);
+      // Setup mutation observer to listen for event on nodes added after
+      // recording starts.
+      mutationObserver = new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              // Add the onchange listener on any new input elements. This
+              // way the recorder can record user interactions with new
+              // elements.
+              registerOnInputChangeActionListener(node);
+            }
           });
         });
-        mutationObserver.observe(document, {childList: true, subtree: true});
-        started = true;
-        return Promise.resolve();
       });
-    return promise;
+      mutationObserver.observe(document, {childList: true, subtree: true});
+      started = true;
+      return Promise.resolve();
   }
 
   function stopRecording() {
@@ -476,8 +495,7 @@
     const iframes = document.querySelectorAll('iframe');
     // Find the target iframe.
     for (let index = 0; index < iframes.length; index++) {
-      const url = new URL(iframes[index].src,
-                          `${location.protocol}//${location.host}`);
+      const url = new URL(iframes[index].src, location.origin);
       // Try to identify the iframe using the entire URL.
       if (frameLocation.href === url.href) {
         iframe = iframes[index];
@@ -490,8 +508,7 @@
       // To handle the scenario described above, this code optionally ignores
       // the iframe url's hash.
       if (iframes === null &&
-          frameLocation.protocol === url.protocol &&
-          frameLocation.host === url.host &&
+          frameLocation.origin === url.origin &&
           frameLocation.pathname === url.pathname &&
           frameLocation.search === url.search) {
         iframe = iframes[index];
@@ -514,7 +531,7 @@
     if (!request) return;
     switch (request.type) {
       case RecorderMsgEnum.START:
-        startRecording()
+        startRecording(request.frameContext)
         .then(() => sendResponse(true))
         .catch((error) => {
           sendResponse(false);
@@ -528,6 +545,7 @@
         sendResponse(true);
         break;
       case RecorderMsgEnum.GET_IFRAME_NAME:
+        console.log(`Cross: ${request.url}`);
         queryIframeName(request.url)
         .then((context) => {
           sendResponse(context);
