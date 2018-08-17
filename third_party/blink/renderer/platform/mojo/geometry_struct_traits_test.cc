@@ -37,6 +37,12 @@ class GeometryStructTraitsTest
     std::move(callback).Run(p);
   }
 
+  void EchoPoint3F(::gfx::mojom::blink::Point3FPtr p,
+                   EchoPoint3FCallback callback) override {
+    // The type map is not specified.
+    NOTREACHED();
+  }
+
   void EchoSize(const WebSize& s, EchoSizeCallback callback) override {
     std::move(callback).Run(s);
   }
@@ -73,6 +79,12 @@ class GeometryStructTraitsTest
 
   void EchoVector2dF(gfx::mojom::blink::Vector2dFPtr,
                      EchoVector2dFCallback) override {
+    // The type map is not specified.
+    NOTREACHED();
+  }
+
+  void EchoVector3dF(gfx::mojom::blink::Vector3dFPtr,
+                     EchoVector3dFCallback) override {
     // The type map is not specified.
     NOTREACHED();
   }
