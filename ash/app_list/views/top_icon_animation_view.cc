@@ -35,9 +35,8 @@ TopIconAnimationView::TopIconAnimationView(const gfx::ImageSkia& icon,
   title_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetHandlesTooltips(false);
-  const gfx::FontList& font = AppListConfig::instance().app_title_font();
-  title_->SetFontList(font);
-  title_->SetLineHeight(font.GetHeight());
+  title_->SetFontList(AppListConfig::instance().app_title_font());
+  title_->SetLineHeight(AppListConfig::instance().app_title_max_line_height());
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetEnabledColor(SK_ColorBLACK);
   title_->SetText(title);
