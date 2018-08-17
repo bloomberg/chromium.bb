@@ -203,6 +203,7 @@ HostResolver::RequestInfoToResolveHostParameters(
   parameters.dns_query_type =
       AddressFamilyToDnsQueryType(request_info.address_family());
   parameters.initial_priority = priority;
+  parameters.is_speculative = request_info.is_speculative();
 
   return parameters;
 }

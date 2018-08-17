@@ -67,19 +67,16 @@ class MockHostResolverBase::RequestImpl
                     optional_parameters,
                     0 /* host_resolver_flags */,
                     true /* allow_cached_response */,
-                    false /* is_speculative */,
                     resolver) {}
 
   RequestImpl(const HostPortPair& request_host,
               const base::Optional<ResolveHostParameters>& optional_parameters,
               HostResolverFlags host_resolver_flags,
               bool allow_cached_response,
-              bool is_speculative,
               base::WeakPtr<MockHostResolverBase> resolver)
       : request_host_(request_host),
         host_resolver_flags_(host_resolver_flags),
         allow_cached_response_(allow_cached_response),
-        is_speculative_(is_speculative),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
         id_(0),
@@ -127,6 +124,7 @@ class MockHostResolverBase::RequestImpl
     // completed.
     DCHECK(!complete_);
     DCHECK(!address_results_);
+    DCHECK(!parameters_.is_speculative);
 
     address_results_ = address_results;
   }
@@ -148,8 +146,6 @@ class MockHostResolverBase::RequestImpl
 
   bool allow_cached_response() const { return allow_cached_response_; }
 
-  bool is_speculative() const { return is_speculative_; }
-
   const ResolveHostParameters& parameters() const { return parameters_; }
 
   size_t id() { return id_; }
@@ -167,7 +163,6 @@ class MockHostResolverBase::RequestImpl
   const HostPortPair request_host_;
   int host_resolver_flags_;
   bool allow_cached_response_;
-  bool is_speculative_;
   const ResolveHostParameters parameters_;
 
   base::Optional<AddressList> address_results_;
@@ -219,7 +214,7 @@ class MockHostResolverBase::LegacyRequestImpl : public HostResolver::Request {
     // Must call AssignCallback() before async results.
     DCHECK(callback_);
 
-    if (error == OK) {
+    if (error == OK && !inner_request_->parameters().is_speculative) {
       // Legacy API does not allow non-address results (eg TXT), so AddressList
       // is always expected to be present on OK.
       DCHECK(inner_request_->GetAddressResults());
@@ -263,8 +258,7 @@ int MockHostResolverBase::Resolve(const RequestInfo& info,
 
   auto request = std::make_unique<RequestImpl>(
       info.host_port_pair(), RequestInfoToResolveHostParameters(info, priority),
-      info.host_resolver_flags(), info.allow_cached_response(),
-      info.is_speculative(), AsWeakPtr());
+      info.host_resolver_flags(), info.allow_cached_response(), AsWeakPtr());
   auto wrapped_request =
       std::make_unique<LegacyRequestImpl>(std::move(request));
 
@@ -363,7 +357,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
       DnsQueryTypeToAddressFamily(request->parameters().dns_query_type),
       request->host_resolver_flags(), request->allow_cached_response(),
       &addresses);
-  if (rv == OK)
+  if (rv == OK && !request->parameters().is_speculative)
     request->set_address_results(addresses);
   if (rv != ERR_DNS_CACHE_MISS)
     return rv;
@@ -378,7 +372,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
         request->request_host(),
         DnsQueryTypeToAddressFamily(request->parameters().dns_query_type),
         request->host_resolver_flags(), &addresses);
-    if (rv == OK)
+    if (rv == OK && !request->parameters().is_speculative)
       request->set_address_results(addresses);
     return rv;
   }
@@ -469,7 +463,7 @@ void MockHostResolverBase::ResolveNow(size_t id) {
       ResolveProc(req->request_host(),
                   DnsQueryTypeToAddressFamily(req->parameters().dns_query_type),
                   req->host_resolver_flags(), &addresses);
-  if (error == OK)
+  if (error == OK && !req->parameters().is_speculative)
     req->set_address_results(addresses);
   req->OnAsyncCompleted(id, error);
 }

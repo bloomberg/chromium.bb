@@ -55,6 +55,12 @@ struct ResolveHostParameters {
   // If set, the outstanding request can be controlled, eg cancelled, via the
   // handle.
   ResolveHostHandle&? control_handle;
+
+  // Set |true| iff the host resolve request is only being made speculatively
+  // to fill the cache and the result addresses will not be used. The request
+  // will receive special logging/observer treatment, and
+  // ResolveHostClient::OnComplete will not receive any addresses.
+  bool is_speculative = false;
 };
 
 // Interface that can be passed to code/processes without direct access to
