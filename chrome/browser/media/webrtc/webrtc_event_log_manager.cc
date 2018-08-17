@@ -621,39 +621,28 @@ void WebRtcEventLogManager::OnFirstBrowserContextLoaded() {
       content::GetNetworkConnectionTracker();
   DCHECK(network_connection_tracker);
 
-  net::URLRequestContextGetter* url_request_context_getter =
-      g_browser_process->system_request_context();
-  DCHECK(url_request_context_getter);
-
   auto log_file_writer_factory = CreateRemoteLogFileWriterFactory();
   DCHECK(log_file_writer_factory);
 
-  // * |url_request_context_getter| is owned by IOThread. The internal task
-  //   runner that uses it (|task_runner_|) stops before IOThread dies, so we
-  //   can trust that |url_request_context_getter| will not be used after
-  //   destruction.
-  // * |network_connection_tracker| is owned by BrowserProcessImpl, which
-  //   owns the IOThread, so the logic explaining why using base::Unretained
-  //   was safe for with |url_request_context_getter|, also applies to it.
+  // |network_connection_tracker| is owned by BrowserProcessImpl, which owns
+  // the IOThread. The internal task runner on which |this| uses
+  // |network_connection_tracker|, stops before IOThread dies, so we can trust
+  // that |network_connection_tracker| will not be used after destruction.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &WebRtcEventLogManager::OnFirstBrowserContextLoadedInternal,
           base::Unretained(this), base::Unretained(network_connection_tracker),
-          base::Unretained(url_request_context_getter),
           std::move(log_file_writer_factory)));
 }
 
 void WebRtcEventLogManager::OnFirstBrowserContextLoadedInternal(
     network::NetworkConnectionTracker* network_connection_tracker,
-    net::URLRequestContextGetter* url_request_context_getter,
     std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(network_connection_tracker);
-  DCHECK(url_request_context_getter);
   DCHECK(log_file_writer_factory);
   remote_logs_manager_.SetNetworkConnectionTracker(network_connection_tracker);
-  remote_logs_manager_.SetUrlRequestContextGetter(url_request_context_getter);
   remote_logs_manager_.SetLogFileWriterFactory(
       std::move(log_file_writer_factory));
 }

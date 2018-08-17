@@ -127,6 +127,8 @@ WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
       network_connection_tracker_(nullptr),
       uploading_supported_for_connection_type_(false),
       scheduled_upload_tasks_(0),
+      uploader_factory_(
+          std::make_unique<WebRtcEventLogUploaderImpl::Factory>()),
       task_runner_(task_runner),
       weak_ptr_factory_(
           std::make_unique<base::WeakPtrFactory<WebRtcRemoteEventLogManager>>(
@@ -192,15 +194,6 @@ void WebRtcRemoteEventLogManager::SetNetworkConnectionTracker(
   DCHECK_EQ(enabled_browser_contexts_.size(), 0u);
 }
 
-void WebRtcRemoteEventLogManager::SetUrlRequestContextGetter(
-    net::URLRequestContextGetter* context_getter) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(context_getter);
-  DCHECK(!uploader_factory_);
-  uploader_factory_ =
-      std::make_unique<WebRtcEventLogUploaderImpl::Factory>(context_getter);
-}
-
 void WebRtcRemoteEventLogManager::SetLogFileWriterFactory(
     std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -215,7 +208,6 @@ void WebRtcRemoteEventLogManager::EnableForBrowserContext(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(network_connection_tracker_)
       << "SetNetworkConnectionTracker not called.";
-  DCHECK(uploader_factory_) << "SetUrlRequestContextGetter() not called.";
   DCHECK(log_file_writer_factory_) << "SetLogFileWriterFactory() not called.";
   DCHECK(!BrowserContextEnabled(browser_context_id)) << "Already enabled.";
 
@@ -464,6 +456,7 @@ void WebRtcRemoteEventLogManager::OnConnectionChanged(
 void WebRtcRemoteEventLogManager::SetWebRtcEventLogUploaderFactoryForTesting(
     std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(uploader_factory);
   uploader_factory_ = std::move(uploader_factory);
 }
 

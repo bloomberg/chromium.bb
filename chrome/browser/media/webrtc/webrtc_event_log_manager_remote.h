@@ -18,10 +18,6 @@
 
 // TODO(crbug.com/775415): Avoid uploading logs when Chrome shutdown imminent.
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 class WebRtcRemoteEventLogManager final
     : public network::NetworkConnectionTracker::NetworkConnectionObserver {
   using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
@@ -41,11 +37,6 @@ class WebRtcRemoteEventLogManager final
   // Must be called before any call to EnableForBrowserContext().
   void SetNetworkConnectionTracker(
       network::NetworkConnectionTracker* network_connection_tracker);
-
-  // Sets a net::URLRequestContextGetter which will be used for uploads.
-  // Must not be called more than once.
-  // Must be called before any call to EnableForBrowserContext().
-  void SetUrlRequestContextGetter(net::URLRequestContextGetter* context_getter);
 
   // Sets a LogFileWriter factory.
   // Must not be called more than once.

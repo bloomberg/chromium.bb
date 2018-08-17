@@ -207,9 +207,9 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   void OnPrefChange(content::BrowserContext* browser_context);
 
-  // network_connection_tracker() and system_request_context() are not available
-  // during instantiation; we get them when the first profile is loaded, which
-  // is also the earliest time when they could be needed.
+  // network_connection_tracker() is not available during instantiation;
+  // we get it when the first profile is loaded, which is also the earliest
+  // time when it could be needed.
   // The LogFileWriter::Factory is similarly deferred, but for a different
   // reason - it makes it easier to allow unit tests to inject their own.
   // OnFirstBrowserContextLoaded() is on the UI thread.
@@ -217,7 +217,6 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   void OnFirstBrowserContextLoaded();
   void OnFirstBrowserContextLoadedInternal(
       network::NetworkConnectionTracker* network_connection_tracker,
-      net::URLRequestContextGetter* url_request_context_getter,
       std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory);
 
   void EnableRemoteBoundLoggingForBrowserContext(

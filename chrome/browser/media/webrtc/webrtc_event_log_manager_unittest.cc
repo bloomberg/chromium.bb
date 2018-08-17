@@ -50,8 +50,9 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -221,14 +222,15 @@ class MockWebRtcRemoteEventLogsObserver : public WebRtcRemoteEventLogsObserver {
 class WebRtcEventLogManagerTestBase : public ::testing::Test {
  public:
   WebRtcEventLogManagerTestBase()
-      : url_request_context_getter_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
+      : test_shared_url_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
         run_loop_(std::make_unique<base::RunLoop>()),
         uploader_run_loop_(std::make_unique<base::RunLoop>()),
         browser_context_(nullptr),
         browser_context_id_(GetBrowserContextId(browser_context_.get())) {
-    TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
-        url_request_context_getter_.get());
+    TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
+        test_shared_url_loader_factory_);
 
     // Avoid proactive pruning; it has the potential to mess up tests, as well
     // as keep pendings tasks around with a dangling reference to the unit
@@ -697,7 +699,9 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedCommandLine scoped_command_line_;
   base::SimpleTestClock frozen_clock_;
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory>
+      test_shared_url_loader_factory_;
 
   // The main loop, which allows waiting for the operations invoked on the
   // unit-under-test to be completed. Do not use this object directly from the
