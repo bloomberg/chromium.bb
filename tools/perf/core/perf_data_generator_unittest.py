@@ -33,11 +33,11 @@ class PerfDataGeneratorTest(unittest.TestCase):
         }
     }
     benchmarks = {
-        'benchmark_name_1': BenchmarkMetadata('foo@bar.com', None, None, False),
+        'benchmark_name_1': BenchmarkMetadata('foo@bar.com'),
         'benchmark_name_2':
-            BenchmarkMetadata('darth@deathstar', None, None, False),
+            BenchmarkMetadata('darth@deathstar'),
         'benchmark_name_3':
-            BenchmarkMetadata('neo@matrix.org', None, None, False)
+            BenchmarkMetadata('neo@matrix.org')
     }
 
     # Mock out content of unowned_benchmarks.txt and sharding map
@@ -63,8 +63,8 @@ class PerfDataGeneratorTest(unittest.TestCase):
         }
     }
     benchmarks = {
-        'benchmark_name_2': BenchmarkMetadata(None, None, None, False),
-        'benchmark_name_3': BenchmarkMetadata(None, None, None, False),
+        'benchmark_name_2': BenchmarkMetadata('baz@foo.com'),
+        'benchmark_name_3': BenchmarkMetadata('darth@vader.com'),
     }
 
     with self.assertRaises(AssertionError) as context:
@@ -77,7 +77,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
   def testVerifyAllTestsInBenchmarkCsvFindsFakeTest(self):
     tests = {'Random fake test': {}}
     benchmarks = {
-        'benchmark_name_1': BenchmarkMetadata(None, None, None, False)
+        'benchmark_name_1': BenchmarkMetadata('deathstar@empire.com')
     }
 
     with self.assertRaises(AssertionError) as context:
