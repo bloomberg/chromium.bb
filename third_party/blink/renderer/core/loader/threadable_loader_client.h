@@ -50,6 +50,8 @@ class CORE_EXPORT ThreadableLoaderClient {
  public:
   virtual void DidSendData(unsigned long long /*bytesSent*/,
                            unsigned long long /*totalBytesToBeSent*/) {}
+  // Note that redirects for redirect modes kError and kManual are still
+  // notified here. A client must return false in such cases.
   virtual bool WillFollowRedirect(const KURL& new_url,
                                   const ResourceResponse&) {
     return true;
