@@ -54,10 +54,10 @@ bool IsMaterialRefreshEnabled() {
 
 #if defined(OS_CHROMEOS)
 
-// Whether to use MATERIAL_TOUCH_OPTIMIZED when a touch device is detected.
-// Enabled by default on ChromeOS.
+// Whether to use touchable UI.
+// http://crbug.com/875122 - Disabled by default on ChromeOS except on tablets.
 const base::Feature kTouchOptimizedUi = {"TouchOptimizedUi",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 MaterialDesignController::Mode GetDefaultTouchDeviceMode() {
   bool material_refresh_enabled = IsMaterialRefreshEnabled();
