@@ -124,6 +124,7 @@ void BackgroundFetchRegistration::DidAbort(
     case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
+    case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
       // Not applicable for this callback.
       break;
   }

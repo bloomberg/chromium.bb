@@ -10,11 +10,28 @@
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 
 namespace content {
 
 namespace background_fetch {
+
+namespace {
+
+void DidGetUsageAndQuota(DatabaseTask::IsQuotaAvailableCallback callback,
+                         int64_t size,
+                         blink::mojom::QuotaStatusCode status,
+                         int64_t usage,
+                         int64_t quota) {
+  bool is_available =
+      status == blink::mojom::QuotaStatusCode::kOk && (usage + size) <= quota;
+
+  std::move(callback).Run(is_available);
+}
+
+}  // namespace
 
 DatabaseTaskHost::DatabaseTaskHost() : weak_factory_(this) {}
 
@@ -60,6 +77,17 @@ void DatabaseTask::AddSubTask(std::unique_ptr<DatabaseTask> task) {
 void DatabaseTask::AbandonFetches(int64_t service_worker_registration_id) {
   for (auto& observer : data_manager()->observers())
     observer.OnServiceWorkerDatabaseCorrupted(service_worker_registration_id);
+}
+
+void DatabaseTask::IsQuotaAvailable(const url::Origin& origin,
+                                    int64_t size,
+                                    IsQuotaAvailableCallback callback) {
+  DCHECK(quota_manager_proxy());
+  DCHECK_GT(size, 0);
+  quota_manager_proxy()->GetUsageAndQuota(
+      base::ThreadTaskRunnerHandle::Get().get(), origin,
+      blink::mojom::StorageType::kTemporary,
+      base::BindOnce(&DidGetUsageAndQuota, std::move(callback), size));
 }
 
 void DatabaseTask::SetStorageError(BackgroundFetchStorageError error) {
@@ -122,6 +150,10 @@ ChromeBlobStorageContext* DatabaseTask::blob_storage_context() {
 
 BackgroundFetchDataManager* DatabaseTask::data_manager() {
   return host_->data_manager();
+}
+
+storage::QuotaManagerProxy* DatabaseTask::quota_manager_proxy() {
+  return data_manager()->quota_manager_proxy();
 }
 
 }  // namespace background_fetch

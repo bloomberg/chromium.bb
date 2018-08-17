@@ -161,7 +161,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     context_ = base::MakeRefCounted<BackgroundFetchContext>(
         browser_context(),
         base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()),
-        base::WrapRefCounted(partition->GetCacheStorageContext()));
+        base::WrapRefCounted(partition->GetCacheStorageContext()),
+        nullptr /* quota_manager_proxy */);
   }
 
   void TearDown() override {

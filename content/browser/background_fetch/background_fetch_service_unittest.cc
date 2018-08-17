@@ -279,10 +279,10 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
   void SetUp() override {
     BackgroundFetchTestBase::SetUp();
 
-    context_ = new BackgroundFetchContext(
+    context_ = base::MakeRefCounted<BackgroundFetchContext>(
         browser_context(),
         base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()),
-        nullptr /* cache_storage_context */);
+        nullptr /* cache_storage_context */, nullptr /* quota_manager_proxy */);
     context_->SetDataManagerForTesting(
         std::make_unique<BackgroundFetchTestDataManager>(
             browser_context(), storage_partition(),

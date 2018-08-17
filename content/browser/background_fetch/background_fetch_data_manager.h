@@ -31,6 +31,7 @@
 
 namespace storage {
 class BlobDataHandle;
+class QuotaManagerProxy;
 }
 
 namespace content {
@@ -77,7 +78,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   BackgroundFetchDataManager(
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      scoped_refptr<CacheStorageContextImpl> cache_storage_context);
+      scoped_refptr<CacheStorageContextImpl> cache_storage_context,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   ~BackgroundFetchDataManager() override;
 
@@ -187,6 +189,9 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   ChromeBlobStorageContext* blob_storage_context() const {
     return blob_storage_context_.get();
   }
+  storage::QuotaManagerProxy* quota_manager_proxy() const {
+    return quota_manager_proxy_.get();
+  }
 
   void AddStartNextPendingRequestTask(
       const BackgroundFetchRegistrationId& registration_id,
@@ -208,6 +213,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   scoped_refptr<CacheStorageContextImpl> cache_storage_context_;
+
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
   // The BackgroundFetch stores its own reference to CacheStorageManager
   // in case StoragePartitionImpl is destoyed, which releases the reference.

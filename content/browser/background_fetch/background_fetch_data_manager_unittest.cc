@@ -95,7 +95,8 @@ void DidGetRegistrationUserDataByKeyPrefix(
 
 void AnnotateRequestInfoWithFakeDownloadManagerData(
     BackgroundFetchRequestInfo* request_info,
-    bool success = false) {
+    bool success = false,
+    bool over_quota = false) {
   DCHECK(request_info);
 
   std::string headers =
@@ -115,7 +116,7 @@ void AnnotateRequestInfoWithFakeDownloadManagerData(
   // |kResponseFileSize| for tests that use filesize.
   request_info->SetResult(std::make_unique<BackgroundFetchResult>(
       base::Time::Now(), base::FilePath(), base::nullopt /* blob_handle */,
-      kResponseFileSize));
+      over_quota ? kBackgroundFetchMaxQuotaBytes + 1 : kResponseFileSize));
 }
 
 void GetNumUserData(base::Closure quit_closure,
@@ -551,6 +552,8 @@ class BackgroundFetchDataManagerTest
                     const base::Optional<SkBitmap>& icon));
   MOCK_METHOD1(OnServiceWorkerDatabaseCorrupted,
                void(int64_t service_worker_registration_id));
+  MOCK_METHOD1(OnQuotaExceeded,
+               void(const BackgroundFetchRegistrationId& registration_id));
 
  protected:
   void DidGetRegistration(base::OnceClosure quit_closure,
@@ -726,6 +729,27 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
     CreateRegistration(registration_id2, requests, options, SkBitmap(), &error);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
+}
+
+TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaFailsCreation) {
+  // Tests that the BackgroundFetchDataManager correctly rejects creating a
+  // registration where the provided download total exceeds the available quota.
+
+  int64_t service_worker_registration_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            service_worker_registration_id);
+
+  BackgroundFetchRegistrationId registration_id(service_worker_registration_id,
+                                                origin(), kExampleDeveloperId,
+                                                kExampleUniqueId);
+  std::vector<ServiceWorkerFetchRequest> requests;
+  BackgroundFetchOptions options;
+  options.download_total = kBackgroundFetchMaxQuotaBytes + 1;
+
+  blink::mojom::BackgroundFetchError error;
+
+  CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
 }
 
 TEST_F(BackgroundFetchDataManagerTest, GetDeveloperIds) {
@@ -1198,6 +1222,33 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadTotalUpdated) {
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // |download_total| is unchanged.
   EXPECT_EQ(registration.download_total, 2 * kResponseFileSize);
+}
+
+TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaAbandonsFetch) {
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+  auto requests = CreateValidRequests(origin(), 3u /* num_requests */);
+
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+  {
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
+
+    CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  scoped_refptr<BackgroundFetchRequestInfo> request_info;
+  PopNextRequest(registration_id, &request_info);
+  AnnotateRequestInfoWithFakeDownloadManagerData(
+      request_info.get(), true /* succeeded */, true /* over_quota */);
+  {
+    EXPECT_CALL(*this, OnQuotaExceeded(registration_id));
+    MarkRequestAsComplete(registration_id, request_info.get());
+  }
 }
 
 TEST_F(BackgroundFetchDataManagerTest, WriteToCache) {

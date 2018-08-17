@@ -37,6 +37,10 @@ class MarkRequestCompleteTask : public DatabaseTask {
 
   void PopulateResponseBody(blink::mojom::FetchAPIResponse* response);
 
+  void DidGetIsQuotaAvailable(blink::mojom::FetchAPIResponsePtr response,
+                              base::OnceClosure done_closure,
+                              bool is_available);
+
   void DidOpenCache(blink::mojom::FetchAPIResponsePtr response,
                     base::OnceClosure done_closure,
                     CacheStorageCacheHandle handle,

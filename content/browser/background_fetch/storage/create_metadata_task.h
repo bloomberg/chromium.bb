@@ -40,6 +40,10 @@ class CreateMetadataTask : public DatabaseTask {
   void Start() override;
 
  private:
+  void DidGetIsQuotaAvailable(bool is_available);
+
+  void GetRegistrationUniqueId();
+
   void DidGetUniqueId(const std::vector<std::string>& data,
                       blink::ServiceWorkerStatusCode status);
 

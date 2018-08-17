@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -79,6 +80,42 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
   // A valid non-empty url is needed if we want to write to the cache.
   if (!request_info_->fetch_request().url.is_valid()) {
     CreateAndStoreCompletedRequest(std::move(done_closure));
+    return;
+  }
+
+  int64_t response_size = 0;
+  if (service_worker_context()->is_incognito()) {
+    // The blob contains the size.
+    if (request_info_->GetBlobDataHandle())
+      response_size = request_info_->GetBlobDataHandle()->size();
+  } else {
+    // The file contains the size.
+    response_size = request_info_->GetFileSize();
+  }
+
+  // We need to check if there is enough quota before writing the response to
+  // the cache.
+  if (response_size > 0) {
+    IsQuotaAvailable(
+        registration_id_.origin(), response_size,
+        base::BindOnce(&MarkRequestCompleteTask::DidGetIsQuotaAvailable,
+                       weak_factory_.GetWeakPtr(), std::move(response),
+                       std::move(done_closure)));
+  } else {
+    // Assume there is enough quota.
+    DidGetIsQuotaAvailable(std::move(response), std::move(done_closure),
+                           true /* is_available */);
+  }
+}
+
+void MarkRequestCompleteTask::DidGetIsQuotaAvailable(
+    blink::mojom::FetchAPIResponsePtr response,
+    base::OnceClosure done_closure,
+    bool is_available) {
+  if (!is_available) {
+    for (auto& observer : data_manager()->observers())
+      observer.OnQuotaExceeded(registration_id_);
+    FinishWithError(blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
     return;
   }
 

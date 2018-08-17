@@ -633,7 +633,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->background_fetch_context_ =
       base::MakeRefCounted<BackgroundFetchContext>(
           context, partition->service_worker_context_,
-          partition->cache_storage_context_);
+          partition->cache_storage_context_, quota_manager_proxy);
 
   partition->background_sync_context_ =
       base::MakeRefCounted<BackgroundSyncContext>();

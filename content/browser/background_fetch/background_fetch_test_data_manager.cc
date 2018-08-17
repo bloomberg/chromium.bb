@@ -29,6 +29,15 @@ class MockBGFQuotaManagerProxy : public MockQuotaManagerProxy {
     delete client;  // Directly delete, to avoid memory leak.
   }
 
+  void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
+                        const url::Origin& origin,
+                        blink::mojom::StorageType type,
+                        UsageAndQuotaCallback callback) override {
+    DCHECK(original_task_runner);
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, 0 /* usage */,
+                            kBackgroundFetchMaxQuotaBytes);
+  }
+
  protected:
   ~MockBGFQuotaManagerProxy() override = default;
 };
@@ -42,7 +51,8 @@ BackgroundFetchTestDataManager::BackgroundFetchTestDataManager(
     bool mock_fill_response)
     : BackgroundFetchDataManager(browser_context,
                                  service_worker_context,
-                                 nullptr /* cache_storage_context */),
+                                 nullptr /* cache_storage_context */,
+                                 nullptr /* quota_manager_proxy */),
       browser_context_(browser_context),
       storage_partition_(storage_partition),
       mock_fill_response_(mock_fill_response) {}
@@ -57,13 +67,13 @@ void BackgroundFetchTestDataManager::InitializeOnIOThread() {
       storage_partition_->GetPath().empty(), storage_partition_->GetPath(),
       base::ThreadTaskRunnerHandle::Get().get(),
       base::MakeRefCounted<MockSpecialStoragePolicy>());
-  mock_quota_manager_->SetQuota(GURL("https://example.com/"),
-                                StorageType::kTemporary, 1024 * 1024 * 100);
+
+  quota_manager_proxy_ =
+      base::MakeRefCounted<MockBGFQuotaManagerProxy>(mock_quota_manager_.get());
 
   cache_manager_ = CacheStorageManager::Create(
       storage_partition_->GetPath(), base::ThreadTaskRunnerHandle::Get(),
-      base::MakeRefCounted<MockBGFQuotaManagerProxy>(
-          mock_quota_manager_.get()));
+      quota_manager_proxy_);
   DCHECK(cache_manager_);
 
   cache_manager_->SetBlobParametersForCache(
