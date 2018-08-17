@@ -52,6 +52,10 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
       GetPermissionCallback callback) override;
   void SetClient(device::mojom::UsbDeviceManagerClientPtr client) override;
 
+  void OnGetDevices(
+      GetDevicesCallback callback,
+      std::vector<device::mojom::UsbDeviceInfoPtr> device_info_list);
+
   // device::UsbService::Observer implementation:
   void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;

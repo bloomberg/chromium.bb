@@ -25,7 +25,6 @@
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/cpp/filter_utils.h"
 #include "device/usb/usb_device.h"
-#include "device/usb/usb_ids.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -125,13 +124,15 @@ base::string16 UsbChooserController::GetOption(size_t index) const {
 }
 
 bool UsbChooserController::IsPaired(size_t index) const {
-  scoped_refptr<UsbDevice> device = devices_[index].first;
-
   if (!chooser_context_)
     return false;
 
+  auto device_info = device::mojom::UsbDeviceInfo::From(*devices_[index].first);
+  DCHECK(device_info);
+
   return WebUSBPermissionProvider::HasDevicePermission(
-      chooser_context_.get(), requesting_origin_, embedding_origin_, device);
+      chooser_context_.get(), requesting_origin_, embedding_origin_,
+      *device_info);
 }
 
 void UsbChooserController::Select(const std::vector<size_t>& indices) {

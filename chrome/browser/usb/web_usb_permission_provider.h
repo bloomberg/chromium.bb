@@ -14,6 +14,12 @@ namespace content {
 class RenderFrameHost;
 }
 
+namespace device {
+namespace mojom {
+class UsbDeviceInfo;
+}
+}  // namespace device
+
 class GURL;
 class UsbChooserContext;
 
@@ -27,7 +33,7 @@ class WebUSBPermissionProvider : public device::usb::PermissionProvider {
       UsbChooserContext* chooser_context,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
-      scoped_refptr<const device::UsbDevice> device);
+      const device::mojom::UsbDeviceInfo& device_info);
 
   explicit WebUSBPermissionProvider(
       content::RenderFrameHost* render_frame_host);
@@ -37,7 +43,7 @@ class WebUSBPermissionProvider : public device::usb::PermissionProvider {
 
   // device::usb::PermissionProvider implementation.
   bool HasDevicePermission(
-      scoped_refptr<const device::UsbDevice> device) const override;
+      const device::mojom::UsbDeviceInfo& device_info) const override;
   void IncrementConnectionCount() override;
   void DecrementConnectionCount() override;
 

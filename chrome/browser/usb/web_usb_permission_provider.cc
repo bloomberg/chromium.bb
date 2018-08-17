@@ -16,7 +16,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "device/usb/usb_device.h"
 
 using content::RenderFrameHost;
 using content::WebContents;
@@ -26,14 +25,14 @@ bool WebUSBPermissionProvider::HasDevicePermission(
     UsbChooserContext* chooser_context,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    scoped_refptr<const device::UsbDevice> device) {
+    const device::mojom::UsbDeviceInfo& device_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (UsbBlocklist::Get().IsExcluded(device))
+  if (UsbBlocklist::Get().IsExcluded(device_info))
     return false;
 
   return chooser_context->HasDevicePermission(requesting_origin,
-                                              embedding_origin, device);
+                                              embedding_origin, device_info);
 }
 
 WebUSBPermissionProvider::WebUSBPermissionProvider(
@@ -51,7 +50,7 @@ WebUSBPermissionProvider::GetWeakPtr() {
 }
 
 bool WebUSBPermissionProvider::HasDevicePermission(
-    scoped_refptr<const device::UsbDevice> device) const {
+    const device::mojom::UsbDeviceInfo& device_info) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   WebContents* web_contents =
@@ -63,7 +62,7 @@ bool WebUSBPermissionProvider::HasDevicePermission(
   return HasDevicePermission(
       UsbChooserContextFactory::GetForProfile(profile),
       render_frame_host_->GetLastCommittedURL().GetOrigin(),
-      main_frame->GetLastCommittedURL().GetOrigin(), device);
+      main_frame->GetLastCommittedURL().GetOrigin(), device_info);
 }
 
 void WebUSBPermissionProvider::IncrementConnectionCount() {

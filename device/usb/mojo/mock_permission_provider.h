@@ -9,10 +9,14 @@
 
 #include "base/memory/weak_ptr.h"
 #include "device/usb/mojo/permission_provider.h"
-#include "device/usb/usb_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
+
+namespace mojom {
+class UsbDeviceInfo;
+}
+
 namespace usb {
 
 class MockPermissionProvider : public PermissionProvider {
@@ -24,7 +28,7 @@ class MockPermissionProvider : public PermissionProvider {
 
   base::WeakPtr<PermissionProvider> GetWeakPtr();
   bool HasDevicePermission(
-      scoped_refptr<const UsbDevice> device) const override;
+      const mojom::UsbDeviceInfo& device_info) const override;
 
   MOCK_METHOD0(IncrementConnectionCount, void());
   MOCK_METHOD0(DecrementConnectionCount, void());

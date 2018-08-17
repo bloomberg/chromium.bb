@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "device/base/device_client.h"
 #include "device/usb/mojo/device_impl.h"
-#include "device/usb/mojo/permission_provider.h"
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/cpp/filter_utils.h"
 #include "device/usb/public/mojom/device.mojom.h"
@@ -27,26 +26,19 @@ namespace usb {
 
 // static
 void DeviceManagerImpl::Create(
-    base::WeakPtr<PermissionProvider> permission_provider,
     mojom::UsbDeviceManagerRequest request) {
   DCHECK(DeviceClient::Get());
   UsbService* service = DeviceClient::Get()->GetUsbService();
   if (!service)
     return;
 
-  auto* device_manager_impl =
-      new DeviceManagerImpl(std::move(permission_provider), service);
+  auto* device_manager_impl = new DeviceManagerImpl(service);
   device_manager_impl->binding_ = mojo::MakeStrongBinding(
       base::WrapUnique(device_manager_impl), std::move(request));
 }
 
-DeviceManagerImpl::DeviceManagerImpl(
-    base::WeakPtr<PermissionProvider> permission_provider,
-    UsbService* usb_service)
-    : permission_provider_(permission_provider),
-      usb_service_(usb_service),
-      observer_(this),
-      weak_factory_(this) {
+DeviceManagerImpl::DeviceManagerImpl(UsbService* usb_service)
+    : usb_service_(usb_service), observer_(this), weak_factory_(this) {
   // This object owns itself and will be destroyed if the message pipe it is
   // bound to is closed, the message loop is destructed, or the UsbService is
   // shut down.
@@ -69,11 +61,8 @@ void DeviceManagerImpl::GetDevice(const std::string& guid,
   if (!device)
     return;
 
-  if (permission_provider_ &&
-      permission_provider_->HasDevicePermission(device)) {
-    DeviceImpl::Create(std::move(device), std::move(device_request),
-                       std::move(device_client));
-  }
+  DeviceImpl::Create(std::move(device), std::move(device_request),
+                     std::move(device_client));
 }
 
 void DeviceManagerImpl::SetClient(mojom::UsbDeviceManagerClientPtr client) {
@@ -91,10 +80,7 @@ void DeviceManagerImpl::OnGetDevices(
   std::vector<mojom::UsbDeviceInfoPtr> device_infos;
   for (const auto& device : devices) {
     if (UsbDeviceFilterMatchesAny(filters, *device)) {
-      if (permission_provider_ &&
-          permission_provider_->HasDevicePermission(device)) {
-        device_infos.push_back(mojom::UsbDeviceInfo::From(*device));
-      }
+      device_infos.push_back(mojom::UsbDeviceInfo::From(*device));
     }
   }
 
@@ -102,14 +88,12 @@ void DeviceManagerImpl::OnGetDevices(
 }
 
 void DeviceManagerImpl::OnDeviceAdded(scoped_refptr<UsbDevice> device) {
-  if (client_ && permission_provider_ &&
-      permission_provider_->HasDevicePermission(device))
+  if (client_)
     client_->OnDeviceAdded(mojom::UsbDeviceInfo::From(*device));
 }
 
 void DeviceManagerImpl::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
-  if (client_ && permission_provider_ &&
-      permission_provider_->HasDevicePermission(device))
+  if (client_)
     client_->OnDeviceRemoved(mojom::UsbDeviceInfo::From(*device));
 }
 

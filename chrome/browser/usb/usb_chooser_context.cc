@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "device/base/device_client.h"
+#include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_device.h"
 
@@ -163,14 +164,14 @@ void UsbChooserContext::GrantDevicePermission(const GURL& requesting_origin,
 bool UsbChooserContext::HasDevicePermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    scoped_refptr<const device::UsbDevice> device) {
+    const device::mojom::UsbDeviceInfo& device_info) {
   if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
     return false;
 
   auto it = ephemeral_devices_.find(
       std::make_pair(requesting_origin, embedding_origin));
   if (it != ephemeral_devices_.end() &&
-      base::ContainsKey(it->second, device->guid())) {
+      base::ContainsKey(it->second, device_info.guid)) {
     return true;
   }
 
@@ -182,16 +183,30 @@ bool UsbChooserContext::HasDevicePermission(
     int product_id;
     base::string16 serial_number;
     if (device_dict->GetInteger(kVendorIdKey, &vendor_id) &&
-        device->vendor_id() == vendor_id &&
+        device_info.vendor_id == vendor_id &&
         device_dict->GetInteger(kProductIdKey, &product_id) &&
-        device->product_id() == product_id &&
+        device_info.product_id == product_id &&
         device_dict->GetString(kSerialNumberKey, &serial_number) &&
-        device->serial_number() == serial_number) {
+        device_info.serial_number == serial_number) {
       return true;
     }
   }
 
   return false;
+}
+
+bool UsbChooserContext::HasDevicePermission(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    scoped_refptr<const device::UsbDevice> device) {
+  if (!device)
+    return false;
+
+  device::mojom::UsbDeviceInfoPtr device_info =
+      device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
+
+  return HasDevicePermission(requesting_origin, embedding_origin, *device_info);
 }
 
 base::WeakPtr<UsbChooserContext> UsbChooserContext::AsWeakPtr() {
