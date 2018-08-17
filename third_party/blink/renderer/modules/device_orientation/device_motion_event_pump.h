@@ -17,7 +17,7 @@ class DeviceMotionData;
 
 class MODULES_EXPORT DeviceMotionEventPump
     : public GarbageCollectedFinalized<DeviceMotionEventPump>,
-      public DeviceSensorEventPump<WebDeviceMotionListener>,
+      public DeviceSensorEventPump,
       public PlatformEventDispatcher {
   USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionEventPump);
 
