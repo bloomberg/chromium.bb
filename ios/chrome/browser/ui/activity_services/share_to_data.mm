@@ -25,7 +25,6 @@
 @implementation ShareToData
 
 @synthesize title = _title;
-@synthesize image = image_;
 @synthesize thumbnailGenerator = _thumbnailGenerator;
 @synthesize isOriginalTitle = _isOriginalTitle;
 @synthesize isPagePrintable = _isPagePrintable;
