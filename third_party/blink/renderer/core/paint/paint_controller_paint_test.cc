@@ -98,7 +98,12 @@ TEST_P(PaintControllerPaintTest, ChunkIdClientCacheFlag) {
   // Verify that the background does not scroll.
   const PaintChunk& background_chunk = RootPaintController().PaintChunks()[0];
   auto* transform = background_chunk.properties.Transform();
-  EXPECT_EQ(nullptr, transform->ScrollNode());
+  // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
+  // scrolling.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_FALSE(transform->ScrollNode());
+  else
+    EXPECT_TRUE(transform->ScrollNode());
 
   const EffectPaintPropertyNode* effect_node =
       div.FirstFragment().PaintProperties()->Effect();
