@@ -297,7 +297,8 @@ TEST_F(UDPSocketTest, PartialRecv) {
 // broadcasting to 255.255.255.255 returns error -109 (Address not reachable).
 // crbug.com/139144.
 // - Fuchsia: TODO(fuchsia): broadcast support is not implemented yet.
-// - ChromeOS: https://crbug.com/873851.
+// - ChromeOS: QEMU's user-mode networking doesn't handle broadcasts.
+//   https://crbug.com/852590
 #define MAYBE_LocalBroadcast DISABLED_LocalBroadcast
 #else
 #define MAYBE_LocalBroadcast LocalBroadcast
