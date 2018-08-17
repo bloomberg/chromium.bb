@@ -21,11 +21,6 @@ extern const base::Feature kUIRefreshLocationBar;
 // used directly. Instead use ui_util::IsUIRefreshPhase1Enabled().
 extern const base::Feature kUIRefreshPhase1;
 
-// Feature to choose whether to use the new UI Reboot Collection stack, or the
-// legacy one. This flag should not be used directly. Instead use
-// experimental_flags::IsCollectionsUIRebootEnabled()
-extern const base::Feature kCollectionsUIReboot;
-
 // Feature to choose whether to use the new UI Reboot Infobar UX, or the legacy
 // one. This flag should not be used directly. Instead, use
 // IsRefreshInfobarEnabled().

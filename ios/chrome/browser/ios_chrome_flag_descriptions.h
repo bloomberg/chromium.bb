@@ -166,11 +166,6 @@ extern const char kPhysicalWeb[];
 extern const char kPhysicalWebDescription[];
 
 // Title and description for the flag to enable the new UI Reboot on existing
-// Collections.
-extern const char kCollectionsUIRebootName[];
-extern const char kCollectionsUIRebootDescription[];
-
-// Title and description for the flag to enable the new UI Reboot on existing
 // Infobars.
 extern const char kInfobarsUIRebootName[];
 extern const char kInfobarsUIRebootDescription[];

@@ -13,7 +13,6 @@
 #include "components/reading_list/core/reading_list_model.h"
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #include "components/url_formatter/url_formatter.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
@@ -170,8 +169,7 @@ const CGFloat kFallbackIconDefaultBackgroundColor = 0xf1f3f4;
         if (!strongSelf || !strongItem) {
           return;
         }
-        if (attributes.monogramString &&
-            experimental_flags::IsCollectionsUIRebootEnabled()) {
+        if (attributes.monogramString && IsUIRefreshPhase1Enabled()) {
           UIColor* textColor = [UIColor colorWithWhite:0 alpha:0.33];
           UIColor* backgroundColor =
               UIColorFromRGB(kFallbackIconDefaultBackgroundColor);

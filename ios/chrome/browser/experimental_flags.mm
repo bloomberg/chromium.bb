@@ -138,10 +138,6 @@ bool IsReadingListUIRebootEnabled() {
   return base::FeatureList::IsEnabled(kUIRefreshPhase1);
 }
 
-bool IsCollectionsUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kCollectionsUIReboot);
-}
-
 bool IsSettingsUIRebootEnabled() {
   return base::FeatureList::IsEnabled(kUIRefreshPhase1);
 }

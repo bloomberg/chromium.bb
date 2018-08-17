@@ -13,7 +13,6 @@
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_callback.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #include "skia/ext/skia_utils_ios.h"
@@ -68,7 +67,7 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
         skia::UIColorFromSkColor(result.fallback_icon_style->text_color);
     UIColor* backgroundColor =
         skia::UIColorFromSkColor(result.fallback_icon_style->background_color);
-    if (experimental_flags::IsCollectionsUIRebootEnabled()) {
+    if (IsUIRefreshPhase1Enabled()) {
       textColor = UIColorFromRGB(kFallbackIconDefaultTextColor);
       backgroundColor = [UIColor clearColor];
     }
@@ -91,7 +90,7 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
       url, min_favicon_size, favicon_size_in_pixels,
       base::BindRepeating(favicon_block), &cancelable_task_tracker_);
 
-  if (experimental_flags::IsCollectionsUIRebootEnabled()) {
+  if (IsUIRefreshPhase1Enabled()) {
     return [FaviconAttributes
         attributesWithImage:[UIImage imageNamed:@"default_world_favicon"]];
   }

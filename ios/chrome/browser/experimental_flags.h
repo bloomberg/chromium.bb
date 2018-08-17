@@ -63,9 +63,6 @@ bool IsBookmarksUIRebootEnabled();
 // Whether the Reading List UI Reboot is enabled.
 bool IsReadingListUIRebootEnabled();
 
-// Whether the Collections UI Reboot is enabled.
-bool IsCollectionsUIRebootEnabled();
-
 // Whether the Settings UI Reboot is enabled.
 bool IsSettingsUIRebootEnabled();
 
