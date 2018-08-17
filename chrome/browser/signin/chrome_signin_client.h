@@ -46,9 +46,6 @@ class ChromeSigninClient
 
   // SigninClient implementation.
   PrefService* GetPrefs() override;
-  scoped_refptr<TokenWebData> GetDatabase() override;
-  bool CanRevokeCredentials() override;
-  std::string GetSigninScopedDeviceId() override;
   void OnSignedOut() override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;

@@ -1387,6 +1387,8 @@ jumbo_split_static_library("browser") {
     "signin/account_reconcilor_factory.h",
     "signin/account_tracker_service_factory.cc",
     "signin/account_tracker_service_factory.h",
+    "signin/chrome_device_id_helper.cc",
+    "signin/chrome_device_id_helper.h",
     "signin/chrome_signin_client.cc",
     "signin/chrome_signin_client.h",
     "signin/chrome_signin_client_factory.cc",

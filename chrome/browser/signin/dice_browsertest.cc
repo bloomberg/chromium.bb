@@ -24,6 +24,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
@@ -376,8 +377,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   }
 
   std::string GetDeviceId() {
-    return ChromeSigninClientFactory::GetForProfile(browser()->profile())
-        ->GetSigninScopedDeviceId();
+    return GetSigninScopedDeviceIdForProfile(browser()->profile());
   }
 
   // Signin with a main account and add token for a secondary account.

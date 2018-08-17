@@ -336,8 +336,10 @@ MutableProfileOAuth2TokenServiceDelegate::
         SigninClient* client,
         SigninErrorController* signin_error_controller,
         AccountTrackerService* account_tracker_service,
+        scoped_refptr<TokenWebData> token_web_data,
         signin::AccountConsistencyMethod account_consistency,
-        bool revoke_all_tokens_on_load)
+        bool revoke_all_tokens_on_load,
+        bool can_revoke_credentials)
     : web_data_service_request_(0),
       load_credentials_state_(LOAD_CREDENTIALS_NOT_STARTED),
       backoff_entry_(&backoff_policy_),
@@ -345,8 +347,10 @@ MutableProfileOAuth2TokenServiceDelegate::
       client_(client),
       signin_error_controller_(signin_error_controller),
       account_tracker_service_(account_tracker_service),
+      token_web_data_(token_web_data),
       account_consistency_(account_consistency),
-      revoke_all_tokens_on_load_(revoke_all_tokens_on_load) {
+      revoke_all_tokens_on_load_(revoke_all_tokens_on_load),
+      can_revoke_credentials_(can_revoke_credentials) {
   VLOG(1) << "MutablePO2TS::MutablePO2TS";
   DCHECK(client);
   DCHECK(signin_error_controller);
@@ -360,12 +364,6 @@ MutableProfileOAuth2TokenServiceDelegate::
   backoff_policy_.entry_lifetime_ms = -1;
   backoff_policy_.always_use_initial_delay = false;
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
-
-#if !defined(OS_CHROMEOS)
-  // Ensure the device ID is not empty.
-  std::string device_id = client_->GetSigninScopedDeviceId();
-  DCHECK(!device_id.empty());
-#endif
 }
 
 MutableProfileOAuth2TokenServiceDelegate::
@@ -509,8 +507,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
 
   refresh_tokens_.clear();
 
-  scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
-  if (!token_web_data) {
+  if (!token_web_data_) {
     // This case only exists in unit tests that do not care about loading
     // credentials.
     load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS;
@@ -529,7 +526,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
     }
   }
 
-  web_data_service_request_ = token_web_data->GetAllTokens(this);
+  web_data_service_request_ = token_web_data_->GetAllTokens(this);
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
@@ -609,11 +606,10 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
         old_login_token = refresh_token;
 
       if (IsLegacyServiceId(prefixed_account_id)) {
-        scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
-        if (token_web_data.get()) {
+        if (token_web_data_) {
           VLOG(1) << "MutablePO2TS remove legacy refresh token for account id "
                   << prefixed_account_id;
-          token_web_data->RemoveTokenForService(prefixed_account_id);
+          token_web_data_->RemoveTokenForService(prefixed_account_id);
         }
       } else {
         DCHECK(!refresh_token.empty());
@@ -803,16 +799,15 @@ void MutableProfileOAuth2TokenServiceDelegate::PersistCredentials(
     const std::string& refresh_token) {
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
-  scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
-  if (token_web_data.get()) {
+  if (token_web_data_) {
     VLOG(1) << "MutablePO2TS::PersistCredentials for account_id=" << account_id;
-    token_web_data->SetTokenForService(ApplyAccountIdPrefix(account_id),
-                                       refresh_token);
+    token_web_data_->SetTokenForService(ApplyAccountIdPrefix(account_id),
+                                        refresh_token);
   }
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
-  if (!client_->CanRevokeCredentials())
+  if (!can_revoke_credentials_)
     return;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -831,9 +826,8 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
   DCHECK_EQ(0u, refresh_tokens_.size());
 
   // Make sure all tokens are removed.
-  scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
-  if (token_web_data.get())
-    token_web_data->RemoveAllTokens();
+  if (token_web_data_)
+    token_web_data_->RemoveAllTokens();
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentials(
@@ -851,19 +845,15 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentials(
     ClearPersistedCredentials(account_id);
     FireRefreshTokenRevoked(account_id);
   }
-
-  // If this was the last token, recreate the device ID.
-  RecreateDeviceIdIfNeeded();
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::ClearPersistedCredentials(
     const std::string& account_id) {
   DCHECK(!account_id.empty());
-  scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
-  if (token_web_data.get()) {
+  if (token_web_data_) {
     VLOG(1) << "MutablePO2TS::ClearPersistedCredentials for account_id="
             << account_id;
-    token_web_data->RemoveTokenForService(ApplyAccountIdPrefix(account_id));
+    token_web_data_->RemoveTokenForService(ApplyAccountIdPrefix(account_id));
   }
 }
 
@@ -882,9 +872,8 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsOnServer(
 
 void MutableProfileOAuth2TokenServiceDelegate::CancelWebTokenFetch() {
   if (web_data_service_request_ != 0) {
-    scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
-    DCHECK(token_web_data.get());
-    token_web_data->CancelRequest(web_data_service_request_);
+    DCHECK(token_web_data_);
+    token_web_data_->CancelRequest(web_data_service_request_);
     web_data_service_request_ = 0;
   }
 }
@@ -921,40 +910,9 @@ void MutableProfileOAuth2TokenServiceDelegate::AddAccountStatus(
   FireAuthErrorChanged(account_id, status->GetAuthStatus());
 }
 
-void MutableProfileOAuth2TokenServiceDelegate::RecreateDeviceIdIfNeeded() {
-#if !defined(OS_CHROMEOS)
-  // Re-create a new device ID if needed.
-  switch (load_credentials_state_) {
-    case LOAD_CREDENTIALS_UNKNOWN:
-    case LOAD_CREDENTIALS_NOT_STARTED:
-    case LOAD_CREDENTIALS_IN_PROGRESS:
-      // TODO(droger): Add a DCHECK here, because this would mean that the token
-      // service is being used before tokens are loaded. This currently would
-      // fire in tests though.
-      return;
-    case LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS:
-    case LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS:
-      // Do not recreate a new device ID if Chrome fails to decrypt tokens as it
-      // may successfully load them on the next restart.
-      return;
-    case LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS:
-    case LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT:
-    case LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS:
-      // this is the only case when we recreate the device ID.
-      if (GetAccounts().empty())
-        client_->RecreateSigninScopedDeviceId();
-  }
-#endif
-}
-
 void MutableProfileOAuth2TokenServiceDelegate::FinishLoadingCredentials() {
   DCHECK(load_credentials_state_ != LOAD_CREDENTIALS_UNKNOWN);
   DCHECK(load_credentials_state_ != LOAD_CREDENTIALS_NOT_STARTED);
   DCHECK(load_credentials_state_ != LOAD_CREDENTIALS_IN_PROGRESS);
-
-  // Ensure the device ID is not empty, and recreate it if all tokens were
-  // cleared during the loading process.
-  RecreateDeviceIdIfNeeded();
-
   FireRefreshTokensLoaded();
 }

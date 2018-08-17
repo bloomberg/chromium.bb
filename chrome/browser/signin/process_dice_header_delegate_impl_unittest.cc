@@ -36,6 +36,7 @@ class ProcessDiceHeaderDelegateImplTest
  public:
   ProcessDiceHeaderDelegateImplTest()
       : signin_client_(&pref_service_),
+        token_service_(&pref_service_),
         signin_manager_(&signin_client_,
                         &token_service_,
                         &account_tracker_service_,

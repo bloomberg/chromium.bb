@@ -122,7 +122,8 @@ class DiceResponseHandlerTest : public testing::Test,
         request_context_getter_(
             new net::TestURLRequestContextGetter(task_runner_)),
         signin_client_(&pref_service_),
-        token_service_(std::make_unique<FakeOAuth2TokenServiceDelegate>()),
+        token_service_(&pref_service_,
+                       std::make_unique<FakeOAuth2TokenServiceDelegate>()),
         signin_error_controller_(
             SigninErrorController::AccountMode::PRIMARY_ACCOUNT),
         signin_manager_(&signin_client_,

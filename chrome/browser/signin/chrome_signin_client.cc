@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -23,13 +22,13 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/force_signin_verifier.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
@@ -42,7 +41,6 @@
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/core/browser/signin_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -57,9 +55,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/net/delay_network_call.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "components/user_manager/known_user.h"
-#include "components/user_manager/user_manager.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -81,32 +76,6 @@ ChromeSigninClient::ChromeSigninClient(
   signin_error_controller_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
-#else
-  // UserManager may not exist in unit_tests.
-  if (!user_manager::UserManager::IsInitialized())
-    return;
-
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-  if (!user)
-    return;
-  const AccountId account_id = user->GetAccountId();
-  if (user_manager::known_user::GetDeviceId(account_id).empty()) {
-    const std::string legacy_device_id =
-        GetPrefs()->GetString(prefs::kGoogleServicesSigninScopedDeviceId);
-    if (!legacy_device_id.empty()) {
-      // Need to move device ID from the old location to the new one, if it has
-      // not been done yet.
-      user_manager::known_user::SetDeviceId(account_id, legacy_device_id);
-    } else {
-      user_manager::known_user::SetDeviceId(
-          account_id, GenerateSigninScopedDeviceID(
-                          user_manager::UserManager::Get()
-                              ->IsUserNonCryptohomeDataEphemeral(account_id)));
-    }
-  }
-  GetPrefs()->SetString(prefs::kGoogleServicesSigninScopedDeviceId,
-                        std::string());
 #endif
 }
 
@@ -130,60 +99,6 @@ bool ChromeSigninClient::ProfileAllowsSigninCookies(Profile* profile) {
 }
 
 PrefService* ChromeSigninClient::GetPrefs() { return profile_->GetPrefs(); }
-
-scoped_refptr<TokenWebData> ChromeSigninClient::GetDatabase() {
-  return WebDataServiceFactory::GetTokenWebDataForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-}
-
-bool ChromeSigninClient::CanRevokeCredentials() {
-#if defined(OS_CHROMEOS)
-  // UserManager may not exist in unit_tests.
-  if (user_manager::UserManager::IsInitialized() &&
-      user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
-    // Don't allow revoking credentials for Chrome OS supervised users.
-    // See http://crbug.com/332032
-    LOG(ERROR) << "Attempt to revoke supervised user refresh "
-               << "token detected, ignoring.";
-    return false;
-  }
-#else
-  // Don't allow revoking credentials for legacy supervised users.
-  // See http://crbug.com/332032
-  if (profile_->IsLegacySupervised()) {
-    LOG(ERROR) << "Attempt to revoke supervised user refresh "
-               << "token detected, ignoring.";
-    return false;
-  }
-#endif
-  return true;
-}
-
-std::string ChromeSigninClient::GetSigninScopedDeviceId() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSigninScopedDeviceId)) {
-    return std::string();
-  }
-
-#if !defined(OS_CHROMEOS)
-  return SigninClient::GetOrCreateScopedDeviceIdPref(GetPrefs());
-#else
-  // UserManager may not exist in unit_tests.
-  if (!user_manager::UserManager::IsInitialized())
-    return std::string();
-
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-  if (!user)
-    return std::string();
-
-  const std::string signin_scoped_device_id =
-      user_manager::known_user::GetDeviceId(user->GetAccountId());
-  LOG_IF(ERROR, signin_scoped_device_id.empty())
-      << "Device ID is not set for user.";
-  return signin_scoped_device_id;
-#endif
-}
 
 void ChromeSigninClient::OnSignedOut() {
   ProfileAttributesEntry* entry;

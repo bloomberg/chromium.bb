@@ -159,6 +159,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/assistant/buildflags.h"
@@ -698,6 +699,8 @@ void ProfileImpl::DoFinalInit() {
     user_manager::UserManager::Get()->OnProfileInitialized(
         profile_helper->GetUserByProfile(this));
   }
+
+  MigrateSigninScopedDeviceId(this);
 
   if (chromeos::UserSessionManager::GetInstance()
           ->RestartToApplyPerSessionFlagsIfNeed(this, true)) {

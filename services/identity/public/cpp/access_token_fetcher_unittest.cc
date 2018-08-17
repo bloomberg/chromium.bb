@@ -43,6 +43,7 @@ class AccessTokenFetcherTest : public testing::Test,
 
   AccessTokenFetcherTest()
       : signin_client_(&pref_service_),
+        token_service_(&pref_service_),
         access_token_info_("access token",
                            base::Time::Now() + base::TimeDelta::FromHours(1)) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());

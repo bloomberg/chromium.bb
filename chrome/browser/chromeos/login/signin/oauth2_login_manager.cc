@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -202,10 +202,8 @@ void OAuth2LoginManager::FetchOAuth2Tokens() {
 
   // If we have authenticated cookie jar, get OAuth1 token first, then fetch
   // SID/LSID cookies through OAuthLogin call.
-  SigninClient* signin_client =
-      ChromeSigninClientFactory::GetForProfile(user_profile_);
   std::string signin_scoped_device_id =
-      signin_client->GetSigninScopedDeviceId();
+      GetSigninScopedDeviceIdForProfile(user_profile_);
 
   oauth2_token_fetcher_ =
       std::make_unique<OAuth2TokenFetcher>(this, auth_url_loader_factory_);

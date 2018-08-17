@@ -13,11 +13,13 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -81,6 +83,7 @@ class SigninManagerTest : public testing::Test {
  public:
   SigninManagerTest()
       : test_signin_client_(&user_prefs_),
+        token_service_(&user_prefs_),
         cookie_manager_service_(&token_service_,
                                 GaiaConstants::kChromeSource,
                                 &test_signin_client_),
@@ -164,8 +167,8 @@ class SigninManagerTest : public testing::Test {
   base::MessageLoop loop_;
   sync_preferences::TestingPrefServiceSyncable user_prefs_;
   TestingPrefServiceSimple local_state_;
-  FakeProfileOAuth2TokenService token_service_;
   TestSigninClient test_signin_client_;
+  FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
   FakeGaiaCookieManagerService cookie_manager_service_;
   FakeAccountFetcherService account_fetcher_;

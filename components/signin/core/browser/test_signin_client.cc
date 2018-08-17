@@ -9,8 +9,6 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/signin/core/browser/webdata/token_service_table.h"
-#include "components/webdata/common/web_data_service_base.h"
-#include "components/webdata/common/web_database_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,16 +26,6 @@ void TestSigninClient::DoFinalInit() {}
 
 PrefService* TestSigninClient::GetPrefs() {
   return pref_service_;
-}
-
-scoped_refptr<TokenWebData> TestSigninClient::GetDatabase() {
-  return database_;
-}
-
-bool TestSigninClient::CanRevokeCredentials() { return true; }
-
-std::string TestSigninClient::GetSigninScopedDeviceId() {
-  return "DeviceID";
 }
 
 void TestSigninClient::OnSignedOut() {}
@@ -67,21 +55,6 @@ void TestSigninClient::SetURLRequestContext(
 }
 
 std::string TestSigninClient::GetProductVersion() { return ""; }
-
-void TestSigninClient::LoadTokenDatabase() {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
-  scoped_refptr<WebDatabaseService> web_database =
-      new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
-                             base::ThreadTaskRunnerHandle::Get());
-  web_database->AddTable(std::make_unique<TokenServiceTable>());
-  web_database->LoadDatabase();
-  database_ =
-      new TokenWebData(web_database, base::ThreadTaskRunnerHandle::Get(),
-                       base::ThreadTaskRunnerHandle::Get(),
-                       WebDataServiceBase::ProfileErrorCallback());
-  database_->Init();
-}
 
 void TestSigninClient::SetNetworkCallsDelayed(bool value) {
   network_calls_delayed_ = value;

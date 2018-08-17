@@ -39,7 +39,6 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
-#include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -66,13 +65,11 @@ class FakeSigninClient : public IOSChromeSigninClient {
       ios::ChromeBrowserState* browser_state,
       SigninErrorController* signin_error_controller,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
-      scoped_refptr<HostContentSettingsMap> host_content_settings_map,
-      scoped_refptr<TokenWebData> token_web_data)
+      scoped_refptr<HostContentSettingsMap> host_content_settings_map)
       : IOSChromeSigninClient(browser_state,
                               signin_error_controller,
                               cookie_settings,
-                              host_content_settings_map,
-                              token_web_data) {}
+                              host_content_settings_map) {}
   ~FakeSigninClient() override {}
 
   base::Time GetInstallDate() override { return base::Time::Now(); }
@@ -88,9 +85,7 @@ std::unique_ptr<KeyedService> BuildFakeTestSigninClient(
           chrome_browser_state),
       ios::CookieSettingsFactory::GetForBrowserState(chrome_browser_state),
       ios::HostContentSettingsMapFactory::GetForBrowserState(
-          chrome_browser_state),
-      ios::WebDataServiceFactory::GetTokenWebDataForBrowserState(
-          chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS));
+          chrome_browser_state));
 }
 
 std::unique_ptr<KeyedService> BuildMockSyncSetupService(

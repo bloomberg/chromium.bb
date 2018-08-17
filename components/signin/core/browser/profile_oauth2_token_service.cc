@@ -4,17 +4,20 @@
 
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#if defined(OS_IOS)
+#include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#endif
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService(
+    PrefService* user_prefs,
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
     : OAuth2TokenService(std::move(delegate)),
+      user_prefs_(user_prefs),
       all_credentials_loaded_(false),
       diagnostics_client_(nullptr) {
+  DCHECK(user_prefs_);
   AddObserver(this);
 }
 
@@ -30,6 +33,8 @@ void ProfileOAuth2TokenService::RegisterProfilePrefs(
                                 false);
   registry->RegisterListPref(prefs::kTokenServiceExcludedSecondaryAccounts);
 #endif
+  registry->RegisterStringPref(prefs::kGoogleServicesSigninScopedDeviceId,
+                               std::string());
 }
 
 void ProfileOAuth2TokenService::Shutdown() {
@@ -87,6 +92,9 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
 
 void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
     const std::string& account_id) {
+  // If this was the last token, recreate the device ID.
+  RecreateDeviceIdIfNeeded();
+
   // NOTE: The code executed in the rest of this method does not affect the
   // state of the accounts in this object, so it doesn't matter whether the
   // callout to |diagnostics_client_| is made before or after. If that fact ever
@@ -100,5 +108,42 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
+  // Ensure the device ID is not empty, and recreate it if all tokens were
+  // cleared during the loading process.
+  RecreateDeviceIdIfNeeded();
+
   all_credentials_loaded_ = true;
+}
+
+void ProfileOAuth2TokenService::RecreateDeviceIdIfNeeded() {
+// On ChromeOS the device ID is not managed by the token service.
+#if !defined(OS_CHROMEOS)
+  // Re-create a new device ID if needed.
+  switch (GetDelegate()->GetLoadCredentialsState()) {
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_UNKNOWN:
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED:
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS:
+      // TODO(droger): Add a DCHECK here, because this would mean that the token
+      // service is being used before tokens are loaded. This currently would
+      // fire in tests though.
+      return;
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS:
+    case OAuth2TokenServiceDelegate::
+        LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS:
+      // Do not recreate a new device ID if Chrome fails to decrypt tokens as it
+      // may successfully load them on the next restart.
+      return;
+    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS:
+    case OAuth2TokenServiceDelegate::
+        LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT:
+    case OAuth2TokenServiceDelegate::
+        LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS:
+      // this is the only case when we recreate the device ID.
+      if (GetAccounts().empty())
+        signin::RecreateSigninScopedDeviceId(user_prefs_);
+      return;
+  }
+
+  NOTREACHED();
+#endif
 }

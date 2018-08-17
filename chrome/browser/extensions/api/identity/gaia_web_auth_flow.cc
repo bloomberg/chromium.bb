@@ -11,7 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -58,11 +58,8 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
   std::reverse(client_id_parts.begin(), client_id_parts.end());
   redirect_scheme_ = base::JoinString(client_id_parts, ".");
   std::string signin_scoped_device_id;
-  // profile_ can be nullptr in unittests.
-  SigninClient* signin_client =
-      profile_ ? ChromeSigninClientFactory::GetForProfile(profile_) : nullptr;
-  if (signin_client)
-    signin_scoped_device_id = signin_client->GetSigninScopedDeviceId();
+  if (profile_)
+    signin_scoped_device_id = GetSigninScopedDeviceIdForProfile(profile_);
 
   redirect_path_prefix_ = base::StringPrintf(kOAuth2RedirectPathFormat,
                                              token_key->extension_id.c_str());

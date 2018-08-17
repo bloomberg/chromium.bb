@@ -59,5 +59,6 @@ ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
           chrome_browser_state),
       ios::SigninErrorControllerFactory::GetForBrowserState(
           chrome_browser_state));
-  return std::make_unique<ProfileOAuth2TokenService>(std::move(delegate));
+  return std::make_unique<ProfileOAuth2TokenService>(
+      chrome_browser_state->GetPrefs(), std::move(delegate));
 }
