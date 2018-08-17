@@ -468,9 +468,7 @@ Output.RULES = {
     },
     listMarker: {speak: `$name`},
     menu: {
-      enter:
-          `$name $role
-          @@list_with_items($countChildren(menuItem, menuItemCheckBox, menuItemRadio))`,
+      enter: `$name $role `,
       speak: `$name $node(activeDescendant)
           $role @@list_with_items(
               $countChildren(menuItem, menuItemCheckBox, menuItemRadio))
@@ -478,20 +476,23 @@ Output.RULES = {
     },
     menuItem: {
       speak: `$name $role $if($haspopup, @has_submenu)
-          @describe_index($posInSet, $setSize)
+          @describe_index($if($posInSet, $posInSet, $indexInParent(menuItem, menuItemCheckBox, menuItemRadio)),
+              $if($setSize, $setSize, $parentChildCount(menuItem, menuItemCheckBox, menuItemRadio)))
           $description $state $restriction`
     },
     menuItemCheckBox: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
           $name $role $checked $state $restriction $description
-          @describe_index($posInSet, $setSize)`
+          @describe_index($if($posInSet, $posInSet, $indexInParent(menuItem, menuItemCheckBox, menuItemRadio)),
+              $if($setSize, $setSize, $parentChildCount(menuItem, menuItemCheckBox, menuItemRadio))) `
     },
     menuItemRadio: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
           $if($checked, @describe_radio_selected($name),
           @describe_radio_unselected($name)) $state $roleDescription
-          $restriction
-          $description @describe_index($posInSet, $setSize) `
+          $restriction $description
+          @describe_index($if($posInSet, $posInSet, $indexInParent(menuItem, menuItemCheckBox, menuItemRadio)),
+              $if($setSize, $setSize, $parentChildCount(menuItem, menuItemCheckBox, menuItemRadio))) `
     },
     menuListOption: {
       speak: `$name $role @describe_index($posInSet, $setSize) $state
@@ -1221,9 +1222,17 @@ Output.prototype = {
         } else if (token == 'indexInParent') {
           if (node.parent) {
             options.annotation.push(token);
+            var roles;
+            if (tree.firstChild) {
+              roles = this.createRoles_(tree);
+            } else {
+              roles = new Set();
+              roles.add(node.role);
+            }
+
             var count = 0;
             for (var i = 0, child; child = node.parent.children[i]; i++) {
-              if (node.role == child.role)
+              if (roles.has(child.role))
                 count++;
               if (node === child)
                 break;
@@ -1233,9 +1242,17 @@ Output.prototype = {
         } else if (token == 'parentChildCount') {
           if (node.parent) {
             options.annotation.push(token);
+            var roles;
+            if (tree.firstChild) {
+              roles = this.createRoles_(tree);
+            } else {
+              roles = new Set();
+              roles.add(node.role);
+            }
+
             var count = node.parent.children
                             .filter(function(child) {
-                              return node.role == child.role;
+                              return roles.has(child.role);
                             })
                             .length;
             this.append_(buff, String(count));
@@ -1480,14 +1497,11 @@ Output.prototype = {
                 tree.firstChild.value, node.location || undefined));
             this.append_(buff, '', options);
           } else if (token == 'countChildren') {
-            var roles = [];
-            var currentNode = tree.firstChild;
-            for (; currentNode; currentNode = currentNode.nextSibling)
-              roles.push(currentNode.value);
+            var roles = this.createRoles_(tree);
 
             var count = node.children
                             .filter(function(e) {
-                              return roles.includes(e.role);
+                              return roles.has(e.role);
                             })
                             .length;
             this.append_(buff, String(count));
@@ -1586,6 +1600,19 @@ Output.prototype = {
         }
       }
     }.bind(this));
+  },
+
+  /**
+   * @param {Object} tree
+   * @return {!Set}
+   * @private
+   */
+  createRoles_: function(tree) {
+    var roles = new Set();
+    var currentNode = tree.firstChild;
+    for (; currentNode; currentNode = currentNode.nextSibling)
+      roles.add(currentNode.value);
+    return roles;
   },
 
   /**
