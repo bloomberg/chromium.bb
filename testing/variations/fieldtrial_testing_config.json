@@ -994,6 +994,12 @@
             ],
             "experiments": [
                 {
+                    "name": "Control",
+                    "disable_features": [
+                        "ChromeModernDesign"
+                    ]
+                },
+                {
                     "name": "Modern",
                     "enable_features": [
                         "ChromeModernDesign"
