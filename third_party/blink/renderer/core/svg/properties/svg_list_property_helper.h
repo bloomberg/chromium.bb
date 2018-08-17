@@ -224,17 +224,6 @@ ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::ReplaceItem(
   if (!CheckIndexBound(index, exception_state))
     return nullptr;
 
-  if (values_.IsEmpty()) {
-    // 'newItem' already lived in our list, we removed it, and now we're empty,
-    // which means there's nothing to replace.
-    // TODO(fs): This should not cause us to throw an exception.
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kIndexSizeError,
-        String::Format("Failed to replace the provided item at index %zu.",
-                       static_cast<size_t>(index)));
-    return nullptr;
-  }
-
   // Update the value at the desired position 'index'.
   Member<ItemPropertyType>& position = values_[index];
   DCHECK_EQ(position->OwnerList(), this);
