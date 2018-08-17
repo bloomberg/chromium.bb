@@ -111,11 +111,18 @@ def UndoHierarchicalSizing(data):
       else:
         # Sibling or higher nodes
         break
-    # Disabled for perf bots: https://crbug.com/874956
-    # TODO(wnwen): Investigate reason
+
+    # Apkanalyzer may overcount private method sizes at times. Unfortunately
+    # the fix is not in the version we have in Android SDK Tools. For now we
+    # prefer to undercount child sizes since the parent's size is more
+    # accurate. This means the sum of child nodes may exceed its immediate
+    # parent node's size.
+    total_child_size = min(size, total_child_size)
+    # TODO(wnwen): Add assert back once dexlib2 2.2.5 is released and rolled.
     #assert total_child_size <= size, (
     #    'Child node total size exceeded parent node total size')
-    node_size = max(0, size - total_child_size)
+
+    node_size = size - total_child_size
     nodes.append((name, node_size))
     return next_idx, size
 
