@@ -1715,6 +1715,7 @@ if (defined(expected_static_initializer_count)) {
 if (enable_arcore) {
   ar_module_tmpl("ar_public_module") {
     manifest_package = manifest_package
+    module_name = "ArPublicModule"
   }
 }
 

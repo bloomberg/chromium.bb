@@ -14,7 +14,7 @@
 
     <!-- TODO(crbug.com/863068): Set dist:onDemand="true" once we can on-demand
          install modules. -->
-    <!-- TODO(crbug.com/871912: Use @string reference for dist:title. -->
+    <!-- TODO(crbug.com/871912): Use @string reference for dist:title. -->
     <dist:module
         dist:onDemand="false"
         dist:title="AR">
