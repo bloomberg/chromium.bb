@@ -98,7 +98,11 @@ class AuthenticatorDialogViewTest : public DialogBrowserTest {
   void ShowUi(const std::string& name) override {
     content::WebContents* const web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
+
     auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>();
+    dialog_model->StartFlow(
+        ::device::FidoRequestHandlerBase::TransportAvailabilityInfo(),
+        base::nullopt);
     auto dialog = std::make_unique<AuthenticatorRequestDialogView>(
         web_contents, std::move(dialog_model));
 
