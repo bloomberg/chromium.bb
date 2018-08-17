@@ -395,7 +395,7 @@ int SyncClientMain(int argc, char* argv[]) {
   // HttpPostProviderFactory is removed.
   CancelationSignal factory_cancelation_signal;
   std::unique_ptr<HttpPostProviderFactory> post_factory(new HttpBridgeFactory(
-      context_getter.get(), base::Bind(&StubNetworkTimeUpdateCallback),
+      context_getter.get(), base::BindRepeating(&StubNetworkTimeUpdateCallback),
       &factory_cancelation_signal));
   post_factory->Init(kUserAgent, BindToTrackerCallback());
   // Used only when committing bookmarks, so it's okay to leave this as null.
@@ -427,7 +427,7 @@ int SyncClientMain(int argc, char* argv[]) {
   args.encryptor = &null_encryptor;
   args.unrecoverable_error_handler = WeakHandle<UnrecoverableErrorHandler>();
   args.report_unrecoverable_error_function =
-      base::Bind(LogUnrecoverableErrorContext);
+      base::BindRepeating(LogUnrecoverableErrorContext);
   args.cancelation_signal = &scm_cancelation_signal;
   sync_manager->Init(&args);
   // TODO(akalin): Avoid passing in model parameters multiple times by
