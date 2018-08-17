@@ -179,24 +179,34 @@ class SingleTestRunner(object):
         if (test_failures.has_failure_type(test_failures.FailureTimeout, failures) or
                 test_failures.has_failure_type(test_failures.FailureCrash, failures)):
             return
+        # We usually don't want to create a new baseline if there isn't one
+        # existing (which usually means this baseline isn't necessary, e.g.
+        # an image-first test without text expectation files). However, in the
+        # following cases, we do:
+        # 1. The failure is MISSING; a baseline is apparently needed.
+        # 2. A testharness.js test fails assertions: testharness.js tests
+        #    without baselines are implicitly expected to pass all assertions;
+        #    if there are failed assertions we need to create a new baseline.
+        #    Note that the created baseline might be redundant, but users can
+        #    optimize them later with optimize-baselines.
         self._save_baseline_data(driver_output.text, '.txt',
-                                 test_failures.has_failure_type(test_failures.FailureMissingResult, failures))
+                                 test_failures.has_failure_type(test_failures.FailureMissingResult, failures) or
+                                 test_failures.has_failure_type(test_failures.FailureTestHarnessAssertion, failures))
         self._save_baseline_data(driver_output.audio, '.wav',
                                  test_failures.has_failure_type(test_failures.FailureMissingAudio, failures))
         self._save_baseline_data(driver_output.image, '.png',
                                  test_failures.has_failure_type(test_failures.FailureMissingImage, failures))
 
-    def _save_baseline_data(self, data, extension, is_missing):
+    def _save_baseline_data(self, data, extension, force_create_new_baseline):
         if data is None:
             return
 
         port = self._port
         fs = self._filesystem
 
-        # It's OK that a testharness test or image-first test doesn't have the
-        # particular baseline, as long as |is_missing| is False.
+        # Do not create a new baseline unless we are specifically told so.
         current_expected_path = port.expected_filename(self._test_name, extension)
-        if not fs.exists(current_expected_path) and not is_missing:
+        if not fs.exists(current_expected_path) and not force_create_new_baseline:
             return
 
         flag_specific_dir = port.baseline_flag_specific_dir()
