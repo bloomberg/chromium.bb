@@ -26,7 +26,7 @@ extern const char kWebContextDataPath[];
 
 // Switch passed to content process when running in incognito mode, i.e. when
 // there is no kWebContextDataPath.
-extern const char kIncognitoSwitch[];
+WEBRUNNER_EXPORT extern const char kIncognitoSwitch[];
 
 // Returns data directory that should be used by this context process. Should
 // not be called in ContextProvider. Empty path is returned if the context

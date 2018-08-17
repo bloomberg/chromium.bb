@@ -4,6 +4,8 @@
 
 #include "webrunner/service/webrunner_main_delegate.h"
 
+#include <utility>
+
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
@@ -15,8 +17,9 @@
 #include "webrunner/service/common.h"
 
 namespace webrunner {
-
 namespace {
+
+WebRunnerMainDelegate* g_current_webrunner_main_delegate = nullptr;
 
 void InitLoggingFromCommandLine(const base::CommandLine& command_line) {
   base::FilePath log_filename;
@@ -47,8 +50,16 @@ void InitializeResourceBundle() {
 
 }  // namespace
 
+// static
+WebRunnerMainDelegate* WebRunnerMainDelegate::GetInstanceForTest() {
+  return g_current_webrunner_main_delegate;
+}
+
 WebRunnerMainDelegate::WebRunnerMainDelegate(zx::channel context_channel)
-    : context_channel_(std::move(context_channel)) {}
+    : context_channel_(std::move(context_channel)) {
+  DCHECK(context_channel_);
+  g_current_webrunner_main_delegate = this;
+}
 
 WebRunnerMainDelegate::~WebRunnerMainDelegate() = default;
 
@@ -75,6 +86,7 @@ int WebRunnerMainDelegate::RunProcess(
 
 content::ContentBrowserClient*
 WebRunnerMainDelegate::CreateContentBrowserClient() {
+  DCHECK(context_channel_);
   DCHECK(!browser_client_);
   browser_client_ = std::make_unique<WebRunnerContentBrowserClient>(
       std::move(context_channel_));

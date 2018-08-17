@@ -7,6 +7,7 @@
 
 #include <lib/zx/channel.h>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "content/public/app/content_main_delegate.h"
@@ -18,11 +19,19 @@ class ContentClient;
 
 namespace webrunner {
 
+class WebRunnerContentBrowserClient;
+
 class WEBRUNNER_EXPORT WebRunnerMainDelegate
     : public content::ContentMainDelegate {
  public:
   explicit WebRunnerMainDelegate(zx::channel context_channel);
   ~WebRunnerMainDelegate() override;
+
+  static WebRunnerMainDelegate* GetInstanceForTest();
+
+  WebRunnerContentBrowserClient* browser_client() {
+    return browser_client_.get();
+  }
 
   // ContentMainDelegate implementation.
   bool BasicStartupComplete(int* exit_code) override;
@@ -34,7 +43,7 @@ class WEBRUNNER_EXPORT WebRunnerMainDelegate
 
  private:
   std::unique_ptr<content::ContentClient> content_client_;
-  std::unique_ptr<content::ContentBrowserClient> browser_client_;
+  std::unique_ptr<WebRunnerContentBrowserClient> browser_client_;
 
   zx::channel context_channel_;
 

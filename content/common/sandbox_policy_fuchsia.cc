@@ -4,10 +4,13 @@
 
 #include "content/common/sandbox_policy_fuchsia.h"
 
-#include <fuchsia/fonts/cpp/fidl.h>
 #include <lib/fdio/spawn.h>
 #include <stdio.h>
 #include <zircon/processargs.h>
+
+#include <fuchsia/fonts/cpp/fidl.h>
+#include <memory>
+#include <utility>
 
 #include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"

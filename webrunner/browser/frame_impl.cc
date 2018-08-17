@@ -4,13 +4,19 @@
 
 #include "webrunner/browser/frame_impl.h"
 
+#include <string>
+
 #include "base/logging.h"
+#include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "url/gurl.h"
+#include "webrunner/browser/context_impl.h"
 
 namespace webrunner {
 
@@ -57,14 +63,24 @@ class LayoutManagerImpl : public aura::LayoutManager {
 }  // namespace
 
 FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
-                     chromium::web::FrameObserverPtr observer)
-    : web_contents_(std::move(web_contents)), observer_(std::move(observer)) {
-  Observe(web_contents.get());
+                     ContextImpl* context,
+                     fidl::InterfaceRequest<chromium::web::Frame> frame_request)
+    : web_contents_(std::move(web_contents)),
+      context_(context),
+      binding_(this, std::move(frame_request)) {
+  binding_.set_error_handler([this]() { context_->DestroyFrame(this); });
+  Observe(web_contents_.get());
 }
 
 FrameImpl::~FrameImpl() {
-  window_tree_host_->Hide();
-  window_tree_host_->compositor()->SetVisible(false);
+  if (window_tree_host_) {
+    window_tree_host_->Hide();
+    window_tree_host_->compositor()->SetVisible(false);
+  }
+}
+
+zx::unowned_channel FrameImpl::GetBindingChannelForTest() const {
+  return zx::unowned_channel(binding_.channel());
 }
 
 void FrameImpl::CreateView(
@@ -103,11 +119,13 @@ void FrameImpl::LoadUrl(fidl::StringPtr url,
 }
 
 void FrameImpl::GoBack() {
-  NOTIMPLEMENTED();
+  if (web_contents_->GetController().CanGoBack())
+    web_contents_->GetController().GoBack();
 }
 
 void FrameImpl::GoForward() {
-  NOTIMPLEMENTED();
+  if (web_contents_->GetController().CanGoForward())
+    web_contents_->GetController().GoForward();
 }
 
 void FrameImpl::Stop() {
@@ -121,6 +139,30 @@ void FrameImpl::Reload() {
 void FrameImpl::GetVisibleEntry(GetVisibleEntryCallback callback) {
   NOTIMPLEMENTED();
   callback(nullptr);
+}
+
+void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                              const GURL& validated_url) {
+  if (web_contents_->GetMainFrame() != render_frame_host) {
+    return;
+  }
+
+  std::string current_url = validated_url.spec();
+  std::string current_title = base::UTF16ToUTF8(web_contents_->GetTitle());
+
+  bool is_changed;
+  chromium::web::NavigationStateChangeDetails delta;
+  if (current_title != cached_navigation_state_.title) {
+    is_changed = true;
+    delta.title = current_title;
+  }
+
+  if (current_url != cached_navigation_state_.url) {
+    is_changed = true;
+    delta.url = current_url;
+  }
+
+  binding_.events().OnNavigationStateChanged(std::move(delta));
 }
 
 }  // namespace webrunner

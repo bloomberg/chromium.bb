@@ -4,6 +4,9 @@
 
 #include "webrunner/browser/webrunner_browser_context.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,10 +64,14 @@ WebRunnerBrowserContext::WebRunnerBrowserContext(base::FilePath data_dir_path)
 }
 
 WebRunnerBrowserContext::~WebRunnerBrowserContext() {
+  NotifyWillBeDestroyed(this);
+
   if (resource_context_) {
     content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                        std::move(resource_context_));
   }
+
+  ShutdownStoragePartitions();
 }
 
 std::unique_ptr<content::ZoomLevelDelegate>
