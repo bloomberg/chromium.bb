@@ -66,15 +66,6 @@ class ServiceWorkerContext {
   using StartWorkerCallback =
       base::OnceCallback<void(int process_id, int thread_id)>;
 
-  // Registers the header name which should not be passed to the ServiceWorker.
-  // Must be called from the IO thread.
-  CONTENT_EXPORT static void AddExcludedHeadersForFetchEvent(
-      const std::set<std::string>& header_names);
-
-  // Returns true if the header name should not be passed to the ServiceWorker.
-  // Must be called from the IO thread.
-  static bool IsExcludedHeaderNameForFetchEvent(const std::string& header_name);
-
   // Returns true if |url| is within the service worker |scope|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
 

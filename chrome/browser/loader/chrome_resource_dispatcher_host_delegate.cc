@@ -333,14 +333,10 @@ ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate()
     : download_request_limiter_(g_browser_process->download_request_limiter()),
       safe_browsing_(g_browser_process->safe_browsing_service())
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-      , user_script_listener_(new extensions::UserScriptListener())
+      ,
+      user_script_listener_(new extensions::UserScriptListener())
 #endif
-      {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          content::ServiceWorkerContext::AddExcludedHeadersForFetchEvent,
-          variations::GetVariationHeaderNames()));
+{
 }
 
 ChromeResourceDispatcherHostDelegate::~ChromeResourceDispatcherHostDelegate() {

@@ -87,6 +87,7 @@
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/task_scheduler_util/variations_util.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
@@ -1624,6 +1625,11 @@ void ChromeContentRendererClient::WillDestroyServiceWorkerContextOnWorkerThread(
   extensions::Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
       context, service_worker_version_id, service_worker_scope, script_url);
 #endif
+}
+
+bool ChromeContentRendererClient::IsExcludedHeaderForServiceWorkerFetchEvent(
+    const std::string& header_name) {
+  return header_name == variations::kClientDataHeader;
 }
 
 // If we're in an extension, there is no need disabling multiple routes as
