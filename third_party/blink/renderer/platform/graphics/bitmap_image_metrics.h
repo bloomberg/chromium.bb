@@ -49,6 +49,7 @@ class PLATFORM_EXPORT BitmapImageMetrics {
 
   static void CountDecodedImageType(const String& type);
   static void CountImageOrientation(const ImageOrientationEnum);
+  static void CountImageJpegDensity(int64_t density_centi_bpp);
   static void CountImageGammaAndGamut(const skcms_ICCProfile*);
 
  private:
@@ -57,4 +58,4 @@ class PLATFORM_EXPORT BitmapImageMetrics {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_BITMAP_IMAGE_METRICS_H_

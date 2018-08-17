@@ -185,6 +185,15 @@ Image::SizeAvailability BitmapImage::SetData(scoped_refptr<SharedBuffer> data,
   return DataChanged(all_data_received);
 }
 
+// Return the image density in 0.01 "bits per pixel" rounded to the nearest
+// integer.
+static inline int ImageDensityInCentiBpp(IntSize size,
+                                         size_t image_size_bytes) {
+  uint64_t image_area = static_cast<uint64_t>(size.Width()) * size.Height();
+  return (static_cast<uint64_t>(image_size_bytes) * 100 * 8 + image_area / 2) /
+         image_area;
+}
+
 Image::SizeAvailability BitmapImage::DataChanged(bool all_data_received) {
   TRACE_EVENT0("blink", "BitmapImage::dataChanged");
 
@@ -192,6 +201,17 @@ Image::SizeAvailability BitmapImage::DataChanged(bool all_data_received) {
   // compositor thread. Its necessary to clear the frame since more data
   // requires a new PaintImageGenerator instance.
   cached_frame_ = PaintImage();
+
+  // Report the image density metric right after we received all the data. The
+  // SetData() call on the decoder_ (if there is one) should have decoded the
+  // images and we should know the image size at this point. We still check it
+  // here as a sanity check.
+  if (!all_data_received_ && all_data_received && decoder_ &&
+      decoder_->Data() && decoder_->FilenameExtension() == "jpg" &&
+      IsSizeAvailable() && Size().Width() >= 100 && Size().Height() >= 100) {
+    BitmapImageMetrics::CountImageJpegDensity(
+        ImageDensityInCentiBpp(Size(), decoder_->Data()->size()));
+  }
 
   // Feed all the data we've seen so far to the image decoder.
   all_data_received_ = all_data_received;

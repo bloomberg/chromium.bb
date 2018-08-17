@@ -730,4 +730,22 @@ INSTANTIATE_TEST_CASE_P(
     DecodedImageOrientationHistogramTest,
     testing::ValuesIn(kDecodedImageOrientationHistogramTestParams));
 
+using DecodedImageDensityHistogramTest = BitmapHistogramTest<int>;
+
+TEST_P(DecodedImageDensityHistogramTest, ImageOrientation) {
+  RunTest("Blink.DecodedImage.JpegDensity");
+}
+
+const DecodedImageDensityHistogramTest::ParamType
+    kDecodedImageDensityHistogramTestParams[] = {
+        // 439x154, 23220 bytes --> 2.74 bpp
+        {"/images/resources/cropped_mandrill.jpg", 274},
+        // 320x320, 74017 bytes --> 5.78
+        {"/images/resources/blue-wheel-srgb-color-profile.jpg", 578}};
+
+INSTANTIATE_TEST_CASE_P(
+    DecodedImageDensityHistogramTest,
+    DecodedImageDensityHistogramTest,
+    testing::ValuesIn(kDecodedImageDensityHistogramTestParams));
+
 }  // namespace blink
