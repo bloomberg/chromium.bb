@@ -1658,4 +1658,33 @@ TEST_F(ClientControlledShellSurfaceTest, SnappedInTabletMode) {
   EXPECT_TRUE(frame_view->GetHeaderView()->in_immersive_mode());
 }
 
+TEST_F(ClientControlledShellSurfaceTest, PipWindowCannotBeActivated) {
+  const gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
+  EXPECT_TRUE(shell_surface->GetWidget()->CanActivate());
+
+  // Entering PIP should unactivate the window and make the widget
+  // unactivatable.
+  shell_surface->SetPip();
+  surface->Commit();
+
+  EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
+  EXPECT_FALSE(shell_surface->GetWidget()->CanActivate());
+
+  // Leaving PIP should make it activatable again.
+  shell_surface->SetRestored();
+  surface->Commit();
+
+  EXPECT_TRUE(shell_surface->GetWidget()->CanActivate());
+}
+
 }  // namespace exo

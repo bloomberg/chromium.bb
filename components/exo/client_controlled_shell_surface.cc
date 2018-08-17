@@ -875,6 +875,20 @@ void ClientControlledShellSurface::OnPreWidgetCommit() {
       break;
   }
 
+  // PIP windows should not be able to be active.
+  if (pending_window_state_ == ash::mojom::WindowStateType::PIP) {
+    auto* window = widget_->GetNativeWindow();
+    if (wm::IsActiveWindow(window)) {
+      // In the case that a window changed state into PIP while activated,
+      // make sure to deactivate it now.
+      wm::DeactivateWindow(window);
+    }
+
+    widget_->widget_delegate()->set_can_activate(false);
+  } else {
+    widget_->widget_delegate()->set_can_activate(true);
+  }
+
   client_controlled_state_->EnterNextState(window_state, pending_window_state_,
                                            animation_type);
 }
