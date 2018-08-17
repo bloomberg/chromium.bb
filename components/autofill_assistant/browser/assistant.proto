@@ -85,11 +85,11 @@ message ActionsResponseProto {
 message AssistantActionProto {
   // Next action id: 3.
   oneof action_info {
-    ClickSpecificationProto click_specification = 1;
-    TellSpecificationProto tell_specification = 2;
-    UseAddressSpecificationProto use_address_specification = 3;
-    UseCreditCardSpecificationProto use_card_specification = 4;
-    WaitForDomSpecificationProto wait_for_dom_specification = 5;
+    ClickProto click = 1;
+    TellProto tell = 2;
+    UseAddressProto use_address = 3;
+    UseCreditCardProto use_card = 4;
+    WaitForDomProto wait_for_dom = 5;
   }
 }
 
@@ -104,19 +104,19 @@ message ElementReferenceProto {
 }
 
 // Contain all arguments to perform a click.
-message ClickSpecificationProto {
+message ClickProto {
   required ElementReferenceProto element_to_click = 1;
 }
 
 // Contain a message to tell the user.
-message TellSpecificationProto {
+message TellProto {
   required string message = 1;
 }
 
 // TODO(crbug.com/806868): Handle it better when there is no local address.
 // Ask user to fill a form with a local address if there is, otherwise fail this
 // action.
-message UseAddressSpecificationProto {
+message UseAddressProto {
   // Optional message to show usage of the address, like billing or shipping
   // address.
   optional string usage = 1;
@@ -128,19 +128,19 @@ message UseAddressSpecificationProto {
 // TODO(crbug.com/806868): Handle it better when there is no local credit card.
 // Ask user to fill a form with a local credit card if there is, otherwise fail
 // this action.
-message UseCreditCardSpecificationProto {
+message UseCreditCardProto {
   // A reference to the card number field in the form that should be filled.
   optional ElementReferenceProto form_field_element = 1;
 }
 
 // Ask Chrome to wait for an element in the DOM. This can be used to only
 // proceed to the next action once the page is ready.
-message WaitForDomSpecificationProto {
-  // Fail after waiting this amount of time.
-  required int32 timeout_ms = 1;
-
+message WaitForDomProto {
   // The element to wait.
-  required ElementReferenceProto element = 2;
+  required ElementReferenceProto element = 1;
+
+  // Fail after waiting this amount of time.
+  optional int32 timeout_ms = 2;
 
   // If true, wait for the given element to be absent, otherwise wait for
   // existence.

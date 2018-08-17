@@ -23,6 +23,10 @@ class AssistantActionDelegate {
   virtual void ClickElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback) = 0;
 
+  // Check whether the element given by |selectors| exists on the web page.
+  virtual void ElementExists(const std::vector<std::string>& selectors,
+                             base::OnceCallback<void(bool)> callback) = 0;
+
  protected:
   AssistantActionDelegate() = default;
 };

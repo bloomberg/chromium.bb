@@ -129,11 +129,11 @@ bool AssistantProtocolUtils::ParseAssistantActions(
 
   for (const auto& action : response_proto.actions()) {
     switch (action.action_info_case()) {
-      case AssistantActionProto::ActionInfoCase::kClickSpecification: {
-        DCHECK(action.has_click_specification());
+      case AssistantActionProto::ActionInfoCase::kClick: {
+        DCHECK(action.has_click());
         std::vector<std::string> selectors;
         for (const auto& selector :
-             action.click_specification().element_to_click().selectors()) {
+             action.click().element_to_click().selectors()) {
           selectors.emplace_back(selector);
         }
         DCHECK(!selectors.empty());
@@ -141,34 +141,32 @@ bool AssistantProtocolUtils::ParseAssistantActions(
             std::make_unique<AssistantClickAction>(selectors));
         break;
       }
-      case AssistantActionProto::ActionInfoCase::kTellSpecification: {
-        DCHECK(action.has_tell_specification());
-        assistant_actions->emplace_back(std::make_unique<AssistantTellAction>(
-            action.tell_specification().message()));
+      case AssistantActionProto::ActionInfoCase::kTell: {
+        DCHECK(action.has_tell());
+        assistant_actions->emplace_back(
+            std::make_unique<AssistantTellAction>(action.tell().message()));
         break;
       }
-      case AssistantActionProto::ActionInfoCase::kUseAddressSpecification: {
-        DCHECK(action.has_use_address_specification());
+      case AssistantActionProto::ActionInfoCase::kUseAddress: {
+        DCHECK(action.has_use_address());
         std::vector<std::string> selectors;
-        for (const auto& selector : action.use_address_specification()
-                                        .form_field_element()
-                                        .selectors()) {
+        for (const auto& selector :
+             action.use_address().form_field_element().selectors()) {
           selectors.emplace_back(selector);
         }
         DCHECK(!selectors.empty());
         assistant_actions->emplace_back(
             std::make_unique<AssistantUseAddressAction>(
-                action.use_address_specification().has_usage()
-                    ? action.use_address_specification().usage()
-                    : "",
+                action.use_address().has_usage() ? action.use_address().usage()
+                                                 : "",
                 selectors));
         break;
       }
-      case AssistantActionProto::ActionInfoCase::kUseCardSpecification: {
-        DCHECK(action.has_use_card_specification());
+      case AssistantActionProto::ActionInfoCase::kUseCard: {
+        DCHECK(action.has_use_card());
         std::vector<std::string> selectors;
         for (const auto& selector :
-             action.use_card_specification().form_field_element().selectors()) {
+             action.use_card().form_field_element().selectors()) {
           selectors.emplace_back(selector);
         }
         DCHECK(!selectors.empty());
@@ -176,19 +174,22 @@ bool AssistantProtocolUtils::ParseAssistantActions(
             std::make_unique<AssistantUseCardAction>(selectors));
         break;
       }
-      case AssistantActionProto::ActionInfoCase::kWaitForDomSpecification: {
-        DCHECK(action.has_wait_for_dom_specification());
+      case AssistantActionProto::ActionInfoCase::kWaitForDom: {
+        DCHECK(action.has_wait_for_dom());
         std::vector<std::string> selectors;
         for (const auto& selector :
-             action.wait_for_dom_specification().element().selectors()) {
+             action.wait_for_dom().element().selectors()) {
           selectors.emplace_back(selector);
         }
         DCHECK(!selectors.empty());
         assistant_actions->emplace_back(
             std::make_unique<AssistantWaitForDomAction>(
-                action.wait_for_dom_specification().timeout_ms(), selectors,
-                action.wait_for_dom_specification().has_check_for_absence() &&
-                    action.wait_for_dom_specification().check_for_absence()));
+                action.wait_for_dom().has_timeout_ms()
+                    ? action.wait_for_dom().timeout_ms()
+                    : 0,
+                selectors,
+                action.wait_for_dom().has_check_for_absence() &&
+                    action.wait_for_dom().check_for_absence()));
         break;
       }
       case AssistantActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
