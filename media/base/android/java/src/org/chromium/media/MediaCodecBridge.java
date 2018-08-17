@@ -479,15 +479,6 @@ class MediaCodecBridge {
     @CalledByNative
     private ByteBuffer getInputBuffer(int index) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-            if (mUseAsyncApi) {
-                synchronized (this) {
-                    // Prior to Android N, some versions of MediaCodec will
-                    // crash internally if we call getInputBuffer() after an
-                    // error has occurred. See https://crbug.com/610523 and
-                    // https://crbug.com/873094.
-                    if (mPendingError) return null;
-                }
-            }
             try {
                 return mMediaCodec.getInputBuffer(index);
             } catch (IllegalStateException e) {
