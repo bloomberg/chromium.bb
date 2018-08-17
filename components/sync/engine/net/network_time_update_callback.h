@@ -19,7 +19,7 @@ namespace syncer {
 // const base::Time& network_time - the new network time.
 // const base::TimeDelta& resolution - how precise the reading is.
 // const base::TimeDelta& latency - the http request's latency.
-using NetworkTimeUpdateCallback = base::Callback<
+using NetworkTimeUpdateCallback = base::RepeatingCallback<
     void(const base::Time&, const base::TimeDelta&, const base::TimeDelta&)>;
 
 }  // namespace syncer
