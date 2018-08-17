@@ -13,7 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/content_browser_client.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 

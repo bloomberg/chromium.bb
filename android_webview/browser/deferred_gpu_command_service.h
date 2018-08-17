@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
-#include "gpu/ipc/in_process_command_buffer.h"
 
 namespace gpu {
 struct GpuFeatureInfo;

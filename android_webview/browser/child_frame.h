@@ -11,8 +11,6 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "content/public/browser/android/synchronous_compositor.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
 namespace viz {

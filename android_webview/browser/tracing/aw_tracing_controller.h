@@ -8,8 +8,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-
-#include "content/public/browser/tracing_controller.h"
+#include "base/values.h"
 
 namespace android_webview {
 

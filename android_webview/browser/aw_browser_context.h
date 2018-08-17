@@ -19,8 +19,6 @@
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/web_restrictions/browser/web_restrictions_client.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/content_browser_client.h"
-#include "net/url_request/url_request_job_factory.h"
 
 class GURL;
 class PrefService;

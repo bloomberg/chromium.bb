@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 struct AwDrawGLInfo;
