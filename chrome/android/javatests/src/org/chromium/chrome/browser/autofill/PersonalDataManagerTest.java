@@ -152,11 +152,12 @@ public class PersonalDataManagerTest {
         Assert.assertEquals("Visa", storedCard.getName());
         Assert.assertEquals("10", storedCard.getMonth());
         Assert.assertEquals("4012888888881881", storedCard.getNumber());
-        // \u0020\...\u2006 is four dots ellipsis, \u202A is the Left-To-Right Embedding (LTE) mark,
+        // \u0020\...\u2060 is four dots ellipsis, \u202A is the Left-To-Right Embedding (LTE) mark,
         // \u202C is the Pop Directional Formatting (PDF) mark. Expected string with form
         // 'Visa  <LRE>****1881<PDF>'.
-        Assert.assertEquals("Visa\u0020\u0020\u202A\u2022\u2006\u2022\u2006\u2022\u2006\u2022"
-                        + "\u20061881\u202C",
+        Assert.assertEquals(
+                "Visa\u0020\u0020\u202A\u2022\u2060\u2006\u2060\u2022\u2060\u2006\u2060\u2022"
+                        + "\u2060\u2006\u2060\u2022\u2060\u2006\u20601881\u202C",
                 storedCard.getObfuscatedNumber());
         Assert.assertNotNull(mHelper.getCreditCard(cardTwoGUID));
     }
