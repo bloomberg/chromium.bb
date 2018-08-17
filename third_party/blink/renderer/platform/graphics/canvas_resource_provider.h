@@ -181,6 +181,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
     std::vector<ScopedDecodedDrawImage> locked_images_;
     cc::PlaybackImageProvider playback_image_provider_;
+
+    base::WeakPtrFactory<CanvasImageProvider> weak_factory_;
   };
 
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
