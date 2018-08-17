@@ -22,6 +22,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -50,6 +51,16 @@ namespace {
 constexpr char kRecurrentInterstitialModeParam[] = "mode";
 constexpr char kRecurrentInterstitialModeInMemory[] = "in-memory";
 constexpr char kRecurrentInterstitialModePref[] = "pref";
+
+#if defined(OS_ANDROID)
+const base::FeatureParam<std::string> kRecurrentInterstitialMode{
+    &kRecurrentInterstitialFeature, kRecurrentInterstitialModeParam,
+    kRecurrentInterstitialModePref};
+#else
+const base::FeatureParam<std::string> kRecurrentInterstitialMode{
+    &kRecurrentInterstitialFeature, kRecurrentInterstitialModeParam,
+    kRecurrentInterstitialModeInMemory};
+#endif
 
 // The number of times an error must recur before the recurrent error message is
 // shown.
@@ -244,7 +255,7 @@ bool HostFilterToPatternFilter(
 }  // namespace
 
 const base::Feature kRecurrentInterstitialFeature{
-    "RecurrentInterstitialFeature", base::FEATURE_DISABLED_BY_DEFAULT};
+    "RecurrentInterstitialFeature", base::FEATURE_ENABLED_BY_DEFAULT};
 
 ChromeSSLHostStateDelegate::ChromeSSLHostStateDelegate(Profile* profile)
     : clock_(new base::DefaultClock()),
@@ -469,8 +480,7 @@ void ChromeSSLHostStateDelegate::DidDisplayErrorPage(int error) {
     return;
   }
 
-  const std::string mode_param = base::GetFieldTrialParamValueByFeature(
-      kRecurrentInterstitialFeature, kRecurrentInterstitialModeParam);
+  const std::string mode_param = kRecurrentInterstitialMode.Get();
   const int threshold = base::GetFieldTrialParamByFeatureAsInt(
       kRecurrentInterstitialFeature, kRecurrentInterstitialThresholdParam,
       kRecurrentInterstitialDefaultThreshold);
@@ -495,8 +505,7 @@ bool ChromeSSLHostStateDelegate::HasSeenRecurrentErrors(int error) const {
     return false;
   }
 
-  const std::string mode_param = base::GetFieldTrialParamValueByFeature(
-      kRecurrentInterstitialFeature, kRecurrentInterstitialModeParam);
+  const std::string mode_param = kRecurrentInterstitialMode.Get();
   const int threshold = base::GetFieldTrialParamByFeatureAsInt(
       kRecurrentInterstitialFeature, kRecurrentInterstitialThresholdParam,
       kRecurrentInterstitialDefaultThreshold);
