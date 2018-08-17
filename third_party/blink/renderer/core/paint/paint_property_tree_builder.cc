@@ -612,14 +612,26 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           object_, context_.current.paint_offset);
       bool has_clip_path =
           style.ClipPath() && fragment_data_.ClipPathBoundingBox();
-      bool has_spv1_composited_clip_path =
-          has_clip_path && object_.HasLayer() &&
+      bool is_spv1_composited =
+          object_.HasLayer() &&
           ToLayoutBoxModelObject(object_).Layer()->GetCompositedLayerMapping();
+      bool has_spv1_composited_clip_path = has_clip_path && is_spv1_composited;
       bool has_mask_based_clip_path =
           has_clip_path && !fragment_data_.ClipPathPath();
       base::Optional<IntRect> clip_path_clip;
       if (has_spv1_composited_clip_path || has_mask_based_clip_path) {
         clip_path_clip = fragment_data_.ClipPathBoundingBox();
+      } else if (!mask_clip && is_spv1_composited &&
+                 ToLayoutBoxModelObject(object_)
+                     .Layer()
+                     ->GetCompositedLayerMapping()
+                     ->MaskLayer()) {
+        // TODO(crbug.com/856818): This should never happen.
+        // This is a band-aid to avoid nullptr properties on the mask layer
+        // crashing the renderer, but will result in incorrect rendering.
+        NOTREACHED();
+        has_spv1_composited_clip_path = true;
+        clip_path_clip = IntRect();
       }
       if (mask_clip || clip_path_clip) {
         IntRect combined_clip = mask_clip ? *mask_clip : *clip_path_clip;
