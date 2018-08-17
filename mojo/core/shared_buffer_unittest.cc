@@ -249,17 +249,11 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndMapWriteSharedBuffer,
   EXPECT_EQ(region.GetMode(),
             base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly);
 
-  EXPECT_EQ("quit", ReadMessage(h));
   WriteMessage(h, "ok");
+  EXPECT_EQ("quit", ReadMessage(h));
 }
 
-#if defined(OS_ANDROID)
-// Android multi-process tests are not executing the new process. This is flaky.
-#define MAYBE_CreateAndPassReadOnlyBuffer DISABLED_CreateAndPassReadOnlyBuffer
-#else
-#define MAYBE_CreateAndPassReadOnlyBuffer CreateAndPassReadOnlyBuffer
-#endif
-TEST_F(SharedBufferTest, MAYBE_CreateAndPassReadOnlyBuffer) {
+TEST_F(SharedBufferTest, CreateAndPassReadOnlyBuffer) {
   RunTestClient("ReadAndMapWriteSharedBuffer", [&](MojoHandle h) {
     // Create a new shared buffer.
     MojoHandle b = CreateBuffer(1234);
@@ -269,8 +263,8 @@ TEST_F(SharedBufferTest, MAYBE_CreateAndPassReadOnlyBuffer) {
     MojoHandle dupe = DuplicateBuffer(b, true /* read_only */);
     WriteMessageWithHandles(h, "hello", &dupe, 1);
 
-    WriteMessage(h, "quit");
     EXPECT_EQ("ok", ReadMessage(h));
+    WriteMessage(h, "quit");
   });
 }
 
@@ -285,20 +279,11 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassReadOnlyBuffer,
   MojoHandle dupe = DuplicateBuffer(b, true /* read_only */);
   WriteMessageWithHandles(h, "", &dupe, 1);
 
-  EXPECT_EQ("quit", ReadMessage(h));
   WriteMessage(h, "ok");
+  EXPECT_EQ("quit", ReadMessage(h));
 }
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
-// Android multi-process tests are not executing the new process. This is flaky.
-// Flaky on Fuchsia; see http://crbug.com/874719
-#define MAYBE_CreateAndPassFromChildReadOnlyBuffer \
-  DISABLED_CreateAndPassFromChildReadOnlyBuffer
-#else
-#define MAYBE_CreateAndPassFromChildReadOnlyBuffer \
-  CreateAndPassFromChildReadOnlyBuffer
-#endif
-TEST_F(SharedBufferTest, MAYBE_CreateAndPassFromChildReadOnlyBuffer) {
+TEST_F(SharedBufferTest, CreateAndPassFromChildReadOnlyBuffer) {
   RunTestClient("CreateAndPassReadOnlyBuffer", [&](MojoHandle h) {
     MojoHandle b;
     EXPECT_EQ("", ReadMessageWithHandles(h, &b, 1));
@@ -312,8 +297,8 @@ TEST_F(SharedBufferTest, MAYBE_CreateAndPassFromChildReadOnlyBuffer) {
     EXPECT_EQ(region.GetMode(),
               base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly);
 
-    WriteMessage(h, "quit");
     EXPECT_EQ("ok", ReadMessage(h));
+    WriteMessage(h, "quit");
   });
 }
 
