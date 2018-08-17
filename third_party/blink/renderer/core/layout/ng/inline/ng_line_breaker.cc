@@ -785,9 +785,9 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item) {
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
   bool is_flipped_lines = style.IsFlippedLinesWritingMode();
-  item_result->margins =
-      NGLineBoxStrut(ComputeMarginsForVisualContainer(constraint_space_, style),
-                     is_flipped_lines);
+  item_result->margins = NGLineBoxStrut(
+      ComputeMarginsForVisualContainer(constraint_space_, style),
+      IsFlippedLinesWritingMode(constraint_space_.GetWritingMode()));
   item_result->padding = NGLineBoxStrut(
       ComputePadding(constraint_space_, style), is_flipped_lines);
   item_result->inline_size += item_result->margins.InlineSum();
