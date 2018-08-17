@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,13 +17,26 @@
 
 class ComponentActionDelegate;
 
-// Controller for MediaRouterAction that determines when to show and hide the
-// action icon on the toolbar. There should be one instance of this class per
-// profile, and it should only be used on the UI thread.
+// Controller for the Cast toolbar icon that determines when to show and hide
+// icon. There should be one instance of this class per profile, and it should
+// only be used on the UI thread.
+// TODO(takumif): Rename this class to CastToolbarIconController.
 class MediaRouterActionController : public media_router::IssuesObserver,
                                     public media_router::MediaRoutesObserver,
                                     public MediaRouterContextualMenu::Observer {
  public:
+  class Observer {
+   public:
+    virtual void ShowIcon() = 0;
+    virtual void HideIcon() = 0;
+    // TODO(https://crbug.com/872392): Use the common code path to show and hide
+    // the icon's inkdrop.
+    // This is called when the icon should enter pressed state.
+    virtual void ActivateIcon() = 0;
+    // This is called when the icon should enter unpressed state.
+    virtual void DeactivateIcon() = 0;
+  };
+
   explicit MediaRouterActionController(Profile* profile);
   // Constructor for injecting dependencies in tests.
   MediaRouterActionController(
@@ -57,6 +71,16 @@ class MediaRouterActionController : public media_router::IssuesObserver,
   void OnContextMenuShown() override;
   void OnContextMenuHidden() override;
 
+  // On Windows, when the user right-clicks on the toolbar icon, the context
+  // menu appears on mouse release. Since the dialog, if shown, disappears on
+  // mouse press, we need to make sure that the icon does not get hidden between
+  // mouse press and mouse release. These methods ensure that.
+  void KeepIconOnRightMousePressed();
+  void MaybeHideIconOnRightMouseReleased();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
   friend class MediaRouterActionControllerUnitTest;
   FRIEND_TEST_ALL_PREFIXES(MediaRouterActionControllerUnitTest,
@@ -68,6 +92,12 @@ class MediaRouterActionController : public media_router::IssuesObserver,
   // |component_action_delegate_| if necessary, depending on whether or not
   // we have issues, local routes or a dialog.
   virtual void MaybeAddOrRemoveAction();
+
+  // Implementation-specific helper methods for MaybeAddOrRemoveAction().
+  // TODO(takumif): Remove MaybeAddOrRemoveComponentAction() once the trusted
+  // area icon is completely rolled out.
+  void MaybeAddOrRemoveComponentAction();
+  void MaybeAddOrRemoveTrustedAreaIcon();
 
   // Returns |true| if the Media Router action should be present on the toolbar
   // or the overflow menu.
@@ -94,7 +124,16 @@ class MediaRouterActionController : public media_router::IssuesObserver,
   // should not be hidden while a context menu is shown.
   bool context_menu_shown_ = false;
 
+  // Whether the right mouse button is pressed on the toolbar icon. On Windows,
+  // when the user right clicks on the toolbar icon, the dialog gets hidden on
+  // mouse press, and the context menu gets shown on mouse release. If the icon
+  // is ephemeral, it gets hidden on mouse press and can't show the context
+  // menu. So we must keep the icon shown while right mouse button is pressed.
+  bool keep_visible_for_right_mouse_button_ = false;
+
   PrefChangeRegistrar pref_change_registrar_;
+
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<MediaRouterActionController> weak_factory_;
 

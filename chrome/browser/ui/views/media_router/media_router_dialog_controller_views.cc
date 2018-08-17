@@ -57,7 +57,7 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
   ui_ = std::make_unique<MediaRouterViewsUI>();
   InitializeMediaRouterUI(ui_.get());
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  if (browser_view->toolbar()->browser_actions()) {
+  if (browser_view->toolbar()->cast_button()) {
     CastDialogView::ShowDialogWithToolbarAction(ui_.get(), browser,
                                                 dialog_creation_time);
   } else {

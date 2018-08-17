@@ -14,6 +14,7 @@
 #include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -61,46 +62,49 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
                                                      Observer* observer)
     : observer_(observer),
       browser_(browser),
-      menu_model_(this),
+      menu_model_(std::make_unique<ui::SimpleMenuModel>(this)),
       is_action_in_toolbar_(is_action_in_toolbar) {
-  menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_ABOUT,
-                                  IDS_MEDIA_ROUTER_ABOUT);
-  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-  menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_LEARN_MORE, IDS_LEARN_MORE);
-  menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_HELP,
-                                  IDS_MEDIA_ROUTER_HELP);
+  menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_ABOUT,
+                                   IDS_MEDIA_ROUTER_ABOUT);
+  menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+  menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_LEARN_MORE, IDS_LEARN_MORE);
+  menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_HELP,
+                                   IDS_MEDIA_ROUTER_HELP);
   if (shown_by_policy) {
-    menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY,
-                                    IDS_MEDIA_ROUTER_SHOWN_BY_POLICY);
-    menu_model_.SetIcon(
-        menu_model_.GetIndexOfCommandId(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY),
+    menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY,
+                                     IDS_MEDIA_ROUTER_SHOWN_BY_POLICY);
+    menu_model_->SetIcon(
+        menu_model_->GetIndexOfCommandId(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY),
         gfx::Image(gfx::CreateVectorIcon(vector_icons::kBusinessIcon, 16,
                                          gfx::kChromeIconGrey)));
   } else {
-    menu_model_.AddCheckItemWithStringId(
+    menu_model_->AddCheckItemWithStringId(
         IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION,
         IDS_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
   }
-  menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR,
-                                  GetChangeVisibilityTextId());
-
+  if (!media_router::ShouldUseViewsDialog()) {
+    menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR,
+                                     GetChangeVisibilityTextId());
+  }
   if (!browser_->profile()->IsOffTheRecord()) {
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_MANAGE_DEVICES,
-                                    IDS_MEDIA_ROUTER_MANAGE_DEVICES);
+    menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_MANAGE_DEVICES,
+                                     IDS_MEDIA_ROUTER_MANAGE_DEVICES);
 #endif
-    menu_model_.AddCheckItemWithStringId(
+    menu_model_->AddCheckItemWithStringId(
         IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE,
         IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE);
-    menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
-                                    IDS_MEDIA_ROUTER_REPORT_ISSUE);
+    menu_model_->AddItemWithStringId(IDC_MEDIA_ROUTER_REPORT_ISSUE,
+                                     IDS_MEDIA_ROUTER_REPORT_ISSUE);
   }
-  observer_->OnContextMenuShown();
 }
 
-MediaRouterContextualMenu::~MediaRouterContextualMenu() {
-  observer_->OnContextMenuHidden();
+MediaRouterContextualMenu::~MediaRouterContextualMenu() = default;
+
+std::unique_ptr<ui::SimpleMenuModel>
+MediaRouterContextualMenu::TakeMenuModel() {
+  return std::move(menu_model_);
 }
 
 bool MediaRouterContextualMenu::GetAlwaysShowActionPref() const {
@@ -187,6 +191,14 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
     default:
       NOTREACHED();
   }
+}
+
+void MediaRouterContextualMenu::MenuWillShow(ui::SimpleMenuModel* source) {
+  observer_->OnContextMenuShown();
+}
+
+void MediaRouterContextualMenu::MenuClosed(ui::SimpleMenuModel* source) {
+  observer_->OnContextMenuHidden();
 }
 
 void MediaRouterContextualMenu::ToggleCloudServices() {

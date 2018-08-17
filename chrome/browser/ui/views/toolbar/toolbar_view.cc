@@ -17,6 +17,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
+#include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
@@ -206,6 +208,9 @@ void ToolbarView::Init() {
       new BrowserActionsContainer(browser_, main_container, this);
 
   if (ui::MaterialDesignController::IsRefreshUi()) {
+    if (media_router::ShouldUseViewsDialog())
+      cast_ = media_router::CastToolbarButton::Create(browser_).release();
+
     bool show_avatar_toolbar_button = true;
 #if defined(OS_CHROMEOS)
     // ChromeOS only badges Incognito and Guest icons in the browser window.
@@ -231,6 +236,8 @@ void ToolbarView::Init() {
   AddChildView(home_);
   AddChildView(location_bar_);
   AddChildView(browser_actions_);
+  if (cast_)
+    AddChildView(cast_);
   if (avatar_)
     AddChildView(avatar_);
   AddChildView(app_menu_button_);
@@ -540,6 +547,10 @@ void ToolbarView::Layout() {
       width() - end_padding - app_menu_width -
       (browser_actions_->GetPreferredSize().IsEmpty() ? right_padding : 0) -
       next_element_x);
+  if (cast_ && cast_->visible()) {
+    available_width -= cast_->GetPreferredSize().width();
+    available_width -= element_padding;
+  }
   if (avatar_) {
     available_width -= avatar_->GetPreferredSize().width();
     available_width -= element_padding;
@@ -576,6 +587,11 @@ void ToolbarView::Layout() {
   //                required.
   browser_actions_->Layout();
 
+  if (cast_ && cast_->visible()) {
+    cast_->SetBounds(next_element_x, toolbar_button_y,
+                     cast_->GetPreferredSize().width(), toolbar_button_height);
+    next_element_x = cast_->bounds().right() + element_padding;
+  }
   if (avatar_) {
     avatar_->SetBounds(next_element_x, toolbar_button_y,
                        avatar_->GetPreferredSize().width(),
@@ -803,6 +819,8 @@ void ToolbarView::LoadImages() {
   home_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(home_image, normal_color));
 
+  if (cast_)
+    cast_->UpdateIcon();
   if (avatar_)
     avatar_->UpdateIcon();
 

@@ -32,10 +32,12 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener)
 
 ToolbarButton::ToolbarButton(views::ButtonListener* listener,
                              std::unique_ptr<ui::MenuModel> model,
-                             TabStripModel* tab_strip_model)
+                             TabStripModel* tab_strip_model,
+                             bool trigger_menu_on_long_press)
     : views::LabelButton(listener, base::string16(), CONTEXT_TOOLBAR_BUTTON),
       model_(std::move(model)),
       tab_strip_model_(tab_strip_model),
+      trigger_menu_on_long_press_(trigger_menu_on_long_press),
       layout_insets_(GetLayoutInsets(TOOLBAR_BUTTON)),
       show_menu_factory_(this) {
   set_has_ink_drop_action_on_click(true);
@@ -142,8 +144,8 @@ gfx::Rect ToolbarButton::GetAnchorBoundsInScreen() const {
 }
 
 bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
-  if (IsTriggerableEvent(event) && enabled() && ShouldShowMenu() &&
-      HitTestPoint(event.location())) {
+  if (trigger_menu_on_long_press_ && IsTriggerableEvent(event) && enabled() &&
+      ShouldShowMenu() && HitTestPoint(event.location())) {
     // Store the y pos of the mouse coordinates so we can use them later to
     // determine if the user dragged the mouse down (which should pop up the
     // drag down menu immediately, instead of waiting for the timer)
@@ -165,7 +167,7 @@ bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
 bool ToolbarButton::OnMouseDragged(const ui::MouseEvent& event) {
   bool result = LabelButton::OnMouseDragged(event);
 
-  if (show_menu_factory_.HasWeakPtrs()) {
+  if (trigger_menu_on_long_press_ && show_menu_factory_.HasWeakPtrs()) {
     // If the mouse is dragged to a y position lower than where it was when
     // clicked then we should not wait for the menu to appear but show
     // it immediately.

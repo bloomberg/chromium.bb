@@ -46,7 +46,8 @@ class ToolbarButton : public views::LabelButton,
   // shutdown.
   ToolbarButton(views::ButtonListener* listener,
                 std::unique_ptr<ui::MenuModel> model,
-                TabStripModel* tab_strip_model);
+                TabStripModel* tab_strip_model,
+                bool trigger_menu_on_long_press = true);
 
   ~ToolbarButton() override;
 
@@ -87,6 +88,8 @@ class ToolbarButton : public views::LabelButton,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
 
+  ui::MenuModel* menu_model_for_test() { return model_.get(); }
+
  protected:
   // Returns if menu should be shown. Override this to change default behavior.
   virtual bool ShouldShowMenu();
@@ -115,6 +118,10 @@ class ToolbarButton : public views::LabelButton,
 
   // Indicates if menu is currently showing.
   bool menu_showing_ = false;
+
+  // Whether the menu should be shown when there is a long mouse press or a drag
+  // event.
+  const bool trigger_menu_on_long_press_;
 
   // Y position of mouse when left mouse button is pressed.
   int y_position_on_lbuttondown_ = 0;

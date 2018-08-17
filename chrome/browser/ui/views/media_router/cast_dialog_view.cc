@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_no_sinks_view.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
+#include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/media_router/media_sink.h"
@@ -57,9 +58,7 @@ void CastDialogView::ShowDialogWithToolbarAction(
     const base::Time& start_time) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   DCHECK(browser_view->toolbar()->browser_actions());
-  views::View* action_view =
-      browser_view->toolbar()->browser_actions()->GetViewForId(
-          ComponentToolbarActionsFactory::kMediaRouterActionId);
+  views::View* action_view = browser_view->toolbar()->cast_button();
   ShowDialog(action_view, views::BubbleBorder::TOP_RIGHT, controller, browser,
              start_time);
 }
