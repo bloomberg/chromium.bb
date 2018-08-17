@@ -23,6 +23,7 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
@@ -33,6 +34,7 @@
 #include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
+using install_static::InstallDetails;
 using installer::InstallationState;
 
 const wchar_t GoogleUpdateSettings::kPoliciesKey[] =
@@ -63,29 +65,44 @@ base::LazySequencedTaskRunner g_collect_stats_consent_task_runner =
         base::TaskTraits(base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
+// Reads the value |name| from the app's ClientState registry key in |root| into
+// |value|.
+bool ReadGoogleUpdateStrKeyFromRoot(HKEY root,
+                                    const wchar_t* const name,
+                                    base::string16* value) {
+  RegKey key;
+  return key.Open(root, InstallDetails::Get().GetClientStateKeyPath().c_str(),
+                  KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
+         key.ReadValue(name, value) == ERROR_SUCCESS;
+}
+
+// Reads the value |name| from the app's ClientState registry key in
+// HKEY_CURRENT_USER into |value|. This function is only provided for legacy
+// use. New code needing to load/store per-user data should use
+// install_details::GetRegistryPath().
+bool ReadUserGoogleUpdateStrKey(const wchar_t* const name,
+                                base::string16* value) {
+  return ReadGoogleUpdateStrKeyFromRoot(HKEY_CURRENT_USER, name, value);
+}
+
+// Reads the value |name| from the app's ClientState registry key into |value|.
+// This is primarily to be used for reading values written by Google Update
+// during app install.
 bool ReadGoogleUpdateStrKey(const wchar_t* const name, base::string16* value) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 reg_path = dist->GetStateKey();
-  RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ | KEY_WOW64_32KEY);
-  if (key.ReadValue(name, value) != ERROR_SUCCESS) {
-    RegKey hklm_key(
-        HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ | KEY_WOW64_32KEY);
-    return (hklm_key.ReadValue(name, value) == ERROR_SUCCESS);
-  }
-  return true;
+  return ReadGoogleUpdateStrKeyFromRoot(install_static::IsSystemInstall()
+                                            ? HKEY_LOCAL_MACHINE
+                                            : HKEY_CURRENT_USER,
+                                        name, value);
 }
 
 // Writes |value| into a user-specific value in the key |name| under
 // |app_reg_data|'s ClientStateMedium key in HKLM along with the aggregation
 // method |aggregate|. This function is solely for use by system-level installs.
-bool WriteGoogleUpdateAggregateNumKeyInternal(
-    const AppRegistrationData& app_reg_data,
-    const wchar_t* const name,
-    uint32_t value,
-    const wchar_t* const aggregate) {
+bool WriteGoogleUpdateAggregateNumKeyInternal(const wchar_t* const name,
+                                              uint32_t value,
+                                              const wchar_t* const aggregate) {
   DCHECK(aggregate);
-  DCHECK(GoogleUpdateSettings::IsSystemInstall());
-  const REGSAM kAccess = KEY_SET_VALUE | KEY_WOW64_32KEY;
+  DCHECK(install_static::IsSystemInstall());
 
   // Machine installs require each OS user to write a unique key under a
   // named key in HKLM as well as an "aggregation" function that describes
@@ -96,70 +113,80 @@ bool WriteGoogleUpdateAggregateNumKeyInternal(
     return false;
   }
 
-  base::string16 reg_path(app_reg_data.GetStateMediumKey());
-  reg_path.append(L"\\");
-  reg_path.append(name);
-  RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), kAccess);
+  base::string16 reg_path(InstallDetails::Get().GetClientStateMediumKeyPath());
+  reg_path.append(L"\\").append(name);
+  RegKey key;
+  if (key.Create(HKEY_LOCAL_MACHINE, reg_path.c_str(),
+                 KEY_SET_VALUE | KEY_WOW64_32KEY) != ERROR_SUCCESS) {
+    return false;
+  }
   key.WriteValue(google_update::kRegAggregateMethod, aggregate);
-
-  return (key.WriteValue(uniquename.c_str(), value) == ERROR_SUCCESS);
+  return key.WriteValue(uniquename.c_str(), value) == ERROR_SUCCESS;
 }
 
-// Updates a registry key |name| to be |value| for the given |app_reg_data|.
-bool WriteGoogleUpdateStrKeyInternal(const AppRegistrationData& app_reg_data,
-                                     const wchar_t* const name,
-                                     const base::string16& value) {
-  const REGSAM kAccess = KEY_SET_VALUE | KEY_WOW64_32KEY;
-  RegKey key(HKEY_CURRENT_USER, app_reg_data.GetStateKey().c_str(), kAccess);
-  return (key.WriteValue(name, value.c_str()) == ERROR_SUCCESS);
+// Writes |value| into |name| in the app's ClientState key in HKEY_CURRENT_USER.
+// This function is only provided for legacy use. New code needing to load/store
+// per-user data should use install_details::GetRegistryPath().
+bool WriteUserGoogleUpdateStrKey(const wchar_t* const name,
+                                 const base::string16& value) {
+  RegKey key;
+  return key.Create(HKEY_CURRENT_USER,
+                    InstallDetails::Get().GetClientStateKeyPath().c_str(),
+                    KEY_SET_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
+         key.WriteValue(name, value.c_str()) == ERROR_SUCCESS;
 }
 
 // Writes the per-user stat |value_name|=|value| either in ClientStateMedium
 // using summation as the aggregation function or in ClientState directly,
 // depending on whether this is is a per-machine or a per-user install.
-void WritePerUserStat(const AppRegistrationData& app_reg_data,
-                      bool is_system_install,
-                      const wchar_t* value_name,
-                      uint32_t value) {
-  if (is_system_install) {
+void WritePerUserStat(const wchar_t* value_name, uint32_t value) {
+  if (install_static::IsSystemInstall()) {
     // Write |value| as a DWORD in a per-user value of subkey |value_name|.
-    WriteGoogleUpdateAggregateNumKeyInternal(app_reg_data, value_name, value,
-                                             L"sum()");
+    WriteGoogleUpdateAggregateNumKeyInternal(value_name, value, L"sum()");
   } else {
     // Write |value| as a string in value |value_name|.
-    WriteGoogleUpdateStrKeyInternal(app_reg_data, value_name,
-                                    base::UintToString16(value));
+    WriteUserGoogleUpdateStrKey(value_name, base::UintToString16(value));
   }
 }
 
-bool WriteGoogleUpdateStrKey(const wchar_t* const name,
-                             const base::string16& value) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  return WriteGoogleUpdateStrKeyInternal(
-      dist->GetAppRegistrationData(), name, value);
-}
-
+// Clears |name| in the app's ClientState key by writing an empty string into
+// it. Returns true if the value does not exist, is already clear, or is
+// successfully cleared.
 bool ClearGoogleUpdateStrKey(const wchar_t* const name) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 reg_path = dist->GetStateKey();
-  RegKey key(HKEY_CURRENT_USER,
-             reg_path.c_str(),
-             KEY_READ | KEY_WRITE | KEY_WOW64_32KEY);
+  RegKey key;
+  auto result = key.Open(install_static::IsSystemInstall() ? HKEY_LOCAL_MACHINE
+                                                           : HKEY_CURRENT_USER,
+                         InstallDetails::Get().GetClientStateKeyPath().c_str(),
+                         KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
+  if (result == ERROR_PATH_NOT_FOUND || result == ERROR_FILE_NOT_FOUND)
+    return true;  // The key doesn't exist; consider the value cleared.
+  if (result != ERROR_SUCCESS)
+    return false;  // Failed to open the key.
+
   base::string16 value;
-  if (key.ReadValue(name, &value) != ERROR_SUCCESS)
-    return false;
-  return (key.WriteValue(name, L"") == ERROR_SUCCESS);
+  result = key.ReadValue(name, &value);
+  if (result == ERROR_FILE_NOT_FOUND ||
+      (result == ERROR_SUCCESS && value.empty())) {
+    return true;  // The value doesn't exist or is empty; consider it cleared.
+  }
+  return key.WriteValue(name, L"") == ERROR_SUCCESS;
 }
 
-bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 reg_path = dist->GetStateKey();
-  RegKey key(HKEY_CURRENT_USER,
-             reg_path.c_str(),
-             KEY_READ | KEY_WRITE | KEY_WOW64_32KEY);
-  if (!key.HasValue(name))
-    return true;
-  return (key.DeleteValue(name) == ERROR_SUCCESS);
+// Deletes the value |name| from the app's ClientState key in HKEY_CURRENT_USER.
+// Returns true if the value does not exist or is successfully deleted.
+bool RemoveUserGoogleUpdateStrKey(const wchar_t* const name) {
+  RegKey key;
+  auto result = key.Open(HKEY_CURRENT_USER,
+                         InstallDetails::Get().GetClientStateKeyPath().c_str(),
+                         KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
+  if (result == ERROR_PATH_NOT_FOUND || result == ERROR_FILE_NOT_FOUND)
+    return true;  // The key doesn't exist; consider the value cleared.
+  if (result != ERROR_SUCCESS)
+    return false;  // Failed to open the key.
+
+  base::string16 value;
+  return key.ReadValue(name, &value) == ERROR_FILE_NOT_FOUND ||
+         key.DeleteValue(name) == ERROR_SUCCESS;
 }
 
 // Initializes |channel_info| based on |system_install|. Returns false on
@@ -303,7 +330,8 @@ bool GoogleUpdateSettings::GetCollectStatsConsentDefault(
 std::unique_ptr<metrics::ClientInfo>
 GoogleUpdateSettings::LoadMetricsClientInfo() {
   base::string16 client_id_16;
-  if (!ReadGoogleUpdateStrKey(google_update::kRegMetricsId, &client_id_16) ||
+  if (!ReadUserGoogleUpdateStrKey(google_update::kRegMetricsId,
+                                  &client_id_16) ||
       client_id_16.empty()) {
     return std::unique_ptr<metrics::ClientInfo>();
   }
@@ -312,14 +340,14 @@ GoogleUpdateSettings::LoadMetricsClientInfo() {
   client_info->client_id = base::UTF16ToUTF8(client_id_16);
 
   base::string16 installation_date_str;
-  if (ReadGoogleUpdateStrKey(google_update::kRegMetricsIdInstallDate,
-                             &installation_date_str)) {
+  if (ReadUserGoogleUpdateStrKey(google_update::kRegMetricsIdInstallDate,
+                                 &installation_date_str)) {
     base::StringToInt64(installation_date_str, &client_info->installation_date);
   }
 
   base::string16 reporting_enbaled_date_date_str;
-  if (ReadGoogleUpdateStrKey(google_update::kRegMetricsIdEnabledDate,
-                             &reporting_enbaled_date_date_str)) {
+  if (ReadUserGoogleUpdateStrKey(google_update::kRegMetricsIdEnabledDate,
+                                 &reporting_enbaled_date_date_str)) {
     base::StringToInt64(reporting_enbaled_date_date_str,
                         &client_info->reporting_enabled_date);
   }
@@ -331,11 +359,12 @@ void GoogleUpdateSettings::StoreMetricsClientInfo(
     const metrics::ClientInfo& client_info) {
   // Attempt a best-effort at backing |client_info| in the registry (but don't
   // handle/report failures).
-  WriteGoogleUpdateStrKey(google_update::kRegMetricsId,
-                          base::UTF8ToUTF16(client_info.client_id));
-  WriteGoogleUpdateStrKey(google_update::kRegMetricsIdInstallDate,
-                          base::Int64ToString16(client_info.installation_date));
-  WriteGoogleUpdateStrKey(
+  WriteUserGoogleUpdateStrKey(google_update::kRegMetricsId,
+                              base::UTF8ToUTF16(client_info.client_id));
+  WriteUserGoogleUpdateStrKey(
+      google_update::kRegMetricsIdInstallDate,
+      base::Int64ToString16(client_info.installation_date));
+  WriteUserGoogleUpdateStrKey(
       google_update::kRegMetricsIdEnabledDate,
       base::Int64ToString16(client_info.reporting_enabled_date));
 }
@@ -359,7 +388,7 @@ bool GoogleUpdateSettings::SetEULAConsent(
 
 int GoogleUpdateSettings::GetLastRunTime() {
   base::string16 time_s;
-  if (!ReadGoogleUpdateStrKey(google_update::kRegLastRunTimeField, &time_s))
+  if (!ReadUserGoogleUpdateStrKey(google_update::kRegLastRunTimeField, &time_s))
     return -1;
   int64_t time_i;
   if (!base::StringToInt64(time_s, &time_i))
@@ -371,52 +400,51 @@ int GoogleUpdateSettings::GetLastRunTime() {
 
 bool GoogleUpdateSettings::SetLastRunTime() {
   int64_t time = base::Time::NowFromSystemTime().ToInternalValue();
-  return WriteGoogleUpdateStrKey(google_update::kRegLastRunTimeField,
-                                 base::Int64ToString16(time));
+  return WriteUserGoogleUpdateStrKey(google_update::kRegLastRunTimeField,
+                                     base::Int64ToString16(time));
 }
 
 bool GoogleUpdateSettings::RemoveLastRunTime() {
-  return RemoveGoogleUpdateStrKey(google_update::kRegLastRunTimeField);
+  return RemoveUserGoogleUpdateStrKey(google_update::kRegLastRunTimeField);
 }
 
 bool GoogleUpdateSettings::GetBrowser(base::string16* browser) {
+  // Written by Google Update.
   return ReadGoogleUpdateStrKey(google_update::kRegBrowserField, browser);
 }
 
 bool GoogleUpdateSettings::GetLanguage(base::string16* language) {
+  // Written by Google Update.
   return ReadGoogleUpdateStrKey(google_update::kRegLangField, language);
 }
 
 bool GoogleUpdateSettings::GetBrand(base::string16* brand) {
+  // Written by Google Update.
   return ReadGoogleUpdateStrKey(google_update::kRegRLZBrandField, brand);
 }
 
 bool GoogleUpdateSettings::GetReactivationBrand(base::string16* brand) {
-  return ReadGoogleUpdateStrKey(google_update::kRegRLZReactivationBrandField,
-                                brand);
-}
-
-bool GoogleUpdateSettings::GetClient(base::string16* client) {
-  return ReadGoogleUpdateStrKey(google_update::kRegClientField, client);
-}
-
-bool GoogleUpdateSettings::SetClient(const base::string16& client) {
-  return WriteGoogleUpdateStrKey(google_update::kRegClientField, client);
+  // Written by GCAPI into HKCU.
+  return ReadUserGoogleUpdateStrKey(
+      google_update::kRegRLZReactivationBrandField, brand);
 }
 
 bool GoogleUpdateSettings::GetReferral(base::string16* referral) {
+  // Written by Google Update.
   return ReadGoogleUpdateStrKey(google_update::kRegReferralField, referral);
 }
 
 bool GoogleUpdateSettings::ClearReferral() {
+  // This is expected to fail when called from within the browser for
+  // system-level installs, as the user generally does not have the required
+  // rights to modify keys in HKLM.
   return ClearGoogleUpdateStrKey(google_update::kRegReferralField);
 }
 
 bool GoogleUpdateSettings::UpdateDidRunState(bool did_run) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  return WriteGoogleUpdateStrKeyInternal(dist->GetAppRegistrationData(),
-                                         google_update::kRegDidRunField,
-                                         did_run ? L"1" : L"0");
+  // Written into HKCU; read by Google Update.
+  return WriteUserGoogleUpdateStrKey(google_update::kRegDidRunField,
+                                     did_run ? L"1" : L"0");
 }
 
 void GoogleUpdateSettings::UpdateInstallStatus(bool system_install,
@@ -526,44 +554,10 @@ bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
 
 void GoogleUpdateSettings::UpdateProfileCounts(size_t profiles_active,
                                                size_t profiles_signedin) {
-  const auto& app_reg_data =
-      BrowserDistribution::GetDistribution()->GetAppRegistrationData();
-  const bool is_system_install = IsSystemInstall();
-  WritePerUserStat(app_reg_data, is_system_install,
-                   google_update::kRegProfilesActive,
+  WritePerUserStat(google_update::kRegProfilesActive,
                    base::saturated_cast<uint32_t>(profiles_active));
-  WritePerUserStat(app_reg_data, is_system_install,
-                   google_update::kRegProfilesSignedIn,
+  WritePerUserStat(google_update::kRegProfilesSignedIn,
                    base::saturated_cast<uint32_t>(profiles_signedin));
-}
-
-int GoogleUpdateSettings::DuplicateGoogleUpdateSystemClientKey() {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 reg_path = dist->GetStateKey();
-
-  // Minimum access needed is to be able to write to this key.
-  RegKey reg_key(
-      HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_SET_VALUE | KEY_WOW64_32KEY);
-  if (!reg_key.Valid())
-    return 0;
-
-  HANDLE target_handle = 0;
-  if (!DuplicateHandle(GetCurrentProcess(), reg_key.Handle(),
-                       GetCurrentProcess(), &target_handle, KEY_SET_VALUE,
-                       TRUE, DUPLICATE_SAME_ACCESS)) {
-    return 0;
-  }
-  return static_cast<int>(reinterpret_cast<uintptr_t>(target_handle));
-}
-
-bool GoogleUpdateSettings::WriteGoogleUpdateSystemClientKey(
-    int handle, const base::string16& key, const base::string16& value) {
-  HKEY reg_key = reinterpret_cast<HKEY>(
-      reinterpret_cast<void*>(static_cast<uintptr_t>(handle)));
-  DWORD size = static_cast<DWORD>(value.size()) * sizeof(wchar_t);
-  LSTATUS status = RegSetValueEx(reg_key, key.c_str(), 0, REG_SZ,
-      reinterpret_cast<const BYTE*>(value.c_str()), size);
-  return status == ERROR_SUCCESS;
 }
 
 GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
