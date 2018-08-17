@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
@@ -328,6 +329,8 @@ void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls,
         !installed_scripts_manager->IsScriptInstalled(completed_url)) {
       DCHECK(installed_scripts_manager->IsScriptInstalled(Url()));
       CountFeature(WebFeature::kServiceWorkerImportScriptNotInstalled);
+      Deprecation::CountDeprecation(
+          this, WebFeature::kServiceWorkerImportScriptNotInstalled);
     }
     // Bust the MemoryCache to ensure script requests reach the browser-side
     // and get added to and retrieved from the ServiceWorker's script cache.
