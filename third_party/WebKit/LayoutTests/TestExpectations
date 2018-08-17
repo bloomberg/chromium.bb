@@ -4260,8 +4260,6 @@ crbug.com/827231 external/wpt/cookie-store/document_cookie.tentative.html [ Pass
 crbug.com/827231 external/wpt/cookie-store/document_cookie.tentative.https.html [ Pass Failure ]
 
 # Failing cookies tests with random numbers in error message
-crbug.com/843945 external/wpt/cookies/prefix/__secure.http.secure.html [ Failure ]
-crbug.com/843945 external/wpt/cookies/prefix/document-cookie.non-secure.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/fetch.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/form-get-blank-reload.html [ Failure ]
 crbug.com/843945 external/wpt/cookies/samesite/form-get-blank.html [ Failure ]
