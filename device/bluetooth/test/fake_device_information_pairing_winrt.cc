@@ -10,6 +10,9 @@ namespace {
 
 using ABI::Windows::Devices::Enumeration::DevicePairingProtectionLevel;
 using ABI::Windows::Devices::Enumeration::DevicePairingResult;
+using ABI::Windows::Devices::Enumeration::DeviceUnpairingResult;
+using ABI::Windows::Devices::Enumeration::IDeviceInformationCustomPairing;
+using ABI::Windows::Devices::Enumeration::IDevicePairingSettings;
 using ABI::Windows::Foundation::IAsyncOperation;
 
 }  // namespace
@@ -38,6 +41,29 @@ HRESULT FakeDeviceInformationPairingWinrt::PairAsync(
 HRESULT FakeDeviceInformationPairingWinrt::PairWithProtectionLevelAsync(
     DevicePairingProtectionLevel min_protection_level,
     IAsyncOperation<DevicePairingResult*>** result) {
+  return E_NOTIMPL;
+}
+
+HRESULT FakeDeviceInformationPairingWinrt::get_ProtectionLevel(
+    DevicePairingProtectionLevel* value) {
+  return E_NOTIMPL;
+}
+
+HRESULT FakeDeviceInformationPairingWinrt::get_Custom(
+    IDeviceInformationCustomPairing** value) {
+  return E_NOTIMPL;
+}
+
+HRESULT
+FakeDeviceInformationPairingWinrt::PairWithProtectionLevelAndSettingsAsync(
+    DevicePairingProtectionLevel min_protection_level,
+    IDevicePairingSettings* device_pairing_settings,
+    IAsyncOperation<DevicePairingResult*>** result) {
+  return E_NOTIMPL;
+}
+
+HRESULT FakeDeviceInformationPairingWinrt::UnpairAsync(
+    IAsyncOperation<DeviceUnpairingResult*>** result) {
   return E_NOTIMPL;
 }
 

@@ -30,6 +30,7 @@
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_service_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_input_client.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
+#include "device/bluetooth/test/test_pairing_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -41,6 +42,7 @@ using device::BluetoothDiscoveryFilter;
 using device::BluetoothDiscoverySession;
 using device::BluetoothUUID;
 using device::TestBluetoothAdapterObserver;
+using device::TestPairingDelegate;
 
 namespace bluez {
 
@@ -87,88 +89,6 @@ class FakeBluetoothProfileServiceProviderDelegate
 
 }  // namespace
 
-class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
- public:
-  TestPairingDelegate()
-      : call_count_(0),
-        request_pincode_count_(0),
-        request_passkey_count_(0),
-        display_pincode_count_(0),
-        display_passkey_count_(0),
-        keys_entered_count_(0),
-        confirm_passkey_count_(0),
-        authorize_pairing_count_(0),
-        last_passkey_(9999999U),
-        last_entered_(999U) {}
-  ~TestPairingDelegate() override = default;
-
-  void RequestPinCode(BluetoothDevice* device) override {
-    ++call_count_;
-    ++request_pincode_count_;
-    QuitMessageLoop();
-  }
-
-  void RequestPasskey(BluetoothDevice* device) override {
-    ++call_count_;
-    ++request_passkey_count_;
-    QuitMessageLoop();
-  }
-
-  void DisplayPinCode(BluetoothDevice* device,
-                      const std::string& pincode) override {
-    ++call_count_;
-    ++display_pincode_count_;
-    last_pincode_ = pincode;
-    QuitMessageLoop();
-  }
-
-  void DisplayPasskey(BluetoothDevice* device, uint32_t passkey) override {
-    ++call_count_;
-    ++display_passkey_count_;
-    last_passkey_ = passkey;
-    QuitMessageLoop();
-  }
-
-  void KeysEntered(BluetoothDevice* device, uint32_t entered) override {
-    ++call_count_;
-    ++keys_entered_count_;
-    last_entered_ = entered;
-    QuitMessageLoop();
-  }
-
-  void ConfirmPasskey(BluetoothDevice* device, uint32_t passkey) override {
-    ++call_count_;
-    ++confirm_passkey_count_;
-    last_passkey_ = passkey;
-    QuitMessageLoop();
-  }
-
-  void AuthorizePairing(BluetoothDevice* device) override {
-    ++call_count_;
-    ++authorize_pairing_count_;
-    QuitMessageLoop();
-  }
-
-  int call_count_;
-  int request_pincode_count_;
-  int request_passkey_count_;
-  int display_pincode_count_;
-  int display_passkey_count_;
-  int keys_entered_count_;
-  int confirm_passkey_count_;
-  int authorize_pairing_count_;
-  uint32_t last_passkey_;
-  uint32_t last_entered_;
-  std::string last_pincode_;
-
- private:
-  // Some tests use a message loop since background processing is simulated;
-  // break out of those loops.
-  void QuitMessageLoop() {
-    if (base::RunLoop::IsRunningOnCurrentThread())
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-};
 
 class BluetoothBlueZTest : public testing::Test {
  public:

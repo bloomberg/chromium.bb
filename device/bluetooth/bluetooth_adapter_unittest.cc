@@ -44,6 +44,8 @@ using device::BluetoothDevice;
 
 namespace device {
 
+namespace {
+
 class TestBluetoothAdapter : public BluetoothAdapter {
  public:
   TestBluetoothAdapter() = default;
@@ -175,6 +177,8 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
   void ConfirmPasskey(BluetoothDevice* device, uint32_t passkey) override {}
   void AuthorizePairing(BluetoothDevice* device) override {}
 };
+
+}  // namespace
 
 TEST(BluetoothAdapterTest, NoDefaultPairingDelegate) {
   scoped_refptr<BluetoothAdapter> adapter = new TestBluetoothAdapter();
