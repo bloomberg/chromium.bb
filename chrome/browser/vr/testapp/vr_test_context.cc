@@ -37,6 +37,7 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/vector_icons.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -663,14 +664,14 @@ void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
       full_string.find(request.text) == 0) {
     result->suggestions.emplace_back(OmniboxSuggestion(
         full_string, base::string16(), ACMatchClassifications(),
-        ACMatchClassifications(), AutocompleteMatch::Type::VOICE_SUGGEST,
-        GURL(), request.text, full_string.substr(request.text.size())));
+        ACMatchClassifications(), &vector_icons::kSearchIcon, GURL(),
+        request.text, full_string.substr(request.text.size())));
   }
 
   // Supply a verbatim search match.
   result->suggestions.emplace_back(OmniboxSuggestion(
       request.text, base::string16(), ACMatchClassifications(),
-      ACMatchClassifications(), AutocompleteMatch::Type::VOICE_SUGGEST, GURL(),
+      ACMatchClassifications(), &vector_icons::kSearchIcon, GURL(),
       base::string16(), base::string16()));
 
   // Add a suggestion to exercise classification text styling.
@@ -685,7 +686,7 @@ void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
           ACMatchClassification(15, ACMatchClassification::DIM),
           ACMatchClassification(19, ACMatchClassification::INVISIBLE),
       },
-      AutocompleteMatch::Type::VOICE_SUGGEST, GURL("http://www.test.com/"),
+      &vector_icons::kSearchIcon, GURL("http://www.test.com/"),
       base::string16(), base::string16()));
 
   while (result->suggestions.size() < 4) {
@@ -695,7 +696,7 @@ void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
             "Very lengthy description of the suggestion that would wrap "
             "if not truncated through some other means."),
         ACMatchClassifications(), ACMatchClassifications(),
-        AutocompleteMatch::Type::VOICE_SUGGEST, GURL("http://www.test.com/"),
+        &vector_icons::kSearchIcon, GURL("http://www.test.com/"),
         base::string16(), base::string16()));
   }
 

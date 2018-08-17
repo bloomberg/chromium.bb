@@ -929,10 +929,10 @@ TEST_F(UiTest, OmniboxSuggestionBindings) {
   EXPECT_EQ(container->children().size(), 0u);
   EXPECT_EQ(NumVisibleInTree(kOmniboxSuggestions), 0);
 
-  model_->omnibox_suggestions.emplace_back(OmniboxSuggestion(
-      base::string16(), base::string16(), ACMatchClassifications(),
-      ACMatchClassifications(), AutocompleteMatch::Type::VOICE_SUGGEST, GURL(),
-      base::string16(), base::string16()));
+  model_->omnibox_suggestions.emplace_back(
+      OmniboxSuggestion(base::string16(), base::string16(),
+                        ACMatchClassifications(), ACMatchClassifications(),
+                        nullptr, GURL(), base::string16(), base::string16()));
   OnBeginFrame();
   EXPECT_EQ(container->children().size(), 1u);
   EXPECT_GT(NumVisibleInTree(kOmniboxSuggestions), 1);
@@ -947,10 +947,10 @@ TEST_F(UiTest, OmniboxSuggestionNavigates) {
   CreateScene(kNotInWebVr);
   GURL gurl("http://test.com/");
   model_->push_mode(kModeEditingOmnibox);
-  model_->omnibox_suggestions.emplace_back(OmniboxSuggestion(
-      base::string16(), base::string16(), ACMatchClassifications(),
-      ACMatchClassifications(), AutocompleteMatch::Type::VOICE_SUGGEST, gurl,
-      base::string16(), base::string16()));
+  model_->omnibox_suggestions.emplace_back(
+      OmniboxSuggestion(base::string16(), base::string16(),
+                        ACMatchClassifications(), ACMatchClassifications(),
+                        nullptr, gurl, base::string16(), base::string16()));
   OnBeginFrame();
 
   // Let the omnibox fade in.

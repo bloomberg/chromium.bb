@@ -25,7 +25,7 @@ OmniboxSuggestion::OmniboxSuggestion(
         new_contents_classifications,
     const AutocompleteMatch::ACMatchClassifications&
         new_description_classifications,
-    AutocompleteMatch::Type new_type,
+    const gfx::VectorIcon* new_icon,
     GURL new_destination,
     const base::string16& new_input,
     const base::string16& new_inline_autocompletion)
@@ -33,7 +33,7 @@ OmniboxSuggestion::OmniboxSuggestion(
       description(new_description),
       contents_classifications(new_contents_classifications),
       description_classifications(new_description_classifications),
-      type(new_type),
+      icon(new_icon),
       destination(new_destination),
       autocompletion(Autocompletion(new_input, new_inline_autocompletion)) {}
 
@@ -44,7 +44,7 @@ OmniboxSuggestion::OmniboxSuggestion(const OmniboxSuggestion& other) {
   contents_classifications = other.contents_classifications;
   description = other.description;
   description_classifications = other.description_classifications;
-  type = other.type;
+  icon = other.icon;
   destination = other.destination;
   autocompletion = other.autocompletion;
 }
