@@ -40,7 +40,11 @@ bool WeightedMovingAverage::Average(int64_t* average, double* error) const {
     return false;
 
   *average = static_cast<int64_t>(round(mean_.weighted_mean()));
-  *error = sqrt(mean_.variance_sum() / mean_.sum_weights());
+
+  const double effective_sample_size =
+      mean_.sum_weights() * mean_.sum_weights() / mean_.sum_squared_weights();
+  const double variance = mean_.variance_sum() / mean_.sum_weights();
+  *error = sqrt(variance / effective_sample_size);
   return true;
 }
 

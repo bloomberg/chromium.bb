@@ -4,16 +4,21 @@
 
 #include "chromecast/base/statistics/weighted_mean.h"
 
+#include <cmath>
+
 namespace chromecast {
 
 WeightedMean::WeightedMean()
-    : weighted_mean_(0), variance_sum_(0), sum_weights_(0) {}
-
-WeightedMean::~WeightedMean() {}
+    : weighted_mean_(0),
+      variance_sum_(0),
+      sum_weights_(0),
+      sum_squared_weights_(0) {}
 
 void WeightedMean::AddSample(int64_t value, double weight) {
   double old_sum_weights = sum_weights_;
   sum_weights_ += weight;
+  // Use std::abs() to handle negative weights (ie, removing a sample).
+  sum_squared_weights_ += weight * std::abs(weight);
   if (sum_weights_ == 0) {
     weighted_mean_ = 0;
     variance_sum_ = 0;

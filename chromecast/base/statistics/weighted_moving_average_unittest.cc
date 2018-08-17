@@ -53,7 +53,7 @@ TEST(WeightedMovingAverageTest, AverageSeveralUnweightedValues) {
   double error = 0;
   EXPECT_TRUE(averager.Average(&avg, &error));
   EXPECT_EQ(3, avg);
-  EXPECT_NEAR(sqrt(2), error, 1e-9);
+  EXPECT_NEAR(sqrt(2) / sqrt(5), error, 1e-9);
 }
 
 TEST(WeightedMovingAverageTest, Clear) {
@@ -65,7 +65,7 @@ TEST(WeightedMovingAverageTest, Clear) {
   double error = 0;
   EXPECT_TRUE(averager.Average(&avg, &error));
   EXPECT_EQ(3, avg);
-  EXPECT_NEAR(sqrt(2), error, 1e-9);
+  EXPECT_NEAR(sqrt(2) / sqrt(5), error, 1e-9);
 
   averager.Clear();
   EXPECT_FALSE(averager.Average(&avg, &error));
@@ -77,7 +77,7 @@ TEST(WeightedMovingAverageTest, Clear) {
   error = 0;
   EXPECT_TRUE(averager.Average(&avg, &error));
   EXPECT_EQ(3, avg);
-  EXPECT_NEAR(sqrt(2), error, 1e-9);
+  EXPECT_NEAR(sqrt(2) / sqrt(5), error, 1e-9);
 }
 
 TEST(WeightedMovingAverageTest, AverageSeveralWeightedValues) {
@@ -92,7 +92,9 @@ TEST(WeightedMovingAverageTest, AverageSeveralWeightedValues) {
   double error = 0;
   EXPECT_TRUE(averager.Average(&avg, &error));
   EXPECT_EQ(3, avg);
-  EXPECT_NEAR(sqrt(3), error, 1e-9);
+  // <sum of weights>^2 / <sum of weights^2>
+  double effective_sample_size = 36.0 / 10.0;
+  EXPECT_NEAR(sqrt(3) / sqrt(effective_sample_size), error, 1e-9);
 }
 
 TEST(WeightedMovingAverageTest, DropOldValues) {
@@ -107,7 +109,7 @@ TEST(WeightedMovingAverageTest, DropOldValues) {
   double error = 0;
   EXPECT_TRUE(averager.Average(&avg, &error));
   EXPECT_EQ(2, avg);
-  EXPECT_DOUBLE_EQ(1.0, error);
+  EXPECT_DOUBLE_EQ(1.0 / sqrt(2), error);
 }
 
 TEST(WeightedMovingAverageTest, DropOldValuesUneven) {
@@ -122,7 +124,7 @@ TEST(WeightedMovingAverageTest, DropOldValuesUneven) {
   double error = 0;
   EXPECT_TRUE(averager.Average(&avg, &error));
   EXPECT_EQ(2, avg);
-  EXPECT_DOUBLE_EQ(1.0, error);
+  EXPECT_DOUBLE_EQ(1.0 / sqrt(2), error);
 }
 
 TEST(WeightedMovingAverageTest, DropOldValuesByAddingZeroWeightValues) {
