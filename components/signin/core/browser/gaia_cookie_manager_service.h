@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -44,7 +45,8 @@ class SimpleURLLoader;
 class GaiaCookieManagerService : public KeyedService,
                                  public GaiaAuthConsumer,
                                  public UbertokenConsumer,
-                                 public network::mojom::CookieChangeListener {
+                                 public network::mojom::CookieChangeListener,
+                                 public OAuth2TokenService::Consumer {
  public:
   enum GaiaCookieRequestType {
     ADD_ACCOUNT,
@@ -197,6 +199,10 @@ class GaiaCookieManagerService : public KeyedService,
   void SetAccountsInCookie(const std::vector<std::string>& account_ids,
                            const std::string& source);
 
+  // Takes list of account_ids from the front request, matches them with a
+  // corresponding stored access_token and calls StartMultilogin.
+  void SetAccountsInCookieWithTokens();
+
   // Returns if the listed accounts are up to date or not. The out parameter
   // will be assigned the current cached accounts (whether they are not up to
   // date or not). If the accounts are not up to date, a ListAccounts fetch is
@@ -272,6 +278,13 @@ class GaiaCookieManagerService : public KeyedService,
   void OnUbertokenSuccess(const std::string& token) override;
   void OnUbertokenFailure(const GoogleServiceAuthError& error) override;
 
+  // Overridden from OAuth2TokenService::Consumer.
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
+
   // Overridden from GaiaAuthConsumer.
   void OnMergeSessionSuccess(const std::string& data) override;
   void OnMergeSessionFailure(const GoogleServiceAuthError& error) override;
@@ -323,6 +336,14 @@ class GaiaCookieManagerService : public KeyedService,
 
   // The last fetched ubertoken, for use in MergeSession retries.
   std::string uber_token_;
+
+  // Access tokens for use inside SetAccountsToCookie.
+  // TODO (valeriyas): make FetchUberToken use those instead of a separate
+  // access_token.
+  std::unordered_map<std::string, std::string> access_tokens_;
+
+  // Current list of processed token requests;
+  std::vector<std::unique_ptr<OAuth2TokenService::Request>> token_requests_;
 
   // The access token that can be used to prime the UberToken fetch.
   std::string access_token_;
