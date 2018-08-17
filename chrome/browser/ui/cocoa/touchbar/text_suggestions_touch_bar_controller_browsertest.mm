@@ -191,17 +191,6 @@ IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
   }
 }
 
-// Tests that an invalid range does not crash the controller.
-IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, InvalidRange) {
-  FocusTextfield();
-  [touch_bar_controller_
-      updateTextSelection:base::string16(base::ASCIIToUTF16("text"))
-                    range:gfx::Range::InvalidRange()
-                   offset:0];
-  EXPECT_STREQ("", [touch_bar_controller_ text].UTF8String);
-  EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
-}
-
 // Tests that a change in WebContents is handled properly.
 IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, SetWebContents) {
   NSString* const kText = @"text";
