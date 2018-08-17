@@ -113,17 +113,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // on the next DecodeSurface(). Return true on success.
   bool SubmitSlice(int index, const uint8_t* data, size_t size);
 
-  //
-  // TODO(crbug.com/819930): Remove after https://crrev.com/c/1134929 and
-  // https://crrev.com/c/1136336 are merged.
-  //
-  // If |ctrl_id| is for a ChromeOS-specific control of MPEG video and
-  // https://crrev.com/c/1134929 and https://crrev.com/c/1136336 don't seem to
-  // be merged into the kernel, change the value of |ctrl_id| to one for the
-  // kernel.
-  // Otherwise, do nothing.
-  void ReplaceChromeMpegVideoCtrlId(uint32_t* ctrl_id);
-
   // Submit controls in |ext_ctrls| to hardware. Return true on success.
   bool SubmitExtControls(struct v4l2_ext_controls* ext_ctrls);
 
