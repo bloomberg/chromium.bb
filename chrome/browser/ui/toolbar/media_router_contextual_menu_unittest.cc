@@ -294,7 +294,9 @@ TEST_F(MediaRouterContextualMenuUnitTest, NotifyActionController) {
   EXPECT_CALL(observer_, OnContextMenuShown());
   auto menu = std::make_unique<MediaRouterContextualMenu>(
       browser(), kInToolbar, kShownByUser, &observer_);
+  menu->MenuWillShow(menu->menu_model());
 
   EXPECT_CALL(observer_, OnContextMenuHidden());
+  menu->MenuClosed(menu->menu_model());
   menu.reset();
 }

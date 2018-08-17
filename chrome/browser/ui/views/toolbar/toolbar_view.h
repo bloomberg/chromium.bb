@@ -47,6 +47,10 @@ namespace bookmarks {
 class BookmarkBubbleObserver;
 }
 
+namespace media_router {
+class CastToolbarButton;
+}
+
 // The Browser Window's toolbar.
 class ToolbarView : public views::AccessiblePaneView,
                     public views::MenuButtonListener,
@@ -110,6 +114,7 @@ class ToolbarView : public views::AccessiblePaneView,
   ToolbarButton* back_button() const { return back_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
+  media_router::CastToolbarButton* cast_button() const { return cast_; }
   AvatarToolbarButton* avatar_button() const { return avatar_; }
   BrowserAppMenuButton* app_menu_button() const { return app_menu_button_; }
   HomeButton* home_button() const { return home_; }
@@ -230,6 +235,7 @@ class ToolbarView : public views::AccessiblePaneView,
   HomeButton* home_ = nullptr;
   LocationBarView* location_bar_ = nullptr;
   BrowserActionsContainer* browser_actions_ = nullptr;
+  media_router::CastToolbarButton* cast_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;
 

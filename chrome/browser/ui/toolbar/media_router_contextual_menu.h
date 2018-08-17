@@ -39,7 +39,10 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
                             Observer* observer);
   ~MediaRouterContextualMenu() override;
 
-  ui::SimpleMenuModel* menu_model() { return &menu_model_; }
+  // Transfers the ownership of |menu_model_| to the caller.
+  std::unique_ptr<ui::SimpleMenuModel> TakeMenuModel();
+
+  ui::SimpleMenuModel* menu_model() { return menu_model_.get(); }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
@@ -50,6 +53,8 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
                            ToggleAlwaysShowIconItem);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
                            ActionShownByPolicy);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
+                           NotifyActionController);
 
   // Gets or sets the "Always show icon" option.
   bool GetAlwaysShowActionPref() const;
@@ -60,6 +65,8 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   bool IsCommandIdEnabled(int command_id) const override;
   bool IsCommandIdVisible(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
+  void MenuWillShow(ui::SimpleMenuModel* source) override;
+  void MenuClosed(ui::SimpleMenuModel* source) override;
 
   // Toggles the enabled/disabled state of cloud services. This may show a
   // dialog asking the user to acknowledge the Google Privacy Policy before
@@ -77,7 +84,10 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   Observer* const observer_;
 
   Browser* const browser_;
-  ui::SimpleMenuModel menu_model_;
+
+  // TODO(takumif): |menu_model_| is required by MediaRouterAction but not by
+  // CastToolbarButton. Remove |menu_model_| when removing MediaRouterAction.
+  std::unique_ptr<ui::SimpleMenuModel> menu_model_;
 
   // Whether the action icon is in the toolbar, as opposed to the overflow menu.
   const bool is_action_in_toolbar_;

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/pref_names.h"
@@ -28,12 +29,9 @@
 namespace media_router {
 
 void ShowCloudServicesDialog(Browser* browser) {
-  views::View* action_view =
-      BrowserView::GetBrowserViewForBrowser(browser)
-          ->toolbar()
-          ->browser_actions()
-          ->GetViewForId(ComponentToolbarActionsFactory::kMediaRouterActionId);
-  CloudServicesDialogView::ShowDialog(action_view, browser);
+  views::View* icon_view =
+      BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->cast_button();
+  CloudServicesDialogView::ShowDialog(icon_view, browser);
 }
 
 // static

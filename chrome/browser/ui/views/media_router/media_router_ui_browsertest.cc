@@ -8,6 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,7 +22,10 @@
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/media_router/app_menu_test_api.h"
+#include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -32,6 +36,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace media_router {
@@ -82,9 +87,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     // When the Media Router Action executes, it opens a dialog with web
     // contents to chrome://media-router.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MediaRouterUIBrowserTest::ExecuteMediaRouterAction,
-                       base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&MediaRouterUIBrowserTest::PressToolbarIcon,
+                                  base::Unretained(this)));
 
     std::unique_ptr<test::AppMenuTestApi> test_api =
         test::AppMenuTestApi::Create(browser());
@@ -107,18 +111,32 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     return GetDialogController()->action();
   }
 
-  ui::SimpleMenuModel* GetActionContextMenu() {
+  CastToolbarButton* GetTrustedAreaIcon() {
+    return BrowserView::GetBrowserViewForBrowser(browser())
+        ->toolbar()
+        ->cast_button();
+  }
+
+  ui::SimpleMenuModel* GetIconContextMenu() {
     return static_cast<ui::SimpleMenuModel*>(
-        GetMediaRouterAction()->GetContextMenu());
+        ShouldUseViewsDialog() ? GetTrustedAreaIcon()->menu_model_for_test()
+                               : GetMediaRouterAction()->GetContextMenu());
   }
 
-  void ExecuteMediaRouterAction() {
-    EXPECT_TRUE(test::AppMenuTestApi::Create(browser())->IsMenuShowing());
-    GetMediaRouterAction()->ExecuteAction(true);
+  void PressToolbarIcon() {
+    if (ShouldUseViewsDialog()) {
+      GetTrustedAreaIcon()->OnMousePressed(ui::MouseEvent(
+          ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0),
+          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+    } else {
+      GetMediaRouterAction()->ExecuteAction(true);
+    }
   }
 
-  bool ActionExists() {
+  bool ToolbarIconExists() {
     base::RunLoop().RunUntilIdle();
+    if (ShouldUseViewsDialog())
+      return GetTrustedAreaIcon()->visible();
     return ToolbarActionsModel::Get(browser()->profile())
         ->HasComponentAction(
             ComponentToolbarActionsFactory::kMediaRouterActionId);
@@ -182,56 +200,31 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   void TestEphemeralToolbarIconForDialog() {
     MediaRouterDialogController* dialog_controller = GetDialogController();
 
-    EXPECT_FALSE(ActionExists());
+    EXPECT_FALSE(ToolbarIconExists());
     dialog_controller->ShowMediaRouterDialog();
-    EXPECT_TRUE(ActionExists());
+    EXPECT_TRUE(ToolbarIconExists());
     dialog_controller->HideMediaRouterDialog();
-    EXPECT_FALSE(ActionExists());
+    EXPECT_FALSE(ToolbarIconExists());
 
     dialog_controller->ShowMediaRouterDialog();
-    EXPECT_TRUE(ActionExists());
+    EXPECT_TRUE(ToolbarIconExists());
     // Clicking on the toolbar icon should hide both the dialog and the icon.
-    GetMediaRouterAction()->ExecuteAction(true);
+    PressToolbarIcon();
     EXPECT_FALSE(dialog_controller->IsShowingMediaRouterDialog());
-    EXPECT_FALSE(ActionExists());
+    EXPECT_FALSE(ToolbarIconExists());
 
     dialog_controller->ShowMediaRouterDialog();
     SetAlwaysShowActionPref(true);
     // When the pref is set to true, hiding the dialog shouldn't hide the icon.
     dialog_controller->HideMediaRouterDialog();
-    EXPECT_TRUE(ActionExists());
+    EXPECT_TRUE(ToolbarIconExists());
     dialog_controller->ShowMediaRouterDialog();
     // While the dialog is showing, setting the pref to false shouldn't hide the
     // icon.
     SetAlwaysShowActionPref(false);
-    EXPECT_TRUE(ActionExists());
+    EXPECT_TRUE(ToolbarIconExists());
     dialog_controller->HideMediaRouterDialog();
-    EXPECT_FALSE(ActionExists());
-  }
-
-  void TestPinAndUnpinToolbarIcon() {
-    GetDialogController()->ShowMediaRouterDialog();
-    EXPECT_TRUE(ActionExists());
-
-    // Pin the icon via its context menu.
-    ui::SimpleMenuModel* context_menu = GetActionContextMenu();
-    const int command_index = context_menu->GetIndexOfCommandId(
-        IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
-    if (IsCocoaBrowser()) {
-      // With Cocoa, OnContextMenuClosed() gets called before command execution.
-      GetMediaRouterAction()->OnContextMenuClosed();
-      context_menu->ActivatedAt(command_index);
-    } else {
-      context_menu->ActivatedAt(command_index);
-      GetMediaRouterAction()->OnContextMenuClosed();
-    }
-    GetDialogController()->HideMediaRouterDialog();
-    EXPECT_TRUE(ActionExists());
-
-    // Unpin the icon via its context menu.
-    GetActionContextMenu()->ActivatedAt(command_index);
-    GetMediaRouterAction()->OnContextMenuClosed();
-    EXPECT_FALSE(ActionExists());
+    EXPECT_FALSE(ToolbarIconExists());
   }
 
   ToolbarActionsBar* toolbar_actions_bar_ = nullptr;
@@ -281,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   SetAlwaysShowActionPref(true);
-  EXPECT_TRUE(ActionExists());
+  EXPECT_TRUE(ToolbarIconExists());
 
   OpenMediaRouterDialogAndWaitForNewWebContents();
 
@@ -330,23 +323,23 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
   // Open a dialog in the first tab using the toolbar action.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
   EXPECT_FALSE(dialog_controller1->IsShowingMediaRouterDialog());
-  GetMediaRouterAction()->ExecuteAction(true);
+  PressToolbarIcon();
   EXPECT_TRUE(dialog_controller1->IsShowingMediaRouterDialog());
 
   // Move to the second tab, which shouldn't have a dialog at first. Open and
   // close a dialog in that tab.
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   EXPECT_FALSE(dialog_controller2->IsShowingMediaRouterDialog());
-  GetMediaRouterAction()->ExecuteAction(true);
+  PressToolbarIcon();
   EXPECT_TRUE(dialog_controller2->IsShowingMediaRouterDialog());
-  GetMediaRouterAction()->ExecuteAction(true);
+  PressToolbarIcon();
   EXPECT_FALSE(dialog_controller2->IsShowingMediaRouterDialog());
 
   // Move back to the first tab, whose dialog should still be open. Hide the
   // dialog.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
   EXPECT_TRUE(dialog_controller1->IsShowingMediaRouterDialog());
-  GetMediaRouterAction()->ExecuteAction(true);
+  PressToolbarIcon();
   EXPECT_FALSE(dialog_controller1->IsShowingMediaRouterDialog());
 
   // Reset the preference showing the toolbar action.
@@ -356,59 +349,59 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
                        EphemeralToolbarIconForRoutesAndIssues) {
   action_controller_->OnIssue(issue_);
-  EXPECT_TRUE(ActionExists());
+  EXPECT_TRUE(ToolbarIconExists());
   action_controller_->OnIssuesCleared();
-  EXPECT_FALSE(ActionExists());
+  EXPECT_FALSE(ToolbarIconExists());
 
   action_controller_->OnRoutesUpdated(routes_, std::vector<MediaRoute::Id>());
-  EXPECT_TRUE(ActionExists());
+  EXPECT_TRUE(ToolbarIconExists());
   action_controller_->OnRoutesUpdated(std::vector<MediaRoute>(),
                                       std::vector<MediaRoute::Id>());
-  EXPECT_FALSE(ActionExists());
+  EXPECT_FALSE(ToolbarIconExists());
 
   SetAlwaysShowActionPref(true);
-  EXPECT_TRUE(ActionExists());
+  EXPECT_TRUE(ToolbarIconExists());
   SetAlwaysShowActionPref(false);
-  EXPECT_FALSE(ActionExists());
+  EXPECT_FALSE(ToolbarIconExists());
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
                        EphemeralToolbarIconWithMultipleWindows) {
   action_controller_->OnRoutesUpdated(routes_, std::vector<MediaRoute::Id>());
-  EXPECT_TRUE(ActionExists());
+  EXPECT_TRUE(ToolbarIconExists());
 
   // Opening and closing a window shouldn't affect the state of the ephemeral
   // icon. Creating and removing the icon with multiple windows open should also
   // work.
   Browser* browser2 = CreateBrowser(browser()->profile());
-  EXPECT_TRUE(ActionExists());
+  EXPECT_TRUE(ToolbarIconExists());
   action_controller_->OnRoutesUpdated(std::vector<MediaRoute>(),
                                       std::vector<MediaRoute::Id>());
-  EXPECT_FALSE(ActionExists());
+  EXPECT_FALSE(ToolbarIconExists());
   action_controller_->OnRoutesUpdated(routes_, std::vector<MediaRoute::Id>());
-  EXPECT_TRUE(ActionExists());
+  EXPECT_TRUE(ToolbarIconExists());
   browser2->window()->Close();
-  EXPECT_TRUE(ActionExists());
+  EXPECT_TRUE(ToolbarIconExists());
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, UpdateActionLocation) {
   SetAlwaysShowActionPref(true);
 
   // Get the index for "Hide in Chrome menu" / "Show in toolbar" menu item.
-  const int command_index = GetActionContextMenu()->GetIndexOfCommandId(
+  const int command_index = GetIconContextMenu()->GetIndexOfCommandId(
       IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR);
   GetMediaRouterAction()->OnContextMenuClosed();
 
   // Start out with the action visible on the main bar.
   EXPECT_TRUE(
       toolbar_actions_bar_->IsActionVisibleOnMainBar(GetMediaRouterAction()));
-  GetActionContextMenu()->ActivatedAt(command_index);
+  GetIconContextMenu()->ActivatedAt(command_index);
   GetMediaRouterAction()->OnContextMenuClosed();
 
   // The action should get hidden in the overflow menu.
   EXPECT_FALSE(
       toolbar_actions_bar_->IsActionVisibleOnMainBar(GetMediaRouterAction()));
-  GetActionContextMenu()->ActivatedAt(command_index);
+  GetIconContextMenu()->ActivatedAt(command_index);
   GetMediaRouterAction()->OnContextMenuClosed();
 
   // The action should be back on the main bar.
@@ -417,7 +410,27 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, UpdateActionLocation) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, PinAndUnpinToolbarIcon) {
-  TestPinAndUnpinToolbarIcon();
+  GetDialogController()->ShowMediaRouterDialog();
+  EXPECT_TRUE(ToolbarIconExists());
+  // Pin the icon via its context menu.
+  ui::SimpleMenuModel* context_menu = GetIconContextMenu();
+  const int command_index = context_menu->GetIndexOfCommandId(
+      IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
+  if (IsCocoaBrowser()) {
+    // With Cocoa, OnContextMenuClosed() gets called before command execution.
+    GetMediaRouterAction()->OnContextMenuClosed();
+    context_menu->ActivatedAt(command_index);
+  } else {
+    context_menu->ActivatedAt(command_index);
+    GetMediaRouterAction()->OnContextMenuClosed();
+  }
+  GetDialogController()->HideMediaRouterDialog();
+  EXPECT_TRUE(ToolbarIconExists());
+
+  // Unpin the icon via its context menu.
+  CHECK(GetIconContextMenu());
+  GetIconContextMenu()->ActivatedAt(command_index);
+  EXPECT_FALSE(ToolbarIconExists());
 }
 
 // Runs dialog-related tests with the Views Cast dialog.
@@ -454,7 +467,19 @@ IN_PROC_BROWSER_TEST_F(MediaRouterViewsUIBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaRouterViewsUIBrowserTest, PinAndUnpinToolbarIcon) {
   if (IsCocoaBrowser())
     return;
-  TestPinAndUnpinToolbarIcon();
+  GetDialogController()->ShowMediaRouterDialog();
+  EXPECT_TRUE(ToolbarIconExists());
+  // Pin the icon via its context menu.
+  ui::SimpleMenuModel* context_menu = GetIconContextMenu();
+  const int command_index = context_menu->GetIndexOfCommandId(
+      IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
+  context_menu->ActivatedAt(command_index);
+  GetDialogController()->HideMediaRouterDialog();
+  EXPECT_TRUE(ToolbarIconExists());
+
+  // Unpin the icon via its context menu.
+  GetIconContextMenu()->ActivatedAt(command_index);
+  EXPECT_FALSE(ToolbarIconExists());
 }
 
 }  // namespace media_router
