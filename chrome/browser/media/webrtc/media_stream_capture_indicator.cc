@@ -235,9 +235,11 @@ int& MediaStreamCaptureIndicator::WebContentsDeviceUsage::GetStreamCount(
 
     case content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
     case content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE:
+    case content::MEDIA_DISPLAY_VIDEO_CAPTURE:
       return desktop_stream_count_;
 
-    default:
+    case content::MEDIA_NO_SERVICE:
+    case content::NUM_MEDIA_TYPES:
       NOTREACHED();
       return video_stream_count_;
   }
