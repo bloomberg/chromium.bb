@@ -820,10 +820,8 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
   }
 }
 
-TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithSwitch) {
+TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledByDefault) {
   TestServiceManagerContext service_manager_context;
-  EnableFeature(features::kWebAuthCable);
-
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
@@ -844,19 +842,19 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithSwitch) {
       device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
 }
 
-TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledForMakeCredential) {
-  EnableFeature(features::kWebAuthCable);
-
+TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithoutFlag) {
+  scoped_feature_list_.emplace();
+  scoped_feature_list_->InitAndDisableFeature(features::kWebAuthCable);
+  TestServiceManagerContext service_manager_context;
   SimulateNavigation(GURL(kTestOrigin1));
-  PublicKeyCredentialCreationOptionsPtr options =
-      GetTestPublicKeyCredentialCreationOptions();
-  TestMakeCredentialCallback callback_receiver;
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  TestGetAssertionCallback callback_receiver;
 
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  authenticator->MakeCredential(std::move(options),
-                                callback_receiver.callback());
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
 
   // Trigger timer.
   base::RunLoop().RunUntilIdle();
@@ -868,16 +866,17 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledForMakeCredential) {
       device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
 }
 
-TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithoutSwitch) {
+TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledForMakeCredential) {
   SimulateNavigation(GURL(kTestOrigin1));
-  PublicKeyCredentialRequestOptionsPtr options =
-      GetTestPublicKeyCredentialRequestOptions();
-  TestGetAssertionCallback callback_receiver;
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  TestMakeCredentialCallback callback_receiver;
 
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
 
   // Trigger timer.
   base::RunLoop().RunUntilIdle();
