@@ -88,7 +88,9 @@ public class ShadowAsyncTask<Result> {
         return future.get(timeout, unit);
     }
 
-    public AsyncTask<Result> executeInRobolectric() {
+    @SuppressWarnings("unchecked")
+    @Implementation
+    public AsyncTask<Result> execute() {
         status = AsyncTask.Status.RUNNING;
         getBridge().onPreExecute();
 
