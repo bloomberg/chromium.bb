@@ -239,12 +239,6 @@ NSString* const kActivityServicesSnackbarCategory =
                                  thumbnailGenerator:data.thumbnailGenerator];
   [activityItems addObject:loginActionProvider];
 
-  if (data.image) {
-    UIActivityImageSource* imageProvider =
-        [[UIActivityImageSource alloc] initWithImage:data.image];
-    [activityItems addObject:imageProvider];
-  }
-
   return activityItems;
 }
 

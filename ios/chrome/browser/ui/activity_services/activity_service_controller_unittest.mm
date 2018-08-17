@@ -354,33 +354,6 @@ TEST_F(ActivityServiceControllerTest, PresentAndDismissController) {
   EXPECT_TRUE(provider.activityServiceDidEndPresentingWasCalled);
 }
 
-// Verifies that an UIActivityImageSource is sent to the
-// UIActivityViewController if and only if the ShareToData contains an image.
-TEST_F(ActivityServiceControllerTest, ActivityItemsForData) {
-  ActivityServiceController* activityController =
-      [[ActivityServiceController alloc] init];
-
-  // ShareToData does not contain an image, so the result items array will not
-  // contain an image source.
-  ShareToData* data =
-      [[ShareToData alloc] initWithShareURL:GURL("https://chromium.org")
-                                 visibleURL:GURL("https://chromium.org")
-                                      title:@"foo"
-                            isOriginalTitle:YES
-                            isPagePrintable:YES
-                           isPageSearchable:YES
-                                  userAgent:web::UserAgentType::DESKTOP
-                         thumbnailGenerator:DummyThumbnailGeneratorBlock()];
-  NSArray* items = [activityController activityItemsForData:data];
-  EXPECT_FALSE(ArrayContainsImageSource(items));
-
-  // Adds an image to the ShareToData object and call -activityItemsForData:
-  // again. Verifies that the result items array contains an image source.
-  [data setImage:[UIImage imageNamed:@"activity_services_print"]];
-  items = [activityController activityItemsForData:data];
-  EXPECT_TRUE(ArrayContainsImageSource(items));
-}
-
 // Verifies that when App Extension support is enabled, the URL string is
 // passed in a dictionary as part of the Activity Items to the App Extension.
 TEST_F(ActivityServiceControllerTest, ActivityItemsForDataWithPasswordAppEx) {

@@ -44,7 +44,6 @@
 // Whether FindInPage can be enabled for this page.
 @property(nonatomic, readonly, assign) BOOL isPageSearchable;
 @property(nonatomic, readonly, assign) web::UserAgentType userAgent;
-@property(nonatomic, strong) UIImage* image;
 @property(nonatomic, copy) ThumbnailGeneratorBlock thumbnailGenerator;
 
 @end
