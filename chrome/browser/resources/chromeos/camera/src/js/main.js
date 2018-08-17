@@ -59,7 +59,7 @@ camera.Camera = function() {
    * @type {?number}
    * @private
    */
-  this.resizeCompleteTimer_ = null;
+  this.resizeWindowTimeout_ = null;
 
   // End of properties. Seal the object.
   Object.seal(this);
@@ -291,12 +291,13 @@ camera.Camera.prototype.updateWindowSize_ = function() {
  * @private
  */
 camera.Camera.prototype.onWindowResize_ = function() {
-  if (this.resizeCompleteTimer_) {
-    clearTimeout(this.resizeCompleteTimer_);
-    this.resizeCompleteTimer_ = null;
+  // Delay updating window size during resizing for smooth UX.
+  if (this.resizeWindowTimeout_) {
+    clearTimeout(this.resizeWindowTimeout_);
+    this.resizeWindowTimeout_ = null;
   }
-  this.resizeCompleteTimer_ = setTimeout(() => {
-    this.resizeCompleteTimer_ = null;
+  this.resizeWindowTimeout_ = setTimeout(() => {
+    this.resizeWindowTimeout_ = null;
     this.updateWindowSize_();
   }, 500);
 
