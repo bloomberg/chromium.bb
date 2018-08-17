@@ -88,6 +88,7 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInPDF) {
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
   blink::WebFindOptions options;
+  options.run_synchronously_for_testing = true;
   Find("result", options);
   options.find_next = true;
   Find("result", options);
@@ -113,6 +114,7 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest,
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
   blink::WebFindOptions options;
+  options.find_next = true;
   Find("result", options);
   options.find_next = true;
   options.forward = false;

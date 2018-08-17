@@ -81,13 +81,12 @@ TEST_F(FindInPageTest, FindMatchRectsReturnsCorrectRects) {
 
   int identifier = 0;
   WebString search_text(String("aA"));
-  WebFindOptions find_options;  // Default.
+  WebFindOptions find_options;  // Default + add testing flag.
+  find_options.run_synchronously_for_testing = true;
 
   GetTextFinder().ResetMatchCount();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             find_options);
-  while (GetTextFinder().ScopingInProgress())
-    RunPendingTasks();
 
   int rects_version = GetTextFinder().FindMatchMarkersVersion();
   FindInPageCallbackReceiver callback_receiver;

@@ -111,4 +111,8 @@ struct FindOptions {
   // Force a re-search of the frame: typically used when forcing a re-search
   // after the frame navigates.
   bool force;
+
+  // Signifies whether we should force text scoping to happen immediately
+  // or not. Only used for testing purposes.
+  bool run_synchronously_for_testing;
 };

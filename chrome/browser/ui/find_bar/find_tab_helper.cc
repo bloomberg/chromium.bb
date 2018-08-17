@@ -41,7 +41,8 @@ FindTabHelper::~FindTabHelper() {
 
 void FindTabHelper::StartFinding(base::string16 search_string,
                                  bool forward_direction,
-                                 bool case_sensitive) {
+                                 bool case_sensitive,
+                                 bool run_synchronously_for_testing) {
   // Remove the carriage return character, which generally isn't in web content.
   const base::char16 kInvalidChars[] = { '\r', 0 };
   base::RemoveChars(search_string, kInvalidChars, &search_string);
@@ -97,6 +98,7 @@ void FindTabHelper::StartFinding(base::string16 search_string,
   options.forward = forward_direction;
   options.match_case = case_sensitive;
   options.find_next = find_next;
+  options.run_synchronously_for_testing = run_synchronously_for_testing;
   web_contents()->Find(current_find_request_id_, find_text_, options);
 }
 

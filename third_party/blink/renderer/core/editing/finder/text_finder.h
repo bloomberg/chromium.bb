@@ -41,6 +41,7 @@
 
 namespace blink {
 
+class IdleDeadline;
 class LocalFrame;
 class Range;
 class WebLocalFrameImpl;
@@ -127,8 +128,8 @@ class CORE_EXPORT TextFinder final
   void Trace(blink::Visitor*);
 
  private:
-  class DeferredScopeStringMatches;
-  friend class DeferredScopeStringMatches;
+  class IdleScopeStringMatchesCallback;
+  friend class IdleScopeStringMatchesCallback;
 
   explicit TextFinder(WebLocalFrameImpl& owner_frame);
 
@@ -185,7 +186,8 @@ class CORE_EXPORT TextFinder final
   // multiple frames to be searched at the same time and provides a way to
   // cancel at any time (see cancelPendingScopingEffort).  The parameter
   // searchText specifies what to look for.
-  void ScopeStringMatches(int identifier,
+  void ScopeStringMatches(IdleDeadline* deadline,
+                          int identifier,
                           const WebString& search_text,
                           const WebFindOptions&);
 
@@ -194,8 +196,9 @@ class CORE_EXPORT TextFinder final
                               const WebString& search_text,
                               const WebFindOptions&);
 
-  // Called by a DeferredScopeStringMatches instance.
-  void ResumeScopingStringMatches(int identifier,
+  // Called by an IdleScopeStringMatchesCallback instance.
+  void ResumeScopingStringMatches(IdleDeadline* deadline,
+                                  int identifier,
                                   const WebString& search_text,
                                   const WebFindOptions&);
 
@@ -260,7 +263,7 @@ class CORE_EXPORT TextFinder final
   int next_invalidate_after_;
 
   // Pending call to scopeStringMatches.
-  Member<DeferredScopeStringMatches> deferred_scoping_work_;
+  Member<IdleScopeStringMatchesCallback> idle_scoping_callback_;
 
   // Version number incremented whenever this frame's find-in-page match
   // markers change.

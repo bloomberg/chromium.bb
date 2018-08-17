@@ -97,6 +97,8 @@ void FindInPage::Find(int request_id,
   web_options.match_case = options->match_case;
   web_options.find_next = options->find_next;
   web_options.force = options->force;
+  web_options.run_synchronously_for_testing =
+      options->run_synchronously_for_testing;
 
   // Search for an active match only if this frame is focused or if this is a
   // find next request.

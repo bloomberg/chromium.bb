@@ -27,7 +27,8 @@ class FindTabHelper : public content::WebContentsObserver,
   // for details.
   void StartFinding(base::string16 search_string,
                     bool forward_direction,
-                    bool case_sensitive);
+                    bool case_sensitive,
+                    bool run_synchronously_for_testing = false);
 
   // Stops the current Find operation.
   void StopFinding(FindBarController::SelectionAction selection_action);
