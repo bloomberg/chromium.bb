@@ -2410,7 +2410,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
 // Checks that a beforeunload handler is executed on the referring page when a
 // prerendered page is swapped in. Also checks that the WebContents of the
 // referring page is destroyed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderBeforeUnload) {
+// Disabled on Windows. See https://crbug.com/875404.
+#if defined(OS_WIN)
+#define MAYBE_PrerenderBeforeUnload DISABLED_PrerenderBeforeUnload
+#else
+#define MAYBE_PrerenderBeforeUnload PrerenderBeforeUnload
+#endif
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderBeforeUnload) {
   set_loader_path("/prerender/prerender_loader_with_beforeunload.html");
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   WebContentsDestructionObserver destruction_observer(GetActiveWebContents());
