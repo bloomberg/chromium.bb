@@ -127,45 +127,6 @@ void UpdateLegacyMultiColumnFlowThread(
   flow_thread->ClearNeedsLayout();
 }
 
-// For inline children, NG painters handles fragments directly, but there are
-// some cases where we need to copy data to the LayoutObject tree. This function
-// handles such cases.
-void CopyFragmentDataToLayoutBoxForInlineChildren(
-    const NGPhysicalContainerFragment& container,
-    LayoutUnit initial_container_width,
-    bool initial_container_is_flipped,
-    NGPhysicalOffset offset = {}) {
-  for (const auto& child : container.Children()) {
-    if (child->IsContainer()) {
-      NGPhysicalOffset child_offset = offset + child->Offset();
-
-      // Replaced elements and inline blocks need Location() set relative to
-      // their block container.
-      LayoutObject* layout_object = child->GetLayoutObject();
-      if (layout_object && layout_object->IsBox()) {
-        LayoutBox& layout_box = ToLayoutBox(*layout_object);
-        NGPhysicalOffset maybe_flipped_offset = child_offset;
-        if (initial_container_is_flipped) {
-          maybe_flipped_offset.left = initial_container_width -
-                                      child->Size().width -
-                                      maybe_flipped_offset.left;
-        }
-        layout_box.SetLocation(maybe_flipped_offset.ToLayoutPoint());
-      }
-
-      // The Location() of inline LayoutObject is relative to the
-      // LayoutBlockFlow. If |child| establishes a new block formatting context,
-      // it also creates another inline formatting context. Do not copy to its
-      // descendants in this case.
-      if (!child->IsBlockFormattingContextRoot()) {
-        CopyFragmentDataToLayoutBoxForInlineChildren(
-            ToNGPhysicalContainerFragment(*child), initial_container_width,
-            initial_container_is_flipped, child_offset);
-      }
-    }
-  }
-}
-
 NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
     NGBlockNode node) {
   return NGConstraintSpaceBuilder(node.Style().GetWritingMode(),
@@ -625,6 +586,45 @@ void NGBlockNode::CopyChildFragmentPosition(
                           layout_box->MarginTop());
     floating_object->SetIsPlaced(true);
     floating_object->SetIsInPlacedTree(true);
+  }
+}
+
+// For inline children, NG painters handles fragments directly, but there are
+// some cases where we need to copy data to the LayoutObject tree. This function
+// handles such cases.
+void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
+    const NGPhysicalContainerFragment& container,
+    LayoutUnit initial_container_width,
+    bool initial_container_is_flipped,
+    NGPhysicalOffset offset) {
+  for (const auto& child : container.Children()) {
+    if (child->IsContainer()) {
+      NGPhysicalOffset child_offset = offset + child->Offset();
+
+      // Replaced elements and inline blocks need Location() set relative to
+      // their block container.
+      LayoutObject* layout_object = child->GetLayoutObject();
+      if (layout_object && layout_object->IsBox()) {
+        LayoutBox& layout_box = ToLayoutBox(*layout_object);
+        NGPhysicalOffset maybe_flipped_offset = child_offset;
+        if (initial_container_is_flipped) {
+          maybe_flipped_offset.left = initial_container_width -
+                                      child->Size().width -
+                                      maybe_flipped_offset.left;
+        }
+        layout_box.SetLocation(maybe_flipped_offset.ToLayoutPoint());
+      }
+
+      // The Location() of inline LayoutObject is relative to the
+      // LayoutBlockFlow. If |child| establishes a new block formatting context,
+      // it also creates another inline formatting context. Do not copy to its
+      // descendants in this case.
+      if (!child->IsBlockFormattingContextRoot()) {
+        CopyFragmentDataToLayoutBoxForInlineChildren(
+            ToNGPhysicalContainerFragment(*child), initial_container_width,
+            initial_container_is_flipped, child_offset);
+      }
+    }
   }
 }
 
