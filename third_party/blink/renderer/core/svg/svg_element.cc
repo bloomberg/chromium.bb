@@ -685,21 +685,17 @@ void SVGElement::ParseAttribute(const AttributeModificationParams& params) {
     return;
   }
 
-  if (params.name == tabindexAttr) {
-    Element::ParseAttribute(params);
-  } else {
-    // standard events
-    const AtomicString& event_name =
-        HTMLElement::EventNameForAttributeName(params.name);
-    if (!event_name.IsNull()) {
-      SetAttributeEventListener(
-          event_name,
-          CreateAttributeEventListener(this, params.name, params.new_value,
-                                       EventParameterName()));
-    } else {
-      Element::ParseAttribute(params);
-    }
+  const AtomicString& event_name =
+      HTMLElement::EventNameForAttributeName(params.name);
+  if (!event_name.IsNull()) {
+    SetAttributeEventListener(
+        event_name,
+        CreateAttributeEventListener(this, params.name, params.new_value,
+                                     EventParameterName()));
+    return;
   }
+
+  Element::ParseAttribute(params);
 }
 
 // If the attribute is not present in the map, the map will return the "empty
