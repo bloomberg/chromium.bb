@@ -196,6 +196,28 @@ void NGPaintFragment::UpdatePhysicalFragmentFromCachedLayoutResult(
   physical_fragment_ = fragment;
 }
 
+NGPaintFragment* NGPaintFragment::Last(const NGBreakToken& break_token) {
+  for (NGPaintFragment* fragment = this; fragment;
+       fragment = fragment->next_fragmented_.get()) {
+    if (fragment->PhysicalFragment().BreakToken() == &break_token)
+      return fragment;
+  }
+  return nullptr;
+}
+
+NGPaintFragment* NGPaintFragment::Last() {
+  for (NGPaintFragment* fragment = this;;) {
+    NGPaintFragment* next = fragment->next_fragmented_.get();
+    if (!next)
+      return fragment;
+    fragment = next;
+  }
+}
+
+void NGPaintFragment::SetNext(std::unique_ptr<NGPaintFragment> fragment) {
+  next_fragmented_ = std::move(fragment);
+}
+
 bool NGPaintFragment::IsDescendantOfNotSelf(
     const NGPaintFragment& ancestor) const {
   for (const NGPaintFragment* fragment = Parent(); fragment;

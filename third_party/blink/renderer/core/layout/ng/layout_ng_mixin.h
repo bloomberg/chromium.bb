@@ -70,10 +70,11 @@ class LayoutNGMixin : public Base {
   NGPaintFragment* PaintFragment() const override {
     return paint_fragment_.get();
   }
-  void SetPaintFragment(scoped_refptr<const NGPhysicalFragment>) final;
+  void SetPaintFragment(const NGBreakToken*,
+                        scoped_refptr<const NGPhysicalFragment>) final;
   void UpdatePaintFragmentFromCachedLayoutResult(
+      const NGBreakToken*,
       scoped_refptr<const NGPhysicalFragment>) final;
-  void ClearPaintFragment() final;
 
  protected:
   bool IsOfType(LayoutObject::LayoutObjectType) const override;
@@ -82,6 +83,8 @@ class LayoutNGMixin : public Base {
 
  private:
   void AddScrollingOverflowFromChildren();
+  void SetPaintFragment(NGPaintFragment* last_paint_fragment,
+                        std::unique_ptr<NGPaintFragment>);
 
  protected:
   void AddOutlineRects(
