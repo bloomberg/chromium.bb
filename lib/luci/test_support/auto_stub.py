@@ -68,7 +68,7 @@ class SimpleMock(object):
     str_args = ', '.join(repr(arg) for arg in args)
     str_kwargs = ', '.join('%s=%r' % (k, v) for k, v in kwargs.items())
     self.calls.append('%s(%s)' % (caller_name, ', '.join(
-        filter(None, [str_args, str_kwargs]))))
+        x for x in [str_args, str_kwargs] if x)))
 
 
 class TestCase(unittest.TestCase, AutoStubMixIn):

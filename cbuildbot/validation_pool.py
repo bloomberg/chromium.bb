@@ -1182,7 +1182,7 @@ class ValidationPool(object):
 
     sha1s = {}
     errors = {}
-    for sha1s_for_branch, branch_errors in filter(bool, push_results):
+    for sha1s_for_branch, branch_errors in (x for x in push_results if x):
       sha1s.update(sha1s_for_branch)
       errors.update(branch_errors)
 

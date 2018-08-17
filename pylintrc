@@ -57,6 +57,7 @@ enable=
     exception-message-attribute,
     execfile-builtin,
     file-builtin,
+    filter-builtin-not-iterating,
     getslice-method,
     hex-method,
     idiv-method,
@@ -202,12 +203,13 @@ generated-members=REQUEST,acl_users,aq_parent,AndRaise,AndReturn,InAnyOrder,Mult
 #required-attributes=
 
 # List of builtins function names that should not be used, separated by a comma.
-# XXX: Should we ban map() & filter() for list comprehensions?
+# XXX: Should we ban map() for list comprehensions?
 # exit & quit are for the interactive interpreter shell only.
 # https://docs.python.org/3/library/constants.html#constants-added-by-the-site-module
 bad-functions=
     apply,
     exit,
+    filter,
     input,
     quit,
     raw_input,

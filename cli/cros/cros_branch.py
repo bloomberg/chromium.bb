@@ -473,7 +473,8 @@ class Branch(object):
     """
     return [
         ProjectBranch(proj, self._ProjectBranchName(branch, proj, original))
-        for proj in filter(CanBranchProject, self.checkout.manifest.Projects())
+        for proj in self.checkout.manifest.Projects()
+        if CanBranchProject(proj)
     ]
 
   def _ValidateBranches(self, branches):
@@ -633,7 +634,7 @@ class StandardBranch(Branch):
     """
     vinfo = checkout.ReadVersion()
     version = '.'.join(str(comp) for comp in vinfo.VersionComponents() if comp)
-    name = '-'.join(filter(None, args) + (version,)) + '.B'
+    name = '-'.join([x for x in args if x] + [version]) + '.B'
     super(StandardBranch, self).__init__(checkout, name)
 
 

@@ -1142,7 +1142,8 @@ def GetAvailableKernelProfiles():
     logging.info('gs files not found: %s', gs_ls_url)
     return {}
 
-  matches = filter(None, [re.match(gs_match_url, p.url) for p in res])
+  all_matches = [re.match(gs_match_url, x.url) for x in res]
+  matches = [x for x in all_matches if x]
   versions = {}
   for m in matches:
     versions.setdefault(m.group(1), []).append(map(int, m.groups()[1:]))

@@ -267,11 +267,11 @@ class StackedSetup(type):
     iterator = iter if reverse else reversed
     methods = (getattr(x, attr, None) for x in iterator(obj.__class__.__mro__))
     seen = set()
-    for x in filter(None, methods):
-      x = getattr(x, 'im_func', x)
-      if x not in seen:
-        seen.add(x)
-        yield x
+    for method in (x for x in methods if x):
+      method = getattr(method, 'im_func', method)
+      if method not in seen:
+        seen.add(method)
+        yield method
 
   @staticmethod
   def _stacked_setUp(obj):

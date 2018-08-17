@@ -146,7 +146,7 @@ def _LogList(title, obj_list):
 
 def _FilterForImages(artifacts):
   """Return only instances of Image from a list of artifacts."""
-  return filter(gspaths.IsImage, artifacts)
+  return [x for x in artifacts if gspaths.IsImage(x)]
 
 
 def _FilterForMp(artifacts):
@@ -195,7 +195,7 @@ def _FilterForBasic(artifacts):
 
 def _FilterForUnsignedImageArchives(artifacts):
   """Return only instances of UnsignedImageArchive from a list of artifacts."""
-  return filter(gspaths.IsUnsignedImageArchive, artifacts)
+  return [x for x in artifacts if gspaths.IsUnsignedImageArchive(x)]
 
 
 def _FilterForImageType(artifacts, image_type):

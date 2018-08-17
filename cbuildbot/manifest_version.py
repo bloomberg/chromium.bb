@@ -1186,8 +1186,8 @@ def FilterManifest(manifest, whitelisted_remotes=None, whitelisted_groups=None):
 
   with os.fdopen(temp_fd, 'w') as manifest_file:
     # Filter out empty lines.
-    filtered_manifest_noempty = filter(
-        str.strip, manifest_dom.toxml('utf-8').splitlines())
+    stripped = [x.strip() for x in manifest_dom.toxml('utf-8').splitlines()]
+    filtered_manifest_noempty = [x for x in stripped if x]
     manifest_file.write(os.linesep.join(filtered_manifest_noempty))
 
   return new_path

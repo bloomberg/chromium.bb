@@ -89,9 +89,9 @@ class TrybotPatchPool(object):
       f = lambda p: not filter_fn(p)
 
     return self.__class__(
-        gerrit_patches=filter(f, self.gerrit_patches),
-        local_patches=filter(f, self.local_patches),
-        remote_patches=filter(f, self.remote_patches))
+        gerrit_patches=(x for x in self.gerrit_patches if f(x)),
+        local_patches=(x for x in self.local_patches if f(x)),
+        remote_patches=(x for x in self.remote_patches if f(x)))
 
   def FilterManifest(self, negate=False):
     """Return a patch pool with only patches to the manifest."""

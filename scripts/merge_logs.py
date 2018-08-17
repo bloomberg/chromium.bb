@@ -408,7 +408,7 @@ def main(argv):
   if options.filelist:
     with open(options.filelist) as f:
       found = [l.strip() for l in f.readlines()]
-    files.extend(filter(bool, found))
+    files.extend(x for x in found if x)
   if options.base:
     files = [os.path.join(options.base, f) for f in files]
 

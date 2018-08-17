@@ -76,7 +76,7 @@ def BundleTestUpdatePayloads(input_proto, output_proto):
                constants.IMAGE_TYPE_BASE]
   img_names = [constants.IMAGE_TYPE_TO_NAME[t] for t in img_types]
   img_paths = map(functools.partial(os.path.join, img_dir), img_names)
-  valid_images = filter(os.path.exists, img_paths)
+  valid_images = [x for x in img_paths if os.path.exists(x)]
 
   if not valid_images:
     cros_build_lib.Die(

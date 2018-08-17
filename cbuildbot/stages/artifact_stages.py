@@ -685,7 +685,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
       # Deduplicate against previous binhosts.
       binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, board).split())
       binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, None).split())
-      for binhost in filter(None, binhosts):
+      for binhost in (x for x in binhosts if x):
         generated_args.extend(['--previous-binhost-url', binhost])
 
       if self._run.config.master and board == self._boards[-1]:
