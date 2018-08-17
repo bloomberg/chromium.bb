@@ -19,25 +19,13 @@ const char kContentSuggestionsBackend[] = "content_suggestions_backend";
 
 }  // namespace
 
-GURL GetFetchEndpoint(version_info::Channel channel) {
+GURL GetFetchEndpoint() {
   std::string endpoint = variations::GetVariationParamValueByFeature(
       ntp_snippets::kArticleSuggestionsFeature, kContentSuggestionsBackend);
   if (!endpoint.empty()) {
     return GURL{endpoint};
   }
-
-  switch (channel) {
-    case version_info::Channel::STABLE:
-    case version_info::Channel::BETA:
-      return GURL{kContentSuggestionsServer};
-
-    case version_info::Channel::DEV:
-    case version_info::Channel::CANARY:
-    case version_info::Channel::UNKNOWN:
-      return GURL{kContentSuggestionsStagingServer};
-  }
-  NOTREACHED();
-  return GURL{kContentSuggestionsStagingServer};
+  return GURL{kContentSuggestionsServer};
 }
 
 RemoteSuggestionsFetcher::~RemoteSuggestionsFetcher() = default;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -331,7 +332,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
       base::Bind(
           &data_decoder::SafeJsonParser::Parse,
           content::ServiceManagerConnection::GetForProcess()->GetConnector()),
-      GetFetchEndpoint(chrome::GetChannel()), api_key, user_classifier);
+      GetFetchEndpoint(), api_key, user_classifier);
 
   std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider;
 #if defined(OS_ANDROID)

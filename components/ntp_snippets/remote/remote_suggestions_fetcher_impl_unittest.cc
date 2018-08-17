@@ -196,8 +196,7 @@ class RemoteSuggestionsFetcherImplTest : public testing::Test {
     fetcher_ = std::make_unique<RemoteSuggestionsFetcherImpl>(
         identity_test_env_.identity_manager(),
         std::move(test_shared_loader_factory), utils_.pref_service(), nullptr,
-        base::BindRepeating(&ParseJsonDelayed),
-        GetFetchEndpoint(version_info::Channel::STABLE), api_key,
+        base::BindRepeating(&ParseJsonDelayed), GetFetchEndpoint(), api_key,
         user_classifier_.get());
 
     fetcher_->SetClockForTesting(mock_task_runner_->GetMockClock());
