@@ -15,6 +15,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
@@ -35,6 +36,11 @@ void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
 
   g_network_service = new network::NetworkService(
       nullptr, std::move(request), GetContentClient()->browser()->GetNetLog());
+}
+
+void BindNetworkChangeManagerRequest(
+    network::mojom::NetworkChangeManagerRequest request) {
+  GetNetworkService()->GetNetworkChangeManager(std::move(request));
 }
 
 }  // namespace
@@ -110,7 +116,7 @@ network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!g_network_connection_tracker) {
     g_network_connection_tracker = new network::NetworkConnectionTracker(
-        base::BindRepeating(&GetNetworkService));
+        base::BindRepeating(&BindNetworkChangeManagerRequest));
   }
   return g_network_connection_tracker;
 }

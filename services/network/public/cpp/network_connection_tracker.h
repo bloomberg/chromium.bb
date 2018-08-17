@@ -17,9 +17,7 @@
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
-#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace network {
 
@@ -30,6 +28,8 @@ namespace network {
 class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
     : public network::mojom::NetworkChangeManagerClient {
  public:
+  using BindingCallback = base::RepeatingCallback<void(
+      network::mojom::NetworkChangeManagerRequest)>;
   using ConnectionTypeCallback =
       base::OnceCallback<void(network::mojom::ConnectionType)>;
 
@@ -43,11 +43,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
     virtual ~NetworkConnectionObserver() {}
   };
 
-  // Constructs a NetworkConnectionTracker. |callback| should return the network
-  // service that is in use. NetworkConnectionTracker does not need to be
-  // destroyed before the network service.
-  explicit NetworkConnectionTracker(
-      base::RepeatingCallback<network::mojom::NetworkService*()> callback);
+  // Constructs a NetworkConnectionTracker. |callback| should bind the given
+  // NetworkChangeManagerRequest to the NetworkChangeManager that should be
+  // used. NetworkConnectionTracker does not need to be destroyed before the
+  // network service.
+  explicit NetworkConnectionTracker(BindingCallback callback);
 
   ~NetworkConnectionTracker() override;
 
@@ -113,10 +113,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
   // restarts.
   void HandleNetworkServicePipeBroken();
 
-  // Callback to get the current network service raw mojo pointer. This is to
-  // ensure that |this| can survive crashes and restarts of network service.
-  const base::RepeatingCallback<network::mojom::NetworkService*()>
-      get_network_service_callback_;
+  // Callback to bind a NetworkChangeManagerRequest.
+  const BindingCallback bind_request_callback_;
 
   // The task runner that |this| lives on.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

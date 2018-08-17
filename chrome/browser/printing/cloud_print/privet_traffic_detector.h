@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/network_interfaces.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 
