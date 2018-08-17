@@ -5,16 +5,19 @@
 package org.chromium.chrome.browser.media;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
+import android.webkit.MimeTypeMap;
 
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Locale;
 
 /**
  * The MediaLauncherActivity handles media-viewing Intents from other apps. It takes the given
@@ -43,7 +46,7 @@ public class MediaLauncherActivity extends Activity {
 
         Intent input = IntentUtils.sanitizeIntent(getIntent());
         Uri contentUri = input.getData();
-        String mimeType = getContentResolver().getType(contentUri);
+        String mimeType = getMIMEType(contentUri);
         int mediaType = MediaViewerUtils.getMediaTypeFromMIMEType(mimeType);
 
         sMediaTypeHistogram.record(mediaType);
@@ -63,5 +66,37 @@ public class MediaLauncherActivity extends Activity {
         startActivity(intent);
 
         finish();
+    }
+
+    private String getMIMEType(Uri uri) {
+        // With a content URI, we can just query the ContentResolver.
+        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            return getContentResolver().getType(uri);
+        }
+
+        // Otherwise, use the file extension.
+        String filteredUri = filterURI(uri);
+        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(filteredUri);
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                fileExtension.toLowerCase(Locale.ROOT));
+    }
+
+    // MimeTypeMap.getFileExtensionFromUrl fails when the file name includes certain special
+    // characters, so we filter those out of the URI when determining the MIME type.
+    protected static String filterURI(Uri uri) {
+        String uriString = uri.toString();
+        int filterIndex = uriString.length();
+
+        int fragmentIndex = uriString.lastIndexOf('#', filterIndex);
+        if (fragmentIndex >= 0) filterIndex = fragmentIndex;
+
+        int queryIndex = uriString.lastIndexOf('?', filterIndex);
+        if (queryIndex >= 0) filterIndex = queryIndex;
+
+        int extensionIndex = uriString.lastIndexOf('.', filterIndex);
+        if (extensionIndex >= 0) filterIndex = extensionIndex;
+
+        return uriString.substring(0, filterIndex).replaceAll("['$!]", "")
+                + uriString.substring(filterIndex);
     }
 }

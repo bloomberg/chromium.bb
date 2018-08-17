@@ -11,14 +11,18 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.util.Pair;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity0;
@@ -30,6 +34,7 @@ import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -73,6 +78,30 @@ public class MediaLauncherActivityTest {
     public void testHandleImageIntent() throws Exception {
         String url = TestContentProvider.createContentUrl("google.png");
         expectMediaToBeHandled(url, "image/png");
+    }
+
+    @Test
+    @SmallTest
+    public void testHandleFileURIIntent() throws Exception {
+        String url = UrlUtils.getTestFileUrl("google.png");
+        expectMediaToBeHandled(url, "image/png");
+    }
+
+    @Test
+    @SmallTest
+    public void testFilterURI() throws Exception {
+        List<Pair<String, String>> testCases = CollectionUtil.newArrayList(
+                new Pair<>("file:///test.jpg", "file:///test.jpg"),
+                new Pair<>("file:///test.jp!g", "file:///test.jp!g"),
+                new Pair<>("file:///test!$'.jpg", "file:///test.jpg"),
+                new Pair<>("file:///test!$'.jpg?x=y", "file:///test.jpg?x=y"),
+                new Pair<>("file:///test!$'.jpg?x=y#fragment!", "file:///test.jpg?x=y#fragment!"));
+
+        for (Pair<String, String> testCase : testCases) {
+            String testInput = testCase.first;
+            String expected = testCase.second;
+            Assert.assertEquals(expected, MediaLauncherActivity.filterURI(Uri.parse(testInput)));
+        }
     }
 
     private void expectMediaToBeHandled(String url, String mimeType) throws Exception {
