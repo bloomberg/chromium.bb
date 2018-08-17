@@ -33,7 +33,7 @@ TEST_F(ErrorRetryStateMachineTest, OfflineThenReload) {
   // Initial load fails.
   ASSERT_EQ(ErrorRetryCommand::kLoadPlaceholder,
             machine.DidFailProvisionalNavigation(GURL::EmptyGURL(), test_url));
-  ASSERT_EQ(ErrorRetryState::kNewRequest, machine.state());
+  ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, machine.state());
 
   // Placeholder load finishes.
   ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
@@ -96,7 +96,7 @@ TEST_F(ErrorRetryStateMachineTest, WebErrorPageThenReload) {
   // Initial load fails.
   ASSERT_EQ(ErrorRetryCommand::kLoadPlaceholder,
             machine.DidFailProvisionalNavigation(GURL::EmptyGURL(), test_url));
-  ASSERT_EQ(ErrorRetryState::kNewRequest, machine.state());
+  ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, machine.state());
 
   // Placeholder load finishes.
   ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,

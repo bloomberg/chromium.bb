@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 
+#include "base/test/scoped_feature_list.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -15,10 +17,26 @@
 #error "This file requires ARC support."
 #endif
 
+// VoiceSearchNavigationsTest is parameterized on this enum to test both
+// LegacyNavigationManager and WKBasedNavigationManager.
+enum class NavigationManagerChoice {
+  LEGACY,
+  WK_BASED,
+};
+
 // Test fixture for VoiceSearchNavigations.
-class VoiceSearchNavigationsTest : public web::WebTestWithWebState {
+class VoiceSearchNavigationsTest
+    : public web::WebTestWithWebState,
+      public ::testing::WithParamInterface<NavigationManagerChoice> {
  public:
   void SetUp() override {
+    if (GetParam() == NavigationManagerChoice::LEGACY) {
+      scoped_feature_list_.InitAndDisableFeature(
+          web::features::kSlimNavigationManager);
+    } else {
+      scoped_feature_list_.InitAndEnableFeature(
+          web::features::kSlimNavigationManager);
+    }
     web::WebTestWithWebState::SetUp();
     VoiceSearchNavigationTabHelper::CreateForWebState(web_state());
   }
@@ -26,11 +44,14 @@ class VoiceSearchNavigationsTest : public web::WebTestWithWebState {
   VoiceSearchNavigationTabHelper* navigations() {
     return VoiceSearchNavigationTabHelper::FromWebState(web_state());
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that a NavigationItem is not marked as a voice search if
 // WillLoadVoiceSearchResult() was not called.
-TEST_F(VoiceSearchNavigationsTest, NotVoiceSearchNavigation) {
+TEST_P(VoiceSearchNavigationsTest, NotVoiceSearchNavigation) {
   LoadHtml(@"<html></html>");
   web::NavigationItem* item =
       web_state()->GetNavigationManager()->GetLastCommittedItem();
@@ -39,7 +60,7 @@ TEST_F(VoiceSearchNavigationsTest, NotVoiceSearchNavigation) {
 
 // Tests that a pending NavigationItem is recorded as a voice search navigation
 // if it is added after calling WillLoadVoiceSearchResult().
-TEST_F(VoiceSearchNavigationsTest, PendingVoiceSearchNavigation) {
+TEST_P(VoiceSearchNavigationsTest, PendingVoiceSearchNavigation) {
   navigations()->WillLoadVoiceSearchResult();
   const GURL kPendingUrl("http://pending.test");
   AddPendingItem(kPendingUrl, ui::PAGE_TRANSITION_LINK);
@@ -50,7 +71,7 @@ TEST_F(VoiceSearchNavigationsTest, PendingVoiceSearchNavigation) {
 
 // Tests that a committed NavigationItem is recordored as a voice search
 // navigation if it occurs after calling WillLoadVoiceSearchResult().
-TEST_F(VoiceSearchNavigationsTest, CommittedVoiceSearchNavigation) {
+TEST_P(VoiceSearchNavigationsTest, CommittedVoiceSearchNavigation) {
   navigations()->WillLoadVoiceSearchResult();
   LoadHtml(@"<html></html>");
   web::NavigationItem* item =
@@ -60,7 +81,7 @@ TEST_F(VoiceSearchNavigationsTest, CommittedVoiceSearchNavigation) {
 
 // Tests that navigations that occur after a voice search navigation are not
 // marked as voice search navigations.
-TEST_F(VoiceSearchNavigationsTest, NavigationAfterVoiceSearch) {
+TEST_P(VoiceSearchNavigationsTest, NavigationAfterVoiceSearch) {
   navigations()->WillLoadVoiceSearchResult();
   const GURL kVoiceSearchUrl("http://voice.test");
   LoadHtml(@"<html></html>", kVoiceSearchUrl);
@@ -75,7 +96,7 @@ TEST_F(VoiceSearchNavigationsTest, NavigationAfterVoiceSearch) {
 }
 
 // Tests that transient NavigationItems are handled the same as pending items
-TEST_F(VoiceSearchNavigationsTest, TransientNavigations) {
+TEST_P(VoiceSearchNavigationsTest, TransientNavigations) {
   LoadHtml(@"<html></html>", GURL("http://committed_url.test"));
   const GURL kTransientURL("http://transient.test");
   AddTransientItem(kTransientURL);
@@ -85,3 +106,8 @@ TEST_F(VoiceSearchNavigationsTest, TransientNavigations) {
   navigations()->WillLoadVoiceSearchResult();
   EXPECT_TRUE(navigations()->IsNavigationFromVoiceSearch(item));
 }
+
+INSTANTIATE_TEST_CASE_P(ProgrammaticVoiceSearchNavigationsTest,
+                        VoiceSearchNavigationsTest,
+                        ::testing::Values(NavigationManagerChoice::LEGACY,
+                                          NavigationManagerChoice::WK_BASED));

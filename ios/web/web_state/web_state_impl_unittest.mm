@@ -17,6 +17,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #import "ios/web/interstitials/html_web_interstitial_impl.h"
+#import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
@@ -464,6 +465,8 @@ TEST_P(WebStateImplTest, ObserverTest) {
   // Test that NavigationItemCommitted() is called.
   ASSERT_FALSE(observer->commit_navigation_info());
   LoadCommittedDetails details;
+  auto item = std::make_unique<NavigationItemImpl>();
+  details.item = item.get();
   web_state_->OnNavigationItemCommitted(details);
   ASSERT_TRUE(observer->commit_navigation_info());
   EXPECT_EQ(web_state_.get(), observer->commit_navigation_info()->web_state);
@@ -656,6 +659,8 @@ TEST_P(WebStateImplTest, GlobalObserverTest) {
   // Test that NavigationItemCommitted() is called.
   EXPECT_FALSE(observer->navigation_item_committed_called());
   LoadCommittedDetails details;
+  auto item = std::make_unique<NavigationItemImpl>();
+  details.item = item.get();
   web_state_->OnNavigationItemCommitted(details);
   EXPECT_TRUE(observer->navigation_item_committed_called());
 

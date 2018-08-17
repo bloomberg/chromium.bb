@@ -33,6 +33,9 @@ enum class ErrorRetryState {
   kNewRequest,
   // This navigation item loaded without error.
   kNoNavigationError,
+  // This navigation item failed to load and is in the process of loading a
+  // placeholder.
+  kLoadingPlaceholder,
   // This navigation item has an entry in WKBackForwardList. Ready to present
   // error in native view.
   kReadyToDisplayErrorForFailedNavigation,

@@ -58,6 +58,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailProvisionalNavigation(
         return ErrorRetryCommand::kLoadErrorView;
       }
       // Provisional navigation failed on a new item.
+      state_ = ErrorRetryState::kLoadingPlaceholder;
       return ErrorRetryCommand::kLoadPlaceholder;
 
     // Reload of a previously successful load fails.
@@ -71,6 +72,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailProvisionalNavigation(
     case ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
       return BackForwardOrReloadFailed(web_view_url, error_url);
 
+    case ErrorRetryState::kLoadingPlaceholder:
     case ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
     case ErrorRetryState::kNavigatingToFailedNavigationItem:
       NOTREACHED() << "Unexpected error retry state: "
@@ -96,6 +98,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailNavigation(
     case ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
       return BackForwardOrReloadFailed(web_view_url, error_url);
 
+    case ErrorRetryState::kLoadingPlaceholder:
     case ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
     case ErrorRetryState::kNavigatingToFailedNavigationItem:
       NOTREACHED() << "Unexpected error retry state: "
@@ -107,21 +110,20 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailNavigation(
 ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
     const GURL& web_view_url) {
   switch (state_) {
-    case ErrorRetryState::kNewRequest:
+    case ErrorRetryState::kLoadingPlaceholder:
       // (1) Placeholder load for initial failure succeeded.
-      if (!web::GetWebClient()->IsAppSpecificURL(url_) &&
-          web_view_url ==
-              wk_navigation_util::CreatePlaceholderUrlForUrl(url_)) {
-        state_ = ErrorRetryState::kReadyToDisplayErrorForFailedNavigation;
-        return ErrorRetryCommand::kLoadErrorView;
-      }
+      DCHECK(!web::GetWebClient()->IsAppSpecificURL(url_));
+      DCHECK_EQ(web_view_url,
+                wk_navigation_util::CreatePlaceholderUrlForUrl(url_));
+      state_ = ErrorRetryState::kReadyToDisplayErrorForFailedNavigation;
+      return ErrorRetryCommand::kLoadErrorView;
+
+    case ErrorRetryState::kNewRequest:
       if (wk_navigation_util::IsRestoreSessionUrl(web_view_url)) {
         // (8) Initial load of restore_session.html. Don't change state or
         // issue command. Wait for the client-side redirect.
       } else {
         // (2) Initial load succeeded.
-        DCHECK(web::GetWebClient()->IsAppSpecificURL(url_) ||
-               web_view_url == url_);
         state_ = ErrorRetryState::kNoNavigationError;
       }
       break;
