@@ -30,8 +30,8 @@ class GenPredeterminedIdsUnittest(unittest.TestCase):
 #pragma once
 
 #define IDS_BOOKMARKS_NO_ITEMS 12500
-#define IDS_BOOKMARK_BAR_IMPORT_LINK _Pragma("whitelisted_resource_12501") 12501
-#define IDS_BOOKMARK_X __pragma(message("whitelisted_resource_12502")) 12502
+#define IDS_BOOKMARK_BAR_IMPORT_LINK (::ui::WhitelistedResource<12501>(), 12501)
+#define IDS_BOOKMARK_X (::ui::WhitelistedResource<12502>(), 12502)
 ''')
     resources = {}
     gen_predetermined_ids.ReadResourceIdsFromFile(f, resources)

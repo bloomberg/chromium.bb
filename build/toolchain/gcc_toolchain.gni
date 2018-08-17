@@ -285,16 +285,8 @@ template("gcc_toolchain") {
       depsformat = "gcc"
       description = "CC {{output}}"
       outputs = [
-        # The whitelist file is also an output, but ninja does not
-        # currently support multiple outputs for tool("cc").
         "$object_subdir/{{source_name_part}}.o",
       ]
-      if (enable_resource_whitelist_generation) {
-        compile_wrapper =
-            rebase_path("//build/toolchain/gcc_compile_wrapper.py",
-                        root_build_dir)
-        command = "$python_path \"$compile_wrapper\" --resource-whitelist=\"{{output}}.whitelist\" $command"
-      }
     }
 
     tool("cxx") {
@@ -303,16 +295,8 @@ template("gcc_toolchain") {
       depsformat = "gcc"
       description = "CXX {{output}}"
       outputs = [
-        # The whitelist file is also an output, but ninja does not
-        # currently support multiple outputs for tool("cxx").
         "$object_subdir/{{source_name_part}}.o",
       ]
-      if (enable_resource_whitelist_generation) {
-        compile_wrapper =
-            rebase_path("//build/toolchain/gcc_compile_wrapper.py",
-                        root_build_dir)
-        command = "$python_path \"$compile_wrapper\" --resource-whitelist=\"{{output}}.whitelist\" $command"
-      }
     }
 
     tool("asm") {
@@ -327,30 +311,29 @@ template("gcc_toolchain") {
     }
 
     tool("alink") {
-      rspfile = "{{output}}.rsp"
-      whitelist_flag = " "
-      if (enable_resource_whitelist_generation) {
-        whitelist_flag = " --resource-whitelist=\"{{output}}.whitelist\""
+      if (current_os == "aix") {
+        # AIX does not support either -D (deterministic output) or response
+        # files.
+        command = "$ar -X64 {{arflags}} -r -c -s {{output}} {{inputs}}"
+      } else {
+        rspfile = "{{output}}.rsp"
+        rspfile_content = "{{inputs}}"
+        command = "\"$ar\" {{arflags}} -r -c -s -D {{output}} @\"$rspfile\""
       }
 
-      # This needs a Python script to avoid using simple sh features in this
-      # command, in case the host does not use a POSIX shell (e.g. compiling
-      # POSIX-like toolchains such as NaCl on Windows).
-      ar_wrapper =
-          rebase_path("//build/toolchain/gcc_ar_wrapper.py", root_build_dir)
-
-      if (current_os == "aix") {
-        # We use slightly different arflags for AIX.
-        extra_arflags = "-r -c -s"
+      # Remove the output file first so that ar doesn't try to modify the
+      # existing file.
+      if (host_os == "win") {
+        tool_wrapper_path =
+            rebase_path("//build/toolchain/win/tool_wrapper.py", root_build_dir)
+        command = "cmd /c $python_path $tool_wrapper_path delete-file {{output}} && $command"
       } else {
-        extra_arflags = "-r -c -s -D"
+        command = "rm -f {{output}} && $command"
       }
 
       # Almost all targets build with //build/config/compiler:thin_archive which
       # adds -T to arflags.
-      command = "$python_path \"$ar_wrapper\"$whitelist_flag --output={{output}} --ar=\"$ar\" \"{{arflags}} $extra_arflags\" @\"$rspfile\""
       description = "AR {{output}}"
-      rspfile_content = "{{inputs}}"
       outputs = [
         "{{output_dir}}/{{target_output_name}}{{output_extension}}",
       ]
@@ -367,11 +350,6 @@ template("gcc_toolchain") {
       sofile = "{{output_dir}}/$soname"  # Possibly including toolchain dir.
       rspfile = sofile + ".rsp"
       pool = "//build/toolchain:link_pool($default_toolchain)"
-      whitelist_flag = " "
-      if (enable_resource_whitelist_generation) {
-        whitelist_file = "$sofile.whitelist"
-        whitelist_flag = " --resource-whitelist=\"$whitelist_file\""
-      }
 
       if (defined(invoker.strip)) {
         unstripped_sofile = "{{root_out_dir}}/lib.unstripped/$soname"
@@ -408,7 +386,7 @@ template("gcc_toolchain") {
       # The host might not have a POSIX shell and utilities (e.g. Windows).
       solink_wrapper =
           rebase_path("//build/toolchain/gcc_solink_wrapper.py", root_build_dir)
-      command = "$python_path \"$solink_wrapper\" --readelf=\"$readelf\" --nm=\"$nm\" $strip_switch--sofile=\"$unstripped_sofile\" --tocfile=\"$tocfile\"$map_switch --output=\"$sofile\"$whitelist_flag -- $link_command"
+      command = "$python_path \"$solink_wrapper\" --readelf=\"$readelf\" --nm=\"$nm\" $strip_switch--sofile=\"$unstripped_sofile\" --tocfile=\"$tocfile\"$map_switch --output=\"$sofile\" -- $link_command"
 
       if (target_cpu == "mipsel" && is_component_build && is_android) {
         rspfile_content = "-Wl,--start-group -Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix -Wl,--end-group"
@@ -441,9 +419,6 @@ template("gcc_toolchain") {
         sofile,
         tocfile,
       ]
-      if (enable_resource_whitelist_generation) {
-        outputs += [ whitelist_file ]
-      }
       if (sofile != unstripped_sofile) {
         outputs += [ unstripped_sofile ]
         if (defined(invoker.use_unstripped_as_runtime_outputs) &&

@@ -1026,7 +1026,7 @@ if (current_toolchain == default_toolchain) {
       ]
 
       input = get_label_info(deps[0], "root_out_dir") +
-              "/libmonochrome$shlib_extension.whitelist"
+              "/lib.unstripped/libmonochrome$shlib_extension"
       output = monochrome_resource_whitelist
     }
 

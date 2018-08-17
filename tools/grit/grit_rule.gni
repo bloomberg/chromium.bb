@@ -86,14 +86,16 @@
 #   }
 import("//build/config/android/config.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/compiler/compiler.gni")
 import("//build/config/compute_inputs_for_analyze.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//third_party/closure_compiler/closure_args.gni")
 
-assert(!enable_resource_whitelist_generation || is_android,
-       "resource whitelist generation only works on android")
+assert(
+    !enable_resource_whitelist_generation || (is_android && symbol_level > 0),
+    "resource whitelist generation only works on android with symbol_level > 0")
 
 grit_defines = []
 
@@ -315,23 +317,6 @@ template("grit") {
     pak_info_outputs += [ "${output}.info" ]
   }
 
-  # The config and the action below get this visibility son only the generated
-  # source set can depend on them. The variable "target_name" will get
-  # overwritten inside the inner classes so we need to compute it here.
-  target_visibility = [ ":$target_name" ]
-
-  # This config sets up flags needed for enable_resource_whitelist_generation.
-  grit_config = target_name + "_grit_config"
-  config(grit_config) {
-    if ((is_linux || is_android) && enable_resource_whitelist_generation) {
-      cflags = [
-        "-Wunknown-pragmas",
-        "-Wno-error=unknown-pragmas",
-      ]
-    }
-    visibility = target_visibility
-  }
-
   grit_custom_target = target_name + "_grit"
   action(grit_custom_target) {
     script = "//tools/grit/grit.py"
@@ -376,12 +361,7 @@ template("grit") {
     args += define_args + grit_flags + assert_files_flags
 
     if (enable_resource_whitelist_generation) {
-      args += [ "-h" ]
-      if (is_win) {
-        args += [ "#define {textual_id} __pragma(message(\"whitelisted_resource_{numeric_id}\")) {numeric_id}" ]
-      } else {
-        args += [ "#define {textual_id} _Pragma(\"whitelisted_resource_{numeric_id}\") {numeric_id}" ]
-      }
+      args += [ "--whitelist-support" ]
     }
     if (_strip_resource_files) {
       js_minifier_command = rebase_path(_js_minifier, root_build_dir)
@@ -430,7 +410,7 @@ template("grit") {
       #
       # Only define visibility at all if the invoker specified it. Otherwise,
       # we want to keep the public "no visibility specified" default.
-      visibility = target_visibility + invoker.visibility
+      visibility = [ ":${invoker.target_name}" ] + invoker.visibility
     }
 
     deps = [
@@ -458,7 +438,6 @@ template("grit") {
     public_deps = [
       ":$grit_custom_target",
     ]
-    public_configs = [ ":$grit_config" ]
 
     if (defined(invoker.public_configs)) {
       public_configs += invoker.public_configs

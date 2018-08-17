@@ -68,7 +68,7 @@ template("pnacl_toolchain") {
 
     cc = compiler_scriptprefix + toolprefix + "clang" + scriptsuffix
     cxx = compiler_scriptprefix + toolprefix + "clang++" + scriptsuffix
-    ar = scriptprefix + toolprefix + "ar" + scriptsuffix
+    ar = toolprefix + "ar" + scriptsuffix
     readelf = scriptprefix + toolprefix + "readelf" + scriptsuffix
     nm = scriptprefix + toolprefix + "nm" + scriptsuffix
     if (defined(invoker.strip)) {

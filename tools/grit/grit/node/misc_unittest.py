@@ -173,7 +173,7 @@ class GritNodeUnittest(unittest.TestCase):
               Bongo!
             </message>
           </messages>''', predetermined_ids_file=ids_file)
-      output = rc_header.FormatDefines(grd, grd.GetRcHeaderFormat())
+      output = rc_header.FormatDefines(grd)
       self.assertEqual(('#define IDS_B 102\n'
                         '#define IDS_GREETING 10000\n'
                         '#define IDS_A 101\n'), ''.join(output))

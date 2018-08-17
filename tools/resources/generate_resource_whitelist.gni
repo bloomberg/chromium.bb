@@ -4,20 +4,17 @@
 
 # Generates the final .pak file whitelist that can be used by repack()'s
 # repack_whitelist parameter. Used resources are tracked by the toolchain when
-# enable_resource_whitelist_generation = true, and per-.o and per-.so .whitelist
-# files are generated. However, there are a couple of IDs (IDS_VERSION_UI_32BIT
-# and IDS_VERSION_UI_64BIT) that should always be included, and which are not
-# referenced in code. This action adds in these two ids to an existing
-# .so.whitelist.
+# enable_resource_whitelist_generation = true and are stored in the unstripped
+# binary's debug info. This action extracts the whitelist from the binary.
 #
 # Variables
-#   input: Path to the .whitelist created by the toolchain.
+#   input: Path to the unstripped .so file.
 #   output: Path to write the output whitelist to.
 #
 # Example
 #   generate_resource_whitelist("pak_whitelist") {
-#     deps = [ ":my_shared_library" ]
-#     input = "$root_out_dir/libmy_shared_library$shlib_extension.whitelist"
+#     deps = [ ":my_shared_lib" ]
+#     input = "$root_out_dir/lib.unstripped/libmy_shared_lib$shlib_extension"
 #     output = "$target_gen_dir/pak_whitelist.txt"
 #   }
 template("generate_resource_whitelist") {
@@ -37,11 +34,9 @@ template("generate_resource_whitelist") {
     ]
 
     args = [
-      "--input",
-      rebase_path(invoker.input, root_build_dir),
-      "--output",
+      "-o",
       rebase_path(invoker.output, root_build_dir),
-      "--output-directory=.",
+      rebase_path(invoker.input, root_build_dir),
     ]
   }
 }
