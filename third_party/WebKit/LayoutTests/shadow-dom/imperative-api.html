@@ -56,21 +56,24 @@ test(() => {
 }, 'attachShadow can take slotting parameter');
 
 test(() => {
-  assert_array_equals(slot1.assignedElements(), []);
+  assert_array_equals(slot2.assignedElements(), []);
   assert_equals(child1.assignedSlot, null);
 
-  slot1.assign([child1]);
-
-  assert_array_equals(slot1.assignedNodes(), [child1]);
-  assert_equals(child1.assignedSlot, slot1);
-
   slot2.assign([child1]);
-  assert_array_equals(slot1.assignedNodes(), []);
+
+  assert_array_equals(slot2.assignedNodes(), [child1]);
   assert_equals(child1.assignedSlot, slot2);
 
-  slot1.assign([child2,child3]);
-  assert_array_equals(slot1.assignedNodes(), [child2,child3]);
-}, 'assignedNodes can be used in manual slotting');
+  slot1.assign([child2,child1]);
+  assert_array_equals(slot1.assignedNodes(), [child1,child2]);
+  assert_array_equals(slot2.assignedNodes(), []);
+  assert_equals(child1.assignedSlot, slot1);
+  assert_equals(child2.assignedSlot, slot1);
+
+  slot1.assign([child2]);
+  assert_array_equals(slot1.assignedNodes(), [child2]);
+  assert_array_equals(slot2.assignedNodes(), [child1]);
+}, 'assignedNodes/Slot can be used in manual slotting');
 
 test(() => {
   slot3.assign([child4]);
@@ -78,11 +81,11 @@ test(() => {
 }, 'Nodes that is not connected to host should not be assigned');
 
 test(() => {
-  assert_array_equals(slot4.assignedNodes(), [child5]);
+  assert_array_equals(slot4.assignedElements(), [child5]);
   assert_equals(child5.assignedSlot, slot4);
 
   slot4.assign([]);
-  assert_array_equals(slot4.assignedNodes(), [child5]);
+  assert_array_equals(slot4.assignedElements(), [child5]);
   assert_equals(child5.assignedSlot, slot4);
 }, 'slotting API should not have any effect in auto mode');
 
