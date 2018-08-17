@@ -8,6 +8,7 @@
 
 #include "base/numerics/ranges.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
+#include "content/browser/media/session/audio_focus_type.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/media_session_service_impl.h"
@@ -193,20 +194,18 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
 
   observer->OnSetVolumeMultiplier(player_id, GetVolumeMultiplier());
 
-  AudioFocusManager::AudioFocusType required_audio_focus_type;
-  if (media_content_type == media::MediaContentType::Persistent) {
-    required_audio_focus_type = AudioFocusManager::AudioFocusType::Gain;
-  } else {
-    required_audio_focus_type =
-        AudioFocusManager::AudioFocusType::GainTransientMayDuck;
-  }
+  AudioFocusType required_audio_focus_type;
+  if (media_content_type == media::MediaContentType::Persistent)
+    required_audio_focus_type = AudioFocusType::Gain;
+  else
+    required_audio_focus_type = AudioFocusType::GainTransientMayDuck;
 
   // If the audio focus is already granted and is of type Content, there is
   // nothing to do. If it is granted of type Transient the requested type is
   // also transient, there is also nothing to do. Otherwise, the session needs
   // to request audio focus again.
   if (audio_focus_state_ == State::ACTIVE &&
-      (audio_focus_type_ == AudioFocusManager::AudioFocusType::Gain ||
+      (audio_focus_type_ == AudioFocusType::Gain ||
        audio_focus_type_ == required_audio_focus_type)) {
     normal_players_.insert(PlayerIdentifier(observer, player_id));
     return true;
@@ -408,8 +407,7 @@ bool MediaSessionImpl::IsControllable() const {
   // inactive. Also, the session will be uncontrollable if it contains one-shot
   // players.
   return audio_focus_state_ != State::INACTIVE &&
-         audio_focus_type_ == AudioFocusManager::AudioFocusType::Gain &&
-         one_shot_players_.empty();
+         audio_focus_type_ == AudioFocusType::Gain && one_shot_players_.empty();
 }
 
 bool MediaSessionImpl::IsActuallyPaused() const {
@@ -558,8 +556,7 @@ void MediaSessionImpl::OnResumeInternal(SuspendType suspend_type) {
 MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       audio_focus_state_(State::INACTIVE),
-      audio_focus_type_(
-          AudioFocusManager::AudioFocusType::GainTransientMayDuck),
+      audio_focus_type_(AudioFocusType::GainTransientMayDuck),
       is_ducking_(false),
       ducking_volume_multiplier_(kDefaultDuckingVolumeMultiplier),
       routed_service_(nullptr) {
@@ -573,7 +570,7 @@ void MediaSessionImpl::Initialize() {
 }
 
 bool MediaSessionImpl::RequestSystemAudioFocus(
-    AudioFocusManager::AudioFocusType audio_focus_type) {
+    AudioFocusType audio_focus_type) {
   bool result = delegate_->RequestAudioFocus(audio_focus_type);
   uma_helper_.RecordRequestAudioFocusResult(result);
 
@@ -628,8 +625,7 @@ void MediaSessionImpl::SetAudioFocusState(State audio_focus_state) {
 
 bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,
                                        int player_id) {
-  bool success =
-      RequestSystemAudioFocus(AudioFocusManager::AudioFocusType::Gain);
+  bool success = RequestSystemAudioFocus(AudioFocusType::Gain);
   DCHECK(success);
 
   pepper_players_.insert(PlayerIdentifier(observer, player_id));
@@ -642,7 +638,7 @@ bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,
 
 bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
                                         int player_id) {
-  if (!RequestSystemAudioFocus(AudioFocusManager::AudioFocusType::Gain))
+  if (!RequestSystemAudioFocus(AudioFocusType::Gain))
     return false;
 
   one_shot_players_.insert(PlayerIdentifier(observer, player_id));
