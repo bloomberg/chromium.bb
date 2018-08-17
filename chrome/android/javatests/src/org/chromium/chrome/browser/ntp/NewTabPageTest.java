@@ -11,6 +11,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
+import android.content.ComponentCallbacks2;
 import android.graphics.Canvas;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
@@ -28,7 +29,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.memory.MemoryPressureCallback;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
@@ -735,6 +738,27 @@ public class NewTabPageTest {
         onView(withId(R.id.header_title)).perform(click());
         // Check header is collapsed.
         mRenderTestRule.render(view, "expandable_header_collapsed");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"NewTabPage", "FeedNewTabPage"})
+    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
+    public void testMemoryPressure(boolean interestFeedEnabled) throws Exception {
+        // TODO(twellington): This test currently just checks that sending a memory pressure
+        // signal doesn't crash. Enhance the test to also check whether certain behaviors are
+        // performed.
+        CallbackHelper callback = new CallbackHelper();
+        MemoryPressureCallback pressureCallback = pressure -> callback.notifyCalled();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            MemoryPressureListener.addCallback(pressureCallback);
+            mActivityTestRule.getActivity().getApplication().onTrimMemory(
+                    ComponentCallbacks2.TRIM_MEMORY_MODERATE);
+        });
+
+        callback.waitForCallback(0);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> MemoryPressureListener.removeCallback(pressureCallback));
     }
 
     private void assertThumbnailInvalidAndRecapture() {
