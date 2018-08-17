@@ -978,8 +978,8 @@ TEST_F(MockCastSocketTest, TestOpenChannelClosedSocket) {
                                   base::Unretained(&handler_)));
 }
 
-// https://crbug.com/874491, flaky on Win
-#if defined(OS_WIN)
+// https://crbug.com/874491, flaky on Win and Mac
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_TestConnectEndToEndWithRealSSL \
   DISABLED_TestConnectEndToEndWithRealSSL
 #else
