@@ -24,7 +24,7 @@ namespace android_webview {
 
 class AwLoginDelegate : public content::LoginDelegate {
  public:
-  AwLoginDelegate(
+  static scoped_refptr<AwLoginDelegate> Create(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       bool first_auth_attempt,
@@ -38,6 +38,8 @@ class AwLoginDelegate : public content::LoginDelegate {
   void OnRequestCancelled() override;
 
  private:
+  AwLoginDelegate(net::AuthChallengeInfo* auth_info,
+                  LoginAuthRequiredCallback auth_required_callback);
   ~AwLoginDelegate() override;
   void HandleHttpAuthRequestOnUIThread(
       bool first_auth_attempt,

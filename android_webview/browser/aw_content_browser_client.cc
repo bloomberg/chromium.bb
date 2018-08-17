@@ -714,9 +714,9 @@ AwContentBrowserClient::CreateLoginDelegate(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     bool first_auth_attempt,
     LoginAuthRequiredCallback auth_required_callback) {
-  return base::MakeRefCounted<AwLoginDelegate>(
-      auth_info, web_contents_getter, first_auth_attempt,
-      std::move(auth_required_callback));
+  return AwLoginDelegate::Create(auth_info, web_contents_getter,
+                                 first_auth_attempt,
+                                 std::move(auth_required_callback));
 }
 
 bool AwContentBrowserClient::HandleExternalProtocol(
