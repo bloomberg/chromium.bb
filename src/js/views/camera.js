@@ -128,6 +128,13 @@ camera.views.Camera = function(context, router, model) {
   this.keyBuffer_ = '';
 
   /**
+   * Promise for the current timer ticks.
+   * @type {Promise<>}
+   * @private
+   */
+  this.ticks_ = null;
+
+  /**
    * Timeout for a take of photo or recording.
    * @type {?number}
    * @private
@@ -307,9 +314,19 @@ camera.views.Camera.prototype.beginTake_ = function() {
   document.body.classList.add('taking');
   this.updateControls_();
 
-  this.options_.onTimerTicks(recordMode => {
+  this.ticks_ = this.options_.onTimerTicks();
+  if (this.ticks_) {
+    // Re-enable the shutter button for canceling timer ticks.
+    // TODO(yuli): Update the shutter assets for canceling timer ticks.
+    this.shutterButton_.disabled = false;
+  }
+
+  Promise.resolve(this.ticks_).finally(() => {
+    this.shutterButton_.disabled = true;
+  }).then(() => {
     // Play a sound before starting to record and delay the take to avoid the
     // sound being recorded if necessary.
+    var recordMode = this.options_.recordMode;
     var delay = (recordMode && this.options_.onSound(
         camera.views.camera.Options.Sound.RECORDSTART)) ? 250 : 0;
     this.takeTimeout_ = setTimeout(() => {
@@ -325,7 +342,7 @@ camera.views.Camera.prototype.beginTake_ = function() {
         this.endTake_();
       }
     }, delay);
-  });
+  }).catch(() => {});
 };
 
 /**
@@ -333,7 +350,9 @@ camera.views.Camera.prototype.beginTake_ = function() {
  * @private
  */
 camera.views.Camera.prototype.endTake_ = function() {
-  this.options_.cancelTimerTicks();
+  if (this.ticks_) {
+    this.ticks_.cancel();
+  }
   if (this.takeTimeout_) {
     clearTimeout(this.takeTimeout_);
     this.takeTimeout_ = null;

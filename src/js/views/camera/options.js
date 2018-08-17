@@ -359,38 +359,45 @@ camera.views.camera.Options.prototype.onSound = function(sound) {
 };
 
 /**
- * Schedules a take of photo or recording by the timer option.
- * @param {function(boolean)} scheduled A take scheduled after the timer ticks.
+ * Schedules ticks by the timer option if any.
+ * @return {?Promise<>} Promise for the operation.
  */
-camera.views.camera.Options.prototype.onTimerTicks = function(scheduled) {
-  var tickCounter = this.toggleTimer_.checked ? 10 : 0;
-  var onTimerTick = () => {
-    if (tickCounter == 0) {
-      scheduled(this.recordMode);
-    } else {
-      tickCounter--;
-      this.tickTimeout_ = setTimeout(onTimerTick, 1000);
-      this.onSound(camera.views.camera.Options.Sound.TICK);
-      // Blink the toggle timer button.
-      this.toggleTimer_.classList.add('animate');
-      setTimeout(() => {
-        this.toggleTimer_.classList.remove('animate');
-      }, 500);
-    }
-  };
-  // First tick immediately in the next message loop cycle.
-  this.tickTimeout_ = setTimeout(onTimerTick, 0);
-};
-
-/**
- * Cancels the pending timer ticks if any.
- */
-camera.views.camera.Options.prototype.cancelTimerTicks = function() {
-  if (this.tickTimeout_) {
-    clearTimeout(this.tickTimeout_);
-    this.tickTimeout_ = null;
+camera.views.camera.Options.prototype.onTimerTicks = function() {
+  if (!this.toggleTimer_.checked) {
+    return null;
   }
-  this.toggleTimer_.classList.remove('animate');
+  var cancel;
+  var ticks = new Promise((resolve, reject) => {
+    // TODO(yuli): Set tick-counter by timer settings.
+    var tickCounter = 6;
+    var onTimerTick = () => {
+      if (tickCounter == 0) {
+        resolve();
+      } else {
+        tickCounter--;
+        this.tickTimeout_ = setTimeout(onTimerTick, 1000);
+        this.onSound(camera.views.camera.Options.Sound.TICK);
+        // Blink the toggle timer button.
+        this.toggleTimer_.classList.add('animate');
+        setTimeout(() => {
+          this.toggleTimer_.classList.remove('animate');
+        }, 500);
+      }
+    };
+    // First tick immediately in the next message loop cycle.
+    this.tickTimeout_ = setTimeout(onTimerTick, 0);
+    cancel = reject;
+  });
+
+  ticks.cancel = () => {
+    this.toggleTimer_.classList.remove('animate');
+    if (this.tickTimeout_) {
+      clearTimeout(this.tickTimeout_);
+      this.tickTimeout_ = null;
+    }
+    cancel();
+  };
+  return ticks;
 };
 
 /**
