@@ -37,7 +37,7 @@ public class ChromeTabbedActivityVrTestRule
     }
 
     @Override
-    public SupportedActivity getRestriction() {
+    public @SupportedActivity int getRestriction() {
         return SupportedActivity.CTA;
     }
 

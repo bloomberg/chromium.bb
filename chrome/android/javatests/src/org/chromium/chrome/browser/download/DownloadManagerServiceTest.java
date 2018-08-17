@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.annotation.IntDef;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.util.Log;
@@ -37,6 +38,8 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.ConnectionType;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Queue;
@@ -63,18 +66,23 @@ public class DownloadManagerServiceTest {
         /**
          * The Ids of different methods in this mock object.
          */
-        static enum MethodID {
-            DOWNLOAD_SUCCESSFUL,
-            DOWNLOAD_FAILED,
-            DOWNLOAD_PROGRESS,
-            DOWNLOAD_PAUSED,
-            DOWNLOAD_INTERRUPTED,
-            CANCEL_DOWNLOAD_ID,
-            CLEAR_PENDING_DOWNLOADS
+        @IntDef({MethodID.DOWNLOAD_SUCCESSFUL, MethodID.DOWNLOAD_FAILED, MethodID.DOWNLOAD_PROGRESS,
+                MethodID.DOWNLOAD_PAUSED, MethodID.DOWNLOAD_INTERRUPTED,
+                MethodID.CANCEL_DOWNLOAD_ID, MethodID.CLEAR_PENDING_DOWNLOADS})
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface MethodID {
+            int DOWNLOAD_SUCCESSFUL = 0;
+            int DOWNLOAD_FAILED = 1;
+            int DOWNLOAD_PROGRESS = 2;
+            int DOWNLOAD_PAUSED = 3;
+            int DOWNLOAD_INTERRUPTED = 4;
+            int CANCEL_DOWNLOAD_ID = 5;
+            int CLEAR_PENDING_DOWNLOADS = 6;
         }
 
-        private final Queue<Pair<MethodID, Object>> mExpectedCalls =
-                new ConcurrentLinkedQueue<Pair<MethodID, Object>>();
+        // Use MethodID for Integer values.
+        private final Queue<Pair<Integer, Object>> mExpectedCalls =
+                new ConcurrentLinkedQueue<Pair<Integer, Object>>();
 
         public MockDownloadNotifier() {
             expect(MethodID.CLEAR_PENDING_DOWNLOADS, null);
@@ -85,7 +93,7 @@ public class DownloadManagerServiceTest {
             this();
         }
 
-        public MockDownloadNotifier expect(MethodID method, Object param) {
+        public MockDownloadNotifier expect(@MethodID int method, Object param) {
             mExpectedCalls.clear();
             mExpectedCalls.add(getMethodSignature(method, param));
             return this;
@@ -101,21 +109,21 @@ public class DownloadManagerServiceTest {
                     });
         }
 
-        public MockDownloadNotifier andThen(MethodID method, Object param) {
+        public MockDownloadNotifier andThen(@MethodID int method, Object param) {
             mExpectedCalls.add(getMethodSignature(method, param));
             return this;
         }
 
-        static Pair<MethodID, Object> getMethodSignature(MethodID methodId, Object param) {
-            return new Pair<MethodID, Object>(methodId, param);
+        static Pair<Integer, Object> getMethodSignature(@MethodID int methodId, Object param) {
+            return new Pair<Integer, Object>(methodId, param);
         }
 
-        void assertCorrectExpectedCall(MethodID methodId, Object param, boolean matchParams) {
+        void assertCorrectExpectedCall(@MethodID int methodId, Object param, boolean matchParams) {
             Log.w("MockDownloadNotifier", "Called: " + methodId);
             Assert.assertFalse("Unexpected call:, no call expected, but got: " + methodId,
                     mExpectedCalls.isEmpty());
-            Pair<MethodID, Object> actual = getMethodSignature(methodId, param);
-            Pair<MethodID, Object> expected = mExpectedCalls.poll();
+            Pair<Integer, Object> actual = getMethodSignature(methodId, param);
+            Pair<Integer, Object> expected = mExpectedCalls.poll();
             Assert.assertEquals("Unexpected call", expected.first, actual.first);
             if (matchParams) {
                 Assert.assertTrue(
