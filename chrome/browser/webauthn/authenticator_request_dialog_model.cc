@@ -4,6 +4,8 @@
 
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 
 namespace {
@@ -62,9 +64,9 @@ AuthenticatorTransport ToAuthenticatorTransport(
 // AuthenticatorRequestDialogModel::AuthenticatorReference --------------------
 
 AuthenticatorRequestDialogModel::AuthenticatorReference::AuthenticatorReference(
-    base::StringPiece device_id,
+    base::StringPiece authenticator_id,
     device::FidoTransportProtocol transport)
-    : device_id(device_id), transport(transport) {}
+    : authenticator_id(authenticator_id), transport(transport) {}
 AuthenticatorRequestDialogModel::AuthenticatorReference::AuthenticatorReference(
     AuthenticatorReference&& data) = default;
 AuthenticatorRequestDialogModel::AuthenticatorReference&
@@ -133,7 +135,7 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
       SetCurrentStep(Step::kTransportSelection);
       break;
     case AuthenticatorTransport::kInternal:
-      SetCurrentStep(Step::kTouchId);
+      TryTouchId();
       break;
     case AuthenticatorTransport::kBluetoothLowEnergy:
       SetCurrentStep(Step::kBleActivate);
@@ -173,7 +175,21 @@ void AuthenticatorRequestDialogModel::TryUsbDevice() {
 }
 
 void AuthenticatorRequestDialogModel::TryTouchId() {
-  DCHECK_EQ(current_step(), Step::kTouchId);
+  SetCurrentStep(Step::kTouchId);
+  if (!request_callback_)
+    return;
+
+  auto touch_id_authenticator =
+      std::find_if(saved_authenticators_.begin(), saved_authenticators_.end(),
+                   [](const auto& authenticator) {
+                     return authenticator.transport ==
+                            device::FidoTransportProtocol::kInternal;
+                   });
+
+  if (touch_id_authenticator == saved_authenticators_.end())
+    return;
+
+  request_callback_.Run(touch_id_authenticator->authenticator_id);
 }
 
 void AuthenticatorRequestDialogModel::Cancel() {
@@ -208,4 +224,9 @@ void AuthenticatorRequestDialogModel::OnRequestTimeout() {
 void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
     bool powered) {
   transport_availability_.is_ble_powered = powered;
+}
+
+void AuthenticatorRequestDialogModel::SetRequestCallback(
+    device::FidoRequestHandlerBase::RequestCallback request_callback) {
+  request_callback_ = request_callback;
 }

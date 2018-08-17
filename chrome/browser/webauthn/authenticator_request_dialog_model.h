@@ -70,7 +70,7 @@ class AuthenticatorRequestDialogModel {
 
     ~AuthenticatorReference();
 
-    std::string device_id;
+    std::string authenticator_id;
     device::FidoTransportProtocol transport;
   };
 
@@ -183,6 +183,9 @@ class AuthenticatorRequestDialogModel {
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);
 
+  void SetRequestCallback(
+      device::FidoRequestHandlerBase::RequestCallback request_callback);
+
   std::vector<AuthenticatorReference>& saved_authenticators() {
     return saved_authenticators_;
   }
@@ -202,6 +205,7 @@ class AuthenticatorRequestDialogModel {
   // that the WebAuthN request for the corresponding authenticators can be
   // dispatched lazily after the user interacts with the UI element.
   std::vector<AuthenticatorReference> saved_authenticators_;
+  device::FidoRequestHandlerBase::RequestCallback request_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModel);
 };
