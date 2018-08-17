@@ -285,8 +285,18 @@ max-parents=10
 
 [IMPORTS]
 
-# Deprecated modules which should not be used, separated by a comma
-deprecated-modules=regsub,TERMIOS,Bastion,rexec,optparse
+# Deprecated modules which should not be used, separated by a comma.
+# Bastion: Dropped in Python 3.
+# optparse: Use the 'argparse' module instead.
+# regsub: Use the 're' module instead.
+# rexec: Dropped in Python 3.
+# TERMIOS: Use the 'termios' module instead.
+deprecated-modules=
+    Bastion,
+    optparse,
+    regsub,
+    rexec,
+    TERMIOS,
 
 # Create a graph of every (i.e. internal and external) dependencies in the
 # given file (report RP0402 must not be disabled)
