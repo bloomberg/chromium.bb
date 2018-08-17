@@ -91,7 +91,6 @@ int ChromeMainDelegateAndroid::RunProcess(
     // start time of the application, and will be same for all requests.
     if (!browser_runner_.get()) {
       startup_metric_utils::RecordMainEntryPointTime(
-          chrome::android::GetMainEntryPointTimeWallClock(),
           chrome::android::GetMainEntryPointTimeTicks());
       browser_runner_.reset(content::BrowserMainRunner::Create());
     }
