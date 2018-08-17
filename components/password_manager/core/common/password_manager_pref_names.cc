@@ -24,6 +24,8 @@ const char kOsPasswordLastChanged[] =
 
 #if defined(OS_MACOSX)
 const char kKeychainMigrationStatus[] = "password_manager.keychain_migration";
+const char kSyncUsersPasswordRecovery[] =
+    "password_manager.sync_users_password_recovery";
 #endif
 
 const char kWasAutoSignInFirstRunExperienceShown[] =

@@ -303,13 +303,17 @@ void PasswordManager::RegisterProfilePrefs(
                              PrefRegistry::NO_REGISTRATION_FLAGS);
 }
 
-#if defined(OS_WIN)
 // static
 void PasswordManager::RegisterLocalPrefs(PrefRegistrySimple* registry) {
+#if defined(OS_WIN)
   registry->RegisterInt64Pref(prefs::kOsPasswordLastChanged, 0);
   registry->RegisterBooleanPref(prefs::kOsPasswordBlank, false);
-}
 #endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  registry->RegisterTimePref(prefs::kSyncUsersPasswordRecovery, base::Time());
+#endif
+}
 
 PasswordManager::PasswordManager(PasswordManagerClient* client)
     : client_(client) {

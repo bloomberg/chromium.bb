@@ -53,9 +53,9 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   enum class NavigationEntryToCheck { LAST_COMMITTED, VISIBLE };
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-#if defined(OS_WIN)
+
   static void RegisterLocalPrefs(PrefRegistrySimple* registry);
-#endif
+
   explicit PasswordManager(PasswordManagerClient* client);
   ~PasswordManager() override;
 

@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -165,6 +166,13 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<password_manager::LoginDatabase> login_db(
       password_manager::CreateLoginDatabase(profile->GetPath()));
+#if defined(OS_MACOSX)
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  login_db->InitPasswordRecoveryUtil(
+      std::make_unique<password_manager::PasswordRecoveryUtilMac>(
+          local_state, base::ThreadTaskRunnerHandle::Get()));
+#endif
 
   scoped_refptr<PasswordStore> ps;
 #if defined(OS_WIN)

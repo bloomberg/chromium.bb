@@ -229,6 +229,13 @@ jumbo_static_library("browser") {
     sources += [ "login_database_posix.cc" ]
   }
 
+  if (is_mac && !is_ios) {
+    sources += [
+      "password_recovery_util_mac.cc",
+      "password_recovery_util_mac.h",
+    ]
+  }
+
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }

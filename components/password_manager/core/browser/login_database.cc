@@ -631,6 +631,13 @@ bool LoginDatabase::Init() {
   return true;
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+void LoginDatabase::InitPasswordRecoveryUtil(
+    std::unique_ptr<PasswordRecoveryUtilMac> password_recovery_util) {
+  password_recovery_util_ = std::move(password_recovery_util);
+}
+#endif
+
 void LoginDatabase::ReportMetrics(const std::string& sync_username,
                                   bool custom_passphrase_sync_enabled) {
   sql::Statement s(db_.GetCachedStatement(
@@ -1350,6 +1357,8 @@ DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
         metrics_util::DeleteUndecryptableLoginsReturnValue::
             kSuccessNoDeletions);
   } else {
+    DCHECK(password_recovery_util_);
+    password_recovery_util_->RecordPasswordRecovery();
     metrics_util::LogDeleteUndecryptableLoginsReturnValue(
         metrics_util::DeleteUndecryptableLoginsReturnValue::
             kSuccessLoginsDeleted);
