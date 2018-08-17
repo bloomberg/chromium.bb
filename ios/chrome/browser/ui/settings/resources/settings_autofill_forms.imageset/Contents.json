@@ -3,17 +3,17 @@
         {
             "idiom": "universal",
             "scale": "1x",
-            "filename": "payment_methods.png"
+            "filename": "settings_autofill_forms.png"
         },
         {
             "idiom": "universal",
             "scale": "2x",
-            "filename": "payment_methods@2x.png"
+            "filename": "settings_autofill_forms@2x.png"
         },
         {
             "idiom": "universal",
             "scale": "3x",
-            "filename": "payment_methods@3x.png"
+            "filename": "settings_autofill_forms@3x.png"
         }
     ],
     "info": {

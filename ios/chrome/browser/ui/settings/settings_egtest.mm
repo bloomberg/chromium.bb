@@ -97,13 +97,9 @@ id<GREYMatcher> ClearBrowsingDataCell() {
 id<GREYMatcher> SearchEngineButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_SEARCH_ENGINE_SETTING_TITLE);
 }
-// Matcher for the payment methods cell on the main Settings screen.
-id<GREYMatcher> PaymentMethodsButton() {
-  return ButtonWithAccessibilityLabelId(IDS_AUTOFILL_PAYMENT_METHODS);
-}
-// Matcher for the addresses cell on the main Settings screen.
-id<GREYMatcher> AddressesButton() {
-  return ButtonWithAccessibilityLabelId(IDS_AUTOFILL_ADDRESSES);
+// Matcher for the Autofill Forms cell on the main Settings screen.
+id<GREYMatcher> AutofillButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_AUTOFILL);
 }
 // Matcher for the Google Chrome cell on the main Settings screen.
 id<GREYMatcher> GoogleChromeButton() {
@@ -713,18 +709,10 @@ bool IsCertificateCleared() {
   [self closeSubSettingsMenu];
 }
 
-// Verifies the UI elements are accessible on the payment methods page.
-- (void)testAccessibilityOnPaymentMethods {
+// Verifies the UI elements are accessible on the Autofill Forms page.
+- (void)testAccessibilityOnAutofillForms {
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:PaymentMethodsButton()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  [self closeSubSettingsMenu];
-}
-
-// Verifies the UI elements are accessible on the addresses page.
-- (void)testAccessibilityOnAddresses {
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:AddressesButton()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:AutofillButton()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];
 }

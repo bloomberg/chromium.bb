@@ -44,8 +44,7 @@
 #import "ios/chrome/browser/ui/commands/settings_main_page_commands.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/autofill_credit_card_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/autofill_profile_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/bandwidth_management_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
@@ -97,9 +96,7 @@ const CGFloat kAccountProfilePhotoDimension = 40.0f;
 NSString* const kSyncAndGoogleServicesImageName = @"sync_and_google_services";
 NSString* const kSettingsSearchEngineImageName = @"settings_search_engine";
 NSString* const kSettingsPasswordsImageName = @"settings_passwords";
-NSString* const kSettingsAutofillCreditCardImageName =
-    @"settings_payment_methods";
-NSString* const kSettingsAutofillProfileImageName = @"settings_addresses";
+NSString* const kSettingsAutofillFormsImageName = @"settings_autofill_forms";
 NSString* const kSettingsVoiceSearchImageName = @"settings_voice_search";
 NSString* const kSettingsPrivacyImageName = @"settings_privacy";
 NSString* const kSettingsContentSettingsImageName =
@@ -127,8 +124,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeHeader,
   ItemTypeSearchEngine,
   ItemTypeSavedPasswords,
-  ItemTypeAutofillCreditCard,
-  ItemTypeAutofillProfile,
+  ItemTypeAutofill,
   ItemTypeVoiceSearch,
   ItemTypePrivacy,
   ItemTypeContentSettings,
@@ -244,8 +240,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   SettingsDetailItem* _voiceSearchDetailItem;
   SettingsDetailItem* _defaultSearchEngineItem;
   SettingsDetailItem* _savePasswordsDetailItem;
-  SettingsDetailItem* _autoFillProfileDetailItem;
-  SettingsDetailItem* _autoFillCreditCardDetailItem;
+  SettingsDetailItem* _autoFillDetailItem;
 
   // YES if the user used at least once the sign-in promo view buttons.
   BOOL _signinStarted;
@@ -429,9 +424,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       toSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self savePasswordsDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
-  [model addItem:[self AutoFillCreditCardDetailItem]
-      toSectionWithIdentifier:SectionIdentifierBasics];
-  [model addItem:[self autoFillProfileDetailItem]
+  [model addItem:[self autoFillDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
 
   // Advanced Section
@@ -569,34 +562,19 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   return _savePasswordsDetailItem;
 }
 
-- (CollectionViewItem*)AutoFillCreditCardDetailItem {
-  BOOL autofillCreditCardEnabled =
-      autofill::prefs::IsCreditCardAutofillEnabled(_browserState->GetPrefs());
-  NSString* detailText = autofillCreditCardEnabled
-                             ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                             : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  _autoFillCreditCardDetailItem = [self
-      detailItemWithType:ItemTypeAutofillCreditCard
-                    text:l10n_util::GetNSString(IDS_AUTOFILL_PAYMENT_METHODS)
-              detailText:detailText
-           iconImageName:kSettingsAutofillCreditCardImageName];
+- (CollectionViewItem*)autoFillDetailItem {
+  BOOL autofillEnabled =
+      autofill::prefs::IsAutofillEnabled(_browserState->GetPrefs());
+  NSString* autofillDetail = autofillEnabled
+                                 ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+                                 : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+  _autoFillDetailItem =
+      [self detailItemWithType:ItemTypeAutofill
+                          text:l10n_util::GetNSString(IDS_IOS_AUTOFILL)
+                    detailText:autofillDetail
+                 iconImageName:kSettingsAutofillFormsImageName];
 
-  return _autoFillCreditCardDetailItem;
-}
-
-- (CollectionViewItem*)autoFillProfileDetailItem {
-  BOOL autofillProfileEnabled =
-      autofill::prefs::IsProfileAutofillEnabled(_browserState->GetPrefs());
-  NSString* detailText = autofillProfileEnabled
-                             ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                             : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  _autoFillProfileDetailItem =
-      [self detailItemWithType:ItemTypeAutofillProfile
-                          text:l10n_util::GetNSString(IDS_AUTOFILL_ADDRESSES)
-                    detailText:detailText
-                 iconImageName:kSettingsAutofillProfileImageName];
-
-  return _autoFillProfileDetailItem;
+  return _autoFillDetailItem;
 }
 
 - (CollectionViewItem*)voiceSearchDetailItem {
@@ -878,12 +856,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       controller = [[SavePasswordsCollectionViewController alloc]
           initWithBrowserState:_browserState];
       break;
-    case ItemTypeAutofillCreditCard:
-      controller = [[AutofillCreditCardCollectionViewController alloc]
-          initWithBrowserState:_browserState];
-      break;
-    case ItemTypeAutofillProfile:
-      controller = [[AutofillProfileCollectionViewController alloc]
+    case ItemTypeAutofill:
+      controller = [[AutofillCollectionViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeVoiceSearch:
@@ -1286,24 +1260,15 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     [self reconfigureCellsForItems:@[ _savePasswordsDetailItem ]];
   }
 
-  if (preferenceName == autofill::prefs::kAutofillProfileEnabled) {
-    BOOL autofillProfileEnabled =
-        autofill::prefs::IsProfileAutofillEnabled(_browserState->GetPrefs());
-    NSString* detailText = autofillProfileEnabled
-                               ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                               : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-    _autoFillProfileDetailItem.detailText = detailText;
-    [self reconfigureCellsForItems:@[ _autoFillProfileDetailItem ]];
-  }
-
-  if (preferenceName == autofill::prefs::kAutofillCreditCardEnabled) {
-    BOOL autofillCreditCardEnabled =
-        autofill::prefs::IsCreditCardAutofillEnabled(_browserState->GetPrefs());
-    NSString* detailText = autofillCreditCardEnabled
-                               ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                               : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-    _autoFillCreditCardDetailItem.detailText = detailText;
-    [self reconfigureCellsForItems:@[ _autoFillCreditCardDetailItem ]];
+  if (preferenceName == autofill::prefs::kAutofillCreditCardEnabled ||
+      preferenceName == autofill::prefs::kAutofillProfileEnabled) {
+    BOOL autofillEnabled =
+        autofill::prefs::IsAutofillEnabled(_browserState->GetPrefs());
+    NSString* autofillDetail =
+        autofillEnabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+                        : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+    _autoFillDetailItem.detailText = autofillDetail;
+    [self reconfigureCellsForItems:@[ _autoFillDetailItem ]];
   }
 }
 
