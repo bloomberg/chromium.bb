@@ -155,7 +155,13 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
   }
 
   identifier_ = identifier;
-  response_url_ = response.Url();
+  if (response.WasFetchedViaServiceWorker() &&
+      !response.OriginalURLViaServiceWorker().IsEmpty()) {
+    response_url_ = response.OriginalURLViaServiceWorker();
+  } else {
+    response_url_ = response.Url();
+  }
+
   response_encoding_ = response.TextEncodingName();
   app_cache_id_ = response.AppCacheID();
 
