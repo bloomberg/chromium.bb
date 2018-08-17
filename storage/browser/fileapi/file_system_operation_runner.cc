@@ -10,7 +10,6 @@
 #include <tuple>
 #include <utility>
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -28,6 +27,21 @@ namespace storage {
 
 using OperationID = FileSystemOperationRunner::OperationID;
 
+class FileSystemOperationRunner::BeginOperationScoper
+    : public base::SupportsWeakPtr<
+          FileSystemOperationRunner::BeginOperationScoper> {
+ public:
+  BeginOperationScoper() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BeginOperationScoper);
+};
+
+FileSystemOperationRunner::OperationHandle::OperationHandle() = default;
+FileSystemOperationRunner::OperationHandle::OperationHandle(
+    const OperationHandle& other) = default;
+FileSystemOperationRunner::OperationHandle::~OperationHandle() = default;
+
 FileSystemOperationRunner::~FileSystemOperationRunner() = default;
 
 void FileSystemOperationRunner::Shutdown() {
@@ -44,17 +58,18 @@ OperationID FileSystemOperationRunner::CreateFile(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForWrite(id, url);
+  PrepareForWrite(handle.id, url);
   operation_raw->CreateFile(url, exclusive,
                             base::Bind(&FileSystemOperationRunner::DidFinish,
-                                       weak_ptr_, id, callback));
-  return id;
+                                       AsWeakPtr(), handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::CreateDirectory(
@@ -66,18 +81,19 @@ OperationID FileSystemOperationRunner::CreateDirectory(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForWrite(id, url);
+  PrepareForWrite(handle.id, url);
   operation_raw->CreateDirectory(
       url, exclusive, recursive,
-      base::Bind(&FileSystemOperationRunner::DidFinish, weak_ptr_, id,
+      base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(), handle,
                  callback));
-  return id;
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::Copy(
@@ -91,23 +107,24 @@ OperationID FileSystemOperationRunner::Copy(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(dest_url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForWrite(id, dest_url);
-  PrepareForRead(id, src_url);
+  PrepareForWrite(handle.id, dest_url);
+  PrepareForRead(handle.id, src_url);
   operation_raw->Copy(
       src_url, dest_url, option, error_behavior,
       progress_callback.is_null()
           ? CopyProgressCallback()
-          : base::Bind(&FileSystemOperationRunner::OnCopyProgress, weak_ptr_,
-                       id, progress_callback),
-      base::Bind(&FileSystemOperationRunner::DidFinish, weak_ptr_, id,
+          : base::Bind(&FileSystemOperationRunner::OnCopyProgress, AsWeakPtr(),
+                       handle, progress_callback),
+      base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(), handle,
                  callback));
-  return id;
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::Move(
@@ -119,18 +136,19 @@ OperationID FileSystemOperationRunner::Move(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(dest_url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForWrite(id, dest_url);
-  PrepareForWrite(id, src_url);
+  PrepareForWrite(handle.id, dest_url);
+  PrepareForWrite(handle.id, src_url);
   operation_raw->Move(src_url, dest_url, option,
                       base::Bind(&FileSystemOperationRunner::DidFinish,
-                                 weak_ptr_, id, callback));
-  return id;
+                                 AsWeakPtr(), handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::DirectoryExists(
@@ -140,17 +158,18 @@ OperationID FileSystemOperationRunner::DirectoryExists(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForRead(id, url);
+  PrepareForRead(handle.id, url);
   operation_raw->DirectoryExists(
-      url, base::Bind(&FileSystemOperationRunner::DidFinish, weak_ptr_, id,
-                      callback));
-  return id;
+      url, base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
+                      handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::FileExists(
@@ -160,17 +179,18 @@ OperationID FileSystemOperationRunner::FileExists(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForRead(id, url);
+  PrepareForRead(handle.id, url);
   operation_raw->FileExists(
-      url, base::Bind(&FileSystemOperationRunner::DidFinish, weak_ptr_, id,
-                      callback));
-  return id;
+      url, base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
+                      handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::GetMetadata(
@@ -181,18 +201,19 @@ OperationID FileSystemOperationRunner::GetMetadata(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidGetMetadata(id, callback, error, base::File::Info());
-    return id;
+    DidGetMetadata(handle, callback, error, base::File::Info());
+    return handle.id;
   }
-  PrepareForRead(id, url);
+  PrepareForRead(handle.id, url);
   operation_raw->GetMetadata(
       url, fields,
-      base::Bind(&FileSystemOperationRunner::DidGetMetadata, weak_ptr_, id,
-                 callback));
-  return id;
+      base::Bind(&FileSystemOperationRunner::DidGetMetadata, AsWeakPtr(),
+                 handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::ReadDirectory(
@@ -202,18 +223,19 @@ OperationID FileSystemOperationRunner::ReadDirectory(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidReadDirectory(id, std::move(callback), error,
+    DidReadDirectory(handle, std::move(callback), error,
                      std::vector<filesystem::mojom::DirectoryEntry>(), false);
-    return id;
+    return handle.id;
   }
-  PrepareForRead(id, url);
+  PrepareForRead(handle.id, url);
   operation_raw->ReadDirectory(
       url, base::BindRepeating(&FileSystemOperationRunner::DidReadDirectory,
-                               weak_ptr_, id, callback));
-  return id;
+                               AsWeakPtr(), handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::Remove(
@@ -223,17 +245,18 @@ OperationID FileSystemOperationRunner::Remove(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForWrite(id, url);
+  PrepareForWrite(handle.id, url);
   operation_raw->Remove(url, recursive,
                         base::Bind(&FileSystemOperationRunner::DidFinish,
-                                   weak_ptr_, id, callback));
-  return id;
+                                   AsWeakPtr(), handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::Write(
@@ -245,19 +268,20 @@ OperationID FileSystemOperationRunner::Write(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidWrite(id, callback, error, 0, true);
-    return id;
+    DidWrite(handle, callback, error, 0, true);
+    return handle.id;
   }
 
   std::unique_ptr<FileStreamWriter> writer(
       file_system_context_->CreateFileStreamWriter(url, offset));
   if (!writer) {
     // Write is not supported.
-    DidWrite(id, callback, base::File::FILE_ERROR_SECURITY, 0, true);
-    return id;
+    DidWrite(handle, callback, base::File::FILE_ERROR_SECURITY, 0, true);
+    return handle.id;
   }
 
   std::unique_ptr<FileWriterDelegate> writer_delegate(new FileWriterDelegate(
@@ -267,11 +291,11 @@ OperationID FileSystemOperationRunner::Write(
   if (blob)
     blob_reader = blob->CreateReader();
 
-  PrepareForWrite(id, url);
+  PrepareForWrite(handle.id, url);
   operation_raw->Write(url, std::move(writer_delegate), std::move(blob_reader),
                        base::Bind(&FileSystemOperationRunner::DidWrite,
-                                  weak_ptr_, id, callback));
-  return id;
+                                  AsWeakPtr(), handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::Truncate(
@@ -282,17 +306,18 @@ OperationID FileSystemOperationRunner::Truncate(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForWrite(id, url);
+  PrepareForWrite(handle.id, url);
   operation_raw->Truncate(url, length,
                           base::Bind(&FileSystemOperationRunner::DidFinish,
-                                     weak_ptr_, id, callback));
-  return id;
+                                     AsWeakPtr(), handle, callback));
+  return handle.id;
 }
 
 void FileSystemOperationRunner::Cancel(
@@ -322,17 +347,18 @@ OperationID FileSystemOperationRunner::TouchFile(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForWrite(id, url);
+  PrepareForWrite(handle.id, url);
   operation_raw->TouchFile(url, last_access_time, last_modified_time,
                            base::Bind(&FileSystemOperationRunner::DidFinish,
-                                      weak_ptr_, id, callback));
-  return id;
+                                      AsWeakPtr(), handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::OpenFile(
@@ -343,11 +369,12 @@ OperationID FileSystemOperationRunner::OpenFile(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidOpenFile(id, callback, base::File(error), base::Closure());
-    return id;
+    DidOpenFile(handle, callback, base::File(error), base::Closure());
+    return handle.id;
   }
   if (file_flags &
       (base::File::FLAG_CREATE | base::File::FLAG_OPEN_ALWAYS |
@@ -355,14 +382,14 @@ OperationID FileSystemOperationRunner::OpenFile(
        base::File::FLAG_WRITE | base::File::FLAG_EXCLUSIVE_WRITE |
        base::File::FLAG_DELETE_ON_CLOSE |
        base::File::FLAG_WRITE_ATTRIBUTES)) {
-    PrepareForWrite(id, url);
+    PrepareForWrite(handle.id, url);
   } else {
-    PrepareForRead(id, url);
+    PrepareForRead(handle.id, url);
   }
   operation_raw->OpenFile(url, file_flags,
                           base::Bind(&FileSystemOperationRunner::DidOpenFile,
-                                     weak_ptr_, id, callback));
-  return id;
+                                     AsWeakPtr(), handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::CreateSnapshotFile(
@@ -372,18 +399,19 @@ OperationID FileSystemOperationRunner::CreateSnapshotFile(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidCreateSnapshot(id, std::move(callback), error, base::File::Info(),
+    DidCreateSnapshot(handle, std::move(callback), error, base::File::Info(),
                       base::FilePath(), nullptr);
-    return id;
+    return handle.id;
   }
-  PrepareForRead(id, url);
+  PrepareForRead(handle.id, url);
   operation_raw->CreateSnapshotFile(
-      url, base::BindOnce(&FileSystemOperationRunner::DidCreateSnapshot,
-                          weak_ptr_, id, std::move(callback)));
-  return id;
+      url, base::Bind(&FileSystemOperationRunner::DidCreateSnapshot,
+                      AsWeakPtr(), handle, base::Passed(&callback)));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::CopyInForeignFile(
@@ -394,18 +422,19 @@ OperationID FileSystemOperationRunner::CopyInForeignFile(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(dest_url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForWrite(id, dest_url);
+  PrepareForWrite(handle.id, dest_url);
   operation_raw->CopyInForeignFile(
       src_local_disk_path, dest_url,
-      base::Bind(&FileSystemOperationRunner::DidFinish, weak_ptr_, id,
+      base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(), handle,
                  callback));
-  return id;
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::RemoveFile(
@@ -415,17 +444,18 @@ OperationID FileSystemOperationRunner::RemoveFile(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForWrite(id, url);
+  PrepareForWrite(handle.id, url);
   operation_raw->RemoveFile(
-      url, base::Bind(&FileSystemOperationRunner::DidFinish, weak_ptr_, id,
-                      callback));
-  return id;
+      url, base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
+                      handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::RemoveDirectory(
@@ -435,17 +465,18 @@ OperationID FileSystemOperationRunner::RemoveDirectory(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForWrite(id, url);
+  PrepareForWrite(handle.id, url);
   operation_raw->RemoveDirectory(
-      url, base::Bind(&FileSystemOperationRunner::DidFinish, weak_ptr_, id,
-                      callback));
-  return id;
+      url, base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
+                      handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::CopyFileLocal(
@@ -458,18 +489,19 @@ OperationID FileSystemOperationRunner::CopyFileLocal(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(src_url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForRead(id, src_url);
-  PrepareForWrite(id, dest_url);
+  PrepareForRead(handle.id, src_url);
+  PrepareForWrite(handle.id, dest_url);
   operation_raw->CopyFileLocal(src_url, dest_url, option, progress_callback,
                                base::Bind(&FileSystemOperationRunner::DidFinish,
-                                          weak_ptr_, id, callback));
-  return id;
+                                          AsWeakPtr(), handle, callback));
+  return handle.id;
 }
 
 OperationID FileSystemOperationRunner::MoveFileLocal(
@@ -481,18 +513,19 @@ OperationID FileSystemOperationRunner::MoveFileLocal(
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(src_url, &error));
   FileSystemOperation* operation_raw = operation.get();
-  OperationID id = BeginOperation(std::move(operation));
-  base::AutoReset<bool> beginning(&is_beginning_operation_, true);
+  BeginOperationScoper scope;
+  OperationHandle handle =
+      BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidFinish(id, callback, error);
-    return id;
+    DidFinish(handle, callback, error);
+    return handle.id;
   }
-  PrepareForWrite(id, src_url);
-  PrepareForWrite(id, dest_url);
+  PrepareForWrite(handle.id, src_url);
+  PrepareForWrite(handle.id, dest_url);
   operation_raw->MoveFileLocal(src_url, dest_url, option,
                                base::Bind(&FileSystemOperationRunner::DidFinish,
-                                          weak_ptr_, id, callback));
-  return id;
+                                          AsWeakPtr(), handle, callback));
+  return handle.id;
 }
 
 base::File::Error FileSystemOperationRunner::SyncGetPlatformPath(
@@ -508,126 +541,126 @@ base::File::Error FileSystemOperationRunner::SyncGetPlatformPath(
 
 FileSystemOperationRunner::FileSystemOperationRunner(
     FileSystemContext* file_system_context)
-    : file_system_context_(file_system_context), weak_factory_(this) {
-  weak_ptr_ = weak_factory_.GetWeakPtr();
-}
+    : file_system_context_(file_system_context) {}
 
-void FileSystemOperationRunner::DidFinish(const OperationID id,
+void FileSystemOperationRunner::DidFinish(const OperationHandle& handle,
                                           const StatusCallback& callback,
                                           base::File::Error rv) {
-  if (is_beginning_operation_) {
-    finished_operations_.insert(id);
+  if (handle.scope) {
+    finished_operations_.insert(handle.id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&FileSystemOperationRunner::DidFinish,
-                                  weak_ptr_, id, callback, rv));
+                                  AsWeakPtr(), handle, callback, rv));
     return;
   }
   callback.Run(rv);
-  FinishOperation(id);
+  FinishOperation(handle.id);
 }
 
 void FileSystemOperationRunner::DidGetMetadata(
-    const OperationID id,
+    const OperationHandle& handle,
     const GetMetadataCallback& callback,
     base::File::Error rv,
     const base::File::Info& file_info) {
-  if (is_beginning_operation_) {
-    finished_operations_.insert(id);
+  if (handle.scope) {
+    finished_operations_.insert(handle.id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&FileSystemOperationRunner::DidGetMetadata,
-                                  weak_ptr_, id, callback, rv, file_info));
+        FROM_HERE,
+        base::BindOnce(&FileSystemOperationRunner::DidGetMetadata, AsWeakPtr(),
+                       handle, callback, rv, file_info));
     return;
   }
   callback.Run(rv, file_info);
-  FinishOperation(id);
+  FinishOperation(handle.id);
 }
 
 void FileSystemOperationRunner::DidReadDirectory(
-    const OperationID id,
+    const OperationHandle& handle,
     const ReadDirectoryCallback& callback,
     base::File::Error rv,
     std::vector<filesystem::mojom::DirectoryEntry> entries,
     bool has_more) {
-  if (is_beginning_operation_) {
-    finished_operations_.insert(id);
+  if (handle.scope) {
+    finished_operations_.insert(handle.id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&FileSystemOperationRunner::DidReadDirectory, weak_ptr_,
-                       id, callback, rv, std::move(entries), has_more));
+        FROM_HERE, base::BindOnce(&FileSystemOperationRunner::DidReadDirectory,
+                                  AsWeakPtr(), handle, callback, rv,
+                                  std::move(entries), has_more));
     return;
   }
   callback.Run(rv, std::move(entries), has_more);
   if (rv != base::File::FILE_OK || !has_more)
-    FinishOperation(id);
+    FinishOperation(handle.id);
 }
 
-void FileSystemOperationRunner::DidWrite(const OperationID id,
+void FileSystemOperationRunner::DidWrite(const OperationHandle& handle,
                                          const WriteCallback& callback,
                                          base::File::Error rv,
                                          int64_t bytes,
                                          bool complete) {
-  if (is_beginning_operation_) {
-    finished_operations_.insert(id);
+  if (handle.scope) {
+    finished_operations_.insert(handle.id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&FileSystemOperationRunner::DidWrite, weak_ptr_, id,
-                       callback, rv, bytes, complete));
+        base::BindOnce(&FileSystemOperationRunner::DidWrite, AsWeakPtr(),
+                       handle, callback, rv, bytes, complete));
     return;
   }
   callback.Run(rv, bytes, complete);
   if (rv != base::File::FILE_OK || complete)
-    FinishOperation(id);
+    FinishOperation(handle.id);
 }
 
 void FileSystemOperationRunner::DidOpenFile(
-    const OperationID id,
+    const OperationHandle& handle,
     const OpenFileCallback& callback,
     base::File file,
     base::OnceClosure on_close_callback) {
-  if (is_beginning_operation_) {
-    finished_operations_.insert(id);
+  if (handle.scope) {
+    finished_operations_.insert(handle.id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&FileSystemOperationRunner::DidOpenFile,
-                                  weak_ptr_, id, callback, std::move(file),
-                                  std::move(on_close_callback)));
+        FROM_HERE,
+        base::BindOnce(&FileSystemOperationRunner::DidOpenFile, AsWeakPtr(),
+                       handle, callback, std::move(file),
+                       std::move(on_close_callback)));
     return;
   }
   callback.Run(std::move(file), std::move(on_close_callback));
-  FinishOperation(id);
+  FinishOperation(handle.id);
 }
 
 void FileSystemOperationRunner::DidCreateSnapshot(
-    const OperationID id,
+    const OperationHandle& handle,
     SnapshotFileCallback callback,
     base::File::Error rv,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
     scoped_refptr<storage::ShareableFileReference> file_ref) {
-  if (is_beginning_operation_) {
-    finished_operations_.insert(id);
+  if (handle.scope) {
+    finished_operations_.insert(handle.id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&FileSystemOperationRunner::DidCreateSnapshot, weak_ptr_,
-                       id, std::move(callback), rv, file_info, platform_path,
-                       std::move(file_ref)));
+        base::BindOnce(&FileSystemOperationRunner::DidCreateSnapshot,
+                       AsWeakPtr(), handle, std::move(callback), rv, file_info,
+                       platform_path, std::move(file_ref)));
     return;
   }
   std::move(callback).Run(rv, file_info, platform_path, std::move(file_ref));
-  FinishOperation(id);
+  FinishOperation(handle.id);
 }
 
 void FileSystemOperationRunner::OnCopyProgress(
-    const OperationID id,
+    const OperationHandle& handle,
     const CopyProgressCallback& callback,
     FileSystemOperation::CopyProgressType type,
     const FileSystemURL& source_url,
     const FileSystemURL& dest_url,
     int64_t size) {
-  if (is_beginning_operation_) {
+  if (handle.scope) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&FileSystemOperationRunner::OnCopyProgress, weak_ptr_,
-                       id, callback, type, source_url, dest_url, size));
+        base::BindOnce(&FileSystemOperationRunner::OnCopyProgress, AsWeakPtr(),
+                       handle, callback, type, source_url, dest_url, size));
     return;
   }
   callback.Run(type, source_url, dest_url, size);
@@ -650,11 +683,15 @@ void FileSystemOperationRunner::PrepareForRead(OperationID id,
   }
 }
 
-OperationID FileSystemOperationRunner::BeginOperation(
-    std::unique_ptr<FileSystemOperation> operation) {
-  OperationID id = next_operation_id_++;
-  operations_.emplace(id, std::move(operation));
-  return id;
+FileSystemOperationRunner::OperationHandle
+FileSystemOperationRunner::BeginOperation(
+    std::unique_ptr<FileSystemOperation> operation,
+    base::WeakPtr<BeginOperationScoper> scope) {
+  OperationHandle handle;
+  handle.id = next_operation_id_++;
+  operations_.emplace(handle.id, std::move(operation));
+  handle.scope = scope;
+  return handle;
 }
 
 void FileSystemOperationRunner::FinishOperation(OperationID id) {
