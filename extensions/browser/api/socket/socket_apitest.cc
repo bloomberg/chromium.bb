@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/dns/host_resolver_wrapper.h"
-#include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api/socket/socket_api.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/extension.h"

@@ -11,8 +11,6 @@ source_set("dns") {
   sources = [
     "dns_api.cc",
     "dns_api.h",
-    "host_resolver_wrapper.cc",
-    "host_resolver_wrapper.h",
   ]
 
   deps = [
