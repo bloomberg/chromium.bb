@@ -33,6 +33,7 @@ DemoSetupScreen::~DemoSetupScreen() {
 }
 
 void DemoSetupScreen::Show() {
+  DCHECK(DemoSetupController::IsOobeDemoSetupFlowInProgress());
   if (view_)
     view_->Show();
 }
@@ -53,6 +54,16 @@ void DemoSetupScreen::OnUserAction(const std::string& action_id) {
 }
 
 void DemoSetupScreen::OnSetupError(DemoSetupController::DemoSetupError error) {
+  if (error != DemoSetupController::DemoSetupError::kFatal &&
+      WizardController::default_controller()
+          ->demo_setup_controller()
+          ->IsDerelictOfflineEnrollment()) {
+    // Silently return to the welcome screen since enrollment was attempted
+    // automatically.
+    Finish(ScreenExitCode::DEMO_MODE_SETUP_CANCELED);
+    return;
+  }
+
   // TODO(mukai): propagate |error| information and change the error message.
   view_->OnSetupFinished(false, std::string());
 }

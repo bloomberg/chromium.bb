@@ -29,6 +29,9 @@ class DemoSetupController
     kOnline,
     // Offline enrollment into demo mode that is established locally.
     kOffline,
+    // Offline enrollment into demo mode that is established locally due to
+    // device being derelict.
+    kDerelictOffline,
   };
 
   // Type of demo mode setup error.
@@ -68,8 +71,12 @@ class DemoSetupController
     enrollment_type_ = enrollment_type;
   }
 
-  // Whether offline enrollment is used for setup.
+  // Whether offline enrollment is used for setup. This includes manual and
+  // derelict enrollment.
   bool IsOfflineEnrollment() const;
+
+  // Whether derelict offline enrollment occurred.
+  bool IsDerelictOfflineEnrollment() const;
 
   // Initiates enrollment that sets up the device in the demo mode domain. The
   // |enrollment_type_| determines whether online or offline setup will be
