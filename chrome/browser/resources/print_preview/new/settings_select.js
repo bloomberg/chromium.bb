@@ -77,6 +77,7 @@ Polymer({
       assertNotReached();
       return;
     }
-    this.setSetting(this.settingName, /** @type {Object} */ (newValue));
+    if (value !== JSON.stringify(this.getSettingValue(this.settingName)))
+      this.setSetting(this.settingName, /** @type {Object} */ (newValue));
   },
 });

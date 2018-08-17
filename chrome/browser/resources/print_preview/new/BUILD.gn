@@ -259,6 +259,7 @@ js_library("margin_control_container") {
   deps = [
     ":margin_control",
     ":settings_behavior",
+    ":state",
     "../data:coordinate2d",
     "../data:margins",
     "../data:measurement_system",

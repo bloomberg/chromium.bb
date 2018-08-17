@@ -721,6 +721,40 @@ TEST_F('PrintPreviewCustomMarginsTest', 'SetControlsWithTextbox', function() {
   this.runMochaTest(custom_margins_test.TestNames.SetControlsWithTextbox);
 });
 
+TEST_F(
+    'PrintPreviewCustomMarginsTest', 'RestoreStickyMarginsAfterDefault',
+    function() {
+      this.runMochaTest(
+          custom_margins_test.TestNames.RestoreStickyMarginsAfterDefault);
+    });
+
+TEST_F(
+    'PrintPreviewCustomMarginsTest', 'MediaSizeClearsCustomMargins',
+    function() {
+      this.runMochaTest(
+          custom_margins_test.TestNames.MediaSizeClearsCustomMargins);
+    });
+
+TEST_F(
+    'PrintPreviewCustomMarginsTest', 'LayoutClearsCustomMargins', function() {
+      this.runMochaTest(
+          custom_margins_test.TestNames.LayoutClearsCustomMargins);
+    });
+
+TEST_F(
+    'PrintPreviewCustomMarginsTest', 'IgnoreDocumentMarginsFromPDF',
+    function() {
+      this.runMochaTest(
+          custom_margins_test.TestNames.IgnoreDocumentMarginsFromPDF);
+    });
+
+TEST_F(
+    'PrintPreviewCustomMarginsTest', 'MediaSizeClearsCustomMarginsPDF',
+    function() {
+      this.runMochaTest(
+          custom_margins_test.TestNames.MediaSizeClearsCustomMarginsPDF);
+    });
+
 PrintPreviewNewDestinationSearchTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
