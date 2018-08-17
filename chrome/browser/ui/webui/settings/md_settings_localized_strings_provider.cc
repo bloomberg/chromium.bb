@@ -2595,8 +2595,6 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_MULTIDEVICE_INSTANT_TETHERING},
       {"multideviceAndroidMessagesItemTitle",
        IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES},
-      {"multideviceAndroidMessagesItemSummary",
-       IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES_SUMMARY},
       {"multideviceForgetDevice", IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE},
       {"multideviceForgetDeviceSummary",
        IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE_EXPLANATION},
@@ -2628,6 +2626,11 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_SMART_LOCK_SUMMARY,
           GetHelpUrlWithBoard(chrome::kEasyUnlockLearnMoreUrl)));
+  html_source->AddString(
+      "multideviceAndroidMessagesItemSummary",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES_SUMMARY,
+          GetHelpUrlWithBoard(chrome::kAndroidMessagesLearnMoreURL)));
 }
 #endif
 

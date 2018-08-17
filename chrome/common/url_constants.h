@@ -225,6 +225,9 @@ extern const char kInstantTetheringLearnMoreURL[];
 // The URL for the "Learn more" link in the connected devices.
 extern const char kMultiDeviceLearnMoreURL[];
 
+// The URL for the "Learn more" link for Android Messages.
+extern const char kAndroidMessagesLearnMoreURL[];
+
 // The URL for the "Learn more" link in the language settings.
 extern const char kLanguageSettingsLearnMoreUrl[];
 

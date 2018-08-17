@@ -270,6 +270,9 @@ const char kInstantTetheringLearnMoreURL[] =
 const char kMultiDeviceLearnMoreURL[] =
     "https://support.google.com/chromebook?p=multidevice-placeholder";
 
+const char kAndroidMessagesLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=messages-for-web-placeholder";
+
 const char kLanguageSettingsLearnMoreUrl[] =
     "https://support.google.com/chromebook/answer/1059490";
 
