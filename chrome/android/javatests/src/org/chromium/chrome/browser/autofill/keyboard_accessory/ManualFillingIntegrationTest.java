@@ -12,14 +12,16 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 
 import android.support.test.espresso.Espresso;
 import android.support.test.filters.SmallTest;
+import android.view.View;
+import android.view.ViewGroup;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,10 +36,12 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.DropdownPopupWindowInterface;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Integration tests for password accessory views. This integration test currently stops testing at
@@ -59,13 +63,13 @@ public class ManualFillingIntegrationTest {
         mHelper.loadTestPage(false);
         mHelper.createTestTab();
 
-        Assert.assertNotNull("Controller for Manual filling should be available.",
+        assertNotNull("Controller for Manual filling should be available.",
                 mActivityTestRule.getActivity().getManualFillingController());
-        Assert.assertNotNull("Keyboard accessory should have an instance.",
+        assertNotNull("Keyboard accessory should have an instance.",
                 mActivityTestRule.getActivity()
                         .getManualFillingController()
                         .getKeyboardAccessory());
-        Assert.assertNotNull("Accessory Sheet should have an instance.",
+        assertNotNull("Accessory Sheet should have an instance.",
                 mActivityTestRule.getActivity()
                         .getManualFillingController()
                         .getMediatorForTesting()
@@ -131,6 +135,8 @@ public class ManualFillingIntegrationTest {
     @SmallTest
     public void testAccessorySheetHiddenWhenRefocusingField()
             throws InterruptedException, TimeoutException {
+        AtomicReference<ViewGroup.MarginLayoutParams> accessoryMargins = new AtomicReference<>();
+        AtomicReference<View> accessorySheetView = new AtomicReference<>();
         mHelper.loadTestPage(false);
         mHelper.createTestTab();
 
@@ -139,17 +145,27 @@ public class ManualFillingIntegrationTest {
         mHelper.waitForKeyboard();
 
         // Check that ONLY the accessory is there but the sheet is still hidden.
-        whenDisplayed(withId(R.id.keyboard_accessory));
+        whenDisplayed(withId(R.id.keyboard_accessory)).check((view, e) -> {
+            accessoryMargins.set((ViewGroup.MarginLayoutParams) view.getLayoutParams());
+            assertThat(accessoryMargins.get().bottomMargin, is(0)); // Attached to keyboard.
+        });
         onView(withId(R.id.keyboard_accessory_sheet)).check(doesNotExist());
 
         // Trigger the sheet and wait for it to open and the keyboard to disappear.
         onView(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         mHelper.waitForKeyboardToDisappear();
-        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+        whenDisplayed(withId(R.id.keyboard_accessory_sheet)).check((view, e) -> {
+            accessorySheetView.set(view);
+        });
+        // The accessory bar is now pushed up by the accessory.
+        CriteriaHelper.pollUiThread(() -> {
+            return accessoryMargins.get().bottomMargin == accessorySheetView.get().getHeight();
+        });
 
         mHelper.clickPasswordField();
         mHelper.waitForKeyboard();
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
+        CriteriaHelper.pollUiThread(() -> accessoryMargins.get().bottomMargin == 0);
     }
 
     @Test
@@ -284,6 +300,4 @@ public class ManualFillingIntegrationTest {
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
     }
-
-    // TODO(fhorschig): Check that it overlays info bars.
 }

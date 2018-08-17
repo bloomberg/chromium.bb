@@ -8,7 +8,7 @@
     android:id="@+id/keyboard_accessory_sheet"
     android:background="@android:color/white"
     android:fillViewport="true"
-    android:paddingTop="@dimen/keyboard_accessory_height"
+    android:paddingTop="0dp"
     android:layout_gravity="start|top"
     android:layout_height="@dimen/keyboard_accessory_sheet_height"
     android:layout_width="match_parent"

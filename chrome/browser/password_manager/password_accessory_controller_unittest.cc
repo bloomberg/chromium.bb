@@ -259,6 +259,7 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
         mock_dialog_factory_.Get(), favicon_service());
     NavigateAndCommit(GURL(kExampleSite));
     EXPECT_CALL(*view(), CloseAccessorySheet()).Times(AnyNumber());
+    EXPECT_CALL(*view(), OpenKeyboard()).Times(AnyNumber());
   }
 
   PasswordAccessoryController* controller() {
@@ -405,11 +406,11 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
 TEST_F(PasswordAccessoryControllerTest, ClosesViewOnSuccessfullFillingOnly) {
   // If the filling wasn't successful, no call is expected.
   EXPECT_CALL(*view(), CloseAccessorySheet()).Times(0);
+  EXPECT_CALL(*view(), OpenKeyboard()).Times(0);
   controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NOT_ALLOWED);
   controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NO_VALID_FIELD);
 
   // If the filling completed successfully, let the view know.
-  EXPECT_CALL(*view(), CloseAccessorySheet());
   EXPECT_CALL(*view(), OpenKeyboard());
   controller()->OnFilledIntoFocusedField(FillingStatus::SUCCESS);
 }

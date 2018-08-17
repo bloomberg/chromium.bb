@@ -70,6 +70,9 @@ public class PasswordAccessorySheetViewTest {
                 });
         accessorySheet.addTab(
                 new KeyboardAccessoryData.Tab(null, null, layout, AccessoryTabType.ALL, listener));
+        accessorySheet.setHeight(
+                mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
+                        R.dimen.keyboard_accessory_sheet_height));
         ThreadUtils.runOnUiThreadBlocking(accessorySheet::show);
     }
 

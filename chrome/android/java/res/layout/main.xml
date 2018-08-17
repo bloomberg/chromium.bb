@@ -25,24 +25,23 @@
             android:id="@+id/bottom_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="start|bottom">
+            android:layout_gravity="start|bottom" />
 
-            <ViewStub
-                android:id="@+id/keyboard_accessory_stub"
-                android:inflatedId="@+id/keyboard_accessory"
-                android:layout="@layout/keyboard_accessory"
-                android:layout_height="@dimen/keyboard_accessory_height"
-                android:layout_width="match_parent"
-                android:layout_gravity="start|top"/>
-            <ViewStub
-                android:id="@+id/keyboard_accessory_sheet_stub"
-                android:inflatedId="@+id/keyboard_accessory_sheet"
-                android:layout="@layout/keyboard_accessory_sheet"
-                android:layout_height="@dimen/keyboard_accessory_sheet_height"
-                android:layout_width="match_parent"
-                android:layout_gravity="start|bottom"/>
+        <ViewStub
+            android:id="@+id/keyboard_accessory_stub"
+            android:inflatedId="@+id/keyboard_accessory"
+            android:layout="@layout/keyboard_accessory"
+            android:layout_height="@dimen/keyboard_accessory_height"
+            android:layout_width="match_parent"
+            android:layout_gravity="start|bottom"/>
 
-        </org.chromium.chrome.browser.snackbar.BottomContainer>
+        <ViewStub
+            android:id="@+id/keyboard_accessory_sheet_stub"
+            android:inflatedId="@+id/keyboard_accessory_sheet"
+            android:layout="@layout/keyboard_accessory_sheet"
+            android:layout_height="@dimen/keyboard_accessory_sheet_height"
+            android:layout_width="match_parent"
+            android:layout_gravity="start|bottom"/>
 
         <ViewStub
             android:id="@+id/bottombar_stub"
