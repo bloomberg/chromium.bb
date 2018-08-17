@@ -29,7 +29,7 @@ import("//build/config/nacl/config.gni")
 import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//build/nocompile.gni")
-import("//build/util/lastchange.gni")
+import("//build/timestamp.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
@@ -2770,22 +2770,14 @@ test("base_unittests") {
 action("build_date") {
   script = "//build/write_build_date_header.py"
 
-  # Force recalculation if there's been a change.
-  inputs = [
-    lastchange_file,
-  ]
   outputs = [
     "$target_gen_dir/generated_build_date.h",
   ]
 
-  args =
-      [ rebase_path("$target_gen_dir/generated_build_date.h", root_build_dir) ]
-
-  if (is_official_build) {
-    args += [ "official" ]
-  } else {
-    args += [ "default" ]
-  }
+  args = [
+    rebase_path("$target_gen_dir/generated_build_date.h", root_build_dir),
+    build_timestamp,
+  ]
 }
 
 if (enable_nocompile_tests) {
