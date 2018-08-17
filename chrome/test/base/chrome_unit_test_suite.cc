@@ -35,9 +35,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/common/initialize_extensions_client.h"
+#include "chrome/common/extensions/chrome_extensions_client.h"
 #include "extensions/common/extension_paths.h"
-#include "extensions/common/extensions_client.h"
 #endif
 
 namespace {
@@ -51,6 +50,11 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
   void OnTestStart(const testing::TestInfo& test_info) override {
     content_client_.reset(new ChromeContentClient);
     content::SetContentClient(content_client_.get());
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    extensions::ExtensionsClient::Get()->InitializeWebStoreUrls(
+        base::CommandLine::ForCurrentProcess());
+
+#endif
 
     browser_content_client_.reset(new ChromeContentBrowserClient());
     content::SetBrowserClientForTesting(browser_content_client_.get());
@@ -131,7 +135,8 @@ void ChromeUnitTestSuite::InitializeProviders() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::RegisterPathProvider();
 
-  EnsureExtensionsClientInitialized();
+  extensions::ExtensionsClient::Set(
+      extensions::ChromeExtensionsClient::GetInstance());
 #endif
 
   content::WebUIControllerFactory::RegisterFactory(
