@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS Default value
+PASS Change composite value
+FAIL Unspecified keyframe composite value when setting effect composite assert_equals: unspecified keyframe composite value should be auto even if effect composite is set expected (string) "auto" but got (object) null
+PASS Specified keyframe composite value when setting effect composite
+Harness: the test ran to completion.
+
