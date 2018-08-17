@@ -263,9 +263,10 @@ class DriveIntegrationService::PreferenceWatcher
     if (!integration_service_->GetDriveFsInterface())
       return;
 
-    integration_service_->GetDriveFsInterface()->SetPauseSyncing(
+    integration_service_->GetDriveFsInterface()->UpdateNetworkState(
         net::NetworkChangeNotifier::IsConnectionCellular(type) &&
-        pref_service_->GetBoolean(prefs::kDisableDriveOverCellular));
+            pref_service_->GetBoolean(prefs::kDisableDriveOverCellular),
+        type == net::NetworkChangeNotifier::CONNECTION_NONE);
   }
 
   PrefService* pref_service_;
