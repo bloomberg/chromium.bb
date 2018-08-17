@@ -178,6 +178,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
   // Create a persistent memory segment for subprocess histograms.
   CreateMetricsAllocator();
+  ShareMetricsAllocatorToProcess();
 }
 
 BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
@@ -389,7 +390,6 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   delegate_->OnChannelConnected(peer_pid);
 
   if (IsProcessLaunched()) {
-    ShareMetricsAllocatorToProcess();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&NotifyProcessLaunchedAndConnected, data_.Duplicate()));
@@ -608,7 +608,6 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   delegate_->OnProcessLaunched();
 
   if (is_channel_connected_) {
-    ShareMetricsAllocatorToProcess();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&NotifyProcessLaunchedAndConnected, data_.Duplicate()));
