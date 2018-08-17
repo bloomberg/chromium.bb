@@ -2067,6 +2067,12 @@ void QuicChromiumClientSession::OnPathDegrading() {
     net_log_.AddEvent(
         NetLogEventType::QUIC_SESSION_CLIENT_GOAWAY_ON_PATH_DEGRADING);
     NotifyFactoryOfSessionGoingAway();
+    UMA_HISTOGRAM_COUNTS_1M(
+        "Net.QuicSession.ActiveStreamsOnGoAwayAfterPathDegrading",
+        GetNumActiveStreams());
+    UMA_HISTOGRAM_COUNTS_1M(
+        "Net.QuicSession.DrainingStreamsOnGoAwayAfterPathDegrading",
+        GetNumDrainingStreams());
     return;
   }
 
