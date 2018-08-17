@@ -1,20 +1,27 @@
 // TODOs/spec-noncompliances:
-// - Susceptible to tampering of built-in prototypes and globals. We want to work on tooling to ameliorate that.
-// - Uses symbols for information hiding but those are interceptable and forgeable. Need private fields/methods.
+// - Susceptible to tampering of built-in prototypes and globals. We want to
+//   work on tooling to ameliorate that.
 
-const databaseName = Symbol("[[DatabaseName]]");
-const databasePromise = Symbol("[[DatabasePromise]]");
+// TODO: Use private fields when those ship.
+const databaseName = new WeakMap();
+const databasePromise = new WeakMap();
+
+if (!self.isSecureContext) {
+  throw new DOMException(
+      'Async local storage is only available in secure contexts',
+      'SecurityError');
+}
 
 export class StorageArea {
   constructor(name) {
-    this[databasePromise] = null;
-    this[databaseName] = "async-local-storage:" + `${name}`;
+    databasePromise.set(this, null);
+    databaseName.set(this, `async-local-storage:${name}`);
   }
 
   async set(key, value) {
     throwForDisallowedKey(key);
 
-    return performDatabaseOperation(this, "readwrite", (transaction, store) => {
+    return performDatabaseOperation(this, 'readwrite', (transaction, store) => {
       store.put(value, key);
 
       return new Promise((resolve, reject) => {
@@ -28,7 +35,7 @@ export class StorageArea {
   async get(key) {
     throwForDisallowedKey(key);
 
-    return performDatabaseOperation(this, "readonly", (transaction, store) => {
+    return performDatabaseOperation(this, 'readonly', (transaction, store) => {
       const request = store.get(key);
 
       return new Promise((resolve, reject) => {
@@ -41,7 +48,7 @@ export class StorageArea {
   async has(key) {
     throwForDisallowedKey(key);
 
-    return performDatabaseOperation(this, "readonly", (transaction, store) => {
+    return performDatabaseOperation(this, 'readonly', (transaction, store) => {
       const request = store.count(key);
 
       return new Promise((resolve, reject) => {
@@ -54,7 +61,7 @@ export class StorageArea {
   async delete(key) {
     throwForDisallowedKey(key);
 
-    return performDatabaseOperation(this, "readwrite", (transaction, store) => {
+    return performDatabaseOperation(this, 'readwrite', (transaction, store) => {
       store.delete(key);
 
       return new Promise((resolve, reject) => {
@@ -66,28 +73,27 @@ export class StorageArea {
   }
 
   async clear() {
-    if (!(databasePromise in this)) {
-      return Promise.reject(new TypeError("Invalid this value"));
+    if (!databasePromise.has(this)) {
+      return Promise.reject(new TypeError('Invalid this value'));
     }
 
-    if (this[databasePromise] !== null) {
-      return this[databasePromise].then(
-        () => {
-          this[databasePromise] = null;
-          return deleteDatabase(this[databaseName]);
-        },
-        () => {
-          this[databasePromise] = null;
-          return deleteDatabase(this[databaseName]);
-        }
-      );
+    if (databasePromise.get(this) !== null) {
+      return databasePromise.get(this).then(
+          () => {
+            databasePromise.set(this, null);
+            return deleteDatabase(databaseName.get(this));
+          },
+          () => {
+            databasePromise.set(this, null);
+            return deleteDatabase(databaseName.get(this));
+          });
     }
 
-    return deleteDatabase(this[databaseName]);
+    return deleteDatabase(databaseName.get(this));
   }
 
   async keys() {
-    return performDatabaseOperation(this, "readonly", (transaction, store) => {
+    return performDatabaseOperation(this, 'readonly', (transaction, store) => {
       const request = store.getAllKeys(undefined);
 
       return new Promise((resolve, reject) => {
@@ -98,7 +104,7 @@ export class StorageArea {
   }
 
   async values() {
-    return performDatabaseOperation(this, "readonly", (transaction, store) => {
+    return performDatabaseOperation(this, 'readonly', (transaction, store) => {
       const request = store.getAll(undefined);
 
       return new Promise((resolve, reject) => {
@@ -109,7 +115,7 @@ export class StorageArea {
   }
 
   async entries() {
-    return performDatabaseOperation(this, "readonly", (transaction, store) => {
+    return performDatabaseOperation(this, 'readonly', (transaction, store) => {
       const keysRequest = store.getAllKeys(undefined);
       const valuesRequest = store.getAll(undefined);
 
@@ -125,48 +131,44 @@ export class StorageArea {
   }
 
   get backingStore() {
-    if (!(databasePromise in this)) {
-      throw new TypeError("Invalid this value");
+    if (!databasePromise.has(this)) {
+      throw new TypeError('Invalid this value');
     }
 
-    return {
-      database: this[databaseName],
-      store: "store",
-      version: 1
-    };
+    return {database: databaseName.get(this), store: 'store', version: 1};
   }
 }
 
-export const storage = new StorageArea("default");
+export const storage = new StorageArea('default');
 
 function performDatabaseOperation(area, mode, steps) {
-  if (!(databasePromise in area)) {
-    return Promise.reject(new TypeError("Invalid this value"));
+  if (!databasePromise.has(area)) {
+    return Promise.reject(new TypeError('Invalid this value'));
   }
 
-  if (area[databasePromise] === null) {
+  if (databasePromise.get(area) === null) {
     initializeDatabasePromise(area);
   }
 
-  return area[databasePromise].then(database => {
-    const transaction = database.transaction("store", mode);
-    const store = transaction.objectStore("store");
+  return databasePromise.get(area).then(database => {
+    const transaction = database.transaction('store', mode);
+    const store = transaction.objectStore('store');
 
     return steps(transaction, store);
   });
 }
 
 function initializeDatabasePromise(area) {
-  area[databasePromise] = new Promise((resolve, reject) => {
-    const request = self.indexedDB.open(area[databaseName], 1);
+  databasePromise.set(area, new Promise((resolve, reject) => {
+    const request = self.indexedDB.open(databaseName.get(area), 1);
 
     request.onsuccess = () => {
       const database = request.result;
-      database.onclose = () => area[databasePromise] = null;
+      database.onclose = () => databasePromise.set(area, null);
       database.onversionchange = () => {
         database.close();
-        area[databasePromise] = null;
-      }
+        databasePromise.set(area, null);
+      };
       resolve(database);
     };
 
@@ -174,16 +176,16 @@ function initializeDatabasePromise(area) {
 
     request.onupgradeneeded = () => {
       try {
-        request.result.createObjectStore("store");
+        request.result.createObjectStore('store');
       } catch (e) {
         reject(e);
       }
     };
-  });
+  }));
 }
 
 function isAllowedAsAKey(value) {
-  if (typeof value === "number" || typeof value === "string") {
+  if (typeof value === 'number' || typeof value === 'string') {
     return true;
   }
 
@@ -210,24 +212,26 @@ function isDate(value) {
   try {
     Date.prototype.getTime.call(value);
     return true;
-  } catch (e) { // TODO: remove useless binding
+  } catch {
     return false;
   }
 }
 
-const byteLengthGetter = Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, "byteLength").get;
+const byteLengthGetter =
+    Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, 'byteLength').get;
 function isArrayBuffer(value) {
   try {
     byteLengthGetter.call(value);
     return true;
-  } catch (e) { // TODO: remove useless binding
+  } catch {
     return false;
   }
 }
 
 function throwForDisallowedKey(key) {
   if (!isAllowedAsAKey(key)) {
-    throw new DOMException("The given value is not allowed as a key", "DataError");
+    throw new DOMException(
+        'The given value is not allowed as a key', 'DataError');
   }
 }
 
