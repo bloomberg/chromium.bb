@@ -1685,6 +1685,9 @@ extern const char kEnableWebAuthenticationTestingAPIDescription[];
 extern const char kInfiniteSessionRestoreName[];
 extern const char kInfiniteSessionRestoreDescription[];
 
+extern const char kOmniboxDriveSuggestionsName[];
+extern const char kOmniboxDriveSuggestionsDescriptions[];
+
 extern const char kOmniboxRichEntitySuggestionsName[];
 extern const char kOmniboxRichEntitySuggestionsDescription[];
 

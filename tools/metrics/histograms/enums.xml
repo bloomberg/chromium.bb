@@ -28314,6 +28314,7 @@ from previous Chrome versions.
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
   <int value="-1267958145" label="disable-pdf-material-ui"/>
   <int value="-1262152606" label="disable-lock-screen-apps"/>
+  <int value="-1261972671" label="OmniboxDocumentProvider:disabled"/>
   <int value="-1261263046"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:disabled"/>
   <int value="-1259901957" label="VrBrowserKeyboard:disabled"/>
@@ -29163,6 +29164,7 @@ from previous Chrome versions.
   <int value="535131384" label="OmniboxTailSuggestions:enabled"/>
   <int value="535976218" label="enable-plugin-power-saver"/>
   <int value="538468149" label="OfflinePagesCT:enabled"/>
+  <int value="538600423" label="OmniboxDocumentProvider:enabled"/>
   <int value="546520086" label="enable-data-reduction-proxy-savings-promo"/>
   <int value="546710806" label="disable-easy-signin"/>
   <int value="549483647" label="EnableUnifiedMultiDeviceSettings:disabled"/>

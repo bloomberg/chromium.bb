@@ -3213,6 +3213,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-new-app-menu-icon", flag_descriptions::kEnableNewAppMenuIconName,
      flag_descriptions::kEnableNewAppMenuIconDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kAnimatedAppMenuIcon)},
+    {"omnibox-drive-suggestions",
+     flag_descriptions::kOmniboxDriveSuggestionsName,
+     flag_descriptions::kOmniboxDriveSuggestionsDescriptions, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kDocumentProvider)},
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_ANDROID)
