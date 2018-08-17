@@ -271,8 +271,10 @@ TEST_F(DownloadShelfControllerTest,
   EXPECT_EQ(1, shelf_.get()->cancelAutoCloseCount_);
 }
 
+// TODO(crbug.com/849477) Disabled for flakiness.
 // Test of autoclosing behavior after opening a download item.
-TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseOffShelf) {
+TEST_F(DownloadShelfControllerTest,
+       DISABLED_AutoCloseAfterOpenWithMouseOffShelf) {
   base::scoped_nsobject<DownloadItemController> item(CreateItemController());
   [shelf_ showDownloadShelf:YES isUserAction:NO animate:YES];
   EXPECT_TRUE([shelf_ isVisible]);
