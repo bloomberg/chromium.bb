@@ -36,7 +36,7 @@ TEST(AccountConsistencyModeManagerTest, DefaultValue) {
   EXPECT_EQ(signin::AccountConsistencyMethod::kMirror,
             AccountConsistencyModeManager::GetMethodForProfile(&profile));
 #elif BUILDFLAG(ENABLE_DICE_SUPPORT)
-  EXPECT_EQ(signin::AccountConsistencyMethod::kDicePrepareMigration,
+  EXPECT_EQ(signin::AccountConsistencyMethod::kDiceMigration,
             AccountConsistencyModeManager::GetMethodForProfile(&profile));
 #else
   EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
