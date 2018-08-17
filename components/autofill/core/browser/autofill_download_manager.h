@@ -88,6 +88,9 @@ class AutofillDownloadManager {
       const std::string& login_form_signature,
       bool observed_submission);
 
+  // Returns true if the autofill server communication is enabled.
+  bool IsEnabled() const { return autofill_server_url_.is_valid(); }
+
  private:
   friend class AutofillDownloadManagerTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, QueryAndUploadTest);
@@ -144,7 +147,7 @@ class AutofillDownloadManager {
 
   // The autofill server URL root: scheme://host[:port]/path excluding the
   // final path component for the request and the query params.
-  GURL autofill_server_url_;
+  const GURL autofill_server_url_;
 
   // Loaders used for the processing the requests. Invalidated after completion.
   std::list<std::unique_ptr<network::SimpleURLLoader>> url_loaders_;

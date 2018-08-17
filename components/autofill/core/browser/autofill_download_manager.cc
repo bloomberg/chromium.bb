@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
@@ -75,6 +76,9 @@ const char kDefaultAutofillServerURL[] =
 
 // Returns the base URL for the autofill server.
 GURL GetAutofillServerURL() {
+  // If a valid autofill server URL is specified on the command line, then the
+  // AutofillDownlaodManager will use it, and assume that server communication
+  // is enabled.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kAutofillServerURL)) {
@@ -82,13 +86,35 @@ GURL GetAutofillServerURL() {
     if (url.is_valid())
       return url;
 
-    LOG(ERROR) << "Invalid URL given for --" << switches::kAutofillServerURL
-               << ". Using default value.";
+    LOG(ERROR) << "Invalid URL value for --" << switches::kAutofillServerURL
+               << ": "
+               << command_line.GetSwitchValueASCII(
+                      switches::kAutofillServerURL);
   }
 
-  GURL default_url(kDefaultAutofillServerURL);
-  DCHECK(default_url.is_valid());
-  return default_url;
+  // If communication is disabled, leave the autofill server URL unset.
+  if (!base::FeatureList::IsEnabled(features::kAutofillServerCommunication))
+    return GURL();
+
+  // Server communication is enabled. If there's an autofill server url param
+  // use it, otherwise use the default.
+  const std::string autofill_server_url_str =
+      base::FeatureParam<std::string>(&features::kAutofillServerCommunication,
+                                      switches::kAutofillServerURL,
+                                      kDefaultAutofillServerURL)
+          .Get();
+
+  GURL autofill_server_url(autofill_server_url_str);
+
+  if (!autofill_server_url.is_valid()) {
+    LOG(ERROR) << "Invalid URL param for "
+               << features::kAutofillServerCommunication.name << "/"
+               << switches::kAutofillServerURL << ": "
+               << autofill_server_url_str;
+    return GURL();
+  }
+
+  return autofill_server_url;
 }
 
 // Helper to log the HTTP |response_code| received for |request_type| to UMA.
@@ -298,6 +324,9 @@ AutofillDownloadManager::~AutofillDownloadManager() = default;
 
 bool AutofillDownloadManager::StartQueryRequest(
     const std::vector<FormStructure*>& forms) {
+  if (!IsEnabled())
+    return false;
+
   // Do not send the request if it contains more fields than the server can
   // accept.
   if (CountActiveFieldsInForms(forms) > kMaxFieldsPerQueryRequest)
@@ -339,6 +368,9 @@ bool AutofillDownloadManager::StartUploadRequest(
     const ServerFieldTypeSet& available_field_types,
     const std::string& login_form_signature,
     bool observed_submission) {
+  if (!IsEnabled())
+    return false;
+
   AutofillUploadContents upload;
   if (!form.EncodeUploadRequest(available_field_types, form_was_autofilled,
                                 login_form_signature, observed_submission,
