@@ -214,7 +214,8 @@ TEST_F(RTCVideoDecoderAdapterTest, DISABLED_InitializationFailure) {
   ASSERT_FALSE(CreateAndInitialize(false));
 }
 
-TEST_F(RTCVideoDecoderAdapterTest, Decode) {
+// Crashing. See https://crbug.com/875336.
+TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Decode) {
   ASSERT_TRUE(BasicSetup());
 
   EXPECT_CALL(*video_decoder_, Decode(_, _))
