@@ -67,6 +67,7 @@ class _MobileStartupSharedState(story_module.SharedState):
     wpr_mode = wpr_modes.WPR_REPLAY
     if finder_options.use_live_sites:
       wpr_mode = wpr_modes.WPR_OFF
+    self.platform.SetFullPerformanceModeEnabled(True)
     self.platform.network_controller.Open(wpr_mode)
     self._story_set = story_set
 
@@ -76,6 +77,7 @@ class _MobileStartupSharedState(story_module.SharedState):
 
   def TearDownState(self):
     self.platform.network_controller.Close()
+    self.platform.SetFullPerformanceModeEnabled(False)
 
   def LaunchBrowser(self, url):
     self.platform.FlushDnsCache()
