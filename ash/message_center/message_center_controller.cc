@@ -155,10 +155,13 @@ MessageCenterController::MessageCenterController() {
 }
 
 MessageCenterController::~MessageCenterController() {
+  // These members all depend on the MessageCenter instance, so must be
+  // destroyed first.
   all_popup_blocker_.reset();
   session_state_notification_blocker_.reset();
   inactive_user_notification_blocker_.reset();
   fullscreen_notification_blocker_.reset();
+  arc_notification_manager_.reset();
 
   message_center::MessageCenter::Shutdown();
 }
