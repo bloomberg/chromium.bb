@@ -82,20 +82,16 @@ static unsigned int VaSurfaceFormatForJpeg(
 
 void VaapiJpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
                                              Error error) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&VaapiJpegDecodeAccelerator::NotifyError,
+                                  weak_this_factory_.GetWeakPtr(),
+                                  bitstream_buffer_id, error));
+    return;
+  }
   VLOGF(1) << "Notifying of error " << error;
   DCHECK(client_);
   client_->NotifyError(bitstream_buffer_id, error);
-}
-
-void VaapiJpegDecodeAccelerator::NotifyErrorFromDecoderThread(
-    int32_t bitstream_buffer_id,
-    Error error) {
-  DCHECK(decoder_task_runner_->BelongsToCurrentThread());
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VaapiJpegDecodeAccelerator::NotifyError,
-                                weak_this_factory_.GetWeakPtr(),
-                                bitstream_buffer_id, error));
 }
 
 void VaapiJpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
@@ -234,7 +230,7 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
   if (!ParseJpegPicture(reinterpret_cast<const uint8_t*>(shm->memory()),
                         shm->size(), &parse_result)) {
     VLOGF(1) << "ParseJpegPicture failed";
-    NotifyErrorFromDecoderThread(bitstream_buffer_id, PARSE_JPEG_FAILED);
+    NotifyError(bitstream_buffer_id, PARSE_JPEG_FAILED);
     return;
   }
 
@@ -242,7 +238,7 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
       VaSurfaceFormatForJpeg(parse_result.frame_header);
   if (!new_va_rt_format) {
     VLOGF(1) << "Unsupported subsampling";
-    NotifyErrorFromDecoderThread(bitstream_buffer_id, UNSUPPORTED_JPEG);
+    NotifyError(bitstream_buffer_id, UNSUPPORTED_JPEG);
     return;
   }
 
@@ -259,7 +255,7 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
     if (!vaapi_wrapper_->CreateSurfaces(va_rt_format_, new_coded_size, 1,
                                         &va_surfaces)) {
       VLOGF(1) << "Create VA surface failed";
-      NotifyErrorFromDecoderThread(bitstream_buffer_id, PLATFORM_FAILURE);
+      NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
       return;
     }
     va_surface_id_ = va_surfaces[0];
@@ -269,13 +265,13 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
   if (!VaapiJpegDecoder::Decode(vaapi_wrapper_.get(), parse_result,
                                 va_surface_id_)) {
     VLOGF(1) << "Decode JPEG failed";
-    NotifyErrorFromDecoderThread(bitstream_buffer_id, PLATFORM_FAILURE);
+    NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
     return;
   }
 
   if (!OutputPicture(va_surface_id_, bitstream_buffer_id, video_frame)) {
     VLOGF(1) << "Output picture failed";
-    NotifyErrorFromDecoderThread(bitstream_buffer_id, PLATFORM_FAILURE);
+    NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
     return;
   }
 }
@@ -295,16 +291,18 @@ void VaapiJpegDecodeAccelerator::Decode(
 
   if (bitstream_buffer.id() < 0) {
     VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
-    NotifyErrorFromDecoderThread(bitstream_buffer.id(), INVALID_ARGUMENT);
+    NotifyError(bitstream_buffer.id(), INVALID_ARGUMENT);
     return;
   }
 
   if (!shm->MapAt(bitstream_buffer.offset(), bitstream_buffer.size())) {
     VLOGF(1) << "Failed to map input buffer";
-    NotifyErrorFromDecoderThread(bitstream_buffer.id(), UNREADABLE_INPUT);
+    NotifyError(bitstream_buffer.id(), UNREADABLE_INPUT);
     return;
   }
 
+  // It's safe to use base::Unretained(this) because |decoder_task_runner_| runs
+  // tasks on |decoder_thread_| which is stopped in the destructor of |this|.
   decoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VaapiJpegDecodeAccelerator::DecodeTask,
                                 base::Unretained(this), bitstream_buffer.id(),

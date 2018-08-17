@@ -47,9 +47,12 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
 
  private:
   // Notifies the client that an error has occurred and decoding cannot
-  // continue.
+  // continue. The client is notified on the |task_runner_|, i.e., the thread in
+  // which |*this| was created.
   void NotifyError(int32_t bitstream_buffer_id, Error error);
-  void NotifyErrorFromDecoderThread(int32_t bitstream_buffer_id, Error error);
+
+  // Notifies the client that a decode is ready. The client is notified on the
+  // |task_runner_|, i.e., the thread in which |*this| was created.
   void VideoFrameReady(int32_t bitstream_buffer_id);
 
   // Processes one decode request.
