@@ -20,10 +20,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-#include "ui/base/ui_base_features.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "components/signin/core/browser/signin_pref_names.h"
 #endif
@@ -255,13 +251,7 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  AccountConsistencyMethod method =
-      AccountConsistencyMethod::kDicePrepareMigration;
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  if (base::FeatureList::IsEnabled(features::kExperimentalUi))
-    method = AccountConsistencyMethod::kDiceMigration;
-#endif
+  AccountConsistencyMethod method = AccountConsistencyMethod::kDiceMigration;
 
   if (method_value == kAccountConsistencyFeatureMethodDiceFixAuthErrors)
     method = AccountConsistencyMethod::kDiceFixAuthErrors;
