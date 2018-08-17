@@ -162,6 +162,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   CommandLineHelper::AddDisabledFeature(*cl, features::kWebPayments.name);
 
+  // WebView does not and should not support WebAuthN.
+  CommandLineHelper::AddDisabledFeature(*cl, features::kWebAuth.name);
+
   // WebView isn't compatible with OOP-D.
   CommandLineHelper::AddDisabledFeature(*cl,
                                         features::kVizDisplayCompositor.name);
