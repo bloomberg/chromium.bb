@@ -22,10 +22,6 @@ class DictionaryValue;
 class FilePath;
 }
 
-namespace net {
-class URLFetcher;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
@@ -53,15 +49,6 @@ std::unique_ptr<network::SimpleURLLoader> SendProtocolRequest(
     const std::string& protocol_request,
     LoadCompleteCallback callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-
-// Returns true if the url request of |fetcher| was succesful.
-bool FetchSuccess(const net::URLFetcher& fetcher);
-
-// Returns the error code which occured during the fetch. The function returns 0
-// if the fetch was successful. If errors happen, the function could return a
-// network error, an http response code, or the status of the fetch, if the
-// fetch is pending or canceled.
-int GetFetchError(const net::URLFetcher& fetcher);
 
 // Returns true if the |component| contains a valid differential update url.
 bool HasDiffUpdate(const Component& component);
