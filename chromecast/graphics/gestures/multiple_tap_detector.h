@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_GRAPHICS_GESTURES_TRIPLE_TAP_DETECTOR_H_
-#define CHROMECAST_GRAPHICS_GESTURES_TRIPLE_TAP_DETECTOR_H_
+#ifndef CHROMECAST_GRAPHICS_GESTURES_MULTIPLE_TAP_DETECTOR_H_
+#define CHROMECAST_GRAPHICS_GESTURES_MULTIPLE_TAP_DETECTOR_H_
 
 #include <deque>
 
@@ -28,25 +28,26 @@ class TouchEvent;
 
 namespace chromecast {
 
-class TripleTapDetectorDelegate {
+class MultipleTapDetectorDelegate {
  public:
-  virtual ~TripleTapDetectorDelegate() = default;
+  virtual ~MultipleTapDetectorDelegate() = default;
   virtual void OnTripleTap(const gfx::Point& touch_location) = 0;
+  virtual void OnDoubleTap(const gfx::Point& touch_location) {}
 };
 
-enum class TripleTapState {
+enum class MultiTapState {
   NONE,
   TOUCH,
   INTERVAL_WAIT,
 };
 
-// An event rewriter responsible for detecting triple-tap events on the root
-// window.
-class TripleTapDetector : public ui::EventRewriter {
+// An event rewriter responsible for detecting triple-tap or double-tap events
+// on the root window.
+class MultipleTapDetector : public ui::EventRewriter {
  public:
-  TripleTapDetector(aura::Window* root_window,
-                    TripleTapDetectorDelegate* delegate);
-  ~TripleTapDetector() override;
+  MultipleTapDetector(aura::Window* root_window,
+                      MultipleTapDetectorDelegate* delegate);
+  ~MultipleTapDetector() override;
 
   void set_enabled(bool enabled) { enabled_ = enabled; }
   bool enabled() const { return enabled_; }
@@ -60,33 +61,34 @@ class TripleTapDetector : public ui::EventRewriter {
       std::unique_ptr<ui::Event>* new_event) override;
 
  private:
-  friend class TripleTapDetectorTest;
+  friend class MultipleTapDetectorTest;
 
-  // Expiration event for maximum time between taps in a triple tap.
-  void OnTripleTapIntervalTimerFired();
-  // Expiration event for a finger that is pressed too long during a triple tap.
+  // Expiration event for maximum time between taps in a tap.
+  void OnTapIntervalTimerFired();
+  // Expiration event for a finger that is pressed too long during a multi tap.
   void OnLongPressIntervalTimerFired();
+  void TapDetectorStateReset();
 
-  void TripleTapReset();
+  void DispatchEvent(ui::TouchEvent* event);
 
   // A default gesture detector config, so we can share the same
   // timeout and pixel slop constants.
   ui::GestureDetector::Config gesture_detector_config_;
 
   aura::Window* root_window_;
-  TripleTapDetectorDelegate* delegate_;
+  MultipleTapDetectorDelegate* delegate_;
 
   bool enabled_;
 
-  TripleTapState triple_tap_state_;
+  MultiTapState tap_state_;
   int tap_count_;
   gfx::Point last_tap_location_;
   base::OneShotTimer triple_tap_timer_;
   std::deque<ui::TouchEvent> stashed_events_;
 
-  DISALLOW_COPY_AND_ASSIGN(TripleTapDetector);
+  DISALLOW_COPY_AND_ASSIGN(MultipleTapDetector);
 };
 
 }  // namespace chromecast
 
-#endif  // CHROMECAST_GRAPHICS_GESTURES_TRIPLE_TAP_DETECTOR_H_
+#endif  // CHROMECAST_GRAPHICS_GESTURES_MULTIPLE_TAP_DETECTOR_H_

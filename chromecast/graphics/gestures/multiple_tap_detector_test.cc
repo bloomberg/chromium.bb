@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/graphics/gestures/triple_tap_detector.h"
+#include "chromecast/graphics/gestures/multiple_tap_detector.h"
 
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -26,15 +26,16 @@ constexpr gfx::Point kTestTapLocation(50, 50);
 constexpr int kTapLengthMs = 50;
 }  // namespace
 
-class MockTripleTapDetectorDelegate : public TripleTapDetectorDelegate {
+class MockMultipleTapDetectorDelegate : public MultipleTapDetectorDelegate {
  public:
-  ~MockTripleTapDetectorDelegate() override = default;
+  ~MockMultipleTapDetectorDelegate() override = default;
   MOCK_METHOD1(OnTripleTap, void(const gfx::Point&));
+  MOCK_METHOD1(OnDoubleTap, void(const gfx::Point&));
 };
 
-class TripleTapDetectorTest : public aura::test::AuraTestBase {
+class MultipleTapDetectorTest : public aura::test::AuraTestBase {
  public:
-  ~TripleTapDetectorTest() override = default;
+  ~MultipleTapDetectorTest() override = default;
 
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
@@ -43,8 +44,8 @@ class TripleTapDetectorTest : public aura::test::AuraTestBase {
     aura::client::SetScreenPositionClient(root_window(),
                                           screen_position_client_.get());
 
-    triple_tap_delegate_ = std::make_unique<MockTripleTapDetectorDelegate>();
-    triple_tap_detector_ = std::make_unique<TripleTapDetector>(
+    triple_tap_delegate_ = std::make_unique<MockMultipleTapDetectorDelegate>();
+    triple_tap_detector_ = std::make_unique<MultipleTapDetector>(
         root_window(), triple_tap_delegate_.get());
 
     generator_.reset(new ui::test::EventGenerator(root_window()));
@@ -70,7 +71,7 @@ class TripleTapDetectorTest : public aura::test::AuraTestBase {
     simulated_clock_.Advance(gesture_detector_config_.double_tap_timeout);
     simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
     triple_tap_detector_->triple_tap_timer_.Stop();
-    triple_tap_detector_->OnTripleTapIntervalTimerFired();
+    triple_tap_detector_->OnTapIntervalTimerFired();
   }
 
   // Simulate a tap event.
@@ -90,23 +91,25 @@ class TripleTapDetectorTest : public aura::test::AuraTestBase {
 
   void Tap() { Tap(kTestTapLocation); }
 
-  TripleTapDetector& detector() { return *triple_tap_detector_; }
-  MockTripleTapDetectorDelegate& delegate() { return *triple_tap_delegate_; }
+  MultipleTapDetector& detector() { return *triple_tap_detector_; }
+  MockMultipleTapDetectorDelegate& delegate() { return *triple_tap_delegate_; }
 
  private:
   ui::GestureDetector::Config gesture_detector_config_;
 
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 
-  std::unique_ptr<TripleTapDetector> triple_tap_detector_;
-  std::unique_ptr<MockTripleTapDetectorDelegate> triple_tap_delegate_;
+  std::unique_ptr<MultipleTapDetector> triple_tap_detector_;
+  std::unique_ptr<MockMultipleTapDetectorDelegate> triple_tap_delegate_;
   base::SimpleTestTickClock simulated_clock_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
 };
 
 // Verify that a simple correct triple tap triggers the delegate.
-TEST_F(TripleTapDetectorTest, TripleTap) {
-  EXPECT_CALL(delegate(), OnTripleTap(Eq(kTestTapLocation)));
+TEST_F(MultipleTapDetectorTest, TripleTap) {
+  EXPECT_CALL(delegate(), OnTripleTap(Eq(kTestTapLocation))).Times(1);
+  ;
+  EXPECT_CALL(delegate(), OnDoubleTap(Eq(kTestTapLocation))).Times(0);
 
   detector().set_enabled(true);
 
@@ -120,10 +123,27 @@ TEST_F(TripleTapDetectorTest, TripleTap) {
   run_loop.RunUntilIdle();
 }
 
-// Verify that no triple taps are detected when the detector is not enabled.
-TEST_F(TripleTapDetectorTest, InactiveNoTriple) {
+// Verify double tap when there's two taps then a pause past our double tap
+// interval.
+TEST_F(MultipleTapDetectorTest, DoubleTap) {
   EXPECT_CALL(delegate(), OnTripleTap(Eq(kTestTapLocation))).Times(0);
+  EXPECT_CALL(delegate(), OnDoubleTap(Eq(kTestTapLocation))).Times(1);
 
+  detector().set_enabled(true);
+
+  Tap();
+  DoubleTapPause();
+  Tap();
+  TooLongPause();
+
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+}
+
+// Verify that no multi taps are detected when the detector is not enabled.
+TEST_F(MultipleTapDetectorTest, Inactive) {
+  EXPECT_CALL(delegate(), OnTripleTap(Eq(kTestTapLocation))).Times(0);
+  EXPECT_CALL(delegate(), OnDoubleTap(Eq(kTestTapLocation))).Times(0);
   Tap();
   DoubleTapPause();
   Tap();
@@ -134,10 +154,11 @@ TEST_F(TripleTapDetectorTest, InactiveNoTriple) {
   run_loop.RunUntilIdle();
 }
 
-// Verify it's not a triple tap if the pause from the first tap to the second
-// tap is too long.
-TEST_F(TripleTapDetectorTest, FirstTapTooLong) {
+// Verify it's not a multi tap of any kind if the pause from the first tap to
+// the second tap is too long.
+TEST_F(MultipleTapDetectorTest, FirstTapTooLong) {
   EXPECT_CALL(delegate(), OnTripleTap(Eq(kTestTapLocation))).Times(0);
+  EXPECT_CALL(delegate(), OnDoubleTap(Eq(kTestTapLocation))).Times(0);
 
   detector().set_enabled(true);
 
@@ -151,10 +172,11 @@ TEST_F(TripleTapDetectorTest, FirstTapTooLong) {
   run_loop.RunUntilIdle();
 }
 
-// Verify it's not a triple tap if the pause from the second tap to the last tap
-// is too long.
-TEST_F(TripleTapDetectorTest, LastTapTooLong) {
+// Verify it's not a triple tap but instead a doubletap if the pause from the
+// second tap to the last tap is too long.
+TEST_F(MultipleTapDetectorTest, LastTapTooLongIsDoubleTap) {
   EXPECT_CALL(delegate(), OnTripleTap(Eq(kTestTapLocation))).Times(0);
+  EXPECT_CALL(delegate(), OnDoubleTap(Eq(kTestTapLocation))).Times(1);
 
   detector().set_enabled(true);
 

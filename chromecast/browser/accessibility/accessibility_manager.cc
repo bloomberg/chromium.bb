@@ -30,7 +30,8 @@ AccessibilityManager::AccessibilityManager(
       root_window, activation_client,
       accessibility_focus_ring_controller_.get(), &accessibility_sound_proxy_,
       window_manager->GetGestureHandler());
-  triple_tap_detector_ = std::make_unique<TripleTapDetector>(root_window, this);
+  magnify_gesture_detector_ =
+      std::make_unique<MultipleTapDetector>(root_window, this);
   magnification_controller_ =
       std::make_unique<FullscreenMagnificationController>(
           root_window, window_manager->GetGestureHandler());
@@ -99,7 +100,7 @@ aura::WindowTreeHost* AccessibilityManager::window_tree_host() const {
 
 void AccessibilityManager::SetMagnificationGestureEnabled(
     bool gesture_enabled) {
-  triple_tap_detector_->set_enabled(gesture_enabled);
+  magnify_gesture_detector_->set_enabled(gesture_enabled);
 
   // If the gesture is not enabled, make sure that magnification is turned off,
   // in case we're already in magnification. Otherwise the user will be stuck in
@@ -110,7 +111,7 @@ void AccessibilityManager::SetMagnificationGestureEnabled(
 }
 
 bool AccessibilityManager::IsMagnificationGestureEnabled() const {
-  return triple_tap_detector_->enabled();
+  return magnify_gesture_detector_->enabled();
 }
 
 void AccessibilityManager::OnTripleTap(const gfx::Point& tap_location) {
