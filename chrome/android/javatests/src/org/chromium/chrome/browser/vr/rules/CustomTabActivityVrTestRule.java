@@ -41,7 +41,7 @@ public class CustomTabActivityVrTestRule extends CustomTabActivityTestRule imple
     }
 
     @Override
-    public SupportedActivity getRestriction() {
+    public @SupportedActivity int getRestriction() {
         return SupportedActivity.CCT;
     }
 
