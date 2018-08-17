@@ -57,9 +57,10 @@ bool SaveCardIconView::Update() {
   enabled &= SetCommandEnabled(enabled);
   SetVisible(enabled);
 
-  AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
-  if (enabled && controller->CanAnimate())
+  if (enabled && controller->CanAnimate()) {
+    AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
     AnimateIn(IDS_AUTOFILL_CARD_SAVED);
+  }
 
   return was_visible != visible();
 }
@@ -91,6 +92,7 @@ bool SaveCardIconView::ShouldShowSeparator() const {
 
 void SaveCardIconView::AnimationEnded(const gfx::Animation* animation) {
   IconLabelBubbleView::AnimationEnded(animation);
+  AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
 
   // |controller| may be nullptr due to lazy initialization.
   SaveCardBubbleControllerImpl* controller = GetController();
