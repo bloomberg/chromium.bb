@@ -157,7 +157,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/common/initialize_extensions_client.h"
+#include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
@@ -353,7 +353,8 @@ ChromeContentRendererClient::ChromeContentRendererClient()
     : main_entry_time_(base::TimeTicks::Now()),
       main_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread()) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  EnsureExtensionsClientInitialized();
+  extensions::ExtensionsClient::Set(
+      extensions::ChromeExtensionsClient::GetInstance());
   extensions::ExtensionsRendererClient::Set(
       ChromeExtensionsRendererClient::GetInstance());
 #endif
