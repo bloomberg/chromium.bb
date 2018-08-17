@@ -35,9 +35,9 @@ inline SVGTitleElement::SVGTitleElement(Document& document)
 DEFINE_NODE_FACTORY(SVGTitleElement)
 
 Node::InsertionNotificationRequest SVGTitleElement::InsertedInto(
-    ContainerNode* root_parent) {
+    ContainerNode& root_parent) {
   SVGElement::InsertedInto(root_parent);
-  if (!root_parent->isConnected())
+  if (!root_parent.isConnected())
     return kInsertionDone;
   if (HasChildren() && GetDocument().IsSVGDocument())
     GetDocument().SetTitleElement(this);

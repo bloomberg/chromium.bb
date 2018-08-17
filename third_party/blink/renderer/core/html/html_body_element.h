@@ -57,7 +57,7 @@ class CORE_EXPORT HTMLBodyElement final : public HTMLElement {
       const AtomicString&,
       MutableCSSPropertyValueSet*) override;
 
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void DidNotifySubtreeInsertionsToDocument() override;
 
   bool IsURLAttribute(const Attribute&) const override;

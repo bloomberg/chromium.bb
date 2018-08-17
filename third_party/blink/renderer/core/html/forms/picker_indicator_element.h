@@ -79,7 +79,7 @@ class PickerIndicatorElement final : public HTMLDivElement,
   void DefaultEventHandler(Event*) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
   bool IsPickerIndicatorElement() const override;
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void DidNotifySubtreeInsertionsToDocument() override;
 
   HTMLInputElement* HostInput();

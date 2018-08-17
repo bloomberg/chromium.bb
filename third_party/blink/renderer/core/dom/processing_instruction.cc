@@ -236,9 +236,9 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
 }
 
 Node::InsertionNotificationRequest ProcessingInstruction::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   CharacterData::InsertedInto(insertion_point);
-  if (!insertion_point->isConnected())
+  if (!insertion_point.isConnected())
     return kInsertionDone;
 
   String href;

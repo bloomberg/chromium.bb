@@ -124,7 +124,7 @@ void SVGFEImageElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 }
 
 Node::InsertionNotificationRequest SVGFEImageElement::InsertedInto(
-    ContainerNode* root_parent) {
+    ContainerNode& root_parent) {
   SVGFilterPrimitiveStandardAttributes::InsertedInto(root_parent);
   BuildPendingResource();
   return kInsertionDone;

@@ -61,7 +61,7 @@ class HTMLTrackElement final : public HTMLElement,
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
 
   void RemovedFrom(ContainerNode*) override;
   bool IsURLAttribute(const Attribute&) const override;

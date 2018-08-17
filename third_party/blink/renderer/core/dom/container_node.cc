@@ -927,7 +927,7 @@ void ContainerNode::NotifyNodeInsertedInternal(
     if (!isConnected() && !IsInShadowTree() && !node.IsContainerNode())
       continue;
     if (Node::kInsertionShouldCallDidNotifySubtreeInsertions ==
-        node.InsertedInto(this))
+        node.InsertedInto(*this))
       post_insertion_notification_targets.push_back(&node);
     if (ShadowRoot* shadow_root = node.GetShadowRoot())
       NotifyNodeInsertedInternal(*shadow_root,

@@ -2009,14 +2009,14 @@ LayoutObject* Element::CreateLayoutObject(const ComputedStyle& style) {
 }
 
 Node::InsertionNotificationRequest Element::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   // need to do superclass processing first so isConnected() is true
   // by the time we reach updateId
   ContainerNode::InsertedInto(insertion_point);
 
   DCHECK(!HasRareData() || !GetElementRareData()->HasPseudoElements());
 
-  if (!insertion_point->IsInTreeScope())
+  if (!insertion_point.IsInTreeScope())
     return kInsertionDone;
 
   if (HasRareData()) {
@@ -2035,7 +2035,7 @@ Node::InsertionNotificationRequest Element::InsertedInto(
       CustomElement::TryToUpgrade(this);
   }
 
-  TreeScope& scope = insertion_point->GetTreeScope();
+  TreeScope& scope = insertion_point.GetTreeScope();
   if (scope != GetTreeScope())
     return kInsertionDone;
 
@@ -2672,7 +2672,7 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
     shadow_root->SetNeedsDistributionRecalc();
   }
 
-  shadow_root->InsertedInto(this);
+  shadow_root->InsertedInto(*this);
   SetChildNeedsStyleRecalc();
   SetNeedsStyleRecalc(kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
                                                StyleChangeReason::kShadow));
@@ -4105,7 +4105,7 @@ PseudoElement* Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
 
   PseudoElement* pseudo_element = PseudoElement::Create(this, pseudo_id);
   EnsureElementRareData().SetPseudoElement(pseudo_id, pseudo_element);
-  pseudo_element->InsertedInto(this);
+  pseudo_element->InsertedInto(*this);
 
   scoped_refptr<ComputedStyle> pseudo_style =
       pseudo_element->StyleForLayoutObject();
@@ -4732,22 +4732,22 @@ void Element::DetachAllAttrNodesFromElement() {
 }
 
 Node::InsertionNotificationRequest Node::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   DCHECK(!ChildNeedsStyleInvalidation());
   DCHECK(!NeedsStyleInvalidation());
-  DCHECK(insertion_point->isConnected() || insertion_point->IsInShadowTree() ||
+  DCHECK(insertion_point.isConnected() || insertion_point.IsInShadowTree() ||
          IsContainerNode());
-  if (insertion_point->isConnected()) {
+  if (insertion_point.isConnected()) {
     SetFlag(kIsConnectedFlag);
-    insertion_point->GetDocument().IncrementNodeCount();
+    insertion_point.GetDocument().IncrementNodeCount();
   }
   if (ParentOrShadowHostNode()->IsInShadowTree())
     SetFlag(kIsInShadowTreeFlag);
   if (ChildNeedsDistributionRecalc() &&
-      !insertion_point->ChildNeedsDistributionRecalc())
-    insertion_point->MarkAncestorsWithChildNeedsDistributionRecalc();
+      !insertion_point.ChildNeedsDistributionRecalc())
+    insertion_point.MarkAncestorsWithChildNeedsDistributionRecalc();
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->ChildrenChanged(insertion_point);
+    cache->ChildrenChanged(&insertion_point);
   return kInsertionDone;
 }
 

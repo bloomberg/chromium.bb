@@ -68,7 +68,7 @@ void SVGScriptElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 }
 
 Node::InsertionNotificationRequest SVGScriptElement::InsertedInto(
-    ContainerNode* root_parent) {
+    ContainerNode& root_parent) {
   SVGElement::InsertedInto(root_parent);
   return kInsertionShouldCallDidNotifySubtreeInsertions;
 }

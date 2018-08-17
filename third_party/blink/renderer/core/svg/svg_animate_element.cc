@@ -136,9 +136,9 @@ bool SVGAnimateElement::IsSVGAnimationAttributeSettingJavaScriptURL(
 }
 
 Node::InsertionNotificationRequest SVGAnimateElement::InsertedInto(
-    ContainerNode* root_parent) {
+    ContainerNode& root_parent) {
   SVGAnimationElement::InsertedInto(root_parent);
-  if (root_parent->isConnected()) {
+  if (root_parent.isConnected()) {
     SetAttributeName(ConstructQualifiedName(
         *this, FastGetAttribute(SVGNames::attributeNameAttr)));
   }

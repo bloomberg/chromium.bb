@@ -88,9 +88,9 @@ void HTMLScriptElement::ParseAttribute(
 }
 
 Node::InsertionNotificationRequest HTMLScriptElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   ScriptType script_type = ScriptType::kClassic;
-  if (insertion_point->isConnected() && HasSourceAttribute() &&
+  if (insertion_point.isConnected() && HasSourceAttribute() &&
       !ScriptLoader::IsValidScriptTypeAndLanguage(
           TypeAttributeValue(), LanguageAttributeValue(),
           ScriptLoader::kDisallowLegacyTypeInTypeAttribute, script_type)) {

@@ -203,10 +203,10 @@ void HTMLLinkElement::Process() {
 }
 
 Node::InsertionNotificationRequest HTMLLinkElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   LogAddElementIfIsolatedWorldAndInDocument("link", relAttr, hrefAttr);
-  if (!insertion_point->isConnected())
+  if (!insertion_point.isConnected())
     return kInsertionDone;
   DCHECK(isConnected());
   if (!ShouldLoadLink() && IsInShadowTree()) {

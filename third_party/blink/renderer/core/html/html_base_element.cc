@@ -48,9 +48,9 @@ void HTMLBaseElement::ParseAttribute(
 }
 
 Node::InsertionNotificationRequest HTMLBaseElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
-  if (insertion_point->isConnected())
+  if (insertion_point.isConnected())
     GetDocument().ProcessBaseElement();
   return kInsertionDone;
 }

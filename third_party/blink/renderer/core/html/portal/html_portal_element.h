@@ -33,7 +33,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   explicit HTMLPortalElement(Document&);
 
   // Node overrides
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode*) override;
 
   // HTMLFrameOwnerElement overrides

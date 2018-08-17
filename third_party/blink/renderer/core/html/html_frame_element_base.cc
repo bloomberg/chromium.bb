@@ -187,7 +187,7 @@ void HTMLFrameElementBase::SetNameAndOpenURL() {
 }
 
 Node::InsertionNotificationRequest HTMLFrameElementBase::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   HTMLFrameOwnerElement::InsertedInto(insertion_point);
   // We should never have a content frame at the point where we got inserted
   // into a tree.

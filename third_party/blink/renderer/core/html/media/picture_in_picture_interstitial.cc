@@ -117,7 +117,7 @@ void PictureInPictureInterstitial::Hide() {
 }
 
 Node::InsertionNotificationRequest PictureInPictureInterstitial::InsertedInto(
-    ContainerNode* root) {
+    ContainerNode& root) {
   if (GetVideoElement().isConnected() && !resize_observer_) {
     resize_observer_ =
         ResizeObserver::Create(GetVideoElement().GetDocument(),

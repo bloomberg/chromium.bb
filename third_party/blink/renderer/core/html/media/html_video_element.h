@@ -58,7 +58,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   bool HasPendingActivity() const final;
 
   // Node override.
-  Node::InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  Node::InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode*) override;
 
   unsigned videoWidth() const;

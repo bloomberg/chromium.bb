@@ -62,7 +62,7 @@ class CORE_EXPORT HTMLIFrameElement final
       const AtomicString&,
       MutableCSSPropertyValueSet*) override;
 
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode*) override;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;

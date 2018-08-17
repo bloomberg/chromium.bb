@@ -219,7 +219,7 @@ void V0InsertionPoint::ChildrenChanged(const ChildrenChange& change) {
 }
 
 Node::InsertionNotificationRequest V0InsertionPoint::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   if (ShadowRoot* root = ContainingShadowRoot()) {
     if (!root->IsV1()) {
@@ -227,7 +227,7 @@ Node::InsertionNotificationRequest V0InsertionPoint::InsertedInto(
             root->IsV1()))
         root->SetNeedsDistributionRecalc();
       if (CanBeActive() && !registered_with_shadow_root_ &&
-          insertion_point->GetTreeScope().RootNode() == root) {
+          insertion_point.GetTreeScope().RootNode() == root) {
         registered_with_shadow_root_ = true;
         root->V0().DidAddInsertionPoint(this);
         if (CanAffectSelector())

@@ -106,8 +106,8 @@ HTMLCollection* HTMLMapElement::areas() {
 }
 
 Node::InsertionNotificationRequest HTMLMapElement::InsertedInto(
-    ContainerNode* insertion_point) {
-  if (insertion_point->isConnected())
+    ContainerNode& insertion_point) {
+  if (insertion_point.isConnected())
     GetTreeScope().AddImageMap(*this);
   return HTMLElement::InsertedInto(insertion_point);
 }

@@ -61,7 +61,7 @@ DEFINE_NODE_FACTORY(HTMLTrackElement)
 HTMLTrackElement::~HTMLTrackElement() = default;
 
 Node::InsertionNotificationRequest HTMLTrackElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   DVLOG(TRACK_LOG_LEVEL) << "insertedInto";
 
   // Since we've moved to a new parent, we may now be able to load.
@@ -69,7 +69,7 @@ Node::InsertionNotificationRequest HTMLTrackElement::InsertedInto(
 
   HTMLElement::InsertedInto(insertion_point);
   HTMLMediaElement* parent = MediaElement();
-  if (insertion_point == parent)
+  if (&insertion_point == parent)
     parent->DidAddTrackElement(this);
   return kInsertionDone;
 }

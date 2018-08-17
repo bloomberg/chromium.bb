@@ -302,10 +302,10 @@ void SVGSMILElement::Reset() {
 }
 
 Node::InsertionNotificationRequest SVGSMILElement::InsertedInto(
-    ContainerNode* root_parent) {
+    ContainerNode& root_parent) {
   SVGElement::InsertedInto(root_parent);
 
-  if (!root_parent->isConnected())
+  if (!root_parent.isConnected())
     return kInsertionDone;
 
   UseCounter::Count(GetDocument(), WebFeature::kSVGSMILElementInDocument);

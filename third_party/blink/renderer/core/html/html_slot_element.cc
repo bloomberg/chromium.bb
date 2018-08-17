@@ -412,17 +412,17 @@ void HTMLSlotElement::AttributeChanged(
 }
 
 Node::InsertionNotificationRequest HTMLSlotElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   if (SupportsAssignment()) {
     ShadowRoot* root = ContainingShadowRoot();
     DCHECK(root);
     DCHECK(root->IsV1());
-    if (root == insertion_point->ContainingShadowRoot()) {
+    if (root == insertion_point.ContainingShadowRoot()) {
       // This slot is inserted into the same tree of |insertion_point|
       root->DidAddSlot(*this);
     } else if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
-               insertion_point->isConnected() &&
+               insertion_point.isConnected() &&
                root->NeedsSlotAssignmentRecalc()) {
       // Even when a slot and its containing shadow root is removed together
       // and inserted together again, the slot's cached assigned nodes can be

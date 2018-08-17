@@ -47,7 +47,7 @@ class SVGMPathElement final : public SVGElement, public SVGURIReference {
 
   void BuildPendingResource() override;
   void ClearResourceReferences();
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode*) override;
 
   void SvgAttributeChanged(const QualifiedName&) override;

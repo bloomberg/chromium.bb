@@ -389,9 +389,9 @@ void HTMLImageElement::AttachLayoutTree(AttachContext& context) {
 }
 
 Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   if (!form_was_set_by_parser_ ||
-      NodeTraversal::HighestAncestorOrSelf(*insertion_point) !=
+      NodeTraversal::HighestAncestorOrSelf(insertion_point) !=
           NodeTraversal::HighestAncestorOrSelf(*form_.Get()))
     ResetFormOwner();
   if (listener_)
@@ -411,7 +411,7 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
 
   // If we have been inserted from a layoutObject-less document,
   // our loader may have not fetched the image, so do it now.
-  if ((insertion_point->isConnected() && !GetImageLoader().GetContent() &&
+  if ((insertion_point.isConnected() && !GetImageLoader().GetContent() &&
        !GetImageLoader().HasPendingActivity()) ||
       image_was_modified) {
     GetImageLoader().UpdateFromElement(ImageLoader::kUpdateNormal,

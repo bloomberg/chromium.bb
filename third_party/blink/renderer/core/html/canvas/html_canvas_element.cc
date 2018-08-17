@@ -187,7 +187,7 @@ LayoutObject* HTMLCanvasElement::CreateLayoutObject(
 }
 
 Node::InsertionNotificationRequest HTMLCanvasElement::InsertedInto(
-    ContainerNode* node) {
+    ContainerNode& node) {
   SetIsInCanvasSubtree(true);
   return HTMLElement::InsertedInto(node);
 }

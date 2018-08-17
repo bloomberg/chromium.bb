@@ -74,7 +74,7 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
                                     bool viewport_meta_zero_values_quirk);
 
   void ParseAttribute(const AttributeModificationParams&) override;
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void DidNotifySubtreeInsertionsToDocument() override;
 
   static float ParsePositiveNumber(Document*,

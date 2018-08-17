@@ -97,7 +97,7 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
  protected:
   ListedElement();
 
-  void InsertedInto(ContainerNode*);
+  void InsertedInto(ContainerNode&);
   void RemovedFrom(ContainerNode*);
   void DidMoveToNewDocument(Document& old_document);
 

@@ -75,7 +75,7 @@ class SVGUseElement final : public SVGGraphicsElement,
 
   bool IsStructurallyExternal() const override;
 
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode*) override;
 
   void SvgAttributeChanged(const QualifiedName&) override;

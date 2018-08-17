@@ -60,7 +60,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   HTMLScriptElement(Document&, const CreateElementFlags);
 
   void ParseAttribute(const AttributeModificationParams&) override;
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void DidNotifySubtreeInsertionsToDocument() override;
   void ChildrenChanged(const ChildrenChange&) override;
   void DidMoveToNewDocument(Document& old_document) override;

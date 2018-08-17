@@ -103,7 +103,7 @@ void SVGStyleElement::FinishParsingChildren() {
 }
 
 Node::InsertionNotificationRequest SVGStyleElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   SVGElement::InsertedInto(insertion_point);
   if (isConnected()) {
     if (StyleElement::ProcessStyleSheet(GetDocument(), *this) ==

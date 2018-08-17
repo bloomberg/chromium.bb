@@ -367,7 +367,7 @@ AffineTransform SVGElement::CalculateTransform(
 }
 
 Node::InsertionNotificationRequest SVGElement::InsertedInto(
-    ContainerNode* root_parent) {
+    ContainerNode& root_parent) {
   Element::InsertedInto(root_parent);
   UpdateRelativeLengthsInformation();
 

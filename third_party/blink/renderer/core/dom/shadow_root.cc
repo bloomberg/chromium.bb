@@ -182,10 +182,10 @@ void ShadowRoot::DetachLayoutTree(const AttachContext& context) {
 }
 
 Node::InsertionNotificationRequest ShadowRoot::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   DocumentFragment::InsertedInto(insertion_point);
 
-  if (!insertion_point->isConnected())
+  if (!insertion_point.isConnected())
     return kInsertionDone;
 
   if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())

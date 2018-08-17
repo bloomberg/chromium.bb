@@ -85,7 +85,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   static bool IsTouchEvent(Event*);
 
   // Node override.
-  Node::InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  Node::InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode*) override;
 
   // MediaControls implementation.
