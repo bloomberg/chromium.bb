@@ -85,7 +85,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
                   assistant_client::OutputStreamType type,
                   assistant_client::OutputStreamFormat format)
       : connector_(connector),
-        main_thread_task_runner_(std::move(task_runner)),
+        main_thread_task_runner_(task_runner),
         stream_type_(type),
         format_(format),
         device_owner_(std::make_unique<AudioDeviceOwner>(task_runner)) {}
@@ -221,7 +221,7 @@ void AudioOutputProviderImpl::RegisterAudioEmittingStateCallback(
 
 AudioDeviceOwner::AudioDeviceOwner(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : main_thread_task_runner_(std::move(task_runner)) {}
+    : main_thread_task_runner_(task_runner) {}
 
 AudioDeviceOwner::~AudioDeviceOwner() = default;
 
@@ -246,7 +246,11 @@ void AudioDeviceOwner::StartOnMainThread(
   audio_fifo_ = std::make_unique<media::AudioBlockFifo>(
       format.pcm_num_channels, audio_param_.frames_per_buffer(), 3);
   audio_data_.resize(GetBufferSizeInBytesFromBufferFormat(format_));
-  ScheduleFillLocked(base::TimeTicks::Now());
+
+  {
+    base::AutoLock lock(lock_);
+    ScheduleFillLocked(base::TimeTicks::Now());
+  }
 
   // |connector| is null in unittest.
   if (connector) {
