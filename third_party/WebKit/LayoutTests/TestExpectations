@@ -4943,6 +4943,7 @@ crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/recorded-keyd
 
 # Sheriff 2018-08-10
 crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click.html [ Timeout Pass ]
+crbug.com/872705 [ Mac ] fast/events/middleClickAutoscroll-click.html [ Timeout Pass ]
 
 # Sheriff 2018-08-13
 crbug.com/873829 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-iframe-no-scrolling.html [ Timeout Pass ]
