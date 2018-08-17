@@ -9,12 +9,12 @@
 #include <utility>
 #include <vector>
 
-#include "ash/ime/test_ime_controller.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/browser/ui/ash/test_ime_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/fake_input_method_delegate.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
@@ -158,7 +158,7 @@ class ImeControllerClientTest : public testing::Test {
   TestInputMethodManager input_method_manager_;
 
   // Mock of mojo interface in ash.
-  ash::TestImeController ime_controller_;
+  TestImeController ime_controller_;
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;

@@ -10,9 +10,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/ime/ime_controller.h"
-#include "ash/ime/test_ime_controller.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -23,6 +20,7 @@
 #include "chrome/browser/chromeos/input_method/mock_input_method_engine.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
+#include "chrome/browser/ui/ash/test_ime_controller.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -1425,7 +1423,7 @@ TEST_F(InputMethodManagerImplTest, SetLoginDefaultWithAllowedKeyboardLayouts) {
 // Verifies that the combination of InputMethodManagerImpl and
 // ImeControllerClient sends the correct data to ash.
 TEST_F(InputMethodManagerImplTest, IntegrationWithAsh) {
-  ash::TestImeController ime_controller;  // Mojo interface to ash.
+  TestImeController ime_controller;  // Mojo interface to ash.
   ImeControllerClient ime_controller_client(manager_.get());
   ime_controller_client.InitForTesting(ime_controller.CreateInterfacePtr());
 

@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/test_ime_controller.h"
+#include "chrome/browser/ui/ash/test_ime_controller.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 
 #include "ash/public/interfaces/ime_controller.mojom.h"
-
-namespace ash {
 
 TestImeController::TestImeController() : binding_(this) {}
 TestImeController::~TestImeController() = default;
@@ -21,7 +19,7 @@ ash::mojom::ImeControllerPtr TestImeController::CreateInterfacePtr() {
   return ptr;
 }
 
-void TestImeController::SetClient(mojom::ImeControllerClientPtr client) {}
+void TestImeController::SetClient(ash::mojom::ImeControllerClientPtr client) {}
 
 void TestImeController::RefreshIme(
     const std::string& current_ime_id,
@@ -64,5 +62,3 @@ void TestImeController::ShowModeIndicator(const gfx::Rect& anchor_bounds,
                                           const base::string16& text) {
   show_mode_indicator_ = true;
 }
-
-}  // namespace ash
