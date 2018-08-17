@@ -309,4 +309,9 @@
 # https://crbug.com/671891
 -SiteDetailsBrowserTest.IsolateExtensions
 
+# Started flaking on MSAN Mash browser_tests bots for the Downloads case (Drive
+# tests cases are fine), https://crbug.com/874954
+-KeyboardOperations/FilesAppBrowserTest.Test/renameNewFolderDownloads
+-KeyboardOperations/FilesAppBrowserTest.Test/renameNewFolderDownloads_GuestMode
+
 # See comment at top of file regarding adding test exclusions.
