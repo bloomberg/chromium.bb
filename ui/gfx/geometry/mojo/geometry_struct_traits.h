@@ -163,7 +163,7 @@ struct StructTraits<gfx::mojom::Vector3dFDataView, gfx::Vector3dF> {
   static bool Read(gfx::mojom::Vector3dFDataView data, gfx::Vector3dF* out) {
     out->set_x(data.x());
     out->set_y(data.y());
-    out->set_y(data.z());
+    out->set_z(data.z());
     return true;
   }
 };

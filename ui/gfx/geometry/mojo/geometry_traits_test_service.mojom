@@ -16,6 +16,9 @@ interface GeometryTraitsTestService {
   EchoPointF(PointF p) => (PointF pass);
 
   [Sync]
+  EchoPoint3F(Point3F p) => (Point3F pass);
+
+  [Sync]
   EchoSize(Size s) => (Size pass);
 
   [Sync]
@@ -38,4 +41,7 @@ interface GeometryTraitsTestService {
 
   [Sync]
   EchoVector2dF(Vector2dF v) => (Vector2dF pass);
+
+  [Sync]
+  EchoVector3dF(Vector3dF v) => (Vector3dF pass);
 };
