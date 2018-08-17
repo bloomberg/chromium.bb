@@ -121,6 +121,10 @@ public class TrustedWebActivityUi {
         assert mDelegate.getSnackbarManager() != null;
         assert mDelegate.getClientPackageName() != null;
 
+        // If we have left Trusted Web Activity mode (through onDidFinishNavigation), we don't need
+        // to show the Snackbar.
+        if (!mInTrustedWebActivity) return;
+
         mDisclosure.showSnackbarIfNeeded(mDelegate.getSnackbarManager(),
                 mDelegate.getClientPackageName());
     }
