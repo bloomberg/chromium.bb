@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.WindowAndroid;
@@ -25,19 +24,17 @@ public class ManualFillingCoordinator {
 
     /**
      * Creates a the manual filling controller.
-     * @param windowAndroid The window needed to set up the sub components.
+     * @param windowAndroid The window needed to listen to the keyboard and to connect to activity.
      * @param keyboardAccessoryStub The view stub for keyboard accessory bar.
      * @param accessorySheetStub The view stub for the keyboard accessory bottom sheet.
      */
     public ManualFillingCoordinator(WindowAndroid windowAndroid, ViewStub keyboardAccessoryStub,
             ViewStub accessorySheetStub) {
-        assert windowAndroid.getActivity().get() != null;
         KeyboardAccessoryCoordinator keyboardAccessory =
-                new KeyboardAccessoryCoordinator(windowAndroid, keyboardAccessoryStub, mMediator);
+                new KeyboardAccessoryCoordinator(keyboardAccessoryStub, mMediator);
         AccessorySheetCoordinator accessorySheet = new AccessorySheetCoordinator(
                 accessorySheetStub, keyboardAccessory::getPageChangeListener);
-        mMediator.initialize(keyboardAccessory, accessorySheet,
-                (ChromeActivity) windowAndroid.getActivity().get());
+        mMediator.initialize(keyboardAccessory, accessorySheet, windowAndroid);
     }
 
     /**
@@ -71,7 +68,7 @@ public class ManualFillingCoordinator {
      * is a NoOp.
      */
     public void closeAccessorySheet() {
-        mMediator.getKeyboardAccessory().closeActiveTab();
+        mMediator.onCloseAccessorySheet();
     }
 
     /**

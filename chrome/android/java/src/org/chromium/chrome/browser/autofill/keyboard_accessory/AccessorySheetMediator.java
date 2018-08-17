@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetModel.NO_ACTIVE_TAB;
 
 import android.support.annotation.Nullable;
+import android.support.annotation.Px;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
@@ -41,6 +42,10 @@ class AccessorySheetMediator
 
     void setHeight(int height) {
         mModel.setHeight(height);
+    }
+
+    public @Px int getHeight() {
+        return mModel.getHeight();
     }
 
     void hide() {

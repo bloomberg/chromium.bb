@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.support.annotation.Px;
 import android.support.v4.view.ViewPager;
 import android.view.ViewStub;
 
@@ -15,7 +16,6 @@ import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Creates and owns all elements which are part of the keyboard accessory component.
@@ -34,16 +34,9 @@ public class KeyboardAccessoryCoordinator {
     public interface VisibilityDelegate {
         /**
          * Is triggered when a tab in the accessory was selected and the sheet needs to change.
-         * If the sheet needs to also be opened, {@link VisibilityDelegate#onOpenAccessorySheet()}
-         * is called right after this method.
          * @param tabIndex The index of the selected tab in the tab bar.
          */
         void onChangeAccessorySheet(int tabIndex);
-
-        /**
-         * Called when the sheet needs to be opened.
-         */
-        void onOpenAccessorySheet();
 
         /**
          * Called when the sheet needs to be hidden.
@@ -55,18 +48,21 @@ public class KeyboardAccessoryCoordinator {
          * sheet manually because they didn't find a suitable suggestion).
          */
         void onOpenKeyboard();
+
+        /**
+         * Called when the keyboard accessory or a sheet changes visibility or size.
+         */
+        void onBottomControlSpaceChanged();
     }
 
     /**
      * Initializes the component as soon as the native library is loaded by e.g. starting to listen
      * to keyboard visibility events.
-     * @param windowAndroid The window connected to the activity this component lives in.
      * @param viewStub the stub that will become the accessory.
      */
-    public KeyboardAccessoryCoordinator(
-            WindowAndroid windowAndroid, ViewStub viewStub, VisibilityDelegate visibilityDelegate) {
+    public KeyboardAccessoryCoordinator(ViewStub viewStub, VisibilityDelegate visibilityDelegate) {
         KeyboardAccessoryModel model = new KeyboardAccessoryModel();
-        mMediator = new KeyboardAccessoryMediator(model, windowAndroid, visibilityDelegate);
+        mMediator = new KeyboardAccessoryMediator(model, visibilityDelegate);
         mViewHolder = new LazyViewBinderAdapter.StubHolder<>(viewStub);
 
         model.addObserver(new PropertyModelChangeProcessor<>(model, mViewHolder,
@@ -154,18 +150,54 @@ public class KeyboardAccessoryCoordinator {
     }
 
     /**
-     * Used to clean up the accessory by e.g. unregister listeners to keyboard visibility.
-     */
-    public void destroy() {
-        mMediator.destroy();
-    }
-
-    /**
      * Dismisses the accessory by hiding it's view, clearing potentially left over suggestions and
      * hiding the keyboard.
      */
     public void dismiss() {
         mMediator.dismiss();
+    }
+
+    /**
+     * Sets the offset to the end of the activity - which is usually 0, the height of the keyboard
+     * or the height of a bottom sheet.
+     * @param bottomOffset The offset in pixels.
+     */
+    public void setBottomOffset(@Px int bottomOffset) {
+        mMediator.setBottomOffset(bottomOffset);
+    }
+
+    /**
+     * Closes the accessory bar. This sends signals to close the active tab and recalculate bottom
+     * offsets.
+     */
+    public void close() {
+        mMediator.close();
+    }
+
+    /**
+     * Triggers the accessory to be shown if there are contents to be shown. Effect might therefore
+     * be delayed until contents (e.g. tabs, actions, chips) arrive.
+     */
+    public void requestShowing() {
+        mMediator.requestShowing();
+    }
+
+    /**
+     * Returns the visibility of the the accessory. The returned property reflects the latest change
+     * while the view might still be in progress of being updated accordingly.
+     * @return True if the accessory should be visible, false otherwise.
+     */
+    public boolean isShown() {
+        return mMediator.isShown();
+    }
+
+    /**
+     * Returns whether the active tab is non-null. The returned property reflects the latest change
+     * while the view might still be in progress of being updated accordingly.
+     * @return True if the accessory has an active tab, false otherwise.
+     */
+    public boolean hasActiveTab() {
+        return mMediator.hasActiveTab();
     }
 
     @VisibleForTesting

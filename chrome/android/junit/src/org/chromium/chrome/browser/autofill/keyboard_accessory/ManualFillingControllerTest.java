@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.tab.Tab;
@@ -74,6 +75,7 @@ public class ManualFillingControllerTest {
     private ListObservable.ListObserver<Void> mMockItemListObserver;
     @Mock
     private TabModelSelector mMockTabModelSelector;
+    private ChromeFullscreenManager mFullScreenManager;
     @Mock
     private Drawable mMockIcon;
 
@@ -88,6 +90,8 @@ public class ManualFillingControllerTest {
         when(mMockViewStub.inflate()).thenReturn(mMockView);
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
         when(mMockActivity.getTabModelSelector()).thenReturn(mMockTabModelSelector);
+        mFullScreenManager = new ChromeFullscreenManager(mMockActivity, 0);
+        when(mMockActivity.getFullscreenManager()).thenReturn(mFullScreenManager);
         PasswordAccessorySheetCoordinator.IconProvider.getInstance().setIconForTesting(mMockIcon);
         mController = new ManualFillingCoordinator(mMockWindow, mMockViewStub, mMockViewStub);
     }

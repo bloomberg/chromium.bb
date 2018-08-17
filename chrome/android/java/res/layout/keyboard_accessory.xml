@@ -17,7 +17,9 @@
     android:layout_height="@dimen/keyboard_accessory_height"
     android:layout_width="match_parent"
     android:paddingEnd="0dp"
-    android:paddingStart="@dimen/keyboard_accessory_padding">
+    android:paddingStart="@dimen/keyboard_accessory_padding"
+    android:clickable="true"
+    android:focusable="true">
 
     <android.support.design.widget.TabLayout
         android:id="@+id/tabs"

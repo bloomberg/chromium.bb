@@ -73,6 +73,7 @@ public class KeyboardAccessoryMetricsRecorder {
                 return;
             }
             if (propertyKey == KeyboardAccessoryModel.PropertyKey.ACTIVE_TAB
+                    || propertyKey == KeyboardAccessoryModel.PropertyKey.BOTTOM_OFFSET
                     || propertyKey == KeyboardAccessoryModel.PropertyKey.TAB_SELECTION_CALLBACKS) {
                 return;
             }

@@ -131,6 +131,10 @@ class KeyboardAccessoryViewBinder
             view.setActiveTabColor(model.activeTab());
             return;
         }
+        if (propertyKey == PropertyKey.BOTTOM_OFFSET) {
+            view.setBottomOffset(model.bottomOffset());
+            return;
+        }
         if (propertyKey == PropertyKey.TAB_SELECTION_CALLBACKS) {
             // Don't add null as listener. It's a valid state but an invalid argument.
             if (model.getTabSelectionCallbacks() == null) return;

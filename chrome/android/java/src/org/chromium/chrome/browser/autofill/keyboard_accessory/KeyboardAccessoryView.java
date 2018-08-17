@@ -75,6 +75,12 @@ class KeyboardAccessoryView extends LinearLayout {
         }
     }
 
+    public void setBottomOffset(int bottomOffset) {
+        MarginLayoutParams params = (MarginLayoutParams) getLayoutParams();
+        params.setMargins(params.leftMargin, params.topMargin, params.rightMargin, bottomOffset);
+        setLayoutParams(params);
+    }
+
     void setActionsAdapter(RecyclerView.Adapter adapter) {
         mActionsView.setAdapter(adapter);
     }

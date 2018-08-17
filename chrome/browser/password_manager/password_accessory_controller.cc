@@ -173,7 +173,6 @@ void PasswordAccessoryController::OnFilledIntoFocusedField(
     autofill::FillingStatus status) {
   if (status != autofill::FillingStatus::SUCCESS)
     return;                      // TODO(crbug/853766): Record success rate.
-  view_->CloseAccessorySheet();  // The sheet's purpose is fulfilled.
   view_->OpenKeyboard();  // Bring up the keyboard for the still focused field.
 }
 
@@ -181,19 +180,17 @@ void PasswordAccessoryController::RefreshSuggestionsForField(
     const url::Origin& origin,
     bool is_fillable,
     bool is_password_field) {
-  // When new suggestions are requested, the keyboard will pop open. To avoid
-  // that any open sheet is pushed up, close it now. Doesn't affect the bar.
-  view_->CloseAccessorySheet();
-  // TODO(crbug/853766): Record CTR metric.
   if (is_fillable) {
     current_origin_ = origin;
     view_->OnItemsAvailable(CreateViewItems(origin, origin_suggestions_[origin],
                                             is_password_field));
+    view_->OpenKeyboard();  // Should happen automatically.
   } else {
     // For unfillable fields, reset the origin and send the empty state message.
     current_origin_ = url::Origin();
     view_->OnItemsAvailable(CreateViewItems(
         origin, std::vector<SuggestionElementData>(), is_password_field));
+    view_->CloseAccessorySheet();
   }
 }
 

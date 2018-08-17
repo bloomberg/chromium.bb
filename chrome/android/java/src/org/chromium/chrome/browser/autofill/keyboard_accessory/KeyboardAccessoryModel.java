@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.support.annotation.Nullable;
+import android.support.annotation.Px;
 import android.support.design.widget.TabLayout;
 
 import org.chromium.chrome.browser.modelutil.ListModel;
@@ -29,6 +30,7 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
         static final List<PropertyKey> ALL_PROPERTIES = new ArrayList<>();
 
         static final PropertyKey VISIBLE = new PropertyKey();
+        static final PropertyKey BOTTOM_OFFSET = new PropertyKey();
         static final PropertyKey ACTIVE_TAB = new PropertyKey();
         static final PropertyKey TAB_SELECTION_CALLBACKS = new PropertyKey();
 
@@ -40,6 +42,7 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
     private ListModel<KeyboardAccessoryData.Action> mActionListObservable;
     private ListModel<KeyboardAccessoryData.Tab> mTabListObservable;
     private boolean mVisible;
+    private @Px int mBottomOffset;
     private @Nullable Integer mActiveTab;
     private TabLayout.OnTabSelectedListener mTabSelectionCallbacks;
 
@@ -84,6 +87,17 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
 
     boolean isVisible() {
         return mVisible;
+    }
+
+    void setBottomOffset(@Px int bottomOffset) {
+        if (mBottomOffset == bottomOffset) return; // Nothing to do here: same value.
+        mBottomOffset = bottomOffset;
+        notifyPropertyChanged(PropertyKey.BOTTOM_OFFSET);
+    }
+
+    @Px
+    int bottomOffset() {
+        return mBottomOffset;
     }
 
     @SuppressWarnings("ReferenceEquality") // No action if both are null or exact same object.
