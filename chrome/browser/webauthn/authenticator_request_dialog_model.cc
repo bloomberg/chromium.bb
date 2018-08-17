@@ -45,6 +45,9 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
     case AuthenticatorTransport::kInternal:
       SetCurrentStep(Step::kTouchId);
       break;
+    case AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy:
+      SetCurrentStep(Step::kCableActivate);
+      break;
     default:
       break;
   }

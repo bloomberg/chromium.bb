@@ -46,6 +46,9 @@ class AuthenticatorRequestDialogModel {
 
     // Touch ID.
     kTouchId,
+
+    // Phone as a security key.
+    kCableActivate,
   };
 
   // Encapsulates information about authenticators that have been found but are

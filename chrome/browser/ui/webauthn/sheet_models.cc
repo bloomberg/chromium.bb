@@ -368,3 +368,17 @@ base::string16 AuthenticatorTouchIdSheetModel::GetStepTitle() const {
 base::string16 AuthenticatorTouchIdSheetModel::GetStepDescription() const {
   return base::string16();
 }
+
+// AuthenticatorPaaskSheetModel -----------------------------------------
+
+gfx::ImageSkia* AuthenticatorPaaskSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PHONE_1X);
+}
+
+base::string16 AuthenticatorPaaskSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_ACTIVATE_TITLE);
+}
+
+base::string16 AuthenticatorPaaskSheetModel::GetStepDescription() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_ACTIVATE_DESCRIPTION);
+}
