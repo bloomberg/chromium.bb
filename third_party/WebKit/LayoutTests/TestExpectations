@@ -4989,6 +4989,8 @@ crbug.com/874737 [ Android ] animations/svg-attribute-interpolation/svg-numOctav
 
 # Sheriff 2018-08-17
 crbug.com/869726 [ Mac ] virtual/scroll_customization/fast/events/touch/touch-latched-scroll-node-removed.html [ Pass Failure ]
+crbug.com/875170 animations/interpolation/svg-stroke-dasharray-interpolation.html [ Timeout Pass ]
+crbug.com/875195 external/wpt/cookies/http-state/domain-tests.html [ Timeout Pass ]
 
 # Test frequently times out on Mac CQ bots.
 crbug.com/874703 [ Mac ] http/tests/devtools/extensions/extensions-panel.js [ Timeout Pass ]
