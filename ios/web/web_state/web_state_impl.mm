@@ -25,6 +25,7 @@
 #import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
+#include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/url_util.h"
 #import "ios/web/public/web_client.h"
@@ -852,6 +853,9 @@ void WebStateImpl::OnNavigationItemChanged() {
 
 void WebStateImpl::OnNavigationItemCommitted(
     const LoadCommittedDetails& load_details) {
+  if (wk_navigation_util::IsWKInternalUrl(load_details.item->GetURL()))
+    return;
+
   // A committed navigation item indicates that NavigationManager has a new
   // valid session history so should invalidate the cached restored session
   // history.

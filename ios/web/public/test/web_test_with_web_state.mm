@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -103,15 +104,15 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
   CRWWebController* web_controller = GetWebController(web_state());
   ASSERT_EQ(PAGE_LOADED, web_controller.loadPhase);
 
-  // If the underlying WKWebView is empty, first load a placeholder about:blank
-  // to create a WKBackForwardListItem to store the NavigationItem associated
-  // with the |-loadHTML|.
+  // If the underlying WKWebView is empty, first load a placeholder to create a
+  // WKBackForwardListItem to store the NavigationItem associated with the
+  // |-loadHTML|.
   // TODO(crbug.com/777884): consider changing |-loadHTML| to match WKWebView's
   // |-loadHTMLString:baseURL| that doesn't create a navigation entry.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
       !web_state()->GetNavigationManager()->GetItemCount()) {
-    GURL url(url::kAboutBlankURL);
-    NavigationManager::WebLoadParams params(url);
+    GURL placeholder_url = wk_navigation_util::CreatePlaceholderUrlForUrl(url);
+    NavigationManager::WebLoadParams params(placeholder_url);
     web_state()->GetNavigationManager()->LoadURLWithParams(params);
     base::test::ios::WaitUntilCondition(^{
       return web_controller.loadPhase == PAGE_LOADED;

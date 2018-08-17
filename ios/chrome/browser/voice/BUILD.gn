@@ -79,6 +79,7 @@ source_set("unit_tests") {
     ":tts",
     ":voice",
     "//base",
+    "//base/test:test_support",
     "//ios/web",
     "//ios/web/public/test",
     "//testing/gtest",
