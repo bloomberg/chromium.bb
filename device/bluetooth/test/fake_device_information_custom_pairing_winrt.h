@@ -2,49 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_TEST_FAKE_DEVICE_INFORMATION_PAIRING_WINRT_H_
-#define DEVICE_BLUETOOTH_TEST_FAKE_DEVICE_INFORMATION_PAIRING_WINRT_H_
+#ifndef DEVICE_BLUETOOTH_TEST_FAKE_DEVICE_INFORMATION_CUSTOM_PAIRING_WINRT_H_
+#define DEVICE_BLUETOOTH_TEST_FAKE_DEVICE_INFORMATION_CUSTOM_PAIRING_WINRT_H_
 
 #include <windows.devices.enumeration.h>
-#include <wrl/client.h>
 #include <wrl/implements.h>
 
 #include "base/macros.h"
 
 namespace device {
 
-class FakeDeviceInformationPairingWinrt
+class FakeDeviceInformationCustomPairingWinrt
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
-          ABI::Windows::Devices::Enumeration::IDeviceInformationPairing,
-          ABI::Windows::Devices::Enumeration::IDeviceInformationPairing2> {
+          ABI::Windows::Devices::Enumeration::IDeviceInformationCustomPairing> {
  public:
-  explicit FakeDeviceInformationPairingWinrt(bool is_paired);
-  ~FakeDeviceInformationPairingWinrt() override;
+  FakeDeviceInformationCustomPairingWinrt();
+  ~FakeDeviceInformationCustomPairingWinrt() override;
 
-  // IDeviceInformationPairing:
-  IFACEMETHODIMP get_IsPaired(boolean* value) override;
-  IFACEMETHODIMP get_CanPair(boolean* value) override;
+  // IDeviceInformationCustomPairing:
   IFACEMETHODIMP PairAsync(
+      ABI::Windows::Devices::Enumeration::DevicePairingKinds
+          pairing_kinds_supported,
       ABI::Windows::Foundation::IAsyncOperation<
           ABI::Windows::Devices::Enumeration::DevicePairingResult*>** result)
       override;
   IFACEMETHODIMP PairWithProtectionLevelAsync(
+      ABI::Windows::Devices::Enumeration::DevicePairingKinds
+          pairing_kinds_supported,
       ABI::Windows::Devices::Enumeration::DevicePairingProtectionLevel
           min_protection_level,
       ABI::Windows::Foundation::IAsyncOperation<
           ABI::Windows::Devices::Enumeration::DevicePairingResult*>** result)
       override;
-
-  // IDeviceInformationPairing2:
-  IFACEMETHODIMP get_ProtectionLevel(
-      ABI::Windows::Devices::Enumeration::DevicePairingProtectionLevel* value)
-      override;
-  IFACEMETHODIMP get_Custom(
-      ABI::Windows::Devices::Enumeration::IDeviceInformationCustomPairing**
-          value) override;
   IFACEMETHODIMP PairWithProtectionLevelAndSettingsAsync(
+      ABI::Windows::Devices::Enumeration::DevicePairingKinds
+          pairing_kinds_supported,
       ABI::Windows::Devices::Enumeration::DevicePairingProtectionLevel
           min_protection_level,
       ABI::Windows::Devices::Enumeration::IDevicePairingSettings*
@@ -52,17 +46,18 @@ class FakeDeviceInformationPairingWinrt
       ABI::Windows::Foundation::IAsyncOperation<
           ABI::Windows::Devices::Enumeration::DevicePairingResult*>** result)
       override;
-  IFACEMETHODIMP UnpairAsync(
-      ABI::Windows::Foundation::IAsyncOperation<
-          ABI::Windows::Devices::Enumeration::DeviceUnpairingResult*>** result)
-      override;
+  IFACEMETHODIMP add_PairingRequested(
+      ABI::Windows::Foundation::ITypedEventHandler<
+          ABI::Windows::Devices::Enumeration::DeviceInformationCustomPairing*,
+          ABI::Windows::Devices::Enumeration::DevicePairingRequestedEventArgs*>*
+          handler,
+      EventRegistrationToken* token) override;
+  IFACEMETHODIMP remove_PairingRequested(EventRegistrationToken token) override;
 
  private:
-  bool is_paired_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDeviceInformationPairingWinrt);
+  DISALLOW_COPY_AND_ASSIGN(FakeDeviceInformationCustomPairingWinrt);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_BLUETOOTH_TEST_FAKE_DEVICE_INFORMATION_PAIRING_WINRT_H_
+#endif  // DEVICE_BLUETOOTH_TEST_FAKE_DEVICE_INFORMATION_CUSTOM_PAIRING_WINRT_H_
