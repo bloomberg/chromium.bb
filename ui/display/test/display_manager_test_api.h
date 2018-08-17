@@ -48,10 +48,6 @@ class DISPLAY_EXPORT DisplayManagerTestApi {
   // Gets the internal ManagedDisplayInfo for a specific display id.
   const ManagedDisplayInfo& GetInternalManagedDisplayInfo(int64_t display_id);
 
-  // Sets the UI scale for the |display_id|. Returns false if the
-  // display_id is not an internal display.
-  bool SetDisplayUIScale(int64_t display_id, float scale);
-
   // Sets the touch support for |display_id|.
   void SetTouchSupport(int64_t display_id, Display::TouchSupport touch_support);
 

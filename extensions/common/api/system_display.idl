@@ -77,7 +77,7 @@ namespace system.display {
     long heightInNativePixels;
 
     // The display mode UI scale factor.
-    double uiScale;
+    [deprecated="Use $(ref: displayZoomFactor)"] double? uiScale;
 
     // The display mode device scale factor.
     double deviceScaleFactor;

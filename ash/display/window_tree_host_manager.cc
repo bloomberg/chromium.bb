@@ -809,7 +809,6 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
   }
   params_with_bounds.display_id = display.id();
   params_with_bounds.device_scale_factor = display.device_scale_factor();
-  params_with_bounds.ui_scale_factor = display_info.configured_ui_scale();
   // The AshWindowTreeHost ends up owned by the RootWindowControllers created
   // by this class.
   AshWindowTreeHost* ash_host =

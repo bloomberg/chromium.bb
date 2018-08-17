@@ -102,7 +102,6 @@ base::string16 GetExternalDisplayName(int64_t external_display_id) {
   const display::ManagedDisplayInfo& display_info =
       display_manager->GetDisplayInfo(external_display_id);
   if (display_info.GetActiveRotation() != display::Display::ROTATE_0 ||
-      display_info.configured_ui_scale() != 1.0f ||
       !display_info.overscan_insets_in_dip().IsEmpty()) {
     name =
         l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME,
@@ -289,10 +288,8 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
       // Consume this state so that later changes are not affected.
       displays_changed_from_settings_ui_.erase(ignore_display_iter);
     } else {
-      if ((iter.second.configured_ui_scale() !=
-           old_iter->second.configured_ui_scale()) ||
-          (GetDisplayManager()->IsInUnifiedMode() &&
-           iter.second.size_in_pixel() != old_iter->second.size_in_pixel())) {
+      if (GetDisplayManager()->IsInUnifiedMode() &&
+          iter.second.size_in_pixel() != old_iter->second.size_in_pixel()) {
         *out_message = l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE);
         *out_additional_message = l10n_util::GetStringFUTF16(

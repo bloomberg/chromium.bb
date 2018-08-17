@@ -16,13 +16,11 @@ struct ViewportMetrics {
 
   gfx::Rect bounds_in_pixels;
   float device_scale_factor = 0.0f;
-  float ui_scale_factor = 0.0f;
 };
 
 inline bool operator==(const ViewportMetrics& lhs, const ViewportMetrics& rhs) {
   return lhs.bounds_in_pixels == rhs.bounds_in_pixels &&
-         lhs.device_scale_factor == rhs.device_scale_factor &&
-         lhs.ui_scale_factor == rhs.ui_scale_factor;
+         lhs.device_scale_factor == rhs.device_scale_factor;
 }
 
 inline bool operator!=(const ViewportMetrics& lhs, const ViewportMetrics& rhs) {

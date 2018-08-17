@@ -46,9 +46,6 @@ CreateUnifiedManagedDisplayModeList(
     const ManagedDisplayMode& native_mode,
     const std::vector<UnifiedDisplayModeParam>& modes_param_list);
 
-// Tests if the |info| has display mode that matches |ui_scale|.
-bool HasDisplayModeForUIScale(const ManagedDisplayInfo& info, float ui_scale);
-
 // Returns true if the first display should unconditionally be considered an
 // internal display.
 bool ForceFirstDisplayInternal();

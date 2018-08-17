@@ -288,7 +288,8 @@ TEST_F(ScreenLayoutObserverTest, ZoomingInUnifiedModeNotification) {
   // Using keyboard shortcuts to change the zoom should result in a
   // notification.
   CloseNotification();
-  EXPECT_TRUE(display_manager()->ZoomInternalDisplay(false /* up */));
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  EXPECT_TRUE(display_manager()->ZoomDisplay(display_id, false /* up */));
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
                 GetUnifiedDisplayName(), base::UTF8ToUTF16("400x200")),
@@ -298,7 +299,7 @@ TEST_F(ScreenLayoutObserverTest, ZoomingInUnifiedModeNotification) {
             GetDisplayNotificationText());
 
   CloseNotification();
-  EXPECT_TRUE(display_manager()->ZoomInternalDisplay(true /* up */));
+  EXPECT_TRUE(display_manager()->ZoomDisplay(display_id, true /* up */));
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
                 GetUnifiedDisplayName(), base::UTF8ToUTF16("800x400")),
@@ -313,7 +314,7 @@ TEST_F(ScreenLayoutObserverTest, ZoomingInUnifiedModeNotification) {
   CloseNotification();
   Shell::Get()->screen_layout_observer()->SetDisplayChangedFromSettingsUI(
       display::kUnifiedDisplayId);
-  EXPECT_TRUE(display_manager()->ZoomInternalDisplay(false /* up */));
+  EXPECT_TRUE(display_manager()->ZoomDisplay(display_id, false /* up */));
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 }

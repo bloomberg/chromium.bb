@@ -194,18 +194,15 @@ void ScreenManagerOzoneInternal::ToggleAddRemoveDisplay() {
 }
 
 void ScreenManagerOzoneInternal::IncreaseInternalDisplayZoom() {
-  if (Display::HasInternalDisplay())
-    display_manager_->ZoomInternalDisplay(false);
+  NOTREACHED();
 }
 
 void ScreenManagerOzoneInternal::DecreaseInternalDisplayZoom() {
-  if (Display::HasInternalDisplay())
-    display_manager_->ZoomInternalDisplay(true);
+  NOTREACHED();
 }
 
 void ScreenManagerOzoneInternal::ResetInternalDisplayZoom() {
-  if (Display::HasInternalDisplay())
-    display_manager_->ResetInternalDisplayZoom();
+  NOTREACHED();
 }
 
 void ScreenManagerOzoneInternal::RotateCurrentDisplayCW() {
@@ -287,7 +284,6 @@ ViewportMetrics ScreenManagerOzoneInternal::GetViewportMetricsForDisplay(
   // so that PlatformWindows appear next to one another for multiple displays.
   metrics.bounds_in_pixels = managed_info.bounds_in_native();
   metrics.device_scale_factor = display.device_scale_factor();
-  metrics.ui_scale_factor = managed_info.configured_ui_scale();
 
   return metrics;
 }

@@ -11,5 +11,4 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 struct WmViewportMetrics {
   gfx.mojom.Rect bounds_in_pixels;
   float device_scale_factor;
-  float ui_scale_factor;
 };

@@ -24,7 +24,6 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_EQ("200x100", info.size_in_pixel().ToString());
   EXPECT_EQ(Display::ROTATE_0, info.GetActiveRotation());
   EXPECT_EQ("0,0,0,0", info.overscan_insets_in_dip().ToString());
-  EXPECT_EQ(1.0f, info.configured_ui_scale());
 
   info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/o", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_native().ToString());

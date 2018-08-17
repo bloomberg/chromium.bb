@@ -1998,7 +1998,6 @@ TEST_F(DisplayManagerTest, FHD125DefaultsTo08UIScaling) {
   display_manager()->OnNativeDisplaysChanged(display_info_list);
 
   EXPECT_EQ(1.25f, GetDisplayInfoAt(0).GetEffectiveDeviceScaleFactor());
-  EXPECT_EQ(1.0f, GetDisplayInfoAt(0).GetEffectiveUIScale());
 }
 
 TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
@@ -2023,7 +2022,6 @@ TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
   display::ManagedDisplayMode active_mode;
   EXPECT_TRUE(
       display_manager()->GetActiveModeForDisplayId(unified_id, &active_mode));
-  EXPECT_EQ(1.0f, active_mode.ui_scale());
   EXPECT_EQ("400x200", active_mode.size().ToString());
 
   EXPECT_TRUE(display::test::SetDisplayResolution(display_manager(), unified_id,
@@ -2034,7 +2032,6 @@ TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
 
   EXPECT_TRUE(
       display_manager()->GetActiveModeForDisplayId(unified_id, &active_mode));
-  EXPECT_EQ(1.0f, active_mode.ui_scale());
   EXPECT_EQ("800x400", active_mode.size().ToString());
 
   // resolution change will not persist in unified desktop mode.
@@ -2044,7 +2041,6 @@ TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
       display::Screen::GetScreen()->GetPrimaryDisplay().size().ToString());
   EXPECT_TRUE(
       display_manager()->GetActiveModeForDisplayId(unified_id, &active_mode));
-  EXPECT_EQ(1.0f, active_mode.ui_scale());
   EXPECT_TRUE(active_mode.native());
   EXPECT_EQ("1200x600", active_mode.size().ToString());
 }
@@ -2989,11 +2985,6 @@ TEST_F(DisplayManagerTest, DockMode) {
 
   EXPECT_TRUE(display_manager()->IsActiveDisplayId(external_id));
   EXPECT_FALSE(display_manager()->IsActiveDisplayId(internal_id));
-
-  EXPECT_FALSE(display_manager()->ZoomInternalDisplay(true));
-  EXPECT_FALSE(display_manager()->ZoomInternalDisplay(false));
-  EXPECT_FALSE(display::test::DisplayManagerTestApi(display_manager())
-                   .SetDisplayUIScale(internal_id, 1.0f));
 }
 
 // Make sure that bad layout information is ignored and does not crash.
@@ -3150,97 +3141,19 @@ TEST_F(DisplayManagerFontTest,
   EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
 }
 
-TEST_F(DisplayManagerTest, FirstInitializationOfDisplayZoom) {
-  const float ui_scale = 0.8;
-  const float dsf = 2.f;
-  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-
-  display_id++;
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         display_id);
-  display_manager()->RegisterDisplayProperty(
-      display_id, display::Display::ROTATE_0, ui_scale, nullptr, gfx::Size(),
-      1.0f, 1.0f);
-
-  // Setup the display modes with UI-scale.
-  display::ManagedDisplayInfo native_display_info =
-      display::CreateDisplayInfo(display_id, gfx::Rect(0, 0, 2400, 1600));
-  native_display_info.set_native(true);
-  native_display_info.set_device_scale_factor(dsf);
-
-  const display::ManagedDisplayMode base_mode(gfx::Size(2400, 1600), 60.0f,
-                                              false, false);
-  display::ManagedDisplayInfo::ManagedDisplayModeList mode_list =
-      CreateInternalManagedDisplayModeList(base_mode);
-  native_display_info.SetManagedDisplayModes(mode_list);
-
-  std::vector<display::ManagedDisplayInfo> display_info_list;
-  display_info_list.push_back(native_display_info);
-
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
-
-  const float expected_zoom_factor = 1.f / ui_scale;
-
-  const display::ManagedDisplayInfo& info = GetDisplayInfoAt(0);
-  EXPECT_FLOAT_EQ(expected_zoom_factor * dsf,
-                  info.GetEffectiveDeviceScaleFactor());
-  EXPECT_FLOAT_EQ(expected_zoom_factor, info.zoom_factor());
-  EXPECT_EQ(1.f, info.configured_ui_scale());
-}
-
 TEST_F(DisplayManagerTest, SubsequentInitializationOfDisplayZoom) {
   int64_t id = display_manager()->GetDisplayAt(0).id();
   const float zoom_factor = 1.5f;
   // Negative value of ui scale means that this is not the first boot with
   // display zoom enabled.
   display_manager()->RegisterDisplayProperty(id, display::Display::ROTATE_0,
-                                             -1 /* ui_scale */, nullptr,
-                                             gfx::Size(), 1.f, zoom_factor);
+                                             -1000, nullptr, gfx::Size(), 1.f,
+                                             zoom_factor);
 
   const display::ManagedDisplayInfo& info =
       display_manager()->GetDisplayInfo(id);
 
   EXPECT_FLOAT_EQ(info.zoom_factor(), zoom_factor);
-  EXPECT_FLOAT_EQ(info.configured_ui_scale(), 1.f);
-  EXPECT_FALSE(info.is_zoom_factor_from_ui_scale());
-}
-
-TEST_F(DisplayManagerTest, FirstInitializationOfDisplayZoomOnFHD125Device) {
-  const float ui_scale = 0.625f;
-  const float dsf = 1.25f;
-  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-
-  display_id++;
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         display_id);
-  display_manager()->RegisterDisplayProperty(
-      display_id, display::Display::ROTATE_0, ui_scale, nullptr, gfx::Size(),
-      1.0f, 1.0f);
-
-  // Setup the display modes with UI-scale.
-  display::ManagedDisplayInfo native_display_info =
-      display::CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1920, 1080));
-  native_display_info.set_native(true);
-  native_display_info.set_device_scale_factor(dsf);
-
-  const display::ManagedDisplayMode base_mode(gfx::Size(1920, 1080), 60.0f,
-                                              false, false);
-  display::ManagedDisplayInfo::ManagedDisplayModeList mode_list =
-      CreateInternalManagedDisplayModeList(base_mode);
-  native_display_info.SetManagedDisplayModes(mode_list);
-
-  std::vector<display::ManagedDisplayInfo> display_info_list;
-  display_info_list.push_back(native_display_info);
-
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
-
-  const float expected_zoom_factor = 1.f / (ui_scale * dsf);
-
-  const display::ManagedDisplayInfo& info = GetDisplayInfoAt(0);
-  EXPECT_FLOAT_EQ(expected_zoom_factor * dsf,
-                  info.GetEffectiveDeviceScaleFactor());
-  EXPECT_FLOAT_EQ(expected_zoom_factor, info.zoom_factor());
-  EXPECT_EQ(1.f, info.configured_ui_scale());
 }
 
 TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {
@@ -3390,15 +3303,8 @@ TEST_F(DisplayManagerTest, DisconnectedInternalDisplayShouldUpdateDisplayInfo) {
   const display::ManagedDisplayInfo& display_info =
       display_manager()->GetDisplayInfo(internal_id);
   EXPECT_EQ(1.6f, display_info.device_scale_factor());
-
-  bool has_default = false;
-  for (auto& mode : display_info.display_modes()) {
-    if (mode.is_default()) {
-      has_default = true;
-      EXPECT_EQ(1.6f, mode.device_scale_factor());
-    }
-  }
-  EXPECT_TRUE(has_default);
+  ASSERT_EQ(1u, display_info.display_modes().size());
+  EXPECT_EQ(1.6f, display_info.display_modes()[0].device_scale_factor());
 }
 
 TEST_F(DisplayManagerTest, UpdateInternalDisplayNativeBounds) {
