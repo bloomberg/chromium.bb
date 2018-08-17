@@ -70,26 +70,6 @@ bool ShouldDispatchRequestImmediately(
   return true;
 }
 
-#if !defined(OS_ANDROID)
-void SetInitialUiModelBasedOnPreviouslyUsedTransport(
-    AuthenticatorRequestDialogModel* model,
-    base::Optional<device::FidoTransportProtocol> previous_transport) {
-  if (!previous_transport)
-    return;
-
-  // TODO(hongjunchoi): Add UI component for defaulting to BLE, Cable and Mac
-  // TouchID transports.
-  switch (*previous_transport) {
-    case device::FidoTransportProtocol::kUsbHumanInterfaceDevice:
-      model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate);
-      break;
-    default:
-      return;
-  }
-}
-#endif
-
 }  // namespace
 
 #if defined(OS_MACOSX)
@@ -154,6 +134,11 @@ void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
     device::FidoRequestHandlerBase::RequestCallback request_callback) {
   request_callback_ = request_callback;
   cancel_callback_ = std::move(cancel_callback);
+
+  transient_dialog_model_holder_ =
+      std::make_unique<AuthenticatorRequestDialogModel>();
+  weak_dialog_model_ = transient_dialog_model_holder_.get();
+  weak_dialog_model_->AddObserver(this);
 }
 
 bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
@@ -267,10 +252,10 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
   if (!IsWebAuthnUiEnabled())
     return;
 
-  weak_dialog_model_ = transient_dialog_model_holder_.get();
-  SetInitialUiModelBasedOnPreviouslyUsedTransport(weak_dialog_model_,
-                                                  GetLastTransportUsed());
-  weak_dialog_model_->AddObserver(this);
+  DCHECK(weak_dialog_model_);
+  weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed());
+
+  DCHECK(transient_dialog_model_holder_);
   ShowAuthenticatorRequestDialog(
       content::WebContents::FromRenderFrameHost(render_frame_host()),
       std::move(transient_dialog_model_holder_));
@@ -286,7 +271,9 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
   if (!IsWebAuthnUiEnabled())
     return;
 
-  DCHECK(weak_dialog_model_);
+  if (!weak_dialog_model_)
+    return;
+
   weak_dialog_model_->saved_authenticators().emplace_back(
       authenticator.GetId(), authenticator.AuthenticatorTransport());
 }
@@ -296,7 +283,9 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
   if (!IsWebAuthnUiEnabled())
     return;
 
-  DCHECK(weak_dialog_model_);
+  if (!weak_dialog_model_)
+    return;
+
   auto& saved_authenticators = weak_dialog_model_->saved_authenticators();
   saved_authenticators.erase(
       std::remove_if(saved_authenticators.begin(), saved_authenticators.end(),

@@ -80,13 +80,13 @@ void AuthenticatorSheetModelBase::OnModelDestroyed() {
   dialog_model_ = nullptr;
 }
 
-// AuthenticatorInitialSheetModel ---------------------------------------------
+// AuthenticatorWelcomeSheetModel ---------------------------------------------
 
-gfx::ImageSkia* AuthenticatorInitialSheetModel::GetStepIllustration() const {
+gfx::ImageSkia* AuthenticatorWelcomeSheetModel::GetStepIllustration() const {
   return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME_1X);
 }
 
-base::string16 AuthenticatorInitialSheetModel::GetStepTitle() const {
+base::string16 AuthenticatorWelcomeSheetModel::GetStepTitle() const {
   // TODO(hongjunchoi): Insert actual domain name from model to
   // |application_name|.
   base::string16 application_name = base::UTF8ToUTF16("example.com");
@@ -94,27 +94,25 @@ base::string16 AuthenticatorInitialSheetModel::GetStepTitle() const {
                                     application_name);
 }
 
-base::string16 AuthenticatorInitialSheetModel::GetStepDescription() const {
+base::string16 AuthenticatorWelcomeSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_DESCRIPTION);
 }
 
-bool AuthenticatorInitialSheetModel::IsAcceptButtonVisible() const {
+bool AuthenticatorWelcomeSheetModel::IsAcceptButtonVisible() const {
   return true;
 }
 
-bool AuthenticatorInitialSheetModel::IsAcceptButtonEnabled() const {
+bool AuthenticatorWelcomeSheetModel::IsAcceptButtonEnabled() const {
   return true;
 }
 
-base::string16 AuthenticatorInitialSheetModel::GetAcceptButtonLabel() const {
+base::string16 AuthenticatorWelcomeSheetModel::GetAcceptButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_NEXT);
 }
 
-void AuthenticatorInitialSheetModel::OnAccept() {
-  // TODO(hongjunchoi): Check whether Bluetooth adapter is enabled and if it is,
-  // set current step to |kTransportSelection|.
-  dialog_model()->SetCurrentStep(
-      AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate);
+void AuthenticatorWelcomeSheetModel::OnAccept() {
+  dialog_model()
+      ->StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
 }
 
 // AuthenticatorTransportSelectorSheetModel -----------------------------------

@@ -50,7 +50,7 @@ class AuthenticatorSheetModelBase
 };
 
 // The initial sheet shown when the UX flow starts.
-class AuthenticatorInitialSheetModel : public AuthenticatorSheetModelBase {
+class AuthenticatorWelcomeSheetModel : public AuthenticatorSheetModelBase {
  public:
   using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
 

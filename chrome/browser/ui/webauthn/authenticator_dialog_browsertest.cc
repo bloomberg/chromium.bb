@@ -19,6 +19,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     auto model = std::make_unique<AuthenticatorRequestDialogModel>();
+    model->StartFlow(
+        ::device::FidoRequestHandlerBase::TransportAvailabilityInfo(),
+        base::nullopt);
 
     // The dialog should immediately close as soon as it is displayed.
     if (name == "completed") {

@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/webauthn/transport_list_model.h"
+#include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
 // Encapsulates the model behind the Web Authentication request dialog's UX
@@ -22,8 +24,14 @@
 // order, to complete the authentication flow.
 class AuthenticatorRequestDialogModel {
  public:
+  using TransportAvailabilityInfo =
+      device::FidoRequestHandlerBase::TransportAvailabilityInfo;
+
   // Defines the potential steps of the Web Authentication API request UX flow.
   enum class Step {
+    // The UX flow has not started yet, the dialog should still be hidden.
+    kNotStarted,
+
     kWelcomeScreen,
     kTransportSelection,
     kErrorTimedOut,
@@ -90,10 +98,27 @@ class AuthenticatorRequestDialogModel {
 
   TransportListModel* transport_list_model() { return &transport_list_model_; }
 
+  // Starts the UX flow, by either showing the welcome screen, the transport
+  // selection screen, or the guided flow for them most likely transport.
+  //
+  // Valid action when at step: kNotStarted.
+  void StartFlow(
+      TransportAvailabilityInfo transport_availability,
+      base::Optional<device::FidoTransportProtocol> last_used_transport);
+
+  // Starts the UX flow. Tries to figure out the most likely transport to be
+  // used, and starts the guided flow for that transport; or shows the manual
+  // transport selection screen if the transport could not be uniquely
+  // identified.
+  //
+  // Valid action when at step: kNotStarted, kWelcomeScreen.
+  void StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
+
   // Requests that the step-by-step wizard flow commence, guiding the user
   // through using the Secutity Key with the given |transport|.
   //
-  // Valid action when at step: kTransportSelection.
+  // Valid action when at step: kNotStarted, kWelcomeScreen,
+  // kTransportSelection.
   void StartGuidedFlowForTransport(AuthenticatorTransport transport);
 
   // Tries if the BLE adapter is now powered -- the user claims they turned it
@@ -155,16 +180,23 @@ class AuthenticatorRequestDialogModel {
   // To be called when Web Authentication request times-out.
   void OnRequestTimeout();
 
+  // To be called when the Bluetooth adapter powered state changes.
+  void OnBluetoothPoweredStateChanged(bool powered);
+
   std::vector<AuthenticatorReference>& saved_authenticators() {
     return saved_authenticators_;
   }
 
  private:
   // The current step of the request UX flow that is currently shown.
-  Step current_step_ = Step::kWelcomeScreen;
+  Step current_step_ = Step::kNotStarted;
 
   TransportListModel transport_list_model_;
   base::ObserverList<Observer> observers_;
+
+  // These fields are only filled out when the UX flow is started.
+  TransportAvailabilityInfo transport_availability_;
+  base::Optional<device::FidoTransportProtocol> last_used_transport_;
 
   // Transport type and id of Mac TouchId and BLE authenticators are cached so
   // that the WebAuthN request for the corresponding authenticators can be
