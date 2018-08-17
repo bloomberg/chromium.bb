@@ -21,7 +21,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Signal de faible intensité</translation>
 <translation id="1293264513303784526">Appareil USB de type C (port situé sur la gauche de l'appareil)</translation>
-<translation id="1302880136325416935">Afficher les appareils Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1302880136325416935">Afficher les paramètres Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Vers la droite</translation>
 <translation id="1351937230027495976">Réduire le menu</translation>
 <translation id="1383876407941801731">Rechercher</translation>
@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Déverrouillage avec empreinte</translation>
 <translation id="1919743966458266018">Le raccourci permettant d'ouvrir le gestionnaire de tâches a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
-<translation id="1923508880661655826">Votre session est effacée lorsque vous vous déconnectez. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Clics automatiques</translation>
 <translation id="1928739107511554905">Pour télécharger la mise à jour, utilisez l'écran tactile pour redémarrer votre Chromebook avec le clavier branché.</translation>
 <translation id="1942830294380034169">Bouton de dépassement de capacité</translation>
@@ -225,7 +224,6 @@
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4924411785043111640">Redémarrer et réinitialiser</translation>
 <translation id="4961318399572185831">Diffuser l'écran</translation>
-<translation id="5069971504769299223">Il est possible que le gestionnaire de l'appareil puisse surveiller votre activité.</translation>
 <translation id="5083553833479578423">Déverrouiller plus de fonctionnalités de l'Assistant.</translation>
 <translation id="5136175204352732067">Clavier différent branché</translation>
 <translation id="5168181903108465623">Appareils Cast disponibles</translation>
@@ -315,7 +313,6 @@
 <translation id="6627638273713273709">Rechercher+Maj+K</translation>
 <translation id="6650933572246256093">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code d'authentification suivant sur l'appareil : <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Mot de passe</translation>
-<translation id="6687966522050791666">Choisir la langue et la saisie</translation>
 <translation id="6691659475504239918">Recherche+Maj+H</translation>
 <translation id="6696025732084565524">Votre clavier amovible nécessite une mise à jour critique</translation>
 <translation id="6700713906295497288">Bouton de menu IME</translation>
@@ -377,7 +374,7 @@
 <translation id="7798302898096527229">Appuyez sur Rechercher ou Maj pour annuler.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> et <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Signal de forte intensité</translation>
-<translation id="7842211907556571265">Connexion à <ph name="NETWORK_NAME" /></translation>
+<translation id="7842211907556571265">Connexion à <ph name="NETWORK_NAME" />…</translation>
 <translation id="7842569679327885685">Avertissement : Fonctionnalité expérimentale</translation>
 <translation id="7846634333498149051">Clavier</translation>
 <translation id="790040513076446191">Modifier les paramètres de confidentialité</translation>

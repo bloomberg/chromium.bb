@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">Ste pozabili geslo?</translation>
 <translation id="3132996321662585180">Dnevno osveževanje</translation>
 <translation id="3135204511829026971">Zasuk zaslona</translation>
-<translation id="313638818480447860">Odkrili smo toliko aplikacij, povezanih z računom, ki so optimizirane za to napravo: <ph name="NUMBER_OF_APPS" />.</translation>
 <translation id="313963229645891001">Prenašanje, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Privzeti rumeni avatar</translation>
 <translation id="3140353188828248647">Preklopi na naslovno vrstico</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">Odklepanje naprave in prijava v Google Račun</translation>
 <translation id="3625258641415618104">Posnetki zaslona so onemogočeni</translation>
 <translation id="3625481642044239431">Izbrali ste neveljavno datoteko. Poskusite znova.</translation>
-<translation id="3625538291267447988">Če želite nastaviti funkcijo Smart Lock, vnesite geslo</translation>
 <translation id="3625870480639975468">Ponastavi povečavo/pomanjšavo</translation>
 <translation id="3626281679859535460">Svetlost</translation>
 <translation id="3627320433825461852">Še manj kot minuta</translation>
@@ -2734,7 +2732,6 @@
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Zapri zavihek</translation>
 <translation id="5213891612754844763">Prikaži nastavitve strežnika proxy</translation>
-<translation id="5214416042594875361">Do Pomočnika lahko dostopate, kadar koli izgovorite »OK Google«, ko je zaslon vklopljen.</translation>
 <translation id="521582610500777512">Fotografija je bila zavržena</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="52232769093306234">Pakiranje ni uspelo.</translation>
@@ -3395,6 +3392,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6163363155248589649">&amp;Navadno</translation>
 <translation id="6163522313638838258">Razširi vse ...</translation>
 <translation id="6164005077879661055">Vse datoteke in lokalni podatki, povezani z zaščitenim uporabnikom, bodo trajno izbrisani, ko ga odstranite. Obiskana spletna mesta in nastavitve tega uporabnika bodo morda še vedno vidna upravitelju na <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Več o tem</translation>
 <translation id="6166185671393271715">Uvoz gesel v Chrome</translation>
 <translation id="6169040057125497443">Preverite mikrofon.</translation>
 <translation id="6169666352732958425">Namizja ni mogoče predvajati.</translation>
@@ -4981,7 +4979,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8642947597466641025">Povečaj besedilo</translation>
 <translation id="8643418457919840804">Če želite nadaljevati, izberite možnost:</translation>
 <translation id="8645354835496065562">Še naprej dovoli dostop do tipal</translation>
-<translation id="8647691362751835453">Zaznavanje »OK Google«</translation>
 <translation id="8647834505253004544">Ni veljaven spletni naslov</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> ali <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Čeprav ne morete več dostopati do starega profila, ga lahko še vedno odstranite.</translation>

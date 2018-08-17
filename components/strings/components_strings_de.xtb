@@ -604,7 +604,7 @@
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
 <translation id="5201306358585911203">Auf einer in dieser Seite eingebetteten Seite wird Folgendes angezeigt</translation>
 <translation id="5205222826937269299">Name erforderlich</translation>
-<translation id="5215116848420601511">Zahlungsmethoden und Adressen bei Google Pay verwenden</translation>
+<translation id="5215116848420601511">Bei Google Pay gespeicherte Zahlungsmethoden und Adressen</translation>
 <translation id="5222812217790122047">E-Mail-Adresse erforderlich</translation>
 <translation id="5230733896359313003">Versandadresse</translation>
 <translation id="5250209940322997802">"Mit Netzwerk verbinden"</translation>
@@ -824,7 +824,7 @@
 <translation id="6948701128805548767">Wählen Sie eine Adresse aus, um Abholoptionen und -anforderungen zu sehen</translation>
 <translation id="6949872517221025916">Passwort zurücksetzen</translation>
 <translation id="6950684638814147129">Fehler beim Parsen des JSON-Werts: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">Seite in neuem, privatem Tab öffnen</translation>
+<translation id="6957624206566198865">Seite in Inkognito-Fenster öffnen</translation>
 <translation id="6957887021205513506">Das Zertifikat des Servers ist möglicherweise eine Fälschung.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Gerät</translation>
@@ -1100,7 +1100,7 @@
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
 <translation id="8978053250194585037">Google Safe Browsing hat kürzlich <ph name="BEGIN_LINK" />Phishingaktivitäten<ph name="END_LINK" /> auf <ph name="SITE" /> festgestellt. Phishingwebsites geben sich als andere Websites aus, um Sie zu täuschen.</translation>
-<translation id="8983003182662520383">Zahlungsmethoden und Adressen bei Google Pay verwenden</translation>
+<translation id="8983003182662520383">Bei Google Pay gespeicherte Zahlungsmethoden und Adressen</translation>
 <translation id="8987927404178983737">Monat</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Die Website, die Sie aufrufen möchten, enthält schädliche Programme</translation>

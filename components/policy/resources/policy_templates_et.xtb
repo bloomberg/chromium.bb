@@ -1912,11 +1912,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="637934607141010488">Saadab loendi seadme kasutajatest, kes on hiljuti sisse loginud.
 
       Kui määrate reegli olekule Väär, siis kasutajatest ei teavitata.</translation>
-<translation id="6392973646875039351">Lubab rakenduse <ph name="PRODUCT_NAME" /> automaatse täitmise funktsiooni ja võimaldab kasutajatel varem talletatud teabe, näiteks aadressi ja krediitkaardi andmete, alusel veebivorme automaatselt täita.
-
-      Seade keelamisel ei saa automaatset täitmist kasutada.
-
-      Kui lubate seade või ei määra väärtust, siis saab kasutaja automaatset täitmist juhtida. See võimaldab neil seadistada automaatse täitmise profiile ning automaatse täitmise soovi korral sisse või välja lülitada.</translation>
 <translation id="6394350458541421998">Reegel on alates rakenduse <ph name="PRODUCT_OS_NAME" /> versioonist 29 kasutusest kõrvaldatud. Kasutage selle asemel reeglit PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Kasutaja väljalogimine</translation>
 <translation id="6426205278746959912">Te ei saa Androidi rakenduste puhul jõustada puhverserveri kasutamist. Androidi rakendustele on muudetud kättesaadavaks puhverserveri seadete alamkomplekt, mille kasutamine on vabatahtlik.
@@ -2157,13 +2152,13 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="69525503251220566">Parameeter otsingu vaikepakkujale pildi järgi otsimise funktsiooni pakkumiseks</translation>
 <translation id="6956272732789158625">Ära luba ühelgi saidil võtmeid luua</translation>
 <translation id="6982028490425791294">
-      Kui reegel on seatud väärtusele Tõene, võib <ph name="PRODUCT_NAME" /> koguda Google'i teenustest (nt Google Meet) WebRTC sündmuselogisid ja need Google'i serveritesse üles laadida.
+      Kui reegli väärtuseks määratakse Tõene, võib <ph name="PRODUCT_NAME" /> koguda Google'i teenustest (nt Google Meet) WebRTC sündmuselogisid ja need Google'i serveritesse üles laadida.
 
-      Kui reegel on seatud väärtusele Väär või seadistamata, ei tohi <ph name="PRODUCT_NAME" /> logisid koguda ega üles laadida.
+      Kui reegli väärtuseks määratakse Väär või jäetakse see määramata, ei tohi <ph name="PRODUCT_NAME" /> logisid koguda ega üles laadida.
 
-      Need logid sisaldavad näiteks saadetud ja vastuvõetud RTP-pakettide kellaaja ja suuruse teavet, tagasisidet võrgu ummistuste kohta ja metaandmeid heli- ja videokaardite aja ja kvaliteedi kohta. See teave on kasulik Chrome'i hääl- või videokõnedega seotud probleemide, nt ribalaiuse prognoosimise probleemide jms silumisel. Logid ei sisalda kõne hääl- ega videosisu.
+      Need logid sisaldavad näiteks saadetud ja vastuvõetud RTP-pakettide kellaaja ja suuruse teavet, tagasisidet võrgu ummistuste kohta ja metaandmeid heli- ja videokaadrite aja ja kvaliteedi kohta. See teave on kasulik Chrome'i hääl- või videokõnedega seotud probleemide, nt ribalaiuse prognoosimise probleemide jms silumisel. Logid ei sisalda kõne hääl- ega videosisu.
 
-      Andmete kogumise saavad käivitada ainult Google'i veebiteenused, nt as Google Hangouts või Google Meet.
+      Andmete kogumise saavad käivitada ainult Google'i veebiteenused, nt Google Hangouts või Google Meet.
 
       Logid võidakse seansi ID alusel seostada muude logidega, mida Google'i teenus kogub. Selle eesmärk on hõlbustada silumist.
       </translation>

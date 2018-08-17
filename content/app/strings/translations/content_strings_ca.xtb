@@ -109,7 +109,7 @@
 <translation id="4812940957355064477">Introduïu un número.</translation>
 <translation id="4912536737030637138">entrada bibliogràfica</translation>
 <translation id="4975562563186953947">Elements seleccionats: <ph name="SELECTED_COUNT" /></translation>
-<translation id="4992066212339426712">Activa el so</translation>
+<translation id="4992066212339426712">Deixa de silenciar</translation>
 <translation id="49969490063480558">Introduïu un domini precedit per "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" no és una adreça electrònica completa.</translation>
 <translation id="5034860022980953847">indicador de progrés</translation>
 <translation id="5093189678851173835">epígraf</translation>
@@ -125,7 +125,7 @@
 <translation id="5468998798572797635">surt de la pantalla completa</translation>
 <translation id="5516424706154626233">selector de data</translation>
 <translation id="5537725057119320332">Emet</translation>
-<translation id="5546461542133609677">activa el so</translation>
+<translation id="5546461542133609677">deixa de silenciar</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5630795885300617244">Fes doble toc a l'esquerra o a la dreta per saltar 10 s</translation>
 <translation id="5631759159893697722">resum</translation>
@@ -142,7 +142,7 @@
 <translation id="5987525920412732405">botó de selecció de valors</translation>
 <translation id="6015796118275082299">Any</translation>
 <translation id="6023896073578205740">quadre de llista</translation>
-<translation id="6101327004457443354">activa el so de la pista d'àudio</translation>
+<translation id="6101327004457443354">deixa de silenciar la pista d'àudio</translation>
 <translation id="6150588977291308318">bibliografia</translation>
 <translation id="6164829606128959761">comptador</translation>
 <translation id="6166809985690652833">cloenda</translation>

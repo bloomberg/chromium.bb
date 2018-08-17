@@ -1838,7 +1838,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="637934607141010488">Jelentés készítése a mostanában bejelentkezett eszközfelhasználókról.
 
       Ha az irányelv beállítása hamis, akkor a felhasználókról nem készül jelentés.</translation>
-<translation id="6392973646875039351">Engedélyezi a(z) <ph name="PRODUCT_NAME" /> automatikus kitöltés funkcióját, és lehetővé teszi a felhasználók számára az internetes űrlapok korábban tárolt adatokkal, például a címmel vagy a bankkártyaadatokkal történő automatikus kitöltését. Ha engedélyezi ezt a beállítást, vagy nem állítja be az értékét, az automatikus kitöltés funkció a felhasználó ellenőrzése alatt marad. Ez lehetővé teszi, hogy a felhasználók automatikus kitöltési profilokat állítsanak be, és saját belátásuk szerint kapcsolják ki- vagy be az automatikus kitöltést.</translation>
 <translation id="6394350458541421998">Ez a házirend többé nincs jelen a <ph name="PRODUCT_OS_NAME" /> 29-es verziójától kezdve. Kérjük, használja helyette a PresentationScreenDimDelayScale házirendet.</translation>
 <translation id="6401669939808766804">Felhasználó kijelentkeztetése</translation>
 <translation id="6426205278746959912">Az Android-alkalmazások nem kényszeríthetők proxy használatára. A proxybeállítások bizonyos része hozzáférhető az Android-alkalmazások számára is, amelyeket azután saját belátásuk szerint vesznek figyelembe:

@@ -1905,11 +1905,6 @@ politikayı geçersiz kılamaz.
 <translation id="637934607141010488">Son zamanlarda giriş yapmış cihaz kullanıcılarının listesini bildirin.
 
       Politika yanlış değerine ayarlanırsa kullanıcılar bildirilmez.</translation>
-<translation id="6392973646875039351"><ph name="PRODUCT_NAME" /> içinde bulunan Otomatik Doldurma özelliğini etkinleştirir ve kullanıcıların adresler ve kredi kartı bilgileri gibi önceden saklanmış bilgileri kullanarak web formlarını otomatik bir şekilde doldurmalarına olanak sağlar.
-
-      Bu ayarı devre dışı bırakırsanız kullanıcılar Otomatik Doldurma özelliğine erişemezler. 
-
-      Bu ayarı etkinleştirirseniz veya bir değer ayarlamazsanız, Otomatik Doldurma kullanıcının denetimi altında kalır. Böylece kullanıcılara, Otomatik Doldurma profillerini yapılandırma ve kendi istedikleri şekilde Otomatik Doldurma özelliğini açıp kapama olanağı verilir.</translation>
 <translation id="6394350458541421998">Bu politika, <ph name="PRODUCT_OS_NAME" /> Sürüm 29 itibariyle kullanımdan kaldırılmıştır. Lütfen bunun yerine PresentationScreenDimDelayScale politikasını kullanın.</translation>
 <translation id="6401669939808766804">Kullanıcının oturumunu kapat</translation>
 <translation id="6426205278746959912">Android uygulamalarını proxy kullanmaya zorlayamazsınız. Proxy ayarlarının bir alt kümesi Android uygulamalarının kullanımına sunuldu. Bu uygulamalar, söz konusu proxy ayarını kendi tercihleriyle kullanmayı seçebilir:

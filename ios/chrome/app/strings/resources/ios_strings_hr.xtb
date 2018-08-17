@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Upotreba sinkronizacije i svih usluga</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
 <translation id="1323735185997015385">Izbriši</translation>
-<translation id="132390688737681464">Spremi i popuni adrese</translation>
 <translation id="132683371494960526">Dodirnite dvaput da biste promijenili nadređenu mapu.</translation>
 <translation id="1340643665687018190">Zatvori izbornik</translation>
 <translation id="1375321115329958930">Spremljene zaporke</translation>
@@ -120,7 +119,6 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="2870560284913253234">Web lokacija</translation>
 <translation id="2871695793448672541">Sakriveno, zaporka</translation>
 <translation id="2898963176829412617">Nova mapa…</translation>
-<translation id="2903493209154104877">Adrese</translation>
 <translation id="2909437209446960244">Nedavne kartice</translation>
 <translation id="2916171785467530738">Samodovršavanje pretraživanja i URL-ova</translation>
 <translation id="291754862089661335">Postavite QR ili crtični kôd u ovaj okvir</translation>
@@ -244,7 +242,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste
 <translation id="5062321486222145940">Instaliraj Google disk</translation>
 <translation id="5083464117946352670">Veličina datoteke nije utvrđena.</translation>
 <translation id="5094827893301452931">Tweet je dovršen.</translation>
-<translation id="5123982333065001601">Spremi i popuni kreditne kartice</translation>
 <translation id="5173593619615111996">Zatvori sve anonimne kartice</translation>
 <translation id="5181140330217080051">Preuzimanje</translation>
 <translation id="5186185447130319458">Privatno</translation>
@@ -252,7 +249,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Omogući sinkronizaciju</translation>
 <translation id="5244474230056479698">Sinkronizacija s računom <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Otvorite karticu da biste pregledavali web u privatnosti.</translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="5327248766486351172">Naziv</translation>
@@ -336,7 +332,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="6464071786529933911">Otvori na novoj anonimnoj kartici</translation>
 <translation id="6482629121755362506">Broj izbrisanih stavki: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Od proteklog sata</translation>
-<translation id="6570040839871198836">Autom. popunj.</translation>
 <translation id="6656103420185847513">Uređivanje mape</translation>
 <translation id="6657585470893396449">Zaporka</translation>
 <translation id="667999046851023355">Dokument</translation>
@@ -426,7 +421,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="8205564605687841303">Odustani</translation>
 <translation id="8225985093977202398">Predmemorirane slike i datoteke</translation>
 <translation id="8261506727792406068">Izbriši</translation>
-<translation id="8272426682713568063">Kreditne kartice</translation>
 <translation id="8281781826761538115">Zadano – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Zatvori sve</translation>
 <translation id="8381750437846184350">Upravljajte načinom na koji Google upotrebljava vašu povijest pregledavanja za prilagodbu Pretraživanja, oglasa i drugih Googleovih usluga</translation>

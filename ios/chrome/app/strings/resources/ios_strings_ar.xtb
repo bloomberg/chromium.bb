@@ -23,7 +23,6 @@
 <translation id="127138278192656016">استخدام المزامنة وجميع الخدمات</translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1323735185997015385">حذف</translation>
-<translation id="132390688737681464">حفظ العناوين وملؤها</translation>
 <translation id="132683371494960526">انقر مرّتين لتغيير المجلد الرئيسي.</translation>
 <translation id="1340643665687018190">إغلاق القائمة</translation>
 <translation id="1375321115329958930">كلمات المرور المحفوظة</translation>
@@ -120,7 +119,6 @@
 <translation id="2870560284913253234">الموقع</translation>
 <translation id="2871695793448672541">مخفية، كلمة المرور</translation>
 <translation id="2898963176829412617">مجلد جديد...</translation>
-<translation id="2903493209154104877">العناوين</translation>
 <translation id="2909437209446960244">علامات التبويب الأخيرة</translation>
 <translation id="2916171785467530738">‏الإكمال التلقائي لعناوين URL وعمليات البحث</translation>
 <translation id="291754862089661335">ضَع رمز الاستجابة السريعة أو الرمز الشريطي في هذا الإطار</translation>
@@ -244,7 +242,6 @@
 <translation id="5062321486222145940">‏تثبيت Google Drive</translation>
 <translation id="5083464117946352670">تعذر تحديد حجم الملف.</translation>
 <translation id="5094827893301452931">‏اكتملت مشاركة Tweet.</translation>
-<translation id="5123982333065001601">حفظ بطاقات الائتمان وملؤها</translation>
 <translation id="5173593619615111996">إغلاق جميع علامات تبويب التصفح المتخفي</translation>
 <translation id="5181140330217080051">تنزيل</translation>
 <translation id="5186185447130319458">خاص</translation>
@@ -252,7 +249,6 @@
 <translation id="5197255632782567636">الإنترنت</translation>
 <translation id="5228579091201413441">تفعيل المزامنة</translation>
 <translation id="5244474230056479698">المزامنة مع <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">يمكنك فتح علامة تبويب جديدة لتصفّح الويب بخصوصية تامّة.</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5327248766486351172">الاسم</translation>
@@ -336,7 +332,6 @@
 <translation id="6464071786529933911">فتح في علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="6482629121755362506">تم حذف <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
 <translation id="6541915733953096570">الساعة الماضية</translation>
-<translation id="6570040839871198836">ملء النماذج تلقائيًا</translation>
 <translation id="6656103420185847513">تعديل مجلد</translation>
 <translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="667999046851023355">مستند</translation>
@@ -426,7 +421,6 @@
 <translation id="8205564605687841303">إلغاء</translation>
 <translation id="8225985093977202398">الصور والملفات المُخزنة مؤقتًا</translation>
 <translation id="8261506727792406068">حذف</translation>
-<translation id="8272426682713568063">بطاقات ائتمان</translation>
 <translation id="8281781826761538115">التلقائي - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">إغلاق الكل</translation>
 <translation id="8381750437846184350">‏التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث، والإعلانات، وخدمات Google الأخرى</translation>

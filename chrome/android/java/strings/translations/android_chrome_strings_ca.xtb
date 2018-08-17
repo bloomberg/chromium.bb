@@ -143,7 +143,6 @@ Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet
 <translation id="2021896219286479412">Controls de pantalla completa</translation>
 <translation id="2038563949887743358">Activa Mostra com a ordinador</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB en altres aplicacions</translation>
-<translation id="2055670718290744343">Accelerador de la cerca</translation>
 <translation id="2063713494490388661">Toca per cercar</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
@@ -643,7 +642,6 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="6111020039983847643">dades utilitzades</translation>
 <translation id="6112702117600201073">S'està actualitzant la pàgina</translation>
 <translation id="6127379762771434464">S'ha suprimit l'element</translation>
-<translation id="6138140242378429169">Adapta la pàgina per a mòbils</translation>
 <translation id="6140912465461743537">País/regió</translation>
 <translation id="6154478581116148741">Activa el bloqueig de pantalla a Configuració per exportar les teves contrasenyes d'aquest dispositiu</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de reducció de dades</translation>
@@ -1020,7 +1018,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="9206873250291191720">A</translation>
 <translation id="9218033835049520260">Suggereix una contrasenya segura...</translation>
 <translation id="9219103736887031265">Imatges</translation>
-<translation id="932327136139879170">Pàgina d'inici</translation>
+<translation id="932327136139879170">Inici</translation>
 <translation id="932599481871055447">Estalvia dades i navega més de pressa</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="945522503751344254">Envia suggeriments</translation>

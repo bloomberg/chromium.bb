@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">Wachtwoord vergeten?</translation>
 <translation id="3132996321662585180">Dagelijks vernieuwen</translation>
 <translation id="3135204511829026971">Scherm draaien</translation>
-<translation id="313638818480447860">We hebben <ph name="NUMBER_OF_APPS" /> apps gevonden die aan je account zijn gekoppeld en die zijn geoptimaliseerd voor dit apparaat.</translation>
 <translation id="313963229645891001">Downloaden: <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Standaard gele avatar</translation>
 <translation id="3140353188828248647">Adresbalk activeren</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">Apparaat ontgrendelen en inloggen op Google-account</translation>
 <translation id="3625258641415618104">Screenshots uitgeschakeld</translation>
 <translation id="3625481642044239431">Ongeldig bestand geselecteerd. Probeer het opnieuw.</translation>
-<translation id="3625538291267447988">Geef je wachtwoord op om Smart Lock in te stellen</translation>
 <translation id="3625870480639975468">Zoom opnieuw instellen</translation>
 <translation id="3626281679859535460">Helderheid</translation>
 <translation id="3627320433825461852">Minder dan 1 minuut resterend</translation>
@@ -2603,7 +2601,7 @@
 <translation id="4992066212339426712">Dempen opheffen</translation>
 <translation id="4992458225095111526">Powerwash bevestigen</translation>
 <translation id="4992473555164495036">Je beheerder heeft de beschikbare invoermethoden beperkt.</translation>
-<translation id="4992926179187649719">'Oké Google' uitschakelen</translation>
+<translation id="4992926179187649719">'Oké Google' inschakelen</translation>
 <translation id="4994474651455208930">Websites laten vragen of je ze als de standaardhandler voor protocollen wilt instellen.</translation>
 <translation id="4994754230098574403">Instellen</translation>
 <translation id="4996978546172906250">Delen via</translation>
@@ -2735,7 +2733,6 @@
 <translation id="5209518306177824490">SHA-1-vingerafdruk</translation>
 <translation id="5210365745912300556">Tabblad sluiten</translation>
 <translation id="5213891612754844763">Proxyinstellingen weergeven</translation>
-<translation id="5214416042594875361">Open de Assistent wanneer je scherm is ingeschakeld door 'Oké Google' te zeggen.</translation>
 <translation id="521582610500777512">Foto is geannuleerd</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
 <translation id="52232769093306234">Inpakken mislukt.</translation>
@@ -3395,6 +3392,7 @@
 <translation id="6163363155248589649">&amp;Normaal</translation>
 <translation id="6163522313638838258">Alles uitvouwen...</translation>
 <translation id="6164005077879661055">Alle bestanden en lokale gegevens gekoppeld aan de gebruiker met beperkte rechten worden permanent verwijderd zodra de gebruiker met beperkte rechten is verwijderd. Bezochte websites en instellingen voor deze gebruiker met beperkte rechten kunnen nog steeds zichtbaar zijn voor de beheerder op <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Meer informatie</translation>
 <translation id="6166185671393271715">Wachtwoorden importeren in Chrome</translation>
 <translation id="6169040057125497443">Controleer je microfoon</translation>
 <translation id="6169666352732958425">Kan desktop niet casten.</translation>
@@ -4981,7 +4979,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8642947597466641025">De tekst groter maken</translation>
 <translation id="8643418457919840804">Kies een optie om door te gaan:</translation>
 <translation id="8645354835496065562">Toegang tot sensoren blijven toestaan</translation>
-<translation id="8647691362751835453">'Oké Google'-detectie</translation>
 <translation id="8647834505253004544">Geen geldig webadres</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> of <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Hoewel je geen toegang meer hebt tot je oude profiel, kun je dit nog wel verwijderen.</translation>

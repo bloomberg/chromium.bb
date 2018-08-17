@@ -537,7 +537,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Ce paramètre a été supprimé de <ph name="PRODUCT_NAME" /> 29 et versions ultérieures.</translation>
 <translation id="2433412232489478893">Cette règle permet de déterminer si la fonctionnalité Partages de fichiers en réseau pour <ph name="PRODUCT_NAME" /> est autorisée pour un utilisateur.
 
-      Si cette règle n'est pas configurée ou si elle est définie sur "True", les utilisateurs peuvent utiliser la fonctionnalité Partages de fichiers en réseau.
+      Si cette règle n'est pas configurée ou définie sur "True", les utilisateurs peuvent utiliser la fonctionnalité Partages de fichiers en réseau.
 
       Si cette règle est définie sur "False", les utilisateurs ne peuvent pas utiliser la fonctionnalité Partages de fichiers en réseau.</translation>
 <translation id="2438609638493026652">Permet de signaler des événements clés à Google pendant l'installation d'une application Android. Les événements ne sont enregistrés que pour les applications dont l'installation a été déclenchée via des règles.
@@ -1936,11 +1936,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="637934607141010488">Générer une liste des utilisateurs qui se sont récemment connectés à l'appareil.
 
       Si cette règle est définie sur "False", aucune liste d'utilisateurs n'est générée.</translation>
-<translation id="6392973646875039351">Active la fonction de saisie automatique de <ph name="PRODUCT_NAME" /> et permet aux utilisateurs de remplir automatiquement des formulaires Web à l'aide de données stockées précédemment, telles qu'une adresse ou des informations de carte de crédit. 
-
-Si vous désactivez ce paramètre, la fonction de saisie automatique n'est pas accessible aux utilisateurs. 
-
-Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de saisie automatique peut être contrôlée par les utilisateurs. Ces derniers peuvent ainsi configurer des profils de saisie automatique et activer ou désactiver la fonction de saisie automatique à leur guise.</translation>
 <translation id="6394350458541421998">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_OS_NAME" />. Veuillez utiliser la règle PresentationScreenDimDelayScale à la place.</translation>
 <translation id="6401669939808766804">Déconnecter l'utilisateur</translation>
 <translation id="6426205278746959912">Vous ne pouvez pas forcer les applications Android à utiliser un proxy. Celles-ci disposent d'un sous-ensemble de paramètres proxy qu'elles peuvent choisir d'utiliser ou non :
@@ -2013,9 +2008,9 @@ Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de sa
       Si vous ne définissez pas cette règle ou si la liste est vide, tous les schémas sont accessibles dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Paramètres des utilisateurs gérés en local</translation>
 <translation id="6658245400435704251">Indique le nombre maximal de secondes pendant lesquelles un appareil peut retarder de façon aléatoire le téléchargement d'une mise à jour à partir du moment où celle-ci est disponible sur le serveur. L'appareil peut attendre pendant une certaine partie de ce temps en termes de temps de l'horloge et pendant la partie restante en termes de nombre de recherches de mise à jour. Dans tous les cas, le facteur de dispersion est limité à une quantité de temps constante, de sorte qu'un appareil ne reste jamais bloqué dans l'attente d'une mise à jour.</translation>
-<translation id="6665599130599311250">Si cette règle est définie sur "False" ou n'est pas définie, la session en mode Invité gérée se comportera comme une session publique standard, tel que cela est expliqué dans l'article https://support.google.com/chrome/a/answer/3017014.
+<translation id="6665599130599311250">Si cette règle est définie sur "False" ou n'est pas définie, la session gérée en mode Invité se comportera comme une session publique standard, tel que cela est expliqué dans l'article suivant : https://support.google.com/chrome/a/answer/3017014.
 
-      Si cette règle est définie sur "True", la session en mode Invité gérée se comportera comme une session gérée, et de nombreuses restrictions appliquées aux sessions publiques normales seront ainsi levées.
+      Si cette règle est définie sur "True", la session gérée en mode Invité se comportera comme une session gérée, et de nombreuses restrictions appliquées aux sessions publiques normales seront ainsi levées.
 
       Si cette règle est configurée, l'utilisateur ne pourra pas la modifier ni l'ignorer.</translation>
 <translation id="6665670272107384733">Définir la fréquence à laquelle l'utilisateur doit saisir le mot de passe pour utiliser le déverrouillage rapide</translation>

@@ -1429,7 +1429,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="313205617302240621">Ai uitat parola?</translation>
 <translation id="3132996321662585180">Actualizează zilnic</translation>
 <translation id="3135204511829026971">Rotește ecranul</translation>
-<translation id="313638818480447860">Am găsit <ph name="NUMBER_OF_APPS" /> aplicații conectate la contul tău care sunt optimizate pentru acest dispozitiv.</translation>
 <translation id="313963229645891001">Se descarcă, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Avatar galben prestabilit</translation>
 <translation id="3140353188828248647">Focalizează pe bara de adrese</translation>
@@ -1744,7 +1743,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3624567683873126087">Deblochează dispozitivul și conectează-te la Contul Google</translation>
 <translation id="3625258641415618104">Capturile de ecran sunt dezactivate</translation>
 <translation id="3625481642044239431">A fost selectat un fișier nevalid. Încearcă din nou.</translation>
-<translation id="3625538291267447988">Introdu parola pentru a configura Smart Lock</translation>
 <translation id="3625870480639975468">Resetează zoomul</translation>
 <translation id="3626281679859535460">Luminozitate</translation>
 <translation id="3627320433825461852">A mai rămas mai puțin de 1 minut</translation>
@@ -2734,7 +2732,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5209518306177824490">Amprentă digitală SHA-1</translation>
 <translation id="5210365745912300556">Închide fila</translation>
 <translation id="5213891612754844763">Afișează setările de proxy</translation>
-<translation id="5214416042594875361">Accesează Asistentul de câte ori rostești „Ok Google” când ecranul este pornit.</translation>
 <translation id="521582610500777512">Fotografia a fost ștearsă</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="52232769093306234">Împachetarea nu a reușit.</translation>
@@ -3394,6 +3391,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Extinde-le pe toate...</translation>
 <translation id="6164005077879661055">Toate fișierele și datele locale asociate acestui utilizator monitorizat vor fi șterse definitiv după eliminarea acestui utilizator monitorizat. Site-urile web accesate și setările acestui utilizator monitorizat pot fi în continuare vizibile pentru manager la <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6166185671393271715">Importă parolele în Chrome</translation>
 <translation id="6169040057125497443">Verifică microfonul.</translation>
 <translation id="6169666352732958425">Nu se poate proiecta desktopul.</translation>
@@ -4981,7 +4979,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8642947597466641025">Măriți textul</translation>
 <translation id="8643418457919840804">Pentru a continua, alege o opțiune:</translation>
 <translation id="8645354835496065562">Permite în continuare accesul la senzori</translation>
-<translation id="8647691362751835453">Detectare „Ok Google”</translation>
 <translation id="8647834505253004544">Nu este o adresă web validă</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> sau <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Deși nu mai poți accesa profilul vechi, poți totuși să-l elimini.</translation>

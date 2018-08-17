@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Дзеркалювання на <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Розблоковуйте відбитком пальця</translation>
 <translation id="1919743966458266018">Комбінація клавіш для запуску Диспетчера завдань змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Коли ви вийдете з облікового запису, дані сеансу буде очищено. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Автоматичні кліки</translation>
 <translation id="1928739107511554905">Щоб завантажити оновлення, перезапустіть Chromebook із під’єднаною клавіатурою, використовуючи сенсорний екран.</translation>
 <translation id="1942830294380034169">Кнопка додаткового меню</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">Прийняти</translation>
 <translation id="4924411785043111640">Перезапустити й скинути</translation>
 <translation id="4961318399572185831">Трансляція екрана</translation>
-<translation id="5069971504769299223">Адміністратор пристрою може відстежувати вашу активність.</translation>
 <translation id="5083553833479578423">Розблокуйте інші функції Асистента.</translation>
 <translation id="5136175204352732067">Під’єднано іншу клавіатуру</translation>
 <translation id="5168181903108465623">Доступні пристрої для трансляції</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Введіть на пристрої цей ключ доступу: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Пароль</translation>
-<translation id="6687966522050791666">Вибрати мову й спосіб введення</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Змінну клавіатуру потрібно оновити</translation>
 <translation id="6700713906295497288">Кнопка меню IME</translation>

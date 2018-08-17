@@ -54,7 +54,6 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് മിറർചെയ്യുന്നു</translation>
 <translation id="1885785240814121742">ഫിംഗർപ്രിന്‍റ് ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="1919743966458266018">ടാസ്‌ക് മാനേജർ തുറക്കാനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
-<translation id="1923508880661655826">നിങ്ങൾ സൈൻ ഔട്ട് ചെയ്യുമ്പോൾ നിങ്ങളുടെ സെഷൻ മായ്ക്കപ്പെടും.<ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">യാന്ത്രിക ക്ലിക്കുകൾ</translation>
 <translation id="1928739107511554905">അപ്ഡേറ്റ് നേടാൻ, അറ്റാച്ച് ചെയ്‌ത കീബോഡിനൊപ്പം Chromebook റീസ്‌റ്റാർട്ട് ചെയ്യാൻ ടച്ച്‌സ്‌ക്രീൻ ഉപയോഗിക്കുക.</translation>
 <translation id="1942830294380034169">ഓവർഫ്ലോ ബട്ടൺ</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">സ്വീകരിക്കുക</translation>
 <translation id="4924411785043111640">പുനഃരാരംഭിച്ച് പുനഃസജ്ജീകരിക്കുക</translation>
 <translation id="4961318399572185831">സ്‌ക്രീൻ കാസ്റ്റുചെയ്യുക</translation>
-<translation id="5069971504769299223">നിങ്ങളുടെ ആക്‌റ്റിവിറ്റി, ഉപകരണ മാനേജർക്ക് നിരീക്ഷിക്കാനായേക്കും.</translation>
 <translation id="5083553833479578423">കൂടുതൽ അസിസ്റ്റന്റ് ഫീച്ചറുകൾ അൺലോക്ക് ചെയ്യുക.</translation>
 <translation id="5136175204352732067">വ്യത്യസ്ത കീബോർഡ് കണക്‌റ്റ് ചെയ്‌തു</translation>
 <translation id="5168181903108465623">Cast ഉപകരണങ്ങൾ ലഭ്യമാണ്.</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">തിരയല്‍+Shift+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ നൽകുക: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">പാസ്‌വേഡ്</translation>
-<translation id="6687966522050791666">ഭാഷയും ഇൻപുട്ടും തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6691659475504239918">തിരയൽ+Shift+H</translation>
 <translation id="6696025732084565524">നിങ്ങളുടെ വേർപെടുത്താനാകുന്ന കീബോഡിന് നിർണ്ണായക അപ്‌ഡേറ്റ് ആവശ്യമാണ്</translation>
 <translation id="6700713906295497288">IME മെനു ബട്ടൺ</translation>
@@ -445,7 +442,7 @@
 <translation id="8938800817013097409">USB-C ഉപകരണം (പുറകിൽ വലതുവശത്തെ പോർട്ട്)</translation>
 <translation id="8940956008527784070">ബാറ്ററി കുറവാണ് (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">ക്വിക്ക് ലോഞ്ച്</translation>
-<translation id="899350903320462459">അറിയിപ്പ് പ്രവർത്തനം നിർവഹിക്കാൻ, <ph name="LOGIN_ID" /> ആയി ഉപകരണം ലോക്ക് ചെയ്യുക</translation>
+<translation id="899350903320462459">അറിയിപ്പ് പ്രവർത്തനം നിർവഹിക്കാൻ, <ph name="LOGIN_ID" /> ആയി ഉപകരണം അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> എന്നത് കൈകാര്യം ചെയ്യുന്നു</translation>
 <translation id="9029474291399787231">Adobe Flash Player അപ്‌ഡേറ്റ് ലഭ്യമാണ്</translation>
 <translation id="9056839673611986238">ഉപകരണം പഴയ അവസ്ഥയിലേക്ക് പുനഃസ്ഥാപിക്കും</translation>

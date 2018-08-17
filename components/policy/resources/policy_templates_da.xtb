@@ -1847,7 +1847,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="637934607141010488">Rapportér liste over enhedsbrugere, der har logget ind for nylig.
 
       Hvis politikken er indstillet til Falsk, vil brugerne ikke blive rapporteret.</translation>
-<translation id="6392973646875039351">Aktiverer funktionen AutoFyld i <ph name="PRODUCT_NAME" /> og giver brugerne mulighed for automatisk at udfylde webformularer med oplysninger, der er gemt tidligere, såsom oplysninger om adresser og kreditkort. Hvis du deaktiverer denne indstilling, er AutoFyld ikke tilgængelig for brugerne. Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver AutoFyld under brugerens kontrol. Dette giver brugerne mulighed for at konfigurere AutoFyld-profiler og for at aktivere og deaktivere AutoFyld efter eget valg.</translation>
 <translation id="6394350458541421998">Denne politik er trukket tilbage fra og med <ph name="PRODUCT_OS_NAME" /> version 29. Du kan i stedet bruge politikken PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Log brugeren ud</translation>
 <translation id="6426205278746959912">Du kan ikke tvinge Android-apps til at bruge en proxy. En undergruppe af proxyindstillinger er tilgængelige for Android-apps, hvilket de frivilligt kan vælge at overholde:

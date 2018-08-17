@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Spoguļo šeit: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Atbloķēšana ar pirksta nospiedumu</translation>
 <translation id="1919743966458266018">Tika mainīti īsinājumtaustiņi, ar kuriem var atvērt uzdevumu pārvaldnieku. Lūdzu, turpmāk izmantojiet <ph name="NEW_SHORTCUT" />, nevis <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Pēc izrakstīšanās jūsu sesija tiks notīrīta. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Automātiskie klikšķi</translation>
 <translation id="1928739107511554905">Lai iegūtu atjauninājumu, izmantojiet skārienekrānu, lai ar pievienoto tastatūru restartētu Chromebook datoru.</translation>
 <translation id="1942830294380034169">Pārpildes poga</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">Pieņemt</translation>
 <translation id="4924411785043111640">Restartēt un atiestatīt</translation>
 <translation id="4961318399572185831">Ekrāna apraide</translation>
-<translation id="5069971504769299223">Jūsu darbības var uzraudzīt ierīces pārvaldnieks.</translation>
 <translation id="5083553833479578423">Piekļūstiet citām Asistenta funkcijām</translation>
 <translation id="5136175204352732067">Ir pievienota cita tastatūra</translation>
 <translation id="5168181903108465623">Pieejamas apraides ierīces</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">Meklēšana+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Lūdzu, ievadiet ierīcē šo ieejas atslēgu: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Parole</translation>
-<translation id="6687966522050791666">Izvēlēties valodu un ievadi</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Noņemamajai tastatūrai nepieciešams svarīgs atjauninājums</translation>
 <translation id="6700713906295497288">IME izvēlnes poga</translation>

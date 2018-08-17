@@ -1427,7 +1427,6 @@
 <translation id="313205617302240621">Har du glemt din adgangskode?</translation>
 <translation id="3132996321662585180">Opdater dagligt</translation>
 <translation id="3135204511829026971">Roter skærmen</translation>
-<translation id="313638818480447860">Vi fandt <ph name="NUMBER_OF_APPS" /> apps, som er tilknyttet din konto og er optimeret til denne enhed.</translation>
 <translation id="313963229645891001">Downloader – <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Gul standardavatar</translation>
 <translation id="3140353188828248647">Fokuser på adresselinje</translation>
@@ -1742,7 +1741,6 @@
 <translation id="3624567683873126087">Lås enheden op, og log ind på Google-kontoen</translation>
 <translation id="3625258641415618104">Screenshots er deaktiveret</translation>
 <translation id="3625481642044239431">Der er valgt en ugyldig fil. Prøv igen.</translation>
-<translation id="3625538291267447988">Angiv din adgangskode for at konfigurere Smart Lock</translation>
 <translation id="3625870480639975468">Nulstil zoom</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
 <translation id="3627320433825461852">Mindre end ét minut tilbage</translation>
@@ -2732,7 +2730,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5209518306177824490">SHA-1-fingeraftryk</translation>
 <translation id="5210365745912300556">Luk fanen</translation>
 <translation id="5213891612754844763">Vis proxyindstillinger</translation>
-<translation id="5214416042594875361">Få adgang til Google-assistenten, hver gang du siger "OK Google", når skærmen er tændt.</translation>
 <translation id="521582610500777512">Billede blev kasseret</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="52232769093306234">Pakning mislykkedes.</translation>
@@ -3393,6 +3390,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6163522313638838258">Udvid alle...</translation>
 <translation id="6164005077879661055">Alle filer og lokale data, der er knyttet til den administrerede bruger, 
 slettes permanent, når den administrerede bruger fjernes. Besøgte websites og indstillinger for denne administrerede bruger er muligvis stadig synlige for administratoren på <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6166185671393271715">Importér adgangskoder til Chrome</translation>
 <translation id="6169040057125497443">Tjek din mikrofon.</translation>
 <translation id="6169666352732958425">Skrivebordet kunne ikke castes.</translation>
@@ -4979,7 +4977,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8642947597466641025">Gør teksten større</translation>
 <translation id="8643418457919840804">Vælg en indstilling for at fortsætte:</translation>
 <translation id="8645354835496065562">Fortsæt med at tillade adgang til sensorer</translation>
-<translation id="8647691362751835453">Registrer "Ok Google"</translation>
 <translation id="8647834505253004544">Ikke en gyldig webadresse</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> eller <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Du kan godt fjerne din gamle profil, selvom du ikke længere har adgang til den.</translation>

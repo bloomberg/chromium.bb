@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">पासवर्ड भूल गए?</translation>
 <translation id="3132996321662585180">हर रोज़ रीफ्रेश करें</translation>
 <translation id="3135204511829026971">स्क्रीन को घुमाएं</translation>
-<translation id="313638818480447860">हमें आपके खाते से जुड़े हुए ऐसे <ph name="NUMBER_OF_APPS" /> ऐप्लिकेशन मिले हैं जो इस डिवाइस के लिए ऑप्टिमाइज़ किए गए हैं.</translation>
 <translation id="313963229645891001">फ़ाइल डाउनलोड हो रही है, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">डिफ़ॉल्ट पीला अवतार</translation>
 <translation id="3140353188828248647">पता बार को फ़ोकस करें</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">डिवाइस अनलॉक करें और 'Google खाते' में साइन इन करें</translation>
 <translation id="3625258641415618104">स्क्रीनशॉट अक्षम हैं</translation>
 <translation id="3625481642044239431">गलत फ़ाइल चुनी गई. फिर से कोशिश करें.</translation>
-<translation id="3625538291267447988">Smart Lock सेट अप करने के लिए, अपना पासवर्ड डालें</translation>
 <translation id="3625870480639975468">ज़ूम रीसेट करें</translation>
 <translation id="3626281679859535460">स्क्रीन की रोशनी</translation>
 <translation id="3627320433825461852">1 मिनट से भी कम शेष है</translation>
@@ -2733,7 +2731,6 @@
 <translation id="5209518306177824490">SHA-1 फ़िंगरप्रिंट</translation>
 <translation id="5210365745912300556">टैब बंद करें</translation>
 <translation id="5213891612754844763">प्रॉक्सी सेटिंग दिखाएं</translation>
-<translation id="5214416042594875361">स्क्रीन चालू होने पर कभी भी "OK Google" बोलें और अपनी Assistant सेवा एक्सेस करें.</translation>
 <translation id="521582610500777512">फ़ोटो को छोड़ दिया गया था</translation>
 <translation id="5222676887888702881">प्रस्थान करें</translation>
 <translation id="52232769093306234">पैक नहीं किया जा सका.</translation>
@@ -3393,6 +3390,7 @@
 <translation id="6163363155248589649">&amp;सामान्य</translation>
 <translation id="6163522313638838258">सभी को विस्तृत करें...</translation>
 <translation id="6164005077879661055">'निगरानी में रखे गए इस उपयोगकर्ता' को हटाने के बाद, निगरानी में रखे गए उपयोगकर्ता से जुड़ीं सभी फ़ाइलें और 'स्थानीय डेटा' हमेशा के लिए मिट जाएंगे. 'निगरानी में रखे गए इस उपयोगकर्ता' की देखी गईं वेबसाइटें और सेटिंग <ph name="MANAGEMENT_URL" /> पर प्रबंधक को अब भी दिखेंगी.</translation>
+<translation id="6165508094623778733">अधिक जानें</translation>
 <translation id="6166185671393271715">Chrome में पासवर्ड आयात करें</translation>
 <translation id="6169040057125497443">कृपया अपना माइक्रोफ़ोन जाँचें.</translation>
 <translation id="6169666352732958425">डेस्‍कटॉप कास्ट करने में असमर्थ.</translation>
@@ -4980,7 +4978,6 @@
 <translation id="8642947597466641025">लेख को बड़ा करें</translation>
 <translation id="8643418457919840804">जारी रखने के लिए, कोई विकल्प चुनें:</translation>
 <translation id="8645354835496065562">सेंसर का एक्सेस जारी रहने दें</translation>
-<translation id="8647691362751835453">"OK Google" के ज़रिए पता लगाना</translation>
 <translation id="8647834505253004544">मान्य वेब पता नहीं है</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> या <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">हालांकि अब आप अपनी पुरानी प्रोफ़ाइल एक्सेस नहीं कर सकते हैं, लेकिन फिर भी आप उसे निकाल सकते हैं.</translation>

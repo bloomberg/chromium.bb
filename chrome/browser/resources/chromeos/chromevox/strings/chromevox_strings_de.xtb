@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="100812568230599391">Für die Displaydarstellung wird "Überlappen" festgelegt.</translation>
-<translation id="1011903154582639569">Suchen Sie sich einen Schlüssel aus und heben Sie zum Tippen den Finger an</translation>
+<translation id="1011903154582639569">Um auf die gewählte Taste zu tippen, heben Sie den Finger an</translation>
 <translation id="1012173283529841972">Listenelement</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">Verwenden Sie gesprochenes Feedback von ChromeVox zum ersten Mal? In dieser kurzen Anleitung erfahren Sie die Grundlagen für die Nutzung von ChromeVox.</translation>
@@ -163,7 +163,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2553108862507765288">Grammatikfehler</translation>
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2582407057977008361">Aside-Element</translation>
-<translation id="2592212930811759050">Tippen Sie zum Bearbeiten doppelt</translation>
+<translation id="2592212930811759050">Zum Bearbeiten doppeltippen</translation>
 <translation id="2606210917827248971">mit {COUNT,plural, =1{# Eintrag}other{# Einträgen}}</translation>
 <translation id="2614981083756825552">MathML-Layout</translation>
 <translation id="2624431853467395961">Lernmodus öffnen</translation>

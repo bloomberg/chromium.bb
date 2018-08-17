@@ -1830,7 +1830,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="637934607141010488">Informa sobre la lista de usuarios de dispositivos que accedieron recientemente.
 
       Si esta política se establece en "False", no se informará sobre los usuarios.</translation>
-<translation id="6392973646875039351">Habilita la función Autocompletar de <ph name="PRODUCT_NAME" /> y permite que los usuarios completen automáticamente formularios web con información que se almacenó con anterioridad como la dirección o datos de la tarjeta de crédito. Si se inhabilita esta configuración, Autocompletar no estará disponible para los usuarios. Si se habilita esta opción o no se configura un valor, Autocompletar permanece bajo el control del usuario. Esto permite configurar los perfiles de autocompletar y activar o desactivar esta opción cuando lo deseen.</translation>
 <translation id="6394350458541421998">Esta política se eliminó a partir de la versión 29 de <ph name="PRODUCT_OS_NAME" />. Utiliza la política PresentationScreenDimDelayScale en su lugar.</translation>
 <translation id="6401669939808766804">Salir de la cuenta de usuario</translation>
 <translation id="6426205278746959912">No puedes forzar las apps de Android a que usen un proxy. Las apps de Android tienen a su disposición un subgrupo de opciones de configuración de proxy que pueden respetar de forma voluntaria:
@@ -2074,7 +2073,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si se establece como falsa, o no se establece, <ph name="PRODUCT_NAME" /> no puede recopilar estos registros ni cargarlos.
 
-      Estos registros contienen información como el momento en que se enviaron o recibieron paquetes RTP, el tamaño de estos paquetes, comentarios sobre la congestión de la red y metadatos sobre el tiempo y la calidad de los cuadros de video y audio. Esta información es útil para depurar problemas con llamadas de audio o videollamadas en Chrome, como los problemas relacionados con la estimación del ancho de banda, etc. Los registros no incluyen contenido de audio o video de la llamada.
+      Estos registros contienen información, como el momento en que se enviaron o recibieron paquetes RTP, el tamaño de estos paquetes, comentarios sobre la congestión de la red y metadatos sobre el tiempo y la calidad de los cuadros de video y audio. Esta información es útil para depurar problemas con llamadas de audio o videollamadas en Chrome, como los problemas relacionados con la estimación del ancho de banda, etc. Los registros no incluyen contenido de audio o video de la llamada.
 
       Esta recopilación de datos solo se puede activar mediante servicios web de Google, como Google Hangouts o Google Meet.
 

@@ -1878,11 +1878,6 @@ Nastavením této zásady na hodnotu False přeskočení stránky s upozorněn�
 <translation id="637934607141010488">Hlásit seznam uživatelů zařízení, kteří se nedávno přihlásili.
 
       Pokud je tato zásada nastavena na hodnotu false, informace o uživatelích odesílány nebudou.</translation>
-<translation id="6392973646875039351">Aktivuje v aplikaci <ph name="PRODUCT_NAME" /> funkci Automatické vyplňování a umožní uživatelům automaticky vyplňovat pole webových formulářů pomocí uložených informací (například adresa nebo číslo platební karty). 
-  
-       Pokud toto nastavení deaktivujete, uživatelé nebudou mít k funkci Automatické vyplňování přístup. 
-
-       Pokud toto nastavení aktivujete nebo nenastavíte žádnou hodnotu, zůstane funkce Automatické vyplňování pod kontrolou uživatelů. Budou moci nakonfigurovat profily této funkce a podle vlastního uvážení ji zapínat nebo vypínat.</translation>
 <translation id="6394350458541421998">U systémů <ph name="PRODUCT_OS_NAME" /> verze 29 a novějších byla tato zásada zrušena. Použijte prosím namísto toho zásadu PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Odhlášení uživatele</translation>
 <translation id="6426205278746959912">U aplikací Android nelze používání proxy serveru vynutit. Aplikacím Android je poskytnuta část nastavení proxy serveru a mohou se rozhodnout, zda tato nastavení budou respektovat.

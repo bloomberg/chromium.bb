@@ -210,7 +210,7 @@
 <translation id="2359808026110333948">المتابعة</translation>
 <translation id="2365563543831475020">لم يتم تحميل تقرير الأعطال الذي تم الحصول عليه في <ph name="CRASH_TIME" /></translation>
 <translation id="2367567093518048410">المستوى</translation>
-<translation id="2378238891085281592">الانتقال إلى الوضع الخاص</translation>
+<translation id="2378238891085281592">الانتقال إلى التصفّح المتخفي</translation>
 <translation id="2384307209577226199">السياسة تلقائية في المؤسسة ويمكن إلغاؤها</translation>
 <translation id="2386255080630008482">تم إبطال شهادة الخادم.</translation>
 <translation id="2392959068659972793">عرض السياسات التي لم يتم تعيين قيم لها</translation>
@@ -825,13 +825,13 @@
 <translation id="6948701128805548767">لعرض طرق الاستلام ومتطلباته، حدِّد عنوانًا</translation>
 <translation id="6949872517221025916">إعادة تحديد كلمة المرور</translation>
 <translation id="6950684638814147129">‏حدث خطأ أثناء تحليل قيمة JSON: <ph name="ERROR" /></translation>
-<translation id="6957624206566198865">فتح الصفحة في علامة تبويب جديدة "للوضع الخاص"</translation>
+<translation id="6957624206566198865">افتح صفحة في علامة التبويب الجديدة "التصفّح المتخفي".</translation>
 <translation id="6957887021205513506">يبدو أن شهادة الخادم مزيفة.</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6965978654500191972">جهاز</translation>
 <translation id="6970216967273061347">المنطقة</translation>
 <translation id="6973656660372572881">‏تم تحديد كل من الخوادم الوكيلة الثابتة وعنوان URL للنص البرمجي pac.</translation>
-<translation id="6984479912851154518">ستتم مغادرة الوضع الخاص للدفع عبر تطبيق خارجي. هل تريد المتابعة؟</translation>
+<translation id="6984479912851154518">ستتم مغادرة وضع التصفّح المتخفي للدفع عبر تطبيق خارجي. هل تريد المتابعة؟</translation>
 <translation id="6989763994942163495">عرض الإعدادات المتقدمة...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">قد يتمّ تحصيل هذه الرسوم لمرة واحدة أو بشكل متكرر، وقد تكون غير واضحة.</translation>

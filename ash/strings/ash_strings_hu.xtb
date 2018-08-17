@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Tükrözés: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Feloldás ujjlenyomattal</translation>
 <translation id="1919743966458266018">Megváltozott a feladatkezelő megnyitásának billentyűkódja. A <ph name="OLD_SHORTCUT" /> helyett használja a következőt: <ph name="NEW_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Kijelentkezés után munkamenete törlődik. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Automatikus kattintások</translation>
 <translation id="1928739107511554905">A frissítés alkalmazásához és a csatlakoztatott billentyűzet használatához indítsa újra a Chromebookot az érintőképernyő segítségével.</translation>
 <translation id="1942830294380034169">Túlcsordulás gomb</translation>
@@ -225,7 +224,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4918086044614829423">Elfogadás</translation>
 <translation id="4924411785043111640">Újraindítás és visszaállítás</translation>
 <translation id="4961318399572185831">Képernyő átküldése</translation>
-<translation id="5069971504769299223">Lehet, hogy tevékenységeit megfigyelheti az eszköz felügyelője.</translation>
 <translation id="5083553833479578423">Hozzáférés a Segéd további funkcióihoz</translation>
 <translation id="5136175204352732067">Új billentyűzet lett csatlakoztatva</translation>
 <translation id="5168181903108465623">Cast-eszközök állnak rendelkezésre</translation>
@@ -315,7 +313,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6627638273713273709">Keresés+Shift+K</translation>
 <translation id="6650933572246256093">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Kérjük, adja meg ezt a biztonsági kódot azon az eszközön: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Jelszó</translation>
-<translation id="6687966522050791666">Nyelv és bevitel kiválasztása</translation>
 <translation id="6691659475504239918">Keresés+Shift+H</translation>
 <translation id="6696025732084565524">Szükség van a leválasztható billentyűzet kritikus frissítésének telepítésére</translation>
 <translation id="6700713906295497288">IME-menü gomb</translation>

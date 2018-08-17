@@ -1919,11 +1919,6 @@
 <translation id="637934607141010488">Laporkan senarai pengguna peranti yang telah log masuk baru-baru ini.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada tidak benar, pengguna tidak akan dilaporkan.</translation>
-<translation id="6392973646875039351">Mendayakan ciri Auto Isi <ph name="PRODUCT_NAME" /> dan membolehkan pengguna melengkapkan borang web secara automatik dengan menggunakan maklumat yang disimpan sebelum ini seperti alamat atau maklumat kad kredit.
-
-      Jika anda melumpuhkan tetapan ini, Auto Isi tidak akan boleh diakses oleh pengguna.
-
-      Jika anda mendayakan tetapan ini atau tidak menetapkan nilai, Auto Isi akan kekal di bawah kawalan pengguna. Perkara ini akan membenarkan mereka mengkonfigurasi profil Auto Isi dan untuk menghidupkan atau mematikan Auto Isi mengikut budi bicara mereka.</translation>
 <translation id="6394350458541421998">Dasar ini telah dihentikan pada <ph name="PRODUCT_OS_NAME" /> versi 29. Sebaliknya sila gunakan dasar PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Log keluar pengguna</translation>
 <translation id="6426205278746959912">Anda tidak boleh memaksa apl Android untuk menggunakan proksi. Terdapat subset tetapan proksi yang disediakan untuk apl Andoid. Apl Android boleh memilih tetapan yang hendak digunakan secara sukarela:

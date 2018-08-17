@@ -33,6 +33,28 @@
           If this setting is disabled or not configured, the remote assistance host will run in the user's context and remote users cannot interact with elevated windows on the desktop.</translation>
 <translation id="1096105751829466145">Default search provider</translation>
 <translation id="1099282607296956954">Enable Site Isolation for every site</translation>
+<translation id="1100570158310952027">
+      The policy specifies a list of origins (URLs) or hostname patterns (such
+      as '*.example.com') for which security restrictions on insecure origins
+      will not apply.
+
+      The intent is to allow organisations to set whitelist origins for legacy
+      applications that cannot deploy TLS, or to set up a staging server for
+      internal web development so that their developers can test out features
+      requiring secure contexts without having to deploy TLS on the staging
+      server. This policy will also prevent the origin from being labelled
+      'Not Secure' in the omnibox.
+
+      Setting a list of URLs in this policy has the same effect as setting the
+      command-line flag '--unsafely-treat-insecure-origin-as-secure' to a
+      comma-separated list of the same URLs. If the policy is set, it will
+      override the command-line flag.
+
+      This policy will override UnsafelyTreatInsecureOriginAsSecure, if present.
+
+      For more information on secure contexts, see
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">The protocol handlers set via this policy are not used when handling Android intents.</translation>
 <translation id="1118093128235245168">Allow sites to ask the user to grant access to a connected USB device</translation>
 <translation id="1128903365609589950">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
@@ -80,6 +102,8 @@
       If the policy is not set, or is set to false, then RC4 cipher suites in TLS will not be enabled. Otherwise it may be set to true to retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.</translation>
 <translation id="1297182715641689552">Use a .pac proxy script</translation>
 <translation id="1304973015437969093">Extension/App IDs and update URLs to be silently installed</translation>
+<translation id="1307454923744766368">Origins or hostname patterns for which restrictions on
+      insecure origins should not apply</translation>
 <translation id="1313457536529613143">Specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off.
 
           If this policy is set, it specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off. When the dim delay is scaled, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
@@ -91,6 +115,11 @@
 <translation id="1327466551276625742">Enable network configuration prompt when offline</translation>
 <translation id="1330145147221172764">Enable on-screen keyboard</translation>
 <translation id="13356285923490863">Policy Name</translation>
+<translation id="1352174694615491349">This policy allows HTTP/2 connection coalescing when client certificates are in use. In order to coalesce, both the hostname of the potential new connection and the hostname of an existing connection must match one or more patterns described by this policy. The policy is a list of hosts using the URLBlacklist filter format: 'example.com' matches 'example.com' and all subdomains (e.g. 'sub.example.com'), while '.example.net' matches exactly 'example.net'.
+
+      Coalescing requests to different hosts over connections that use client certificates can create security and privacy issues, as the ambient authority will be conveyed to all requests, even if the user did not explicitly authorise this. This policy is temporary and will be removed in a future release. See https://crbug.com/855690.
+
+      If this policy is left unset, then the default behaviour of not allowing any HTTP/2 connection coalescing on connections using client certificates will be used.</translation>
 <translation id="1353966721814789986">Startup pages:</translation>
 <translation id="1359553908012294236">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will enable guest logins. Guest logins are <ph name="PRODUCT_NAME" /> profiles where all windows are in incognito mode.
 
@@ -184,6 +213,7 @@
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME" /> by default</translation>
 <translation id="1599424828227887013">Enable Site Isolation for specified origins on Android devices</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
+<translation id="1615221548356595305">Allow coalescing of HTTP/2 connections for these hosts even when client certificates are used</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
 <translation id="163200210584085447">Patterns in this list will be matched against the security
       origin of the requesting URL.  If a match is found, access to video
@@ -1355,6 +1385,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is enabled, sites will be allowed to simultaneously navigate and open new windows/tabs.
       If this policy is disabled or not set, sites will be disallowed from simultaneously navigating and opening a new window/tab.</translation>
 <translation id="4680961954980851756">Enable AutoFill</translation>
+<translation id="4703402283970867140">Enable smart dim model to extend the time until the screen is dimmed</translation>
 <translation id="4722122254122249791">Enable Site Isolation for specified origins</translation>
 <translation id="4722399051042571387">If false, users will be unable to set PINs which are weak and easy to guess.
 
@@ -1923,11 +1954,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="637934607141010488">Report list of device users that have recently logged in.
 
       If the policy is set to false, the users will not be reported.</translation>
-<translation id="6392973646875039351">Enables <ph name="PRODUCT_NAME" />'s Auto-fill feature and allows users to auto-complete web forms using previously stored information such as address or credit card information.
-
-      If you disable this setting, Auto-fill will be inaccessible to users.
-
-      If you enable this setting or do not set a value, Auto-fill will remain under the control of the user. This will allow them to configure Auto-fill profiles and to switch Auto-fill on or off at their own discretion.</translation>
 <translation id="6394350458541421998">This policy has been retired as of <ph name="PRODUCT_OS_NAME" /> version 29. Please use the PresentationScreenDimDelayScale policy instead.</translation>
 <translation id="6401669939808766804">Log the user out</translation>
 <translation id="6426205278746959912">You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honour:
@@ -2166,6 +2192,10 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6943577887654905793">Mac/Linux preference name:</translation>
 <translation id="69525503251220566">Parameter providing search-by-image feature for the default search provider</translation>
 <translation id="6956272732789158625">Do not allow any site to use key generation</translation>
+<translation id="6965859329738616662">Specifies whether a smart dim model is allowed to extend the time until the screen is dimmed.
+
+      When the screen is about to be dimmed, the smart dim model evaluates if dimming the screen should be deferred. If the smart dim model defers dimming the screen, it effectively extends the time until the screen is dimmed. In this case, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
+      If this policy is set to True or left not set, the smart dim model will be enabled and allowed to extend the time until the screen is dimmed. If this policy is set to False, the smart dim model will not influence screen dimming.</translation>
 <translation id="6982028490425791294">
       If the policy is set to true, <ph name="PRODUCT_NAME" /> is allowed to collect WebRTC event logs from Google services (e.g. Google Meet), and upload those logs to Google.
 
@@ -2616,6 +2646,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7980227303582973781">No special restrictions</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotate screen by 0 degrees</translation>
+<translation id="8033913082323846868">This policy is deprecated in M70, please use AutofillAddressEnabled and AutofillCreditCardEnabled instead.
+
+      Enables <ph name="PRODUCT_NAME" />'s Auto-Fill feature and allows users to auto-complete web forms using previously stored information such as address or credit card information.
+
+      If you disable this setting, Auto-Fill will be inaccessible to users.
+
+      If you enable this setting or do not set a value, Auto-Fill will remain under the control of the user. This will allow them to configure Auto-Fill profiles and to switch Auto-Fill on or off at their own discretion.</translation>
 <translation id="8044493735196713914">Report device boot mode</translation>
 <translation id="8050080920415773384">Native Printing</translation>
 <translation id="8059164285174960932">URL where remote access clients should obtain their authentication token</translation>
@@ -2947,6 +2984,33 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL" /> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST" /> is selected, <ph name="DEVICE_PRINTERS_BLACKLIST" /> is used to restrict access to the specified printers. If <ph name="PRINTERS_WHITELIST" /> is selected, <ph name="DEVICE_PRINTERS_WHITELIST" /> designates only those printers which are selectable.
 
       If this policy is not set, <ph name="PRINTERS_ALLOW_ALL" /> is assumed.
+      </translation>
+<translation id="8938932171964587769">Deprecated in M69. Use
+      OverrideSecurityRestrictionsOnInsecureOrigin instead.
+
+      The policy specifies a list of origins (URLs) or hostname patterns (such
+      as '*.example.com') for which security restrictions on insecure origins
+      will not apply.
+
+      The intent is to allow organisations to whitelist origins for legacy
+      applications that cannot deploy TLS, or to set up a staging server for
+      internal web development so that their developers can test out features
+      requiring secure contexts without having to deploy TLS on the staging
+      server. This policy will also prevent the origin from being labelled
+      'Not Secure' in the omnibox.
+
+      Setting a list of URLs in this policy has the same effect as setting the
+      command-line flag '--unsafely-treat-insecure-origin-as-secure' to a
+      comma-separated list of the same URLs. If the policy is set, it will
+      override the command-line flag.
+
+      This policy is deprecated in M69 in favour of
+      OverrideSecurityRestrictionsOnInsecureOrigin. If both policies are
+      present, OverrideSecurityRestrictionsOnInsecureOrigin will override this
+      policy.
+
+      For more information on secure contexts, see
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">This policy controls if Sync Consent can be shown to the user during first sign-in. It should be set to false if Sync Consent is never needed for the user.
       If set to false, Sync Consent will not be displayed.

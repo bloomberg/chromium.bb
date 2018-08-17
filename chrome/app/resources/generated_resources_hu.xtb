@@ -271,7 +271,7 @@
 <translation id="1397854323885047133">Szinkronizálás és személyre szabás</translation>
 <translation id="1398853756734560583">Teljes méret</translation>
 <translation id="1399511500114202393">Felhasználói tanúsítvány nélkül</translation>
-<translation id="1401165786814632797">Segédjéhez bármikor hozzáférhet az „OK Google” kimondásával, ha eszköze nincs alvó üzemmódban, és fel is van oldva.</translation>
+<translation id="1401165786814632797">Segédjéhez bármikor hozzáférhet az „Ok Google” kimondásával, ha eszköze nincs alvó üzemmódban, és fel is van oldva.</translation>
 <translation id="140250605646987970">Megtaláltuk telefonját. A Smart Lock azonban csak Android 5.0 és újabb rendszert futtató eszközökön működik. &lt;a&gt;További információ&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (felügyelt)</translation>
 <translation id="1405476660552109915">Szeretné, hogy a(z) <ph name="PASSWORD_MANAGER_BRAND" /> mentse az ehhez a webhelyhez tartozó fiókot?</translation>
@@ -1430,7 +1430,6 @@
 <translation id="313205617302240621">Elfelejtette a jelszavát?</translation>
 <translation id="3132996321662585180">Frissítés naponta</translation>
 <translation id="3135204511829026971">Képernyő elforgatása</translation>
-<translation id="313638818480447860"><ph name="NUMBER_OF_APPS" /> olyan alkalmazás csatlakozik a fiókhoz, amely optimalizálva van erre az eszközre.</translation>
 <translation id="313963229645891001">Letöltés folyamatban, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Alapértelmezett sárga avatar</translation>
 <translation id="3140353188828248647">Fókuszálás a címsávra</translation>
@@ -1745,7 +1744,6 @@
 <translation id="3624567683873126087">Eszköz feloldása, és bejelentkezés Google-fiókba</translation>
 <translation id="3625258641415618104">Képernyőképek letiltva</translation>
 <translation id="3625481642044239431">A kiválasztott fájl érvénytelen. Próbálja újra.</translation>
-<translation id="3625538291267447988">A Smart Lock beállításához adja meg jelszavát</translation>
 <translation id="3625870480639975468">Nagyítás alaphelyzetbe állítása</translation>
 <translation id="3626281679859535460">Fényerő</translation>
 <translation id="3627320433825461852">Kevesebb mint 1 perc van hátra</translation>
@@ -2734,7 +2732,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5209518306177824490">SHA-1 ujjlenyomat</translation>
 <translation id="5210365745912300556">Lap bezárása</translation>
 <translation id="5213891612754844763">Proxybeállítások megjelenítése</translation>
-<translation id="5214416042594875361">Bármikor hozzáférhet Segédjéhez. Mondja bekapcsolt képernyő mellett azt, hogy „Ok Google”.</translation>
 <translation id="521582610500777512">A fotót elvetették</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
 <translation id="52232769093306234">Sikertelen csomagolás.</translation>
@@ -3396,6 +3393,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6163363155248589649">&amp;Normál</translation>
 <translation id="6163522313638838258">Összes részletes nézete...</translation>
 <translation id="6164005077879661055">Amikor ezt a felügyelt felhasználót eltávolítják, minden hozzá tartozó fájl és helyi adat véglegesen törlődik. A felügyelt felhasználó felkeresett webhelyeit és beállításait a kezelő továbbra is láthatja a következő címen: <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">További információ</translation>
 <translation id="6166185671393271715">Jelszavak importálása a Chrome-ba</translation>
 <translation id="6169040057125497443">Ellenőrizze a mikrofont.</translation>
 <translation id="6169666352732958425">Nem lehet átküldeni az asztalt.</translation>
@@ -4983,7 +4981,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8642947597466641025">Szöveg nagyítása</translation>
 <translation id="8643418457919840804">A folytatáshoz válasszon a lehetőségek közül:</translation>
 <translation id="8645354835496065562">Érzékelőhöz való hozzáférés engedélyezésének fenntartása</translation>
-<translation id="8647691362751835453">Az „Ok Google” felismerése</translation>
 <translation id="8647834505253004544">Érvénytelen internetcím</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> vagy <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Ugyan már nem tud hozzáférni régi profiljához, de az eltávolítása lehetséges.</translation>

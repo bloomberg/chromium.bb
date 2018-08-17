@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">Kas olete parooli unustanud?</translation>
 <translation id="3132996321662585180">Värskendatakse iga päev</translation>
 <translation id="3135204511829026971">Pööra ekraani</translation>
-<translation id="313638818480447860">Leidsime <ph name="NUMBER_OF_APPS" /> teie kontoga ühendatud rakendust, mis on selle seadme jaoks optimeeritud.</translation>
 <translation id="313963229645891001">Allalaadimine, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Kollane vaikeavatar</translation>
 <translation id="3140353188828248647">Keskendub aadressiribale</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">Avage seade ja logige oma Google'i kontole sisse</translation>
 <translation id="3625258641415618104">Ekraanipildid on keelatud</translation>
 <translation id="3625481642044239431">Valiti kehtetu fail. Proovige uuesti.</translation>
-<translation id="3625538291267447988">Smart Locki seadistamiseks sisestage parool</translation>
 <translation id="3625870480639975468">Lähtestab suumimise</translation>
 <translation id="3626281679859535460">Eredus</translation>
 <translation id="3627320433825461852">Jäänud on vähem kui 1 minut</translation>
@@ -2734,7 +2732,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5209518306177824490">SHA-1 sõrmejälg</translation>
 <translation id="5210365745912300556">Sule vaheleht</translation>
 <translation id="5213891612754844763">Kuva puhverserveri seaded</translation>
-<translation id="5214416042594875361">Pääsete assistendile alati juurde, kui ütlete „Ok Google” ja ekraan on sisse lülitatud.</translation>
 <translation id="521582610500777512">Fotost loobuti</translation>
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="52232769093306234">Pakkimine ebaõnnestus.</translation>
@@ -3394,6 +3391,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6163363155248589649">&amp;Tavaline</translation>
 <translation id="6163522313638838258">Laienda kõik ...</translation>
 <translation id="6164005077879661055">Kõik jälgitava kasutajaga seotud failid ja kohalikud andmed kustutatakse jäädavalt kohe, kui jälgitav kasutaja eemaldatakse. Selle jälgitava kasutaja külastatud veebisaite ja seadeid näeb haldur endiselt aadressil <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Lisateave</translation>
 <translation id="6166185671393271715">Paroolide importimine Chrome'i</translation>
 <translation id="6169040057125497443">Kontrollige mikrofoni.</translation>
 <translation id="6169666352732958425">Töölauda ei saa üle kanda.</translation>
@@ -4982,7 +4980,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8642947597466641025">Saate teksti suurendada</translation>
 <translation id="8643418457919840804">Jätkamiseks tehke valik:</translation>
 <translation id="8645354835496065562">Luba ka edaspidi juurdepääs anduritele</translation>
-<translation id="8647691362751835453">Otsetee sõna „Ok Google” tuvastamine</translation>
 <translation id="8647834505253004544">Pole sobiv veebiaadress</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> või <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Kuigi te ei pääse enam oma vanale profiilile juurde, on teil siiski võimalik see eemaldada.</translation>

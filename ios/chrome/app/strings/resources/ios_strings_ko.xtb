@@ -23,7 +23,6 @@
 <translation id="127138278192656016">동기화 및 모든 서비스 사용</translation>
 <translation id="1272079795634619415">중지</translation>
 <translation id="1323735185997015385">삭제</translation>
-<translation id="132390688737681464">주소 저장 및 자동 입력</translation>
 <translation id="132683371494960526">상위 폴더를 변경하려면 두 번 탭하세요.</translation>
 <translation id="1340643665687018190">메뉴 닫기</translation>
 <translation id="1375321115329958930">저장된 비밀번호</translation>
@@ -120,7 +119,6 @@
 <translation id="2870560284913253234">사이트</translation>
 <translation id="2871695793448672541">숨겨진 비밀번호</translation>
 <translation id="2898963176829412617">새 폴더 만들기…</translation>
-<translation id="2903493209154104877">주소</translation>
 <translation id="2909437209446960244">최근 탭</translation>
 <translation id="2916171785467530738">검색어 및 URL 자동 완성</translation>
 <translation id="291754862089661335">프레임 안에 QR 코드나 바코드를 위치시키세요.</translation>
@@ -244,7 +242,6 @@
 <translation id="5062321486222145940">Google 드라이브 설치</translation>
 <translation id="5083464117946352670">파일 크기를 알 수 없습니다.</translation>
 <translation id="5094827893301452931">Tweet이 완료되었습니다.</translation>
-<translation id="5123982333065001601">신용카드 저장 및 자동 입력</translation>
 <translation id="5173593619615111996">모든 시크릿 탭 닫기</translation>
 <translation id="5181140330217080051">다운로드 중</translation>
 <translation id="5186185447130319458">비공개</translation>
@@ -252,7 +249,6 @@
 <translation id="5197255632782567636">인터넷</translation>
 <translation id="5228579091201413441">동기화 사용</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" />에 동기화</translation>
-<translation id="527973086555161537">탭을 열어 웹을 비공개로 탐색하세요.</translation>
 <translation id="5300589172476337783">표시</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5327248766486351172">이름</translation>
@@ -336,7 +332,6 @@
 <translation id="6464071786529933911">새 시크릿 탭에서 열기</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 삭제함</translation>
 <translation id="6541915733953096570">지난 1시간</translation>
-<translation id="6570040839871198836">양식 자동 완성</translation>
 <translation id="6656103420185847513">폴더 수정</translation>
 <translation id="6657585470893396449">비밀번호</translation>
 <translation id="667999046851023355">문서</translation>
@@ -426,7 +421,6 @@
 <translation id="8205564605687841303">취소</translation>
 <translation id="8225985093977202398">캐시된 이미지 및 파일</translation>
 <translation id="8261506727792406068">삭제</translation>
-<translation id="8272426682713568063">신용카드</translation>
 <translation id="8281781826761538115">기본값 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">모두 닫기</translation>
 <translation id="8381750437846184350">Google이 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 인터넷 사용 기록을 사용하는 방법을 제어하세요.</translation>

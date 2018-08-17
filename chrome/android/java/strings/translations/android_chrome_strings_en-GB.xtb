@@ -120,6 +120,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="1891331835972267886"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Close navigation drawer</translation>
 <translation id="1919345977826869612">Ads</translation>
+<translation id="1919950603503897840">Select contacts</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Selected Tab</translation>
 <translation id="1938981467853765413">Provide feedback</translation>
@@ -143,7 +144,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2021896219286479412">Full screen site controls</translation>
 <translation id="2038563949887743358">Turn on Request desktop site</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB other apps</translation>
-<translation id="2055670718290744343">Search accelerator</translation>
 <translation id="2063713494490388661">Tap to Search</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="2082238445998314030">Result <ph name="RESULT_NUMBER" /> of <ph name="TOTAL_RESULTS" /></translation>
@@ -274,7 +274,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3115898365077584848">Show info</translation>
 <translation id="3137521801621304719">Leave incognito mode</translation>
 <translation id="3148434565183091099">To get your bookmarks on all your devices, sign in to Chrome.</translation>
-<translation id="3157842584138209013">See how much data that you've saved from the More Options button</translation>
+<translation id="3157842584138209013">See how much data you've saved from the More Options button</translation>
 <translation id="3166827708714933426">Tab and window shortcuts</translation>
 <translation id="3190152372525844641">Turn on permissions for Chrome in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> stored data</translation>
@@ -292,9 +292,10 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="32895400574683172">Notifications are allowed</translation>
 <translation id="3295602654194328831">Hide info</translation>
+<translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Proceed to download the content?</translation>
 <translation id="3328801116991980348">Site information</translation>
-<translation id="3341058695485821946">See how much data that you've saved</translation>
+<translation id="3341058695485821946">See how much data you've saved</translation>
 <translation id="3350687908700087792">Close all incognito tabs</translation>
 <translation id="3365671512111106261">Unavailable when Data Saver is turned on</translation>
 <translation id="3367813778245106622">Sign in again to start sync</translation>
@@ -643,7 +644,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="6111020039983847643">data used</translation>
 <translation id="6112702117600201073">Refreshing page</translation>
 <translation id="6127379762771434464">Item removed</translation>
-<translation id="6138140242378429169">Make page mobile-friendly</translation>
 <translation id="6140912465461743537">Country/Region</translation>
 <translation id="6154478581116148741">Turn on screen lock in Settings to export your passwords from this device</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> data savings</translation>
@@ -857,6 +857,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7791543448312431591">Add</translation>
 <translation id="780301667611848630">No, thank you</translation>
 <translation id="7810647596859435254">Open with…</translation>
+<translation id="7821588508402923572">Your data savings will appear here</translation>
 <translation id="7832327313660264358">The data that you sync to Google and the features that you use will not change</translation>
 <translation id="7837721118676387834">Allow auto-play of muted videos for a specific site.</translation>
 <translation id="7846076177841592234">Cancel selection</translation>

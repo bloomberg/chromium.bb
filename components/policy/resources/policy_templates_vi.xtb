@@ -1917,7 +1917,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="637934607141010488">Danh sách báo cáo người dùng thiết bị đã đăng nhập gần đây.
 
       Nếu chính sách này được đặt thành sai, người dùng sẽ không được báo cáo.</translation>
-<translation id="6392973646875039351">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> và cho phép người dùng tự động hoàn thành các biểu mẫu web bằng cách sử dụng thông tin được lưu trữ trước đây, chẳng hạn như địa chỉ hoặc thông tin thẻ tín dụng. Nếu bạn tắt cài đặt này, người dùng sẽ không sử dụng được tính năng Tự động điền. Nếu bạn bật cài đặt này hoặc không đặt giá trị, Tự động điền sẽ vẫn thuộc quyền kiểm soát của người dùng. Điều này sẽ cho phép họ thiết lập cấu hình Tự động điền và bật hoặc tắt Tự động điền tùy theo ý họ.</translation>
 <translation id="6394350458541421998">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_OS_NAME" /> 29. Vui lòng sử dụng chính sách PresentationScreenDimDelayScale thay vào đó.</translation>
 <translation id="6401669939808766804">Đăng xuất người dùng</translation>
 <translation id="6426205278746959912">Bạn không thể buộc ứng dụng Android sử dụng proxy. Tập hợp con của cài đặt proxy được cung cấp cho ứng dụng Android. Cài đặt mà ứng dụng có thể tự nguyện chọn để thực hiện:

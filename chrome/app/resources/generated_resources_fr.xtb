@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">Mot de passe oublié ?</translation>
 <translation id="3132996321662585180">Actualiser quotidiennement</translation>
 <translation id="3135204511829026971">Faire pivoter l'écran</translation>
-<translation id="313638818480447860">Nous avons trouvé <ph name="NUMBER_OF_APPS" /> applications associées à votre compte, qui sont optimisées pour cet appareil.</translation>
 <translation id="313963229645891001">Téléchargement en cours : <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Avatar jaune par défaut</translation>
 <translation id="3140353188828248647">Activer la barre d'adresse</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">Déverrouiller l'appareil et se connecter au compte Google</translation>
 <translation id="3625258641415618104">Captures d'écran désactivées</translation>
 <translation id="3625481642044239431">Le fichier sélectionné n'est pas valide. Veuillez réessayer.</translation>
-<translation id="3625538291267447988">Pour configurer Smart Lock, saisissez votre mot de passe</translation>
 <translation id="3625870480639975468">Réinitialiser le zoom</translation>
 <translation id="3626281679859535460">Luminosité</translation>
 <translation id="3627320433825461852">Moins d'1 minute restante</translation>
@@ -2734,7 +2732,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5209518306177824490">Empreinte SHA-1</translation>
 <translation id="5210365745912300556">Fermer l'onglet</translation>
 <translation id="5213891612754844763">Afficher les paramètres de proxy</translation>
-<translation id="5214416042594875361">Accédez à l'Assistant chaque fois que vous dites "Ok Google" quand l'écran est allumé.</translation>
 <translation id="521582610500777512">La photo a été supprimée.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="52232769093306234">Échec de la compression.</translation>
@@ -3395,6 +3392,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Tout développer...</translation>
 <translation id="6164005077879661055">Tous les fichiers et les données locales associés à l'utilisateur supervisé seront définitivement supprimés en même temps que cet utilisateur. Le gestionnaire peut toujours accéder aux sites Web consultés par l'utilisateur supervisé et aux paramètres de celui-ci à l'adresse <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6166185671393271715">Importer des mots de passe dans Chrome</translation>
 <translation id="6169040057125497443">Veuillez vérifier votre micro.</translation>
 <translation id="6169666352732958425">Impossible de caster le bureau</translation>
@@ -3902,7 +3900,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6970856801391541997">Imprimer des pages spécifiques</translation>
 <translation id="6972180789171089114">Audio/Vidéo</translation>
 <translation id="6973630695168034713">Dossiers</translation>
-<translation id="6974609594866392343">Mode démo hors connexion</translation>
+<translation id="6974609594866392343">Mode de démonstration hors connexion</translation>
 <translation id="6976108581241006975">Console JavaScript</translation>
 <translation id="6977381486153291903">Version du micrologiciel</translation>
 <translation id="6978121630131642226">Moteurs de recherche</translation>
@@ -4982,7 +4980,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8642947597466641025">Augmente la taille du texte</translation>
 <translation id="8643418457919840804">Pour continuer, sélectionnez une option :</translation>
 <translation id="8645354835496065562">Continuer d'autoriser l'accès aux capteurs</translation>
-<translation id="8647691362751835453">Détection "Ok Google"</translation>
 <translation id="8647834505253004544">Adresse Web non valide</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> ou <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Bien que vous ne puissiez plus accéder à votre ancien profil, vous pouvez quand même le supprimer.</translation>

@@ -271,7 +271,7 @@
 <translation id="1397854323885047133">同步處理和個人化</translation>
 <translation id="1398853756734560583">放到最大</translation>
 <translation id="1399511500114202393">不使用使用者憑證</translation>
-<translation id="1401165786814632797">在裝置已喚醒並解鎖的狀態下，只要說出「Ok Google」，就能隨時存取 Google 助理。</translation>
+<translation id="1401165786814632797">在裝置已喚醒並且解鎖的狀態下，只要說出「Ok Google」，就能隨時存取 Google 助理。</translation>
 <translation id="140250605646987970">找到您的手機，但 Smart Lock 僅適用於搭載 Android 5.0 以上版本的裝置。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (受監管)</translation>
 <translation id="1405476660552109915">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 儲存您在這個網站使用的帳戶嗎？</translation>
@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">忘記密碼了嗎？</translation>
 <translation id="3132996321662585180">每天重新整理</translation>
 <translation id="3135204511829026971">旋轉螢幕</translation>
-<translation id="313638818480447860">有 <ph name="NUMBER_OF_APPS" /> 個針對這個裝置經過最佳化處理的應用程式與你的帳戶連結。</translation>
 <translation id="313963229645891001">下載中，<ph name="STATUS" /></translation>
 <translation id="3139925690611372679">預設的黃色顯示圖片</translation>
 <translation id="3140353188828248647">將焦點移至網址列</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">解鎖裝置並登入 Google 帳戶</translation>
 <translation id="3625258641415618104">已停用螢幕擷取畫面</translation>
 <translation id="3625481642044239431">選取的檔案無效，請再試一次。</translation>
-<translation id="3625538291267447988">如要設定 Smart Lock，請輸入你的密碼</translation>
 <translation id="3625870480639975468">重設縮放</translation>
 <translation id="3626281679859535460">亮度</translation>
 <translation id="3627320433825461852">剩下不到 1 分鐘</translation>
@@ -2732,7 +2730,6 @@
 <translation id="5209518306177824490">SHA-1 指紋</translation>
 <translation id="5210365745912300556">關閉分頁</translation>
 <translation id="5213891612754844763">顯示 Proxy 設定</translation>
-<translation id="5214416042594875361">只要在螢幕開啟狀態下說出「Ok Google」，就能隨時存取 Google 助理。</translation>
 <translation id="521582610500777512">已捨棄相片</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="52232769093306234">封裝失敗。</translation>
@@ -3392,6 +3389,7 @@
 <translation id="6163363155248589649">一般(&amp;N)</translation>
 <translation id="6163522313638838258">全部展開...</translation>
 <translation id="6164005077879661055">將這位受監管的使用者移除後，系統即會永久刪除所有與該使用者相關的檔案和本機資料。管理員仍可前往 <ph name="MANAGEMENT_URL" /> 查看這位受監管使用者的網頁瀏覽記錄和設定。</translation>
+<translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6166185671393271715">將密碼匯入 Chrome 中</translation>
 <translation id="6169040057125497443">請檢查麥克風。</translation>
 <translation id="6169666352732958425">無法投放桌面。</translation>
@@ -4977,7 +4975,6 @@
 <translation id="8642947597466641025">放大文字</translation>
 <translation id="8643418457919840804">如要繼續，請選擇一個選項：</translation>
 <translation id="8645354835496065562">繼續允許存取感應器</translation>
-<translation id="8647691362751835453">「Ok Google」啟動字詞偵測</translation>
 <translation id="8647834505253004544">網址無效</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" />或<ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">雖然你無法再使用舊的設定檔，但仍可將其移除。</translation>

@@ -81,7 +81,7 @@
 <translation id="1566400915470565838">لاستخدام <ph name="APP_NAME" />، يُرجى الاتصال بالإنترنت.</translation>
 <translation id="1569387923882100876">جهاز متصل</translation>
 <translation id="1571304935088121812">نسخ اسم المستخدم</translation>
-<translation id="1576370611341449972">‏لا يتم التنزيل إلا عند الاتصال بشبكة Wi-Fi</translation>
+<translation id="1576370611341449972">‏لا يتم التنزيل إلا عند الاتصال بشبكة Wi-Fi.</translation>
 <translation id="1612196535745283361">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. الوصول إلى الموقع <ph name="BEGIN_LINK" />غير مفعّل لهذا الجهاز<ph name="END_LINK" />.</translation>
 <translation id="162035744160882748">‏تفعيل المزامنة والتخصيص وخدمات Google الأخرى</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
@@ -143,7 +143,6 @@
 <translation id="2021896219286479412">عناصر التحكم لموقع في وضع ملء الشاشة</translation>
 <translation id="2038563949887743358">تشغيل طلب موقع الويب لسطح المكتب</translation>
 <translation id="2045104531052923016">تطبيقات أخرى بحجم <ph name="GIGABYTES" /> غيغابايت</translation>
-<translation id="2055670718290744343">مسرَّع البحث</translation>
 <translation id="2063713494490388661">انقر للبحث</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
@@ -346,7 +345,7 @@
 <translation id="3810838688059735925">فيديو</translation>
 <translation id="3810973564298564668">إدارة محرّكات البحث</translation>
 <translation id="3819178904835489326">تم إلغاء <ph name="NUMBER_OF_DOWNLOADS" /> من التنزيلات</translation>
-<translation id="3819562311292413223">تنزيل مقالات تهمّك</translation>
+<translation id="3819562311292413223">تنزيل مقالات لك</translation>
 <translation id="3822502789641063741">أتمحو سعة تخزين الموقع؟</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3859306556332390985">الانتقال للأمام</translation>
@@ -644,7 +643,6 @@
 <translation id="6111020039983847643">البيانات المُستخدَمة</translation>
 <translation id="6112702117600201073">يتم الآن تحديث الصفحة</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
-<translation id="6138140242378429169">جعل الصفحة متوافقة مع الجوّال</translation>
 <translation id="6140912465461743537">الدولة/الإقليم</translation>
 <translation id="6154478581116148741">تشغيل قفل الشاشة في الإعدادات لتصدير كلمات المرور من هذا الجهاز</translation>
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
@@ -762,7 +760,7 @@
 <translation id="7016516562562142042">تم السماح به لمحرك البحث الحالي</translation>
 <translation id="7021515813996758557">تم تنزيل <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">فتح في المتصفح</translation>
-<translation id="702463548815491781">‏تمت التوصية به عند تفعيل TalkBack أو الوصول عبر مفتاح التحويل</translation>
+<translation id="702463548815491781">‏يُوصى به عند تفعيل TalkBack أو الوصول عبر مفتاح التحويل</translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
 <translation id="7031882061095297553">مزامنة لـ</translation>
 <translation id="7032663816368481562">‏عند النقر على "المزيد من النتائج المشابهة" <ph name="ICON" /> في شريط العناوين، تظهر روابط سريعة للصفحات ذات الصلة. ويُرسِل المتصفّح عناوين URL للصفحات التي تزورها إلى Google.</translation>

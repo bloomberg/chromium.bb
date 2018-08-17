@@ -1929,11 +1929,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="637934607141010488">Poročanje o seznamu nedavno prijavljenih uporabnikov naprave.
 
       Če je pravilnik nastavljen nastavljen na »False«, se o uporabnikih ne poroča.</translation>
-<translation id="6392973646875039351">Omogoči funkcijo za samodejno izpolnjevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom omogoča samodejno izpolnjevanje spletnih obrazcev s shranjenimi podatki, kot so naslov ali podrobnosti kreditne kartice.
-
-      Če to nastavitev onemogočite, samodejno izpolnjevanje ne bo na voljo uporabnikom.
-
-      Če to nastavitev omogočite ali ne nastavite vrednosti zanjo, ostane samodejno izpolnjevanje pod nadzorom uporabnikov. Nastavili bodo lahko profile za samodejno izpolnjevanje in ga poljubno vklapljali ali izklapljali.</translation>
 <translation id="6394350458541421998">Ta pravilnik se ne uporablja od uveljavitve različice <ph name="PRODUCT_OS_NAME" /> 29. Namesto njega uporabite pravilnik PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Odjava uporabnika</translation>
 <translation id="6426205278746959912">Aplikacij za Android ni mogoče prisiliti, da bi uporabljale strežnik proxy. Aplikacije za Android imajo na voljo podnabor nastavitev strežnika proxy, ki jih lahko prostovoljno upoštevajo:
@@ -2006,11 +2001,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 Če ta pravilnik ni nastavljen ali je seznam prazen, bodo v brskalniku <ph name="PRODUCT_NAME" /> dostopne vse sheme.</translation>
 <translation id="6652197835259177259">Nastavitve lokalno upravljanih uporabnikov</translation>
 <translation id="6658245400435704251">Določa število sekund, do katerega lahko naprava naključno odloži prenos posodobitve od trenutka, ko je bila posodobitev prvič na voljo v strežniku. Naprava lahko del tega časa čaka v smislu dejansko pretečenega časa, preostali del pa v smislu števila preverjanj za posodobitve. Razpršitev je v vsakem primeru omejena navzgor na nespremenljiv čas, tako da se ne more zgoditi, da bi naprava neomejen čas čakala na prenos posodobitve.</translation>
-<translation id="6665599130599311250">Če je ta pravilnik onemogočen ali ni nastavljen, bo upravljana seja gosta delovala, kot je opisano na https://support.google.com/chrome/a/answer/3017014 – standardna »seja gosta«.
+<translation id="6665599130599311250">Če je ta pravilnik onemogočen ali ni nastavljen, bo upravljana seja gosta delovala, kot je opisano na https://support.google.com/chrome/a/answer/3017014 – standardna »javna seja«.
 
-      Če je ta pravilnik omogočen, bo upravljana seja gosta prevzela delovanje »upravljane seja«, ki odpravlja številne omejitve, ki veljajo za običajne »javne seje«.
+      Če je ta pravilnik omogočen, bo upravljana seja gosta prevzela delovanje »upravljane seje«, ki odpravlja številne omejitve, ki veljajo za običajne »javne seje«.
 
-      Če ta pravilnik ni nastavljen, ga uporabniki ne morejo spremeniti ali preglasiti.</translation>
+      Če je ta pravilnik nastavljen, ga uporabniki ne morejo spremeniti ali preglasiti.</translation>
 <translation id="6665670272107384733">Nastavi, kako pogosto mora uporabnik vnesti geslo, če želi uporabljati hitro odklepanje</translation>
 <translation id="6681229465468164801">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je preprečeno pozivanje uporabnikov k odobritvi dostopa do naprave USB.
 
@@ -2177,7 +2172,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če je pravilnik onemogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> tovrstnih dnevnikov ne sme ne zbirati ne nalagati.
 
-      Ti dnevniki vsebujejo podatke, kot so čas in velikost poslanih ter prejetih paketov RT, povratne informacije o preobremenjenosti omrežja ter metapodatki o času in kakovosti zvočnih ter slikovnih okvirov. Ti podatki so v pomoč pri odpravljanju napak z zvočnimi klici ali videoklici v Chromu, na primer pri težavah z ocenjevanjem pasovne širine ipd. Dnevniki ne vsebujejo zvočne in slikovne vsebine klica.
+      Ti dnevniki vsebujejo podatke, kot so čas in velikost poslanih ter prejetih paketov RTP, povratne informacije o preobremenjenosti omrežja ter metapodatki o času in kakovosti zvočnih ter slikovnih okvirov. Ti podatki so v pomoč pri odpravljanju napak z zvočnimi klici ali videoklici v Chromu, na primer pri težavah z ocenjevanjem pasovne širine ipd. Dnevniki ne vsebujejo zvočne in slikovne vsebine klica.
 
       To zbiranje podatkov lahko sprožijo samo Googlove spletne storitve, na primer Google Hangouts ali Google Meet.
 

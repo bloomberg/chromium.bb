@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="1885785240814121742">Отключване с отпечатък</translation>
 <translation id="1919743966458266018">Комбинацията за отваряне на диспечера на задачите е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
-<translation id="1923508880661655826">Сесията ви ще бъде изчистена, когато излезете от профила си. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Автоматични кликвания</translation>
 <translation id="1928739107511554905">За да инсталирате актуализацията, използвайте сензорния екран да рестартирате своя Chromebook, докато клавиатурата е прикачена.</translation>
 <translation id="1942830294380034169">Бутон „Препълване“</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">Приемам</translation>
 <translation id="4924411785043111640">Рестартиране и нулиране</translation>
 <translation id="4961318399572185831">Предаване на екрана</translation>
-<translation id="5069971504769299223">Мениджърът на устройството може да е в състояние да наблюдава активността ви.</translation>
 <translation id="5083553833479578423">Отключете още функции на Асистент.</translation>
 <translation id="5136175204352732067">Свързана е различна клавиатура</translation>
 <translation id="5168181903108465623">Налице са устройства Cast</translation>
@@ -314,7 +312,6 @@
 <translation id="6627638273713273709">клавиш „търсене“ + Shift + K</translation>
 <translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Парола</translation>
-<translation id="6687966522050791666">Избиране на език и метод на въвеждане</translation>
 <translation id="6691659475504239918">Клавиш „Търсене“ + Shift + H</translation>
 <translation id="6696025732084565524">Вашата отделяща се клавиатура се нуждае от критична актуализация</translation>
 <translation id="6700713906295497288">Бутон за меню на редактора за метод на въвеждане</translation>

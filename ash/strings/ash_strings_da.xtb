@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Lås op med fingeraftryk</translation>
 <translation id="1919743966458266018">Genvejen til at åbne Jobliste er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Din session ryddes, når du logger ud. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
 <translation id="1928739107511554905">Brug touchskærmen til at genstarte din Chromebook med det tilsluttede tastatur for at hente opdateringen.</translation>
 <translation id="1942830294380034169">Knappen Overflow</translation>
@@ -224,7 +223,6 @@
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4924411785043111640">Genstart og nulstil</translation>
 <translation id="4961318399572185831">Cast skærm</translation>
-<translation id="5069971504769299223">Enhedsadministratoren kan muligvis overvåge din aktivitet.</translation>
 <translation id="5083553833479578423">Få adgang til endnu flere Assistent-funktioner.</translation>
 <translation id="5136175204352732067">Du har tilsluttet et andet tastatur</translation>
 <translation id="5168181903108465623">Tilgængelige Cast-enheder</translation>
@@ -315,7 +313,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6627638273713273709">Søgetast+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Angiv din adgangsnøgle på enheden: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Adgangskode</translation>
-<translation id="6687966522050791666">Vælg sprog og indtastning</translation>
 <translation id="6691659475504239918">Søg+Shift+H</translation>
 <translation id="6696025732084565524">Dit aftagelige tastatur kræver en vigtig opdatering</translation>
 <translation id="6700713906295497288">IME-menuknap</translation>

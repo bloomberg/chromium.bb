@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">Pamiršote slaptažodį?</translation>
 <translation id="3132996321662585180">Atnaujinti kasdien</translation>
 <translation id="3135204511829026971">Pasukti ekraną</translation>
-<translation id="313638818480447860">Radome su paskyra susietų programų (<ph name="NUMBER_OF_APPS" />), optimizuotų naudoti šiame įrenginyje.</translation>
 <translation id="313963229645891001">Atsisiunčiama: <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Numatytasis geltonas pseudoportretas</translation>
 <translation id="3140353188828248647">Fokusuoti adreso juostą</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">Atrakinti įrenginį ir prisijungti prie „Google“ paskyros</translation>
 <translation id="3625258641415618104">Ekrano kopijos išjungtos</translation>
 <translation id="3625481642044239431">Pasirinktas netinkamas failas. Bandykite dar kartą.</translation>
-<translation id="3625538291267447988">Jei norite nustatyti „Smart Lock“, įveskite slaptažodį</translation>
 <translation id="3625870480639975468">Iš naujo nustatyti mastelį</translation>
 <translation id="3626281679859535460">Šviesumas</translation>
 <translation id="3627320433825461852">Liko mažiau nei 1 min.</translation>
@@ -2734,7 +2732,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5209518306177824490">SHA-1 piršto atspaudas</translation>
 <translation id="5210365745912300556">Uždaryti skirtuką</translation>
 <translation id="5213891612754844763">Rodyti tarpinio serverio nustatymus</translation>
-<translation id="5214416042594875361">Pasiekite Padėjėją bet kuriuo metu pasakę „Ok Google“, kai ekranas įjungtas.</translation>
 <translation id="521582610500777512">Nuotrauka buvo atmesta</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
 <translation id="52232769093306234">Nepavyko supakuoti.</translation>
@@ -3395,6 +3392,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6163363155248589649">&amp;Normalus</translation>
 <translation id="6163522313638838258">Išskleisti viską</translation>
 <translation id="6164005077879661055">Visi failai ir su prižiūrimu naudotoju susiję duomenys bus ištrinti visam laikui, kai bus pašalintas šis prižiūrimas naudotojas. Valdytojas vis tiek gali peržiūrėti šio prižiūrimo naudotojo aplankytas svetaines ir nustatymus adresu <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6166185671393271715">Slaptažodžių importavimas į „Chrome“</translation>
 <translation id="6169040057125497443">Patikrinkite mikrofoną.</translation>
 <translation id="6169666352732958425">Nepavyko perduoti stalinio kompiuterio ekrano.</translation>
@@ -4982,7 +4980,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8642947597466641025">Padidinti tekstą</translation>
 <translation id="8643418457919840804">Norėdami tęsti pasirinkite toliau pateiktą parinktį.</translation>
 <translation id="8645354835496065562">Toliau leisti prieigą prie jutiklio</translation>
-<translation id="8647691362751835453">„Ok Google“ aptikimas</translation>
 <translation id="8647834505253004544">Netinkamas žiniatinklio adresas</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> arba <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Nors nebegalite pasiekti seno profilio, vis tiek galite jį pašalinti.</translation>

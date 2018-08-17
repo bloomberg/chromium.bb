@@ -120,6 +120,7 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="1891331835972267886"><ph name="APP_NAME" /> sa otvorí v Chrome. Pokračovaním vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozornením o ochrane súkromia<ph name="END_LINK2" /> Chromu.</translation>
 <translation id="189172778771606813">Zavrieť navigačný vysúvací panel</translation>
 <translation id="1919345977826869612">Reklamy</translation>
+<translation id="1919950603503897840">Výber kontaktov</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Vybratá karta</translation>
 <translation id="1938981467853765413">Poskytnúť spätnú väzbu</translation>
@@ -143,7 +144,6 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="2021896219286479412">Ovládanie webu na celú obrazovku</translation>
 <translation id="2038563949887743358">Zapnutie žiadosti o verziu stránok pre počítače</translation>
 <translation id="2045104531052923016">Ďalšie aplikácie: <ph name="GIGABYTES" /> GB</translation>
-<translation id="2055670718290744343">Hľadať Zrýchlovač</translation>
 <translation id="2063713494490388661">Vyhľadávanie klepnutím</translation>
 <translation id="2079545284768500474">Späť</translation>
 <translation id="2082238445998314030">Výsledok <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
@@ -292,6 +292,7 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="3282568296779691940">Prihlásenie do prehliadača Chrome</translation>
 <translation id="32895400574683172">Upozornenia sú povolené</translation>
 <translation id="3295602654194328831">Skryť informácie</translation>
+<translation id="3298243779924642547">Zjednoduš.</translation>
 <translation id="3303414029551471755">Pokračovať a stiahnuť obsah?</translation>
 <translation id="3328801116991980348">Informácie o stránkach</translation>
 <translation id="3341058695485821946">Zistite, koľko dát ste ušetrili</translation>
@@ -643,7 +644,6 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="6111020039983847643">využité dáta</translation>
 <translation id="6112702117600201073">Obnovenie stránky</translation>
 <translation id="6127379762771434464">Položka bola odstránená</translation>
-<translation id="6138140242378429169">Upravte stránku, aby bola vhodná pre mobilné zariadenia</translation>
 <translation id="6140912465461743537">Krajina alebo oblasť</translation>
 <translation id="6154478581116148741">Ak chcete exportovať heslá z tohto zariadenia, zapnite v Nastaveniach zámku obrazovky</translation>
 <translation id="6159335304067198720">Úspora dát: <ph name="PERCENT" /></translation>
@@ -857,6 +857,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7791543448312431591">Pridať</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="7810647596859435254">Otvoriť pomocou…</translation>
+<translation id="7821588508402923572">Tu sa zobrazia ušetrené dáta</translation>
 <translation id="7832327313660264358">Dáta synchronizované do Googlu a používané funkcie sa nezmenia</translation>
 <translation id="7837721118676387834">Povoliť automatické prehrávanie stlmených videí pre konkrétny web.</translation>
 <translation id="7846076177841592234">Zrušiť výber</translation>

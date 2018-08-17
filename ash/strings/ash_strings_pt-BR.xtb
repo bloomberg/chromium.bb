@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">Espelhamento de <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Desbloqueio com impressão digital</translation>
 <translation id="1919743966458266018">O atalho para abrir o gerenciador de tarefas foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Sua sessão será limpa quando você sair. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
 <translation id="1928739107511554905">Para receber a atualização, use a touchscreen para reiniciar o Chromebook com o teclado conectado.</translation>
 <translation id="1942830294380034169">Botão de estouro</translation>
@@ -225,7 +224,6 @@
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4924411785043111640">Reiniciar e redefinir</translation>
 <translation id="4961318399572185831">Transmitir tela</translation>
-<translation id="5069971504769299223">O administrador do dispositivo pode conseguir monitorar sua atividade.</translation>
 <translation id="5083553833479578423">Desbloqueie mais recursos do Assistente.</translation>
 <translation id="5136175204352732067">Teclado diferente conectado</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
@@ -316,7 +314,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Digite esta senha no dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Senha</translation>
-<translation id="6687966522050791666">Escolher o idioma e a entrada</translation>
 <translation id="6691659475504239918">Pesquisa+Shift+H</translation>
 <translation id="6696025732084565524">Seu teclado removível precisa de uma atualização crítica</translation>
 <translation id="6700713906295497288">Botão do menu do IME</translation>

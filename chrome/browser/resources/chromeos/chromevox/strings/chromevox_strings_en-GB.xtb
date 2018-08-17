@@ -490,6 +490,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4973762002207131920">Switched to <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">milliseconds</translation>
 <translation id="49787999531187221">ChromeVox is now inactive.</translation>
+<translation id="4979263087381759787">Developer Options</translation>
 <translation id="4979404613699303341">Previous button</translation>
 <translation id="4982773647088557172"><ph name="VALUE" />, <ph name="NAME" />, list box</translation>
 <translation id="4983588134362688868">Jump to the top of the page</translation>
@@ -501,6 +502,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5000760171916499057">No forms.</translation>
 <translation id="5005670136041063723">No more similar elements.</translation>
 <translation id="501473567976723023">January</translation>
+<translation id="5020651427400641814">Enable speech logging</translation>
 <translation id="5041394372352067729">Move braille display to top of page</translation>
 <translation id="5042770794184672516">Increase speech volume</translation>
 <translation id="5050015258024679800">Previous level 4 heading</translation>

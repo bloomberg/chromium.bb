@@ -54,7 +54,6 @@
 <translation id="1882897271359938046">正在镜像到<ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">使用指纹解锁</translation>
 <translation id="1919743966458266018">用于打开任务管理器的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
-<translation id="1923508880661655826">当您退出后，系统即会清除您的会话。<ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">自动点击</translation>
 <translation id="1928739107511554905">要想获取此项更新，请在已连接该键盘的情况下使用触摸屏重新启动您的 Chromebook。</translation>
 <translation id="1942830294380034169">溢出按钮</translation>
@@ -225,7 +224,6 @@
 <translation id="4918086044614829423">接受</translation>
 <translation id="4924411785043111640">重启并重置</translation>
 <translation id="4961318399572185831">投射屏幕</translation>
-<translation id="5069971504769299223">设备管理员或许能监控您的活动。</translation>
 <translation id="5083553833479578423">启用更多 Google 助理功能。</translation>
 <translation id="5136175204352732067">所连接的键盘已不是原来的那个</translation>
 <translation id="5168181903108465623">有可用的投射设备</translation>
@@ -315,7 +313,6 @@
 <translation id="6627638273713273709">搜索键+Shift+K</translation>
 <translation id="6650933572246256093">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下配对密钥：<ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">密码</translation>
-<translation id="6687966522050791666">选择语言和输入法</translation>
 <translation id="6691659475504239918">搜索键+Shift+H</translation>
 <translation id="6696025732084565524">您的可拆卸式键盘需要安装一项重要更新</translation>
 <translation id="6700713906295497288">IME 菜单按钮</translation>

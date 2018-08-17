@@ -1429,7 +1429,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="313205617302240621">Zapomněli jste heslo?</translation>
 <translation id="3132996321662585180">Každý den obnovit</translation>
 <translation id="3135204511829026971">Otočit obrazovku</translation>
-<translation id="313638818480447860">K vašemu účtu je připojen tento počet aplikací, které jsou optimalizovány pro toto zařízení: <ph name="NUMBER_OF_APPS" />.</translation>
 <translation id="313963229645891001">Stahování: <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Výchozí žlutý avatar</translation>
 <translation id="3140353188828248647">Přepnout do adresního řádku</translation>
@@ -1742,7 +1741,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3624567683873126087">Odemknout zařízení a přihlásit se k účtu Google</translation>
 <translation id="3625258641415618104">Snímky obrazovky zakázány</translation>
 <translation id="3625481642044239431">Byl vybrán neplatný soubor. Zkuste to znovu.</translation>
-<translation id="3625538291267447988">Chcete-li nastavit funkci Smart Lock, zadejte heslo</translation>
 <translation id="3625870480639975468">Resetovat lupu</translation>
 <translation id="3626281679859535460">Jas</translation>
 <translation id="3627320433825461852">Zbývá méně než minuta</translation>
@@ -2731,7 +2729,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5209518306177824490">Digitální otisk SHA-1</translation>
 <translation id="5210365745912300556">Zavřít kartu</translation>
 <translation id="5213891612754844763">Zobrazit nastavení proxy serveru</translation>
-<translation id="5214416042594875361">Když je zapnutá a odemknutá obrazovka, můžete Asistenta kdykoliv aktivovat vyslovením fráze „Ok Google“.</translation>
 <translation id="521582610500777512">Fotografie byla zahozena</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
 <translation id="52232769093306234">Zabalení se nezdařilo.</translation>
@@ -3390,6 +3387,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6163363155248589649">Normální</translation>
 <translation id="6163522313638838258">Rozbalit vše...</translation>
 <translation id="6164005077879661055">Po odebrání dozorovaného uživatele budou trvale smazány všechny soubory a místní data, která jsou k němu přiřazena. Navštívené weby a nastavení tohoto dozorovaného uživatele může správce i nadále zobrazit na adrese <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Další informace</translation>
 <translation id="6166185671393271715">Import hesel do Chromu</translation>
 <translation id="6169040057125497443">Zkontrolujte mikrofon.</translation>
 <translation id="6169666352732958425">Plochu nelze odeslat.</translation>
@@ -4975,7 +4973,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8642947597466641025">Zvětšit text</translation>
 <translation id="8643418457919840804">Chcete-li pokračovat, vyberte jednu možnost:</translation>
 <translation id="8645354835496065562">I nadále povolovat přístup k senzorům</translation>
-<translation id="8647691362751835453">Zjišťování příkazu „Ok Google“</translation>
 <translation id="8647834505253004544">Toto není platná webová adresa</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> nebo <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Ačkoliv svůj starý profil již nemůžete používat, můžete jej odstranit.</translation>

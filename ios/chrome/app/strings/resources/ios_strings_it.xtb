@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Usa la sincronizzazione e tutti i servizi</translation>
 <translation id="1272079795634619415">Interrompi</translation>
 <translation id="1323735185997015385">Elimina</translation>
-<translation id="132390688737681464">Salva e compila gli indirizzi</translation>
 <translation id="132683371494960526">Tocca due volte per cambiare la cartella principale.</translation>
 <translation id="1340643665687018190">Chiudi menu</translation>
 <translation id="1375321115329958930">Password salvate</translation>
@@ -120,7 +119,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="2870560284913253234">Sito</translation>
 <translation id="2871695793448672541">Nascosta, password</translation>
 <translation id="2898963176829412617">Nuova cartella…</translation>
-<translation id="2903493209154104877">Indirizzi</translation>
 <translation id="2909437209446960244">Schede recenti</translation>
 <translation id="2916171785467530738">Completamento automatico di ricerche e URL</translation>
 <translation id="291754862089661335">Posiziona il codice a barre o QR all'interno di quest'area</translation>
@@ -244,7 +242,6 @@ I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inserisc
 <translation id="5062321486222145940">Installa Google Drive</translation>
 <translation id="5083464117946352670">Impossibile stabilire le dimensioni del file.</translation>
 <translation id="5094827893301452931">Tweet completato.</translation>
-<translation id="5123982333065001601">Salva e compila le carte di credito</translation>
 <translation id="5173593619615111996">Chiudi schede incognito*</translation>
 <translation id="5181140330217080051">Download in corso</translation>
 <translation id="5186185447130319458">Privata</translation>
@@ -252,7 +249,6 @@ I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inserisc
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Abilita sincronizzazione</translation>
 <translation id="5244474230056479698">Sincronizzazione con <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Apri una scheda per navigare sul Web in privato.</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="5327248766486351172">Nome</translation>
@@ -336,7 +332,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6464071786529933911">Apri in nuova scheda in incognito</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi eliminati</translation>
 <translation id="6541915733953096570">Ultima ora</translation>
-<translation id="6570040839871198836">Compilazione automatica dei moduli</translation>
 <translation id="6656103420185847513">Modifica cartella</translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="667999046851023355">Documento</translation>
@@ -426,7 +421,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8205564605687841303">Annulla</translation>
 <translation id="8225985093977202398">Immagini e file memorizzati nella cache</translation>
 <translation id="8261506727792406068">Elimina</translation>
-<translation id="8272426682713568063">Carte di credito</translation>
 <translation id="8281781826761538115">Predefinita - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Chiudi tutte</translation>
 <translation id="8381750437846184350">Controlla il modo in cui Google utilizza la tua cronologia di navigazione per personalizzare la Ricerca, gli annunci e altri servizi Google.</translation>

@@ -1429,7 +1429,6 @@
 <translation id="313205617302240621">Lupa sandi?</translation>
 <translation id="3132996321662585180">Refresh tiap hari</translation>
 <translation id="3135204511829026971">Memutar layar</translation>
-<translation id="313638818480447860">Kami menemukan <ph name="NUMBER_OF_APPS" /> aplikasi yang terhubung ke akun Anda yang dioptimalkan untuk perangkat ini.</translation>
 <translation id="313963229645891001">Mendownload, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Avatar kuning default</translation>
 <translation id="3140353188828248647">Fokus ke bilah alamat</translation>
@@ -1744,7 +1743,6 @@
 <translation id="3624567683873126087">Buka kunci perangkat dan login ke Akun Google</translation>
 <translation id="3625258641415618104">Screenshot dinonaktifkan</translation>
 <translation id="3625481642044239431">File yang dipilih tidak valid. Harap coba lagi.</translation>
-<translation id="3625538291267447988">Untuk menyiapkan Smart Lock, masukkan sandi</translation>
 <translation id="3625870480639975468">Setel ulang zoom</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
 <translation id="3627320433825461852">Kurang dari 1 menit lagi</translation>
@@ -2734,7 +2732,6 @@
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Tutup tab</translation>
 <translation id="5213891612754844763">Tampilkan setelan proxy</translation>
-<translation id="5214416042594875361">Akses Asisten setiap kali Anda mengatakan "OK Google" saat layar aktif.</translation>
 <translation id="521582610500777512">Foto dibuang</translation>
 <translation id="5222676887888702881">Logout</translation>
 <translation id="52232769093306234">Pengemasan gagal.</translation>
@@ -3394,6 +3391,7 @@
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Luaskan semua...</translation>
 <translation id="6164005077879661055">Semua file dan data lokal yang terkait dengan pengguna yang dilindungi akan dihapus secara permanen setelah pengguna yang dilindungi ini dihapus. Situs web yang dikunjungi dan setelan untuk pengguna yang dilindungi ini mungkin tetap dapat dilihat oleh pengelola di <ph name="MANAGEMENT_URL" />.</translation>
+<translation id="6165508094623778733">Pelajari lebih lanjut</translation>
 <translation id="6166185671393271715">Impor Sandi ke Chrome</translation>
 <translation id="6169040057125497443">Harap periksa mikrofon Anda.</translation>
 <translation id="6169666352732958425">Tidak dapat mentransmisi desktop.</translation>
@@ -4981,7 +4979,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8642947597466641025">Perbesar Teks</translation>
 <translation id="8643418457919840804">Untuk melanjutkan, pilih salah satu opsi:</translation>
 <translation id="8645354835496065562">Terus izinkan akses sensor</translation>
-<translation id="8647691362751835453">Deteksi "OK Google"</translation>
 <translation id="8647834505253004544">Bukan alamat web yang valid</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> atau <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Meskipun tidak lagi dapat mengakses profil lama, Anda tetap dapat menghapusnya.</translation>

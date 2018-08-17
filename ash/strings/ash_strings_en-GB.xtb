@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Input methods are configured by your administrator.</translation>
 <translation id="1747827819627189109">On-screen keyboard enabled</translation>
 <translation id="1761222317188459878">Toggle network connection. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">What's on my screen?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (loading...)</translation>
 <translation id="1841545962859478868">The device admin may monitor the following:</translation>
@@ -54,7 +55,6 @@
 <translation id="1882897271359938046">Mirroring to <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Unlock with fingerprint</translation>
 <translation id="1919743966458266018">The shortcut to open the task manager has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="1923508880661655826">Your session will be cleared when you sign out. <ph name="LEARN_MORE" /></translation>
 <translation id="1923539912171292317">Automatic clicks</translation>
 <translation id="1928739107511554905">To get the update, use the touchscreen to restart your Chromebook with the keyboard attached.</translation>
 <translation id="1942830294380034169">Overflow button</translation>
@@ -123,6 +123,7 @@
 <translation id="2946119680249604491">Add connection</translation>
 <translation id="2961963223658824723">Something went wrong. Try again in a few seconds.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Show all notification content</translation>
 <translation id="2995447421581609334">Show cast devices.</translation>
 <translation id="2996462380875591307">Docked Magnifier enabled. Press Ctrl+Search+D again to toggle it off.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> is a public session managed by <ph name="DOMAIN" /></translation>
@@ -211,12 +212,14 @@
 <translation id="4628757576491864469">Devices</translation>
 <translation id="4659419629803378708">ChromeVox enabled</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">The administrator of this device has access to all activity, including passwords and communications.</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Disconnect</translation>
 <translation id="4849058404725798627">Highlight object with keyboard focus</translation>
 <translation id="4872237917498892622">Alt+Search or Shift</translation>
 <translation id="4890187583552566966">The Google Assistant is disabled by your administrator.</translation>
+<translation id="4893522937062257019">On the lock screen</translation>
 <translation id="4895488851634969361">Battery is full.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">The shortcut to toggle high contrast mode has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
@@ -224,7 +227,6 @@
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4924411785043111640">Restart and reset</translation>
 <translation id="4961318399572185831">Cast screen</translation>
-<translation id="5069971504769299223">The device manager may be able to monitor your activity.</translation>
 <translation id="5083553833479578423">Unlock more Assistant features.</translation>
 <translation id="5136175204352732067">Different keyboard connected</translation>
 <translation id="5168181903108465623">Cast devices available</translation>
@@ -233,6 +235,7 @@
 <translation id="523505283826916779">Accessibility settings</translation>
 <translation id="5313326810920013265">Bluetooth settings</translation>
 <translation id="5331975486040154427">USB-C device (left side back port)</translation>
+<translation id="5379115545237091094">Too many attempts</translation>
 <translation id="5397578532367286026">Usage and history of this user can be reviewed by the manager (<ph name="MANAGER_EMAIL" />) on chrome.com.</translation>
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -264,6 +267,7 @@
 <translation id="5895138241574237353">Restart</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">Shortcut viewer</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="592343074608792716">This Chromebook and your phone will connect automatically</translation>
 <translation id="5947494881799873997">Revert</translation>
@@ -314,7 +318,6 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
-<translation id="6687966522050791666">Choose language and input</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Your detachable keyboard needs a critical update</translation>
 <translation id="6700713906295497288">IME menu button</translation>
@@ -334,6 +337,7 @@
 <translation id="6972754398087986839">Get Started</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="698231206551913481">All files and local data associated with this user will be permanently deleted once this user is removed.</translation>
+<translation id="7007100238996585961">Answering on another device</translation>
 <translation id="7015766095477679451">Come back at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Exit session</translation>
 <translation id="7037152028959403492">You pressed the shortcut for high contrast. Do you want to turn it on?</translation>
@@ -355,6 +359,7 @@
 <translation id="7398254312354928459">Switched network connection</translation>
 <translation id="742594950370306541">Camera is in use.</translation>
 <translation id="743058460480092004">Camera and microphone are in use.</translation>
+<translation id="7497767806359279797">Choose language and keyboard</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Network may be monitored</translation>
 <translation id="7536035074519304529">IP address: <ph name="ADDRESS" /></translation>
@@ -364,6 +369,7 @@
 <translation id="7569509451529460200">Braille and ChromeVox are enabled</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7604942372593434070">Access your browsing activity</translation>
+<translation id="7642778300616172920">Hide sensitive content</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (owner)</translation>
 <translation id="7647488630410863958">Unlock device to view your notifications</translation>
 <translation id="7649070708921625228">Help</translation>
@@ -379,6 +385,7 @@
 <translation id="7842211907556571265">Connecting to <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Warning: Experimental feature</translation>
 <translation id="7846634333498149051">Keyboard</translation>
+<translation id="7886277072580235377">Your Internet session will be cleared when you sign out. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Manipulate privacy-related settings</translation>
 <translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>
 <translation id="7933084174919150729">The Google Assistant is only available for primary profile.</translation>
@@ -419,6 +426,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Reconnecting...</translation>
 <translation id="8513108775083588393">Auto-rotate</translation>
 <translation id="8517041960877371778">Your <ph name="DEVICE_TYPE" /> may not charge while it is turned on.</translation>
+<translation id="8592141010104017453">Don't show notifications at all</translation>
 <translation id="8627191004499078455">Connected to <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> remaining</translation>
 <translation id="8649101189709089199">Select-to-Speak</translation>

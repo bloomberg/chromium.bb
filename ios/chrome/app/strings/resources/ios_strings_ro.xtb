@@ -23,7 +23,6 @@
 <translation id="127138278192656016">Folosește sincronizarea și toate serviciile</translation>
 <translation id="1272079795634619415">Oprește</translation>
 <translation id="1323735185997015385">Șterge</translation>
-<translation id="132390688737681464">Salvează și completează adresele</translation>
 <translation id="132683371494960526">Atinge de două ori pentru a modifica dosarul părinte.</translation>
 <translation id="1340643665687018190">Meniul Închide</translation>
 <translation id="1375321115329958930">Parole salvate</translation>
@@ -120,7 +119,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Parolă ascunsă</translation>
 <translation id="2898963176829412617">Dosar nou…</translation>
-<translation id="2903493209154104877">Adrese</translation>
 <translation id="2909437209446960244">File recente</translation>
 <translation id="2916171785467530738">Completează automat căutările și adresele URL</translation>
 <translation id="291754862089661335">Poziționează codul QR sau codul de bare în acest cadru</translation>
@@ -244,7 +242,6 @@ Datele sunt criptate cu expresia de acces pentru sincronizare. Introdu-o pentru 
 <translation id="5062321486222145940">Instalează Google Drive</translation>
 <translation id="5083464117946352670">Dimensiune fișier necunoscută.</translation>
 <translation id="5094827893301452931">Tweet finalizat.</translation>
-<translation id="5123982333065001601">Salvează și completează cardurile de credit</translation>
 <translation id="5173593619615111996">Închide toate filele incognito</translation>
 <translation id="5181140330217080051">Se descarcă</translation>
 <translation id="5186185447130319458">Privat</translation>
@@ -252,7 +249,6 @@ Datele sunt criptate cu expresia de acces pentru sincronizare. Introdu-o pentru 
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Activează sincronizarea</translation>
 <translation id="5244474230056479698">Se sincronizează cu <ph name="EMAIL" /></translation>
-<translation id="527973086555161537">Deschide o filă pentru a naviga privat pe web.</translation>
 <translation id="5300589172476337783">Afișează</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5327248766486351172">Nume</translation>
@@ -336,7 +332,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="6464071786529933911">Deschide în Filă incognito nouă</translation>
 <translation id="6482629121755362506">Elemente șterse: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Din ultima oră</translation>
-<translation id="6570040839871198836">Completare auto.</translation>
 <translation id="6656103420185847513">Modificați dosarul</translation>
 <translation id="6657585470893396449">Parolă</translation>
 <translation id="667999046851023355">Document</translation>
@@ -426,7 +421,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8205564605687841303">Anulează</translation>
 <translation id="8225985093977202398">Imaginile și fișierele memorate în cache</translation>
 <translation id="8261506727792406068">Șterge</translation>
-<translation id="8272426682713568063">Cărți de credit</translation>
 <translation id="8281781826761538115">Prestabilit – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Închideți toate</translation>
 <translation id="8381750437846184350">Stabilește cum poate folosi Google istoricul de navigare pentru a personaliza Căutarea, anunțurile și alte servicii Google</translation>
