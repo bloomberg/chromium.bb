@@ -30,6 +30,7 @@
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
+#include "ash/system/unified/top_shortcut_button.h"
 #include "base/i18n/number_formatting.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -45,6 +46,7 @@
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/onc/onc_constants.h"
+#include "components/vector_icons/vector_icons.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -165,7 +167,12 @@ class NetworkListView::SectionHeaderRowView : public views::View,
   void InitializeLayout() {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
     SetLayoutManager(std::make_unique<views::FillLayout>());
-    container_ = TrayPopupUtils::CreateSubHeaderRowView(false);
+    bool show_spacing = features::IsSystemTrayUnifiedEnabled();
+    container_ = TrayPopupUtils::CreateSubHeaderRowView(show_spacing);
+    if (show_spacing) {
+      container_->AddView(TriView::Container::START,
+                          TrayPopupUtils::CreateMainImageView());
+    }
     AddChildView(container_);
 
     network_row_title_view_ = new NetworkRowTitleView(title_id_);
@@ -446,11 +453,20 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
     gfx::ImageSkia disabled_image = network_icon::GetImageForNewWifiNetwork(
         SkColorSetA(prominent_color, kDisabledJoinIconAlpha),
         SkColorSetA(prominent_color, kDisabledJoinBadgeAlpha));
-    join_button_ = new SystemMenuButton(this, normal_image, disabled_image,
-                                        IDS_ASH_STATUS_TRAY_OTHER_WIFI);
-    join_button_->SetInkDropColor(prominent_color);
-    join_button_->SetEnabled(enabled);
-    container()->AddView(TriView::Container::END, join_button_);
+    if (features::IsSystemTrayUnifiedEnabled()) {
+      auto* join_button = new TopShortcutButton(
+          this, vector_icons::kWifiAddIcon, IDS_ASH_STATUS_TRAY_OTHER_WIFI);
+      join_button->SetEnabled(enabled);
+      container()->AddView(TriView::Container::END, join_button);
+      join_button_ = join_button;
+    } else {
+      auto* join_button = new SystemMenuButton(
+          this, normal_image, disabled_image, IDS_ASH_STATUS_TRAY_OTHER_WIFI);
+      join_button->SetInkDropColor(prominent_color);
+      join_button->SetEnabled(enabled);
+      container()->AddView(TriView::Container::END, join_button);
+      join_button_ = join_button;
+    }
   }
 
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
@@ -478,7 +494,7 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
   static constexpr int kDisabledJoinIconAlpha = 0x1D;
 
   // A button to invoke "Join Wi-Fi network" dialog.
-  SystemMenuButton* join_button_;
+  views::Button* join_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiHeaderRowView);
 };
