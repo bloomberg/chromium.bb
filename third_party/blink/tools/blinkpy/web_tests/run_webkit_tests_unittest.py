@@ -1273,7 +1273,8 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             expected_extensions=['.txt'])
 
     def test_reset_results_testharness_no_baseline(self):
-        # Tests that we don't create new result for a testharness test without baselines.
+        # Tests that we create new result for a failing testharness test without
+        # baselines, but don't create one for a passing one.
         host = MockHost()
         details, log_stream, _ = logging_run(
             [
@@ -1284,8 +1285,8 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 5)
-        self.assert_baselines(file_list, log_stream, 'failures/unexpected/testharness', [])
+        self.assertEqual(len(file_list), 6)
+        self.assert_baselines(file_list, log_stream, 'failures/unexpected/testharness', ['.txt'])
         self.assert_baselines(file_list, log_stream, 'passes/testharness', [])
 
     def test_reset_results_testharness_existing_baseline(self):
