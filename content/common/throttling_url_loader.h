@@ -83,12 +83,7 @@ class CONTENT_EXPORT ThrottlingURLLoader
              network::ResourceRequest* url_request,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  void StartNow(scoped_refptr<network::SharedURLLoaderFactory> factory,
-                int32_t routing_id,
-                int32_t request_id,
-                uint32_t options,
-                network::ResourceRequest* url_request,
-                scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  void StartNow();
 
   // Processes the result of a URLLoaderThrottle call, adding the throttle to
   // the blocking set if it deferred and updating |*should_defer| accordingly.
@@ -192,7 +187,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
     // |task_runner_| is used to set up |client_binding_|.
     scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   };
-  // Set if start is deferred.
+  // Holds any info needed to start or restart the request. Used when start is
+  // deferred or when FollowRedirectForcingRestart() is called.
   std::unique_ptr<StartInfo> start_info_;
 
   struct ResponseInfo {
