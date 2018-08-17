@@ -76,8 +76,8 @@ ScopedJavaLocalRef<jintArray> JNI_ProfileSyncService_ModelTypeSetToJavaIntArray(
     JNIEnv* env,
     syncer::ModelTypeSet types) {
   std::vector<int> type_vector;
-  for (syncer::ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
-    type_vector.push_back(it.Get());
+  for (syncer::ModelType type : types) {
+    type_vector.push_back(type);
   }
   return base::android::ToJavaIntArray(env, type_vector);
 }

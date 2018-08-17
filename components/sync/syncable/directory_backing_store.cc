@@ -389,9 +389,7 @@ bool DirectoryBackingStore::SaveChanges(
             "VALUES (?, ?, ?, ?)"));
 
     ModelTypeSet protocol_types = ProtocolTypes();
-    for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
-         iter.Inc()) {
-      ModelType type = iter.Get();
+    for (ModelType type : protocol_types) {
       // We persist not ModelType but rather a protobuf-derived ID.
       string model_id = ModelTypeEnumToModelId(type);
       string progress_marker;

@@ -301,10 +301,9 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
 
 ModelType GetModelTypeFromSpecificsFieldNumber(int field_number) {
   ModelTypeSet protocol_types = ProtocolTypes();
-  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
-       iter.Inc()) {
-    if (GetSpecificsFieldNumberFromModelType(iter.Get()) == field_number)
-      return iter.Get();
+  for (ModelType type : protocol_types) {
+    if (GetSpecificsFieldNumberFromModelType(type) == field_number)
+      return type;
   }
   return UNSPECIFIED;
 }
@@ -320,8 +319,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
 
 FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in) {
   FullModelTypeSet out;
-  for (ModelTypeSet::Iterator i = in.First(); i.Good(); i.Inc()) {
-    out.Put(i.Get());
+  for (ModelType type : in) {
+    out.Put(type);
   }
   return out;
 }
@@ -437,11 +436,12 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 ModelTypeNameMap GetUserSelectableTypeNameMap() {
   ModelTypeNameMap type_names;
   ModelTypeSet type_set = UserSelectableTypes();
-  ModelTypeSet::Iterator it = type_set.First();
-  DCHECK_EQ(arraysize(kUserSelectableDataTypeNames), type_set.Size());
-  for (size_t i = 0; i < arraysize(kUserSelectableDataTypeNames) && it.Good();
-       ++i, it.Inc()) {
-    type_names[it.Get()] = kUserSelectableDataTypeNames[i];
+  ModelTypeSet::Iterator it = type_set.begin();
+  DCHECK_EQ(base::size(kUserSelectableDataTypeNames), type_set.Size());
+  for (size_t i = 0;
+       i < base::size(kUserSelectableDataTypeNames) && it != type_set.end();
+       ++i, ++it) {
+    type_names[*it] = kUserSelectableDataTypeNames[i];
   }
   return type_names;
 }
@@ -553,11 +553,11 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
 
 std::string ModelTypeSetToString(ModelTypeSet model_types) {
   std::string result;
-  for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
+  for (ModelType type : model_types) {
     if (!result.empty()) {
       result += ", ";
     }
-    result += ModelTypeToString(it.Get());
+    result += ModelTypeToString(type);
   }
   return result;
 }
@@ -592,8 +592,8 @@ ModelTypeSet ModelTypeSetFromString(const std::string& model_types_string) {
 
 std::unique_ptr<base::ListValue> ModelTypeSetToValue(ModelTypeSet model_types) {
   std::unique_ptr<base::ListValue> value(new base::ListValue());
-  for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
-    value->AppendString(ModelTypeToString(it.Get()));
+  for (ModelType type : model_types) {
+    value->AppendString(ModelTypeToString(type));
   }
   return value;
 }

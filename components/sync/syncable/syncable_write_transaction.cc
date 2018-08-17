@@ -144,7 +144,7 @@ void WriteTransaction::UpdateTransactionVersion(
   if (!type_seen.Empty() && transaction_version_) {
     DCHECK_EQ(1u, type_seen.Size());
     *transaction_version_ =
-        directory_->GetTransactionVersion(type_seen.First().Get());
+        directory_->GetTransactionVersion(*(type_seen.begin()));
   }
 }
 

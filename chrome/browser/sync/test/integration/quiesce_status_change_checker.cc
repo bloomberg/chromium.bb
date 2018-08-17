@@ -35,17 +35,16 @@ bool ProgressMarkersMatch(const browser_sync::ProfileSyncService* service1,
   const syncer::SyncCycleSnapshot& snap1 = service1->GetLastCycleSnapshot();
   const syncer::SyncCycleSnapshot& snap2 = service2->GetLastCycleSnapshot();
 
-  for (syncer::ModelTypeSet::Iterator type_it = common_types.First();
-       type_it.Good(); type_it.Inc()) {
+  for (syncer::ModelType type : common_types) {
     // Look up the progress markers.  Fail if either one is missing.
     syncer::ProgressMarkerMap::const_iterator pm_it1 =
-        snap1.download_progress_markers().find(type_it.Get());
+        snap1.download_progress_markers().find(type);
     if (pm_it1 == snap1.download_progress_markers().end()) {
       return false;
     }
 
     syncer::ProgressMarkerMap::const_iterator pm_it2 =
-        snap2.download_progress_markers().find(type_it.Get());
+        snap2.download_progress_markers().find(type);
     if (pm_it2 == snap2.download_progress_markers().end()) {
       return false;
     }

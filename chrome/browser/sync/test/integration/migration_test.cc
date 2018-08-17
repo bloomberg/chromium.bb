@@ -130,9 +130,8 @@ class MigrationTest : public SyncTest  {
     MigrationList migration_list;
     const syncer::ModelTypeSet preferred_data_types =
         GetPreferredDataTypes();
-    for (syncer::ModelTypeSet::Iterator it =
-             preferred_data_types.First(); it.Good(); it.Inc()) {
-      migration_list.push_back(MakeSet(it.Get()));
+    for (syncer::ModelType type : preferred_data_types) {
+      migration_list.push_back(MakeSet(type));
     }
     return migration_list;
   }

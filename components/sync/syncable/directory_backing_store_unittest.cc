@@ -4235,13 +4235,11 @@ INSTANTIATE_TEST_CASE_P(DirectoryBackingStore, MigrationTest,
 
 TEST_F(DirectoryBackingStoreTest, ModelTypeIds) {
   ModelTypeSet protocol_types = ProtocolTypes();
-  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
-       iter.Inc()) {
+  for (ModelType type : protocol_types) {
     std::string model_id =
-        TestDirectoryBackingStore::ModelTypeEnumToModelId(iter.Get());
-    EXPECT_EQ(iter.Get(),
-        TestDirectoryBackingStore::ModelIdToModelTypeEnum(model_id.data(),
-                                                          model_id.size()));
+        TestDirectoryBackingStore::ModelTypeEnumToModelId(type);
+    EXPECT_EQ(type, TestDirectoryBackingStore::ModelIdToModelTypeEnum(
+                        model_id.data(), model_id.size()));
   }
 }
 

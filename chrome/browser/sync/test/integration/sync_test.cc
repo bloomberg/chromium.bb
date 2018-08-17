@@ -1157,12 +1157,10 @@ void SyncTest::TriggerMigrationDoneError(syncer::ModelTypeSet model_types) {
   ASSERT_TRUE(ServerSupportsErrorTriggering());
   std::string path = "chromiumsync/migrate";
   char joiner = '?';
-  for (syncer::ModelTypeSet::Iterator it = model_types.First();
-       it.Good(); it.Inc()) {
+  for (syncer::ModelType type : model_types) {
     path.append(
-        base::StringPrintf(
-            "%ctype=%d", joiner,
-            syncer::GetSpecificsFieldNumberFromModelType(it.Get())));
+        base::StringPrintf("%ctype=%d", joiner,
+                           syncer::GetSpecificsFieldNumberFromModelType(type)));
     joiner = '&';
   }
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
