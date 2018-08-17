@@ -446,7 +446,10 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
   if (is_android) {
     packaged_services += [ ":chrome_download_manager_manifest" ]
   } else {
-    packaged_services += [ "//chrome/utility:profile_import_manifest" ]
+    packaged_services += [
+      "//components/mirroring/service:manifest",
+      "//chrome/utility:profile_import_manifest",
+    ]
   }
   if (is_chromeos) {
     packaged_services += [

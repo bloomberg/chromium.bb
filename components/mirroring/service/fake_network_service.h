@@ -6,7 +6,7 @@
 #define COMPONENTS_MIRRORING_SERVICE_FAKE_NETWORK_SERVICE_H_
 
 #include "base/callback.h"
-#include "media/cast/net/cast_transport_config.h"
+#include "media/cast/net/cast_transport_defines.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/test/test_network_context.h"
