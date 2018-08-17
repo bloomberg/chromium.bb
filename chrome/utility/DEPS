@@ -20,6 +20,8 @@ include_rules = [
   "+chrome/services/wifi_util_win/wifi_util_win_service.h",
   "+chrome/services/wifi_util_win/public/mojom",
   "+components/crash/core/common/crash_keys.h",
+  "+components/mirroring/mojom",
+  "+components/mirroring/service",
   "+components/payments/content/utility",
   "+components/services/heap_profiling/heap_profiling_service.h",
   "+components/services/heap_profiling/public",

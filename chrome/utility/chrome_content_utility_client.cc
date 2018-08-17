@@ -14,16 +14,21 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "chrome/common/buildflags.h"
+#include "components/mirroring/mojom/constants.mojom.h"
+#include "components/mirroring/service/features.h"
+#include "components/mirroring/service/mirroring_service.h"
 #include "components/services/heap_profiling/heap_profiling_service.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
 #include "content/public/utility/utility_thread.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
+#include "services/network/public/cpp/features.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -290,6 +295,19 @@ void ChromeContentUtilityClient::RegisterServices(
                       service_info);
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
+      base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
+      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    service_manager::EmbeddedServiceInfo mirroring_info;
+    mirroring_info.factory =
+        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
+          return std::make_unique<mirroring::MirroringService>();
+        });
+    services->emplace(mirroring::mojom::kServiceName, mirroring_info);
+  }
+#endif
 
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Figure out why we have to do this when not using mash.

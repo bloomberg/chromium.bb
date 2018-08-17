@@ -2,7 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/catalog/public/tools/catalog.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
+
+service_manifest("manifest") {
+  name = "mirroring"
+  source = "manifest.json"
+}
 
 component("mirroring_service") {
   sources = [
@@ -16,6 +25,8 @@ component("mirroring_service") {
     "message_dispatcher.h",
     "mirror_settings.cc",
     "mirror_settings.h",
+    "mirroring_service.cc",
+    "mirroring_service.h",
     "receiver_response.cc",
     "receiver_response.h",
     "remoting_sender.cc",
@@ -58,6 +69,7 @@ component("mirroring_service") {
     "//net",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
+    "//services/service_manager/public/cpp:cpp",
     "//ui/gfx",
   ]
 
@@ -95,13 +107,11 @@ source_set("unittests") {
     "//media/cast:net",
     "//media/cast:sender",
     "//media/cast:test_support",
-    "//media/cast:test_support",
     "//media/mojo/interfaces",
     "//media/mojo/interfaces:remoting",
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/network:test_support",
-    "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",

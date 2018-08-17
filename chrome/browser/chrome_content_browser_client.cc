@@ -179,6 +179,8 @@
 #include "components/google/core/common/google_util.h"
 #include "components/metrics/call_stack_profile_collector.h"
 #include "components/metrics/client_info.h"
+#include "components/mirroring/mojom/constants.mojom.h"
+#include "components/mirroring/service/features.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_constants.h"
 #include "components/net_log/chrome_net_log.h"
@@ -3751,6 +3753,15 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
         base::BindRepeating([]() -> base::string16 {
           return base::ASCIIToUTF16("Simple Browser");
         });
+  }
+#endif
+
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
+      base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
+      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    (*services)[mirroring::mojom::kServiceName] =
+        base::BindRepeating(&base::ASCIIToUTF16, "Mirroring Service");
   }
 #endif
 }

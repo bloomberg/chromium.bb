@@ -4,6 +4,12 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
+mojom("constants") {
+  sources = [
+    "constants.mojom",
+  ]
+}
+
 mojom("common") {
   sources = [
     "cast_message_channel.mojom",
