@@ -19,6 +19,8 @@ FASTPATH = Tag(
     'fastpath', 'Fast path stories.')
 REQUIRED_WEBGL = Tag(
     'required_webgl', 'Stories that are skipped if no webgl support')
+USE_FAKE_CAMERA_DEVICE = Tag(
+    'use_fake_camera_device', 'Story requires a camera device for media')
 
 # Below are tags for filtering by page sets
 

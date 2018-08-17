@@ -16,16 +16,16 @@
             "DEFAULT": "rendering_desktop_002.wprgo"
         },
         "animometer_webgl": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
+            "DEFAULT": "rendering_desktop_011.wprgo"
         },
         "aquarium": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
+            "DEFAULT": "rendering_desktop_011.wprgo"
         },
         "aquarium_20k": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
+            "DEFAULT": "rendering_desktop_011.wprgo"
         },
         "blob": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
+            "DEFAULT": "rendering_desktop_011.wprgo"
         },
         "blogspot_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
@@ -38,6 +38,9 @@
         },
         "booking_pinch_2018": {
             "DEFAULT": "rendering_desktop_007.wprgo"
+        },
+        "camera_to_webgl": {
+            "DEFAULT": "rendering_desktop_011.wprgo"
         },
         "cats_unscaled": {
             "DEFAULT": "rendering_desktop_008.wprgo"
@@ -67,10 +70,10 @@
             "DEFAULT": "rendering_desktop_004.wprgo"
         },
         "dynamic_cube_map": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
+            "DEFAULT": "rendering_desktop_011.wprgo"
         },
         "earth": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
+            "DEFAULT": "rendering_desktop_011.wprgo"
         },
         "ebay_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
@@ -172,7 +175,7 @@
             "DEFAULT": "rendering_desktop_004.wprgo"
         },
         "many_planets_deep": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
+            "DEFAULT": "rendering_desktop_011.wprgo"
         },
         "maps_move_2018": {
             "DEFAULT": "rendering_desktop_001.wprgo"
@@ -223,10 +226,10 @@
             "DEFAULT": "rendering_desktop_010.wprgo"
         },
         "nvidia_vertex_buffer_object": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
+            "DEFAULT": "rendering_desktop_011.wprgo"
         },
         "particles": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
+            "DEFAULT": "rendering_desktop_011.wprgo"
         },
         "pinterest_2018": {
             "DEFAULT": "rendering_desktop_000.wprgo"
@@ -235,7 +238,7 @@
             "DEFAULT": "rendering_desktop_004.wprgo"
         },
         "san_angeles": {
-            "DEFAULT": "rendering_desktop_006.wprgo"
+            "DEFAULT": "rendering_desktop_011.wprgo"
         },
         "smash_cat": {
             "DEFAULT": "rendering_desktop_004.wprgo"

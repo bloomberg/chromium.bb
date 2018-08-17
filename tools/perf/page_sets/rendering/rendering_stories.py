@@ -40,9 +40,21 @@ class RenderingStorySet(story.StorySet):
           platform not in story_class.SUPPORTED_PLATFORMS):
         continue
 
+      required_args = []
+      if (story_class.TAGS and
+          story_tags.USE_FAKE_CAMERA_DEVICE in story_class.TAGS):
+        required_args += [
+            # Use a fake camera showing a placeholder video.
+            '--use-fake-device-for-media-stream',
+            # Don't prompt for camera access. (Conveniently,
+            # this takes precedent over --deny-permission-prompts.)
+            '--use-fake-ui-for-media-stream',
+        ]
+
       self.AddStory(story_class(
           page_set=self,
-          shared_page_state_class=shared_page_state_class))
+          shared_page_state_class=shared_page_state_class,
+          extra_browser_args=required_args))
 
       if (platform == platforms.MOBILE and
           story_class.TAGS and
@@ -51,7 +63,9 @@ class RenderingStorySet(story.StorySet):
             page_set=self,
             shared_page_state_class=shared_page_state_class,
             name_suffix='_desktop_gpu_raster',
-            extra_browser_args=['--force-gpu-rasterization']))
+            extra_browser_args=required_args + [
+                '--force-gpu-rasterization',
+            ]))
 
       if (platform == platforms.MOBILE and
           story_class.TAGS and
@@ -60,7 +74,9 @@ class RenderingStorySet(story.StorySet):
             page_set=self,
             shared_page_state_class=shared_page_state_class,
             name_suffix='_sync_scroll',
-            extra_browser_args=['--disable-threaded-scrolling']))
+            extra_browser_args=required_args + [
+                '--disable-threaded-scrolling',
+            ]))
 
       if (platform == platforms.MOBILE and
           story_class.TAGS and
@@ -69,8 +85,10 @@ class RenderingStorySet(story.StorySet):
             page_set=self,
             shared_page_state_class=shared_page_state_class,
             name_suffix='_gpu_rasterization_and_decoding',
-            extra_browser_args=['--force-gpu-rasterization',
-                                '--enable-accelerated-jpeg-decoding']))
+            extra_browser_args=required_args + [
+                '--force-gpu-rasterization',
+                '--enable-accelerated-jpeg-decoding',
+            ]))
 
 
 class DesktopRenderingStorySet(RenderingStorySet):

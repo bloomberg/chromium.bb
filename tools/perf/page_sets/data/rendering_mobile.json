@@ -28,13 +28,13 @@
             "DEFAULT": "rendering_mobile_011.wprgo"
         },
         "animometer_webgl": {
-            "DEFAULT": "rendering_mobile_006.wprgo"
+            "DEFAULT": "rendering_mobile_026.wprgo"
         },
         "aquarium": {
-            "DEFAULT": "rendering_mobile_006.wprgo"
+            "DEFAULT": "rendering_mobile_026.wprgo"
         },
         "aquarium_20k": {
-            "DEFAULT": "rendering_mobile_006.wprgo"
+            "DEFAULT": "rendering_mobile_026.wprgo"
         },
         "baidu_mobile_2018": {
             "DEFAULT": "rendering_mobile_011.wprgo"
@@ -52,7 +52,7 @@
             "DEFAULT": "rendering_mobile_011.wprgo"
         },
         "blob": {
-            "DEFAULT": "rendering_mobile_006.wprgo"
+            "DEFAULT": "rendering_mobile_026.wprgo"
         },
         "blogspot_2018": {
             "DEFAULT": "rendering_mobile_000.wprgo"
@@ -83,6 +83,9 @@
         },
         "booking.com_mobile_sync_scroll_2018": {
             "DEFAULT": "rendering_mobile_011.wprgo"
+        },
+        "camera_to_webgl": {
+            "DEFAULT": "rendering_mobile_026.wprgo"
         },
         "capitolvolkswagen_mobile_2018": {
             "DEFAULT": "rendering_mobile_011.wprgo"
@@ -163,10 +166,10 @@
             "DEFAULT": "rendering_mobile_011.wprgo"
         },
         "dynamic_cube_map": {
-            "DEFAULT": "rendering_mobile_006.wprgo"
+            "DEFAULT": "rendering_mobile_026.wprgo"
         },
         "earth": {
-            "DEFAULT": "rendering_mobile_006.wprgo"
+            "DEFAULT": "rendering_mobile_026.wprgo"
         },
         "ebay_2018": {
             "DEFAULT": "rendering_mobile_000.wprgo"
@@ -367,7 +370,7 @@
             "DEFAULT": "rendering_mobile_004.wprgo"
         },
         "many_planets_deep": {
-            "DEFAULT": "rendering_mobile_006.wprgo"
+            "DEFAULT": "rendering_mobile_026.wprgo"
         },
         "mask_transition_animation": {
             "DEFAULT": "rendering_mobile_020.wprgo"
@@ -427,7 +430,7 @@
             "DEFAULT": "rendering_mobile_010.wprgo"
         },
         "nvidia_vertex_buffer_object": {
-            "DEFAULT": "rendering_mobile_006.wprgo"
+            "DEFAULT": "rendering_mobile_026.wprgo"
         },
         "nyc_gov_scroll_2018": {
             "DEFAULT": "rendering_mobile_016.wprgo"
@@ -469,7 +472,7 @@
             "DEFAULT": "rendering_mobile_020.wprgo"
         },
         "particles": {
-            "DEFAULT": "rendering_mobile_006.wprgo"
+            "DEFAULT": "rendering_mobile_026.wprgo"
         },
         "pbs_pathological_2018": {
             "DEFAULT": "rendering_mobile_025.wprgo"
@@ -505,7 +508,7 @@
             "DEFAULT": "rendering_mobile_004.wprgo"
         },
         "san_angeles": {
-            "DEFAULT": "rendering_mobile_006.wprgo"
+            "DEFAULT": "rendering_mobile_026.wprgo"
         },
         "sfgate_mobile_2018": {
             "DEFAULT": "rendering_mobile_011.wprgo"
