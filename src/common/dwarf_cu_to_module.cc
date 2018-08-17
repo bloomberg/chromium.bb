@@ -558,7 +558,7 @@ bool DwarfCUToModule::FuncHandler::EndAttributes() {
   return true;
 }
 
-static bool IsEmptyRange(vector<Module::Range> ranges) {
+static bool IsEmptyRange(const vector<Module::Range>& ranges) {
   uint64 size = accumulate(ranges.cbegin(), ranges.cend(), 0,
     [](uint64 total, Module::Range entry) {
       return total + entry.size;
