@@ -2467,52 +2467,10 @@ bool V4L2SliceVideoDecodeAccelerator::SubmitSlice(int index,
   return true;
 }
 
-// TODO(crbug.com/819930): Remove after https://crrev.com/c/1134929 and
-// https://crrev.com/c/1136336 are merged.
-//
-// This is a hack making Chrome work before/after merging
-// https://crrev.com/c/1136336 (for v3.14) and
-// https://crrev.com/c/1134929 (for v4.4), which changes IDs of controls from
-// V4L2_CID_MPEG_VIDEO_VP8_FRAME_HDR to V4L2_CID_MPEG_VIDEO_VP9_ENTROPY.
-void V4L2SliceVideoDecodeAccelerator::ReplaceChromeMpegVideoCtrlId(
-    uint32_t* ctrl_id) {
-  static_assert(
-      V4L2_CID_MPEG_VIDEO_VP9_ENTROPY - V4L2_CID_MPEG_VIDEO_VP8_FRAME_HDR == 3,
-      "The difference between V4L2_CID_MPEG_VIDEO_VP9_ENTROPY and "
-      "V4L2_CID_MPEG_VIDEO_VP8_FRAME_HDR must be 3");
-  if (*ctrl_id < V4L2_CID_MPEG_VIDEO_VP8_FRAME_HDR ||
-      *ctrl_id > V4L2_CID_MPEG_VIDEO_VP9_ENTROPY)
-    return;
-
-  // Prepare flags for each control since these controls are optional
-  // -1: uninitialized, 0: old kernel or unsupported control, 1: new kernel
-  static int flags[4] = {-1, -1, -1, -1};
-  const size_t offset = *ctrl_id - V4L2_CID_MPEG_VIDEO_VP8_FRAME_HDR;
-
-  if (flags[offset] < 0) {
-    struct v4l2_queryctrl query_ctrl = {};
-    query_ctrl.id = *ctrl_id;
-
-    flags[offset] = device_->Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0;
-  }
-
-  if (!flags[offset]) {
-    static uint32_t kOldBase = V4L2_CID_MPEG_BASE + 512;
-    *ctrl_id = kOldBase + offset;
-  }
-}
-
 bool V4L2SliceVideoDecodeAccelerator::SubmitExtControls(
     struct v4l2_ext_controls* ext_ctrls) {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_GT(ext_ctrls->config_store, 0u);
-
-  // TODO(crbug.com/819930): Remove after https://crrev.com/c/1134929 and
-  // https://crrev.com/c/1136336 are merged.
-  for (size_t i = 0; i < ext_ctrls->count; ++i) {
-    ReplaceChromeMpegVideoCtrlId(&ext_ctrls->controls[i].id);
-  }
-
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_EXT_CTRLS, ext_ctrls);
   return true;
 }
@@ -2521,13 +2479,6 @@ bool V4L2SliceVideoDecodeAccelerator::GetExtControls(
     struct v4l2_ext_controls* ext_ctrls) {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_GT(ext_ctrls->config_store, 0u);
-
-  // TODO(crbug.com/819930): Remove after https://crrev.com/c/1134929 and
-  // https://crrev.com/c/1136336 are merged.
-  for (size_t i = 0; i < ext_ctrls->count; ++i) {
-    ReplaceChromeMpegVideoCtrlId(&ext_ctrls->controls[i].id);
-  }
-
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_G_EXT_CTRLS, ext_ctrls);
   return true;
 }
@@ -2536,10 +2487,6 @@ bool V4L2SliceVideoDecodeAccelerator::IsCtrlExposed(uint32_t ctrl_id) {
   struct v4l2_queryctrl query_ctrl;
   memset(&query_ctrl, 0, sizeof(query_ctrl));
   query_ctrl.id = ctrl_id;
-
-  // TODO(crbug.com/819930): Remove after https://crrev.com/c/1134929 and
-  // https://crrev.com/c/1136336 are merged.
-  ReplaceChromeMpegVideoCtrlId(&query_ctrl.id);
 
   return (device_->Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0);
 }
