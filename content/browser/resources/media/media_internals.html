@@ -25,6 +25,7 @@ found in the LICENSE file.
       <tab>Players</tab>
       <tab>Audio</tab>
       <tab>Video Capture</tab>
+      <tab>Audio Focus</tab>
     </tabs>
     <tabpanels>
       <tabpanel id="players">
@@ -119,6 +120,21 @@ found in the LICENSE file.
             <tbody id="video-capture-capabilities-tbody" class="show-none-if-empty"></tbody>
           </table>
         </div>
+      </tabpanel>
+      <tabpanel id="players">
+        <div id="list-wrapper">
+          <h2>Active Sessions</h2>
+          <ul id="audio-focus-session-list" class="show-none-if-empty"></ul>
+        </div>
+        <template id="audio-focus-session-row">
+          <li>
+            <label class="audio-focus-session">
+              <span class="player-name"></span><br />
+              <span class="player-frame"></span><br />
+              <span class="player-desc"></span>
+            </label>
+          </li>
+        </template>
       </tabpanel>
     </tabpanels>
   </tabbox>

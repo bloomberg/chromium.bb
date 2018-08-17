@@ -205,6 +205,19 @@ class MediaSessionImpl : public MediaSession,
   // Returns whether the request was granted.
   CONTENT_EXPORT bool RequestSystemAudioFocus(AudioFocusType audio_focus_type);
 
+  // Returns debugging information to be displayed on chrome://media-internals.
+  struct DebugInfo {
+    // A unique name for the MediaSession.
+    std::string name;
+
+    // The title and URL of the owning WebContents.
+    std::string owner;
+
+    // State information stored in a string e.g. Ducked.
+    std::string state;
+  };
+  const DebugInfo GetDebugInfo();
+
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
   friend class ::MediaSessionImplBrowserTest;
@@ -213,6 +226,7 @@ class MediaSessionImpl : public MediaSession,
   friend class content::MediaSessionImplServiceRoutingTest;
   friend class content::MediaSessionImplStateObserver;
   friend class content::MediaSessionServiceImplBrowserTest;
+  friend class MediaInternalsAudioFocusTest;
 
   CONTENT_EXPORT void SetDelegateForTests(
       std::unique_ptr<AudioFocusDelegate> delegate);

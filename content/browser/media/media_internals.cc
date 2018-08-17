@@ -16,6 +16,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "content/browser/media/session/audio_focus_manager.h"
+#include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -698,6 +700,34 @@ void MediaInternals::SendVideoCaptureDeviceCapabilities() {
                              &video_capture_capabilities_cached_data_));
 }
 
+#if !defined(OS_ANDROID)
+void MediaInternals::SendAudioFocusState() {
+  if (!CanUpdate())
+    return;
+
+  base::DictionaryValue audio_focus_data;
+  const std::list<MediaSessionImpl*>& stack =
+      AudioFocusManager::GetInstance()->audio_focus_stack_;
+
+  // We should go backwards through the stack so the top of the stack is always
+  // shown first in the list.
+  base::ListValue stack_data;
+  for (auto iter = stack.rbegin(); iter != stack.rend(); ++iter) {
+    MediaSessionImpl::DebugInfo debug_info = (*iter)->GetDebugInfo();
+    base::DictionaryValue media_session_data;
+    media_session_data.SetKey("name", base::Value(debug_info.name));
+    media_session_data.SetKey("owner", base::Value(debug_info.owner));
+    media_session_data.SetKey("state", base::Value(debug_info.state));
+    stack_data.GetList().push_back(std::move(media_session_data));
+  }
+
+  audio_focus_data.SetKey("sessions", std::move(stack_data));
+
+  SendUpdate(
+      SerializeUpdate("media.onReceiveAudioFocusState", &audio_focus_data));
+}
+#endif  // !defined(OS_ANDROID)
+
 void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
     const std::vector<std::tuple<media::VideoCaptureDeviceDescriptor,
                                  media::VideoCaptureFormats>>&
@@ -777,6 +807,25 @@ MediaInternals::CreateAudioLogImpl(
 void MediaInternals::OnProcessTerminatedForTesting(int process_id) {
   uma_handler_->OnProcessTerminated(process_id);
 }
+
+#if !defined(OS_ANDROID)
+void MediaInternals::OnFocusGained(MediaSession* media_session,
+                                   AudioFocusType type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&MediaInternals::SendAudioFocusState,
+                                         base::Unretained(this)));
+}
+
+void MediaInternals::OnFocusLost(MediaSession* media_session) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&MediaInternals::SendAudioFocusState,
+                                         base::Unretained(this)));
+}
+#endif  // !defined(OS_ANDROID)
 
 void MediaInternals::SendUpdate(const base::string16& update) {
   // SendUpdate() may be called from any thread, but must run on the UI thread.
