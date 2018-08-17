@@ -92,7 +92,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       base::OnceCallback<void(gfx::GpuMemoryBufferHandle handle,
                               BufferCreationStatus status)>;
 
-  using RequestGPUInfoCallback = base::Callback<void(const gpu::GPUInfo&)>;
   using RequestHDRStatusCallback = base::RepeatingCallback<void(bool)>;
 
   static int GetGpuCrashCount();
@@ -162,7 +161,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       viz::mojom::FrameSinkManagerRequest request,
       viz::mojom::FrameSinkManagerClientPtrInfo client);
 
-  void RequestGPUInfo(RequestGPUInfoCallback request_cb);
   void RequestHDRStatus(RequestHDRStatusCallback request_cb);
 
   // What kind of GPU process, e.g. sandboxed or unsandboxed.
@@ -185,8 +183,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
  private:
   class ConnectionFilterImpl;
-
-  enum GpuInitializationStatus { UNKNOWN, SUCCESS, FAILURE };
 
   enum class GpuTerminationOrigin {
     kUnknownOrigin = 0,
@@ -258,8 +254,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   void SendOutstandingReplies();
 
-  void RunRequestGPUInfoCallbacks(const gpu::GPUInfo& gpu_info);
-
   void BlockLiveOffscreenContexts();
 
   // Update GPU crash counters.  Disable GPU if crash limit is reached.
@@ -280,8 +274,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // A callback to signal the completion of a SendDestroyingVideoSurface call.
   base::Closure send_destroying_video_surface_done_cb_;
 
-  std::vector<RequestGPUInfoCallback> request_gpu_info_callbacks_;
-
   // Qeueud messages to send when the process launches.
   base::queue<IPC::Message*> queued_messages_;
 
@@ -299,7 +291,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Whether we actually launched a GPU process.
   bool process_launched_;
 
-  GpuInitializationStatus status_;
+  bool initialized_;
 
   GpuTerminationOrigin termination_origin_ =
       GpuTerminationOrigin::kUnknownOrigin;
