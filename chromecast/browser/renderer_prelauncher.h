@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chromecast/browser/renderer_config.h"
 #include "ipc/ipc_listener.h"
 #include "url/gurl.h"
 
@@ -26,7 +25,6 @@ namespace chromecast {
 class RendererPrelauncher : private IPC::Listener {
  public:
   RendererPrelauncher(content::BrowserContext* browser_context,
-                      shell::RendererConfigurator renderer_configurator,
                       const GURL& gurl);
   ~RendererPrelauncher() override;
 
@@ -43,7 +41,6 @@ class RendererPrelauncher : private IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   content::BrowserContext* const browser_context_;
-  shell::RendererConfigurator renderer_configurator_;
   scoped_refptr<content::SiteInstance> site_instance_;
   const GURL gurl_;
   int32_t rph_routing_id_;

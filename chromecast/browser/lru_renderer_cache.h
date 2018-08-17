@@ -21,10 +21,6 @@ class BrowserContext;
 namespace chromecast {
 class RendererPrelauncher;
 
-namespace shell {
-class RendererConfigManager;
-}  // namespace shell
-
 // Factory class for testing.
 class RendererPrelauncherFactory {
  public:
@@ -39,7 +35,6 @@ class RendererPrelauncherFactory {
 class LRURendererCache {
  public:
   LRURendererCache(content::BrowserContext* browser_context,
-                   shell::RendererConfigManager* renderer_config_manager,
                    size_t max_renderers);
   virtual ~LRURendererCache();
 
@@ -69,7 +64,6 @@ class LRURendererCache {
   void EvictCache();
 
   content::BrowserContext* const browser_context_;
-  shell::RendererConfigManager* const renderer_config_manager_;
   const size_t max_renderers_;
   size_t in_use_count_;
   std::list<std::unique_ptr<RendererPrelauncher>> cache_;

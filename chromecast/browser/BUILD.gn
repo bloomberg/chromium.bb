@@ -77,8 +77,6 @@ cast_source_set("browser") {
     "network_context_manager.h",
     "pref_service_helper.cc",
     "pref_service_helper.h",
-    "renderer_config.cc",
-    "renderer_config.h",
     "renderer_prelauncher.cc",
     "renderer_prelauncher.h",
     "service/cast_service_simple.cc",
@@ -290,8 +288,8 @@ cast_source_set("browser") {
         "accessibility/accessibility_manager.cc",
         "accessibility/accessibility_manager.h",
         "accessibility/accessibility_sound_player.h",
-        "accessibility/accessibility_sound_proxy.h",
         "accessibility/accessibility_sound_proxy.cc",
+        "accessibility/accessibility_sound_proxy.h",
         "accessibility/touch_exploration_controller.cc",
         "accessibility/touch_exploration_controller.h",
         "accessibility/touch_exploration_manager.cc",
@@ -479,7 +477,6 @@ cast_source_set("unittests") {
     "devtools/cast_devtools_manager_delegate_unittest.cc",
     "lru_renderer_cache_test.cc",
     "network_context_manager_unittest.cc",
-    "renderer_config_unittest.cc",
   ]
 
   deps = [

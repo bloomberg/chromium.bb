@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chromecast/browser/renderer_config.h"
 #include "chromecast/browser/renderer_prelauncher.h"
 #include "content/public/browser/site_instance.h"
 
@@ -16,15 +15,12 @@ namespace chromecast {
 
 LRURendererCache::LRURendererCache(
     content::BrowserContext* browser_context,
-    shell::RendererConfigManager* renderer_config_manager,
     size_t max_renderers)
     : browser_context_(browser_context),
-      renderer_config_manager_(renderer_config_manager),
       max_renderers_(max_renderers),
       in_use_count_(0),
       weak_factory_(this) {
   DCHECK(browser_context_);
-  DCHECK(renderer_config_manager_);
   memory_pressure_listener_ =
       std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
           &LRURendererCache::OnMemoryPressure, weak_factory_.GetWeakPtr()));
@@ -100,9 +96,8 @@ void LRURendererCache::StartNextPrelauncher(const GURL& page_url) {
   if (factory_for_testing_) {
     cache_.push_front(factory_for_testing_->Create(browser_context_, page_url));
   } else {
-    cache_.push_front(std::make_unique<RendererPrelauncher>(
-        browser_context_,
-        renderer_config_manager_->CreateRendererConfigurator(), page_url));
+    cache_.push_front(
+        std::make_unique<RendererPrelauncher>(browser_context_, page_url));
   }
   // Evict the cache before prelaunching.
   EvictCache();
