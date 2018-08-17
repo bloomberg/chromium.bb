@@ -59,6 +59,7 @@ crypto_test_sources = [
   "src/crypto/hmac_extra/hmac_test.cc",
   "src/crypto/lhash/lhash_test.cc",
   "src/crypto/obj/obj_test.cc",
+  "src/crypto/pem/pem_test.cc",
   "src/crypto/pkcs7/pkcs7_test.cc",
   "src/crypto/pkcs8/pkcs12_test.cc",
   "src/crypto/pkcs8/pkcs8_test.cc",
