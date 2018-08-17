@@ -68,6 +68,8 @@ blink_platform_sources("loader") {
     "fetch/resource_status.h",
     "fetch/resource_timing_info.cc",
     "fetch/resource_timing_info.h",
+    "fetch/script_cached_metadata_handler.cc",
+    "fetch/script_cached_metadata_handler.h",
     "fetch/script_fetch_options.cc",
     "fetch/script_fetch_options.h",
     "fetch/source_keyed_cached_metadata_handler.cc",

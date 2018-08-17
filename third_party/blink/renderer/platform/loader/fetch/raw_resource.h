@@ -94,6 +94,11 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   // kMainResource.
   SourceKeyedCachedMetadataHandler* InlineScriptCacheHandler();
 
+  // Used for code caching of fetched code resources. Returns a cache handler
+  // which can only store a single cache metadata entry. This is valid only if
+  // type is kRaw.
+  SingleCachedMetadataHandler* ScriptCacheHandler();
+
   scoped_refptr<BlobDataHandle> DownloadedBlob() const {
     return downloaded_blob_;
   }
