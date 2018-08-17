@@ -21,7 +21,9 @@
 
 using ::testing::_;
 using ::testing::Eq;
+using ::testing::InSequence;
 using ::testing::Invoke;
+using ::testing::Mock;
 using ::testing::Return;
 
 namespace chromeos {
@@ -47,14 +49,6 @@ class CrosDBusServiceTest : public testing::Test {
     // ShutdownAndBlock() will be called in TearDown().
     EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
-    // CrosDBusService should take ownership of the service name passed to it.
-    const char kServiceName[] = "org.example.TestService";
-    EXPECT_CALL(
-        *mock_bus_.get(),
-        RequestOwnership(kServiceName,
-                         dbus::Bus::REQUIRE_PRIMARY_ALLOW_REPLACEMENT, _))
-        .Times(1);
-
     // Create a mock exported object.
     const dbus::ObjectPath kObjectPath("/org/example/TestService");
     mock_exported_object_ =
@@ -63,15 +57,27 @@ class CrosDBusServiceTest : public testing::Test {
     // |mock_bus_|'s GetExportedObject() will return mock_exported_object_|
     // for the given service name and the object path.
     EXPECT_CALL(*mock_bus_.get(), GetExportedObject(kObjectPath))
-        .WillOnce(Return(mock_exported_object_.get()));
+        .WillRepeatedly(Return(mock_exported_object_.get()));
 
     // Create a mock proxy resolution service.
     auto mock_proxy_resolution_service_provider =
         std::make_unique<MockProxyResolutionService>();
 
-    // Start() will be called with |mock_exported_object_|.
-    EXPECT_CALL(*mock_proxy_resolution_service_provider,
-                Start(Eq(mock_exported_object_))).WillOnce(Return());
+    const char kServiceName[] = "org.example.TestService";
+
+    {
+      // |mock_exported_object_|'s Start method should be called before
+      // RequestOwnership: https://crbug.com/874978
+      InSequence export_methods_before_taking_ownership;
+      EXPECT_CALL(*mock_proxy_resolution_service_provider,
+                  Start(Eq(mock_exported_object_)))
+          .WillOnce(Return());
+      EXPECT_CALL(
+          *mock_bus_.get(),
+          RequestOwnership(kServiceName,
+                           dbus::Bus::REQUIRE_PRIMARY_ALLOW_REPLACEMENT, _))
+          .Times(1);
+    }
 
     // Initialize the cros service with the mocks injected.
     CrosDBusService::ServiceProviderList service_providers;
@@ -85,6 +91,10 @@ class CrosDBusServiceTest : public testing::Test {
   void TearDown() override {
     cros_dbus_service_.reset();
     mock_bus_->ShutdownAndBlock();
+
+    // Clear expectations to allow |mock_bus_| to be destroyed:
+    // http://go/soverflow/10286514
+    EXPECT_TRUE(Mock::VerifyAndClearExpectations(mock_bus_.get()));
   }
 
  protected:

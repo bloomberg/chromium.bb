@@ -46,6 +46,12 @@ class CrosDBusServiceImpl : public CrosDBusService {
     DCHECK(OnOriginThread());
     DCHECK(!service_started_);
 
+    // Methods must be exported before RequestOwnership is called:
+    // https://crbug.com/874978
+    exported_object_ = bus_->GetExportedObject(object_path_);
+    for (const auto& provider : service_providers_)
+      provider->Start(exported_object_);
+
     // There are some situations, described in http://crbug.com/234382#c27,
     // where processes on Linux can wind up stuck in an uninterruptible state
     // for tens of seconds. If this happens when Chrome is trying to exit, this
@@ -57,10 +63,6 @@ class CrosDBusServiceImpl : public CrosDBusService {
     bus_->RequestOwnership(
         service_name_, dbus::Bus::REQUIRE_PRIMARY_ALLOW_REPLACEMENT,
         base::Bind(&CrosDBusServiceImpl::OnOwnership, base::Unretained(this)));
-
-    exported_object_ = bus_->GetExportedObject(object_path_);
-    for (size_t i = 0; i < service_providers_.size(); ++i)
-      service_providers_[i]->Start(exported_object_);
 
     service_started_ = true;
   }
