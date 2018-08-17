@@ -709,7 +709,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       in_process_(false),
       kind_(kind),
       process_launched_(false),
-      status_(UNKNOWN),
+      initialized_(false),
       gpu_host_binding_(this),
       weak_ptr_factory_(this) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -742,12 +742,6 @@ GpuProcessHost::~GpuProcessHost() {
     ca_transaction_gpu_coordinator_ = nullptr;
   }
 #endif
-
-  if (status_ == UNKNOWN) {
-    RunRequestGPUInfoCallbacks(gpu::GPUInfo());
-  } else {
-    DCHECK(request_gpu_info_callbacks_.empty());
-  }
 
   // In case we never started, clean up.
   while (!queued_messages_.empty()) {
@@ -1086,15 +1080,6 @@ void GpuProcessHost::ConnectFrameSinkManager(
   gpu_main_ptr_->CreateFrameSinkManager(std::move(params));
 }
 
-void GpuProcessHost::RequestGPUInfo(RequestGPUInfoCallback request_cb) {
-  if (status_ == SUCCESS || status_ == FAILURE) {
-    std::move(request_cb).Run(GpuDataManagerImpl::GetInstance()->GetGPUInfo());
-    return;
-  }
-
-  request_gpu_info_callbacks_.push_back(std::move(request_cb));
-}
-
 void GpuProcessHost::RequestHDRStatus(RequestHDRStatusCallback request_cb) {
   gpu_service_ptr_->RequestHDRStatus(std::move(request_cb));
 }
@@ -1203,7 +1188,7 @@ void GpuProcessHost::DidInitialize(
     const base::Optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", true);
-  status_ = SUCCESS;
+  initialized_ = true;
 
   // Set GPU driver bug workaround flags that are checked on the browser side.
   if (gpu_feature_info.IsWorkaroundEnabled(gpu::WAKE_UP_GPU_BEFORE_DRAWING)) {
@@ -1220,16 +1205,12 @@ void GpuProcessHost::DidInitialize(
   gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info,
                                          gpu_feature_info_for_hardware_gpu);
   gpu_data_manager->UpdateGpuInfo(gpu_info, gpu_info_for_hardware_gpu);
-  RunRequestGPUInfoCallbacks(gpu_data_manager->GetGPUInfo());
 }
 
 void GpuProcessHost::DidFailInitialize() {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", false);
-  status_ = FAILURE;
-  GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   if (kind_ == GPU_PROCESS_KIND_SANDBOXED)
-    gpu_data_manager->FallBackToNextGpuMode();
-  RunRequestGPUInfoCallbacks(gpu_data_manager->GetGPUInfo());
+    GpuDataManagerImpl::GetInstance()->FallBackToNextGpuMode();
 }
 
 void GpuProcessHost::DidCreateContextSuccessfully() {
@@ -1502,13 +1483,6 @@ void GpuProcessHost::SendOutstandingReplies() {
     base::ResetAndReturn(&send_destroying_video_surface_done_cb_).Run();
 }
 
-void GpuProcessHost::RunRequestGPUInfoCallbacks(const gpu::GPUInfo& gpu_info) {
-  for (auto& callback : request_gpu_info_callbacks_)
-    std::move(callback).Run(gpu_info);
-
-  request_gpu_info_callbacks_.clear();
-}
-
 void GpuProcessHost::BlockLiveOffscreenContexts() {
   for (std::multiset<GURL>::iterator iter =
            urls_with_live_offscreen_contexts_.begin();
@@ -1577,7 +1551,7 @@ void GpuProcessHost::RecordProcessCrash() {
   base::debug::Alias(&display_compositor_crash_count);
 
   // GPU process initialization failed and fallback already happened.
-  if (status_ == FAILURE)
+  if (!initialized_)
     return;
 
   bool disable_crash_limit = base::CommandLine::ForCurrentProcess()->HasSwitch(
