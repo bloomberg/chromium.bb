@@ -74,8 +74,8 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
       // Initialize blacklist before initializing third_party_dlls.
       // Note: "blacklist" is deprecated in favor of "third_party_dlls", but
       //       beacon management temporarily remains in the blacklist project.
-      blacklist::Initialize(false);  // Don't force, abort if beacon is present.
-      third_party_dlls::Init();
+      if (blacklist::Initialize(false))
+        third_party_dlls::Init();
     } __except (elf_crash::GenerateCrashDump(GetExceptionInformation())) {
     }
   } else if (reason == DLL_PROCESS_DETACH) {
