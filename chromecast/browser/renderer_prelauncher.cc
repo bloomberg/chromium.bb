@@ -14,10 +14,8 @@ namespace chromecast {
 
 RendererPrelauncher::RendererPrelauncher(
     content::BrowserContext* browser_context,
-    shell::RendererConfigurator renderer_configurator,
     const GURL& gurl)
     : browser_context_(browser_context),
-      renderer_configurator_(std::move(renderer_configurator)),
       gurl_(gurl),
       rph_routing_id_(MSG_ROUTING_NONE) {}
 
@@ -31,7 +29,6 @@ RendererPrelauncher::~RendererPrelauncher() {
 void RendererPrelauncher::Prelaunch() {
   DLOG(INFO) << "Prelaunching for: " << gurl_;
   site_instance_ = content::SiteInstance::CreateForURL(browser_context_, gurl_);
-  renderer_configurator_.Configure(site_instance_->GetProcess()->GetID());
   content::RenderProcessHost* rph = site_instance_->GetProcess();
   rph_routing_id_ = rph->GetNextRoutingID();
   rph->AddRoute(rph_routing_id_, this);

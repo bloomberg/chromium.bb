@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "chromecast/browser/renderer_config.h"
 #include "chromecast/browser/renderer_prelauncher.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/test_browser_context.h"
@@ -17,12 +16,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#define EXPECT_CREATE_AND_PRELAUNCH(ptr, url)                      \
-  ptr = new MockPrelauncher(                                       \
-      &browser_context_,                                           \
-      renderer_config_manager_.CreateRendererConfigurator(), url); \
-  EXPECT_CALL(*ptr, Prelaunch());                                  \
-  EXPECT_CALL(factory_, Create(&browser_context_, url))            \
+#define EXPECT_CREATE_AND_PRELAUNCH(ptr, url)           \
+  ptr = new MockPrelauncher(&browser_context_, url);    \
+  EXPECT_CALL(*ptr, Prelaunch());                       \
+  EXPECT_CALL(factory_, Create(&browser_context_, url)) \
       .WillOnce(Return(ByMove(std::unique_ptr<MockPrelauncher>(ptr))));
 
 #define EXPECT_EVICTION(ptr) EXPECT_CALL(*ptr, Destroy());
@@ -47,10 +44,8 @@ const GURL kUrl3("https://www.three.com");
 class MockPrelauncher : public RendererPrelauncher {
  public:
   MockPrelauncher(content::BrowserContext* browser_context,
-                  shell::RendererConfigurator renderer_configurator,
                   const GURL& page_url)
       : RendererPrelauncher(browser_context,
-                            std::move(renderer_configurator),
                             page_url) {}
   virtual ~MockPrelauncher() { Destroy(); }
 
@@ -78,13 +73,11 @@ class LRURendererCacheTest : public testing::Test {
   content::TestBrowserThreadBundle threads_;
   content::TestBrowserContext browser_context_;
   MockFactory factory_;
-  shell::RendererConfigManager renderer_config_manager_;
   std::unique_ptr<LRURendererCache> lru_cache_;
 };
 
 TEST_F(LRURendererCacheTest, SimpleTakeAndRelease) {
-  lru_cache_ = std::make_unique<LRURendererCache>(&browser_context_,
-                                                  &renderer_config_manager_, 1);
+  lru_cache_ = std::make_unique<LRURendererCache>(&browser_context_, 1);
   SetFactory();
   MockPrelauncher* p1;
   std::unique_ptr<RendererPrelauncher> taken;
@@ -119,8 +112,7 @@ TEST_F(LRURendererCacheTest, SimpleTakeAndRelease) {
 }
 
 TEST_F(LRURendererCacheTest, SimpleCacheEviction) {
-  lru_cache_ = std::make_unique<LRURendererCache>(&browser_context_,
-                                                  &renderer_config_manager_, 1);
+  lru_cache_ = std::make_unique<LRURendererCache>(&browser_context_, 1);
   SetFactory();
   MockPrelauncher* p1;
   std::unique_ptr<RendererPrelauncher> taken;
@@ -145,8 +137,7 @@ TEST_F(LRURendererCacheTest, SimpleCacheEviction) {
 }
 
 TEST_F(LRURendererCacheTest, CapacityOne) {
-  lru_cache_ = std::make_unique<LRURendererCache>(&browser_context_,
-                                                  &renderer_config_manager_, 1);
+  lru_cache_ = std::make_unique<LRURendererCache>(&browser_context_, 1);
   SetFactory();
   MockPrelauncher* p1;
   MockPrelauncher* p2;
@@ -233,8 +224,7 @@ TEST_F(LRURendererCacheTest, CapacityOne) {
 }
 
 TEST_F(LRURendererCacheTest, CapacityTwo) {
-  lru_cache_ = std::make_unique<LRURendererCache>(&browser_context_,
-                                                  &renderer_config_manager_, 2);
+  lru_cache_ = std::make_unique<LRURendererCache>(&browser_context_, 2);
   SetFactory();
   MockPrelauncher* p1;
   MockPrelauncher* p2;

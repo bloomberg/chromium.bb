@@ -13,7 +13,6 @@
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
-#include "chromecast/browser/renderer_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -60,10 +59,8 @@ IN_PROC_BROWSER_TEST_F(RendererPrelauncherTest, ReusedRenderer) {
   EXPECT_TRUE(browser_context);
 
   // Prelaunch a renderer process for the url.
-  shell::RendererConfigManager renderer_config_manager;
-  auto prelauncher = std::make_unique<RendererPrelauncher>(
-      browser_context, renderer_config_manager.CreateRendererConfigurator(),
-      gurl);
+  auto prelauncher =
+      std::make_unique<RendererPrelauncher>(browser_context, gurl);
   prelauncher->Prelaunch();
   scoped_refptr<content::SiteInstance> site_instance =
       prelauncher->site_instance();
