@@ -24,9 +24,8 @@ namespace display {
 ManagedDisplayInfo::ManagedDisplayModeList CreateInternalManagedDisplayModeList(
     const ManagedDisplayMode& native_mode) {
   ManagedDisplayMode mode(native_mode.size(), native_mode.refresh_rate(),
-                          native_mode.is_interlaced(), true, 1.f,
+                          native_mode.is_interlaced(), true,
                           native_mode.device_scale_factor());
-  mode.set_is_default(true);
   return ManagedDisplayInfo::ManagedDisplayModeList{mode};
 }
 
@@ -50,7 +49,7 @@ ManagedDisplayInfo::ManagedDisplayModeList CreateUnifiedManagedDisplayModeList(
         gfx::ToFlooredSize(scaled_size), native_mode.refresh_rate(),
         native_mode.is_interlaced(),
         param.is_default_mode ? true : false /* native */,
-        native_mode.ui_scale(), param.device_scale_factor);
+        param.device_scale_factor);
   }
   // Sort the mode by the size in DIP.
   std::sort(display_mode_list.begin(), display_mode_list.end(),

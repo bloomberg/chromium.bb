@@ -59,7 +59,7 @@ DisplayChangeObserver::GetInternalManagedDisplayModeList(
   const DisplayMode* ui_native_mode = output.native_mode();
   ManagedDisplayMode native_mode(ui_native_mode->size(),
                                  ui_native_mode->refresh_rate(),
-                                 ui_native_mode->is_interlaced(), true, 1.0,
+                                 ui_native_mode->is_interlaced(), true,
                                  display_info.device_scale_factor());
   return CreateInternalManagedDisplayModeList(native_mode);
 }
@@ -78,7 +78,7 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
     ManagedDisplayMode display_mode(
         mode_info->size(), mode_info->refresh_rate(),
         mode_info->is_interlaced(), output.native_mode() == mode_info.get(),
-        1.0, 1.0);
+        1.0);
     if (display_mode.native())
       native_mode = display_mode;
 

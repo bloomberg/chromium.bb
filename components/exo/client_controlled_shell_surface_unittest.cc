@@ -905,8 +905,7 @@ TEST_F(ClientControlledShellSurfaceTest,
 
   double scale = 1.25;
   display::ManagedDisplayMode mode(size, 60.f, false /* overscan */,
-                                   true /*native*/, 1.0, scale);
-  mode.set_is_default(true);
+                                   true /*native*/, scale);
 
   display::ManagedDisplayInfo::ManagedDisplayModeList mode_list;
   mode_list.push_back(mode);

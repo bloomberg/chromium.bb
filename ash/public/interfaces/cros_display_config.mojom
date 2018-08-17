@@ -137,8 +137,6 @@ struct DisplayMode {
   gfx.mojom.Size size;
   // The display mode size in native pixels.
   gfx.mojom.Size size_in_native_pixels;
-  // The display mode UI scale factor.
-  double ui_scale;
   // The display mode device scale factor.
   double device_scale_factor;
   // The display mode refresh rate in hertz.

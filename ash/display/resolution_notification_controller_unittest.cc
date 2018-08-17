@@ -64,7 +64,7 @@ class ResolutionNotificationControllerTest : public AshTestBase {
         false /* native */);
     display::ManagedDisplayMode new_mode(
         new_resolution, old_mode.refresh_rate(), old_mode.is_interlaced(),
-        old_mode.native(), old_mode.ui_scale(), old_mode.device_scale_factor());
+        old_mode.native(), old_mode.device_scale_factor());
 
     EXPECT_TRUE(controller()->PrepareNotificationAndSetDisplayMode(
         display.id(), old_mode, new_mode,

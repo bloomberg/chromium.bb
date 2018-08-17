@@ -12,7 +12,7 @@
 namespace ash {
 namespace accelerators {
 
-// Change internal display zooming up or down.
+// Change the display zooming up or down.
 ASH_EXPORT bool ZoomDisplay(bool up);
 
 // Reset the display zooming to the default state.

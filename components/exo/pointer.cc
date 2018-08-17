@@ -439,11 +439,9 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
   // Surface size is in DIPs, while layer size is in pseudo-DIP units that
   // depend on the DSF of the display mode. Scale the layer to capture the
   // surface at a constant pixel size, regardless of the primary display's
-  // UI scale and display mode DSF.
+  // display mode DSF.
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  auto* helper = WMHelper::GetInstance();
-  float scale = helper->GetDisplayInfo(display.id()).GetEffectiveUIScale() *
-                capture_scale_ / display.device_scale_factor();
+  float scale = capture_scale_ / display.device_scale_factor();
   host_window()->SetTransform(gfx::GetScaleTransform(gfx::Point(), scale));
 
   std::unique_ptr<viz::CopyOutputRequest> request =

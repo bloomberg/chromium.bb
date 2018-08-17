@@ -225,7 +225,6 @@ mojom::DisplayModePtr GetDisplayMode(
   gfx::Size size_dip = display_mode.GetSizeInDIP(is_internal);
   result->size = size_dip;
   result->size_in_native_pixels = display_mode.size();
-  result->ui_scale = display_mode.ui_scale();
   result->device_scale_factor = display_mode.device_scale_factor();
   result->refresh_rate = display_mode.refresh_rate();
   result->is_native = display_mode.native();
@@ -418,7 +417,7 @@ mojom::DisplayConfigResult SetDisplayMode(
   display::ManagedDisplayMode new_mode(
       display_mode.size_in_native_pixels, current_mode.refresh_rate(),
       current_mode.is_interlaced(), display_mode.is_native,
-      display_mode.ui_scale, display_mode.device_scale_factor);
+      display_mode.device_scale_factor);
 
   if (!new_mode.IsEquivalent(current_mode)) {
     // For the internal display, the display mode will be applied directly.

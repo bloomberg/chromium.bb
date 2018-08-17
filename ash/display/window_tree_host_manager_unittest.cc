@@ -183,8 +183,6 @@ class TestHelper {
 
   void SetDefaultDisplayLayout(display::DisplayPlacement::Position position);
 
-  float GetStoredUIScale(int64_t id);
-
   float GetStoredZoomScale(int64_t id);
 
  private:
@@ -215,10 +213,6 @@ void TestHelper::SetDefaultDisplayLayout(
   display::DisplayPlacement default_placement(position, 0);
   delegate_->display_manager()->layout_store()->SetDefaultDisplayPlacement(
       default_placement);
-}
-
-float TestHelper::GetStoredUIScale(int64_t id) {
-  return delegate_->display_manager()->GetDisplayInfo(id).GetEffectiveUIScale();
 }
 
 float TestHelper::GetStoredZoomScale(int64_t id) {
@@ -1219,7 +1213,7 @@ TEST_F(WindowTreeHostManagerTest, ScaleRootWindow) {
   TestEventHandler event_handler;
   Shell::Get()->AddPreTargetHandler(&event_handler);
 
-  UpdateDisplay("600x400*2@0.8,500x300");
+  UpdateDisplay("600x400*1.6,500x300");
 
   display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
@@ -1230,20 +1224,20 @@ TEST_F(WindowTreeHostManagerTest, ScaleRootWindow) {
   EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
   EXPECT_EQ("0,0 375x250", root_windows[0]->bounds().ToString());
   EXPECT_EQ("375,0 500x300", display2.bounds().ToString());
-  EXPECT_FLOAT_EQ(0.8f, GetStoredZoomScale(display1.id()));
+  EXPECT_FLOAT_EQ(1.0f, GetStoredZoomScale(display1.id()));
   EXPECT_FLOAT_EQ(1.0f, GetStoredZoomScale(display2.id()));
 
   ui::test::EventGenerator generator(root_windows[0]);
   generator.MoveMouseToInHost(599, 200);
   EXPECT_EQ("374,125", event_handler.GetLocationAndReset());
 
-  display_manager()->UpdateZoomFactor(display1.id(), 1.f / 1.5f);
+  display_manager()->UpdateZoomFactor(display1.id(), 1.f / 1.2f);
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
   display2 = display_manager()->GetSecondaryDisplay();
   EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
   EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
   EXPECT_EQ("450,0 500x300", display2.bounds().ToString());
-  EXPECT_FLOAT_EQ(1.f / 1.5f, GetStoredZoomScale(display1.id()));
+  EXPECT_FLOAT_EQ(1.f / 1.2f, GetStoredZoomScale(display1.id()));
   EXPECT_FLOAT_EQ(1.0f, GetStoredZoomScale(display2.id()));
 
   Shell::Get()->RemovePreTargetHandler(&event_handler);

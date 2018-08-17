@@ -35,7 +35,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
                      float refresh_rate,
                      bool is_interlaced,
                      bool native,
-                     float ui_scale,
                      float device_scale_factor);
 
   ~ManagedDisplayMode();
@@ -54,11 +53,7 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
 
   bool native() const { return native_; }
 
-  bool is_default() const { return is_default_; }
-  void set_is_default(bool is_default) { is_default_ = is_default; }
-
   // Missing from ui::ManagedDisplayMode
-  float ui_scale() const { return ui_scale_; }
   float device_scale_factor() const { return device_scale_factor_; }
 
  private:
@@ -66,8 +61,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
   float refresh_rate_ = 0.0f;   // Refresh rate of the display, in Hz.
   bool is_interlaced_ = false;  // True if mode is interlaced.
   bool native_ = false;         // True if mode is native mode of the display.
-  bool is_default_ = false;     // True if mode is one with default UI scale.
-  float ui_scale_ = 1.0f;       // The UI scale factor of the mode.
   float device_scale_factor_ = 1.0f;  // The device scale factor of the mode.
 };
 
@@ -149,7 +142,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
 
   float zoom_factor() const { return zoom_factor_; }
   void set_zoom_factor(float zoom_factor) { zoom_factor_ = zoom_factor; }
-
   void set_is_zoom_factor_from_ui_scale(bool is_zoom_factor_from_ui_scale) {
     is_zoom_factor_from_ui_scale_ = is_zoom_factor_from_ui_scale;
   }
@@ -162,8 +154,7 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   void set_device_dpi(float dpi) { device_dpi_ = dpi; }
 
   // The native bounds for the display. The size of this can be
-  // different from the |size_in_pixel| when overscan insets are set
-  // and/or |configured_ui_scale_| is set.
+  // different from the |size_in_pixel| when overscan insets are set.
   const gfx::Rect& bounds_in_native() const { return bounds_in_native_; }
 
   // The size for the display in pixels.
@@ -173,12 +164,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   const gfx::Insets& overscan_insets_in_dip() const {
     return overscan_insets_in_dip_;
   }
-
-  // Sets/gets configured ui scale. This can be different from the ui
-  // scale actually used when the scale is 2.0 and DSF is 2.0.
-  // (the effective ui scale is 1.0 in this case).
-  float configured_ui_scale() const { return configured_ui_scale_; }
-  void set_configured_ui_scale(float scale) { configured_ui_scale_ = scale; }
 
   // Sets the rotation for the given |source|. Setting a new rotation will also
   // have it become the active rotation.
@@ -207,13 +192,9 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   //    uses 1.0f DFS unless 0.8x UI scaling is specified.
   float GetEffectiveDeviceScaleFactor() const;
 
-  // Returns the ui scale used for the device scale factor. This
-  // return 1.0f if the ui scale and dsf are both set to 2.0.
-  float GetEffectiveUIScale() const;
-
-  // Copy the display info except for fields that can be modified by a
-  // user (|rotation_| and |configured_ui_scale_|). |rotation_| and
-  // |configured_ui_scale_| are copied when the |another_info| isn't native one.
+  // Copy the display info except for fields that can be modified by a user
+  // (|rotation_|). |rotation_| is copied when the |another_info| isn't native
+  // one.
   void Copy(const ManagedDisplayInfo& another_info);
 
   // Update the |bounds_in_native_| and |size_in_pixel_| using
@@ -316,13 +297,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // needed to correctly compute zoom values and effective device scale factor
   // for FHD devices with 1.25 device scale factor.
   bool is_zoom_factor_from_ui_scale_;
-
-  // The pixel scale of the display. This is used to simply expand (or shrink)
-  // the desktop over the native display resolution (useful in HighDPI display).
-  // Note that this should not be confused with the device scale factor, which
-  // specifies the pixel density of the display. The actuall scale value to be
-  // used depends on the device scale factor.  See |GetEffectiveScaleFactor()|.
-  float configured_ui_scale_;
 
   // True if this comes from native platform (DisplayChangeObserver).
   bool native_;

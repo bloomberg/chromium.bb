@@ -38,7 +38,7 @@ TEST_F(DisplayUtilTest, DisplayZooms) {
   }};
   for (const auto& data : kTestData) {
     ManagedDisplayMode mode(gfx::Size(data.first, data.first), 60, false, true,
-                            1.f, 1.f);
+                            1.f);
     const std::vector<float> zoom_values = GetDisplayZoomFactors(mode);
     for (std::size_t j = 0; j < kNumOfZoomFactors; j++)
       EXPECT_FLOAT_EQ(zoom_values[j], data.second[j]);

@@ -10,10 +10,8 @@ namespace display {
 
 std::string ViewportMetrics::ToString() const {
   return base::StringPrintf(
-      "ViewportMetrics(bounds_in_pixels=%s, device_scale_factor=%g, "
-      "ui_scale_factor=%g)",
-      bounds_in_pixels.ToString().c_str(), device_scale_factor,
-      ui_scale_factor);
+      "ViewportMetrics(bounds_in_pixels=%s, device_scale_factor=%g)",
+      bounds_in_pixels.ToString().c_str(), device_scale_factor);
 }
 
 }  // namespace display

@@ -210,13 +210,8 @@ double WMHelper::GetDefaultDeviceScaleFactor() const {
       ash::Shell::Get()->display_manager();
   const display::ManagedDisplayInfo& display_info =
       display_manager->GetDisplayInfo(display::Display::InternalDisplayId());
-  for (auto& mode : display_info.display_modes()) {
-    if (mode.is_default())
-      return mode.device_scale_factor();
-  }
-
-  NOTREACHED();
-  return 1.0f;
+  DCHECK(display_info.display_modes().size());
+  return display_info.display_modes()[0].device_scale_factor();
 }
 
 }  // namespace exo

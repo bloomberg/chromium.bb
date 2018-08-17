@@ -40,21 +40,6 @@ DisplayInfoList CreateDisplayInfoListFromString(
   return display_info_list;
 }
 
-bool GetDisplayModeForUIScale(const ManagedDisplayInfo& info,
-                              float ui_scale,
-                              ManagedDisplayMode* mode) {
-  const ManagedDisplayInfo::ManagedDisplayModeList& modes =
-      info.display_modes();
-  auto iter = std::find_if(modes.begin(), modes.end(),
-                           [ui_scale](const ManagedDisplayMode& mode) {
-                             return mode.ui_scale() == ui_scale;
-                           });
-  if (iter == modes.end())
-    return false;
-  *mode = *iter;
-  return true;
-}
-
 // Gets the display |mode| for |resolution|. Returns false if no display
 // mode matches the resolution, or the display is an internal display.
 bool GetDisplayModeForResolution(const ManagedDisplayInfo& info,
@@ -142,19 +127,6 @@ void DisplayManagerTestApi::DisableChangeDisplayUponHostResize() {
 const ManagedDisplayInfo& DisplayManagerTestApi::GetInternalManagedDisplayInfo(
     int64_t display_id) {
   return display_manager_->display_info_[display_id];
-}
-
-bool DisplayManagerTestApi::SetDisplayUIScale(int64_t id, float ui_scale) {
-  if (!display_manager_->IsActiveDisplayId(id) ||
-      !Display::IsInternalDisplayId(id)) {
-    return false;
-  }
-  const ManagedDisplayInfo& info = display_manager_->GetDisplayInfo(id);
-
-  ManagedDisplayMode mode;
-  if (!GetDisplayModeForUIScale(info, ui_scale, &mode))
-    return false;
-  return display_manager_->SetDisplayMode(id, mode);
 }
 
 void DisplayManagerTestApi::SetTouchSupport(
