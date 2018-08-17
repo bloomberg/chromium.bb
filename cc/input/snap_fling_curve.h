@@ -41,8 +41,8 @@ class CC_EXPORT SnapFlingCurve {
   base::TimeDelta duration() const { return duration_; }
 
  private:
-  // Returns the curve's current distance at |time_stamp|.
-  double GetCurrentCurveDistance(base::TimeTicks time_stamp);
+  // Returns the curve's current distance at |current_time|.
+  double GetCurrentCurveDistance(base::TimeDelta current_time);
 
   // The initial scroll offset of the scroller.
   const gfx::Vector2dF start_offset_;

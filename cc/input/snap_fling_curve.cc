@@ -4,6 +4,7 @@
 
 #include "cc/input/snap_fling_curve.h"
 
+#include <algorithm>
 #include <cmath>
 #include "build/build_config.h"
 
@@ -43,6 +44,11 @@ double CalculateFirstDelta(double distance, double frames) {
   return distance * (1 - kRatio) / (1 - std::pow(kRatio, frames));
 }
 
+bool IsWithinOnePixel(gfx::Vector2dF actual, gfx::Vector2dF target) {
+  return std::abs(actual.x() - target.x()) < 1 &&
+         std::abs(actual.y() - target.y()) < 1;
+}
+
 }  // namespace
 
 gfx::Vector2dF SnapFlingCurve::EstimateDisplacement(
@@ -71,16 +77,7 @@ SnapFlingCurve::SnapFlingCurve(const gfx::Vector2dF& start_offset,
 
 SnapFlingCurve::~SnapFlingCurve() = default;
 
-double SnapFlingCurve::GetCurrentCurveDistance(base::TimeTicks time_stamp) {
-  double current_distance = GetDistanceFromDisplacement(current_displacement_);
-  base::TimeDelta current_time = time_stamp - start_time_;
-
-  // Finishes the curve if the time elapsed is longer than |duration_|, or the
-  // remaining distance is less than 1.
-  if (current_time >= duration_ || current_distance >= total_distance_ - 1) {
-    return total_distance_;
-  }
-
+double SnapFlingCurve::GetCurrentCurveDistance(base::TimeDelta current_time) {
   double current_frame = current_time.InMillisecondsF() / kMsPerFrame + 1;
   double sum =
       first_delta_ * (1 - std::pow(kRatio, current_frame)) / (1 - kRatio);
@@ -93,13 +90,15 @@ gfx::Vector2dF SnapFlingCurve::GetScrollDelta(base::TimeTicks time_stamp) {
 
   // The the snap offset may never be reached due to clamping or other factors.
   // To avoid a never ending snap curve, we force the curve to end if the time
-  // has passed a maximum Duration.
-  if (time_stamp - start_time_ > kMaximumSnapDuration) {
+  // has passed |duration_| or the remaining displacement is less than 1.
+  base::TimeDelta current_time = time_stamp - start_time_;
+  if (current_time >= std::min(duration_, kMaximumSnapDuration) ||
+      IsWithinOnePixel(current_displacement_, total_displacement_)) {
     is_finished_ = true;
     return total_displacement_ - current_displacement_;
   }
 
-  double new_distance = GetCurrentCurveDistance(time_stamp);
+  double new_distance = GetCurrentCurveDistance(current_time);
   gfx::Vector2dF new_displacement(new_distance * ratio_x_,
                                   new_distance * ratio_y_);
 
@@ -108,8 +107,6 @@ gfx::Vector2dF SnapFlingCurve::GetScrollDelta(base::TimeTicks time_stamp) {
 
 void SnapFlingCurve::UpdateCurrentOffset(const gfx::Vector2dF& current_offset) {
   current_displacement_ = current_offset - start_offset_;
-  if (current_displacement_ == total_displacement_)
-    is_finished_ = true;
 }
 
 bool SnapFlingCurve::IsFinished() const {
