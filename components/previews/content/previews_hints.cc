@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
+#include "components/optimization_guide/url_pattern_with_wildcards.h"
 #include "components/previews/core/previews_features.h"
 #include "url/gurl.h"
 
@@ -235,11 +236,15 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
 const optimization_guide::proto::PageHint* PreviewsHints::FindPageHint(
     const GURL& document_url,
     const optimization_guide::proto::Hint& hint) {
+  if (hint.page_hints_size() == 0)
+    return nullptr;
   std::string url = document_url.spec();
   for (const auto& page_hint : hint.page_hints()) {
-    // TODO(dougarnett): Support wildcards. https://crbug.com/870039
-    if (!page_hint.page_pattern().empty() &&
-        url.find(page_hint.page_pattern()) != std::string::npos) {
+    if (page_hint.page_pattern().empty())
+      continue;
+    optimization_guide::URLPatternWithWildcards url_pattern(
+        page_hint.page_pattern());
+    if (url_pattern.Matches(url)) {
       // Return the first matching page hint.
       return &page_hint;
     }
