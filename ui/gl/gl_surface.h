@@ -37,7 +37,6 @@ struct DCRendererLayerParams;
 namespace gl {
 
 class GLContext;
-class EGLTimestampClient;
 
 // Encapsulates a surface that can be rendered to with GL, hiding platform
 // specific management.
@@ -298,9 +297,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // example, most surfaces are double-buffered, so this would return 2. For
   // triple-buffered surfaces this would return 3, etc.
   virtual int GetBufferCount() const;
-
-  // Return the interface used for querying EGL timestamps.
-  virtual EGLTimestampClient* GetEGLTimestampClient();
 
   static GLSurface* GetCurrent();
 

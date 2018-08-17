@@ -1109,13 +1109,6 @@ void NativeViewGLSurfaceEGL::SetEnableSwapTimestamps() {
 
   eglSurfaceAttrib(GetDisplay(), surface_, EGL_TIMESTAMPS_ANDROID, EGL_TRUE);
 
-  // Check if egl composite interval is supported or not. If not then return.
-  // Else check which other timestamps are supported.
-  EGLint interval_name = EGL_COMPOSITE_INTERVAL_ANDROID;
-  if (!eglGetCompositorTimingSupportedANDROID(GetDisplay(), surface_,
-                                              interval_name))
-    return;
-
   static const struct {
     EGLint egl_name;
     const char* name;
@@ -1137,25 +1130,6 @@ void NativeViewGLSurfaceEGL::SetEnableSwapTimestamps() {
     if (!eglGetFrameTimestampSupportedANDROID(GetDisplay(), surface_,
                                               ts.egl_name))
       continue;
-
-    // For presentation feedback, prefer the actual scan out time, but fallback
-    // to SurfaceFlinger's composite time since some devices don't support
-    // the former.
-    switch (ts.egl_name) {
-      case EGL_FIRST_COMPOSITION_START_TIME_ANDROID:
-        // Value of presentation_feedback_index_ relies on the order of
-        // all_timestamps.
-        presentation_feedback_index_ =
-            static_cast<int>(supported_egl_timestamps_.size());
-        presentation_flags_ = 0;
-        break;
-      case EGL_DISPLAY_PRESENT_TIME_ANDROID:
-        presentation_feedback_index_ =
-            static_cast<int>(supported_egl_timestamps_.size());
-        presentation_flags_ = gfx::PresentationFeedback::kVSync |
-                              gfx::PresentationFeedback::kHWCompletion;
-        break;
-    }
 
     // Stored in separate vectors so we can pass the egl timestamps
     // directly to the EGL functions.
@@ -1202,24 +1176,21 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers(
     return gfx::SwapResult::SWAP_FAILED;
   }
 
-  EGLuint64KHR new_frame_id = 0;
-  bool new_frame_id_is_valid = true;
+  EGLuint64KHR newFrameId = 0;
+  bool newFrameIdIsValid = true;
   if (use_egl_timestamps_) {
-    new_frame_id_is_valid =
-        !!eglGetNextFrameIdANDROID(GetDisplay(), surface_, &new_frame_id);
+    newFrameIdIsValid =
+        !!eglGetNextFrameIdANDROID(GetDisplay(), surface_, &newFrameId);
   }
-  if (!new_frame_id_is_valid)
-    new_frame_id = -1;
 
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
-      presentation_helper_.get(), callback, new_frame_id);
-
+      presentation_helper_.get(), callback);
   if (!eglSwapBuffers(GetDisplay(), surface_)) {
     DVLOG(1) << "eglSwapBuffers failed with error "
              << GetLastEGLErrorString();
     scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_FAILED);
   } else if (use_egl_timestamps_) {
-    UpdateSwapEvents(new_frame_id, new_frame_id_is_valid);
+    UpdateSwapEvents(newFrameId, newFrameIdIsValid);
   }
 
 #if defined(USE_X11)
@@ -1410,80 +1381,6 @@ bool NativeViewGLSurfaceEGL::FlipsVertically() const {
 
 bool NativeViewGLSurfaceEGL::BuffersFlipped() const {
   return g_use_direct_composition;
-}
-
-EGLTimestampClient* NativeViewGLSurfaceEGL::GetEGLTimestampClient() {
-  // This api call is used by GLSurfacePresentationHelper class which is member
-  // of this class NativeViewGLSurfaceEGL. Hence its guaranteed "this" pointer
-  // will live longer than the GLSurfacePresentationHelper class.
-  return this;
-}
-
-bool NativeViewGLSurfaceEGL::IsEGLTimestampSupported() const {
-  return use_egl_timestamps_;
-}
-
-bool NativeViewGLSurfaceEGL::GetFrameTimestampInfoIfAvailable(
-    base::TimeTicks* presentation_time,
-    base::TimeDelta* composite_interval,
-    uint32_t* presentation_flags,
-    int frame_id) {
-  DCHECK(presentation_time);
-  DCHECK(composite_interval);
-  DCHECK(presentation_flags);
-
-  TRACE_EVENT1("gpu", "NativeViewGLSurfaceEGL:GetFrameTimestampInfoIfAvailable",
-               "frame_id", frame_id);
-
-  // Get the composite interval.
-  EGLint interval_name = EGL_COMPOSITE_INTERVAL_ANDROID;
-  EGLnsecsANDROID composite_interval_ns = 0;
-
-  *presentation_time = base::TimeTicks();
-  *presentation_flags = 0;
-
-  // If an error is generated, we will treat it as a frame done for timestamp
-  // reporting purpose.
-  if (!eglGetCompositorTimingANDROID(GetDisplay(), surface_, 1, &interval_name,
-                                     &composite_interval_ns)) {
-    *composite_interval = base::TimeDelta::FromNanoseconds(
-        base::TimeTicks::kNanosecondsPerSecond / 60);
-    return true;
-  }
-
-  // If the composite interval is pending, the frame is not yet done.
-  if (composite_interval_ns == EGL_TIMESTAMP_PENDING_ANDROID) {
-    return false;
-  }
-  DCHECK_GT(composite_interval_ns, 0);
-  *composite_interval = base::TimeDelta::FromNanoseconds(composite_interval_ns);
-
-  // Get the all available timestamps for the frame. If a frame is invalid or
-  // an error is generated,  we will treat it as a frame done for timestamp
-  // reporting purpose.
-  std::vector<EGLnsecsANDROID> egl_timestamps(supported_egl_timestamps_.size(),
-                                              EGL_TIMESTAMP_INVALID_ANDROID);
-  if ((frame_id < 0) ||
-      !eglGetFrameTimestampsANDROID(
-          GetDisplay(), surface_, frame_id,
-          static_cast<EGLint>(supported_egl_timestamps_.size()),
-          supported_egl_timestamps_.data(), egl_timestamps.data())) {
-    return true;
-  }
-  DCHECK_GE(presentation_feedback_index_, 0);
-
-  // Get the presentation time.
-  EGLnsecsANDROID presentation_time_ns =
-      egl_timestamps[presentation_feedback_index_];
-
-  // If the presentation time is pending, the frame is not yet done.
-  if (presentation_time_ns == EGL_TIMESTAMP_PENDING_ANDROID) {
-    return false;
-  }
-  *presentation_time = base::TimeTicks() +
-                       base::TimeDelta::FromNanoseconds(presentation_time_ns);
-  *presentation_flags = presentation_flags_;
-  return true;
 }
 
 gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffersWithDamage(

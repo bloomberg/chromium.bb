@@ -7,7 +7,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/gl/egl_timestamps.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gpu_timing.h"
@@ -17,15 +16,9 @@ namespace gl {
 GLSurfacePresentationHelper::ScopedSwapBuffers::ScopedSwapBuffers(
     GLSurfacePresentationHelper* helper,
     const GLSurface::PresentationCallback& callback)
-    : ScopedSwapBuffers(helper, callback, -1) {}
-
-GLSurfacePresentationHelper::ScopedSwapBuffers::ScopedSwapBuffers(
-    GLSurfacePresentationHelper* helper,
-    const GLSurface::PresentationCallback& callback,
-    int frame_id)
     : helper_(helper) {
   if (helper_)
-    helper_->PreSwapBuffers(callback, frame_id);
+    helper_->PreSwapBuffers(callback);
 }
 
 GLSurfacePresentationHelper::ScopedSwapBuffers::~ScopedSwapBuffers() {
@@ -34,11 +27,6 @@ GLSurfacePresentationHelper::ScopedSwapBuffers::~ScopedSwapBuffers() {
 }
 
 GLSurfacePresentationHelper::Frame::Frame(Frame&& other) = default;
-
-GLSurfacePresentationHelper::Frame::Frame(
-    int frame_id,
-    const GLSurface::PresentationCallback& callback)
-    : frame_id(frame_id), callback(callback) {}
 
 GLSurfacePresentationHelper::Frame::Frame(
     std::unique_ptr<GPUTimer>&& timer,
@@ -59,67 +47,20 @@ GLSurfacePresentationHelper::Frame::~Frame() = default;
 GLSurfacePresentationHelper::Frame& GLSurfacePresentationHelper::Frame::
 operator=(Frame&& other) = default;
 
-bool GLSurfacePresentationHelper::GetFrameTimestampInfoIfAvailable(
-    const Frame& frame,
-    base::TimeTicks* timestamp,
-    base::TimeDelta* interval,
-    uint32_t* flags) {
-  DCHECK(frame.timer || frame.fence || egl_timestamp_client_);
+bool GLSurfacePresentationHelper::Frame::StillPending() const {
+  DCHECK(timer || fence);
+  return timer ? !timer->IsAvailable() : !fence->HasCompleted();
+}
 
-  if (egl_timestamp_client_) {
-    return egl_timestamp_client_->GetFrameTimestampInfoIfAvailable(
-        timestamp, interval, flags, frame.frame_id);
-  } else if (frame.timer) {
-    if (!frame.timer->IsAvailable())
-      return false;
+base::TimeTicks GLSurfacePresentationHelper::Frame::GetTimestamp() const {
+  DCHECK(!StillPending());
+  if (timer) {
     int64_t start = 0;
     int64_t end = 0;
-    frame.timer->GetStartEndTimestamps(&start, &end);
-    *timestamp = base::TimeTicks() + base::TimeDelta::FromMicroseconds(start);
-  } else {
-    if (!frame.fence->HasCompleted())
-      return false;
-    *timestamp = base::TimeTicks::Now();
+    timer->GetStartEndTimestamps(&start, &end);
+    return base::TimeTicks() + base::TimeDelta::FromMicroseconds(start);
   }
-  // Below logic is used to calculate final values of timestamp, interval and
-  // flags when using timer/fence to report the timestamps.
-  const bool fixed_vsync = !vsync_provider_;
-  const bool hw_clock = vsync_provider_ && vsync_provider_->IsHWClock();
-  *interval = vsync_interval_;
-  *flags = 0;
-  if (vsync_interval_.is_zero() || fixed_vsync) {
-    // If VSync parameters are fixed or not available, we just run
-    // presentation callbacks with timestamp from GPUTimers.
-    return true;
-  } else if (*timestamp < vsync_timebase_) {
-    // We got a VSync whose timestamp is after GPU finished rendering this
-    // back buffer.
-    *flags = gfx::PresentationFeedback::kVSync |
-             gfx::PresentationFeedback::kHWCompletion;
-    auto delta = vsync_timebase_ - *timestamp;
-    if (delta < vsync_interval_) {
-      // The |vsync_timebase_| is the closest VSync's timestamp after the GPU
-      // finished rendering.
-      *timestamp = vsync_timebase_;
-      if (hw_clock)
-        *flags |= gfx::PresentationFeedback::kHWClock;
-    } else {
-      // The |vsync_timebase_| isn't the closest VSync's timestamp after the
-      // GPU finished rendering. We have to compute the closest VSync's
-      // timestmp.
-      *timestamp =
-          timestamp->SnappedToNextTick(vsync_timebase_, vsync_interval_);
-    }
-  } else {
-    // The |vsync_timebase_| is earlier than |timestamp|, we will compute the
-    // next vSync's timestamp and use it to run callback.
-    if (!vsync_interval_.is_zero()) {
-      *timestamp =
-          timestamp->SnappedToNextTick(vsync_timebase_, vsync_interval_);
-      *flags = gfx::PresentationFeedback::kVSync;
-    }
-  }
-  return true;
+  return base::TimeTicks::Now();
 }
 
 void GLSurfacePresentationHelper::Frame::Destroy(bool has_context) {
@@ -175,20 +116,6 @@ void GLSurfacePresentationHelper::OnMakeCurrent(GLContext* context,
   pending_frames_.clear();
 
   gl_context_ = context;
-
-  // Get an egl timestamp client.
-  egl_timestamp_client_ = surface_->GetEGLTimestampClient();
-
-  // If there is an egl timestamp client, check if egl timestamps are supported
-  // or not. If supported, then return as there is no need to use gpu timestamp
-  // client or fence.
-  if (egl_timestamp_client_) {
-    if (egl_timestamp_client_->IsEGLTimestampSupported())
-      return;
-    else
-      egl_timestamp_client_ = nullptr;
-  }
-
   gpu_timing_client_ = context->CreateGPUTimingClient();
   if (!gpu_timing_client_->IsAvailable())
     gpu_timing_client_ = nullptr;
@@ -201,11 +128,8 @@ void GLSurfacePresentationHelper::OnMakeCurrent(GLContext* context,
 }
 
 void GLSurfacePresentationHelper::PreSwapBuffers(
-    const GLSurface::PresentationCallback& callback,
-    int frame_id) {
-  if (egl_timestamp_client_) {
-    pending_frames_.emplace_back(frame_id, callback);
-  } else if (gpu_timing_client_) {
+    const GLSurface::PresentationCallback& callback) {
+  if (gpu_timing_client_) {
     std::unique_ptr<GPUTimer> timer;
     timer = gpu_timing_client_->CreateGPUTimer(false /* prefer_elapsed_time */);
     timer->QueryTimeStamp();
@@ -243,7 +167,6 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
 
   if (!gl_context_->MakeCurrent(surface_)) {
     gl_context_ = nullptr;
-    egl_timestamp_client_ = nullptr;
     gpu_timing_client_ = nullptr;
     for (auto& frame : pending_frames_)
       frame.Destroy();
@@ -254,11 +177,10 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
   bool need_update_vsync = false;
   bool disjoint_occurred =
       gpu_timing_client_ && gpu_timing_client_->CheckAndResetTimerErrors();
-  if (disjoint_occurred ||
-      (!egl_timestamp_client_ && !gpu_timing_client_ && !gl_fence_supported_)) {
-    // If EGLTimestamps, GPUTimer and GLFence are not available or disjoint
-    // occurred, we will compute the next VSync's timestamp and use it to run
-    // presentation callback.
+  if (disjoint_occurred || (!gpu_timing_client_ && !gl_fence_supported_)) {
+    // If GPUTimer and GLFence are not avaliable or disjoint occurred, we will
+    // compute the next VSync's timestamp and use it to run presentation
+    // callback.
     uint32_t flags = 0;
     auto timestamp = base::TimeTicks::Now();
     if (!vsync_interval_.is_zero()) {
@@ -284,6 +206,9 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
     }
   }
 
+  const bool fixed_vsync = !vsync_provider_;
+  const bool hw_clock = vsync_provider_ && vsync_provider_->IsHWClock();
+
   while (!pending_frames_.empty()) {
     auto& frame = pending_frames_.front();
     // Helper lambda for running the presentation callback and releasing the
@@ -301,16 +226,49 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
       continue;
     }
 
-    base::TimeTicks timestamp;
-    base::TimeDelta interval;
-    uint32_t flags = 0;
-    // Get timestamp info for a frame if available. If timestamp is not
-    // available, it means this frame is not yet done.
-    if (!GetFrameTimestampInfoIfAvailable(frame, &timestamp, &interval, &flags))
+    if (frame.StillPending())
       break;
 
-    frame_presentation_callback(
-        gfx::PresentationFeedback(timestamp, interval, flags));
+    auto timestamp = frame.GetTimestamp();
+
+    if (vsync_interval_.is_zero() || fixed_vsync) {
+      // If VSync parameters are fixed or not avaliable, we just run
+      // presentation callbacks with timestamp from GPUTimers.
+      frame_presentation_callback(
+          gfx::PresentationFeedback(timestamp, vsync_interval_, 0 /* flags */));
+    } else if (timestamp < vsync_timebase_) {
+      // We got a VSync whose timestamp is after GPU finished renderering this
+      // back buffer.
+      uint32_t flags = gfx::PresentationFeedback::kVSync |
+                       gfx::PresentationFeedback::kHWCompletion;
+      auto delta = vsync_timebase_ - timestamp;
+      if (delta < vsync_interval_) {
+        // The |vsync_timebase_| is the closest VSync's timestamp after the GPU
+        // finished renderering.
+        timestamp = vsync_timebase_;
+        if (hw_clock)
+          flags |= gfx::PresentationFeedback::kHWClock;
+      } else {
+        // The |vsync_timebase_| isn't the closest VSync's timestamp after the
+        // GPU finished renderering. We have to compute the closest VSync's
+        // timestmp.
+        timestamp =
+            timestamp.SnappedToNextTick(vsync_timebase_, vsync_interval_);
+      }
+      frame_presentation_callback(
+          gfx::PresentationFeedback(timestamp, vsync_interval_, flags));
+    } else {
+      // The |vsync_timebase_| is earlier than |timestamp|, we will compute the
+      // next vSync's timestamp and use it to run callback.
+      uint32_t flags = 0;
+      if (!vsync_interval_.is_zero()) {
+        timestamp =
+            timestamp.SnappedToNextTick(vsync_timebase_, vsync_interval_);
+        flags = gfx::PresentationFeedback::kVSync;
+      }
+      frame_presentation_callback(
+          gfx::PresentationFeedback(timestamp, vsync_interval_, flags));
+    }
   }
 
   if (pending_frames_.empty() && !need_update_vsync)
