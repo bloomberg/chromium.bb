@@ -3862,9 +3862,8 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   const GURL url = https_test_server().GetURL("accounts.google.com",
                                               "/password/gaia_reath_form.html");
 
-  NavigationObserver observer(WebContents());
   ui_test_utils::NavigateToURL(browser(), url);
-  observer.Wait();
+
   // Expects no requests to the password store. So no filling.
   EXPECT_EQ(0, password_store->fill_matching_logins_calls());
 }
@@ -3881,9 +3880,8 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   const GURL url = https_test_server().GetURL(
       "accounts.google.com", "/password/password_form.html?ssp=1");
 
-  NavigationObserver observer(WebContents());
   ui_test_utils::NavigateToURL(browser(), url);
-  observer.Wait();
+
   // Expects no requests to the password store. So no filling.
   EXPECT_EQ(0, password_store->fill_matching_logins_calls());
 }
