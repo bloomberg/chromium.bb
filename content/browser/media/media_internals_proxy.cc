@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "build/build_config.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/media_internals_handler.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,6 +49,10 @@ void MediaInternalsProxy::GetEverythingOnIOThread() {
   // TODO(xhwang): Investigate whether we can update on UI thread directly.
   MediaInternals::GetInstance()->SendAudioStreamData();
   MediaInternals::GetInstance()->SendVideoCaptureDeviceCapabilities();
+
+#if !defined(OS_ANDROID)
+  MediaInternals::GetInstance()->SendAudioFocusState();
+#endif
 }
 
 void MediaInternalsProxy::UpdateUIOnUIThread(const base::string16& update) {

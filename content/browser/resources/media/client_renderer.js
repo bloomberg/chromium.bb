@@ -16,6 +16,8 @@ var ClientRenderer = (function() {
       this.logTable = logElement.querySelector('tbody');
     this.graphElement = document.getElementById('graphs');
     this.audioPropertyName = document.getElementById('audio-property-name');
+    this.audioFocusSessionListElement_ =
+        document.getElementById('audio-focus-session-list');
 
     this.players = null;
     this.selectedPlayer = null;
@@ -136,6 +138,19 @@ var ClientRenderer = (function() {
             componentType, this.selectedAudioComponentId,
             components[this.selectedAudioComponentId]);
       }
+    },
+
+    /**
+     * Called when the list of audio focus sessions has changed.
+     * @param sessions A list of media sessions that contain the current state.
+     */
+    audioFocusSessionUpdated: function(sessions) {
+      removeChildren(this.audioFocusSessionListElement_);
+
+      sessions.forEach(session => {
+        this.audioFocusSessionListElement_.appendChild(
+            this.createAudioFocusSessionRow_(session));
+      });
     },
 
     /**
@@ -527,6 +542,15 @@ var ClientRenderer = (function() {
         this.selectedPlayerLogIndex = 0;
         this.drawLog_();
       }
+    },
+
+    createAudioFocusSessionRow_: function(session) {
+      const template = $('audio-focus-session-row');
+      const span = template.content.querySelectorAll('span');
+      span[0].textContent = session.name;
+      span[1].textContent = session.owner;
+      span[2].textContent = session.state;
+      return document.importNode(template.content, true);
     },
   };
 

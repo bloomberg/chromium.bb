@@ -41,6 +41,14 @@ var Manager = (function() {
 
   Manager.prototype = {
     /**
+     * Updates the audio focus state.
+     * @param sessions A list of media sessions that contain the current state.
+     */
+    updateAudioFocusSessions: function(sessions) {
+      this.clientRenderer_.audioFocusSessionUpdated(sessions);
+    },
+
+    /**
      * Updates an audio-component.
      * @param componentType Integer AudioComponent enum value; must match values
      * from the AudioLogFactory::AudioComponent enum.

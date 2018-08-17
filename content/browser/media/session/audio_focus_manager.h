@@ -35,6 +35,9 @@ class CONTENT_EXPORT AudioFocusManager {
   friend struct base::DefaultSingletonTraits<AudioFocusManager>;
   friend class AudioFocusManagerTest;
 
+  // Media internals UI needs access to internal state.
+  friend class MediaInternals;
+
   AudioFocusManager();
   ~AudioFocusManager();
 

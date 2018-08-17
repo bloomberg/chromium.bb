@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/numerics/ranges.h"
+#include "base/strings/string_util.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/audio_focus_type.h"
 #include "content/browser/media/session/media_session_controller.h"
@@ -32,6 +33,12 @@ namespace {
 
 const double kUnduckedVolumeMultiplier = 1.0;
 const double kDefaultDuckingVolumeMultiplier = 0.2;
+
+const char kDebugInfoOwnerSeparator[] = " - ";
+const char kDebugInfoDucked[] = "Ducked";
+const char kDebugInfoActive[] = "Active";
+const char kDebugInfoInactive[] = "Inactive";
+const char kDebugInfoStateSeparator[] = " ";
 
 using MapRenderFrameHostToDepth = std::map<RenderFrameHost*, size_t>;
 
@@ -71,6 +78,13 @@ MediaSessionUserAction MediaSessionActionToUserAction(
   }
   NOTREACHED();
   return MediaSessionUserAction::Count;
+}
+
+// If the string is not empty then push it to the back of a vector.
+void MaybePushBackString(std::vector<std::string>& vector,
+                         const std::string& str) {
+  if (!str.empty())
+    vector.push_back(str);
 }
 
 }  // anonymous namespace
@@ -583,6 +597,32 @@ bool MediaSessionImpl::RequestSystemAudioFocus(
   SetAudioFocusState(result ? State::ACTIVE : State::INACTIVE);
   audio_focus_type_ = audio_focus_type;
   return result;
+}
+
+const MediaSessionImpl::DebugInfo MediaSessionImpl::GetDebugInfo() {
+  MediaSessionImpl::DebugInfo debug_info;
+
+  // Convert the address of |this| to a string and use it as the name.
+  std::stringstream stream;
+  stream << this;
+  debug_info.name = stream.str();
+
+  // Add the title and the url to the owner.
+  std::vector<std::string> owner_parts;
+  MaybePushBackString(owner_parts,
+                      base::UTF16ToUTF8(web_contents()->GetTitle()));
+  MaybePushBackString(owner_parts,
+                      web_contents()->GetLastCommittedURL().spec());
+  debug_info.owner = base::JoinString(owner_parts, kDebugInfoOwnerSeparator);
+
+  // Add the ducking state to state.
+  std::vector<std::string> state_parts;
+  MaybePushBackString(state_parts,
+                      IsActive() ? kDebugInfoActive : kDebugInfoInactive);
+  MaybePushBackString(state_parts, is_ducking_ ? kDebugInfoDucked : "");
+  debug_info.state = base::JoinString(state_parts, kDebugInfoStateSeparator);
+
+  return debug_info;
 }
 
 void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {

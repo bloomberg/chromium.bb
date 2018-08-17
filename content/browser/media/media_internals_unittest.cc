@@ -12,13 +12,20 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "content/browser/media/session/audio_focus_manager.h"
+#include "content/browser/media/session/audio_focus_type.h"
+#include "content/browser/media/session/media_session_impl.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/test_web_contents.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -278,5 +285,140 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
                     media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER,
                     media::AudioLogFactory::AUDIO_OUTPUT_STREAM));
+
+// TODO(https://crbug.com/873320): AudioFocusManager is not available on
+// Android.
+#if !defined(OS_ANDROID)
+
+namespace {
+
+// Test page titles.
+const char kTestTitle1[] = "Test Title 1";
+const char kTestTitle2[] = "Test Title 2";
+
+}  // namespace
+
+class MediaInternalsAudioFocusTest : public testing::Test,
+                                     public MediaInternalsTestBase {
+ public:
+  void SetUp() override {
+    update_cb_ =
+        base::BindRepeating(&MediaInternalsAudioFocusTest::UpdateCallbackImpl,
+                            base::Unretained(this));
+
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
+        switches::kEnableAudioFocus);
+
+    content::MediaInternals::GetInstance()->AddUpdateCallback(update_cb_);
+    browser_context_.reset(new TestBrowserContext());
+  }
+
+  void TearDown() override {
+    content::MediaInternals::GetInstance()->RemoveUpdateCallback(update_cb_);
+    browser_context_.reset();
+  }
+
+ protected:
+  void ExpectValue(base::ListValue expected_list) {
+    base::DictionaryValue expected_data;
+    expected_data.SetKey("sessions", std::move(expected_list));
+    EXPECT_EQ(expected_data, update_data_);
+  }
+
+  std::unique_ptr<TestWebContents> CreateWebContents() {
+    return TestWebContents::Create(
+        browser_context_.get(), SiteInstance::Create(browser_context_.get()));
+  }
+
+  base::Value GetAddressAsValue(MediaSessionImpl* media_session) {
+    std::stringstream stream;
+    stream << media_session;
+    return base::Value(stream.str());
+  }
+
+  void RemoveAllPlayersForTest(MediaSessionImpl* session) {
+    session->RemoveAllPlayersForTest();
+  }
+
+  MediaInternals::UpdateCallback update_cb_;
+
+ private:
+  base::test::ScopedCommandLine scoped_command_line_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
+};
+
+TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
+  // Create a test media session and request audio focus.
+  std::unique_ptr<TestWebContents> web_contents1 = CreateWebContents();
+  web_contents1->SetTitle(base::UTF8ToUTF16(kTestTitle1));
+  MediaSessionImpl* media_session1 = MediaSessionImpl::Get(web_contents1.get());
+  media_session1->RequestSystemAudioFocus(AudioFocusType::Gain);
+  base::RunLoop().RunUntilIdle();
+
+  // Check JSON is what we expect.
+  {
+    base::DictionaryValue expected_session;
+    expected_session.SetKey("name", GetAddressAsValue(media_session1));
+    expected_session.SetKey("owner", base::Value(kTestTitle1));
+    expected_session.SetKey("state", base::Value("Active"));
+
+    base::ListValue expected_list;
+    expected_list.GetList().push_back(std::move(expected_session));
+    ExpectValue(std::move(expected_list));
+  }
+
+  // Create another media session.
+  std::unique_ptr<TestWebContents> web_contents2 = CreateWebContents();
+  web_contents2->SetTitle(base::UTF8ToUTF16(kTestTitle2));
+  MediaSessionImpl* media_session2 = MediaSessionImpl::Get(web_contents2.get());
+  media_session2->RequestSystemAudioFocus(AudioFocusType::GainTransientMayDuck);
+  base::RunLoop().RunUntilIdle();
+
+  // Check JSON is what we expect.
+  {
+    base::DictionaryValue expected_session1;
+    expected_session1.SetKey("name", GetAddressAsValue(media_session2));
+    expected_session1.SetKey("owner", base::Value(kTestTitle2));
+    expected_session1.SetKey("state", base::Value("Active"));
+
+    base::DictionaryValue expected_session2;
+    expected_session2.SetKey("name", GetAddressAsValue(media_session1));
+    expected_session2.SetKey("owner", base::Value(kTestTitle1));
+    expected_session2.SetKey("state", base::Value("Active Ducked"));
+
+    base::ListValue expected_list;
+    expected_list.GetList().push_back(std::move(expected_session1));
+    expected_list.GetList().push_back(std::move(expected_session2));
+    ExpectValue(std::move(expected_list));
+  }
+
+  // Abandon audio focus.
+  RemoveAllPlayersForTest(media_session2);
+  base::RunLoop().RunUntilIdle();
+
+  // Check JSON is what we expect.
+  {
+    base::DictionaryValue expected_session;
+    expected_session.SetKey("name", GetAddressAsValue(media_session1));
+    expected_session.SetKey("owner", base::Value(kTestTitle1));
+    expected_session.SetKey("state", base::Value("Active"));
+
+    base::ListValue expected_list;
+    expected_list.GetList().push_back(std::move(expected_session));
+    ExpectValue(std::move(expected_list));
+  }
+
+  // Abandon audio focus.
+  RemoveAllPlayersForTest(media_session1);
+  base::RunLoop().RunUntilIdle();
+
+  // Check JSON is what we expect.
+  {
+    base::ListValue expected_list;
+    ExpectValue(std::move(expected_list));
+  }
+}
+
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace content

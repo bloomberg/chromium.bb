@@ -18,6 +18,8 @@
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
+#include "build/build_config.h"
+#include "content/browser/media/session/audio_focus_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -33,10 +35,15 @@ struct MediaLogEvent;
 
 namespace content {
 
+enum class AudioFocusType;
+
 // This class stores information about currently active media.
 // TODO(crbug.com/812557): Remove inheritance from media::AudioLogFactory once
 // the creation of the AudioManager instance moves to the audio service.
 class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
+#if !defined(OS_ANDROID)
+                                      public AudioFocusObserver,
+#endif
                                       public NotificationObserver {
  public:
   // Called with the update string.
@@ -74,6 +81,11 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   // UpdateCallback.
   void SendVideoCaptureDeviceCapabilities();
 
+#if !defined(OS_ANDROID)
+  // Sends all audio focus information to each registered UpdateCallback.
+  void SendAudioFocusState();
+#endif
+
   // Called to inform of the capabilities enumerated for video devices.
   void UpdateVideoCaptureDeviceCapabilities(
       const std::vector<std::tuple<media::VideoCaptureDeviceDescriptor,
@@ -108,6 +120,12 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   class MediaInternalsUMAHandler;
 
   MediaInternals();
+
+#if !defined(OS_ANDROID)
+  // AudioFocusObserver implementation.
+  void OnFocusGained(MediaSession* media_session, AudioFocusType type) override;
+  void OnFocusLost(MediaSession* media_session) override;
+#endif
 
   // Sends |update| to each registered UpdateCallback.  Safe to call from any
   // thread, but will forward to the IO thread.

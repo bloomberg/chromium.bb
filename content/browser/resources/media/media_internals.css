@@ -178,17 +178,21 @@ h3 {
   color: rgba(0, 0, 0, .5);
 }
 
+label.audio-focus-session,
 label.selectable-button {
-  -webkit-user-select: none;
   display: inline-block;
-  background: #BDF;
-  cursor: pointer;
   border: solid 1px #999;
   border-radius: 3px;
   padding: 6px;
   margin: 4px 0;
   line-height: 1.4;
   word-break: break-all;
+}
+
+label.selectable-button {
+  background: #BDF;
+  cursor: pointer;
+  user-select: none;
 }
 
 input.selectable-button {
@@ -205,6 +209,7 @@ input.selectable-button:hover + label.selectable-button {
   border-color: #666;
 }
 
+label.audio-focus-session,
 label.destructed-player {
   background-color: #EEE;
 }
@@ -226,3 +231,6 @@ label.destructed-player {
   display: none;
 }
 
+#audio-focus-session-list {
+  list-style: none;
+}
