@@ -116,8 +116,6 @@ jumbo_static_library("browser") {
     "local_card_migration_manager.h",
     "name_field.cc",
     "name_field.h",
-    "password_generator.cc",
-    "password_generator.h",
     "password_requirements_spec_fetcher.h",
     "password_requirements_spec_fetcher_impl.cc",
     "password_requirements_spec_fetcher_impl.h",
@@ -255,6 +253,7 @@ jumbo_static_library("browser") {
     "//third_party/libaddressinput",
   ]
   deps = [
+    ":password_generator",
     ":password_generator_fips181",
     "//base",
     "//base:i18n",
@@ -370,6 +369,19 @@ jumbo_static_library("test_support") {
     "//third_party/libaddressinput:util",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
+  ]
+}
+
+static_library("password_generator") {
+  sources = [
+    "password_generator.cc",
+    "password_generator.h",
+  ]
+  public_deps = [
+    "//components/autofill/core/browser/proto",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
@@ -494,6 +506,7 @@ source_set("unit_tests") {
 
   deps = [
     ":browser",
+    ":password_generator",
     ":password_generator_fips181",
     ":test_support",
     ":unit_tests_bundle_data",
@@ -569,6 +582,17 @@ if (use_libfuzzer) {
       "//base:base",
       "//components/autofill/core/browser/proto",
       "//components/autofill/core/common",
+      "//third_party/libprotobuf-mutator",
+    ]
+  }
+
+  fuzzer_test("password_generator_proto_fuzzer") {
+    sources = [
+      "password_generator_proto_fuzzer.cc",
+    ]
+    deps = [
+      ":password_generator",
+      "//components/autofill/core/browser/proto",
       "//third_party/libprotobuf-mutator",
     ]
   }
