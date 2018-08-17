@@ -45,6 +45,20 @@ source_set("components") {
   ]
 }
 
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "test_pending_app_manager.cc",
+    "test_pending_app_manager.h",
+  ]
+
+  deps = [
+    ":components",
+    "//base",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 

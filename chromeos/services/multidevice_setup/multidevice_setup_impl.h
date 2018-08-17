@@ -13,6 +13,7 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "url/gurl.h"
 
 class PrefService;
 
@@ -29,6 +30,7 @@ class SecureChannelClient;
 namespace multidevice_setup {
 
 class AccountStatusChangeDelegateNotifier;
+class AndroidSmsAppInstallDelegate;
 class AuthTokenValidator;
 class HostBackendDelegate;
 class HostStatusProvider;
@@ -50,7 +52,9 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
-        AuthTokenValidator* auth_token_validator);
+        AuthTokenValidator* auth_token_validator,
+        std::unique_ptr<AndroidSmsAppInstallDelegate>
+            android_sms_app_install_delegate);
 
    private:
     static Factory* test_factory_;
@@ -65,7 +69,9 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
-      AuthTokenValidator* auth_token_validator);
+      AuthTokenValidator* auth_token_validator,
+      std::unique_ptr<AndroidSmsAppInstallDelegate>
+          android_sms_app_install_delegate);
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
@@ -97,6 +103,8 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
 
   void FlushForTesting();
 
+  std::unique_ptr<AndroidSmsAppInstallDelegate>
+      android_sms_app_install_delegate_;
   std::unique_ptr<EligibleHostDevicesProvider> eligible_host_devices_provider_;
   std::unique_ptr<HostBackendDelegate> host_backend_delegate_;
   std::unique_ptr<HostVerifier> host_verifier_;

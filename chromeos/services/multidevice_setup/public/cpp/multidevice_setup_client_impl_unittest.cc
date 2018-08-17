@@ -14,6 +14,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_initializer.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
+#include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_install_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -43,7 +44,9 @@ class FakeMultiDeviceSetupInitializerFactory
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
-      AuthTokenValidator* auth_token_validator) override {
+      AuthTokenValidator* auth_token_validator,
+      std::unique_ptr<AndroidSmsAppInstallDelegate>
+          android_sms_app_install_delegate) override {
     EXPECT_TRUE(fake_multidevice_setup_);
     return std::move(fake_multidevice_setup_);
   }
@@ -98,8 +101,8 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
 
     auto multidevice_setup_service = std::make_unique<MultiDeviceSetupService>(
         nullptr /* pref_service */, nullptr /* device_sync_client */,
-        nullptr /* secure_channel_client */,
-        nullptr /* auth_token_validator */);
+        nullptr /* secure_channel_client */, nullptr /* auth_token_validator */,
+        nullptr /* android_sms_app_install_delegate */);
 
     connector_factory_ =
         service_manager::TestConnectorFactory::CreateForUniqueService(

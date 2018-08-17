@@ -2,16 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("android_sms_urls") {
+  sources = [
+    "android_sms_switches.cc",
+    "android_sms_switches.h",
+    "android_sms_urls.cc",
+    "android_sms_urls.h",
+  ]
+
+  deps = [
+    "//base",
+    "//url",
+  ]
+}
+
 static_library("android_sms") {
   sources = [
     "android_sms_service.cc",
     "android_sms_service.h",
     "android_sms_service_factory.cc",
     "android_sms_service_factory.h",
-    "android_sms_switches.cc",
-    "android_sms_switches.h",
-    "android_sms_urls.cc",
-    "android_sms_urls.h",
     "connection_establisher.h",
     "connection_establisher_impl.cc",
     "connection_establisher_impl.h",
@@ -20,6 +30,7 @@ static_library("android_sms") {
   ]
 
   deps = [
+    ":android_sms_urls",
     "//base",
     "//chrome/browser/chromeos:chromeos",
     "//chromeos:chromeos",
@@ -53,6 +64,7 @@ source_set("unit_tests") {
 
   deps = [
     ":android_sms",
+    ":android_sms_urls",
     ":test_support",
     "//content/public/browser",
     "//content/test:test_support",

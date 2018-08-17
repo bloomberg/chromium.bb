@@ -26,6 +26,7 @@ class SecureChannelClient;
 
 namespace multidevice_setup {
 
+class AndroidSmsAppInstallDelegate;
 class AuthTokenValidator;
 class MultiDeviceSetupBase;
 
@@ -38,7 +39,9 @@ class MultiDeviceSetupService : public service_manager::Service {
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
-      AuthTokenValidator* auth_token_validator);
+      AuthTokenValidator* auth_token_validator,
+      std::unique_ptr<AndroidSmsAppInstallDelegate>
+          android_sms_app_install_delegate);
   ~MultiDeviceSetupService() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);

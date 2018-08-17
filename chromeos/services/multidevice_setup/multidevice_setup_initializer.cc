@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
+#include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_install_delegate.h"
 
 namespace chromeos {
 
@@ -41,21 +42,27 @@ MultiDeviceSetupInitializer::Factory::BuildInstance(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
-    AuthTokenValidator* auth_token_validator) {
+    AuthTokenValidator* auth_token_validator,
+    std::unique_ptr<AndroidSmsAppInstallDelegate>
+        android_sms_app_install_delegate) {
   return base::WrapUnique(new MultiDeviceSetupInitializer(
       pref_service, device_sync_client, secure_channel_client,
-      auth_token_validator));
+      auth_token_validator, std::move(android_sms_app_install_delegate)));
 }
 
 MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
-    AuthTokenValidator* auth_token_validator)
+    AuthTokenValidator* auth_token_validator,
+    std::unique_ptr<AndroidSmsAppInstallDelegate>
+        android_sms_app_install_delegate)
     : pref_service_(pref_service),
       device_sync_client_(device_sync_client),
       secure_channel_client_(secure_channel_client),
-      auth_token_validator_(auth_token_validator) {
+      auth_token_validator_(auth_token_validator),
+      android_sms_app_install_delegate_(
+          std::move(android_sms_app_install_delegate)) {
   if (device_sync_client_->is_ready()) {
     InitializeImplementation();
     return;
@@ -210,7 +217,7 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
 
   multidevice_setup_impl_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
       pref_service_, device_sync_client_, secure_channel_client_,
-      auth_token_validator_);
+      auth_token_validator_, std::move(android_sms_app_install_delegate_));
 
   if (pending_delegate_) {
     multidevice_setup_impl_->SetAccountStatusChangeDelegate(
