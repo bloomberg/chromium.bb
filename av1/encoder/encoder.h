@@ -248,6 +248,7 @@ typedef struct AV1EncoderConfig {
   int min_gf_interval;
   int max_gf_interval;
 
+  int row_mt;
   int tile_columns;
   int tile_rows;
   int tile_width_count;
@@ -539,6 +540,7 @@ typedef struct AV1_COMP {
   int previous_index;
   int cur_poc;  // DebugInfo
 
+  unsigned int row_mt;
   int scaled_ref_idx[REF_FRAMES];
   int ref_fb_idx[REF_FRAMES];
   int refresh_fb_idx;  // ref frame buffer index to refresh

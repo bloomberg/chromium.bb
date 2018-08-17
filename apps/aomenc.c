@@ -414,6 +414,9 @@ static const arg_def_t cpu_used_av1 =
 static const arg_def_t single_tile_decoding =
     ARG_DEF(NULL, "single-tile-decoding", 1,
             "Single tile decoding (0: off (default), 1: on)");
+static const arg_def_t rowmtarg =
+    ARG_DEF(NULL, "row-mt", 1,
+            "Enable row based multi-threading (0: off (default), 1: on)");
 static const arg_def_t tile_cols =
     ARG_DEF(NULL, "tile-columns", 1, "Number of tile columns to use, log2");
 static const arg_def_t tile_rows =
@@ -621,6 +624,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &sharpness,
                                        &static_thresh,
                                        &single_tile_decoding,
+                                       &rowmtarg,
                                        &tile_cols,
                                        &tile_rows,
                                        &arnr_maxframes,
@@ -676,6 +680,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AOME_SET_SHARPNESS,
                                         AOME_SET_STATIC_THRESHOLD,
                                         AV1E_SET_SINGLE_TILE_DECODING,
+                                        AV1E_SET_ROW_MT,
                                         AV1E_SET_TILE_COLUMNS,
                                         AV1E_SET_TILE_ROWS,
                                         AOME_SET_ARNR_MAXFRAMES,

@@ -282,6 +282,12 @@ enum aome_enc_control_id {
    */
   AV1E_SET_LOSSLESS = AV1E_SET_GF_CBR_BOOST_PCT + 2,
 
+  /** control function to enable the row based multi-threading of encoder. A
+   * value that is equal to 1 indicates that row based multi-threading is
+   * enabled.
+   */
+  AV1E_SET_ROW_MT,
+
   /*!\brief Codec control function to set number of tile columns.
    *
    * In encoding and decoding, AV1 allows an input image frame be partitioned
@@ -988,6 +994,9 @@ AOM_CTRL_USE_TYPE(AOME_SET_TUNING, int) /* aom_tune_metric */
 #define AOM_CTRL_AOME_SET_TUNING
 AOM_CTRL_USE_TYPE(AOME_SET_CQ_LEVEL, unsigned int)
 #define AOM_CTRL_AOME_SET_CQ_LEVEL
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ROW_MT, int)
+#define AOM_CTRL_AV1E_SET_ROW_MT
 
 AOM_CTRL_USE_TYPE(AV1E_SET_TILE_COLUMNS, int)
 #define AOM_CTRL_AV1E_SET_TILE_COLUMNS

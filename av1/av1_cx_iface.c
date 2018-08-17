@@ -36,6 +36,7 @@ struct av1_extracfg {
   unsigned int noise_sensitivity;
   unsigned int sharpness;
   unsigned int static_thresh;
+  unsigned int row_mt;
   unsigned int tile_columns;  // log2 number of tile columns
   unsigned int tile_rows;     // log2 number of tile rows
   unsigned int arnr_max_frames;
@@ -107,6 +108,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                 // noise_sensitivity
   0,                 // sharpness
   0,                 // static_thresh
+  0,                 // row_mt
   0,                 // tile_columns
   0,                 // tile_rows
   7,                 // arnr_max_frames
@@ -285,6 +287,8 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
               AOM_SUPERBLOCK_SIZE_DYNAMIC);
   RANGE_CHECK_HI(cfg, large_scale_tile, 1);
   RANGE_CHECK_HI(extra_cfg, single_tile_decoding, 1);
+
+  RANGE_CHECK_HI(extra_cfg, row_mt, 1);
 
   RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
   RANGE_CHECK_HI(extra_cfg, tile_rows, 6);
@@ -631,6 +635,8 @@ static aom_codec_err_t set_encoder_config(
       oxcf->superblock_size = AOM_SUPERBLOCK_SIZE_64X64;
   }
 
+  oxcf->row_mt = extra_cfg->row_mt;
+
   oxcf->tile_columns = extra_cfg->tile_columns;
   oxcf->tile_rows = extra_cfg->tile_rows;
 
@@ -791,6 +797,13 @@ static aom_codec_err_t ctrl_set_static_thresh(aom_codec_alg_priv_t *ctx,
                                               va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.static_thresh = CAST(AOME_SET_STATIC_THRESHOLD, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_row_mt(aom_codec_alg_priv_t *ctx,
+                                       va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.row_mt = CAST(AV1E_SET_ROW_MT, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1673,6 +1686,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AOME_SET_ENABLEAUTOBWDREF, ctrl_set_enable_auto_bwd_ref },
   { AOME_SET_SHARPNESS, ctrl_set_sharpness },
   { AOME_SET_STATIC_THRESHOLD, ctrl_set_static_thresh },
+  { AV1E_SET_ROW_MT, ctrl_set_row_mt },
   { AV1E_SET_TILE_COLUMNS, ctrl_set_tile_columns },
   { AV1E_SET_TILE_ROWS, ctrl_set_tile_rows },
   { AOME_SET_ARNR_MAXFRAMES, ctrl_set_arnr_max_frames },

@@ -5172,7 +5172,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     }
 #endif
 
-    if (AOMMIN(cpi->oxcf.max_threads, cm->tile_cols * cm->tile_rows) > 1)
+    if (cpi->row_mt && (cpi->oxcf.max_threads > 1))
+      av1_encode_tiles_mt(cpi);
+    else if (AOMMIN(cpi->oxcf.max_threads, cm->tile_cols * cm->tile_rows) > 1)
       av1_encode_tiles_mt(cpi);
     else
       encode_tiles(cpi);
