@@ -1745,6 +1745,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ASSISTANT_CHIP_SEND_AN_EMAIL" desc="Message shown on suggestion chip in Assistant UI to initiate a query to send an email.">
         Send an email
       </message>
+      <message name="IDS_ASH_ASSISTANT_CHIP_SET_A_REMINDER" desc="Message shown on suggestion chip in Assistant UI to initiate a query to set a reminder.">
+        Set a reminder
+      </message>
       <message name="IDS_ASH_ASSISTANT_CHIP_WHAT_CAN_YOU_DO" desc="Message shown on suggestion chip in Assistant UI to initiate a query for Assistant capabilities.">
         What can you do?
       </message>
