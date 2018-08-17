@@ -30,8 +30,7 @@ IN_PROC_BROWSER_TEST_F(GalleryJsTest, ImageViewTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryJsTest, EntryListWatcherTest) {
-  RunTest(
-      base::FilePath(FILE_PATH_LITERAL("entry_list_watcher_unittest.html")));
+  RunGeneratedTest("/entry_list_watcher_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryJsTest, GalleryUtilTest) {

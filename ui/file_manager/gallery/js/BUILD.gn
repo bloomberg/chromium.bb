@@ -55,7 +55,19 @@ js_library("entry_list_watcher") {
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
-  externs_list = [ "$externs_path/file_manager_private.js" ]
+  externs_list = [
+    "$externs_path/file_system_provider.js",
+    "$externs_path/file_manager_private.js",
+  ]
+}
+
+js_library("entry_list_watcher_unittest") {
+  deps = [
+    ":entry_list_watcher",
+    "../../file_manager/common/js:mock_entry",
+    "../../file_manager/common/js:unittest_util",
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
 }
 
 js_library("error_banner") {
@@ -207,6 +219,7 @@ js_library("thumbnail_mode") {
 js_unit_tests("unit_tests") {
   deps = [
     ":dimmable_ui_controller_unittest",
+    ":entry_list_watcher_unittest",
     ":gallery_data_model_unittest",
     ":gallery_util_unittest",
     ":ribbon_unittest",
