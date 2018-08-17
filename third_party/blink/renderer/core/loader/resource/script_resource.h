@@ -40,7 +40,6 @@ namespace blink {
 class FetchParameters;
 class KURL;
 class ResourceFetcher;
-class ScriptResource;
 
 class CORE_EXPORT ScriptResource final : public TextResource {
  public:
@@ -80,8 +79,6 @@ class CORE_EXPORT ScriptResource final : public TextResource {
       std::unique_ptr<CachedMetadataSender> send_callback) override;
 
  private:
-  class SingleCachedMetadataHandlerImpl;
-
   class ScriptResourceFactory : public ResourceFactory {
    public:
     ScriptResourceFactory()
