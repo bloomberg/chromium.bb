@@ -414,38 +414,6 @@ bool CanShowSuggestion(const PasswordFormFillData& fill_data,
   return false;
 }
 
-// Updates the value (i.e. the pair of elements's value |value| and field
-// properties |added_flags|) associated with the key |element| in
-// |field_value_and_properties_map|.
-// Flags in |added_flags| are added with bitwise OR operation.
-// If |value| is null, the value is neither updated nor added.
-// If |*value| is empty, USER_TYPED and AUTOFILLED should be cleared.
-void UpdateFieldValueAndPropertiesMaskMap(
-    const WebFormControlElement& element,
-    const base::string16* value,
-    FieldPropertiesMask added_flags,
-    FieldValueAndPropertiesMaskMap* field_value_and_properties_map) {
-  FieldValueAndPropertiesMaskMap::iterator it =
-      field_value_and_properties_map->find(
-          element.UniqueRendererFormControlId());
-  if (it != field_value_and_properties_map->end()) {
-    if (value)
-      it->second.first.reset(new base::string16(*value));
-    it->second.second |= added_flags;
-  } else {
-    (*field_value_and_properties_map)[element.UniqueRendererFormControlId()] =
-        std::make_pair(
-            value ? std::make_unique<base::string16>(*value) : nullptr,
-            added_flags);
-  }
-  // Reset USER_TYPED and AUTOFILLED flags if the value is empty.
-  if (value && value->empty()) {
-    (*field_value_and_properties_map)[element.UniqueRendererFormControlId()]
-        .second &=
-        ~(FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::AUTOFILLED);
-  }
-}
-
 // This function attempts to find the matching credentials for the
 // |current_username| by scanning |fill_data|. The result is written in
 // |username| and |password| parameters.
@@ -805,9 +773,8 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
 
   if (element.IsTextField()) {
     const base::string16 element_value = element.Value().Utf16();
-    UpdateFieldValueAndPropertiesMaskMap(element, &element_value,
-                                         FieldPropertiesFlags::USER_TYPED,
-                                         &field_value_and_properties_map_);
+    field_data_manager_.UpdateFieldDataMap(element, element_value,
+                                           FieldPropertiesFlags::USER_TYPED);
   }
 
   ProvisionallySavePassword(element.Form(), element, RESTRICTION_NONE);
@@ -897,9 +864,8 @@ void PasswordAutofillAgent::FillField(WebInputElement* input,
   DCHECK(!input->IsNull());
   input->SetAutofillValue(WebString::FromUTF16(credential));
   input->SetAutofillState(WebAutofillState::kAutofilled);
-  UpdateFieldValueAndPropertiesMaskMap(
-      *input, &credential, FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER,
-      &field_value_and_properties_map_);
+  field_data_manager_.UpdateFieldDataMap(
+      *input, credential, FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER);
 }
 
 void PasswordAutofillAgent::FillPasswordFieldAndSave(
@@ -1495,7 +1461,7 @@ void PasswordAutofillAgent::FillUsingRendererIDs(
   StoreDataForFillOnAccountSelect(key, form_data, username_element,
                                   password_element);
   FillFormOnPasswordReceived(form_data, username_element, password_element,
-                             &field_value_and_properties_map_, logger.get());
+                             &field_data_manager_, logger.get());
 }
 
 // mojom::PasswordAutofillAgent:
@@ -1529,10 +1495,8 @@ void PasswordAutofillAgent::FillPasswordForm(
         element.IsPasswordFieldForAutofill()
             ? element
             : web_input_to_password_info_[element].password_field;
-    FillFormOnPasswordReceived(
-        form_data, username_element, password_element,
-        &field_value_and_properties_map_,
-        logger.get());
+    FillFormOnPasswordReceived(form_data, username_element, password_element,
+                               &field_data_manager_, logger.get());
   }
 }
 
@@ -1615,16 +1579,15 @@ void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
     return;
   const WebFormControlElement control_element =
       web_element.ToConst<WebFormControlElement>();
-  UpdateFieldValueAndPropertiesMaskMap(control_element, nullptr,
-                                       FieldPropertiesFlags::HAD_FOCUS,
-                                       &field_value_and_properties_map_);
+  field_data_manager_.UpdateFieldDataMapWithNullValue(
+      control_element, FieldPropertiesFlags::HAD_FOCUS);
 }
 
 std::unique_ptr<PasswordForm> PasswordAutofillAgent::GetPasswordFormFromWebForm(
     const WebFormElement& web_form) {
-  return CreatePasswordFormFromWebForm(
-      web_form, &field_value_and_properties_map_, &form_predictions_,
-      &username_detector_cache_);
+  return CreatePasswordFormFromWebForm(web_form, &field_data_manager_,
+                                       &form_predictions_,
+                                       &username_detector_cache_);
 }
 
 std::unique_ptr<PasswordForm>
@@ -1640,7 +1603,7 @@ PasswordAutofillAgent::GetPasswordFormFromUnownedInputElements() {
   if (!web_frame)
     return nullptr;
   return CreatePasswordFormFromUnownedInputElements(
-      *web_frame, &field_value_and_properties_map_, &form_predictions_,
+      *web_frame, &field_data_manager_, &form_predictions_,
       &username_detector_cache_);
 }
 
@@ -1735,7 +1698,7 @@ void PasswordAutofillAgent::FrameClosing() {
   password_to_username_.clear();
   last_supplied_password_info_iter_ = web_input_to_password_info_.end();
   provisionally_saved_form_.Reset();
-  field_value_and_properties_map_.clear();
+  field_data_manager_.ClearData();
   username_autofill_state_ = WebAutofillState::kNotFilled;
   password_autofill_state_ = WebAutofillState::kNotFilled;
   sent_request_to_store_ = false;
@@ -1800,7 +1763,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     const PasswordFormFillData& fill_data,
     bool exact_username_match,
     bool username_may_use_prefilled_placeholder,
-    FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
+    FieldDataManager* field_data_manager,
     RendererSavePasswordProgressLogger* logger) {
   if (logger)
     logger->LogMessage(Logger::STRING_FILL_USERNAME_AND_PASSWORD_METHOD);
@@ -1875,11 +1838,9 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
                 kPrefilledPlaceholderUsernameOverridden);
       }
     }
-
-    UpdateFieldValueAndPropertiesMaskMap(
-        *username_element, &username,
-        FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD,
-        field_value_and_properties_map);
+    field_data_manager->UpdateFieldDataMap(
+        *username_element, username,
+        FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
     username_element->SetAutofillState(WebAutofillState::kAutofilled);
     if (logger)
       logger->LogElementName(Logger::STRING_USERNAME_FILLED, *username_element);
@@ -1890,10 +1851,9 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // user is intentionally interacting with the page.
   if (password_element->Value().Utf16() != password)
     password_element->SetSuggestedValue(WebString::FromUTF16(password));
-  UpdateFieldValueAndPropertiesMaskMap(
-      *password_element, &password,
-      FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD,
-      field_value_and_properties_map);
+  field_data_manager->UpdateFieldDataMap(
+      *password_element, password,
+      FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
   ProvisionallySavePassword(password_element->Form(), *password_element,
                             RESTRICTION_NONE);
   gatekeeper_.RegisterElement(password_element);
@@ -1917,7 +1877,7 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
     const PasswordFormFillData& fill_data,
     WebInputElement username_element,
     WebInputElement password_element,
-    FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
+    FieldDataManager* field_data_manager,
     RendererSavePasswordProgressLogger* logger) {
   // Do not fill if the password field is in a chain of iframes not having
   // identical origin.
@@ -1944,8 +1904,8 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
   // match for read-only username fields.
   return FillUserNameAndPassword(
       &username_element, &password_element, fill_data, exact_username_match,
-      fill_data.username_may_use_prefilled_placeholder,
-      field_value_and_properties_map, logger);
+      fill_data.username_may_use_prefilled_placeholder, field_data_manager,
+      logger);
 }
 
 void PasswordAutofillAgent::OnProvisionallySaveForm(
