@@ -42,6 +42,13 @@ void BitmapImageMetrics::CountImageOrientation(
   orientation_histogram.Count(orientation);
 }
 
+void BitmapImageMetrics::CountImageJpegDensity(int64_t density_centi_bpp) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, density_histogram,
+      ("Blink.DecodedImage.JpegDensity", 1, 1000, 100));  // 0.01 to 10 bpp
+  density_histogram.Count(density_centi_bpp);
+}
+
 void BitmapImageMetrics::CountImageGammaAndGamut(
     const skcms_ICCProfile* color_profile) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, gamma_named_histogram,
