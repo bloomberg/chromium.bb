@@ -315,7 +315,8 @@ NSString* GetTextFieldForID(int categoryId) {
 
 // Checks that the autofill credit card switch can be toggled on/off
 // independently and the list of autofill credit cards is not affected by it.
-- (void)testToggleAutofillCreditCardSwitch {
+// TODO(crbug.com/875313): Disabled from flakiness.
+- (void)DISABLED_testToggleAutofillCreditCardSwitch {
   autofill::CreditCard creditCard = [self addCreditCard];
 
   // Go to Autofill Settings.
@@ -351,7 +352,8 @@ NSString* GetTextFieldForID(int categoryId) {
 // Tests that toggling the Autofill switch on and off disables and enables the
 // Autofill address and credit card switches respectively and that the list of
 // autofill addresses and credit cards is not affected by it.
-- (void)testToggleAutofillSwitches {
+// TODO(crbug.com/875313): Disabled from flakiness.
+- (void)DISABLED_testToggleAutofillSwitches {
   autofill::AutofillProfile profile = [self addAutofillProfile];
   autofill::CreditCard creditCard = [self addCreditCard];
 
