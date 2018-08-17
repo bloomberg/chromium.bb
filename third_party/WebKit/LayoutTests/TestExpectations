@@ -4555,10 +4555,10 @@ crbug.com/826936 external/wpt/webauthn/createcredential-badargs-user.https.html 
 crbug.com/826936 external/wpt/webauthn/createcredential-excludecredentials.https.html  [ Pass Timeout ]
 crbug.com/826936 external/wpt/webauthn/createcredential-extensions.https.html [ Pass Timeout ]
 crbug.com/826936 external/wpt/webauthn/createcredential-passing.https.html [ Pass Timeout ]
-crbug.com/826936 external/wpt/webauthn/createcredential-pubkeycredparams.https.html [ Pass Timeout ]
 
 # Sheriff 2018-08-17
 crbug.com/826936 external/wpt/webauthn/createcredential-badargs-challenge.https.html [ Pass Timeout Failure ]
+crbug.com/826936 external/wpt/webauthn/createcredential-pubkeycredparams.https.html [ Pass Timeout Failure ]
 crbug.com/826936 external/wpt/webauthn/getcredential-badargs-rpid.https.html [ Pass Timeout Failure ]
 crbug.com/826936 external/wpt/webauthn/getcredential-badargs-userverification.https.html [ Pass Timeout Failure ]
 crbug.com/826936 external/wpt/webauthn/getcredential-extensions.https.html [ Pass Timeout Failure ]
