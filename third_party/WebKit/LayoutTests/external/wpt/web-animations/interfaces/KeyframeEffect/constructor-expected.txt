@@ -1,74 +1,74 @@
 This is a testharness.js-based test.
-Found 167 tests; 155 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 167 tests; 107 PASS, 60 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS A KeyframeEffect can be constructed with no frames
 PASS easing values are parsed correctly when passed to the KeyframeEffect constructor in KeyframeEffectOptions
 PASS Invalid easing values are correctly rejected when passed to the KeyframeEffect constructor in KeyframeEffectOptions
 FAIL composite values are parsed correctly when passed to the KeyframeEffect constructor in property-indexed keyframes assert_equals: resulting composite for 'accumulate' expected "accumulate" but got "replace"
 FAIL composite values are parsed correctly when passed to the KeyframeEffect constructor in regular keyframes assert_equals: resulting composite for 'accumulate' expected "accumulate" but got "replace"
-PASS composite value is null if the composite operation specified on the keyframe effect is being used
-PASS A KeyframeEffect can be constructed with a one property two value property-indexed keyframes specification
+FAIL composite value is auto if the composite operation specified on the keyframe effect is being used assert_equals: resulting composite for 'replace' expected (string) "auto" but got (object) null
+FAIL A KeyframeEffect can be constructed with a one property two value property-indexed keyframes specification assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property two value property-indexed keyframes specification roundtrips
 FAIL A KeyframeEffect can be constructed with a one shorthand property two value property-indexed keyframes specification assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
 PASS A KeyframeEffect constructed with a one shorthand property two value property-indexed keyframes specification roundtrips
 FAIL A KeyframeEffect can be constructed with a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,marginTop,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
 PASS A KeyframeEffect constructed with a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification roundtrips
-PASS A KeyframeEffect can be constructed with a two property two value property-indexed keyframes specification
+FAIL A KeyframeEffect can be constructed with a two property two value property-indexed keyframes specification assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a two property two value property-indexed keyframes specification roundtrips
-PASS A KeyframeEffect can be constructed with a two property property-indexed keyframes specification with different numbers of values
+FAIL A KeyframeEffect can be constructed with a two property property-indexed keyframes specification with different numbers of values assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a two property property-indexed keyframes specification with different numbers of values roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframes specification with an invalid value
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframes specification with an invalid value assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframes specification with an invalid value roundtrips
-PASS A KeyframeEffect can be constructed with a one property two value property-indexed keyframes specification that needs to stringify its values
+FAIL A KeyframeEffect can be constructed with a one property two value property-indexed keyframes specification that needs to stringify its values assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property two value property-indexed keyframes specification that needs to stringify its values roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframes specification with a CSS variable reference
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframes specification with a CSS variable reference assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframes specification with a CSS variable reference roundtrips
 FAIL A KeyframeEffect can be constructed with a property-indexed keyframes specification with a CSS variable reference in a shorthand property assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
 FAIL A KeyframeEffect constructed with a property-indexed keyframes specification with a CSS variable reference in a shorthand property roundtrips assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset" but got "composite,computedOffset,easing,offset"
-PASS A KeyframeEffect can be constructed with a one property one value property-indexed keyframes specification
+FAIL A KeyframeEffect can be constructed with a one property one value property-indexed keyframes specification assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property one value property-indexed keyframes specification roundtrips
-PASS A KeyframeEffect can be constructed with a one property one non-array value property-indexed keyframes specification
+FAIL A KeyframeEffect can be constructed with a one property one non-array value property-indexed keyframes specification assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property one non-array value property-indexed keyframes specification roundtrips
-PASS A KeyframeEffect can be constructed with a one property two value property-indexed keyframes specification where the first value is invalid
+FAIL A KeyframeEffect can be constructed with a one property two value property-indexed keyframes specification where the first value is invalid assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property two value property-indexed keyframes specification where the first value is invalid roundtrips
-PASS A KeyframeEffect can be constructed with a one property two value property-indexed keyframes specification where the second value is invalid
+FAIL A KeyframeEffect can be constructed with a one property two value property-indexed keyframes specification where the second value is invalid assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property two value property-indexed keyframes specification where the second value is invalid roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with a single offset
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with a single offset assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with a single offset roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of offsets roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets that is too short
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets that is too short assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of offsets that is too short roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets that is too long
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets that is too long assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of offsets that is too long roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an empty array of offsets
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an empty array of offsets assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an empty array of offsets roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets with an embedded null value
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets with an embedded null value assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of offsets with an embedded null value roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets with a trailing null value
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets with a trailing null value assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of offsets with a trailing null value roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets with leading and trailing null values
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets with leading and trailing null values assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of offsets with leading and trailing null values roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets with adjacent null values
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets with adjacent null values assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of offsets with adjacent null values roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets with all null values (and too many at that)
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets with all null values (and too many at that) assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of offsets with all null values (and too many at that) roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with a single null offset
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with a single null offset assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with a single null offset roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets that is not strictly ascending in the unused part of the array
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of offsets that is not strictly ascending in the unused part of the array assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of offsets that is not strictly ascending in the unused part of the array roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe without any specified easing
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe without any specified easing assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe without any specified easing roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with a single easing
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with a single easing assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with a single easing roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of easings
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of easings assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of easings roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of easings that is too short
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of easings that is too short assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of easings that is too short roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with a single-element array of easings
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with a single-element array of easings assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with a single-element array of easings roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an empty array of easings
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an empty array of easings assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an empty array of easings roundtrips
-PASS A KeyframeEffect can be constructed with a property-indexed keyframe with an array of easings that is too long
+FAIL A KeyframeEffect can be constructed with a property-indexed keyframe with an array of easings that is too long assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a property-indexed keyframe with an array of easings that is too long roundtrips
 PASS A KeyframeEffect can be constructed with a property-indexed keyframe with a single composite operation
 PASS A KeyframeEffect constructed with a property-indexed keyframe with a single composite operation roundtrips
@@ -80,47 +80,47 @@ PASS A KeyframeEffect can be constructed with a property-indexed keyframe with a
 PASS A KeyframeEffect constructed with a property-indexed keyframe with a composite array that is too long roundtrips
 PASS A KeyframeEffect can be constructed with a property-indexed keyframe with a single-element composite array
 PASS A KeyframeEffect constructed with a property-indexed keyframe with a single-element composite array roundtrips
-PASS A KeyframeEffect can be constructed with a one property one keyframe sequence
+FAIL A KeyframeEffect can be constructed with a one property one keyframe sequence assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property one keyframe sequence roundtrips
-PASS A KeyframeEffect can be constructed with a one property two keyframe sequence
+FAIL A KeyframeEffect can be constructed with a one property two keyframe sequence assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property two keyframe sequence roundtrips
-PASS A KeyframeEffect can be constructed with a two property two keyframe sequence
+FAIL A KeyframeEffect can be constructed with a two property two keyframe sequence assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a two property two keyframe sequence roundtrips
 FAIL A KeyframeEffect can be constructed with a one shorthand property two keyframe sequence assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
 PASS A KeyframeEffect constructed with a one shorthand property two keyframe sequence roundtrips
 FAIL A KeyframeEffect can be constructed with a two property (a shorthand and one of its component longhands) two keyframe sequence assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,marginTop,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
 PASS A KeyframeEffect constructed with a two property (a shorthand and one of its component longhands) two keyframe sequence roundtrips
-PASS A KeyframeEffect can be constructed with a two property keyframe sequence where one property is missing from the first keyframe
+FAIL A KeyframeEffect can be constructed with a two property keyframe sequence where one property is missing from the first keyframe assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a two property keyframe sequence where one property is missing from the first keyframe roundtrips
-PASS A KeyframeEffect can be constructed with a two property keyframe sequence where one property is missing from the last keyframe
+FAIL A KeyframeEffect can be constructed with a two property keyframe sequence where one property is missing from the last keyframe assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a two property keyframe sequence where one property is missing from the last keyframe roundtrips
-PASS A KeyframeEffect can be constructed with a one property two keyframe sequence that needs to stringify its values
+FAIL A KeyframeEffect can be constructed with a one property two keyframe sequence that needs to stringify its values assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property two keyframe sequence that needs to stringify its values roundtrips
-PASS A KeyframeEffect can be constructed with a keyframe sequence with a CSS variable reference
+FAIL A KeyframeEffect can be constructed with a keyframe sequence with a CSS variable reference assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a keyframe sequence with a CSS variable reference roundtrips
 FAIL A KeyframeEffect can be constructed with a keyframe sequence with a CSS variable reference in a shorthand property assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
 FAIL A KeyframeEffect constructed with a keyframe sequence with a CSS variable reference in a shorthand property roundtrips assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset" but got "composite,computedOffset,easing,offset"
-PASS A KeyframeEffect can be constructed with a keyframe sequence with duplicate values for a given interior offset
+FAIL A KeyframeEffect can be constructed with a keyframe sequence with duplicate values for a given interior offset assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a keyframe sequence with duplicate values for a given interior offset roundtrips
-PASS A KeyframeEffect can be constructed with a keyframe sequence with duplicate values for offsets 0 and 1
+FAIL A KeyframeEffect can be constructed with a keyframe sequence with duplicate values for offsets 0 and 1 assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a keyframe sequence with duplicate values for offsets 0 and 1 roundtrips
-PASS A KeyframeEffect can be constructed with a two property four keyframe sequence
+FAIL A KeyframeEffect can be constructed with a two property four keyframe sequence assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a two property four keyframe sequence roundtrips
-PASS A KeyframeEffect can be constructed with a single keyframe sequence with omitted offset
+FAIL A KeyframeEffect can be constructed with a single keyframe sequence with omitted offset assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a single keyframe sequence with omitted offset roundtrips
-PASS A KeyframeEffect can be constructed with a single keyframe sequence with null offset
+FAIL A KeyframeEffect can be constructed with a single keyframe sequence with null offset assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a single keyframe sequence with null offset roundtrips
-PASS A KeyframeEffect can be constructed with a single keyframe sequence with string offset
+FAIL A KeyframeEffect can be constructed with a single keyframe sequence with string offset assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a single keyframe sequence with string offset roundtrips
-PASS A KeyframeEffect can be constructed with a one property keyframe sequence with some omitted offsets
+FAIL A KeyframeEffect can be constructed with a one property keyframe sequence with some omitted offsets assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property keyframe sequence with some omitted offsets roundtrips
-PASS A KeyframeEffect can be constructed with a one property keyframe sequence with some null offsets
+FAIL A KeyframeEffect can be constructed with a one property keyframe sequence with some null offsets assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property keyframe sequence with some null offsets roundtrips
-PASS A KeyframeEffect can be constructed with a two property keyframe sequence with some omitted offsets
+FAIL A KeyframeEffect can be constructed with a two property keyframe sequence with some omitted offsets assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a two property keyframe sequence with some omitted offsets roundtrips
-PASS A KeyframeEffect can be constructed with a one property keyframe sequence with all omitted offsets
+FAIL A KeyframeEffect can be constructed with a one property keyframe sequence with all omitted offsets assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a one property keyframe sequence with all omitted offsets roundtrips
-PASS A KeyframeEffect can be constructed with a keyframe sequence with different easing values, but the same easing value for a given offset
+FAIL A KeyframeEffect can be constructed with a keyframe sequence with different easing values, but the same easing value for a given offset assert_equals: value for 'composite' on ComputedKeyframe #0 expected (string) "auto" but got (object) null
 PASS A KeyframeEffect constructed with a keyframe sequence with different easing values, but the same easing value for a given offset roundtrips
 PASS A KeyframeEffect can be constructed with a keyframe sequence with different composite values, but the same composite value for a given offset
 PASS A KeyframeEffect constructed with a keyframe sequence with different composite values, but the same composite value for a given offset roundtrips
