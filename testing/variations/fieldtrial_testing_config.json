@@ -614,6 +614,24 @@
             ]
         }
     ],
+    "AutofillUpstreamEditableCardholderName": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillUpstreamEditableCardholderName"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillUpstreamUpdatePromptExplanation": [
         {
             "platforms": [
