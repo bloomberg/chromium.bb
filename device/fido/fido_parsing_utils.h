@@ -114,6 +114,12 @@ std::array<uint8_t, crypto::kSHA256Length> CreateSHA256Hash(
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::StringPiece ConvertToStringPiece(base::span<const uint8_t> data);
 
+// Convert byte array into GUID formatted string as defined by RFC 4122.
+// As we are converting 128 bit UUID, |bytes| must be have length of 16.
+// https://tools.ietf.org/html/rfc4122
+COMPONENT_EXPORT(DEVICE_FIDO)
+std::string ConvertBytesToUuid(base::span<const uint8_t, 16> bytes);
+
 }  // namespace fido_parsing_utils
 }  // namespace device
 

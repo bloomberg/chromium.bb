@@ -108,7 +108,7 @@ MATCHER_P2(IsAdvertisementContent,
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   const auto service_data = arg->service_data();
   const auto service_data_with_uuid =
-      service_data->find(kCableAdvertisementUUID);
+      service_data->find(kCableAdvertisementUUID128);
 
   if (service_data_with_uuid == service_data->end())
     return false;
@@ -158,12 +158,30 @@ class CableMockAdapter : public MockBluetoothAdapter {
     std::copy(authenticator_eid.begin(), authenticator_eid.end(),
               service_data.begin() + 2);
     BluetoothDevice::ServiceDataMap service_data_map;
-    service_data_map.emplace(kCableAdvertisementUUID, std::move(service_data));
+    service_data_map.emplace(kCableAdvertisementUUID128,
+                             std::move(service_data));
 
     mock_device->UpdateAdvertisementData(
         1 /* rssi */, base::nullopt /* flags */, BluetoothDevice::UUIDList(),
         base::nullopt /* tx_power */, std::move(service_data_map),
         BluetoothDevice::ManufacturerDataMap());
+
+    auto* mock_device_ptr = mock_device.get();
+    AddMockDevice(std::move(mock_device));
+
+    for (auto& observer : GetObservers())
+      observer.DeviceAdded(this, mock_device_ptr);
+  }
+
+  void AddNewTestAppleBluetoothDevice(
+      base::span<const uint8_t, FidoCableDiscovery::kEphemeralIdSize>
+          authenticator_eid) {
+    auto mock_device = CreateTestBluetoothDevice();
+    // Apple doesn't allow advertising service data, so we advertise a 16 bit
+    // UUID plus the EID converted into 128 bit UUID.
+    mock_device->AddUUID(BluetoothUUID("fde2"));
+    mock_device->AddUUID(BluetoothUUID(
+        fido_parsing_utils::ConvertBytesToUuid(authenticator_eid)));
 
     auto* mock_device_ptr = mock_device.get();
     AddMockDevice(std::move(mock_device));
@@ -215,12 +233,18 @@ class CableMockAdapter : public MockBluetoothAdapter {
   }
 
   void ExpectDiscoveryWithScanCallback(
-      base::span<const uint8_t, FidoCableDiscovery::kEphemeralIdSize> eid) {
+      base::span<const uint8_t, FidoCableDiscovery::kEphemeralIdSize> eid,
+      bool is_apple_device = false) {
     EXPECT_CALL(*this, StartDiscoverySessionWithFilterRaw(_, _, _))
-        .WillOnce(::testing::WithArg<1>([this, eid](const auto& callback) {
-          callback.Run(nullptr);
-          AddNewTestBluetoothDevice(eid);
-        }));
+        .WillOnce(::testing::WithArg<1>(
+            [this, eid, is_apple_device](const auto& callback) {
+              callback.Run(nullptr);
+              if (is_apple_device) {
+                AddNewTestAppleBluetoothDevice(eid);
+              } else {
+                AddNewTestBluetoothDevice(eid);
+              }
+            }));
   }
 
  protected:
@@ -290,6 +314,25 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewDevice) {
       base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
   mock_adapter->ExpectSuccessCallbackToSetPowered();
   mock_adapter->ExpectDiscoveryWithScanCallback(kAuthenticatorEid);
+  mock_adapter->ExpectRegisterAdvertisementWithResponse(
+      true /* simulate_success */, kClientEid, kUuidFormattedClientEid);
+
+  BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+  cable_discovery->Start();
+  scoped_task_environment_.RunUntilIdle();
+}
+
+// Tests successful discovery flow for Apple Cable device.
+TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewAppleDevice) {
+  auto cable_discovery = CreateDiscovery();
+  NiceMock<MockFidoDiscoveryObserver> mock_observer;
+  EXPECT_CALL(mock_observer, DeviceAdded(_, _));
+  cable_discovery->set_observer(&mock_observer);
+
+  auto mock_adapter =
+      base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
+  mock_adapter->ExpectSuccessCallbackToSetPowered();
+  mock_adapter->ExpectDiscoveryWithScanCallback(kAuthenticatorEid, true);
   mock_adapter->ExpectRegisterAdvertisementWithResponse(
       true /* simulate_success */, kClientEid, kUuidFormattedClientEid);
 

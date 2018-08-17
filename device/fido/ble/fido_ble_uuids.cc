@@ -17,10 +17,8 @@ const char kFidoServiceRevisionUUID[] = "00002a28-0000-1000-8000-00805f9b34fb";
 const char kFidoServiceRevisionBitfieldUUID[] =
     "f1d0fff4-deaa-ecee-b42f-c9ba7ed623bb";
 
-#if defined(OS_MACOSX)
-const char kCableAdvertisementUUID[] = "fde2";
-#else
-const char kCableAdvertisementUUID[] = "0000fde2-0000-1000-8000-00805f9b34fb";
-#endif
+const char kCableAdvertisementUUID16[] = "fde2";
+const char kCableAdvertisementUUID128[] =
+    "0000fde2-0000-1000-8000-00805f9b34fb";
 
 }  // namespace device
