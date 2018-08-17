@@ -945,7 +945,7 @@ TEST_F(UpdateCheckerTest, UpdatePauseResume) {
       testing::HasSubstr(R"(<packages><package fp="fp1"/></packages></app>)"));
 }
 
-// Tests that an update checker object and its underlying URLFetcher can
+// Tests that an update checker object and its underlying SimpleURLLoader can
 // be safely destroyed while it is paused.
 TEST_F(UpdateCheckerTest, UpdateResetUpdateChecker) {
   base::RunLoop runloop;
