@@ -980,7 +980,7 @@ class BlockedByClient_NetworkObserver_Test
   std::map<std::string, std::string> urls_by_id_;
 };
 
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(BlockedByClient_NetworkObserver_Test);
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(BlockedByClient_NetworkObserver_Test);
 
 class DevToolsSetCookieTest : public HeadlessAsyncDevTooledBrowserTest,
                               public network::Observer {
