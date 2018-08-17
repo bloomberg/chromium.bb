@@ -9,29 +9,40 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/dns/dns_api.h"
+#include "extensions/browser/api/dns/host_resolver_wrapper.h"
+#include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "net/base/net_errors.h"
-#include "net/dns/mock_host_resolver.h"
 
-namespace extensions {
-namespace {
 using extensions::api_test_utils::RunFunctionAndReturnSingleResult;
 
-constexpr char kHostname[] = "www.sowbug.com";
-constexpr char kAddress[] = "9.8.7.6";
-}  // namespace
+namespace extensions {
 
 class DnsApiTest : public ShellApiTest {
+ public:
+  DnsApiTest() : resolver_creator_(new MockHostResolverCreator()) {}
+
  private:
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
-    host_resolver()->AddRule(kHostname, kAddress);
-    host_resolver()->AddSimulatedFailure("this.hostname.is.bogus");
+    HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
+        resolver_creator_->CreateMockHostResolver());
   }
+
+  void TearDownOnMainThread() override {
+    HostResolverWrapper::GetInstance()->SetHostResolverForTesting(NULL);
+    resolver_creator_->DeleteMockHostResolver();
+    ShellApiTest::TearDownOnMainThread();
+  }
+
+  // The MockHostResolver asserts that it's used on the same thread on which
+  // it's created, which is actually a stronger rule than its real counterpart.
+  // But that's fine; it's good practice.
+  scoped_refptr<MockHostResolverCreator> resolver_creator_;
 };
 
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
@@ -63,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
   resolve_function->set_has_callback(true);
 
   std::string function_arguments("[\"");
-  function_arguments += kHostname;
+  function_arguments += MockHostResolverCreator::kHostname;
   function_arguments += "\"]";
   std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       resolve_function.get(), function_arguments, browser_context()));
@@ -76,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
 
   std::string address;
   EXPECT_TRUE(dict->GetString("address", &address));
-  EXPECT_EQ(kAddress, address);
+  EXPECT_EQ(MockHostResolverCreator::kAddress, address);
 }
 
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsExtension) {

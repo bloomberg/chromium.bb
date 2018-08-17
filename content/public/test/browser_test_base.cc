@@ -492,20 +492,6 @@ void BrowserTestBase::InitializeNetworkProcess() {
     // For now, this covers all the rules used in content's tests.
     // TODO(jam: expand this when we try to make browser_tests and
     // components_browsertests work.
-    if (rule.resolver_type ==
-        net::RuleBasedHostResolverProc::Rule::kResolverTypeFail) {
-      // The host "wpad" is added automatically in TestHostResolver, so we don't
-      // need to send it to NetworkServiceTest.
-      if (rule.host_pattern != "wpad") {
-        network::mojom::RulePtr mojo_rule = network::mojom::Rule::New();
-        mojo_rule->resolver_type =
-            network::mojom::ResolverType::kResolverTypeFail;
-        mojo_rule->host_pattern = rule.host_pattern;
-        mojo_rules.push_back(std::move(mojo_rule));
-      }
-      continue;
-    }
-
     if ((rule.resolver_type !=
              net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem &&
          rule.resolver_type !=
@@ -514,14 +500,6 @@ void BrowserTestBase::InitializeNetworkProcess() {
         !!rule.latency_ms || rule.replacement.empty())
       continue;
     network::mojom::RulePtr mojo_rule = network::mojom::Rule::New();
-    if (rule.resolver_type ==
-        net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem) {
-      mojo_rule->resolver_type =
-          network::mojom::ResolverType::kResolverTypeSystem;
-    } else {
-      mojo_rule->resolver_type =
-          network::mojom::ResolverType::kResolverTypeIPLiteral;
-    }
     mojo_rule->host_pattern = rule.host_pattern;
     mojo_rule->replacement = rule.replacement;
     mojo_rules.push_back(std::move(mojo_rule));

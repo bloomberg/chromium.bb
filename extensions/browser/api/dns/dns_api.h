@@ -8,16 +8,17 @@
 #include <string>
 
 #include "extensions/browser/extension_function.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/dns/host_resolver.h"
-#include "services/network/public/mojom/network_context.mojom.h"
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace extensions {
 
-class DnsResolveFunction : public UIThreadExtensionFunction,
-                           public network::mojom::ResolveHostClient {
+class DnsResolveFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("dns.resolve", DNS_RESOLVE)
 
@@ -30,14 +31,19 @@ class DnsResolveFunction : public UIThreadExtensionFunction,
   ResponseAction Run() override;
 
  private:
-  // network::mojom::ResolveHostClient implementation:
-  void OnComplete(
-      int result,
-      const base::Optional<net::AddressList>& resolved_addresses) override;
+  void WorkOnIOThread();
+  void RespondOnUIThread(std::unique_ptr<base::ListValue> results);
 
-  // A reference to |this| must be taken while the request is being made on this
-  // binding so the object is alive when the request completes.
-  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+  void OnLookupFinished(int result);
+
+  std::string hostname_;
+
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  bool response_;  // The value sent in SendResponse().
+
+  std::unique_ptr<net::HostResolver::Request> request_;
+  std::unique_ptr<net::AddressList> addresses_;
 };
 
 }  // namespace extensions

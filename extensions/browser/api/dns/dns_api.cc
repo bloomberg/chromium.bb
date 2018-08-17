@@ -13,6 +13,9 @@
 #include "extensions/common/api/dns.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_with_source.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
 using extensions::api::dns::ResolveCallbackResolveInfo;
@@ -21,51 +24,79 @@ namespace Resolve = extensions::api::dns::Resolve;
 
 namespace extensions {
 
-DnsResolveFunction::DnsResolveFunction() : binding_(this) {}
+DnsResolveFunction::DnsResolveFunction()
+    : response_(false), addresses_(new net::AddressList) {}
 
 DnsResolveFunction::~DnsResolveFunction() {}
 
 ExtensionFunction::ResponseAction DnsResolveFunction::Run() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<Resolve::Params> params(Resolve::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  network::mojom::ResolveHostClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr));
-  binding_.set_connection_error_handler(
-      base::BindOnce(&DnsResolveFunction::OnComplete, base::Unretained(this),
-                     net::ERR_FAILED, base::nullopt));
+  hostname_ = params->hostname;
+  url_request_context_getter_ =
+      content::BrowserContext::GetDefaultStoragePartition(browser_context())
+          ->GetURLRequestContext();
+
+  bool result = BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&DnsResolveFunction::WorkOnIOThread, this));
+  DCHECK(result);
+  return RespondLater();
+}
+
+void DnsResolveFunction::WorkOnIOThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  net::HostResolver* host_resolver =
+      HostResolverWrapper::GetInstance()->GetHostResolver(
+          url_request_context_getter_.get());
+  DCHECK(host_resolver);
+
   // Yes, we are passing zero as the port. There are some interesting but not
   // presently relevant reasons why HostResolver asks for the port of the
   // hostname you'd like to resolve, even though it doesn't use that value in
   // determining its answer.
-  net::HostPortPair host_port_pair(params->hostname, 0);
-  content::BrowserContext::GetDefaultStoragePartition(browser_context())
-      ->GetNetworkContext()
-      ->ResolveHost(host_port_pair, nullptr, std::move(client_ptr));
+  net::HostPortPair host_port_pair(hostname_, 0);
 
-  // Balanced in OnComplete().
+  net::HostResolver::RequestInfo request_info(host_port_pair);
+  int resolve_result = host_resolver->Resolve(
+      request_info, net::DEFAULT_PRIORITY, addresses_.get(),
+      base::Bind(&DnsResolveFunction::OnLookupFinished, this), &request_,
+      net::NetLogWithSource());
+
+  // Balanced in OnLookupFinished.
   AddRef();
-  return RespondLater();
+
+  if (resolve_result != net::ERR_IO_PENDING)
+    OnLookupFinished(resolve_result);
 }
 
-void DnsResolveFunction::OnComplete(
-    int result,
-    const base::Optional<net::AddressList>& resolved_addresses) {
+void DnsResolveFunction::RespondOnUIThread(
+    std::unique_ptr<base::ListValue> results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  binding_.Close();
+  Respond(response_ ? ArgumentList(std::move(results))
+                    : Error(kUnknownErrorDoNotUse));
+}
 
-  ResolveCallbackResolveInfo resolve_info;
-  resolve_info.result_code = result;
-  if (result == net::OK) {
-    DCHECK(resolved_addresses.has_value() && !resolved_addresses->empty());
-    resolve_info.address = std::make_unique<std::string>(
-        resolved_addresses->front().ToStringWithoutPort());
+void DnsResolveFunction::OnLookupFinished(int resolve_result) {
+  auto resolve_info = std::make_unique<ResolveCallbackResolveInfo>();
+  resolve_info->result_code = resolve_result;
+  if (resolve_result == net::OK) {
+    DCHECK(!addresses_->empty());
+    resolve_info->address.reset(
+        new std::string(addresses_->front().ToStringWithoutPort()));
   }
+  response_ = true;
 
-  Respond(ArgumentList(Resolve::Results::Create(resolve_info)));
+  bool post_task_result = BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&DnsResolveFunction::RespondOnUIThread, this,
+                     Resolve::Results::Create(*resolve_info)));
+  DCHECK(post_task_result);
 
-  Release();  // Added in Run().
+  Release();  // Added in WorkOnIOThread().
 }
 
 }  // namespace extensions

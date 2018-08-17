@@ -404,7 +404,9 @@ class NetworkContextConfigurationBrowserTest
       ASSERT_TRUE(simple_loader_helper.response_body());
       EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
     } else {
-      EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, simple_loader->NetError());
+      // TestHostResolver returns net::ERR_NOT_IMPLEMENTED for non-local host
+      // URLs.
+      EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, simple_loader->NetError());
       ASSERT_FALSE(simple_loader_helper.response_body());
     }
   }
