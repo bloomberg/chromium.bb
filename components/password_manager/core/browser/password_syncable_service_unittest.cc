@@ -236,6 +236,8 @@ TEST_F(PasswordSyncableServiceTest, AdditionsInBoth) {
   autofill::PasswordForm new_from_sync =
       PasswordFromSpecifics(GetPasswordSpecifics(list.back()));
 
+  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
+      .WillOnce(Return(DatabaseCleanupResult::kSuccess));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
@@ -255,6 +257,8 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInSync) {
   autofill::PasswordForm new_from_sync =
       PasswordFromSpecifics(GetPasswordSpecifics(list.back()));
 
+  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
+      .WillOnce(Return(DatabaseCleanupResult::kSuccess));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(Return(true));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
@@ -277,6 +281,8 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
   form.federation_origin = url::Origin::Create(GURL(kFederationUrl));
   form.username_value = base::ASCIIToUTF16(kUsername);
   form.password_value = base::ASCIIToUTF16(kPassword);
+  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
+      .WillOnce(Return(DatabaseCleanupResult::kSuccess));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
@@ -297,6 +303,8 @@ TEST_F(PasswordSyncableServiceTest, BothInSync) {
   form.type = kArbitraryType;
   form.username_value = base::ASCIIToUTF16(kUsername);
   form.password_value = base::ASCIIToUTF16(kPassword);
+  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
+      .WillOnce(Return(DatabaseCleanupResult::kSuccess));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
@@ -321,6 +329,8 @@ TEST_F(PasswordSyncableServiceTest, Merge) {
 
   autofill::PasswordForm form2(form1);
   form2.preferred = false;
+  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
+      .WillOnce(Return(DatabaseCleanupResult::kSuccess));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form1));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
@@ -338,6 +348,8 @@ TEST_F(PasswordSyncableServiceTest, PasswordStoreChanges) {
   // MergeDataAndStartSyncing().
   MockSyncChangeProcessor& weak_processor = *processor_;
   EXPECT_CALL(weak_processor, ProcessSyncChanges(_, IsEmpty()));
+  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
+      .WillOnce(Return(DatabaseCleanupResult::kSuccess));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(Return(true));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
@@ -446,6 +458,8 @@ TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
   form2.action = GURL("http://bar.com");
   form2.username_value = base::ASCIIToUTF16(kUsername);
   form2.password_value = base::ASCIIToUTF16(kPassword);
+  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
+      .WillOnce(Return(DatabaseCleanupResult::kSuccess));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form1));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
@@ -494,6 +508,8 @@ TEST_F(PasswordSyncableServiceTest, FailedReadFromPasswordStore) {
   syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
                           "Failed to get passwords from store.",
                           syncer::PASSWORDS);
+  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
+      .WillOnce(Return(DatabaseCleanupResult::kSuccess));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(Return(false));
   EXPECT_CALL(*error_factory, CreateAndUploadError(_, _))
@@ -583,6 +599,8 @@ TEST_F(PasswordSyncableServiceTest, FailedProcessSyncChanges) {
       new syncer::SyncErrorFactoryMock);
   syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
                           "There is a problem", syncer::PASSWORDS);
+  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
+      .WillOnce(Return(DatabaseCleanupResult::kSuccess));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
