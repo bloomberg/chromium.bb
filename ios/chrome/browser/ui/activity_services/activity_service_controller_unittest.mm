@@ -568,7 +568,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
       [activityController applicationActivitiesForData:data
                                             dispatcher:nil
                                          bookmarkModel:bookmark_model_];
-  ASSERT_EQ(IsUIRefreshPhase1Enabled() ? 4U : 2U, [items count]);
+  ASSERT_EQ(IsUIRefreshPhase1Enabled() ? 5U : 3U, [items count]);
   BOOL foundPrintActivity = NO;
   for (id item in items) {
     if ([item class] == [PrintActivity class]) {
@@ -591,7 +591,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_];
-  EXPECT_EQ(IsUIRefreshPhase1Enabled() ? 3U : 1U, [items count]);
+  EXPECT_EQ(IsUIRefreshPhase1Enabled() ? 4U : 2U, [items count]);
   foundPrintActivity = NO;
   for (id item in items) {
     if ([item class] == [PrintActivity class]) {
@@ -626,7 +626,7 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
       [activityController applicationActivitiesForData:data
                                             dispatcher:nil
                                          bookmarkModel:bookmark_model_];
-  ASSERT_EQ(5U, [items count]);
+  ASSERT_EQ(6U, [items count]);
 
   // Verify non-HTTP URL.
   data = [[ShareToData alloc] initWithShareURL:GURL("chrome://chromium.org/")
@@ -640,7 +640,7 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_];
-  ASSERT_EQ(1U, [items count]);
+  ASSERT_EQ(2U, [items count]);
 }
 
 // Verifies that the Bookmark Activity is correct on bookmarked pages.
@@ -666,8 +666,8 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
       [activityController applicationActivitiesForData:data
                                             dispatcher:nil
                                          bookmarkModel:bookmark_model_];
-  ASSERT_EQ(4U, [items count]);
-  UIActivity* activity = [items objectAtIndex:1];
+  ASSERT_EQ(5U, [items count]);
+  UIActivity* activity = [items objectAtIndex:2];
   EXPECT_EQ([BookmarkActivity class], [activity class]);
   NSString* addToBookmarkString =
       l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS);
@@ -691,8 +691,8 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_];
-  ASSERT_EQ(4U, [items count]);
-  activity = [items objectAtIndex:1];
+  ASSERT_EQ(5U, [items count]);
+  activity = [items objectAtIndex:2];
   EXPECT_EQ([BookmarkActivity class], [activity class]);
   NSString* editBookmark =
       l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK);
@@ -726,8 +726,8 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
       [activityController applicationActivitiesForData:data
                                             dispatcher:mockDispatcher
                                          bookmarkModel:bookmark_model_];
-  ASSERT_EQ(5U, [items count]);
-  UIActivity* activity = [items objectAtIndex:3];
+  ASSERT_EQ(6U, [items count]);
+  UIActivity* activity = [items objectAtIndex:4];
   EXPECT_EQ([RequestDesktopOrMobileSiteActivity class], [activity class]);
   NSString* requestDesktopSiteString =
       l10n_util::GetNSString(IDS_IOS_SHARE_MENU_REQUEST_DESKTOP_SITE);
@@ -750,8 +750,8 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:mockDispatcher
                                              bookmarkModel:bookmark_model_];
-  ASSERT_EQ(5U, [items count]);
-  activity = [items objectAtIndex:3];
+  ASSERT_EQ(6U, [items count]);
+  activity = [items objectAtIndex:4];
   EXPECT_EQ([RequestDesktopOrMobileSiteActivity class], [activity class]);
   NSString* requestMobileSiteString =
       l10n_util::GetNSString(IDS_IOS_SHARE_MENU_REQUEST_MOBILE_SITE);
@@ -870,7 +870,7 @@ TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
       [activityController applicationActivitiesForData:data
                                             dispatcher:nil
                                          bookmarkModel:bookmark_model_];
-  ASSERT_EQ(4U, [items count]);
+  ASSERT_EQ(5U, [items count]);
   BOOL foundFindInPageActivity = NO;
   for (id item in items) {
     if ([item class] == [FindInPageActivity class]) {
@@ -893,7 +893,7 @@ TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_];
-  EXPECT_EQ(3U, [items count]);
+  EXPECT_EQ(4U, [items count]);
   foundFindInPageActivity = NO;
   for (id item in items) {
     if ([item class] == [FindInPageActivity class]) {

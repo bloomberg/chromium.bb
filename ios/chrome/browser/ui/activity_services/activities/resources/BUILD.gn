@@ -13,6 +13,15 @@ imageset("activity_services_add_bookmark") {
   ]
 }
 
+imageset("activity_services_copy") {
+  sources = [
+    "activity_services_copy.imageset/Contents.json",
+    "activity_services_copy.imageset/activity_services_copy-60@2x.png",
+    "activity_services_copy.imageset/activity_services_copy-60@3x.png",
+    "activity_services_copy.imageset/activity_services_copy-76@2x.png",
+  ]
+}
+
 imageset("activity_services_edit_bookmark") {
   sources = [
     "activity_services_edit_bookmark.imageset/Contents.json",
