@@ -1312,6 +1312,26 @@ TEST_F(Canvas2DLayerBridgeTest, ImagesLockedUntilCacheLimit) {
   EXPECT_EQ(image_decode_cache_.num_locked_images(), 0);
 }
 
+TEST_F(Canvas2DLayerBridgeTest, QueuesCleanupTaskForLockedImages) {
+  // Disable deferral so we can inspect the cache state as we use the canvas.
+  auto color_params =
+      CanvasColorParams(kSRGBCanvasColorSpace, kF16CanvasPixelFormat, kOpaque);
+  std::unique_ptr<Canvas2DLayerBridge> bridge =
+      MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
+                 color_params);
+  bridge->DisableDeferral(DisableDeferralReason::kDisableDeferralReasonUnknown);
+
+  auto image =
+      cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
+                    SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
+                    SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace());
+  bridge->Canvas()->drawImage(image.paint_image(), 0u, 0u, nullptr);
+  EXPECT_EQ(image_decode_cache_.num_locked_images(), 1);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(image_decode_cache_.num_locked_images(), 0);
+}
+
 TEST_F(Canvas2DLayerBridgeTest, ImageCacheOnContextLost) {
   // Disable deferral so we use the raster canvas directly.
   auto color_params =
