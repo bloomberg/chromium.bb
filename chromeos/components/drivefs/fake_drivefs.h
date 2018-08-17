@@ -53,7 +53,7 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
                  bool pinned,
                  SetPinnedCallback callback) override;
 
-  void SetPauseSyncing(bool pause) override;
+  void UpdateNetworkState(bool pause_syncing, bool is_offline) override;
 
   const base::FilePath mount_path_;
 

@@ -30,8 +30,9 @@ interface DriveFs {
   // |pinned|.
   SetPinned(mojo_base.mojom.FilePath path, bool pinned) => (FileError error);
 
-  // Set whether syncing should be paused.
-  SetPauseSyncing(bool pause);
+  // Update DriveFS with the current network state, including whether the
+  // network is available and whether syncing should be paused.
+  UpdateNetworkState(bool pause_syncing, bool is_offline);
 };
 
 // Implemented by Chrome, used from DriveFS.
