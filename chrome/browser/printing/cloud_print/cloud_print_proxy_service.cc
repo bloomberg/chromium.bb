@@ -136,8 +136,11 @@ bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
 
 void CloudPrintProxyService::GetPrinters(const PrintersCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kCloudPrintProxyEnabled))
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kCloudPrintProxyEnabled)) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, std::vector<std::string>()));
     return;
+  }
 
   base::FilePath list_path(
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
