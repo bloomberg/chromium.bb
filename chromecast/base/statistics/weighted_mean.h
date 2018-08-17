@@ -14,12 +14,12 @@ namespace chromecast {
 class WeightedMean {
  public:
   WeightedMean();
-  ~WeightedMean();
 
   double weighted_mean() const { return weighted_mean_; }
   // The weighted variance should be calculated as variance_sum()/sum_weights().
   double variance_sum() const { return variance_sum_; }
   double sum_weights() const { return sum_weights_; }
+  double sum_squared_weights() const { return sum_squared_weights_; }
 
   // Adds |value| to the mean if |weight| is positive. Removes |value| from
   // the mean if |weight| is negative. Has no effect if |weight| is 0.
@@ -29,6 +29,7 @@ class WeightedMean {
   double weighted_mean_;
   double variance_sum_;
   double sum_weights_;
+  double sum_squared_weights_;
 };
 
 }  // namespace chromecast
