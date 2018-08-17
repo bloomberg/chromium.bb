@@ -197,8 +197,8 @@ TEST_F(EnumSetTest, HasAll) {
 TEST_F(EnumSetTest, Iterators) {
   const TestEnumSet enums1(TEST_3, TEST_4);
   TestEnumSet enums2;
-  for (TestEnumSet::Iterator it = enums1.First(); it.Good(); it.Inc()) {
-    enums2.Put(it.Get());
+  for (TestEnumSet::Iterator it = enums1.begin(); it != enums1.end(); it++) {
+    enums2.Put(*it);
   }
   EXPECT_EQ(enums2, enums1);
 }

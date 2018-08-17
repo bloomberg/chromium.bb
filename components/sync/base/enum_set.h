@@ -84,26 +84,6 @@ class EnumSet {
     Iterator() : enums_(nullptr), i_(kValueCount) {}
     ~Iterator() {}
 
-    // Copy constructor and assignment welcome.
-
-    // Returns true iff the iterator points to an EnumSet and it
-    // hasn't yet traversed the EnumSet entirely.
-    bool Good() const { return enums_ && i_ < kValueCount && enums_->test(i_); }
-
-    // Returns the value the iterator currently points to.  Good()
-    // must hold.
-    E Get() const {
-      DCHECK(Good());
-      return FromIndex(i_);
-    }
-
-    // Moves the iterator to the next value in the EnumSet. Good()
-    // must hold. Takes linear time.
-    void Inc() {
-      DCHECK(Good());
-      i_ = FindNext(i_ + 1);
-    }
-
     bool operator==(const Iterator& other) const { return i_ == other.i_; }
 
     bool operator!=(const Iterator& other) const { return !(*this == other); }
@@ -134,11 +114,14 @@ class EnumSet {
     }
 
    private:
-    friend Iterator EnumSet::First() const;
     friend Iterator EnumSet::begin() const;
 
     explicit Iterator(const EnumBitSet& enums)
         : enums_(&enums), i_(FindNext(0)) {}
+
+    // Returns true iff the iterator points to an EnumSet and it
+    // hasn't yet traversed the EnumSet entirely.
+    bool Good() const { return enums_ && i_ < kValueCount && enums_->test(i_); }
 
     size_t FindNext(size_t i) {
       while ((i < kValueCount) && !enums_->test(i)) {
@@ -241,8 +224,6 @@ class EnumSet {
   size_t Size() const { return enums_.count(); }
 
   // Returns an iterator pointing to the first element (if any).
-  Iterator First() const { return Iterator(enums_); }
-
   Iterator begin() const { return Iterator(enums_); }
 
   // Returns an iterator that does not point to any element, but to the position
