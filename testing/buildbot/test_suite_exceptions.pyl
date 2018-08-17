@@ -77,6 +77,7 @@
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
       'Mac ASan 64 Tests (1)', # https://crbug.com/828031
+      'win-asan', # https://crbug.com/873234, https://crbug.com/856169
       # chromium.win
       'Win10 Tests x64 (dbg)',
     ],
@@ -252,6 +253,11 @@
         },
       },
     },
+  },
+  'cc_unittests': {
+    'remove_from': [
+      'win-asan',  # https://crbug.com/875223
+    ],
   },
   'checkbins': {
     'remove_from': [
@@ -675,6 +681,11 @@
       'Win V8 FYI Release (NVIDIA)',
     ],
   },
+  'install_static_unittests': {
+    'remove_from': [
+      'win-asan',  # https://crbug.com/875225
+    ],
+  },
   'interactive_ui_tests': {
     'modifications': {
       # chromium.win
@@ -824,6 +835,7 @@
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
       'Linux TSan Tests',  # No capacity, https://crbug.com/852442
+      'win-asan', # https://crbug.com/873234, https://crbug.com/856169
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
       'Win10 Tests x64 (dbg)',  # Matches browser_tests.
@@ -892,9 +904,6 @@
       'Win7 Tests (1)',
       'Win7 Tests (dbg)(1)',
       # chromium.clang; all these bots run Windows 7.
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
       'ToTWin',
       'ToTWin(dbg)',
       'ToTWin(dll)',
@@ -911,6 +920,11 @@
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',  # https://crbug.com/852895
+    ],
+  },
+  'sbox_integration_tests': {
+    'remove_from': [
+      'win-asan',  # https://crbug.com/875242
     ],
   },
   'services_unittests': {
@@ -1041,6 +1055,7 @@
     'remove_from': [
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/852002
+      'win-asan',  # https://crbug.com/875239
     ],
   },
   'performance_test_suite': {
@@ -1326,6 +1341,7 @@
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
       'Mac ASan 64 Tests (1)', # https://crbug.com/828031
+      'win-asan', # https://crbug.com/873234, https://crbug.com/856169
       # chromium.win
       # Currently too flaky on Windows.
       'Win 7 Tests x64 (1)',

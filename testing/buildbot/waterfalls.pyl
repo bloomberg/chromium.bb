@@ -3078,6 +3078,18 @@
           'gtest_tests': 'chromium_mac_gtests',
         },
       },
+      'win-asan': {
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-10-15063',
+            },
+          ],
+        },
+      },
     },
   },
   {
