@@ -204,10 +204,6 @@ const char kInfobarsUIRebootName[] = "Infobars UI Reboot";
 const char kInfobarsUIRebootDescription[] =
     "When enabled, Infobars will use the new UI Reboot layout.";
 
-const char kCollectionsUIRebootName[] = "Collections UI Reboot";
-const char kCollectionsUIRebootDescription[] =
-    "When enabled, Collections will use the new UI Reboot stack.";
-
 const char kSlimNavigationManagerName[] = "Use Slim Navigation Manager";
 const char kSlimNavigationManagerDescription[] =
     "When enabled, uses the experimental slim navigation manager that provides "
