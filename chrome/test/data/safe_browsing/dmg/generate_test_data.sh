@@ -30,9 +30,9 @@ generate_test_data() {
 
   # HFS Raw Images #############################################################
 
-  # Extract the checked-in testdata to the OUT_DIR, ignoring the archived
-  # modification times.
-  tar x -m -C "${OUT_DIR}" -f "${THIS_DIR}/hfs_raw_images.tar.bz2"
+  MAKE_HFS="${THIS_DIR}/make_hfs.sh"
+  "${MAKE_HFS}" HFS+ 1024 "${OUT_DIR}/hfs_plus.img"
+  "${MAKE_HFS}" hfsx $((8 * 1024)) "${OUT_DIR}/hfsx_case_sensitive.img"
 
   # DMG Files ##################################################################
 
@@ -103,6 +103,10 @@ generate_test_data() {
   # Copy of Mach-O DMG with extension changed to .txt and no 'koly' signature ##
   cp "${OUT_DIR}/mach_o_in_dmg_no_koly_signature.dmg" \
       "${OUT_DIR}/mach_o_in_dmg_no_koly_signature.txt"
+
+  # Package Data for CIPD ######################################################
+
+  cipd pkg-build -pkg-def "${THIS_DIR}/cipd.yaml" -out "${THIS_DIR}/data.zip"
 }
 
 # Silence any stdout, but keep stderr.

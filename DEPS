@@ -253,6 +253,17 @@ deps = {
   'src/chrome/test/data/perf/frame_rate/content':
     Var('chromium_git') + '/chromium/frame_rate/content.git' + '@' + 'c10272c88463efeef6bb19c9ec07c42bc8fe22b9',
 
+  'src/chrome/test/data/safe_browsing/dmg': {
+    'packages': [
+      {
+        'package': 'chromium/chrome/test/data/safe_browsing/dmg',
+        'version': 'version:20180816.2',
+      },
+    ],
+    'condition': 'checkout_mac',
+    'dep_type': 'cipd',
+  },
+
   'src/chrome/test/data/xr/webvr_info':
     Var('chromium_git') + '/external/github.com/toji/webvr.info.git' + '@' + 'c58ae99b9ff9e2aa4c524633519570bf33536248',
 

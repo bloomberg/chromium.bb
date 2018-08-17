@@ -45,9 +45,10 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
 
   base::FilePath GetFilePath(const char* file_name) {
     base::FilePath test_data;
-    EXPECT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA, &test_data));
-    return test_data.AppendASCII("chrome")
-        .AppendASCII("safe_browsing_dmg")
+    EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+    return test_data.AppendASCII("safe_browsing")
+        .AppendASCII("dmg")
+        .AppendASCII("data")
         .AppendASCII(file_name);
   }
 
