@@ -18,7 +18,7 @@ TEST(PreviewsHintsTest, FindPageHintForSubstringPagePattern) {
 
   // Page hint for "/one/"
   optimization_guide::proto::PageHint* page_hint1 = hint1.add_page_hints();
-  page_hint1->set_page_pattern("/one/");
+  page_hint1->set_page_pattern("foo.org/*/one/");
 
   // Page hint for "two"
   optimization_guide::proto::PageHint* page_hint2 = hint1.add_page_hints();
@@ -34,17 +34,25 @@ TEST(PreviewsHintsTest, FindPageHintForSubstringPagePattern) {
   EXPECT_EQ(nullptr, PreviewsHints::FindPageHint(
                          GURL("https://www.foo.org/one"), hint1));
 
+  EXPECT_EQ(nullptr, PreviewsHints::FindPageHint(
+                         GURL("https://www.foo.org/one/"), hint1));
   EXPECT_EQ(page_hint1, PreviewsHints::FindPageHint(
-                            GURL("https://www.foo.org/one/"), hint1));
-  EXPECT_EQ(page_hint1, PreviewsHints::FindPageHint(
-                            GURL("https://www.foo.org/one/two"), hint1));
+                            GURL("https://www.foo.org/pages/one/"), hint1));
   EXPECT_EQ(page_hint1,
             PreviewsHints::FindPageHint(
-                GURL("https://www.foo.org/one/two/three.jpg"), hint1));
+                GURL("https://www.foo.org/pages/subpages/one/"), hint1));
+  EXPECT_EQ(page_hint1, PreviewsHints::FindPageHint(
+                            GURL("https://www.foo.org/pages/one/two"), hint1));
+  EXPECT_EQ(page_hint1,
+            PreviewsHints::FindPageHint(
+                GURL("https://www.foo.org/pages/one/two/three.jpg"), hint1));
 
   EXPECT_EQ(page_hint2,
             PreviewsHints::FindPageHint(
-                GURL("https://www.foo.org/onetwo/three.jpg"), hint1));
+                GURL("https://www.foo.org/pages/onetwo/three.jpg"), hint1));
+  EXPECT_EQ(page_hint2,
+            PreviewsHints::FindPageHint(
+                GURL("https://www.foo.org/one/two/three.jpg"), hint1));
   EXPECT_EQ(page_hint2,
             PreviewsHints::FindPageHint(GURL("https://one.two.org"), hint1));
 
