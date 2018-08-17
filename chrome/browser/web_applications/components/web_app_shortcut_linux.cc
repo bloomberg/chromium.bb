@@ -22,6 +22,7 @@
 #include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 
 namespace {
