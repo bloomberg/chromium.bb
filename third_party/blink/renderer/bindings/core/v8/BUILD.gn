@@ -148,6 +148,10 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/v8_resize_observer_callback.h",
   "$bindings_core_v8_output_dir/v8_scroll_state_callback.cc",
   "$bindings_core_v8_output_dir/v8_scroll_state_callback.h",
+  "$bindings_core_v8_output_dir/v8_create_html_callback.cc",
+  "$bindings_core_v8_output_dir/v8_create_html_callback.h",
+  "$bindings_core_v8_output_dir/v8_create_url_callback.cc",
+  "$bindings_core_v8_output_dir/v8_create_url_callback.h",
   "$bindings_core_v8_output_dir/v8_void_function.cc",
   "$bindings_core_v8_output_dir/v8_void_function.h",
 ]

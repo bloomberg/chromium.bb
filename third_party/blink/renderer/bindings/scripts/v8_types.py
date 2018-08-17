@@ -1118,6 +1118,7 @@ IdlArrayOrSequenceType.literal_cpp_value = array_or_sequence_literal_cpp_value
 
 _IDL_TYPE_TO_NATIVE_VALUE_TRAITS_TAG_MAP = {
     'DOMString': 'IDLString',
+    'USVString': 'IDLUSVString',
     'any': 'ScriptValue',
     'boolean': 'IDLBoolean',
     'long': 'IDLLong',

@@ -8,4 +8,7 @@
     RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedTypePolicy {
     readonly attribute DOMString name;
+    [CallWith=ScriptState, RaisesException] TrustedHTML createHTML(DOMString input);
+    [CallWith=ScriptState, RaisesException] TrustedScriptURL createScriptURL(DOMString input);
+    [CallWith=ScriptState, RaisesException] TrustedURL createURL(DOMString input);
 };
