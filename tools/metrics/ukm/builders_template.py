@@ -32,7 +32,8 @@ namespace builders {{
 event_template="""
 class {event.name} final : public ::ukm::internal::UkmEntryBuilderBase {{
  public:
-  {event.name}(ukm::SourceId source_id);
+  explicit {event.name}(ukm::SourceId source_id);
+  explicit {event.name}(base::UkmSourceId source_id);
   ~{event.name}() override;
 
   static const char kEntryName[];
@@ -67,6 +68,10 @@ event_template="""
 const char {event.name}::kEntryName[] = "{event.raw_name}";
 
 {event.name}::{event.name}(ukm::SourceId source_id) :
+  ::ukm::internal::UkmEntryBuilderBase(source_id, kEntryNameHash) {{
+}}
+
+{event.name}::{event.name}(base::UkmSourceId source_id) :
   ::ukm::internal::UkmEntryBuilderBase(source_id, kEntryNameHash) {{
 }}
 

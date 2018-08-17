@@ -95,6 +95,11 @@ class METRICS_EXPORT UkmRecorder {
   // Disables sampling for testing purposes.
   virtual void DisableSamplingForTesting(){};
 
+ protected:
+  // Type-safe wrappers for Update<X> functions.
+  void RecordOtherURL(base::UkmSourceId source_id, const GURL& url);
+  void RecordAppURL(base::UkmSourceId source_id, const GURL& url);
+
  private:
   friend DelegatingUkmRecorder;
   friend IOSChromePasswordManagerClient;

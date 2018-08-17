@@ -31,4 +31,12 @@ ukm::SourceId UkmRecorder::GetNewSourceID() {
   return AssignNewSourceId();
 }
 
+void UkmRecorder::RecordOtherURL(base::UkmSourceId source_id, const GURL& url) {
+  UpdateSourceURL(source_id.ToInt64(), url);
+}
+
+void UkmRecorder::RecordAppURL(base::UkmSourceId source_id, const GURL& url) {
+  UpdateAppURL(source_id.ToInt64(), url);
+}
+
 }  // namespace ukm
