@@ -474,6 +474,7 @@ struct CommandLineTestData {
   std::string switch_value_string;
   float expected_fps;
   size_t expected_device_count;
+  FakeVideoCaptureDevice::DisplayMediaType expected_display_media_type;
   std::vector<VideoPixelFormat> expected_pixel_formats;
 };
 
@@ -506,10 +507,16 @@ TEST_F(FakeVideoCaptureDeviceFactoryTest, DeviceWithNoSupportedFormats) {
 
 // Tests that the FakeVideoCaptureDeviceFactory delivers the expected number
 // of devices and formats when being configured using command-line switches.
-TEST_P(FakeVideoCaptureDeviceFactoryTest, FrameRateAndDeviceCount) {
+TEST_P(FakeVideoCaptureDeviceFactoryTest,
+       FrameRateAndDeviceCountAndDisplayMediaType) {
   std::vector<FakeVideoCaptureDeviceSettings> config;
   FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
       GetParam().switch_value_string, &config);
+  for (const auto settings : config) {
+    EXPECT_EQ(GetParam().expected_display_media_type,
+              settings.display_media_type);
+  }
+
   video_capture_device_factory_->SetToCustomDevicesConfig(config);
   video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
   EXPECT_EQ(GetParam().expected_device_count, descriptors_->size());
@@ -551,28 +558,52 @@ TEST_P(FakeVideoCaptureDeviceFactoryTest, FrameRateAndDeviceCount) {
 INSTANTIATE_TEST_CASE_P(
     ,
     FakeVideoCaptureDeviceFactoryTest,
-    Values(CommandLineTestData{"fps=-1", 5, 1u, {PIXEL_FORMAT_I420}},
+    Values(CommandLineTestData{"fps=-1",
+                               5,
+                               1u,
+                               FakeVideoCaptureDevice::DisplayMediaType::ANY,
+                               {PIXEL_FORMAT_I420}},
            CommandLineTestData{"fps=29.97,device-count=1",
                                29.97f,
                                1u,
+                               FakeVideoCaptureDevice::DisplayMediaType::ANY,
                                {PIXEL_FORMAT_I420}},
            CommandLineTestData{"fps=60,device-count=2",
                                60,
                                2u,
+                               FakeVideoCaptureDevice::DisplayMediaType::ANY,
                                {PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16}},
            CommandLineTestData{"fps=1000,device-count=-1",
                                60,
                                1u,
+                               FakeVideoCaptureDevice::DisplayMediaType::ANY,
                                {PIXEL_FORMAT_I420}},
            CommandLineTestData{"device-count=4",
                                20,
                                4u,
+                               FakeVideoCaptureDevice::DisplayMediaType::ANY,
                                {PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16,
                                 PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_I420}},
            CommandLineTestData{"device-count=4,ownership=client",
                                20,
                                4u,
+                               FakeVideoCaptureDevice::DisplayMediaType::ANY,
                                {PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16,
                                 PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_I420}},
-           CommandLineTestData{"device-count=0", 20, 0u, {PIXEL_FORMAT_I420}}));
+           CommandLineTestData{"device-count=0",
+                               20,
+                               0u,
+                               FakeVideoCaptureDevice::DisplayMediaType::ANY,
+                               {PIXEL_FORMAT_I420}},
+           CommandLineTestData{"display-media-type=window",
+                               20,
+                               1u,
+                               FakeVideoCaptureDevice::DisplayMediaType::WINDOW,
+                               {PIXEL_FORMAT_I420}},
+           CommandLineTestData{
+               "display-media-type=browser,fps=60",
+               60,
+               1u,
+               FakeVideoCaptureDevice::DisplayMediaType::BROWSER,
+               {PIXEL_FORMAT_I420}}));
 };  // namespace media

@@ -28,9 +28,9 @@ struct CONTENT_EXPORT DesktopMediaID {
   typedef intptr_t Id;
 
   // Represents an "unset" value for either |id| or |aura_id|.
-  static const Id kNullId = 0;
+  static const Id kNullId;
   // Represents a fake id to create a dummy capturer for autotests.
-  static const Id kFakeId = -3;
+  static const Id kFakeId;
 
 #if defined(USE_AURA)
   // Assigns integer identifier to the |window| and returns its DesktopMediaID.

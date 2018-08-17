@@ -77,6 +77,11 @@ namespace content {
 const char kScreenPrefix[] = "screen";
 const char kWindowPrefix[] = "window";
 
+// static
+const DesktopMediaID::Id DesktopMediaID::kNullId = 0;
+// static
+const DesktopMediaID::Id DesktopMediaID::kFakeId = -3;
+
 #if defined(USE_AURA)
 
 // static

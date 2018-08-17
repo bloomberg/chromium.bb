@@ -5,7 +5,6 @@
 #include "media/capture/video/fake_video_capture_device_factory.h"
 
 #include <array>
-#include <vector>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -259,6 +258,8 @@ void FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
   std::vector<gfx::Size> resolutions = ArrayToVector(kDefaultResolutions);
   std::vector<float> frame_rates = ArrayToVector(kDefaultFrameRates);
   int device_count = kDefaultDeviceCount;
+  FakeVideoCaptureDevice::DisplayMediaType display_media_type =
+      FakeVideoCaptureDevice::DisplayMediaType::ANY;
 
   while (option_tokenizer.GetNext()) {
     std::vector<std::string> param =
@@ -322,6 +323,17 @@ void FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
       }
       LOG(WARNING) << "Unknown config " << param.back();
       return;
+    } else if (base::EqualsCaseInsensitiveASCII(param.front(),
+                                                "display-media-type")) {
+      if (base::EqualsCaseInsensitiveASCII(param.back(), "any")) {
+        display_media_type = FakeVideoCaptureDevice::DisplayMediaType::ANY;
+      } else if (base::EqualsCaseInsensitiveASCII(param.back(), "monitor")) {
+        display_media_type = FakeVideoCaptureDevice::DisplayMediaType::MONITOR;
+      } else if (base::EqualsCaseInsensitiveASCII(param.back(), "window")) {
+        display_media_type = FakeVideoCaptureDevice::DisplayMediaType::WINDOW;
+      } else if (base::EqualsCaseInsensitiveASCII(param.back(), "browser")) {
+        display_media_type = FakeVideoCaptureDevice::DisplayMediaType::BROWSER;
+      }
     }
   }
 
@@ -333,6 +345,7 @@ void FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
     settings.device_id = base::StringPrintf(kDefaultDeviceIdMask, device_index);
     AppendAllCombinationsToFormatsContainer(
         pixel_formats, resolutions, frame_rates, &settings.supported_formats);
+    settings.display_media_type = display_media_type;
     config->push_back(settings);
   }
 }
