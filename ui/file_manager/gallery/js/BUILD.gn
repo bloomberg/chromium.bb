@@ -180,6 +180,15 @@ js_library("slide_mode") {
     "image_editor:viewport",
     "//third_party/polymer/v1_0/components-chromium/paper-progress:paper-progress-extracted",
   ]
+  externs_list = [ "../../externs/gallery_foreground.js" ]
+}
+
+js_library("slide_mode_unittest") {
+  deps = [
+    ":slide_mode",
+    "../../file_manager/common/js:unittest_util",
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
 }
 
 js_library("thumbnail_mode") {
@@ -201,6 +210,7 @@ js_unit_tests("unit_tests") {
     ":gallery_data_model_unittest",
     ":gallery_util_unittest",
     ":ribbon_unittest",
+    ":slide_mode_unittest",
   ]
 }
 
