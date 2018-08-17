@@ -105,12 +105,12 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
                 "https://bobpay.com", mPaymentRequestTestRule.getPaymentInstrumentLabel(1));
         Assert.assertEquals(
                 "https://alicepay.com", mPaymentRequestTestRule.getPaymentInstrumentLabel(2));
-        // \u0020\...\u2006 is four dots ellipsis, \u202A is the Left-To-Right Embedding (LTE) mark,
+        // \u0020\...\u2060 is four dots ellipsis, \u202A is the Left-To-Right Embedding (LTE) mark,
         // \u202C is the Pop Directional Formatting (PDF) mark. Expected string with form
         // 'Visa  <LRE>****1111<PDF>\nJoe Doe'.
         Assert.assertEquals(
-                "Visa\u0020\u0020\u202A\u2022\u2006\u2022\u2006\u2022\u2006\u2022\u20061111"
-                        + "\u202C\nJon Doe",
+                "Visa\u0020\u0020\u202A\u2022\u2060\u2006\u2060\u2022\u2060\u2006\u2060\u2022"
+                        + "\u2060\u2006\u2060\u2022\u2060\u2006\u20601111\u202C\nJon Doe",
                 mPaymentRequestTestRule.getPaymentInstrumentLabel(3));
 
         // Cancel the Payment Request.
@@ -143,12 +143,12 @@ public class PaymentRequestPaymentAppsSortingTest implements MainActivityStartCa
                 "https://charliepay.com", mPaymentRequestTestRule.getPaymentInstrumentLabel(1));
         Assert.assertEquals(
                 "https://bobpay.com", mPaymentRequestTestRule.getPaymentInstrumentLabel(2));
-        // \u0020\...\u2006 is four dots ellipsis, \u202A is the Left-To-Right Embedding (LTE) mark,
+        // \u0020\...\u2060 is four dots ellipsis, \u202A is the Left-To-Right Embedding (LTE) mark,
         // \u202C is the Pop Directional Formatting (PDF) mark. Expected string with form
         // 'Visa  <LRE>****1111<PDF>\nJoe Doe'.
         Assert.assertEquals(
-                "Visa\u0020\u0020\u202A\u2022\u2006\u2022\u2006\u2022\u2006\u2022\u20061111"
-                        + "\u202C\nJon Doe",
+                "Visa\u0020\u0020\u202A\u2022\u2060\u2006\u2060\u2022\u2060\u2006\u2060\u2022"
+                        + "\u2060\u2006\u2060\u2022\u2060\u2006\u20601111\u202C\nJon Doe",
                 mPaymentRequestTestRule.getPaymentInstrumentLabel(3));
 
         mPaymentRequestTestRule.clickAndWait(

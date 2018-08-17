@@ -46,8 +46,13 @@ using base::ASCIIToUTF16;
 
 namespace autofill {
 
-const base::char16 kMidlineEllipsis[] = {0x2022, 0x2006, 0x2022, 0x2006, 0x2022,
-                                         0x2006, 0x2022, 0x2006, 0};
+// Unicode characters used in card number obfuscation:
+//  - 0x2022 - Bullet.
+//  - 0x2006 - SIX-PER-EM SPACE (small space between bullets).
+//  - 0x2060 - WORD-JOINER (makes obfuscated string undivisible).
+const base::char16 kMidlineEllipsis[] = {
+    0x2022, 0x2060, 0x2006, 0x2060, 0x2022, 0x2060, 0x2006, 0x2060, 0x2022,
+    0x2060, 0x2006, 0x2060, 0x2022, 0x2060, 0x2006, 0x2060, 0};
 
 namespace {
 
