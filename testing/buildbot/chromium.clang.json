@@ -1579,6 +1579,17 @@
             }
           ]
         },
+        "test": "notification_helper_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
         "test": "pdf_unittests"
       },
       {
@@ -2775,6 +2786,17 @@
             }
           ]
         },
+        "test": "notification_helper_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
         "test": "pdf_unittests"
       },
       {
@@ -3949,6 +3971,17 @@
           ]
         },
         "test": "net_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "notification_helper_unittests"
       },
       {
         "swarming": {
