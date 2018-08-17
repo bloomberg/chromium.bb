@@ -12,10 +12,14 @@
 
 namespace webrunner {
 
+class WebRunnerBrowserMainParts;
+
 class WebRunnerContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit WebRunnerContentBrowserClient(zx::channel context_channel);
   ~WebRunnerContentBrowserClient() override;
+
+  WebRunnerBrowserMainParts* main_parts_for_test() const { return main_parts_; }
 
   // ContentBrowserClient overrides.
   content::BrowserMainParts* CreateBrowserMainParts(
@@ -23,6 +27,7 @@ class WebRunnerContentBrowserClient : public content::ContentBrowserClient {
 
  private:
   zx::channel context_channel_;
+  WebRunnerBrowserMainParts* main_parts_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRunnerContentBrowserClient);
 };

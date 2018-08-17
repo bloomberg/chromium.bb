@@ -4,6 +4,14 @@
 
 library chromium.web;
 
+// Indicates which properties of the NavigationController's visible content
+// that have changed since the last OnNavigationStateChanged() event.
+// Properties which remain unchanged are left unset.
+struct NavigationStateChangeDetails {
+  string? url;
+  string? title;
+};
+
 interface Frame {
   // Creates and registers a view with the view manager and returns its
   // view owner which may subsequently be passed to |View.AddChild()|
@@ -20,4 +28,7 @@ interface Frame {
   // |view_provider|: An interface request for the Frame's
   // NavigationController.
   2: GetNavigationController(request<NavigationController> controller);
+
+  // Called when user-visible navigation state has changed for the Frame.
+  3: -> OnNavigationStateChanged(NavigationStateChangeDetails change);
 };

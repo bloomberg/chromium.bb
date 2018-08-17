@@ -6,6 +6,7 @@
 #define WEBRUNNER_BROWSER_FRAME_IMPL_H_
 
 #include <lib/fidl/cpp/binding_set.h>
+#include <lib/zx/channel.h>
 #include <memory>
 #include <utility>
 
@@ -25,6 +26,8 @@ class WebContents;
 
 namespace webrunner {
 
+class ContextImpl;
+
 // Implementation of Frame from //webrunner/fidl/frame.fidl.
 // Implements a Frame service, which is a wrapper for a WebContents instance.
 class FrameImpl : public chromium::web::Frame,
@@ -32,8 +35,13 @@ class FrameImpl : public chromium::web::Frame,
                   public content::WebContentsObserver {
  public:
   FrameImpl(std::unique_ptr<content::WebContents> web_contents,
-            chromium::web::FrameObserverPtr observer);
+            ContextImpl* context,
+            fidl::InterfaceRequest<chromium::web::Frame> frame_request);
   ~FrameImpl() override;
+
+  zx::unowned_channel GetBindingChannelForTest() const;
+
+  content::WebContents* web_contents_for_test() { return web_contents_.get(); }
 
   // content::WebContentsObserver implementation.
   void Init(content::BrowserContext* browser_context, const GURL& url);
@@ -55,11 +63,19 @@ class FrameImpl : public chromium::web::Frame,
   void Reload() override;
   void GetVisibleEntry(GetVisibleEntryCallback callback) override;
 
+  // content::WebContentsObserver implementation.
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+
  private:
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
   std::unique_ptr<content::WebContents> web_contents_;
 
-  chromium::web::FrameObserverPtr observer_;
+  // Cached navigation event details.
+  chromium::web::NavigationEntry cached_navigation_state_;
+
+  ContextImpl* context_ = nullptr;
+  fidl::Binding<chromium::web::Frame> binding_;
   fidl::BindingSet<chromium::web::NavigationController> controller_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameImpl);
