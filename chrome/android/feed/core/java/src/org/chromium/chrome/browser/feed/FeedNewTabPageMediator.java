@@ -10,6 +10,8 @@ import com.google.android.libraries.feed.api.stream.ContentChangedListener;
 import com.google.android.libraries.feed.api.stream.ScrollListener;
 import com.google.android.libraries.feed.api.stream.Stream;
 
+import org.chromium.base.MemoryPressureListener;
+import org.chromium.base.memory.MemoryPressureCallback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
@@ -30,6 +32,7 @@ class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
     private ScrollListener mStreamScrollListener;
     private ContentChangedListener mStreamContentChangedListener;
     private SectionHeader mSectionHeader;
+    private MemoryPressureCallback mMemoryPressureCallback;
 
     private boolean mStreamContentChanged;
     private int mThumbnailWidth;
@@ -55,6 +58,7 @@ class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
         stream.removeScrollListener(mStreamScrollListener);
         stream.removeOnContentChangedListener(mStreamContentChangedListener);
         mPrefChangeRegistrar.destroy();
+        MemoryPressureListener.removeCallback(mMemoryPressureCallback);
     }
 
     /**
@@ -92,6 +96,9 @@ class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
                         this::onSectionHeaderToggled);
         mCoordinator.getSectionHeaderView().setHeader(mSectionHeader);
         stream.setStreamContentVisibility(mSectionHeader.isExpanded());
+
+        mMemoryPressureCallback = pressure -> mCoordinator.getStream().trim();
+        MemoryPressureListener.addCallback(mMemoryPressureCallback);
     }
 
     /** Update whether the section header should be expanded. */
