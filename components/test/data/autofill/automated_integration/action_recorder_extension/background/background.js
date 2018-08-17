@@ -312,7 +312,7 @@
               frameId: targetFrame.parentFrameId
             })
             .then((frameName) => {
-              if (frameName !== '') {
+              if (frameName !== '' && frameName !== undefined) {
                 context.browserTest = { name: frameName };
                 resolve(context);
               } else {
@@ -699,19 +699,6 @@
     if (!request) return false;
     switch (request.type) {
       // Tab commands.
-      // Query for a frame's frame id and parent frame id.
-      case RecorderMsgEnum.GET_FRAME_CONTEXT:
-        getIframeContext(sender.tab.id, sender.frameId, request.location)
-        .then((context) => {
-          sendResponse(context);
-        })
-        .catch((error) => {
-          console.error(
-              `Unable to query for context on tab ${sender.tab.id}, ` +
-              `frame ${sender.frameId}!\r\n`,
-              error);
-        });
-        return true;
       case RecorderMsgEnum.SAVE:
         downloadRecipe()
         .then(() => sendResponse(true));
