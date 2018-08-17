@@ -2,17 +2,13 @@
 
 Below is a list of all WebDriver commands and their current support in ChromeDriver based on what is in the [WebDriver Specification](https://w3c.github.io/webdriver/webdriver-spec.html).
 
-Notes:
- - Currently discussing missing some beginning error checks on almost all commands which are not counted in completion currently. This is tracked in bug [1989](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1989)
-
-
 | Method | URL | Command | Status | Bug
 | --- | --- | --- | --- | --- |
 | POST   | /session                                                       | New Session                | Partially Complete | [1997](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1997)
 | DELETE | /session/{session id}                                          | Delete Status              | Complete           |
 | GET    | /status                                                        | Status                     | Complete           |
 | GET    | /session/{session id}/timeouts                                 | Get Timeouts               | Complete           |
-| POST   | /session/{session id}/timeouts                                 | Set Timeouts               | Partially Complete | [1951](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1951)
+| POST   | /session/{session id}/timeouts                                 | Set Timeouts               | Complete           |
 | POST   | /session/{session id}/url                                      | Navigate To                | Partially Complete | [1987](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1987)
 | GET    | /session/{session id}/url                                      | Get Current URL            | Complete           |
 | POST   | /session/{session id}/back                                     | Back                       |                    |
@@ -21,14 +17,14 @@ Notes:
 | GET    | /session/{session id}/title                                    | Get Title                  | Complete           |
 | GET    | /session/{session id}/window                                   | Get Window Handle          | Complete           |
 | DELETE | /session/{session id}/window                                   | Close Window               | Partially Complete | [1990](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1990)
-| POST   | /session/{session id}/window                                   | Switch To Window           | Partially Complete | [1991](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1991)
+| POST   | /session/{session id}/window                                   | Switch To Window           | Complete           |
 | GET    | /session/{session id}/window/handles                           | Get Window Handles         | Complete           |
 | POST   | /session/{session id}/frame                                    | Switch To Frame            | Partially Complete | [1992](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1992)
 | POST   | /session/{session id}/frame/parent                             | Switch To Parent Frame     |                    |
 | GET    | /session/{session id}/window/rect                              | Get Window Rect            | Complete           |
 | POST   | /session/{session id}/window/rect                              | Set Window Rect            | Complete           |
-| POST   | /session/{session id}/window/maximize                          | Maximize Window            | Incomplete         | [1940](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1940)
-| POST   | /session/{session id}/window/minimize                          | Minimize Window            | Incomplete         | [1940](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1940)
+| POST   | /session/{session id}/window/maximize                          | Maximize Window            | Complete           |
+| POST   | /session/{session id}/window/minimize                          | Minimize Window            | Complete           |
 | POST   | /session/{session id}/window/fullscreen                        | Fullscreen Window          | Partially Complete | [1993](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1993)
 | GET    | /session/{session id}/element/active                           | Get Active Element         | Complete           |
 | POST   | /session/{session id}/element                                  | Find Element               |                    |
@@ -41,7 +37,7 @@ Notes:
 | GET    | /session/{session id}/element/{element id}/css/{property name} | Get Element CSS Value      | Partially Complete | [1994](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1994)
 | GET    | /session/{session id}/element/{element id}/text                | Get Element Text           | Complete           |
 | GET    | /session/{session id}/element/{element id}/name	              | Get Element Tag Name       | Complete           |
-| GET    | /session/{session id}/element/{element id}/rect                | Get Element Rect           | Incomplete         | [1937](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1937)
+| GET    | /session/{session id}/element/{element id}/rect                | Get Element Rect           | Complete           |
 | GET    | /session/{session id}/element/{element id}/enabled             | Is Element Enabled         | Partially Complete | [1995](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1995)
 | POST   | /session/{session id}/element/{element id}/click               | Element Click              | Partially Complete | [1996](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1996)
 | POST   | /session/{session id}/element/{element id}/clear               | Element Clear              | Partially Complete | [1998](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1998)
