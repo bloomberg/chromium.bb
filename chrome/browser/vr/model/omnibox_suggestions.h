@@ -37,7 +37,7 @@ struct VR_EXPORT OmniboxSuggestion {
                         new_contents_classifications,
                     const AutocompleteMatch::ACMatchClassifications&
                         new_description_classifications,
-                    AutocompleteMatch::Type new_type,
+                    const gfx::VectorIcon* icon,
                     GURL new_destination,
                     const base::string16& new_input,
                     const base::string16& new_inline_autocompletion);
@@ -48,7 +48,7 @@ struct VR_EXPORT OmniboxSuggestion {
   base::string16 description;
   AutocompleteMatch::ACMatchClassifications contents_classifications;
   AutocompleteMatch::ACMatchClassifications description_classifications;
-  AutocompleteMatch::Type type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;
+  const gfx::VectorIcon* icon = nullptr;
   GURL destination;
   Autocompletion autocompletion;
 };
