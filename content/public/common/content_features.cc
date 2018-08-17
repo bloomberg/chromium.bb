@@ -524,7 +524,7 @@ const base::Feature kWebAuthBle{"WebAuthenticationBle",
 // using pairingless BLE protocol.
 // https://w3c.github.io/webauthn
 const base::Feature kWebAuthCable{"WebAuthenticationCable",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.
