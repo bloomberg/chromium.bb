@@ -671,6 +671,13 @@ bool SVGElement::InUseShadowTree() const {
 }
 
 void SVGElement::ParseAttribute(const AttributeModificationParams& params) {
+  // Note about the 'class' attribute:
+  // The "special storage" (SVGAnimatedString) for the 'class' attribute (and
+  // the 'className' property) is updated by the follow block (|class_name_|
+  // registered in |attribute_to_property_map_|.). SvgAttributeChanged then
+  // triggers the resulting style updates (instead of
+  // Element::ParseAttribute). We don't tell Element about the change to avoid
+  // parsing the class list twice.
   if (SVGAnimatedPropertyBase* property = PropertyFromAttribute(params.name)) {
     SVGParsingError parse_error =
         property->SetBaseValueAsString(params.new_value);
@@ -678,15 +685,7 @@ void SVGElement::ParseAttribute(const AttributeModificationParams& params) {
     return;
   }
 
-  if (params.name == HTMLNames::classAttr) {
-    // SVG animation has currently requires special storage of values so we set
-    // the className here. svgAttributeChanged actually causes the resulting
-    // style updates (instead of Element::parseAttribute). We don't
-    // tell Element about the change to avoid parsing the class list twice
-    SVGParsingError parse_error =
-        class_name_->SetBaseValueAsString(params.new_value);
-    ReportAttributeParsingError(parse_error, params.name, params.new_value);
-  } else if (params.name == tabindexAttr) {
+  if (params.name == tabindexAttr) {
     Element::ParseAttribute(params);
   } else {
     // standard events
