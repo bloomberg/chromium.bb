@@ -80,7 +80,9 @@ class FakeTabController : public TabController {
       gfx::Path* clip) override {
     return true;
   }
-  int GetStrokeThickness() const override { return 0; }
+  int GetStrokeThickness() const override {
+    return ui::MaterialDesignController::IsRefreshUi() ? 0 : 1;
+  }
   bool CanPaintThrobberToLayer() const override {
     return paint_throbber_to_layer_;
   }
