@@ -16,14 +16,13 @@
 #include "components/ntp_snippets/remote/remote_suggestion.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/status.h"
-#include "components/version_info/version_info.h"
 #include "url/gurl.h"
 
 namespace ntp_snippets {
 
 // Returns the appropriate API endpoint for the fetcher, in consideration of
-// the channel and variation parameters.
-GURL GetFetchEndpoint(version_info::Channel channel);
+// variation parameters.
+GURL GetFetchEndpoint();
 
 // Fetches suggestion data for the NTP from the server.
 class RemoteSuggestionsFetcher {
