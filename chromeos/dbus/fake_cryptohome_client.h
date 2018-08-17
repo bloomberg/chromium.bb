@@ -297,6 +297,9 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       uint64_t current,
       uint64_t total);
 
+  // Notifies LowDiskSpace() to Observer instances.
+  void NotifyLowDiskSpace(uint64_t disk_free_bytes);
+
   // MountEx getters.
   bool to_migrate_from_ecryptfs() const {
     return last_mount_request_.to_migrate_from_ecryptfs();
@@ -346,9 +349,6 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void NotifyAsyncCallStatusWithData(int async_id,
                                      bool return_status,
                                      const std::string& data);
-
-  // Notifies LowDiskSpace() to Observer instances.
-  void NotifyLowDiskSpace(uint64_t disk_free_bytes);
 
   // Loads install attributes from the stub file.
   bool LoadInstallAttributes();
