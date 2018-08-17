@@ -60,7 +60,7 @@ class DateTimeFieldElement : public HTMLSpanElement {
     virtual void FieldDidChangeValueByKeyboard() = 0;
   };
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
   virtual bool HasValue() const = 0;
   bool IsDisabled() const;
   virtual float MaximumWidth(const ComputedStyle&);

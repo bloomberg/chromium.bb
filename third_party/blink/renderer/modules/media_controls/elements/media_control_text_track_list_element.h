@@ -25,7 +25,7 @@ class MediaControlTextTrackListElement final
   Element* PopupAnchor() const final;
 
  private:
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 
   void RefreshTextTrackListMenu();
 

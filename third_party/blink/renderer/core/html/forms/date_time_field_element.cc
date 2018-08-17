@@ -55,21 +55,21 @@ float DateTimeFieldElement::ComputeTextWidth(const ComputedStyle& style,
   return style.GetFont().Width(ConstructTextRun(style.GetFont(), text, style));
 }
 
-void DateTimeFieldElement::DefaultEventHandler(Event* event) {
-  if (event->IsKeyboardEvent()) {
-    KeyboardEvent* keyboard_event = ToKeyboardEvent(event);
+void DateTimeFieldElement::DefaultEventHandler(Event& event) {
+  if (event.IsKeyboardEvent()) {
+    auto& keyboard_event = ToKeyboardEvent(event);
     if (!IsDisabled() && !IsFieldOwnerDisabled() && !IsFieldOwnerReadOnly()) {
-      HandleKeyboardEvent(keyboard_event);
-      if (keyboard_event->DefaultHandled()) {
+      HandleKeyboardEvent(&keyboard_event);
+      if (keyboard_event.DefaultHandled()) {
         if (field_owner_)
           field_owner_->FieldDidChangeValueByKeyboard();
         return;
       }
     }
-    DefaultKeyboardEventHandler(keyboard_event);
+    DefaultKeyboardEventHandler(&keyboard_event);
     if (field_owner_)
       field_owner_->FieldDidChangeValueByKeyboard();
-    if (keyboard_event->DefaultHandled())
+    if (keyboard_event.DefaultHandled())
       return;
   }
 

@@ -29,7 +29,7 @@ class MediaControlFullscreenButtonElement final
   const char* GetNameForHistograms() const override;
 
  private:
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
   void RecordClickMetrics();
 };
 

@@ -73,7 +73,7 @@ class HTMLFrameSetElement final : public HTMLElement {
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void WillRecalcStyle(StyleRecalcChange) override;

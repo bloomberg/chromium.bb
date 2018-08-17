@@ -306,7 +306,7 @@ class CORE_EXPORT HTMLInputElement
  protected:
   HTMLInputElement(Document&, const CreateElementFlags);
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
   void CreateShadowSubtree();
 
  private:

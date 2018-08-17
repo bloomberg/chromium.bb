@@ -143,16 +143,16 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
   url.AppendNumber(clamped_point.Y());
 }
 
-void HTMLAnchorElement::DefaultEventHandler(Event* event) {
+void HTMLAnchorElement::DefaultEventHandler(Event& event) {
   if (IsLink()) {
-    if (IsFocused() && IsEnterKeyKeydownEvent(event) && IsLiveLink()) {
-      event->SetDefaultHandled();
-      DispatchSimulatedClick(event);
+    if (IsFocused() && IsEnterKeyKeydownEvent(&event) && IsLiveLink()) {
+      event.SetDefaultHandled();
+      DispatchSimulatedClick(&event);
       return;
     }
 
-    if (IsLinkClick(event) && IsLiveLink()) {
-      HandleClick(event);
+    if (IsLinkClick(&event) && IsLiveLink()) {
+      HandleClick(&event);
       return;
     }
   }

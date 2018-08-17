@@ -41,7 +41,7 @@ class MediaDocument final : public HTMLDocument {
 
   DocumentParser* CreateParser() override;
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 };
 
 }  // namespace blink

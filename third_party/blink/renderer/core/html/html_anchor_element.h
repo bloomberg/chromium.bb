@@ -110,7 +110,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   bool ShouldHaveFocusAppearance() const final;
   bool IsMouseFocusable() const override;
   bool IsKeyboardFocusable() const override;
-  void DefaultEventHandler(Event*) final;
+  void DefaultEventHandler(Event&) final;
   bool HasActivationBehavior() const override;
   void SetActive(bool = true) final;
   void AccessKeyAction(bool send_mouse_events) final;

@@ -207,10 +207,10 @@ bool HTMLDialogElement::IsPresentationAttribute(
   return HTMLElement::IsPresentationAttribute(name);
 }
 
-void HTMLDialogElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::cancel) {
+void HTMLDialogElement::DefaultEventHandler(Event& event) {
+  if (event.type() == EventTypeNames::cancel) {
     close();
-    event->SetDefaultHandled();
+    event.SetDefaultHandled();
     return;
   }
   HTMLElement::DefaultEventHandler(event);

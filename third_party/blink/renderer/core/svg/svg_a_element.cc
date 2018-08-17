@@ -104,15 +104,15 @@ LayoutObject* SVGAElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGTransformableContainer(this);
 }
 
-void SVGAElement::DefaultEventHandler(Event* event) {
+void SVGAElement::DefaultEventHandler(Event& event) {
   if (IsLink()) {
-    if (IsFocused() && IsEnterKeyKeydownEvent(event)) {
-      event->SetDefaultHandled();
-      DispatchSimulatedClick(event);
+    if (IsFocused() && IsEnterKeyKeydownEvent(&event)) {
+      event.SetDefaultHandled();
+      DispatchSimulatedClick(&event);
       return;
     }
 
-    if (IsLinkClick(event)) {
+    if (IsLinkClick(&event)) {
       String url = StripLeadingAndTrailingHTMLSpaces(HrefString());
 
       if (url[0] == '#') {
@@ -120,7 +120,7 @@ void SVGAElement::DefaultEventHandler(Event* event) {
             GetTreeScope().getElementById(AtomicString(url.Substring(1)));
         if (target_element && IsSVGSMILElement(*target_element)) {
           ToSVGSMILElement(target_element)->BeginByLinkActivation();
-          event->SetDefaultHandled();
+          event.SetDefaultHandled();
           return;
         }
       }
@@ -128,7 +128,7 @@ void SVGAElement::DefaultEventHandler(Event* event) {
       AtomicString target(svg_target_->CurrentValue()->Value());
       if (target.IsEmpty() && FastGetAttribute(XLinkNames::showAttr) == "new")
         target = AtomicString("_blank");
-      event->SetDefaultHandled();
+      event.SetDefaultHandled();
 
       LocalFrame* frame = GetDocument().GetFrame();
       if (!frame)
@@ -137,11 +137,11 @@ void SVGAElement::DefaultEventHandler(Event* event) {
           &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)),
           target);
       frame_request.SetTriggeringEventInfo(
-          event->isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
-                             : WebTriggeringEventInfo::kFromUntrustedEvent);
+          event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
+                            : WebTriggeringEventInfo::kFromUntrustedEvent);
       frame->Loader().StartNavigation(frame_request,
                                       WebFrameLoadType::kStandard,
-                                      NavigationPolicyFromEvent(event));
+                                      NavigationPolicyFromEvent(&event));
       return;
     }
   }

@@ -103,8 +103,8 @@ void TextControlElement::DispatchBlurEvent(
                                                      source_capabilities);
 }
 
-void TextControlElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::webkitEditableContentChanged &&
+void TextControlElement::DefaultEventHandler(Event& event) {
+  if (event.type() == EventTypeNames::webkitEditableContentChanged &&
       GetLayoutObject() && GetLayoutObject()->IsTextControl()) {
     last_change_was_user_edit_ = !GetDocument().IsRunningExecCommand();
     user_has_edited_the_field_ |= last_change_was_user_edit_;
@@ -131,7 +131,7 @@ void TextControlElement::ForwardEvent(Event* event) {
   if (event->type() == EventTypeNames::blur ||
       event->type() == EventTypeNames::focus)
     return;
-  InnerEditorElement()->DefaultEventHandler(event);
+  InnerEditorElement()->DefaultEventHandler(*event);
 }
 
 String TextControlElement::StrippedPlaceholder() const {

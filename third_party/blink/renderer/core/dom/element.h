@@ -320,7 +320,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void setInvisible(const AtomicString&);
   void DispatchActivateInvisibleEventIfNeeded();
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 
   void DidMoveToNewDocument(Document&) override;
 

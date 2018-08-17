@@ -70,15 +70,15 @@ Element* MediaControlTextTrackListElement::PopupAnchor() const {
   return &GetMediaControls().ToggleClosedCaptions();
 }
 
-void MediaControlTextTrackListElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::click) {
+void MediaControlTextTrackListElement::DefaultEventHandler(Event& event) {
+  if (event.type() == EventTypeNames::click) {
     // This handles the back button click. Clicking on a menu item triggers the
     // change event instead.
     GetMediaControls().ToggleOverflowMenu();
-    event->SetDefaultHandled();
-  } else if (event->type() == EventTypeNames::change) {
+    event.SetDefaultHandled();
+  } else if (event.type() == EventTypeNames::change) {
     // Identify which input element was selected and set track to showing
-    Node* target = event->target()->ToNode();
+    Node* target = event.target()->ToNode();
     if (!target || !target->IsElementNode())
       return;
 
@@ -91,7 +91,7 @@ void MediaControlTextTrackListElement::DefaultEventHandler(Event* event) {
       MediaElement().DisableAutomaticTextTrackSelection();
     }
 
-    event->SetDefaultHandled();
+    event.SetDefaultHandled();
   }
   MediaControlPopupMenuElement::DefaultEventHandler(event);
 }

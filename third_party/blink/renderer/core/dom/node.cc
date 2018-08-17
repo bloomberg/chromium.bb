@@ -2398,39 +2398,40 @@ void Node::DispatchInputEvent() {
   DispatchScopedEvent(*Event::CreateBubble(EventTypeNames::input));
 }
 
-void Node::DefaultEventHandler(Event* event) {
-  if (event->target() != this)
+void Node::DefaultEventHandler(Event& event) {
+  if (event.target() != this)
     return;
-  const AtomicString& event_type = event->type();
+  const AtomicString& event_type = event.type();
   if (event_type == EventTypeNames::keydown ||
       event_type == EventTypeNames::keypress) {
-    if (event->IsKeyboardEvent()) {
-      if (LocalFrame* frame = GetDocument().GetFrame())
+    if (event.IsKeyboardEvent()) {
+      if (LocalFrame* frame = GetDocument().GetFrame()) {
         frame->GetEventHandler().DefaultKeyboardEventHandler(
-            ToKeyboardEvent(event));
+            ToKeyboardEvent(&event));
+      }
     }
   } else if (event_type == EventTypeNames::click) {
-    int detail =
-        event->IsUIEvent() ? static_cast<UIEvent*>(event)->detail() : 0;
-    if (DispatchDOMActivateEvent(detail, *event) !=
+    int detail = event.IsUIEvent() ? ToUIEvent(event).detail() : 0;
+    if (DispatchDOMActivateEvent(detail, event) !=
         DispatchEventResult::kNotCanceled)
-      event->SetDefaultHandled();
+      event.SetDefaultHandled();
   } else if (event_type == EventTypeNames::contextmenu &&
-             event->IsMouseEvent()) {
+             event.IsMouseEvent()) {
     if (Page* page = GetDocument().GetPage()) {
       page->GetContextMenuController().HandleContextMenuEvent(
-          ToMouseEvent(event));
+          ToMouseEvent(&event));
     }
   } else if (event_type == EventTypeNames::textInput) {
-    if (event->HasInterface(EventNames::TextEvent)) {
-      if (LocalFrame* frame = GetDocument().GetFrame())
+    if (event.HasInterface(EventNames::TextEvent)) {
+      if (LocalFrame* frame = GetDocument().GetFrame()) {
         frame->GetEventHandler().DefaultTextInputEventHandler(
-            ToTextEvent(event));
+            ToTextEvent(&event));
+      }
     }
   } else if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled() &&
-             event_type == EventTypeNames::mousedown && event->IsMouseEvent()) {
-    MouseEvent* mouse_event = ToMouseEvent(event);
-    if (mouse_event->button() ==
+             event_type == EventTypeNames::mousedown && event.IsMouseEvent()) {
+    auto& mouse_event = ToMouseEvent(event);
+    if (mouse_event.button() ==
         static_cast<short>(WebPointerProperties::Button::kMiddle)) {
       if (EnclosingLinkEventParentOrSelf())
         return;
@@ -2459,19 +2460,19 @@ void Node::DefaultEventHandler(Event* event) {
           frame->GetEventHandler().StartMiddleClickAutoscroll(layout_object);
       }
     }
-  } else if (event_type == EventTypeNames::mouseup && event->IsMouseEvent()) {
-    MouseEvent* mouse_event = ToMouseEvent(event);
-    if (mouse_event->button() ==
+  } else if (event_type == EventTypeNames::mouseup && event.IsMouseEvent()) {
+    auto& mouse_event = ToMouseEvent(event);
+    if (mouse_event.button() ==
         static_cast<short>(WebPointerProperties::Button::kBack)) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         if (frame->Client()->NavigateBackForward(-1))
-          event->SetDefaultHandled();
+          event.SetDefaultHandled();
       }
-    } else if (mouse_event->button() ==
+    } else if (mouse_event.button() ==
                static_cast<short>(WebPointerProperties::Button::kForward)) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         if (frame->Client()->NavigateBackForward(1))
-          event->SetDefaultHandled();
+          event.SetDefaultHandled();
       }
     }
   }

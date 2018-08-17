@@ -1209,10 +1209,10 @@ bool HTMLElement::IsInteractiveContent() const {
   return false;
 }
 
-void HTMLElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::keypress && event->IsKeyboardEvent()) {
-    HandleKeypressEvent(ToKeyboardEvent(event));
-    if (event->DefaultHandled())
+void HTMLElement::DefaultEventHandler(Event& event) {
+  if (event.type() == EventTypeNames::keypress && event.IsKeyboardEvent()) {
+    HandleKeypressEvent(ToKeyboardEvent(&event));
+    if (event.DefaultHandled())
       return;
   }
 

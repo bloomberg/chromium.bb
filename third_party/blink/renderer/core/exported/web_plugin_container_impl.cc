@@ -268,7 +268,7 @@ void WebPluginContainerImpl::HandleEvent(Event* event) {
   // true/false and HTMLPluginElement called SetDefaultHandled or
   // DefaultEventHandler.
   if (!event->DefaultHandled())
-    element_->Node::DefaultEventHandler(event);
+    element_->Node::DefaultEventHandler(*event);
 }
 
 void WebPluginContainerImpl::FrameRectsChanged() {

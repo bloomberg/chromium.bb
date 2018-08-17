@@ -95,7 +95,7 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   }
   bool IsRequiredFormControl() const override { return IsRequired(); }
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 
   void SubtreeHasChanged() override;
 

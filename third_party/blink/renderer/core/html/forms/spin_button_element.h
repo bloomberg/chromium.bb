@@ -86,7 +86,7 @@ class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
   }
   bool MatchesReadOnlyPseudoClass() const override;
   bool MatchesReadWritePseudoClass() const override;
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
   void WillOpenPopup() override;
   void DoStepAction(int);
   void StartRepeatingTimer();

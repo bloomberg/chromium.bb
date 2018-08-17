@@ -104,52 +104,52 @@ const char* MediaControlTimelineElement::GetNameForHistograms() const {
   return "TimelineSlider";
 }
 
-void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
+void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
   if (!isConnected() || !GetDocument().IsActive() || controls_hidden_)
     return;
 
   RenderBarSegments();
 
-  if (BeginScrubbingEvent(*event)) {
+  if (BeginScrubbingEvent(event)) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.ScrubbingBegin"));
-    GetMediaControls().BeginScrubbing(MediaControlsImpl::IsTouchEvent(event));
+    GetMediaControls().BeginScrubbing(MediaControlsImpl::IsTouchEvent(&event));
     Element* thumb = UserAgentShadowRoot()->getElementById(
         ShadowElementNames::SliderThumb());
-    bool started_from_thumb = thumb && thumb == event->target()->ToNode();
+    bool started_from_thumb = thumb && thumb == event.target()->ToNode();
     metrics_.StartGesture(started_from_thumb);
-  } else if (EndScrubbingEvent(*event)) {
+  } else if (EndScrubbingEvent(event)) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.ScrubbingEnd"));
     GetMediaControls().EndScrubbing();
     metrics_.RecordEndGesture(TrackWidth(), MediaElement().duration());
   }
 
-  if (event->type() == EventTypeNames::keydown) {
+  if (event.type() == EventTypeNames::keydown) {
     metrics_.StartKey();
   }
-  if (event->type() == EventTypeNames::keyup && event->IsKeyboardEvent()) {
-    metrics_.RecordEndKey(TrackWidth(), ToKeyboardEvent(event)->keyCode());
+  if (event.type() == EventTypeNames::keyup && event.IsKeyboardEvent()) {
+    metrics_.RecordEndKey(TrackWidth(), ToKeyboardEvent(event).keyCode());
   }
 
   MediaControlInputElement::DefaultEventHandler(event);
 
-  if (event->IsMouseEvent() || event->IsKeyboardEvent() ||
-      event->IsGestureEvent() || event->IsPointerEvent()) {
+  if (event.IsMouseEvent() || event.IsKeyboardEvent() ||
+      event.IsGestureEvent() || event.IsPointerEvent()) {
     MaybeRecordInteracted();
   }
 
   // Update the value based on the touchmove event.
-  if (is_touching_ && event->type() == EventTypeNames::touchmove) {
-    TouchEvent* touch_event = ToTouchEvent(event);
-    if (touch_event->touches()->length() != 1)
+  if (is_touching_ && event.type() == EventTypeNames::touchmove) {
+    auto& touch_event = ToTouchEvent(event);
+    if (touch_event.touches()->length() != 1)
       return;
 
-    const Touch* touch = touch_event->touches()->item(0);
+    const Touch* touch = touch_event.touches()->item(0);
     double position =
         max(0.0, fmin(1.0, touch->clientX() / TrackWidth() * ZoomFactor()));
     SetPosition(position * MediaElement().duration());
-  } else if (event->type() != EventTypeNames::input) {
+  } else if (event.type() != EventTypeNames::input) {
     return;
   }
 

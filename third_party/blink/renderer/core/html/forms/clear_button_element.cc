@@ -54,28 +54,28 @@ void ClearButtonElement::DetachLayoutTree(const AttachContext& context) {
   HTMLDivElement::DetachLayoutTree(context);
 }
 
-void ClearButtonElement::DefaultEventHandler(Event* event) {
+void ClearButtonElement::DefaultEventHandler(Event& event) {
   if (!clear_button_owner_) {
-    if (!event->DefaultHandled())
+    if (!event.DefaultHandled())
       HTMLDivElement::DefaultEventHandler(event);
     return;
   }
 
   if (!clear_button_owner_->ShouldClearButtonRespondToMouseEvents()) {
-    if (!event->DefaultHandled())
+    if (!event.DefaultHandled())
       HTMLDivElement::DefaultEventHandler(event);
     return;
   }
 
-  if (event->type() == EventTypeNames::click) {
+  if (event.type() == EventTypeNames::click) {
     if (GetLayoutObject() && GetLayoutObject()->VisibleToHitTesting()) {
       clear_button_owner_->FocusAndSelectClearButtonOwner();
       clear_button_owner_->ClearValue();
-      event->SetDefaultHandled();
+      event.SetDefaultHandled();
     }
   }
 
-  if (!event->DefaultHandled())
+  if (!event.DefaultHandled())
     HTMLDivElement::DefaultEventHandler(event);
 }
 

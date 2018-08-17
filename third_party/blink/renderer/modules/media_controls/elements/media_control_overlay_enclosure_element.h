@@ -17,7 +17,7 @@ class MediaControlOverlayEnclosureElement final
  public:
   explicit MediaControlOverlayEnclosureElement(MediaControlsImpl&);
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 };
 
 }  // namespace blink

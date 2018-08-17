@@ -160,7 +160,7 @@ class CORE_EXPORT HTMLPlugInElement
   bool CanContainRangeEndPoint() const override { return false; }
   bool CanStartSelection() const override;
   bool WillRespondToMouseClickEvents() final;
-  void DefaultEventHandler(Event*) final;
+  void DefaultEventHandler(Event&) final;
   void DetachLayoutTree(const AttachContext& = AttachContext()) final;
   void FinishParsingChildren() final;
 

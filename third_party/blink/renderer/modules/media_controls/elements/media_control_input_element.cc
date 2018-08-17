@@ -198,8 +198,8 @@ void MediaControlInputElement::UpdateShownState() {
   MediaControlElementBase::UpdateShownState();
 }
 
-void MediaControlInputElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::click)
+void MediaControlInputElement::DefaultEventHandler(Event& event) {
+  if (event.type() == EventTypeNames::click)
     MaybeRecordInteracted();
 
   HTMLInputElement::DefaultEventHandler(event);

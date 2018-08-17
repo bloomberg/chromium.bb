@@ -785,12 +785,12 @@ void DateTimeEditElement::ResetFields() {
   fields_.Shrink(0);
 }
 
-void DateTimeEditElement::DefaultEventHandler(Event* event) {
+void DateTimeEditElement::DefaultEventHandler(Event& event) {
   // In case of control owner forward event to control, e.g. DOM
   // dispatchEvent method.
   if (DateTimeFieldElement* field = FocusedField()) {
     field->DefaultEventHandler(event);
-    if (event->DefaultHandled())
+    if (event.DefaultHandled())
       return;
   }
 

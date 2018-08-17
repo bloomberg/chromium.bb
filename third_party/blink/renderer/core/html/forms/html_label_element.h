@@ -53,7 +53,7 @@ class CORE_EXPORT HTMLLabelElement final : public HTMLElement {
   void SetHovered(bool = true) override;
 
   // Overridden to either click() or focus() the corresponding control.
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
   bool HasActivationBehavior() const override;
 
   void focus(const FocusParams&) override;

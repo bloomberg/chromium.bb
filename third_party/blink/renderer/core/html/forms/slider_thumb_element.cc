@@ -211,14 +211,14 @@ void SliderThumbElement::StopDragging() {
     HostInput()->DispatchFormControlChangeEvent();
 }
 
-void SliderThumbElement::DefaultEventHandler(Event* event) {
-  if (event->IsPointerEvent() &&
-      event->type() == EventTypeNames::lostpointercapture) {
+void SliderThumbElement::DefaultEventHandler(Event& event) {
+  if (event.IsPointerEvent() &&
+      event.type() == EventTypeNames::lostpointercapture) {
     StopDragging();
     return;
   }
 
-  if (!event->IsMouseEvent()) {
+  if (!event.IsMouseEvent()) {
     HTMLDivElement::DefaultEventHandler(event);
     return;
   }
@@ -233,10 +233,10 @@ void SliderThumbElement::DefaultEventHandler(Event* event) {
     return;
   }
 
-  MouseEvent* mouse_event = ToMouseEvent(event);
-  bool is_left_button = mouse_event->button() ==
+  auto& mouse_event = ToMouseEvent(event);
+  bool is_left_button = mouse_event.button() ==
                         static_cast<short>(WebPointerProperties::Button::kLeft);
-  const AtomicString& event_type = event->type();
+  const AtomicString& event_type = event.type();
 
   // We intentionally do not call event->setDefaultHandled() here because
   // MediaControlTimelineElement::defaultEventHandler() wants to handle these
@@ -251,7 +251,7 @@ void SliderThumbElement::DefaultEventHandler(Event* event) {
   }
   if (event_type == EventTypeNames::mousemove) {
     if (in_drag_mode_)
-      SetPositionFromPoint(LayoutPoint(mouse_event->AbsoluteLocation()));
+      SetPositionFromPoint(LayoutPoint(mouse_event.AbsoluteLocation()));
     return;
   }
 
@@ -358,9 +358,9 @@ LayoutObject* SliderContainerElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSliderContainer(this);
 }
 
-void SliderContainerElement::DefaultEventHandler(Event* event) {
-  if (event->IsTouchEvent()) {
-    HandleTouchEvent(ToTouchEvent(event));
+void SliderContainerElement::DefaultEventHandler(Event& event) {
+  if (event.IsTouchEvent()) {
+    HandleTouchEvent(ToTouchEvent(&event));
     return;
   }
 }

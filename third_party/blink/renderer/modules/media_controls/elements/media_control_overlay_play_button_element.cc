@@ -216,16 +216,16 @@ void MediaControlOverlayPlayButtonElement::MaybeJump(int seconds) {
     left_jump_arrow_->Show();
 }
 
-void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
-  if (ShouldCausePlayPause(*event)) {
-    event->SetDefaultHandled();
+void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event& event) {
+  if (ShouldCausePlayPause(event)) {
+    event.SetDefaultHandled();
     MaybePlayPause();
-  } else if (event->type() == EventTypeNames::click) {
-    event->SetDefaultHandled();
+  } else if (event.type() == EventTypeNames::click) {
+    event.SetDefaultHandled();
 
-    DCHECK(event->IsMouseEvent());
-    MouseEvent* mouse_event = ToMouseEvent(event);
-    DCHECK(mouse_event->HasPosition());
+    DCHECK(event.IsMouseEvent());
+    auto& mouse_event = ToMouseEvent(event);
+    DCHECK(mouse_event.HasPosition());
 
     if (!tap_timer_.IsActive()) {
       // If there was not a previous touch and this was outside of the button
@@ -233,7 +233,7 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
       // case their is a second tap.
       if (tap_timer_.IsActive())
         return;
-      tap_was_touch_event_ = MediaControlsImpl::IsTouchEvent(event);
+      tap_was_touch_event_ = MediaControlsImpl::IsTouchEvent(&event);
       tap_timer_.StartOneShot(kDoubleTapDelay, FROM_HERE);
     } else {
       // Cancel the play pause event.
@@ -241,12 +241,12 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
 
       // If both taps were touch events, then jump.
       if (tap_was_touch_event_.value() &&
-          MediaControlsImpl::IsTouchEvent(event)) {
+          MediaControlsImpl::IsTouchEvent(&event)) {
         // Jump forwards or backwards based on the position of the tap.
         WebSize element_size =
             MediaControlElementsHelper::GetSizeOrDefault(*this, WebSize(0, 0));
 
-        if (mouse_event->clientX() >= element_size.width / 2) {
+        if (mouse_event.clientX() >= element_size.width / 2) {
           MaybeJump(kNumberOfSecondsToJump);
         } else {
           MaybeJump(kNumberOfSecondsToJump * -1);

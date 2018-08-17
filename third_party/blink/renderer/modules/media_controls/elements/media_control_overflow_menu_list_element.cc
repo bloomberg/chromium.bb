@@ -37,9 +37,9 @@ void MediaControlOverflowMenuListElement::MaybeRecordTimeTaken(
   time_shown_.reset();
 }
 
-void MediaControlOverflowMenuListElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::click)
-    event->SetDefaultHandled();
+void MediaControlOverflowMenuListElement::DefaultEventHandler(Event& event) {
+  if (event.type() == EventTypeNames::click)
+    event.SetDefaultHandled();
 
   MediaControlPopupMenuElement::DefaultEventHandler(event);
 }

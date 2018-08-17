@@ -95,6 +95,8 @@ class CORE_EXPORT UIEvent : public Event {
   Member<InputDeviceCapabilities> source_capabilities_;
 };
 
+DEFINE_EVENT_TYPE_CASTS(UIEvent);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_UI_EVENT_H_

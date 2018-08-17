@@ -50,8 +50,8 @@ const char* MediaControlMuteButtonElement::GetNameForHistograms() const {
   return IsOverflowElement() ? "MuteOverflowButton" : "MuteButton";
 }
 
-void MediaControlMuteButtonElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::click) {
+void MediaControlMuteButtonElement::DefaultEventHandler(Event& event) {
+  if (event.type() == EventTypeNames::click) {
     if (MediaElement().muted()) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.Unmute"));
@@ -61,7 +61,7 @@ void MediaControlMuteButtonElement::DefaultEventHandler(Event* event) {
     }
 
     MediaElement().setMuted(!MediaElement().muted());
-    event->SetDefaultHandled();
+    event.SetDefaultHandled();
   }
 
   MediaControlInputElement::DefaultEventHandler(event);

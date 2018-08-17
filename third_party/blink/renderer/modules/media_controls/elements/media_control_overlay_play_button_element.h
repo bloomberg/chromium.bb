@@ -29,7 +29,7 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
   // MediaControlInputElement overrides.
   void UpdateDisplayType() override;
 
-  void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(event); }
+  void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(*event); }
 
   WebSize GetSizeOrDefault() const final;
 
@@ -79,7 +79,7 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
 
   void TapTimerFired(TimerBase*);
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
   bool KeepEventInNode(const Event&) const override;
 
   bool ShouldCausePlayPause(const Event&) const;

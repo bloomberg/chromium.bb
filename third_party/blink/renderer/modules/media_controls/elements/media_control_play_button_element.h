@@ -22,13 +22,13 @@ class MediaControlPlayButtonElement final : public MediaControlInputElement {
   WebLocalizedString::Name GetOverflowStringName() const override;
   bool HasOverflowButton() const override;
 
-  void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(event); }
+  void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(*event); }
 
  protected:
   const char* GetNameForHistograms() const override;
 
  private:
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 };
 
 }  // namespace blink

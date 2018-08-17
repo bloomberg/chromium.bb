@@ -211,7 +211,7 @@ class CORE_EXPORT HTMLSelectElement final
   void AppendToFormData(FormData&) override;
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
 
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
 
   void DispatchInputAndChangeEventForMenuList();
 

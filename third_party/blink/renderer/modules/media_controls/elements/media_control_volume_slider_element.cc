@@ -48,28 +48,28 @@ const char* MediaControlVolumeSliderElement::GetNameForHistograms() const {
   return "VolumeSlider";
 }
 
-void MediaControlVolumeSliderElement::DefaultEventHandler(Event* event) {
+void MediaControlVolumeSliderElement::DefaultEventHandler(Event& event) {
   if (!isConnected() || !GetDocument().IsActive())
     return;
 
   MediaControlInputElement::DefaultEventHandler(event);
 
-  if (event->IsMouseEvent() || event->IsKeyboardEvent() ||
-      event->IsGestureEvent() || event->IsPointerEvent()) {
+  if (event.IsMouseEvent() || event.IsKeyboardEvent() ||
+      event.IsGestureEvent() || event.IsPointerEvent()) {
     MaybeRecordInteracted();
   }
 
-  if (event->type() == EventTypeNames::pointerdown) {
+  if (event.type() == EventTypeNames::pointerdown) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.VolumeChangeBegin"));
   }
 
-  if (event->type() == EventTypeNames::pointerup) {
+  if (event.type() == EventTypeNames::pointerup) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.VolumeChangeEnd"));
   }
 
-  if (event->type() == EventTypeNames::input) {
+  if (event.type() == EventTypeNames::input) {
     double volume = value().ToDouble();
     MediaElement().setVolume(volume);
     MediaElement().setMuted(false);

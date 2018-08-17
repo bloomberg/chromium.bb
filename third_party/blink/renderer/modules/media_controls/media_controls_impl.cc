@@ -1411,7 +1411,7 @@ void MediaControlsImpl::OnAccessibleFocus() {
   MaybeShow();
 }
 
-void MediaControlsImpl::DefaultEventHandler(Event* event) {
+void MediaControlsImpl::DefaultEventHandler(Event& event) {
   HTMLDivElement::DefaultEventHandler(event);
 
   // Do not handle events to not interfere with the rest of the page if no
@@ -1423,7 +1423,7 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
   // event, to allow the hide-timer to do the right thing when it fires.
   // FIXME: Preferably we would only do this when we're actually handling the
   // event here ourselves.
-  bool is_touch_event = IsTouchEvent(event);
+  bool is_touch_event = IsTouchEvent(&event);
   hide_timer_behavior_flags_ |=
       is_touch_event ? kIgnoreControlsHover : kIgnoreNone;
 
@@ -1431,46 +1431,46 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
   // random behavior. The expect behaviour for touch is that a tap will show the
   // controls and they will hide when the timer to hide fires.
   if (is_touch_event)
-    HandleTouchEvent(event);
+    HandleTouchEvent(&event);
 
-  if (event->type() == EventTypeNames::mouseover && !is_touch_event)
+  if (event.type() == EventTypeNames::mouseover && !is_touch_event)
     is_touch_interaction_ = false;
 
-  if ((event->type() == EventTypeNames::pointerover ||
-       event->type() == EventTypeNames::pointermove ||
-       event->type() == EventTypeNames::pointerout) &&
+  if ((event.type() == EventTypeNames::pointerover ||
+       event.type() == EventTypeNames::pointermove ||
+       event.type() == EventTypeNames::pointerout) &&
       !is_touch_interaction_) {
-    HandlePointerEvent(event);
+    HandlePointerEvent(&event);
   }
 
   // If the user is interacting with the controls via the keyboard, don't hide
   // the controls. This will fire when the user tabs between controls (focusin)
   // or when they seek either the timeline or volume sliders (input).
-  if (event->type() == EventTypeNames::focusin ||
-      event->type() == EventTypeNames::input) {
+  if (event.type() == EventTypeNames::focusin ||
+      event.type() == EventTypeNames::input) {
     ResetHideMediaControlsTimer();
   }
 
-  if (event->IsKeyboardEvent() &&
+  if (event.IsKeyboardEvent() &&
       !IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
-    const String& key = ToKeyboardEvent(event)->key();
-    if (key == "Enter" || ToKeyboardEvent(event)->keyCode() == ' ') {
+    const String& key = ToKeyboardEvent(event).key();
+    if (key == "Enter" || ToKeyboardEvent(event).keyCode() == ' ') {
       if (IsModern()) {
-        overlay_play_button_->OnMediaKeyboardEvent(event);
+        overlay_play_button_->OnMediaKeyboardEvent(&event);
       } else {
-        play_button_->OnMediaKeyboardEvent(event);
+        play_button_->OnMediaKeyboardEvent(&event);
       }
       return;
     }
     if (key == "ArrowLeft" || key == "ArrowRight" || key == "Home" ||
         key == "End") {
-      timeline_->OnMediaKeyboardEvent(event);
+      timeline_->OnMediaKeyboardEvent(&event);
       return;
     }
     // We don't allow the user to change the volume on modern media controls.
     if (!IsModern() && (key == "ArrowDown" || key == "ArrowUp")) {
       for (int i = 0; i < 5; i++)
-        volume_slider_->OnMediaKeyboardEvent(event);
+        volume_slider_->OnMediaKeyboardEvent(&event);
       return;
     }
   }

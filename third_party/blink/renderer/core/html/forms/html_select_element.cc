@@ -1701,12 +1701,12 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event* event) {
   }
 }
 
-void HTMLSelectElement::DefaultEventHandler(Event* event) {
+void HTMLSelectElement::DefaultEventHandler(Event& event) {
   if (!GetLayoutObject())
     return;
 
-  if (event->type() == EventTypeNames::click ||
-      event->type() == EventTypeNames::change) {
+  if (event.type() == EventTypeNames::click ||
+      event.type() == EventTypeNames::change) {
     user_has_edited_the_field_ = true;
   }
 
@@ -1716,19 +1716,19 @@ void HTMLSelectElement::DefaultEventHandler(Event* event) {
   }
 
   if (UsesMenuList())
-    MenuListDefaultEventHandler(event);
+    MenuListDefaultEventHandler(&event);
   else
-    ListBoxDefaultEventHandler(event);
-  if (event->DefaultHandled())
+    ListBoxDefaultEventHandler(&event);
+  if (event.DefaultHandled())
     return;
 
-  if (event->type() == EventTypeNames::keypress && event->IsKeyboardEvent()) {
-    KeyboardEvent* keyboard_event = ToKeyboardEvent(event);
-    if (!keyboard_event->ctrlKey() && !keyboard_event->altKey() &&
-        !keyboard_event->metaKey() &&
-        WTF::Unicode::IsPrintableChar(keyboard_event->charCode())) {
-      TypeAheadFind(keyboard_event);
-      event->SetDefaultHandled();
+  if (event.type() == EventTypeNames::keypress && event.IsKeyboardEvent()) {
+    auto& keyboard_event = ToKeyboardEvent(event);
+    if (!keyboard_event.ctrlKey() && !keyboard_event.altKey() &&
+        !keyboard_event.metaKey() &&
+        WTF::Unicode::IsPrintableChar(keyboard_event.charCode())) {
+      TypeAheadFind(&keyboard_event);
+      event.SetDefaultHandled();
       return;
     }
   }

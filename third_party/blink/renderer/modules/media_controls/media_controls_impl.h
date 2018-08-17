@@ -292,7 +292,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Node
   bool IsMediaControls() const override { return true; }
   bool WillRespondToMouseMoveEvents() override { return true; }
-  void DefaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event&) override;
   bool ContainsRelatedTarget(Event*);
 
   void HandlePointerEvent(Event*);
@@ -319,7 +319,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void OnExitedFullscreen();
   void OnPictureInPictureChanged();
   void OnPanelKeypress();
-  void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(event); }
+  void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(*event); }
   void OnWaiting();
   void OnLoadingProgress();
   void OnLoadedData();
