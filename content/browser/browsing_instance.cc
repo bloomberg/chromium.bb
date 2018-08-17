@@ -21,15 +21,16 @@ BrowsingInstance::BrowsingInstance(BrowserContext* browser_context)
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
-  std::string site = SiteInstance::GetSiteForURL(browser_context_, url)
-                         .possibly_invalid_spec();
+  std::string site =
+      SiteInstanceImpl::GetSiteForURL(browser_context_, url)
+          .possibly_invalid_spec();
 
   return site_instance_map_.find(site) != site_instance_map_.end();
 }
 
 scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURL(
     const GURL& url) {
-  std::string site = SiteInstance::GetSiteForURL(browser_context_, url)
+  std::string site = SiteInstanceImpl::GetSiteForURL(browser_context_, url)
                          .possibly_invalid_spec();
 
   SiteInstanceMap::iterator i = site_instance_map_.find(site);

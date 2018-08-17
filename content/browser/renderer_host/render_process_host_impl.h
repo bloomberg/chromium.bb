@@ -266,16 +266,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Implementation of FilterURL below that can be shared with the mock class.
   static void FilterURL(RenderProcessHost* rph, bool empty_allowed, GURL* url);
 
-  // Returns true if |host| is suitable for rendering a page in the given
-  // |browser_context|, where the page would utilize |site_url| as its
-  // SiteInstance site URL, and its process would be locked to |lock_url|.
-  // |site_url| and |lock_url| may differ in cases where an effective URL is
-  // not the actual site that the process is locked to, which happens for
-  // hosted apps.
+  // Returns true if |host| is suitable for launching a new view with |site_url|
+  // in the given |browser_context|.
   static bool IsSuitableHost(RenderProcessHost* host,
                              BrowserContext* browser_context,
-                             const GURL& site_url,
-                             const GURL& lock_url);
+                             const GURL& site_url);
 
   // Returns an existing RenderProcessHost for |url| in |browser_context|,
   // if one exists.  Otherwise a new RenderProcessHost should be created and
@@ -283,45 +278,25 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // This should only be used for process-per-site mode, which can be enabled
   // globally with a command line flag or per-site, as determined by
   // SiteInstanceImpl::ShouldUseProcessPerSite.
-  // Important: |url| should be a full URL and *not* a site URL.
-  static RenderProcessHost* GetSoleProcessHostForURL(
+  static RenderProcessHost* GetProcessHostForSite(
       BrowserContext* browser_context,
       const GURL& url);
 
-  // Variant of the above that takes in a SiteInstance site URL and the
-  // process's origin lock URL, when they are known.
-  static RenderProcessHost* GetSoleProcessHostForSite(
-      BrowserContext* browser_context,
-      const GURL& site_url,
-      const GURL& lock_url);
-
-  // Registers the given |process| to be used for all sites identified by
-  // |site_instance| within |browser_context|.
+  // Registers the given |process| to be used for any instance of |url|
+  // within |browser_context|.
   // This should only be used for process-per-site mode, which can be enabled
   // globally with a command line flag or per-site, as determined by
   // SiteInstanceImpl::ShouldUseProcessPerSite.
-  static void RegisterSoleProcessHostForSite(BrowserContext* browser_context,
-                                             RenderProcessHost* process,
-                                             SiteInstanceImpl* site_instance);
+  static void RegisterProcessHostForSite(
+      BrowserContext* browser_context,
+      RenderProcessHost* process,
+      const GURL& url);
 
   // Returns a suitable RenderProcessHost to use for |site_instance|. Depending
   // on the SiteInstance's ProcessReusePolicy and its url, this may be an
   // existing RenderProcessHost or a new one.
-  //
-  // This is the main entrypoint into the process assignment logic, which
-  // handles all cases.  These cases include:
-  // - process-per-site: see
-  //   RegisterSoleProcessHostForSite/GetSoleProcessHostForSite.
-  // - TDI: see GetDefaultSubframeProcessHost.
-  // - REUSE_PENDING_OR_COMMITTED reuse policy (for ServiceWorkers and OOPIFs):
-  //   see FindReusableProcessHostForSiteInstance.
-  // - normal process reuse when over process limit:  see
-  //   GetExistingProcessHost.
-  // - using the spare RenderProcessHost when possible: see
-  //   MaybeTakeSpareRenderProcessHost.
-  // - process creation when an existing process couldn't be found: see
-  //   CreateRenderProcessHost.
   static RenderProcessHost* GetProcessHostForSiteInstance(
+      BrowserContext* browser_context,
       SiteInstanceImpl* site_instance);
 
   // Should be called when |browser_context| is used in a navigation.
@@ -577,19 +552,20 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Get an existing RenderProcessHost associated with the given browser
   // context, if possible.  The renderer process is chosen randomly from
   // suitable renderers that share the same context and type (determined by the
-  // site url of |site_instance|).
+  // site url).
   // Returns nullptr if no suitable renderer process is available, in which case
   // the caller is free to create a new renderer.
   static RenderProcessHost* GetExistingProcessHost(
-      SiteInstanceImpl* site_instance);
+      content::BrowserContext* browser_context,
+      const GURL& site_url);
   FRIEND_TEST_ALL_PREFIXES(RenderProcessHostUnitTest,
                            GuestsAreNotSuitableHosts);
 
-  // Returns a RenderProcessHost that is rendering a URL corresponding to
-  // |site_instance| in one of its frames, or that is expecting a navigation to
-  // that SiteInstance.
-  static RenderProcessHost* FindReusableProcessHostForSiteInstance(
-      SiteInstanceImpl* site_instance);
+  // Returns a RenderProcessHost that is rendering |site_url| in one of its
+  // frames, or that is expecting a navigation to |site_url|.
+  static RenderProcessHost* FindReusableProcessHostForSite(
+      BrowserContext* browser_context,
+      const GURL& site_url);
 
   void CreateMediaStreamDispatcherHost(
       MediaStreamManager* media_stream_manager,

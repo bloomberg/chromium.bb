@@ -133,7 +133,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_TRUE(main_test_rfh()->navigation_request());
   main_test_rfh()->SendNavigate(entry_id, true, kUrl);
   EXPECT_TRUE(main_test_rfh()->is_active());
-  EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrl),
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(browser_context(), kUrl),
             main_test_rfh()->GetSiteInstance()->GetSiteURL());
   EXPECT_EQ(kUrl, contents()->GetLastCommittedURL());
 
@@ -187,7 +187,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // Commit the navigation.
   navigation->Commit();
   EXPECT_TRUE(main_test_rfh()->is_active());
-  EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrl2),
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(browser_context(), kUrl2),
             main_test_rfh()->GetSiteInstance()->GetSiteURL());
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -878,7 +878,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // Receive the beforeUnload ACK.
   main_test_rfh()->SendBeforeUnloadACK(true);
   EXPECT_EQ(speculative_rfh, GetSpeculativeRenderFrameHost(node));
-  EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrl),
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(browser_context(), kUrl),
             speculative_rfh->GetSiteInstance()->GetSiteURL());
   int32_t site_instance_id = speculative_rfh->GetSiteInstance()->GetId();
   int64_t navigation_id =
@@ -923,7 +923,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_NE(init_site_instance_id, site_instance_id);
   EXPECT_EQ(init_site_instance_id, main_test_rfh()->GetSiteInstance()->GetId());
   EXPECT_NE(speculative_rfh, main_test_rfh());
-  EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrl),
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(browser_context(), kUrl),
             speculative_rfh->GetSiteInstance()->GetSiteURL());
 
   // Receive the beforeUnload ACK.
@@ -960,7 +960,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Once commit happens the speculative RenderFrameHost is updated to match the
   // known final SiteInstance.
-  EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrlRedirect),
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(browser_context(), kUrlRedirect),
             speculative_rfh->GetSiteInstance()->GetSiteURL());
   int32_t redirect_site_instance_id =
       speculative_rfh->GetSiteInstance()->GetId();
