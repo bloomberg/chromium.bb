@@ -4435,6 +4435,9 @@ crbug.com/806645 [ Win7 Mac ] http/tests/devtools/elements/elements-panel-rewrit
 
 crbug.com/813216 [ Win7 ] http/tests/devtools/elements/styles-3/style-rule-from-imported-stylesheet.js  [ Failure Pass ]
 
+# TODO(robertphillips): rebaseline after Skia roll
+crbug.com/875268 virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Failure Pass ]
+
 # Media tests are timing out on Fuchsia.
 crbug.com/778467 [ Fuchsia ] external/wpt/mediacapture-streams/MediaStream-idl.https.html [ Timeout ]
 crbug.com/778467 [ Fuchsia ] fast/mediastream/MediaStream-onactive-oninactive.html [ Timeout ]
