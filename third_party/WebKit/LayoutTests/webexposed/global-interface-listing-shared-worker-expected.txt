@@ -1119,6 +1119,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method toString
+[Worker] interface TrustedScript
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method toString
 [Worker] interface TrustedScriptURL
 [Worker]     static method unsafelyCreate
 [Worker]     attribute @@toStringTag

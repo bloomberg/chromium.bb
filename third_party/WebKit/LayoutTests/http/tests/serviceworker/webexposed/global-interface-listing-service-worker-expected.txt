@@ -1219,6 +1219,10 @@ interface TrustedHTML
     attribute @@toStringTag
     method constructor
     method toString
+interface TrustedScript
+    attribute @@toStringTag
+    method constructor
+    method toString
 interface TrustedScriptURL
     static method unsafelyCreate
     attribute @@toStringTag

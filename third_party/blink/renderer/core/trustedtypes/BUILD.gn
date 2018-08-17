@@ -8,6 +8,8 @@ blink_core_sources("trustedtypes") {
   sources = [
     "trusted_html.cc",
     "trusted_html.h",
+    "trusted_script.cc",
+    "trusted_script.h",
     "trusted_script_url.cc",
     "trusted_script_url.h",
     "trusted_type_policy.cc",

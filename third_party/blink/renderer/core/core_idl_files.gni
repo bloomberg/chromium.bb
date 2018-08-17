@@ -134,6 +134,7 @@ core_idl_files =
                     "dom/events/event.idl",
                     "dom/events/event_target.idl",
                     "trustedtypes/trusted_html.idl",
+                    "trustedtypes/trusted_script.idl",
                     "trustedtypes/trusted_script_url.idl",
                     "trustedtypes/trusted_url.idl",
                     "trustedtypes/trusted_type_policy.idl",
