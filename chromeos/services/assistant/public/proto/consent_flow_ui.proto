@@ -90,63 +90,6 @@ message ConsentFlowUi {
     }
     optional ActivityControlUi activity_control_ui = 1;
 
-    // A screen where we ask the user to confirm their intention to reject
-    // activity control.
-    // The client should only show if user rejects ActivityControlUi.
-    message ActivityControlConfirmRejectUi {
-      // Title for the whole page.
-      //
-      // Required.
-      optional string title = 1;
-
-      // Title for the option to opt in to ActivityControl.
-      //
-      // Required.
-      optional string accept_title = 2;
-
-      // Message for the option to opt in to ActivityControl.
-      //
-      // Required.
-      optional string accept_message = 3;
-
-      // Message for the option to opt in to ActivityControl in its expanded
-      // state. This extra text conveys some fine-print info about what will
-      // happen if the user accepts ActivityControl from this screen.
-      //
-      // Required
-      optional string accept_message_expanded = 4;
-
-      // A button that expands the accept message. In expanded state,
-      // both accept_message and accept_message_expanded are visible.
-      //
-      // Required.
-      optional string button_accept_expand = 5;
-
-      // A button that collapses the accept message. In collapsed state,
-      // accept_message is visible, but accept_message_expanded is not.
-      //
-      // Required.
-      optional string button_accept_collapse = 6;
-
-      // Title for the option to opt out of ActivityControl.
-      //
-      // Required.
-      optional string reject_title = 7;
-
-      // Message for the option to opt out of ActivityControl.
-      //
-      // Required.
-      optional string reject_message = 8;
-
-      // Text of the action button that lets the user commit their decision
-      // to accept or reject ActivityControl from the confirm page.
-      //
-      // Required.
-      optional string button_continue = 9;
-    }
-    optional ActivityControlConfirmRejectUi activity_control_confirm_reject_ui =
-        7;
-
     // Represents the subsection of the ConsentUi that displays and conveys a
     // disclosure that the user's account might be shared with third
     // parties the user invokes in conversation/interaction with the Assistant.
