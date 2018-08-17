@@ -243,10 +243,6 @@ bool GLSurface::SupportsPlaneGpuFences() const {
   return false;
 }
 
-EGLTimestampClient* GLSurface::GetEGLTimestampClient() {
-  return nullptr;
-}
-
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }

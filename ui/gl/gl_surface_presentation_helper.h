@@ -32,9 +32,6 @@ class GL_EXPORT GLSurfacePresentationHelper {
    public:
     ScopedSwapBuffers(GLSurfacePresentationHelper* helper,
                       const GLSurface::PresentationCallback& callback);
-    ScopedSwapBuffers(GLSurfacePresentationHelper* helper,
-                      const GLSurface::PresentationCallback& callback,
-                      int frame_id);
     ~ScopedSwapBuffers();
 
     void set_result(gfx::SwapResult result) { result_ = result; }
@@ -55,14 +52,12 @@ class GL_EXPORT GLSurfacePresentationHelper {
   ~GLSurfacePresentationHelper();
 
   void OnMakeCurrent(GLContext* context, GLSurface* surface);
-  void PreSwapBuffers(const GLSurface::PresentationCallback& callback,
-                      int frame_id);
+  void PreSwapBuffers(const GLSurface::PresentationCallback& callback);
   void PostSwapBuffers(gfx::SwapResult result);
 
  private:
   struct Frame {
     Frame(Frame&& other);
-    Frame(int frame_id, const GLSurface::PresentationCallback& callback);
     Frame(std::unique_ptr<GPUTimer>&& timer,
           const GLSurface::PresentationCallback& callback);
     Frame(std::unique_ptr<GLFence>&& fence,
@@ -71,20 +66,16 @@ class GL_EXPORT GLSurfacePresentationHelper {
     ~Frame();
     Frame& operator=(Frame&& other);
 
+    bool StillPending() const;
+    base::TimeTicks GetTimestamp() const;
     void Destroy(bool has_context = false);
 
     std::unique_ptr<GPUTimer> timer;
     // GLFence is used only if gpu timers are not available.
     std::unique_ptr<GLFence> fence;
-    int frame_id = -1;
     GLSurface::PresentationCallback callback;
     gfx::SwapResult result = gfx::SwapResult::SWAP_ACK;
   };
-
-  bool GetFrameTimestampInfoIfAvailable(const Frame& frame,
-                                        base::TimeTicks* timestamp,
-                                        base::TimeDelta* interval,
-                                        uint32_t* flags);
 
   // Check |pending_frames_| and run presentation callbacks.
   void CheckPendingFrames();
@@ -106,7 +97,6 @@ class GL_EXPORT GLSurfacePresentationHelper {
   base::TimeDelta vsync_interval_;
   bool check_pending_frame_scheduled_ = false;
   bool gl_fence_supported_ = false;
-  EGLTimestampClient* egl_timestamp_client_ = nullptr;
 
   base::WeakPtrFactory<GLSurfacePresentationHelper> weak_ptr_factory_;
 
