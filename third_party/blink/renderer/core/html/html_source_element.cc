@@ -89,7 +89,7 @@ void HTMLSourceElement::DidMoveToNewDocument(Document& old_document) {
 }
 
 Node::InsertionNotificationRequest HTMLSourceElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   Element* parent = parentElement();
   if (auto* media = ToHTMLMediaElementOrNull(parent))

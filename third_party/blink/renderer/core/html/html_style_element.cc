@@ -75,7 +75,7 @@ void HTMLStyleElement::FinishParsingChildren() {
 }
 
 Node::InsertionNotificationRequest HTMLStyleElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   if (isConnected()) {
     if (StyleElement::ProcessStyleSheet(GetDocument(), *this) ==

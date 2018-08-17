@@ -112,11 +112,11 @@ static inline bool IsWellFormedDocument(Document* document) {
 #endif
 
 Node::InsertionNotificationRequest SVGUseElement::InsertedInto(
-    ContainerNode* root_parent) {
+    ContainerNode& root_parent) {
   // This functions exists to assure assumptions made in the code regarding
   // SVGElementInstance creation/destruction are satisfied.
   SVGGraphicsElement::InsertedInto(root_parent);
-  if (!root_parent->isConnected())
+  if (!root_parent.isConnected())
     return kInsertionDone;
 #if DCHECK_IS_ON()
   DCHECK(!target_element_instance_ || !IsWellFormedDocument(&GetDocument()));

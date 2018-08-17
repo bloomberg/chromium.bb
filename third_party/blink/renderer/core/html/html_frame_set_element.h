@@ -75,7 +75,7 @@ class HTMLFrameSetElement final : public HTMLElement {
 
   void DefaultEventHandler(Event*) override;
 
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void WillRecalcStyle(StyleRecalcChange) override;
 
   Vector<HTMLDimension> row_lengths_;

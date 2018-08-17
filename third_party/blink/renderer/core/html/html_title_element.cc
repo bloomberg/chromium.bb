@@ -41,7 +41,7 @@ inline HTMLTitleElement::HTMLTitleElement(Document& document)
 DEFINE_NODE_FACTORY(HTMLTitleElement)
 
 Node::InsertionNotificationRequest HTMLTitleElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   if (IsInDocumentTree())
     GetDocument().SetTitleElement(this);

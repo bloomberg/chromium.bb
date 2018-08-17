@@ -1060,7 +1060,7 @@ void HTMLElement::AdjustDirectionalityIfNeededAfterChildrenChanged(
 }
 
 Node::InsertionNotificationRequest HTMLElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   // Process the superclass first to ensure that `InActiveDocument()` is
   // updated.
   Element::InsertedInto(insertion_point);

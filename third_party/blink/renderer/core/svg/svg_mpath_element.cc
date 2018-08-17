@@ -62,9 +62,9 @@ void SVGMPathElement::ClearResourceReferences() {
 }
 
 Node::InsertionNotificationRequest SVGMPathElement::InsertedInto(
-    ContainerNode* root_parent) {
+    ContainerNode& root_parent) {
   SVGElement::InsertedInto(root_parent);
-  if (root_parent->isConnected())
+  if (root_parent.isConnected())
     BuildPendingResource();
   return kInsertionDone;
 }

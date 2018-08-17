@@ -40,8 +40,8 @@ HTMLFormControlElementWithState::HTMLFormControlElementWithState(
 HTMLFormControlElementWithState::~HTMLFormControlElementWithState() = default;
 
 Node::InsertionNotificationRequest
-HTMLFormControlElementWithState::InsertedInto(ContainerNode* insertion_point) {
-  if (insertion_point->isConnected() && !ContainingShadowRoot())
+HTMLFormControlElementWithState::InsertedInto(ContainerNode& insertion_point) {
+  if (insertion_point.isConnected() && !ContainingShadowRoot())
     GetDocument().GetFormController().RegisterStatefulFormControl(*this);
   return HTMLFormControlElement::InsertedInto(insertion_point);
 }

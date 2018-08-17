@@ -25,12 +25,12 @@ HTMLElement* HTMLPortalElement::Create(Document& document) {
 }
 
 HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
-    ContainerNode* node) {
+    ContainerNode& node) {
   auto result = HTMLFrameOwnerElement::InsertedInto(node);
 
   Document& document = GetDocument();
 
-  if (node->IsInDocumentTree() && document.IsHTMLDocument()) {
+  if (node.IsInDocumentTree() && document.IsHTMLDocument()) {
     document.GetFrame()->GetInterfaceProvider().GetInterface(
         mojo::MakeRequest(&portal_ptr_));
   }

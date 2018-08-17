@@ -63,7 +63,7 @@ class SVGPathElement final : public SVGGeometryElement {
       const AtomicString&,
       MutableCSSPropertyValueSet*) override;
 
-  Node::InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  Node::InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode*) override;
 
   void InvalidateMPathDependencies();

@@ -93,7 +93,7 @@ class SVGPatternElement final : public SVGElement,
       MutableCSSPropertyValueSet*) override;
 
   void SvgAttributeChanged(const QualifiedName&) override;
-  InsertionNotificationRequest InsertedInto(ContainerNode*) final;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) final;
   void RemovedFrom(ContainerNode*) final;
   void ChildrenChanged(const ChildrenChange&) override;
 

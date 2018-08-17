@@ -137,7 +137,7 @@ void SVGTextPathElement::BuildPendingResource() {
 }
 
 Node::InsertionNotificationRequest SVGTextPathElement::InsertedInto(
-    ContainerNode* root_parent) {
+    ContainerNode& root_parent) {
   SVGTextContentElement::InsertedInto(root_parent);
   BuildPendingResource();
   return kInsertionDone;

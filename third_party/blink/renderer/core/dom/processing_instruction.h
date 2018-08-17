@@ -78,7 +78,7 @@ class ProcessingInstruction final : public CharacterData,
   NodeType getNodeType() const override;
   Node* Clone(Document&, CloneChildrenFlag) const override;
 
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode*) override;
 
   bool CheckStyleSheet(String& href, String& charset);

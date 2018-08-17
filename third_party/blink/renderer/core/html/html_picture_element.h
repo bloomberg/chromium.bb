@@ -23,7 +23,7 @@ class HTMLPictureElement final : public HTMLElement {
   explicit HTMLPictureElement(Document&);
 
  private:
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
 };
 
 }  // namespace blink

@@ -296,7 +296,7 @@ void HTMLFormControlElement::DidMoveToNewDocument(Document& old_document) {
 }
 
 Node::InsertionNotificationRequest HTMLFormControlElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   ancestor_disabled_state_ = kAncestorDisabledStateUnknown;
   // Force traversal to find ancestor
   may_have_field_set_ancestor_ = true;
@@ -304,10 +304,10 @@ Node::InsertionNotificationRequest HTMLFormControlElement::InsertedInto(
   SetNeedsWillValidateCheck();
   HTMLElement::InsertedInto(insertion_point);
   ListedElement::InsertedInto(insertion_point);
-  FieldSetAncestorsSetNeedsValidityCheck(insertion_point);
+  FieldSetAncestorsSetNeedsValidityCheck(&insertion_point);
 
   // Trigger for elements outside of forms.
-  if (!formOwner() && insertion_point->isConnected())
+  if (!formOwner() && insertion_point.isConnected())
     GetDocument().DidAssociateFormControl(this);
 
   return kInsertionDone;

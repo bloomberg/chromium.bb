@@ -123,7 +123,7 @@ void SVGPathElement::InvalidateMPathDependencies() {
 }
 
 Node::InsertionNotificationRequest SVGPathElement::InsertedInto(
-    ContainerNode* root_parent) {
+    ContainerNode& root_parent) {
   SVGGeometryElement::InsertedInto(root_parent);
   InvalidateMPathDependencies();
   return kInsertionDone;

@@ -274,8 +274,8 @@ void HTMLFrameSetElement::DefaultEventHandler(Event* evt) {
 }
 
 Node::InsertionNotificationRequest HTMLFrameSetElement::InsertedInto(
-    ContainerNode* insertion_point) {
-  if (insertion_point->isConnected() && GetDocument().GetFrame()) {
+    ContainerNode& insertion_point) {
+  if (insertion_point.isConnected() && GetDocument().GetFrame()) {
     // A document using <frameset> likely won't literally have a body, but as
     // far as the client is concerned, the frameset is effectively the body.
     GetDocument().WillInsertBody();

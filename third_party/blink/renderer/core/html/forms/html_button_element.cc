@@ -211,7 +211,7 @@ bool HTMLButtonElement::MatchesDefaultPseudoClass() const {
 }
 
 Node::InsertionNotificationRequest HTMLButtonElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   InsertionNotificationRequest request =
       HTMLFormControlElement::InsertedInto(insertion_point);
   LogAddElementIfIsolatedWorldAndInDocument("button", typeAttr, formmethodAttr,

@@ -163,9 +163,9 @@ void SVGPatternElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 }
 
 Node::InsertionNotificationRequest SVGPatternElement::InsertedInto(
-    ContainerNode* root_parent) {
+    ContainerNode& root_parent) {
   SVGElement::InsertedInto(root_parent);
-  if (root_parent->isConnected())
+  if (root_parent.isConnected())
     BuildPendingResource();
   return kInsertionDone;
 }

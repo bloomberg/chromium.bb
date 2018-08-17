@@ -662,7 +662,7 @@ void MediaControlsImpl::PopulatePanel() {
 }
 
 Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
-    ContainerNode* root) {
+    ContainerNode& root) {
   if (!MediaElement().isConnected())
     return HTMLDivElement::InsertedInto(root);
 

@@ -273,11 +273,11 @@ LayoutObject* HTMLIFrameElement::CreateLayoutObject(const ComputedStyle&) {
 }
 
 Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   InsertionNotificationRequest result =
       HTMLFrameElementBase::InsertedInto(insertion_point);
 
-  if (insertion_point->IsInDocumentTree() && GetDocument().IsHTMLDocument()) {
+  if (insertion_point.IsInDocumentTree() && GetDocument().IsHTMLDocument()) {
     ToHTMLDocument(GetDocument()).AddNamedItem(name_);
 
     if (!ContentSecurityPolicy::IsValidCSPAttr(

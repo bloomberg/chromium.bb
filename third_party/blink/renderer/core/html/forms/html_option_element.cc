@@ -329,11 +329,11 @@ String HTMLOptionElement::DefaultToolTip() const {
 }
 
 Node::InsertionNotificationRequest HTMLOptionElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   if (HTMLSelectElement* select = OwnerSelectElement()) {
-    if (insertion_point == select || (IsHTMLOptGroupElement(*insertion_point) &&
-                                      insertion_point->parentNode() == select))
+    if (&insertion_point == select || (IsHTMLOptGroupElement(insertion_point) &&
+                                       insertion_point.parentNode() == select))
       select->OptionInserted(*this, is_selected_);
   }
   return kInsertionDone;

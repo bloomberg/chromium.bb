@@ -52,7 +52,7 @@ class HTMLButtonElement final : public HTMLFormControlElement {
   // HTMLFormControlElement always creates one, but buttons don't need it.
   bool AlwaysCreateUserAgentShadowRoot() const override { return false; }
 
-  Node::InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  Node::InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void DefaultEventHandler(Event*) override;

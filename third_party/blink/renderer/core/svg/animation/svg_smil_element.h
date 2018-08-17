@@ -51,7 +51,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   void ParseAttribute(const AttributeModificationParams&) override;
   void SvgAttributeChanged(const QualifiedName&) override;
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode*) override;
 
   virtual bool HasValidTarget();

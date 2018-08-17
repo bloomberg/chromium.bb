@@ -1540,9 +1540,9 @@ void HTMLInputElement::DidChangeForm() {
 }
 
 Node::InsertionNotificationRequest HTMLInputElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   TextControlElement::InsertedInto(insertion_point);
-  if (insertion_point->isConnected() && !Form())
+  if (insertion_point.isConnected() && !Form())
     AddToRadioButtonGroup();
   ResetListAttributeTargetObserver();
   LogAddElementIfIsolatedWorldAndInDocument("input", typeAttr, formactionAttr);

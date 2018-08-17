@@ -712,7 +712,7 @@ class CORE_EXPORT Node : public EventTarget {
   };
 
   virtual InsertionNotificationRequest InsertedInto(
-      ContainerNode* insertion_point);
+      ContainerNode& insertion_point);
   virtual void DidNotifySubtreeInsertionsToDocument() {}
 
   // Notifies the node that it is no longer part of the tree.

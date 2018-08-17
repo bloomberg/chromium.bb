@@ -153,7 +153,7 @@ bool PickerIndicatorElement::IsPickerIndicatorElement() const {
 }
 
 Node::InsertionNotificationRequest PickerIndicatorElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   HTMLDivElement::InsertedInto(insertion_point);
   return kInsertionShouldCallDidNotifySubtreeInsertions;
 }

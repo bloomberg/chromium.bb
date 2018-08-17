@@ -64,7 +64,7 @@ class CORE_EXPORT HTMLFormControlElementWithState
   HTMLFormControlElementWithState(const QualifiedName& tag_name, Document&);
 
   void FinishParsingChildren() override;
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode*) override;
   bool IsFormControlElementWithState() const final;
 

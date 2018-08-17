@@ -128,7 +128,7 @@ class HTMLMarqueeElement::AnimationFinished final : public EventListener {
 };
 
 Node::InsertionNotificationRequest HTMLMarqueeElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
 
   if (isConnected())

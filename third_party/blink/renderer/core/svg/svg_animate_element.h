@@ -98,7 +98,7 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
 
   void SetAttributeType(const AtomicString&);
 
-  InsertionNotificationRequest InsertedInto(ContainerNode*) final;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) final;
   void RemovedFrom(ContainerNode*) final;
 
   virtual void ResolveTargetProperty();

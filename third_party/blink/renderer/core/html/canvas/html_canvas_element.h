@@ -172,7 +172,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   const AtomicString ImageSourceURL() const override;
 
-  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode&) override;
 
   bool IsDirty() { return !dirty_rect_.IsEmpty(); }
 

@@ -433,7 +433,7 @@ bool HTMLAnchorElement::IsInteractiveContent() const {
 }
 
 Node::InsertionNotificationRequest HTMLAnchorElement::InsertedInto(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   InsertionNotificationRequest request =
       HTMLElement::InsertedInto(insertion_point);
   LogAddElementIfIsolatedWorldAndInDocument("a", hrefAttr);

@@ -108,8 +108,8 @@ bool HTMLVideoElement::HasPendingActivity() const {
 }
 
 Node::InsertionNotificationRequest HTMLVideoElement::InsertedInto(
-    ContainerNode* insertion_point) {
-  if (insertion_point->isConnected() && custom_controls_fullscreen_detector_)
+    ContainerNode& insertion_point) {
+  if (insertion_point.isConnected() && custom_controls_fullscreen_detector_)
     custom_controls_fullscreen_detector_->Attach();
 
   return HTMLMediaElement::InsertedInto(insertion_point);

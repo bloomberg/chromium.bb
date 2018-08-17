@@ -523,10 +523,10 @@ LayoutObject* SVGSVGElement::CreateLayoutObject(const ComputedStyle&) {
 }
 
 Node::InsertionNotificationRequest SVGSVGElement::InsertedInto(
-    ContainerNode* root_parent) {
-  if (root_parent->isConnected()) {
+    ContainerNode& root_parent) {
+  if (root_parent.isConnected()) {
     UseCounter::Count(GetDocument(), WebFeature::kSVGSVGElementInDocument);
-    if (root_parent->GetDocument().IsXMLDocument())
+    if (root_parent.GetDocument().IsXMLDocument())
       UseCounter::Count(GetDocument(), WebFeature::kSVGSVGElementInXMLDocument);
 
     if (RuntimeEnabledFeatures::SMILEnabled()) {
