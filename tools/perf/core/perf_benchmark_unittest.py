@@ -94,7 +94,7 @@ class PerfBenchmarkTest(unittest.TestCase):
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
     options.chrome_root = self._output_dir
-    options.browser_options.compatibility_mode = True
+    options.browser_options.compatibility_mode = ['no-field-trials']
     benchmark.CustomizeBrowserOptions(options.browser_options)
 
     for arg in expected_args:

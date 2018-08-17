@@ -90,7 +90,8 @@ class PerfBenchmark(benchmark.Benchmark):
     #
     # The same logic applies to the ad filtering ruleset, which could be in a
     # binary format that an older build does not expect.
-    if options.browser_type != 'reference' and not options.compatibility_mode:
+    if options.browser_type != 'reference' and ('no-field-trials' not in
+        options.compatibility_mode):
       variations = self._GetVariationsBrowserArgs(options.finder_options)
       options.AppendExtraBrowserArgs(variations)
 
