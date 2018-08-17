@@ -1865,6 +1865,8 @@ jumbo_split_static_library("ui") {
       "ash/tablet_mode_client.cc",
       "ash/tablet_mode_client.h",
       "ash/tablet_mode_client_observer.h",
+      "ash/test_ime_controller.cc",
+      "ash/test_ime_controller.h",
       "ash/volume_controller.cc",
       "ash/volume_controller.h",
       "ash/vpn_list_forwarder.cc",
