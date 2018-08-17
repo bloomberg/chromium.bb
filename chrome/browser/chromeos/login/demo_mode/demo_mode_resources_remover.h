@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_DEMO_MODE_DEMO_MODE_RESOURCES_REMOVER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -13,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "components/user_manager/user_manager.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -28,10 +30,12 @@ namespace chromeos {
 // Demo mode resources are deleted if the device is not in demo mode, and any
 // of the following conditions are satisfied:
 //   * device is running low on disk space
-//   * TODO(crbug.com/827368): device is enrolled in a non-demo-mode domain
+//   * device is enrolled in a non-demo-mode domain
 //   * TODO(crbug.com/827368): enough non-demo-mode user activity has been
 //     detected on the device
-class DemoModeResourcesRemover : public CryptohomeClient::Observer {
+class DemoModeResourcesRemover
+    : public CryptohomeClient::Observer,
+      public user_manager::UserManager::UserSessionStateObserver {
  public:
   // The reason a removal was requested.
   // DO NOT REORDER - used to report metrics.
@@ -85,10 +89,20 @@ class DemoModeResourcesRemover : public CryptohomeClient::Observer {
   static std::unique_ptr<DemoModeResourcesRemover> CreateIfNeeded(
       PrefService* local_state);
 
+  // Method used to determine whether a domain is associated with legacy demo
+  // retail mode, where demo mode sessions are implemented as public sessions.
+  // Exposed so the matching can be tested.
+  // TODO(crbug.com/874778): Remove after legacy retail mode domains have been
+  // disabled.
+  static bool IsLegacyDemoRetailModeDomain(const std::string& domain);
+
   ~DemoModeResourcesRemover() override;
 
   // CryptohomeClient::Observer:
   void LowDiskSpace(uint64_t free_disk_space) override;
+
+  // user_manager::UserManager::UserSessionStateObserver:
+  void ActiveUserChanged(const user_manager::User* user) override;
 
   // Requests demo mode resources removal from the disk. If a removal operation
   // is already in progress, this method will schedule the callback to be run
