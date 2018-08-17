@@ -160,6 +160,9 @@ class BLINK_PLATFORM_EXPORT Platform {
   // You should not pass in a Platform object that is not fully instantiated.
   static void SetCurrentPlatformForTesting(Platform*);
 
+  Platform();
+  virtual ~Platform();
+
   // May return null.
   virtual WebCookieJar* CookieJar() { return nullptr; }
 
@@ -702,9 +705,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual bool IsTakingV8ContextSnapshot() { return false; }
 
  protected:
-  Platform();
-  virtual ~Platform();
-
   WebThread* main_thread_;
 
  private:

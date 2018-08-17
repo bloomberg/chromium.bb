@@ -33,8 +33,6 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
       const WebThreadCreationParams& params);
   static std::unique_ptr<WebThreadBase> CreateCompositorThread(
       const WebThreadCreationParams& params);
-  // Must be called on utility thread.
-  static std::unique_ptr<WebThreadBase> InitializeUtilityThread();
 
   // WebThread implementation.
   bool IsCurrentThread() const override;
