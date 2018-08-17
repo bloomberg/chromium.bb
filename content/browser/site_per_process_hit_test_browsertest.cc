@@ -4299,6 +4299,89 @@ class SitePerProcessGestureHitTestBrowserTest
     rwhi_root_ = root_node->current_frame_host()->GetRenderWidgetHost();
   }
 
+  void SubframeGesturePinchTestHelper(const std::string& url,
+                                      bool reset_root_touch_action) {
+    GURL main_url(embedded_test_server()->GetURL(
+        "a.com", "/cross_site_iframe_factory.html?a(b)"));
+
+    EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+    // It is safe to obtain the root frame tree node here, as it doesn't change.
+    FrameTreeNode* root_node =
+        static_cast<WebContentsImpl*>(shell()->web_contents())
+            ->GetFrameTree()
+            ->root();
+    ASSERT_EQ(1U, root_node->child_count());
+
+    FrameTreeNode* child_node = root_node->child_at(0);
+    GURL b_url(embedded_test_server()->GetURL("b.com", url));
+    NavigateFrameToURL(child_node, b_url);
+
+    ASSERT_EQ(
+        " Site A ------------ proxies for B\n"
+        "   +--Site B ------- proxies for A\n"
+        "Where A = http://a.com/\n"
+        "      B = http://b.com/",
+        DepictFrameTree(root_node));
+
+    rwhv_child_ = static_cast<RenderWidgetHostViewBase*>(
+        child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+    rwhva_root_ = static_cast<RenderWidgetHostViewAura*>(
+        shell()->web_contents()->GetRenderWidgetHostView());
+
+    WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+
+    MainThreadFrameObserver observer(rwhv_child_->GetRenderWidgetHost());
+    observer.Wait();
+
+    rwhi_child_ = child_node->current_frame_host()->GetRenderWidgetHost();
+    rwhi_root_ = root_node->current_frame_host()->GetRenderWidgetHost();
+
+    TestInputEventObserver root_frame_monitor(rwhi_root_);
+    TestInputEventObserver child_frame_monitor(rwhi_child_);
+
+    gfx::Rect bounds = rwhv_child_->GetViewBounds();
+    bounds.Offset(gfx::Point() - rwhva_root_->GetViewBounds().origin());
+
+    // The pinch gesture will always sent to the root frame even if the fingers
+    // are targeting the iframe. In this case, the test should not crash.
+    if (reset_root_touch_action) {
+      static_cast<InputRouterImpl*>(
+          static_cast<RenderWidgetHostImpl*>(rwhva_root_->GetRenderWidgetHost())
+              ->input_router())
+          ->OnHasTouchEventHandlersForTest(true);
+    }
+    SendPinchBeginEndSequence(rwhva_root_, bounds.CenterPoint(), rwhi_child_);
+
+    if (reset_root_touch_action)
+      return;
+
+    // Verify that root-RWHI gets nothing.
+    EXPECT_FALSE(root_frame_monitor.EventWasReceived());
+    // Verify that child-RWHI gets TS/GTD/GSB/GPB/GPE/GSE/TE.
+    EXPECT_EQ(blink::WebInputEvent::kTouchStart,
+              child_frame_monitor.events_received()[0]);
+    EXPECT_EQ(blink::WebInputEvent::kGestureTapDown,
+              child_frame_monitor.events_received()[1]);
+    EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
+              child_frame_monitor.events_received()[2]);
+    EXPECT_EQ(blink::WebInputEvent::kGesturePinchBegin,
+              child_frame_monitor.events_received()[3]);
+    EXPECT_EQ(blink::WebInputEvent::kGesturePinchEnd,
+              child_frame_monitor.events_received()[4]);
+    EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
+              child_frame_monitor.events_received()[5]);
+    EXPECT_EQ(blink::WebInputEvent::kTouchEnd,
+              child_frame_monitor.events_received()[6]);
+
+    // Verify that the pinch gestures are consumed by browser.
+    EXPECT_EQ(InputEventAckSource::BROWSER,
+              child_frame_monitor.events_acked()[3]);
+    EXPECT_EQ(InputEventAckSource::BROWSER,
+              child_frame_monitor.events_acked()[4]);
+  }
+
  protected:
   RenderWidgetHostViewBase* rwhv_child_;
   RenderWidgetHostViewAura* rwhva_root_;
@@ -4384,75 +4467,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessGestureHitTestBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessGestureHitTestBrowserTest,
                        SubframeGesturePinchDeniedBySubframeTouchAction) {
-  GURL main_url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  SubframeGesturePinchTestHelper("/div_with_touch_action_none.html", false);
+}
 
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
-
-  // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root_node =
-      static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetFrameTree()
-          ->root();
-  ASSERT_EQ(1U, root_node->child_count());
-
-  FrameTreeNode* child_node = root_node->child_at(0);
-  GURL b_url(embedded_test_server()->GetURL(
-      "b.com", "/div_with_touch_action_none.html"));
-  NavigateFrameToURL(child_node, b_url);
-
-  ASSERT_EQ(
-      " Site A ------------ proxies for B\n"
-      "   +--Site B ------- proxies for A\n"
-      "Where A = http://a.com/\n"
-      "      B = http://b.com/",
-      DepictFrameTree(root_node));
-
-  rwhv_child_ = static_cast<RenderWidgetHostViewBase*>(
-      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
-
-  rwhva_root_ = static_cast<RenderWidgetHostViewAura*>(
-      shell()->web_contents()->GetRenderWidgetHostView());
-
-  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
-
-  MainThreadFrameObserver observer(rwhv_child_->GetRenderWidgetHost());
-  observer.Wait();
-
-  rwhi_child_ = child_node->current_frame_host()->GetRenderWidgetHost();
-  rwhi_root_ = root_node->current_frame_host()->GetRenderWidgetHost();
-
-  TestInputEventObserver root_frame_monitor(rwhi_root_);
-  TestInputEventObserver child_frame_monitor(rwhi_child_);
-
-  gfx::Rect bounds = rwhv_child_->GetViewBounds();
-  bounds.Offset(gfx::Point() - rwhva_root_->GetViewBounds().origin());
-
-  SendPinchBeginEndSequence(rwhva_root_, bounds.CenterPoint(), rwhi_child_);
-
-  // Verify that root-RWHI gets nothing.
-  EXPECT_FALSE(root_frame_monitor.EventWasReceived());
-  // Verify that child-RWHI gets TS/GTD/GSB/GPB/GPE/GSE/TE.
-  EXPECT_EQ(blink::WebInputEvent::kTouchStart,
-            child_frame_monitor.events_received()[0]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureTapDown,
-            child_frame_monitor.events_received()[1]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
-            child_frame_monitor.events_received()[2]);
-  EXPECT_EQ(blink::WebInputEvent::kGesturePinchBegin,
-            child_frame_monitor.events_received()[3]);
-  EXPECT_EQ(blink::WebInputEvent::kGesturePinchEnd,
-            child_frame_monitor.events_received()[4]);
-  EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
-            child_frame_monitor.events_received()[5]);
-  EXPECT_EQ(blink::WebInputEvent::kTouchEnd,
-            child_frame_monitor.events_received()[6]);
-
-  // Verify that the pinch gestures are consumed by browser.
-  EXPECT_EQ(InputEventAckSource::BROWSER,
-            child_frame_monitor.events_acked()[3]);
-  EXPECT_EQ(InputEventAckSource::BROWSER,
-            child_frame_monitor.events_acked()[4]);
+IN_PROC_BROWSER_TEST_P(SitePerProcessGestureHitTestBrowserTest,
+                       SubframeGesturePinchNoCrash) {
+  SubframeGesturePinchTestHelper("/div_with_touch_action_auto.html", true);
 }
 #endif  // defined(USE_AURA)
 
