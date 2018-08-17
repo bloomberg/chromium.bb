@@ -8,10 +8,8 @@
 #include <map>
 
 #include "android_webview/browser/child_frame.h"
-#include "android_webview/browser/compositor_id.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "components/viz/common/resources/returned_resource.h"
-#include "content/public/browser/android/synchronous_compositor.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace android_webview {

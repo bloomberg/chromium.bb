@@ -13,7 +13,6 @@
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
-#include "components/version_info/channel.h"
 
 class PrefService;
 

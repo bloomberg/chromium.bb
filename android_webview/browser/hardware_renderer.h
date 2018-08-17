@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "components/viz/common/surfaces/surface_id.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 struct AwDrawGLInfo;

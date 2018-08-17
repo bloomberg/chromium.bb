@@ -9,7 +9,6 @@
 
 #include "base/synchronization/lock.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
-#include "components/crash/content/browser/crash_dump_manager_android.h"
 
 namespace base {
 class SyncSocket;

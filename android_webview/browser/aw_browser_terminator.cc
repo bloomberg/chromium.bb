@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/sync_socket.h"
 #include "base/task/post_task.h"
+#include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_launcher_utils.h"

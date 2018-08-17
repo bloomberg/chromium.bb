@@ -9,7 +9,6 @@
 #include "android_webview/browser/aw_variations_service_client.h"
 #include "base/metrics/field_trial.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/pref_service_factory.h"
 #include "components/variations/service/variations_field_trial_creator.h"
 
 namespace android_webview {
