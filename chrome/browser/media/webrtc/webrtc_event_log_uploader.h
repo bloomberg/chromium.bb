@@ -12,12 +12,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SimpleURLLoader;
+}  // namespace network
 
 // A sublcass of this interface will take ownership of a file, and either
 // upload it to a remote server (actual implementation), or pretend to do so
@@ -64,8 +63,6 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
  public:
   class Factory : public WebRtcEventLogUploader::Factory {
    public:
-    explicit Factory(net::URLRequestContextGetter* request_context_getter);
-
     ~Factory() override = default;
 
     std::unique_ptr<WebRtcEventLogUploader> Create(
@@ -79,13 +76,9 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
         const WebRtcLogFileInfo& log_file,
         UploadResultCallback callback,
         size_t max_remote_log_file_size_bytes);
-
-   private:
-    net::URLRequestContextGetter* const request_context_getter_;
   };
 
   WebRtcEventLogUploaderImpl(
-      net::URLRequestContextGetter* request_context_getter,
       const WebRtcLogFileInfo& log_file,
       UploadResultCallback callback,
       size_t max_remote_log_file_size_bytes);
@@ -107,10 +100,10 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
   // Initiates the file's upload.
   void StartUpload(const std::string& upload_data);
 
-  // Before this is called, other methods of the URLFetcherDelegate API may be
-  // called, but this is guaranteed to be the last call, so deleting |this| is
-  // permissible afterwards.
-  void OnURLFetchComplete(const net::URLFetcher* source);
+  // Callback invoked when the file upload has finished.
+  // If the |url_loader_| instance it was bound to is deleted before
+  // its invocation, the callback will not be called.
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
   // Cleanup and posting of the result callback.
   void ReportResult(bool result);
@@ -121,30 +114,9 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
   // Allows testing the behavior for excessively large files.
   void SetMaxRemoteLogFileSizeBytesForTesting(size_t max_size_bytes);
 
+ private:
   // The URL used for uploading the logs.
   static const char kUploadURL[];
-
- private:
-  class Delegate : public net::URLFetcherDelegate {
-   public:
-    explicit Delegate(WebRtcEventLogUploaderImpl* owner);
-    ~Delegate() override = default;
-
-    // net::URLFetcherDelegate implementation.
-#if DCHECK_IS_ON()
-    void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                  int64_t current,
-                                  int64_t total) override;
-#endif
-    void OnURLFetchComplete(const net::URLFetcher* source) override;
-
-   private:
-    WebRtcEventLogUploaderImpl* const owner_;
-  } delegate_;
-
-  // Supplier of URLRequestContext objects, which are used by |url_fetcher_|.
-  // They must outlive |this|.
-  net::URLRequestContextGetter* const request_context_getter_;
 
   // Housekeeping information about the uploaded file (path, time of last
   // modification, associated BrowserContext).
@@ -158,7 +130,7 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
   const size_t max_log_file_size_bytes_;
 
   // This object is in charge of the actual upload.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // The object lives on this IO-capable task runner.
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;

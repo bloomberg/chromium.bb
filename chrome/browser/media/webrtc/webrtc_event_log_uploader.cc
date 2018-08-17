@@ -10,12 +10,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace {
 // TODO(crbug.com/817495): Eliminate the duplication with other uploaders.
@@ -23,6 +25,8 @@ const char kUploadContentType[] = "multipart/form-data";
 const char kBoundary[] = "----**--yradnuoBgoLtrapitluMklaTelgooG--**----";
 
 constexpr size_t kExpectedMimeOverheadBytes = 1000;  // Intentional overshot.
+
+constexpr size_t kMaxResponseSizeBytes = 1024;
 
 // TODO(crbug.com/817495): Eliminate the duplication with other uploaders.
 #if defined(OS_WIN)
@@ -94,42 +98,18 @@ std::string MimeContentType() {
 
   return content_type;
 }
-}  // namespace
 
-const char WebRtcEventLogUploaderImpl::kUploadURL[] =
-    "https://clients2.google.com/cr/report";
-
-WebRtcEventLogUploaderImpl::Factory::Factory(
-    net::URLRequestContextGetter* request_context_getter)
-    : request_context_getter_(request_context_getter) {}
-
-std::unique_ptr<WebRtcEventLogUploader>
-WebRtcEventLogUploaderImpl::Factory::Create(const WebRtcLogFileInfo& log_file,
-                                            UploadResultCallback callback) {
-  return std::make_unique<WebRtcEventLogUploaderImpl>(
-      request_context_getter_, log_file, std::move(callback),
-      kMaxRemoteLogFileSizeBytes);
+void BindURLLoaderFactoryRequest(
+    network::mojom::URLLoaderFactoryRequest url_loader_factory_request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory =
+      g_browser_process->shared_url_loader_factory();
+  DCHECK(shared_url_loader_factory);
+  shared_url_loader_factory->Clone(std::move(url_loader_factory_request));
 }
-
-std::unique_ptr<WebRtcEventLogUploader>
-WebRtcEventLogUploaderImpl::Factory::CreateWithCustomMaxSizeForTesting(
-    const WebRtcLogFileInfo& log_file,
-    UploadResultCallback callback,
-    size_t max_log_file_size_bytes) {
-  return std::make_unique<WebRtcEventLogUploaderImpl>(
-      request_context_getter_, log_file, std::move(callback),
-      max_log_file_size_bytes);
-}
-
-WebRtcEventLogUploaderImpl::Delegate::Delegate(
-    WebRtcEventLogUploaderImpl* owner)
-    : owner_(owner) {}
 
 #if DCHECK_IS_ON()
-void WebRtcEventLogUploaderImpl::Delegate::OnURLFetchUploadProgress(
-    const net::URLFetcher* source,
-    int64_t current,
-    int64_t total) {
+void OnURLLoadUploadProgress(uint64_t current, uint64_t total) {
   std::string unit;
   if (total <= 1000) {
     unit = "bytes";
@@ -147,19 +127,32 @@ void WebRtcEventLogUploaderImpl::Delegate::OnURLFetchUploadProgress(
 }
 #endif
 
-void WebRtcEventLogUploaderImpl::Delegate::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  owner_->OnURLFetchComplete(source);
+}  // namespace
+
+const char WebRtcEventLogUploaderImpl::kUploadURL[] =
+    "https://clients2.google.com/cr/report";
+
+std::unique_ptr<WebRtcEventLogUploader>
+WebRtcEventLogUploaderImpl::Factory::Create(const WebRtcLogFileInfo& log_file,
+                                            UploadResultCallback callback) {
+  return std::make_unique<WebRtcEventLogUploaderImpl>(
+      log_file, std::move(callback), kMaxRemoteLogFileSizeBytes);
+}
+
+std::unique_ptr<WebRtcEventLogUploader>
+WebRtcEventLogUploaderImpl::Factory::CreateWithCustomMaxSizeForTesting(
+    const WebRtcLogFileInfo& log_file,
+    UploadResultCallback callback,
+    size_t max_log_file_size_bytes) {
+  return std::make_unique<WebRtcEventLogUploaderImpl>(
+      log_file, std::move(callback), max_log_file_size_bytes);
 }
 
 WebRtcEventLogUploaderImpl::WebRtcEventLogUploaderImpl(
-    net::URLRequestContextGetter* request_context_getter,
     const WebRtcLogFileInfo& log_file,
     UploadResultCallback callback,
     size_t max_log_file_size_bytes)
-    : delegate_(this),
-      request_context_getter_(request_context_getter),
-      log_file_(log_file),
+    : log_file_(log_file),
       callback_(std::move(callback)),
       max_log_file_size_bytes_(max_log_file_size_bytes),
       io_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
@@ -175,19 +168,19 @@ WebRtcEventLogUploaderImpl::WebRtcEventLogUploaderImpl(
 
 WebRtcEventLogUploaderImpl::~WebRtcEventLogUploaderImpl() {
   // WebRtcEventLogUploaderImpl objects' deletion scenarios:
-  // 1. Upload started and finished - |url_fetcher_| should have been reset
+  // 1. Upload started and finished - |url_loader_| should have been reset
   //    so that we would be able to DCHECK and demonstrate that the determinant
   //    is maintained.
   // 2. Upload started and cancelled - behave similarly to a finished upload.
   // 3. The upload was never started, due to an early failure (e.g. file not
-  //    found). In that case, |url_fetcher_| will not have been set.
+  //    found). In that case, |url_loader_| will not have been set.
   // 4. Chrome shutdown.
   if (io_task_runner_->RunsTasksInCurrentSequence()) {  // Scenarios 1-3.
-    DCHECK(!url_fetcher_);
+    DCHECK(!url_loader_);
   } else {  // # Scenario #4 - Chrome shutdown.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     bool will_delete =
-        io_task_runner_->DeleteSoon(FROM_HERE, url_fetcher_.release());
+        io_task_runner_->DeleteSoon(FROM_HERE, url_loader_.release());
     DCHECK(!will_delete)
         << "Task runners must have been stopped by this stage of shutdown.";
   }
@@ -202,7 +195,7 @@ const WebRtcLogFileInfo& WebRtcEventLogUploaderImpl::GetWebRtcLogFileInfo()
 bool WebRtcEventLogUploaderImpl::Cancel() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
-  if (!url_fetcher_) {
+  if (!url_loader_) {
     // The upload either already completed, or was never properly started (due
     // to a file read failure, etc.).
     return false;
@@ -211,7 +204,7 @@ bool WebRtcEventLogUploaderImpl::Cancel() {
   // Note that in this case, it might still be that the last bytes hit the
   // wire right as we attempt to cancel the upload. OnURLFetchComplete, however,
   // would not be called.
-  url_fetcher_.reset();
+  url_loader_.reset();
   DeleteLogFile();
   return true;
 }
@@ -252,40 +245,57 @@ bool WebRtcEventLogUploaderImpl::PrepareUploadData(std::string* upload_data) {
 void WebRtcEventLogUploaderImpl::StartUpload(const std::string& upload_data) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
-  url_fetcher_ = net::URLFetcher::Create(
-      GURL(kUploadURL), net::URLFetcher::POST, &delegate_,
-      kWebrtcEventLogUploaderTrafficAnnotation);
-  url_fetcher_->SetRequestContext(request_context_getter_);
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_COOKIES);
-  url_fetcher_->SetUploadData(MimeContentType(), upload_data);
-  url_fetcher_->Start();  // Delegat::OnURLFetchComplete called when finished.
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(kUploadURL);
+  resource_request->method = "POST";
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+
+  // Create a new mojo pipe. It's safe to pass this around and use
+  // immediately, even though it needs to finish initialization on the UI
+  // thread.
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_ptr;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(BindURLLoaderFactoryRequest,
+                     mojo::MakeRequest(&url_loader_factory_ptr)));
+
+  url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), kWebrtcEventLogUploaderTrafficAnnotation);
+  url_loader_->AttachStringForUpload(upload_data, MimeContentType());
+#if DCHECK_IS_ON()
+  url_loader_->SetOnUploadProgressCallback(
+      base::BindRepeating(OnURLLoadUploadProgress));
+#endif
+
+  // See comment in destructor for an explanation about why using
+  // base::Unretained(this) is safe here.
+  url_loader_->DownloadToString(
+      url_loader_factory_ptr.get(),
+      base::BindOnce(&WebRtcEventLogUploaderImpl::OnURLLoadComplete,
+                     base::Unretained(this)),
+      kMaxResponseSizeBytes);
 }
 
-void WebRtcEventLogUploaderImpl::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void WebRtcEventLogUploaderImpl::OnURLLoadComplete(
+    std::unique_ptr<std::string> response_body) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(url_fetcher_);
-  DCHECK_EQ(source, url_fetcher_.get());
+  DCHECK(url_loader_);
 
-  const bool upload_successful =
-      (source->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
-       source->GetResponseCode() == net::HTTP_OK);
-
+  const bool upload_successful = (response_body != nullptr);
   if (upload_successful) {
     // TODO(crbug.com/775415): Update chrome://webrtc-logs.
-    std::string report_id;
-    if (!url_fetcher_->GetResponseAsString(&report_id)) {
+    if (response_body->empty()) {
       LOG(WARNING) << "WebRTC event log completed, but report ID unknown.";
     } else {
       // TODO(crbug.com/775415): Remove this when chrome://webrtc-logs updated.
-      VLOG(1) << "WebRTC event log successfully uploaded: " << report_id;
+      VLOG(1) << "WebRTC event log successfully uploaded: " << *response_body;
     }
   } else {
     LOG(WARNING) << "WebRTC event log upload failed.";
   }
 
-  url_fetcher_.reset();  // Explicitly maintain determinant.
+  url_loader_.reset();  // Explicitly maintain determinant.
 
   ReportResult(upload_successful);
 }
