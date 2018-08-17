@@ -5,6 +5,12 @@
 #ifndef MEDIA_CAPTURE_VIDEO_FAKE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
 #define MEDIA_CAPTURE_VIDEO_FAKE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
 
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/video_capture_device_factory.h"
 
@@ -19,6 +25,7 @@ struct CAPTURE_EXPORT FakeVideoCaptureDeviceSettings {
   FakeVideoCaptureDevice::DeliveryMode delivery_mode;
   VideoCaptureFormats supported_formats;
   FakePhotoDeviceConfig photo_device_config;
+  FakeVideoCaptureDevice::DisplayMediaType display_media_type;
 };
 
 // Implementation of VideoCaptureDeviceFactory that creates fake devices
