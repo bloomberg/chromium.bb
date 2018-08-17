@@ -22,7 +22,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   }
 
   // Relevant DOM Standard: https://dom.spec.whatwg.org/#find-a-slot
-  HTMLSlotElement* FindSlot(const Node&) const;
+  HTMLSlotElement* FindSlot(const Node&);
   HTMLSlotElement* FindSlotByName(const AtomicString& slot_name) const;
 
   // DOM Standaard defines these two procedures:
@@ -44,9 +44,6 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 
   bool FindHostChildBySlotName(const AtomicString& slot_name) const;
 
-  void InsertSlotInChildSlotMap(HTMLSlotElement& slot,
-                                const HeapVector<Member<Node>>& nodes);
-
   void Trace(blink::Visitor*);
 
   // For Incremental Shadow DOM
@@ -67,7 +64,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 
   HTMLSlotElement* FindSlotInUserAgentShadow(const Node&) const;
 
-  HTMLSlotElement* FindLastAssignedSlot(Node&) const;
+  HTMLSlotElement* FindFirstAssignedSlot(Node&);
 
   void CollectSlots();
   HTMLSlotElement* GetCachedFirstSlotWithoutAccessingNodeTree(
@@ -83,8 +80,6 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 
   HeapVector<Member<HTMLSlotElement>> slots_;
   Member<TreeOrderedMap> slot_map_;
-  HeapHashMap<Member<Node>, HeapVector<Member<HTMLSlotElement>>>
-      child_assigned_slot_history_;
   WeakMember<ShadowRoot> owner_;
   unsigned needs_collect_slots_ : 1;
   unsigned needs_assignment_recalc_ : 1;  // For Incremental Shadow DOM
