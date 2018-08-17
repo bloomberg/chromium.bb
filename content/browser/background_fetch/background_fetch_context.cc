@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 
 namespace content {
 
@@ -26,7 +27,8 @@ BackgroundFetchContext::BackgroundFetchContext(
     BrowserContext* browser_context,
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
     const scoped_refptr<content::CacheStorageContextImpl>&
-        cache_storage_context)
+        cache_storage_context,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy)
     : browser_context_(browser_context),
       service_worker_context_(service_worker_context),
       event_dispatcher_(service_worker_context),
@@ -39,7 +41,8 @@ BackgroundFetchContext::BackgroundFetchContext(
   DCHECK(service_worker_context_);
 
   data_manager_ = std::make_unique<BackgroundFetchDataManager>(
-      browser_context_, service_worker_context, cache_storage_context);
+      browser_context_, service_worker_context, cache_storage_context,
+      std::move(quota_manager_proxy));
   scheduler_ = std::make_unique<BackgroundFetchScheduler>(data_manager_.get());
   delegate_proxy_.SetClickEventDispatcher(base::BindRepeating(
       &BackgroundFetchContext::DispatchClickEvent, weak_factory_.GetWeakPtr()));
@@ -201,6 +204,13 @@ void BackgroundFetchContext::UpdateUI(
 void BackgroundFetchContext::OnServiceWorkerDatabaseCorrupted(
     int64_t service_worker_registration_id) {
   AbandonFetches(service_worker_registration_id);
+}
+
+void BackgroundFetchContext::OnQuotaExceeded(
+    const BackgroundFetchRegistrationId& registration_id) {
+  auto job_it = job_controllers_.find(registration_id.unique_id());
+  if (job_it != job_controllers_.end() && job_it->second)
+    job_it->second->Abort(BackgroundFetchReasonToAbort::QUOTA_EXCEEDED);
 }
 
 void BackgroundFetchContext::AbandonFetches(
@@ -371,6 +381,7 @@ void BackgroundFetchContext::DidMarkForDeletion(
       return;
     case BackgroundFetchReasonToAbort::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
     case BackgroundFetchReasonToAbort::SERVICE_WORKER_UNAVAILABLE:
+    case BackgroundFetchReasonToAbort::QUOTA_EXCEEDED:
     case BackgroundFetchReasonToAbort::NONE:
       // This will send a BackgroundFetchFetched or BackgroundFetchFail event.
       // TODO(crbug.com/699957): Get rid of this once matchAll() is implemented

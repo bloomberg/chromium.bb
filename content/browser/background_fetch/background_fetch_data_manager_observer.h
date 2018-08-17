@@ -40,6 +40,10 @@ class BackgroundFetchDataManagerObserver {
   virtual void OnServiceWorkerDatabaseCorrupted(
       int64_t service_worker_registration_id) = 0;
 
+  // Called if the origin is out of quota during the fetch.
+  virtual void OnQuotaExceeded(
+      const BackgroundFetchRegistrationId& registration_id) = 0;
+
   virtual ~BackgroundFetchDataManagerObserver() {}
 };
 

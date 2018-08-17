@@ -25,6 +25,7 @@
 
 namespace storage {
 class BlobDataHandle;
+class QuotaManagerProxy;
 }
 
 namespace content {
@@ -57,7 +58,8 @@ class CONTENT_EXPORT BackgroundFetchContext
       BrowserContext* browser_context,
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
       const scoped_refptr<content::CacheStorageContextImpl>&
-          cache_storage_context);
+          cache_storage_context,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   void InitializeOnIOThread();
 
@@ -130,6 +132,8 @@ class CONTENT_EXPORT BackgroundFetchContext
                    const base::Optional<SkBitmap>& icon) override;
   void OnServiceWorkerDatabaseCorrupted(
       int64_t service_worker_registration_id) override;
+  void OnQuotaExceeded(
+      const BackgroundFetchRegistrationId& registration_id) override;
 
   // ServiceWorkerContextCoreObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,

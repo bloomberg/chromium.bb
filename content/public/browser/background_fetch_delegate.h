@@ -40,6 +40,7 @@ enum class BackgroundFetchReasonToAbort {
   ABORTED_BY_DEVELOPER,
   TOTAL_DOWNLOAD_SIZE_EXCEEDED,
   SERVICE_WORKER_UNAVAILABLE,
+  QUOTA_EXCEEDED,
 };
 
 // Interface for launching background fetches. Implementing classes would

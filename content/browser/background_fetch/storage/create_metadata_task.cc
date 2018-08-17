@@ -37,6 +37,25 @@ CreateMetadataTask::CreateMetadataTask(
 CreateMetadataTask::~CreateMetadataTask() = default;
 
 void CreateMetadataTask::Start() {
+  // Check if there is enough quota to download the data first.
+  if (options_.download_total > 0) {
+    IsQuotaAvailable(registration_id_.origin(), options_.download_total,
+                     base::BindOnce(&CreateMetadataTask::DidGetIsQuotaAvailable,
+                                    weak_factory_.GetWeakPtr()));
+  } else {
+    // Proceed with the fetch.
+    GetRegistrationUniqueId();
+  }
+}
+
+void CreateMetadataTask::DidGetIsQuotaAvailable(bool is_available) {
+  if (!is_available)
+    FinishWithError(blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
+  else
+    GetRegistrationUniqueId();
+}
+
+void CreateMetadataTask::GetRegistrationUniqueId() {
   service_worker_context()->GetRegistrationUserData(
       registration_id_.service_worker_registration_id(),
       {ActiveRegistrationUniqueIdKey(registration_id_.developer_id())},

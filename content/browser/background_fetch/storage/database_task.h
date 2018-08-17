@@ -16,6 +16,14 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
+namespace storage {
+class QuotaManagerProxy;
+}  // namespace storage
+
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
 class BackgroundFetchDataManager;
@@ -62,6 +70,9 @@ class DatabaseTaskHost {
 // as they are added, and cannot outlive the parent DatabaseTask.
 class DatabaseTask : public DatabaseTaskHost {
  public:
+  using IsQuotaAvailableCallback =
+      base::OnceCallback<void(bool /* is_available */)>;
+
   ~DatabaseTask() override;
 
   virtual void Start() = 0;
@@ -94,6 +105,7 @@ class DatabaseTask : public DatabaseTaskHost {
   CacheStorageManager* cache_manager();
   std::set<std::string>& ref_counted_unique_ids();
   ChromeBlobStorageContext* blob_storage_context();
+  storage::QuotaManagerProxy* quota_manager_proxy();
 
   // DatabaseTaskHost implementation.
   void OnTaskFinished(DatabaseTask* finished_subtask) override;
@@ -104,6 +116,11 @@ class DatabaseTask : public DatabaseTaskHost {
   void SetStorageErrorAndFinish(BackgroundFetchStorageError error);
   void ReportStorageError();
   bool HasStorageError();
+
+  // Quota.
+  void IsQuotaAvailable(const url::Origin& origin,
+                        int64_t size,
+                        IsQuotaAvailableCallback callback);
 
  private:
   // Each task must override this function and perform the following steps:

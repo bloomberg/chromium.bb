@@ -20,6 +20,9 @@ class MockQuotaManager;
 class ServiceWorkerContextWrapper;
 class StoragePartition;
 
+// Arbitrary quota that is large enough for test purposes.
+constexpr int64_t kBackgroundFetchMaxQuotaBytes = 42424242;
+
 // Test DataManager that sets up a CacheStorageManager suited for test
 // environments. Tests can also optionally override FillServiceWorkerResponse by
 // setting |mock_fill_response| to true.

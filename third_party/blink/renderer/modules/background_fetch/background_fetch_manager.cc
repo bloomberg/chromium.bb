@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_type_converters.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -34,7 +35,6 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-
 namespace blink {
 
 namespace {
@@ -341,6 +341,10 @@ void BackgroundFetchManager::DidFetch(
           script_state->GetIsolate(),
           "There is no service worker available to service the fetch."));
       return;
+    case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
+      resolver->Reject(DOMException::Create(
+          DOMExceptionCode::kQuotaExceededError, "Quota exceeded."));
+      return;
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::INVALID_ID:
       // Not applicable for this callback.
@@ -464,6 +468,7 @@ void BackgroundFetchManager::DidGetRegistration(
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
+    case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
       // Not applicable for this callback.
       break;
   }
@@ -513,6 +518,7 @@ void BackgroundFetchManager::DidGetDeveloperIds(
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::INVALID_ID:
     case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
+    case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
       // Not applicable for this callback.
       break;
   }
