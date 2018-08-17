@@ -848,6 +848,11 @@ void GaiaAuthFetcher::StartListAccounts() {
                             traffic_annotation);
 }
 
+void GaiaAuthFetcher::StartOAuthMultilogin(
+    const std::vector<MultiloginTokenIDPair>& accounts) {
+  // TODO (valeriyas): Implement sending request to gaia.
+}
+
 void GaiaAuthFetcher::StartLogOut() {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
