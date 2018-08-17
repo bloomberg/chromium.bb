@@ -60,7 +60,6 @@ class SVGDocumentExtensions
 
   void AddSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
   void RemoveSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
-  bool IsSVGRootWithRelativeLengthDescendents(SVGSVGElement*) const;
   void InvalidateSVGRootsWithRelativeLengthDescendents(SubtreeLayoutScope*);
 
   bool ZoomAndPanEnabled() const;
