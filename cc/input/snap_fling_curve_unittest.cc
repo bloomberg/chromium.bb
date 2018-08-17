@@ -40,15 +40,12 @@ TEST(SnapFlingCurveTest, AdvanceHalfwayThrough) {
   EXPECT_FALSE(curve.IsFinished());
 }
 
-TEST(SnapFlingCurveTest, AdvanceFullyThroughOnlyFinishesAfterUpdate) {
+TEST(SnapFlingCurveTest, AdvanceFullyThrough) {
   SnapFlingCurve curve(gfx::Vector2dF(100, 100), gfx::Vector2dF(500, 500),
                        base::TimeTicks());
   gfx::Vector2dF delta =
       curve.GetScrollDelta(base::TimeTicks() + curve.duration());
   EXPECT_EQ(gfx::Vector2dF(400, 400), delta);
-  EXPECT_FALSE(curve.IsFinished());
-
-  curve.UpdateCurrentOffset(gfx::Vector2dF(500, 500));
   EXPECT_TRUE(curve.IsFinished());
 }
 
@@ -56,14 +53,27 @@ TEST(SnapFlingCurveTest, ReturnsZeroAfterFinished) {
   SnapFlingCurve curve(gfx::Vector2dF(100, 100), gfx::Vector2dF(500, 500),
                        base::TimeTicks());
   curve.UpdateCurrentOffset(gfx::Vector2dF(500, 500));
-  EXPECT_TRUE(curve.IsFinished());
-
   gfx::Vector2dF delta = curve.GetScrollDelta(base::TimeTicks());
   EXPECT_EQ(gfx::Vector2dF(), delta);
   EXPECT_TRUE(curve.IsFinished());
 
   delta = curve.GetScrollDelta(base::TimeTicks() + curve.duration());
   EXPECT_EQ(gfx::Vector2dF(), delta);
+  EXPECT_TRUE(curve.IsFinished());
+}
+
+TEST(SnapFlingCurveTest, FlingFinishesWithinOnePixel) {
+  SnapFlingCurve curve(gfx::Vector2dF(0, 0), gfx::Vector2dF(100.5, 99.5),
+                       base::TimeTicks());
+  EXPECT_FALSE(curve.IsFinished());
+
+  curve.UpdateCurrentOffset(gfx::Vector2dF(99, 101));
+  // IsFinished() is updated in GetScrollDelta().
+  curve.GetScrollDelta(base::TimeTicks());
+  EXPECT_FALSE(curve.IsFinished());
+
+  curve.UpdateCurrentOffset(gfx::Vector2dF(100, 100));
+  curve.GetScrollDelta(base::TimeTicks());
   EXPECT_TRUE(curve.IsFinished());
 }
 
