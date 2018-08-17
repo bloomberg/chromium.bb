@@ -8,6 +8,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
+#include "third_party/blink/public/platform/web_fullscreen_video_status.h"
+#include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
@@ -17,10 +19,16 @@
 
 namespace blink {
 
+class HTMLVideoElementMockMediaPlayer : public EmptyWebMediaPlayer {
+ public:
+  MOCK_METHOD1(SetIsEffectivelyFullscreen, void(WebFullscreenVideoStatus));
+  MOCK_METHOD1(OnDisplayTypeChanged, void(WebMediaPlayer::DisplayType));
+};
+
 class HTMLVideoElementFrameClient : public EmptyLocalFrameClient {
  public:
-  HTMLVideoElementFrameClient()
-      : player_(std::make_unique<EmptyWebMediaPlayer>()) {}
+  HTMLVideoElementFrameClient(std::unique_ptr<WebMediaPlayer> player)
+      : player_(std::move(player)) {}
 
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
@@ -38,7 +46,13 @@ class HTMLVideoElementFrameClient : public EmptyLocalFrameClient {
 class HTMLVideoElementTest : public PageTestBase {
  public:
   void SetUp() override {
-    SetupPageWithClients(nullptr, new HTMLVideoElementFrameClient(), nullptr);
+    auto mock_media_player =
+        std::make_unique<HTMLVideoElementMockMediaPlayer>();
+    media_player_ = mock_media_player.get();
+
+    SetupPageWithClients(
+        nullptr, new HTMLVideoElementFrameClient(std::move(mock_media_player)),
+        nullptr);
     video_ = HTMLVideoElement::Create(GetDocument());
     GetDocument().body()->appendChild(video_);
   }
@@ -47,8 +61,15 @@ class HTMLVideoElementTest : public PageTestBase {
 
   HTMLVideoElement* video() { return video_.Get(); }
 
+  HTMLVideoElementMockMediaPlayer* MockWebMediaPlayer() {
+    return media_player_;
+  }
+
  private:
   Persistent<HTMLVideoElement> video_;
+
+  // Owned by HTMLVideoElementFrameClient.
+  HTMLVideoElementMockMediaPlayer* media_player_;
 };
 
 TEST_F(HTMLVideoElementTest, PictureInPictureInterstitialAndTextContainer) {
@@ -100,6 +121,35 @@ TEST_F(HTMLVideoElementTest, setPictureInPictureControls) {
   video()->SetPictureInPictureCustomControls(test_controls);
 
   EXPECT_TRUE(video()->HasPictureInPictureCustomControls());
+}
+
+TEST_F(HTMLVideoElementTest, EffectivelyFullscreen_DisplayType) {
+  EXPECT_EQ(WebMediaPlayer::DisplayType::kInline, video()->DisplayType());
+
+  // Vector of data to use for tests. First value is to be set when calling
+  // SetIsEffectivelyFullscreen(). The second one is the expected DisplayType.
+  // This is testing all possible values of WebFullscreenVideoStatus and then
+  // sets the value back to a value that should put the DisplayType back to
+  // inline.
+  std::vector<std::pair<WebFullscreenVideoStatus, WebMediaPlayer::DisplayType>>
+      tests = {
+          {WebFullscreenVideoStatus::kNotEffectivelyFullscreen,
+           WebMediaPlayer::DisplayType::kInline},
+          {WebFullscreenVideoStatus::kFullscreenAndPictureInPictureEnabled,
+           WebMediaPlayer::DisplayType::kFullscreen},
+          {WebFullscreenVideoStatus::kFullscreenAndPictureInPictureDisabled,
+           WebMediaPlayer::DisplayType::kFullscreen},
+          {WebFullscreenVideoStatus::kNotEffectivelyFullscreen,
+           WebMediaPlayer::DisplayType::kInline},
+      };
+
+  for (const auto& test : tests) {
+    EXPECT_CALL(*MockWebMediaPlayer(), SetIsEffectivelyFullscreen(test.first));
+    EXPECT_CALL(*MockWebMediaPlayer(), OnDisplayTypeChanged(test.second));
+    video()->SetIsEffectivelyFullscreen(test.first);
+
+    EXPECT_EQ(test.second, video()->DisplayType());
+  }
 }
 
 }  // namespace blink

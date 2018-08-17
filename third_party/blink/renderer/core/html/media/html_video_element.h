@@ -171,6 +171,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   GetPictureInPictureCustomControls() const;
   bool HasPictureInPictureCustomControls() const;
 
+  void SetIsEffectivelyFullscreen(blink::WebFullscreenVideoStatus);
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -226,6 +228,11 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   // Holds the most recently set custom controls. These will be persistent
   // across active/inactive windows until new controls are passed in.
   std::vector<PictureInPictureControlInfo> pip_custom_controls_;
+
+  // Whether the video element should be considered as fullscreen with regards
+  // to display type and other UI features. This does not mean the DOM element
+  // is fullscreen.
+  bool is_effectively_fullscreen_ = false;
 };
 
 }  // namespace blink

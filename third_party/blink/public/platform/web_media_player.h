@@ -347,8 +347,13 @@ class WebMediaPlayer {
   virtual void OnHasNativeControlsChanged(bool) {}
 
   enum class DisplayType {
+    // Playback is happening inline.
     kInline,
+    // Playback is happening either with the video fullscreen. It may also be
+    // set when Blink detects that the video is effectively fullscreen even if
+    // the element is not.
     kFullscreen,
+    // Playback is happening in a Picture-in-Picture window.
     kPictureInPicture,
   };
 
