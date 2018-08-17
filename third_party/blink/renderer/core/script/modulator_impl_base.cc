@@ -121,7 +121,7 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& module_request,
     // specifier. If parsed is not failure, then return the layered API fetching
     // URL given parsed and script's base URL.</spec>
     if (RuntimeEnabledFeatures::LayeredAPIEnabled())
-      return blink::layered_api::ResolveFetchingURL(url, base_url);
+      return blink::layered_api::ResolveFetchingURL(url);
 
     return url;
   }
