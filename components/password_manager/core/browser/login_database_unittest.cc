@@ -25,6 +25,9 @@
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/test/test_helpers.h"
@@ -2054,9 +2057,17 @@ class LoginDatabaseUndecryptableLoginsTest : public testing::Test {
 
   base::FilePath database_path() const { return database_path_; }
 
+  TestingPrefServiceSimple& testing_local_state() {
+    return testing_local_state_;
+  }
+
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+
  private:
   base::FilePath database_path_;
   base::ScopedTempDir temp_dir_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestingPrefServiceSimple testing_local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDatabaseUndecryptableLoginsTest);
 };
@@ -2119,6 +2130,11 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
   ASSERT_TRUE(db.Init());
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+  testing_local_state().registry()->RegisterTimePref(
+      prefs::kSyncUsersPasswordRecovery, base::Time());
+  db.InitPasswordRecoveryUtil(std::make_unique<PasswordRecoveryUtilMac>(
+      &testing_local_state(), base::ThreadTaskRunnerHandle::Get()));
+
   // Make sure that we can't get any logins when database is corrupted.
   std::vector<std::unique_ptr<PasswordForm>> result;
   EXPECT_FALSE(db.GetAutofillableLogins(&result));
@@ -2128,6 +2144,12 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
   EXPECT_EQ(DatabaseCleanupResult::kSuccess, db.DeleteUndecryptableLogins());
   EXPECT_TRUE(db.GetAutofillableLogins(&result));
   EXPECT_THAT(result, UnorderedElementsAre(Pointee(form1), Pointee(form3)));
+
+  RunUntilIdle();
+
+  // Make sure that password recovery pref is set.
+  ASSERT_TRUE(
+      testing_local_state().HasPrefPath(prefs::kSyncUsersPasswordRecovery));
 #else
   EXPECT_EQ(DatabaseCleanupResult::kSuccess, db.DeleteUndecryptableLogins());
 #endif
