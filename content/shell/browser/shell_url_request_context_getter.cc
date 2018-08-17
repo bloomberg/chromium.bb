@@ -197,6 +197,9 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             base::TimeDelta::FromMilliseconds(100);
       builder.set_reporting_policy(std::move(reporting_policy));
     }
+
+    builder.set_network_error_logging_enabled(
+        base::FeatureList::IsEnabled(network::features::kNetworkErrorLogging));
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
     builder.set_enable_brotli(true);
