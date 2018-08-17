@@ -81,9 +81,13 @@ PerUserTopicRegistrationManager::RegistrationEntry::RegistrationEntry(
       pref(pref) {
   const base::DictionaryValue* registered_for_invalidation =
       pref->GetDictionary(kTypeRegisteredForInvalidation);
-  if (registered_for_invalidation &&
-      registered_for_invalidation->FindKey(id.name())) {
-    state = RegistrationEntry::REGISTERED;
+  if (registered_for_invalidation) {
+    auto* value =
+        registered_for_invalidation->FindKey(SerializeInvalidationObjectId(id));
+    if (value) {
+      value->GetAsString(&private_topic_name);
+      state = RegistrationEntry::REGISTERED;
+    }
   }
 }
 
@@ -95,9 +99,9 @@ void PerUserTopicRegistrationManager::RegistrationEntry::RegistrationFinished(
   if (code.IsSuccess()) {
     private_topic_name = topic_name;
     state = RegistrationEntry::REGISTERED;
-    ScopedUserPrefUpdate<base::DictionaryValue, base::Value::Type::DICTIONARY>
-        topics_update(pref, kTypeRegisteredForInvalidation);
-    topics_update->SetKey(id.name(), base::Value(private_topic_name));
+    DictionaryPrefUpdate update(pref, kTypeRegisteredForInvalidation);
+    base::DictionaryValue* pref_data = update.Get();
+    pref_data->SetString(SerializeInvalidationObjectId(id), private_topic_name);
   }
 }
 
