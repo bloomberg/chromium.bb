@@ -37,6 +37,12 @@ class WaylandDataDevice {
  private:
   void ReadClipboardDataFromFD(base::ScopedFD fd, const std::string& mime_type);
 
+  // Registers display sync callback. Once it's called, it's reset.
+  void RegisterSyncCallback();
+
+  // Helper function to read data from fd.
+  void ReadDataFromFD(base::ScopedFD fd, std::string* contents);
+
   // wl_data_device_listener callbacks
   static void OnDataOffer(void* data,
                           wl_data_device* data_device,

@@ -41,20 +41,30 @@ void WaylandDataDevice::RequestSelectionData(const std::string& mime_type) {
   read_from_fd_closure_ =
       base::BindOnce(&WaylandDataDevice::ReadClipboardDataFromFD,
                      base::Unretained(this), std::move(fd), mime_type);
-  sync_callback_.reset(wl_display_sync(connection_->display()));
-  wl_callback_add_listener(sync_callback_.get(), &callback_listener_, this);
-  wl_display_flush(connection_->display());
+  RegisterSyncCallback();
 }
 
 void WaylandDataDevice::ReadClipboardDataFromFD(base::ScopedFD fd,
                                                 const std::string& mime_type) {
   std::string contents;
+  ReadDataFromFD(std::move(fd), &contents);
+  connection_->SetClipboardData(contents, mime_type);
+}
+
+void WaylandDataDevice::RegisterSyncCallback() {
+  DCHECK(!sync_callback_);
+  sync_callback_.reset(wl_display_sync(connection_->display()));
+  wl_callback_add_listener(sync_callback_.get(), &callback_listener_, this);
+  wl_display_flush(connection_->display());
+}
+
+void WaylandDataDevice::ReadDataFromFD(base::ScopedFD fd,
+                                       std::string* contents) {
+  DCHECK(contents);
   char buffer[1 << 10];  // 1 kB in bytes.
   ssize_t length;
   while ((length = read(fd.get(), buffer, sizeof(buffer))) > 0)
-    contents.append(buffer, length);
-
-  connection_->SetClipboardData(contents, mime_type);
+    contents->append(buffer, length);
 }
 
 std::vector<std::string> WaylandDataDevice::GetAvailableMimeTypes() {
