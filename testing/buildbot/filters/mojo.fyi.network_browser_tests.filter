@@ -14,11 +14,6 @@
 # https://crbug.com/853251
 -DomainReliabilityBrowserTest.Upload
 
-# This test fails flakily. Only enable it once
-# SocketExtensionWithDnsLookupFunction::StartDnsLookup uses the Mojo
-# HostResolver API.
--SocketApiTest.SocketUDPExtension
-
 # These tests use URLFetchers directly.
 # https://crbug.com/853798
 -ProfileBrowserTest.SeparateMediaCache
