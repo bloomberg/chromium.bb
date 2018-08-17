@@ -22,7 +22,9 @@ MockAudioDeviceFactory::MockAudioDeviceFactory()
 MockAudioDeviceFactory::~MockAudioDeviceFactory() {}
 
 scoped_refptr<media::AudioCapturerSource>
-MockAudioDeviceFactory::CreateAudioCapturerSource(int render_frame_id) {
+MockAudioDeviceFactory::CreateAudioCapturerSource(
+    int render_frame_id,
+    const media::AudioSourceParameters& params) {
   CHECK(!did_create_once_);
   did_create_once_ = true;
   return scoped_refptr<media::AudioCapturerSource>(mock_capturer_source_);

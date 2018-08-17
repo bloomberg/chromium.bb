@@ -14,6 +14,8 @@
 
 namespace media {
 
+class AudioProcessorControls;
+
 // Contains IPC notifications for the state of the server side
 // (AudioInputController) audio state changes and when an AudioInputController
 // has been created.  Implemented by AudioInputDevice.
@@ -71,6 +73,10 @@ class MEDIA_EXPORT AudioInputIPC {
   // |output_device_id| can be gotten from a device enumeration. Must not be
   // called before the stream has been successfully created.
   virtual void SetOutputDeviceForAec(const std::string& output_device_id) = 0;
+
+  // If the input has built-in processing, returns a pointer to processing
+  // controls. Valid after the stream has been created.
+  virtual AudioProcessorControls* GetProcessorControls();
 
   // Closes the audio stream, which should shut down the corresponding
   // AudioInputController in the peer process.

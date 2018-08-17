@@ -10,4 +10,8 @@ AudioInputIPCDelegate::~AudioInputIPCDelegate() = default;
 
 AudioInputIPC::~AudioInputIPC() = default;
 
+AudioProcessorControls* AudioInputIPC::GetProcessorControls() {
+  return nullptr;
+}
+
 }  // namespace media

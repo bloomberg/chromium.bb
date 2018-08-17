@@ -83,8 +83,10 @@ class WebRtcAudioRendererTest : public testing::Test,
 
     renderer_proxy_ = renderer_->CreateSharedAudioRendererProxy(stream_);
   }
-  MOCK_METHOD1(CreateAudioCapturerSource,
-               scoped_refptr<media::AudioCapturerSource>(int));
+  MOCK_METHOD2(CreateAudioCapturerSource,
+               scoped_refptr<media::AudioCapturerSource>(
+                   int,
+                   const media::AudioSourceParameters&));
   MOCK_METHOD2(CreateFinalAudioRendererSink,
                scoped_refptr<media::AudioRendererSink>(
                    int,

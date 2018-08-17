@@ -218,6 +218,9 @@ void AudioInputDevice::OnStreamCreated(
   if (initially_muted)
     callback_->OnCaptureMuted(true);
 
+  if (auto* controls = ipc_->GetProcessorControls())
+    callback_->OnCaptureProcessorCreated(controls);
+
   if (output_device_id_for_aec_)
     ipc_->SetOutputDeviceForAec(*output_device_id_for_aec_);
 

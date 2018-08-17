@@ -176,8 +176,8 @@ void PepperPlatformAudioInput::InitializeOnIOThread(int session_id) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (ipc_startup_state_ != kStopped)
-    ipc_ = AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id_,
-                                                            session_id);
+    ipc_ = AudioInputIPCFactory::get()->CreateAudioInputIPC(
+        render_frame_id_, media::AudioSourceParameters(session_id));
   if (!ipc_)
     return;
 

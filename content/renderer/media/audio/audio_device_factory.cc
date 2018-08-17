@@ -158,19 +158,19 @@ AudioDeviceFactory::NewSwitchableAudioRendererSink(
 
 // static
 scoped_refptr<media::AudioCapturerSource>
-AudioDeviceFactory::NewAudioCapturerSource(int render_frame_id,
-                                           int session_id) {
+AudioDeviceFactory::NewAudioCapturerSource(
+    int render_frame_id,
+    const media::AudioSourceParameters& params) {
   if (factory_) {
     // We don't pass on |session_id|, as this branch is only used for tests.
     scoped_refptr<media::AudioCapturerSource> source =
-        factory_->CreateAudioCapturerSource(render_frame_id);
+        factory_->CreateAudioCapturerSource(render_frame_id, params);
     if (source)
       return source;
   }
 
   return base::MakeRefCounted<media::AudioInputDevice>(
-      AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id,
-                                                       session_id),
+      AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id, params),
       base::ThreadPriority::REALTIME_AUDIO);
 }
 
