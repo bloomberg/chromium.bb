@@ -321,5 +321,3 @@ crbug.com/859988 virtual/outofblink-cors-ns/http/tests/fetch/serviceworker-proxi
 
 # https://crbug.com/872952: Autoplay is still disabled if there is no gesture.
 crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
-
-crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout ]

@@ -2717,7 +2717,7 @@ crbug.com/870526 external/wpt/budget-api/idlharness.https.any.worker.html [ Skip
 
 crbug.com/873540 external/wpt/budget-api/idlharness.https.any.html [ Timeout Crash ]
 
-crbug.com/875249 [ Mac Win ] external/wpt/infrastructure/testdriver/bless.html [ Timeout ]
+crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Android ] virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-play.html [ Crash ]
