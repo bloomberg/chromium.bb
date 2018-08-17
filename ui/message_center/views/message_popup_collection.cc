@@ -170,6 +170,10 @@ void MessagePopupCollection::OnNotificationUpdated(
   Update();
 }
 
+void MessagePopupCollection::OnCenterVisibilityChanged(Visibility visibility) {
+  Update();
+}
+
 void MessagePopupCollection::AnimationEnded(const gfx::Animation* animation) {
   Update();
 }
@@ -412,6 +416,12 @@ bool MessagePopupCollection::AddPopup() {
 }
 
 void MessagePopupCollection::MarkRemovedPopup() {
+  if (MessageCenter::Get()->IsMessageCenterVisible()) {
+    for (auto& item : popup_items_)
+      item.is_animating = true;
+    return;
+  }
+
   std::set<std::string> existing_ids;
   for (Notification* notification :
        MessageCenter::Get()->GetPopupNotifications()) {
@@ -524,6 +534,9 @@ bool MessagePopupCollection::CollapseAllPopups() {
 }
 
 bool MessagePopupCollection::HasAddedPopup() const {
+  if (MessageCenter::Get()->IsMessageCenterVisible())
+    return false;
+
   std::set<std::string> existing_ids;
   for (const auto& item : popup_items_)
     existing_ids.insert(item.id);
@@ -542,6 +555,9 @@ bool MessagePopupCollection::HasRemovedPopup() const {
        MessageCenter::Get()->GetPopupNotifications()) {
     existing_ids.insert(notification->id());
   }
+
+  if (MessageCenter::Get()->IsMessageCenterVisible())
+    return !popup_items_.empty();
 
   for (const auto& item : popup_items_) {
     if (!existing_ids.count(item.id))
