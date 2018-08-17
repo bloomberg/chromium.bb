@@ -20,18 +20,26 @@ using content::WebContents;
 
 namespace android_webview {
 
-AwLoginDelegate::AwLoginDelegate(
+// static
+scoped_refptr<AwLoginDelegate> AwLoginDelegate::Create(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     bool first_auth_attempt,
-    LoginAuthRequiredCallback auth_required_callback)
-    : auth_info_(auth_info),
-      auth_required_callback_(std::move(auth_required_callback)) {
+    LoginAuthRequiredCallback auth_required_callback) {
+  scoped_refptr<AwLoginDelegate> instance(
+      new AwLoginDelegate(auth_info, std::move(auth_required_callback)));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&AwLoginDelegate::HandleHttpAuthRequestOnUIThread, this,
-                     first_auth_attempt, web_contents_getter));
+      base::BindOnce(&AwLoginDelegate::HandleHttpAuthRequestOnUIThread,
+                     instance, first_auth_attempt, web_contents_getter));
+  return instance;
 }
+
+AwLoginDelegate::AwLoginDelegate(
+    net::AuthChallengeInfo* auth_info,
+    LoginAuthRequiredCallback auth_required_callback)
+    : auth_info_(auth_info),
+      auth_required_callback_(std::move(auth_required_callback)) {}
 
 AwLoginDelegate::~AwLoginDelegate() {
   // The Auth handler holds a ref count back on |this| object, so it should be
