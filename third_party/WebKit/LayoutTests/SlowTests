@@ -560,6 +560,7 @@ crbug.com/874695 external/wpt/content-security-policy/securitypolicyviolation/in
 crbug.com/874695 external/wpt/content-security-policy/securitypolicyviolation/targeting.html [ Slow ]
 crbug.com/874695 external/wpt/content-security-policy/style-src/style-src-multiple-policies-multiple-hashing-algorithms.html [ Slow ]
 crbug.com/874695 external/wpt/cookies/samesite/form-post-blank.html [ Slow ]
+crbug.com/875195 external/wpt/cookies/http-state/domain-tests.html [ Slow ]
 crbug.com/874695 external/wpt/cors/304.htm [ Slow ]
 crbug.com/874695 external/wpt/cors/origin.htm [ Slow ]
 crbug.com/874695 external/wpt/cors/preflight-cache.htm [ Slow ]
