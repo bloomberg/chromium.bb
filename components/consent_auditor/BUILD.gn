@@ -8,7 +8,6 @@ if (is_android) {
 
 static_library("consent_auditor") {
   sources = [
-    "consent_auditor.cc",
     "consent_auditor.h",
     "consent_auditor_impl.cc",
     "consent_auditor_impl.h",

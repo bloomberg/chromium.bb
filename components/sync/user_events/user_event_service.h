@@ -19,8 +19,8 @@ class ModelTypeSyncBridge;
 
 class UserEventService : public KeyedService {
  public:
-  UserEventService();
-  ~UserEventService() override;
+  UserEventService() = default;
+  ~UserEventService() override = default;
 
   // Records a given event to be reported. Relevant settings will be checked to
   // verify user events should be emitted and this will no-op if the the

@@ -45,8 +45,8 @@ enum class ConsentStatus { NOT_GIVEN, GIVEN };
 // fully launched.
 class ConsentAuditor : public KeyedService {
  public:
-  ConsentAuditor();
-  ~ConsentAuditor() override;
+  ConsentAuditor() = default;
+  ~ConsentAuditor() override = default;
 
   // Records the ARC Play |consent| for the signed-in GAIA account with the ID
   // |account_id| (as defined in AccountInfo).
