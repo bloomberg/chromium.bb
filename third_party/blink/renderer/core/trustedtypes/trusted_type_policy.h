@@ -15,6 +15,7 @@ namespace blink {
 
 class ExceptionState;
 class TrustedHTML;
+class TrustedScript;
 class TrustedScriptURL;
 class TrustedURL;
 
@@ -26,6 +27,7 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
                                    const TrustedTypePolicyOptions&);
 
   TrustedHTML* createHTML(ScriptState*, const String&, ExceptionState&);
+  TrustedScript* createScript(ScriptState*, const String&, ExceptionState&);
   TrustedScriptURL* createScriptURL(ScriptState*,
                                     const String&,
                                     ExceptionState&);

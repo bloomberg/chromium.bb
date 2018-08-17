@@ -6,9 +6,11 @@
 
 dictionary TrustedTypePolicyOptions {
    CreateHTMLCallback createHTML;
+   CreateScriptCallback createScript;
    CreateURLCallback createScriptURL;
    CreateURLCallback createURL;
 };
 
 callback CreateHTMLCallback = DOMString (DOMString input);
+callback CreateScriptCallback = DOMString (DOMString input);
 callback CreateURLCallback = USVString (DOMString input);

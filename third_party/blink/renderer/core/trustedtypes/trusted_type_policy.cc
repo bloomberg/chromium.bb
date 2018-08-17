@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -37,6 +38,22 @@ TrustedHTML* TrustedTypePolicy::createHTML(ScriptState* script_state,
     return nullptr;
   }
   return TrustedHTML::Create(html);
+}
+
+TrustedScript* TrustedTypePolicy::createScript(
+    ScriptState* script_state,
+    const String& input,
+    ExceptionState& exception_state) {
+  if (!policy_options_.createScript())
+    return nullptr;
+  v8::TryCatch try_catch(script_state->GetIsolate());
+  String script;
+  if (!policy_options_.createScript()->Invoke(nullptr, input).To(&script)) {
+    DCHECK(try_catch.HasCaught());
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return nullptr;
+  }
+  return TrustedScript::Create(script);
 }
 
 TrustedScriptURL* TrustedTypePolicy::createScriptURL(
