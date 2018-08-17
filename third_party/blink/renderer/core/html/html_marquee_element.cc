@@ -137,9 +137,9 @@ Node::InsertionNotificationRequest HTMLMarqueeElement::InsertedInto(
   return kInsertionDone;
 }
 
-void HTMLMarqueeElement::RemovedFrom(ContainerNode* insertion_point) {
+void HTMLMarqueeElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
-  if (insertion_point->isConnected()) {
+  if (insertion_point.isConnected()) {
     stop();
   }
 }

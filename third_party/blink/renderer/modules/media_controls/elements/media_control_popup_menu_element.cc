@@ -161,7 +161,7 @@ void MediaControlPopupMenuElement::DefaultEventHandler(Event& event) {
   MediaControlDivElement::DefaultEventHandler(event);
 }
 
-void MediaControlPopupMenuElement::RemovedFrom(ContainerNode* container) {
+void MediaControlPopupMenuElement::RemovedFrom(ContainerNode& container) {
   if (IsWanted())
     SetIsWanted(false);
   event_listener_ = nullptr;

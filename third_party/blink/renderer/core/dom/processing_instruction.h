@@ -79,7 +79,7 @@ class ProcessingInstruction final : public CharacterData,
   Node* Clone(Document&, CloneChildrenFlag) const override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   bool CheckStyleSheet(String& href, String& charset);
   void Process(const String& href, const String& charset);

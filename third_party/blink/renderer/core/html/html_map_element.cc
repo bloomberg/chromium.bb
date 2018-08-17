@@ -112,8 +112,8 @@ Node::InsertionNotificationRequest HTMLMapElement::InsertedInto(
   return HTMLElement::InsertedInto(insertion_point);
 }
 
-void HTMLMapElement::RemovedFrom(ContainerNode* insertion_point) {
-  if (insertion_point->isConnected())
+void HTMLMapElement::RemovedFrom(ContainerNode& insertion_point) {
+  if (insertion_point.isConnected())
     GetTreeScope().RemoveImageMap(*this);
   HTMLElement::RemovedFrom(insertion_point);
 }

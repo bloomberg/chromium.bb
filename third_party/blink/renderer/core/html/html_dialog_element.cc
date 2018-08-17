@@ -180,7 +180,7 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   SetFocusForDialog(this);
 }
 
-void HTMLDialogElement::RemovedFrom(ContainerNode* insertion_point) {
+void HTMLDialogElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
   SetNotCentered();
   InertSubtreesChanged(GetDocument());

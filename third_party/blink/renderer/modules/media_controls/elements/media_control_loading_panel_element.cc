@@ -100,7 +100,7 @@ void MediaControlLoadingPanelElement::PopulateShadowDOM() {
 }
 
 void MediaControlLoadingPanelElement::RemovedFrom(
-    ContainerNode* insertion_point) {
+    ContainerNode& insertion_point) {
   if (event_listener_) {
     event_listener_->Detach();
     event_listener_.Clear();

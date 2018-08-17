@@ -94,7 +94,7 @@ class SVGPatternElement final : public SVGElement,
 
   void SvgAttributeChanged(const QualifiedName&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) final;
-  void RemovedFrom(ContainerNode*) final;
+  void RemovedFrom(ContainerNode&) final;
   void ChildrenChanged(const ChildrenChange&) override;
 
   void BuildPendingResource() override;

@@ -47,9 +47,9 @@ HTMLFormControlElementWithState::InsertedInto(ContainerNode& insertion_point) {
 }
 
 void HTMLFormControlElementWithState::RemovedFrom(
-    ContainerNode* insertion_point) {
-  if (insertion_point->isConnected() && !ContainingShadowRoot() &&
-      !insertion_point->ContainingShadowRoot())
+    ContainerNode& insertion_point) {
+  if (insertion_point.isConnected() && !ContainingShadowRoot() &&
+      !insertion_point.ContainingShadowRoot())
     GetDocument().GetFormController().UnregisterStatefulFormControl(*this);
   HTMLFormControlElement::RemovedFrom(insertion_point);
 }

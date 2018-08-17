@@ -44,9 +44,9 @@ Node::InsertionNotificationRequest SVGTitleElement::InsertedInto(
   return kInsertionDone;
 }
 
-void SVGTitleElement::RemovedFrom(ContainerNode* root_parent) {
+void SVGTitleElement::RemovedFrom(ContainerNode& root_parent) {
   SVGElement::RemovedFrom(root_parent);
-  if (root_parent->isConnected() && GetDocument().IsSVGDocument())
+  if (root_parent.isConnected() && GetDocument().IsSVGDocument())
     GetDocument().RemoveTitle(this);
 }
 

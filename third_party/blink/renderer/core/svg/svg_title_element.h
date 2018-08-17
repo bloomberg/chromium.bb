@@ -37,7 +37,7 @@ class SVGTitleElement final : public SVGElement {
   explicit SVGTitleElement(Document&);
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override {

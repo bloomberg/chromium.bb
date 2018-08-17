@@ -143,9 +143,9 @@ Node::InsertionNotificationRequest SVGTextPathElement::InsertedInto(
   return kInsertionDone;
 }
 
-void SVGTextPathElement::RemovedFrom(ContainerNode* root_parent) {
+void SVGTextPathElement::RemovedFrom(ContainerNode& root_parent) {
   SVGTextContentElement::RemovedFrom(root_parent);
-  if (root_parent->isConnected())
+  if (root_parent.isConnected())
     ClearResourceReferences();
 }
 

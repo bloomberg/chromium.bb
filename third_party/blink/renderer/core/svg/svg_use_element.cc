@@ -125,9 +125,9 @@ Node::InsertionNotificationRequest SVGUseElement::InsertedInto(
   return kInsertionDone;
 }
 
-void SVGUseElement::RemovedFrom(ContainerNode* root_parent) {
+void SVGUseElement::RemovedFrom(ContainerNode& root_parent) {
   SVGGraphicsElement::RemovedFrom(root_parent);
-  if (root_parent->isConnected()) {
+  if (root_parent.isConnected()) {
     ClearResourceReference();
     CancelShadowTreeRecreation();
   }

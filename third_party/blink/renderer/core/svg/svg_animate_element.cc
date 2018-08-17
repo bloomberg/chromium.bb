@@ -145,8 +145,8 @@ Node::InsertionNotificationRequest SVGAnimateElement::InsertedInto(
   return kInsertionDone;
 }
 
-void SVGAnimateElement::RemovedFrom(ContainerNode* root_parent) {
-  if (root_parent->isConnected())
+void SVGAnimateElement::RemovedFrom(ContainerNode& root_parent) {
+  if (root_parent.isConnected())
     SetAttributeName(AnyQName());
   SVGAnimationElement::RemovedFrom(root_parent);
 }

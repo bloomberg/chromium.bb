@@ -130,9 +130,9 @@ Node::InsertionNotificationRequest SVGFEImageElement::InsertedInto(
   return kInsertionDone;
 }
 
-void SVGFEImageElement::RemovedFrom(ContainerNode* root_parent) {
+void SVGFEImageElement::RemovedFrom(ContainerNode& root_parent) {
   SVGFilterPrimitiveStandardAttributes::RemovedFrom(root_parent);
-  if (root_parent->isConnected())
+  if (root_parent.isConnected())
     ClearResourceReferences();
 }
 

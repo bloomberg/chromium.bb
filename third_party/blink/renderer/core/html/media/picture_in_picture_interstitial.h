@@ -37,7 +37,7 @@ class PictureInPictureInterstitial final : public HTMLDivElement {
 
   // Node override.
   Node::InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   // Element:
   void Trace(blink::Visitor*) override;

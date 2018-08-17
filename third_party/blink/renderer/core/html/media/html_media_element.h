@@ -345,7 +345,7 @@ class CORE_EXPORT HTMLMediaElement
                                        CloneChildrenFlag) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   // Return true if media is cross origin from the current document
   // and has not passed a cors check, meaning that we should return

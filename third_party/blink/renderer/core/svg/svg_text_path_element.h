@@ -82,7 +82,7 @@ class SVGTextPathElement final : public SVGTextContentElement,
 
   void BuildPendingResource() override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   void SvgAttributeChanged(const QualifiedName&) override;
 

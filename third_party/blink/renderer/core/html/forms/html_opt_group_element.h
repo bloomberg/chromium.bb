@@ -58,7 +58,7 @@ class CORE_EXPORT HTMLOptGroupElement final : public HTMLElement {
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
   bool MatchesEnabledPseudoClass() const override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   void UpdateGroupLabel();
 };

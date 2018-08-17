@@ -82,7 +82,7 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
       MutableCSSPropertyValueSet*) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) final;
-  void RemovedFrom(ContainerNode*) final;
+  void RemovedFrom(ContainerNode&) final;
   void ChildrenChanged(const ChildrenChange&) final;
 
   void BuildPendingResource() override;

@@ -92,7 +92,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
       MutableCSSPropertyValueSet*) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   void DidMoveToNewDocument(Document& old_document) override;
 

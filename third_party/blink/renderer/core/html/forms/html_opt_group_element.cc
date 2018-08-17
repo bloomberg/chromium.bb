@@ -97,8 +97,8 @@ Node::InsertionNotificationRequest HTMLOptGroupElement::InsertedInto(
   return kInsertionDone;
 }
 
-void HTMLOptGroupElement::RemovedFrom(ContainerNode* insertion_point) {
-  if (auto* select = ToHTMLSelectElementOrNull(*insertion_point)) {
+void HTMLOptGroupElement::RemovedFrom(ContainerNode& insertion_point) {
+  if (auto* select = ToHTMLSelectElementOrNull(insertion_point)) {
     if (!parentNode())
       select->OptGroupInsertedOrRemoved(*this);
   }

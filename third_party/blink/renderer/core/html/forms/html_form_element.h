@@ -116,7 +116,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   explicit HTMLFormElement(Document&);
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
   void FinishParsingChildren() override;
 
   void HandleLocalEvents(Event&) override;

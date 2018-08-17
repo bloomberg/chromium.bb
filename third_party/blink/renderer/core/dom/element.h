@@ -907,7 +907,7 @@ class CORE_EXPORT Element : public ContainerNode {
                                                const CSSValue&);
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 
   virtual void WillRecalcStyle(StyleRecalcChange);

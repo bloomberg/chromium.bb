@@ -252,16 +252,16 @@ Node::InsertionNotificationRequest ProcessingInstruction::InsertedInto(
   return kInsertionDone;
 }
 
-void ProcessingInstruction::RemovedFrom(ContainerNode* insertion_point) {
+void ProcessingInstruction::RemovedFrom(ContainerNode& insertion_point) {
   CharacterData::RemovedFrom(insertion_point);
-  if (!insertion_point->isConnected())
+  if (!insertion_point.isConnected())
     return;
 
   // No need to remove XSLStyleSheet from StyleEngine.
   if (!DocumentXSLT::ProcessingInstructionRemovedFromDocument(GetDocument(),
                                                               this)) {
     GetDocument().GetStyleEngine().RemoveStyleSheetCandidateNode(
-        *this, *insertion_point);
+        *this, insertion_point);
   }
 
   if (sheet_) {

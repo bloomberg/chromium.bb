@@ -70,7 +70,7 @@ class MODULES_EXPORT MediaControlLoadingPanelElement final
   void PopulateShadowDOM();
 
   // Cleans up the event listener when this element is removed from the DOM.
-  void RemovedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode&) override;
 
   // This counts how many animation iterations the background elements have
   // played.

@@ -721,7 +721,7 @@ class CORE_EXPORT Node : public EventTarget {
   // DOMNodeRemovedFromDocument DOM event, but does not require the overhead of
   // event dispatching, and is called _after_ the node is removed from the tree.
   //
-  virtual void RemovedFrom(ContainerNode* insertion_point);
+  virtual void RemovedFrom(ContainerNode& insertion_point);
 
   // FIXME(dominicc): This method is not debug-only--it is used by
   // Tracing--rename it to something indicative.

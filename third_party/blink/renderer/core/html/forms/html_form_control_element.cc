@@ -313,8 +313,8 @@ Node::InsertionNotificationRequest HTMLFormControlElement::InsertedInto(
   return kInsertionDone;
 }
 
-void HTMLFormControlElement::RemovedFrom(ContainerNode* insertion_point) {
-  FieldSetAncestorsSetNeedsValidityCheck(insertion_point);
+void HTMLFormControlElement::RemovedFrom(ContainerNode& insertion_point) {
+  FieldSetAncestorsSetNeedsValidityCheck(&insertion_point);
   HideVisibleValidationMessage();
   has_validation_message_ = false;
   ancestor_disabled_state_ = kAncestorDisabledStateUnknown;

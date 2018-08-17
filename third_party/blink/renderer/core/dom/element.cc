@@ -2053,8 +2053,8 @@ Node::InsertionNotificationRequest Element::InsertedInto(
   return kInsertionDone;
 }
 
-void Element::RemovedFrom(ContainerNode* insertion_point) {
-  bool was_in_document = insertion_point->isConnected();
+void Element::RemovedFrom(ContainerNode& insertion_point) {
+  bool was_in_document = insertion_point.isConnected();
   if (HasRareData()) {
     // If we detached the layout tree with LazyReattachIfAttached, we might not
     // have cleared the pseudo elements if we remove the element before calling
@@ -2066,10 +2066,10 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
 
   if (Fullscreen::IsFullscreenElement(*this)) {
     SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
-    if (insertion_point->IsElementNode()) {
-      ToElement(insertion_point)->SetContainsFullScreenElement(false);
+    if (insertion_point.IsElementNode()) {
+      ToElement(insertion_point).SetContainsFullScreenElement(false);
       ToElement(insertion_point)
-          ->SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(
+          .SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(
               false);
     }
   }
@@ -2079,10 +2079,10 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
 
   SetSavedLayerScrollOffset(ScrollOffset());
 
-  if (insertion_point->IsInTreeScope() && GetTreeScope() == GetDocument()) {
+  if (insertion_point.IsInTreeScope() && GetTreeScope() == GetDocument()) {
     const AtomicString& id_value = GetIdAttribute();
     if (!id_value.IsNull())
-      UpdateId(insertion_point->GetTreeScope(), id_value, g_null_atom);
+      UpdateId(insertion_point.GetTreeScope(), id_value, g_null_atom);
 
     const AtomicString& name_value = GetNameAttribute();
     if (!name_value.IsNull())
@@ -2097,7 +2097,7 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
     if (GetCustomElementState() == CustomElementState::kCustom)
       CustomElement::EnqueueDisconnectedCallback(this);
     else if (IsUpgradedV0CustomElement())
-      V0CustomElement::DidDetach(this, insertion_point->GetDocument());
+      V0CustomElement::DidDetach(this, insertion_point.GetDocument());
 
     if (NeedsStyleInvalidation()) {
       GetDocument()
@@ -4751,18 +4751,18 @@ Node::InsertionNotificationRequest Node::InsertedInto(
   return kInsertionDone;
 }
 
-void Node::RemovedFrom(ContainerNode* insertion_point) {
-  DCHECK(insertion_point->isConnected() || IsContainerNode() ||
+void Node::RemovedFrom(ContainerNode& insertion_point) {
+  DCHECK(insertion_point.isConnected() || IsContainerNode() ||
          IsInShadowTree());
-  if (insertion_point->isConnected()) {
+  if (insertion_point.isConnected()) {
     ClearFlag(kIsConnectedFlag);
-    insertion_point->GetDocument().DecrementNodeCount();
+    insertion_point.GetDocument().DecrementNodeCount();
   }
   if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
     ClearFlag(kIsInShadowTreeFlag);
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
     cache->Remove(this);
-    cache->ChildrenChanged(insertion_point);
+    cache->ChildrenChanged(&insertion_point);
   }
 }
 

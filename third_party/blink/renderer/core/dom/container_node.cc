@@ -945,7 +945,7 @@ void ContainerNode::NotifyNodeRemoved(Node& root) {
     // since the virtual call to removedFrom is not needed.
     if (!node.IsContainerNode() && !node.IsInTreeScope())
       continue;
-    node.RemovedFrom(this);
+    node.RemovedFrom(*this);
     if (ShadowRoot* shadow_root = node.GetShadowRoot())
       NotifyNodeRemoved(*shadow_root);
   }

@@ -795,7 +795,7 @@ MediaControlsImpl::ControlsState MediaControlsImpl::State() const {
   return ControlsState::kStopped;
 }
 
-void MediaControlsImpl::RemovedFrom(ContainerNode*) {
+void MediaControlsImpl::RemovedFrom(ContainerNode&) {
   DCHECK(!MediaElement().isConnected());
 
   // TODO(mlamouri): we hide show the controls instead of having

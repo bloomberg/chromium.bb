@@ -129,7 +129,7 @@ Node::InsertionNotificationRequest SVGPathElement::InsertedInto(
   return kInsertionDone;
 }
 
-void SVGPathElement::RemovedFrom(ContainerNode* root_parent) {
+void SVGPathElement::RemovedFrom(ContainerNode& root_parent) {
   SVGGeometryElement::RemovedFrom(root_parent);
   InvalidateMPathDependencies();
 }
