@@ -568,10 +568,12 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, ProcessLimit) {
   // Sanity-check IsSuitableHost values for the current processes.
   BrowserContext* browser_context = web_contents()->GetBrowserContext();
   auto is_suitable_host = [browser_context](RenderProcessHost* process,
-                                            GURL url) {
-    return RenderProcessHostImpl::IsSuitableHost(
-        process, browser_context,
-        SiteInstance::GetSiteForURL(browser_context, url));
+                                            const GURL& url) {
+    GURL site_url(SiteInstance::GetSiteForURL(browser_context, url));
+    GURL lock_url(
+        SiteInstanceImpl::DetermineProcessLockURL(browser_context, url));
+    return RenderProcessHostImpl::IsSuitableHost(process, browser_context,
+                                                 site_url, lock_url);
   };
   EXPECT_TRUE(is_suitable_host(foo_process, foo_url));
   EXPECT_FALSE(is_suitable_host(foo_process, isolated_foo_url));

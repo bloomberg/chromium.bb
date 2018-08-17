@@ -258,51 +258,51 @@ TEST_F(SiteInstanceTest, SetSite) {
 TEST_F(SiteInstanceTest, GetSiteForURL) {
   // Pages are irrelevant.
   GURL test_url = GURL("http://www.google.com/index.html");
-  GURL site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  GURL site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("http://google.com"), site_url);
   EXPECT_EQ("http", site_url.scheme());
   EXPECT_EQ("google.com", site_url.host());
 
   // Ports are irrelevant.
   test_url = GURL("https://www.google.com:8080");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("https://google.com"), site_url);
 
   // Punycode is canonicalized.
   test_url = GURL("http://☃snowperson☃.net:333/");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("http://xn--snowperson-di0gka.net"), site_url);
 
   // Username and password are stripped out.
   test_url = GURL("ftp://username:password@ftp.chromium.org/files/README");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("ftp://chromium.org"), site_url);
 
   // Literal IP addresses of any flavor are okay.
   test_url = GURL("http://127.0.0.1/a.html");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("http://127.0.0.1"), site_url);
   EXPECT_EQ("127.0.0.1", site_url.host());
 
   test_url = GURL("http://2130706433/a.html");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("http://127.0.0.1"), site_url);
   EXPECT_EQ("127.0.0.1", site_url.host());
 
   test_url = GURL("http://[::1]:2/page.html");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("http://[::1]"), site_url);
   EXPECT_EQ("[::1]", site_url.host());
 
   // Hostnames without TLDs are okay.
   test_url = GURL("http://foo/a.html");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("http://foo"), site_url);
   EXPECT_EQ("foo", site_url.host());
 
   // File URLs should include the scheme.
   test_url = GURL("file:///C:/Downloads/");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("file:"), site_url);
   EXPECT_EQ("file", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
@@ -311,7 +311,7 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   // maps *all* file://... URLs into "file://" origin) such file URLs still need
   // to map into "file:" site URL.  See also https://crbug.com/776160.
   test_url = GURL("file://server/path");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("file:"), site_url);
   EXPECT_EQ("file", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
@@ -319,7 +319,7 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   // Data URLs should include the whole URL, except for the hash, when Site
   // Isolation is enabled.  Otherwise they just include the scheme.
   test_url = GURL("data:text/html,foo");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   if (AreAllSitesIsolatedForTesting())
     EXPECT_EQ(test_url, site_url);
   else
@@ -327,7 +327,7 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   EXPECT_EQ("data", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
   test_url = GURL("data:text/html,foo#bar");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_FALSE(site_url.has_ref());
   if (AreAllSitesIsolatedForTesting()) {
     EXPECT_NE(test_url, site_url);
@@ -338,7 +338,7 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
 
   // Javascript URLs should include the scheme.
   test_url = GURL("javascript:foo();");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("javascript:"), site_url);
   EXPECT_EQ("javascript", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
@@ -347,12 +347,12 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   test_url = GURL(
       "blob:gopher://www.ftp.chromium.org/"
       "4d4ff040-6d61-4446-86d3-13ca07ec9ab9");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("gopher://chromium.org"), site_url);
 
   // Blob URLs with file origin also extract the site from the origin.
   test_url = GURL("blob:file:///1029e5a4-2983-4b90-a585-ed217563acfeb");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("file:"), site_url);
   EXPECT_EQ("file", site_url.scheme());
   EXPECT_FALSE(site_url.has_host());
@@ -361,13 +361,13 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   // when Site Isolation is enabled, except for the hash.  Otherwise they just
   // include the scheme.
   test_url = GURL("blob:null/1029e5a4-2983-4b90-a585-ed217563acfeb");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   if (AreAllSitesIsolatedForTesting())
     EXPECT_EQ(test_url, site_url);
   else
     EXPECT_EQ(GURL("blob:"), site_url);
   test_url = GURL("blob:null/1029e5a4-2983-4b90-a585-ed217563acfeb#foo");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_FALSE(site_url.has_ref());
   if (AreAllSitesIsolatedForTesting()) {
     EXPECT_NE(test_url, site_url);
@@ -380,12 +380,12 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   test_url = GURL(
       "blob:http://www.example.appspot.com:44/"
       "4d4ff040-6d61-4446-86d3-13ca07ec9ab9");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("http://example.appspot.com"), site_url);
 
   // The site of filesystem URLs is determined by the inner URL.
   test_url = GURL("filesystem:http://www.google.com/foo/bar.html?foo#bar");
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(GURL("http://google.com"), site_url);
 
   // Guest URLs are special and need to have the path in the site as well,
@@ -393,10 +393,66 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   std::string guest_url(kGuestScheme);
   guest_url.append("://abc123/path");
   test_url = GURL(guest_url);
-  site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url);
+  site_url = SiteInstance::GetSiteForURL(nullptr, test_url);
   EXPECT_EQ(test_url, site_url);
 
   DrainMessageLoop();
+}
+
+// Test that process lock URLs are computed without using effective URLs.
+TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
+  GURL test_url("https://some.app.foo.com/");
+  GURL nonapp_site_url("https://foo.com/");
+  GURL app_url("https://app.com/");
+  EffectiveURLContentBrowserClient modified_client(test_url, app_url);
+  ContentBrowserClient* regular_client =
+      SetBrowserClientForTesting(&modified_client);
+  std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
+
+  // Sanity check that GetSiteForURL's |use_effective_urls| option works
+  // properly.
+  {
+    GURL site_url = SiteInstanceImpl::GetSiteForURL(
+        nullptr, test_url, false /* use_effective_urls */);
+    EXPECT_EQ(nonapp_site_url, site_url);
+
+    site_url = SiteInstanceImpl::GetSiteForURL(nullptr, test_url,
+                                               true /* use_effective_urls */);
+    EXPECT_EQ(app_url, site_url);
+  }
+
+  // New SiteInstance in a new BrowsingInstance with a predetermined URL.
+  {
+    scoped_refptr<SiteInstanceImpl> site_instance =
+        SiteInstanceImpl::CreateForURL(browser_context.get(), test_url);
+    EXPECT_EQ(app_url, site_instance->GetSiteURL());
+    EXPECT_EQ(nonapp_site_url, site_instance->lock_url());
+  }
+
+  // New related SiteInstance from an existing SiteInstance with a
+  // predetermined URL.
+  {
+    scoped_refptr<SiteInstanceImpl> bar_site_instance =
+        SiteInstanceImpl::CreateForURL(browser_context.get(),
+                                       GURL("https://bar.com/"));
+    scoped_refptr<SiteInstance> site_instance =
+        bar_site_instance->GetRelatedSiteInstance(test_url);
+    EXPECT_EQ(app_url, site_instance->GetSiteURL());
+    EXPECT_EQ(nonapp_site_url,
+              static_cast<SiteInstanceImpl*>(site_instance.get())->lock_url());
+  }
+
+  // New SiteInstance with a lazily assigned site URL.
+  {
+    scoped_refptr<SiteInstanceImpl> site_instance =
+        SiteInstanceImpl::Create(browser_context.get());
+    EXPECT_FALSE(site_instance->HasSite());
+    site_instance->SetSite(test_url);
+    EXPECT_EQ(app_url, site_instance->GetSiteURL());
+    EXPECT_EQ(nonapp_site_url, site_instance->lock_url());
+  }
+
+  SetBrowserClientForTesting(regular_client);
 }
 
 // Test of distinguishing URLs from different sites.  Most of this logic is
@@ -837,8 +893,10 @@ TEST_F(SiteInstanceTest, NoProcessPerSiteForEmptySite) {
   EXPECT_TRUE(instance->GetSiteURL().is_empty());
   host.reset(instance->GetProcess());
 
-  EXPECT_FALSE(RenderProcessHostImpl::GetProcessHostForSite(
+  EXPECT_FALSE(RenderProcessHostImpl::GetSoleProcessHostForURL(
       browser_context.get(), GURL()));
+  EXPECT_FALSE(RenderProcessHostImpl::GetSoleProcessHostForSite(
+      browser_context.get(), GURL(), GURL()));
 
   DrainMessageLoop();
 }
