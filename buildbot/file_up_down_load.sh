@@ -39,7 +39,7 @@ SanityCheck() {
 # Config
 ######################################################################
 
-readonly GS_UTIL=${GS_UTIL:-buildbot/gsutil.sh}
+readonly GSUTIL=${GSUTIL:-gsutil}
 
 readonly DIR_ARCHIVE=nativeclient-archive2
 readonly DIR_TRYBOT=nativeclient-trybot
@@ -62,7 +62,7 @@ Upload() {
   echo "uploading: $2 (${size_kb}kB)"
   local path=${2:5}
   echo "@@@STEP_LINK@download (${size_kb}kB)@${URL_PREFIX_UI}/${path}@@@"
-  ${GS_UTIL} cp -a public-read $1 $2
+  ${GSUTIL} cp -a public-read $1 $2
 }
 
 CheckPath() {
@@ -87,7 +87,7 @@ DownloadArchive() {
   local tarball=$2
 
   echo "@@@STEP_LINK@download@${URL_PREFIX_UI}/${path}@@@"
-  ${GS_UTIL} cp ${GS_PREFIX_ARCHIVE}/${path} ${tarball}
+  ${GSUTIL} cp ${GS_PREFIX_ARCHIVE}/${path} ${tarball}
 }
 
 UploadTrybot() {
@@ -103,7 +103,7 @@ DownloadTrybot() {
   local tarball=$2
 
   echo "@@@STEP_LINK@download@${URL_PREFIX_UI}/${path}@@@"
-  ${GS_UTIL} cp ${GS_PREFIX_TRYBOT}/${path} ${tarball}
+  ${GSUTIL} cp ${GS_PREFIX_TRYBOT}/${path} ${tarball}
 }
 
 ComputeSha1() {
@@ -138,9 +138,9 @@ DownloadArmTrustedToolchain() {
 
 ShowRecentArmTrustedToolchains() {
    local url=${GS_PREFIX_ARCHIVE}/toolchain/*/naclsdk_linux_arm-trusted.tgz
-   local recent=$(${GS_UTIL} ls ${url} | tail -5)
+   local recent=$(${GSUTIL} ls ${url} | tail -5)
    for url in ${recent} ; do
-     if ${GS_UTIL} ls -L "${url}" ; then
+     if ${GSUTIL} ls -L "${url}" ; then
        echo "====="
      fi
    done
@@ -180,9 +180,9 @@ ShowRecentPnaclToolchains() {
   local label=$1
   local url="${GS_PREFIX_ARCHIVE}/toolchain/*/naclsdk_${label}.tgz"
 
-  local recent=$(${GS_UTIL} ls ${url} | tail -5)
+  local recent=$(${GSUTIL} ls ${url} | tail -5)
   for url in ${recent} ; do
-    if ${GS_UTIL} ls -L "${url}" ; then
+    if ${GSUTIL} ls -L "${url}" ; then
       echo "====="
     fi
   done

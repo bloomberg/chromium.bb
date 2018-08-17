@@ -37,7 +37,7 @@ cd ../../..
 
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   echo @@@BUILD_STEP archive_build@@@
-  gsutil=buildbot/gsutil.sh
+  gsutil=${GSUTIL:-gsutil}
   GS_BASE=gs://nativeclient-archive2/toolchain
   ${gsutil} cp -a public-read \
       arm-trusted.tgz \
