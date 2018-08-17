@@ -224,10 +224,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=715001)
     self.Fail('conformance/textures/misc/texture-size.html',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
-    self.Fail('conformance2/rendering/attrib-type-match.html',
-        ['win', 'nvidia', 'opengl'], bug=782254)
-    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
-        ['win', 'nvidia', 'opengl'], bug=795030)
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['win', 'nvidia', 'opengl', 'passthrough'], bug=830046)
     self.Flaky('conformance2/transform_feedback/switching-objects.html',
@@ -372,6 +368,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl'], bug=602688)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['passthrough', 'opengl'], bug=795030)
+    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
+        ['passthrough', 'opengl'], bug=794341)
+    self.Flaky('conformance2/rendering/attrib-type-match.html',
+        ['passthrough', 'opengl'], bug=814905)
 
     # Passthrough command decoder / OpenGL / Windows
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
@@ -416,12 +416,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=766918)
-    self.Flaky('conformance2/rendering/attrib-type-match.html',
-        ['linux', 'passthrough', 'opengl', 'nvidia'], bug=814905)
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=793055)
-    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
-        ['linux', 'passthrough', 'opengl', 'nvidia'], bug=794341)
 
     # Passthrough command decoder / Linux / OpenGL / Intel
     self.Fail('conformance2/renderbuffers/' +
