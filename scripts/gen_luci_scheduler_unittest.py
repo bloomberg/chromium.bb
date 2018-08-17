@@ -40,11 +40,11 @@ job {
     bucket: "luci.chromeos.general"
     builder: "Prod"
     tags: "cbb_branch:master"
-    tags: "cbb_display_label:MockLabel"
     tags: "cbb_config:amd64-generic-paladin"
+    tags: "cbb_display_label:MockLabel"
     properties: "cbb_branch:master"
-    properties: "cbb_display_label:MockLabel"
     properties: "cbb_config:amd64-generic-paladin"
+    properties: "cbb_display_label:MockLabel"
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
@@ -123,11 +123,43 @@ job {
     bucket: "luci.chromeos.general"
     builder: "Prod"
     tags: "cbb_branch:mock_branch"
-    tags: "cbb_display_label:MockLabel"
     tags: "cbb_config:amd64-generic-paladin"
+    tags: "cbb_display_label:MockLabel"
     properties: "cbb_branch:mock_branch"
-    properties: "cbb_display_label:MockLabel"
     properties: "cbb_config:amd64-generic-paladin"
+    properties: "cbb_display_label:MockLabel"
+    properties: "cbb_extra_args:[\\"--buildbot\\"]"
+  }
+}
+'''
+
+    result = gen_luci_scheduler.genSchedulerJob(build_config)
+    self.assertEqual(result, expected)
+
+  def testGenSchedulerWorkspaceBranch(self):
+    """Test the job creation helper."""
+    build_config = config_lib_unittest.MockBuildConfig().apply(
+        workspace_branch='work_branch',
+        schedule='funky schedule',
+    )
+
+    expected = '''
+job {
+  id: "amd64-generic-paladin"
+  acl_sets: "default"
+  schedule: "funky schedule"
+  buildbucket: {
+    server: "cr-buildbucket.appspot.com"
+    bucket: "luci.chromeos.general"
+    builder: "Prod"
+    tags: "cbb_branch:master"
+    tags: "cbb_config:amd64-generic-paladin"
+    tags: "cbb_display_label:MockLabel"
+    tags: "cbb_workspace_branch:work_branch"
+    properties: "cbb_branch:master"
+    properties: "cbb_config:amd64-generic-paladin"
+    properties: "cbb_display_label:MockLabel"
+    properties: "cbb_workspace_branch:work_branch"
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
@@ -250,11 +282,11 @@ job {
     bucket: "luci.chromeos.general"
     builder: "ProdBuilder"
     tags: "cbb_branch:master"
-    tags: "cbb_display_label:MockLabel"
     tags: "cbb_config:build_prod"
+    tags: "cbb_display_label:MockLabel"
     properties: "cbb_branch:master"
-    properties: "cbb_display_label:MockLabel"
     properties: "cbb_config:build_prod"
+    properties: "cbb_display_label:MockLabel"
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
@@ -268,11 +300,11 @@ job {
     bucket: "luci.chromeos.general"
     builder: "TestBuilder"
     tags: "cbb_branch:master"
-    tags: "cbb_display_label:TestLabel"
     tags: "cbb_config:build_tester"
+    tags: "cbb_display_label:TestLabel"
     properties: "cbb_branch:master"
-    properties: "cbb_display_label:TestLabel"
     properties: "cbb_config:build_tester"
+    properties: "cbb_display_label:TestLabel"
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
@@ -286,11 +318,11 @@ job {
     bucket: "luci.chromeos.general"
     builder: "ProdBuilder"
     tags: "cbb_branch:master"
-    tags: "cbb_display_label:MockLabel"
     tags: "cbb_config:build_triggered_a"
+    tags: "cbb_display_label:MockLabel"
     properties: "cbb_branch:master"
-    properties: "cbb_display_label:MockLabel"
     properties: "cbb_config:build_triggered_a"
+    properties: "cbb_display_label:MockLabel"
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
@@ -304,11 +336,11 @@ job {
     bucket: "luci.chromeos.general"
     builder: "ProdBuilder"
     tags: "cbb_branch:master"
-    tags: "cbb_display_label:MockLabel"
     tags: "cbb_config:build_triggered_b"
+    tags: "cbb_display_label:MockLabel"
     properties: "cbb_branch:master"
-    properties: "cbb_display_label:MockLabel"
     properties: "cbb_config:build_triggered_b"
+    properties: "cbb_display_label:MockLabel"
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
@@ -322,11 +354,11 @@ job {
     bucket: "luci.chromeos.general"
     builder: "TestBuilder"
     tags: "cbb_branch:test-branch"
-    tags: "cbb_display_label:TestLabel"
     tags: "cbb_config:branch_tester"
+    tags: "cbb_display_label:TestLabel"
     properties: "cbb_branch:test-branch"
-    properties: "cbb_display_label:TestLabel"
     properties: "cbb_config:branch_tester"
+    properties: "cbb_display_label:TestLabel"
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }

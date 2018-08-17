@@ -63,6 +63,29 @@ def genSchedulerJob(build_config):
   Returns:
     Multiline string to include in the luci scheduler configuration.
   """
+  if 'schedule_branch' in build_config:
+    branch = build_config.schedule_branch
+    job_name = '%s-%s' % (branch, build_config.name)
+  else:
+    branch = 'master'
+    job_name = build_config.name
+
+  tags = {
+      'cbb_branch': branch,
+      'cbb_config': build_config.name,
+      'cbb_display_label': build_config.display_label,
+      'cbb_workspace_branch': build_config.workspace_branch,
+  }
+
+  # Filter out tags with no value set.
+  tags = {k: v for k, v in tags.iteritems() if v}
+
+
+  tag_lines = ['    tags: "%s:%s"' % (k, tags[k])
+               for k in sorted(tags.keys())]
+  prop_lines = ['    properties: "%s:%s"' % (k, tags[k])
+                for k in sorted(tags.keys())]
+
   # TODO: Move --buildbot arg into recipe, and remove from here.
   template = """
 job {
@@ -73,30 +96,19 @@ job {
     server: "cr-buildbucket.appspot.com"
     bucket: "luci.chromeos.general"
     builder: "%(builder)s"
-    tags: "cbb_branch:%(branch)s"
-    tags: "cbb_display_label:%(display_label)s"
-    tags: "cbb_config:%(name)s"
-    properties: "cbb_branch:%(branch)s"
-    properties: "cbb_display_label:%(display_label)s"
-    properties: "cbb_config:%(name)s"
+%(tag_lines)s
+%(prop_lines)s
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
 """
-  if 'schedule_branch' in build_config:
-    branch = build_config.schedule_branch
-    job_name = '%s-%s' % (branch, build_config.name)
-  else:
-    branch = 'master'
-    job_name = build_config.name
 
   return template % {
       'job_name': job_name,
-      'name': build_config.name,
       'builder': build_config.luci_builder,
-      'branch': branch,
-      'display_label': build_config.display_label,
       'schedule': build_config.schedule,
+      'tag_lines': '\n'.join(tag_lines),
+      'prop_lines': '\n'.join(prop_lines),
   }
 
 
