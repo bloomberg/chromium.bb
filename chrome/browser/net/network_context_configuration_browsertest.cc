@@ -404,9 +404,7 @@ class NetworkContextConfigurationBrowserTest
       ASSERT_TRUE(simple_loader_helper.response_body());
       EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
     } else {
-      // TestHostResolver returns net::ERR_NOT_IMPLEMENTED for non-local host
-      // URLs.
-      EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, simple_loader->NetError());
+      EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, simple_loader->NetError());
       ASSERT_FALSE(simple_loader_helper.response_body());
     }
   }
@@ -1213,16 +1211,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
 }
 
-#if defined(OS_MACOSX)
-// Disable the test on Mac OSX since it fails on the bot.
-// (https://crbug.com/847555)
-#define MAYBE_CookiesEnabled DISABLED_CookiesEnabled
-#else
-#define MAYBE_CookiesEnabled CookiesEnabled
-#endif
-
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
-                       MAYBE_CookiesEnabled) {
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookiesEnabled) {
   // Check that the cookie from the first stage of the test was / was not
   // preserved between browser restarts, as expected.
   bool has_cookies = !GetCookies(embedded_test_server()->base_url()).empty();
@@ -1681,7 +1670,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 }
 
 // |NetworkServiceTestHelper| doesn't work on browser_tests on OSX.
-// See https://crbug.com/757088
+// See https://crbug.com/843324
 #if defined(OS_MACOSX)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1689,23 +1678,17 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
   INSTANTIATE_TEST_CASE_P(                                                \
       OnDiskApp, TestFixture,                                             \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
-                                  NetworkContextType::kOnDiskApp}),       \
-                        TestCase({NetworkServiceState::kEnabled,          \
                                   NetworkContextType::kOnDiskApp})));     \
                                                                           \
   INSTANTIATE_TEST_CASE_P(                                                \
       InMemoryApp, TestFixture,                                           \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
-                                  NetworkContextType::kInMemoryApp}),     \
-                        TestCase({NetworkServiceState::kEnabled,          \
                                   NetworkContextType::kInMemoryApp})));   \
                                                                           \
   INSTANTIATE_TEST_CASE_P(                                                \
       OnDiskAppWithIncognitoProfile, TestFixture,                         \
       ::testing::Values(                                                  \
           TestCase({NetworkServiceState::kDisabled,                       \
-                    NetworkContextType::kOnDiskAppWithIncognitoProfile}), \
-          TestCase({NetworkServiceState::kEnabled,                        \
                     NetworkContextType::kOnDiskAppWithIncognitoProfile})));
 #else  // !BUILDFLAG(ENABLE_EXTENSIONS)
 #define INSTANTIATE_EXTENSION_TESTS(TestFixture)
@@ -1719,29 +1702,21 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
   INSTANTIATE_TEST_CASE_P(                                                 \
       SystemNetworkContext, TestFixture,                                   \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kSystem}),           \
-                        TestCase({NetworkServiceState::kEnabled,           \
                                   NetworkContextType::kSystem})));         \
                                                                            \
   INSTANTIATE_TEST_CASE_P(                                                 \
       SafeBrowsingNetworkContext, TestFixture,                             \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kSafeBrowsing}),     \
-                        TestCase({NetworkServiceState::kEnabled,           \
                                   NetworkContextType::kSystem})));         \
                                                                            \
   INSTANTIATE_TEST_CASE_P(                                                 \
       ProfileMainNetworkContext, TestFixture,                              \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kProfile}),          \
-                        TestCase({NetworkServiceState::kEnabled,           \
                                   NetworkContextType::kProfile})));        \
                                                                            \
   INSTANTIATE_TEST_CASE_P(                                                 \
       IncognitoProfileMainNetworkContext, TestFixture,                     \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kIncognitoProfile}), \
-                        TestCase({NetworkServiceState::kEnabled,           \
                                   NetworkContextType::kIncognitoProfile})))
 #else  // !defined(OS_MACOSX)
 // Instiates tests with a prefix indicating which NetworkContext is being
