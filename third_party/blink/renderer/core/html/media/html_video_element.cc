@@ -27,6 +27,7 @@
 
 #include <memory>
 #include "cc/paint/paint_canvas.h"
+#include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -629,6 +630,10 @@ WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
           .IsPictureInPictureElement(this)) {
     return WebMediaPlayer::DisplayType::kPictureInPicture;
   }
+
+  if (is_effectively_fullscreen_)
+    return WebMediaPlayer::DisplayType::kFullscreen;
+
   return HTMLMediaElement::DisplayType();
 }
 
@@ -670,6 +675,17 @@ HTMLVideoElement::GetPictureInPictureCustomControls() const {
 
 bool HTMLVideoElement::HasPictureInPictureCustomControls() const {
   return !pip_custom_controls_.empty();
+}
+
+void HTMLVideoElement::SetIsEffectivelyFullscreen(
+    blink::WebFullscreenVideoStatus status) {
+  is_effectively_fullscreen_ =
+      status != blink::WebFullscreenVideoStatus::kNotEffectivelyFullscreen;
+
+  if (GetWebMediaPlayer()) {
+    GetWebMediaPlayer()->SetIsEffectivelyFullscreen(status);
+    GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
+  }
 }
 
 void HTMLVideoElement::AddedEventListener(

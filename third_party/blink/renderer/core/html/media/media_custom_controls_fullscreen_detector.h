@@ -47,7 +47,7 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
                                              const IntRect& root_rect,
                                              const IntRect& intersection_rect);
 
-  // `m_videoElement` owns |this|.
+  // `video_element_` owns |this|.
   Member<HTMLVideoElement> video_element_;
   TaskRunnerTimer<MediaCustomControlsFullscreenDetector>
       check_viewport_intersection_timer_;
