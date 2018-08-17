@@ -3482,44 +3482,6 @@
             ]
         }
     ],
-    "RecurrentSSLInterstitial": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "RecurrentInterstitialWithUIEnabled_V2",
-                    "params": {
-                        "show_error_ui": "true"
-                    },
-                    "enable_features": [
-                        "RecurrentInterstitialFeature"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "RecurrentInterstitialWithUIEnabled_V2",
-                    "params": {
-                        "mode": "pref",
-                        "show_error_ui": "true"
-                    },
-                    "enable_features": [
-                        "RecurrentInterstitialFeature"
-                    ]
-                }
-            ]
-        }
-    ],
     "RemoveNavigationHistory": [
         {
             "platforms": [
