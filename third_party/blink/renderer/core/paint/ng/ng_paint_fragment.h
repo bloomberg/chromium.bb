@@ -224,7 +224,9 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
  private:
   void PopulateDescendants(
       const NGPhysicalOffset inline_offset_to_container_box,
-      HashMap<const LayoutObject*, NGPaintFragment*>* first_fragment_map,
+      HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);
+  void AssociateWithLayoutObject(
+      LayoutObject*,
       HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);
 
   // Helps for PositionForPoint() when |this| falls in different categories.
@@ -248,18 +250,6 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
 
   NGPaintFragment* next_fragment_ = nullptr;
   NGPhysicalOffset inline_offset_to_container_box_;
-
-  // Maps LayoutObject to NGPaintFragment for the root of an inline formatting
-  // context.
-  // TODO(kojii): This is to be stored in fields of LayoutObject where they are
-  // no longer used in NGPaint, specifically:
-  //   LayoutText::first_text_box_
-  //   LayoutInline::line_boxes_
-  //   LayotuBox::inline_box_wrapper_
-  // but doing so is likely to have some impacts on the performance.
-  // Alternatively we can keep in the root NGPaintFragment. Having this in all
-  // NGPaintFragment is tentative.
-  HashMap<const LayoutObject*, NGPaintFragment*> first_fragment_map_;
 
   //
   // Following fields are computed in the pre-paint phase.

@@ -818,9 +818,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // contains us. Enables the atomic inline LayoutObject to quickly determine
   // what line it is contained on and to easily iterate over structures on the
   // line.
-  InlineBox* InlineBoxWrapper() const { return inline_box_wrapper_; }
+  //
+  // InlineBoxWrapper() and FirstInlineFragment() are mutually exclusive,
+  // depends on IsInLayoutNGInlineFormattingContext().
+  InlineBox* InlineBoxWrapper() const;
   void SetInlineBoxWrapper(InlineBox*);
   void DeleteLineBoxWrapper();
+
+  NGPaintFragment* FirstInlineFragment() const final;
+  void SetFirstInlineFragment(NGPaintFragment*) final;
 
   void SetSpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder&);
   void ClearSpannerPlaceholder();
@@ -1458,6 +1464,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void UpdateFromStyle() override;
 
+  void InLayoutNGInlineFormattingContextWillChange(bool) final;
+
   virtual ItemPosition SelfAlignmentNormalBehavior(
       const LayoutBox* child = nullptr) const {
     DCHECK(!child);
@@ -1705,8 +1713,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
         &LayoutBox::SetMarginBottom, &LayoutBox::SetMarginLeft);
   }
 
-  // The inline box containing this LayoutBox, for atomic inline elements.
-  InlineBox* inline_box_wrapper_;
+  union {
+    // The inline box containing this LayoutBox, for atomic inline elements.
+    // Valid only when !IsInLayoutNGInlineFormattingContext().
+    InlineBox* inline_box_wrapper_;
+    // The first fragment of the inline box containing this LayoutBox, for
+    // atomic inline elements. Valid only when
+    // IsInLayoutNGInlineFormattingContext().
+    NGPaintFragment* first_paint_fragment_;
+  };
 
   std::unique_ptr<LayoutBoxRareData> rare_data_;
 };
@@ -1767,7 +1782,13 @@ inline LayoutBox* LayoutBox::NextSiblingMultiColumnBox() const {
   return NextSiblingBox();
 }
 
+inline InlineBox* LayoutBox::InlineBoxWrapper() const {
+  return IsInLayoutNGInlineFormattingContext() ? nullptr : inline_box_wrapper_;
+}
+
 inline void LayoutBox::SetInlineBoxWrapper(InlineBox* box_wrapper) {
+  CHECK(!IsInLayoutNGInlineFormattingContext());
+
   if (box_wrapper) {
     DCHECK(!inline_box_wrapper_);
     // m_inlineBoxWrapper should already be nullptr. Deleting it is a safeguard
@@ -1780,6 +1801,11 @@ inline void LayoutBox::SetInlineBoxWrapper(InlineBox* box_wrapper) {
   }
 
   inline_box_wrapper_ = box_wrapper;
+}
+
+inline NGPaintFragment* LayoutBox::FirstInlineFragment() const {
+  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_
+                                               : nullptr;
 }
 
 inline bool LayoutBox::IsForcedFragmentainerBreakValue(

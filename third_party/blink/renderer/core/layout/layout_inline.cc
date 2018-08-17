@@ -70,9 +70,17 @@ struct SameSizeAsLayoutInline : public LayoutBoxModelObject {
 static_assert(sizeof(LayoutInline) == sizeof(SameSizeAsLayoutInline),
               "LayoutInline should stay small");
 
-LayoutInline::LayoutInline(Element* element) : LayoutBoxModelObject(element) {
+LayoutInline::LayoutInline(Element* element)
+    : LayoutBoxModelObject(element), line_boxes_() {
   SetChildrenInline(true);
 }
+
+#if DCHECK_IS_ON()
+LayoutInline::~LayoutInline() {
+  if (!IsInLayoutNGInlineFormattingContext())
+    line_boxes_.AssertIsEmpty();
+}
+#endif
 
 LayoutInline* LayoutInline::CreateAnonymous(Document* document) {
   LayoutInline* layout_inline = new LayoutInline(nullptr);
@@ -119,9 +127,29 @@ void LayoutInline::WillBeDestroyed() {
     }
   }
 
-  line_boxes_.DeleteLineBoxes();
+  DeleteLineBoxes();
 
   LayoutBoxModelObject::WillBeDestroyed();
+}
+
+void LayoutInline::DeleteLineBoxes() {
+  if (IsInLayoutNGInlineFormattingContext())
+    first_paint_fragment_ = nullptr;
+  else
+    MutableLineBoxes()->DeleteLineBoxes();
+}
+
+void LayoutInline::SetFirstInlineFragment(NGPaintFragment* fragment) {
+  CHECK(IsInLayoutNGInlineFormattingContext());
+  first_paint_fragment_ = fragment;
+}
+
+void LayoutInline::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
+  DeleteLineBoxes();
+
+  // Because |first_paint_fragment_| and |line_boxes_| are union, when one is
+  // deleted, the other should be initialized to nullptr.
+  DCHECK(new_value ? !first_paint_fragment_ : !line_boxes_.First());
 }
 
 LayoutInline* LayoutInline::InlineElementContinuation() const {
@@ -901,9 +929,9 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
     return false;
   }
 
-  return line_boxes_.HitTest(LineLayoutBoxModel(this), result,
-                             location_in_container, accumulated_offset,
-                             hit_test_action);
+  return LineBoxes()->HitTest(LineLayoutBoxModel(this), result,
+                              location_in_container, accumulated_offset,
+                              hit_test_action);
 }
 
 namespace {
@@ -1400,7 +1428,7 @@ void LayoutInline::UpdateHitTestResult(HitTestResult& result,
 
 void LayoutInline::DirtyLineBoxes(bool full_layout) {
   if (full_layout) {
-    line_boxes_.DeleteLineBoxes();
+    DeleteLineBoxes();
     return;
   }
 
@@ -1427,7 +1455,7 @@ void LayoutInline::DirtyLineBoxes(bool full_layout) {
       }
     }
   } else {
-    line_boxes_.DirtyLineBoxes();
+    MutableLineBoxes()->DirtyLineBoxes();
   }
 }
 
@@ -1438,20 +1466,18 @@ InlineFlowBox* LayoutInline::CreateInlineFlowBox() {
 InlineFlowBox* LayoutInline::CreateAndAppendInlineFlowBox() {
   SetAlwaysCreateLineBoxes();
   InlineFlowBox* flow_box = CreateInlineFlowBox();
-  line_boxes_.AppendLineBox(flow_box);
+  MutableLineBoxes()->AppendLineBox(flow_box);
   return flow_box;
 }
 
 void LayoutInline::DirtyLinesFromChangedChild(
     LayoutObject* child,
     MarkingBehavior marking_behavior) {
-  // During layout tree construction, we can't detect whether this node is
-  // in LayoutNG or not.
-  if (Parent() && EnclosingNGBlockFlow()) {
+  if (IsInLayoutNGInlineFormattingContext()) {
     SetAncestorLineBoxDirty();
     return;
   }
-  line_boxes_.DirtyLinesFromChangedChild(
+  MutableLineBoxes()->DirtyLinesFromChangedChild(
       LineLayoutItem(this), LineLayoutItem(child),
       marking_behavior == kMarkContainerChain);
 }

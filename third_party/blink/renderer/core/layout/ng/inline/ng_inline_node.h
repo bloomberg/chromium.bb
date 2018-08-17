@@ -14,6 +14,7 @@
 namespace blink {
 
 class NGConstraintSpace;
+class NGInlineBreakToken;
 class NGInlineItem;
 class NGLayoutResult;
 class NGOffsetMapping;
@@ -92,6 +93,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
                  const String* previous_text);
   void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*);
   void AssociateItemsWithInlines(NGInlineNodeData*);
+
+  void ClearAssociatedFragments(NGInlineBreakToken*);
 
   NGInlineNodeData* MutableData();
   const NGInlineNodeData& Data() const;
