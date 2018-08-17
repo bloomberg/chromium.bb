@@ -98,6 +98,7 @@ jumbo_source_set("filters") {
   ]
 
   deps = [
+    "//cc/base",  # For MathUtil.
     "//gpu/command_buffer/common",
     "//media/base",
     "//media/cdm",

@@ -80,6 +80,7 @@
 #include "base/logging.h"
 #include "base/numerics/math_constants.h"
 #include "build/build_config.h"
+#include "cc/base/math_util.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
 #include <xmmintrin.h>
@@ -237,37 +238,43 @@ void SincResampler::Resample(int frames, float* destination) {
 
   // Step (2) -- Resample!
   while (remaining_frames) {
-    while (virtual_source_idx_ < block_size_) {
-      // |virtual_source_idx_| lies in between two kernel offsets so figure out
-      // what they are.
-      const int source_idx = static_cast<int>(virtual_source_idx_);
-      const double virtual_offset_idx =
-          (virtual_source_idx_ - source_idx) * kKernelOffsetCount;
-      const int offset_idx = static_cast<int>(virtual_offset_idx);
+    // Silent audio can contain non-zero samples small enough to result in
+    // subnormals internally. Disabling subnormals can be significantly faster.
+    {
+      cc::ScopedSubnormalFloatDisabler disable_subnormals;
 
-      // We'll compute "convolutions" for the two kernels which straddle
-      // |virtual_source_idx_|.
-      const float* k1 = kernel_storage_.get() + offset_idx * kKernelSize;
-      const float* k2 = k1 + kKernelSize;
+      while (virtual_source_idx_ < block_size_) {
+        // |virtual_source_idx_| lies in between two kernel offsets so figure
+        // out what they are.
+        const int source_idx = static_cast<int>(virtual_source_idx_);
+        const double virtual_offset_idx =
+            (virtual_source_idx_ - source_idx) * kKernelOffsetCount;
+        const int offset_idx = static_cast<int>(virtual_offset_idx);
 
-      // Ensure |k1|, |k2| are 16-byte aligned for SIMD usage.  Should always be
-      // true so long as kKernelSize is a multiple of 16.
-      DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k1) & 0x0F);
-      DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k2) & 0x0F);
+        // We'll compute "convolutions" for the two kernels which straddle
+        // |virtual_source_idx_|.
+        const float* k1 = kernel_storage_.get() + offset_idx * kKernelSize;
+        const float* k2 = k1 + kKernelSize;
 
-      // Initialize input pointer based on quantized |virtual_source_idx_|.
-      const float* input_ptr = r1_ + source_idx;
+        // Ensure |k1|, |k2| are 16-byte aligned for SIMD usage.  Should always
+        // be true so long as kKernelSize is a multiple of 16.
+        DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k1) & 0x0F);
+        DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k2) & 0x0F);
 
-      // Figure out how much to weight each kernel's "convolution".
-      const double kernel_interpolation_factor =
-          virtual_offset_idx - offset_idx;
-      *destination++ =
-          CONVOLVE_FUNC(input_ptr, k1, k2, kernel_interpolation_factor);
+        // Initialize input pointer based on quantized |virtual_source_idx_|.
+        const float* input_ptr = r1_ + source_idx;
 
-      // Advance the virtual index.
-      virtual_source_idx_ += io_sample_rate_ratio_;
-      if (!--remaining_frames)
-        return;
+        // Figure out how much to weight each kernel's "convolution".
+        const double kernel_interpolation_factor =
+            virtual_offset_idx - offset_idx;
+        *destination++ =
+            CONVOLVE_FUNC(input_ptr, k1, k2, kernel_interpolation_factor);
+
+        // Advance the virtual index.
+        virtual_source_idx_ += io_sample_rate_ratio_;
+        if (!--remaining_frames)
+          return;
+      }
     }
 
     // Wrap back around to the start.

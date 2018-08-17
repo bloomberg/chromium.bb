@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "cc/base/math_util.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
 #include "media/filters/wsola_internals.h"
@@ -191,6 +192,11 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
     // Create potentially smaller wrappers for playback rate adaptation.
     CreateSearchWrappers();
   }
+
+  // Silent audio can contain non-zero samples small enough to result in
+  // subnormals internalls. Disabling subnormals can be significantly faster in
+  // these cases.
+  cc::ScopedSubnormalFloatDisabler disable_subnormals;
 
   int rendered_frames = 0;
   do {
