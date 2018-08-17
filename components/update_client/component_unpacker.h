@@ -18,6 +18,10 @@
 #include "components/update_client/update_client_errors.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+namespace crx_file {
+enum class VerifierFormat;
+}
+
 namespace update_client {
 
 class CrxInstaller;
@@ -84,7 +88,8 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   ComponentUnpacker(const std::vector<uint8_t>& pk_hash,
                     const base::FilePath& path,
                     scoped_refptr<CrxInstaller> installer,
-                    std::unique_ptr<service_manager::Connector> connector);
+                    std::unique_ptr<service_manager::Connector> connector,
+                    crx_file::VerifierFormat crx_format);
 
   // Begins the actual unpacking of the files. May invoke a patcher and the
   // component installer if the package is a differential update.
@@ -127,6 +132,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   scoped_refptr<CrxInstaller> installer_;
   Callback callback_;
   std::unique_ptr<service_manager::Connector> connector_;
+  crx_file::VerifierFormat crx_format_;
   UnpackerError error_;
   int extended_error_;
   std::string public_key_;

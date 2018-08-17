@@ -136,6 +136,10 @@ namespace base {
 class FilePath;
 }
 
+namespace crx_file {
+enum class VerifierFormat;
+}
+
 namespace update_client {
 
 class Configurator;
@@ -243,6 +247,9 @@ struct CrxComponent {
   // note, the confidentiality of the downloads is enforced by the server,
   // which only returns secure download URLs in this case.
   bool requires_network_encryption;
+
+  // Specifies the strength of package validation required for the item.
+  crx_file::VerifierFormat crx_format_requirement;
 
   // True if the component allows enabling or disabling updates by group policy.
   // This member should be set to |false| for data, non-binary components, such

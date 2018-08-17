@@ -34,12 +34,14 @@ ComponentUnpacker::ComponentUnpacker(
     const std::vector<uint8_t>& pk_hash,
     const base::FilePath& path,
     scoped_refptr<CrxInstaller> installer,
-    std::unique_ptr<service_manager::Connector> connector)
+    std::unique_ptr<service_manager::Connector> connector,
+    crx_file::VerifierFormat crx_format)
     : pk_hash_(pk_hash),
       path_(path),
       is_delta_(false),
       installer_(installer),
       connector_(std::move(connector)),
+      crx_format_(crx_format),
       error_(UnpackerError::kNone),
       extended_error_(0) {}
 
@@ -58,9 +60,9 @@ bool ComponentUnpacker::Verify() {
     return false;
   }
   const std::vector<std::vector<uint8_t>> required_keys = {pk_hash_};
-  const crx_file::VerifierResult result = crx_file::Verify(
-      path_, crx_file::VerifierFormat::CRX2_OR_CRX3, required_keys,
-      std::vector<uint8_t>(), &public_key_, nullptr);
+  const crx_file::VerifierResult result =
+      crx_file::Verify(path_, crx_format_, required_keys,
+                       std::vector<uint8_t>(), &public_key_, nullptr);
   if (result != crx_file::VerifierResult::OK_FULL &&
       result != crx_file::VerifierResult::OK_DELTA) {
     error_ = UnpackerError::kInvalidFile;

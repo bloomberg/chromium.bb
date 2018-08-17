@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/task_traits.h"
@@ -52,7 +53,8 @@ void ActionRunner::Unpack(
   // Contains the key hash of the CRX this object is allowed to run.
   const auto key_hash = component_.config()->GetRunActionKeyHash();
   auto unpacker = base::MakeRefCounted<ComponentUnpacker>(
-      key_hash, file_path, installer, std::move(connector));
+      key_hash, file_path, installer, std::move(connector),
+      component_.crx_component()->crx_format_requirement);
   unpacker->Unpack(
       base::BindOnce(&ActionRunner::UnpackComplete, base::Unretained(this)));
 }
