@@ -179,7 +179,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
       deps += [ ":$_unwind_asset" ]
     }
 
-    if (enable_vr) {
+    if (enable_vr && _target_type == "android_apk") {
       deps += [ "//chrome/browser/android/vr:java" ]
     }
   }
@@ -261,6 +261,12 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       }
       proguard_configs += [ "//android_webview/apk/java/proguard.flags" ]
       png_to_webp = true
+    }
+
+    # TODO(crbug.com/862719): Remove Java VR code from the monochrome base
+    # module once we can conditionally install the VR DFM.
+    if (enable_vr) {
+      deps += [ "//chrome/browser/android/vr:java" ]
     }
 
     if (invoker.target_type == "android_apk") {

@@ -25,6 +25,9 @@ import("static_initializers.gni")
 if (enable_arcore) {
   import("//chrome/android/modules/ar/ar_module_tmpl.gni")
 }
+if (enable_vr) {
+  import("//chrome/android/modules/vr/vr_module_tmpl.gni")
+}
 
 manifest_package = "org.chromium.chrome"
 
@@ -1715,6 +1718,13 @@ if (enable_arcore) {
   }
 }
 
+if (enable_vr) {
+  vr_module_tmpl("vr_public_module") {
+    manifest_package = manifest_package
+    module_name = "VrPublicModule"
+  }
+}
+
 # Chrome Android application bundles.
 android_app_bundle("chrome_public_bundle") {
   bundle_name = "ChromePublicBundle"
@@ -1731,6 +1741,14 @@ android_app_bundle("chrome_modern_public_bundle") {
   bundle_name = "ChromeModernPublicBundle"
   base_module_target = ":chrome_modern_public_base_module"
   proguard_enabled = !is_java_debug
+  if (enable_vr) {
+    extra_modules = [
+      {
+        name = "vr"
+        module_target = ":vr_public_module"
+      },
+    ]
+  }
 }
 
 android_app_bundle("monochrome_public_bundle") {
