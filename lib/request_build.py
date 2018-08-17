@@ -86,10 +86,12 @@ class RequestBuild(object):
       # Extract from build_config, if possible.
       self.luci_builder = site_config[build_config].luci_builder
       self.display_label = site_config[build_config].display_label
+      self.workspace_branch = site_config[build_config].workspace_branch
     else:
       # Use generic defaults if needed (lowest priority)
       self.luci_builder = config_lib.LUCI_BUILDER_TRY
       self.display_label = config_lib.DISPLAY_LABEL_TRYJOB
+      self.workspace_branch = None
 
     # But allow an explicit overrides.
     if luci_builder:
@@ -121,6 +123,7 @@ class RequestBuild(object):
         'cbb_email': self.user_email,
         'cbb_master_build_id': self.master_cidb_id,
         'cbb_master_buildbucket_id': self.master_buildbucket_id,
+        'cbb_workspace_branch': self.workspace_branch,
     }
 
     if self.master_cidb_id or self.master_buildbucket_id:
