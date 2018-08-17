@@ -328,9 +328,9 @@ MountError CryptohomeErrorToMountError(CryptohomeErrorCode code) {
       return MOUNT_ERROR_OLD_ENCRYPTION;
     case CRYPTOHOME_ERROR_MOUNT_PREVIOUS_MIGRATION_INCOMPLETE:
       return MOUNT_ERROR_PREVIOUS_MIGRATION_INCOMPLETE;
-    // TODO(crbug.com/797563): Split the error space and/or handle everything.
     case CRYPTOHOME_ERROR_REMOVE_FAILED:
       return MOUNT_ERROR_REMOVE_FAILED;
+    // TODO(crbug.com/797563): Split the error space and/or handle everything.
     case CRYPTOHOME_ERROR_LOCKBOX_SIGNATURE_INVALID:
     case CRYPTOHOME_ERROR_LOCKBOX_CANNOT_SIGN:
     case CRYPTOHOME_ERROR_BOOT_ATTRIBUTE_NOT_FOUND:
