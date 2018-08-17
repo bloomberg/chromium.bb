@@ -259,7 +259,9 @@ TEST_F(FlingControllerTest,
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-TEST_F(FlingControllerTest, ControllerSendsGSEWhenTouchscreenFlingIsOver) {
+// TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
+TEST_F(FlingControllerTest,
+       DISABLED_ControllerSendsGSEWhenTouchscreenFlingIsOver) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(100, 0));
