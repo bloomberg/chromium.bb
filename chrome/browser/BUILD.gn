@@ -1133,6 +1133,8 @@ jumbo_split_static_library("browser") {
     "predictors/predictor_database_factory.h",
     "predictors/predictor_table_base.cc",
     "predictors/predictor_table_base.h",
+    "predictors/resolve_host_client_impl.cc",
+    "predictors/resolve_host_client_impl.h",
     "predictors/resource_prefetch_common.cc",
     "predictors/resource_prefetch_common.h",
     "predictors/resource_prefetch_predictor.cc",

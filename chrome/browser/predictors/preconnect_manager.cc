@@ -8,13 +8,11 @@
 
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_hints.h"
-#include "net/base/net_errors.h"
-#include "net/http/transport_security_state.h"
-#include "net/proxy_resolution/proxy_info.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/url_request/url_request_context.h"
+#include "content/public/browser/storage_partition.h"
+#include "net/base/load_flags.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace predictors {
 
@@ -58,24 +56,23 @@ PreresolveJob::PreresolveJob(const GURL& url,
 PreresolveJob::PreresolveJob(PreresolveJob&& other) = default;
 PreresolveJob::~PreresolveJob() = default;
 
-PreconnectManager::PreconnectManager(
-    base::WeakPtr<Delegate> delegate,
-    scoped_refptr<net::URLRequestContextGetter> context_getter)
+PreconnectManager::PreconnectManager(base::WeakPtr<Delegate> delegate,
+                                     Profile* profile)
     : delegate_(std::move(delegate)),
-      context_getter_(std::move(context_getter)),
+      profile_(profile),
       inflight_preresolves_count_(0),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(context_getter_);
+  DCHECK(profile_);
 }
 
 PreconnectManager::~PreconnectManager() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void PreconnectManager::Start(const GURL& url,
-                              std::vector<PreconnectRequest>&& requests) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+                              std::vector<PreconnectRequest> requests) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const std::string host = url.host();
   if (preresolve_info_.find(host) != preresolve_info_.end())
     return;
@@ -96,7 +93,7 @@ void PreconnectManager::Start(const GURL& url,
 }
 
 void PreconnectManager::StartPreresolveHost(const GURL& url) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
   PreresolveJobId job_id = preresolve_jobs_.Add(std::make_unique<PreresolveJob>(
@@ -108,7 +105,7 @@ void PreconnectManager::StartPreresolveHost(const GURL& url) {
 
 void PreconnectManager::StartPreresolveHosts(
     const std::vector<std::string>& hostnames) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Push jobs in front of the queue due to higher priority.
   for (auto it = hostnames.rbegin(); it != hostnames.rend(); ++it) {
     PreresolveJobId job_id =
@@ -123,7 +120,7 @@ void PreconnectManager::StartPreresolveHosts(
 
 void PreconnectManager::StartPreconnectUrl(const GURL& url,
                                            bool allow_credentials) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
   PreresolveJobId job_id = preresolve_jobs_.Add(std::make_unique<PreresolveJob>(
@@ -134,7 +131,7 @@ void PreconnectManager::StartPreconnectUrl(const GURL& url,
 }
 
 void PreconnectManager::Stop(const GURL& url) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto it = preresolve_info_.find(url.host());
   if (it == preresolve_info_.end()) {
     return;
@@ -149,24 +146,44 @@ void PreconnectManager::PreconnectUrl(const GURL& url,
                                       bool allow_credentials) const {
   DCHECK(url.GetOrigin() == url);
   DCHECK(url.SchemeIsHTTPOrHTTPS());
-  content::PreconnectUrl(context_getter_.get(), url, site_for_cookies,
-                         num_sockets, allow_credentials);
+  auto* network_context = GetNetworkContext();
+  if (!network_context)
+    return;
+
+  bool privacy_mode = false;
+  int load_flags = net::LOAD_NORMAL;
+
+  if (!allow_credentials) {
+    privacy_mode = true;
+    load_flags = net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
+                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  }
+
+  network_context->PreconnectSockets(num_sockets, url, load_flags,
+                                     privacy_mode);
 }
 
-std::pair<int, std::unique_ptr<net::HostResolver::Request>>
-PreconnectManager::PreresolveUrl(
+std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(
     const GURL& url,
-    const net::CompletionCallback& callback) const {
+    ResolveHostCallback callback) const {
   DCHECK(url.GetOrigin() == url);
   DCHECK(url.SchemeIsHTTPOrHTTPS());
-  std::unique_ptr<net::HostResolver::Request> request;
-  int status =
-      content::PreresolveUrl(context_getter_.get(), url, callback, &request);
-  return {status, std::move(request)};
+  auto* network_context = GetNetworkContext();
+  if (!network_context) {
+    // Cannot invoke the callback right away because it would cause the
+    // use-after-free after returning from this function.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(callback), false));
+    return nullptr;
+  }
+
+  return std::make_unique<ResolveHostClientImpl>(url, std::move(callback),
+                                                 GetNetworkContext());
 }
 
 void PreconnectManager::TryToLaunchPreresolveJobs() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   while (!queued_jobs_.empty() &&
          inflight_preresolves_count_ < kMaxInflightPreresolves) {
@@ -176,47 +193,31 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
     DCHECK(job);
     PreresolveInfo* info = job->info;
 
-    if (!info || !info->was_canceled) {
-      int status;
-      if (WouldLikelyProxyURL(job->url)) {
-        // Skip preresolve and go straight to preconnect if a proxy is enabled.
-        status = net::OK;
-      } else {
-        std::tie(status, job->request) = PreresolveUrl(
-            job->url, base::Bind(&PreconnectManager::OnPreresolveFinished,
-                                 weak_factory_.GetWeakPtr(), job_id));
-      }
-
-      if (status == net::ERR_IO_PENDING) {
-        // Will complete asynchronously.
-        if (info)
-          ++info->inflight_count;
-        ++inflight_preresolves_count_;
-      } else {
-        // Completed synchronously (was already cached by HostResolver), or else
-        // there was (equivalently) some network error that prevents us from
-        // finding the name. Status net::OK means it was "found."
-        FinishPreresolve(job_id, status == net::OK, true);
-      }
+    if (!(info && info->was_canceled)) {
+      // TODO(crbug.com/838763): Preconnect to url if proxy is enabled.
+      job->resolve_host_client = PreresolveUrl(
+          job->url, base::BindOnce(&PreconnectManager::OnPreresolveFinished,
+                                   weak_factory_.GetWeakPtr(), job_id));
+      if (info)
+        ++info->inflight_count;
+      ++inflight_preresolves_count_;
     } else {
       preresolve_jobs_.Remove(job_id);
     }
 
     if (info)
       --info->queued_count;
-    if (info && info->is_done())
-      AllPreresolvesForUrlFinished(info);
   }
 }
 
 void PreconnectManager::OnPreresolveFinished(PreresolveJobId job_id,
-                                             int result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+                                             bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PreresolveJob* job = preresolve_jobs_.Lookup(job_id);
   DCHECK(job);
   PreresolveInfo* info = job->info;
 
-  FinishPreresolve(job_id, result == net::OK, false);
+  FinishPreresolve(job_id, success, false);
   --inflight_preresolves_count_;
   if (info)
     --info->inflight_count;
@@ -228,7 +229,7 @@ void PreconnectManager::OnPreresolveFinished(PreresolveJobId job_id,
 void PreconnectManager::FinishPreresolve(PreresolveJobId job_id,
                                          bool found,
                                          bool cached) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PreresolveJob* job = preresolve_jobs_.Lookup(job_id);
   DCHECK(job);
   PreresolveInfo* info = job->info;
@@ -236,8 +237,8 @@ void PreconnectManager::FinishPreresolve(PreresolveJobId job_id,
   bool need_preconnect =
       found && job->need_preconnect() && (!info || !info->was_canceled);
   if (need_preconnect) {
-    PreconnectUrl(GetHSTSRedirect(job->url), info ? info->url : GURL(),
-                  job->num_sockets, job->allow_credentials);
+    PreconnectUrl(job->url, info ? info->url : GURL(), job->num_sockets,
+                  job->allow_credentials);
   }
   if (info && found)
     info->stats->requests_stats.emplace_back(job->url, cached, need_preconnect);
@@ -250,42 +251,23 @@ void PreconnectManager::AllPreresolvesForUrlFinished(PreresolveInfo* info) {
   auto it = preresolve_info_.find(info->url.host());
   DCHECK(it != preresolve_info_.end());
   DCHECK(info == it->second.get());
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&Delegate::PreconnectFinished, delegate_,
-                     std::move(info->stats)));
+  if (delegate_)
+    delegate_->PreconnectFinished(std::move(info->stats));
   preresolve_info_.erase(it);
 }
 
-GURL PreconnectManager::GetHSTSRedirect(const GURL& url) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (!url.SchemeIs(url::kHttpScheme))
-    return url;
+network::mojom::NetworkContext* PreconnectManager::GetNetworkContext() const {
+  if (network_context_)
+    return network_context_;
 
-  auto* transport_security_state =
-      context_getter_->GetURLRequestContext()->transport_security_state();
-  if (!transport_security_state)
-    return url;
+  if (profile_->AsTestingProfile()) {
+    // We're testing and |network_context_| wasn't set. Return nullptr to avoid
+    // hitting the network.
+    return nullptr;
+  }
 
-  if (!transport_security_state->ShouldUpgradeToSSL(url.host()))
-    return url;
-
-  GURL::Replacements replacements;
-  replacements.SetSchemeStr(url::kHttpsScheme);
-  return url.ReplaceComponents(replacements);
-}
-
-bool PreconnectManager::WouldLikelyProxyURL(const GURL& url) const {
-  auto* proxy_resolution_service =
-      context_getter_->GetURLRequestContext()->proxy_resolution_service();
-  if (!proxy_resolution_service)
-    return false;
-
-  net::ProxyInfo info;
-  bool synchronous_success =
-      proxy_resolution_service->TryResolveProxySynchronously(
-          url, std::string(), &info, nullptr, net::NetLogWithSource());
-  return synchronous_success && !info.is_direct();
+  return content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetNetworkContext();
 }
 
 }  // namespace predictors

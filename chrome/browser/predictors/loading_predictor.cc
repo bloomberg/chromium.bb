@@ -128,8 +128,8 @@ PreconnectManager* LoadingPredictor::preconnect_manager() {
 
   if (!preconnect_manager_ &&
       config_.IsPreconnectEnabledForSomeOrigin(profile_)) {
-    preconnect_manager_ = std::make_unique<PreconnectManager>(
-        GetWeakPtr(), profile_->GetRequestContext());
+    preconnect_manager_ =
+        std::make_unique<PreconnectManager>(GetWeakPtr(), profile_);
   }
 
   return preconnect_manager_.get();
@@ -138,10 +138,6 @@ PreconnectManager* LoadingPredictor::preconnect_manager() {
 void LoadingPredictor::Shutdown() {
   DCHECK(!shutdown_);
   resource_prefetch_predictor_->Shutdown();
-
-  // |preconnect_manager_| must be destroyed on the IO thread.
-  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                     std::move(preconnect_manager_));
   shutdown_ = true;
 }
 
@@ -214,14 +210,10 @@ void LoadingPredictor::CleanupAbandonedHintsAndNavigations(
 
 void LoadingPredictor::MaybeAddPreconnect(
     const GURL& url,
-    std::vector<PreconnectRequest>&& requests,
+    std::vector<PreconnectRequest> requests,
     HintOrigin origin) {
   DCHECK(!shutdown_);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&PreconnectManager::Start,
-                     base::Unretained(preconnect_manager()), url,
-                     std::move(requests)));
+  preconnect_manager()->Start(url, std::move(requests));
 }
 
 void LoadingPredictor::MaybeRemovePreconnect(const GURL& url) {
@@ -229,10 +221,7 @@ void LoadingPredictor::MaybeRemovePreconnect(const GURL& url) {
   if (!preconnect_manager_)
     return;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&PreconnectManager::Stop,
-                     base::Unretained(preconnect_manager_.get()), url));
+  preconnect_manager_->Stop(url);
 }
 
 void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
@@ -249,10 +238,7 @@ void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
     if (is_new_origin || now - last_omnibox_preconnect_time_ >=
                              kMinDelayBetweenPreconnectRequests) {
       last_omnibox_preconnect_time_ = now;
-      content::BrowserThread::PostTask(
-          content::BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&PreconnectManager::StartPreconnectUrl,
-                         base::Unretained(preconnect_manager()), url, true));
+      preconnect_manager()->StartPreconnectUrl(url, true);
     }
     return;
   }
@@ -260,10 +246,7 @@ void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
   if (is_new_origin || now - last_omnibox_preresolve_time_ >=
                            kMinDelayBetweenPreresolveRequests) {
     last_omnibox_preresolve_time_ = now;
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&PreconnectManager::StartPreresolveHost,
-                       base::Unretained(preconnect_manager()), url));
+    preconnect_manager()->StartPreresolveHost(url);
   }
 }
 
