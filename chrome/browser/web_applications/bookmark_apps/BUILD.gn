@@ -35,6 +35,7 @@ source_set("unit_tests") {
   deps = [
     ":bookmark_apps",
     "//chrome/browser/web_applications:web_app_group",
+    "//chrome/browser/web_applications/components:test_support",
     "//skia",
     "//testing/gmock",
   ]

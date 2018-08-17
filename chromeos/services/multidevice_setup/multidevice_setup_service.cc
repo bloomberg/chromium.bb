@@ -10,6 +10,7 @@
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_initializer.h"
+#include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_install_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 
 namespace chromeos {
@@ -29,13 +30,16 @@ MultiDeviceSetupService::MultiDeviceSetupService(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
-    AuthTokenValidator* auth_token_validator)
+    AuthTokenValidator* auth_token_validator,
+    std::unique_ptr<AndroidSmsAppInstallDelegate>
+        android_sms_app_install_delegate)
     : multidevice_setup_(
           MultiDeviceSetupInitializer::Factory::Get()->BuildInstance(
               pref_service,
               device_sync_client,
               secure_channel_client,
-              auth_token_validator)) {}
+              auth_token_validator,
+              std::move(android_sms_app_install_delegate))) {}
 
 MultiDeviceSetupService::~MultiDeviceSetupService() = default;
 
