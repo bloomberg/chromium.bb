@@ -1059,6 +1059,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         Tab currentTab = mToolbarModel.getTab();
         if (currentTab != null) currentTab.removeObserver(mTabObserver);
         mToolbar.destroy();
+        mToolbarModel.destroy();
+        mHandler.removeCallbacksAndMessages(null); // Cancel delayed tasks.
     }
 
     /**

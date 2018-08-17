@@ -393,6 +393,10 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
             }
 
             mFilesToDeleteCallback.onResult(filesToDelete);
+
+            synchronized (CLEAN_UP_TASK_LOCK) {
+                sCleanupTask = null; // Release static reference to external callback
+            }
         }
 
         private void getTabsFromStateFile(SparseBooleanArray tabIds, File metadataFile) {
@@ -405,6 +409,14 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
                 Log.e(TAG, "Unable to read state for " + metadataFile.getName() + ": " + e);
             } finally {
                 StreamUtil.closeQuietly(stream);
+            }
+        }
+
+        @Override
+        protected void onCancelled(Void result) {
+            super.onCancelled(result);
+            synchronized (CLEAN_UP_TASK_LOCK) {
+                sCleanupTask = null;
             }
         }
     }
