@@ -988,7 +988,15 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess) {
     rph->RemoveObserver(this);
 }
 
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess_Hung) {
+// Test is flaky on Android builders: https://crbug.com/875179
+#if defined(OS_ANDROID)
+#define MAYBE_KeepAliveRendererProcess_Hung \
+  DISABLED_KeepAliveRendererProcess_Hung
+#else
+#define MAYBE_KeepAliveRendererProcess_Hung KeepAliveRendererProcess_Hung
+#endif
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+                       MAYBE_KeepAliveRendererProcess_Hung) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleHungBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1015,8 +1023,16 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess_Hung) {
     rph->RemoveObserver(this);
 }
 
+// Test is flaky on Android builders: https://crbug.com/875179
+#if defined(OS_ANDROID)
+#define MAYBE_FetchKeepAliveRendererProcess_Hung \
+  DISABLED_FetchKeepAliveRendererProcess_Hung
+#else
+#define MAYBE_FetchKeepAliveRendererProcess_Hung \
+  FetchKeepAliveRendererProcess_Hung
+#endif
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
-                       FetchKeepAliveRendererProcess_Hung) {
+                       MAYBE_FetchKeepAliveRendererProcess_Hung) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleHungBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
