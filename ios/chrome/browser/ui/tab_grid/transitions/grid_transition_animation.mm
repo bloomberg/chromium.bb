@@ -19,9 +19,6 @@ namespace {
 // Scale factor for inactive items when a tab is expanded.
 const CGFloat kInactiveItemScale = 0.95;
 
-CGFloat DeviceCornerRadius() {
-  return IsIPhoneX() ? 40.0 : 0.0;
-}
 }
 
 @interface GridTransitionAnimation ()
