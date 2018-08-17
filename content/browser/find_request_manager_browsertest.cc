@@ -558,7 +558,8 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(FindNewMatches)) {
 
 // TODO(crbug.com/615291): These tests frequently fail on Android.
 // TODO(crbug.com/779912): Flaky timeout on Win7 (dbg).
-#if defined(OS_ANDROID) || (defined(OS_WIN) && !defined(NDEBUG))
+// TODO(crbug.com/875306): Flaky on Win10.
+#if defined(OS_ANDROID) || defined(OS_WIN)
 #define MAYBE_FindInPage_Issue627799 DISABLED_FindInPage_Issue627799
 #else
 #define MAYBE_FindInPage_Issue627799 FindInPage_Issue627799
