@@ -544,7 +544,6 @@ jumbo_static_library("sync") {
     "user_events/no_op_user_event_service.h",
     "user_events/trial_recorder.cc",
     "user_events/trial_recorder.h",
-    "user_events/user_event_service.cc",
     "user_events/user_event_service.h",
     "user_events/user_event_service_impl.cc",
     "user_events/user_event_service_impl.h",
