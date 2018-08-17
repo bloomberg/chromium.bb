@@ -188,7 +188,9 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() = default;
 
 void ScopedTransformOverviewWindow::RestoreWindow(bool reset_transform) {
-  Shell::Get()->shadow_controller()->UpdateShadowForWindow(window_);
+  // Shadow controller may be null on shutdown.
+  if (Shell::Get()->shadow_controller())
+    Shell::Get()->shadow_controller()->UpdateShadowForWindow(window_);
   wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
   if (minimized_widget_) {
     mask_.reset();

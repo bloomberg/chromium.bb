@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +28,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -71,6 +73,8 @@ void ShowAppInfoInAppList(const gfx::Rect& app_info_bounds,
       views::DialogDelegate::GetDialogWidgetInitParams(dialog, nullptr, nullptr,
                                                        app_info_bounds);
   dialog_widget->Init(params);
+  // The title is not shown on the dialog, but it is used for overview mode.
+  dialog_widget->GetNativeWindow()->SetTitle(base::UTF8ToUTF16(app->name()));
   dialog_widget->Show();
 }
 #endif
