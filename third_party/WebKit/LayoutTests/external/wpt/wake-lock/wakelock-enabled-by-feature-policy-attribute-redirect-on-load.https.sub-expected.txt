@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL Feature-Policy allow="wake-lock" allows same-origin relocation assert_true: navigator.getWakeLock("screen") expected true got false
-PASS Feature-Policy allow="wake-lock" disallows cross-origin relocation
+PASS Feature-Policy allow="wake-lock" allows same-origin relocation
+FAIL Feature-Policy allow="wake-lock" disallows cross-origin relocation assert_false: navigator.getWakeLock("screen") expected false got true
 Harness: the test ran to completion.
 

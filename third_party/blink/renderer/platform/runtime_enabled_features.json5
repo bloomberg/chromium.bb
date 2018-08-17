@@ -1236,6 +1236,10 @@
       status: "experimental",
     },
     {
+      name: "WakeLockNavigator",
+      status: "experimental",
+    },
+    {
       name: "WebAnimationsAPI",
       status: "experimental",
     },
