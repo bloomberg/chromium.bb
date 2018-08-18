@@ -922,11 +922,6 @@
       'Linux Tests (dbg)(1)(32)',  # https://crbug.com/852895
     ],
   },
-  'sbox_integration_tests': {
-    'remove_from': [
-      'win-asan',  # https://crbug.com/875242
-    ],
-  },
   'services_unittests': {
     'remove_from': [
       # chromium.clang
