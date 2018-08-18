@@ -212,7 +212,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   mutable base::Lock test_ended_lock_;
   bool ended_ = false;
 
-  int timeout_seconds_ = false;
+  int timeout_seconds_ = 0;
 
   viz::BeginFrameSource* begin_frame_source_ = nullptr;  // NOT OWNED.
 

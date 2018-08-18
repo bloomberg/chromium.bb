@@ -634,7 +634,7 @@ LayerTreeTest::LayerTreeTest()
 #elif defined(ADDRESS_SANITIZER) || defined(_DEBUG) || defined(USE_OZONE)
     // ASAN and Debug builds are slower than release builds, as expected
     // Ozone builds also go through a slower path than regular Linux builds
-    timeout_seconds_ = 15;
+    timeout_seconds_ = 30;
 #else
     timeout_seconds_ = 10;
 #endif
