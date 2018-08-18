@@ -203,19 +203,16 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderAdapterTest);
 };
 
-// Flakily crashing on various platforms. See https://crbug.com/875278.
-TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Lifecycle) {
+TEST_F(RTCVideoDecoderAdapterTest, Lifecycle) {
   ASSERT_TRUE(BasicSetup());
   ASSERT_TRUE(BasicTeardown());
 }
 
-// Flakily crashing on various platforms. See https://crbug.com/875278.
-TEST_F(RTCVideoDecoderAdapterTest, DISABLED_InitializationFailure) {
+TEST_F(RTCVideoDecoderAdapterTest, InitializationFailure) {
   ASSERT_FALSE(CreateAndInitialize(false));
 }
 
-// Flakily crashing on various platforms. See https://crbug.com/875278.
-TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Decode) {
+TEST_F(RTCVideoDecoderAdapterTest, Decode) {
   ASSERT_TRUE(BasicSetup());
 
   EXPECT_CALL(*video_decoder_, Decode(_, _))
@@ -228,8 +225,7 @@ TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Decode) {
   media_thread_.FlushForTesting();
 }
 
-// Flakily crashing on various platforms. See https://crbug.com/875278.
-TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Decode_Error) {
+TEST_F(RTCVideoDecoderAdapterTest, Decode_Error) {
   ASSERT_TRUE(BasicSetup());
 
   EXPECT_CALL(*video_decoder_, Decode(_, _))
@@ -241,8 +237,7 @@ TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Decode_Error) {
   ASSERT_EQ(Decode(1), WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE);
 }
 
-// Flakily crashing on various platforms. See https://crbug.com/875278.
-TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Decode_Hang_Short) {
+TEST_F(RTCVideoDecoderAdapterTest, Decode_Hang_Short) {
   ASSERT_TRUE(BasicSetup());
 
   // Ignore Decode() calls.
@@ -260,8 +255,7 @@ TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Decode_Hang_Short) {
   FAIL();
 }
 
-// Flakily crashing on various platforms. See https://crbug.com/875278.
-TEST_F(RTCVideoDecoderAdapterTest, DISABLED_Decode_Hang_Long) {
+TEST_F(RTCVideoDecoderAdapterTest, Decode_Hang_Long) {
   ASSERT_TRUE(BasicSetup());
 
   // Ignore Decode() calls.
