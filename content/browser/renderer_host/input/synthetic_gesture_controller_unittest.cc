@@ -260,6 +260,28 @@ class MockMoveTouchTarget : public MockMoveGestureTarget {
   bool started_;
 };
 
+class MockFlingGestureTarget : public MockMoveGestureTarget {
+ public:
+  MockFlingGestureTarget() : fling_velocity_x_(0), fling_velocity_y_(0) {}
+  ~MockFlingGestureTarget() override {}
+
+  void DispatchInputEventToPlatform(const WebInputEvent& event) override {
+    if (event.GetType() == WebInputEvent::kGestureFlingStart) {
+      const blink::WebGestureEvent& gesture_event =
+          static_cast<const blink::WebGestureEvent&>(event);
+      fling_velocity_x_ = gesture_event.data.fling_start.velocity_x;
+      fling_velocity_y_ = gesture_event.data.fling_start.velocity_y;
+    }
+  }
+
+  float fling_velocity_x() const { return fling_velocity_x_; }
+  float fling_velocity_y() const { return fling_velocity_y_; }
+
+ private:
+  float fling_velocity_x_;
+  float fling_velocity_y_;
+};
+
 class MockDragMouseTarget : public MockMoveGestureTarget {
  public:
   MockDragMouseTarget() : started_(false) {}
@@ -1188,6 +1210,30 @@ TEST_F(SyntheticGestureControllerTest, MultiScrollGestureMouseHorizontal) {
                   scroll_target->total_abs_move_distance_length());
   EXPECT_FLOAT_EQ((params.distances[0] + params.distances[1]).x(),
                   scroll_target->start_to_end_distance().x());
+}
+
+TEST_F(SyntheticGestureControllerTest, SingleScrollGestureTouchpadSwipe) {
+  CreateControllerAndTarget<MockFlingGestureTarget>();
+
+  SyntheticSmoothMoveGestureParams params;
+  params.input_type = SyntheticSmoothMoveGestureParams::MOUSE_WHEEL_INPUT;
+  params.start_point.SetPoint(39, 86);
+  params.distances.push_back(gfx::Vector2d(0, -132));
+  params.fling_velocity_x = 800;
+  params.fling_velocity_y = -1000;
+  params.prevent_fling = false;
+
+  std::unique_ptr<SyntheticSmoothMoveGesture> gesture(
+      new SyntheticSmoothMoveGesture(params));
+  QueueSyntheticGesture(std::move(gesture));
+  FlushInputUntilComplete();
+
+  MockFlingGestureTarget* swipe_target =
+      static_cast<MockFlingGestureTarget*>(target_);
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(params.fling_velocity_x, swipe_target->fling_velocity_x());
+  EXPECT_EQ(params.fling_velocity_y, swipe_target->fling_velocity_y());
 }
 
 TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMousePreciseScroll) {

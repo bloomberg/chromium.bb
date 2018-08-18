@@ -77,6 +77,7 @@ const GestureSourceType = {
   DEFAULT_INPUT: 0,
   TOUCH_INPUT: 1,
   MOUSE_INPUT: 2,
+  TOUCHPAD_INPUT:2,
   PEN_INPUT: 3
 };
 
@@ -123,7 +124,7 @@ function pixelsPerTick() {
   return 53;
 }
 
-function swipe(pixels_to_scroll, start_x, start_y, direction, speed_in_pixels_s) {
+function swipe(pixels_to_scroll, start_x, start_y, direction, speed_in_pixels_s, fling_velocity, gesture_source_type) {
   return new Promise((resolve, reject) => {
     if (chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.swipe(direction,
@@ -131,7 +132,9 @@ function swipe(pixels_to_scroll, start_x, start_y, direction, speed_in_pixels_s)
                                    resolve,
                                    start_x,
                                    start_y,
-                                   speed_in_pixels_s);
+                                   speed_in_pixels_s,
+                                   fling_velocity,
+                                   gesture_source_type);
     } else {
       reject('This test requires chrome.gpuBenchmarking');
     }

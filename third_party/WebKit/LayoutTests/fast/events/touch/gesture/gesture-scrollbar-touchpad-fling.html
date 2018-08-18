@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE html>
 <script src="../../../../resources/testharness.js"></script>
 <script src="../../../../resources/testharnessreport.js"></script>
 <script src="../../../../resources/gesture-util.js"></script>
@@ -51,7 +51,8 @@ promise_test (async () => {
   var scrollbarX = movingDiv.offsetLeft + movingDiv.offsetWidth - 5;
   var scrollThumbSafeOffset = 80;
   var scrollbarY = movingDiv.offsetTop + scrollThumbSafeOffset;
-  await swipe(10, scrollbarX, scrollbarY, "down");
+  var fling_velocity = 1000;
+  await swipe(10, scrollbarX, scrollbarY, "up", SPEED_INSTANT, fling_velocity, GestureSourceType.TOUCHPAD_INPUT);
   await waitFor(() => {return movingDiv.scrollTop > 90; })
 });
 </script>
