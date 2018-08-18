@@ -311,13 +311,11 @@ void NativeWidgetMac::InitModalType(ui::ModalType modal_type) {
 }
 
 gfx::Rect NativeWidgetMac::GetWindowBoundsInScreen() const {
-  return gfx::ScreenRectFromNSRect([GetNativeWindow() frame]);
+  return bridge_host_ ? bridge_host_->GetWindowBoundsInScreen() : gfx::Rect();
 }
 
 gfx::Rect NativeWidgetMac::GetClientAreaBoundsInScreen() const {
-  NSWindow* window = GetNativeWindow();
-  return gfx::ScreenRectFromNSRect(
-      [window contentRectForFrameRect:[window frame]]);
+  return bridge_host_ ? bridge_host_->GetContentBoundsInScreen() : gfx::Rect();
 }
 
 gfx::Rect NativeWidgetMac::GetRestoredBounds() const {
@@ -601,7 +599,8 @@ void NativeWidgetMac::ClearNativeFocus() {
 }
 
 gfx::Rect NativeWidgetMac::GetWorkAreaBoundsInScreen() const {
-  return gfx::ScreenRectFromNSRect([[GetNativeWindow() screen] visibleFrame]);
+  return bridge_host_ ? bridge_host_->GetCurrentDisplay().work_area()
+                      : gfx::Rect();
 }
 
 Widget::MoveLoopResult NativeWidgetMac::RunMoveLoop(

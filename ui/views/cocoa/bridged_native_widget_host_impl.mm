@@ -8,6 +8,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/views_delegate.h"
@@ -136,14 +137,6 @@ ui::InputMethod* BridgedNativeWidgetHostImpl::GetInputMethod() {
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl, views::BridgedNativeWidgetHost:
 
-void BridgedNativeWidgetHostImpl::SetCompositorSize(
-    const gfx::Size& size_in_dip,
-    float scale_factor) {
-  layer()->SetBounds(gfx::Rect(size_in_dip));
-  compositor_->UpdateSurface(ConvertSizeToPixel(scale_factor, size_in_dip),
-                             scale_factor);
-}
-
 void BridgedNativeWidgetHostImpl::SetCompositorVisibility(bool window_visible) {
   layer()->SetVisible(window_visible);
   if (window_visible) {
@@ -172,7 +165,7 @@ void BridgedNativeWidgetHostImpl::OnGestureEvent(
   root_view_->GetWidget()->OnGestureEvent(&event);
 }
 
-void BridgedNativeWidgetHostImpl::SetSize(const gfx::Size& new_size) {
+void BridgedNativeWidgetHostImpl::SetViewSize(const gfx::Size& new_size) {
   root_view_->SetSize(new_size);
 }
 
@@ -238,6 +231,53 @@ void BridgedNativeWidgetHostImpl::GetWordAt(
   // Convert |baselinePoint| to the coordinate system of |root_view_|.
   views::View::ConvertPointToTarget(target, root_view_, baseline_point);
   *found_word = true;
+}
+
+void BridgedNativeWidgetHostImpl::OnWindowGeometryChanged(
+    const gfx::Rect& new_window_bounds_in_screen,
+    const gfx::Rect& new_content_bounds_in_screen) {
+  has_received_window_geometry_ = true;
+
+  bool window_has_moved =
+      new_window_bounds_in_screen.origin() != window_bounds_in_screen_.origin();
+  bool content_has_resized =
+      new_content_bounds_in_screen.size() != content_bounds_in_screen_.size();
+
+  window_bounds_in_screen_ = new_window_bounds_in_screen;
+  content_bounds_in_screen_ = new_content_bounds_in_screen;
+
+  // When a window grows vertically, the AppKit origin changes, but as far as
+  // tookit-views is concerned, the window hasn't moved. Suppress these.
+  if (window_has_moved)
+    native_widget_mac_->GetWidget()->OnNativeWidgetMove();
+
+  // Note we can't use new_window_bounds_in_screen.size(), since it includes the
+  // titlebar for the purposes of detecting a window move.
+  if (content_has_resized)
+    native_widget_mac_->GetWidget()->OnNativeWidgetSizeChanged(
+        content_bounds_in_screen_.size());
+
+  // Update the compositor surface and layer size.
+  if (compositor_) {
+    gfx::Size surface_size_in_dip = content_bounds_in_screen_.size();
+    layer()->SetBounds(gfx::Rect(surface_size_in_dip));
+    compositor_->UpdateSurface(
+        ConvertSizeToPixel(display_.device_scale_factor(), surface_size_in_dip),
+        display_.device_scale_factor());
+  }
+}
+
+void BridgedNativeWidgetHostImpl::OnWindowDisplayChanged(
+    const display::Display& new_display) {
+  bool scale_factor_changed =
+      display_.device_scale_factor() != new_display.device_scale_factor();
+  display_ = new_display;
+  if (scale_factor_changed && compositor_ && has_received_window_geometry_) {
+    compositor_->UpdateSurface(
+        ConvertSizeToPixel(display_.device_scale_factor(),
+                           content_bounds_in_screen_.size()),
+        display_.device_scale_factor());
+  }
 }
 
 void BridgedNativeWidgetHostImpl::OnWindowWillClose() {

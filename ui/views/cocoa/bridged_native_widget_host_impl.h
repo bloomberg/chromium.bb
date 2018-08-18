@@ -65,14 +65,28 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // See widget.h for documentation.
   ui::InputMethod* GetInputMethod();
 
+  // Geometry of the window, in DIPs.
+  const gfx::Rect& GetWindowBoundsInScreen() const {
+    DCHECK(has_received_window_geometry_);
+    return window_bounds_in_screen_;
+  }
+
+  // Geometry of the content area of the window, in DIPs. Note that this is not
+  // necessarily the same as the views::View's size.
+  const gfx::Rect& GetContentBoundsInScreen() const {
+    DCHECK(has_received_window_geometry_);
+    return content_bounds_in_screen_;
+  }
+
+  // The display that the window is currently on (or best guess thereof).
+  const display::Display& GetCurrentDisplay() const { return display_; }
+
  private:
   void DestroyCompositor();
 
   // views::BridgedNativeWidgetHost:
-  void SetCompositorSize(const gfx::Size& size_in_dip,
-                         float scale_factor) override;
   void SetCompositorVisibility(bool visible) override;
-  void SetSize(const gfx::Size& new_size) override;
+  void SetViewSize(const gfx::Size& new_size) override;
   void SetKeyboardAccessible(bool enabled) override;
   void SetIsFirstResponder(bool is_first_responder) override;
   void OnScrollEvent(const ui::ScrollEvent& const_event) override;
@@ -86,6 +100,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                  bool* found_word,
                  gfx::DecoratedText* decorated_word,
                  gfx::Point* baseline_point) override;
+  void OnWindowGeometryChanged(
+      const gfx::Rect& window_bounds_in_screen_dips,
+      const gfx::Rect& content_bounds_in_screen_dips) override;
+  void OnWindowDisplayChanged(const display::Display& display) override;
   void OnWindowWillClose() override;
   void OnWindowHasClosed() override;
 
@@ -118,6 +136,14 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   std::unique_ptr<ui::InputMethod> input_method_;
   FocusManager* focus_manager_ = nullptr;  // Weak. Owned by our Widget.
+
+  // The display that the window is currently on.
+  display::Display display_;
+
+  // The geometry of the window and its contents view, in screen coordinates.
+  bool has_received_window_geometry_ = false;
+  gfx::Rect window_bounds_in_screen_;
+  gfx::Rect content_bounds_in_screen_;
 
   std::unique_ptr<ui::RecyclableCompositorMac> compositor_;
 

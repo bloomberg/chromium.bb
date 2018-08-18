@@ -16,6 +16,7 @@
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/display/display_observer.h"
 #import "ui/views/cocoa/bridged_native_widget_owner.h"
 #import "ui/views/cocoa/cocoa_mouse_capture_delegate.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
@@ -62,6 +63,7 @@ class VIEWS_EXPORT BridgedNativeWidgetPublic {
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
 class VIEWS_EXPORT BridgedNativeWidget
     : public BridgedNativeWidgetPublic,
+      public display::DisplayObserver,
       public ui::CATransactionCoordinator::PreCommitObserver,
       public CocoaMouseCaptureDelegate,
       public BridgedNativeWidgetOwner {
@@ -230,6 +232,10 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool ShouldRunCustomAnimationFor(
       Widget::VisibilityTransition transition) const;
 
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t metrics) override;
+
   // ui::CATransactionCoordinator::PreCommitObserver:
   bool ShouldWaitInPreCommit() override;
   base::TimeDelta PreCommitTimeout() override;
@@ -252,16 +258,16 @@ class VIEWS_EXPORT BridgedNativeWidget
   // Notify descendants of a visibility change.
   void NotifyVisibilityChangeDown();
 
-  // Essentially NativeWidgetMac::GetClientAreaBoundsInScreen().size(), but no
-  // coordinate transformations are required from AppKit coordinates.
-  gfx::Size GetClientAreaSize() const;
-
   // Installs the NSView for hosting the composited layer.
   void AddCompositorSuperview();
 
-  // Size the layer to match the client area bounds, taking into account display
-  // scale factor.
-  void UpdateCompositorSizeAndScale();
+  // Compute the window and content size, and forward them to |host_|. This will
+  // update widget and compositor size.
+  void UpdateWindowGeometry();
+
+  // Query the display properties of the monitor that |window_| is on, and
+  // forward them to |host_|.
+  void UpdateWindowDisplay();
 
   // Show the window using -[NSApp beginSheet:..], modal for the parent window.
   void ShowAsModalSheet();
@@ -302,8 +308,14 @@ class VIEWS_EXPORT BridgedNativeWidget
   BridgedNativeWidgetOwner* parent_;  // Weak. If non-null, owns this.
   std::vector<BridgedNativeWidget*> child_windows_;
 
-  // The size of the most recently received compositor frame. Note that this
-  // may lag behind GetClientAreaSize.
+  // The size of the content area of the window most recently sent to |host_|
+  // (and its compositor).
+  gfx::Size content_dip_size_;
+
+  // The size of the frame most recently *received from* the compositor. Note
+  // that during resize (and showing new windows), this will lag behind
+  // |content_dip_size_|, which is the frame size most recently *sent to* the
+  // compositor.
   gfx::Size compositor_frame_dip_size_;
   base::scoped_nsobject<NSView> compositor_superview_;
   std::unique_ptr<ui::DisplayCALayerTree> display_ca_layer_tree_;
@@ -312,13 +324,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   // provide an answer for GetRestoredBounds(), but not ever sent to Cocoa (it
   // has its own copy, but doesn't provide access to it).
   gfx::Rect bounds_before_fullscreen_;
-
-  // Tracks the origin of the window (from the top-left of the screen) when it
-  // was last reported to toolkit-views. Needed to trigger move notifications
-  // associated with a window resize since AppKit won't send move notifications
-  // when the top-left point of the window moves vertically. The origin of the
-  // window in AppKit coordinates is not actually changing in this case.
-  gfx::Point last_window_frame_origin_;
 
   // The transition types to animate when not relying on native NSWindow
   // animation behaviors. Bitmask of Widget::VisibilityTransition.

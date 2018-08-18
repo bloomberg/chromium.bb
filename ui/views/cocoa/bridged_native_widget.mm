@@ -22,6 +22,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
@@ -119,10 +120,6 @@ using NSViewComparatorValue = __kindof NSView*;
 #endif
 
 int kWindowPropertiesKey;
-
-float GetDeviceScaleFactorFromView(NSView* view) {
-  return ui::GetScaleFactorForNativeView(view);
-}
 
 // Returns true if bounds passed to window in SetBounds should be treated as
 // though they are in screen coordinates.
@@ -717,28 +714,11 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState(bool async) {
 }
 
 void BridgedNativeWidget::OnSizeChanged() {
-  const gfx::Rect new_bounds = native_widget_mac_->GetWindowBoundsInScreen();
-  if (new_bounds.origin() != last_window_frame_origin_) {
-    native_widget_mac_->GetWidget()->OnNativeWidgetMove();
-    last_window_frame_origin_ = new_bounds.origin();
-  }
-
-  // Note we can't use new_bounds.size(), since it includes the titlebar for the
-  // purposes of detecting a window move.
-  gfx::Size new_size = GetClientAreaSize();
-  native_widget_mac_->GetWidget()->OnNativeWidgetSizeChanged(new_size);
-  UpdateCompositorSizeAndScale();
+  UpdateWindowGeometry();
 }
 
 void BridgedNativeWidget::OnPositionChanged() {
-  // When a window grows vertically, the AppKit origin changes, but as far as
-  // tookit-views is concerned, the window hasn't moved. Suppress these.
-  const gfx::Rect new_bounds = native_widget_mac_->GetWindowBoundsInScreen();
-  if (new_bounds.origin() == last_window_frame_origin_)
-    return;
-
-  last_window_frame_origin_ = new_bounds.origin();
-  native_widget_mac_->GetWidget()->OnNativeWidgetMove();
+  UpdateWindowGeometry();
 }
 
 void BridgedNativeWidget::OnVisibilityChanged() {
@@ -769,9 +749,11 @@ void BridgedNativeWidget::OnVisibilityChanged() {
       [parent_->GetNSWindow() removeChildWindow:window_];
   }
 
-  // Inform the compositor of the view's size before making it visible.
-  if (window_visible_)
-    UpdateCompositorSizeAndScale();
+  // Showing a translucent window after hiding it should trigger shadow
+  // invalidation.
+  if (window_visible && ![window_ isOpaque])
+    invalidate_shadow_on_frame_swap_ = true;
+
   UpdateCompositorVisibility();
   NotifyVisibilityChangeDown();
   native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(
@@ -789,7 +771,7 @@ void BridgedNativeWidget::OnSystemControlTintChanged() {
 }
 
 void BridgedNativeWidget::OnBackingPropertiesChanged() {
-  UpdateCompositorSizeAndScale();
+  UpdateWindowDisplay();
 }
 
 void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
@@ -867,7 +849,11 @@ void BridgedNativeWidget::InitCompositorView() {
     DCHECK(!ca_transaction_sync_suppressed_);
   }
 
-  UpdateCompositorSizeAndScale();
+  // Send the initial window geometry and screen properties. Any future changes
+  // will be forwarded.
+  UpdateWindowDisplay();
+  UpdateWindowGeometry();
+
   // Note, except for controls, this will set the layer to be hidden, since it
   // is only called during initialization.
   UpdateCompositorVisibility();
@@ -967,6 +953,15 @@ bool BridgedNativeWidget::ShouldRunCustomAnimationFor(
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidget, ui::CATransactionObserver
 
+void BridgedNativeWidget::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t metrics) {
+  UpdateWindowDisplay();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidget, ui::CATransactionObserver
+
 bool BridgedNativeWidget::ShouldWaitInPreCommit() {
   if (!window_visible_)
     return false;
@@ -974,7 +969,7 @@ bool BridgedNativeWidget::ShouldWaitInPreCommit() {
     return false;
   if (!compositor_superview_)
     return false;
-  return GetClientAreaSize() != compositor_frame_dip_size_;
+  return content_dip_size_ != compositor_frame_dip_size_;
 }
 
 base::TimeDelta BridgedNativeWidget::PreCommitTimeout() {
@@ -1006,7 +1001,7 @@ void BridgedNativeWidget::SetCALayerParams(
   // should arrive soon.
   gfx::Size frame_dip_size = gfx::ConvertSizeToDIP(ca_layer_params.scale_factor,
                                                    ca_layer_params.pixel_size);
-  if (GetClientAreaSize() != frame_dip_size)
+  if (content_dip_size_ != frame_dip_size)
     return;
   compositor_frame_dip_size_ = frame_dip_size;
 
@@ -1127,11 +1122,6 @@ void BridgedNativeWidget::NotifyVisibilityChangeDown() {
             CountBridgedWindows([window_ childWindows]));
 }
 
-gfx::Size BridgedNativeWidget::GetClientAreaSize() const {
-  NSRect content_rect = [window_ contentRectForFrameRect:[window_ frame]];
-  return gfx::Size(NSWidth(content_rect), NSHeight(content_rect));
-}
-
 void BridgedNativeWidget::AddCompositorSuperview() {
   DCHECK(!compositor_superview_);
   compositor_superview_.reset(
@@ -1161,23 +1151,27 @@ void BridgedNativeWidget::AddCompositorSuperview() {
   [bridged_view_ addSubview:compositor_superview_];
 }
 
-void BridgedNativeWidget::UpdateCompositorSizeAndScale() {
-  // Avoid transient updates during initialization by waiting until after
-  // |compositor_superview_| is created.
-  if (!compositor_superview_)
-    return;
-  float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
-  gfx::Size size_in_dip = GetClientAreaSize();
+void BridgedNativeWidget::UpdateWindowGeometry() {
+  gfx::Rect window_in_screen = gfx::ScreenRectFromNSRect([window_ frame]);
+  gfx::Rect content_in_screen = gfx::ScreenRectFromNSRect(
+      [window_ contentRectForFrameRect:[window_ frame]]);
+  bool content_resized = content_dip_size_ != content_in_screen.size();
+  content_dip_size_ = content_in_screen.size();
 
-  if (!ca_transaction_sync_suppressed_)
+  host_->OnWindowGeometryChanged(window_in_screen, content_in_screen);
+
+  if (content_resized && !ca_transaction_sync_suppressed_)
     ui::CATransactionCoordinator::Get().Synchronize();
-
-  host_->SetCompositorSize(size_in_dip, scale_factor);
 
   // For a translucent window, the shadow calculation needs to be carried out
   // after the frame from the compositor arrives.
-  if (![window_ isOpaque])
+  if (content_resized && ![window_ isOpaque])
     invalidate_shadow_on_frame_swap_ = true;
+}
+
+void BridgedNativeWidget::UpdateWindowDisplay() {
+  host_->OnWindowDisplayChanged(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window_));
 }
 
 void BridgedNativeWidget::ShowAsModalSheet() {
