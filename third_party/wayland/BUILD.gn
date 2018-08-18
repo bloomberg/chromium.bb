@@ -16,6 +16,10 @@ if (!use_system_libwayland) {
       "include/protocol",
       "src/src",
     ]
+
+    # TODO(thomasanderson): Remove this once
+    # https://patchwork.freedesktop.org/patch/242086/ lands.
+    cflags = [ "-Wno-macro-redefined" ]
   }
 
   static_library("wayland_util") {

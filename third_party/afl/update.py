@@ -11,6 +11,7 @@ import cStringIO
 import datetime
 import os
 import re
+import subprocess
 import sys
 import tarfile
 import urllib2
@@ -127,6 +128,16 @@ def version_to_float(version):
   return float(version)
 
 
+def apply_patches():
+  afl_dir = os.path.join('third_party', 'afl')
+  patch_dir = os.path.join(afl_dir, 'patches')
+  src_dir = os.path.join(afl_dir, 'src')
+  for patch_file in os.listdir(patch_dir):
+    subprocess.check_output(
+        ['patch', '-i',
+         os.path.join('..', 'patches', patch_file)], cwd=src_dir)
+
+
 def update_afl(new_version):
   """
   Update this version of AFL to newer version, new_version.
@@ -142,13 +153,9 @@ def update_afl(new_version):
   # Extract the tarball.
   tarball = AflTarball(new_version)
   tarball.download()
-  current_less_than_new = version_to_float(old_version) < version_to_float(
-      tarball.real_version)
-  assert current_less_than_new, (
-      'Trying to update from version {0} to {1}'.format(old_version,
-                                                        tarball.real_version))
-
   tarball.extract()
+
+  apply_patches()
 
   readme.update(tarball.real_version)
 
