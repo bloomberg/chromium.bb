@@ -406,7 +406,11 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, RegisterEngine) {
           Return(true)));
   }
 
-  ASSERT_TRUE(RunExtensionTest("tts_engine/register_engine")) << message_;
+  // TODO(katie): Expect the deprecated gender warning rather than ignoring
+  // warnings.
+  ASSERT_TRUE(RunExtensionTestWithFlags("tts_engine/register_engine",
+                                        kFlagIgnoreManifestWarnings))
+      << message_;
 }
 
 // https://crbug.com/709115 tracks test flakiness.

@@ -15,6 +15,7 @@
       {
         "id": "VoiceGender",
         "type": "string",
+        "deprecated": "Gender is deprecated and will soon be ignored.",
         "enum": ["male", "female"]
       },
       {
@@ -68,6 +69,7 @@
           "gender": {
             "$ref": "VoiceGender",
             "optional": true,
+            "deprecated": "Gender is deprecated and will soon be ignored.",
             "description": "This voice's gender."
           },
           "remote": {
@@ -129,6 +131,7 @@
               "gender": {
                 "$ref": "VoiceGender",
                 "optional": true,
+                "deprecated": "Gender is deprecated and will soon be ignored.",
                 "description": "Gender of voice for synthesized speech."
               },
               "rate": {

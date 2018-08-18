@@ -496,6 +496,7 @@ extern const char kPermissionUnknownOrMalformed[];
 extern const char kPluginsRequirementDeprecated[];
 extern const char kReservedMessageFound[];
 extern const char kRulesFileIsInvalid[];
+extern const char kTtsGenderIsDeprecated[];
 extern const char kUnrecognizedManifestKey[];
 extern const char kUnrecognizedManifestProperty[];
 extern const char kUrlHandlersInHostedApps[];

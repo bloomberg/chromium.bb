@@ -32,7 +32,8 @@ struct TtsVoices : public Extension::ManifestData {
   ~TtsVoices() override;
   static bool Parse(const base::ListValue* tts_voices,
                     TtsVoices* out_voices,
-                    base::string16* error);
+                    base::string16* error,
+                    Extension* extension);
 
   std::vector<extensions::TtsVoice> voices;
 

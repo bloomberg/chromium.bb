@@ -148,7 +148,7 @@ support and to still speak the underlying text.</p>
 <h2 id="choosing_voice">Choosing a voice</h2>
 
 <p>By default, Chrome chooses the most appropriate voice for each
-utterance you want to speak, based on the language and gender. On most
+utterance you want to speak, based on the language. On most
 Windows, Mac OS X, and Chrome OS systems, speech synthesis provided by
 the operating system should be able to speak any text in at least one
 language. Some users may have a variety of voices available, though,
@@ -166,7 +166,6 @@ argument:</p>
         console.log('Voice ' + i + ':');
         console.log('  name: ' + voices[i].voiceName);
         console.log('  lang: ' + voices[i].lang);
-        console.log('  gender: ' + voices[i].gender);
         console.log('  extension id: ' + voices[i].extensionId);
         console.log('  event types: ' + voices[i].eventTypes);
       }

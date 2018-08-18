@@ -34,7 +34,9 @@ TtsVoices::~TtsVoices() {}
 //  static
 bool TtsVoices::Parse(const base::ListValue* tts_voices,
                       TtsVoices* out_voices,
-                      base::string16* error) {
+                      base::string16* error,
+                      Extension* extension) {
+  bool added_gender_warning = false;
   for (size_t i = 0; i < tts_voices->GetSize(); i++) {
     const base::DictionaryValue* one_tts_voice = nullptr;
     if (!tts_voices->GetDictionary(i, &one_tts_voice)) {
@@ -59,6 +61,12 @@ bool TtsVoices::Parse(const base::ListValue* tts_voices,
       }
     }
     if (one_tts_voice->HasKey(keys::kTtsVoicesGender)) {
+      if (!added_gender_warning) {
+        extension->AddInstallWarning(
+            InstallWarning(errors::kTtsGenderIsDeprecated));
+        // No need to add a warning for each voice, that's noisy.
+        added_gender_warning = true;
+      }
       if (!one_tts_voice->GetString(
               keys::kTtsVoicesGender, &voice_data.gender) ||
           (voice_data.gender != keys::kTtsGenderMale &&
@@ -141,7 +149,7 @@ bool TtsEngineManifestHandler::Parse(Extension* extension,
     return false;
   }
 
-  if (!TtsVoices::Parse(tts_voices, info.get(), error))
+  if (!TtsVoices::Parse(tts_voices, info.get(), error, extension))
     return false;
 
   extension->SetManifestData(keys::kTtsVoices, std::move(info));
