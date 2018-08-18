@@ -99,10 +99,12 @@ void Module::AddFunction(Function *function) {
 #if _DEBUG
   {
     // There should be no other PUBLIC symbols that overlap with the function.
-    Extern debug_ext(function->address);
-    ExternSet::iterator it_debug = externs_.lower_bound(&ext);
-    assert(it_debug == externs_.end() ||
-           (*it_debug)->address >= function->address + function->size);
+    for (const Range& range : function->ranges) {
+      Extern debug_ext(range.address);
+      ExternSet::iterator it_debug = externs_.lower_bound(&ext);
+      assert(it_debug == externs_.end() ||
+             (*it_debug)->address >= range.address + range.size);
+    }
   }
 #endif
 

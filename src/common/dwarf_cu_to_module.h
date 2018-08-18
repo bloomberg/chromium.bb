@@ -321,9 +321,6 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
   // The handler to use to handle line number data.
   LineToModuleHandler *line_reader_;
 
-  // The handler to use to handle range lists.
-  RangesHandler *ranges_handler_;
-
   // This compilation unit's context.
   scoped_ptr<CUContext> cu_context_;
 
