@@ -74,6 +74,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // HorizontalPage overrides:
   void OnWillBeHidden() override;

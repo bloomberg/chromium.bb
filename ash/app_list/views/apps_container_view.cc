@@ -316,6 +316,31 @@ const char* AppsContainerView::GetClassName() const {
   return "AppsContainerView";
 }
 
+void AppsContainerView::OnGestureEvent(ui::GestureEvent* event) {
+  // Will forward events to |apps_grid_view_| if they occur in the same y-region
+  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN &&
+      event->location().y() <= apps_grid_view_->bounds().y()) {
+    return;
+  }
+
+  // If a folder is currently opening or closing, we should ignore the event.
+  // This is here until the animation for pagination while closing folders is
+  // fixed: https://crbug.com/875133
+  if (app_list_folder_view_->IsAnimationRunning()) {
+    event->SetHandled();
+    return;
+  }
+
+  // Temporary event for use by |apps_grid_view_|
+  ui::GestureEvent grid_event(*event);
+  ConvertEventToTarget(apps_grid_view_, &grid_event);
+  apps_grid_view_->OnGestureEvent(&grid_event);
+
+  // If the temporary event was handled, we don't want to handle it again.
+  if (grid_event.handled())
+    event->SetHandled();
+}
+
 void AppsContainerView::OnWillBeHidden() {
   if (show_state_ == SHOW_APPS || show_state_ == SHOW_ITEM_REPARENT)
     apps_grid_view_->EndDrag(true);
