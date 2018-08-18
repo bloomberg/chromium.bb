@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "base/containers/queue.h"
+#include "base/containers/small_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -220,15 +221,11 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
 
-  // All allocated Pictures, regardless of their current state. Pictures are
-  // allocated once using |create_vaapi_picture_callback_| and destroyed at the
-  // end of decode. Comes after |vaapi_wrapper_| to ensure all pictures are
-  // destroyed before said |vaapi_wrapper_| is destroyed.
-  using Pictures = std::map<int32_t, std::unique_ptr<VaapiPicture>>;
-  Pictures pictures_;
-
-  // Return a VaapiPicture associated with given client-provided id.
-  VaapiPicture* PictureById(int32_t picture_buffer_id);
+  // All allocated VaapiPictures, regardless of their current state. Pictures
+  // are allocated at AssignPictureBuffers() and are kept until dtor or
+  // TryFinishSurfaceSetChange(). Comes after |vaapi_wrapper_| to ensure all
+  // pictures are destroyed before this is destroyed.
+  base::small_map<std::map<int32_t, std::unique_ptr<VaapiPicture>>> pictures_;
 
   // VA Surfaces no longer in use that can be passed back to the decoder for
   // reuse, once it requests them.
@@ -242,7 +239,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // to use, we'll execute the callback passing the Picture. The callback
   // will put the contents of the surface into the picture and return it to
   // the client, releasing the surface as well.
-  // If we don't have any available Pictures at the time when the decoder
+  // If we don't have any available |pictures_| at the time when the decoder
   // requests output, we'll store the request on pending_output_cbs_ queue for
   // later and run it once the client gives us more textures
   // via ReusePictureBuffer().
@@ -250,7 +247,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   base::queue<OutputCB> pending_output_cbs_;
 
   // ChildThread's task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks from the decoder
   // thread back to the ChildThread.  Because the decoder thread is a member of

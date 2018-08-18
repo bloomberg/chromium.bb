@@ -128,17 +128,6 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
   }
 }
 
-VaapiPicture* VaapiVideoDecodeAccelerator::PictureById(
-    int32_t picture_buffer_id) {
-  Pictures::iterator it = pictures_.find(picture_buffer_id);
-  if (it == pictures_.end()) {
-    DVLOGF(4) << "Picture id " << picture_buffer_id << " does not exist";
-    return NULL;
-  }
-
-  return it->second.get();
-}
-
 VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb)
@@ -258,11 +247,11 @@ void VaapiVideoDecodeAccelerator::TryOutputSurface() {
   if (pending_output_cbs_.empty() || output_buffers_.empty())
     return;
 
-  OutputCB output_cb = pending_output_cbs_.front();
+  OutputCB output_cb = std::move(pending_output_cbs_.front());
   pending_output_cbs_.pop();
 
-  VaapiPicture* picture = PictureById(output_buffers_.front());
-  DCHECK(picture);
+  DCHECK(base::ContainsKey(pictures_, output_buffers_.front()));
+  VaapiPicture* picture = pictures_[output_buffers_.front()].get();
   output_buffers_.pop();
 
   output_cb.Run(picture);
@@ -508,8 +497,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   available_va_surfaces_.clear();
   vaapi_wrapper_->DestroySurfaces();
 
-  for (Pictures::iterator iter = pictures_.begin(); iter != pictures_.end();
-       ++iter) {
+  for (auto iter = pictures_.begin(); iter != pictures_.end(); ++iter) {
     VLOGF(2) << "Dismissing picture id: " << iter->first;
     if (client_)
       client_->DismissPictureBuffer(iter->first);
@@ -601,10 +589,9 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
           "Failed to allocate memory for a VaapiPicture", PLATFORM_FAILURE, );
       output_buffers_.push(buffers[i].id());
     }
-    bool inserted =
-        pictures_.insert(std::make_pair(buffers[i].id(), std::move(picture)))
-            .second;
-    DCHECK(inserted);
+
+    DCHECK(!base::ContainsKey(pictures_, buffers[i].id()));
+    pictures_[buffers[i].id()] = std::move(picture);
 
     available_va_surfaces_.push_back(va_surface_ids[i]);
     surfaces_available_.Signal();
@@ -633,8 +620,7 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     return;
   }
 
-  VaapiPicture* picture = PictureById(picture_buffer_id);
-  if (!picture) {
+  if (!pictures_.count(picture_buffer_id)) {
     CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
 
     // It's possible that we've already posted a DismissPictureBuffer for this
@@ -646,6 +632,7 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     return;
   }
 
+  VaapiPicture* picture = pictures_[picture_buffer_id].get();
   if (!picture->ImportGpuMemoryBufferHandle(
           VideoPixelFormatToGfxBufferFormat(pixel_format),
           gpu_memory_buffer_handle)) {
@@ -667,7 +654,7 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
   TRACE_EVENT1("media,gpu", "VAVDA::ReusePictureBuffer", "Picture id",
                picture_buffer_id);
 
-  if (!PictureById(picture_buffer_id)) {
+  if (!pictures_.count(picture_buffer_id)) {
     // It's possible that we've already posted a DismissPictureBuffer for this
     // picture, but it has not yet executed when this ReusePictureBuffer
     // was posted to us by the client. In that case just ignore this (we've
