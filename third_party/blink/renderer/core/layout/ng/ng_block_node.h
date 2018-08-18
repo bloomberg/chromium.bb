@@ -97,6 +97,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   String ToString() const;
 
  private:
+  void FinishLayout(const NGConstraintSpace&,
+                    NGBreakToken*,
+                    scoped_refptr<NGLayoutResult>);
+
   // After we run the layout algorithm, this function copies back the geometry
   // data to the layout box.
   void CopyFragmentDataToLayoutBox(const NGConstraintSpace&,

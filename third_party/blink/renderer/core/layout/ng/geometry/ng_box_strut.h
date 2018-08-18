@@ -77,6 +77,7 @@ struct CORE_EXPORT NGBoxStrut {
   }
 
   bool operator==(const NGBoxStrut& other) const;
+  bool operator!=(const NGBoxStrut& other) const;
 
   String ToString() const;
 
