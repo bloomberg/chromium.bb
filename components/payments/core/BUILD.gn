@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("core") {
+import("//build/config/jumbo.gni")
+
+jumbo_static_library("core") {
   sources = [
     "autofill_payment_instrument.cc",
     "autofill_payment_instrument.h",
@@ -82,7 +84,7 @@ static_library("core") {
   ]
 }
 
-static_library("test_support") {
+jumbo_static_library("test_support") {
   testonly = true
   sources = [
     "payments_test_util.cc",
@@ -106,7 +108,7 @@ static_library("test_support") {
   ]
 }
 
-source_set("unit_tests") {
+jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
     "autofill_payment_instrument_unittest.cc",

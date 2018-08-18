@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("content") {
+import("//build/config/jumbo.gni")
+
+jumbo_static_library("content") {
   sources = [
     "can_make_payment_query_factory.cc",
     "can_make_payment_query_factory.h",
@@ -45,7 +47,7 @@ static_library("content") {
 }
 
 # Files used by content and utility.
-static_library("content_common") {
+jumbo_static_library("content_common") {
   sources = [
     "web_app_manifest.cc",
     "web_app_manifest.h",
@@ -56,7 +58,7 @@ static_library("content_common") {
   ]
 }
 
-static_library("utils") {
+jumbo_static_library("utils") {
   sources = [
     "installable_payment_app_crawler.cc",
     "installable_payment_app_crawler.h",
@@ -94,7 +96,7 @@ static_library("utils") {
   ]
 }
 
-source_set("unit_tests") {
+jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
     "payment_method_manifest_table_unittest.cc",

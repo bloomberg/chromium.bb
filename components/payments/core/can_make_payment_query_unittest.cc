@@ -11,23 +11,23 @@
 namespace payments {
 namespace {
 
-struct TestCase {
-  TestCase(const char* first_origin,
-           const char* second_origin,
-           bool expected_second_origin_different_query_allowed)
+struct QueryTestCase {
+  QueryTestCase(const char* first_origin,
+                const char* second_origin,
+                bool expected_second_origin_different_query_allowed)
       : first_origin(first_origin),
         second_origin(second_origin),
         expected_second_origin_different_query_allowed(
             expected_second_origin_different_query_allowed) {}
 
-  ~TestCase() {}
+  ~QueryTestCase() {}
 
   const char* const first_origin;
   const char* const second_origin;
   const bool expected_second_origin_different_query_allowed;
 };
 
-class CanMakePaymentQueryTest : public ::testing::TestWithParam<TestCase> {
+class CanMakePaymentQueryTest : public ::testing::TestWithParam<QueryTestCase> {
  private:
   base::MessageLoop message_loop_;
 };
@@ -50,17 +50,21 @@ INSTANTIATE_TEST_CASE_P(
     Denied,
     CanMakePaymentQueryTest,
     testing::Values(
-        TestCase("https://example.com", "https://example.com", false),
-        TestCase("http://localhost", "http://localhost", false),
-        TestCase("file:///tmp/test.html", "file:///tmp/test.html", false)));
+        QueryTestCase("https://example.com", "https://example.com", false),
+        QueryTestCase("http://localhost", "http://localhost", false),
+        QueryTestCase("file:///tmp/test.html",
+                      "file:///tmp/test.html",
+                      false)));
 
 INSTANTIATE_TEST_CASE_P(
     Allowed,
     CanMakePaymentQueryTest,
     testing::Values(
-        TestCase("https://example.com", "https://not-example.com", true),
-        TestCase("http://localhost", "http://not-localhost", true),
-        TestCase("file:///tmp/test.html", "file:///tmp/not-test.html", true)));
+        QueryTestCase("https://example.com", "https://not-example.com", true),
+        QueryTestCase("http://localhost", "http://not-localhost", true),
+        QueryTestCase("file:///tmp/test.html",
+                      "file:///tmp/not-test.html",
+                      true)));
 
 }  // namespace
 }  // namespace payments
