@@ -838,6 +838,11 @@ Shell::~Shell() {
   // |window_selector_controller_|.
   split_view_controller_.reset();
 
+  // Stop dispatching events (e.g. synthesized mouse exits from window close).
+  // https://crbug.com/874156
+  for (RootWindowController* rwc : GetAllRootWindowControllers())
+    rwc->GetHost()->dispatcher()->Shutdown();
+
   // Close all widgets (including the shelf) and destroy all window containers.
   CloseAllRootWindowChildWindows();
 

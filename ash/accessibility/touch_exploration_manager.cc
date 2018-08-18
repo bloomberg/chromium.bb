@@ -131,7 +131,10 @@ void TouchExplorationManager::OnTwoFingerTouchStart() {
 }
 
 void TouchExplorationManager::OnTwoFingerTouchStop() {
-  GetA11yController()->OnTwoFingerTouchStop();
+  // Can be null during shutdown.
+  AccessibilityController* controller = GetA11yController();
+  if (controller)
+    controller->OnTwoFingerTouchStop();
 }
 
 void TouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
