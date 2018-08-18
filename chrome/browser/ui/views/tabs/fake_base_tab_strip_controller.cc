@@ -150,6 +150,10 @@ void FakeBaseTabStripController::OnStartedDraggingTabs() {
 void FakeBaseTabStripController::OnStoppedDraggingTabs() {
 }
 
+bool FakeBaseTabStripController::HasVisibleBackgroundTabShapes() const {
+  return false;
+}
+
 bool FakeBaseTabStripController::EverHasVisibleBackgroundTabShapes() const {
   return false;
 }

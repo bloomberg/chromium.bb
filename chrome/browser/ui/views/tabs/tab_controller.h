@@ -142,6 +142,10 @@ class TabController {
   // in the same window will redraw on top of the the favicon area of any tab.
   virtual bool CanPaintThrobberToLayer() const = 0;
 
+  // Returns whether the shapes of background tabs are visible against the
+  // frame.
+  virtual bool HasVisibleBackgroundTabShapes() const = 0;
+
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
   virtual SkColor GetToolbarTopSeparatorColor() const = 0;

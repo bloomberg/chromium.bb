@@ -256,6 +256,7 @@ class TabStrip : public views::View,
       gfx::Path* clip) override;
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
+  bool HasVisibleBackgroundTabShapes() const override;
   SkColor GetToolbarTopSeparatorColor() const override;
   SkColor GetTabSeparatorColor() const override;
   SkColor GetTabBackgroundColor(TabState state, bool opaque) const override;
