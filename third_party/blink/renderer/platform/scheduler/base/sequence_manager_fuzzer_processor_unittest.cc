@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/strings/strcat.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/proto/sequence_manager_test_description.pb.h"
@@ -1237,7 +1238,13 @@ TEST(SequenceManagerFuzzerProcessorTest, CreateThreadRecursively) {
   EXPECT_THAT(executed_actions, ContainerEq(expected_actions));
 }
 
-TEST(SequenceManagerFuzzerProcessorTest, PostTaskToCreateThread) {
+// Disabled since this test is flaky on Linux. https://crbug.com/875170.
+#if defined(OS_LINUX)
+#define MAYBE_PostTaskToCreateThread DISABLED_PostTaskToCreateThread
+#else
+#define MAYBE_PostTaskToCreateThread PostTaskToCreateThread
+#endif
+TEST(SequenceManagerFuzzerProcessorTest, MAYBE_PostTaskToCreateThread) {
   std::vector<std::vector<ActionForTest>> executed_actions;
   std::vector<std::vector<TaskForTest>> executed_tasks;
 
