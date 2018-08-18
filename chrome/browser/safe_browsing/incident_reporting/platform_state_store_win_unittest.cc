@@ -7,10 +7,8 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
-#include "base/test/test_simple_task_runner.h"
 #include "base/win/registry.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -37,12 +35,10 @@ class PlatformStateStoreWinTest : public ::testing::Test {
  protected:
   PlatformStateStoreWinTest()
       : profile_(nullptr),
-        task_runner_(new base::TestSimpleTaskRunner()),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   void SetUp() override {
     ::testing::Test::SetUp();
-    base::MessageLoopCurrent::Get()->SetTaskRunner(task_runner_);
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
     ASSERT_TRUE(profile_manager_.SetUp());
@@ -118,7 +114,6 @@ class PlatformStateStoreWinTest : public ::testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   registry_util::RegistryOverrideManager registry_override_manager_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   TestingProfileManager profile_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformStateStoreWinTest);

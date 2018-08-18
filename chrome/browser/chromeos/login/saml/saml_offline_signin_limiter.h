@@ -38,6 +38,9 @@ class SAMLOfflineSigninLimiter : public KeyedService {
   // the type of authentication flow that the user went through.
   void SignedIn(UserContext::AuthFlow auth_flow);
 
+  // Allows a mock timer to be substituted for testing purposes.
+  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
+
   // KeyedService:
   void Shutdown() override;
 

@@ -10,10 +10,8 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -80,7 +78,6 @@ class StateStoreTest : public PlatformStateStoreTestBase {
 
   void SetUp() override {
     PlatformStateStoreTestBase::SetUp();
-    base::MessageLoopCurrent::Get()->SetTaskRunner(task_runner_);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(profile_manager_.SetUp());
     CreateProfile();
@@ -91,6 +88,14 @@ class StateStoreTest : public PlatformStateStoreTestBase {
       profile_ = nullptr;
       profile_manager_.DeleteTestingProfile(kProfileName_);
     }
+  }
+
+  // Commits a pending write (which posts a task to task_runner_) and waits for
+  // it to finish.
+  void CommitWrite() {
+    ASSERT_NE(nullptr, profile_);
+    profile_->GetPrefs()->CommitPendingWrite();
+    task_runner_->RunUntilIdle();
   }
 
   // Removes the safebrowsing.incidents_sent preference from the profile's pref
@@ -208,8 +213,8 @@ TEST_F(StateStoreTest, ClearAll) {
     ASSERT_FALSE(state_store.HasBeenReported(data.type, data.key, data.digest));
   }
 
-  // Run tasks to write prefs out to the JsonPrefStore.
-  task_runner_->RunUntilIdle();
+  // Write prefs out to the JsonPrefStore.
+  CommitWrite();
 
   // Delete the profile.
   DeleteProfile();
@@ -234,7 +239,7 @@ TEST_F(StateStoreTest, Persistence) {
   }
 
   // Run tasks to write prefs out to the JsonPrefStore.
-  task_runner_->RunUntilIdle();
+  CommitWrite();
 
   // Delete the profile.
   DeleteProfile();
@@ -257,8 +262,8 @@ TEST_F(StateStoreTest, PersistenceWithStoreDelete) {
       transaction.MarkAsReported(data.type, data.key, data.digest);
   }
 
-  // Run tasks to write prefs out to the JsonPrefStore.
-  task_runner_->RunUntilIdle();
+  // Write prefs out to the JsonPrefStore.
+  CommitWrite();
 
   // Delete the profile.
   DeleteProfile();
