@@ -119,7 +119,7 @@ void BrowserFrameMac::InitNativeWidget(
   [[GetNativeWindow() contentView] setWantsLayer:YES];
 }
 
-NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
+base::scoped_nsobject<NativeWidgetMacNSWindow> BrowserFrameMac::CreateNSWindow(
     const views::Widget::InitParams& params) {
   NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
                           NSMiniaturizableWindowMask | NSResizableWindowMask;
@@ -153,7 +153,7 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
                window:ns_window]);
   [ns_window setWindowTouchBarDelegate:touch_bar_delegate_.get()];
 
-  return ns_window.autorelease();
+  return ns_window;
 }
 
 void BrowserFrameMac::OnWindowDestroying(NSWindow* window) {

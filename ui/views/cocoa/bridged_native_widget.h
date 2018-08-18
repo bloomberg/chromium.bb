@@ -19,13 +19,13 @@
 #include "ui/display/display_observer.h"
 #import "ui/views/cocoa/bridged_native_widget_owner.h"
 #import "ui/views/cocoa/cocoa_mouse_capture_delegate.h"
-#import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 
 @class BridgedContentView;
 @class ModalShowAnimationWithLayer;
+@class NativeWidgetMacNSWindow;
 @class ViewsNSWindowDelegate;
 
 namespace views {
@@ -88,16 +88,13 @@ class VIEWS_EXPORT BridgedNativeWidget
   BridgedNativeWidget(BridgedNativeWidgetHost* host, NativeWidgetMac* parent);
   ~BridgedNativeWidget() override;
 
-  // Create the NSWindow using the specified style mask.
-  void CreateWindow(uint64_t window_style_mask);
   // Initialize the NSWindow by taking ownership of the specified object.
-  // Either CreateWindow or SetWindow maybe used to initialize the NSWindow,
-  // and the initialization may happen only once.
   // TODO(ccameron): When a BridgedNativeWidget is allocated across a process
   // boundary, it will not be possible to call SetWindow. Move the relevant
   // sub-classes so that they can be allocated via CreateWindow.
   void SetWindow(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
-  // Initialize the bridge (after the NSWindow has been created).
+
+  // Initialize the bridge after the NSWindow has been set.
   void Init(const Widget::InitParams& params);
 
   // Changes the bounds of the window and the hosted layer if present. The
@@ -192,7 +189,7 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   NativeWidgetMac* native_widget_mac() { return native_widget_mac_; }
   BridgedContentView* ns_view() { return bridged_view_; }
-  NativeWidgetMacNSWindow* ns_window() { return window_; }
+  NSWindow* ns_window();
 
   TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
 
