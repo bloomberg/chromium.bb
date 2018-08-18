@@ -244,6 +244,11 @@ class AppMenuAdapter extends BaseAdapter {
                 holder.title.setEnabled(titleItem.isEnabled());
                 holder.title.setFocusable(titleItem.isEnabled());
                 holder.title.setOnClickListener(v -> mAppMenu.onItemClick(titleItem));
+                if (TextUtils.isEmpty(titleItem.getTitleCondensed())) {
+                    holder.title.setContentDescription(null);
+                } else {
+                    holder.title.setContentDescription(titleItem.getTitleCondensed());
+                }
 
                 if (subItem.isCheckable()) {
                     // Display a checkbox for the MenuItem.
