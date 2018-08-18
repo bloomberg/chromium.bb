@@ -137,15 +137,11 @@ class FakeFidoAuthenticator : public FidoDeviceAuthenticator {
 
 class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
  public:
-  FakeFidoRequestHandler(
-      const base::flat_set<FidoTransportProtocol>& protocols,
-      FakeHandlerCallback callback,
-      AddPlatformAuthenticatorCallback add_platform_authenticator =
-          AddPlatformAuthenticatorCallback())
+  FakeFidoRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols,
+                         FakeHandlerCallback callback)
       : FidoRequestHandler(nullptr /* connector */,
                            protocols,
-                           std::move(callback),
-                           std::move(add_platform_authenticator)),
+                           std::move(callback)),
         weak_factory_(this) {
     Start();
   }
@@ -191,21 +187,13 @@ class FidoRequestHandlerTest : public ::testing::Test {
 
   std::unique_ptr<FakeFidoRequestHandler> CreateFakeHandler() {
     ForgeNextHidDiscovery();
-    return std::make_unique<FakeFidoRequestHandler>(
+    auto handler = std::make_unique<FakeFidoRequestHandler>(
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice,
              FidoTransportProtocol::kBluetoothLowEnergy}),
         cb_.callback());
-  }
-
-  std::unique_ptr<FakeFidoRequestHandler>
-  CreateFakeHandlerWithPlatformAuthenticatorCallback(
-      FidoRequestHandlerBase::AddPlatformAuthenticatorCallback
-          add_platform_authenticator) {
-    return std::make_unique<FakeFidoRequestHandler>(
-        base::flat_set<FidoTransportProtocol>(
-            {FidoTransportProtocol::kInternal}),
-        cb_.callback(), std::move(add_platform_authenticator));
+    handler->SetPlatformAuthenticatorOrMarkUnavailable(nullptr);
+    return handler;
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
@@ -268,8 +256,8 @@ TEST_F(FidoRequestHandlerTest, TestAuthenticatorHandlerReset) {
   request_handler.reset();
 }
 
-// Test a scenario where 2 devices are connected and a response is received from
-// only a single device(device1) and the remaining device hangs.
+// Test a scenario where 2 devices are connected and a response is received
+// from only a single device(device1) and the remaining device hangs.
 TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleDevices) {
   auto request_handler = CreateFakeHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
@@ -342,11 +330,11 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleSuccessResponses) {
 }
 
 // Test a scenario where 3 devices respond with a processing error, an UP(user
-// presence) verified failure response with small time delay, and an UP verified
-// failure response with big time delay, respectively. Request for device with
-// processing error should be immediately dropped. Also, for UP verified
-// failures, the first received response should be passed on to the relying
-// party and cancel command should be sent to the remaining device.
+// presence) verified failure response with small time delay, and an UP
+// verified failure response with big time delay, respectively. Request for
+// device with processing error should be immediately dropped. Also, for UP
+// verified failures, the first received response should be passed on to the
+// relying party and cancel command should be sent to the remaining device.
 TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
   auto request_handler = CreateFakeHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
@@ -395,9 +383,9 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
             callback().status());
 }
 
-// Requests should be dispatched to the authenticator returned from the
-// AddPlatformAuthenticatorCallback if one is passed.
-TEST_F(FidoRequestHandlerTest, TestPlatformAuthenticatorCallback) {
+// Requests should be dispatched to the authenticator passed to
+// SetPlatformAuthenticatorOrMarkUnavailable.
+TEST_F(FidoRequestHandlerTest, TestSetPlatformAuthenticator) {
   // A platform authenticator usually wouldn't usually use a FidoDevice, but
   // that's not the point of the test here. The test is only trying to ensure
   // the authenticator gets injected and used.
@@ -406,18 +394,16 @@ TEST_F(FidoRequestHandlerTest, TestPlatformAuthenticatorCallback) {
   // Device returns success response.
   device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                       CreateFakeSuccessDeviceResponse());
-
-  FidoRequestHandlerBase::AddPlatformAuthenticatorCallback
-      make_platform_authenticator = base::BindOnce(
-          [](FidoDevice* device) -> std::unique_ptr<FidoAuthenticator> {
-            return std::make_unique<FakeFidoAuthenticator>(device);
-          },
-          device.get());
+  device->SetDeviceTransport(FidoTransportProtocol::kInternal);
+  auto authenticator = std::make_unique<FakeFidoAuthenticator>(device.get());
 
   TestTransportAvailabilityObserver observer;
-  auto request_handler = CreateFakeHandlerWithPlatformAuthenticatorCallback(
-      std::move(make_platform_authenticator));
+  auto request_handler = std::make_unique<FakeFidoRequestHandler>(
+      base::flat_set<FidoTransportProtocol>({FidoTransportProtocol::kInternal}),
+      callback().callback());
   request_handler->set_observer(&observer);
+  request_handler->SetPlatformAuthenticatorOrMarkUnavailable(
+      std::move(authenticator));
 
   observer.WaitForAndExpectAvailableTransportsAre(
       {FidoTransportProtocol::kInternal});
@@ -427,13 +413,14 @@ TEST_F(FidoRequestHandlerTest, TestPlatformAuthenticatorCallback) {
   EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
 }
 
-TEST_F(FidoRequestHandlerTest,
-       InternalTransportDisallowedIfFactoryYieldsNoAuthenticator) {
+TEST_F(FidoRequestHandlerTest, InternalTransportDisallowedIfMarkedUnavailable) {
   TestTransportAvailabilityObserver observer;
-  auto request_handler =
-      CreateFakeHandlerWithPlatformAuthenticatorCallback(base::BindOnce(
-          []() -> std::unique_ptr<FidoAuthenticator> { return nullptr; }));
+  auto request_handler = std::make_unique<FakeFidoRequestHandler>(
+      base::flat_set<FidoTransportProtocol>({FidoTransportProtocol::kInternal}),
+      callback().callback());
   request_handler->set_observer(&observer);
+  request_handler->SetPlatformAuthenticatorOrMarkUnavailable(nullptr);
+
   observer.WaitForAndExpectAvailableTransportsAre({});
 }
 

@@ -76,12 +76,12 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   CreateGetAssertionHandlerWithRequest(CtapGetAssertionRequest request) {
     ForgeDiscoveries();
 
-    return std::make_unique<GetAssertionRequestHandler>(
+    auto handler = std::make_unique<GetAssertionRequestHandler>(
         nullptr /* connector */, supported_transports_, std::move(request),
-        get_assertion_cb_.callback(),
-        base::BindOnce(
-            &FidoGetAssertionHandlerTest::CreatePlatformAuthenticator,
-            base::Unretained(this)));
+        get_assertion_cb_.callback());
+    handler->SetPlatformAuthenticatorOrMarkUnavailable(
+        CreatePlatformAuthenticator());
+    return handler;
   }
 
   void ExpectAllowedTransportsForRequestAre(
@@ -94,8 +94,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
       ble_discovery()->WaitForCallToStartAndSimulateSuccess();
     if (base::ContainsKey(transports, Transport::kNearFieldCommunication))
       nfc_discovery()->WaitForCallToStartAndSimulateSuccess();
-    if (base::ContainsKey(transports, Transport::kInternal))
-      platform_authenticator_factory().WaitForCallback();
 
     scoped_task_environment_.FastForwardUntilNoTasksRemain();
     EXPECT_FALSE(get_assertion_callback().was_called());
@@ -106,8 +104,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
       EXPECT_FALSE(ble_discovery()->is_start_requested());
     if (!base::ContainsKey(transports, Transport::kNearFieldCommunication))
       EXPECT_FALSE(nfc_discovery()->is_start_requested());
-    if (!base::ContainsKey(transports, Transport::kInternal))
-      EXPECT_FALSE(platform_authenticator_factory().was_called());
 
     // Even with FidoTransportProtocol::kInternal allowed, unless the platform
     // authenticator factory returns a FidoAuthenticator instance (which it will
@@ -140,10 +136,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     mock_platform_device_ = std::move(device);
   }
 
-  test::TestCallbackReceiver<>& platform_authenticator_factory() {
-    return create_platform_authenticator_receiver_;
-  }
-
   void set_supported_transports(
       base::flat_set<FidoTransportProtocol> transports) {
     supported_transports_ = std::move(transports);
@@ -151,7 +143,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
  protected:
   std::unique_ptr<FidoAuthenticator> CreatePlatformAuthenticator() {
-    create_platform_authenticator_receiver_.callback().Run();
     if (!mock_platform_device_)
       return nullptr;
     return std::make_unique<FidoDeviceAuthenticator>(
@@ -166,7 +157,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   test::FakeFidoDiscovery* ble_discovery_;
   test::FakeFidoDiscovery* nfc_discovery_;
   std::unique_ptr<MockFidoDevice> mock_platform_device_;
-  test::TestCallbackReceiver<> create_platform_authenticator_receiver_;
   TestGetAssertionRequestCallback get_assertion_cb_;
   base::flat_set<FidoTransportProtocol> supported_transports_ =
       GetTestableTransportProtocols();

@@ -38,12 +38,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapGetAssertionRequest request_parameter,
       SignResponseCallback completion_callback);
-  GetAssertionRequestHandler(
-      service_manager::Connector* connector,
-      const base::flat_set<FidoTransportProtocol>& supported_transports,
-      CtapGetAssertionRequest request_parameter,
-      SignResponseCallback completion_callback,
-      AddPlatformAuthenticatorCallback add_platform_authenticator);
   ~GetAssertionRequestHandler() override;
 
  private:

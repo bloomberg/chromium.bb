@@ -151,25 +151,12 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
     SignResponseCallback completion_callback)
-    : GetAssertionRequestHandler(connector,
-                                 supported_transports,
-                                 std::move(request),
-                                 std::move(completion_callback),
-                                 AddPlatformAuthenticatorCallback()) {}
-
-GetAssertionRequestHandler::GetAssertionRequestHandler(
-    service_manager::Connector* connector,
-    const base::flat_set<FidoTransportProtocol>& supported_transports,
-    CtapGetAssertionRequest request,
-    SignResponseCallback completion_callback,
-    AddPlatformAuthenticatorCallback add_platform_authenticator)
     : FidoRequestHandler(
           connector,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
               supported_transports,
               GetTransportsAllowedByRP(request)),
-          std::move(completion_callback),
-          std::move(add_platform_authenticator)),
+          std::move(completion_callback)),
       request_(std::move(request)),
       weak_factory_(this) {
   transport_availability_info().rp_id = request.rp_id();

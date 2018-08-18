@@ -490,9 +490,7 @@ void AuthenticatorImpl::MakeCredential(
           individual_attestation),
       std::move(authenticator_selection_criteria),
       base::BindOnce(&AuthenticatorImpl::OnRegisterResponse,
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce(&AuthenticatorImpl::CreatePlatformAuthenticatorIfAvailable,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr()));
 
   request_delegate_->RegisterActionCallbacks(
       base::BindOnce(&AuthenticatorImpl::Cancel,
@@ -501,6 +499,9 @@ void AuthenticatorImpl::MakeCredential(
           &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
           request_->GetWeakPtr()) /* request_callback */);
   request_->set_observer(request_delegate_.get());
+
+  request_->SetPlatformAuthenticatorOrMarkUnavailable(
+      CreatePlatformAuthenticatorIfAvailable());
 }
 
 // mojom:Authenticator
@@ -573,9 +574,7 @@ void AuthenticatorImpl::GetAssertion(
                                     std::move(options),
                                     alternative_application_parameter_),
       base::BindOnce(&AuthenticatorImpl::OnSignResponse,
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce(&AuthenticatorImpl::CreatePlatformAuthenticatorIfAvailable,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr()));
 
   request_delegate_->RegisterActionCallbacks(
       base::BindOnce(&AuthenticatorImpl::Cancel,
@@ -584,6 +583,9 @@ void AuthenticatorImpl::GetAssertion(
           &device::FidoRequestHandlerBase::StartAuthenticatorRequest,
           request_->GetWeakPtr()) /* request_callback */);
   request_->set_observer(request_delegate_.get());
+
+  request_->SetPlatformAuthenticatorOrMarkUnavailable(
+      CreatePlatformAuthenticatorIfAvailable());
 }
 
 void AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(

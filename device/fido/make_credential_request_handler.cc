@@ -98,27 +98,12 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     CtapMakeCredentialRequest request,
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
     RegisterResponseCallback completion_callback)
-    : MakeCredentialRequestHandler(connector,
-                                   supported_transports,
-                                   std::move(request),
-                                   authenticator_selection_criteria,
-                                   std::move(completion_callback),
-                                   AddPlatformAuthenticatorCallback()) {}
-
-MakeCredentialRequestHandler::MakeCredentialRequestHandler(
-    service_manager::Connector* connector,
-    const base::flat_set<FidoTransportProtocol>& supported_transports,
-    CtapMakeCredentialRequest request,
-    AuthenticatorSelectionCriteria authenticator_selection_criteria,
-    RegisterResponseCallback completion_callback,
-    AddPlatformAuthenticatorCallback add_platform_authenticator)
     : FidoRequestHandler(
           connector,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
               supported_transports,
               GetTransportsAllowedByRP(authenticator_selection_criteria)),
-          std::move(completion_callback),
-          std::move(add_platform_authenticator)),
+          std::move(completion_callback)),
       request_parameter_(std::move(request)),
       authenticator_selection_criteria_(
           std::move(authenticator_selection_criteria)),
