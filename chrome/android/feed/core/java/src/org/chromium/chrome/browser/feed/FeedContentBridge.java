@@ -34,7 +34,7 @@ public class FeedContentBridge {
     public FeedContentBridge() {}
 
     /**
-     * Inits native side bridge.
+     * Initializes the native side of this bridge.
      *
      * @param profile {@link Profile} of the user we are rendering the Feed for.
      */
