@@ -735,6 +735,9 @@ const char kReservedMessageFound[] =
     "Reserved key * found in message catalog.";
 const char kRulesFileIsInvalid[] =
     "Invalid value for key '*.*': The provided path is invalid.";
+const char kTtsGenderIsDeprecated[] =
+    "Voice gender is deprecated and values will be ignored starting in Chrome "
+    "71";
 const char kUnrecognizedManifestKey[] = "Unrecognized manifest key '*'.";
 const char kUnrecognizedManifestProperty[] =
     "Unrecognized property '*' of manifest key '*'.";

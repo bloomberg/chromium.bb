@@ -6,7 +6,6 @@ var testVoiceData = [
   {
     eventTypes: ['start'],
     extensionId: 'pkplfbidichfdicaijlchgnapepdginl',
-    gender: 'male',
     lang: 'zh-TW',
     remote: false,
     voiceName: 'David'

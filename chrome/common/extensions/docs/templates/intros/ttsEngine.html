@@ -27,7 +27,6 @@ it provides in the extension manifest, like this:</p>
       {
         "voice_name": "Alice",
         "lang": "en-US",
-        "gender": "female",
         "event_types": ["start", "marker", "end"]
       },
       {
@@ -54,10 +53,6 @@ descriptive enough that it identifies the name of the voice and the
 engine used. In the unlikely event that two extensions register voices
 with the same name, a client can specify the ID of the extension that
 should do the synthesis.</p>
-
-<p>The <code>gender</code> parameter is optional. If your voice corresponds
-to a male or female voice, you can use this parameter to help clients
-choose the most appropriate voice for their application.</p>
 
 <p>The <code>lang</code> parameter is optional, but highly recommended.
 Almost always, a voice can synthesize speech in just a single language.
