@@ -699,6 +699,7 @@ if (enable_me2me_host) {
       "//base:i18n",
       "//components/policy/core/common",
       "//ipc",
+      "//mojo/core/embedder",
       "//net",
       "//remoting/base",
       "//remoting/host",
@@ -728,10 +729,6 @@ if (enable_me2me_host) {
 
     if (is_mac && is_official_build) {
       sources += [ "internal/internal_mac-inl.h" ]
-    }
-
-    if (remoting_multi_process != 0) {
-      deps += [ "//mojo/core/embedder" ]
     }
   }
 
