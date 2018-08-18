@@ -165,6 +165,8 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
   void SetFilterStatus(bool enabled,
                        SetFilterStatusCallback callback) override {}
   void GetFilterStatus(GetFilterStatusCallback callback) override {}
+  void SetNameServers(
+      ::fidl::VectorPtr<::fuchsia::netstack::NetAddress> servers) override {}
 
   ::fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces_ =
       fidl::VectorPtr<fuchsia::netstack::NetInterface>::New(0);
