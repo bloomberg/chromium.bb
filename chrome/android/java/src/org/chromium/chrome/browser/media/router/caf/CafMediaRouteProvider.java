@@ -53,20 +53,6 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
     }
 
     @Override
-    public void requestSessionLaunch(CreateRouteRequestInfo request) {
-        CastUtils.getCastContext().setReceiverApplicationId(request.source.getApplicationId());
-
-        for (MediaRouter.RouteInfo routeInfo : getAndroidMediaRouter().getRoutes()) {
-            if (routeInfo.getId().equals(request.sink.getId())) {
-                // Unselect and then select so that CAF will get notified of the selection.
-                getAndroidMediaRouter().unselect(0);
-                routeInfo.select();
-                break;
-            }
-        }
-    }
-
-    @Override
     public void joinRoute(
             String sourceId, String presentationId, String origin, int tabId, int nativeRequestId) {
         CastMediaSource source = CastMediaSource.from(sourceId);
@@ -149,12 +135,10 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
         mManager.onMessage(clientRecord.routeId, message);
     }
 
-    ///////////////////////////////////////////////
-    // SessionManagerListener implementation
-    ///////////////////////////////////////////////
-
     @Override
-    public void onSessionStarting(CastSession session) {}
+    public CafMessageHandler getMessageHandler() {
+        return mMessageHandler;
+    }
 
     @Override
     public void onSessionStarted(CreateRouteRequestInfo request) {
@@ -189,13 +173,7 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
 
     @Override
     public void onSessionEnding(CastSession session) {
-        // Not implemented.
-    }
-
-    @Override
-    public void onSessionEnded(CastSession session, int error) {
-        if (!hasSession()) return;
-
+        super.onSessionEnding(session);
         if (mClientRecords.isEmpty()) {
             for (String routeId : mRoutes.keySet()) mManager.onRouteClosed(routeId);
             mRoutes.clear();
@@ -208,22 +186,8 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
             }
             mClientRecords.clear();
         }
-
-        detachFromSession();
-        getAndroidMediaRouter().selectRoute(getAndroidMediaRouter().getDefaultRoute());
     }
 
-    @Override
-    public void onSessionResuming(CastSession session, String sessionId) {}
-
-    @Override
-    public void onSessionResumed(CastSession session, boolean wasSuspended) {}
-
-    @Override
-    public void onSessionResumeFailed(CastSession session, int error) {}
-
-    @Override
-    public void onSessionSuspended(CastSession session, int reason) {}
 
     private void addRoute(MediaRoute route, String origin, int tabId) {
         CastMediaSource source = CastMediaSource.from(route.sourceId);
@@ -253,6 +217,7 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
 
     private CafMediaRouteProvider(MediaRouter androidMediaRouter, MediaRouteManager manager) {
         super(androidMediaRouter, manager);
+        mMessageHandler = new CafMessageHandler(this);
     }
 
     private boolean canJoinExistingSession(
