@@ -2232,6 +2232,15 @@ config("minimal_symbols") {
     # Linker symbols for backtraces only.
     cflags = []
     ldflags = [ "/DEBUG" ]
+
+    # For win/asan, get stack traces with full line numbers.
+    # AddressSanitizerTests.TestAddressSanitizer needs this, and since
+    # win/asan isn't a default cq bot the build time hit is ok.
+    if (is_clang && using_sanitizer) {
+      # -gline-tables-only is the same as -g1, but clang-cl only exposes the
+      # former.
+      cflags += [ "-gline-tables-only" ]
+    }
   } else {
     cflags = []
     if (target_cpu == "arm") {
