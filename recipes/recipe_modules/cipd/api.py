@@ -2,6 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""API for interacting with CIPD.
+
+Depends on 'cipd' binary available in PATH:
+https://godoc.org/go.chromium.org/luci/cipd/client/cmd/cipd
+
+WARNING: There is an alternative cipd recipe_module in recipes-py.git:
+https://codesearch.chromium.org/chromium/infra/recipes-py/recipe_modules/cipd/
+
+Consider using that one instead.
+TODO(crbug.com/875523): Delete this module.
+"""
+
 import re
 
 from collections import namedtuple
