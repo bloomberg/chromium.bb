@@ -111,6 +111,12 @@ void FetchParameters::MakeSynchronous() {
   options_.synchronous_policy = kRequestSynchronously;
 }
 
+void FetchParameters::SetClientLoFiPlaceholder() {
+  resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() |
+                                     WebURLRequest::kClientLoFiOn);
+  SetAllowImagePlaceholder();
+}
+
 void FetchParameters::SetAllowImagePlaceholder() {
   DCHECK_EQ(kDisallowPlaceholder, placeholder_image_request_type_);
   if (!resource_request_.Url().ProtocolIsInHTTPFamily() ||
