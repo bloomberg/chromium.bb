@@ -8014,6 +8014,17 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "install_static_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
               "integrity": "high",
               "os": "Windows-10-15063"
             }

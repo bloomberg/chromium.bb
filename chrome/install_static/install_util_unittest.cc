@@ -662,7 +662,7 @@ TEST_P(InstallStaticUtilTest, GetSandboxSidPrefix) {
       L"924012148-",  // Chromium.
   };
 #endif
-  EXPECT_EQ(GetSandboxSidPrefix(), kSandBoxSids[std::get<0>(GetParam())]);
+  EXPECT_STREQ(GetSandboxSidPrefix(), kSandBoxSids[std::get<0>(GetParam())]);
 }
 
 #if defined(GOOGLE_CHROME_BUILD)

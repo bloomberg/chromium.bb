@@ -676,11 +676,6 @@
       'Win V8 FYI Release (NVIDIA)',
     ],
   },
-  'install_static_unittests': {
-    'remove_from': [
-      'win-asan',  # https://crbug.com/875225
-    ],
-  },
   'interactive_ui_tests': {
     'modifications': {
       # chromium.win
