@@ -26,6 +26,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -1743,8 +1744,8 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
   RenderProcessHost* process = GetProcess();
 
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::DidCommitProvisionalLoad",
-               "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
-               validated_params->url.possibly_invalid_spec());
+               "url", validated_params->url.possibly_invalid_spec(), "details",
+               CommitAsTracedValue(validated_params.get()));
 
   // Notify the resource scheduler of the navigation committing.
   NotifyResourceSchedulerOfNavigation(process->GetID(), *validated_params);
@@ -5597,6 +5598,27 @@ RenderFrameHostImpl::CloneSubresourceFactories() {
         subresource_loader_factories_bundle_->Clone().release()));
   }
   return nullptr;
+}
+
+std::unique_ptr<base::trace_event::TracedValue>
+RenderFrameHostImpl::CommitAsTracedValue(
+    FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) const {
+  auto value = std::make_unique<base::trace_event::TracedValue>();
+
+  value->SetInteger("frame_tree_node", frame_tree_node_->frame_tree_node_id());
+  value->SetInteger("site id", site_instance_->GetId());
+  value->SetString("process lock", ChildProcessSecurityPolicyImpl::GetInstance()
+                                       ->GetOriginLock(process_->GetID())
+                                       .spec());
+  value->SetString("origin", validated_params->origin.Serialize());
+  value->SetInteger("transition", validated_params->transition);
+
+  if (!validated_params->base_url.is_empty()) {
+    value->SetString("base_url",
+                     validated_params->base_url.possibly_invalid_spec());
+  }
+
+  return value;
 }
 
 }  // namespace content
