@@ -386,6 +386,11 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
   immersive_reveal_lock_.reset();
 }
 
+bool BrowserTabStripController::HasVisibleBackgroundTabShapes() const {
+  return GetFrameView()->HasVisibleBackgroundTabShapes(
+      BrowserNonClientFrameView::kUseCurrent);
+}
+
 bool BrowserTabStripController::EverHasVisibleBackgroundTabShapes() const {
   return GetFrameView()->EverHasVisibleBackgroundTabShapes();
 }

@@ -86,6 +86,7 @@ class FakeTabController : public TabController {
   bool CanPaintThrobberToLayer() const override {
     return paint_throbber_to_layer_;
   }
+  bool HasVisibleBackgroundTabShapes() const override { return false; }
   SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabBackgroundColor(TabState state, bool opaque) const override {

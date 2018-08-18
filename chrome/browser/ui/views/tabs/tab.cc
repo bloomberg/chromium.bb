@@ -1678,9 +1678,14 @@ Tab::SeparatorOpacities Tab::GetSeparatorOpacities(bool for_layout) const {
   const int tab_width = std::max(width(), target_bounds.width());
   const float target_opacity =
       float{std::min(std::abs(x() - target_bounds.x()), tab_width)} / tab_width;
-  if (ntb_position != LEADING && controller_->IsFirstVisibleTab(this))
+  // If the tab shapes are visible, never draw end separators.
+  const bool always_hide_separators_on_ends =
+      controller_->HasVisibleBackgroundTabShapes();
+  if (controller_->IsFirstVisibleTab(this) &&
+      (ntb_position != LEADING || always_hide_separators_on_ends))
     leading_opacity = target_opacity;
-  if (ntb_position != AFTER_TABS && controller_->IsLastVisibleTab(this))
+  if (controller_->IsLastVisibleTab(this) &&
+      (ntb_position != AFTER_TABS || always_hide_separators_on_ends))
     trailing_opacity = target_opacity;
 
   // Return the opacities in physical order, rather than logical.
