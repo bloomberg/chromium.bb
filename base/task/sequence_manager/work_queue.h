@@ -77,8 +77,6 @@ class BASE_EXPORT WorkQueue {
 
   size_t Size() const { return tasks_.size(); }
 
-  size_t Capacity() const { return tasks_.capacity(); }
-
   // Pulls a task off the |tasks_| and informs the WorkQueueSets.  If the
   // task removed had an enqueue order >= the current fence then WorkQueue
   // pretends to be empty as far as the WorkQueueSets is concerned.
@@ -131,9 +129,6 @@ class BASE_EXPORT WorkQueue {
 
   // Test support function. This should not be used in production code.
   void PopTaskForTesting();
-
-  // Shrinks |tasks_| if it's wasting memory.
-  void MaybeShrinkQueue();
 
  private:
   bool InsertFenceImpl(EnqueueOrder fence);
