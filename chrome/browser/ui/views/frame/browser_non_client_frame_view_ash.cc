@@ -632,13 +632,13 @@ void BrowserNonClientFrameViewAsh::OnThemeChanged() {
   };
 
   active_frame_image_registration_ =
-      update_window_image(ash::kFrameImageActiveKey, GetFrameImage(true));
-  inactive_frame_image_registration_ =
-      update_window_image(ash::kFrameImageInactiveKey, GetFrameImage(false));
+      update_window_image(ash::kFrameImageActiveKey, GetFrameImage(kActive));
+  inactive_frame_image_registration_ = update_window_image(
+      ash::kFrameImageInactiveKey, GetFrameImage(kInactive));
   active_frame_overlay_image_registration_ = update_window_image(
-      ash::kFrameImageOverlayActiveKey, GetFrameOverlayImage(true));
+      ash::kFrameImageOverlayActiveKey, GetFrameOverlayImage(kActive));
   inactive_frame_overlay_image_registration_ = update_window_image(
-      ash::kFrameImageOverlayInactiveKey, GetFrameOverlayImage(false));
+      ash::kFrameImageOverlayInactiveKey, GetFrameOverlayImage(kInactive));
 
   UpdateFrameColors();
 
@@ -666,12 +666,12 @@ SkColor BrowserNonClientFrameViewAsh::GetTitleColor() {
 
 SkColor BrowserNonClientFrameViewAsh::GetFrameHeaderColor(bool active) {
   DCHECK(!IsMash());
-  return GetFrameColor(active);
+  return GetFrameColor(active ? kActive : kInactive);
 }
 
 gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderImage(bool active) {
   DCHECK(!IsMash());
-  return GetFrameImage(active);
+  return GetFrameImage(active ? kActive : kInactive);
 }
 
 int BrowserNonClientFrameViewAsh::GetFrameHeaderImageYInset() {
@@ -681,7 +681,7 @@ int BrowserNonClientFrameViewAsh::GetFrameHeaderImageYInset() {
 gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderOverlayImage(
     bool active) {
   DCHECK(!IsMash());
-  return GetFrameOverlayImage(active);
+  return GetFrameOverlayImage(active ? kActive : kInactive);
 }
 
 bool BrowserNonClientFrameViewAsh::IsTabletMode() const {
@@ -998,8 +998,8 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
   aura::Window* window = frame()->GetNativeWindow();
   base::Optional<SkColor> active_color, inactive_color;
   if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
-    active_color = GetFrameColor(true);
-    inactive_color = GetFrameColor(false);
+    active_color = GetFrameColor(kActive);
+    inactive_color = GetFrameColor(kInactive);
   } else if (extensions::HostedAppBrowserController::
                  IsForExperimentalHostedAppBrowser(browser_view()->browser())) {
     active_color =

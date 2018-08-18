@@ -261,7 +261,10 @@ class TabStrip : public views::View,
   SkColor GetTabBackgroundColor(TabState state, bool opaque) const override;
   SkColor GetTabForegroundColor(TabState state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
-  int GetBackgroundResourceId(bool* has_custom_image) const override;
+  int GetBackgroundResourceId(
+      bool* has_custom_image,
+      BrowserNonClientFrameView::ActiveState active_state =
+          BrowserNonClientFrameView::kUseCurrent) const override;
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
   float GetHoverOpacityForTab(float range_parameter) const override;
   float GetHoverOpacityForRadialHighlight() const override;

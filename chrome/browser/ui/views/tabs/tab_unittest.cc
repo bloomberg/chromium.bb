@@ -94,7 +94,9 @@ class FakeTabController : public TabController {
   SkColor GetTabForegroundColor(TabState state) const override {
     return gfx::kPlaceholderColor;
   }
-  int GetBackgroundResourceId(bool* has_custom_image) const override {
+  int GetBackgroundResourceId(
+      bool* has_custom_image,
+      BrowserNonClientFrameView::ActiveState active_state) const override {
     *has_custom_image = false;
     return IDR_THEME_TAB_BACKGROUND;
   }

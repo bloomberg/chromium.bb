@@ -84,6 +84,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   }
   int GetTopAreaHeight() const override { return 0; }
   bool UseCustomFrame() const override { return true; }
+  bool EverHasVisibleBackgroundTabShapes() const override { return false; }
 
  private:
   base::string16 window_title_;
@@ -271,7 +272,7 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
     } else {
       int tabstrip_nonexcluded_y =
           OpaqueBrowserFrameViewLayout::kFrameBorderThickness +
-          OpaqueBrowserFrameViewLayout::GetNonClientRestoredExtraThickness();
+          layout_manager_->GetNonClientRestoredExtraThickness();
       if (MD::IsRefreshUi()) {
         tabstrip_nonexcluded_y +=
             OpaqueBrowserFrameViewLayout::kRefreshNonClientExtraTopThickness;

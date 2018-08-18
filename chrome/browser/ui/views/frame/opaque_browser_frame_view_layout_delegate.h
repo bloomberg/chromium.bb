@@ -61,6 +61,10 @@ class OpaqueBrowserFrameViewLayoutDelegate {
   // Returns true if the window frame is rendered by Chrome.
   virtual bool UseCustomFrame() const = 0;
 
+  // Returns whether the shapes of background tabs are visible against the frame
+  // for either active or inactive windows.
+  virtual bool EverHasVisibleBackgroundTabShapes() const = 0;
+
  protected:
   virtual ~OpaqueBrowserFrameViewLayoutDelegate() {}
 };

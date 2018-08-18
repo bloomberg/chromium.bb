@@ -348,7 +348,7 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
 
   // Disable drag handle extension when tab shapes are visible.
   bool extend_drag_handle = !SizeTabButtonToTopOfTabStrip() &&
-                            !controller_->HasVisibleBackgroundTabShapes();
+                            !controller_->EverHasVisibleBackgroundTabShapes();
 
   // A hit on the tab is not in the caption unless it is in the thin strip
   // mentioned above.
@@ -1163,9 +1163,13 @@ base::string16 TabStrip::GetAccessibleTabName(const Tab* tab) const {
   return base::string16();
 }
 
-int TabStrip::GetBackgroundResourceId(bool* has_custom_image) const {
-  if (!TitlebarBackgroundIsTransparent())
-    return controller_->GetTabBackgroundResourceId(has_custom_image);
+int TabStrip::GetBackgroundResourceId(
+    bool* has_custom_image,
+    BrowserNonClientFrameView::ActiveState active_state) const {
+  if (!TitlebarBackgroundIsTransparent()) {
+    return controller_->GetTabBackgroundResourceId(active_state,
+                                                   has_custom_image);
+  }
 
   constexpr int kBackgroundIdGlass = IDR_THEME_TAB_BACKGROUND_V;
   *has_custom_image = GetThemeProvider()->HasCustomImage(kBackgroundIdGlass);

@@ -79,14 +79,19 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
   if (!browser_view()->IsTabStripVisible())
     return 0;
 
-  // TODO(pkasting): https://crbug.com/862276  Increase this height when we
-  // can't extend the drag handle into the tabstrip.  Mac seems to reserve 1 DIP
-  // of this as resize handle, so the actual top drag height is 7 DIP.
+  // Mac seems to reserve 1 DIP of the top inset as a resize handle.
+  constexpr int kResizeHandleHeight = 1;
   constexpr int kTabstripTopInset = 8;
+  int top_inset = kTabstripTopInset;
+  if (EverHasVisibleBackgroundTabShapes()) {
+    top_inset =
+        std::max(top_inset, BrowserNonClientFrameView::kMinimumDragHeight +
+                                kResizeHandleHeight);
+  }
 
   // Calculate the y offset for the tab strip because in fullscreen mode the tab
   // strip may need to move under the slide down menu bar.
-  CGFloat y_offset = kTabstripTopInset;
+  CGFloat y_offset = top_inset;
   if (browser_view()->IsFullscreen()) {
     CGFloat menu_bar_height =
         [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
