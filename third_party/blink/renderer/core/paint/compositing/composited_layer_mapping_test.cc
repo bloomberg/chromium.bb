@@ -1038,8 +1038,7 @@ TEST_F(CompositedLayerMappingTest,
       mapping->ForegroundLayer()->PaintingPhase());
   // Regression test for crbug.com/767908: a foreground layer should also
   // participates hit testing.
-  EXPECT_TRUE(mapping->ForegroundLayer()
-                  ->GetHitTestableWithoutDrawsContentForTesting());
+  EXPECT_TRUE(mapping->ForegroundLayer()->GetHitTestableWithoutDrawsContent());
 
   Element* negative_composited_child =
       GetDocument().getElementById("negative-composited-child");
