@@ -287,6 +287,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void SetMouseCapture(bool capture) override;
 
+  bool UsePrintingLayout() const override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
 

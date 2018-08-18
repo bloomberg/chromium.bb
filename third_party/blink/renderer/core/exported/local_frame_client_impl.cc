@@ -1138,6 +1138,10 @@ void LocalFrameClientImpl::SetMouseCapture(bool capture) {
   web_frame_->Client()->SetMouseCapture(capture);
 }
 
+bool LocalFrameClientImpl::UsePrintingLayout() const {
+  return web_frame_->UsePrintingLayout();
+}
+
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kFollow,
                    WebLocalFrameClient::CrossOriginRedirects::kFollow);
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kNavigate,

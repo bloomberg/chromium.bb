@@ -424,7 +424,7 @@ TEST_P(PrintContextFrameTest, DISABLED_SubframePrintPageLayout) {
   EXPECT_EQ(child->OffsetWidth(), 800);
   EXPECT_EQ(target->OffsetWidth(), 800);
 
-  GetDocument().GetFrame()->StartPrintingWithoutPrintingLayout();
+  GetDocument().GetFrame()->StartPrinting();
   EXPECT_EQ(parent->OffsetWidth(), 800);
   EXPECT_EQ(child->OffsetWidth(), 800);
   EXPECT_EQ(target->OffsetWidth(), 800);

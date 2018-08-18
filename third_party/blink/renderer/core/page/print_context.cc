@@ -148,11 +148,6 @@ void PrintContext::BeginPrintMode(float width, float height) {
   // without going back to screen mode.
   is_printing_ = true;
 
-  if (!use_printing_layout_) {
-    frame_->StartPrintingWithoutPrintingLayout();
-    return;
-  }
-
   FloatSize original_page_size = FloatSize(width, height);
   FloatSize min_layout_size = frame_->ResizePageRectsKeepingRatio(
       original_page_size, FloatSize(width * kPrintingMinimumShrinkFactor,
@@ -324,6 +319,10 @@ bool PrintContext::IsFrameValid() const {
 void PrintContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(linked_destinations_);
+}
+
+bool PrintContext::use_printing_layout() const {
+  return use_printing_layout_;
 }
 
 ScopedPrintContext::ScopedPrintContext(LocalFrame* frame)

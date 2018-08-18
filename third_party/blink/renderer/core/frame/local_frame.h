@@ -207,13 +207,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Begin printing with the given page size information.
   // The frame content will fit to the page size with specified shrink ratio.
-  void StartPrinting(const FloatSize& page_size,
-                     const FloatSize& original_page_size,
-                     float maximum_shrink_ratio);
-
-  // Begin printing without changing the the frame's layout. This is used for
-  // child frames because they don't need to fit to a page size.
-  void StartPrintingWithoutPrintingLayout();
+  // If this frame doesn't need to fit into a page size, default values are
+  // used.
+  void StartPrinting(const FloatSize& page_size = FloatSize(),
+                     const FloatSize& original_page_size = FloatSize(),
+                     float maximum_shrink_ratio = 0);
 
   void EndPrinting();
   bool ShouldUsePrintingLayout() const;
@@ -402,10 +400,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Internal implementation for starting or ending printing.
   // |printing| is true when printing starts, false when printing ends.
   // |page_size|, |original_page_size|, and |maximum_shrink_ratio| are only
-  // meaningful when starting to print with printing layout -- both |printing|
-  // and |use_printing_layout| are true.
+  // meaningful when we should use printing layout for this frame.
   void SetPrinting(bool printing,
-                   bool use_printing_layout,
                    const FloatSize& page_size,
                    const FloatSize& original_page_size,
                    float maximum_shrink_ratio);
