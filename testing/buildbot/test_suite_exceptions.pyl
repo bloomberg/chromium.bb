@@ -254,11 +254,6 @@
       },
     },
   },
-  'cc_unittests': {
-    'remove_from': [
-      'win-asan',  # https://crbug.com/875223
-    ],
-  },
   'checkbins': {
     'remove_from': [
       'linux-rel',
