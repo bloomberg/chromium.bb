@@ -256,7 +256,7 @@ void PowerMetricsProvider::OnRecordingEnabled() {
   io_object_t connect;
   bool service_opened = IOServiceOpen(smc_service, mach_task_self(), 1,
                                       &connect) == kIOReturnSuccess;
-  UMA_HISTOGRAM_BOOLEAN("Power.Consumption.AppleSMCOpened", service_opened);
+  UMA_HISTOGRAM_BOOLEAN("Power.Mac.AppleSMCOpened", service_opened);
   if (!service_opened)
     return;
   impl_ = Impl::Create(base::mac::ScopedIOObject<io_object_t>(connect));
