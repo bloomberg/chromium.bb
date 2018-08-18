@@ -49,7 +49,7 @@ std::unique_ptr<KeyedService> GoogleURLTrackerFactory::BuildServiceInstanceFor(
 
   return std::make_unique<GoogleURLTracker>(
       base::WrapUnique(new GoogleURLTrackerClientImpl(browser_state)),
-      GoogleURLTracker::NORMAL_MODE);
+      GoogleURLTracker::NORMAL_MODE, context->GetNetworkConnectionTracker());
 }
 
 web::BrowserState* GoogleURLTrackerFactory::GetBrowserStateToUse(
