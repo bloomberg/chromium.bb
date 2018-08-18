@@ -120,6 +120,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticSmoothScrollGestureParams)
   IPC_STRUCT_TRAITS_MEMBER(distances)
   IPC_STRUCT_TRAITS_MEMBER(prevent_fling)
   IPC_STRUCT_TRAITS_MEMBER(speed_in_pixels_s)
+  IPC_STRUCT_TRAITS_MEMBER(fling_velocity_x)
+  IPC_STRUCT_TRAITS_MEMBER(fling_velocity_y)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPinchGestureParams)

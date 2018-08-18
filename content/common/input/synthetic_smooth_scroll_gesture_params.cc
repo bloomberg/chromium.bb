@@ -16,16 +16,12 @@ const float kDefaultSpeedInPixelsS = 800;
 SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams()
     : prevent_fling(true),
       speed_in_pixels_s(kDefaultSpeedInPixelsS),
+      fling_velocity_x(0),
+      fling_velocity_y(0),
       precise_scrolling_deltas(false) {}
 
 SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams(
-    const SyntheticSmoothScrollGestureParams& other)
-    : SyntheticGestureParams(other),
-      anchor(other.anchor),
-      distances(other.distances),
-      prevent_fling(other.prevent_fling),
-      speed_in_pixels_s(other.speed_in_pixels_s),
-      precise_scrolling_deltas(other.precise_scrolling_deltas) {}
+    const SyntheticSmoothScrollGestureParams& other) = default;
 
 SyntheticSmoothScrollGestureParams::~SyntheticSmoothScrollGestureParams() {}
 

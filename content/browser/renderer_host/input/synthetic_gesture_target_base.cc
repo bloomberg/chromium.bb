@@ -99,6 +99,19 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
       return;
     }
     DispatchWebGestureEventToPlatform(web_pinch, latency_info);
+  } else if (WebInputEvent::IsFlingGestureEventType(event.GetType())) {
+    const WebGestureEvent& web_fling =
+        static_cast<const WebGestureEvent&>(event);
+    // Touchscreen swipe should be injected as touch events.
+    DCHECK_EQ(blink::kWebGestureDeviceTouchpad, web_fling.SourceDevice());
+    if (event.GetType() == WebInputEvent::kGestureFlingStart &&
+        !PointIsWithinContents(web_fling.PositionInWidget().x,
+                               web_fling.PositionInWidget().y)) {
+      LOG(WARNING)
+          << "Fling coordinates are not within content bounds on FlingStart.";
+      return;
+    }
+    DispatchWebGestureEventToPlatform(web_fling, latency_info);
   } else {
     NOTREACHED();
   }
