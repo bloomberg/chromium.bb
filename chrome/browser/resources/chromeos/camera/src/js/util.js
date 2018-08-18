@@ -125,11 +125,11 @@ camera.util.TooltipManager.prototype.showTooltip_ = function(element) {
   element.addEventListener('click', hideTooltip);
   element.addEventListener('blur', hideTooltip);
 
-  // Show the tooltip after 500ms.
+  // Show the tooltip after delay.
   this.effect_.invoke({
     element: element,
     visibility: true
-  }, function() {}, 500);
+  }, function() {}, 1000);
 };
 
 /**

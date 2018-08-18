@@ -85,6 +85,8 @@ SRC_RESOURCES= \
         src/images/camera_button_timer_on.svg \
         src/images/camera_button_toggle_device.svg \
 	src/images/camera_button_video.png \
+        src/images/camera_mode_photo.svg \
+        src/images/camera_mode_recording.svg \
 	src/images/gallery_button_back.png \
 	src/images/gallery_button_delete.png \
         src/images/dialog_button_close.png \

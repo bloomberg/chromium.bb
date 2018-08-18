@@ -185,10 +185,6 @@ body.has-error #error {
   display: flex;
 }
 
-body.mirror #preview-video {
-  -webkit-transform: scaleX(-1);
-}
-
 ::-webkit-scrollbar {
   width: 0;
   height: 0;
@@ -215,7 +211,8 @@ body.mirror #preview-video {
   -webkit-transform: scale(1.05);
 }
 
-.buttons.circle #gallery-enter img {
+.buttons.circle #gallery-enter img,
+.centered-overlay {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -279,6 +276,21 @@ body.record-mode #take-picture {
 .buttons #toggle-device.animate {
   -webkit-transform: rotate(-180deg);
   transition: transform 1s ease-out;
+}
+
+#camera-mode {
+  background-image: url(../images/camera_mode_photo.svg);
+  width:  40px;
+  height: 40px;
+  visibility: visible;
+}
+
+body.record-mode #camera-mode {
+  background-image: url(../images/camera_mode_recording.svg);
+}
+
+body.capturing #camera-mode {
+  visibility: hidden;
 }
 
 .buttons #switch-recordvideo {
@@ -402,7 +414,6 @@ body.record-mode #switch-recordvideo {
   position: absolute;
   right: 0;
   top: 0;
-  transition: opacity 100ms, visibility 0 100ms;
   visibility: hidden;
 }
 
@@ -426,6 +437,20 @@ body.browser #browser {
   flex-shrink: 0;
   pointer-events: none;
   position: relative;
+}
+
+body.mirror #preview-video {
+  -webkit-transform: scaleX(-1);
+}
+
+body:not(.capturing) #preview-video {
+  filter: blur(10px);
+  /* Scale up to hide blurred edges. */
+  -webkit-transform: scale(1.03, 1.03);
+}
+
+body.mirror:not(.capturing) #preview-video {
+  -webkit-transform: scale(-1.03, 1.03);
 }
 
 #preview-grid {
@@ -635,7 +660,6 @@ body.capturing #preview-grid.visible {
 }
 
 #tooltip {
-  -webkit-transform: translateY(10px);
   left: 0;
   opacity: 0;
   padding: 5px;
@@ -664,8 +688,7 @@ body.capturing #preview-grid.visible {
 }
 
 #tooltip.visible {
-  -webkit-transform: translateY(0);
-  transition: opacity 500ms, -webkit-transform 500ms;
+  transition: opacity 350ms;
   opacity: 1;
 }
 
@@ -676,18 +699,18 @@ body.capturing #preview-grid.visible {
   display: flex;
   justify-content: center;
   left: 0;
-  opacity: 1;
   position: absolute;
   right: 0;
   top: 0;
-  transition: opacity 200ms, visibility 0;
+  opacity: 0;
+  visibility: hidden;
   z-index: 1;
 }
 
-body:not(.dialog) #dialog {
-  opacity: 0;
-  transition: opacity 200ms, visibility 0 200ms;
-  visibility: hidden;
+body.dialog #dialog {
+  opacity: 1;
+  transition: opacity 200ms;
+  visibility: visible;
 }
 
 #dialog #dialog-popup {
@@ -767,18 +790,13 @@ html[dir='rtl'] #dialog #dialog-close-button {
 }
 
 #spinner {
-  background: transparent url(../images/spinner.svg) center / 32px no-repeat;
-  bottom: 0;
-  left: 0;
-  opacity: 1;
-  position: absolute;
-  right: 0;
-  top: 0;
+  background-image: url(../images/spinner.svg);
+  width:  32px;
+  height: 32px;
   z-index: 1;
+  visibility: hidden;
 }
 
-body.capturing #spinner {
-  opacity: 0;
-  transition: opacity 100ms, visibility 0 100ms;
-  visibility: hidden;
+body.initialize #spinner {
+  visibility: visible;
 }

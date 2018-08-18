@@ -503,10 +503,8 @@ camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
 camera.views.Camera.prototype.startWithConstraints_ = function(
     constraints, onSuccess, onFailure) {
   navigator.mediaDevices.getUserMedia(constraints).then(stream => {
-    // Mute to avoid echo from the captured audio.
-    this.video_.muted = true;
-    this.video_.srcObject = stream;
     var onLoadedMetadata = () => {
+      this.video_.play();
       this.video_.removeEventListener('loadedmetadata', onLoadedMetadata);
       // Use a watchdog since the stream.onended event is unreliable in the
       // recent version of Chrome. As of 55, the event is still broken.
@@ -527,9 +525,12 @@ camera.views.Camera.prototype.startWithConstraints_ = function(
       this.updateControls_();
       onSuccess();
     };
+    // Mute to avoid echo from the captured audio.
+    this.video_.muted = true;
     // Load the stream and wait for the metadata.
+    // TODO(yuli): Maybe create a new video element to prevent blink.
     this.video_.addEventListener('loadedmetadata', onLoadedMetadata);
-    this.video_.play();
+    this.video_.srcObject = stream;
   }, onFailure);
 };
 
@@ -578,7 +579,8 @@ camera.views.Camera.prototype.stop_ = function() {
     clearInterval(this.watchdog_);
     this.watchdog_ = null;
   }
-  // TODO(mtomasz): Prevent blink. Clear somehow the video tag.
+  // TODO(yuli): Ensure stopping stream won't clear paused video element.
+  this.video_.pause();
   if (this.stream_) {
     this.stream_.getVideoTracks()[0].stop();
   }
