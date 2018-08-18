@@ -18,12 +18,12 @@ namespace payments {
 namespace {
 
 // Data valid duration in seconds.
-const time_t DATA_VALID_TIME_IN_SECONDS = 90 * 24 * 60 * 60;
+const time_t WEB_APP_MANIFEST_VALID_TIME_IN_SECONDS = 90 * 24 * 60 * 60;
 
 // Note that the fingerprint is calculated with SHA-256.
 const size_t kFingerPrintLength = 32;
 
-WebDatabaseTable::TypeKey GetKey() {
+WebDatabaseTable::TypeKey GetWebAppManifestKey() {
   // We just need a unique constant. Use the address of a static that
   // COMDAT folding won't touch in an optimizing linker.
   static int table_key = 0;
@@ -69,11 +69,12 @@ WebAppManifestSectionTable::~WebAppManifestSectionTable() {}
 
 WebAppManifestSectionTable* WebAppManifestSectionTable::FromWebDatabase(
     WebDatabase* db) {
-  return static_cast<WebAppManifestSectionTable*>(db->GetTable(GetKey()));
+  return static_cast<WebAppManifestSectionTable*>(
+      db->GetTable(GetWebAppManifestKey()));
 }
 
 WebDatabaseTable::TypeKey WebAppManifestSectionTable::GetTypeKey() const {
-  return GetKey();
+  return GetWebAppManifestKey();
 }
 
 bool WebAppManifestSectionTable::CreateTablesIfNecessary() {
@@ -129,7 +130,8 @@ bool WebAppManifestSectionTable::AddWebAppManifest(
                               "(expire_date, id, min_version, fingerprints) "
                               "VALUES (?, ?, ?, ?)"));
   const time_t expire_date_in_seconds =
-      base::Time::NowFromSystemTime().ToTimeT() + DATA_VALID_TIME_IN_SECONDS;
+      base::Time::NowFromSystemTime().ToTimeT() +
+      WEB_APP_MANIFEST_VALID_TIME_IN_SECONDS;
   for (const auto& section : manifest) {
     int index = 0;
     s2.BindInt64(index++, expire_date_in_seconds);

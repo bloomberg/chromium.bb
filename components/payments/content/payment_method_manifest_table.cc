@@ -16,9 +16,9 @@ namespace payments {
 namespace {
 
 // Data valid duration in seconds.
-const time_t DATA_VALID_TIME_IN_SECONDS = 90 * 24 * 60 * 60;
+const time_t PAYMENT_METHOD_MANIFEST_VALID_TIME_IN_SECONDS = 90 * 24 * 60 * 60;
 
-WebDatabaseTable::TypeKey GetKey() {
+WebDatabaseTable::TypeKey GetPaymentMethodManifestKey() {
   // We just need a unique constant. Use the address of a static that
   // COMDAT folding won't touch in an optimizing linker.
   static int table_key = 0;
@@ -33,11 +33,12 @@ PaymentMethodManifestTable::~PaymentMethodManifestTable() {}
 
 PaymentMethodManifestTable* PaymentMethodManifestTable::FromWebDatabase(
     WebDatabase* db) {
-  return static_cast<PaymentMethodManifestTable*>(db->GetTable(GetKey()));
+  return static_cast<PaymentMethodManifestTable*>(
+      db->GetTable(GetPaymentMethodManifestKey()));
 }
 
 WebDatabaseTable::TypeKey PaymentMethodManifestTable::GetTypeKey() const {
-  return GetKey();
+  return GetPaymentMethodManifestKey();
 }
 
 bool PaymentMethodManifestTable::CreateTablesIfNecessary() {
@@ -88,7 +89,8 @@ bool PaymentMethodManifestTable::AddManifest(
                               "(expire_date, method_name, web_app_id) "
                               "VALUES (?, ?, ?) "));
   const time_t expire_date_in_seconds =
-      base::Time::NowFromSystemTime().ToTimeT() + DATA_VALID_TIME_IN_SECONDS;
+      base::Time::NowFromSystemTime().ToTimeT() +
+      PAYMENT_METHOD_MANIFEST_VALID_TIME_IN_SECONDS;
   for (const auto& id : web_app_ids) {
     int index = 0;
     s2.BindInt64(index++, expire_date_in_seconds);
