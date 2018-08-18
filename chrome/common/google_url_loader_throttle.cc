@@ -62,9 +62,10 @@ void GoogleURLLoaderThrottle::WillStartRequest(
 
 void GoogleURLLoaderThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head,
-    bool* defer,
-    std::vector<std::string>* to_be_removed_headers) {
+    const network::ResourceResponseHead& /* response_head */,
+    bool* /* defer */,
+    std::vector<std::string>* to_be_removed_headers,
+    net::HttpRequestHeaders* /* modified_headers */) {
   if (!variations::ShouldAppendVariationHeaders(redirect_info.new_url))
     to_be_removed_headers->push_back(variations::kClientDataHeader);
 }

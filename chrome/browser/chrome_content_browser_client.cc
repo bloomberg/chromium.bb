@@ -102,6 +102,8 @@
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
+#include "chrome/browser/signin/chrome_signin_url_loader_throttle_delegate_impl.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller.h"
@@ -4309,6 +4311,15 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
             resource_context, request.resource_type, frame_tree_node_id));
   }
 #endif
+
+  if (network_service_enabled) {
+    auto delegate = std::make_unique<signin::URLLoaderThrottleDelegateImpl>(
+        resource_context);
+    auto signin_throttle = signin::URLLoaderThrottle::MaybeCreate(
+        std::move(delegate), navigation_ui_data, wc_getter);
+    if (signin_throttle)
+      result.push_back(std::move(signin_throttle));
+  }
   return result;
 }
 

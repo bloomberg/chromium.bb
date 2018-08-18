@@ -40,10 +40,11 @@ class DeferringURLLoaderThrottle final : public URLLoaderThrottle {
   }
 
   void WillRedirectRequest(
-      const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head,
+      const net::RedirectInfo& /* redirect_info */,
+      const network::ResourceResponseHead& /* response_head */,
       bool* defer,
-      std::vector<std::string>* to_be_removed_headers) override {
+      std::vector<std::string>* /* to_be_removed_headers */,
+      net::HttpRequestHeaders* /* modified_headers */) override {
     will_redirect_request_called_ = true;
     *defer = true;
   }

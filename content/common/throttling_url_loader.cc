@@ -189,35 +189,48 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
 }
 
 void ThrottlingURLLoader::FollowRedirect(
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
+  const base::Optional<net::HttpRequestHeaders>* modified_headers_to_send =
+      &modified_headers;
+  if (modified_request_headers_) {
+    if (modified_headers)
+      modified_request_headers_->MergeFrom(*modified_headers);
+    modified_headers_to_send = &modified_request_headers_;
+  }
+
   if (!throttle_redirect_url_.is_empty()) {
     throttle_redirect_url_ = GURL();
     // This is a synthesized redirect, so no need to tell the URLLoader.
-    DCHECK(!modified_request_headers.has_value())
-        << "ThrottlingURLLoader doesn't support modified_request_headers for "
+    DCHECK(!modified_headers_to_send->has_value())
+        << "ThrottlingURLLoader doesn't support modifying headers for "
            "synthesized requests.";
     StartNow();
     return;
   }
 
   if (url_loader_) {
-    if (to_be_removed_request_headers_.empty()) {
-      url_loader_->FollowRedirect(base::nullopt, modified_request_headers);
-    } else {
-      url_loader_->FollowRedirect(to_be_removed_request_headers_,
-                                  modified_request_headers);
-    }
-    to_be_removed_request_headers_.clear();
+    url_loader_->FollowRedirect(to_be_removed_request_headers_,
+                                *modified_headers_to_send);
   }
+
+  to_be_removed_request_headers_.reset();
+  modified_request_headers_.reset();
 }
 
 void ThrottlingURLLoader::FollowRedirectForcingRestart() {
   url_loader_.reset();
   client_binding_.Close();
 
-  for (const std::string& key : to_be_removed_request_headers_)
-    start_info_->url_request.headers.RemoveHeader(key);
-  to_be_removed_request_headers_.clear();
+  if (to_be_removed_request_headers_) {
+    for (const std::string& key : *to_be_removed_request_headers_)
+      start_info_->url_request.headers.RemoveHeader(key);
+    to_be_removed_request_headers_.reset();
+  }
+
+  if (modified_request_headers_) {
+    start_info_->url_request.headers.MergeFrom(*modified_request_headers_);
+    modified_request_headers_.reset();
+  }
 
   StartNow();
 }
@@ -417,16 +430,33 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
       auto weak_ptr = weak_factory_.GetWeakPtr();
-      std::vector<std::string> headers;
+      std::vector<std::string> to_be_removed_headers;
+      net::HttpRequestHeaders modified_headers;
       throttle->WillRedirectRequest(redirect_info, response_head,
-                                    &throttle_deferred, &headers);
+                                    &throttle_deferred, &to_be_removed_headers,
+                                    &modified_headers);
       if (!weak_ptr)
         return;
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
 
-      to_be_removed_request_headers_.insert(
-          to_be_removed_request_headers_.end(), headers.begin(), headers.end());
+      if (!to_be_removed_headers.empty()) {
+        if (to_be_removed_request_headers_) {
+          for (auto& header : to_be_removed_headers) {
+            if (!base::ContainsValue(*to_be_removed_request_headers_, header))
+              to_be_removed_request_headers_->push_back(std::move(header));
+          }
+        } else {
+          to_be_removed_request_headers_ = std::move(to_be_removed_headers);
+        }
+      }
+
+      if (!modified_headers.IsEmpty()) {
+        if (modified_request_headers_)
+          modified_request_headers_->MergeFrom(modified_headers);
+        else
+          modified_request_headers_ = std::move(modified_headers);
+      }
     }
 
     if (deferred) {

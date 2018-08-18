@@ -101,11 +101,17 @@ class CONTENT_EXPORT URLLoaderThrottle {
   // redirect responses's HTTP status code and some information about the new
   // request that will be sent if the redirect is followed, including the new
   // URL and new method.
+  //
+  // Request headers added to |to_be_removed_request_headers| will be removed
+  // before the redirect is followed. Headers added to
+  // |modified_request_headers| will be merged into the existing request headers
+  // before the redirect is followed.
   virtual void WillRedirectRequest(
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head,
       bool* defer,
-      std::vector<std::string>* to_be_removed_request_headers);
+      std::vector<std::string>* to_be_removed_request_headers,
+      net::HttpRequestHeaders* modified_request_headers);
 
   // Called when the response headers and meta data are available.
   // TODO(776312): Migrate this URL to ResourceResponseHead.
