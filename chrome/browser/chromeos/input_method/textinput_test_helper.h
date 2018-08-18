@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/geometry/rect.h"
@@ -26,6 +27,8 @@ class TextInputTestBase : public InProcessBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override;
 
+  ui::InputMethod* GetInputMethod() const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TextInputTestBase);
 };
@@ -33,7 +36,7 @@ class TextInputTestBase : public InProcessBrowserTest {
 // Provides text input test utilities.
 class TextInputTestHelper : public ui::InputMethodObserver {
  public:
-  TextInputTestHelper();
+  explicit TextInputTestHelper(ui::InputMethod* input_method);
   ~TextInputTestHelper() override;
 
   // Returns the latest status notified to ui::InputMethod
@@ -91,6 +94,7 @@ class TextInputTestHelper : public ui::InputMethodObserver {
   gfx::Range selection_range_;
   bool focus_state_;
   ui::TextInputType latest_text_input_type_;
+  ui::InputMethod* input_method_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputTestHelper);
 };

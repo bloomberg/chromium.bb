@@ -47,7 +47,7 @@ void ClickElementWithId(content::WebContents* web_contents,
 
 namespace keyboard {
 
-class KeyboardEndToEndTest : public InProcessBrowserTest {
+class KeyboardEndToEndTest : public chromeos::TextInputTestBase {
  public:
   KeyboardEndToEndTest() {}
   ~KeyboardEndToEndTest() override {}
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardEndToEndTest, OpenOnlyOnSyncFocus) {
   auto* controller = keyboard::KeyboardController::Get();
   EXPECT_FALSE(IsKeyboardVisible());
 
-  chromeos::TextInputTestHelper helper;
+  chromeos::TextInputTestHelper helper(GetInputMethod());
 
   ClickElementWithId(web_contents, "blur");
   helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_NONE);

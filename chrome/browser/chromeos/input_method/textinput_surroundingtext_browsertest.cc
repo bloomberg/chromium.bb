@@ -17,7 +17,7 @@ typedef TextInputTestBase TextInput_SurroundingTextChangedTest;
 
 IN_PROC_BROWSER_TEST_F(TextInput_SurroundingTextChangedTest,
                        SurroundingTextChangedWithInsertText) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(FILE_PATH_LITERAL("textinput")),
       base::FilePath(FILE_PATH_LITERAL("simple_textarea.html")));
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_SurroundingTextChangedTest,
 
 IN_PROC_BROWSER_TEST_F(TextInput_SurroundingTextChangedTest,
                        SurroundingTextChangedWithComposition) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(FILE_PATH_LITERAL("textinput")),
       base::FilePath(FILE_PATH_LITERAL("simple_textarea.html")));
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_SurroundingTextChangedTest,
 
 IN_PROC_BROWSER_TEST_F(TextInput_SurroundingTextChangedTest,
                        FocusToTextContainingTextAreaByClickingCase) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(FILE_PATH_LITERAL("textinput")),
       base::FilePath(FILE_PATH_LITERAL("textarea_with_preset_text.html")));
