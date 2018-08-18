@@ -276,7 +276,7 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
   size_t num_results = results_list->GetSize();
   UMA_HISTOGRAM_COUNTS("Omnibox.DocumentSuggest.ResultCount", num_results);
 
-  // Create a synthetic score. Eventually we'll have signals from the API.
+  // Create a synthetic score, for when there's no signal from the API.
   // For now, allow setting of each of three scores from Finch.
   int score0 = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kDocumentProvider, "DocumentScoreResult1", 1100);
@@ -316,11 +316,20 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
       default:
         break;
     }
+    int server_score;
+    if (result->GetInteger("score", &server_score)) {
+      relevance = server_score;
+    }
     AutocompleteMatch match(this, relevance, false,
                             AutocompleteMatchType::DOCUMENT_SUGGESTION);
+    // Use full URL for displayed text and navigation. Use "originalUrl" for
+    // deduping if present.
+    match.fill_into_edit = url;
+    match.destination_url = GURL(url);
     base::string16 original_url;
-    result->GetString("originalUrl", &original_url);  // optional.
-    match.destination_url = GURL(!original_url.empty() ? original_url : url);
+    if (result->GetString("originalUrl", &original_url)) {
+      match.stripped_destination_url = GURL(original_url);
+    }
     match.contents = AutocompleteMatch::SanitizeString(title);
     AutocompleteMatch::AddLastClassificationIfNecessary(
         &match.contents_class, 0, ACMatchClassification::NONE);

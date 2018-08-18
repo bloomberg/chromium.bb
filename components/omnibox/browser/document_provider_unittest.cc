@@ -190,7 +190,9 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
       "results": [
         {
           "title": "Document 1",
-          "url": "https://documentprovider.tld/doc?id=1"
+          "url": "https://documentprovider.tld/doc?id=1",
+          "score": 1234,
+          "originalUrl": "https://shortened.url"
         },
         {
           "title": "Document 2",
@@ -206,12 +208,19 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
   ACMatches matches;
   provider_->ParseDocumentSearchResults(*response, &matches);
   EXPECT_EQ(matches.size(), 2u);
+
   EXPECT_EQ(matches[0].contents, base::ASCIIToUTF16("Document 1"));
   EXPECT_EQ(matches[0].destination_url,
             GURL("https://documentprovider.tld/doc?id=1"));
+  EXPECT_EQ(matches[0].relevance, 1234);  // Server-specified.
+  EXPECT_EQ(matches[0].stripped_destination_url, GURL("https://shortened.url"));
+
   EXPECT_EQ(matches[1].contents, base::ASCIIToUTF16("Document 2"));
   EXPECT_EQ(matches[1].destination_url,
             GURL("https://documentprovider.tld/doc?id=2"));
+  EXPECT_EQ(matches[1].relevance, 700);  // From study default.
+  EXPECT_TRUE(matches[1].stripped_destination_url.is_empty());
+
   ASSERT_FALSE(provider_->backoff_for_session_);
 }
 
