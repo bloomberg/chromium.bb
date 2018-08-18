@@ -52,6 +52,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   // use.
   static void GetAdapter(const AdapterCallback& callback);
 
+  // Returns the shared instance of the classic adapter, creating and
+  // initializing it if necessary. |callback| is called with the adapter
+  // instance passed only once the adapter is fully initialized and ready to
+  // use.
+  // For all platforms except Windows this is equivalent to calling
+  // GetAdapter(), as the default adapter already supports Bluetooth classic.
+  static void GetClassicAdapter(const AdapterCallback& callback);
+
 #if defined(OS_LINUX)
   // Calls |BluetoothAdapter::Shutdown| on the adapter if
   // present.

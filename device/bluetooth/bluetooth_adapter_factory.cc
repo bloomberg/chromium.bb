@@ -19,6 +19,7 @@
 #endif
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "device/bluetooth/bluetooth_adapter_win.h"
 #endif
 #if defined(ANDROID)
 #include "base/android/build_info.h"
@@ -60,6 +61,26 @@ void RunAdapterCallbacks() {
   adapter_callbacks.Get().clear();
 }
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
+
+#if defined(OS_WIN)
+// Shared classic adapter instance. See above why this is a lazy instance.
+// Note: This is only applicable on Windows, as here the default adapter does
+// not provide Bluetooth Classic support yet.
+base::LazyInstance<base::WeakPtr<BluetoothAdapter>>::Leaky classic_adapter =
+    LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<AdapterCallbackList>::DestructorAtExit
+    classic_adapter_callbacks = LAZY_INSTANCE_INITIALIZER;
+
+void RunClassicAdapterCallbacks() {
+  DCHECK(classic_adapter.Get());
+  scoped_refptr<BluetoothAdapter> adapter(classic_adapter.Get().get());
+  for (auto& callback : classic_adapter_callbacks.Get())
+    callback.Run(adapter);
+
+  classic_adapter_callbacks.Get().clear();
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -132,6 +153,31 @@ void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
     callback.Run(scoped_refptr<BluetoothAdapter>(default_adapter.Get().get()));
 }
 
+// static
+void BluetoothAdapterFactory::GetClassicAdapter(
+    const AdapterCallback& callback) {
+#if defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+    // Prior to Win10, the default adapter will support Bluetooth classic.
+    GetAdapter(callback);
+    return;
+  }
+
+  if (!classic_adapter.Get()) {
+    classic_adapter.Get() = BluetoothAdapterWin::CreateClassicAdapter(
+        base::Bind(&RunClassicAdapterCallbacks));
+    DCHECK(!classic_adapter.Get()->IsInitialized());
+  }
+
+  if (!classic_adapter.Get()->IsInitialized())
+    classic_adapter_callbacks.Get().push_back(callback);
+  else
+    callback.Run(scoped_refptr<BluetoothAdapter>(classic_adapter.Get().get()));
+#else
+  GetAdapter(callback);
+#endif  // defined(OS_WIN)
+}
+
 #if defined(OS_LINUX)
 // static
 void BluetoothAdapterFactory::Shutdown() {
@@ -144,6 +190,9 @@ void BluetoothAdapterFactory::Shutdown() {
 void BluetoothAdapterFactory::SetAdapterForTesting(
     scoped_refptr<BluetoothAdapter> adapter) {
   default_adapter.Get() = adapter->GetWeakPtrForTesting();
+#if defined(OS_WIN)
+  classic_adapter.Get() = adapter->GetWeakPtrForTesting();
+#endif
 }
 
 // static
