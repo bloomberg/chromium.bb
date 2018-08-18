@@ -1686,4 +1686,29 @@ TEST_F(ClientControlledShellSurfaceTest, PipWindowCannotBeActivated) {
   EXPECT_TRUE(shell_surface->GetWidget()->CanActivate());
 }
 
+TEST_F(ClientControlledShellSurfaceTest, MovingPipWindowOffDisplayIsAllowed) {
+  UpdateDisplay("500x500");
+
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface(
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  // Use the PIP window state type.
+  shell_surface->SetPip();
+  shell_surface->GetWidget()->Show();
+
+  // Set an off-screen geometry.
+  gfx::Rect bounds(-200, 0, 100, 100);
+  shell_surface->SetGeometry(bounds);
+  surface->Commit();
+
+  EXPECT_EQ(gfx::Rect(-200, 0, 100, 100),
+            shell_surface->GetWidget()->GetWindowBoundsInScreen());
+}
+
 }  // namespace exo
