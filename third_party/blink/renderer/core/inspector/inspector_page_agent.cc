@@ -444,7 +444,6 @@ InspectorPageAgent::InspectorPageAgent(
     : inspected_frames_(inspected_frames),
       v8_session_(v8_session),
       client_(client),
-      last_script_identifier_(0),
       reloading_(false),
       inspector_resource_content_loader_(resource_content_loader),
       resource_content_loader_client_id_(
@@ -542,13 +541,17 @@ Response InspectorPageAgent::disable() {
 
 Response InspectorPageAgent::addScriptToEvaluateOnLoad(const String& source,
                                                        String* identifier) {
-  // Assure we don't override existing ids -- m_lastScriptIdentifier could get
-  // out of sync WRT actual scripts once we restored the scripts from the cookie
-  // during navigation.
-  do {
-    *identifier = String::Number(++last_script_identifier_);
-  } while (!scripts_to_evaluate_on_load_.Get(*identifier).IsNull());
-  scripts_to_evaluate_on_load_.Set(*identifier, source);
+  std::vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
+  auto result = std::max_element(
+      keys.begin(), keys.end(), [](const WTF::String& a, const WTF::String& b) {
+        return Decimal::FromString(a) < Decimal::FromString(b);
+      });
+  if (result == keys.end()) {
+    scripts_to_evaluate_on_load_.Set(String::Number(1), source);
+  } else {
+    scripts_to_evaluate_on_load_.Set(
+        String::Number(Decimal::FromString(*result).ToDouble() + 1), source);
+  }
   return Response::OK();
 }
 
@@ -825,7 +828,13 @@ void InspectorPageAgent::DidNavigateWithinDocument(LocalFrame* frame) {
 void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
   if (!GetFrontend())
     return;
-  for (const WTF::String& key : scripts_to_evaluate_on_load_.Keys()) {
+  std::vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
+  std::sort(keys.begin(), keys.end(),
+            [](const WTF::String& a, const WTF::String& b) {
+              return Decimal::FromString(a) < Decimal::FromString(b);
+            });
+
+  for (const WTF::String& key : keys) {
     const WTF::String& script = scripts_to_evaluate_on_load_.Get(key);
     frame->GetScriptController().ExecuteScriptInMainWorld(script);
   }
