@@ -44,16 +44,7 @@ FidoRequestHandlerBase::TransportAvailabilityObserver::
 FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& available_transports)
-    : FidoRequestHandlerBase(connector,
-                             available_transports,
-                             AddPlatformAuthenticatorCallback()) {}
-
-FidoRequestHandlerBase::FidoRequestHandlerBase(
-    service_manager::Connector* connector,
-    const base::flat_set<FidoTransportProtocol>& available_transports,
-    AddPlatformAuthenticatorCallback add_platform_authenticator)
-    : add_platform_authenticator_(std::move(add_platform_authenticator)),
-      weak_factory_(this) {
+    : weak_factory_(this) {
   // The number of times |notify_observer_callback_| needs to be invoked before
   // Observer::OnTransportAvailabilityEnumerated is dispatched. Essentially this
   // is used to wait until all the parts of |transport_availability_info_| are
@@ -79,8 +70,8 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
     }
 
     if (transport == FidoTransportProtocol::kInternal) {
-      // Internal authenticators are injected through
-      // AddPlatformAuthenticatorCallback.
+      // Platform authenticator availability is always indicated by
+      // |AuthenticatorImpl|.
       continue;
     }
 
@@ -139,15 +130,6 @@ base::WeakPtr<FidoRequestHandlerBase> FidoRequestHandlerBase::GetWeakPtr() {
 void FidoRequestHandlerBase::Start() {
   for (const auto& discovery : discoveries_)
     discovery->Start();
-
-  // Post |MaybeAddPlatformAuthenticator| into its own task. This avoids
-  // FidoAuthenticatorAdded() to be called synchronously from the constructor of
-  // FidoRequestHandlerBase prior to any TransportAvailabilityObserver being
-  // set.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&FidoRequestHandlerBase::MaybeAddPlatformAuthenticator,
-                     weak_factory_.GetWeakPtr()));
 }
 
 void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,
@@ -225,15 +207,13 @@ void FidoRequestHandlerBase::AddAuthenticator(
                                 GetWeakPtr(), authenticator_ptr));
 }
 
-void FidoRequestHandlerBase::MaybeAddPlatformAuthenticator() {
-  std::unique_ptr<FidoAuthenticator> authenticator;
-  if (add_platform_authenticator_ &&
+void FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(
+    std::unique_ptr<FidoAuthenticator> authenticator) {
+  if (authenticator &&
       base::ContainsKey(transport_availability_info_.available_transports,
                         FidoTransportProtocol::kInternal)) {
-    authenticator = std::move(add_platform_authenticator_).Run();
-  }
-
-  if (authenticator) {
+    DCHECK(authenticator->AuthenticatorTransport() ==
+           FidoTransportProtocol::kInternal);
     AddAuthenticator(std::move(authenticator));
   } else {
     transport_availability_info_.available_transports.erase(

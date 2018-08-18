@@ -43,8 +43,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
  public:
   using AuthenticatorMap =
       std::map<std::string, std::unique_ptr<FidoAuthenticator>, std::less<>>;
-  using AddPlatformAuthenticatorCallback =
-      base::OnceCallback<std::unique_ptr<FidoAuthenticator>()>;
   using RequestCallback = base::RepeatingCallback<void(const std::string&)>;
 
   enum class RequestType { kMakeCredential, kGetAssertion };
@@ -96,10 +94,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   FidoRequestHandlerBase(
       service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& available_transports);
-  FidoRequestHandlerBase(
-      service_manager::Connector* connector,
-      const base::flat_set<FidoTransportProtocol>& available_transports,
-      AddPlatformAuthenticatorCallback add_platform_authenticator);
   ~FidoRequestHandlerBase() override;
 
   // Triggers DispatchRequest() if |active_authenticators_| hold
@@ -127,6 +121,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     DCHECK(notify_observer_callback_);
     notify_observer_callback_.Run();
   }
+
+  // Set the platform authenticator for this request, if one is available.
+  // |AuthenticatorImpl| must call this method after invoking |set_oberver| even
+  // if no platform authenticator is available, in which case it passes nullptr.
+  void SetPlatformAuthenticatorOrMarkUnavailable(
+      std::unique_ptr<FidoAuthenticator> authenticator);
 
   TransportAvailabilityInfo& transport_availability_info() {
     return transport_availability_info_;
@@ -158,7 +158,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void BluetoothAdapterPowerChanged(bool is_powered_on) final;
 
   void AddAuthenticator(std::unique_ptr<FidoAuthenticator> authenticator);
-  void MaybeAddPlatformAuthenticator();
   void NotifyObserverTransportAvailability();
 
   AuthenticatorMap active_authenticators_;
@@ -166,7 +165,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   TransportAvailabilityObserver* observer_ = nullptr;
   TransportAvailabilityInfo transport_availability_info_;
   base::RepeatingClosure notify_observer_callback_;
-  AddPlatformAuthenticatorCallback add_platform_authenticator_;
 
   base::WeakPtrFactory<FidoRequestHandlerBase> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandlerBase);

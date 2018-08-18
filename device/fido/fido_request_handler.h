@@ -36,19 +36,9 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
       service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& available_transports,
       CompletionCallback completion_callback)
-      : FidoRequestHandler(connector,
-                           available_transports,
-                           std::move(completion_callback),
-                           AddPlatformAuthenticatorCallback()) {}
-  FidoRequestHandler(
-      service_manager::Connector* connector,
-      const base::flat_set<FidoTransportProtocol>& available_transports,
-      CompletionCallback completion_callback,
-      AddPlatformAuthenticatorCallback add_platform_authenticator)
-      : FidoRequestHandlerBase(connector,
-                               available_transports,
-                               std::move(add_platform_authenticator)),
+      : FidoRequestHandlerBase(connector, available_transports),
         completion_callback_(std::move(completion_callback)) {}
+
   ~FidoRequestHandler() override {
     if (!is_complete())
       CancelOngoingTasks();
