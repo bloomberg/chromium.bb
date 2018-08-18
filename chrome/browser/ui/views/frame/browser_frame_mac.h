@@ -49,7 +49,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   ~BrowserFrameMac() override;
 
   // Overridden from views::NativeWidgetMac:
-  NativeWidgetMacNSWindow* CreateNSWindow(
+  base::scoped_nsobject<NativeWidgetMacNSWindow> CreateNSWindow(
       const views::Widget::InitParams& params) override;
   void OnWindowDestroying(NSWindow* window) override;
 

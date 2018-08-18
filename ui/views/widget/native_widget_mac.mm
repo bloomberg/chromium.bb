@@ -28,6 +28,7 @@
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #include "ui/views/cocoa/cocoa_mouse_capture.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
+#import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -128,8 +129,8 @@ int NativeWidgetMac::SheetPositionY() {
 void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   name_ = params.name;
-  base::scoped_nsobject<NativeWidgetMacNSWindow> window(
-      [CreateNSWindow(params) retain]);
+  base::scoped_nsobject<NativeWidgetMacNSWindow> window =
+      CreateNSWindow(params);
   bridge()->SetWindow(window);
   bridge()->Init(params);
 
@@ -653,13 +654,14 @@ std::string NativeWidgetMac::GetName() const {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMac, protected:
 
-NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
+base::scoped_nsobject<NativeWidgetMacNSWindow> NativeWidgetMac::CreateNSWindow(
     const Widget::InitParams& params) {
-  return [[[NativeWidgetMacNSWindow alloc]
-      initWithContentRect:ui::kWindowSizeDeterminedLater
-                styleMask:StyleMaskForParams(params)
-                  backing:NSBackingStoreBuffered
-                    defer:NO] autorelease];
+  return base::scoped_nsobject<NativeWidgetMacNSWindow>(
+      [[NativeWidgetMacNSWindow alloc]
+          initWithContentRect:ui::kWindowSizeDeterminedLater
+                    styleMask:StyleMaskForParams(params)
+                      backing:NSBackingStoreBuffered
+                        defer:NO]);
 }
 
 BridgedNativeWidget* NativeWidgetMac::bridge() const {
