@@ -280,7 +280,8 @@ FAKE OUTPUT. Will be filled in later.
     args = list(args)
     base_cmd = base_cmd + args
 
-    self.create_cmd = base_cmd + ['--create_and_return']
+    self.create_cmd = base_cmd + ['--create_and_return',
+                                  '--passed_mins', '0']
     create_results = iter([
         self.rc.CmdResult(returncode=create_return_code,
                           output=self.CREATE_OUTPUT,
@@ -291,7 +292,8 @@ FAKE OUTPUT. Will be filled in later.
         side_effect=lambda *args, **kwargs: create_results.next(),
     )
 
-    self.wait_cmd = base_cmd + ['--suite_id', 'fake_parent_id']
+    self.wait_cmd = base_cmd + ['--suite_id', 'fake_parent_id',
+                                '--passed_mins', '0']
     wait_results = iter([
         self.rc.CmdResult(returncode=wait_return_code,
                           output=self.WAIT_OUTPUT,

@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import itertools
 import json
 import os
 
@@ -24,9 +25,12 @@ CONNECTION_TYPE_COMMON = 'common'
 CONNECTION_TYPE_MOCK = 'mock'
 # Code 80 - bot died.
 RETRIABLE_INTERNAL_FAILURE_STATES = {80}
+# Choose a prime number here to make the lowest common multiple of suite
+# timeout_mins and silence check interval large enough.
+SILENCE_INTERVAL_MIN = 97
 
 
-def RunSwarmingCommand(cmd, swarming_server,
+def RunSwarmingCommand(cmd, swarming_server, is_skylab=False,
                        task_name=None, dimensions=None,
                        priority=None,
                        print_status_updates=False,
@@ -39,6 +43,7 @@ def RunSwarmingCommand(cmd, swarming_server,
   Args:
     cmd: Commands to run, represented as a list.
     swarming_server: The swarming server to send request to.
+    is_skylab: A boolean indicating whether the call is for skylab.
     task_name: String, represent a task.
     dimensions: A list of tuple with two elements, representing dimension for
                selecting a swarming bots. E.g. ('os', 'Linux') and pools and
@@ -103,13 +108,19 @@ def RunSwarmingCommand(cmd, swarming_server,
 
     try:
       result = None
-      while True:
+      for iteration in itertools.count(0):
         try:
-          # Add a timeout limit of 1.5 hours here to avoid
+          # Add a timeout limit of SILENCE_INTERVAL_MIN mins here to avoid
           # buildbot salency check.
-          with timeout_util.Timeout(5400):
+          with timeout_util.Timeout(SILENCE_INTERVAL_MIN * 60):
             logging.info('Re-run swarming_cmd to avoid buildbot salency check.')
-            result = cros_build_lib.RunCommand(swarming_cmd, *args, **kwargs)
+            if is_skylab:
+              result = cros_build_lib.RunCommand(
+                  swarming_cmd + ['--passed_mins',
+                                  str(iteration * SILENCE_INTERVAL_MIN)],
+                  *args, **kwargs)
+            else:
+              result = cros_build_lib.RunCommand(swarming_cmd, *args, **kwargs)
             break
         except timeout_util.TimeoutError:
           pass

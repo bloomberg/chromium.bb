@@ -1101,6 +1101,7 @@ def _SkylabHWTestCreate(cmd, **kwargs):
                cros_build_lib.CmdToStr(create_cmd))
   result = swarming_lib.RunSwarmingCommandWithRetries(
       max_retry=_MAX_HWTEST_START_CMD_RETRY,
+      is_skylab=True,
       error_check=swarming_lib.SwarmingRetriableErrorCheck,
       cmd=create_cmd, capture_output=True,
       combine_stdout_stderr=True, **kwargs)
@@ -1127,6 +1128,7 @@ def _SkylabHWTestWait(cmd, suite_id, **kwargs):
   try:
     result = swarming_lib.RunSwarmingCommandWithRetries(
         max_retry=_MAX_HWTEST_START_CMD_RETRY,
+        is_skylab=True,
         error_check=swarming_lib.SwarmingRetriableErrorCheck,
         cmd=wait_cmd, capture_output=True, combine_stdout_stderr=True,
         **kwargs)
