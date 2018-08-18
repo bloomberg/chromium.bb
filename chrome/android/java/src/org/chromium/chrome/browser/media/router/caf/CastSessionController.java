@@ -6,15 +6,20 @@ package org.chromium.chrome.browser.media.router.caf;
 
 import android.support.v7.media.MediaRouter;
 
+import com.google.android.gms.cast.ApplicationMetadata;
+import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.framework.CastSession;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.CastSessionUtil;
 import org.chromium.chrome.browser.media.router.MediaSink;
 import org.chromium.chrome.browser.media.router.MediaSource;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A wrapper for {@link CastSession}, extending its functionality for Chrome MediaRouter.
@@ -22,19 +27,33 @@ import java.util.List;
  * Has the same lifecycle with CastSession.
  */
 public class CastSessionController {
-    private static final String TAG = "CastSessionController";
+    private static final String TAG = "CafSessionCtrl";
 
-    private final CastSession mCastSession;
+    private CastSession mCastSession;
     private final CafBaseMediaRouteProvider mProvider;
-    private final MediaSink mSink;
-    private final MediaSource mSource;
+    private MediaSink mSink;
+    private MediaSource mSource;
+    private List<String> mNamespaces;
+    private final CastListener mCastListener;
 
-    public CastSessionController(CastSession castSession, CafBaseMediaRouteProvider provider,
-            MediaSink sink, MediaSource source) {
-        mCastSession = castSession;
+    public CastSessionController(CafBaseMediaRouteProvider provider) {
         mProvider = provider;
-        mSink = sink;
-        mSource = source;
+        mCastListener = new CastListener();
+    }
+
+    public void requestSessionLaunch(CreateRouteRequestInfo request) {
+        mSource = request.source;
+        mSink = request.sink;
+        CastUtils.getCastContext().setReceiverApplicationId(request.source.getApplicationId());
+
+        for (MediaRouter.RouteInfo routeInfo : mProvider.getAndroidMediaRouter().getRoutes()) {
+            if (routeInfo.getId().equals(request.sink.getId())) {
+                // Unselect and then select so that CAF will get notified of the selection.
+                mProvider.getAndroidMediaRouter().unselect(MediaRouter.UNSELECT_REASON_UNKNOWN);
+                routeInfo.select();
+                break;
+            }
+        }
     }
 
     public MediaSource getSource() {
@@ -78,10 +97,6 @@ public class CastSessionController {
         return capabilities;
     }
 
-    public void onSessionStarted() {
-        // Not implemented.
-    }
-
     public boolean isConnected() {
         return mCastSession != null && mCastSession.isConnected();
     }
@@ -91,5 +106,92 @@ public class CastSessionController {
 
         mCastSession.getRemoteMediaClient().onMessageReceived(
                 mCastSession.getCastDevice(), CastSessionUtil.MEDIA_NAMESPACE, message);
+    }
+
+    public void attachToCastSession(CastSession session) {
+        mCastSession = session;
+        mCastSession.addCastListener(mCastListener);
+    }
+
+    public void detachFromCastSession(CastSession session) {
+        mCastSession.removeCastListener(mCastListener);
+        mCastSession = null;
+    }
+
+    private class CastListener extends Cast.Listener {
+        @Override
+        public void onApplicationStatusChanged() {
+            CastSessionController.this.onApplicationStatusChanged();
+        }
+
+        @Override
+        public void onApplicationMetadataChanged(ApplicationMetadata metadata) {
+            onApplicationStatusChanged();
+        }
+
+        @Override
+        public void onVolumeChanged() {
+            CafMessageHandler messageHandler = mProvider.getMessageHandler();
+            if (messageHandler == null) return;
+            messageHandler.onVolumeChanged();
+        }
+    }
+
+    private void onApplicationStatusChanged() {
+        updateNamespaces();
+
+        CafMessageHandler messageHandler = mProvider.getMessageHandler();
+        if (messageHandler != null) {
+            messageHandler.broadcastClientMessage(
+                    "update_sesssion", messageHandler.buildSessionMessage());
+        }
+    }
+
+    private void updateNamespaces() {
+        if (!isConnected()) return;
+
+        Set<String> namespacesToAdd =
+                new HashSet<>(mCastSession.getApplicationMetadata().getSupportedNamespaces());
+        Set<String> namespacesToRemove = new HashSet<String>(mNamespaces);
+
+        namespacesToRemove.removeAll(namespacesToAdd);
+        namespacesToAdd.removeAll(mNamespaces);
+
+        for (String namespace : namespacesToRemove) unregisterNamespace(namespace);
+        for (String namespace : namespacesToAdd) registerNamespace(namespace);
+    }
+
+    private void registerNamespace(String namespace) {
+        assert !mNamespaces.contains(namespace);
+
+        if (!isConnected()) return;
+
+        try {
+            mCastSession.setMessageReceivedCallbacks(namespace, this ::onMessageReceived);
+            mNamespaces.add(namespace);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to register namespace listener for %s", namespace, e);
+        }
+    }
+
+    private void unregisterNamespace(String namespace) {
+        assert mNamespaces.contains(namespace);
+
+        if (!isConnected()) return;
+
+        try {
+            mCastSession.removeMessageReceivedCallbacks(namespace);
+            mNamespaces.remove(namespace);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to remove the namespace listener for %s", namespace, e);
+        }
+    }
+
+    private void onMessageReceived(CastDevice castDevice, String namespace, String message) {
+        Log.d(TAG,
+                "Received message from Cast device: namespace=\"" + namespace + "\" message=\""
+                        + message + "\"");
+        CafMessageHandler messageHandler = mProvider.getMessageHandler();
+        messageHandler.onMessageReceived(namespace, message);
     }
 }

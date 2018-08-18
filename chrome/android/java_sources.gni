@@ -778,6 +778,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/media/router/caf/CafBaseMediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/caf/CafMediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/caf/CafMessageHandler.java",
+  "java/src/org/chromium/chrome/browser/media/router/caf/CreateRouteRequestInfo.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/BaseMediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/CastMediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/CastMediaSource.java",
