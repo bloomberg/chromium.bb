@@ -12,6 +12,7 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "extensions/common/constants.h"
@@ -76,7 +77,7 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
     const GURL& validated_url,
     const GURL& start_url,
     const GURL& manifest_url) {
-  return extensions::BookmarkAppHelper::BookmarkOrHostedAppInstalled(
+  return extensions::BookmarkOrHostedAppInstalled(
       web_contents->GetBrowserContext(), start_url);
 }
 

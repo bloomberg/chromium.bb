@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
@@ -518,7 +519,8 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
   web_app_info.icons.push_back(
       CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED));
 
-  extensions::CreateOrUpdateBookmarkApp(service_, &web_app_info);
+  extensions::CreateOrUpdateBookmarkApp(service_, &web_app_info,
+                                        false /* is_locally_installed */);
   content::RunAllTasksUntilIdle();
 
   {
@@ -533,13 +535,15 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
     EXPECT_FALSE(extensions::IconsInfo::GetIconResource(
                      extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY)
                      .empty());
+    EXPECT_FALSE(BookmarkAppIsLocallyInstalled(profile(), extension));
   }
 
   web_app_info.title = base::UTF8ToUTF16(kAlternativeAppTitle);
   web_app_info.icons[0] = CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorRED);
   web_app_info.scope = GURL(kAppAlternativeScope);
 
-  extensions::CreateOrUpdateBookmarkApp(service_, &web_app_info);
+  extensions::CreateOrUpdateBookmarkApp(service_, &web_app_info,
+                                        true /* is_locally_installed */);
   content::RunAllTasksUntilIdle();
 
   {
@@ -558,6 +562,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
     EXPECT_FALSE(extensions::IconsInfo::GetIconResource(
                      extension, kIconSizeLarge, ExtensionIconSet::MATCH_EXACTLY)
                      .empty());
+    EXPECT_TRUE(BookmarkAppIsLocallyInstalled(profile(), extension));
   }
 }
 

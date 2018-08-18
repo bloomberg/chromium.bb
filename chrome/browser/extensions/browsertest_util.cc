@@ -58,7 +58,8 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
   content::WindowedNotificationObserver windowed_observer(
       NOTIFICATION_CRX_INSTALLER_DONE,
       content::NotificationService::AllSources());
-  CreateOrUpdateBookmarkApp(GetExtensionService(profile), &info);
+  CreateOrUpdateBookmarkApp(GetExtensionService(profile), &info,
+                            true /* locally_installed */);
   windowed_observer.Wait();
 
   EXPECT_EQ(++num_extensions,

@@ -555,7 +555,13 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
     web_app_info.icons.push_back(icon_info);
   }
 
-  CreateOrUpdateBookmarkApp(extension_service(), &web_app_info);
+#if defined(OS_CHROMEOS)
+  bool is_locally_installed = true;
+#else
+  bool is_locally_installed = extension != nullptr;
+#endif
+  CreateOrUpdateBookmarkApp(extension_service(), &web_app_info,
+                            is_locally_installed);
 }
 
 void ExtensionSyncService::SetSyncStartFlareForTesting(

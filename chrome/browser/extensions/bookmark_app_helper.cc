@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/browser/webshare/share_target_pref_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -51,7 +52,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/pref_names.h"
@@ -114,8 +114,11 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
                              public content::WebContentsObserver {
  public:
   BookmarkAppInstaller(extensions::ExtensionService* service,
-                       const WebApplicationInfo& web_app_info)
-      : service_(service), web_app_info_(web_app_info) {}
+                       const WebApplicationInfo& web_app_info,
+                       bool is_locally_installed)
+      : service_(service),
+        web_app_info_(web_app_info),
+        is_locally_installed_(is_locally_installed) {}
 
   void Run() {
     for (const auto& icon : web_app_info_.icons) {
@@ -131,7 +134,7 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
       return;
     }
 
-    FinishInstallation();
+    DoInstallation();
   }
 
   void SetupWebContents() {
@@ -190,11 +193,11 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
         }
       }
     }
-    FinishInstallation();
+    DoInstallation();
     Release();
   }
 
-  void FinishInstallation() {
+  void DoInstallation() {
     // Ensure that all icons that are in web_app_info are present, by generating
     // icons for any sizes which have failed to download. This ensures that the
     // created manifest for the bookmark app does not contain links to icons
@@ -218,11 +221,24 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
                                                              &web_app_info_);
     scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service_));
     installer->set_error_on_unsupported_requirements(true);
+    installer->set_installer_callback(base::BindOnce(
+        &BookmarkAppInstaller::OnInstallationDone, this, installer));
     installer->InstallWebApp(web_app_info_);
+  }
+
+  void OnInstallationDone(scoped_refptr<CrxInstaller> installer,
+                          const base::Optional<CrxInstallError>& result) {
+    // No result means success.
+    if (!result.has_value()) {
+      SetBookmarkAppIsLocallyInstalled(service_->GetBrowserContext(),
+                                       installer->extension(),
+                                       is_locally_installed_);
+    }
   }
 
   extensions::ExtensionService* service_;
   WebApplicationInfo web_app_info_;
+  bool is_locally_installed_;
 
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<WebAppIconDownloader> web_app_icon_downloader_;
@@ -284,27 +300,6 @@ WebApplicationInfo::IconInfo BookmarkAppHelper::GenerateIconInfo(
   icon_info.height = output_size;
   icon_info.data = web_app::GenerateBitmap(output_size, color, letter);
   return icon_info;
-}
-
-// static
-bool BookmarkAppHelper::BookmarkOrHostedAppInstalled(
-    content::BrowserContext* browser_context,
-    const GURL& url) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
-  const ExtensionSet& extensions = registry->enabled_extensions();
-
-  // Iterate through the extensions and extract the LaunchWebUrl (bookmark apps)
-  // or check the web extent (hosted apps).
-  for (const scoped_refptr<const Extension>& extension : extensions) {
-    if (!extension->is_hosted_app())
-      continue;
-
-    if (extension->web_extent().MatchesURL(url) ||
-        AppLaunchInfo::GetLaunchWebURL(extension.get()) == url) {
-      return true;
-    }
-  }
-  return false;
 }
 
 // static
@@ -572,6 +567,10 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   // Set the launcher type for the app.
   SetLaunchType(profile_, extension->id(), launch_type);
 
+  // Set this app to be locally installed, as it was installed from this
+  // machine.
+  SetBookmarkAppIsLocallyInstalled(profile_, extension, true);
+
   if (!contents_) {
     // The web contents can be null in tests.
     callback_.Run(extension, web_app_info_);
@@ -671,9 +670,10 @@ void BookmarkAppHelper::Observe(int type,
 }
 
 void CreateOrUpdateBookmarkApp(extensions::ExtensionService* service,
-                               WebApplicationInfo* web_app_info) {
+                               WebApplicationInfo* web_app_info,
+                               bool is_locally_installed) {
   scoped_refptr<BookmarkAppInstaller> installer(
-      new BookmarkAppInstaller(service, *web_app_info));
+      new BookmarkAppInstaller(service, *web_app_info, is_locally_installed));
   installer->Run();
 }
 
