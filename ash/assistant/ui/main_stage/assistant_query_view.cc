@@ -98,32 +98,31 @@ void AssistantQueryView::SetQuery(const AssistantQuery& query) {
 
 void AssistantQueryView::SetText(const std::string& high_confidence_text,
                                  const std::string& low_confidence_text) {
-  // High confidence text and low confidence text are displayed in different
-  // colors for visual emphasis.
-  const base::string16& high_confidence_text_16 =
-      base::UTF8ToUTF16(high_confidence_text);
-
-  if (low_confidence_text.empty()) {
-    label_->SetText(high_confidence_text_16);
-    label_->AddStyleRange(gfx::Range(0, high_confidence_text_16.length()),
-                          CreateStyleInfo(kTextColorPrimary));
+  if (high_confidence_text.empty() && low_confidence_text.empty()) {
+    label_->SetText(base::string16());
   } else {
+    const base::string16& high_confidence_text_16 =
+        base::UTF8ToUTF16(high_confidence_text);
+
     const base::string16& low_confidence_text_16 =
         base::UTF8ToUTF16(low_confidence_text);
 
     label_->SetText(high_confidence_text_16 + low_confidence_text_16);
 
-    // High confidence text styling.
-    label_->AddStyleRange(gfx::Range(0, high_confidence_text_16.length()),
-                          CreateStyleInfo(kTextColorPrimary));
+    // Style high confidence text.
+    if (!high_confidence_text_16.empty()) {
+      label_->AddStyleRange(gfx::Range(0, high_confidence_text_16.length()),
+                            CreateStyleInfo(kTextColorPrimary));
+    }
 
-    // Low confidence text styling.
-    label_->AddStyleRange(gfx::Range(high_confidence_text_16.length(),
-                                     high_confidence_text_16.length() +
-                                         low_confidence_text_16.length()),
-                          CreateStyleInfo(kTextColorHint));
+    // Style low confidence text.
+    if (!low_confidence_text_16.empty()) {
+      label_->AddStyleRange(gfx::Range(high_confidence_text_16.length(),
+                                       high_confidence_text_16.length() +
+                                           low_confidence_text_16.length()),
+                            CreateStyleInfo(kTextColorHint));
+    }
   }
-
   label_->SizeToFit(width());
   PreferredSizeChanged();
 }
