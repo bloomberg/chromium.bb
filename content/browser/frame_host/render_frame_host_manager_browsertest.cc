@@ -4575,6 +4575,103 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(error_url.spec(), result);
 }
 
+// Test to verify that navigation to existing history entry, which results in
+// an error page, is correctly placed in the error page SiteInstance.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ErrorPageNavigationHistoryNavigationFailure) {
+  // This test is only valid if error page isolation is enabled.
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
+    return;
+
+  StartEmbeddedServer();
+
+  // Perform successful navigations to two URLs to establish session history.
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+
+  GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  WebContents* web_contents = shell()->web_contents();
+  NavigationControllerImpl& nav_controller =
+      static_cast<NavigationControllerImpl&>(web_contents->GetController());
+
+  // There should be two NavigationEntries.
+  EXPECT_EQ(2, nav_controller.GetEntryCount());
+
+  // Create an interceptor to cause navigations to url1 to fail and go back
+  // in session history.
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      SetupRequestFailForURL(url1);
+  TestNavigationObserver back_observer(web_contents);
+  nav_controller.GoBack();
+  back_observer.Wait();
+  EXPECT_FALSE(back_observer.last_navigation_succeeded());
+  EXPECT_EQ(2, nav_controller.GetEntryCount());
+  EXPECT_EQ(0, nav_controller.GetLastCommittedEntryIndex());
+
+  EXPECT_EQ(GURL(kUnreachableWebDataURL),
+            web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_EQ(GURL(kUnreachableWebDataURL),
+            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+                web_contents->GetSiteInstance()->GetProcess()->GetID()));
+}
+
+// Test to verify that a successful navigation to existing history entry,
+// which initially resulted in an error page, is correctly placed in a
+// SiteInstance different than the error page one.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ErrorPageNavigationHistoryNavigationSuccess) {
+  // This test is only valid if error page isolation is enabled.
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
+    return;
+
+  StartEmbeddedServer();
+  WebContents* web_contents = shell()->web_contents();
+
+  // Start with a successful navigation.
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+
+  // Navigate to URL that results in an error page and verify its SiteInstance.
+  GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      SetupRequestFailForURL(url2);
+
+  EXPECT_FALSE(NavigateToURL(shell(), url2));
+  EXPECT_EQ(GURL(kUnreachableWebDataURL),
+            web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_EQ(GURL(kUnreachableWebDataURL),
+            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+                web_contents->GetSiteInstance()->GetProcess()->GetID()));
+
+  // There should be two NavigationEntries.
+  NavigationControllerImpl& nav_controller =
+      static_cast<NavigationControllerImpl&>(web_contents->GetController());
+  EXPECT_EQ(2, nav_controller.GetEntryCount());
+
+  // Navigate once more to create another session history entry.
+  GURL url3(embedded_test_server()->GetURL("c.com", "/title3.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url3));
+  EXPECT_EQ(3, nav_controller.GetEntryCount());
+
+  // Navigate back, this time remove the interceptor so the navigation will
+  // succeed.
+  url_interceptor.reset();
+  TestNavigationObserver back_observer(web_contents);
+  nav_controller.GoBack();
+  back_observer.Wait();
+  EXPECT_TRUE(back_observer.last_navigation_succeeded());
+  EXPECT_EQ(3, nav_controller.GetEntryCount());
+  EXPECT_EQ(1, nav_controller.GetLastCommittedEntryIndex());
+
+  EXPECT_NE(GURL(kUnreachableWebDataURL),
+            web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_NE(GURL(kUnreachableWebDataURL),
+            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+                web_contents->GetSiteInstance()->GetProcess()->GetID()));
+}
+
 // A NavigationThrottle implementation that blocks all outgoing navigation
 // requests for a specific WebContents. It is used to block navigations to
 // WebUI URLs in the following test.
