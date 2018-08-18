@@ -36,8 +36,6 @@
 -MediaRouterElementsBrowserTest.MediaRouterContainerSinkList
 -MediaRouterElementsBrowserTest.MediaRouterRouteDetails
 -PasswordsAndFormsBrowserTest.uiTests
--PrintPreviewDestinationListTest.FilterDestinations
--PrintPreviewDestinationListTest.FireDestinationSelected
 -SettingsAdvancedPageBrowserTest.Load
 
 # Mac only failure. See crbug.com/874976
@@ -310,6 +308,7 @@ PrintPreviewAdvancedItemTest.*
 PrintPreviewCustomMarginsTest.*
 PrintPreviewDestinationDialogTest.*
 PrintPreviewDestinationItemTest.*
+PrintPreviewDestinationListTest.*
 PrintPreviewDestinationSearchTest.*
 PrintPreviewHeaderTest.*
 PrintPreviewLinkContainerTest.*

@@ -56,15 +56,6 @@ Polymer({
     'matchingDestinationsChanged_(matchingDestinations_.*)',
   ],
 
-  /** @private {boolean} */
-  newDestinations_: false,
-
-  /** @private {boolean} */
-  initializedDestinations_: false,
-
-  /** @private {!Array<!Node>} */
-  highlights_: [],
-
   // This is a workaround to ensure that the iron-list correctly updates the
   // displayed destination information when the elements in the
   // |matchingDestinations_| array change, instead of using stale information
@@ -77,6 +68,9 @@ Polymer({
 
   /** @private */
   updateMatchingDestinations_: function() {
+    if (this.destinations === undefined)
+      return;
+
     this.updateList(
         'matchingDestinations_',
         destination => destination.origin + '/' + destination.id + '/' +
