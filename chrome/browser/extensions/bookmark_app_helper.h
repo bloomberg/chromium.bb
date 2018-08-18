@@ -29,7 +29,6 @@ class Profile;
 class SkBitmap;
 
 namespace content {
-class BrowserContext;
 class WebContents;
 }  // namespace content
 
@@ -76,11 +75,6 @@ class BookmarkAppHelper : public content::NotificationObserver {
   static WebApplicationInfo::IconInfo GenerateIconInfo(int output_size,
                                                        SkColor color,
                                                        char letter);
-
-  // Returns true if a bookmark or hosted app from a given URL is already
-  // installed and enabled.
-  static bool BookmarkOrHostedAppInstalled(
-      content::BrowserContext* browser_context, const GURL& url);
 
   // It is important that the linked app information in any extension that
   // gets created from sync matches the linked app information that came from
@@ -173,7 +167,8 @@ class BookmarkAppHelper : public content::NotificationObserver {
 // Creates or updates a bookmark app from the given |web_app_info|. Icons will
 // be downloaded from the icon URLs provided in |web_app_info|.
 void CreateOrUpdateBookmarkApp(ExtensionService* service,
-                               WebApplicationInfo* web_app_info);
+                               WebApplicationInfo* web_app_info,
+                               bool is_locally_installed);
 
 // Returns whether the given |url| is a valid bookmark app url.
 bool IsValidBookmarkAppUrl(const GURL& url);
