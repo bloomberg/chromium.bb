@@ -32,7 +32,8 @@ class ExtensionURLLoaderThrottle : public content::URLLoaderThrottle {
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head,
       bool* defer,
-      std::vector<std::string>* to_be_removed_request_headers) override;
+      std::vector<std::string>* to_be_removed_request_headers,
+      net::HttpRequestHeaders* modified_request_headers) override;
   void WillProcessResponse(const GURL& response_url,
                            network::ResourceResponseHead* response_head,
                            bool* defer) override;

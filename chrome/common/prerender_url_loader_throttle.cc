@@ -143,7 +143,8 @@ void PrerenderURLLoaderThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head,
     bool* defer,
-    std::vector<std::string>* to_be_removed_headers) {
+    std::vector<std::string>* /* to_be_removed_headers */,
+    net::HttpRequestHeaders* /* modified_headers */) {
   redirect_count_++;
   if (mode_ == PREFETCH_ONLY) {
     RecordPrefetchResponseReceived(

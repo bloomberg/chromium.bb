@@ -88,18 +88,8 @@
 -DnsProbeBrowserTest.CorrectionsLoadStopped
 -DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 
-# https://crbug.com/789670
--DiceBrowserTest.Reauth
--DiceBrowserTest.Signin
--DiceBrowserTest.SignoutAllAccounts
--DiceBrowserTest.SignoutMainAccount
--DiceBrowserTest.SignoutSecondaryAccount
--DiceFixAuthErrorsBrowserTest.ReauthFixAuthError
--DiceFixAuthErrorsBrowserTest.SigninAccountMismatch
--DicePrepareMigrationBrowserTest.EnableSyncAfterToken
--DicePrepareMigrationBrowserTest.EnableSyncBeforeToken
--DicePrepareMigrationBrowserTest.Signout
--ChromeResourceDispatcherHostDelegateMirrorBrowserTest.MirrorRequestHeader
+# crbug.com/859594 Migrate storage::FileWriterDelegate to use SimpleURLLoader
+-SBNavigationObserverBrowserTest.DownloadViaHTML5FileApi
 
 # https://crbug.com/778793
 # Started failing in r514649.
