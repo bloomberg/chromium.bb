@@ -617,6 +617,8 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
         // strong protection. If only some sites are isolated, we need
         // additional logic to prevent the non-isolated sites from requesting
         // resources for isolated sites. https://crbug.com/509125
+        TRACE_EVENT2("navigation", "SiteInstanceImpl::LockToOrigin", "site id",
+                     id_, "lock", site_.possibly_invalid_spec());
         process_->LockToOrigin(site_);
         break;
       }

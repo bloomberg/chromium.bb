@@ -1271,6 +1271,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
       std::unique_ptr<URLLoaderFactoryBundleInfo> bundle_info);
   std::unique_ptr<URLLoaderFactoryBundleInfo> CloneSubresourceFactories();
 
+  // Creates a TracedValue object containing the details of a committed
+  // navigation, so it can be logged with the tracing system.
+  std::unique_ptr<base::trace_event::TracedValue> CommitAsTracedValue(
+      FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) const;
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
