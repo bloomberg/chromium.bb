@@ -726,9 +726,15 @@ void ClientControlledShellSurface::CompositorLockTimedOut() {
 // ShellSurfaceBase overrides:
 
 void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
+  // Android PIP windows can be dismissed by swiping off the screen. Let them be
+  // positioned off-screen. Apart from swipe to dismiss, the PIP window will
+  // be kept on screen.
+  // TODO(edcourtney): This should be done as a client controlled move, not
+  // a special case.
   if (((!client_controlled_move_resize_ && !GetWindowState()->is_dragged()) ||
        client_controlled_move_resize_) &&
-      !client_controlled_state_->set_bounds_locally()) {
+      !client_controlled_state_->set_bounds_locally() &&
+      !GetWindowState()->IsPip()) {
     {
       // Calculate a minimum window visibility required bounds.
       aura::Window* window = widget_->GetNativeWindow();
