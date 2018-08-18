@@ -26,6 +26,17 @@ class FrameSinkElement : public UIElement {
                    bool is_client_connected);
   ~FrameSinkElement() override;
 
+  // Used by DOMAgentViz on updates when element is already present
+  // in a tree but its properties need to be changed.
+  void SetRegistered(bool is_registered) { is_registered_ = is_registered; }
+  void SetClientConnected(bool is_client_connected) {
+    is_client_connected_ = is_client_connected;
+  }
+  void SetRoot(bool is_root) { is_root_ = is_root; }
+
+  bool is_registered() const { return is_registered_; }
+  bool is_client_connected() const { return is_client_connected_; }
+
   // UIElement:
   std::vector<std::pair<std::string, std::string>> GetCustomProperties()
       const override;

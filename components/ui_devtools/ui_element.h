@@ -31,6 +31,7 @@ class UI_DEVTOOLS_EXPORT UIElement {
   int node_id() const { return node_id_; };
   std::string GetTypeName() const;
   UIElement* parent() const { return parent_; };
+  void set_parent(UIElement* parent) { parent_ = parent; };
   UIElementDelegate* delegate() const { return delegate_; };
   UIElementType type() const { return type_; };
   const std::vector<UIElement*>& children() const { return children_; };
