@@ -111,7 +111,8 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   // non-delayed-invalidation animated background, which should be ignored.
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       (style.Appearance() == kMediaSliderPart ||
-       layout_box_.ShouldDelayFullPaintInvalidation())) {
+       layout_box_.FullPaintInvalidationReason() ==
+           PaintInvalidationReason::kDelayedFull)) {
     cache_skipper.emplace(paint_info.context);
   }
 

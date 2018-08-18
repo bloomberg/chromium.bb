@@ -476,7 +476,7 @@ void LayoutTable::LayoutCaption(LayoutTableCaption& caption,
     UpdateFragmentationInfoForChild(caption);
 
   if (!SelfNeedsLayout())
-    caption.SetShouldCheckForPaintInvalidation();
+    caption.SetMayNeedPaintInvalidation();
 
   SetLogicalHeight(LogicalHeight() + caption.LogicalHeight() +
                    CollapsedMarginBeforeForChild(caption) +
@@ -878,7 +878,7 @@ void LayoutTable::InvalidateCollapsedBorders() {
   collapsed_borders_valid_ = false;
   needs_invalidate_collapsed_borders_for_all_cells_ = true;
   collapsed_outer_borders_valid_ = false;
-  SetShouldCheckForPaintInvalidation();
+  SetMayNeedPaintInvalidation();
 }
 
 void LayoutTable::InvalidateCollapsedBordersForAllCellsIfNeeded() {
@@ -1638,9 +1638,9 @@ void LayoutTable::EnsureIsReadyForPaintInvalidation() {
   }
 }
 
-void LayoutTable::InvalidatePaint(
+PaintInvalidationReason LayoutTable::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
-  TablePaintInvalidator(*this, context).InvalidatePaint();
+  return TablePaintInvalidator(*this, context).InvalidatePaint();
 }
 
 LayoutUnit LayoutTable::PaddingTop() const {

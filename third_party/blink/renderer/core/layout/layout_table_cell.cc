@@ -1215,9 +1215,9 @@ bool LayoutTableCell::HasLineIfEmpty() const {
   return LayoutBlock::HasLineIfEmpty();
 }
 
-void LayoutTableCell::InvalidatePaint(
+PaintInvalidationReason LayoutTableCell::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
-  TableCellPaintInvalidator(*this, context).InvalidatePaint();
+  return TableCellPaintInvalidator(*this, context).InvalidatePaint();
 }
 
 }  // namespace blink

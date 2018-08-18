@@ -266,7 +266,7 @@ void LayoutNGMixin<Base>::SetPaintFragment(
   if (paint_fragment) {
     // When paint fragment is replaced, the subtree needs paint invalidation to
     // re-compute paint properties in NGPaintFragment.
-    Base::SetSubtreeShouldDoFullPaintInvalidation();
+    Base::SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kSubtree);
   }
 
   if (last_paint_fragment) {

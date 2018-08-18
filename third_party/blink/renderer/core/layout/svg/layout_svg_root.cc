@@ -196,7 +196,7 @@ void LayoutSVGRoot::UpdateLayout() {
   // mark the entire subtree as needing paint invalidation checking.
   if (transform_change != SVGTransformChange::kNone ||
       viewport_may_have_changed) {
-    SetSubtreeShouldCheckForPaintInvalidation();
+    SetMayNeedPaintInvalidationSubtree();
     SetNeedsPaintPropertyUpdate();
 
     if (Layer())

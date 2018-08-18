@@ -20,17 +20,17 @@
         {
           "object": "InlineTextBox 'X'",
           "rect": [8, 8, 300, 100],
-          "reason": "subtree"
+          "reason": "SVG resource change"
         },
         {
           "object": "InlineTextBox 'Y'",
           "rect": [8, 8, 300, 100],
-          "reason": "subtree"
+          "reason": "SVG resource change"
         },
         {
           "object": "InlineTextBox 'Z'",
           "rect": [8, 8, 300, 100],
-          "reason": "subtree"
+          "reason": "SVG resource change"
         }
       ]
     }

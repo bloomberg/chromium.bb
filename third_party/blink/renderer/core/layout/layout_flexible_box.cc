@@ -1472,7 +1472,7 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
 
     DCHECK(!flex_item.box->IsOutOfFlowPositioned());
 
-    child->SetShouldCheckForPaintInvalidation();
+    child->SetMayNeedPaintInvalidation();
 
     SetOverrideMainAxisContentSizeForChild(*child,
                                            flex_item.flexed_content_size);

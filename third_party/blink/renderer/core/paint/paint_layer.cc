@@ -811,11 +811,11 @@ void PaintLayer::UpdateDescendantDependentFlags() {
 
   if (HasVisibleContent() != previously_has_visible_content) {
     SetNeedsCompositingInputsUpdateInternal();
-    // We need to tell layout_object_ to recheck its rect because we
+    // We need to tell m_layoutObject to recheck its rect because we
     // pretend that invisible LayoutObjects have 0x0 rects. Changing
     // visibility therefore changes our rect and we need to visit
-    // this LayoutObject during the PrePaintTreeWalk.
-    layout_object_.SetShouldCheckForPaintInvalidation();
+    // this LayoutObject during the invalidateTreeIfNeeded walk.
+    layout_object_.SetMayNeedPaintInvalidation();
   }
 
   Update3DTransformedDescendantStatus();
@@ -1455,7 +1455,8 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
       // can't see this layer (which has been removed) so won't do this for us.
       ObjectPaintInvalidator(GetLayoutObject())
           .InvalidatePaintIncludingNonCompositingDescendants();
-      GetLayoutObject().SetSubtreeShouldDoFullPaintInvalidation();
+      GetLayoutObject()
+          .SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
       did_set_paint_invalidation = true;
     }
   }

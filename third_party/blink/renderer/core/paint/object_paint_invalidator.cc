@@ -285,7 +285,7 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
 }
 
 DISABLE_CFI_PERF
-PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
+void ObjectPaintInvalidatorWithContext::InvalidateSelection(
     PaintInvalidationReason reason) {
   // In LayoutNG, if NGPaintFragment paints the selection, we invalidate for
   // selection change in PaintInvalidator.
@@ -294,15 +294,15 @@ PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
       !object_.IsLayoutReplaced() &&
       NGPaintFragment::InlineFragmentsFor(&object_)
           .IsInLayoutNGInlineFormattingContext())
-    return reason;
+    return;
 
   // Update selection rect when we are doing full invalidation with geometry
   // change (in case that the object is moved, composite status changed, etc.)
   // or shouldInvalidationSelection is set (in case that the selection itself
   // changed).
-  bool full_invalidation = IsFullPaintInvalidationReason(reason);
+  bool full_invalidation = IsImmediateFullPaintInvalidationReason(reason);
   if (!full_invalidation && !object_.ShouldInvalidateSelection())
-    return reason;
+    return;
 
   LayoutRect old_selection_rect = object_.SelectionVisualRect();
   LayoutRect new_selection_rect;
@@ -320,50 +320,70 @@ PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
   object_.GetMutableForPainting().SetSelectionVisualRect(new_selection_rect);
 
   if (full_invalidation)
-    return reason;
+    return;
 
   object_.GetMutableForPainting().SetPartialInvalidationVisualRect(
       UnionRect(object_.PartialInvalidationVisualRect(),
                 UnionRect(new_selection_rect, old_selection_rect)));
-  return PaintInvalidationReason::kSelection;
+  context_.painting_layer->SetNeedsRepaint();
+  object_.InvalidateDisplayItemClients(PaintInvalidationReason::kSelection);
 }
 
 DISABLE_CFI_PERF
-PaintInvalidationReason
-ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
+void ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
     PaintInvalidationReason reason) {
-  if (IsFullPaintInvalidationReason(reason))
-    return reason;
+  if (IsImmediateFullPaintInvalidationReason(reason))
+    return;
 
   auto rect = object_.PartialInvalidationLocalRect();
   if (rect.IsEmpty())
-    return reason;
+    return;
 
   context_.MapLocalRectToVisualRect(object_, rect);
   if (rect.IsEmpty())
-    return reason;
+    return;
 
   object_.GetMutableForPainting().SetPartialInvalidationVisualRect(
       UnionRect(object_.PartialInvalidationVisualRect(), rect));
 
-  return PaintInvalidationReason::kRectangle;
+  context_.painting_layer->SetNeedsRepaint();
+  object_.InvalidateDisplayItemClients(PaintInvalidationReason::kRectangle);
 }
 
 DISABLE_CFI_PERF
-void ObjectPaintInvalidatorWithContext::InvalidatePaintWithComputedReason(
+PaintInvalidationReason
+ObjectPaintInvalidatorWithContext::InvalidatePaintWithComputedReason(
     PaintInvalidationReason reason) {
   DCHECK(!(context_.subtree_flags &
            PaintInvalidatorContext::kSubtreeNoInvalidation));
 
-  // InvalidatePartialRect is before InvalidateSelection because the latter will
-  // accumulate selection visual rects to the partial rect mapped in the former.
-  reason = InvalidatePartialRect(reason);
-  reason = InvalidateSelection(reason);
-  if (reason == PaintInvalidationReason::kNone)
-    return;
+  // This is before InvalidateSelection before the latter will accumulate
+  // selection visual rects to the partial rect mapped in the former.
+  InvalidatePartialRect(reason);
+
+  // We need to invalidate the selection before checking for whether we are
+  // doing a full invalidation.  This is because we need to update the previous
+  // selection rect regardless.
+  InvalidateSelection(reason);
+
+  switch (reason) {
+    case PaintInvalidationReason::kNone:
+      if (object_.IsSVG() &&
+          (context_.subtree_flags &
+           PaintInvalidatorContext::kSubtreeSVGResourceChange)) {
+        reason = PaintInvalidationReason::kSVGResource;
+        break;
+      }
+      return PaintInvalidationReason::kNone;
+    case PaintInvalidationReason::kDelayedFull:
+      return PaintInvalidationReason::kDelayedFull;
+    default:
+      DCHECK(IsImmediateFullPaintInvalidationReason(reason));
+  }
 
   context_.painting_layer->SetNeedsRepaint();
   object_.InvalidateDisplayItemClients(reason);
+  return reason;
 }
 
 }  // namespace blink

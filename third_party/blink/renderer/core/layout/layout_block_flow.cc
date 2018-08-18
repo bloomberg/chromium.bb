@@ -1528,7 +1528,7 @@ void LayoutBlockFlow::LayoutBlockChildren(bool relayout_children,
     CHECK(!next_sibling || next_sibling->IsBox());
     next = ToLayoutBox(next_sibling);
 
-    child->SetShouldCheckForPaintInvalidation();
+    child->SetMayNeedPaintInvalidation();
 
     if (child_to_exclude == child)
       continue;  // Skip this child, since it will be positioned by the
@@ -3876,7 +3876,7 @@ LayoutUnit LayoutBlockFlow::PositionAndLayoutFloat(
   LayoutBox& child = *floating_object.GetLayoutObject();
 
   // FIXME Investigate if this can be removed. crbug.com/370006
-  child.SetShouldCheckForPaintInvalidation();
+  child.SetMayNeedPaintInvalidation();
 
   logical_top_margin_edge =
       std::max(logical_top_margin_edge,

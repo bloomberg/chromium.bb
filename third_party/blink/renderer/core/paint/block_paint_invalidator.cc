@@ -20,12 +20,15 @@ void BlockPaintInvalidator::ClearPreviousVisualRects() {
   block_.GetFrame()->GetPage()->GetDragCaret().ClearPreviousVisualRect(block_);
 }
 
-void BlockPaintInvalidator::InvalidatePaint(
+PaintInvalidationReason BlockPaintInvalidator::InvalidatePaint(
     const PaintInvalidatorContext& context) {
-  BoxPaintInvalidator(block_, context).InvalidatePaint();
+  PaintInvalidationReason reason =
+      BoxPaintInvalidator(block_, context).InvalidatePaint();
 
   block_.GetFrame()->Selection().InvalidatePaint(block_, context);
   block_.GetFrame()->GetPage()->GetDragCaret().InvalidatePaint(block_, context);
+
+  return reason;
 }
 
 }  // namespace blink

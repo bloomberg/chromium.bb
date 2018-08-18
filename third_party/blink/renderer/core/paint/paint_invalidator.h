@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -59,7 +58,8 @@ struct CORE_EXPORT PaintInvalidatorContext {
     return subtree_flags &
            (kSubtreeInvalidationChecking | kSubtreeVisualRectUpdate |
             kSubtreeFullInvalidation |
-            kSubtreeFullInvalidationForStackedContents);
+            kSubtreeFullInvalidationForStackedContents |
+            kSubtreeSVGResourceChange);
   }
 
   const PaintInvalidatorContext* ParentContext() const {
@@ -78,9 +78,10 @@ struct CORE_EXPORT PaintInvalidatorContext {
     kSubtreeVisualRectUpdate = 1 << 1,
     kSubtreeFullInvalidation = 1 << 2,
     kSubtreeFullInvalidationForStackedContents = 1 << 3,
+    kSubtreeSVGResourceChange = 1 << 4,
 
     // For repeated objects inside multicolumn.
-    kSubtreeSlowPathRect = 1 << 4,
+    kSubtreeSlowPathRect = 1 << 5,
 
     // When this flag is set, no paint or raster invalidation will be issued
     // for the subtree.

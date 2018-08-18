@@ -168,7 +168,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       // -dynamic.html
       // TODO(layoutng): See if we can optimize this. When we natively
       // support relative positioning in NG we can probably remove this,
-      box_->SetShouldCheckForPaintInvalidation();
+      box_->SetMayNeedPaintInvalidation();
 
       // We have to re-set the cached result here, because it is used for
       // LayoutNGMixin::CurrentFragment and therefore has to be up-to-date.

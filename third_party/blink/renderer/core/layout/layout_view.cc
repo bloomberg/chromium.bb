@@ -477,13 +477,13 @@ static void SetShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(
 
 void LayoutView::SetShouldDoFullPaintInvalidationForViewAndAllDescendants() {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    SetSubtreeShouldDoFullPaintInvalidation();
+    SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
   else
     SetShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(this);
 }
 
 void LayoutView::InvalidatePaintForViewAndCompositedLayers() {
-  SetSubtreeShouldDoFullPaintInvalidation();
+  SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
 
   // The only way we know how to hit these ASSERTS below this point is via the
   // Chromium OS login screen.
@@ -886,7 +886,7 @@ bool LayoutView::RecalcOverflowAfterStyleChange() {
     if (NeedsLayout())
       return result;
     if (GetFrameView()->VisualViewportSuppliesScrollbars())
-      SetShouldCheckForPaintInvalidation();
+      SetMayNeedPaintInvalidation();
     GetFrameView()->AdjustViewSize();
     SetNeedsPaintPropertyUpdate();
     if (Layer())

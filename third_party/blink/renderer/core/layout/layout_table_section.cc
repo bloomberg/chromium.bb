@@ -1271,7 +1271,7 @@ void LayoutTableSection::LayoutRows() {
         // need a layout. In this case, we know we're going to issue paint
         // invalidations ourselves (and the child) anyway.
         if (!Table()->SelfNeedsLayout())
-          cell->SetShouldCheckForPaintInvalidation();
+          cell->SetMayNeedPaintInvalidation();
       }
     }
     if (row)

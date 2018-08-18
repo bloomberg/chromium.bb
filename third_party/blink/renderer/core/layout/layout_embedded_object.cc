@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/embedded_object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/embedded_object_painter.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
@@ -86,6 +87,11 @@ void LayoutEmbeddedObject::PaintReplaced(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) const {
   EmbeddedObjectPainter(*this).PaintReplaced(paint_info, paint_offset);
+}
+
+PaintInvalidationReason LayoutEmbeddedObject::InvalidatePaint(
+    const PaintInvalidatorContext& context) const {
+  return EmbeddedObjectPaintInvalidator(*this, context).InvalidatePaint();
 }
 
 void LayoutEmbeddedObject::UpdateLayout() {

@@ -645,8 +645,7 @@ TEST_P(PaintAndRasterInvalidationTest, RecalcOverflowInvalidatesBackground) {
 
   ScrollableArea* scrollable_area = GetDocument().View()->LayoutViewport();
   ASSERT_EQ(scrollable_area->MaximumScrollOffset().Height(), 0);
-  EXPECT_FALSE(
-      GetDocument().GetLayoutView()->ShouldCheckForPaintInvalidation());
+  EXPECT_FALSE(GetDocument().GetLayoutView()->MayNeedPaintInvalidation());
 
   Element* container = GetDocument().getElementById("container");
   container->setAttribute(HTMLNames::styleAttr,
@@ -654,7 +653,7 @@ TEST_P(PaintAndRasterInvalidationTest, RecalcOverflowInvalidatesBackground) {
   GetDocument().UpdateStyleAndLayoutTree();
 
   EXPECT_EQ(scrollable_area->MaximumScrollOffset().Height(), 1000);
-  EXPECT_TRUE(GetDocument().GetLayoutView()->ShouldCheckForPaintInvalidation());
+  EXPECT_TRUE(GetDocument().GetLayoutView()->MayNeedPaintInvalidation());
 }
 
 TEST_P(PaintAndRasterInvalidationTest,
@@ -697,26 +696,17 @@ TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
 
   auto* target = GetLayoutObjectByElementId("target");
   target->SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-      PaintInvalidationReason::kForTesting);
-  target->SetShouldDelayFullPaintInvalidation();
-  EXPECT_FALSE(target->ShouldDoFullPaintInvalidation());
-  EXPECT_TRUE(target->ShouldDelayFullPaintInvalidation());
-  EXPECT_EQ(PaintInvalidationReason::kForTesting,
+      PaintInvalidationReason::kDelayedFull);
+  EXPECT_EQ(PaintInvalidationReason::kDelayedFull,
             target->FullPaintInvalidationReason());
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
-  EXPECT_TRUE(target->ShouldCheckForPaintInvalidation());
-  EXPECT_TRUE(target->Parent()->ShouldCheckForPaintInvalidation());
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
-  EXPECT_FALSE(target->ShouldDoFullPaintInvalidation());
-  EXPECT_TRUE(target->ShouldDelayFullPaintInvalidation());
-  EXPECT_EQ(PaintInvalidationReason::kForTesting,
+  EXPECT_EQ(PaintInvalidationReason::kDelayedFull,
             target->FullPaintInvalidationReason());
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
-  EXPECT_TRUE(target->ShouldCheckForPaintInvalidation());
-  EXPECT_TRUE(target->Parent()->ShouldCheckForPaintInvalidation());
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -726,12 +716,9 @@ TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
   EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
                   target, target->DebugName(), IntRect(0, 4000, 100, 100),
-                  PaintInvalidationReason::kForTesting}));
+                  PaintInvalidationReason::kFull}));
   EXPECT_EQ(PaintInvalidationReason::kNone,
             target->FullPaintInvalidationReason());
-  EXPECT_FALSE(target->ShouldDelayFullPaintInvalidation());
-  EXPECT_FALSE(target->ShouldCheckForPaintInvalidation());
-  EXPECT_FALSE(target->Parent()->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
   GetDocument().View()->SetTracksPaintInvalidations(false);
 };
@@ -761,6 +748,14 @@ TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   ToElement(mask_rect->GetNode())->setAttribute("x", "20");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  EXPECT_EQ(PaintInvalidationReason::kFull,
+            real_rect->GetPaintInvalidationReason());
+  // mask_rect is not cached and validated by any PaintController.
+  EXPECT_EQ(PaintInvalidationReason::kJustCreated,
+            mask_rect->GetPaintInvalidationReason());
+
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(LayoutRect(), mask_rect->FirstFragment().VisualRect());
