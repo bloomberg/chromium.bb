@@ -107,6 +107,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   gfx::Size GetNewTabButtonPreferredSize() const override;
   int GetTopAreaHeight() const override;
   bool UseCustomFrame() const override;
+  bool EverHasVisibleBackgroundTabShapes() const override;
 
  protected:
   views::ImageButton* minimize_button() const { return minimize_button_; }

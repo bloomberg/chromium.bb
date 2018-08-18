@@ -39,7 +39,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   bool HasClientEdge() const override;
-  bool HasVisibleBackgroundTabShapes() const override;
+  bool HasVisibleBackgroundTabShapes(ActiveState active_state) const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
   int GetTabStripLeftInset() const override;
@@ -144,7 +144,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   Windows10CaptionButton* CreateCaptionButton(ViewID button_type,
                                               int accessible_name_resource_id);
 
-  SkColor GetTitlebarFeatureColor(bool active) const;
+  SkColor GetTitlebarFeatureColor(ActiveState active_state) const;
 
   // Paint various sub-components of this view.
   void PaintTitlebar(gfx::Canvas* canvas) const;

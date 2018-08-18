@@ -22,6 +22,18 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
                                   public ProfileAttributesStorage::Observer,
                                   public TabStripObserver {
  public:
+  // Type used for functions whose return values depend on the active state of
+  // the frame.
+  enum ActiveState {
+    kUseCurrent,  // Use current frame active state.
+    kActive,      // Treat frame as active regardless of current state.
+    kInactive,    // Treat frame as inactive regardless of current state.
+  };
+
+  // The minimum total height users should have to use as a drag handle to move
+  // the window with.
+  static constexpr int kMinimumDragHeight = 8;
+
   BrowserNonClientFrameView(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameView() override;
 
@@ -79,15 +91,20 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   virtual bool HasClientEdge() const;
 
   // Returns whether the shapes of background tabs are visible against the
-  // frame.
-  virtual bool HasVisibleBackgroundTabShapes() const;
+  // frame, given an active state of |active|.
+  virtual bool HasVisibleBackgroundTabShapes(
+      ActiveState active_state = kUseCurrent) const;
+
+  // Returns whether the shapes of background tabs are visible against the frame
+  // for either active or inactive windows.
+  bool EverHasVisibleBackgroundTabShapes() const;
 
   // Retrieves the icon to use in the frame to indicate an incognito window.
   gfx::ImageSkia GetIncognitoAvatarIcon() const;
 
   // Returns the color of the browser frame, which is also the color of the
   // tabstrip background.
-  SkColor GetFrameColor() const;
+  SkColor GetFrameColor(ActiveState active_state = kUseCurrent) const;
 
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
@@ -96,7 +113,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns the tab background color based on both the |state| of the tab and
   // the activation state of the window.  If |opaque| is true, the resulting
   // color after drawing the tab background on the frame will be returned.
-  SkColor GetTabBackgroundColor(TabState state, bool opaque) const;
+  SkColor GetTabBackgroundColor(TabState state,
+                                bool opaque,
+                                ActiveState active_state = kUseCurrent) const;
 
   // Returns the tab foreground color of the for the text based on both the
   // |state| of the tab and the activation state of the window.
@@ -108,7 +127,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // image generation, |has_custom_image| may be true even when the returned
   // background resource ID has not been directly overridden (i.e.
   // ThemeProvider::HasCustomImage() returns false).
-  int GetTabBackgroundResourceId(bool* has_custom_image) const;
+  int GetTabBackgroundResourceId(ActiveState active_state,
+                                 bool* has_custom_image) const;
 
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
@@ -137,6 +157,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   virtual bool ShouldDrawStrokes() const;
 
   // views::NonClientFrameView:
+  using views::NonClientFrameView::ShouldPaintAsActive;
   void ChildPreferredSizeChanged(views::View* child) override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
@@ -149,18 +170,17 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // not.
   virtual bool ShouldPaintAsThemed() const;
 
+  // Converts an ActiveState to a bool representing whether the frame should be
+  // treated as active.
+  bool ShouldPaintAsActive(ActiveState active_state) const;
+
   // Whether the frame should be painted with the special mode for one tab.
   bool ShouldPaintAsSingleTabMode() const;
 
   // Compute aspects of the frame needed to paint the frame background.
-  SkColor GetFrameColor(bool active) const;
-  gfx::ImageSkia GetFrameImage(bool active) const;
-  gfx::ImageSkia GetFrameOverlayImage(bool active) const;
-
-  // Convenience versions of the above which use ShouldPaintAsActive() for
-  // |active|.
-  gfx::ImageSkia GetFrameImage() const;
-  gfx::ImageSkia GetFrameOverlayImage() const;
+  gfx::ImageSkia GetFrameImage(ActiveState active_state = kUseCurrent) const;
+  gfx::ImageSkia GetFrameOverlayImage(
+      ActiveState active_state = kUseCurrent) const;
 
   // Returns the style of the profile switcher avatar button.
   virtual AvatarButtonStyle GetAvatarButtonStyle() const = 0;

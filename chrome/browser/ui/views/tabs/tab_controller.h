@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 
 #include "base/callback_forward.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -160,7 +161,10 @@ class TabController {
   // Returns the resource ID for the image to use as the tab background.
   // |custom_image| is an outparam set to true if either the tab or the frame
   // background images have been customized; see implementation comments.
-  virtual int GetBackgroundResourceId(bool* has_custom_image) const = 0;
+  virtual int GetBackgroundResourceId(
+      bool* has_custom_image,
+      BrowserNonClientFrameView::ActiveState active_state =
+          BrowserNonClientFrameView::kUseCurrent) const = 0;
 
   // If the given tab is animating to its target destination, this returns the
   // target bounds. If the tab isn't moving this will return the current bounds

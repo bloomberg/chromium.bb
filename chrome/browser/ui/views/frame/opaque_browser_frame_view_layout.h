@@ -142,7 +142,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   // Returns the extra thickness of the area above the tabs. The value returned
   // is dependent on whether in material refresh mode or not.
-  static int GetNonClientRestoredExtraThickness();
+  int GetNonClientRestoredExtraThickness() const;
 
   bool HasClientEdge() const;
 

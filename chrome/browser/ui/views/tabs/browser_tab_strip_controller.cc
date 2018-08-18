@@ -386,8 +386,8 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
   immersive_reveal_lock_.reset();
 }
 
-bool BrowserTabStripController::HasVisibleBackgroundTabShapes() const {
-  return GetFrameView()->HasVisibleBackgroundTabShapes();
+bool BrowserTabStripController::EverHasVisibleBackgroundTabShapes() const {
+  return GetFrameView()->EverHasVisibleBackgroundTabShapes();
 }
 
 SkColor BrowserTabStripController::GetFrameColor() const {
@@ -408,8 +408,10 @@ SkColor BrowserTabStripController::GetTabForegroundColor(TabState state) const {
 }
 
 int BrowserTabStripController::GetTabBackgroundResourceId(
+    BrowserNonClientFrameView::ActiveState active_state,
     bool* has_custom_image) const {
-  return GetFrameView()->GetTabBackgroundResourceId(has_custom_image);
+  return GetFrameView()->GetTabBackgroundResourceId(active_state,
+                                                    has_custom_image);
 }
 
 base::string16 BrowserTabStripController::GetAccessibleTabName(

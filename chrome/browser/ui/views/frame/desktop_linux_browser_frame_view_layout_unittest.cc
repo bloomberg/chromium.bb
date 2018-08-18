@@ -69,6 +69,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   }
   int GetTopAreaHeight() const override { return 0; }
   bool UseCustomFrame() const override { return true; }
+  bool EverHasVisibleBackgroundTabShapes() const override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestLayoutDelegate);

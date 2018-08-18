@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -120,8 +121,8 @@ class TabStripController {
   virtual void OnStoppedDraggingTabs() = 0;
 
   // Returns whether the shapes of background tabs are visible against the
-  // frame.
-  virtual bool HasVisibleBackgroundTabShapes() const = 0;
+  // frame for either active or inactive windows.
+  virtual bool EverHasVisibleBackgroundTabShapes() const = 0;
 
   // Returns the color of the browser frame, which is also the color of the
   // tabstrip background.
@@ -146,7 +147,9 @@ class TabStripController {
   // image generation, |has_custom_image| may be true even when the returned
   // background resource ID has not been directly overridden (i.e.
   // ThemeProvider::HasCustomImage() returns false).
-  virtual int GetTabBackgroundResourceId(bool* has_custom_image) const = 0;
+  virtual int GetTabBackgroundResourceId(
+      BrowserNonClientFrameView::ActiveState active_state,
+      bool* has_custom_image) const = 0;
 
   // Returns the accessible tab name.
   virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;

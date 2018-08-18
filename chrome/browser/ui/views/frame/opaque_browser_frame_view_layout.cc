@@ -284,16 +284,21 @@ bool OpaqueBrowserFrameViewLayout::IsTitleBarCondensed() const {
   return !delegate_->ShouldShowCaptionButtons() || delegate_->IsMaximized();
 }
 
-// static
-int OpaqueBrowserFrameViewLayout::GetNonClientRestoredExtraThickness() {
+int OpaqueBrowserFrameViewLayout::GetNonClientRestoredExtraThickness() const {
   // Besides the frame border, there's empty space atop the window in restored
   // mode, to use to drag the window around.
-  constexpr int kNonClientRestoredExtraThickness = 11;
-  // TODO(pkasting): https://crbug.com/862276  Increase this height when we
-  // can't extend the drag handle into the tabstrip.
+  if (!MD::IsRefreshUi()) {
+    constexpr int kNonClientRestoredExtraThickness = 11;
+    return kNonClientRestoredExtraThickness;
+  }
+
   constexpr int kRefreshNonClientRestoredExtraThickness = 4;
-  return MD::IsRefreshUi() ? kRefreshNonClientRestoredExtraThickness
-                           : kNonClientRestoredExtraThickness;
+  int thickness = kRefreshNonClientRestoredExtraThickness;
+  if (delegate_->EverHasVisibleBackgroundTabShapes()) {
+    thickness =
+        std::max(thickness, BrowserNonClientFrameView::kMinimumDragHeight);
+  }
+  return thickness;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

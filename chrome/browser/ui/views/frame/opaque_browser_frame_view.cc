@@ -131,9 +131,9 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
     hosted_app_button_container_ = new HostedAppButtonContainer(
         frame, browser_view,
         color_utils::GetReadableColor(kTitleBarFeatureColor,
-                                      GetFrameColor(true)),
+                                      GetFrameColor(kActive)),
         color_utils::GetReadableColor(kTitleBarFeatureColor,
-                                      GetFrameColor(false)));
+                                      GetFrameColor(kInactive)));
     hosted_app_button_container_->set_id(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
     AddChildView(hosted_app_button_container_);
   }
@@ -487,6 +487,10 @@ int OpaqueBrowserFrameView::GetTopAreaHeight() const {
 
 bool OpaqueBrowserFrameView::UseCustomFrame() const {
   return frame()->UseCustomFrame();
+}
+
+bool OpaqueBrowserFrameView::EverHasVisibleBackgroundTabShapes() const {
+  return BrowserNonClientFrameView::EverHasVisibleBackgroundTabShapes();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

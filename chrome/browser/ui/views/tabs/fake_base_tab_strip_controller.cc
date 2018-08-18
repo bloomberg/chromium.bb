@@ -150,7 +150,7 @@ void FakeBaseTabStripController::OnStartedDraggingTabs() {
 void FakeBaseTabStripController::OnStoppedDraggingTabs() {
 }
 
-bool FakeBaseTabStripController::HasVisibleBackgroundTabShapes() const {
+bool FakeBaseTabStripController::EverHasVisibleBackgroundTabShapes() const {
   return false;
 }
 
@@ -173,6 +173,7 @@ SkColor FakeBaseTabStripController::GetTabForegroundColor(
 }
 
 int FakeBaseTabStripController::GetTabBackgroundResourceId(
+    BrowserNonClientFrameView::ActiveState active_state,
     bool* has_custom_image) const {
   *has_custom_image = false;
   return IDR_THEME_TAB_BACKGROUND;
