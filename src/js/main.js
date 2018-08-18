@@ -213,7 +213,10 @@ camera.Camera.prototype.start = function() {
       });
     });
   };
-  camera.models.FileSystem.initialize(promptMigrate).then(() => {
+  document.body.classList.add('initialize');
+  camera.models.FileSystem.initialize(promptMigrate).finally(() => {
+    document.body.classList.remove('initialize');
+  }).then(() => {
     // Prepare the views and model, and then make the app ready.
     this.cameraView_.prepare();
     this.browserView_.prepare();
