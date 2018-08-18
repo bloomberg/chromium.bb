@@ -237,7 +237,6 @@ class CORE_EXPORT InspectorPageAgent final
   HashMap<String, Vector<char>> compilation_cache_;
   v8_inspector::V8InspectorSession* v8_session_;
   Client* client_;
-  long last_script_identifier_;
   String pending_script_to_evaluate_on_load_once_;
   String script_to_evaluate_on_load_once_;
   bool reloading_;
