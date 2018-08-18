@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/tracing/background_startup_tracing_observer.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/public/browser/browser_thread.h"
@@ -94,6 +95,19 @@ void TestBackgroundTracingObserver::OnTracingEnabled(
     BackgroundTracingConfigImpl::CategoryPreset preset) {
   tracing_enabled_callback_.Run();
 }
+
+class TestStartupPreferenceManagerImpl
+    : public BackgroundStartupTracingObserver::PreferenceManager {
+ public:
+  void SetBackgroundStartupTracingEnabled(bool enabled) override {
+    enabled_ = enabled;
+  }
+
+  bool GetBackgroundStartupTracingEnabled() const override { return enabled_; }
+
+ private:
+  bool enabled_ = false;
+};
 
 }  // namespace
 
@@ -1586,6 +1600,125 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       SetupStartupTracing) {
+  SetupBackgroundTracingManager();
+  std::unique_ptr<TestStartupPreferenceManagerImpl> preferences_moved(
+      new TestStartupPreferenceManagerImpl);
+  TestStartupPreferenceManagerImpl* preferences = preferences_moved.get();
+  BackgroundStartupTracingObserver::GetInstance()
+      ->SetPreferenceManagerForTesting(std::move(preferences_moved));
+  preferences->SetBackgroundStartupTracingEnabled(false);
+  BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+      (base::OnceClosure()));
+
+  base::DictionaryValue dict;
+  std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
+  {
+    std::unique_ptr<base::DictionaryValue> rules_dict(
+        new base::DictionaryValue());
+    rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
+    rules_dict->SetString("trigger_name", "startup-config");
+    rules_dict->SetBoolean("stop_tracing_on_repeated_reactive", false);
+    rules_dict->SetInteger("trigger_delay", 10);
+    rules_dict->SetString("category", "BENCHMARK_STARTUP");
+    rules_list->Append(std::move(rules_dict));
+  }
+  dict.Set("configs", std::move(rules_list));
+
+  std::unique_ptr<BackgroundTracingConfig> config(
+      BackgroundTracingConfigImpl::ReactiveFromDict(&dict));
+
+  base::RunLoop wait_for_tracing_enabled;
+  TestBackgroundTracingObserver observer(
+      wait_for_tracing_enabled.QuitClosure());
+  EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
+      std::move(config), upload_config_wrapper.get_receive_callback(),
+      BackgroundTracingManager::NO_DATA_FILTERING));
+
+  BackgroundTracingManager::GetInstance()->WhenIdle(
+      base::BindRepeating(&DisableScenarioWhenIdle));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Since we specified a delay in the scenario, we should still be tracing
+  // at this point.
+  EXPECT_FALSE(
+      BackgroundTracingManagerImpl::GetInstance()->IsTracingForTesting());
+  EXPECT_TRUE(preferences->GetBackgroundStartupTracingEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, RunStartupTracing) {
+  SetupBackgroundTracingManager();
+  std::unique_ptr<TestStartupPreferenceManagerImpl> preferences_moved(
+      new TestStartupPreferenceManagerImpl);
+  TestStartupPreferenceManagerImpl* preferences = preferences_moved.get();
+  BackgroundStartupTracingObserver::GetInstance()
+      ->SetPreferenceManagerForTesting(std::move(preferences_moved));
+  preferences->SetBackgroundStartupTracingEnabled(true);
+  TraceLog::GetInstance()->SetArgumentFilterPredicate(
+      base::BindRepeating(&IsTraceEventArgsWhitelisted));
+  base::RunLoop wait_for_trace_log_enabled;
+  std::unique_ptr<TestEnabledStateObserver> trace_log_observer(
+      new TestEnabledStateObserver(wait_for_trace_log_enabled.QuitClosure()));
+
+  base::RunLoop run_loop;
+  BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+      run_loop.QuitClosure());
+
+  base::DictionaryValue dict;
+  std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
+  {
+    std::unique_ptr<base::DictionaryValue> rules_dict(
+        new base::DictionaryValue());
+    rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
+    rules_dict->SetString("trigger_name", "gpu-config");
+    rules_dict->SetBoolean("stop_tracing_on_repeated_reactive", false);
+    rules_dict->SetInteger("trigger_delay", 10);
+    rules_dict->SetString("category", "BENCHMARK_GPU");
+    rules_list->Append(std::move(rules_dict));
+  }
+  dict.Set("configs", std::move(rules_list));
+
+  std::unique_ptr<BackgroundTracingConfig> config(
+      BackgroundTracingConfigImpl::ReactiveFromDict(&dict));
+
+  base::RunLoop wait_for_tracing_enabled;
+  TestBackgroundTracingObserver observer(
+      wait_for_tracing_enabled.QuitClosure());
+  EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
+      std::move(config), upload_config_wrapper.get_receive_callback(),
+      BackgroundTracingManager::NO_DATA_FILTERING));
+
+  BackgroundTracingManager::GetInstance()->WhenIdle(
+      base::BindRepeating(&DisableScenarioWhenIdle));
+
+  wait_for_tracing_enabled.Run();
+  wait_for_trace_log_enabled.Run();
+  trace_log_observer.reset();
+
+  EXPECT_TRUE(BackgroundTracingManagerImpl::GetInstance()
+                  ->requires_anonymized_data_for_testing());
+  EXPECT_TRUE(base::trace_event::TraceLog::GetInstance()
+                  ->GetCurrentTraceConfig()
+                  .IsArgumentFilterEnabled());
+
+  // Since we specified a delay in the scenario, we should still be tracing
+  // at this point.
+  EXPECT_TRUE(
+      BackgroundTracingManagerImpl::GetInstance()->IsTracingForTesting());
+
+  BackgroundTracingManager::GetInstance()->FireTimerForTesting();
+
+  EXPECT_FALSE(
+      BackgroundTracingManagerImpl::GetInstance()->IsTracingForTesting());
+
+  run_loop.Run();
+
+  EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
+  EXPECT_FALSE(preferences->GetBackgroundStartupTracingEnabled());
 }
 
 }  // namespace content

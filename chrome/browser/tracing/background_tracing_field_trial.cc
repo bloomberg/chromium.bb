@@ -68,6 +68,27 @@ void BackgroundTracingUploadCallback(
                      std::move(callback)));
 }
 
+std::unique_ptr<content::BackgroundTracingConfig> GetBackgroundTracingConfig() {
+  std::string config_text = variations::GetVariationParamValue(
+      kBackgroundTracingFieldTrial, kBackgroundTracingConfig);
+
+  if (config_text.empty())
+    return nullptr;
+
+  if (g_config_text_filter_for_testing)
+    (*g_config_text_filter_for_testing)(&config_text);
+
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(config_text);
+  if (!value)
+    return nullptr;
+
+  const base::DictionaryValue* dict = nullptr;
+  if (!value->GetAsDictionary(&dict))
+    return nullptr;
+
+  return content::BackgroundTracingConfig::FromDict(dict);
+}
+
 }  // namespace
 
 void SetConfigTextFilterForTesting(ConfigTextFilterForTesting predicate) {
@@ -75,33 +96,11 @@ void SetConfigTextFilterForTesting(ConfigTextFilterForTesting predicate) {
 }
 
 void SetupBackgroundTracingFieldTrial() {
-  if (base::trace_event::TraceLog::GetInstance()->IsEnabled())
-    return;
+  std::unique_ptr<content::BackgroundTracingConfig> config =
+      GetBackgroundTracingConfig();
 
-  std::string config_text = variations::GetVariationParamValue(
-      kBackgroundTracingFieldTrial, kBackgroundTracingConfig);
   std::string upload_url = variations::GetVariationParamValue(
       kBackgroundTracingFieldTrial, kBackgroundTracingUploadUrl);
-
-  if (config_text.empty())
-    return;
-
-  if (g_config_text_filter_for_testing)
-    (*g_config_text_filter_for_testing)(&config_text);
-
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(config_text);
-  if (!value)
-    return;
-
-  const base::DictionaryValue* dict = nullptr;
-  if (!value->GetAsDictionary(&dict))
-    return;
-
-  std::unique_ptr<content::BackgroundTracingConfig> config =
-      content::BackgroundTracingConfig::FromDict(dict);
-  if (!config)
-    return;
-
   content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
       std::move(config),
       base::BindRepeating(&BackgroundTracingUploadCallback, upload_url),
