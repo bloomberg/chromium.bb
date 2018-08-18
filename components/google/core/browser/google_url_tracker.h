@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/google/core/browser/google_url_tracker_client.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "url/gurl.h"
 
 namespace user_prefs {
@@ -35,7 +35,7 @@ class SimpleURLLoader;
 // performed (ever) unless at least one consumer registers interest by calling
 // RequestServerCheck().
 class GoogleURLTracker
-    : public net::NetworkChangeNotifier::NetworkChangeObserver,
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public KeyedService {
  public:
   // Callback that is called when the Google URL is updated.
@@ -64,10 +64,15 @@ class GoogleURLTracker
   static const base::Feature kNoSearchDomainCheck;
 
   // Only the GoogleURLTrackerFactory and tests should call this.
+  // |network_connection_tracker| should be the global singleton instance and
+  // should outlive the GoogleURLTracker object.
   // Note: you *must* manually call Shutdown() before this instance gets
   // destroyed if you want to create another instance in the same binary
   // (e.g. in unit tests).
-  GoogleURLTracker(std::unique_ptr<GoogleURLTrackerClient> client, Mode mode);
+  GoogleURLTracker(
+      std::unique_ptr<GoogleURLTrackerClient> client,
+      Mode mode,
+      network::NetworkConnectionTracker* network_connection_tracker);
 
   ~GoogleURLTracker() override;
 
@@ -95,9 +100,8 @@ class GoogleURLTracker
 
   void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  // NetworkChangeNotifier::NetworkChangeObserver:
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // KeyedService:
   void Shutdown() override;
@@ -116,6 +120,7 @@ class GoogleURLTracker
   CallbackList callback_list_;
 
   std::unique_ptr<GoogleURLTrackerClient> client_;
+  network::NetworkConnectionTracker* network_connection_tracker_;
 
   GURL google_url_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
