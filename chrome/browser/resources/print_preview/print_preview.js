@@ -634,6 +634,9 @@ cr.define('print_preview', function() {
         dpiVertical: 'vertical_dpi' in printTicketStore.dpi.getValue() ?
             printTicketStore.dpi.getValue().vertical_dpi :
             0,
+        dpiDefault: 'is_default' in printTicketStore.dpi.getValue() ?
+            printTicketStore.dpi.getValue().is_default :
+            false,
         deviceName: destination.id,
         fitToPageEnabled: printTicketStore.fitToPage.getValue(),
         pageWidth: documentInfo.pageSize.width,

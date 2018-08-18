@@ -39668,6 +39668,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="18" label="SCALING"/>
   <int value="19" label="PRINT_AS_IMAGE"/>
   <int value="20" label="PAGES_PER_SHEET"/>
+  <int value="21" label="FIT_TO_PAGE"/>
+  <int value="22" label="DEFAULT_DPI"/>
+  <int value="23" label="NON_DEFAULT_DPI"/>
 </enum>
 
 <enum name="PrivetNotificationsEvent">
