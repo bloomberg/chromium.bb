@@ -424,12 +424,13 @@ public class AppMenuPropertiesDelegate {
         requestMenuRow.setVisible(itemVisible);
         if (!itemVisible) return;
 
+        boolean isRds = currentTab.getUseDesktopUserAgent();
         // Mark the checkbox if RDS is activated on this page.
-        requestMenuCheck.setChecked(currentTab.getUseDesktopUserAgent());
+        requestMenuCheck.setChecked(isRds);
 
         // This title doesn't seem to be displayed by Android, but it is used to set up
         // accessibility text in {@link AppMenuAdapter#setupMenuButton}.
-        requestMenuLabel.setTitleCondensed(requestMenuLabel.isChecked()
+        requestMenuLabel.setTitleCondensed(isRds
                         ? mActivity.getString(R.string.menu_request_desktop_site_on)
                         : mActivity.getString(R.string.menu_request_desktop_site_off));
     }
