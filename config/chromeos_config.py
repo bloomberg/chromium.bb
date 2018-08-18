@@ -411,9 +411,6 @@ class HWTestList(object):
     if kwargs.get('suite_min_duts', 0):
       kwargs['suite_min_duts'] = 1
 
-    # For now, Tast test failures only cause warnings.
-    kwargs['warn_only'] = True
-
     return config_lib.HWTestConfig(suite_name, **kwargs)
 
 
