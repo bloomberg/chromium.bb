@@ -603,22 +603,14 @@ scoped_refptr<InspectorTaskRunner> LocalFrame::GetInspectorTaskRunner() {
 void LocalFrame::StartPrinting(const FloatSize& page_size,
                                const FloatSize& original_page_size,
                                float maximum_shrink_ratio) {
-  SetPrinting(/*printing=*/true, /*use_printing_layout=*/true, page_size,
-              original_page_size, maximum_shrink_ratio);
-}
-
-void LocalFrame::StartPrintingWithoutPrintingLayout() {
-  SetPrinting(/*printing=*/true, /*use_printing_layout=*/false, FloatSize(),
-              FloatSize(), 0);
+  SetPrinting(true, page_size, original_page_size, maximum_shrink_ratio);
 }
 
 void LocalFrame::EndPrinting() {
-  SetPrinting(/*printing=*/false, /*use_printing_layout=*/false, FloatSize(),
-              FloatSize(), 0);
+  SetPrinting(false, FloatSize(), FloatSize(), 0);
 }
 
 void LocalFrame::SetPrinting(bool printing,
-                             bool use_printing_layout,
                              const FloatSize& page_size,
                              const FloatSize& original_page_size,
                              float maximum_shrink_ratio) {
@@ -634,7 +626,7 @@ void LocalFrame::SetPrinting(bool printing,
   if (TextAutosizer* text_autosizer = GetDocument()->GetTextAutosizer())
     text_autosizer->UpdatePageInfo();
 
-  if (use_printing_layout && ShouldUsePrintingLayout()) {
+  if (ShouldUsePrintingLayout()) {
     View()->ForceLayoutForPagination(page_size, original_page_size,
                                      maximum_shrink_ratio);
   } else {
@@ -652,7 +644,7 @@ void LocalFrame::SetPrinting(bool printing,
        child = child->Tree().NextSibling()) {
     if (child->IsLocalFrame()) {
       if (printing)
-        ToLocalFrame(child)->StartPrintingWithoutPrintingLayout();
+        ToLocalFrame(child)->StartPrinting();
       else
         ToLocalFrame(child)->EndPrinting();
     }
@@ -665,19 +657,22 @@ void LocalFrame::SetPrinting(bool printing,
 }
 
 bool LocalFrame::ShouldUsePrintingLayout() const {
+  if (!GetDocument()->Printing())
+    return false;
+
   // Only the top frame being printed should be fitted to page size.
   // Subframes should be constrained by parents only.
-  // This function considers the following three kinds of frames as top frames:
+  // This function considers the following two kinds of frames as top frames:
   // -- frame with no parent;
-  // -- frame's parent is remote frame;
   // -- frame's parent is not in printing mode.
-  // Among them, if a frame's parent is a remote frame, but in printing mode,
-  // this frame should not use printing layout either. But in that case, this
-  // frame is a local top frame, the printing must start from
-  // StartPrintingWithoutPrintingLayout() so this function won't been called.
-  return GetDocument()->Printing() &&
-         (!Tree().Parent() || !Tree().Parent()->IsLocalFrame() ||
-          !ToLocalFrame(Tree().Parent())->GetDocument()->Printing());
+  // For the second type, it is a bit complicated when its parent is a remote
+  // frame. In such case, we can not check its document or other internal
+  // status. However, if the parent is in printing mode, this frame's printing
+  // must have started with |use_printing_layout| as false in print context.
+  return !Tree().Parent() ||
+         (Tree().Parent()->IsLocalFrame() &&
+          !ToLocalFrame(Tree().Parent())->GetDocument()->Printing()) ||
+         (!Tree().Parent()->IsLocalFrame() && Client()->UsePrintingLayout());
 }
 
 FloatSize LocalFrame::ResizePageRectsKeepingRatio(

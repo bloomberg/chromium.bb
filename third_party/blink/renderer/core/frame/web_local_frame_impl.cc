@@ -594,6 +594,10 @@ bool WebLocalFrameImpl::IsFocused() const {
              ViewImpl()->GetPage()->GetFocusController().FocusedFrame());
 }
 
+bool WebLocalFrameImpl::UsePrintingLayout() const {
+  return print_context_ ? print_context_->use_printing_layout() : false;
+}
+
 WebSize WebLocalFrameImpl::GetScrollOffset() const {
   if (ScrollableArea* scrollable_area = LayoutViewport())
     return scrollable_area->ScrollOffsetInt();

@@ -106,6 +106,8 @@ class CORE_EXPORT PrintContext
 
   virtual void Trace(blink::Visitor*);
 
+  bool use_printing_layout() const;
+
  protected:
   friend class PrintContextTest;
 
