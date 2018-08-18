@@ -164,7 +164,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
   void MaybeSendSyntheticTapGestureForTest(
       const blink::WebFloatPoint& position,
-      const blink::WebFloatPoint& screenPosition) const;
+      const blink::WebFloatPoint& screen_position) const;
 
  private:
   friend class RenderWidgetHostView;
@@ -187,7 +187,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // http://crbug.com/533069
   void MaybeSendSyntheticTapGesture(
       const blink::WebFloatPoint& position,
-      const blink::WebFloatPoint& screenPosition) const;
+      const blink::WebFloatPoint& screen_position) const;
 
   void OnHandleInputEvent(RenderWidgetHostImpl* embedder,
                           int browser_plugin_instance_id,
