@@ -169,6 +169,11 @@
                   'components/autofill/browser/webdata/|'\
                   'components/webdata/',
     },
+    'autofill_assistant': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/autofill_assistant/|'\
+                  'chrome/browser/android/autofill_assistant/|'\
+                  'components/autofill_assistant/',
+    },
     'autofill_credit_cards': {
       'filepath': 'chrome/browser/ui/autofill/chrome_autofill_client*|'\
                   'chrome/browser/ui/autofill/save_card_*|'\
@@ -1789,6 +1794,7 @@
                  'sebsg+autofillwatch@chromium.org',
                  'tmartino+autofillwatch@chromium.org',
                  'vabr+watchlistautofill@chromium.org'],
+    'autofill_assistant': ['gogerald+autofillassistantwatch@chromium.org'],
     'autofill_credit_cards': ['jsaul+autofillwatch@google.com'],
     'background_fetch': ['peter@chromium.org',
                          'rayankans+watch@chromium.org',
