@@ -203,20 +203,40 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     box_->ComputePreferredLogicalWidths();
   }
 
-  bool preferred_logical_widths_were_dirty =
-      box_->PreferredLogicalWidthsDirty();
+  NGBoxStrut old_scrollbars = GetScrollbarSizes();
   layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,
                                       /* ignored */ nullptr);
-  if (!preferred_logical_widths_were_dirty &&
-      box_->PreferredLogicalWidthsDirty()) {
-    // The only thing that should dirty preferred widths at this point is the
-    // addition of overflow:auto scrollbars in a descendant. To avoid a
-    // potential infinite loop, run layout again with auto scrollbars frozen in
-    // their current state.
+
+  FinishLayout(constraint_space, break_token, layout_result);
+  if (old_scrollbars != GetScrollbarSizes()) {
+    // If our scrollbars have changed, we need to relayout because either:
+    // - Our size has changed (if shrinking to fit), or
+    // - Space available to our children has changed.
+    // This mirrors legacy code in PaintLayerScrollableArea::UpdateAfterLayout.
+    // TODO(cbiesinger): It seems that we should also check if
+    // PreferredLogicalWidthsDirty() has changed from false to true during
+    // layout, so that we correctly size ourselves when shrinking to fit
+    // and a child gained a vertical scrollbar. However, no test fails
+    // without that check.
     PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
     layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,
                                         /* ignored */ nullptr);
+    FinishLayout(constraint_space, break_token, layout_result);
   }
+
+  return layout_result;
+}
+
+void NGBlockNode::FinishLayout(const NGConstraintSpace& constraint_space,
+                               NGBreakToken* break_token,
+                               scoped_refptr<NGLayoutResult> layout_result) {
+  if (!IsBlockLayoutComplete(constraint_space, *layout_result))
+    return;
+
+  // TODO(kojii): Even when we paint fragments, there seem to be some data we
+  // need to copy to LayoutBox. Review if we can minimize the copy.
+  LayoutBlockFlow* block_flow =
+      box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_) : nullptr;
   if (block_flow) {
     block_flow->SetCachedLayoutResult(constraint_space, break_token,
                                       layout_result);
@@ -225,27 +245,24 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       block_flow->SetPaintFragment(break_token, nullptr);
   }
 
-  if (IsBlockLayoutComplete(constraint_space, *layout_result)) {
-    DCHECK(layout_result->PhysicalFragment());
+  DCHECK(layout_result->PhysicalFragment());
 
-    if (block_flow && first_child && first_child.IsInline()) {
-      NGBoxStrut scrollbars = GetScrollbarSizes();
-      CopyFragmentDataToLayoutBoxForInlineChildren(
-          ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()),
-          layout_result->PhysicalFragment()->Size().width -
-              scrollbars.block_start,
-          Style().IsFlippedBlocksWritingMode());
+  NGLayoutInputNode first_child = FirstChild();
+  if (block_flow && first_child && first_child.IsInline()) {
+    NGBoxStrut scrollbars = GetScrollbarSizes();
+    CopyFragmentDataToLayoutBoxForInlineChildren(
+        ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()),
+        layout_result->PhysicalFragment()->Size().width -
+            scrollbars.block_start,
+        Style().IsFlippedBlocksWritingMode());
 
-      block_flow->SetPaintFragment(break_token,
-                                   layout_result->PhysicalFragment());
-    }
-
-    // TODO(kojii): Even when we paint fragments, there seem to be some data we
-    // need to copy to LayoutBox. Review if we can minimize the copy.
-    CopyFragmentDataToLayoutBox(constraint_space, *layout_result);
+    block_flow->SetPaintFragment(break_token,
+                                 layout_result->PhysicalFragment());
   }
 
-  return layout_result;
+  // TODO(kojii): Even when we paint fragments, there seem to be some data we
+  // need to copy to LayoutBox. Review if we can minimize the copy.
+  CopyFragmentDataToLayoutBox(constraint_space, *layout_result);
 }
 
 MinMaxSize NGBlockNode::ComputeMinMaxSize(
@@ -415,7 +432,11 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   } else {
     DCHECK_EQ(box_->LogicalWidth(), fragment_logical_size.inline_size)
         << "Variable fragment inline size not supported";
-    logical_height = box_->LogicalHeight();
+    logical_height =
+        PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
+    // TODO(layout-ng): We should store this on the break token instead of
+    // relying on previously-stored data. Our relayout in NGBlockNode::Layout
+    // will otherwise lead to wrong data.
     intrinsic_content_logical_height = box_->IntrinsicContentLogicalHeight();
   }
   logical_height += fragment_logical_size.block_size;

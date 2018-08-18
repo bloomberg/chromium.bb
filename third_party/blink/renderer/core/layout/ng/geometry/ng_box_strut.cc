@@ -18,6 +18,10 @@ bool NGBoxStrut::operator==(const NGBoxStrut& other) const {
          std::tie(inline_start, inline_end, block_start, block_end);
 }
 
+bool NGBoxStrut::operator!=(const NGBoxStrut& other) const {
+  return !(*this == other);
+}
+
 NGPhysicalBoxStrut NGBoxStrut::ConvertToPhysical(
     WritingMode writing_mode,
     TextDirection direction) const {
