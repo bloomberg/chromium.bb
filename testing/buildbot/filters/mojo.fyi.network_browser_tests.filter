@@ -8,7 +8,6 @@
 # Uncategorized timeouts or test failures.
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
--SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 
 # Domain Reliability has yet to be hookup to the NetworkService.
 # https://crbug.com/853251
