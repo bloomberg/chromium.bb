@@ -512,8 +512,14 @@ const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",
 // Launch bug: https://crbug.com/739418.  This is a //chrome-layer feature to
 // avoid turning on site-per-process by default for *all* //content embedders
 // (e.g. this approach lets ChromeCast avoid site-per-process mode).
-const base::Feature kSitePerProcess{"site-per-process",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSitePerProcess {
+  "site-per-process",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // kSitePerProcessOnlyForHighMemoryClients is checked before kSitePerProcess,
 // and (if enabled) can restrict if kSitePerProcess feature is checked at all -
