@@ -86,7 +86,7 @@ void IDBValue::SetData(scoped_refptr<SharedBuffer> new_data) {
   DCHECK(new_data) << "Value unwrapping must result in a non-empty buffer";
 
   int64_t old_external_allocated_size = external_allocated_size_;
-  external_allocated_size_ = data_->size();
+  external_allocated_size_ = new_data->size();
   isolate_->AdjustAmountOfExternalAllocatedMemory(external_allocated_size_ -
                                                   old_external_allocated_size);
 
