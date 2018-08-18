@@ -157,8 +157,9 @@ class CC_EXPORT GpuImageDecodeCache
   bool SupportsColorSpaceConversion() const;
 
   // For testing only.
-  void SetWorkingSetLimitForTesting(size_t limit) {
-    max_working_set_bytes_ = limit;
+  void SetWorkingSetLimitsForTesting(size_t bytes_limit, size_t items_limit) {
+    max_working_set_bytes_ = bytes_limit;
+    max_working_set_items_ = items_limit;
   }
   size_t GetWorkingSetBytesForTesting() const { return working_set_bytes_; }
   size_t GetNumCacheEntriesForTesting() const {
@@ -505,7 +506,9 @@ class CC_EXPORT GpuImageDecodeCache
   InUseCache in_use_cache_;
 
   size_t max_working_set_bytes_ = 0;
+  size_t max_working_set_items_ = 0;
   size_t working_set_bytes_ = 0;
+  size_t working_set_items_ = 0;
   base::MemoryState memory_state_ = base::MemoryState::NORMAL;
   bool aggressively_freeing_resources_ = false;
 
