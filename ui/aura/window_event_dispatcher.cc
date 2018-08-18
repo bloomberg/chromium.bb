@@ -117,6 +117,10 @@ WindowEventDispatcher::~WindowEventDispatcher() {
   ui::GestureRecognizer::Get()->RemoveGestureEventHelper(this);
 }
 
+void WindowEventDispatcher::Shutdown() {
+  in_shutdown_ = true;
+}
+
 ui::EventTargeter* WindowEventDispatcher::GetDefaultEventTargeter() {
   return event_targeter_.get();
 }
@@ -287,6 +291,11 @@ void WindowEventDispatcher::TransformEventForDeviceScaleFactor(
 }
 
 void WindowEventDispatcher::DispatchMouseExitToHidingWindow(Window* window) {
+  // Dispatching events during shutdown can cause crashes (e.g. in Chrome OS
+  // system tray cleanup). https://crbug.com/874156
+  if (in_shutdown_)
+    return;
+
   // The mouse capture is intentionally ignored. Think that a mouse enters
   // to a window, the window sets the capture, the mouse exits the window,
   // and then it releases the capture. In that case OnMouseExited won't
@@ -538,6 +547,12 @@ ui::EventTarget* WindowEventDispatcher::GetRootForEvent(ui::Event* event) {
 }
 
 void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {
+  // Don't dispatch events during shutdown.
+  if (in_shutdown_) {
+    event->SetHandled();
+    return;
+  }
+
   // The held events are already in |window()|'s coordinate system. So it is
   // not necessary to apply the transform to convert from the host's
   // coordinate system to |window()|'s coordinate system.
@@ -553,6 +568,9 @@ void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {
 }
 
 void WindowEventDispatcher::OnEventProcessingFinished(ui::Event* event) {
+  if (in_shutdown_)
+    return;
+
   if (mus_mouse_location_updater_)
     mus_mouse_location_updater_->OnEventProcessingFinished();
   observer_notifiers_.pop();

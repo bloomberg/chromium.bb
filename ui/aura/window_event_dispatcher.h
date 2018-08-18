@@ -64,6 +64,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   WindowEventDispatcher(WindowTreeHost* host, bool are_events_in_pixels);
   ~WindowEventDispatcher() override;
 
+  void Shutdown();
+
   WindowTreeHost* host() { return host_; }
 
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
@@ -334,6 +336,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // See ObserverNotifier for details. This is a queue to handle the case of
   // nested event dispatch.
   std::queue<std::unique_ptr<ObserverNotifier>> observer_notifiers_;
+
+  bool in_shutdown_ = false;
 
   // Used to schedule reposting an event.
   base::WeakPtrFactory<WindowEventDispatcher> repost_event_factory_{this};
