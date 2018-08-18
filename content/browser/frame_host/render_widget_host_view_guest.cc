@@ -622,15 +622,15 @@ RenderWidgetHostViewGuest::GetOwnerRenderWidgetHostView() const {
 
 void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGestureForTest(
     const blink::WebFloatPoint& position,
-    const blink::WebFloatPoint& screenPosition) const {
-  MaybeSendSyntheticTapGesture(position, screenPosition);
+    const blink::WebFloatPoint& screen_position) const {
+  MaybeSendSyntheticTapGesture(position, screen_position);
 }
 
 // TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
 // http://crbug.com/533069
 void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGesture(
     const blink::WebFloatPoint& position,
-    const blink::WebFloatPoint& screenPosition) const {
+    const blink::WebFloatPoint& screen_position) const {
   if (!HasFocus()) {
     // We need to a account for the position of the guest view within the
     // embedder, as well as the fact that the embedder's host will add its
@@ -646,7 +646,7 @@ void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGesture(
         blink::kWebGestureDeviceTouchscreen);
     gesture_tap_event.SetPositionInWidget(
         blink::WebFloatPoint(position.x + offset.x(), position.y + offset.y()));
-    gesture_tap_event.SetPositionInScreen(screenPosition);
+    gesture_tap_event.SetPositionInScreen(screen_position);
     // The touch action may not be set yet because this is still at the
     // Pre-processing stage of a mouse or a touch event. In this case, set the
     // touch action to Auto to prevent crashing.
