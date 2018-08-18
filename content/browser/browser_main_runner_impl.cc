@@ -183,7 +183,7 @@ void BrowserMainRunnerImpl::Shutdown() {
   // startup tracing becomes a version of shutdown tracing).
   // There are two cases:
   // 1. Startup duration is not reached.
-  // 2. Or startup duration is not specified for --trace-config-file flag.
+  // 2. Or if the trace should be saved to file for --trace-config-file flag.
   std::unique_ptr<BrowserShutdownProfileDumper> startup_profiler;
   if (tracing::TraceStartupConfig::GetInstance()
           ->IsTracingStartupForDuration()) {
@@ -193,7 +193,8 @@ void BrowserMainRunnerImpl::Shutdown() {
       startup_profiler.reset(
           new BrowserShutdownProfileDumper(main_loop_->startup_trace_file()));
     }
-  } else if (tracing::TraceStartupConfig::GetInstance()->IsEnabled()) {
+  } else if (tracing::TraceStartupConfig::GetInstance()
+                 ->ShouldTraceToResultFile()) {
     base::FilePath result_file = main_loop_->GetStartupTraceFileName();
     startup_profiler.reset(new BrowserShutdownProfileDumper(result_file));
   }

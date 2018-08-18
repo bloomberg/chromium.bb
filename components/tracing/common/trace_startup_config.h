@@ -74,6 +74,9 @@ class TRACING_EXPORT TraceStartupConfig {
  public:
   static TraceStartupConfig* GetInstance();
 
+  // Default minimum startup trace config with enough events to debug issues.
+  static base::trace_event::TraceConfig GetDefaultBrowserStartupConfig();
+
   // IsEnabled() returns true if
   // - valid trace config file or trace startup flags are specified,
   // - the specified startup duration is zero or we are not passed the positive
@@ -92,7 +95,18 @@ class TRACING_EXPORT TraceStartupConfig {
 
   base::trace_event::TraceConfig GetTraceConfig() const;
   int GetStartupDuration() const;
+
+  // Returns true while startup tracing is not finished, if trace should be
+  // saved to result file.
+  bool ShouldTraceToResultFile() const;
   base::FilePath GetResultFile() const;
+
+  // Get the background tracing config set in application preferences on the
+  // previous session, for current session.
+  bool GetBackgroundStartupTracingEnabled() const;
+
+  // Set the background tracing config in preferences for the next session.
+  void SetBackgroundStartupTracingEnabled(bool enabled);
 
  private:
   // This allows constructor and destructor to be private and usable only
@@ -101,11 +115,17 @@ class TRACING_EXPORT TraceStartupConfig {
   TraceStartupConfig();
   ~TraceStartupConfig();
 
+  bool EnableFromCommandLine();
+  bool EnableFromConfigFile();
+  bool EnableFromBackgroundTracing();
+
   bool ParseTraceConfigFileContent(const std::string& content);
 
   bool is_enabled_;
+  bool is_enabled_from_background_tracing_;
   base::trace_event::TraceConfig trace_config_;
   int startup_duration_;
+  bool should_trace_to_result_file_;
   base::FilePath result_file_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceStartupConfig);

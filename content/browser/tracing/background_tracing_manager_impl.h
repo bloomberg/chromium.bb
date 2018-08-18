@@ -93,6 +93,9 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
       const base::Closure& callback);
   void FireTimerForTesting() override;
   CONTENT_EXPORT bool IsTracingForTesting();
+  CONTENT_EXPORT bool requires_anonymized_data_for_testing() const {
+    return requires_anonymized_data_;
+  }
 
  private:
   BackgroundTracingManagerImpl();
@@ -118,8 +121,9 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
       TriggerHandle handle) const;
   bool IsSupportedConfig(BackgroundTracingConfigImpl* config);
 
-  std::string GetCategoryFilterStringForCategoryPreset(
-      BackgroundTracingConfigImpl::CategoryPreset) const;
+  base::trace_event::TraceConfig GetConfigForCategoryPreset(
+      BackgroundTracingConfigImpl::CategoryPreset,
+      base::trace_event::TraceRecordMode) const;
 
   class TracingTimer {
    public:

@@ -28,7 +28,6 @@ void EnableStartupTracingIfNeeded() {
     uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
     if (!trace_config.event_filters().empty())
       modes |= base::trace_event::TraceLog::FILTERING_MODE;
-    // This checks kTraceConfigFile switch.
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
         TraceStartupConfig::GetInstance()->GetTraceConfig(), modes);
   } else if (command_line.HasSwitch(switches::kTraceToConsole)) {

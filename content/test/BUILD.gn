@@ -1577,6 +1577,7 @@ test("content_unittests") {
     "../browser/storage_partition_impl_unittest.cc",
     "../browser/streams/stream_unittest.cc",
     "../browser/streams/stream_url_request_job_unittest.cc",
+    "../browser/tracing/background_startup_tracing_observer_unittest.cc",
     "../browser/tracing/background_tracing_config_unittest.cc",
     "../browser/tracing/tracing_ui_unittest.cc",
     "../browser/web_contents/aura/gesture_nav_simple_unittest.cc",

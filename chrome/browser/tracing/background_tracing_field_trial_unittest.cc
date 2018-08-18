@@ -11,10 +11,22 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/tracing/common/trace_startup.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class BackgroundTracingTest : public testing::Test,
-                              public testing::WithParamInterface<bool> {};
+class BackgroundTracingTest : public testing::Test {
+ public:
+  BackgroundTracingTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        ui_thread_(content::BrowserThread::UI,
+                   base::ThreadTaskRunnerHandle::Get()) {}
+  ~BackgroundTracingTest() override {}
+
+ private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThread ui_thread_;
+};
 
 namespace {
 
@@ -28,23 +40,13 @@ void CheckConfig(std::string* config) {
 
 }  // namespace
 
-TEST_P(BackgroundTracingTest, SetupBackgroundTracingFieldTrial) {
-  const bool enable_trace_startup = GetParam();
-  if (enable_trace_startup) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kTraceStartup);
-    // Normally is runned from ContentMainRunnerImpl::Initialize().
-    tracing::EnableStartupTracingIfNeeded();
-  }
-
+TEST_F(BackgroundTracingTest, SetupBackgroundTracingFieldTrial) {
   base::FieldTrialList field_trial_list(nullptr);
   const std::string kTrialName = "BackgroundTracing";
   const std::string kExperimentName = "SlowStart";
   base::AssociateFieldTrialParams(kTrialName, kExperimentName,
                                   {{"config", kTestConfig}});
   base::FieldTrialList::CreateFieldTrial(kTrialName, kExperimentName);
-
-  base::test::ScopedTaskEnvironment task_environment;
 
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
@@ -56,10 +58,5 @@ TEST_P(BackgroundTracingTest, SetupBackgroundTracingFieldTrial) {
   tracing::SetConfigTextFilterForTesting(&CheckConfig);
 
   tracing::SetupBackgroundTracingFieldTrial();
-  EXPECT_NE(enable_trace_startup, g_test_config_loaded);
+  EXPECT_TRUE(g_test_config_loaded);
 }
-
-INSTANTIATE_TEST_CASE_P(
-    /* prefix intentionally left blank due to only one parameterization */,
-    BackgroundTracingTest,
-    testing::Bool());
