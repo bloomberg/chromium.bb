@@ -50,6 +50,9 @@ const char kSettingDeviceName[] = "deviceName";
 // Option to disable scaling. True if scaling is disabled else false.
 const char kSettingDisableScaling[] = "disableScaling";
 
+// Default DPI
+const char kSettingDpiDefault[] = "dpiDefault";
+
 // Horizontal DPI
 const char kSettingDpiHorizontal[] = "dpiHorizontal";
 

@@ -139,6 +139,9 @@ enum PrintSettingsBuckets {
   SCALING,
   PRINT_AS_IMAGE,
   PAGES_PER_SHEET,
+  FIT_TO_PAGE,
+  DEFAULT_DPI,
+  NON_DEFAULT_DPI,
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
@@ -291,7 +294,8 @@ std::unique_ptr<base::DictionaryValue> GetSettingsDictionary(
 }
 
 // Track the popularity of print settings and report the stats.
-void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
+void ReportPrintSettingsStats(const base::DictionaryValue& settings,
+                              bool is_pdf) {
   ReportPrintSettingHistogram(TOTAL);
 
   const base::ListValue* page_range_array = NULL;
@@ -381,6 +385,23 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
   if (settings.GetBoolean(printing::kSettingRasterizePdf,
                           &rasterize) && rasterize) {
     ReportPrintSettingHistogram(PRINT_AS_IMAGE);
+  }
+
+  bool fit_to_page = false;
+  if (is_pdf &&
+      settings.GetBoolean(printing::kSettingFitToPageEnabled, &fit_to_page) &&
+      fit_to_page) {
+    ReportPrintSettingHistogram(FIT_TO_PAGE);
+  }
+
+  int dpi_horizontal = 0;
+  int dpi_vertical = 0;
+  if (settings.GetInteger(printing::kSettingDpiHorizontal, &dpi_horizontal) &&
+      settings.GetInteger(printing::kSettingDpiVertical, &dpi_vertical) &&
+      dpi_horizontal > 0 && dpi_vertical > 0) {
+    bool is_default = false;
+    if (settings.GetBoolean(printing::kSettingDpiDefault, &is_default))
+      ReportPrintSettingHistogram(is_default ? DEFAULT_DPI : NON_DEFAULT_DPI);
   }
 }
 
@@ -843,11 +864,10 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   }
 
   // After validating |settings|, record metrics.
-  ReportPrintSettingsStats(*settings);
+  bool is_pdf = !print_preview_ui()->source_is_modifiable();
+  ReportPrintSettingsStats(*settings, is_pdf);
   {
-    PrintDocumentTypeBuckets doc_type =
-        print_preview_ui()->source_is_modifiable() ? HTML_DOCUMENT
-                                                   : PDF_DOCUMENT;
+    PrintDocumentTypeBuckets doc_type = is_pdf ? PDF_DOCUMENT : HTML_DOCUMENT;
     size_t average_page_size_in_kb = data->size() / page_count;
     average_page_size_in_kb /= 1024;
     ReportPrintDocumentTypeAndSizeHistograms(doc_type, average_page_size_in_kb);

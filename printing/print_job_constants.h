@@ -25,6 +25,7 @@ PRINTING_EXPORT extern const char kSettingContentWidth[];
 PRINTING_EXPORT extern const char kSettingCopies[];
 PRINTING_EXPORT extern const char kSettingDeviceName[];
 PRINTING_EXPORT extern const char kSettingDisableScaling[];
+PRINTING_EXPORT extern const char kSettingDpiDefault[];
 PRINTING_EXPORT extern const char kSettingDpiHorizontal[];
 PRINTING_EXPORT extern const char kSettingDpiVertical[];
 PRINTING_EXPORT extern const char kSettingDuplexMode[];
