@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
@@ -136,9 +136,10 @@ class RTCRtpSenderTest : public ::testing::Test {
     return *result_holder;
   }
 
-  // Message loop and child processes is needed for task queues and threading to
-  // work, as is necessary to create tracks and adapters.
-  base::MessageLoop message_loop_;
+  // Code under test expects to be run in a process with an initialized
+  // ChildProcess, which requires TaskScheduler, and a main-thread MessageLoop,
+  // which the ScopedTaskEnvironment also provides.
+  base::test::ScopedTaskEnvironment task_environment_;
   ChildProcess child_process_;
 
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
