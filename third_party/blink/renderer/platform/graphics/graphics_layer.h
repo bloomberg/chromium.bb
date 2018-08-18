@@ -188,7 +188,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetIsRootForIsolatedGroup(bool);
 
   void SetHitTestableWithoutDrawsContent(bool);
-  bool GetHitTestableWithoutDrawsContentForTesting() {
+  bool GetHitTestableWithoutDrawsContent() const {
     return hit_testable_without_draws_content_;
   }
 

@@ -1,0 +1,49 @@
+<!doctype html>
+<style>
+.scroll {
+  overflow: auto;
+  width: 100px;
+  height: 100px;
+  will-change: transform;
+}
+
+.scrolled-content {
+  width: 50px;
+  height: 1000px;
+  background-image: linear-gradient(green, red);
+}
+
+#animated-overlap {
+  height: 100px;
+  width: 110px;
+  animation: cover 1s infinite;
+}
+
+@keyframes cover {
+  0% { transform: translateY(0); }
+  1% { transform: translateY(-100px); }
+  100% { transform: translateY(-100px); }
+}
+</style>
+It should not be possible to scroll this content:<br>
+<div class="scroll">
+  <div class="scrolled-content"></div>
+</div>
+<div id="animated-overlap"></div>
+<script>
+  testRunner.waitUntilDone();
+  // Wait for the animation to advance.
+  requestAnimationFrame(function() {
+    const GESTURE_SOURCE_TYPE = 2; // MOUSE_INPUT from synthetic_gesture_params.h
+      chrome.gpuBenchmarking.smoothScrollBy(
+        1000,
+        function() {
+          testRunner.notifyDone();
+        },
+        50 /* start_x */,
+        50 /* start_y */,
+        GESTURE_SOURCE_TYPE,
+        'down',
+        20000 /* speed */);
+  });
+</script>

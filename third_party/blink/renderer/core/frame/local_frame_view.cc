@@ -2708,7 +2708,11 @@ static void CollectDrawableLayersForLayerListRecursively(
   if (!layer || layer->Client().ShouldThrottleRendering())
     return;
 
-  if (layer->DrawsContent()) {
+  // We need to collect all layers that draw content, as well as some layers
+  // that don't for the purposes of hit testing. For example, an empty div
+  // will not draw content but needs to create a layer to ensure scroll events
+  // do not pass through it.
+  if (layer->DrawsContent() || layer->GetHitTestableWithoutDrawsContent()) {
     ScopedPaintChunkProperties scope(context.GetPaintController(),
                                      layer->GetPropertyTreeState(), *layer,
                                      DisplayItem::kForeignLayerWrapper);

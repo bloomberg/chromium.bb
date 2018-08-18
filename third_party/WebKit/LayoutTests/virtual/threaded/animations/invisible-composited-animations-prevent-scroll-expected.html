@@ -1,0 +1,19 @@
+<!doctype html>
+<style>
+.scroll {
+  overflow: auto;
+  width: 100px;
+  height: 100px;
+  will-change: transform;
+}
+
+.scrolled-content {
+  width: 50px;
+  height: 1000px;
+  background-image: linear-gradient(green, red);
+}
+</style>
+It should not be possible to scroll this content:<br>
+<div class="scroll">
+  <div class="scrolled-content"></div>
+</div>
