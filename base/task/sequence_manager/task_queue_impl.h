@@ -12,6 +12,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -392,7 +393,7 @@ class BASE_EXPORT TaskQueueImpl {
   // empty.
   void PushOntoImmediateIncomingQueueLocked(Task task);
 
-  using TaskDeque = LazilyDeallocatedDeque<Task>;
+  using TaskDeque = circular_deque<Task>;
 
   // Extracts all the tasks from the immediate incoming queue and swaps it with
   // |queue| which must be empty.
