@@ -44,6 +44,12 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapterWin::CreateAdapter(
     return adapter->weak_ptr_factory_.GetWeakPtr();
   }
 
+  return BluetoothAdapterWin::CreateClassicAdapter(std::move(init_callback));
+}
+
+// static
+base::WeakPtr<BluetoothAdapter> BluetoothAdapterWin::CreateClassicAdapter(
+    InitCallback init_callback) {
   auto* adapter = new BluetoothAdapterWin(std::move(init_callback));
   adapter->Init();
   return adapter->weak_ptr_factory_.GetWeakPtr();
