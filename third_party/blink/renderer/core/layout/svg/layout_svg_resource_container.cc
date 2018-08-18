@@ -115,7 +115,7 @@ void LayoutSVGResourceContainer::MarkClientForInvalidation(
     // if the client is one that could have a LayoutSVGInlineText use a
     // paint invalidation reason that will force paint invalidation of the
     // entire <text>/<tspan>/... subtree.
-    client.SetSubtreeShouldDoFullPaintInvalidation(
+    client.SetShouldDoFullPaintInvalidation(
         PaintInvalidationReason::kSVGResource);
     client.InvalidateClipPathCache();
     // Invalidate paint properties to update effects if any.

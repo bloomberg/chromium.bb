@@ -1832,7 +1832,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     // the entire subtree on paint offset changes.
     full_context_.force_subtree_update = true;
 
-    object_.GetMutableForPainting().SetShouldCheckForPaintInvalidation();
+    object_.GetMutableForPainting().SetMayNeedPaintInvalidation();
     fragment_data_.SetPaintOffset(context_.current.paint_offset);
     fragment_data_.InvalidateClipPathCache();
 

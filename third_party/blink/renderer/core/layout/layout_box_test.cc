@@ -453,7 +453,7 @@ class AnimatedImage : public StubImage {
   bool MaybeAnimated() override { return true; }
 };
 
-TEST_F(LayoutBoxTest, DelayedInvalidation) {
+TEST_F(LayoutBoxTest, DeferredInvalidation) {
   SetBodyInnerHTML("<img id='image' style='width: 100px; height: 100px;'/>");
   auto* obj = ToLayoutBox(GetLayoutObjectByElementId("image"));
   ASSERT_TRUE(obj);
@@ -465,24 +465,19 @@ TEST_F(LayoutBoxTest, DelayedInvalidation) {
   ToLayoutImage(obj)->ImageResource()->SetImageResource(image);
   ASSERT_TRUE(ToLayoutImage(obj)->CachedImage()->GetImage()->MaybeAnimated());
 
-  obj->ClearPaintInvalidationFlags();
-  EXPECT_FALSE(obj->ShouldDoFullPaintInvalidation());
-  EXPECT_EQ(obj->FullPaintInvalidationReason(), PaintInvalidationReason::kNone);
-  EXPECT_FALSE(obj->ShouldDelayFullPaintInvalidation());
-
   // CanDeferInvalidation::kYes results in a deferred invalidation.
+  obj->ClearPaintInvalidationFlags();
+  EXPECT_EQ(obj->FullPaintInvalidationReason(), PaintInvalidationReason::kNone);
   obj->ImageChanged(image, ImageResourceObserver::CanDeferInvalidation::kYes);
-  EXPECT_FALSE(obj->ShouldDoFullPaintInvalidation());
   EXPECT_EQ(obj->FullPaintInvalidationReason(),
-            PaintInvalidationReason::kImage);
-  EXPECT_TRUE(obj->ShouldDelayFullPaintInvalidation());
+            PaintInvalidationReason::kDelayedFull);
 
   // CanDeferInvalidation::kNo results in a immediate invalidation.
+  obj->ClearPaintInvalidationFlags();
+  EXPECT_EQ(obj->FullPaintInvalidationReason(), PaintInvalidationReason::kNone);
   obj->ImageChanged(image, ImageResourceObserver::CanDeferInvalidation::kNo);
-  EXPECT_TRUE(obj->ShouldDoFullPaintInvalidation());
   EXPECT_EQ(obj->FullPaintInvalidationReason(),
             PaintInvalidationReason::kImage);
-  EXPECT_FALSE(obj->ShouldDelayFullPaintInvalidation());
 }
 
 TEST_F(LayoutBoxTest, MarkerContainerLayoutOverflowRect) {

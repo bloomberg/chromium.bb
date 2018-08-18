@@ -46,7 +46,7 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
 
     GetDocument().View()->UpdateAllLifecyclePhases();
     auto& target = *GetDocument().getElementById("target");
-    auto& box = *ToLayoutBox(target.GetLayoutObject());
+    const auto& box = *ToLayoutBox(target.GetLayoutObject());
     LayoutRect visual_rect = box.FirstFragment().VisualRect();
     LayoutPoint paint_offset = box.FirstFragment().PaintOffset();
 
@@ -79,9 +79,6 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
           height: 100px;
           transform-origin: 0 0;
         }
-        .background {
-          background: blue;
-        }
         .border {
           border-width: 20px 10px;
           border-style: solid;
@@ -108,6 +105,7 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
 
   EXPECT_TRUE(box.PaintedOutputOfObjectHasNoEffectRegardlessOfSize());
   LayoutRect visual_rect = box.FirstFragment().VisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 50, 100), visual_rect);
 
   // No geometry change.
   EXPECT_EQ(
@@ -141,7 +139,7 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
   target.setAttribute(HTMLNames::styleAttr, "background: blue");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  box.SetShouldCheckForPaintInvalidation();
+  box.SetMayNeedPaintInvalidation();
   LayoutRect visual_rect = box.FirstFragment().VisualRect();
   EXPECT_EQ(LayoutRect(0, 0, 50, 100), visual_rect);
 
@@ -188,8 +186,8 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {
   // The target initially has border.
   ExpectFullPaintInvalidationOnGeometryChange("With border");
 
-  // Clear border, set background.
-  target.setAttribute(HTMLNames::classAttr, "background");
+  // Clear border.
+  target.setAttribute(HTMLNames::classAttr, "");
   target.setAttribute(HTMLNames::styleAttr, "border-radius: 5px");
   ExpectFullPaintInvalidationOnGeometryChange("With border-radius");
 

@@ -20,12 +20,12 @@
         {
           "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [158, 74, 50, 50],
-          "reason": "subtree"
+          "reason": "style change"
         },
         {
           "object": "LayoutNGBlockFlow (positioned) DIV",
           "rect": [100, 74, 50, 50],
-          "reason": "subtree"
+          "reason": "style change"
         }
       ]
     }

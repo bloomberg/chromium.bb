@@ -72,6 +72,8 @@ const char* PaintInvalidationReasonToString(PaintInvalidationReason reason) {
       return "full layer";
     case PaintInvalidationReason::kForTesting:
       return "for testing";
+    case PaintInvalidationReason::kDelayedFull:
+      return "delayed full";
   }
   NOTREACHED();
   return "";

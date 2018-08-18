@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TABLE_PAINT_INVALIDATOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TABLE_PAINT_INVALIDATOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_EMBEDDED_OBJECT_PAINT_INVALIDATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_EMBEDDED_OBJECT_PAINT_INVALIDATOR_H_
 
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
-class LayoutTable;
+class LayoutEmbeddedObject;
 struct PaintInvalidatorContext;
 
-class TablePaintInvalidator {
+class EmbeddedObjectPaintInvalidator {
   STACK_ALLOCATED();
 
  public:
-  TablePaintInvalidator(const LayoutTable& table,
-                        const PaintInvalidatorContext& context)
-      : table_(table), context_(context) {}
+  EmbeddedObjectPaintInvalidator(const LayoutEmbeddedObject& embedded_object,
+                                 const PaintInvalidatorContext& context)
+      : embedded_object_(embedded_object), context_(context) {}
 
   PaintInvalidationReason InvalidatePaint();
 
  private:
-  const LayoutTable& table_;
+  const LayoutEmbeddedObject& embedded_object_;
   const PaintInvalidatorContext& context_;
 };
 

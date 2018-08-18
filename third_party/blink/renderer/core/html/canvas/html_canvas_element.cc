@@ -361,7 +361,7 @@ void HTMLCanvasElement::DidDraw(const FloatRect& rect) {
     return;
   canvas_is_clear_ = false;
   if (GetLayoutObject() && !LowLatencyEnabled())
-    GetLayoutObject()->SetShouldCheckForPaintInvalidation();
+    GetLayoutObject()->SetMayNeedPaintInvalidation();
   if (Is2d() && context_->ShouldAntialias() && GetPage() &&
       GetPage()->DeviceScaleFactorDeprecated() > 1.0f) {
     FloatRect inflated_rect = rect;
