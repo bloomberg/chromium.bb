@@ -104,6 +104,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/plugins/plugin_data.h"
@@ -1265,197 +1266,211 @@ void ScopedFrameBlamer::LeaveContext() {
     context->Leave();
 }
 
-bool LocalFrame::IsClientLoFiAllowed(const ResourceRequest& request) const {
-  return Client() && ShouldUseClientLoFiForRequest(
-                         request, Client()->GetPreviewsStateForFrame());
+void LocalFrame::MaybeAllowImagePlaceholder(FetchParameters& params) const {
+  if (GetSettings() && GetSettings()->GetFetchImagePlaceholders()) {
+    params.SetAllowImagePlaceholder();
+    return;
+  }
+
+  if (Client() &&
+      ShouldUseClientLoFiForRequest(params.GetResourceRequest(),
+                                    Client()->GetPreviewsStateForFrame())) {
+    params.MutableResourceRequest().SetPreviewsState(
+        params.GetResourceRequest().GetPreviewsState() |
+        WebURLRequest::kClientLoFiOn);
+    params.SetAllowImagePlaceholder();
+  }
 }
 
-bool LocalFrame::IsLazyLoadingImageAllowed() const {
+bool LocalFrame::MaybeAllowLazyLoadingImage(FetchParameters& params) const {
   if (!RuntimeEnabledFeatures::LazyImageLoadingEnabled())
     return false;
+  if (params.GetPlaceholderImageRequestType() ==
+      FetchParameters::PlaceholderImageRequestType::kAllowPlaceholder) {
+    return false;
+  }
   if (Owner() && !Owner()->ShouldLazyLoadChildren())
     return false;
+
+  params.SetAllowImagePlaceholder();
   return true;
+}
+
+WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {
+  if (!url_loader_factory_)
+    url_loader_factory_ = Client()->CreateURLLoaderFactory();
+  return url_loader_factory_.get();
+}
+
+WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
+  if (GetDocument() && GetDocument()->IsPluginDocument()) {
+    return ToPluginDocument(GetDocument())->GetPluginView();
+  }
+  if (!node) {
+    DCHECK(GetDocument());
+    node = GetDocument()->FocusedElement();
   }
 
-  WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {
-    if (!url_loader_factory_)
-      url_loader_factory_ = Client()->CreateURLLoaderFactory();
-    return url_loader_factory_.get();
+  if (node) {
+    return node->GetWebPluginContainer();
+  }
+  return nullptr;
+}
+
+void LocalFrame::SetViewportIntersectionFromParent(
+    const IntRect& viewport_intersection,
+    bool occluded_or_obscured) {
+  if (remote_viewport_intersection_ != viewport_intersection ||
+      occluded_or_obscured_by_ancestor_ != occluded_or_obscured) {
+    remote_viewport_intersection_ = viewport_intersection;
+    occluded_or_obscured_by_ancestor_ = occluded_or_obscured;
+    if (View()) {
+      View()->SetNeedsIntersectionObservation(LocalFrameView::kRequired);
+      View()->ScheduleAnimation();
+    }
+  }
+}
+
+void LocalFrame::ForceSynchronousDocumentInstall(
+    const AtomicString& mime_type,
+    scoped_refptr<SharedBuffer> data) {
+  CHECK(loader_.StateMachine()->IsDisplayingInitialEmptyDocument());
+  DCHECK(!Client()->IsLocalFrameClientImpl());
+
+  // Any Document requires Shutdown() before detach, even the initial empty
+  // document.
+  GetDocument()->Shutdown();
+
+  DomWindow()->InstallNewDocument(
+      mime_type,
+      DocumentInit::Create().WithDocumentLoader(loader_.GetDocumentLoader()),
+      false);
+  loader_.StateMachine()->AdvanceTo(
+      FrameLoaderStateMachine::kCommittedFirstRealLoad);
+
+  GetDocument()->OpenForNavigation(kForceSynchronousParsing, mime_type,
+                                   AtomicString("UTF-8"));
+  for (const auto& segment : *data)
+    GetDocument()->Parser()->AppendBytes(segment.data(), segment.size());
+  GetDocument()->Parser()->Finish();
+
+  // Upon loading of SVGIamges, log PageVisits in UseCounter.
+  // Do not track PageVisits for inspector, web page popups, and validation
+  // message overlays (the other callers of this method).
+  if (GetDocument()->IsSVGDocument())
+    loader_.GetDocumentLoader()->GetUseCounter().DidCommitLoad(this);
+}
+
+bool LocalFrame::IsProvisional() const {
+  // Calling this after the frame is marked as completely detached is a bug, as
+  // this state can no longer be accurately calculated.
+  CHECK_NE(FrameLifecycle::kDetached, lifecycle_.GetState());
+
+  if (IsMainFrame()) {
+    return GetPage()->MainFrame() != this;
   }
 
-  WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
-    if (GetDocument() && GetDocument()->IsPluginDocument()) {
-      return ToPluginDocument(GetDocument())->GetPluginView();
-    }
-    if (!node) {
-      DCHECK(GetDocument());
-      node = GetDocument()->FocusedElement();
-    }
+  DCHECK(Owner());
+  return Owner()->ContentFrame() != this;
+}
 
-    if (node) {
-      return node->GetWebPluginContainer();
-    }
+bool LocalFrame::IsUsingDataSavingPreview() const {
+  if (!Client())
+    return false;
+
+  WebURLRequest::PreviewsState previews_state =
+      Client()->GetPreviewsStateForFrame();
+  // Check for any data saving type of preview.
+  return previews_state &
+         (WebURLRequest::kServerLoFiOn | WebURLRequest::kClientLoFiOn |
+          WebURLRequest::kNoScriptOn);
+}
+
+ComputedAccessibleNode* LocalFrame::GetOrCreateComputedAccessibleNode(
+    AXID ax_id,
+    WebComputedAXTree* tree) {
+  if (computed_node_mapping_.find(ax_id) == computed_node_mapping_.end()) {
+    ComputedAccessibleNode* node =
+        ComputedAccessibleNode::Create(ax_id, tree, this);
+    computed_node_mapping_.insert(ax_id, node);
+  }
+  return computed_node_mapping_.at(ax_id);
+}
+
+void LocalFrame::PauseSubresourceLoading(
+    blink::mojom::blink::PauseSubresourceLoadingHandleRequest request) {
+  auto handle = GetFrameScheduler()->GetPauseSubresourceLoadingHandle();
+  if (!handle)
+    return;
+  pause_handle_bindings_.AddBinding(std::move(handle), std::move(request));
+}
+
+void LocalFrame::ResumeSubresourceLoading() {
+  pause_handle_bindings_.CloseAllBindings();
+}
+
+void LocalFrame::AnimateSnapFling(base::TimeTicks monotonic_time) {
+  GetEventHandler().AnimateSnapFling(monotonic_time);
+}
+
+void LocalFrame::BindPreviewsResourceLoadingHintsRequest(
+    blink::mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request) {
+  DCHECK(!previews_resource_loading_hints_receiver_);
+  previews_resource_loading_hints_receiver_ =
+      std::make_unique<PreviewsResourceLoadingHintsReceiverImpl>(
+          std::move(request), GetDocument());
+}
+
+SmoothScrollSequencer& LocalFrame::GetSmoothScrollSequencer() {
+  if (!IsLocalRoot())
+    return LocalFrameRoot().GetSmoothScrollSequencer();
+  if (!smooth_scroll_sequencer_)
+    smooth_scroll_sequencer_ = new SmoothScrollSequencer();
+  return *smooth_scroll_sequencer_;
+}
+
+ukm::UkmRecorder* LocalFrame::GetUkmRecorder() {
+  Document* document = GetDocument();
+  if (!document)
     return nullptr;
+  return document->UkmRecorder();
+}
+
+int64_t LocalFrame::GetUkmSourceId() {
+  Document* document = GetDocument();
+  if (!document)
+    return ukm::kInvalidSourceId;
+  return document->UkmSourceID();
+}
+
+const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
+    const {
+  if (!reporting_service_) {
+    Platform::Current()->GetConnector()->BindInterface(
+        Platform::Current()->GetBrowserServiceName(), &reporting_service_);
   }
+  return reporting_service_;
+}
 
-  void LocalFrame::SetViewportIntersectionFromParent(
-      const IntRect& viewport_intersection,
-      bool occluded_or_obscured) {
-    if (remote_viewport_intersection_ != viewport_intersection ||
-        occluded_or_obscured_by_ancestor_ != occluded_or_obscured) {
-      remote_viewport_intersection_ = viewport_intersection;
-      occluded_or_obscured_by_ancestor_ = occluded_or_obscured;
-      if (View()) {
-        View()->SetNeedsIntersectionObservation(LocalFrameView::kRequired);
-        View()->ScheduleAnimation();
-      }
-    }
-  }
+void LocalFrame::ReportFeaturePolicyViolation(
+    mojom::FeaturePolicyFeature feature) const {
+  const String& feature_name = GetNameForFeature(feature);
+  FeaturePolicyViolationReportBody* body = new FeaturePolicyViolationReportBody(
+      feature_name, "Feature policy violation", SourceLocation::Capture());
+  Report* report =
+      new Report("feature-policy", GetDocument()->Url().GetString(), body);
+  ReportingContext::From(GetDocument())->QueueReport(report);
 
-  void LocalFrame::ForceSynchronousDocumentInstall(
-      const AtomicString& mime_type,
-      scoped_refptr<SharedBuffer> data) {
-    CHECK(loader_.StateMachine()->IsDisplayingInitialEmptyDocument());
-    DCHECK(!Client()->IsLocalFrameClientImpl());
+  bool is_null;
+  int line_number = body->lineNumber(is_null);
+  line_number = is_null ? 0 : line_number;
+  int column_number = body->columnNumber(is_null);
+  column_number = is_null ? 0 : column_number;
 
-    // Any Document requires Shutdown() before detach, even the initial empty
-    // document.
-    GetDocument()->Shutdown();
-
-    DomWindow()->InstallNewDocument(
-        mime_type,
-        DocumentInit::Create().WithDocumentLoader(loader_.GetDocumentLoader()),
-        false);
-    loader_.StateMachine()->AdvanceTo(
-        FrameLoaderStateMachine::kCommittedFirstRealLoad);
-
-    GetDocument()->OpenForNavigation(kForceSynchronousParsing, mime_type,
-                                     AtomicString("UTF-8"));
-    for (const auto& segment : *data)
-      GetDocument()->Parser()->AppendBytes(segment.data(), segment.size());
-    GetDocument()->Parser()->Finish();
-
-    // Upon loading of SVGIamges, log PageVisits in UseCounter.
-    // Do not track PageVisits for inspector, web page popups, and validation
-    // message overlays (the other callers of this method).
-    if (GetDocument()->IsSVGDocument())
-      loader_.GetDocumentLoader()->GetUseCounter().DidCommitLoad(this);
-  }
-
-  bool LocalFrame::IsProvisional() const {
-    // Calling this after the frame is marked as completely detached is a bug,
-    // as this state can no longer be accurately calculated.
-    CHECK_NE(FrameLifecycle::kDetached, lifecycle_.GetState());
-
-    if (IsMainFrame()) {
-      return GetPage()->MainFrame() != this;
-    }
-
-    DCHECK(Owner());
-    return Owner()->ContentFrame() != this;
-  }
-
-  bool LocalFrame::IsUsingDataSavingPreview() const {
-    if (!Client())
-      return false;
-
-    WebURLRequest::PreviewsState previews_state =
-        Client()->GetPreviewsStateForFrame();
-    // Check for any data saving type of preview.
-    return previews_state &
-           (WebURLRequest::kServerLoFiOn | WebURLRequest::kClientLoFiOn |
-            WebURLRequest::kNoScriptOn);
-  }
-
-  ComputedAccessibleNode* LocalFrame::GetOrCreateComputedAccessibleNode(
-      AXID ax_id,
-      WebComputedAXTree* tree) {
-    if (computed_node_mapping_.find(ax_id) == computed_node_mapping_.end()) {
-      ComputedAccessibleNode* node =
-          ComputedAccessibleNode::Create(ax_id, tree, this);
-      computed_node_mapping_.insert(ax_id, node);
-    }
-    return computed_node_mapping_.at(ax_id);
-  }
-
-  void LocalFrame::PauseSubresourceLoading(
-      blink::mojom::blink::PauseSubresourceLoadingHandleRequest request) {
-    auto handle = GetFrameScheduler()->GetPauseSubresourceLoadingHandle();
-    if (!handle)
-      return;
-    pause_handle_bindings_.AddBinding(std::move(handle), std::move(request));
-  }
-
-  void LocalFrame::ResumeSubresourceLoading() {
-    pause_handle_bindings_.CloseAllBindings();
-  }
-
-  void LocalFrame::AnimateSnapFling(base::TimeTicks monotonic_time) {
-    GetEventHandler().AnimateSnapFling(monotonic_time);
-  }
-
-  void LocalFrame::BindPreviewsResourceLoadingHintsRequest(
-      blink::mojom::blink::PreviewsResourceLoadingHintsReceiverRequest
-          request) {
-    DCHECK(!previews_resource_loading_hints_receiver_);
-    previews_resource_loading_hints_receiver_ =
-        std::make_unique<PreviewsResourceLoadingHintsReceiverImpl>(
-            std::move(request), GetDocument());
-  }
-
-  SmoothScrollSequencer& LocalFrame::GetSmoothScrollSequencer() {
-    if (!IsLocalRoot())
-      return LocalFrameRoot().GetSmoothScrollSequencer();
-    if (!smooth_scroll_sequencer_)
-      smooth_scroll_sequencer_ = new SmoothScrollSequencer();
-    return *smooth_scroll_sequencer_;
-  }
-
-  ukm::UkmRecorder* LocalFrame::GetUkmRecorder() {
-    Document* document = GetDocument();
-    if (!document)
-      return nullptr;
-    return document->UkmRecorder();
-  }
-
-  int64_t LocalFrame::GetUkmSourceId() {
-    Document* document = GetDocument();
-    if (!document)
-      return ukm::kInvalidSourceId;
-    return document->UkmSourceID();
-  }
-
-  const mojom::blink::ReportingServiceProxyPtr&
-  LocalFrame::GetReportingService() const {
-    if (!reporting_service_) {
-      Platform::Current()->GetConnector()->BindInterface(
-          Platform::Current()->GetBrowserServiceName(), &reporting_service_);
-    }
-    return reporting_service_;
-  }
-
-  void LocalFrame::ReportFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature feature) const {
-    const String& feature_name = GetNameForFeature(feature);
-    FeaturePolicyViolationReportBody* body =
-        new FeaturePolicyViolationReportBody(feature_name,
-                                             "Feature policy violation",
-                                             SourceLocation::Capture());
-    Report* report =
-        new Report("feature-policy", GetDocument()->Url().GetString(), body);
-    ReportingContext::From(GetDocument())->QueueReport(report);
-
-    bool is_null;
-    int line_number = body->lineNumber(is_null);
-    line_number = is_null ? 0 : line_number;
-    int column_number = body->columnNumber(is_null);
-    column_number = is_null ? 0 : column_number;
-
-    // Send the feature policy violation report to the Reporting API.
-    GetReportingService()->QueueFeaturePolicyViolationReport(
-        GetDocument()->Url(), feature_name, "Feature policy violation",
-        body->sourceFile(), line_number, column_number);
-  }
+  // Send the feature policy violation report to the Reporting API.
+  GetReportingService()->QueueFeaturePolicyViolationReport(
+      GetDocument()->Url(), feature_name, "Feature policy violation",
+      body->sourceFile(), line_number, column_number);
+}
 
 }  // namespace blink

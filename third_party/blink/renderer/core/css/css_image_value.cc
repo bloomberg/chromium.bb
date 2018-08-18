@@ -74,10 +74,8 @@ StyleImage* CSSImageValue::CacheImage(
     }
 
     if (document.GetFrame() &&
-        placeholder_image_request_type == FetchParameters::kAllowPlaceholder &&
-        document.GetFrame()->IsClientLoFiAllowed(params.GetResourceRequest())) {
-      params.SetClientLoFiPlaceholder();
-    }
+        placeholder_image_request_type == FetchParameters::kAllowPlaceholder)
+      document.GetFrame()->MaybeAllowImagePlaceholder(params);
 
     cached_image_ = StyleFetchedImage::Create(document, params);
   }
