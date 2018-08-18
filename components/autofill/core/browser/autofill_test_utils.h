@@ -63,22 +63,28 @@ void CreateTestSelectField(const std::vector<const char*>& values,
 // Populates |form| with data corresponding to a simple address form.
 // Note that this actually appends fields to the form data, which can be useful
 // for building up more complex test forms. Another version of the function is
-// provided in case the caller wants the vector of expected field |types|.
-void CreateTestAddressFormData(FormData* form);
+// provided in case the caller wants the vector of expected field |types|. Use
+// |unique_id| optionally ensure that each form has its own signature.
+void CreateTestAddressFormData(FormData* form, const char* unique_id = nullptr);
 void CreateTestAddressFormData(FormData* form,
-                               std::vector<ServerFieldTypeSet>* types);
+                               std::vector<ServerFieldTypeSet>* types,
+                               const char* unique_id = nullptr);
 
 // Populates |form| with data corresponding to a simple personal information
-// form, including name and email, but no address-related fields.
-void CreateTestPersonalInformationFormData(FormData* form);
+// form, including name and email, but no address-related fields. Use
+// |unique_id| to optionally ensure that each form has its own signature.
+void CreateTestPersonalInformationFormData(FormData* form,
+                                           const char* unique_id = nullptr);
 
 // Populates |form| with data corresponding to a simple credit card form.
 // Note that this actually appends fields to the form data, which can be
-// useful for building up more complex test forms.
+// useful for building up more complex test forms. Use |unique_id| to optionally
+// ensure that each form has its own signature.
 void CreateTestCreditCardFormData(FormData* form,
                                   bool is_https,
                                   bool use_month_type,
-                                  bool split_names = false);
+                                  bool split_names = false,
+                                  const char* unique_id = nullptr);
 
 // Returns a full profile with valid info according to rules for Canada.
 AutofillProfile GetFullValidProfileForCanada();

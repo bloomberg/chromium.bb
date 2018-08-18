@@ -345,6 +345,7 @@ FormStructure::FormStructure(const FormData& form)
       is_formless_checkout_(form.is_formless_checkout),
       all_fields_are_passwords_(!form.fields.empty()),
       is_signin_upload_(false),
+      form_parsed_timestamp_(base::TimeTicks::Now()),
       passwords_were_revealed_(false),
       developer_engagement_metrics_(0) {
   // Copy the form fields.
@@ -762,7 +763,7 @@ void FormStructure::RetrieveFromCache(
   UpdateAutofillCount();
 
   // Update form parsed timestamp
-  set_form_parsed_timestamp(cached_form.form_parsed_timestamp());
+  form_parsed_timestamp_ = cached_form.form_parsed_timestamp_;
 
   // The form signature should match between query and upload requests to the
   // server. On many websites, form elements are dynamically added, removed, or
