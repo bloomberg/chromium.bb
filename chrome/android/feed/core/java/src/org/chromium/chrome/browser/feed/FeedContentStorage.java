@@ -99,8 +99,7 @@ public class FeedContentStorage implements ContentStorage {
     @Override
     public void commit(ContentMutation mutation, Consumer<CommitResult> consumer) {
         assert mFeedContentBridge != null;
-        CommitCallback callback = new CommitCallback(consumer);
-        mFeedContentBridge.commitContentMutation(mutation, callback);
+        mFeedContentBridge.commitContentMutation(mutation, new CommitCallback(consumer));
     }
 
     @Override
