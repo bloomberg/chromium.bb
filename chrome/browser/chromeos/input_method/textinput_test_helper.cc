@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -21,29 +22,26 @@
 #include "ui/base/ime/input_method_factory.h"
 
 namespace chromeos {
-namespace {
-ui::MockInputMethod* GetInputMethod() {
-  ui::MockInputMethod* input_method = static_cast<ui::MockInputMethod*>(
-      ash::Shell::GetPrimaryRootWindow()->GetHost()->GetInputMethod());
-  CHECK(input_method);
-  return input_method;
-}
-}  // namespace
 
 void TextInputTestBase::SetUpInProcessBrowserTestFixture() {
   ui::SetUpInputMethodFactoryForTesting();
 }
 
-TextInputTestHelper::TextInputTestHelper()
-  : waiting_type_(NO_WAIT),
-    selection_range_(gfx::Range::InvalidRange()),
-    focus_state_(false),
-    latest_text_input_type_(ui::TEXT_INPUT_TYPE_NONE) {
-  GetInputMethod()->AddObserver(this);
+ui::InputMethod* TextInputTestBase::GetInputMethod() const {
+  return browser()->window()->GetNativeWindow()->GetHost()->GetInputMethod();
+}
+
+TextInputTestHelper::TextInputTestHelper(ui::InputMethod* input_method)
+    : waiting_type_(NO_WAIT),
+      selection_range_(gfx::Range::InvalidRange()),
+      focus_state_(false),
+      latest_text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+      input_method_(input_method) {
+  input_method_->AddObserver(this);
 }
 
 TextInputTestHelper::~TextInputTestHelper() {
-  GetInputMethod()->RemoveObserver(this);
+  input_method_->RemoveObserver(this);
 }
 
 base::string16 TextInputTestHelper::GetSurroundingText() const {
@@ -71,7 +69,7 @@ ui::TextInputType TextInputTestHelper::GetTextInputType() const {
 }
 
 ui::TextInputClient* TextInputTestHelper::GetTextInputClient() const {
-  return GetInputMethod()->GetTextInputClient();
+  return input_method_->GetTextInputClient();
 }
 
 void TextInputTestHelper::OnShowVirtualKeyboardIfEnabled() {}

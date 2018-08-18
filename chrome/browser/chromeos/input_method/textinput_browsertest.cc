@@ -29,7 +29,7 @@ typedef TextInputTestBase TextInput_TextInputStateChangedTest;
 
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
                        SwitchToPasswordFieldTest) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(FILE_PATH_LITERAL("textinput")),
       base::FilePath(FILE_PATH_LITERAL("ime_enable_disable_test.html")));
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest, FocusOnLoadTest) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
 
   GURL url = ui_test_utils::GetTestUrl(
@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest, FocusOnLoadTest) {
 
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
                        FocusOnContentJSTest) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
 
   GURL url = ui_test_utils::GetTestUrl(
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
 
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
                        MouseClickChange) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
 
   GURL url = ui_test_utils::GetTestUrl(
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
 
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
                        FocusChangeOnFocus) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
 
   GURL url = ui_test_utils::GetTestUrl(
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
 
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
                        NodeEliminationCase) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
 
   GURL url = ui_test_utils::GetTestUrl(
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
 
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
                        TextInputTypeChangedByJavaScript) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
 
   GURL url = ui_test_utils::GetTestUrl(
@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
 
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
                        ChangingToContentEditableCase) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
 
   GURL url = ui_test_utils::GetTestUrl(
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
 
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
                        DISABLED_SwitchingAllTextInputTest) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
 
   GURL url = ui_test_utils::GetTestUrl(
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
 // Flaky on chromeos.  http://crbug.com/391582
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
                        DISABLED_OpenNewTabOnloadTest) {
-  TextInputTestHelper helper;
+  TextInputTestHelper helper(GetInputMethod());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, helper.GetTextInputType());
 
   GURL base_url = ui_test_utils::GetTestUrl(
