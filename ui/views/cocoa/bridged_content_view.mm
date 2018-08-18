@@ -745,7 +745,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   [super setFrameSize:newSize];
   if (!host_)
     return;
-  host_->SetSize(gfx::Size(newSize.width, newSize.height));
+  host_->SetViewSize(gfx::Size(newSize.width, newSize.height));
 }
 
 - (BOOL)isOpaque {

@@ -19,15 +19,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHost {
  public:
   virtual ~BridgedNativeWidgetHost() = default;
 
-  // Update the ui::Compositor and ui::Layer's size.
-  virtual void SetCompositorSize(const gfx::Size& size_in_dip,
-                                 float scale_factor) = 0;
-
   // Update the ui::Compositor and ui::Layer's visibility.
   virtual void SetCompositorVisibility(bool visible) = 0;
 
-  // Resize the underlying views::View to |new_size|.
-  virtual void SetSize(const gfx::Size& new_size) = 0;
+  // Resize the underlying views::View to |new_size|. Note that this will not
+  // necessarily match the content bounds from OnWindowGeometryChanged.
+  virtual void SetViewSize(const gfx::Size& new_size) = 0;
 
   // Indicate if full keyboard accessibility is needed and updates focus if
   // needed.
@@ -56,6 +53,15 @@ class VIEWS_EXPORT BridgedNativeWidgetHost {
                          bool* found_word,
                          gfx::DecoratedText* decorated_word,
                          gfx::Point* baseline_point) = 0;
+
+  // Called whenever the NSWindow's size or position changes.
+  virtual void OnWindowGeometryChanged(
+      const gfx::Rect& window_bounds_in_screen_dips,
+      const gfx::Rect& content_bounds_in_screen_dips) = 0;
+
+  // Called when the current display or the properties of the current display
+  // change.
+  virtual void OnWindowDisplayChanged(const display::Display& display) = 0;
 
   // Called before the NSWindow is closed and destroyed.
   virtual void OnWindowWillClose() = 0;
