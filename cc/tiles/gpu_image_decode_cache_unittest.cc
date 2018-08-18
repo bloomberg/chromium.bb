@@ -922,7 +922,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawAtRasterDecode) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  cache->SetWorkingSetLimitForTesting(0);
+  cache->SetWorkingSetLimitsForTesting(0 /* max_bytes */, 0 /* max_items */);
 
   PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
@@ -1139,7 +1139,7 @@ TEST_P(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  cache->SetWorkingSetLimitForTesting(0);
+  cache->SetWorkingSetLimitsForTesting(0 /* max_bytes */, 0 /* max_items */);
 
   PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
@@ -1165,7 +1165,8 @@ TEST_P(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
 
   // Increase memory limit and attempt to use the same image. It should be in
   // available for ref.
-  cache->SetWorkingSetLimitForTesting(96 * 1024 * 1024);
+  cache->SetWorkingSetLimitsForTesting(96 * 1024 * 1024 /* max_bytes */,
+                                       256 /* max_items */);
   ImageDecodeCache::TaskResult another_result =
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(another_result.need_unref);
@@ -1179,7 +1180,7 @@ TEST_P(GpuImageDecodeCacheTest,
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  cache->SetWorkingSetLimitForTesting(0);
+  cache->SetWorkingSetLimitsForTesting(0 /* max_bytes */, 0 /* max_items */);
 
   PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
@@ -1217,7 +1218,7 @@ TEST_P(GpuImageDecodeCacheTest,
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  cache->SetWorkingSetLimitForTesting(0);
+  cache->SetWorkingSetLimitsForTesting(0 /* max_bytes */, 0 /* max_items */);
   PaintImage image = CreateDiscardablePaintImage(gfx::Size(1, 24000));
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
@@ -2044,9 +2045,6 @@ TEST_P(GpuImageDecodeCacheTest, EvictDueToCachedItemsLimit) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  // Allow a single 10x10 images.
-  cache->SetWorkingSetLimitForTesting(
-      SkColorTypeBytesPerPixel(GetParam().first) * 10 * 10 * 10);
   // Set the THROTTLED state, which limits our cache to 100 entries.
   cache->OnMemoryStateChange(base::MemoryState::THROTTLED);
 
@@ -2088,8 +2086,9 @@ TEST_P(GpuImageDecodeCacheTest, AlreadyBudgetedImagesAreNotAtRaster) {
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
   // Allow a single 10x10 image and lock it.
-  cache->SetWorkingSetLimitForTesting(
-      SkColorTypeBytesPerPixel(GetParam().first) * 10 * 10 * 10);
+  cache->SetWorkingSetLimitsForTesting(
+      SkColorTypeBytesPerPixel(GetParam().first) * 10 * 10 * 10 /* max_bytes */,
+      1 /* max_items */);
   PaintImage image = CreateDiscardablePaintImage(gfx::Size(10, 10));
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
@@ -2118,14 +2117,15 @@ TEST_P(GpuImageDecodeCacheTest, AlreadyBudgetedImagesAreNotAtRaster) {
   cache->UnrefImage(draw_image);
 }
 
-TEST_P(GpuImageDecodeCacheTest, ImagesUsedDuringDrawAreBudgeted) {
+TEST_P(GpuImageDecodeCacheTest, ImageBudgetingByCount) {
   auto cache = CreateCache();
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  // Allow a single 10x10 image.
-  cache->SetWorkingSetLimitForTesting(
-      SkColorTypeBytesPerPixel(GetParam().first) * 10 * 10 * 10);
+  // Allow a single image by count. Use a high byte limit as we want to test the
+  // count restriction.
+  cache->SetWorkingSetLimitsForTesting(96 * 1024 * 1024 /* max_bytes */,
+                                       1 /* max_items */);
   PaintImage image = CreateDiscardablePaintImage(gfx::Size(10, 10));
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
@@ -2139,12 +2139,62 @@ TEST_P(GpuImageDecodeCacheTest, ImagesUsedDuringDrawAreBudgeted) {
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.is_budgeted());
 
-  // Try another image, it shouldn't be budgeted.
+  // Try another image, it shouldn't be budgeted and should be at-raster.
   DrawImage second_draw_image(
       CreateDiscardablePaintImage(gfx::Size(100, 100)),
       SkIRect::MakeWH(image.width(), image.height()), quality,
       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  // Should be at raster.
+  ImageDecodeCache::TaskResult result = cache->GetTaskForImageAndRef(
+      second_draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_FALSE(result.need_unref);
+  EXPECT_FALSE(result.task);
+  // Image retrieved from at-raster decode should not be budgeted.
+  DecodedDrawImage second_decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(second_draw_image));
+  EXPECT_TRUE(second_decoded_draw_image.image());
+  EXPECT_FALSE(second_decoded_draw_image.is_budgeted());
+
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->DrawWithImageFinished(second_draw_image, second_decoded_draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheTest, ImageBudgetingBySize) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  // Allow a single 10x10 image by size. Don't restrict the items limit as we
+  // want to test the size limit.
+  cache->SetWorkingSetLimitsForTesting(
+      SkColorTypeBytesPerPixel(GetParam().first) * 10 * 10 * 10 /* max_bytes */,
+      256 /* max_items */);
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(10, 10));
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+
+  // The image counts against our budget.
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
+
+  // Try another image, it shouldn't be budgeted and should be at-raster.
+  DrawImage second_draw_image(
+      CreateDiscardablePaintImage(gfx::Size(100, 100)),
+      SkIRect::MakeWH(image.width(), image.height()), quality,
+      CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  // Should be at raster.
+  ImageDecodeCache::TaskResult result = cache->GetTaskForImageAndRef(
+      second_draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_FALSE(result.need_unref);
+  EXPECT_FALSE(result.task);
+  // Image retrieved from at-raster decode should not be budgeted.
   DecodedDrawImage second_decoded_draw_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(second_draw_image));
   EXPECT_TRUE(second_decoded_draw_image.image());

@@ -44,6 +44,12 @@ static const int kNormalMaxItemsInCacheForGpu = 2000;
 static const int kThrottledMaxItemsInCacheForGpu = 100;
 static const int kSuspendedMaxItemsInCacheForGpu = 0;
 
+// The maximum number of images that we can lock simultaneously in our working
+// set. This is separate from the memory limit, as keeping very large numbers
+// of small images simultaneously locked can lead to performance issues and
+// memory spikes.
+static const int kMaxItemsInWorkingSet = 256;
+
 // lock_count │ used  │ result state
 // ═══════════╪═══════╪══════════════════
 //  1         │ false │ WASTED_ONCE
@@ -674,7 +680,8 @@ GpuImageDecodeCache::GpuImageDecodeCache(viz::RasterContextProvider* context,
       context_(context),
       max_texture_size_(max_texture_size),
       persistent_cache_(PersistentCache::NO_AUTO_EVICT),
-      max_working_set_bytes_(max_working_set_bytes) {
+      max_working_set_bytes_(max_working_set_bytes),
+      max_working_set_items_(kMaxItemsInWorkingSet) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
   if (base::ThreadTaskRunnerHandle::IsSet()) {
@@ -1290,7 +1297,9 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
   // If we have no image refs on an image, we should unbudget it.
   if (!has_any_refs && image_data->is_budgeted) {
     DCHECK_GE(working_set_bytes_, image_data->size);
+    DCHECK_GE(working_set_items_, 1u);
     working_set_bytes_ -= image_data->size;
+    working_set_items_ -= 1;
     image_data->is_budgeted = false;
   }
 
@@ -1329,6 +1338,7 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
   if (has_any_refs && !image_data->is_budgeted &&
       CanFitInWorkingSet(image_data->size)) {
     working_set_bytes_ += image_data->size;
+    working_set_items_ += 1;
     image_data->is_budgeted = true;
   }
 
@@ -1393,9 +1403,15 @@ bool GpuImageDecodeCache::EnsureCapacity(size_t required_size) {
 bool GpuImageDecodeCache::CanFitInWorkingSet(size_t size) const {
   lock_.AssertAcquired();
 
+  if (working_set_items_ >= max_working_set_items_)
+    return false;
+
   base::CheckedNumeric<uint32_t> new_size(working_set_bytes_);
   new_size += size;
-  return new_size.IsValid() && new_size.ValueOrDie() <= max_working_set_bytes_;
+  if (!new_size.IsValid() || new_size.ValueOrDie() > max_working_set_bytes_)
+    return false;
+
+  return true;
 }
 
 bool GpuImageDecodeCache::ExceedsPreferredCount() const {
