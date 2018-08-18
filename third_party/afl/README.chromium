@@ -2,7 +2,7 @@ Name: American Fuzzy Lop
 Short Name: AFL
 URL: http://lcamtuf.coredump.cx/afl/
 Version: 2.52b
-Date: December 13, 2017
+Date: August 17, 2018
 License: Apache 2.0
 License File: src/docs/COPYING
 Security Critical: no
@@ -20,3 +20,5 @@ Local Modifications:
   - src/testcases/others/elf
   - src/llvm_mode/afl-llvm-pass.so.cc
   - src/dictionaries/
+- patches/0001-fix-build-with-std-c11.patch
+  - Fix build with CFLAGS="-std=c11 -D_GNU_SOURCE"

@@ -32,18 +32,18 @@ EXTERN_C_BEGIN
 
 // Declare REAL function pointer.
 #define DECLARE_REAL_PTR(group, name) \
-  typeof(__libnacl_irt_##group.name) REAL(name);
+  __typeof__(__libnacl_irt_##group.name) REAL(name);
 
 // Assign the REAL function pointer.
 #define ASSIGN_REAL_PTR(group, name) REAL(name) = __libnacl_irt_##group.name;
 
 // Switch IRT's pointer to the REAL pointer
 #define USE_REAL(group, name) \
-  __libnacl_irt_##group.name = (typeof(REAL(name)))REAL(name);
+  __libnacl_irt_##group.name = (__typeof__(REAL(name)))REAL(name);
 
 // Switch the IRT's pointer to the WRAP function
 #define USE_WRAP(group, name) \
-  __libnacl_irt_##group.name = (typeof(REAL(name)))WRAP(name);
+  __libnacl_irt_##group.name = (__typeof__(REAL(name)))WRAP(name);
 
 extern void __libnacl_irt_dev_filename_init(void);
 extern void __libnacl_irt_dev_fdio_init(void);

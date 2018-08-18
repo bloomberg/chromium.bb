@@ -15,8 +15,10 @@ declare_args() {
 
 if (!use_system_libdrm) {
   config("libdrm_config") {
-    # Define _GNU_SOURCE for vasprintf use in xf86drm.c
-    defines = [ "_GNU_SOURCE" ]
+    # TODO(thomasanderson): Remove this hack once
+    # https://patchwork.kernel.org/patch/10545295/ lands.
+    defines = [ "typeof(x)=__typeof__(x)" ]
+
     include_dirs = [
       "src",
       "src/include",
