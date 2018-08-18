@@ -19,8 +19,10 @@ bool FolderBackgroundView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void FolderBackgroundView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() != ui::ET_GESTURE_TAP)
-    return;
+  // A fix for the current folder close animation should be implemented to allow
+  // for a folder to close while pages are changing. Until this, we should
+  // always close the folder before movement.
+  // https://crbug.com/875133
   HandleClickOrTap();
   event->SetHandled();
 }
