@@ -90,9 +90,17 @@ std::vector<base::FilePath> GetTestFiles() {
 }
 
 std::string FormStructuresToString(
-    const std::vector<std::unique_ptr<FormStructure>>& forms) {
+    const AutofillManager::FormStructureMap& forms) {
+  std::map<base::TimeTicks, const FormStructure*> sorted_forms;
+  for (const auto& form_kv : forms) {
+    const auto* form = form_kv.second.get();
+    EXPECT_TRUE(
+        sorted_forms.emplace(form->form_parsed_timestamp(), form).second);
+  }
+
   std::string forms_string;
-  for (const auto& form : forms) {
+  for (const auto& kv : sorted_forms) {
+    const auto* form = kv.second;
     for (const auto& field : *form) {
       forms_string += field->Type().ToString();
       forms_string += " | " + base::UTF16ToUTF8(field->name);
@@ -199,9 +207,7 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
   ASSERT_NE(nullptr, autofill_driver);
   AutofillManager* autofill_manager = autofill_driver->autofill_manager();
   ASSERT_NE(nullptr, autofill_manager);
-  const std::vector<std::unique_ptr<FormStructure>>& forms =
-      autofill_manager->form_structures();
-  *output = FormStructuresToString(forms);
+  *output = FormStructuresToString(autofill_manager->form_structures());
 }
 
 std::unique_ptr<HttpResponse> FormStructureBrowserTest::HandleRequest(

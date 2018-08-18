@@ -148,8 +148,8 @@ void TestAutofillManager::AddSeenForm(
 
 void TestAutofillManager::AddSeenFormStructure(
     std::unique_ptr<FormStructure> form_structure) {
-  form_structure->set_form_parsed_timestamp(base::TimeTicks::Now());
-  mutable_form_structures()->push_back(std::move(form_structure));
+  const auto signature = form_structure->form_signature();
+  (*mutable_form_structures())[signature] = std::move(form_structure);
 }
 
 void TestAutofillManager::ClearFormStructures() {

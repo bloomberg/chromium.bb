@@ -236,9 +236,6 @@ class FormStructure {
   }
   UploadRequired upload_required() const { return upload_required_; }
 
-  void set_form_parsed_timestamp(const base::TimeTicks form_parsed_timestamp) {
-    form_parsed_timestamp_ = form_parsed_timestamp;
-  }
   base::TimeTicks form_parsed_timestamp() const {
     return form_parsed_timestamp_;
   }
@@ -510,7 +507,7 @@ class FormStructure {
   // the form name, and the form field names in a 64-bit hash.
   FormSignature form_signature_;
 
-  // When a form is parsed on this page.
+  // The timestamp (not wallclock time) when this form was initially parsed.
   base::TimeTicks form_parsed_timestamp_;
 
   // If phone number rationalization has been performed for a given section.

@@ -1925,8 +1925,10 @@ TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
       std::make_unique<TestFormStructure>(form);
   TestFormStructure* form_structure_ptr = form_structure.get();
   form_structure->DetermineHeuristicTypes();
-  autofill_manager_->mutable_form_structures()->push_back(
-      std::move(form_structure));
+  ASSERT_TRUE(autofill_manager_->mutable_form_structures()
+                  ->emplace(form_structure_ptr->form_signature(),
+                            std::move(form_structure))
+                  .second);
 
   AutofillQueryResponseContents response;
   // Server response will match with autocomplete.
@@ -7504,7 +7506,7 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
       AutofillMetrics::FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL, 0);
 
   // Trigger a refill, the refill metric should be updated.
-  autofill_manager_->TriggerRefill(form, &form_structure);
+  autofill_manager_->TriggerRefill(form);
   histogram_tester.ExpectBucketCount(
       "Autofill.FormEvents.Address",
       AutofillMetrics::FORM_EVENT_DID_SEE_DYNAMIC_FORM, 2);

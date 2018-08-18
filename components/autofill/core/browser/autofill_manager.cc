@@ -924,25 +924,25 @@ void AutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
     return;
 
   if (ShouldTriggerRefill(*form_structure))
-    TriggerRefill(form, form_structure);
+    TriggerRefill(form);
 }
 
 void AutofillManager::OnLoadedServerPredictions(
     std::string response,
     const std::vector<std::string>& form_signatures) {
-  // We obtain the current valid FormStructures represented by
-  // |form_signatures|. We invert both lists because most recent forms are at
-  // the end of the list (and reverse the resulting pointer vector).
+  // Get the current valid FormStructures represented by |form_signatures|.
   std::vector<FormStructure*> queried_forms;
-  for (const std::string& signature : base::Reversed(form_signatures)) {
-    for (auto& cur_form : base::Reversed(form_structures())) {
-      if (cur_form->FormSignatureAsStr() == signature) {
-        queried_forms.push_back(cur_form.get());
-        break;
-      }
+  queried_forms.reserve(form_signatures.size());
+  for (const std::string& signature : form_signatures) {
+    // The |signature| is the direct string representation of the FormSignature.
+    // Convert it to a uint64_t to do the lookup.
+    FormSignature form_signature;
+    FormStructure* form_structure;
+    if (base::StringToUint64(signature, &form_signature) &&
+        FindCachedForm(form_signature, &form_structure)) {
+      queried_forms.push_back(form_structure);
     }
   }
-  std::reverse(queried_forms.begin(), queried_forms.end());
 
   // If there are no current forms corresponding to the queried signatures, drop
   // the query response.
@@ -1359,17 +1359,15 @@ void AutofillManager::FillOrPreviewDataModelForm(
 
 std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
     const FormData& form) {
-  std::unique_ptr<FormStructure> submitted_form(
-      std::make_unique<FormStructure>(form));
-  if (!ShouldUploadForm(*submitted_form))
-    return std::unique_ptr<FormStructure>();
-
   // Ignore forms not present in our cache.  These are typically forms with
   // wonky JavaScript that also makes them not auto-fillable.
   FormStructure* cached_submitted_form;
-  if (!FindCachedForm(form, &cached_submitted_form))
-    return std::unique_ptr<FormStructure>();
+  if (!FindCachedForm(form, &cached_submitted_form) ||
+      !ShouldUploadForm(*cached_submitted_form)) {
+    return nullptr;
+  }
 
+  auto submitted_form = std::make_unique<FormStructure>(form);
   submitted_form->RetrieveFromCache(*cached_submitted_form,
                                     /*apply_is_autofilled=*/false,
                                     /*only_server_and_autofill_state=*/false);
@@ -1511,13 +1509,13 @@ void AutofillManager::OnFormsParsed(
       if (filling_context->on_refill_timer.IsRunning())
         filling_context->on_refill_timer.AbandonAndStop();
 
-      // Can TriggerRefill get FormData from FormStructure?
+      // Start a new timer to trigger refill.
       filling_context->on_refill_timer.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kWaitTimeForDynamicFormsMs),
           base::BindRepeating(&AutofillManager::TriggerRefill,
                               weak_ptr_factory_.GetWeakPtr(),
-                              form_structure->ToFormData(), form_structure));
+                              form_structure->ToFormData()));
     }
   }
 
@@ -1539,8 +1537,7 @@ void AutofillManager::OnFormsParsed(
   // prompt for credit card assisted filling. Upon accepting the infobar, the
   // form will automatically be filled with the user's information through this
   // class' FillCreditCardForm().
-  if (autofill_assistant_.CanShowCreditCardAssist(
-          AutofillHandler::form_structures())) {
+  if (autofill_assistant_.CanShowCreditCardAssist()) {
     const std::vector<CreditCard*> cards =
         personal_data_->GetCreditCardsToSuggest(
             client_->AreServerCardsSupported());
@@ -1854,8 +1851,13 @@ bool AutofillManager::ShouldTriggerRefill(const FormStructure& form_structure) {
          delta.InMilliseconds() < kLimitBeforeRefillMs;
 }
 
-void AutofillManager::TriggerRefill(const FormData& form,
-                                    FormStructure* form_structure) {
+void AutofillManager::TriggerRefill(const FormData& form) {
+  FormStructure* form_structure = nullptr;
+  if (!FindCachedForm(form, &form_structure))
+    return;
+
+  DCHECK(form_structure);
+
   address_form_event_logger_->OnDidRefill();
 
   auto itr =

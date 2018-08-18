@@ -1418,8 +1418,8 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
 
   // Create, fill and submit two address forms with different zip codes.
   FormData address_form1, address_form2;
-  test::CreateTestAddressFormData(&address_form1);
-  test::CreateTestAddressFormData(&address_form2);
+  test::CreateTestAddressFormData(&address_form1, "1");
+  test::CreateTestAddressFormData(&address_form2, "2");
 
   std::vector<FormData> address_forms;
   address_forms.push_back(address_form1);

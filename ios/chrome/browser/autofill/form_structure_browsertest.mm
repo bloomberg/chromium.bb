@@ -107,7 +107,7 @@ class FormStructureBrowserTest
 
   // Serializes the given |forms| into a string.
   std::string FormStructuresToString(
-      const std::vector<std::unique_ptr<FormStructure>>& forms);
+      const AutofillManager::FormStructureMap& forms);
 
   FormSuggestionController* suggestionController_;
   AutofillController* autofillController_;
@@ -167,15 +167,21 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
   ASSERT_NE(nullptr, autofill_manager);
-  const std::vector<std::unique_ptr<FormStructure>>& forms =
-      autofill_manager->form_structures();
-  *output = FormStructureBrowserTest::FormStructuresToString(forms);
+  *output = FormStructuresToString(autofill_manager->form_structures());
 }
 
 std::string FormStructureBrowserTest::FormStructuresToString(
-    const std::vector<std::unique_ptr<FormStructure>>& forms) {
+    const AutofillManager::FormStructureMap& forms) {
+  std::map<base::TimeTicks, const FormStructure*> sorted_forms;
+  for (const auto& form_kv : forms) {
+    const auto* form = form_kv.second.get();
+    EXPECT_TRUE(
+        sorted_forms.emplace(form->form_parsed_timestamp(), form).second);
+  }
+
   std::string forms_string;
-  for (const std::unique_ptr<FormStructure>& form : forms) {
+  for (const auto& form_kv : sorted_forms) {
+    const auto* form = form_kv.second;
     for (const auto& field : *form) {
       std::string name = base::UTF16ToUTF8(field->name);
       if (base::StartsWith(name, "gChrome~field~",

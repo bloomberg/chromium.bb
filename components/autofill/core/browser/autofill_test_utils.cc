@@ -103,14 +103,16 @@ void CreateTestSelectField(const std::vector<const char*>& values,
   CreateTestSelectField("", "", "", values, values, values.size(), field);
 }
 
-void CreateTestAddressFormData(FormData* form) {
+void CreateTestAddressFormData(FormData* form, const char* unique_id) {
   std::vector<ServerFieldTypeSet> types;
-  CreateTestAddressFormData(form, &types);
+  CreateTestAddressFormData(form, &types, unique_id);
 }
 
 void CreateTestAddressFormData(FormData* form,
-                               std::vector<ServerFieldTypeSet>* types) {
-  form->name = ASCIIToUTF16("MyForm");
+                               std::vector<ServerFieldTypeSet>* types,
+                               const char* unique_id) {
+  form->name =
+      ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
   form->origin = GURL("http://myform.com/form.html");
   form->action = GURL("http://myform.com/submit.html");
   form->main_frame_origin =
@@ -176,8 +178,10 @@ void CreateTestAddressFormData(FormData* form,
   types->push_back(type_set);
 }
 
-void CreateTestPersonalInformationFormData(FormData* form) {
-  form->name = ASCIIToUTF16("MyForm");
+void CreateTestPersonalInformationFormData(FormData* form,
+                                           const char* unique_id) {
+  form->name =
+      ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
   form->origin = GURL("http://myform.com/form.html");
   form->action = GURL("http://myform.com/submit.html");
   form->main_frame_origin =
@@ -198,8 +202,10 @@ void CreateTestPersonalInformationFormData(FormData* form) {
 void CreateTestCreditCardFormData(FormData* form,
                                   bool is_https,
                                   bool use_month_type,
-                                  bool split_names) {
-  form->name = ASCIIToUTF16("MyForm");
+                                  bool split_names,
+                                  const char* unique_id) {
+  form->name =
+      ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
   if (is_https) {
     form->origin = GURL("https://myform.com/form.html");
     form->action = GURL("https://myform.com/submit.html");

@@ -17,7 +17,6 @@ namespace autofill {
 
 class AutofillManager;
 class CreditCard;
-class FormStructure;
 
 // This class encompasses the triggering rules and the logic for the autofill
 // assisted filling mechanisms.
@@ -30,9 +29,9 @@ class AutofillAssistant : public payments::FullCardRequest::ResultDelegate {
   void Reset();
 
   // Returns whether a credit card assist can be shown. Will go through the
-  // forms in |form_structures| and extract the credit card form.
-  bool CanShowCreditCardAssist(
-      const std::vector<std::unique_ptr<FormStructure>>& form_structures);
+  // forms in autofill_manager_.form_structures() and extract the credit card
+  // form.
+  bool CanShowCreditCardAssist();
 
   // Will show an assist infobar for the previously extracted form proposing to
   // autofill it. Should only be called if CanShowCreditCardAssist() returned

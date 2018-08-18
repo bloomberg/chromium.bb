@@ -5,14 +5,16 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_HANDLER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_HANDLER_H_
 
+#include <map>
+#include <memory>
 #include <string>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "components/autofill/core/common/submission_source.h"
 
 namespace gfx {
@@ -34,6 +36,9 @@ class AutofillHandler {
     ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
     DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
   };
+
+  using FormStructureMap =
+      std::map<FormSignature, std::unique_ptr<FormStructure>>;
 
   virtual ~AutofillHandler();
 
@@ -114,9 +119,7 @@ class AutofillHandler {
   size_t NumFormsDetected() const { return form_structures_.size(); }
 
   // Returns the present form structures seen by Autofill handler.
-  const std::vector<std::unique_ptr<FormStructure>>& form_structures() {
-    return form_structures_;
-  }
+  const FormStructureMap& form_structures() const { return form_structures_; }
 
  protected:
   AutofillHandler(AutofillDriver* driver);
@@ -159,8 +162,6 @@ class AutofillHandler {
   virtual void OnFormsParsed(const std::vector<FormStructure*>& form_structures,
                              const base::TimeTicks timestamp) = 0;
 
-  AutofillDriver* driver() { return driver_; }
-
   // Fills |form_structure| and |autofill_field| with the cached elements
   // corresponding to |form| and |field|.  This might have the side-effect of
   // updating the cache.  Returns false if the |form| is not autofillable, or if
@@ -170,22 +171,18 @@ class AutofillHandler {
                              FormStructure** form_structure,
                              AutofillField** autofill_field) WARN_UNUSED_RESULT;
 
-  // Re-parses |live_form| and adds the result to |form_structures_|.
-  // |cached_form| should be a pointer to the existing version of the form, or
-  // NULL if no cached version exists.  The updated form is then written into
-  // |updated_form|.  Returns false if the cache could not be updated.
-  bool UpdateCachedForm(const FormData& live_form,
-                        const FormStructure* cached_form,
-                        FormStructure** updated_form) WARN_UNUSED_RESULT;
-
-  // Fills |form_structure| cached element corresponding to |form|.
-  // Returns false if the cached element was not found.
-  bool FindCachedForm(const FormData& form,
+  // Fills |form_structure| with a pointer to the cached form structure
+  // corresponding to |form_signature|. Returns false if no cached form
+  // structure is found with a matching signature.
+  bool FindCachedForm(FormSignature form_signature,
                       FormStructure** form_structure) const WARN_UNUSED_RESULT;
 
-  std::vector<std::unique_ptr<FormStructure>>* mutable_form_structures() {
-    return &form_structures_;
-  }
+  // Fills |form_structure| with a pointer to the cached form structure
+  // corresponding to |form|. This will do a direct match of the form's
+  // signature as well as fuzzy match of the forms structure if no directly
+  // matching form signature is found. Returns false if no match is found.
+  bool FindCachedForm(const FormData& form,
+                      FormStructure** form_structure) const WARN_UNUSED_RESULT;
 
   // Parses the |form| with the server data retrieved from the |cached_form|
   // (if any), and writes it to the |parse_form_structure|. Adds the
@@ -195,13 +192,17 @@ class AutofillHandler {
                  const FormStructure* cached_form,
                  FormStructure** parsed_form_structure);
 
- private:
-  // Our copy of the form data.
-  std::vector<std::unique_ptr<FormStructure>> form_structures_;
+  AutofillDriver* driver() { return driver_; }
 
+  FormStructureMap* mutable_form_structures() { return &form_structures_; }
+
+ private:
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
-  AutofillDriver* driver_;
+  AutofillDriver* const driver_;
+
+  // Our copy of the form data.
+  FormStructureMap form_structures_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillHandler);
 };
