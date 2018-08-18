@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/bluetooth_test.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/ble/fido_ble_device.h"
 #include "device/fido/mock_fido_discovery_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,6 +37,26 @@ ACTION_P(ReturnFromAsyncCall, closure) {
 
 MATCHER_P(IdMatches, id, "") {
   return arg->GetId() == std::string("ble:") + id;
+}
+
+TEST_F(BluetoothTest, FidoBleDiscoveryNotifyObserverWhenAdapterNotPresent) {
+  FidoBleDiscovery discovery;
+  MockFidoDiscoveryObserver observer;
+  discovery.set_observer(&observer);
+  auto mock_adapter =
+      base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
+  EXPECT_CALL(*mock_adapter, IsPresent()).WillOnce(::testing::Return(false));
+  BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+
+  {
+    base::RunLoop run_loop;
+    auto quit = run_loop.QuitClosure();
+    EXPECT_CALL(observer, DiscoveryStarted(&discovery, false))
+        .WillOnce(ReturnFromAsyncCall(quit));
+
+    discovery.Start();
+    run_loop.Run();
+  }
 }
 
 TEST_F(BluetoothTest, FidoBleDiscoveryNoAdapter) {

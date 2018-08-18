@@ -54,6 +54,7 @@ void FidoBleDiscoveryBase::OnGetAdapter(
     scoped_refptr<BluetoothAdapter> adapter) {
   if (!adapter->IsPresent()) {
     DVLOG(2) << "bluetooth adapter is not available in current system.";
+    NotifyDiscoveryStarted(false);
     return;
   }
 
