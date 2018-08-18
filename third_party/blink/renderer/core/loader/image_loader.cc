@@ -443,11 +443,14 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
     if (update_behavior != kUpdateForcedReload &&
         lazy_image_load_state_ == LazyImageLoadState::kNone) {
       const auto* frame = document.GetFrame();
-      frame->MaybeAllowImagePlaceholder(params);
-      auto* html_image = ToHTMLImageElementOrNull(GetElement());
-      if (html_image && html_image->ElementCreatedByParser() &&
-          frame->MaybeAllowLazyLoadingImage(params)) {
-        lazy_image_load_state_ = LazyImageLoadState::kDeferred;
+      if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
+        params.SetClientLoFiPlaceholder();
+      } else if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
+        if (html_image->ElementCreatedByParser() &&
+            frame->IsLazyLoadingImageAllowed()) {
+          params.SetAllowImagePlaceholder();
+          lazy_image_load_state_ = LazyImageLoadState::kDeferred;
+        }
       }
     }
 
