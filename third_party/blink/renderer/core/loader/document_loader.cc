@@ -218,11 +218,8 @@ Resource* DocumentLoader::StartPreload(Resource::Type type,
   switch (type) {
     case Resource::kImage:
       if (frame_) {
-        if (frame_->IsClientLoFiAllowed(params.GetResourceRequest())) {
-          params.SetClientLoFiPlaceholder();
-        } else if (frame_->IsLazyLoadingImageAllowed()) {
-          params.SetAllowImagePlaceholder();
-        }
+        frame_->MaybeAllowImagePlaceholder(params);
+        frame_->MaybeAllowLazyLoadingImage(params);
       }
       resource = ImageResource::Fetch(params, Fetcher());
       break;

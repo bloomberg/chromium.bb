@@ -12,16 +12,6 @@
 
 namespace blink {
 
-namespace {
-
-void MaybeAllowImagePlaceholder(DummyPageHolder* page_holder,
-                                FetchParameters& params) {
-  if (page_holder->GetFrame().IsClientLoFiAllowed(params.GetResourceRequest()))
-    params.SetClientLoFiPlaceholder();
-}
-
-}  // namespace
-
 class TestLocalFrameClient : public EmptyLocalFrameClient {
  public:
   explicit TestLocalFrameClient(
@@ -42,10 +32,10 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesSpecifiedRequestValue) {
   request1.SetURL(KURL("http://insecure.com"));
   request1.SetPreviewsState(WebURLRequest::kClientLoFiOn);
   FetchParameters params1(request1);
-  auto page_holder = DummyPageHolder::Create(
-      IntSize(800, 600), nullptr,
-      new TestLocalFrameClient(WebURLRequest::kPreviewsOff));
-  MaybeAllowImagePlaceholder(page_holder.get(), params1);
+  DummyPageHolder::Create(IntSize(800, 600), nullptr,
+                          new TestLocalFrameClient(WebURLRequest::kPreviewsOff))
+      ->GetFrame()
+      .MaybeAllowImagePlaceholder(params1);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
             params1.GetPlaceholderImageRequestType());
 
@@ -53,10 +43,11 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesSpecifiedRequestValue) {
   request2.SetURL(KURL("https://secure.com"));
   request2.SetPreviewsState(WebURLRequest::kPreviewsOff);
   FetchParameters params2(request2);
-  auto page_holder2 = DummyPageHolder::Create(
+  DummyPageHolder::Create(
       IntSize(800, 600), nullptr,
-      new TestLocalFrameClient(WebURLRequest::kClientLoFiOn));
-  MaybeAllowImagePlaceholder(page_holder2.get(), params2);
+      new TestLocalFrameClient(WebURLRequest::kClientLoFiOn))
+      ->GetFrame()
+      .MaybeAllowImagePlaceholder(params2);
   EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
             params2.GetPlaceholderImageRequestType());
 }
@@ -69,7 +60,7 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesFramePreviewsState) {
   std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create(
       IntSize(800, 600), nullptr,
       new TestLocalFrameClient(WebURLRequest::kClientLoFiOn));
-  MaybeAllowImagePlaceholder(page_holder.get(), params1);
+  page_holder->GetFrame().MaybeAllowImagePlaceholder(params1);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
             params1.GetPlaceholderImageRequestType());
   EXPECT_TRUE(page_holder->GetFrame().IsUsingDataSavingPreview());
@@ -81,7 +72,7 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesFramePreviewsState) {
   std::unique_ptr<DummyPageHolder> page_holder2 = DummyPageHolder::Create(
       IntSize(800, 600), nullptr,
       new TestLocalFrameClient(WebURLRequest::kServerLitePageOn));
-  MaybeAllowImagePlaceholder(page_holder2.get(), params2);
+  page_holder2->GetFrame().MaybeAllowImagePlaceholder(params2);
   EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
             params2.GetPlaceholderImageRequestType());
   EXPECT_FALSE(page_holder2->GetFrame().IsUsingDataSavingPreview());
@@ -93,11 +84,12 @@ TEST(LocalFrameTest,
   request1.SetURL(KURL("https://secure.com"));
   request1.SetPreviewsState(WebURLRequest::kPreviewsUnspecified);
   FetchParameters params1(request1);
-  auto page_holder = DummyPageHolder::Create(
+  DummyPageHolder::Create(
       IntSize(800, 600), nullptr,
       new TestLocalFrameClient(WebURLRequest::kServerLoFiOn |
-                               WebURLRequest::kClientLoFiOn));
-  MaybeAllowImagePlaceholder(page_holder.get(), params1);
+                               WebURLRequest::kClientLoFiOn))
+      ->GetFrame()
+      .MaybeAllowImagePlaceholder(params1);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
             params1.GetPlaceholderImageRequestType());
 
@@ -105,11 +97,12 @@ TEST(LocalFrameTest,
   request2.SetURL(KURL("http://insecure.com"));
   request2.SetPreviewsState(WebURLRequest::kPreviewsUnspecified);
   FetchParameters params2(request2);
-  auto page_holder2 = DummyPageHolder::Create(
+  DummyPageHolder::Create(
       IntSize(800, 600), nullptr,
       new TestLocalFrameClient(WebURLRequest::kServerLoFiOn |
-                               WebURLRequest::kClientLoFiOn));
-  MaybeAllowImagePlaceholder(page_holder2.get(), params2);
+                               WebURLRequest::kClientLoFiOn))
+      ->GetFrame()
+      .MaybeAllowImagePlaceholder(params2);
   EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
             params2.GetPlaceholderImageRequestType());
 }
