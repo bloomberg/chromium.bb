@@ -309,7 +309,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
                         backing:NSBackingStoreBuffered
                           defer:NO]);
     bridge()->SetWindow(window);
-    bridge_host_for_testing()->InitWindow(params);
+    bridge()->Init(params);
 
     // Usually the bridge gets initialized here. It is skipped to run extra
     // checks in tests, and so that a second window isn't created.

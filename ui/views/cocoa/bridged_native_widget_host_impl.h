@@ -49,16 +49,6 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   BridgedNativeWidget* bridge_impl() const { return bridge_impl_.get(); }
   BridgedNativeWidgetPublic* bridge() const;
 
-  void InitWindow(const Widget::InitParams& params);
-
-  // Changes the bounds of the window and the hosted layer if present. The
-  // origin is a location in screen coordinates except for "child" windows,
-  // which are positioned relative to their parent. SetBounds() considers a
-  // "child" window to be one initialized with InitParams specifying all of:
-  // a |parent| NSWindow, the |child| attribute, and a |type| that
-  // views::GetAuraWindowTypeForWidgetType does not consider a "popup" type.
-  void SetBounds(const gfx::Rect& bounds);
-
   // Set the root view (set during initialization and un-set during teardown).
   void SetRootView(views::View* root_view);
 
@@ -92,7 +82,6 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   const display::Display& GetCurrentDisplay() const { return display_; }
 
  private:
-  gfx::Vector2d GetBoundsOffsetForParent() const;
   void DestroyCompositor();
 
   // views::BridgedNativeWidgetHost:
@@ -137,8 +126,6 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void AcceleratedWidgetCALayerParamsUpdated() override;
 
   views::NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |this_|.
-
-  Widget::InitParams::Type widget_type_ = Widget::InitParams::TYPE_WINDOW;
 
   views::View* root_view_ = nullptr;  // Weak. Owned by |native_widget_mac_|.
 
