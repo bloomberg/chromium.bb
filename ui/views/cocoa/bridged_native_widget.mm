@@ -18,6 +18,7 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+#import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -244,17 +245,26 @@ BridgedNativeWidget::~BridgedNativeWidget() {
   SetRootView(nullptr);
 }
 
+void BridgedNativeWidget::CreateWindow(uint64_t window_style_mask) {
+  DCHECK(!window_);
+  window_.reset([[NativeWidgetMacNSWindow alloc]
+      initWithContentRect:ui::kWindowSizeDeterminedLater
+                styleMask:window_style_mask
+                  backing:NSBackingStoreBuffered
+                    defer:NO]);
+  [window_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
+  [window_ setDelegate:window_delegate_];
+}
 
 void BridgedNativeWidget::SetWindow(
     base::scoped_nsobject<NativeWidgetMacNSWindow> window) {
   DCHECK(!window_);
   window_ = std::move(window);
-  DCHECK(![window_ isReleasedWhenClosed]);
+  [window_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
   [window_ setDelegate:window_delegate_];
 }
 
 void BridgedNativeWidget::Init(const Widget::InitParams& params) {
-  DCHECK(window_);
   widget_type_ = params.type;
   is_translucent_window_ =
       params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -938,10 +948,6 @@ bool BridgedNativeWidget::ShouldRunCustomAnimationFor(
          [window_ animationBehavior] != NSWindowAnimationBehaviorNone &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableModalAnimations);
-}
-
-NSWindow* BridgedNativeWidget::ns_window() {
-  return window_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

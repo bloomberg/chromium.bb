@@ -20,13 +20,13 @@ AppWindowNativeWidgetMac::AppWindowNativeWidgetMac(
 AppWindowNativeWidgetMac::~AppWindowNativeWidgetMac() {
 }
 
-base::scoped_nsobject<NativeWidgetMacNSWindow>
-AppWindowNativeWidgetMac::CreateNSWindow(
+NativeWidgetMacNSWindow* AppWindowNativeWidgetMac::CreateNSWindow(
     const views::Widget::InitParams& params) {
   // If the window has a native or colored frame, use the same NSWindow as
   // NativeWidgetMac.
   if (!native_app_window_->IsFrameless()) {
-    auto ns_window = NativeWidgetMac::CreateNSWindow(params);
+    NativeWidgetMacNSWindow* ns_window =
+        NativeWidgetMac::CreateNSWindow(params);
     if (native_app_window_->HasFrameColor()) {
       [TitlebarBackgroundView
           addToNSWindow:ns_window
@@ -43,11 +43,9 @@ AppWindowNativeWidgetMac::CreateNSWindow(
     style_mask |= NSWindowStyleMaskFullSizeContentView;
   else
     NOTREACHED();
-
-  return base::scoped_nsobject<NativeWidgetMacNSWindow>(
-      [[NativeWidgetMacFramelessNSWindow alloc]
-          initWithContentRect:ui::kWindowSizeDeterminedLater
-                    styleMask:style_mask
-                      backing:NSBackingStoreBuffered
-                        defer:NO]);
+  return [[[NativeWidgetMacFramelessNSWindow alloc]
+      initWithContentRect:ui::kWindowSizeDeterminedLater
+                styleMask:style_mask
+                  backing:NSBackingStoreBuffered
+                    defer:NO] autorelease];
 }

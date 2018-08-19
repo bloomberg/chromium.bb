@@ -15,11 +15,6 @@
 class NativeWidgetMacNSWindow;
 #endif
 
-namespace base {
-template <typename NST>
-class scoped_nsobject;
-}  // namespace base
-
 namespace views {
 namespace test {
 class HitTestNativeWidgetMac;
@@ -150,10 +145,9 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   std::string GetName() const override;
 
  protected:
-  // Creates the NSWindow that will be passed to the BridgedNativeWidget. Note
-  // that the result will always have setReleasedWhenClosed set to NO. Called
-  // by InitNativeWidget.
-  virtual base::scoped_nsobject<NativeWidgetMacNSWindow> CreateNSWindow(
+  // Creates the NSWindow that will be passed to the BridgedNativeWidget.
+  // Called by InitNativeWidget. The return value will be autoreleased.
+  virtual NativeWidgetMacNSWindow* CreateNSWindow(
       const Widget::InitParams& params);
 
   // Optional hook for subclasses invoked by WindowDestroying().

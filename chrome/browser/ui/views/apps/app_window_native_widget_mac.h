@@ -22,7 +22,7 @@ class AppWindowNativeWidgetMac : public views::NativeWidgetMac {
 
  protected:
   // NativeWidgetMac:
-  base::scoped_nsobject<NativeWidgetMacNSWindow> CreateNSWindow(
+  NativeWidgetMacNSWindow* CreateNSWindow(
       const views::Widget::InitParams& params) override;
 
  private:
