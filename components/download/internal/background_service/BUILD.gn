@@ -65,12 +65,17 @@ static_library("internal") {
     "noop_store.h",
     "proto_conversions.cc",
     "proto_conversions.h",
+    "scheduler/battery_status_listener.h",
+    "scheduler/battery_status_listener_impl.cc",
+    "scheduler/battery_status_listener_impl.h",
     "scheduler/device_status.cc",
     "scheduler/device_status.h",
     "scheduler/device_status_listener.cc",
     "scheduler/device_status_listener.h",
     "scheduler/network_status_listener.cc",
     "scheduler/network_status_listener.h",
+    "scheduler/network_status_listener_impl.cc",
+    "scheduler/network_status_listener_impl.h",
     "scheduler/scheduler.h",
     "scheduler/scheduler_impl.cc",
     "scheduler/scheduler_impl.h",
@@ -102,6 +107,15 @@ static_library("internal") {
     ]
 
     deps += [ ":jni_headers" ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "scheduler/battery_status_listener_mac.cc",
+      "scheduler/battery_status_listener_mac.h",
+      "scheduler/network_status_listener_mac.cc",
+      "scheduler/network_status_listener_mac.h",
+    ]
   }
 }
 
