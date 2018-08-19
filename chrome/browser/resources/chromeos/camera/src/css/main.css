@@ -101,6 +101,10 @@ body {
   pointer-events: none;
 }
 
+.buttons.circle button[disabled] {
+  opacity: 0.75;
+}
+
 .buttons button:not([disabled]):hover,
 .buttons input:not([disabled]):hover {
   background-color: rgba(255, 255, 255, 0.1);
@@ -111,39 +115,25 @@ body {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-#toolbar-stripe {
-  margin: 8px 0;
-  position: relative;
-}
-
-.buttons.prev-to-middle {
-  /* Start just before the take-picture button. */
-  -webkit-margin-end: calc(50% + 73px/2);
-  justify-content: flex-end;
-  position: absolute;
-  right: 0;
-  padding: 0 10px;
-}
-
-.buttons #browser-print {
+#browser-print {
   background-image: -webkit-image-set(
       url(../images/browser_button_print.png) 1x,
       url(../images/2x/browser_button_print.png) 2x);
 }
 
-.buttons #browser-export {
+#browser-export {
   background-image: -webkit-image-set(
       url(../images/browser_button_export.png) 1x,
       url(../images/2x/browser_button_export.png) 2x);
 }
 
-.buttons #browser-back {
+#browser-back {
   background-image: -webkit-image-set(
       url(../images/gallery_button_back.png) 1x,
       url(../images/2x/gallery_button_back.png) 2x);
 }
 
-.buttons #browser-delete {
+#browser-delete {
   background-image: -webkit-image-set(
       url(../images/gallery_button_delete.png) 1x,
       url(../images/2x/gallery_button_delete.png) 2x);
@@ -200,82 +190,156 @@ body.has-error #error {
   height: 0;
 }
 
-.buttons.circle #gallery-enter {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  overflow: hidden;
-}
-
-.buttons.circle #gallery-enter:active {
-  -webkit-transform: scale(1.05);
-}
-
-.buttons.circle #gallery-enter img,
-.centered-overlay {
+.top-stripe {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  -webkit-transform: translate(-50%, -50%);
+  top: 40px;
+  -webkit-transform: translateY(-50%);
 }
 
-.buttons.circle #gallery-enter.no-content {
-  background-color: rgba(24, 24, 24, 1);
+.bottom-stripe,
+body:not(.tablet-landscape) .actions-group {
+  position: absolute;
+  bottom: 56px;
+  -webkit-transform: translateY(50%);
 }
 
-.buttons #take-picture {
-  background-image: -webkit-image-set(
-      url(../images/camera_button_picture.png) 1x,
-      url(../images/2x/camera_button_picture.png) 2x);
-  height: 37px;
-  width: 73px;
-  border-radius: 20px;
-  background-position: 0 0;
+body.tablet-landscape .bottom-stripe {
+  bottom: 40px;
 }
 
-body.record-mode #take-picture {
-  background-image: -webkit-image-set(
-      url(../images/camera_button_video.png) 1x,
-      url(../images/2x/camera_button_video.png) 2x);
+body.shift-bottom-strip .bottom-stripe,
+body.shift-bottom-strip:not(.tablet-landscape) .actions-group {
+  bottom: 0px;  /* Calculate at runtime. */
 }
 
-.buttons #take-picture:hover {
-  background-position: 0 -37px;
+.left-stripe {
+  position: absolute;
+  left: 40px;
+  -webkit-transform: translateX(-50%);
 }
 
-.buttons #take-picture:active {
-  background-position: 0 -74px;
+.right-stripe,
+body.tablet-landscape .actions-group {
+  position: absolute;
+  right: 56px;
+  -webkit-transform: translateX(50%);
 }
 
-.buttons #take-picture[disabled] {
-  background-position: 0 -111px;
+body:not(.tablet-landscape) .right-stripe {
+  right: 40px;
 }
 
-.buttons #take-picture.flash {
-  -webkit-animation: flashTake 600ms linear infinite;
+body.shift-right-strip .right-stripe,
+body.shift-right-strip.tablet-landscape .actions-group {
+  right: 0px;  /* Calculate at runtime. */
 }
 
-@-webkit-keyframes flashTake {
-  from {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
-  to {
-    opacity: 0.5;
-  }
+.top-stripe.right-stripe {
+  -webkit-transform: translate(50%, -50%);
 }
 
-.buttons #toggle-device {
-  background-image: url(../images/camera_button_toggle_device.svg);
-  width: 48px;
-  height: 48px;
+.bottom-stripe.right-stripe {
+  -webkit-transform: translate(50%, 50%);
 }
 
-.buttons #toggle-device.animate {
-  -webkit-transform: rotate(-180deg);
-  transition: transform 1s ease-out;
+.bottom-stripe.left-stripe {
+  -webkit-transform: translate(-50%, 50%);
+}
+
+.actions-group button {
+  margin: 0 8px;
+}
+
+body.tablet-landscape .actions-group {
+  flex-direction: column-reverse;
+}
+
+body.tablet-landscape .actions-group button {
+  margin: 8px 0;
+}
+
+#shutter {
+  background-image: url(../images/camera_shutter_photo_start.svg);
+  width: 72px;
+  height: 72px;
+  z-index: 1;  /* On top of transforming switch-mode buttons. */
+}
+
+#shutter:hover {
+  background-image: url(../images/camera_shutter_photo_start_hover.svg);
+}
+
+#shutter:active {
+  background-image: url(../images/camera_shutter_photo_start_active.svg);
+}
+
+body.taking.timer #shutter {
+  background-image: url(../images/camera_shutter_photo_stop.svg);
+}
+
+body.taking.timer #shutter:hover {
+  background-image: url(../images/camera_shutter_photo_stop_hover.svg);
+}
+
+body.record-mode #shutter {
+  background-image: url(../images/camera_shutter_recording_start.svg);
+}
+
+body.record-mode #shutter:hover {
+  background-image: url(../images/camera_shutter_recording_start_hover.svg);
+}
+
+body.record-mode.taking #shutter {
+  background-image: url(../images/camera_shutter_recording_stop.svg);
+}
+
+body.record-mode.taking #shutter:hover {
+  background-image: url(../images/camera_shutter_recording_stop_hover.svg);
+}
+
+#shutter:active,
+#switch-recordvideo:active,
+#switch-takephoto:active,
+#gallery-enter:active {
+  -webkit-transform: scale(1.06);
+}
+
+#switch-recordvideo,
+#switch-takephoto {
+  width: 56px;
+  height: 56px;
+}
+
+#switch-recordvideo {
+  background-image: url(../images/camera_button_switch_video.svg);
+  transition: transform 50ms;
+}
+
+#switch-takephoto {
+  background-image: url(../images/camera_button_switch_photo.svg);
+  transition: transform 50ms;
+}
+
+body.record-mode #switch-recordvideo {
+  -webkit-transform: translateX(-160px);
+}
+
+body.tablet-landscape.record-mode #switch-recordvideo {
+  -webkit-transform: translateY(160px);
+}
+
+body:not(.record-mode) #switch-takephoto {
+  -webkit-transform: translateX(160px);
+}
+
+body.tablet-landscape:not(.record-mode) #switch-takephoto {
+  -webkit-transform: translateY(-160px);
+}
+
+body.record-mode #switch-recordvideo,
+body:not(.record-mode) #switch-takephoto,
+body:not(.record-mode) #toggle-mic {
+  visibility: hidden;
 }
 
 #camera-mode {
@@ -293,116 +357,78 @@ body.capturing #camera-mode {
   visibility: hidden;
 }
 
-.buttons #switch-recordvideo {
-  background-image: -webkit-image-set(
-      url(../images/camera_button_record.png) 1x,
-      url(../images/2x/camera_button_record.png) 2x);
-  height: 32px;
-  width: 32px;
-  background-position: 0 0;
+#toggle-device {
+  background-image: url(../images/camera_button_toggle_device.svg);
+  width: 48px;
+  height: 48px;
 }
 
-.buttons #switch-takephoto {
-  background-image: -webkit-image-set(
-      url(../images/camera_button_record.png) 1x,
-      url(../images/2x/camera_button_record.png) 2x);
-  height: 32px;
-  width: 32px;
-  background-position: 0 -32px;
+#toggle-device.animate {
+  -webkit-transform: rotate(-180deg);
+  transition: transform 1s ease-out;
 }
 
-body:not(.record-mode) #toggle-mic,
-body:not(.record-mode) #switch-takephoto,
-body.record-mode #switch-recordvideo {
-  visibility: hidden;
+#gallery-enter {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
 }
 
-.top-stripe {
+#gallery-enter img,
+.centered-overlay {
   position: absolute;
-  top: 40px;
-  -webkit-transform: translateY(-50%);
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
 }
 
-.bottom-stripe {
-  position: absolute;
-  bottom: 56px;
-  -webkit-transform: translateY(50%);
+#gallery-enter.no-content {
+  background-color: rgba(24, 24, 24, 1);
 }
 
-.left-stripe {
-  position: absolute;
-  left: 40px;
-  -webkit-transform: translateX(-50%);
-}
-
-.right-stripe {
-  position: absolute;
-  right: 40px;
-  -webkit-transform: translateX(50%);
-}
-
-.top-stripe.right-stripe {
-  -webkit-transform: translate(50%, -50%);
-}
-
-.bottom-stripe.right-stripe {
-  -webkit-transform: translate(50%, 50%);
-}
-
-.bottom-stripe.left-stripe {
-  -webkit-transform: translate(-50%, 50%);
-}
-
-.left-stripe.buttons {
+.options-group {
   flex-direction: column;
 }
 
-.left-stripe.buttons input {
+.options-group input {
   margin: 18px 0;
 }
 
-.buttons #toggle-timer {
+#toggle-timer {
   background-image: url(../images/camera_button_timer_on.svg);
 }
 
-.buttons #toggle-timer:not(:checked) {
+#toggle-timer:not(:checked) {
   background-image: url(../images/camera_button_timer_off.svg);
 }
 
-.buttons #toggle-timer.animate {
+#toggle-timer.animate {
   opacity: 0.25;
 }
 
-.buttons #toggle-grid {
+#toggle-grid {
   background-image: url(../images/camera_button_grid_on.svg);
 }
 
-.buttons #toggle-grid:not(:checked) {
+#toggle-grid:not(:checked) {
   background-image: url(../images/camera_button_grid_off.svg);
 }
 
-.buttons #toggle-mirror {
+#toggle-mirror {
   background-image: url(../images/camera_button_mirror_on.svg);
 }
 
-.buttons #toggle-mirror:not(:checked) {
+#toggle-mirror:not(:checked) {
   background-image: url(../images/camera_button_mirror_off.svg);
 }
 
-.buttons #toggle-mic {
+#toggle-mic {
   background-image: url(../images/camera_button_mic_on.svg);
 }
 
-.buttons #toggle-mic:not(:checked) {
+#toggle-mic:not(:checked) {
   background-image: url(../images/camera_button_mic_off.svg);
-}
-
-#toolbar {
-  background: rgba(32, 32, 32, 0.8);
-  bottom: 0;
-  left: 0;
-  position: absolute;
-  right: 0;
 }
 
 #camera,
@@ -430,6 +456,12 @@ body.browser #browser {
   display: flex;
   justify-content: center;
   overflow: hidden;
+}
+
+body.shift-preview #preview-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 #preview-wrapper,
@@ -463,7 +495,7 @@ body.mirror:not(.capturing) #preview-video {
   visibility: hidden;
 }
 
-body.capturing #preview-grid.visible {
+body.capturing.grid #preview-grid {
   visibility: visible;
 }
 

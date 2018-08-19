@@ -63,9 +63,6 @@ SRC_RESOURCES= \
 	src/css/main.css \
 	src/images/2x/browser_button_export.png \
 	src/images/2x/browser_button_print.png \
-	src/images/2x/camera_button_picture.png \
-        src/images/2x/camera_button_record.png \
-	src/images/2x/camera_button_video.png \
 	src/images/2x/gallery_button_back.png \
 	src/images/2x/gallery_button_delete.png \
         src/images/2x/dialog_button_close.png \
@@ -79,14 +76,22 @@ SRC_RESOURCES= \
         src/images/camera_button_mic_on.svg \
         src/images/camera_button_mirror_off.svg \
         src/images/camera_button_mirror_on.svg \
-	src/images/camera_button_picture.png \
-        src/images/camera_button_record.png \
+        src/images/camera_button_switch_photo.svg \
+        src/images/camera_button_switch_video.svg \
         src/images/camera_button_timer_off.svg \
         src/images/camera_button_timer_on.svg \
         src/images/camera_button_toggle_device.svg \
-	src/images/camera_button_video.png \
         src/images/camera_mode_photo.svg \
         src/images/camera_mode_recording.svg \
+        src/images/camera_shutter_photo_start.svg \
+        src/images/camera_shutter_photo_start_active.svg \
+        src/images/camera_shutter_photo_start_hover.svg \
+        src/images/camera_shutter_photo_stop.svg \
+        src/images/camera_shutter_photo_stop_hover.svg \
+        src/images/camera_shutter_recording_start.svg \
+        src/images/camera_shutter_recording_start_hover.svg \
+        src/images/camera_shutter_recording_stop.svg \
+        src/images/camera_shutter_recording_stop_hover.svg \
 	src/images/gallery_button_back.png \
 	src/images/gallery_button_delete.png \
         src/images/dialog_button_close.png \
