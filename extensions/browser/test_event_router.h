@@ -62,7 +62,7 @@ class TestEventRouter : public EventRouter {
   // Count of dispatched and broadcasted events by event name.
   std::map<std::string, int> seen_events_;
 
-  base::ObserverList<EventObserver, false> observers_;
+  base::ObserverList<EventObserver, false>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventRouter);
 };

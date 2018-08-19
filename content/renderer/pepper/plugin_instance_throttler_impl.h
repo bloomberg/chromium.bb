@@ -113,7 +113,7 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   bool audio_throttled_;
   base::DelayTimer audio_throttled_frame_timeout_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::WeakPtrFactory<PluginInstanceThrottlerImpl> weak_factory_;
 

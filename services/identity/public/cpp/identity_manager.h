@@ -307,8 +307,9 @@ class IdentityManager : public SigninManagerBase::Observer,
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.
-  base::ObserverList<Observer, true> observer_list_;
-  base::ObserverList<DiagnosticsObserver, true> diagnostics_observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
+  base::ObserverList<DiagnosticsObserver, true>::Unchecked
+      diagnostics_observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManager);
 };

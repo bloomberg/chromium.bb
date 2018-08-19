@@ -242,7 +242,8 @@ class BluetoothGattDescriptorClientImpl
   dbus::ObjectManager* object_manager_;
 
   // List of observers interested in event notifications from us.
-  base::ObserverList<BluetoothGattDescriptorClient::Observer> observers_;
+  base::ObserverList<BluetoothGattDescriptorClient::Observer>::Unchecked
+      observers_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.

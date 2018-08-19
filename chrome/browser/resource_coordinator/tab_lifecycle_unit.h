@@ -51,11 +51,12 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // time. |web_contents| and |tab_strip_model| are the WebContents and
   // TabStripModel associated with this tab. The |source| is optional and may be
   // nullptr.
-  TabLifecycleUnit(TabLifecycleUnitSource* source,
-                   base::ObserverList<TabLifecycleObserver>* observers,
-                   UsageClock* usage_clock,
-                   content::WebContents* web_contents,
-                   TabStripModel* tab_strip_model);
+  TabLifecycleUnit(
+      TabLifecycleUnitSource* source,
+      base::ObserverList<TabLifecycleObserver>::Unchecked* observers,
+      UsageClock* usage_clock,
+      content::WebContents* web_contents,
+      TabStripModel* tab_strip_model);
   ~TabLifecycleUnit() override;
 
   // Sets the TabStripModel associated with this tab. The source that created
@@ -168,7 +169,7 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // List of observers to notify when the discarded state or the auto-
   // discardable state of this tab changes.
-  base::ObserverList<TabLifecycleObserver>* observers_;
+  base::ObserverList<TabLifecycleObserver>::Unchecked* observers_;
 
   // TabStripModel to which this tab belongs.
   TabStripModel* tab_strip_model_;

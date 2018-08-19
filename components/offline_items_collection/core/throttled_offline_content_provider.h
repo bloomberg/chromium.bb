@@ -80,7 +80,7 @@ class ThrottledOfflineContentProvider
   bool update_queued_;
 
   OfflineContentProvider* const wrapped_provider_;
-  base::ObserverList<OfflineContentProvider::Observer> observers_;
+  base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
 
   typedef std::map<ContentId, OfflineItem> OfflineItemMap;
   OfflineItemMap updates_;

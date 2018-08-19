@@ -69,7 +69,7 @@ class OutOfMemoryReporter
           reported_counts) override;
 #endif  // defined(OS_ANDROID)
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::Optional<ukm::SourceId> last_committed_source_id_;
   base::TimeTicks last_navigation_timestamp_;

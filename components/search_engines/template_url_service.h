@@ -750,7 +750,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   OwnedTemplateURLVector template_urls_;
 
-  base::ObserverList<TemplateURLServiceObserver> model_observers_;
+  base::ObserverList<TemplateURLServiceObserver>::Unchecked model_observers_;
 
   // Maps from host to set of TemplateURLs whose search url host is host.
   std::unique_ptr<SearchHostToURLsMap> provider_map_ =

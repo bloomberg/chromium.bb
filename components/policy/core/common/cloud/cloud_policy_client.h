@@ -528,7 +528,7 @@ class POLICY_EXPORT CloudPolicyClient {
 
   DeviceDMTokenCallback device_dm_token_callback_;
 
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 

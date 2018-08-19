@@ -661,7 +661,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   base::Closure created_mirror_window_;
 
-  base::ObserverList<DisplayObserver> observers_;
+  base::ObserverList<DisplayObserver>::Unchecked observers_;
 
   display::mojom::DevDisplayControllerPtr dev_display_controller_;
 

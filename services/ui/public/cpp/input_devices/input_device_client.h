@@ -90,7 +90,7 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   bool are_touchscreen_target_displays_valid_ = false;
 
   // List of in-process observers.
-  base::ObserverList<ui::InputDeviceEventObserver> observers_;
+  base::ObserverList<ui::InputDeviceEventObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(InputDeviceClient);
 };

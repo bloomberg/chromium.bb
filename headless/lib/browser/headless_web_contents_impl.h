@@ -174,7 +174,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   // to fix this. See crbug.com/715924
   content::RenderProcessHost* render_process_host_;  // Not owned.
 
-  base::ObserverList<HeadlessWebContents::Observer> observers_;
+  base::ObserverList<HeadlessWebContents::Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<HeadlessWebContentsImpl> weak_ptr_factory_;
 

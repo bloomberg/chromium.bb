@@ -87,7 +87,7 @@ class ArcKioskAppManager {
   std::vector<std::unique_ptr<ArcKioskAppData>> apps_;
   AccountId auto_launch_account_id_;
   bool auto_launched_with_zero_delay_ = false;
-  base::ObserverList<ArcKioskAppManagerObserver, true> observers_;
+  base::ObserverList<ArcKioskAppManagerObserver, true>::Unchecked observers_;
 
   std::unique_ptr<CrosSettings::ObserverSubscription>
       local_accounts_subscription_;

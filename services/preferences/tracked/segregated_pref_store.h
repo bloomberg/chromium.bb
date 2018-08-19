@@ -116,7 +116,7 @@ class SegregatedPrefStore : public PersistentPrefStore {
   std::set<std::string> selected_preference_names_;
 
   std::unique_ptr<PersistentPrefStore::ReadErrorDelegate> read_error_delegate_;
-  base::ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true>::Unchecked observers_;
   AggregatingObserver aggregating_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SegregatedPrefStore);

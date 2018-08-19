@@ -41,7 +41,7 @@ class BrowsingDataRemover : public KeyedService {
   void NotifyBrowsingDataRemoved(BrowsingDataRemoveMask mask);
 
  private:
-  base::ObserverList<BrowsingDataRemoverObserver, true> observers_;
+  base::ObserverList<BrowsingDataRemoverObserver, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemover);
 };

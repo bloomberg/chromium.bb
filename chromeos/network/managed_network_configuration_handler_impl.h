@@ -241,7 +241,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   // associated set of GUIDs is empty.
   UserToModifiedPoliciesMap queued_modified_policies_;
 
-  base::ObserverList<NetworkPolicyObserver, true> observers_;
+  base::ObserverList<NetworkPolicyObserver, true>::Unchecked observers_;
 
   bool user_policy_applied_;
   bool device_policy_applied_;

@@ -98,7 +98,7 @@ class SessionDurationUpdater
   // Tracks the elapsed active session time while the browser is open.
   std::unique_ptr<base::ElapsedTimer> current_session_timer_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionDurationUpdater);
 };

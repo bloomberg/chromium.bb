@@ -167,10 +167,10 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkQualityTracker
   base::TimeDelta transport_rtt_;
   int32_t downlink_bandwidth_kbps_;
 
-  base::ObserverList<EffectiveConnectionTypeObserver>
+  base::ObserverList<EffectiveConnectionTypeObserver>::Unchecked
       effective_connection_type_observer_list_;
 
-  base::ObserverList<RTTAndThroughputEstimatesObserver>
+  base::ObserverList<RTTAndThroughputEstimatesObserver>::Unchecked
       rtt_and_throughput_observer_list_;
 
   mojo::Binding<network::mojom::NetworkQualityEstimatorManagerClient> binding_;

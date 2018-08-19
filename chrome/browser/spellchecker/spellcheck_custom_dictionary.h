@@ -208,7 +208,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   base::FilePath custom_dictionary_path_;
 
   // Observers for dictionary load and content changes.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Used to send local changes to the sync infrastructure.
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;

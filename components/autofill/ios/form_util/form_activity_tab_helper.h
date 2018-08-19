@@ -64,7 +64,7 @@ class FormActivityTabHelper
   web::WebState* web_state_ = nullptr;
 
   // The observers.
-  base::ObserverList<FormActivityObserver> observers_;
+  base::ObserverList<FormActivityObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FormActivityTabHelper);
 };

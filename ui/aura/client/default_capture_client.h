@@ -30,7 +30,7 @@ class AURA_EXPORT DefaultCaptureClient : public client::CaptureClient {
  private:
   Window* root_window_;  // May be null.
   Window* capture_window_;
-  base::ObserverList<CaptureClientObserver> observers_;
+  base::ObserverList<CaptureClientObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultCaptureClient);
 };

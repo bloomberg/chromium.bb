@@ -172,7 +172,8 @@ class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
  private:
   SyncError error_;
   SyncChangeList* output_;
-  base::ObserverList<syncer::LocalChangeObserver> local_change_observers_;
+  base::ObserverList<syncer::LocalChangeObserver>::Unchecked
+      local_change_observers_;
 };
 
 }  // namespace

@@ -37,7 +37,7 @@ class DeviceManagerManual : public DeviceManager {
 
   std::set<base::FilePath> devices_;
   base::FilePathWatcher watcher_;
-  base::ObserverList<DeviceEventObserver> observers_;
+  base::ObserverList<DeviceEventObserver>::Unchecked observers_;
   bool is_watching_ = false;
 
   base::WeakPtrFactory<DeviceManagerManual> weak_ptr_factory_;

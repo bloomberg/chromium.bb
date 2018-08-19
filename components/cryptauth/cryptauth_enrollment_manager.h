@@ -83,7 +83,7 @@ class CryptAuthEnrollmentManager {
   void NotifyEnrollmentFinished(bool success);
 
  private:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthEnrollmentManager);
 };

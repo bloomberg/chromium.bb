@@ -60,7 +60,7 @@ class MockPrefStore : public ValueMapPrefStore {
 
   bool initialized_ = false;
   bool success_ = false;
-  base::ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true>::Unchecked observers_;
 };
 
 void ExpectInitializationComplete(PrefStore* pref_store, bool success) {

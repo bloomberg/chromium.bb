@@ -324,7 +324,7 @@ class MediaSessionImpl : public MediaSession,
 
   base::CallbackList<void(State)> media_session_state_listeners_;
 
-  base::ObserverList<MediaSessionObserver> observers_;
+  base::ObserverList<MediaSessionObserver>::Unchecked observers_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<MediaSessionAndroid> session_android_;

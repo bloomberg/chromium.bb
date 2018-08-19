@@ -146,7 +146,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   HostResponseErrorCode error_code_to_return_;
   base::Time connect_tethering_request_start_time_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTetheringOperation);
 };

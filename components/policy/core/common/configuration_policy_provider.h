@@ -95,7 +95,7 @@ class POLICY_EXPORT ConfigurationPolicyProvider
 
   SchemaRegistry* schema_registry_;
 
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);
 };

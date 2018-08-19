@@ -49,7 +49,7 @@ class WebrtcAudioSourceAdapter::Core {
   // AudioSource.
   std::vector<uint8_t> partial_frame_;
 
-  base::ObserverList<webrtc::AudioTrackSinkInterface> audio_sinks_;
+  base::ObserverList<webrtc::AudioTrackSinkInterface>::Unchecked audio_sinks_;
   base::Lock audio_sinks_lock_;
 
   base::ThreadChecker thread_checker_;

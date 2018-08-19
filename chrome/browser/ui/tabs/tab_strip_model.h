@@ -564,7 +564,7 @@ class TabStripModel {
   std::vector<std::unique_ptr<WebContentsData>> contents_data_;
 
   TabStripModelDelegate* delegate_;
-  base::ObserverList<TabStripModelObserver> observers_;
+  base::ObserverList<TabStripModelObserver>::Unchecked observers_;
 
   // A profile associated with this TabStripModel.
   Profile* profile_;

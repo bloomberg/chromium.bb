@@ -118,7 +118,7 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   // Keeps track of tasks we have delayed while starting up.
   std::unique_ptr<DelayedTaskQueue> task_queue_;
 
-  base::ObserverList<TestObserver> observers_;
+  base::ObserverList<TestObserver>::Unchecked observers_;
 
   content::NotificationRegistrar registrar_;
 

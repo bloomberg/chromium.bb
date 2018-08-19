@@ -315,7 +315,7 @@ class TreeNodeModel : public TreeModel {
 
  private:
   // The observers.
-  base::ObserverList<TreeModelObserver> observer_list_;
+  base::ObserverList<TreeModelObserver>::Unchecked observer_list_;
 
   // The root.
   std::unique_ptr<NodeType> root_;

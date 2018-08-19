@@ -229,8 +229,8 @@ struct AX_EXPORT AXHypertext {
 
 // Get an observer list that allows modules across the codebase to
 // listen to when usage of IAccessible2 is detected.
-extern AX_EXPORT base::ObserverList<IAccessible2UsageObserver>&
-    GetIAccessible2UsageObserverList();
+extern AX_EXPORT base::ObserverList<IAccessible2UsageObserver>::Unchecked&
+GetIAccessible2UsageObserverList();
 
 class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     AXPlatformNodeWin : public CComObjectRootEx<CComMultiThreadModel>,

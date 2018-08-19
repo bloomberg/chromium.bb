@@ -150,7 +150,7 @@ class APP_LIST_MODEL_EXPORT SearchResult {
 
   ash::mojom::SearchResultMetadataPtr metadata_;
 
-  base::ObserverList<SearchResultObserver> observers_;
+  base::ObserverList<SearchResultObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResult);
 };

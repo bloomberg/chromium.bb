@@ -684,7 +684,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   uint32_t renderer_frame_number_;
 
-  base::ObserverList<RenderWidgetHostViewBaseObserver> observers_;
+  base::ObserverList<RenderWidgetHostViewBaseObserver>::Unchecked observers_;
 
 #if defined(USE_AURA)
   mojom::RenderWidgetWindowTreeClientPtr render_widget_window_tree_client_;

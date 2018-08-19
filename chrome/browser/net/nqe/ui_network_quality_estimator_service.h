@@ -99,7 +99,7 @@ class UINetworkQualityEstimatorService
   std::unique_ptr<IONetworkQualityObserver> io_observer_;
 
   // Observer list for changes in effective connection type.
-  base::ObserverList<net::EffectiveConnectionTypeObserver>
+  base::ObserverList<net::EffectiveConnectionTypeObserver>::Unchecked
       effective_connection_type_observer_list_;
 
   // Prefs manager that is owned by this service. Created on the UI thread, but

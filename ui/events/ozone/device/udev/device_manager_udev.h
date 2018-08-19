@@ -42,7 +42,7 @@ class DeviceManagerUdev : public DeviceManager,
 
   base::MessagePumpLibevent::FdWatchController controller_;
 
-  base::ObserverList<DeviceEventObserver> observers_;
+  base::ObserverList<DeviceEventObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagerUdev);
 };

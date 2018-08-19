@@ -276,7 +276,7 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::ObserverList<SyncEncryptionHandler::Observer> observers_;
+  base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;
 
   // The current user share (for creating transactions).
   UserShare* user_share_;

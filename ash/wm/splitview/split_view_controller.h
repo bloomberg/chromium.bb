@@ -398,7 +398,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // window comes from the overview.
   base::flat_map<aura::Window*, gfx::Rect> overview_window_item_bounds_map_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   mojo::InterfacePtrSet<mojom::SplitViewObserver> mojo_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SplitViewController);

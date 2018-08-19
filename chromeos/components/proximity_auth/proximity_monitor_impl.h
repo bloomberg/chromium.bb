@@ -109,7 +109,7 @@ class ProximityMonitorImpl : public ProximityMonitor {
   ProximityAuthPrefManager* pref_manager_;
 
   // The observers attached to the ProximityMonitor.
-  base::ObserverList<ProximityMonitorObserver> observers_;
+  base::ObserverList<ProximityMonitorObserver>::Unchecked observers_;
 
   // The Bluetooth adapter that will be polled for connection info.
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;

@@ -72,7 +72,7 @@ class AddressComboboxModel : public ui::ComboboxModel {
   std::string default_selected_guid_;
 
   // To be called when the data for the given country code was loaded.
-  base::ObserverList<ui::ComboboxModelObserver> observers_;
+  base::ObserverList<ui::ComboboxModelObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AddressComboboxModel);
 };

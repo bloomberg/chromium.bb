@@ -141,7 +141,7 @@ class RulesCacheDelegate {
   // We notified the RulesRegistry that the rules are loaded.
   bool notified_registry_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Use this factory to generate weak pointers bound to the UI thread.
   base::WeakPtrFactory<RulesCacheDelegate> weak_ptr_factory_;

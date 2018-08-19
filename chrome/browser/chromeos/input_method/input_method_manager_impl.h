@@ -275,9 +275,10 @@ class InputMethodManagerImpl : public InputMethodManager,
   UISessionState ui_session_;
 
   // A list of objects that monitor the manager.
-  base::ObserverList<InputMethodManager::Observer> observers_;
-  base::ObserverList<CandidateWindowObserver> candidate_window_observers_;
-  base::ObserverList<ImeMenuObserver> ime_menu_observers_;
+  base::ObserverList<InputMethodManager::Observer>::Unchecked observers_;
+  base::ObserverList<CandidateWindowObserver>::Unchecked
+      candidate_window_observers_;
+  base::ObserverList<ImeMenuObserver>::Unchecked ime_menu_observers_;
 
   scoped_refptr<StateImpl> state_;
 

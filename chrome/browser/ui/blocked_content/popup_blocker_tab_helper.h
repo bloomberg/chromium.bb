@@ -134,7 +134,7 @@ class PopupBlockerTabHelper
   // list, so it is keyed by an id which is continually increased.
   std::map<int32_t, std::unique_ptr<BlockedRequest>> blocked_popups_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   int32_t next_id_ = 0;
 

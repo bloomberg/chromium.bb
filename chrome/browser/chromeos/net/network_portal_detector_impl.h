@@ -219,7 +219,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
 
   State state_ = STATE_IDLE;
   CaptivePortalStateMap portal_state_map_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::CancelableClosure attempt_task_;
   base::CancelableClosure attempt_timeout_;

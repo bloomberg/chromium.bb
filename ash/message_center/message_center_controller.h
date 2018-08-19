@@ -103,7 +103,8 @@ class ASH_EXPORT MessageCenterController
       session_state_notification_blocker_;
   std::unique_ptr<message_center::NotificationBlocker> all_popup_blocker_;
 
-  base::ObserverList<NotifierSettingsListener> notifier_settings_listeners_;
+  base::ObserverList<NotifierSettingsListener>::Unchecked
+      notifier_settings_listeners_;
 
   mojo::BindingSet<mojom::AshMessageCenterController> binding_set_;
 

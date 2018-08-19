@@ -265,7 +265,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // currently active; it gets removed and destroyed once it completes.
   base::circular_deque<linked_ptr<SessionManagerOperation>> pending_operations_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Whether the device will be establishing consumer ownership.
   bool will_establish_consumer_ownership_ = false;

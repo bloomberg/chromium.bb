@@ -178,7 +178,7 @@ class OmniboxPopupModel {
   bool has_selected_match_;
 
   // Observers.
-  base::ObserverList<OmniboxPopupModelObserver> observers_;
+  base::ObserverList<OmniboxPopupModelObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<OmniboxPopupModel> weak_factory_;
 

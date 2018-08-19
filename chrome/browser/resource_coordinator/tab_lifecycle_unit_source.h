@@ -152,7 +152,7 @@ class TabLifecycleUnitSource : public BrowserListObserver,
 
   // Observers notified when the discarded or auto-discardable state of a tab
   // changes.
-  base::ObserverList<TabLifecycleObserver> tab_lifecycle_observers_;
+  base::ObserverList<TabLifecycleObserver>::Unchecked tab_lifecycle_observers_;
 
   // The intervention policy database used to assist freezing/discarding
   // decisions.

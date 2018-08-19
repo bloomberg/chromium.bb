@@ -34,7 +34,7 @@ class ChosenObjectView : public views::View, public views::ButtonListener {
   views::ImageView* icon_;             // Owned by the views hierarchy.
   views::ImageButton* delete_button_;  // Owned by the views hierarchy.
 
-  base::ObserverList<ChosenObjectViewObserver> observer_list_;
+  base::ObserverList<ChosenObjectViewObserver>::Unchecked observer_list_;
   std::unique_ptr<PageInfoUI::ChosenObjectInfo> info_;
 
   DISALLOW_COPY_AND_ASSIGN(ChosenObjectView);

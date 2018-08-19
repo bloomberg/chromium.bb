@@ -49,7 +49,7 @@ class PointerDeviceObserver : public ui::InputDeviceEventObserver {
   void OnTouchpadExists(bool exists);
   void OnMouseExists(bool exists);
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<PointerDeviceObserver> weak_factory_;
 

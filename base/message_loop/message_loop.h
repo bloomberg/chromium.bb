@@ -287,7 +287,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // A recent snapshot of Time::Now(), used to check delayed_work_queue_.
   TimeTicks recent_time_;
 
-  ObserverList<DestructionObserver> destruction_observers_;
+  ObserverList<DestructionObserver>::Unchecked destruction_observers_;
 
   // A boolean which prevents unintentional reentrant task execution (e.g. from
   // induced nested message loops). As such, nested message loops will only
@@ -303,7 +303,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // if type_ is TYPE_CUSTOM and pump_ is null.
   MessagePumpFactoryCallback pump_factory_;
 
-  ObserverList<TaskObserver> task_observers_;
+  ObserverList<TaskObserver>::Unchecked task_observers_;
 
   // Pointer to this MessageLoop's Controller, valid throughout this
   // MessageLoop's lifetime (until |underlying_task_runner_| is released at the

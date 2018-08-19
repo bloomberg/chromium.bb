@@ -60,7 +60,8 @@ class SigninManagerFactory : public BrowserStateKeyedServiceFactory {
   ~SigninManagerFactory() override;
 
   // List of observers. Checks that list is empty on destruction.
-  mutable base::ObserverList<SigninManagerFactoryObserver, true> observer_list_;
+  mutable base::ObserverList<SigninManagerFactoryObserver, true>::Unchecked
+      observer_list_;
 
   // BrowserStateKeyedServiceFactory:
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(

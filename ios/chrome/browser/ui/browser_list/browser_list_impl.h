@@ -42,7 +42,7 @@ class BrowserListImpl final : public BrowserList {
   ios::ChromeBrowserState* browser_state_;
   std::unique_ptr<WebStateListDelegate> delegate_;
   std::vector<std::unique_ptr<Browser>> browsers_;
-  base::ObserverList<BrowserListObserver, true> observers_;
+  base::ObserverList<BrowserListObserver, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserListImpl);
 };

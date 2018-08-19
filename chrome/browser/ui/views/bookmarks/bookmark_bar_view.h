@@ -467,7 +467,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // Are we animating to or from the detached state?
   bool animating_detached_;
 
-  base::ObserverList<BookmarkBarViewObserver> observers_;
+  base::ObserverList<BookmarkBarViewObserver>::Unchecked observers_;
 
   // Factory used to delay showing of the drop menu.
   base::WeakPtrFactory<BookmarkBarView> show_folder_method_factory_;

@@ -87,7 +87,7 @@ class CandidateWindowControllerImpl
   // Infolist window.
   std::vector<ui::InfolistEntry> latest_infolist_entries_;
 
-  base::ObserverList<CandidateWindowController::Observer> observers_;
+  base::ObserverList<CandidateWindowController::Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CandidateWindowControllerImpl);
 };

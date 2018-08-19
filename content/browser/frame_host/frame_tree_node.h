@@ -510,7 +510,7 @@ class CONTENT_EXPORT FrameTreeNode {
   std::unique_ptr<NavigationRequest> navigation_request_;
 
   // List of objects observing this FrameTreeNode.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::TimeTicks last_focus_time_;
 

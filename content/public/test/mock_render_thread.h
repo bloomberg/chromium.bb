@@ -108,7 +108,9 @@ class MockRenderThread : public RenderThread {
   // Dispatches control messages to observers.
   bool OnControlMessageReceived(const IPC::Message& msg);
 
-  base::ObserverList<RenderThreadObserver>& observers() { return observers_; }
+  base::ObserverList<RenderThreadObserver>::Unchecked& observers() {
+    return observers_;
+  }
 
   // The View expects to be returned a valid |reply.route_id| different from its
   // own. We do not keep track of the newly created widget in MockRenderThread,
@@ -167,7 +169,7 @@ class MockRenderThread : public RenderThread {
   std::vector<scoped_refptr<IPC::MessageFilter> > filters_;
 
   // Observers to notify.
-  base::ObserverList<RenderThreadObserver> observers_;
+  base::ObserverList<RenderThreadObserver>::Unchecked observers_;
 
   std::unique_ptr<service_manager::Connector> connector_;
   service_manager::mojom::ConnectorRequest pending_connector_request_;

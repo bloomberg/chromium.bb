@@ -230,7 +230,7 @@ class PresentationServiceDelegateImpl
 
   // References to the observers listening for changes to the default
   // presentation of the associated WebContents.
-  base::ObserverList<DefaultPresentationRequestObserver>
+  base::ObserverList<DefaultPresentationRequestObserver>::Unchecked
       default_presentation_request_observers_;
 
   // Default presentation request for the owning WebContents.

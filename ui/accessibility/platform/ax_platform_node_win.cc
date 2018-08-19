@@ -172,8 +172,8 @@ typedef base::hash_set<AXPlatformNodeWin*> AXPlatformNodeWinSet;
 base::LazyInstance<AXPlatformNodeWinSet>::Leaky g_alert_targets =
     LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<base::ObserverList<IAccessible2UsageObserver>>::Leaky
-    g_iaccessible2_usage_observer_list = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ObserverList<IAccessible2UsageObserver>::Unchecked>::
+    Leaky g_iaccessible2_usage_observer_list = LAZY_INSTANCE_INITIALIZER;
 
 // Sets the multiplier by which large changes to a RangeValueProvider are
 // greater than small changes.
@@ -216,8 +216,8 @@ AXHypertext::AXHypertext(const AXHypertext& other) = default;
 AXHypertext::~AXHypertext() {}
 
 // static
-base::ObserverList<IAccessible2UsageObserver>&
-    GetIAccessible2UsageObserverList() {
+base::ObserverList<IAccessible2UsageObserver>::Unchecked&
+GetIAccessible2UsageObserverList() {
   return g_iaccessible2_usage_observer_list.Get();
 }
 

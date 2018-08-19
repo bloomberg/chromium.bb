@@ -230,7 +230,7 @@ class ASH_EXPORT NightLightController
   // controlled by this class from the WebUI settings.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   mojo::Binding<mojom::NightLightController> binding_;
 

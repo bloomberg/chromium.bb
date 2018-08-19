@@ -70,7 +70,7 @@ class TestSyncService : public syncer::FakeSyncService {
  private:
   bool sync_initialized_ = false;
   syncer::ModelTypeSet sync_active_data_types_;
-  base::ObserverList<syncer::SyncServiceObserver> observers_;
+  base::ObserverList<syncer::SyncServiceObserver>::Unchecked observers_;
 };
 
 class UrlKeyedDataCollectionConsentHelperTest

@@ -486,7 +486,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   dbus::ObjectProxy* proxy_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

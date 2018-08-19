@@ -362,7 +362,7 @@ class ASH_EXPORT ShelfLayoutManager
   // False when neither the auto hide timer nor the timer task are running.
   bool mouse_over_shelf_when_auto_hide_timer_started_ = false;
 
-  base::ObserverList<ShelfLayoutManagerObserver> observers_;
+  base::ObserverList<ShelfLayoutManagerObserver>::Unchecked observers_;
 
   // The shelf reacts to gesture-drags, and can be set to auto-hide for certain
   // gestures. Swiping up from the shelf in tablet mode can open the

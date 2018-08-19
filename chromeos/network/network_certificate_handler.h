@@ -82,7 +82,8 @@ class CHROMEOS_EXPORT NetworkCertificateHandler : public CertLoader::Observer {
 
   void ProcessCertificates(const net::ScopedCERTCertificateList& cert_list);
 
-  base::ObserverList<NetworkCertificateHandler::Observer> observer_list_;
+  base::ObserverList<NetworkCertificateHandler::Observer>::Unchecked
+      observer_list_;
 
   std::vector<Certificate> server_ca_certificates_;
   std::vector<Certificate> user_certificates_;

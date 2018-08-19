@@ -227,7 +227,7 @@ class ExtensionManagement : public KeyedService {
   PrefService* pref_service_ = nullptr;
   bool is_signin_profile_ = false;
 
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
   PrefChangeRegistrar pref_change_registrar_;
   std::vector<std::unique_ptr<ManagementPolicy::Provider>> providers_;
 

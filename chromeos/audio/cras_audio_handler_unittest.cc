@@ -267,7 +267,7 @@ class FakeVideoCaptureManager {
   }
 
  private:
-  base::ObserverList<media::VideoCaptureObserver> observers_;
+  base::ObserverList<media::VideoCaptureObserver>::Unchecked observers_;
   DISALLOW_COPY_AND_ASSIGN(FakeVideoCaptureManager);
 };
 

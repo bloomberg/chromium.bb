@@ -77,7 +77,8 @@ class NET_EXPORT ReportingContext {
   const base::TickClock* tick_clock_;
   std::unique_ptr<ReportingUploader> uploader_;
 
-  base::ObserverList<ReportingObserver, /* check_empty= */ true> observers_;
+  base::ObserverList<ReportingObserver, /* check_empty= */ true>::Unchecked
+      observers_;
 
   std::unique_ptr<ReportingDelegate> delegate_;
 

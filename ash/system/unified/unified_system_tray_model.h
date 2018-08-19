@@ -58,7 +58,7 @@ class ASH_EXPORT UnifiedSystemTrayModel {
 
   std::unique_ptr<DBusObserver> dbus_observer_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayModel);
 };

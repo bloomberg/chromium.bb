@@ -136,7 +136,7 @@ class PreviewsLogger {
   std::list<MessageLog> decisions_logs_;
 
   // A list of observers listening to the logger.
-  base::ObserverList<PreviewsLoggerObserver> observer_list_;
+  base::ObserverList<PreviewsLoggerObserver>::Unchecked observer_list_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

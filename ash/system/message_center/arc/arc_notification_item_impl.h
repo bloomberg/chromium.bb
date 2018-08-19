@@ -73,7 +73,7 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   // The reference counter of the window.
   int window_ref_count_ = 0;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   const AccountId profile_id_;
   const std::string notification_key_;

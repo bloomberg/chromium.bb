@@ -101,7 +101,7 @@ class EVENTS_EXPORT X11EventSourceLibevent
   X11EventSource event_source_;
 
   // Keep track of all XEventDispatcher to send XEvents directly to.
-  base::ObserverList<XEventDispatcher> dispatchers_xevent_;
+  base::ObserverList<XEventDispatcher>::Unchecked dispatchers_xevent_;
 
   base::MessagePumpLibevent::FdWatchController watcher_controller_;
   bool initialized_ = false;

@@ -99,6 +99,12 @@ class ObserverList
     : public SupportsWeakPtr<
           ObserverList<ObserverType, check_empty, allow_reentrancy>> {
  public:
+  // Temporary type alias for introducing base::CheckedObserver. Existing
+  // ObserverLists will be Unchecked during the migration.
+  // TODO(https://crbug.com/842987): Use the Unchecked storage type when that
+  // template param is added.
+  using Unchecked = ObserverList<ObserverType, check_empty, allow_reentrancy>;
+
   // An iterator class that can be used to access the list of observers.
   class Iter {
    public:

@@ -275,7 +275,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
   // TODO(jonross): Separate out all hit testing work into its own separate
   // class.
-  base::ObserverList<HitTestRegionObserver> observers_;
+  base::ObserverList<HitTestRegionObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<HostFrameSinkManager> weak_ptr_factory_;
 

@@ -432,7 +432,7 @@ class JobScheduler : public net::NetworkChangeNotifier::NetworkChangeObserver,
   JobIDMap job_map_;
 
   // The list of observers for the scheduler.
-  base::ObserverList<JobListObserver> observer_list_;
+  base::ObserverList<JobListObserver>::Unchecked observer_list_;
 
   EventLogger* logger_;
   DriveServiceInterface* drive_service_;

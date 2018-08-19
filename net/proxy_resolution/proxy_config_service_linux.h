@@ -268,7 +268,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // from the thread running this loop.
     scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
-    base::ObserverList<Observer> observers_;
+    base::ObserverList<Observer>::Unchecked observers_;
 
     MutableNetworkTrafficAnnotationTag traffic_annotation_;
 

@@ -48,12 +48,12 @@ class FakeRemoteDeviceLifeCycle : public RemoteDeviceLifeCycle {
 
   cryptauth::RemoteDeviceRef local_device() { return *local_device_; }
 
-  base::ObserverList<Observer>& observers() { return observers_; }
+  base::ObserverList<Observer>::Unchecked& observers() { return observers_; }
 
  private:
   cryptauth::RemoteDeviceRef remote_device_;
   base::Optional<cryptauth::RemoteDeviceRef> local_device_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   bool started_;
   State state_;
   cryptauth::Connection* connection_;

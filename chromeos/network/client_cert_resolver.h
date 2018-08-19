@@ -121,7 +121,7 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
   // instead.
   base::Time Now() const;
 
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   // Stores the current client certificate resolution status for each network.
   // The key is the network's service path. If a network is not present, it is

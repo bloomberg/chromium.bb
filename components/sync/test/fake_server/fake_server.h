@@ -201,7 +201,7 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   sync_pb::ClientCommand client_command_;
 
   // FakeServer's observers.
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   // When true, the server operates normally. When false, a failure is returned
   // on every request. This is used to simulate a network failure on the client.

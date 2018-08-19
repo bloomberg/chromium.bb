@@ -35,7 +35,7 @@ class EVENTS_DEVICES_EXPORT InputDeviceObserverAndroid {
  private:
   InputDeviceObserverAndroid();
 
-  base::ObserverList<ui::InputDeviceEventObserver> observers_;
+  base::ObserverList<ui::InputDeviceEventObserver>::Unchecked observers_;
 
   friend struct base::DefaultSingletonTraits<InputDeviceObserverAndroid>;
   DISALLOW_COPY_AND_ASSIGN(InputDeviceObserverAndroid);

@@ -27,7 +27,7 @@ class ClientConnectionParameters {
     virtual void OnConnectionRequestCanceled() = 0;
   };
 
-  ClientConnectionParameters(const std::string& feature);
+  explicit ClientConnectionParameters(const std::string& feature);
   virtual ~ClientConnectionParameters();
 
   const base::UnguessableToken& id() const { return id_; }
@@ -74,7 +74,7 @@ class ClientConnectionParameters {
   std::string feature_;
   base::UnguessableToken id_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   bool has_invoked_delegate_function_ = false;
 

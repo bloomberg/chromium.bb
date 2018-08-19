@@ -178,7 +178,7 @@ class ErrorConsole : public KeyedService,
   base::ThreadChecker thread_checker_;
 
   // The list of all observers for the ErrorConsole.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // The errors which we have received so far.
   ErrorMap errors_;

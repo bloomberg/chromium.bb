@@ -582,7 +582,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   std::unique_ptr<internal::ShillPropertyHandler> shill_property_handler_;
 
   // Observer list
-  base::ObserverList<NetworkStateHandlerObserver, true> observers_;
+  base::ObserverList<NetworkStateHandlerObserver, true>::Unchecked observers_;
 
   // List of managed network states
   ManagedStateList network_list_;

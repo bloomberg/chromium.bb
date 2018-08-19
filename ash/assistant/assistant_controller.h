@@ -170,7 +170,7 @@ class ASH_EXPORT AssistantController
 
   // The observer list should be initialized early so that sub-controllers may
   // register as observers during their construction.
-  base::ObserverList<AssistantControllerObserver> observers_;
+  base::ObserverList<AssistantControllerObserver>::Unchecked observers_;
 
   mojo::BindingSet<mojom::AssistantController> assistant_controller_bindings_;
 

@@ -60,7 +60,7 @@ class MockArcNotificationItem : public ArcNotificationItem {
   gfx::ImageSkia snapshot_;
   size_t count_close_ = 0;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   base::OnceClosure close_callback_;
 
   base::WeakPtrFactory<MockArcNotificationItem> weak_factory_;

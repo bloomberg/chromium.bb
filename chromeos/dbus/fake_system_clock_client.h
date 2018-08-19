@@ -41,7 +41,7 @@ class CHROMEOS_EXPORT FakeSystemClockClient : public SystemClockClient {
  private:
   bool network_synchronized_ = false;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSystemClockClient);
 };

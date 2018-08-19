@@ -103,7 +103,7 @@ class CryptAuthDeviceManager {
                           DeviceChangeResult device_change_result);
 
  private:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthDeviceManager);
 };

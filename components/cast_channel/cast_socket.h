@@ -421,7 +421,7 @@ class CastSocketImpl : public CastSocket {
   AuthTransportDelegate* auth_delegate_;
 
   // List of socket observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSocketImpl);
 };

@@ -21,14 +21,14 @@ class HostStatusMonitor : public base::RefCountedThreadSafe<HostStatusMonitor> {
   void AddStatusObserver(HostStatusObserver* observer);
   void RemoveStatusObserver(HostStatusObserver* observer);
 
-  const base::ObserverList<HostStatusObserver>& observers() {
+  const base::ObserverList<HostStatusObserver>::Unchecked& observers() {
     return observers_;
   };
 
  protected:
   friend class base::RefCountedThreadSafe<HostStatusMonitor>;
 
-  base::ObserverList<HostStatusObserver> observers_;
+  base::ObserverList<HostStatusObserver>::Unchecked observers_;
 
   virtual ~HostStatusMonitor();
 };

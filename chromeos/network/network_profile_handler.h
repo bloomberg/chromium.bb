@@ -80,7 +80,7 @@ class CHROMEOS_EXPORT NetworkProfileHandler
   // properties are retrieved and the path is still in this set, a new profile
   // object is created.
   std::set<std::string> pending_profile_creations_;
-  base::ObserverList<NetworkProfileObserver, true> observers_;
+  base::ObserverList<NetworkProfileObserver, true>::Unchecked observers_;
 
   // For Shill client callbacks
   base::WeakPtrFactory<NetworkProfileHandler> weak_ptr_factory_;

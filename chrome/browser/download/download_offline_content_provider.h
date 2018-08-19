@@ -63,7 +63,7 @@ class DownloadOfflineContentProvider
 
   DownloadManager* manager_;
   download::AllDownloadItemNotifier download_notifier_;
-  base::ObserverList<OfflineContentProvider::Observer> observers_;
+  base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
   OfflineContentAggregator* aggregator_;
 
   base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_;

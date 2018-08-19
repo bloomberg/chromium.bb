@@ -142,7 +142,7 @@ class CHROMEOS_EXPORT CertLoader {
 
   void NotifyCertificatesLoaded();
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Cache for certificates from the system-token NSSCertDatabase.
   std::unique_ptr<CertCache> system_cert_cache_;

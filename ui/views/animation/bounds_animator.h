@@ -161,7 +161,7 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   // Parent of all views being animated.
   View* parent_;
 
-  base::ObserverList<BoundsAnimatorObserver> observers_;
+  base::ObserverList<BoundsAnimatorObserver>::Unchecked observers_;
 
   // All animations we create up with the same container.
   scoped_refptr<gfx::AnimationContainer> container_;

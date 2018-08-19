@@ -34,12 +34,13 @@ class NativeEventProcessorObserver {
 class CONTENT_EXPORT ScopedNotifyNativeEventProcessorObserver {
  public:
   ScopedNotifyNativeEventProcessorObserver(
-      base::ObserverList<NativeEventProcessorObserver>* observer_list,
+      base::ObserverList<NativeEventProcessorObserver>::Unchecked*
+          observer_list,
       NSEvent* event);
   ~ScopedNotifyNativeEventProcessorObserver();
 
  private:
-  base::ObserverList<NativeEventProcessorObserver>* observer_list_;
+  base::ObserverList<NativeEventProcessorObserver>::Unchecked* observer_list_;
   NSEvent* event_;
   DISALLOW_COPY_AND_ASSIGN(ScopedNotifyNativeEventProcessorObserver);
 };

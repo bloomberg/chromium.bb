@@ -234,7 +234,7 @@ class ObservedMockDownloadManager : public MockDownloadManager {
   }
 
  private:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   std::vector<std::unique_ptr<FakeDownloadItem>> items_;
 };
 

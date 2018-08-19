@@ -79,7 +79,7 @@ class UnifiedConsentServiceClient {
   // Callback for the pref change registrars.
   void OnPrefChanged(const std::string& pref_name);
 
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   // Matches the pref name to it's service.
   std::map<std::string, Service> service_prefs_;

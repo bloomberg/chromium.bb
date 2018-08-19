@@ -42,10 +42,12 @@ class ASH_EXPORT KeyboardUI {
  protected:
   KeyboardUI();
 
-  base::ObserverList<KeyboardUIObserver>* observers() { return &observers_; }
+  base::ObserverList<KeyboardUIObserver>::Unchecked* observers() {
+    return &observers_;
+  }
 
  private:
-  base::ObserverList<KeyboardUIObserver> observers_;
+  base::ObserverList<KeyboardUIObserver>::Unchecked observers_;
 };
 
 }  // namespace ash

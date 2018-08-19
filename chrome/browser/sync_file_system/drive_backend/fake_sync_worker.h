@@ -96,7 +96,7 @@ class FakeSyncWorker : public SyncWorkerInterface {
 
   std::unique_ptr<SyncEngineContext> sync_engine_context_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncWorker);

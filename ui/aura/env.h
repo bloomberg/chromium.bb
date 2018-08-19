@@ -114,7 +114,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
       WindowEventDispatcherObserver* observer);
   void RemoveWindowEventDispatcherObserver(
       WindowEventDispatcherObserver* observer);
-  base::ObserverList<WindowEventDispatcherObserver>&
+  base::ObserverList<WindowEventDispatcherObserver>::Unchecked&
   window_event_dispatcher_observers() {
     return window_event_dispatcher_observers_;
   }
@@ -236,12 +236,12 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // during shutdown.
   WindowTreeClient* window_tree_client_ = nullptr;
 
-  base::ObserverList<EnvObserver> observers_;
+  base::ObserverList<EnvObserver>::Unchecked observers_;
 
   // Code wanting to observe WindowEventDispatcher typically wants to observe
   // all WindowEventDispatchers. This is made easier by having Env own all the
   // observers.
-  base::ObserverList<WindowEventDispatcherObserver>
+  base::ObserverList<WindowEventDispatcherObserver>::Unchecked
       window_event_dispatcher_observers_;
 
   std::unique_ptr<EnvInputStateController> env_controller_;

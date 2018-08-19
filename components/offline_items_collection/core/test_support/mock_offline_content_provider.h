@@ -49,7 +49,7 @@ class MockOfflineContentProvider : public OfflineContentProvider {
   void RemoveObserver(Observer* observer) override;
 
  private:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   OfflineItemList items_;
 };
 

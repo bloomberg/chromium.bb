@@ -118,7 +118,7 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
   // changed.
   void NetworkSynchronizationUpdated(bool network_synchronized);
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // The main value of "OffHours" policy which indicates current "OffHours" mode
   // state.

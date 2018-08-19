@@ -34,7 +34,8 @@ class TestFocusClient : public client::FocusClient,
 
   Window* focused_window_;
   ScopedObserver<Window, WindowObserver> observer_manager_;
-  base::ObserverList<aura::client::FocusChangeObserver> focus_observers_;
+  base::ObserverList<aura::client::FocusChangeObserver>::Unchecked
+      focus_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFocusClient);
 };

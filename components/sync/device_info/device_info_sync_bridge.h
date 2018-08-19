@@ -128,7 +128,7 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   ClientIdToSpecifics all_data_;
 
   // Registered observers, not owned.
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   // Used to listen for provider initialization. If the provider is already
   // initialized during our constructor then the subscription is never used.

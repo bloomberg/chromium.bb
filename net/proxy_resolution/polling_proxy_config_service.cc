@@ -149,7 +149,7 @@ class PollingProxyConfigService::Core
   }
 
   GetConfigFunction get_config_func_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   ProxyConfigWithAnnotation last_config_;
   base::TimeTicks last_poll_time_;
   base::TimeDelta poll_interval_;

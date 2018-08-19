@@ -179,7 +179,7 @@ class UserScriptLoader : public content::NotificationObserver {
   HostID host_id_;
 
   // The associated observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<UserScriptLoader> weak_factory_;
 

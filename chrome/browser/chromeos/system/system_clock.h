@@ -75,7 +75,7 @@ class SystemClock : public chromeos::LoginState::Observer,
   std::unique_ptr<content::NotificationRegistrar> registrar_;
   std::unique_ptr<PrefChangeRegistrar> user_pref_registrar_;
 
-  base::ObserverList<SystemClockObserver> observer_list_;
+  base::ObserverList<SystemClockObserver>::Unchecked observer_list_;
 
   std::unique_ptr<CrosSettingsObserverSubscription> device_settings_observer_;
 

@@ -337,7 +337,7 @@ class EasyUnlockService : public KeyedService {
 
   bool tpm_key_checked_;
 
-  base::ObserverList<EasyUnlockServiceObserver> observers_;
+  base::ObserverList<EasyUnlockServiceObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<EasyUnlockService> weak_ptr_factory_;
 

@@ -120,7 +120,8 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
     int retries_left = 0;
     bool lock_enabled = true;
   };
-  typedef base::ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
+  typedef base::ObserverList<ShillPropertyChangedObserver>::Unchecked
+      PropertyObserverList;
 
   SimLockStatus GetSimLockStatus(const std::string& device_path);
   void SetSimLockStatus(const std::string& device_path,

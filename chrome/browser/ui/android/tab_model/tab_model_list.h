@@ -51,8 +51,8 @@ class TabModelList {
 
   // A list of observers which will be notified of every TabModel addition and
   // removal across all TabModelLists.
-  static base::LazyInstance<base::ObserverList<TabModelListObserver>>::Leaky
-      observers_;
+  static base::LazyInstance<
+      base::ObserverList<TabModelListObserver>::Unchecked>::Leaky observers_;
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(TabModelList);

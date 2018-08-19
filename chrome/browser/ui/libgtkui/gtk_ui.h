@@ -189,11 +189,11 @@ class GtkUi : public views::LinuxUI {
   std::unique_ptr<Gtk2KeyBindingsHandler> key_bindings_handler_;
 
   // Objects to notify when the window frame button order changes.
-  base::ObserverList<views::WindowButtonOrderObserver>
+  base::ObserverList<views::WindowButtonOrderObserver>::Unchecked
       window_button_order_observer_list_;
 
   // Objects to notify when the device scale factor changes.
-  base::ObserverList<views::DeviceScaleFactorObserver>
+  base::ObserverList<views::DeviceScaleFactorObserver>::Unchecked
       device_scale_factor_observer_list_;
 
   // The action to take when middle, double, or right clicking the titlebar.

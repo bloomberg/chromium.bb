@@ -98,7 +98,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   // Currently-fullscreen root windows.
   std::set<aura::Window*> fullscreen_root_windows_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_manager_;
   ScopedSessionObserver scoped_session_observer_;

@@ -108,8 +108,8 @@ class AX_EXPORT AXPlatformNode {
 
  private:
   // Global ObserverList for AXMode changes.
-  static base::LazyInstance<base::ObserverList<AXModeObserver>>::Leaky
-      ax_mode_observers_;
+  static base::LazyInstance<
+      base::ObserverList<AXModeObserver>::Unchecked>::Leaky ax_mode_observers_;
 
   static base::LazyInstance<NativeWindowHandlerCallback>::Leaky
       native_window_handler_;

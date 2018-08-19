@@ -76,7 +76,7 @@ class MockSyncService : public syncer::FakeSyncService {
   syncer::ModelTypeSet preferred_data_types_;
 
   // The list of observers of the SyncService state.
-  base::ObserverList<syncer::SyncServiceObserver> observers_;
+  base::ObserverList<syncer::SyncServiceObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSyncService);
 };

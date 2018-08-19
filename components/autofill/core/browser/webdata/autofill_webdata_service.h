@@ -149,7 +149,7 @@ class AutofillWebDataService : public AutofillWebData,
   }
 
  private:
-  base::ObserverList<AutofillWebDataServiceObserverOnUISequence>
+  base::ObserverList<AutofillWebDataServiceObserverOnUISequence>::Unchecked
       ui_observer_list_;
 
   // The task runner that this class uses for UI tasks.

@@ -217,7 +217,7 @@ class NetExportFileWriter {
   network::mojom::NetLogExporterPtr net_log_exporter_;
 
   // List of StateObservers to notify on state changes.
-  base::ObserverList<StateObserver, true> state_observer_list_;
+  base::ObserverList<StateObserver, true>::Unchecked state_observer_list_;
 
   // Used by unit tests to override the default log base directory retrieved
   // during initialization. This getter is initialized to base::GetTempDir().

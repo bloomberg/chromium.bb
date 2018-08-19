@@ -482,7 +482,7 @@ class FakeDriveService : public DriveServiceInterface {
   std::string app_json_template_;
   std::string open_url_format_;
 
-  base::ObserverList<ChangeObserver> change_observers_;
+  base::ObserverList<ChangeObserver>::Unchecked change_observers_;
 
   base::WeakPtrFactory<FakeDriveService> weak_ptr_factory_;
 

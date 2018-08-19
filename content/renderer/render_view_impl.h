@@ -515,7 +515,9 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // to access RenderViewImpl state. The set of state variables are page-level
   // specific, so they don't belong in RenderFrameImpl and should remain in
   // this object.
-  base::ObserverList<RenderViewObserver>& observers() { return observers_; }
+  base::ObserverList<RenderViewObserver>::Unchecked& observers() {
+    return observers_;
+  }
 
   NavigationGesture navigation_gesture() {
     return navigation_gesture_;
@@ -689,7 +691,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.
-  base::ObserverList<RenderViewObserver> observers_;
+  base::ObserverList<RenderViewObserver>::Unchecked observers_;
 
   // NOTE: stats_collection_observer_ should be the last members because their
   // constructors call the AddObservers method of RenderViewImpl.

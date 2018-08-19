@@ -106,7 +106,7 @@ class TestContextProvider
 
   base::Lock context_lock_;
 
-  base::ObserverList<ContextLostObserver> observers_;
+  base::ObserverList<ContextLostObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_;
 

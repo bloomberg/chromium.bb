@@ -50,12 +50,13 @@ const std::string GenerateInjectionKey(const HostID& host_id,
 // corresponding response comes from the renderer, or the renderer is destroyed.
 class Handler : public content::WebContentsObserver {
  public:
-  Handler(base::ObserverList<ScriptExecutionObserver>* script_observers,
-          content::WebContents* web_contents,
-          const ExtensionMsg_ExecuteCode_Params& params,
-          ScriptExecutor::FrameScope scope,
-          int frame_id,
-          const ScriptExecutor::ExecuteScriptCallback& callback)
+  Handler(
+      base::ObserverList<ScriptExecutionObserver>::Unchecked* script_observers,
+      content::WebContents* web_contents,
+      const ExtensionMsg_ExecuteCode_Params& params,
+      ScriptExecutor::FrameScope scope,
+      int frame_id,
+      const ScriptExecutor::ExecuteScriptCallback& callback)
       : content::WebContentsObserver(web_contents),
         script_observers_(AsWeakPtr(script_observers)),
         host_id_(params.host_id),
@@ -191,7 +192,8 @@ class Handler : public content::WebContentsObserver {
     delete this;
   }
 
-  base::WeakPtr<base::ObserverList<ScriptExecutionObserver>> script_observers_;
+  base::WeakPtr<base::ObserverList<ScriptExecutionObserver>::Unchecked>
+      script_observers_;
 
   // The id of the host (the extension or the webui) doing the injection.
   HostID host_id_;
@@ -234,7 +236,7 @@ ScriptExecutionObserver::~ScriptExecutionObserver() {
 
 ScriptExecutor::ScriptExecutor(
     content::WebContents* web_contents,
-    base::ObserverList<ScriptExecutionObserver>* script_observers)
+    base::ObserverList<ScriptExecutionObserver>::Unchecked* script_observers)
     : next_request_id_(0),
       web_contents_(web_contents),
       script_observers_(script_observers) {

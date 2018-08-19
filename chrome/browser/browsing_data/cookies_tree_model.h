@@ -969,7 +969,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
 
   // The CookiesTreeModel maintains a separate list of observers that are
   // specifically of the type CookiesTreeModel::Observer.
-  base::ObserverList<Observer> cookies_observer_list_;
+  base::ObserverList<Observer>::Unchecked cookies_observer_list_;
 
   // Keeps track of how many batches the consumer of this class says it is going
   // to send.

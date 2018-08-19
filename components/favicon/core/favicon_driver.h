@@ -58,7 +58,7 @@ class FaviconDriver {
     const gfx::Image& image);
 
  private:
-  base::ObserverList<FaviconDriverObserver> observer_list_;
+  base::ObserverList<FaviconDriverObserver>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconDriver);
 };

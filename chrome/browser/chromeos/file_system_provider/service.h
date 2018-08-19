@@ -203,7 +203,7 @@ class Service : public KeyedService,
 
   Profile* profile_;
   extensions::ExtensionRegistry* extension_registry_;  // Not owned.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   std::map<FileSystemKey, std::unique_ptr<ProvidedFileSystemInterface>>
       file_system_map_;
   std::map<std::string, FileSystemKey> mount_point_name_to_key_map_;

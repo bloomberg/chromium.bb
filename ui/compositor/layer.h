@@ -578,7 +578,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   LayerDelegate* delegate_;
 
-  base::ObserverList<LayerObserver> observer_list_;
+  base::ObserverList<LayerObserver>::Unchecked observer_list_;
 
   LayerOwner* owner_;
 

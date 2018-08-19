@@ -178,7 +178,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Sets shelf alignment to bottom during login and screen lock.
   ShelfLockingManager shelf_locking_manager_;
 
-  base::ObserverList<ShelfObserver> observers_;
+  base::ObserverList<ShelfObserver>::Unchecked observers_;
 
   // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
   std::unique_ptr<AutoHideEventHandler> auto_hide_event_handler_;

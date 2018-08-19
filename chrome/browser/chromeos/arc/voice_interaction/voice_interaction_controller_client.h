@@ -87,7 +87,7 @@ class VoiceInteractionControllerClient
   ash::mojom::VoiceInteractionState voice_interaction_state_ =
       ash::mojom::VoiceInteractionState::STOPPED;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(VoiceInteractionControllerClient);
 };

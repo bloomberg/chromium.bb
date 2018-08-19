@@ -42,7 +42,7 @@ class ASH_EXPORT EnterpriseDomainModel {
   // Whether this is an Active Directory managed enterprise device.
   bool active_directory_managed_ = false;
 
-  base::ObserverList<EnterpriseDomainObserver> observers_;
+  base::ObserverList<EnterpriseDomainObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseDomainModel);
 };

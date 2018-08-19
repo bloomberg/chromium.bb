@@ -53,7 +53,7 @@ class COMPOSITOR_EXPORT CompositorVSyncManager
 
   void NotifyObservers(base::TimeTicks timebase, base::TimeDelta interval);
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::TimeTicks last_timebase_;
   base::TimeDelta last_interval_;

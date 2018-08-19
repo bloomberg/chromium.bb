@@ -111,7 +111,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   MediaStreamDevices::iterator GetDevice(int session_id);
 
   // Only accessed on Browser::IO thread.
-  base::ObserverList<MediaStreamProviderListener> listeners_;
+  base::ObserverList<MediaStreamProviderListener>::Unchecked listeners_;
   int next_capture_session_id_;
   MediaStreamDevices devices_;
 

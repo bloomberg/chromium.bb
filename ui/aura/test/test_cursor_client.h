@@ -57,7 +57,7 @@ class TestCursorClient : public aura::client::CursorClient {
   bool mouse_events_enabled_;
   int cursor_lock_count_;
   int calls_to_set_cursor_;
-  base::ObserverList<aura::client::CursorClientObserver> observers_;
+  base::ObserverList<aura::client::CursorClientObserver>::Unchecked observers_;
   aura::Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCursorClient);

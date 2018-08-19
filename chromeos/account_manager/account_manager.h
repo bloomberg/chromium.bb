@@ -234,7 +234,7 @@ class CHROMEOS_EXPORT AccountManager {
 
   // A list of |AccountManager| observers.
   // Verifies that the list is empty on destruction.
-  base::ObserverList<Observer, true /* check_empty */> observers_;
+  base::ObserverList<Observer, true /* check_empty */>::Unchecked observers_;
 
   // A list of pending token revocation requests.
   // |AccountManager| is a long living object in general and these requests are

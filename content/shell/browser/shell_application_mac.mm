@@ -15,7 +15,8 @@
 #include "url/gurl.h"
 
 @interface ShellCrApplication ()<NativeEventProcessor> {
-  base::ObserverList<content::NativeEventProcessorObserver> observers_;
+  base::ObserverList<content::NativeEventProcessorObserver>::Unchecked
+      observers_;
 }
 @end
 

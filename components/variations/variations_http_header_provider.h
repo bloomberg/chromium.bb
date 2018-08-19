@@ -158,7 +158,7 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
 
   // List of observers to notify on variation ids header update.
   // Makes sure list is empty on destruction.
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsHttpHeaderProvider);
 };

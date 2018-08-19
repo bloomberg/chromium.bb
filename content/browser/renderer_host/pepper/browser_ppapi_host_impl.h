@@ -137,7 +137,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
     PepperRendererInstanceData renderer_data;
     bool is_throttled;
 
-    base::ObserverList<InstanceObserver> observer_list;
+    base::ObserverList<InstanceObserver>::Unchecked observer_list;
   };
 
   std::unique_ptr<ppapi::host::PpapiHost> ppapi_host_;

@@ -108,7 +108,7 @@ class AccountTracker : public identity::IdentityManager::Observer {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::map<std::string, std::unique_ptr<AccountIdFetcher>> user_info_requests_;
   std::map<std::string, AccountState> accounts_;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
   bool shutdown_called_;
 };
 

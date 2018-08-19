@@ -155,7 +155,7 @@ class ASH_EXPORT DetachableBaseHandler
   // Used for ephemeral users.
   std::map<AccountId, DetachableBaseId> last_used_devices_;
 
-  base::ObserverList<DetachableBaseObserver> observers_;
+  base::ObserverList<DetachableBaseObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<DetachableBaseHandler> weak_ptr_factory_;
 

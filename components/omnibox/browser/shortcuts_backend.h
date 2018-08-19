@@ -154,7 +154,7 @@ class ShortcutsBackend : public RefcountedKeyedService,
   std::unique_ptr<SearchTermsData> search_terms_data_;
 
   CurrentState current_state_;
-  base::ObserverList<ShortcutsBackendObserver> observer_list_;
+  base::ObserverList<ShortcutsBackendObserver>::Unchecked observer_list_;
   scoped_refptr<ShortcutsDatabase> db_;
 
   // The |temp_shortcuts_map_| and |temp_guid_map_| used for temporary storage

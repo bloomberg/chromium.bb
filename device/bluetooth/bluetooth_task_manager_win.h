@@ -333,7 +333,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   scoped_refptr<base::SequencedTaskRunner> bluetooth_task_runner_;
 
   // List of observers interested in event notifications.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // indicates whether the adapter is in discovery mode or not.
   bool discovering_ = false;

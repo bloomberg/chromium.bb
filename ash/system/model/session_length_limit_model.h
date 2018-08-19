@@ -52,7 +52,7 @@ class SessionLengthLimitModel : public SessionObserver {
 
   std::unique_ptr<base::RepeatingTimer> timer_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionLengthLimitModel);
 };

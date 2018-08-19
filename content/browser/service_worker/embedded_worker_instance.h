@@ -211,7 +211,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   base::WeakPtr<EmbeddedWorkerInstance> AsWeakPtr();
 
  private:
-  typedef base::ObserverList<Listener> ListenerList;
+  typedef base::ObserverList<Listener>::Unchecked ListenerList;
   class StartTask;
   class WorkerProcessHandle;
   friend class EmbeddedWorkerRegistry;

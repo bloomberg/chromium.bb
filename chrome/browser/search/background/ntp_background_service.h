@@ -135,7 +135,7 @@ class NtpBackgroundService : public KeyedService {
   // The current OAuth2 token fetcher.
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
-  base::ObserverList<NtpBackgroundServiceObserver, true> observers_;
+  base::ObserverList<NtpBackgroundServiceObserver, true>::Unchecked observers_;
 
   // Callback that processes the response from the FetchCollectionInfo request,
   // refreshing the contents of collection_info_ with server-provided data.

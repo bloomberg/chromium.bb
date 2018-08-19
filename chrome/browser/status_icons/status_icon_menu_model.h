@@ -107,7 +107,7 @@ class StatusIconMenuModel
 
   ItemStateMap item_states_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   Delegate* delegate_;
 

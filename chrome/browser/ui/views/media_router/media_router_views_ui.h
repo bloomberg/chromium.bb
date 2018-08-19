@@ -70,7 +70,7 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
   base::Optional<MediaRoute::Id> terminating_route_id_;
 
   // Observers for dialog model updates.
-  base::ObserverList<CastDialogController::Observer> observers_;
+  base::ObserverList<CastDialogController::Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterViewsUI);
 };

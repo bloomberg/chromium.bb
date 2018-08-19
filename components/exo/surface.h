@@ -393,7 +393,7 @@ class Surface final : public ui::PropertyHandler {
   SurfaceDelegate* delegate_ = nullptr;
 
   // Surface observer list. Surface does not own the observers.
-  base::ObserverList<SurfaceObserver, true> observers_;
+  base::ObserverList<SurfaceObserver, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

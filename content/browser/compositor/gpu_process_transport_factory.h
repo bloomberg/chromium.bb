@@ -165,7 +165,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
 
   const viz::RendererSettings renderer_settings_;
   scoped_refptr<ui::ContextProviderCommandBuffer> shared_main_thread_contexts_;
-  base::ObserverList<ui::ContextFactoryObserver> observer_list_;
+  base::ObserverList<ui::ContextFactoryObserver>::Unchecked observer_list_;
   scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
   scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider_;

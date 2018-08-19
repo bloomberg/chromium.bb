@@ -96,7 +96,7 @@ class LocalFileSyncStatus {
   // If this flag is set sync process is running on the file.
   URLSet syncing_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileSyncStatus);
 };

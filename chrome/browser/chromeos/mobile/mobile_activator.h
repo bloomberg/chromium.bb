@@ -304,7 +304,7 @@ class MobileActivator
   // Cellular plan payment time.
   base::Time cellular_plan_payment_time_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   base::WeakPtrFactory<MobileActivator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileActivator);

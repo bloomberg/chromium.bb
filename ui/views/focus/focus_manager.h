@@ -359,7 +359,8 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   FocusChangeReason focus_change_reason_ = kReasonDirectFocusChange;
 
   // The list of registered FocusChange listeners.
-  base::ObserverList<FocusChangeListener, true> focus_change_listeners_;
+  base::ObserverList<FocusChangeListener, true>::Unchecked
+      focus_change_listeners_;
 
   // This is true if full keyboard accessibility is needed. This causes
   // IsAccessibilityFocusable() to be checked rather than IsFocusable(). This

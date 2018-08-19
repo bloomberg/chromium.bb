@@ -61,7 +61,7 @@ static base::LazyInstance<
     BrowserChildProcessHostImpl::BrowserChildProcessList>::DestructorAtExit
     g_child_process_list = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<base::ObserverList<BrowserChildProcessObserver>>::
+base::LazyInstance<base::ObserverList<BrowserChildProcessObserver>::Unchecked>::
     DestructorAtExit g_browser_child_process_observers =
         LAZY_INSTANCE_INITIALIZER;
 

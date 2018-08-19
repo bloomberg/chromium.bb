@@ -75,7 +75,7 @@ class FullscreenMediator : public FullscreenModelObserver {
   __strong FullscreenAnimator* animator_ = nil;
   // The FullscreenControllerObservers that need to get notified of model
   // changes.
-  base::ObserverList<FullscreenControllerObserver> observers_;
+  base::ObserverList<FullscreenControllerObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenMediator);
 };

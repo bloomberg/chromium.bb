@@ -140,7 +140,7 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
   NodeRenamingMap node_rename_remove_map_;
 
   // The observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PartnerBookmarksShim);
 };

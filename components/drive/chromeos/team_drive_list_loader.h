@@ -89,7 +89,7 @@ class TeamDriveListLoader {
   std::vector<std::unique_ptr<ChangeList>> change_lists_;
   std::vector<FileOperationCallback> pending_load_callbacks_;
   bool loaded_ = false;
-  base::ObserverList<TeamDriveListObserver> observers_;
+  base::ObserverList<TeamDriveListObserver>::Unchecked observers_;
 
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;              // Not owned.

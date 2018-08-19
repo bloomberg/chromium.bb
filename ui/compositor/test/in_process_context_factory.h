@@ -113,7 +113,7 @@ class InProcessContextFactory : public ContextFactory,
   double refresh_rate_ = 60.0;
   viz::HostFrameSinkManager* const host_frame_sink_manager_;
   viz::FrameSinkManagerImpl* const frame_sink_manager_;
-  base::ObserverList<ContextFactoryObserver> observer_list_;
+  base::ObserverList<ContextFactoryObserver>::Unchecked observer_list_;
 
   viz::RendererSettings renderer_settings_;
   using PerCompositorDataMap =

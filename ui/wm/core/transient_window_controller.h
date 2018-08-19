@@ -40,7 +40,8 @@ class WM_CORE_EXPORT TransientWindowController
 
   static TransientWindowController* instance_;
 
-  base::ObserverList<aura::client::TransientWindowClientObserver> observers_;
+  base::ObserverList<aura::client::TransientWindowClientObserver>::Unchecked
+      observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TransientWindowController);
 };

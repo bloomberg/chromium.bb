@@ -137,7 +137,7 @@ class FakeSyncServiceObserverList {
   }
 
  private:
-  base::ObserverList<syncer::SyncServiceObserver, true> observers_;
+  base::ObserverList<syncer::SyncServiceObserver, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncServiceObserverList);
 };

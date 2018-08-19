@@ -104,7 +104,8 @@ class OAuth2TokenServiceDelegate {
  private:
   // List of observers to notify when refresh token availability changes.
   // Makes sure list is empty on destruction.
-  base::ObserverList<OAuth2TokenService::Observer, true> observer_list_;
+  base::ObserverList<OAuth2TokenService::Observer, true>::Unchecked
+      observer_list_;
 
   void StartBatchChanges();
   void EndBatchChanges();

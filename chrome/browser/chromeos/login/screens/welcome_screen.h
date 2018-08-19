@@ -135,7 +135,7 @@ class WelcomeScreen : public BaseScreen,
   // The exact language code selected by user in the menu.
   std::string selected_language_code_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<WelcomeScreen> weak_factory_;
 

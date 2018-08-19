@@ -89,7 +89,7 @@ class Seat : public aura::client::FocusChangeObserver,
   // DataSource has already been destroyed.
   void OnDataRead(const std::vector<uint8_t>& data);
 
-  base::ObserverList<SeatObserver> observers_;
+  base::ObserverList<SeatObserver>::Unchecked observers_;
   // The platform code is the key in this map as it represents the physical
   // key that was pressed. The value is a potentially rewritten code that the
   // physical key press generated.

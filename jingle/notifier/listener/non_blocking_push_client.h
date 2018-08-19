@@ -65,7 +65,7 @@ class NonBlockingPushClient : public PushClient {
   const scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
   scoped_refptr<Core> core_;
 
-  base::ObserverList<PushClientObserver> observers_;
+  base::ObserverList<PushClientObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<NonBlockingPushClient> weak_ptr_factory_;
 

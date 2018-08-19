@@ -115,7 +115,7 @@ class AudioServiceImpl : public AudioService,
   AudioDeviceInfo ToAudioDeviceInfo(const chromeos::AudioDevice& device);
 
   // List of observers.
-  base::ObserverList<AudioService::Observer> observer_list_;
+  base::ObserverList<AudioService::Observer>::Unchecked observer_list_;
 
   chromeos::CrasAudioHandler* cras_audio_handler_;
 

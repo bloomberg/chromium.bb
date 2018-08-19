@@ -124,8 +124,9 @@ class WM_CORE_EXPORT FocusController : public ActivationClient,
 
   std::unique_ptr<FocusRules> rules_;
 
-  base::ObserverList<ActivationChangeObserver> activation_observers_;
-  base::ObserverList<aura::client::FocusChangeObserver> focus_observers_;
+  base::ObserverList<ActivationChangeObserver>::Unchecked activation_observers_;
+  base::ObserverList<aura::client::FocusChangeObserver>::Unchecked
+      focus_observers_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 

@@ -172,7 +172,8 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
 
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
-  base::ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
+  base::ObserverList<web_modal::ModalDialogHostObserver>::Unchecked
+      observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViews);
 };

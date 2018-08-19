@@ -297,7 +297,7 @@ class TaskManagerInterface {
   void ScheduleRefresh(base::TimeDelta refresh_time);
 
   // The list of observers.
-  base::ObserverList<TaskManagerObserver> observers_;
+  base::ObserverList<TaskManagerObserver>::Unchecked observers_;
 
   // The timer that will be used to schedule the successive refreshes.
   std::unique_ptr<base::RepeatingTimer> refresh_timer_;

@@ -129,7 +129,7 @@ class POLICY_EXPORT CloudPolicyCore {
   std::unique_ptr<CloudPolicyRefreshScheduler> refresh_scheduler_;
   std::unique_ptr<RemoteCommandsService> remote_commands_service_;
   std::unique_ptr<IntegerPrefMember> refresh_delay_;
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyCore);
 };

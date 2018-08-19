@@ -33,7 +33,7 @@ class EVENTS_DEVICES_EXPORT InputDeviceObserverWin {
   void NotifyObserversTouchpadDeviceConfigurationChanged();
 
   std::unique_ptr<base::win::RegKey> registry_key_;
-  base::ObserverList<InputDeviceEventObserver> observers_;
+  base::ObserverList<InputDeviceEventObserver>::Unchecked observers_;
   bool slate_mode_enabled_;
 
   friend struct base::DefaultSingletonTraits<InputDeviceObserverWin>;

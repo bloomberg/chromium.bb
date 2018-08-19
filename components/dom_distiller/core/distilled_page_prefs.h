@@ -74,7 +74,7 @@ class DistilledPagePrefs {
 
 
   PrefService* pref_service_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<DistilledPagePrefs> weak_ptr_factory_;
 

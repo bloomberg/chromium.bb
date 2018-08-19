@@ -62,7 +62,7 @@ class UpdateModel {
   mojom::UpdateType update_type_ = mojom::UpdateType::SYSTEM;
   bool update_over_cellular_available_ = false;
 
-  base::ObserverList<UpdateObserver> observers_;
+  base::ObserverList<UpdateObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateModel);
 };

@@ -49,7 +49,7 @@ class DataSource {
   void OnDataRead(ReadDataCallback callback, const std::vector<uint8_t>&);
 
   DataSourceDelegate* const delegate_;
-  base::ObserverList<DataSourceObserver> observers_;
+  base::ObserverList<DataSourceObserver>::Unchecked observers_;
 
   // Mime types which has been offered.
   std::set<std::string> mime_types_;

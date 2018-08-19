@@ -760,8 +760,7 @@ void MediaRouterMojoImpl::RegisterRouteMessageObserver(
   const MediaRoute::Id& route_id = observer->route_id();
   auto& observer_list = message_observers_[route_id];
   if (!observer_list) {
-    observer_list =
-        std::make_unique<base::ObserverList<RouteMessageObserver>>();
+    observer_list = std::make_unique<RouteMessageObserverList>();
   } else {
     DCHECK(!observer_list->HasObserver(observer));
   }

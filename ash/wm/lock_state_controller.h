@@ -251,7 +251,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
 
   ScopedSessionObserver scoped_session_observer_;
 
-  base::ObserverList<LockStateObserver> observers_;
+  base::ObserverList<LockStateObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<LockStateController> weak_ptr_factory_;
 

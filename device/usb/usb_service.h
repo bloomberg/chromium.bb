@@ -103,7 +103,7 @@ class UsbService {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unordered_map<std::string, scoped_refptr<UsbDevice>> devices_;
   std::unordered_set<std::string> testing_devices_;
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbService);
 };

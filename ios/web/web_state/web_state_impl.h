@@ -337,14 +337,14 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   std::unique_ptr<web::WebUIIOS> web_ui_;
 
   // A list of observers notified when page state changes. Weak references.
-  base::ObserverList<WebStateObserver, true> observers_;
+  base::ObserverList<WebStateObserver, true>::Unchecked observers_;
 
   // All the WebStatePolicyDeciders asked for navigation decision. Weak
   // references.
   // WebStatePolicyDeciders are semantically different from observers (they
   // modify the behavior of the WebState) but are used like observers in the
   // code, hence the ObserverList.
-  base::ObserverList<WebStatePolicyDecider, true> policy_deciders_;
+  base::ObserverList<WebStatePolicyDecider, true>::Unchecked policy_deciders_;
 
   // Map of all the HTTP response headers received, for each URL.
   // This map is cleared after each page load, and only the headers of the main

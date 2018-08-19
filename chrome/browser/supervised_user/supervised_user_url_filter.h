@@ -187,7 +187,7 @@ class SupervisedUserURLFilter {
                      bool uncertain) const;
 
   // This is mutable to allow notification in const member functions.
-  mutable base::ObserverList<Observer> observers_;
+  mutable base::ObserverList<Observer>::Unchecked observers_;
 
   FilteringBehavior default_behavior_;
   std::unique_ptr<Contents> contents_;

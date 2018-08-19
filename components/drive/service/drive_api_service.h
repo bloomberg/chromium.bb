@@ -288,7 +288,7 @@ class DriveAPIService : public DriveServiceInterface,
   std::unique_ptr<google_apis::RequestSender> sender_;
   std::unique_ptr<google_apis::FilesListRequestRunner>
       files_list_request_runner_;
-  base::ObserverList<DriveServiceObserver> observers_;
+  base::ObserverList<DriveServiceObserver>::Unchecked observers_;
   google_apis::DriveApiUrlGenerator url_generator_;
   const std::string custom_user_agent_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;

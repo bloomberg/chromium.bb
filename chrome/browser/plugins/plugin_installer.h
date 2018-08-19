@@ -41,9 +41,9 @@ class PluginInstaller {
   FRIEND_TEST_ALL_PREFIXES(PluginInstallerTest, StartInstalling_FailedStart);
   FRIEND_TEST_ALL_PREFIXES(PluginInstallerTest, StartInstalling_Interrupted);
 
-  base::ObserverList<PluginInstallerObserver> observers_;
+  base::ObserverList<PluginInstallerObserver>::Unchecked observers_;
   int strong_observer_count_;
-  base::ObserverList<WeakPluginInstallerObserver> weak_observers_;
+  base::ObserverList<WeakPluginInstallerObserver>::Unchecked weak_observers_;
   DISALLOW_COPY_AND_ASSIGN(PluginInstaller);
 };
 

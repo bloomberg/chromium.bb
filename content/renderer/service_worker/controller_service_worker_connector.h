@@ -109,7 +109,7 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   // in the renderer process)
   mojom::ControllerServiceWorkerPtr controller_service_worker_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   // The web-exposed client id, used for FetchEvent#clientId (i.e.,
   // ServiceWorkerProviderHost::client_uuid and not

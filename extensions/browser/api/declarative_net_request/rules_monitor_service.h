@@ -102,7 +102,7 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   ExtensionRegistry* const extension_registry_;
   WarningService* const warning_service_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details.

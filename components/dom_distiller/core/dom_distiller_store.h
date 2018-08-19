@@ -134,7 +134,7 @@ class DomDistillerStore : public DomDistillerStoreInterface {
   std::unique_ptr<syncer::SyncErrorFactory> error_factory_;
   std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>> database_;
   bool database_loaded_;
-  base::ObserverList<DomDistillerObserver> observers_;
+  base::ObserverList<DomDistillerObserver>::Unchecked observers_;
 
   DomDistillerModel model_;
 

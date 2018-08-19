@@ -687,7 +687,7 @@ class ExtensionService : public ExtensionServiceInterface,
   // The SharedModuleService used to check for import dependencies.
   std::unique_ptr<SharedModuleService> shared_module_service_;
 
-  base::ObserverList<UpdateObserver, true> update_observers_;
+  base::ObserverList<UpdateObserver, true>::Unchecked update_observers_;
 
   // Migrates app data when upgrading a legacy packaged app to a platform app
   std::unique_ptr<AppDataMigrator> app_data_migrator_;

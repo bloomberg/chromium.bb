@@ -71,7 +71,7 @@ class AuthService : public AuthServiceInterface,
   bool has_refresh_token_;
   std::string access_token_;
   std::vector<std::string> scopes_;
-  base::ObserverList<AuthServiceObserver> observers_;
+  base::ObserverList<AuthServiceObserver>::Unchecked observers_;
   base::ThreadChecker thread_checker_;
 
   // Note: This should remain the last member so it'll be destroyed and

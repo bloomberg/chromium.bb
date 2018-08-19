@@ -175,7 +175,7 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   base::Optional<power_manager::PowerSupplyProperties_ExternalPower>
       external_power_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Holds activity timestamps while we monitor for idle events. It will be
   // converted to an ActivityData when an idle event is sent out.

@@ -233,7 +233,7 @@ class StateController : public ash::mojom::TrayActionClient,
   ash::mojom::TrayActionState lock_screen_note_state_ =
       ash::mojom::TrayActionState::kNotAvailable;
 
-  base::ObserverList<StateObserver> observers_;
+  base::ObserverList<StateObserver>::Unchecked observers_;
 
   mojo::Binding<ash::mojom::TrayActionClient> binding_;
   ash::mojom::TrayActionPtr tray_action_ptr_;

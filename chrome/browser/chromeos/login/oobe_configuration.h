@@ -55,7 +55,7 @@ class OobeConfiguration {
   std::unique_ptr<base::Value> configuration_;
 
   // Observers
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   // Factory of callbacks.
   base::WeakPtrFactory<OobeConfiguration> weak_factory_;

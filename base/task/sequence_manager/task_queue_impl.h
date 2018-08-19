@@ -355,7 +355,7 @@ class BASE_EXPORT TaskQueueImpl {
     std::unique_ptr<WorkQueue> delayed_work_queue;
     std::unique_ptr<WorkQueue> immediate_work_queue;
     std::priority_queue<TaskQueueImpl::Task> delayed_incoming_queue;
-    ObserverList<MessageLoop::TaskObserver> task_observers;
+    ObserverList<MessageLoop::TaskObserver>::Unchecked task_observers;
     size_t set_index;
     HeapHandle heap_handle;
     int is_enabled_refcount;

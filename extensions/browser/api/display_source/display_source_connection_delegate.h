@@ -122,7 +122,7 @@ class DisplaySourceConnectionDelegate : public KeyedService {
   virtual void StopWatchingAvailableSinks() = 0;
 
  protected:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 };
 
 }  // namespace extensions

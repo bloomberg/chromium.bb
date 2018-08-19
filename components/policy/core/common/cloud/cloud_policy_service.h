@@ -125,7 +125,7 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
 
   // Observers who will receive notifications when the service has finished
   // initializing.
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   // Identifier from the stored policy. Policy validations results are only
   // reported once if the validated policy's data signature matches with this

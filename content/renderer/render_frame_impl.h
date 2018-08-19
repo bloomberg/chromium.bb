@@ -1410,7 +1410,7 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererWebCookieJarImpl cookie_jar_;
 
   // All the registered observers.
-  base::ObserverList<RenderFrameObserver> observers_;
+  base::ObserverList<RenderFrameObserver>::Unchecked observers_;
 
   // External context menu requests we're waiting for. "Internal"
   // (WebKit-originated) context menu events will have an ID of 0 and will not

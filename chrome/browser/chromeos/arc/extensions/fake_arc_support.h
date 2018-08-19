@@ -137,7 +137,7 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   bool tos_shown_ = false;
   std::string active_directory_auth_federation_url_;
   std::string active_directory_auth_device_management_url_prefix_;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::WeakPtrFactory<FakeArcSupport> weak_ptr_factory_;
 

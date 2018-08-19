@@ -205,7 +205,7 @@ class CrostiniRegistryService : public KeyedService {
   // stored.
   base::FilePath base_icon_path_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   const base::Clock* clock_;
 

@@ -191,7 +191,7 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<std::set<url::Origin>> origin_set_;
   std::map<url::Origin, int64_t> origin_size_map_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);
 };

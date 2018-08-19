@@ -114,7 +114,7 @@ class DataUseAscriber {
   virtual void DisableAscriber();
 
  protected:
-  base::ObserverList<PageLoadObserver> observers_;
+  base::ObserverList<PageLoadObserver>::Unchecked observers_;
 
  private:
   THREAD_CHECKER(thread_checker_);

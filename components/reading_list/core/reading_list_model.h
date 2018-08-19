@@ -158,7 +158,7 @@ class ReadingListModel {
   virtual ~ReadingListModel();
 
   // The observers.
-  base::ObserverList<ReadingListModelObserver> observers_;
+  base::ObserverList<ReadingListModelObserver>::Unchecked observers_;
 
   // Tells model that batch updates have completed. Called from
   // ReadingListBatchUpdateToken dtor.

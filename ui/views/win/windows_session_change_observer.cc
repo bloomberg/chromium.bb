@@ -98,7 +98,8 @@ class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
       observer.ClearCallback();
   }
 
-  base::ObserverList<WindowsSessionChangeObserver, true> observer_list_;
+  base::ObserverList<WindowsSessionChangeObserver, true>::Unchecked
+      observer_list_;
   std::unique_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WtsRegistrationNotificationManager);

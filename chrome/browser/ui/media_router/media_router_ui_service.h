@@ -51,7 +51,7 @@ class MediaRouterUIService : public KeyedService {
   std::unique_ptr<MediaRouterActionController> action_controller_;
   std::unique_ptr<PrefChangeRegistrar> profile_pref_registrar_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterUIService);
 };

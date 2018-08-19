@@ -103,7 +103,7 @@ class IconImage : public content::NotificationObserver {
   ExtensionIconSet icon_set_;
   const int resource_size_in_dip_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   Source* source_;  // Owned by ImageSkia storage.
   gfx::ImageSkia image_skia_;

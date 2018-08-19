@@ -82,7 +82,7 @@ class FakeSignalStrategy : public SignalStrategy {
 
   SignalingAddress address_;
   PeerCallback peer_callback_;
-  base::ObserverList<Listener, true> listeners_;
+  base::ObserverList<Listener, true>::Unchecked listeners_;
 
   int last_id_;
 

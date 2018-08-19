@@ -213,8 +213,8 @@ class ExtensionHost : public DeferredStartRenderHost,
   // started only once the ExtensionHost has exited the ExtensionHostQueue.
   std::unique_ptr<base::ElapsedTimer> load_start_;
 
-  base::ObserverList<ExtensionHostObserver> observer_list_;
-  base::ObserverList<DeferredStartRenderHostObserver>
+  base::ObserverList<ExtensionHostObserver>::Unchecked observer_list_;
+  base::ObserverList<DeferredStartRenderHostObserver>::Unchecked
       deferred_start_render_host_observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);

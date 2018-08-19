@@ -111,7 +111,7 @@ class ArcIntentHelperBridge
   // handle a URL without handing off to Android.
   std::vector<IntentFilter> intent_filters_;
 
-  base::ObserverList<ArcIntentHelperObserver> observer_list_;
+  base::ObserverList<ArcIntentHelperObserver>::Unchecked observer_list_;
 
   // about: and chrome://settings pages assistant requires to launch via
   // OnOpenChromePage.

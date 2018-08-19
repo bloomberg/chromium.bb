@@ -91,7 +91,7 @@ class CHROMEOS_EXPORT NetworkSmsHandler : public ShillPropertyChangedObserver {
                                 DBusMethodCallStatus call_status,
                                 const base::DictionaryValue& properties);
 
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
   std::vector<std::unique_ptr<NetworkSmsDeviceHandler>> device_handlers_;
   std::vector<std::unique_ptr<base::DictionaryValue>> received_messages_;
   base::WeakPtrFactory<NetworkSmsHandler> weak_ptr_factory_;

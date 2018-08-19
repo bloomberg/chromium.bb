@@ -542,7 +542,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // Bindings for the WallpaperController interface.
   mojo::BindingSet<mojom::WallpaperController> bindings_;
 
-  base::ObserverList<WallpaperControllerObserver> observers_;
+  base::ObserverList<WallpaperControllerObserver>::Unchecked observers_;
 
   mojo::AssociatedInterfacePtrSet<mojom::WallpaperObserver> mojo_observers_;
 

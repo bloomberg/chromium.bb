@@ -61,7 +61,7 @@ class WindowControllerList {
   // Entries are not owned by this class and must be removed when destroyed.
   ControllerList windows_;
 
-  base::ObserverList<WindowControllerListObserver> observers_;
+  base::ObserverList<WindowControllerListObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowControllerList);
 };

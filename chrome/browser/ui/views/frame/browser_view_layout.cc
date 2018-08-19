@@ -115,7 +115,7 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
 
   BrowserViewLayout* const browser_view_layout_;
 
-  base::ObserverList<ModalDialogHostObserver> observer_list_;
+  base::ObserverList<ModalDialogHostObserver>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogHostViews);
 };

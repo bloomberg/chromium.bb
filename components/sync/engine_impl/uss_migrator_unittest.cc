@@ -106,7 +106,7 @@ class UssMigratorTest : public ::testing::Test {
   CancelationSignal cancelation_signal_;
   std::unique_ptr<TestEntryFactory> entry_factory_;
   MockNudgeHandler nudge_handler_;
-  base::ObserverList<TypeDebugInfoObserver> debug_observers_;
+  base::ObserverList<TypeDebugInfoObserver>::Unchecked debug_observers_;
   NonBlockingTypeDebugInfoEmitter debug_emitter_;
   MockModelTypeProcessor* processor_ = nullptr;
   std::unique_ptr<ModelTypeWorker> worker_;

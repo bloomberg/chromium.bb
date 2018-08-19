@@ -88,7 +88,7 @@ class BackendMigrator {
 
   State state_;
 
-  base::ObserverList<MigrationObserver> migration_observers_;
+  base::ObserverList<MigrationObserver>::Unchecked migration_observers_;
 
   ModelTypeSet to_migrate_;
 

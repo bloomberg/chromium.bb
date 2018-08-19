@@ -21,7 +21,8 @@ namespace content {
 
 namespace {
 
-using WorkerThreadObservers = base::ObserverList<WorkerThread::Observer>;
+using WorkerThreadObservers =
+    base::ObserverList<WorkerThread::Observer>::Unchecked;
 using ThreadLocalWorkerThreadObservers =
     base::ThreadLocalPointer<WorkerThreadObservers>;
 

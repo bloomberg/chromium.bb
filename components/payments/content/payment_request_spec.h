@@ -217,7 +217,7 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
 
   // The |observer_for_testing_| will fire after all the |observers_| have been
   // notified.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSpec);
 };

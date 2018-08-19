@@ -371,7 +371,7 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
 
   ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_;
 
-  base::ObserverList<ToolbarActionsBarObserver> observers_;
+  base::ObserverList<ToolbarActionsBarObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<ToolbarActionsBar> weak_ptr_factory_;
 

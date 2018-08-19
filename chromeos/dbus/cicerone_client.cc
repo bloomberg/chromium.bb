@@ -386,7 +386,7 @@ class CiceroneClientImpl : public CiceroneClient {
 
   dbus::ObjectProxy* cicerone_proxy_ = nullptr;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   bool is_container_started_signal_connected_ = false;
   bool is_container_shutdown_signal_connected_ = false;

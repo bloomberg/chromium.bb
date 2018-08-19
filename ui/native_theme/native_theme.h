@@ -436,7 +436,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
  private:
   // Observers to notify when the native theme changes.
-  base::ObserverList<NativeThemeObserver> native_theme_observers_;
+  base::ObserverList<NativeThemeObserver>::Unchecked native_theme_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTheme);
 };

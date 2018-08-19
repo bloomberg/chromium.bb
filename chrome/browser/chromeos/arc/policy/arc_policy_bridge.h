@@ -176,7 +176,7 @@ class ArcPolicyBridge : public KeyedService,
   // since the most recent policy update notificaton was already reported.
   bool compliance_since_update_timing_reported_ = false;
 
-  base::ObserverList<Observer, true /* check_empty */> observers_;
+  base::ObserverList<Observer, true /* check_empty */>::Unchecked observers_;
 
   // Called when the ARC connection is ready.
   base::OnceClosure on_arc_instance_ready_callback_;

@@ -74,7 +74,7 @@ class FontPrefChangeNotifier : public PrefObserver, public KeyedService {
 
   // Non-owning pointers to the Registrars that have registered themselves
   // with us. We expect few registrars.
-  base::ObserverList<Registrar> registrars_;
+  base::ObserverList<Registrar>::Unchecked registrars_;
 
   DISALLOW_COPY_AND_ASSIGN(FontPrefChangeNotifier);
 };

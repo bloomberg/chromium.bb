@@ -117,7 +117,7 @@ class HEADLESS_EXPORT Domain {
 
   internal::MessageDispatcher* dispatcher_;  // Not owned.
   {% if "events" in domain %}
-  base::ObserverList<ExperimentalObserver> observers_;
+  base::ObserverList<ExperimentalObserver>::Unchecked observers_;
   {% endif %}
 
   {% if "events" in domain %}

@@ -537,7 +537,7 @@ class AURA_EXPORT WindowTreeClient
   // server uses this to let us synchronously read the cursor location.
   mojo::ScopedSharedBufferMapping cursor_location_mapping_;
 
-  base::ObserverList<WindowTreeClientObserver> observers_;
+  base::ObserverList<WindowTreeClientObserver>::Unchecked observers_;
 
   bool has_pointer_watcher_ = false;
 
@@ -550,7 +550,7 @@ class AURA_EXPORT WindowTreeClient
 
   std::unique_ptr<DragDropControllerMus> drag_drop_controller_;
 
-  base::ObserverList<WindowTreeClientTestObserver> test_observers_;
+  base::ObserverList<WindowTreeClientTestObserver>::Unchecked test_observers_;
 
   // IO thread for GPU and discardable shared memory IPC.
   std::unique_ptr<base::Thread> io_thread_;

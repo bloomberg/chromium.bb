@@ -222,7 +222,8 @@ class WebUILoginView : public views::View,
   // FocusCyclerDelegate.
   bool delegates_lock_screen_app_focus_cycle_ = false;
 
-  base::ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
+  base::ObserverList<web_modal::ModalDialogHostObserver>::Unchecked
+      observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginView);
 };

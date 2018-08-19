@@ -96,7 +96,7 @@ class TestImageTransportFactory : public ui::ContextFactory,
   viz::RendererSettings renderer_settings_;
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
   scoped_refptr<viz::ContextProvider> shared_main_context_provider_;
-  base::ObserverList<ui::ContextFactoryObserver> observer_list_;
+  base::ObserverList<ui::ContextFactoryObserver>::Unchecked observer_list_;
   viz::HostFrameSinkManager host_frame_sink_manager_;
 
   // Objects that exist if |enable_viz_| is false.

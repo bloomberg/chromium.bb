@@ -72,7 +72,8 @@ class SyntheticTrialRegistry {
   std::vector<SyntheticTrialGroup> synthetic_trial_groups_;
 
   // List of observers of |synthetic_trial_groups_| changes.
-  base::ObserverList<SyntheticTrialObserver> synthetic_trial_observer_list_;
+  base::ObserverList<SyntheticTrialObserver>::Unchecked
+      synthetic_trial_observer_list_;
 };
 
 }  // namespace variations

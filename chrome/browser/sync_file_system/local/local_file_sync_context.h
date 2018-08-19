@@ -368,7 +368,8 @@ class LocalFileSyncContext
   // ApplyRemoteChange(). Modified only on IO thread.
   std::unique_ptr<RootDeleteHelper> root_delete_helper_;
 
-  base::ObserverList<LocalOriginChangeObserver> origin_change_observers_;
+  base::ObserverList<LocalOriginChangeObserver>::Unchecked
+      origin_change_observers_;
 
   int mock_notify_changes_duration_in_sec_;
 

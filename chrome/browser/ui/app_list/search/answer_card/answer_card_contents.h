@@ -72,7 +72,7 @@ class AnswerCardContents {
 
  private:
   // Results receiving input events.
-  base::ObserverList<AnswerCardResult> results_;
+  base::ObserverList<AnswerCardResult>::Unchecked results_;
   // Unowned delegate that handles content-related events.
   Delegate* delegate_ = nullptr;
 

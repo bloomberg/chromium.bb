@@ -78,7 +78,7 @@ class DISPLAY_MANAGER_EXPORT ForwardingDisplayDelegate
   // Call OnDisplaySnapshotsInvalidated() on observers before invalidating them.
   std::vector<std::unique_ptr<DisplaySnapshot>> snapshots_;
 
-  base::ObserverList<display::NativeDisplayObserver> observers_;
+  base::ObserverList<display::NativeDisplayObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingDisplayDelegate);
 };

@@ -73,7 +73,7 @@ class CastConfigController : public ash::mojom::CastConfig {
 
   std::vector<mojom::SinkAndRoutePtr> sinks_and_routes_;
 
-  base::ObserverList<CastConfigControllerObserver> observers_;
+  base::ObserverList<CastConfigControllerObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CastConfigController);
 };

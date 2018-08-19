@@ -85,7 +85,7 @@ class STORAGE_EXPORT SpecialStoragePolicy
   void NotifyRevoked(const GURL& origin, int change_flags);
   void NotifyCleared();
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 };
 
 }  // namespace storage

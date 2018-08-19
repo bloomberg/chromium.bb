@@ -145,7 +145,7 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   base::TimeTicks creation_time_;
 
   // Observers for DialogModel changes.
-  base::ObserverList<DialogObserver> observer_list_;
+  base::ObserverList<DialogObserver>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogDelegate);
 };

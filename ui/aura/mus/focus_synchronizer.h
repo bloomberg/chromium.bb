@@ -81,7 +81,7 @@ class AURA_EXPORT FocusSynchronizer : public client::FocusChangeObserver,
   FocusSynchronizerDelegate* delegate_;
   ui::mojom::WindowTree* window_tree_;
 
-  base::ObserverList<FocusSynchronizerObserver> observers_;
+  base::ObserverList<FocusSynchronizerObserver>::Unchecked observers_;
 
   bool setting_focus_ = false;
   WindowMus* window_setting_focus_to_ = nullptr;

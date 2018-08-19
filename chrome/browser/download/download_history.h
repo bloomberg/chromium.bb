@@ -165,7 +165,7 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
 
   bool initial_history_query_complete_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<DownloadHistory> weak_ptr_factory_;
 

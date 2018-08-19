@@ -187,7 +187,8 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
   bool spellcheck_enabled_;
 
   // Observers of update dictionary events.
-  base::ObserverList<DictionaryUpdateObserver> dictionary_update_observers_;
+  base::ObserverList<DictionaryUpdateObserver>::Unchecked
+      dictionary_update_observers_;
 
   base::WeakPtrFactory<SpellCheck> weak_factory_;
 

@@ -106,7 +106,8 @@ class TestChromotingClient : public ClientUserInterface,
   // List of observers which are notified when remote connection events occur.
   // We specify true below for the 'check_empty' flag so the list will check to
   // see if all observers have been unregistered when it is destroyed.
-  base::ObserverList<RemoteConnectionObserver, true> connection_observers_;
+  base::ObserverList<RemoteConnectionObserver, true>::Unchecked
+      connection_observers_;
 
   // ConnectionToHost used by TestChromotingClient tests.
   std::unique_ptr<protocol::ConnectionToHost> test_connection_to_host_;

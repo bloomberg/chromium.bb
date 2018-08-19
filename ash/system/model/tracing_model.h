@@ -40,7 +40,7 @@ class ASH_EXPORT TracingModel {
   // True if performance tracing is enabled.
   bool is_tracing_ = false;
 
-  base::ObserverList<TracingObserver> observers_;
+  base::ObserverList<TracingObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingModel);
 };

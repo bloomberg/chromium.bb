@@ -59,7 +59,7 @@ class BleScanner {
   void NotifyDiscoverySessionStateChanged(bool discovery_session_active);
 
  private:
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BleScanner);
 };

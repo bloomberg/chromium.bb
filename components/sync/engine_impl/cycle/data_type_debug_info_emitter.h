@@ -33,11 +33,11 @@ class TypeDebugInfoObserver;
 // information on demand.
 class DataTypeDebugInfoEmitter {
  public:
+  using ObserverListType = base::ObserverList<TypeDebugInfoObserver>::Unchecked;
+
   // The |observers| is not owned.  |observers| may be modified outside of this
   // object and is expected to outlive this object.
-  DataTypeDebugInfoEmitter(
-      ModelType type,
-      base::ObserverList<TypeDebugInfoObserver>* observers);
+  DataTypeDebugInfoEmitter(ModelType type, ObserverListType* observers);
 
   virtual ~DataTypeDebugInfoEmitter();
 
@@ -71,7 +71,7 @@ class DataTypeDebugInfoEmitter {
   // doesn't make sense to have them manage their own observer list.  They all
   // share one observer list that is provided by their owner and which is
   // guaranteed to outlive them.
-  base::ObserverList<TypeDebugInfoObserver>* type_debug_info_observers_;
+  ObserverListType* type_debug_info_observers_;
 
  private:
   // The actual up-to-date counters.

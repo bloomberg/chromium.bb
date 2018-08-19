@@ -180,7 +180,7 @@ class ASH_EXPORT ScreenRotationAnimator {
   std::unique_ptr<ui::AnimationMetricsReporter> metrics_reporter_;
   // Only set in unittest to disable animation timers.
   bool disable_animation_timers_for_test_;
-  base::ObserverList<ScreenRotationAnimatorObserver>
+  base::ObserverList<ScreenRotationAnimatorObserver>::Unchecked
       screen_rotation_animator_observers_;
   std::unique_ptr<ui::LayerTreeOwner> old_layer_tree_owner_;
   std::unique_ptr<ui::LayerTreeOwner> new_layer_tree_owner_;

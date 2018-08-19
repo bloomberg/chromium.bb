@@ -386,7 +386,7 @@ class SupervisedUserService : public KeyedService,
       registry_observer_;
 #endif
 
-  base::ObserverList<SupervisedUserServiceObserver> observer_list_;
+  base::ObserverList<SupervisedUserServiceObserver>::Unchecked observer_list_;
 
   base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_;
 

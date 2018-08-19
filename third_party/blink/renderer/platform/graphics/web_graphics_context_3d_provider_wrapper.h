@@ -48,7 +48,7 @@ class PLATFORM_EXPORT WebGraphicsContext3DProviderWrapper {
  private:
   std::unique_ptr<GraphicsContext3DUtils> utils_;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
-  base::ObserverList<DestructionObserver> observers_;
+  base::ObserverList<DestructionObserver>::Unchecked observers_;
   base::WeakPtrFactory<WebGraphicsContext3DProviderWrapper> weak_ptr_factory_;
 };
 

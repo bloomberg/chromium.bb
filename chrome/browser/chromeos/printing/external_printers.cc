@@ -352,7 +352,7 @@ class ExternalPrintersImpl : public ExternalPrinters {
   // The computed set of printers.
   PrinterView printers_;
 
-  base::ObserverList<ExternalPrinters::Observer> observers_;
+  base::ObserverList<ExternalPrinters::Observer>::Unchecked observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<ExternalPrintersImpl> weak_ptr_factory_;

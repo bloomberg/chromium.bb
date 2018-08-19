@@ -85,7 +85,7 @@ class ASH_EXPORT LockScreenActionBackgroundController {
   LockScreenActionBackgroundState state_ =
       LockScreenActionBackgroundState::kHidden;
 
-  base::ObserverList<LockScreenActionBackgroundObserver> observers_;
+  base::ObserverList<LockScreenActionBackgroundObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenActionBackgroundController);
 };

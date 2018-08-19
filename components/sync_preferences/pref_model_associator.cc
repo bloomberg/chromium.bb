@@ -433,10 +433,9 @@ bool PrefModelAssociator::IsPrefSynced(const std::string& name) const {
 
 void PrefModelAssociator::AddSyncedPrefObserver(const std::string& name,
                                                 SyncedPrefObserver* observer) {
-  std::unique_ptr<base::ObserverList<SyncedPrefObserver>>& observers =
-      synced_pref_observers_[name];
+  auto& observers = synced_pref_observers_[name];
   if (!observers)
-    observers = std::make_unique<base::ObserverList<SyncedPrefObserver>>();
+    observers = std::make_unique<SyncedPrefObserverList>();
 
   observers->AddObserver(observer);
 }

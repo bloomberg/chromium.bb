@@ -111,7 +111,7 @@ class NET_EXPORT SSLConfigService {
   static void SetCRLSet(scoped_refptr<CRLSet> crl_set, bool if_newer);
 
  private:
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 };
 
 }  // namespace net

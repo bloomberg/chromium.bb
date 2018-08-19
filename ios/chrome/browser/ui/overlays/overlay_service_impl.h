@@ -24,7 +24,7 @@ class OverlayServiceImpl : public BrowserListObserver,
 
  private:
   // The OverlayServiceObservers.
-  base::ObserverList<OverlayServiceObserver> observers_;
+  base::ObserverList<OverlayServiceObserver>::Unchecked observers_;
   // The BrowserList passed on implementation.
   BrowserList* browser_list_;
 

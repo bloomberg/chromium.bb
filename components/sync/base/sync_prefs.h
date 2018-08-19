@@ -263,7 +263,7 @@ class SyncPrefs : public SessionSyncPrefs,
   // May be null.
   PrefService* const pref_service_;
 
-  base::ObserverList<SyncPrefObserver> sync_pref_observers_;
+  base::ObserverList<SyncPrefObserver>::Unchecked sync_pref_observers_;
 
   // The preference that controls whether sync is under control by
   // configuration management.

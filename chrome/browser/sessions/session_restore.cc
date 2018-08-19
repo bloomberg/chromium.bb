@@ -936,8 +936,8 @@ base::CallbackList<void(int)>*
     SessionRestore::on_session_restored_callbacks_ = nullptr;
 
 // static
-base::ObserverList<SessionRestoreObserver>* SessionRestore::observers_ =
-    nullptr;
+base::ObserverList<SessionRestoreObserver>::Unchecked*
+    SessionRestore::observers_ = nullptr;
 
 // static
 bool SessionRestore::session_restore_started_ = false;

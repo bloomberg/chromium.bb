@@ -214,7 +214,7 @@ class CONTENT_EXPORT AppCacheServiceImpl
   base::Time last_reinit_time_;
   base::TimeDelta next_reinit_delay_;
   base::OneShotTimer reinit_timer_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // In the network service world contains the pointer to the
   // URLLoaderFactoryGetter instance which is used to get to the network

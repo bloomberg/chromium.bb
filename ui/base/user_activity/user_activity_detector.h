@@ -67,7 +67,7 @@ class UI_BASE_EXPORT UserActivityDetector : public PlatformEventObserver {
   // since the last notification.
   void HandleActivity(const ui::Event* event);
 
-  base::ObserverList<UserActivityObserver> observers_;
+  base::ObserverList<UserActivityObserver>::Unchecked observers_;
 
   // Last time at which user activity was observed.
   base::TimeTicks last_activity_time_;

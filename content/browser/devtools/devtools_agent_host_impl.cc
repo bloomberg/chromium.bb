@@ -35,8 +35,8 @@ typedef std::map<std::string, DevToolsAgentHostImpl*> DevToolsMap;
 base::LazyInstance<DevToolsMap>::Leaky g_devtools_instances =
     LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<base::ObserverList<DevToolsAgentHostObserver>>::Leaky
-    g_devtools_observers = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ObserverList<DevToolsAgentHostObserver>::Unchecked>::
+    Leaky g_devtools_observers = LAZY_INSTANCE_INITIALIZER;
 
 // Returns a list of all active hosts on browser targets.
 DevToolsAgentHost::List GetBrowserAgentHosts() {

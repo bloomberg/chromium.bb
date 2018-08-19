@@ -139,7 +139,7 @@ class AssistantInteractionModel {
   std::unique_ptr<AssistantResponse> pending_response_;
   std::unique_ptr<AssistantResponse> response_;
 
-  base::ObserverList<AssistantInteractionModelObserver> observers_;
+  base::ObserverList<AssistantInteractionModelObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantInteractionModel);
 };

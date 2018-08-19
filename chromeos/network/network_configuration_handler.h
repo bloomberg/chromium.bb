@@ -230,7 +230,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
   std::map<std::string, network_handler::ServiceResultCallback>
       configure_callbacks_;
 
-  base::ObserverList<NetworkConfigurationObserver, true> observers_;
+  base::ObserverList<NetworkConfigurationObserver, true>::Unchecked observers_;
 
   base::WeakPtrFactory<NetworkConfigurationHandler> weak_ptr_factory_;
 

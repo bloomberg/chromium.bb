@@ -127,7 +127,7 @@ class GPU_GLES2_EXPORT ShaderTranslator : public ShaderTranslatorInterface {
   ShCompileOptions compile_options_;
   scoped_refptr<OptionsAffectingCompilationString>
       options_affecting_compilation_;
-  base::ObserverList<DestructionObserver> destruction_observers_;
+  base::ObserverList<DestructionObserver>::Unchecked destruction_observers_;
 };
 
 }  // namespace gles2

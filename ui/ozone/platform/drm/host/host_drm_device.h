@@ -165,7 +165,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   THREAD_CHECKER(on_ui_thread_);
 
   bool connected_ = false;
-  base::ObserverList<GpuThreadObserver> gpu_thread_observers_;
+  base::ObserverList<GpuThreadObserver>::Unchecked gpu_thread_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(HostDrmDevice);
 };

@@ -115,7 +115,7 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
   Profile* profile_;
   std::unique_ptr<content::WebContents> web_contents_;
   content::NotificationRegistrar registrar_;
-  base::ObserverList<extensions::DeferredStartRenderHostObserver>
+  base::ObserverList<extensions::DeferredStartRenderHostObserver>::Unchecked
       deferred_start_render_host_observer_list_;
 
   // The initial URL to load.

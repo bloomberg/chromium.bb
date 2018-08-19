@@ -320,7 +320,7 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   // lock screen apps are enabled.
   PrefChangeRegistrar pref_change_registrar_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   content::NotificationRegistrar registrar_;
 

@@ -193,7 +193,7 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   vm_tools::cicerone::SetUpLxdContainerUserResponse
       setup_lxd_container_user_response_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCiceroneClient);
 };

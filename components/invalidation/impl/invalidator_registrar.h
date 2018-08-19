@@ -81,7 +81,7 @@ class INVALIDATION_EXPORT InvalidatorRegistrar {
   typedef std::map<InvalidationHandler*, ObjectIdSet> HandlerIdsMap;
 
   base::ThreadChecker thread_checker_;
-  base::ObserverList<InvalidationHandler, true> handlers_;
+  base::ObserverList<InvalidationHandler, true>::Unchecked handlers_;
   HandlerIdsMap handler_to_ids_map_;
   InvalidatorState state_;
 

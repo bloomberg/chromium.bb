@@ -84,7 +84,7 @@ class KeepAliveOperation : public MessageTransferOperation {
 
   cryptauth::RemoteDeviceRef remote_device_;
   base::Clock* clock_;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::Time keep_alive_tickle_request_start_time_;
 

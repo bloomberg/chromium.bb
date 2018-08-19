@@ -91,7 +91,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CATransactionCoordinator {
 
   bool active_ = false;
   bool disabled_for_testing_ = false;
-  base::ObserverList<PreCommitObserver> pre_commit_observers_;
+  base::ObserverList<PreCommitObserver>::Unchecked pre_commit_observers_;
   std::set<scoped_refptr<PostCommitObserver>> post_commit_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CATransactionCoordinator);

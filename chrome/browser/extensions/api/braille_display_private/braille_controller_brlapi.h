@@ -78,7 +78,7 @@ class BrailleControllerImpl : public BrailleController {
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   // Manipulated on the UI thread.
-  base::ObserverList<BrailleObserver> observers_;
+  base::ObserverList<BrailleObserver>::Unchecked observers_;
 
   // Manipulated by the SequencedTaskRunner.
   base::FilePathWatcher file_path_watcher_;

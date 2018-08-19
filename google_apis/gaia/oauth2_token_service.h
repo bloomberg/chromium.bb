@@ -392,7 +392,8 @@ class OAuth2TokenService {
   std::map<RequestParameters, std::unique_ptr<Fetcher>> pending_fetchers_;
 
   // List of observers to notify when access token status changes.
-  base::ObserverList<DiagnosticsObserver, true> diagnostics_observer_list_;
+  base::ObserverList<DiagnosticsObserver, true>::Unchecked
+      diagnostics_observer_list_;
 
   // The depth of batch changes.
   int batch_change_depth_;

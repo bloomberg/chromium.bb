@@ -194,7 +194,7 @@ class AppMenu : public views::MenuDelegate,
   // The bit mask of RunFlags.
   const int run_flags_;
 
-  base::ObserverList<AppMenuObserver> observer_list_;
+  base::ObserverList<AppMenuObserver>::Unchecked observer_list_;
 
   // Records the time from when menu opens to when the user selects a menu item.
   base::ElapsedTimer menu_opened_timer_;

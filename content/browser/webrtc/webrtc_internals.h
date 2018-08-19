@@ -187,7 +187,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
                                     int lid,
                                     size_t* index = nullptr);
 
-  base::ObserverList<WebRTCInternalsUIObserver> observers_;
+  base::ObserverList<WebRTCInternalsUIObserver>::Unchecked observers_;
 
   // |peer_connection_data_| is a list containing all the PeerConnection
   // updates.

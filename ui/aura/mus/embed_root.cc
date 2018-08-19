@@ -84,7 +84,7 @@ class EmbeddedFocusClient : public client::FocusClient, public WindowObserver {
 
   Window* focused_window_ = nullptr;
 
-  base::ObserverList<client::FocusChangeObserver> observers_;
+  base::ObserverList<client::FocusChangeObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedFocusClient);
 };

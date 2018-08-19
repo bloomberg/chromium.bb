@@ -393,7 +393,7 @@ class ProxyConfigServiceAndroid::Delegate
   ScopedJavaGlobalRef<jobject> java_proxy_change_listener_;
 
   JNIDelegateImpl jni_delegate_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   scoped_refptr<base::SequencedTaskRunner> network_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> jni_task_runner_;
   GetPropertyCallback get_property_callback_;

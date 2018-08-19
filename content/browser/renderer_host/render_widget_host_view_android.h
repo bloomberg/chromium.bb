@@ -499,7 +499,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 
-  base::ObserverList<DestructionObserver> destruction_observers_;
+  base::ObserverList<DestructionObserver>::Unchecked destruction_observers_;
 
   MouseWheelPhaseHandler mouse_wheel_phase_handler_;
   uint32_t latest_capture_sequence_number_ = 0u;

@@ -23,7 +23,7 @@ static TabModelList::TabModelVector& tab_models() {
 }  // namespace
 
 // static
-base::LazyInstance<base::ObserverList<TabModelListObserver>>::Leaky
+base::LazyInstance<base::ObserverList<TabModelListObserver>::Unchecked>::Leaky
     TabModelList::observers_ = LAZY_INSTANCE_INITIALIZER;
 
 void TabModelList::AddTabModel(TabModel* tab_model) {

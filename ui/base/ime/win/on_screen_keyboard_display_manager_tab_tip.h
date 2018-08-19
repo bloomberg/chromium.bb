@@ -47,7 +47,8 @@ class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManagerTabTip final
   void NotifyKeyboardHidden();
 
   std::unique_ptr<OnScreenKeyboardDetector> keyboard_detector_;
-  base::ObserverList<InputMethodKeyboardControllerObserver, false> observers_;
+  base::ObserverList<InputMethodKeyboardControllerObserver, false>::Unchecked
+      observers_;
   HWND hwnd_;
 
   // The location of TabTip.exe.

@@ -66,7 +66,7 @@ class UI_BASE_IME_EXPORT MockInputMethod : public InputMethod {
       override;
 
   TextInputClient* text_input_client_;
-  base::ObserverList<InputMethodObserver> observer_list_;
+  base::ObserverList<InputMethodObserver>::Unchecked observer_list_;
   internal::InputMethodDelegate* delegate_;
 
   std::vector<std::unique_ptr<ui::KeyEvent>> key_events_for_testing_;

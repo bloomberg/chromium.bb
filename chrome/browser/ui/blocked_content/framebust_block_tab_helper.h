@@ -74,7 +74,7 @@ class FramebustBlockTabHelper
   // Remembers if the animation has run.
   bool animation_has_run_ = false;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FramebustBlockTabHelper);
 };

@@ -110,7 +110,7 @@ class DialogPlate : public views::View,
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
 
-  base::ObserverList<DialogPlateObserver> observers_;
+  base::ObserverList<DialogPlateObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogPlate);
 };

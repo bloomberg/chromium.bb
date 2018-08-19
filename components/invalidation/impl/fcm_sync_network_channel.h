@@ -68,7 +68,7 @@ class FCMSyncNetworkChannel : public NetworkChannel {
   int received_messages_count_;
   std::string token_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 };
 }  // namespace syncer
 

@@ -258,7 +258,7 @@ class DialServiceImpl : public DialService {
   base::TimeDelta request_interval_;
 
   // List of observers.
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::CancelableTaskTracker task_tracker_;
 

@@ -103,7 +103,7 @@ class CHROMEOS_EXPORT FakeBiodClient : public BiodClient {
   // The current session of the fake storage.
   FingerprintSession current_session_ = FingerprintSession::NONE;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBiodClient);
 };

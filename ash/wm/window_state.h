@@ -438,7 +438,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // displays are restored to their previous states.
   base::Optional<PersistentWindowInfo> persistent_window_info_;
 
-  base::ObserverList<WindowStateObserver> observer_list_;
+  base::ObserverList<WindowStateObserver>::Unchecked observer_list_;
 
   // True to ignore a property change event to avoid reentrance in
   // UpdateWindowStateType()

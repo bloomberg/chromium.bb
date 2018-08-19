@@ -341,11 +341,9 @@ void MDnsClientImpl::Core::AddListener(
     MDnsListenerImpl* listener) {
   ListenerKey key(listener->GetName(), listener->GetType());
 
-  std::unique_ptr<base::ObserverList<MDnsListenerImpl>>& observer_list =
-      listeners_[key];
-
+  auto& observer_list = listeners_[key];
   if (!observer_list)
-    observer_list = std::make_unique<base::ObserverList<MDnsListenerImpl>>();
+    observer_list = std::make_unique<ObserverListType>();
 
   observer_list->AddObserver(listener);
 }

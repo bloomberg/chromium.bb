@@ -49,7 +49,7 @@ class HeadlessNativeDisplayDelegate : public display::NativeDisplayDelegate {
   int64_t next_display_id() { return next_display_id_++; }
   std::unique_ptr<display::DisplaySnapshot> current_snapshot_;
 
-  base::ObserverList<display::NativeDisplayObserver> observers_;
+  base::ObserverList<display::NativeDisplayObserver>::Unchecked observers_;
 
   // The next available display id.
   int64_t next_display_id_ = 0;

@@ -102,7 +102,7 @@ class SESSION_EXPORT SessionManager {
   // Keeps track of user sessions.
   std::vector<Session> sessions_;
 
-  base::ObserverList<SessionManagerObserver> observers_;
+  base::ObserverList<SessionManagerObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);
 };

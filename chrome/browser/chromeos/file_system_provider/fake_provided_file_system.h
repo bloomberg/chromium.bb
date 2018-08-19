@@ -183,7 +183,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   OpenedFiles opened_files_;
   int last_file_handle_;
   base::CancelableTaskTracker tracker_;
-  base::ObserverList<ProvidedFileSystemObserver> observers_;
+  base::ObserverList<ProvidedFileSystemObserver>::Unchecked observers_;
   Watchers watchers_;
 
   base::WeakPtrFactory<FakeProvidedFileSystem> weak_ptr_factory_;

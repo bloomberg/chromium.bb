@@ -130,7 +130,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
   // The user for whom the user policy will be applied.
   const user_manager::User* user_;
 
-  base::ObserverList<WebTrustedCertsObserver, true> observer_list_;
+  base::ObserverList<WebTrustedCertsObserver, true>::Unchecked observer_list_;
 
   // Contains the certificates of the last import that requested web trust. Must
   // be empty if Web trust from policy is not allowed.

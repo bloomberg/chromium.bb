@@ -195,7 +195,7 @@ class AuthenticatorRequestDialogModel {
   Step current_step_ = Step::kNotStarted;
 
   TransportListModel transport_list_model_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // These fields are only filled out when the UX flow is started.
   TransportAvailabilityInfo transport_availability_;

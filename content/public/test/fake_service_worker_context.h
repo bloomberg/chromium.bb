@@ -74,7 +74,7 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
  private:
   bool start_service_worker_for_navigation_hint_called_ = false;
 
-  base::ObserverList<ServiceWorkerContextObserver, true> observers_;
+  base::ObserverList<ServiceWorkerContextObserver, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServiceWorkerContext);
 };

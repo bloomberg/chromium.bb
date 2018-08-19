@@ -381,7 +381,7 @@ class VolumeManager : public KeyedService,
   drive::DriveIntegrationService* drive_integration_service_;  // Not owned.
   chromeos::disks::DiskMountManager* disk_mount_manager_;      // Not owned.
   PrefChangeRegistrar pref_change_registrar_;
-  base::ObserverList<VolumeManagerObserver> observers_;
+  base::ObserverList<VolumeManagerObserver>::Unchecked observers_;
   chromeos::file_system_provider::Service*
       file_system_provider_service_;  // Not owned by this class.
   GetMtpStorageInfoCallback get_mtp_storage_info_callback_;

@@ -131,7 +131,7 @@ class TestSink : public Channel {
  private:
   // The actual list of received messages.
   std::vector<Message> messages_;
-  base::ObserverList<Listener> filter_list_;
+  base::ObserverList<Listener>::Unchecked filter_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSink);
 };

@@ -91,7 +91,7 @@ class IssueManager {
       non_blocking_issues_;
 
   // IssueObserver instances are not owned by the manager.
-  base::ObserverList<IssuesObserver> issues_observers_;
+  base::ObserverList<IssuesObserver>::Unchecked issues_observers_;
 
   // Pointer to the top Issue in |issues_|, or |nullptr| if there are no issues.
   const Issue* top_issue_;

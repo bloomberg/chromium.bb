@@ -203,7 +203,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
  private:
   bool supports_restart_to_apply_user_flags_ = false;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   SessionManagerClient::ActiveSessionsMap user_sessions_;
   std::vector<std::string> server_backed_state_keys_;
 

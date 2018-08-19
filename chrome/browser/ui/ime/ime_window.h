@@ -138,7 +138,7 @@ class ImeWindow : public content::NotificationObserver,
 
   ImeNativeWindow* native_window_;  // Weak, it does self-destruction.
 
-  base::ObserverList<ImeWindowObserver> observers_;
+  base::ObserverList<ImeWindowObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeWindow);
 };

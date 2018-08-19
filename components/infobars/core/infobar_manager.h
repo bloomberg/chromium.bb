@@ -129,7 +129,7 @@ class InfoBarManager {
   bool infobars_enabled_ = true;
   bool animations_enabled_ = true;
 
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarManager);
 };

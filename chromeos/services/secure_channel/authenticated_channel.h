@@ -72,7 +72,7 @@ class AuthenticatedChannel {
                              const std::string& payload);
 
  private:
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
   bool is_disconnected_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatedChannel);

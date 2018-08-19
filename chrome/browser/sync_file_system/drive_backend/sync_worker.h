@@ -176,7 +176,7 @@ class SyncWorker : public SyncWorkerInterface,
   base::WeakPtr<extensions::ExtensionServiceInterface> extension_service_;
 
   std::unique_ptr<SyncEngineContext> context_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::SequenceChecker sequence_checker_;
 

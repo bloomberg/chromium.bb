@@ -856,7 +856,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     base::TimeDelta max_queueing_time;
     base::TimeTicks background_status_changed_at;
     std::set<PageSchedulerImpl*> page_schedulers;                 // Not owned.
-    base::ObserverList<WebRAILModeObserver> rail_mode_observers;  // Not owned.
+    base::ObserverList<WebRAILModeObserver>::Unchecked
+        rail_mode_observers;                                      // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                        // Not owned.
     MainThreadMetricsHelper metrics_helper;
     TraceableState<RendererProcessType, kTracingCategoryNameTopLevel>
@@ -868,7 +869,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         base::Optional<base::sequence_manager::TaskQueue::QueuePriority>,
         kTracingCategoryNameInfo>
         task_priority_for_tracing;  // Only used for tracing.
-    base::ObserverList<VirtualTimeObserver> virtual_time_observers;
+    base::ObserverList<VirtualTimeObserver>::Unchecked virtual_time_observers;
     base::Time initial_virtual_time;
     base::TimeTicks initial_virtual_time_ticks;
 

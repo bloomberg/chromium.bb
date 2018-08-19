@@ -73,7 +73,7 @@ class LogBuffer {
   std::list<LogMessage> log_messages_;
 
   // List of observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LogBuffer);
 };

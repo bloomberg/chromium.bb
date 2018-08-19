@@ -133,7 +133,7 @@ class FakeDownloadItem : public download::DownloadItem {
   void SetLastModifiedTime(const std::string& last_modified_time);
 
  private:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   uint32_t id_ = 0;
   std::string guid_;
   GURL url_;

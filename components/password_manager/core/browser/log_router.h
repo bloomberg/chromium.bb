@@ -53,8 +53,8 @@ class LogRouter {
   // Observer lists for managers and receivers. The |true| in the template
   // specialisation means that they will check that all observers were removed
   // on destruction.
-  base::ObserverList<LogManager, true> managers_;
-  base::ObserverList<LogReceiver, true> receivers_;
+  base::ObserverList<LogManager, true>::Unchecked managers_;
+  base::ObserverList<LogReceiver, true>::Unchecked receivers_;
 
   // Logs accumulated since the first receiver was registered.
   std::string accumulated_logs_;

@@ -80,7 +80,7 @@ class OptimizationGuideService {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
   // Observers receiving notifications on hints being processed.
-  base::ObserverList<OptimizationGuideServiceObserver> observers_;
+  base::ObserverList<OptimizationGuideServiceObserver>::Unchecked observers_;
 
   base::Version latest_processed_version_;
 

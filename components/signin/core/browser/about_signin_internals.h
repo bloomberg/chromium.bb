@@ -227,7 +227,7 @@ class AboutSigninInternals
 
   signin::AccountConsistencyMethod account_consistency_;
 
-  base::ObserverList<Observer> signin_observers_;
+  base::ObserverList<Observer>::Unchecked signin_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutSigninInternals);
 };

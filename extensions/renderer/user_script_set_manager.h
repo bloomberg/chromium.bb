@@ -109,7 +109,7 @@ class UserScriptSetManager : public content::RenderThreadObserver {
   bool activity_logging_enabled_;
 
   // The associated observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(UserScriptSetManager);
 };

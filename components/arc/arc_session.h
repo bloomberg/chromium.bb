@@ -115,7 +115,7 @@ class ArcSession {
  protected:
   ArcSession();
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcSession);

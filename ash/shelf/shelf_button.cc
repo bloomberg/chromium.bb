@@ -125,7 +125,7 @@ class ShelfButtonAnimation : public gfx::AnimationDelegate {
   }
 
   gfx::ThrobAnimation animation_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfButtonAnimation);
 };

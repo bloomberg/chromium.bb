@@ -288,7 +288,7 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // OnSigninScreenPrefServiceInitialized().
   bool on_active_user_prefs_changed_notify_deferred_ = false;
 
-  base::ObserverList<ash::SessionObserver> observers_;
+  base::ObserverList<ash::SessionObserver>::Unchecked observers_;
 
   service_manager::Connector* const connector_;
 

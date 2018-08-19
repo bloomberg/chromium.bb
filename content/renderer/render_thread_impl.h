@@ -691,7 +691,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   scoped_refptr<ui::ContextProviderCommandBuffer> shared_main_thread_contexts_;
 
-  base::ObserverList<RenderThreadObserver> observers_;
+  base::ObserverList<RenderThreadObserver>::Unchecked observers_;
 
   scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider_;
 

@@ -84,7 +84,7 @@ class PrinterProviderInternalAPI : public BrowserContextKeyedAPI {
       int request_id,
       const api::printer_provider::PrinterInfo* printer_info);
 
-  base::ObserverList<PrinterProviderInternalAPIObserver> observers_;
+  base::ObserverList<PrinterProviderInternalAPIObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterProviderInternalAPI);
 };

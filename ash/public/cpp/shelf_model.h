@@ -128,7 +128,7 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   // Maps one notification id to one app id.
   std::map<std::string, std::string> notification_id_to_app_id_;
 
-  base::ObserverList<ShelfModelObserver> observers_;
+  base::ObserverList<ShelfModelObserver>::Unchecked observers_;
 
   std::map<ShelfID, std::unique_ptr<ShelfItemDelegate>>
       id_to_item_delegate_map_;

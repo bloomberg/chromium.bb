@@ -48,7 +48,7 @@ class MESSAGE_CENTER_EXPORT NotificationBlocker {
   void NotifyBlockingStateChanged();
 
  private:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   MessageCenter* message_center_;  // weak
 };
 

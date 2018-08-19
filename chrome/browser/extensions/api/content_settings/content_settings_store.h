@@ -140,7 +140,7 @@ class ContentSettingsStore
   // The entries.
   ExtensionEntries entries_;
 
-  base::ObserverList<Observer, false> observers_;
+  base::ObserverList<Observer, false>::Unchecked observers_;
 
   mutable base::Lock lock_;
 

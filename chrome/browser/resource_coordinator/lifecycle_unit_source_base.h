@@ -54,7 +54,7 @@ class LifecycleUnitSourceBase : public LifecycleUnitSource {
 
  private:
   // Observers notified when a LifecycleUnit is created.
-  base::ObserverList<LifecycleUnitSourceObserver> observers_;
+  base::ObserverList<LifecycleUnitSourceObserver>::Unchecked observers_;
 
   // The count of lifecycle units associated with this source.
   size_t lifecycle_unit_count_ = 0;

@@ -144,7 +144,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   const RendererSettings settings_;
 
   DisplayClient* client_ = nullptr;
-  base::ObserverList<DisplayObserver> observers_;
+  base::ObserverList<DisplayObserver>::Unchecked observers_;
   SurfaceManager* surface_manager_ = nullptr;
   const FrameSinkId frame_sink_id_;
   SurfaceId current_surface_id_;

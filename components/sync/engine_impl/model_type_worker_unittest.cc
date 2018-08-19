@@ -493,7 +493,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   bool is_processor_disconnected_;
 
-  base::ObserverList<TypeDebugInfoObserver> type_observers_;
+  base::ObserverList<TypeDebugInfoObserver>::Unchecked type_observers_;
 
   std::unique_ptr<NonBlockingTypeDebugInfoEmitter> emitter_;
 

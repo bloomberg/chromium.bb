@@ -284,7 +284,7 @@ class AppListSyncableService : public syncer::SyncableService,
   std::string oem_folder_name_;
 
   // List of observers.
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::WeakPtrFactory<AppListSyncableService> weak_ptr_factory_;
 

@@ -218,7 +218,8 @@ class DataReductionProxyService
   // make calls to IO based objects.
   base::WeakPtr<DataReductionProxyIOData> io_data_;
 
-  base::ObserverList<DataReductionProxyServiceObserver> observer_list_;
+  base::ObserverList<DataReductionProxyServiceObserver>::Unchecked
+      observer_list_;
 
   // Authentication headers for the Data Reduction Proxy, if any. This is
   // forwarded from the IO thread in PostTask.

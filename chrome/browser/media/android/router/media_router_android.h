@@ -120,12 +120,14 @@ class MediaRouterAndroid : public MediaRouterBase {
 
   std::unique_ptr<MediaRouterAndroidBridge> bridge_;
 
-  using MediaSinkObservers = std::unordered_map<
-      MediaSource::Id,
-      std::unique_ptr<base::ObserverList<MediaSinksObserver>>>;
+  using MediaSinksObserverList =
+      base::ObserverList<MediaSinksObserver>::Unchecked;
+  using MediaSinkObservers =
+      std::unordered_map<MediaSource::Id,
+                         std::unique_ptr<MediaSinksObserverList>>;
   MediaSinkObservers sinks_observers_;
 
-  base::ObserverList<MediaRoutesObserver> routes_observers_;
+  base::ObserverList<MediaRoutesObserver>::Unchecked routes_observers_;
 
   struct MediaRouteRequest {
     MediaRouteRequest(const MediaSource& source,
@@ -148,9 +150,11 @@ class MediaRouterAndroid : public MediaRouterBase {
       base::IDMap<std::unique_ptr<SendRouteMessageCallback>>;
   SendMessageCallbacks message_callbacks_;
 
-  using MessageObservers = std::unordered_map<
-      MediaRoute::Id,
-      std::unique_ptr<base::ObserverList<RouteMessageObserver>>>;
+  using RouteMessageObserverList =
+      base::ObserverList<RouteMessageObserver>::Unchecked;
+  using MessageObservers =
+      std::unordered_map<MediaRoute::Id,
+                         std::unique_ptr<RouteMessageObserverList>>;
   MessageObservers message_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterAndroid);

@@ -138,7 +138,7 @@ class DirectoryLoader {
   RootFolderIdLoader* root_folder_id_loader_;      // Not owned.
   StartPageTokenLoader* start_page_token_loader_;  // Not owned
   LoaderController* loader_controller_;  // Not owned.
-  base::ObserverList<ChangeListLoaderObserver> observers_;
+  base::ObserverList<ChangeListLoaderObserver>::Unchecked observers_;
   typedef std::map<std::string, std::vector<ReadDirectoryCallbackState> >
       LoadCallbackMap;
   LoadCallbackMap pending_load_callback_;

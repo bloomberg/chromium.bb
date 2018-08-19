@@ -50,7 +50,7 @@ class SettingsWindowManager {
   SettingsWindowManager();
   ~SettingsWindowManager();
 
-  base::ObserverList<SettingsWindowManagerObserver> observers_;
+  base::ObserverList<SettingsWindowManagerObserver>::Unchecked observers_;
   ProfileSessionMap settings_session_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsWindowManager);

@@ -195,7 +195,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   int num_pending_tasks_ = 0;
 
   // Observers of the global state and individual tasks.
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   // We do not own this.
   StoragePartition* storage_partition_for_testing_;

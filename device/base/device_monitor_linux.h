@@ -54,7 +54,7 @@ class DEVICE_BASE_EXPORT DeviceMonitorLinux {
   std::unique_ptr<base::FileDescriptorWatcher::Controller>
       monitor_watch_controller_;
 
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   base::ThreadChecker thread_checker_;
 

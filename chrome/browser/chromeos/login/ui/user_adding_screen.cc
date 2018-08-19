@@ -39,7 +39,7 @@ class UserAddingScreenImpl : public UserAddingScreen {
   UserAddingScreenImpl();
   ~UserAddingScreenImpl() override;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   LoginDisplayHost* display_host_;
 
   UserAddingScreenInputMethodsController im_controller_;

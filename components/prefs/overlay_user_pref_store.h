@@ -83,7 +83,7 @@ class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore
   // persistent PrefStore.
   bool ShallBeStoredInPersistent(const std::string& key) const;
 
-  base::ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true>::Unchecked observers_;
   std::unique_ptr<ObserverAdapter> ephemeral_pref_store_observer_;
   std::unique_ptr<ObserverAdapter> persistent_pref_store_observer_;
   scoped_refptr<PersistentPrefStore> ephemeral_user_pref_store_;

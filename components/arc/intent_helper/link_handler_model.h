@@ -72,7 +72,7 @@ class LinkHandlerModel {
 
   GURL url_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   // Url handler info passed from ARC.
   std::vector<mojom::IntentHandlerInfoPtr> handlers_;

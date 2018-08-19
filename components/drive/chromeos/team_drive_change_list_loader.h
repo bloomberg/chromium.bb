@@ -72,7 +72,8 @@ class TeamDriveChangeListLoader : public DriveChangeListLoader,
 
   const std::string team_drive_id_;
   const base::FilePath root_entry_path_;
-  base::ObserverList<ChangeListLoaderObserver> change_list_loader_observers_;
+  base::ObserverList<ChangeListLoaderObserver>::Unchecked
+      change_list_loader_observers_;
 
   THREAD_CHECKER(thread_checker_);
 

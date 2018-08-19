@@ -102,7 +102,7 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
   // If platfrom sensor events are processed on a different
   // thread, notifications are forwarded to |task_runner_|.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::ObserverList<Client, true> clients_;
+  base::ObserverList<Client, true>::Unchecked clients_;
 
  private:
   friend class base::RefCountedThreadSafe<PlatformSensor>;

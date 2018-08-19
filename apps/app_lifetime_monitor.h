@@ -77,7 +77,7 @@ class AppLifetimeMonitor : public KeyedService,
 
   content::NotificationRegistrar registrar_;
   content::BrowserContext* context_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLifetimeMonitor);
 };

@@ -61,7 +61,7 @@ class ASH_EXPORT WallpaperResizer {
   // has finished running.
   void OnResizeFinished(SkBitmap* resized_bitmap);
 
-  base::ObserverList<WallpaperResizerObserver> observers_;
+  base::ObserverList<WallpaperResizerObserver>::Unchecked observers_;
 
   // Image that should currently be used for wallpaper. It initially
   // contains the original image and is updated to contain the resized

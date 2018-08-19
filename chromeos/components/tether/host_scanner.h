@@ -43,7 +43,7 @@ class HostScanner {
   void NotifyScanFinished();
 
  private:
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HostScanner);
 };

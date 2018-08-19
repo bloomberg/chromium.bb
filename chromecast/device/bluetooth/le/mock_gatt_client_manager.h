@@ -46,7 +46,7 @@ class MockGattClientManager : public GattClientManager {
   MOCK_METHOD1(NotifyConnect, void(const bluetooth_v2_shlib::Addr& addr));
   MOCK_METHOD0(task_runner, scoped_refptr<base::SingleThreadTaskRunner>());
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 };
 
 }  // namespace bluetooth

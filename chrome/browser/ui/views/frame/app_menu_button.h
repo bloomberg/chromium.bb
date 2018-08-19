@@ -65,7 +65,7 @@ class AppMenuButton : public views::MenuButton {
   std::unique_ptr<AppMenu> menu_;
 
   // Listeners to call when the menu opens.
-  base::ObserverList<views::MenuListener> menu_listeners_;
+  base::ObserverList<views::MenuListener>::Unchecked menu_listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuButton);
 };

@@ -178,7 +178,7 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   // Tracks the item background animation values.
   AnimationValues item_background_values_;
 
-  base::ObserverList<ShelfBackgroundAnimatorObserver> observers_;
+  base::ObserverList<ShelfBackgroundAnimatorObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfBackgroundAnimator);
 };

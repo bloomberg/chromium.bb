@@ -216,7 +216,7 @@ class ChromeIdentityService {
   void FireProfileDidUpdate(ChromeIdentity* identity);
 
  private:
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeIdentityService);
 };

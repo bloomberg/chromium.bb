@@ -706,9 +706,11 @@ class ProfileSyncService : public syncer::SyncService,
   // Manages the start and stop of the data types.
   std::unique_ptr<syncer::DataTypeManager> data_type_manager_;
 
-  base::ObserverList<syncer::SyncServiceObserver> observers_;
-  base::ObserverList<syncer::ProtocolEventObserver> protocol_event_observers_;
-  base::ObserverList<syncer::TypeDebugInfoObserver> type_debug_info_observers_;
+  base::ObserverList<syncer::SyncServiceObserver>::Unchecked observers_;
+  base::ObserverList<syncer::ProtocolEventObserver>::Unchecked
+      protocol_event_observers_;
+  base::ObserverList<syncer::TypeDebugInfoObserver>::Unchecked
+      type_debug_info_observers_;
 
   std::set<syncer::SyncTypePreferenceProvider*> preference_providers_;
 

@@ -62,7 +62,7 @@ class GlobalWebStateEventTracker : public WebStateObserver {
   ScopedObserver<WebState, WebStateObserver> scoped_observer_;
 
   // List of observers currently registered with the tracker.
-  base::ObserverList<GlobalWebStateObserver, true> observer_list_;
+  base::ObserverList<GlobalWebStateObserver, true>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalWebStateEventTracker);
 };

@@ -95,7 +95,7 @@ class OverlayScheduler : public BrowserUserData<OverlayScheduler>,
   // The WebStateList of the Browser whose overlays are being scheduled.
   WebStateList* web_state_list_;
   // The OverlaySchedulerObservers.
-  base::ObserverList<OverlaySchedulerObserver> observers_;
+  base::ObserverList<OverlaySchedulerObserver>::Unchecked observers_;
   // The OverlayQueueManager responsible for creating queues for the Browser
   // associated with this OverlayScheduler.
   OverlayQueueManager* queue_manager_ = nullptr;
