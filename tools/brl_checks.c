@@ -91,6 +91,11 @@ check_base(const char *tableList, const char *input, const char *expected,
 		fprintf(stderr, "maxOutputLength not supported with testmode 'bothDirections'\n");
 		return 1;
 	}
+	if (in.real_inlen >= 0 && in.max_outlen < 0) {
+		fprintf(stderr,
+				"realInputLength not supported when maxOutputLength is not specified\n");
+		return 1;
+	}
 	while (1) {
 		widechar *inbuf, *outbuf, *expectedbuf;
 		int inlen = strlen(input);
@@ -121,6 +126,13 @@ check_base(const char *tableList, const char *input, const char *expected,
 			fprintf(stderr, "Cannot parse input string.\n");
 			retval = 1;
 			goto fail;
+		}
+		if (in.real_inlen > inlen) {
+			fprintf(stderr,
+					"expected realInputLength (%d) may not exceed total input length "
+					"(%d)\n",
+					in.real_inlen, inlen);
+			return 1;
 		}
 		if (expected_inputPos) {
 			inputPos = malloc(sizeof(int) * outlen);
@@ -259,6 +271,10 @@ check_base(const char *tableList, const char *input, const char *expected,
 					"Unexpected error happened: returned input length (%d) exceeds "
 					"total input length (%d)\n",
 					actualInlen, inlen);
+			retval = 1;
+		} else if (in.real_inlen >= 0 && in.real_inlen != actualInlen) {
+			fprintf(stderr, "Real input length failure:\n");
+			fprintf(stderr, "Expected: %d, received: %d\n", in.real_inlen, actualInlen);
 			retval = 1;
 		}
 
