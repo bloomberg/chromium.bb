@@ -56,6 +56,18 @@
 - (BOOL)_isTitleHidden;
 @end
 
+// Test NSWindow that provides hooks via method overrides to verify behavior.
+@interface NativeWidgetMacTestWindow : NativeWidgetMacNSWindow {
+ @private
+  int invalidateShadowCount_;
+  int orderWindowCount_;
+  bool* deallocFlag_;
+}
+@property(readonly, nonatomic) int invalidateShadowCount;
+@property(readonly, nonatomic) int orderWindowCount;
+@property(assign, nonatomic) bool* deallocFlag;
+@end
+
 // Used to mock BridgedContentView so that calls to drawRect: can be
 // intercepted.
 @interface MockBridgedView : NSView {
@@ -109,6 +121,33 @@ class BridgedNativeWidgetTestApi {
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTestApi);
 };
 
+// Custom native_widget to create a NativeWidgetMacTestWindow.
+class TestWindowNativeWidgetMac : public NativeWidgetMac {
+ public:
+  explicit TestWindowNativeWidgetMac(Widget* delegate)
+      : NativeWidgetMac(delegate) {}
+
+ protected:
+  // NativeWidgetMac:
+  NativeWidgetMacNSWindow* CreateNSWindow(
+      const Widget::InitParams& params) override {
+    NSUInteger style_mask = NSBorderlessWindowMask;
+    if (params.type == Widget::InitParams::TYPE_WINDOW) {
+      style_mask = NSTexturedBackgroundWindowMask | NSTitledWindowMask |
+                   NSClosableWindowMask | NSMiniaturizableWindowMask |
+                   NSResizableWindowMask;
+    }
+    return [[[NativeWidgetMacTestWindow alloc]
+        initWithContentRect:ui::kWindowSizeDeterminedLater
+                  styleMask:style_mask
+                    backing:NSBackingStoreBuffered
+                      defer:NO] autorelease];
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWindowNativeWidgetMac);
+};
+
 // Tests for parts of NativeWidgetMac not covered by BridgedNativeWidget, which
 // need access to Cocoa APIs.
 class NativeWidgetMacTest : public WidgetTest {
@@ -135,14 +174,14 @@ class NativeWidgetMacTest : public WidgetTest {
     return MakeNativeParentWithStyle(NSBorderlessWindowMask);
   }
 
-  // Create a Widget backed by the NativeWidgetMacNSWindow NSWindow subclass.
+  // Create a Widget backed by the NativeWidgetMacTestWindow NSWindow subclass.
   Widget* CreateWidgetWithTestWindow(Widget::InitParams params,
-                                     NativeWidgetMacNSWindow** window) {
+                                     NativeWidgetMacTestWindow** window) {
     Widget* widget = new Widget;
-    params.native_widget = new NativeWidgetMac(widget);
+    params.native_widget = new TestWindowNativeWidgetMac(widget);
     widget->Init(params);
     widget->Show();
-    *window = base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(
+    *window = base::mac::ObjCCastStrict<NativeWidgetMacTestWindow>(
         widget->GetNativeWindow());
     EXPECT_TRUE(*window);
     return widget;
@@ -430,8 +469,8 @@ TEST_F(NativeWidgetMacTest, DISABLED_OrderFrontAfterMiniaturize) {
 // Test that ShowInactive() on already-visible child widgets is ignored, since
 // it may cause a space transition. See https://crbug.com/866760.
 TEST_F(NativeWidgetMacTest, ShowInactiveOnChildWidget) {
-  NativeWidgetMacNSWindow* parent_window;
-  NativeWidgetMacNSWindow* child_window;
+  NativeWidgetMacTestWindow* parent_window;
+  NativeWidgetMacTestWindow* child_window;
 
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -439,29 +478,28 @@ TEST_F(NativeWidgetMacTest, ShowInactiveOnChildWidget) {
   Widget* parent = CreateWidgetWithTestWindow(init_params, &parent_window);
 
   // CreateWidgetWithTestWindow calls Show()
-  EXPECT_EQ(1, [parent_window orderWindowCountForTesting]);
+  EXPECT_EQ(1, [parent_window orderWindowCount]);
 
   init_params.parent = parent->GetNativeView();
   Widget* child = CreateWidgetWithTestWindow(init_params, &child_window);
 
   // The child is ordered twice, once by Show() and again (by AppKit) when it is
   // registered as a child window.
-  EXPECT_EQ(2, [child_window orderWindowCountForTesting]);
+  EXPECT_EQ(2, [child_window orderWindowCount]);
 
   // Parent is unchanged.
-  EXPECT_EQ(1, [parent_window orderWindowCountForTesting]);
+  EXPECT_EQ(1, [parent_window orderWindowCount]);
 
   // ShowInactive() on a visible regular window may serve to raise its stacking
   // order without taking focus, so it should invoke -[NSWindow orderWindow:..].
   parent->ShowInactive();
-  EXPECT_EQ(2, [parent_window orderWindowCountForTesting]);  // Increases.
+  EXPECT_EQ(2, [parent_window orderWindowCount]);  // Increases.
 
   // However, ShowInactive() on the child should have no effect. It should
   // already be in a correct stacking order and we must avoid a Space switch.
   child->ShowInactive();
-  EXPECT_EQ(2, [child_window orderWindowCountForTesting]);  // No change.
-  EXPECT_EQ(
-      2, [parent_window orderWindowCountForTesting]);  // Parent also unchanged.
+  EXPECT_EQ(2, [child_window orderWindowCount]);   // No change.
+  EXPECT_EQ(2, [parent_window orderWindowCount]);  // Parent also unchanged.
 
   parent->CloseNow();
 }
@@ -838,13 +876,13 @@ TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
     TestNativeParentWindow* native_parent = MakeNativeParent();
     [native_parent setDeallocFlag:&native_parent_dealloced];
 
-    NativeWidgetMacNSWindow* window;
+    NativeWidgetMacTestWindow* window;
     Widget::InitParams init_params =
         CreateParams(Widget::InitParams::TYPE_POPUP);
     init_params.parent = [native_parent_ contentView];
     init_params.bounds = gfx::Rect(0, 0, 100, 200);
     CreateWidgetWithTestWindow(init_params, &window);
-    [window setDeallocFlagForTesting:&child_dealloced];
+    [window setDeallocFlag:&child_dealloced];
   }
   {
     // On 10.11, closing a weak reference on the parent window works, but older
@@ -1757,7 +1795,7 @@ TEST_F(NativeWidgetMacTest, DoesHideTitle) {
 
 // Test calls to invalidate the shadow when composited frames arrive.
 TEST_F(NativeWidgetMacTest, InvalidateShadow) {
-  NativeWidgetMacNSWindow* window;
+  NativeWidgetMacTestWindow* window;
   const gfx::Rect rect(0, 0, 100, 200);
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -1768,7 +1806,7 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   BridgedNativeWidgetTestApi(window).SimulateFrameSwap(rect.size());
 
   // Default is an opaque window, so shadow doesn't need to be invalidated.
-  EXPECT_EQ(0, [window invalidateShadowCountForTesting]);
+  EXPECT_EQ(0, [window invalidateShadowCount]);
   widget->CloseNow();
 
   init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -1776,40 +1814,40 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   BridgedNativeWidgetTestApi test_api(window);
 
   // First paint on a translucent window needs to invalidate the shadow. Once.
-  EXPECT_EQ(0, [window invalidateShadowCountForTesting]);
+  EXPECT_EQ(0, [window invalidateShadowCount]);
   test_api.SimulateFrameSwap(rect.size());
-  EXPECT_EQ(1, [window invalidateShadowCountForTesting]);
+  EXPECT_EQ(1, [window invalidateShadowCount]);
   test_api.SimulateFrameSwap(rect.size());
-  EXPECT_EQ(1, [window invalidateShadowCountForTesting]);
+  EXPECT_EQ(1, [window invalidateShadowCount]);
 
   // Resizing the window also needs to trigger a shadow invalidation.
   [window setContentSize:NSMakeSize(123, 456)];
   // A "late" frame swap at the old size should do nothing.
   test_api.SimulateFrameSwap(rect.size());
-  EXPECT_EQ(1, [window invalidateShadowCountForTesting]);
+  EXPECT_EQ(1, [window invalidateShadowCount]);
 
   test_api.SimulateFrameSwap(gfx::Size(123, 456));
-  EXPECT_EQ(2, [window invalidateShadowCountForTesting]);
+  EXPECT_EQ(2, [window invalidateShadowCount]);
   test_api.SimulateFrameSwap(gfx::Size(123, 456));
-  EXPECT_EQ(2, [window invalidateShadowCountForTesting]);
+  EXPECT_EQ(2, [window invalidateShadowCount]);
 
   // Hiding the window does not require shadow invalidation.
   widget->Hide();
   test_api.SimulateFrameSwap(gfx::Size(123, 456));
-  EXPECT_EQ(2, [window invalidateShadowCountForTesting]);
+  EXPECT_EQ(2, [window invalidateShadowCount]);
 
   // Showing a translucent window after hiding it, should trigger shadow
   // invalidation.
   widget->Show();
   test_api.SimulateFrameSwap(gfx::Size(123, 456));
-  EXPECT_EQ(3, [window invalidateShadowCountForTesting]);
+  EXPECT_EQ(3, [window invalidateShadowCount]);
 
   widget->CloseNow();
 }
 
 // Test that the contentView opacity corresponds to the window type.
 TEST_F(NativeWidgetMacTest, ContentOpacity) {
-  NativeWidgetMacNSWindow* window;
+  NativeWidgetMacTestWindow* window;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 
@@ -2336,6 +2374,33 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
 - (void)setWindowStateForEnd {
   views::test::ScopedSwizzleWaiter::GetMethodAndMarkCalled()(self, _cmd);
 }
+@end
+
+@implementation NativeWidgetMacTestWindow
+
+@synthesize invalidateShadowCount = invalidateShadowCount_;
+@synthesize orderWindowCount = orderWindowCount_;
+@synthesize deallocFlag = deallocFlag_;
+
+- (void)dealloc {
+  if (deallocFlag_) {
+    DCHECK(!*deallocFlag_);
+    *deallocFlag_ = true;
+  }
+  [super dealloc];
+}
+
+- (void)invalidateShadow {
+  ++invalidateShadowCount_;
+  [super invalidateShadow];
+}
+
+- (void)orderWindow:(NSWindowOrderingMode)orderingMode
+         relativeTo:(NSInteger)otherWindowNumber {
+  ++orderWindowCount_;
+  [super orderWindow:orderingMode relativeTo:otherWindowNumber];
+}
+
 @end
 
 @implementation MockBridgedView

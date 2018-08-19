@@ -18,7 +18,6 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
-#import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -243,17 +242,6 @@ BridgedNativeWidget::~BridgedNativeWidget() {
   RemoveOrDestroyChildren();
   DCHECK(child_windows_.empty());
   SetRootView(nullptr);
-}
-
-void BridgedNativeWidget::CreateWindow(uint64_t window_style_mask) {
-  DCHECK(!window_);
-  window_.reset([[NativeWidgetMacNSWindow alloc]
-      initWithContentRect:ui::kWindowSizeDeterminedLater
-                styleMask:window_style_mask
-                  backing:NSBackingStoreBuffered
-                    defer:NO]);
-  [window_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
-  [window_ setDelegate:window_delegate_];
 }
 
 void BridgedNativeWidget::SetWindow(
@@ -948,6 +936,10 @@ bool BridgedNativeWidget::ShouldRunCustomAnimationFor(
          [window_ animationBehavior] != NSWindowAnimationBehaviorNone &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableModalAnimations);
+}
+
+NSWindow* BridgedNativeWidget::ns_window() {
+  return window_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -147,6 +147,10 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
  protected:
   // Creates the NSWindow that will be passed to the BridgedNativeWidget.
   // Called by InitNativeWidget. The return value will be autoreleased.
+  // Note that some tests (in particular, views_unittests that interact
+  // with ScopedFakeNSWindowFullscreen, on 10.10) assume that these windows
+  // are autoreleased, and will crash if the window has a more precise
+  // lifetime.
   virtual NativeWidgetMacNSWindow* CreateNSWindow(
       const Widget::InitParams& params);
 
