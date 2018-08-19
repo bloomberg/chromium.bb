@@ -119,8 +119,25 @@ camera.views.Camera = function(context, router, model) {
    * @type {HTMLButtonElement}
    * @private
    */
-  this.shutterButton_ = document.querySelector('#take-picture');
+  this.shutterButton_ = document.querySelector('#shutter');
 
+  /**
+   * CSS sylte of the shifted right-stripe.
+   * @type {CSSStyleDeclaration}
+   * @private
+   */
+  this.rightStripe_ = camera.views.Camera.cssStyle_(
+      'body.shift-right-strip .right-stripe, ' +
+      'body.shift-right-strip.tablet-landscape .actions-group');
+
+  /**
+   * CSS sylte of the shifted bottom-stripe.
+   * @type {CSSStyleDeclaration}
+   * @private
+   */
+  this.bottomStripe_ = camera.views.Camera.cssStyle_(
+      'body.shift-bottom-strip .bottom-stripe, ' +
+      'body.shift-bottom-strip:not(.tablet-landscape) .actions-group');
   /**
    * @type {string}
    * @private
@@ -155,11 +172,31 @@ camera.views.Camera = function(context, router, model) {
     if (this.video_.videoHeight) {
       this.context_.onAspectRatio(
           this.video_.videoWidth / this.video_.videoHeight);
-      this.updateVideoSize_();
+      this.updateLayout_();
     }
   });
-  this.shutterButton_.addEventListener(
-      'click', this.onShutterButtonClicked_.bind(this));
+  this.shutterButton_.addEventListener('click',
+      this.onShutterButtonClicked_.bind(this));
+};
+
+/**
+ * CSS rules.
+ * @type {Array.<CSSRule>}
+ * @private
+ */
+camera.views.Camera.cssRules_ = [].slice.call(document.styleSheets[0].cssRules);
+
+/**
+ * Gets the CSS style by the given selector.
+ * @param {string} selector Selector text.
+ * @return {CSSStyleDeclaration}
+ * @private
+ */
+camera.views.Camera.cssStyle_ = function(selector) {
+  var rule = camera.views.Camera.cssRules_.find(rule => {
+    return rule.selectorText == selector;
+  });
+  return rule.style;
 };
 
 /**
@@ -251,18 +288,25 @@ camera.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.updateControls_ = function() {
-  var disabled = this.taking || !this.capturing;
+  // Update the shutter's label before enabling or disabling it.
+  this.updateShutterLabel_();
+  this.shutterButton_.disabled = !this.capturing;
+  var disabled = !this.capturing || this.taking;
   this.options_.disabled = disabled;
-  this.shutterButton_.disabled = disabled;
   this.galleryButton_.disabled = disabled;
 };
 
 /**
- * Sets the shutter button's i18n and aria label.
- * @param {string} label Label to be set.
+ * Updates the shutter button's label.
  * @private
  */
-camera.views.Camera.prototype.setShutterLabel_ = function(label) {
+camera.views.Camera.prototype.updateShutterLabel_ = function() {
+  var label;
+  if (this.options_.recordMode) {
+    label = this.taking ? 'recordVideoStopButton' : 'recordVideoStartButton';
+  } else {
+    label = this.taking ? 'takePhotoCancelButton' : 'takePhotoButton';
+  }
   this.shutterButton_.setAttribute('i18n-label', label);
   this.shutterButton_.setAttribute('aria-label', chrome.i18n.getMessage(label));
 };
@@ -271,9 +315,7 @@ camera.views.Camera.prototype.setShutterLabel_ = function(label) {
  * @override
  */
 camera.views.Camera.prototype.onResize = function() {
-  if (this.video_.videoHeight) {
-    this.updateVideoSize_();
-  }
+  this.updateLayout_();
 };
 
 /**
@@ -315,13 +357,8 @@ camera.views.Camera.prototype.beginTake_ = function() {
   this.updateControls_();
 
   this.ticks_ = this.options_.onTimerTicks();
-  if (this.ticks_) {
-    // Re-enable the shutter button for canceling timer ticks.
-    // TODO(yuli): Update the shutter assets for canceling timer ticks.
-    this.shutterButton_.disabled = false;
-  }
-
   Promise.resolve(this.ticks_).finally(() => {
+    // The take once begun cannot be canceled after the timer ticks.
     this.shutterButton_.disabled = true;
   }).then(() => {
     // Play a sound before starting to record and delay the take to avoid the
@@ -361,7 +398,6 @@ camera.views.Camera.prototype.endTake_ = function() {
     this.mediaRecorder_.stop();
   }
 
-  // Re-enable UI controls after finishing the current take.
   Promise.resolve(this.take_ || null).then(blob => {
     if (blob == null) {
       // There is no ongoing take.
@@ -379,6 +415,7 @@ camera.views.Camera.prototype.endTake_ = function() {
     console.error(error);
     this.showToastMessage_(toast, true);
   }).finally(() => {
+    // Re-enable UI controls after finishing the take.
     this.take_ = null;
     document.body.classList.remove('taking');
     this.updateControls_();
@@ -403,8 +440,6 @@ camera.views.Camera.prototype.createRecordingBlob_ = function() {
       this.mediaRecorder_.removeEventListener('dataavailable', ondataavailable);
       this.mediaRecorder_.removeEventListener('stop', onstop);
       this.recordTime_.stop();
-      this.shutterButton_.classList.remove('flash');
-      this.setShutterLabel_('recordVideoStartButton');
 
       var recordedBlob = new Blob(
           recordedChunks, {type: camera.views.Camera.RECORD_MIMETYPE});
@@ -420,12 +455,8 @@ camera.views.Camera.prototype.createRecordingBlob_ = function() {
 
     // Start recording and update the UI for the ongoing recording.
     this.mediaRecorder_.start();
-    this.shutterButton_.classList.add('flash');
     this.recordTime_.start();
-
-    // Re-enable the shutter button to stop recording later and flash the
-    // shutter button until the recording is stopped.
-    this.setShutterLabel_('recordVideoStopButton');
+    // Re-enable the shutter button to stop recording.
     this.shutterButton_.disabled = false;
   });
 };
@@ -519,8 +550,6 @@ camera.views.Camera.prototype.startWithConstraints_ = function(
       }, 100);
       this.stream_ = stream;
       this.options_.updateStreamOptions(constraints, stream);
-      this.setShutterLabel_(this.options_.recordMode ?
-          'recordVideoStartButton' : 'takePhotoButton');
       document.body.classList.add('capturing');
       this.updateControls_();
       onSuccess();
@@ -535,20 +564,64 @@ camera.views.Camera.prototype.startWithConstraints_ = function(
 };
 
 /**
- * Updates the video element's size for previewing in the window.
+ * Layouts the video element's size shown in the window.
  * @private
  */
-camera.views.Camera.prototype.updateVideoSize_ = function() {
-  // The video content keeps its aspect ratio and is filled up or letterboxed
-  // inside the window's inner-bounds. Don't use app-window.innerBounds' width
-  // and height properties during resizing as they are not updated immediately.
-  var fill = !camera.util.isWindowFullSize();
-  var f = fill ? Math.max : Math.min;
+camera.views.Camera.prototype.layoutVideoSize_ = function() {
+  // Make video content keeps its aspect ratio inside the window's inner-bounds;
+  // it may fill up the window or be letterboxed when fullscreen/maximized.
+  // Don't use app-window.innerBounds' width/height properties during resizing
+  // as they are not updated immediately.
+  var f = camera.util.isWindowFullSize() ? Math.min : Math.max;
   var scale = f(window.innerHeight / this.video_.videoHeight,
       window.innerWidth / this.video_.videoWidth);
   this.video_.width = scale * this.video_.videoWidth;
   this.video_.height = scale * this.video_.videoHeight;
-  // TODO(yuli); Align letterboxed video-element by new UI spec.
+}
+
+/**
+ * Updates the layout for video-size or window-size changes.
+ * @private
+ */
+camera.views.Camera.prototype.updateLayout_ = function() {
+  if (this.video_.videoHeight) {
+    this.layoutVideoSize_();
+  }
+  // TODO(yuli): Check if the app runs on a tablet display.
+  var fullWindow = camera.util.isWindowFullSize();
+  var tabletLandscape = fullWindow && (window.innerWidth > window.innerHeight);
+  document.body.classList.toggle('tablet-landscape', tabletLandscape);
+
+  // Shift video-element to top/left for aligning buttons in small letterbox.
+  var letterboxW = window.innerWidth - this.video_.width;
+  var letterboxH = window.innerHeight - this.video_.height;
+  var shiftPreview = (measure) => {
+    return measure > 1 && measure < 160;
+  };
+  document.body.classList.toggle('shift-preview',
+       fullWindow && (shiftPreview(letterboxW) || shiftPreview(letterboxH)));
+
+  // Shift buttons' stripes if right/bottom letterbox of shifted video-element
+  // still couldn't properly accommodate them. Buttons are either fully in
+  // letterbox or video-content while keeping the shutter or gallery button
+  // having minimum margin to either edges.
+  var shiftStripe = (measure, shutter) => {
+    return shutter ? (measure > 12 && measure < 100) :
+        (measure > 8 && measure < 72);
+  };
+  var calcSpace = (measure, shutter) => {
+    return measure + (shutter ? 44 : 32);
+  };
+  if (document.body.classList.toggle('shift-right-strip',
+      shiftStripe(letterboxW, tabletLandscape))) {
+    this.rightStripe_.setProperty('right',
+        calcSpace(letterboxW, tabletLandscape) + 'px');
+  }
+  if (document.body.classList.toggle('shift-bottom-strip',
+      shiftStripe(letterboxH, !tabletLandscape))) {
+    this.bottomStripe_.setProperty('bottom',
+        calcSpace(letterboxH, !tabletLandscape) + 'px');
+  }
 }
 
 /**

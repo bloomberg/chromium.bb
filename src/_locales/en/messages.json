@@ -79,15 +79,19 @@
   },
   "takePhotoButton": {
     "message": "Take photo",
-    "description": "Label for the photo taking button."
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Stop taking photo",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
     "message": "Start recording",
-    "description": "Label for the video recording button to start recording."
+    "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
     "message": "Stop recording",
-    "description": "Label for the video recording button to stop recording."
+    "description": "Label for the shutter button to stop recording."
   },
   "toggleTimerButton": {
     "message": "Toggle timer",

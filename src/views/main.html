@@ -32,27 +32,13 @@
         </div>
       </div>
       <div class="centered-overlay" id="camera-mode"></div>
-      <div id="toolbar">
-        <div id="toolbar-stripe">
-          <div class="buttons prev-to-middle">
-            <button id="switch-recordvideo" disabled tabindex="0"
-                   i18n-label="switchRecordVideoButton"></button>
-            <button id="switch-takephoto" disabled tabindex="0"
-                   i18n-label="switchTakePhotoButton"></button>
-          </div>
-          <div class="buttons">
-            <button id="take-picture" disabled tabindex="0"
-                    i18n-label="takePhotoButton"></button>
-          </div>
-        </div>
-      </div>
-      <div class="left-stripe buttons">
-        <input type="checkbox" id="toggle-mirror" disabled tabindex="0"
-               i18n-label="toggleMirrorButton" checked hidden>
-        <input type="checkbox" id="toggle-grid" disabled tabindex="0"
-               i18n-label="toggleGridButton">
-        <input type="checkbox" id="toggle-timer" disabled tabindex="0"
-               i18n-label="toggleTimerButton">
+      <div class="actions-group buttons circle">
+        <button id="switch-takephoto" disabled tabindex="0"
+                i18n-label="switchTakePhotoButton"></button>
+        <button id="shutter" disabled tabindex="0"
+                i18n-label="takePhotoButton"></button>
+        <button id="switch-recordvideo" disabled tabindex="0"
+                i18n-label="switchRecordVideoButton"></button>
       </div>
       <div class="bottom-stripe left-stripe buttons circle">
         <button id="toggle-device" disabled tabindex="0"
@@ -61,6 +47,14 @@
       <div class="bottom-stripe right-stripe buttons circle">
         <button id="gallery-enter" disabled tabindex="0"
                 i18n-label="galleryButton" hidden></button>
+      </div>
+      <div class="left-stripe options-group buttons">
+        <input type="checkbox" id="toggle-mirror" disabled tabindex="0"
+               i18n-label="toggleMirrorButton" checked hidden>
+        <input type="checkbox" id="toggle-grid" disabled tabindex="0"
+               i18n-label="toggleGridButton">
+        <input type="checkbox" id="toggle-timer" disabled tabindex="0"
+               i18n-label="toggleTimerButton">
       </div>
       <div class="top-stripe" id="record-time">
         <div class="icon"></div>

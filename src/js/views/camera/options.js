@@ -82,12 +82,6 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
   this.switchTakePhoto_ = document.querySelector('#switch-takephoto');
 
   /**
-   * @type {HTMLElement}
-   * @private
-   */
-  this.grid_ = document.querySelector('#preview-grid');
-
-  /**
    * @type {Audio}
    * @private
    */
@@ -226,8 +220,9 @@ camera.views.camera.Options.prototype.prepare = function() {
   }, values => {
     this.toggleMic_.checked = values.toggleMic;
     this.toggleTimer_.checked = values.toggleTimer;
+    this.updateClass_(this.toggleTimer_, 'timer');
     this.toggleGrid_.checked = values.toggleGrid;
-    this.grid_.classList.toggle('visible', values.toggleGrid);
+    this.updateClass_(this.toggleGrid_, 'grid');
     this.mirroringToggles_ = values.mirroringToggles;
   });
   // Remove the deprecated values.
@@ -290,6 +285,17 @@ camera.views.camera.Options.prototype.onToggleDeviceClicked_ = function(event) {
 };
 
 /**
+ * Updates a class attribute by a toggle's value.
+ * @param {HTMLInputElement} toggle Element of a toggle.
+ * @param {string} name Class name.
+ * @return {boolean} Whether the updated result contains the class or not.
+ * @private
+ */
+camera.views.camera.Options.prototype.updateClass_ = function(toggle, name) {
+  return document.body.classList.toggle(name, toggle.checked);
+};
+
+/**
  * Handles clicking on the microphone switch.
  * @param {Event} event Click event.
  * @private
@@ -308,7 +314,8 @@ camera.views.camera.Options.prototype.onToggleMicClicked_ = function(event) {
  * @private
  */
 camera.views.camera.Options.prototype.onToggleTimerClicked_ = function(event) {
-  chrome.storage.local.set({toggleTimer: this.toggleTimer_.checked});
+  chrome.storage.local.set(
+      {toggleTimer: this.updateClass_(this.toggleTimer_, 'timer')});
 };
 
 /**
@@ -317,9 +324,8 @@ camera.views.camera.Options.prototype.onToggleTimerClicked_ = function(event) {
  * @private
  */
 camera.views.camera.Options.prototype.onToggleGridClicked_ = function(event) {
-  var enabled = this.toggleGrid_.checked;
-  chrome.storage.local.set({toggleGrid: enabled});
-  this.grid_.classList.toggle('visible', enabled);
+  chrome.storage.local.set(
+      {toggleGrid: this.updateClass_(this.toggleGrid_, 'grid')});
 };
 
 /**
@@ -328,10 +334,9 @@ camera.views.camera.Options.prototype.onToggleGridClicked_ = function(event) {
  * @private
  */
 camera.views.camera.Options.prototype.onToggleMirrorClicked_ = function(event) {
-  var enabled = this.toggleMirror_.checked;
-  this.mirroringToggles_[this.videoDeviceId_] = enabled;
+  this.mirroringToggles_[this.videoDeviceId_] =
+      this.updateClass_(this.toggleMirror_, 'mirror');
   chrome.storage.local.set({mirroringToggles: this.mirroringToggles_});
-  document.body.classList.toggle('mirror', enabled);
 };
 
 /**
@@ -461,7 +466,7 @@ camera.views.camera.Options.prototype.updateMirroring_ = function(stream) {
     enabled = this.mirroringToggles_[this.videoDeviceId_];
   }
   this.toggleMirror_.checked = enabled;
-  document.body.classList.toggle('mirror', enabled);
+  this.updateClass_(this.toggleMirror_, 'mirror');
 };
 
 /**
