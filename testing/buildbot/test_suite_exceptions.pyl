@@ -1040,7 +1040,6 @@
     'remove_from': [
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/852002
-      'win-asan',  # https://crbug.com/875239
     ],
   },
   'performance_test_suite': {

@@ -8428,6 +8428,17 @@
             }
           ]
         },
+        "test": "sync_integration_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
         "test": "traffic_annotation_auditor_unittests"
       },
       {
