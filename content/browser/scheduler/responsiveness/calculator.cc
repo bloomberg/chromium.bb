@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -86,7 +87,8 @@ void Calculator::TaskOrEventFinishedOnIOThread(base::TimeTicks schedule_time,
 }
 
 void Calculator::EmitResponsiveness(int janky_slices) {
-  // TODO(erikchen): Emit an UMA metric. https://crbug.com/859155.
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Browser.Responsiveness.JankyIntervalsPerThirtySeconds", janky_slices);
 }
 
 base::TimeTicks Calculator::GetLastCalculationTime() {
