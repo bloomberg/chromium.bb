@@ -44,7 +44,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/host_zoom_map.h"
-#include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1399,30 +1398,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, SandboxedLocalFile) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, NewWindowAboutBlank) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/new_window_about_blank"));
-}
-
-// Tests that platform apps can enter and exit Picture-in-Picture.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PictureInPicture) {
-  LoadAndLaunchPlatformApp("picture_in_picture", "Launched");
-
-  WebContents* web_contents = GetFirstAppWindowWebContents();
-  ASSERT_TRUE(web_contents);
-  content::PictureInPictureWindowController* window_controller =
-      content::PictureInPictureWindowController::GetOrCreateForWebContents(
-          web_contents);
-  ASSERT_TRUE(window_controller->GetWindowForTesting());
-  EXPECT_FALSE(window_controller->GetWindowForTesting()->IsVisible());
-
-  bool result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents, "enterPictureInPicture();", &result));
-  EXPECT_TRUE(result);
-  EXPECT_TRUE(window_controller->GetWindowForTesting()->IsVisible());
-
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents, "exitPictureInPicture();", &result));
-  EXPECT_TRUE(result);
-  EXPECT_FALSE(window_controller->GetWindowForTesting()->IsVisible());
 }
 
 }  // namespace extensions

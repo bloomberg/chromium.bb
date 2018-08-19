@@ -106,16 +106,4 @@ bool ShellAppDelegate::TakeFocus(content::WebContents* web_contents,
   return false;
 }
 
-gfx::Size ShellAppDelegate::EnterPictureInPicture(
-    content::WebContents* web_contents,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size) {
-  NOTREACHED();
-  return gfx::Size();
-}
-
-void ShellAppDelegate::ExitPictureInPicture() {
-  NOTREACHED();
-}
-
 }  // namespace extensions

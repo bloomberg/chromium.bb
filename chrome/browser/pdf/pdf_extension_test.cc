@@ -1777,7 +1777,13 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
 
 #endif  // defined(OS_MACOSX)
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, MouseLeave) {
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+// https://crbug.com/856169
+#define MAYBE_MouseLeave DISABLED_MouseLeave
+#else
+#define MAYBE_MouseLeave MouseLeave
+#endif
+IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, MAYBE_MouseLeave) {
   GURL url = embedded_test_server()->GetURL("/pdf/pdf_embed.html");
 
   // Load page with embedded PDF and make sure it succeeds.
