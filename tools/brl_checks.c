@@ -245,7 +245,7 @@ check_base(const char *tableList, const char *input, const char *expected,
 					in.expected_cursorPos, cursorPos);
 			retval = 1;
 		}
-		if (in.max_outlen < 0 && inlen != actualInlen) {
+		if (in.max_outlen < 0 && inlen != actualInlen && direction != 1) {
 			fprintf(stderr,
 					"Unexpected error happened: input length is not the same before as "
 					"after the translation:\n");
