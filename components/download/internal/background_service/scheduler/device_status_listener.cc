@@ -4,14 +4,6 @@
 
 #include "components/download/internal/background_service/scheduler/device_status_listener.h"
 
-#include "base/power_monitor/power_monitor.h"
-#include "build/build_config.h"
-#include "components/download/internal/background_service/scheduler/network_status_listener.h"
-
-#if defined(OS_ANDROID)
-#include "components/download/internal/background_service/android/network_status_listener_android.h"
-#endif
-
 namespace download {
 
 namespace {
@@ -43,72 +35,18 @@ NetworkStatus ToNetworkStatus(network::mojom::ConnectionType type) {
 
 }  // namespace
 
-BatteryStatusListener::BatteryStatusListener(
-    const base::TimeDelta& battery_query_interval)
-    : battery_percentage_(0),
-      battery_query_interval_(battery_query_interval),
-      last_battery_query_(base::Time::Now()) {}
-
-BatteryStatusListener::~BatteryStatusListener() = default;
-
-int BatteryStatusListener::GetBatteryPercentage() {
-  UpdateBatteryPercentage(false);
-  return battery_percentage_;
-}
-
-bool BatteryStatusListener::IsOnBatteryPower() {
-  return base::PowerMonitor::Get()->IsOnBatteryPower();
-}
-
-void BatteryStatusListener::Start(Observer* observer) {
-  observer_ = observer;
-
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  DCHECK(power_monitor);
-  power_monitor->AddObserver(this);
-
-  UpdateBatteryPercentage(true);
-}
-
-void BatteryStatusListener::Stop() {
-  base::PowerMonitor::Get()->RemoveObserver(this);
-}
-
-int BatteryStatusListener::GetBatteryPercentageInternal() {
-  // Non-Android implementation currently always return full battery.
-  return 100;
-}
-
-void BatteryStatusListener::UpdateBatteryPercentage(bool force) {
-  // Throttle the battery queries.
-  if (!force &&
-      base::Time::Now() - last_battery_query_ < battery_query_interval_)
-    return;
-
-  battery_percentage_ = GetBatteryPercentageInternal();
-  last_battery_query_ = base::Time::Now();
-}
-
-void BatteryStatusListener::OnPowerStateChange(bool on_battery_power) {
-  if (observer_)
-    observer_->OnPowerStateChange(on_battery_power);
-}
-
 DeviceStatusListener::DeviceStatusListener(
     const base::TimeDelta& startup_delay,
     const base::TimeDelta& online_delay,
     std::unique_ptr<BatteryStatusListener> battery_listener,
-    network::NetworkConnectionTracker* network_connection_tracker)
-    : observer_(nullptr),
+    std::unique_ptr<NetworkStatusListener> network_listener)
+    : network_listener_(std::move(network_listener)),
+      observer_(nullptr),
       listening_(false),
       is_valid_state_(false),
       startup_delay_(startup_delay),
       online_delay_(online_delay),
-#if !defined(OS_ANDROID)
-      network_connection_tracker_(network_connection_tracker),
-#endif
-      battery_listener_(std::move(battery_listener)) {
-}
+      battery_listener_(std::move(battery_listener)) {}
 
 DeviceStatusListener::~DeviceStatusListener() {
   Stop();
@@ -142,11 +80,10 @@ void DeviceStatusListener::StartAfterDelay() {
       ToBatteryStatus(battery_listener_->IsOnBatteryPower());
 
   // Listen to network status changes.
-  BuildNetworkStatusListener();
   network_listener_->Start(this);
 
   status_.battery_status =
-      ToBatteryStatus(base::PowerMonitor::Get()->IsOnBatteryPower());
+      ToBatteryStatus(battery_listener_->IsOnBatteryPower());
   status_.network_status =
       ToNetworkStatus(network_listener_->GetConnectionType());
   pending_network_status_ = status_.network_status;
@@ -220,15 +157,6 @@ void DeviceStatusListener::NotifyNetworkChange() {
 
   status_.network_status = pending_network_status_;
   NotifyStatusChange();
-}
-
-void DeviceStatusListener::BuildNetworkStatusListener() {
-#if defined(OS_ANDROID)
-  network_listener_ = std::make_unique<NetworkStatusListenerAndroid>();
-#else
-  network_listener_ =
-      std::make_unique<NetworkStatusListenerImpl>(network_connection_tracker_);
-#endif
 }
 
 }  // namespace download

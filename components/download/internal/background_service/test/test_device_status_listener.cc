@@ -6,12 +6,15 @@
 
 #include <memory>
 
+#include "components/download/internal/background_service/scheduler/battery_status_listener_impl.h"
+#include "components/download/internal/background_service/scheduler/network_status_listener_impl.h"
+
 namespace download {
 namespace test {
 
-class FakeBatteryStatusListener : public BatteryStatusListener {
+class FakeBatteryStatusListener : public BatteryStatusListenerImpl {
  public:
-  FakeBatteryStatusListener() : BatteryStatusListener(base::TimeDelta()) {}
+  FakeBatteryStatusListener() : BatteryStatusListenerImpl(base::TimeDelta()) {}
   ~FakeBatteryStatusListener() override = default;
 
   // BatteryStatusListener implementation.
@@ -25,7 +28,8 @@ TestDeviceStatusListener::TestDeviceStatusListener()
     : DeviceStatusListener(base::TimeDelta(), /* startup_delay */
                            base::TimeDelta(), /* online_delay */
                            std::make_unique<FakeBatteryStatusListener>(),
-                           &test_network_connection_tracker_),
+                           std::make_unique<NetworkStatusListenerImpl>(
+                               &test_network_connection_tracker_)),
       test_network_connection_tracker_(
           true,
           network::mojom::ConnectionType::CONNECTION_UNKNOWN),

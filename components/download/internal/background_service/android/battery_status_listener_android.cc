@@ -11,7 +11,7 @@ namespace download {
 
 BatteryStatusListenerAndroid::BatteryStatusListenerAndroid(
     const base::TimeDelta& battery_query_interval)
-    : BatteryStatusListener(battery_query_interval) {}
+    : BatteryStatusListenerImpl(battery_query_interval) {}
 
 BatteryStatusListenerAndroid::~BatteryStatusListenerAndroid() = default;
 

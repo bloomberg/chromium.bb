@@ -9,7 +9,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
-#include "components/download/internal/background_service/scheduler/network_status_listener.h"
+#include "components/download/internal/background_service/scheduler/battery_status_listener_impl.h"
+#include "components/download/internal/background_service/scheduler/network_status_listener_impl.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,9 +35,9 @@ class MockObserver : public DeviceStatusListener::Observer {
   MOCK_METHOD1(OnDeviceStatusChanged, void(const DeviceStatus&));
 };
 
-class TestBatteryStatusListener : public BatteryStatusListener {
+class TestBatteryStatusListener : public BatteryStatusListenerImpl {
  public:
-  TestBatteryStatusListener() : BatteryStatusListener(base::TimeDelta()) {}
+  TestBatteryStatusListener() : BatteryStatusListenerImpl(base::TimeDelta()) {}
   ~TestBatteryStatusListener() override = default;
 
   void set_battery_percentage(int battery_percentage) {
@@ -56,22 +57,15 @@ class TestDeviceStatusListener : public DeviceStatusListener {
  public:
   explicit TestDeviceStatusListener(
       std::unique_ptr<TestBatteryStatusListener> battery_listener,
-      network::NetworkConnectionTracker* network_connection_tracker)
+      std::unique_ptr<NetworkStatusListener> network_listener)
       : DeviceStatusListener(base::TimeDelta(),
                              base::TimeDelta(),
                              std::move(battery_listener),
-                             network_connection_tracker),
-        network_connection_tracker_(network_connection_tracker) {}
-
-  void BuildNetworkStatusListener() override {
-    network_listener_ = std::make_unique<NetworkStatusListenerImpl>(
-        network_connection_tracker_);
-  }
+                             std::move(network_listener)) {}
 
  private:
-  network::NetworkConnectionTracker* network_connection_tracker_;
-
   friend class DeviceStatusListenerTest;
+  DISALLOW_COPY_AND_ASSIGN(TestDeviceStatusListener);
 };
 
 class DeviceStatusListenerTest : public testing::Test {
@@ -87,8 +81,12 @@ class DeviceStatusListenerTest : public testing::Test {
 
     auto battery_listener = std::make_unique<TestBatteryStatusListener>();
     test_battery_listener_ = battery_listener.get();
+
+    auto network_listener = std::make_unique<NetworkStatusListenerImpl>(
+        &network_connection_tracker_);
+
     listener_ = std::make_unique<TestDeviceStatusListener>(
-        std::move(battery_listener), &network_connection_tracker_);
+        std::move(battery_listener), std::move(network_listener));
   }
 
   void TearDown() override { listener_.reset(); }

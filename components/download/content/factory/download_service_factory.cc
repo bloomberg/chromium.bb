@@ -27,6 +27,13 @@
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/background_service/android/battery_status_listener_android.h"
+#include "components/download/internal/background_service/android/network_status_listener_android.h"
+#elif defined(OS_MACOSX)
+#include "components/download/internal/background_service/scheduler/battery_status_listener_mac.h"
+#include "components/download/internal/background_service/scheduler/network_status_listener_mac.h"
+#else
+#include "components/download/internal/background_service/scheduler/battery_status_listener_impl.h"
+#include "components/download/internal/background_service/scheduler/network_status_listener_impl.h"
 #endif
 
 namespace download {
@@ -51,17 +58,24 @@ DownloadService* CreateDownloadServiceInternal(
   auto client_set = std::make_unique<ClientSet>(std::move(clients));
   auto model = std::make_unique<ModelImpl>(std::move(store));
 
+// Build platform network/battery status listener.
 #if defined(OS_ANDROID)
   auto battery_listener = std::make_unique<BatteryStatusListenerAndroid>(
       config->battery_query_interval);
+  auto network_listener = std::make_unique<NetworkStatusListenerAndroid>();
+#elif defined(OS_MACOSX)
+  auto battery_listener = std::make_unique<BatteryStatusListenerMac>();
+  auto network_listener = std::make_unique<NetworkStatusListenerMac>();
 #else
-  auto battery_listener =
-      std::make_unique<BatteryStatusListener>(config->battery_query_interval);
+  auto battery_listener = std::make_unique<BatteryStatusListenerImpl>(
+      config->battery_query_interval);
+  auto network_listener =
+      std::make_unique<NetworkStatusListenerImpl>(network_connection_tracker);
 #endif
 
   auto device_status_listener = std::make_unique<DeviceStatusListener>(
       config->network_startup_delay, config->network_change_delay,
-      std::move(battery_listener), network_connection_tracker);
+      std::move(battery_listener), std::move(network_listener));
   NavigationMonitor* navigation_monitor =
       NavigationMonitorFactory::GetForBrowserContext(browser_context);
   auto scheduler = std::make_unique<SchedulerImpl>(
