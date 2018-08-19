@@ -118,8 +118,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                                    unsigned from,
                                    unsigned to) const;
   // The character start/end index of a range shape result.
-  unsigned StartIndexForResult() const;
-  unsigned EndIndexForResult() const;
+  unsigned StartIndexForResult() const { return start_index_; }
+  unsigned EndIndexForResult() const { return start_index_ + num_characters_; }
   void FallbackFonts(HashSet<const SimpleFontData*>*) const;
   TextDirection Direction() const {
     return static_cast<TextDirection>(direction_);
@@ -332,6 +332,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   void InsertRun(std::unique_ptr<ShapeResult::RunInfo>);
   void InsertRunForIndex(unsigned start_character_index);
   void ReorderRtlRuns(unsigned run_size_before);
+  unsigned ComputeStartIndex() const;
+  void UpdateStartIndex();
 
   float LineLeftBounds() const;
   float LineRightBounds() const;
@@ -342,6 +344,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   scoped_refptr<const SimpleFontData> primary_font_;
   mutable std::unique_ptr<CharacterPositionData> character_position_;
 
+  unsigned start_index_;
   unsigned num_characters_;
   unsigned num_glyphs_ : 30;
 

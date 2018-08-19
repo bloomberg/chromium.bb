@@ -381,6 +381,7 @@ ShapeResult::ShapeResult(const ShapeResult& other)
     : width_(other.width_),
       glyph_bounding_box_(other.glyph_bounding_box_),
       primary_font_(other.primary_font_),
+      start_index_(other.start_index_),
       num_characters_(other.num_characters_),
       num_glyphs_(other.num_glyphs_),
       direction_(other.direction_),
@@ -406,26 +407,6 @@ CharacterRange ShapeResult::GetCharacterRange(const StringView& text,
   EnsureGraphemes(text);
   return ShapeResultBuffer::GetCharacterRange(this, text, Direction(), Width(),
                                               from, to);
-}
-
-unsigned ShapeResult::StartIndexForResult() const {
-  if (UNLIKELY(runs_.IsEmpty()))
-    return 0;
-  const RunInfo& first_run = *runs_.front();
-  if (!Rtl())
-    return first_run.start_index_;
-  unsigned end = first_run.start_index_ + first_run.num_characters_;
-  DCHECK_GE(end, NumCharacters());
-  return end - NumCharacters();
-}
-
-unsigned ShapeResult::EndIndexForResult() const {
-  if (UNLIKELY(runs_.IsEmpty()))
-    return NumCharacters();
-  const RunInfo& first_run = *runs_.front();
-  if (!Rtl())
-    return first_run.start_index_ + NumCharacters();
-  return first_run.start_index_ + first_run.num_characters_;
 }
 
 scoped_refptr<ShapeResult> ShapeResult::MutableUnique() const {
@@ -1071,6 +1052,10 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run) {
   // If we didn't find an existing slot to place it, append.
   if (run)
     runs_.push_back(std::move(run));
+
+  // TODO(layout-dev): We could skip this unless the inserted run is the first
+  // one but determiening that is likely as expensive as the computation.
+  UpdateStartIndex();
 }
 
 // Insert a |RunInfo| without glyphs. |StartIndexForResult()| needs a run to
@@ -1082,6 +1067,7 @@ void ShapeResult::InsertRunForIndex(unsigned start_character_index) {
       primary_font_.get(), !Rtl() ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
       CanvasRotationInVertical::kRegular, HB_SCRIPT_UNKNOWN,
       start_character_index, 0, num_characters_));
+  UpdateStartIndex();
 }
 
 ShapeResult::RunInfo* ShapeResult::InsertRunForTesting(
@@ -1134,6 +1120,21 @@ void ShapeResult::ReorderRtlRuns(unsigned run_size_before) {
   for (unsigned i = 0; i < run_size_before; i++)
     new_runs.push_back(std::move(runs_[i]));
   runs_.swap(new_runs);
+}
+
+unsigned ShapeResult::ComputeStartIndex() const {
+  if (UNLIKELY(runs_.IsEmpty()))
+    return 0;
+  const RunInfo& first_run = *runs_.front();
+  if (!Rtl())  // Left-to-right.
+    return first_run.start_index_;
+  // Right-to-left.
+  unsigned end_index = first_run.start_index_ + first_run.num_characters_;
+  return end_index - num_characters_;
+}
+
+void ShapeResult::UpdateStartIndex() {
+  start_index_ = ComputeStartIndex();
 }
 
 // Returns the left of the glyph bounding box of the left most character.
@@ -1218,8 +1219,10 @@ void ShapeResult::CopyRange(unsigned start_offset,
     }
   }
 
-  if (!target->num_glyphs_)
+  if (!target->num_glyphs_) {
+    target->UpdateStartIndex();
     return;
+  }
 
   // Runs in RTL result are in visual order, and that new runs should be
   // prepended. Reorder appended runs.
@@ -1249,6 +1252,7 @@ void ShapeResult::CopyRange(unsigned start_offset,
   target->glyph_bounding_box_.UniteIfNonZero(adjusted_box);
 
   target->has_vertical_offsets_ |= has_vertical_offsets_;
+  target->UpdateStartIndex();
 
 #if DCHECK_IS_ON()
   DCHECK_EQ(target->num_characters_ - target_num_characters_before,
@@ -1283,6 +1287,7 @@ scoped_refptr<ShapeResult> ShapeResult::CopyAdjustedOffset(
     }
   }
 
+  result->UpdateStartIndex();
   return result;
 }
 
@@ -1294,6 +1299,7 @@ void ShapeResult::CheckConsistency() const {
     return;
   }
 
+  DCHECK_EQ(start_index_, ComputeStartIndex());
   const unsigned start_index = StartIndexForResult();
   unsigned index = start_index;
   unsigned num_glyphs = 0;
@@ -1351,6 +1357,7 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   result->has_vertical_offsets_ =
       font_data->PlatformData().IsVerticalAnyUpright();
   result->runs_.push_back(std::move(run));
+  result->UpdateStartIndex();
   return result;
 }
 
