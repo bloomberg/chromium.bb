@@ -144,7 +144,7 @@ check_base(const char *tableList, const char *input, const char *expected,
 				retval = 1;
 				goto fail;
 			}
-			if (inlen == actualInlen) {
+			if (in.max_outlen >= 0 || inlen == actualInlen) {
 				break;
 			} else {
 				// Hm, something is not quite right. Try again with a larger outbuf
@@ -245,11 +245,17 @@ check_base(const char *tableList, const char *input, const char *expected,
 					in.expected_cursorPos, cursorPos);
 			retval = 1;
 		}
-		if (inlen != actualInlen) {
+		if (in.max_outlen < 0 && inlen != actualInlen) {
 			fprintf(stderr,
 					"Unexpected error happened: input length is not the same before as "
 					"after the translation:\n");
 			fprintf(stderr, "Before: %d After: %d \n", inlen, actualInlen);
+			retval = 1;
+		} else if (actualInlen > inlen) {
+			fprintf(stderr,
+					"Unexpected error happened: returned input length (%d) exceeds "
+					"total input length (%d)\n",
+					actualInlen, inlen);
 			retval = 1;
 		}
 
