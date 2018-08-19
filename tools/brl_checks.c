@@ -129,7 +129,7 @@ check_base(const char *tableList, const char *input, const char *expected,
 			outputPos = malloc(sizeof(int) * inlen);
 		}
 		actualInlen = inlen;
-		for (int k = 0; k < 3; k++) {
+		for (int k = 1; k <= 3; k++) {
 			if (direction == 1) {
 				funcStatus = lou_backTranslate(tableList, inbuf, &actualInlen, outbuf,
 						&outlen, typeformbuf, NULL, outputPos, inputPos, &cursorPos,
@@ -146,18 +146,21 @@ check_base(const char *tableList, const char *input, const char *expected,
 			}
 			if (in.max_outlen >= 0 || inlen == actualInlen) {
 				break;
-			} else {
+			} else if (k < 3) {
 				// Hm, something is not quite right. Try again with a larger outbuf
 				free(outbuf);
-				int old_outlen = inlen * outlen_multiplier * k;
-				int new_outlen = inlen * outlen_multiplier * (k + 1);
-				outbuf = malloc(sizeof(widechar) * new_outlen);
+				outlen = inlen * outlen_multiplier * (k + 1);
+				outbuf = malloc(sizeof(widechar) * outlen);
+				if (expected_inputPos) {
+					free(inputPos);
+					inputPos = malloc(sizeof(int) * outlen);
+				}
 				fprintf(stderr,
 						"Warning: For %s: returned inlen (%d) differs from passed inlen "
 						"(%d) "
 						"using outbuf of size %d. Trying again with bigger outbuf "
 						"(%d).\n",
-						input, actualInlen, inlen, old_outlen, new_outlen);
+						input, actualInlen, inlen, inlen * outlen_multiplier * k, outlen);
 				actualInlen = inlen;
 			}
 		}
