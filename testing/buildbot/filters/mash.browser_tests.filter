@@ -285,7 +285,6 @@
 # https://crbug.com/827327
 -PictureInPictureWindowControllerBrowserTest.*
 -ControlPictureInPictureWindowControllerBrowserTest.*
--PlatformAppBrowserTest.PictureInPicture
 
 # These started failing with the switch to ws2.
 # https:://crbug.com/855767

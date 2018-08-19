@@ -77,7 +77,6 @@
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
       'Mac ASan 64 Tests (1)', # https://crbug.com/828031
-      'win-asan', # https://crbug.com/873234, https://crbug.com/856169
       # chromium.win
       'Win10 Tests x64 (dbg)',
     ],
@@ -825,7 +824,7 @@
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
       'Linux TSan Tests',  # No capacity, https://crbug.com/852442
-      'win-asan', # https://crbug.com/873234, https://crbug.com/856169
+      'win-asan', # https://crbug.com/840063
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
       'Win10 Tests x64 (dbg)',  # Matches browser_tests.
@@ -1325,7 +1324,6 @@
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
       'Mac ASan 64 Tests (1)', # https://crbug.com/828031
-      'win-asan', # https://crbug.com/873234, https://crbug.com/856169
       # chromium.win
       # Currently too flaky on Windows.
       'Win 7 Tests x64 (1)',

@@ -25,10 +25,6 @@ class Rect;
 class Size;
 }
 
-namespace viz {
-class SurfaceId;
-}
-
 namespace extensions {
 
 class Extension;
@@ -93,17 +89,6 @@ class AppDelegate {
   // a chance to handle the focus change.
   // Return whether focus has been handled.
   virtual bool TakeFocus(content::WebContents* web_contents, bool reverse) = 0;
-
-  // Notifies the Picture-in-Picture controller that there is a new player
-  // entering Picture-in-Picture.
-  // Returns the size of the Picture-in-Picture window.
-  virtual gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
-                                          const viz::SurfaceId& surface_id,
-                                          const gfx::Size& natural_size) = 0;
-
-  // Updates the Picture-in-Picture controller with a signal that
-  // Picture-in-Picture mode has ended.
-  virtual void ExitPictureInPicture() = 0;
 };
 
 }  // namespace extensions

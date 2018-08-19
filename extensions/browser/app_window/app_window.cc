@@ -439,16 +439,6 @@ bool AppWindow::TakeFocus(WebContents* source, bool reverse) {
   return app_delegate_->TakeFocus(source, reverse);
 }
 
-gfx::Size AppWindow::EnterPictureInPicture(const viz::SurfaceId& surface_id,
-                                           const gfx::Size& natural_size) {
-  return app_delegate_->EnterPictureInPicture(web_contents(), surface_id,
-                                              natural_size);
-}
-
-void AppWindow::ExitPictureInPicture() {
-  app_delegate_->ExitPictureInPicture();
-}
-
 bool AppWindow::OnMessageReceived(const IPC::Message& message,
                                   content::RenderFrameHost* render_frame_host) {
   bool handled = true;
