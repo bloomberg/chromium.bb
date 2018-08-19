@@ -2725,6 +2725,8 @@ crbug.com/873540 external/wpt/budget-api/idlharness.https.any.html [ Timeout Cra
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-transitions/event-dispatch.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/text/reftests/text-complex-002.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/text/reftests/text-shape-inside-001.svg [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-vert-002.xhtml [ Failure ]
@@ -4671,7 +4673,6 @@ crbug.com/828858 external/wpt/css/selectors/focus-visible-007.html [ Failure ]
 crbug.com/828858 external/wpt/html/editing/focus/inert/inert-node-is-uneditable.html [ Failure ]
 
 # Sheriff 2018-06-07
-crbug.com/850349 external/wpt/css/css-animations/CSSAnimation-getComputedTiming.tentative.html [ Pass Failure ]
 crbug.com/850395 virtual/gpu/fast/canvas/canvas-filter-stroke-paint-pattern.html [ Pass Failure ]
 crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Pass Failure ]
 crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-comment.js [ Pass Failure ]
