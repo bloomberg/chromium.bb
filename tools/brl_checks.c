@@ -94,7 +94,7 @@ check_base(const char *tableList, const char *input, const char *expected,
 	while (1) {
 		widechar *inbuf, *outbuf, *expectedbuf;
 		int inlen = strlen(input);
-		int actualInlen = inlen;;
+		int actualInlen;
 		const int outlen_multiplier = 4 + sizeof(widechar) * 2;
 		int outlen = inlen * outlen_multiplier;
 		int expectedlen = strlen(expected);
@@ -128,6 +128,7 @@ check_base(const char *tableList, const char *input, const char *expected,
 		if (expected_outputPos) {
 			outputPos = malloc(sizeof(int) * inlen);
 		}
+		actualInlen = inlen;
 		for (int k = 0; k < 3; k++) {
 			if (direction == 1) {
 				funcStatus = lou_backTranslate(tableList, inbuf, &actualInlen, outbuf,
