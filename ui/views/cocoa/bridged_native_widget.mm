@@ -38,7 +38,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace {
@@ -119,18 +118,6 @@ using NSViewComparatorValue = __kindof NSView*;
 #endif
 
 int kWindowPropertiesKey;
-
-// Returns true if bounds passed to window in SetBounds should be treated as
-// though they are in screen coordinates.
-bool PositionWindowInScreenCoordinates(views::Widget* widget,
-                                       views::Widget::InitParams::Type type) {
-  // Replicate the logic in desktop_aura/desktop_screen_position_client.cc.
-  if (views::GetAuraWindowTypeForWidgetType(type) ==
-      aura::client::WINDOW_TYPE_POPUP)
-    return true;
-
-  return widget && widget->is_top_level();
-}
 
 // Returns true if the content_view is reparented.
 bool PositionWindowInNativeViewParent(NSView* content_view) {
@@ -328,18 +315,20 @@ void BridgedNativeWidget::Init(const Widget::InitParams& params) {
       break;
   }  // No default case, to pick up new types.
 
-  // Set a meaningful initial bounds. Note that except for frameless widgets
-  // with no WidgetDelegate, the bounds will be set again by Widget after
-  // initializing the non-client view. In the former case, if bounds were not
-  // set at all, the creator of the Widget is expected to call SetBounds()
-  // before calling Widget::Show() to avoid a kWindowSizeDeterminedLater-sized
-  // (i.e. 1x1) window appearing.
-  if (!params.bounds.IsEmpty()) {
-    SetBounds(params.bounds);
-  } else {
+  // Tooltip Widgets shouldn't have their own tooltip manager, but tooltips are
+  // native on Mac, so nothing should ever want one in Widget form.
+  DCHECK_NE(params.type, Widget::InitParams::TYPE_TOOLTIP);
+  tooltip_manager_.reset(new TooltipManagerMac(this));
+}
+
+void BridgedNativeWidget::SetBounds(
+    const gfx::Rect& new_bounds,
+    const gfx::Size& minimum_content_size,
+    const gfx::Vector2d& bounds_offset_for_parent) {
+  if (new_bounds.IsEmpty()) {
     // If a position is set, but no size, complain. Otherwise, a 1x1 window
     // would appear there, which might be unexpected.
-    DCHECK(params.bounds.origin().IsOrigin())
+    DCHECK(new_bounds.origin().IsOrigin())
         << "Zero-sized windows not supported on Mac.";
 
     // Otherwise, bounds is all zeroes. Cocoa will currently have the window at
@@ -349,27 +338,17 @@ void BridgedNativeWidget::Init(const Widget::InitParams& params) {
     // size also depends on the window style.
     NSRect frame_rect = [window_ frame];
     SetBounds(gfx::Rect(gfx::Point(),
-                        gfx::Size(NSWidth(frame_rect), NSHeight(frame_rect))));
+                        gfx::Size(NSWidth(frame_rect), NSHeight(frame_rect))),
+              minimum_content_size, bounds_offset_for_parent);
+    return;
   }
 
-  // Widgets for UI controls (usually layered above web contents) start visible.
-  if (params.type == Widget::InitParams::TYPE_CONTROL)
-    SetVisibilityState(SHOW_INACTIVE);
-
-  // Tooltip Widgets shouldn't have their own tooltip manager, but tooltips are
-  // native on Mac, so nothing should ever want one in Widget form.
-  DCHECK_NE(params.type, Widget::InitParams::TYPE_TOOLTIP);
-  tooltip_manager_.reset(new TooltipManagerMac(this));
-}
-
-void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
-  Widget* widget = native_widget_mac_->GetWidget();
   // -[NSWindow contentMinSize] is only checked by Cocoa for user-initiated
   // resizes. This is not what toolkit-views expects, so clamp. Note there is
   // no check for maximum size (consistent with aura::Window::SetBounds()).
   gfx::Size clamped_content_size =
       GetClientSizeForWindowSize(window_, new_bounds.size());
-  clamped_content_size.SetToMax(widget->GetMinimumSize());
+  clamped_content_size.SetToMax(minimum_content_size);
 
   // A contentRect with zero width or height is a banned practice in ChromeMac,
   // due to unpredictable OSX treatment.
@@ -387,8 +366,7 @@ void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
       new_bounds.origin(),
       GetWindowSizeForClientSize(window_, clamped_content_size));
 
-  if (parent_ && !PositionWindowInScreenCoordinates(widget, widget_type_))
-    actual_new_bounds.Offset(parent_->GetChildWindowOffset());
+  actual_new_bounds.Offset(bounds_offset_for_parent);
 
   if (PositionWindowInNativeViewParent(bridged_view_))
     actual_new_bounds.Offset(GetNativeViewParentOffset(bridged_view_));

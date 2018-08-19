@@ -132,7 +132,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   base::scoped_nsobject<NativeWidgetMacNSWindow> window =
       CreateNSWindow(params);
   bridge()->SetWindow(window);
-  bridge()->Init(params);
+  bridge_host_->InitWindow(params);
 
   // Only set always-on-top here if it is true since setting it may affect how
   // the window is treated by Expose.
@@ -328,8 +328,8 @@ std::string NativeWidgetMac::GetWorkspace() const {
 }
 
 void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
-  if (bridge())
-    bridge()->SetBounds(bounds);
+  if (bridge_host_)
+    bridge_host_->SetBounds(bounds);
 }
 
 void NativeWidgetMac::SetBoundsConstrained(const gfx::Rect& bounds) {
