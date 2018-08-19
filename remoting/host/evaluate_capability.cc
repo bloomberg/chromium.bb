@@ -19,7 +19,6 @@
 #include "remoting/host/switches.h"
 
 #if defined(OS_WIN)
-#include "remoting/host/win/evaluate_3d_display_mode.h"
 #include "remoting/host/win/evaluate_d3d.h"
 #endif
 
@@ -90,9 +89,6 @@ int EvaluateCapabilityLocally(const std::string& type) {
 #if defined(OS_WIN)
   if (type == kEvaluateD3D) {
     return EvaluateD3D();
-  }
-  if (type == kEvaluate3dDisplayMode) {
-    return Evaluate3dDisplayMode();
   }
 #endif
 

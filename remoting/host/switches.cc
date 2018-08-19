@@ -25,7 +25,6 @@ const char kEvaluateCapabilitySwitchName[] = "evaluate-type";
 
 #if defined(OS_WIN)
 const char kEvaluateD3D[] = "d3d-support";
-const char kEvaluate3dDisplayMode[] = "3d-display-mode";
 #endif
 
 const char kParentWindowSwitchName[] = "parent-window";
