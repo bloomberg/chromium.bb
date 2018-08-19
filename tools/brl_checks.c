@@ -247,7 +247,8 @@ check_base(const char *tableList, const char *input, const char *expected,
 		}
 		if (inlen != actualInlen) {
 			fprintf(stderr,
-					"Input length is not the same before as after the translation:\n");
+					"Unexpected error happened: input length is not the same before as "
+					"after the translation:\n");
 			fprintf(stderr, "Before: %d After: %d \n", inlen, actualInlen);
 			retval = 1;
 		}
