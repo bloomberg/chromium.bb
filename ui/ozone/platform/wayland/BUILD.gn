@@ -49,6 +49,8 @@ source_set("wayland") {
     "wayland_surface_factory.h",
     "wayland_touch.cc",
     "wayland_touch.h",
+    "wayland_util.cc",
+    "wayland_util.h",
     "wayland_window.cc",
     "wayland_window.h",
     "xdg_popup_wrapper.h",

@@ -44,7 +44,6 @@ class WaylandCursor {
                     uint32_t serial);
 
  private:
-  bool CreateSHMBuffer(const gfx::Size& size);
   void HideCursor(uint32_t serial);
 
   wl_shm* shm_ = nullptr;                // Owned by WaylandConnection.
