@@ -244,7 +244,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   gpu::GpuControlClient* gpu_control_client_ = nullptr;
 
   // Unowned list of DeletionObservers.
-  base::ObserverList<DeletionObserver> deletion_observers_;
+  base::ObserverList<DeletionObserver>::Unchecked deletion_observers_;
 
   scoped_refptr<GpuChannelHost> channel_;
   GpuMemoryBufferManager* gpu_memory_buffer_manager_;

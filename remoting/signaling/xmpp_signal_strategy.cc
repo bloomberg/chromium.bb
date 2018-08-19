@@ -143,7 +143,7 @@ class XmppSignalStrategy::Core : public XmppLoginHandler::Delegate {
 
   Error error_ = OK;
 
-  base::ObserverList<Listener, true> listeners_;
+  base::ObserverList<Listener, true>::Unchecked listeners_;
 
   base::RepeatingTimer keep_alive_timer_;
 

@@ -356,7 +356,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   std::string sync_password_hash_;
   scoped_refptr<SafeBrowsingNavigationObserverManager>
       navigation_observer_manager_;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::set<content::WebContents*>
       web_contents_with_unhandled_enterprise_reuses_;

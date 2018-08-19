@@ -105,7 +105,7 @@ class DesktopSessionDurationTracker : public AudibleContentsTracker::Observer {
 
   base::OneShotTimer timer_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   ChromeVisibilityObserver visibility_observer_;
   AudibleContentsTracker audio_tracker_;

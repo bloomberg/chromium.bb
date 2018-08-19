@@ -39,7 +39,7 @@ class ASH_EXPORT NetworkIconAnimation : public gfx::AnimationDelegate {
 
  private:
   gfx::ThrobAnimation animation_;
-  base::ObserverList<AnimationObserver> observers_;
+  base::ObserverList<AnimationObserver>::Unchecked observers_;
 };
 
 }  // namespace network_icon

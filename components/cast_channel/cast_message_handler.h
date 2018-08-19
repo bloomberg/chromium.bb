@@ -228,7 +228,7 @@ class CastMessageHandler : public CastSocket::Observer {
 
   int next_request_id_ = 0;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Set of virtual connections opened to receivers.
   base::flat_set<VirtualConnection> virtual_connections_;

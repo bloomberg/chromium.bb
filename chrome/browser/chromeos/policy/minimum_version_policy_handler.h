@@ -46,7 +46,7 @@ class MinimumVersionPolicyHandler {
       policy_subscription_;
 
   // List of registered observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<MinimumVersionPolicyHandler> weak_factory_;
 

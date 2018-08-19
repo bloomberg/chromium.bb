@@ -64,7 +64,7 @@ class ZoomEventManager : public base::SupportsUserData::Data {
  private:
   base::CallbackList<void(const content::HostZoomMap::ZoomLevelChange&)>
       zoom_level_changed_callbacks_;
-  base::ObserverList<ZoomEventManagerObserver> observers_;
+  base::ObserverList<ZoomEventManagerObserver>::Unchecked observers_;
   base::WeakPtrFactory<ZoomEventManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomEventManager);

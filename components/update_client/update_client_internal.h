@@ -82,7 +82,7 @@ class UpdateClientImpl : public UpdateClient {
   std::set<scoped_refptr<Task>> tasks_;
   scoped_refptr<PingManager> ping_manager_;
   scoped_refptr<UpdateEngine> update_engine_;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateClientImpl);
 };

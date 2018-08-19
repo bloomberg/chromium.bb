@@ -114,7 +114,7 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
   mojo::Binding<mojom::PageSignalReceiver> binding_;
   std::map<CoordinationUnitID, content::WebContents*> cu_id_web_contents_map_;
   std::map<content::WebContents*, int64_t> web_contents_navigation_id_map_;
-  base::ObserverList<PageSignalObserver> observers_;
+  base::ObserverList<PageSignalObserver>::Unchecked observers_;
   DISALLOW_COPY_AND_ASSIGN(PageSignalReceiver);
 };
 

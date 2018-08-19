@@ -292,7 +292,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   mojom::FrameSinkManagerClientPtr client_ptr_;
   mojo::Binding<mojom::FrameSinkManager> binding_;
 
-  base::ObserverList<FrameSinkObserver> observer_list_;
+  base::ObserverList<FrameSinkObserver>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerImpl);
 };

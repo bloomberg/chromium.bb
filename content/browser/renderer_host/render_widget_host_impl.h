@@ -993,11 +993,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   std::vector<MouseEventCallback> mouse_event_callbacks_;
 
   // Input event callbacks.
-  base::ObserverList<RenderWidgetHost::InputEventObserver>
+  base::ObserverList<RenderWidgetHost::InputEventObserver>::Unchecked
       input_event_observers_;
 
   // The observers watching us.
-  base::ObserverList<RenderWidgetHostObserver> observers_;
+  base::ObserverList<RenderWidgetHostObserver>::Unchecked observers_;
 
   // If true, then we should repaint when restoring even if we have a
   // backingstore.  This flag is set to true if we receive a paint message

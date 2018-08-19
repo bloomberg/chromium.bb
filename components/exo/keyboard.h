@@ -134,7 +134,7 @@ class Keyboard : public ui::EventHandler,
   // fix https://crbug.com/847500 without breaking ARC++ apps.
   bool focus_belongs_to_arc_app_ = false;
 
-  base::ObserverList<KeyboardObserver> observer_list_;
+  base::ObserverList<KeyboardObserver>::Unchecked observer_list_;
 
   base::WeakPtrFactory<Keyboard> weak_ptr_factory_;
 

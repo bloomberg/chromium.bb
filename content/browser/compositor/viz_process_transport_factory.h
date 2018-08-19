@@ -117,7 +117,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   // are using.
   viz::CompositingModeReporterImpl* const compositing_mode_reporter_;
 
-  base::ObserverList<ui::ContextFactoryObserver> observer_list_;
+  base::ObserverList<ui::ContextFactoryObserver>::Unchecked observer_list_;
 
   // ContextProvider used on worker threads for rasterization.
   scoped_refptr<viz::RasterContextProvider> worker_context_provider_;

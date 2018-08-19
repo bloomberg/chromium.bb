@@ -35,7 +35,7 @@ class RemoteDeviceProvider {
   void NotifyObserversDeviceListChanged();
 
  private:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 };
 
 }  // namespace cryptauth

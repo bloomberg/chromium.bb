@@ -188,7 +188,7 @@ class AccountTrackerService : public KeyedService {
 
   SigninClient* signin_client_;  // Not owned.
   std::map<std::string, AccountState> accounts_;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::FilePath user_data_dir_;
 

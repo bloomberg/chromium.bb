@@ -129,7 +129,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   DrmOverlayManager* overlay_manager_;      // Not owned.
 
   DrmCursor* cursor_;                              // Not owned.
-  base::ObserverList<GpuThreadObserver> gpu_thread_observers_;
+  base::ObserverList<GpuThreadObserver>::Unchecked gpu_thread_observers_;
 
   base::WeakPtr<DrmGpuPlatformSupportHost> weak_ptr_;
   base::WeakPtrFactory<DrmGpuPlatformSupportHost> weak_ptr_factory_;

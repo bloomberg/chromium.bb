@@ -552,7 +552,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // printers.
   std::unordered_map<std::string, int> configured_printers_index_;
 
-  base::ObserverList<CupsPrintersManager::Observer> observer_list_;
+  base::ObserverList<CupsPrintersManager::Observer>::Unchecked observer_list_;
 
   // Holds the current value of the pref |UserNativePrintersAllowed|.
   BooleanPrefMember native_printers_allowed_;

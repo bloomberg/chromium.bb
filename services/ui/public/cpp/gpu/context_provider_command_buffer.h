@@ -153,7 +153,7 @@ class ContextProviderCommandBuffer
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
 
-  base::ObserverList<viz::ContextLostObserver> observers_;
+  base::ObserverList<viz::ContextLostObserver>::Unchecked observers_;
 };
 
 }  // namespace ui

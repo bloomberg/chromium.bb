@@ -98,7 +98,7 @@ class BookmarkTabHelper
   bookmarks::BookmarkModel* bookmark_model_;
 
   // A list of observers notified when when the url starred changed.
-  base::ObserverList<BookmarkTabHelperObserver> observers_;
+  base::ObserverList<BookmarkTabHelperObserver>::Unchecked observers_;
 
   // The BookmarkDrag is used to forward bookmark drag and drop events to
   // extensions.

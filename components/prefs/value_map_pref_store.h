@@ -50,7 +50,7 @@ class COMPONENTS_PREFS_EXPORT ValueMapPrefStore : public WriteablePrefStore {
  private:
   PrefValueMap prefs_;
 
-  base::ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ValueMapPrefStore);
 };

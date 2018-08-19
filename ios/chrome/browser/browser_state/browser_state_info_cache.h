@@ -75,7 +75,8 @@ class BrowserStateInfoCache {
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;
   base::FilePath user_data_dir_;
-  base::ObserverList<BrowserStateInfoCacheObserver, true> observer_list_;
+  base::ObserverList<BrowserStateInfoCacheObserver, true>::Unchecked
+      observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStateInfoCache);
 };

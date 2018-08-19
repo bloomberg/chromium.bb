@@ -319,7 +319,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   // Handles find requests and replies for the webview find API.
   WebViewFindHelper find_helper_;
 
-  base::ObserverList<ScriptExecutionObserver> script_observers_;
+  base::ObserverList<ScriptExecutionObserver>::Unchecked script_observers_;
   std::unique_ptr<ScriptExecutor> script_executor_;
 
   // True if the user agent is overridden.

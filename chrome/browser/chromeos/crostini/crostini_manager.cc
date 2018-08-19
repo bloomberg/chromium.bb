@@ -369,7 +369,8 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter>,
   std::string container_username_;
   std::string source_path_;
   CrostiniManager::RestartCrostiniCallback callback_;
-  base::ObserverList<CrostiniManager::RestartObserver> observer_list_;
+  base::ObserverList<CrostiniManager::RestartObserver>::Unchecked
+      observer_list_;
   CrostiniManager::RestartId restart_id_;
   CrostiniRestarterService* restarter_service_;
   bool is_aborted_ = false;

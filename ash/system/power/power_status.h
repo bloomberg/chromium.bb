@@ -208,7 +208,7 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // Overriden from PowerManagerClient::Observer.
   void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Current state.
   power_manager::PowerSupplyProperties proto_;

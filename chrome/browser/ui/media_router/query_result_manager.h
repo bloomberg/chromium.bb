@@ -168,7 +168,7 @@ class QueryResultManager {
   std::map<MediaSink::Id, CastModesWithMediaSources> all_sinks_;
 
   // Registered observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Not owned by this object.
   MediaRouter* const router_;

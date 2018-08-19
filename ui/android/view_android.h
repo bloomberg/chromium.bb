@@ -259,7 +259,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
       const;
 
   std::list<ViewAndroid*> children_;
-  base::ObserverList<ViewAndroidObserver> observer_list_;
+  base::ObserverList<ViewAndroidObserver>::Unchecked observer_list_;
   scoped_refptr<cc::Layer> layer_;
   JavaObjectWeakGlobalRef delegate_;
 

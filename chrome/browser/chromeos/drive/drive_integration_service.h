@@ -227,7 +227,7 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<DownloadHandler> download_handler_;
   std::unique_ptr<DebugInfoCollector> debug_info_collector_;
 
-  base::ObserverList<DriveIntegrationServiceObserver> observers_;
+  base::ObserverList<DriveIntegrationServiceObserver>::Unchecked observers_;
   std::unique_ptr<PreferenceWatcher> preference_watcher_;
   std::unique_ptr<content::NotificationRegistrar>
       profile_notification_registrar_;

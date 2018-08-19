@@ -92,7 +92,7 @@ class EVENTS_OZONE_EXPORT CursorController {
   WindowToCursorConfigurationMap window_to_cursor_configuration_map_;
   mutable base::Lock window_to_cursor_configuration_map_lock_;
 
-  base::ObserverList<CursorObserver> cursor_observers_;
+  base::ObserverList<CursorObserver>::Unchecked cursor_observers_;
   mutable base::Lock cursor_observers_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorController);

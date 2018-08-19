@@ -181,7 +181,7 @@ class MediaRouteController
 
   // Observers that are notified of status updates. The observers share the
   // ownership of the controller through scoped_refptr.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // This becomes false when |Invalidate()| is called on the controller.
   // TODO(imcheng): We need the |is_valid_| bit and make have the dtor depend on

@@ -59,7 +59,8 @@ class CastFocusClientAura : public aura::WindowObserver,
   // root window).
   aura::Window* GetZOrderWindow(aura::Window* window);
 
-  base::ObserverList<aura::client::FocusChangeObserver> focus_observers_;
+  base::ObserverList<aura::client::FocusChangeObserver>::Unchecked
+      focus_observers_;
 
   // Track the currently focused window, which isn't necessarily a top-level
   // window.

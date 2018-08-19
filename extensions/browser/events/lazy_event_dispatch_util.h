@@ -62,7 +62,7 @@ class LazyEventDispatchUtil : public ExtensionRegistryObserver {
   void StorePendingOnInstallInfoToPref(const Extension* extension);
 
   content::BrowserContext* browser_context_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 

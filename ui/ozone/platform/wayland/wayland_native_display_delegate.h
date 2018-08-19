@@ -53,7 +53,7 @@ class WaylandNativeDisplayDelegate : public display::NativeDisplayDelegate,
  private:
   WaylandConnection* connection_;  // Not owned.
 
-  base::ObserverList<display::NativeDisplayObserver> observers_;
+  base::ObserverList<display::NativeDisplayObserver>::Unchecked observers_;
 
   bool displays_ready_ = false;
 

@@ -34,7 +34,7 @@ class CHROMEOS_EXPORT FakeHammerdClient : public HammerdClient {
   void FireInvalidBaseConnectedSignal();
 
  private:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeHammerdClient);
 };

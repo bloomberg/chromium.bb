@@ -43,7 +43,7 @@ class ArcNotificationSurfaceManagerImpl
                          std::unique_ptr<ArcNotificationSurfaceImpl>>;
   NotificationSurfaceMap notification_surface_map_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationSurfaceManagerImpl);
 };

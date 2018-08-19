@@ -241,7 +241,7 @@ class ASH_EXPORT ScreenOrientationController
   display::Display::Rotation current_rotation_;
 
   // Rotation Lock observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Tracks all windows that have requested a lock, as well as the requested
   // orientation.

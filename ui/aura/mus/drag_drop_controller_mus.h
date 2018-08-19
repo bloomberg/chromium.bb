@@ -109,7 +109,7 @@ class AURA_EXPORT DragDropControllerMus : public client::DragDropClient {
   // Used to track the current drop target.
   WindowTracker drop_target_window_tracker_;
 
-  base::ObserverList<client::DragDropClientObserver> observers_;
+  base::ObserverList<client::DragDropClientObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDropControllerMus);
 };

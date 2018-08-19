@@ -363,7 +363,7 @@ class GaiaCookieManagerService : public KeyedService,
 
   // List of observers to notify when merge session completes.
   // Makes sure list is empty on destruction.
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   // Source to use with GAIA endpoints for accounting.
   std::string source_;

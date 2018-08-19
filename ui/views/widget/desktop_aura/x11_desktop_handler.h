@@ -78,7 +78,7 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
   // Events selected on x_root_window_.
   std::unique_ptr<ui::XScopedEventSelector> x_root_window_events_;
 
-  base::ObserverList<X11DesktopHandlerObserver> observers_;
+  base::ObserverList<X11DesktopHandlerObserver>::Unchecked observers_;
 
   std::string workspace_;
 

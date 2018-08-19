@@ -240,7 +240,7 @@ void CheckIfTabCanCommunicateWithUserWhileInBackground(
 
 TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
     TabLifecycleUnitSource* source,
-    base::ObserverList<TabLifecycleObserver>* observers,
+    base::ObserverList<TabLifecycleObserver>::Unchecked* observers,
     UsageClock* usage_clock,
     content::WebContents* web_contents,
     TabStripModel* tab_strip_model)

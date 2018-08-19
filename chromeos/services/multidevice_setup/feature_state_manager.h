@@ -53,7 +53,7 @@ class FeatureStateManager {
   void NotifyFeatureStatesChange(const FeatureStatesMap& feature_states_map);
 
  private:
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureStateManager);
 };

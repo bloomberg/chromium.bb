@@ -452,7 +452,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // configuration changes asynchronously.
   DisplayStateList cached_displays_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // The timer to delay configuring displays. This is used to aggregate multiple
   // display configuration events when they are reported in short time spans.

@@ -58,9 +58,9 @@ class ASH_EXPORT PointerWatcherAdapter : public ui::EventHandler {
   // destruction. Two sets of observers are maintained, one for observers not
   // needing moves |non_move_watchers_| and |move_watchers_| for those
   // observers wanting moves too.
-  base::ObserverList<views::PointerWatcher, true> non_move_watchers_;
-  base::ObserverList<views::PointerWatcher, true> move_watchers_;
-  base::ObserverList<views::PointerWatcher, true> drag_watchers_;
+  base::ObserverList<views::PointerWatcher, true>::Unchecked non_move_watchers_;
+  base::ObserverList<views::PointerWatcher, true>::Unchecked move_watchers_;
+  base::ObserverList<views::PointerWatcher, true>::Unchecked drag_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerWatcherAdapter);
 };

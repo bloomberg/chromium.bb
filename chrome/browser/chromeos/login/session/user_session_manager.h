@@ -540,7 +540,7 @@ class UserSessionManager
 
   PendingUserSessions pending_user_sessions_;
 
-  base::ObserverList<chromeos::UserSessionStateObserver>
+  base::ObserverList<chromeos::UserSessionStateObserver>::Unchecked
       session_state_observer_list_;
 
   // OAuth2 session related members.

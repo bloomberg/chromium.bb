@@ -82,7 +82,7 @@ class DriveFirstRunController {
   base::OneShotTimer web_contents_timer_;
   base::OneShotTimer initial_delay_timer_;
   bool started_;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   int initial_delay_secs_;
   int web_contents_timeout_secs_;

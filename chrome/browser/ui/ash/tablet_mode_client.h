@@ -82,8 +82,8 @@ class TabletModeClient : public ash::mojom::TabletModeClient,
   // Keeps the interface pipe alive to receive mojo return values.
   ash::mojom::TabletModeControllerPtr tablet_mode_controller_;
 
-  base::ObserverList<TabletModeClientObserver, true /* check_empty */>
-      observers_;
+  base::ObserverList<TabletModeClientObserver,
+                     true /* check_empty */>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeClient);
 };

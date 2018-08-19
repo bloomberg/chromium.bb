@@ -129,7 +129,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
   // The connection to the identity service. Access via |GetIdentityManager()|.
   identity::mojom::IdentityManagerPtr identity_manager_;
 
-  base::ObserverList<DriveFsHostObserver> observers_;
+  base::ObserverList<DriveFsHostObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFsHost);
 };

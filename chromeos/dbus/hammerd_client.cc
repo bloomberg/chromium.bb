@@ -147,7 +147,7 @@ class HammerdClientImpl : public HammerdClient {
   }
 
   dbus::ObjectProxy* bus_proxy_ = nullptr;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<HammerdClientImpl> weak_ptr_factory_{this};
 

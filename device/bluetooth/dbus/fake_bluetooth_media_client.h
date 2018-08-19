@@ -70,7 +70,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothMediaClient
       endpoints_;
 
   // List of observers interested in event notifications from us.
-  base::ObserverList<BluetoothMediaClient::Observer> observers_;
+  base::ObserverList<BluetoothMediaClient::Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothMediaClient);
 };

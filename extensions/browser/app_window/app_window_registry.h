@@ -155,7 +155,7 @@ class AppWindowRegistry : public KeyedService,
   content::BrowserContext* context_;
   AppWindowList app_windows_;
   InspectedWindowSet inspected_windows_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 };
 
 }  // namespace extensions

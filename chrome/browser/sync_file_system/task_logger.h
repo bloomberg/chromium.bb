@@ -59,7 +59,7 @@ class TaskLogger : public base::SupportsWeakPtr<TaskLogger> {
  private:
   LogList log_history_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskLogger);
 };

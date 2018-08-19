@@ -110,7 +110,7 @@ class UndoManager {
   std::vector<std::unique_ptr<UndoGroup>> redo_actions_;
 
   // The observers to notify when internal state changes.
-  base::ObserverList<UndoManagerObserver> observers_;
+  base::ObserverList<UndoManagerObserver>::Unchecked observers_;
 
   // Supports grouping operations into a single undo action.
   int group_actions_count_;

@@ -417,7 +417,7 @@ class HostContentSettingsMap : public content_settings::Observer,
 
   base::ThreadChecker thread_checker_;
 
-  base::ObserverList<content_settings::Observer> observers_;
+  base::ObserverList<content_settings::Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<HostContentSettingsMap> weak_ptr_factory_;
 

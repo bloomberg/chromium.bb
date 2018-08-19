@@ -116,7 +116,7 @@ class DISPLAY_MANAGER_EXPORT FakeDisplayDelegate
   // Performs callback for Configure().
   void ConfigureDone();
 
-  base::ObserverList<NativeDisplayObserver> observers_;
+  base::ObserverList<NativeDisplayObserver>::Unchecked observers_;
   std::vector<std::unique_ptr<DisplaySnapshot>> displays_;
 
   // Add delay before finishing Configure() and running callback.

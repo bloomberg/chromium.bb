@@ -18,7 +18,8 @@
 // correct memory management for use in UIView animation blocks.
 @interface AnimatedScopedFullscreenDisablerObserverListContainer : NSObject {
   // The AnimatedScopedFullscreenDisablerObservers.
-  base::ObserverList<AnimatedScopedFullscreenDisablerObserver> observers_;
+  base::ObserverList<AnimatedScopedFullscreenDisablerObserver>::Unchecked
+      observers_;
 }
 
 // The disabler passed on initialization.
@@ -51,8 +52,8 @@
   return self;
 }
 
-- (const base::ObserverList<AnimatedScopedFullscreenDisablerObserver>&)
-    observers {
+- (const base::ObserverList<
+    AnimatedScopedFullscreenDisablerObserver>::Unchecked&)observers {
   return observers_;
 }
 

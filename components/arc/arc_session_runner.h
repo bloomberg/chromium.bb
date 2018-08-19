@@ -117,7 +117,7 @@ class ArcSessionRunner : public ArcSession::Observer {
   THREAD_CHECKER(thread_checker_);
 
   // Observers for the ARC instance state change events.
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   // Target ARC instance running mode. If nullopt, it means the ARC instance
   // should stop eventually.

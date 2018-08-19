@@ -58,7 +58,7 @@ class FakeDownloadTask : public DownloadTask {
   // Called when download task was updated.
   void OnDownloadUpdated();
 
-  base::ObserverList<DownloadTaskObserver, true> observers_;
+  base::ObserverList<DownloadTaskObserver, true>::Unchecked observers_;
 
   State state_ = State::kNotStarted;
   std::unique_ptr<net::URLFetcherResponseWriter> writer_;

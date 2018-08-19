@@ -73,7 +73,7 @@ class CupsPrintJobManager : public KeyedService {
 
   Profile* profile_;
   std::unique_ptr<CupsPrintJobNotificationManager> notification_manager_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CupsPrintJobManager);

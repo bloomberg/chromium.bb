@@ -194,7 +194,7 @@ class BASE_EXPORT RunLoop {
     using RunLoopStack = base::stack<RunLoop*, std::vector<RunLoop*>>;
 
     RunLoopStack active_run_loops_;
-    ObserverList<RunLoop::NestingObserver> nesting_observers_;
+    ObserverList<RunLoop::NestingObserver>::Unchecked nesting_observers_;
 
 #if DCHECK_IS_ON()
     bool allow_running_for_testing_ = true;

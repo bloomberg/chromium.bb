@@ -242,7 +242,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   base::ImportantFileWriter writer_;
 
   std::unique_ptr<PrefFilter> pref_filter_;
-  base::ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true>::Unchecked observers_;
 
   std::unique_ptr<ReadErrorDelegate> error_delegate_;
 

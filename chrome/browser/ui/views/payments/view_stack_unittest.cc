@@ -38,7 +38,7 @@ class TestStackView : public views::View {
   }
 
  private:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestStackView);
 };

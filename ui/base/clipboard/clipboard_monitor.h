@@ -36,7 +36,7 @@ class UI_BASE_EXPORT ClipboardMonitor {
   ClipboardMonitor();
   virtual ~ClipboardMonitor();
 
-  base::ObserverList<ClipboardObserver> observers_;
+  base::ObserverList<ClipboardObserver>::Unchecked observers_;
 
   THREAD_CHECKER(thread_checker_);
 

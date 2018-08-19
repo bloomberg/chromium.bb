@@ -42,7 +42,7 @@ class DEVICE_BASE_EXPORT DeviceMonitorWin {
   void NotifyDeviceRemoved(const GUID& class_guid,
                            const std::string& device_path);
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 };
 
 }  // namespace device

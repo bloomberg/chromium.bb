@@ -65,7 +65,7 @@ TabModelListUserData* TabModelListUserData::GetForBrowserState(
   return tab_model_list_user_data;
 }
 
-base::LazyInstance<base::ObserverList<TabModelListObserver>>::Leaky
+base::LazyInstance<base::ObserverList<TabModelListObserver>::Unchecked>::Leaky
     g_observer_list;
 
 }  // namespace

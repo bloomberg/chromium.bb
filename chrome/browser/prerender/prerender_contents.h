@@ -314,7 +314,7 @@ class PrerenderContents : public content::NotificationObserver,
 
   mojo::Binding<chrome::mojom::PrerenderCanceler> prerender_canceler_binding_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   // The prerender manager owning this object.
   PrerenderManager* prerender_manager_;

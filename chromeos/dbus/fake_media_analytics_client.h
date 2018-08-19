@@ -60,7 +60,7 @@ class CHROMEOS_EXPORT FakeMediaAnalyticsClient : public MediaAnalyticsClient {
   void OnMediaPerception(const mri::MediaPerception& media_perception);
 
   // Observers for receiving MediaPerception proto messages.
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   // A fake current state for the media analytics process.
   mri::State current_state_;

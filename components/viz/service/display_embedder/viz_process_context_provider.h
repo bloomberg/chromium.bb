@@ -84,7 +84,7 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<ContextCacheController> cache_controller_;
 
-  base::ObserverList<ContextLostObserver> observers_;
+  base::ObserverList<ContextLostObserver>::Unchecked observers_;
 };
 
 }  // namespace viz

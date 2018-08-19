@@ -174,7 +174,7 @@ class InstantService : public KeyedService,
   // Theme-related data for NTP overlay to adopt themes.
   std::unique_ptr<ThemeBackgroundInfo> theme_info_;
 
-  base::ObserverList<InstantServiceObserver> observers_;
+  base::ObserverList<InstantServiceObserver>::Unchecked observers_;
 
   content::NotificationRegistrar registrar_;
 

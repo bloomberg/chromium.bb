@@ -426,7 +426,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
 
   // Observers are notified when layer animations end, are scheduled or are
   // aborted.
-  base::ObserverList<LayerAnimationObserver> observers_;
+  base::ObserverList<LayerAnimationObserver>::Unchecked observers_;
 
   std::vector<std::unique_ptr<ImplicitAnimationObserver>> owned_observer_list_;
 

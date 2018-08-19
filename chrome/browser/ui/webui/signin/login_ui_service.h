@@ -111,7 +111,7 @@ class LoginUIService : public KeyedService {
 #endif
 
   // List of observers.
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::string16 last_login_result_;
   base::string16 last_login_error_email_;

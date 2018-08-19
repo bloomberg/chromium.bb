@@ -186,7 +186,7 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
 
   service_manager::Identity identity_;
 
-  base::ObserverList<MusClientObserver> observer_list_;
+  base::ObserverList<MusClientObserver>::Unchecked observer_list_;
 
 #if defined(USE_OZONE)
   std::unique_ptr<ui::CursorDataFactoryOzone> cursor_factory_ozone_;

@@ -113,7 +113,7 @@ class RemoteDeviceLifeCycleImpl
   RemoteDeviceLifeCycle::State state_;
 
   // Observers added to the life cycle.
-  base::ObserverList<Observer> observers_{
+  base::ObserverList<Observer>::Unchecked observers_{
       base::ObserverListPolicy::EXISTING_ONLY};
 
   // The connection that is established by |connection_finder_|.

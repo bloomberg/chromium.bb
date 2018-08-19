@@ -556,7 +556,7 @@ class PersonalDataManager : public KeyedService,
   WebDataServiceBase::Handle pending_customer_data_query_ = 0;
 
   // The observers.
-  base::ObserverList<PersonalDataManagerObserver> observers_;
+  base::ObserverList<PersonalDataManagerObserver>::Unchecked observers_;
 
  private:
   // Saves |imported_credit_card| to the WebDB if it exists. Returns the guid of

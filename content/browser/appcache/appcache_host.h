@@ -340,7 +340,7 @@ class CONTENT_EXPORT AppCacheHost
   bool associated_cache_info_pending_;
 
   // List of objects observing us.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Used to inform the QuotaManager of what origins are currently in use.
   url::Origin origin_in_use_;

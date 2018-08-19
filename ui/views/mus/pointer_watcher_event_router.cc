@@ -21,7 +21,7 @@ namespace views {
 namespace {
 
 bool HasPointerWatcher(
-    base::ObserverList<views::PointerWatcher, true>* observer_list) {
+    base::ObserverList<views::PointerWatcher, true>::Unchecked* observer_list) {
   return observer_list->begin() != observer_list->end();
 }
 

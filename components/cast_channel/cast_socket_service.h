@@ -87,7 +87,7 @@ class CastSocketService {
   std::map<int, std::unique_ptr<CastSocket>> sockets_;
 
   // List of socket observers.
-  base::ObserverList<CastSocket::Observer> observers_;
+  base::ObserverList<CastSocket::Observer>::Unchecked observers_;
 
   scoped_refptr<Logger> logger_;
 

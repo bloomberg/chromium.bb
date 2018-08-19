@@ -152,7 +152,7 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   // TODO(thestig): Remove when the Cloud Print Service goes away.
   bool enable_wm_quit_ = false;
 
-  ObserverList<Observer> observers_;
+  ObserverList<Observer>::Unchecked observers_;
 };
 
 //-----------------------------------------------------------------------------

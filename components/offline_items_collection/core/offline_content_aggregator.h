@@ -96,7 +96,7 @@ class OfflineContentAggregator : public OfflineContentProvider,
   std::set<OfflineContentProvider*> pending_providers_;
 
   // A list of all currently registered observers.
-  base::ObserverList<OfflineContentProvider::Observer> observers_;
+  base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

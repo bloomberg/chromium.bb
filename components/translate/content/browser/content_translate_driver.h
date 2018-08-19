@@ -113,7 +113,7 @@ class ContentTranslateDriver : public TranslateDriver,
 
   TranslateManager* translate_manager_;
 
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;

@@ -128,7 +128,7 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   static const char* service_name() { return "ExtensionActionAPI"; }
   static const bool kServiceRedirectedInIncognito = true;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   content::BrowserContext* browser_context_;
 

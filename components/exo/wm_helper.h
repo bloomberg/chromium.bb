@@ -108,7 +108,7 @@ class WMHelper : public aura::client::DragDropDelegate {
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
  private:
-  base::ObserverList<DragDropObserver> drag_drop_observers_;
+  base::ObserverList<DragDropObserver>::Unchecked drag_drop_observers_;
 
   // The most recently cached VSync parameters, sent to observers on addition.
   base::TimeTicks vsync_timebase_;

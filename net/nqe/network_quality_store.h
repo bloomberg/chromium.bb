@@ -94,7 +94,7 @@ class NET_EXPORT_PRIVATE NetworkQualityStore {
   CachedNetworkQualities cached_network_qualities_;
 
   // Observer list for changes in the cached network quality.
-  base::ObserverList<NetworkQualitiesCacheObserver>
+  base::ObserverList<NetworkQualitiesCacheObserver>::Unchecked
       network_qualities_cache_observer_list_;
 
   base::ThreadChecker thread_checker_;

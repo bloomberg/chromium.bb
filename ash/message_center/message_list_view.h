@@ -134,7 +134,7 @@ class ASH_EXPORT MessageListView : public views::View,
   void AnimateClearingOneNotification();
 
   // List of MessageListView::Observer
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // The top position of the reposition target rectangle.
   int reposition_top_;

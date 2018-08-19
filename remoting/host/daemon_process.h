@@ -188,7 +188,7 @@ class DaemonProcess
   int next_terminal_id_;
 
   // Keeps track of observers receiving host status notifications.
-  base::ObserverList<HostStatusObserver> status_observers_;
+  base::ObserverList<HostStatusObserver>::Unchecked status_observers_;
 
   // Invoked to ask the owner to delete |this|.
   base::Closure stopped_callback_;

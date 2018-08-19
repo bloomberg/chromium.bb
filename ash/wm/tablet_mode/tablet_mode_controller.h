@@ -279,7 +279,7 @@ class ASH_EXPORT TabletModeController
 
   ScopedSessionObserver scoped_session_observer_;
 
-  base::ObserverList<TabletModeObserver> tablet_mode_observers_;
+  base::ObserverList<TabletModeObserver>::Unchecked tablet_mode_observers_;
 
   base::WeakPtrFactory<TabletModeController> weak_factory_;
 

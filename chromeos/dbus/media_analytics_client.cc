@@ -165,7 +165,7 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
   }
 
   dbus::ObjectProxy* dbus_proxy_ = nullptr;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
   base::WeakPtrFactory<MediaAnalyticsClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaAnalyticsClientImpl);

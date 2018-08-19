@@ -178,7 +178,8 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   std::unique_ptr<base::OneShotTimer> grace_start_timer_;
   std::unique_ptr<base::OneShotTimer> grace_end_timer_;
 
-  base::ObserverList<AutomaticRebootManagerObserver, true> observers_;
+  base::ObserverList<AutomaticRebootManagerObserver, true>::Unchecked
+      observers_;
 
   base::WeakPtrFactory<AutomaticRebootManager> weak_ptr_factory_;
 

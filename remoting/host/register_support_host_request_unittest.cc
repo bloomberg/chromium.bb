@@ -77,7 +77,8 @@ class RegisterSupportHostRequestTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::ScopedMockTimeMessageLoopTaskRunner mock_time_task_runner_;
   MockSignalStrategy signal_strategy_;
-  base::ObserverList<SignalStrategy::Listener, true> signal_strategy_listeners_;
+  base::ObserverList<SignalStrategy::Listener, true>::Unchecked
+      signal_strategy_listeners_;
   scoped_refptr<RsaKeyPair> key_pair_;
   base::MockCallback<RegisterSupportHostRequest::RegisterCallback> callback_;
 };

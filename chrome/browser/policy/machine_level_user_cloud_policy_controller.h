@@ -81,7 +81,7 @@ class MachineLevelUserCloudPolicyController {
       const std::string& dm_token,
       const std::string& client_id);
 
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   std::unique_ptr<MachineLevelUserCloudPolicyRegistrar> policy_registrar_;
   std::unique_ptr<MachineLevelUserCloudPolicyFetcher> policy_fetcher_;

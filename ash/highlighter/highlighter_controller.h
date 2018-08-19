@@ -157,7 +157,7 @@ class ASH_EXPORT HighlighterController
   // Interface to highlighter controller client (chrome).
   mojom::HighlighterControllerClientPtr client_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<HighlighterController> weak_factory_;
 

@@ -360,7 +360,7 @@ class VariationsService
   int request_count_;
 
   // List of observers of the VariationsService.
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   // The main entry point for managing safe mode state.
   SafeSeedManager safe_seed_manager_;

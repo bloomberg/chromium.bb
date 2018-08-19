@@ -1425,7 +1425,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // This MUST be listed above frame_tree_ since at destruction time the
   // latter might cause RenderViewHost's destructor to call us and we might use
   // the observer list then.
-  base::ObserverList<WebContentsObserver> observers_;
+  base::ObserverList<WebContentsObserver>::Unchecked observers_;
 
   // Associated interface binding sets attached to this WebContents.
   std::map<std::string, WebContentsBindingSet*> binding_sets_;

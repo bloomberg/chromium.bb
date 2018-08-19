@@ -101,7 +101,7 @@ class NetworkStateInformer
   std::string network_path_;
   std::unique_ptr<base::Value> proxy_config_;
 
-  base::ObserverList<NetworkStateInformerObserver> observers_;
+  base::ObserverList<NetworkStateInformerObserver>::Unchecked observers_;
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<NetworkStateInformer> weak_ptr_factory_;

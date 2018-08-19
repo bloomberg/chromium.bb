@@ -177,7 +177,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
 
   AuthenticationStage authentication_stage_ = AuthenticationStage::kIdle;
 
-  base::ObserverList<LoginScreenControllerObserver> observers_;
+  base::ObserverList<LoginScreenControllerObserver>::Unchecked observers_;
 
   // If set to false, all auth requests will forcibly fail.
   ForceFailAuth force_fail_auth_for_debug_overlay_ = ForceFailAuth::kOff;

@@ -101,7 +101,8 @@ class ArcTermsOfServiceScreenHandler
   void OnBackupAndRestoreModeChanged(bool enabled, bool managed) override;
   void OnLocationServicesModeChanged(bool enabled, bool managed) override;
 
-  base::ObserverList<ArcTermsOfServiceScreenViewObserver, true> observer_list_;
+  base::ObserverList<ArcTermsOfServiceScreenViewObserver, true>::Unchecked
+      observer_list_;
 
   // Whether the screen should be shown right after initialization.
   bool show_on_init_ = false;

@@ -44,7 +44,8 @@ class CoordinationUnitBase {
   const CoordinationUnitID& id() const { return id_; }
   CoordinationUnitGraph* graph() const { return graph_; }
 
-  const base::ObserverList<CoordinationUnitGraphObserver>& observers() const {
+  const base::ObserverList<CoordinationUnitGraphObserver>::Unchecked&
+  observers() const {
     return observers_;
   }
 
@@ -72,7 +73,7 @@ class CoordinationUnitBase {
   const CoordinationUnitID id_;
 
  private:
-  base::ObserverList<CoordinationUnitGraphObserver> observers_;
+  base::ObserverList<CoordinationUnitGraphObserver>::Unchecked observers_;
   std::map<mojom::PropertyType, int64_t> properties_;
 
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitBase);

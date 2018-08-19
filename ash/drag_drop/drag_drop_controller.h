@@ -138,7 +138,8 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   // See comment in OnGestureEvent() on why we need this.
   std::unique_ptr<ui::GestureEvent> pending_long_tap_;
 
-  base::ObserverList<aura::client::DragDropClientObserver> observers_;
+  base::ObserverList<aura::client::DragDropClientObserver>::Unchecked
+      observers_;
 
   base::WeakPtrFactory<DragDropController> weak_factory_;
 

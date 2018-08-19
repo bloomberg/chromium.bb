@@ -34,7 +34,7 @@ class GL_EXPORT GpuSwitchingManager {
   GpuSwitchingManager();
   virtual ~GpuSwitchingManager();
 
-  base::ObserverList<GpuSwitchingObserver> observer_list_;
+  base::ObserverList<GpuSwitchingObserver>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuSwitchingManager);
 };

@@ -943,7 +943,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   mutable base::hash_map<std::string, int> host_ranks_;
 
   // List of observers
-  base::ObserverList<HistoryBackendObserver> observers_;
+  base::ObserverList<HistoryBackendObserver>::Unchecked observers_;
 
   // Used to manage syncing of the typed urls datatype. It will be null before
   // HistoryBackend::Init is called. Defined after observers_ because

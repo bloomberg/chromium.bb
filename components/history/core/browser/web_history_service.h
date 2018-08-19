@@ -248,7 +248,7 @@ class WebHistoryService : public KeyedService {
       pending_other_forms_of_browsing_history_requests_;
 
   // Observers.
-  base::ObserverList<WebHistoryServiceObserver, true> observer_list_;
+  base::ObserverList<WebHistoryServiceObserver, true>::Unchecked observer_list_;
 
   base::WeakPtrFactory<WebHistoryService> weak_ptr_factory_;
 

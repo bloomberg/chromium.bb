@@ -192,7 +192,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   content::MediaStreamDevices test_video_devices_;
 
   // A list of observers for the device update notifications.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Flag used by unittests to disable device enumeration.
   bool is_device_enumeration_disabled_;

@@ -57,7 +57,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothInputClient
   std::map<const dbus::ObjectPath, std::unique_ptr<Properties>> properties_map_;
 
   // List of observers interested in event notifications from us.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothInputClient);
 };

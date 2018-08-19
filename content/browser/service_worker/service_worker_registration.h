@@ -243,7 +243,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   scoped_refptr<ServiceWorkerVersion> waiting_version_;
   scoped_refptr<ServiceWorkerVersion> installing_version_;
 
-  base::ObserverList<Listener> listeners_;
+  base::ObserverList<Listener>::Unchecked listeners_;
   std::vector<base::Closure> registration_finished_callbacks_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

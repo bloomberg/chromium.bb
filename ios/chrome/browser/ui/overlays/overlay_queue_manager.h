@@ -68,7 +68,7 @@ class OverlayQueueManager : public BrowserUserData<OverlayQueueManager>,
   void RemoveQueueForWebState(web::WebState* web_state);
 
   // The observers for this manager.
-  base::ObserverList<OverlayQueueManagerObserver> observers_;
+  base::ObserverList<OverlayQueueManagerObserver>::Unchecked observers_;
   // The OverlayQueues created by this manager.
   std::set<OverlayQueue*> queues_;
   // The WebStateList for which queues are beign managed.

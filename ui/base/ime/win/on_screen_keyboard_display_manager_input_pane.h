@@ -68,7 +68,8 @@ class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManagerInputPane final
       input_pane_;
   Microsoft::WRL::ComPtr<ABI::Windows::UI::ViewManagement::IInputPane2>
       input_pane2_;
-  base::ObserverList<InputMethodKeyboardControllerObserver, false> observers_;
+  base::ObserverList<InputMethodKeyboardControllerObserver, false>::Unchecked
+      observers_;
   EventRegistrationToken show_event_token_;
   EventRegistrationToken hide_event_token_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

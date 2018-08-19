@@ -80,7 +80,7 @@ class SyncCycleContext {
   }
   int32_t max_commit_batch_size() const { return max_commit_batch_size_; }
 
-  base::ObserverList<SyncEngineEventListener>* listeners() {
+  base::ObserverList<SyncEngineEventListener>::Unchecked* listeners() {
     return &listeners_;
   }
 
@@ -132,7 +132,7 @@ class SyncCycleContext {
   }
 
  private:
-  base::ObserverList<SyncEngineEventListener> listeners_;
+  base::ObserverList<SyncEngineEventListener>::Unchecked listeners_;
 
   ServerConnectionManager* const connection_manager_;
   syncable::Directory* const directory_;

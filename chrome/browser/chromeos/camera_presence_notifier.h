@@ -43,7 +43,7 @@ class CameraPresenceNotifier {
   // Timer for camera check cycle.
   base::RepeatingTimer camera_check_timer_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<CameraPresenceNotifier> weak_factory_;
 

@@ -64,7 +64,7 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void RemoveKeyframeEffect(KeyframeEffect* keyframe_effect);
   bool IsEmpty() const;
 
-  typedef base::ObserverList<KeyframeEffect> KeyframeEffectsList;
+  typedef base::ObserverList<KeyframeEffect>::Unchecked KeyframeEffectsList;
   const KeyframeEffectsList& keyframe_effects_list() const {
     return keyframe_effects_list_;
   }

@@ -132,7 +132,7 @@ class PasswordDropdownModel : public ui::ComboboxModel {
   bool revealed_;
   const std::vector<base::string16> passwords_;
   // To be called when |masked_| was changed;
-  base::ObserverList<ui::ComboboxModelObserver> observers_;
+  base::ObserverList<ui::ComboboxModelObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordDropdownModel);
 };

@@ -291,7 +291,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual gfx::Rect GetTransformedRootWindowBoundsInPixels(
       const gfx::Size& size_in_pixels) const;
 
-  const base::ObserverList<WindowTreeHostObserver>& observers() const {
+  const base::ObserverList<WindowTreeHostObserver>::Unchecked& observers()
+      const {
     return observers_;
   }
 
@@ -318,7 +319,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // the end of the dtor).
   Window* window_;  // Owning.
 
-  base::ObserverList<WindowTreeHostObserver> observers_;
+  base::ObserverList<WindowTreeHostObserver>::Unchecked observers_;
 
   std::unique_ptr<WindowEventDispatcher> dispatcher_;
 

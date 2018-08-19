@@ -87,7 +87,7 @@ class WarningService : public KeyedService, public ExtensionRegistryObserver {
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 };
 
 }  // namespace extensions

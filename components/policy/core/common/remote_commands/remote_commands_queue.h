@@ -78,7 +78,7 @@ class POLICY_EXPORT RemoteCommandsQueue {
   const base::TickClock* clock_;
   base::OneShotTimer execution_timeout_timer_;
 
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCommandsQueue);
 };

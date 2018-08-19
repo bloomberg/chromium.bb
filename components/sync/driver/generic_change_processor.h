@@ -147,7 +147,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   UserShare* const share_handle_;
 
   // List of observers that want to be notified of local changes being written.
-  base::ObserverList<LocalChangeObserver> local_change_observers_;
+  base::ObserverList<LocalChangeObserver>::Unchecked local_change_observers_;
 
   base::WeakPtrFactory<GenericChangeProcessor> weak_ptr_factory_;
 

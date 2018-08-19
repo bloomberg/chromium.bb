@@ -32,7 +32,7 @@ class ConnectionNotifier {
 
  private:
   THREAD_CHECKER(thread_checker_);
-  base::ObserverList<ConnectionObserverBase> observer_list_;
+  base::ObserverList<ConnectionObserverBase>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionNotifier);
 };

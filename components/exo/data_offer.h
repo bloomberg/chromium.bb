@@ -91,7 +91,7 @@ class DataOffer final : public ui::PropertyHandler {
 
   base::flat_set<DndAction> source_actions_;
   DndAction dnd_action_;
-  base::ObserverList<DataOfferObserver> observers_;
+  base::ObserverList<DataOfferObserver>::Unchecked observers_;
   base::WeakPtrFactory<DataOffer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataOffer);

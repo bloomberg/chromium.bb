@@ -394,7 +394,7 @@ class ContentSuggestionsService : public KeyedService,
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   const std::vector<ContentSuggestion> no_suggestions_;
 

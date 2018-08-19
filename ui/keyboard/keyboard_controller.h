@@ -350,7 +350,7 @@ class KEYBOARD_EXPORT KeyboardController
   bool keyboard_locked_;
   KeyboardEventFilter event_filter_;
 
-  base::ObserverList<KeyboardControllerObserver> observer_list_;
+  base::ObserverList<KeyboardControllerObserver>::Unchecked observer_list_;
 
   // The bounds in screen for the visible portion of the keyboard.
   // If the keyboard window is visible, this should be the same size as the

@@ -57,7 +57,7 @@ class MediaController : public mojom::MediaController {
 
   mojom::MediaClientAssociatedPtr client_;
 
-  base::ObserverList<MediaCaptureObserver> observers_;
+  base::ObserverList<MediaCaptureObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaController);
 };

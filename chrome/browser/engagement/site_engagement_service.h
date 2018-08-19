@@ -336,7 +336,7 @@ class SiteEngagementService : public KeyedService,
 
   // A list of observers. When any origin registers an engagement-increasing
   // event, each observer's OnEngagementEvent method will be called.
-  base::ObserverList<SiteEngagementObserver> observer_list_;
+  base::ObserverList<SiteEngagementObserver>::Unchecked observer_list_;
 
   base::WeakPtrFactory<SiteEngagementService> weak_factory_;
 

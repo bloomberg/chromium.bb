@@ -58,7 +58,7 @@ class OneGoogleBarService : public KeyedService {
 
   std::unique_ptr<SigninObserver> signin_observer_;
 
-  base::ObserverList<OneGoogleBarServiceObserver, true> observers_;
+  base::ObserverList<OneGoogleBarServiceObserver, true>::Unchecked observers_;
 
   base::Optional<OneGoogleBarData> one_google_bar_data_;
 };

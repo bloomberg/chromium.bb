@@ -134,7 +134,7 @@ class ImmersiveModeController {
   virtual void RemoveObserver(Observer* observer);
 
  protected:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
  private:
   const Type type_;

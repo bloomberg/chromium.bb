@@ -58,7 +58,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GamepadProviderOzone {
 
   // Registered observers will receive gamepad device update event and gamepad
   // event.
-  base::ObserverList<GamepadObserver> observers_;
+  base::ObserverList<GamepadObserver>::Unchecked observers_;
 
   // List of current connected gamepad events.
   std::vector<InputDevice> gamepad_devices_;

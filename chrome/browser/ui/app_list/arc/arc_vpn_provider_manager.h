@@ -77,7 +77,7 @@ class ArcVpnProviderManager : public ArcAppListPrefs::Observer,
   ArcAppListPrefs* const arc_app_list_prefs_;
 
   // List of observers.
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcVpnProviderManager);
 };

@@ -178,7 +178,7 @@ class DownloadUIAdapter : public OfflineContentProvider,
   std::unique_ptr<Delegate> delegate_;
 
   // The observers.
-  base::ObserverList<OfflineContentProvider::Observer> observers_;
+  base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<DownloadUIAdapter> weak_ptr_factory_;
 

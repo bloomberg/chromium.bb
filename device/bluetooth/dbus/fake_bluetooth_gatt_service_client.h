@@ -114,7 +114,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattServiceClient
   std::string battery_service_path_;
 
   // List of observers interested in event notifications from us.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.

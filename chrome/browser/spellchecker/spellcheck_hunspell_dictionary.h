@@ -165,7 +165,7 @@ class SpellcheckHunspellDictionary
 #endif
 
   // Observers of Hunspell dictionary events.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Status of the dictionary download.
   DownloadStatus download_status_;

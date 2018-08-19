@@ -566,7 +566,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
   }
 
   dbus::ObjectProxy* cras_proxy_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

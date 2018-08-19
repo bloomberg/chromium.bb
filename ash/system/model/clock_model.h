@@ -62,7 +62,7 @@ class ClockModel : public chromeos::SystemClockClient::Observer,
   // If system clock can be configured by user through SetTimeDialog.
   bool can_set_time_ = false;
 
-  base::ObserverList<ClockObserver> observers_;
+  base::ObserverList<ClockObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ClockModel);
 };

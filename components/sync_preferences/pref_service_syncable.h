@@ -113,7 +113,7 @@ class PrefServiceSyncable : public PrefService {
   PrefModelAssociator priority_pref_sync_associator_;
   const scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
 
-  base::ObserverList<PrefServiceSyncableObserver> observer_list_;
+  base::ObserverList<PrefServiceSyncableObserver>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceSyncable);
 };

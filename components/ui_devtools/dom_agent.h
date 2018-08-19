@@ -77,7 +77,7 @@ class UI_DEVTOOLS_EXPORT DOMAgent
   std::unique_ptr<UIElement> element_root_;
   std::unordered_map<int, UIElement*> node_id_to_ui_element_;
 
-  base::ObserverList<DOMAgentObserver> observers_;
+  base::ObserverList<DOMAgentObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMAgent);
 };

@@ -55,7 +55,8 @@ class VIEWS_EXPORT WidgetFocusManager {
   WidgetFocusManager();
   ~WidgetFocusManager();
 
-  base::ObserverList<WidgetFocusChangeListener> focus_change_listeners_;
+  base::ObserverList<WidgetFocusChangeListener>::Unchecked
+      focus_change_listeners_;
 
   bool enabled_;
 

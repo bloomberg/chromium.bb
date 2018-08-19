@@ -183,7 +183,7 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   // Notifies |observers_| that |props_| has been updated.
   void NotifyObservers();
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Last policy passed to SetPolicy().
   power_manager::PowerManagementPolicy policy_;

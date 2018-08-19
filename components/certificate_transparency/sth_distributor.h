@@ -48,7 +48,7 @@ class STHDistributor : public STHObserver, public STHReporter {
   std::vector<net::ct::SignedTreeHead> observed_sths_;
 
   // The observers for new STH notifications.
-  base::ObserverList<STHObserver, true> observer_list_;
+  base::ObserverList<STHObserver, true>::Unchecked observer_list_;
 };
 
 }  // namespace certificate_transparency

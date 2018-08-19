@@ -60,7 +60,7 @@ class AssistantUiModel {
 
   bool visible_ = false;
 
-  base::ObserverList<AssistantUiModelObserver> observers_;
+  base::ObserverList<AssistantUiModelObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantUiModel);
 };

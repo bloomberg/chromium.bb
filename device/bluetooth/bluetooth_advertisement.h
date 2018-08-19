@@ -146,7 +146,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
 
   // List of observers interested in event notifications from us. Objects in
   // |observers_| are expected to outlive a BluetoothAdvertisement object.
-  base::ObserverList<BluetoothAdvertisement::Observer> observers_;
+  base::ObserverList<BluetoothAdvertisement::Observer>::Unchecked observers_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdvertisement);

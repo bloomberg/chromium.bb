@@ -152,7 +152,7 @@ bool MediaRouterAndroid::RegisterMediaSinksObserver(
   const std::string& source_id = observer->source().id();
   auto& observer_list = sinks_observers_[source_id];
   if (!observer_list) {
-    observer_list = std::make_unique<base::ObserverList<MediaSinksObserver>>();
+    observer_list = std::make_unique<MediaSinksObserverList>();
   } else {
     DCHECK(!observer_list->HasObserver(observer));
   }
@@ -200,8 +200,7 @@ void MediaRouterAndroid::RegisterRouteMessageObserver(
   const MediaRoute::Id& route_id = observer->route_id();
   auto& observer_list = message_observers_[route_id];
   if (!observer_list) {
-    observer_list =
-        std::make_unique<base::ObserverList<RouteMessageObserver>>();
+    observer_list = std::make_unique<RouteMessageObserverList>();
   } else {
     DCHECK(!observer_list->HasObserver(observer));
   }

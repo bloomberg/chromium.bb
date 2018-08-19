@@ -43,7 +43,8 @@ class ContextInvalidationData : public base::SupportsUserData::Data {
 
  private:
   bool is_context_valid_ = true;
-  base::ObserverList<ContextInvalidationListener> invalidation_listeners_;
+  base::ObserverList<ContextInvalidationListener>::Unchecked
+      invalidation_listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextInvalidationData);
 };

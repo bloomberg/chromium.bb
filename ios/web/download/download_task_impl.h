@@ -102,7 +102,7 @@ class DownloadTaskImpl : public DownloadTask {
   void OnDownloadFinished(int error_code);
 
   // A list of observers. Weak references.
-  base::ObserverList<DownloadTaskObserver, true> observers_;
+  base::ObserverList<DownloadTaskObserver, true>::Unchecked observers_;
 
   // Back up corresponding public methods of DownloadTask interface.
   State state_ = State::kNotStarted;

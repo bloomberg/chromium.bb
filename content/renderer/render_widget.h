@@ -942,14 +942,14 @@ class CONTENT_EXPORT RenderWidget
 
   // Lists of RenderFrameProxy objects that need to be notified of
   // compositing-related events (e.g. DidCommitCompositorFrame).
-  base::ObserverList<RenderFrameProxy> render_frame_proxies_;
+  base::ObserverList<RenderFrameProxy>::Unchecked render_frame_proxies_;
 
   // A list of RenderFrames associated with this RenderWidget. Notifications
   // are sent to each frame in the list for events such as changing
   // visibility state for example.
-  base::ObserverList<RenderFrameImpl> render_frames_;
+  base::ObserverList<RenderFrameImpl>::Unchecked render_frames_;
 
-  base::ObserverList<BrowserPlugin> browser_plugins_;
+  base::ObserverList<BrowserPlugin>::Unchecked browser_plugins_;
 
   bool has_host_context_menu_location_;
   gfx::Point host_context_menu_location_;

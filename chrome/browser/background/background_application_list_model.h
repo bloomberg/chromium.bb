@@ -159,7 +159,7 @@ class BackgroundApplicationListModel
   std::map<std::string, std::unique_ptr<Application>> applications_;
 
   extensions::ExtensionList extensions_;
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
   Profile* const profile_;
   content::NotificationRegistrar registrar_;
   bool ready_;

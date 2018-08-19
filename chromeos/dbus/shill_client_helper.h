@@ -168,8 +168,8 @@ class ShillClientHelper {
   ReleasedCallback released_callback_;
   int active_refs_;
   PropertyChangedHandler property_changed_handler_;
-  base::ObserverList<ShillPropertyChangedObserver, true /* check_empty */>
-      observer_list_;
+  base::ObserverList<ShillPropertyChangedObserver,
+                     true /* check_empty */>::Unchecked observer_list_;
   std::vector<std::string> interfaces_to_be_monitored_;
 
   // Note: This should remain the last member so it'll be destroyed and

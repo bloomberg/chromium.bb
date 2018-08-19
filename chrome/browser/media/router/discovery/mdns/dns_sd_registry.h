@@ -122,7 +122,7 @@ class DnsSdRegistry : public DnsSdDelegate {
 
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
-  base::ObserverList<DnsSdObserver> observers_;
+  base::ObserverList<DnsSdObserver>::Unchecked observers_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsSdRegistry);

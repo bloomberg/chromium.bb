@@ -79,7 +79,7 @@ class StatusIcon {
   virtual void UpdatePlatformContextMenu(StatusIconMenuModel* model) = 0;
 
  private:
-  base::ObserverList<StatusIconObserver> observers_;
+  base::ObserverList<StatusIconObserver>::Unchecked observers_;
 
   // Context menu, if any.
   std::unique_ptr<StatusIconMenuModel> context_menu_contents_;

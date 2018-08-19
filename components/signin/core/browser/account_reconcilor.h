@@ -297,7 +297,7 @@ class AccountReconcilor : public KeyedService,
   // StartReconcile() should be started when the reconcilor is unblocked.
   bool reconcile_on_unblock_;
 
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   // A timer to set off reconciliation timeout handlers, if account
   // reconciliation does not happen in a given |timeout_| duration.

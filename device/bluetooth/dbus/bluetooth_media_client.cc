@@ -208,7 +208,7 @@ class BluetoothMediaClientImpl : public BluetoothMediaClient,
   dbus::ObjectManager* object_manager_;
 
   // List of observers interested in event notifications from us.
-  base::ObserverList<BluetoothMediaClient::Observer> observers_;
+  base::ObserverList<BluetoothMediaClient::Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<BluetoothMediaClientImpl> weak_ptr_factory_;
 

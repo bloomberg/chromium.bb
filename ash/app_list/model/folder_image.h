@@ -107,7 +107,7 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
   // True if new style launcher feature is enabled.
   const bool is_new_style_launcher_enabled_;
 
-  base::ObserverList<FolderImageObserver> observers_;
+  base::ObserverList<FolderImageObserver>::Unchecked observers_;
 };
 
 }  // namespace app_list

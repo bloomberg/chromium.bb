@@ -102,7 +102,7 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
 
   ActionLogger* log_;  // Not owned.
 
-  base::ObserverList<NativeDisplayObserver> observers_;
+  base::ObserverList<NativeDisplayObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNativeDisplayDelegate);
 };

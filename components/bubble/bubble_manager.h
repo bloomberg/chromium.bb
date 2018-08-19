@@ -98,7 +98,7 @@ class BubbleManager {
                                const content::RenderFrameHost* owner,
                                BubbleCloseReason reason);
 
-  base::ObserverList<BubbleManagerObserver> observers_;
+  base::ObserverList<BubbleManagerObserver>::Unchecked observers_;
 
   // Verify that functions that affect the UI are done on the same thread.
   base::ThreadChecker thread_checker_;

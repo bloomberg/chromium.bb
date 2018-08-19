@@ -365,10 +365,10 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // been read from trusted device policy yet.
   AccountId owner_account_id_ = EmptyAccountId();
 
-  base::ObserverList<UserManager::Observer> observer_list_;
+  base::ObserverList<UserManager::Observer>::Unchecked observer_list_;
 
   // TODO(nkostylev): Merge with session state refactoring CL.
-  base::ObserverList<UserManager::UserSessionStateObserver>
+  base::ObserverList<UserManager::UserSessionStateObserver>::Unchecked
       session_state_observer_list_;
 
   // Time at which this object was created.

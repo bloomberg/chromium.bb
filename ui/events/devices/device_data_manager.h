@@ -104,7 +104,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   std::vector<InputDevice> touchpad_devices_;
   bool device_lists_complete_ = false;
 
-  base::ObserverList<InputDeviceEventObserver> observers_;
+  base::ObserverList<InputDeviceEventObserver>::Unchecked observers_;
 
   bool touch_screens_enabled_ = true;
 

@@ -588,7 +588,7 @@ class TabStrip : public views::View,
 
   // -- Member Variables ------------------------------------------------------
 
-  base::ObserverList<TabStripObserver> observers_;
+  base::ObserverList<TabStripObserver>::Unchecked observers_;
 
   // There is a one-to-one mapping between each of the tabs in the
   // TabStripController (TabStripModel) and |tabs_|. Because we animate tab

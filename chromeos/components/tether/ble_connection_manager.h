@@ -264,8 +264,8 @@ class BleConnectionManager : public BleScanner::Observer {
   // Records if the advertisement from a device was a background advertisement.
   std::map<std::string, bool> device_id_to_is_background_advertisement_map_;
 
-  base::ObserverList<Observer> observer_list_;
-  base::ObserverList<MetricsObserver> metrics_observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
+  base::ObserverList<MetricsObserver>::Unchecked metrics_observer_list_;
   base::WeakPtrFactory<BleConnectionManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BleConnectionManager);

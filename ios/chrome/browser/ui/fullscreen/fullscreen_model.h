@@ -148,7 +148,7 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   void OnBottomToolbarHeightBroadcasted(CGFloat height) override;
 
   // The observers for this model.
-  base::ObserverList<FullscreenModelObserver> observers_;
+  base::ObserverList<FullscreenModelObserver>::Unchecked observers_;
   // The percentage of the toolbar that should be visible, where 1.0 denotes a
   // fully visible toolbar and 0.0 denotes a completely hidden one.
   CGFloat progress_ = 0.0;

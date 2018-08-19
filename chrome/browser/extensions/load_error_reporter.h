@@ -81,7 +81,7 @@ class LoadErrorReporter {
   std::vector<base::string16> errors_;
   bool enable_noisy_errors_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadErrorReporter);
 };

@@ -112,7 +112,7 @@ class FormTracker : public content::RenderFrameObserver {
 
   void ResetLastInteractedElements();
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   bool ignore_control_changes_ = false;
   bool user_gesture_required_ = true;
   blink::WebFormElement last_interacted_form_;

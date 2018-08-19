@@ -102,7 +102,7 @@ class UserScriptSet {
   std::map<GURL, blink::WebString> script_sources_;
 
   // The associated observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(UserScriptSet);
 };

@@ -34,7 +34,8 @@ class CONTENT_EXPORT NotificationServiceImpl : public NotificationService {
  private:
   friend class NotificationRegistrar;
 
-  typedef base::ObserverList<NotificationObserver> NotificationObserverList;
+  typedef base::ObserverList<NotificationObserver>::Unchecked
+      NotificationObserverList;
   typedef std::map<uintptr_t, NotificationObserverList*> NotificationSourceMap;
   typedef std::map<int, NotificationSourceMap> NotificationObserverMap;
   typedef std::map<int, int> NotificationObserverCount;

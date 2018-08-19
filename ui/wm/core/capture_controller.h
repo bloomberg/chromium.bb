@@ -64,7 +64,7 @@ class WM_CORE_EXPORT CaptureController : public aura::client::CaptureClient {
   // The delegates notified when capture changes.
   std::map<aura::Window*, aura::client::CaptureDelegate*> delegates_;
 
-  base::ObserverList<aura::client::CaptureClientObserver> observers_;
+  base::ObserverList<aura::client::CaptureClientObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureController);
 };

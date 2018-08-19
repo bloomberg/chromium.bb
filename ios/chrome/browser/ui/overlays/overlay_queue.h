@@ -63,7 +63,7 @@ class OverlayQueue {
 
  private:
   // The observers for this queue.
-  base::ObserverList<OverlayQueueObserver> observers_;
+  base::ObserverList<OverlayQueueObserver>::Unchecked observers_;
   // The queue of overlays that were added for this WebState.
   __strong NSMutableArray<OverlayCoordinator*>* overlays_;
   // Whether an overlay is currently started.  If this is true, the first

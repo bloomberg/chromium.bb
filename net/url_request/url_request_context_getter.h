@@ -89,7 +89,7 @@ class NET_EXPORT URLRequestContextGetter
   // IO happens.
   void OnDestruct() const;
 
-  base::ObserverList<URLRequestContextGetterObserver> observer_list_;
+  base::ObserverList<URLRequestContextGetterObserver>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextGetter);
 };

@@ -245,7 +245,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   std::unique_ptr<ClientPolicyController> policy_controller_;
 
   // The observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Clock for testing only.
   base::Clock* clock_ = nullptr;

@@ -14,15 +14,12 @@ namespace syncer {
 class DirectoryTypeDebugInfoEmitter : public DataTypeDebugInfoEmitter {
  public:
   // Standard constructor for non-tests.
-  DirectoryTypeDebugInfoEmitter(
-      syncable::Directory* directory,
-      ModelType type,
-      base::ObserverList<TypeDebugInfoObserver>* observers);
+  DirectoryTypeDebugInfoEmitter(syncable::Directory* directory,
+                                ModelType type,
+                                ObserverListType* observers);
 
   // A simple constructor for tests.  Should not be used in real code.
-  DirectoryTypeDebugInfoEmitter(
-      ModelType type,
-      base::ObserverList<TypeDebugInfoObserver>* observers);
+  DirectoryTypeDebugInfoEmitter(ModelType type, ObserverListType* observers);
 
   ~DirectoryTypeDebugInfoEmitter() override;
 

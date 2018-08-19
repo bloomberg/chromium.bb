@@ -14,7 +14,7 @@
 namespace ui {
 
 // static
-base::LazyInstance<base::ObserverList<AXModeObserver>>::Leaky
+base::LazyInstance<base::ObserverList<AXModeObserver>::Unchecked>::Leaky
     AXPlatformNode::ax_mode_observers_ = LAZY_INSTANCE_INITIALIZER;
 
 // static

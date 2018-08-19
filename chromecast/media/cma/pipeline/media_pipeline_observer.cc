@@ -9,7 +9,8 @@
 #include "base/observer_list.h"
 
 namespace {
-base::ObserverList<chromecast::media::MediaPipelineObserver> g_observers;
+base::ObserverList<chromecast::media::MediaPipelineObserver>::Unchecked
+    g_observers;
 }  // namespace
 
 namespace chromecast {

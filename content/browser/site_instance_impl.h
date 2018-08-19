@@ -282,7 +282,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Whether the SiteInstance was created for a service worker.
   bool is_for_service_worker_;
 
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteInstanceImpl);
 };

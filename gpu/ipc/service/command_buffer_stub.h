@@ -235,7 +235,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
 
   uint32_t last_flush_id_;
 
-  base::ObserverList<DestructionObserver> destruction_observers_;
+  base::ObserverList<DestructionObserver>::Unchecked destruction_observers_;
 
   bool waiting_for_sync_point_;
 

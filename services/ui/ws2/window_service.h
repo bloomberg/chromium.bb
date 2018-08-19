@@ -103,7 +103,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   void AddObserver(WindowServiceObserver* observer);
   void RemoveObserver(WindowServiceObserver* observer);
-  base::ObserverList<WindowServiceObserver>& observers() { return observers_; }
+  base::ObserverList<WindowServiceObserver>::Unchecked& observers() {
+    return observers_;
+  }
 
   WindowServiceDelegate* delegate() { return delegate_; }
 
@@ -216,7 +218,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // All WindowTrees created by the WindowService.
   std::set<WindowTree*> window_trees_;
 
-  base::ObserverList<WindowServiceObserver> observers_;
+  base::ObserverList<WindowServiceObserver>::Unchecked observers_;
 
   // Returns true if various test interfaces are exposed.
   bool test_config_ = false;

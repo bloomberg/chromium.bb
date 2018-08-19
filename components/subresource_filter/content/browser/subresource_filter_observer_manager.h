@@ -60,7 +60,7 @@ class SubresourceFilterObserverManager
   void NotifyAdSubframeDetected(content::RenderFrameHost* render_frame_host);
 
  private:
-  base::ObserverList<SubresourceFilterObserver> observers_;
+  base::ObserverList<SubresourceFilterObserver>::Unchecked observers_;
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterObserverManager);
 };
 

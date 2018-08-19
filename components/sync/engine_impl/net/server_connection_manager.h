@@ -244,7 +244,7 @@ class ServerConnectionManager {
   // The previous auth token that is invalid now.
   std::string previously_invalidated_token;
 
-  base::ObserverList<ServerConnectionEventListener> listeners_;
+  base::ObserverList<ServerConnectionEventListener>::Unchecked listeners_;
 
   HttpResponse::ServerConnectionCode server_status_;
 

@@ -89,7 +89,7 @@ class SigninErrorController : public KeyedService {
   // NONE if AuthStatusChanged() has never been invoked).
   GoogleServiceAuthError auth_error_;
 
-  base::ObserverList<Observer, false> observer_list_;
+  base::ObserverList<Observer, false>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninErrorController);
 };

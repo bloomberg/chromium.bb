@@ -47,7 +47,7 @@ class TransportListModel {
 
  private:
   std::vector<AuthenticatorTransport> transports_;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportListModel);
 };

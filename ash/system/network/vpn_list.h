@@ -132,7 +132,7 @@ class ASH_EXPORT VpnList : public mojom::VpnList {
   // creating vpn list view.
   std::vector<VPNProvider> arc_vpn_providers_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(VpnList);
 };

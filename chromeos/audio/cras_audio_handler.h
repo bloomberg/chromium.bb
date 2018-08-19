@@ -491,7 +491,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void OnVideoCaptureStoppedOnMainThread(media::VideoFacingMode facing);
 
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
-  base::ObserverList<AudioObserver> observers_;
+  base::ObserverList<AudioObserver>::Unchecked observers_;
 
   // Audio data and state.
   AudioDeviceMap audio_devices_;

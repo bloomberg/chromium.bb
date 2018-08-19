@@ -32,7 +32,7 @@ class MockCandidateWindowController : public CandidateWindowController {
   int hide_count_;
 
  private:
-  base::ObserverList<CandidateWindowController::Observer> observers_;
+  base::ObserverList<CandidateWindowController::Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCandidateWindowController);
 };

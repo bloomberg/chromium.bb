@@ -34,7 +34,8 @@ base::TimeTicks TimeTicksForEvent(NSEvent* event) {
 
 ScopedNotifyNativeEventProcessorObserver::
     ScopedNotifyNativeEventProcessorObserver(
-        base::ObserverList<NativeEventProcessorObserver>* observer_list,
+        base::ObserverList<NativeEventProcessorObserver>::Unchecked*
+            observer_list,
         NSEvent* event)
     : observer_list_(observer_list), event_(event) {
   for (auto& observer : *observer_list_)

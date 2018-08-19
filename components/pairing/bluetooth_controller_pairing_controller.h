@@ -119,7 +119,8 @@ class BluetoothControllerPairingController
   std::unique_ptr<ProtoDecoder> proto_decoder_;
 
   base::ThreadChecker thread_checker_;
-  base::ObserverList<ControllerPairingController::Observer> observers_;
+  base::ObserverList<ControllerPairingController::Observer>::Unchecked
+      observers_;
   base::WeakPtrFactory<BluetoothControllerPairingController> ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothControllerPairingController);

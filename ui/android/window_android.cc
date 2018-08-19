@@ -48,7 +48,7 @@ class WindowAndroid::WindowBeginFrameSource : public viz::BeginFrameSource {
 
  private:
   WindowAndroid* const window_;
-  base::ObserverList<viz::BeginFrameObserver> observers_;
+  base::ObserverList<viz::BeginFrameObserver>::Unchecked observers_;
   int observer_count_;
   viz::BeginFrameArgs last_begin_frame_args_;
   uint64_t next_sequence_number_;

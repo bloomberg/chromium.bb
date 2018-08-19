@@ -58,7 +58,7 @@ class VIEWS_EXPORT DesktopCaptureClient : public aura::client::CaptureClient {
   // Set of DesktopCaptureClients.
   static CaptureClients* capture_clients_;
 
-  base::ObserverList<aura::client::CaptureClientObserver> observers_;
+  base::ObserverList<aura::client::CaptureClientObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCaptureClient);
 };

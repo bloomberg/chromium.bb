@@ -90,7 +90,7 @@ class CryptAuthGCMManagerImpl : public CryptAuthGCMManager,
   bool registration_in_progress_;
 
   // List of observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<CryptAuthGCMManagerImpl> weak_ptr_factory_;
 

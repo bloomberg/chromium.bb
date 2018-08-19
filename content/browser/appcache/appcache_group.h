@@ -145,7 +145,7 @@ class CONTENT_EXPORT AppCacheGroup
   void RunQueuedUpdates();
   static bool FindObserver(
       const UpdateObserver* find_me,
-      const base::ObserverList<UpdateObserver>& observer_list);
+      const base::ObserverList<UpdateObserver>::Unchecked& observer_list);
   void ScheduleUpdateRestart(int delay_ms);
   void HostDestructionImminent(AppCacheHost* host);
 
@@ -179,11 +179,11 @@ class CONTENT_EXPORT AppCacheGroup
   AppCacheStorage* storage_;
 
   // List of objects observing this group.
-  base::ObserverList<UpdateObserver> observers_;
+  base::ObserverList<UpdateObserver>::Unchecked observers_;
 
   // Updates that have been queued for the next run.
   QueuedUpdates queued_updates_;
-  base::ObserverList<UpdateObserver> queued_observers_;
+  base::ObserverList<UpdateObserver>::Unchecked queued_observers_;
   base::CancelableClosure restart_update_task_;
   std::unique_ptr<HostObserver> host_observer_;
 

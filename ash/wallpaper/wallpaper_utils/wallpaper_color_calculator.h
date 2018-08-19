@@ -78,7 +78,7 @@ class ASH_EXPORT WallpaperColorCalculator {
   // The task runner to run the calculation on.
   scoped_refptr<base::TaskRunner> task_runner_;
 
-  base::ObserverList<WallpaperColorCalculatorObserver> observers_;
+  base::ObserverList<WallpaperColorCalculatorObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<WallpaperColorCalculator> weak_ptr_factory_;
 

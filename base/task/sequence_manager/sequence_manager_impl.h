@@ -222,8 +222,8 @@ class BASE_EXPORT SequenceManagerImpl
     std::uniform_real_distribution<double> uniform_distribution;
 
     internal::TaskQueueSelector selector;
-    ObserverList<MessageLoop::TaskObserver> task_observers;
-    ObserverList<TaskTimeObserver> task_time_observers;
+    ObserverList<MessageLoop::TaskObserver>::Unchecked task_observers;
+    ObserverList<TaskTimeObserver>::Unchecked task_time_observers;
     std::set<TimeDomain*> time_domains;
     std::unique_ptr<internal::RealTimeDomain> real_time_domain;
 

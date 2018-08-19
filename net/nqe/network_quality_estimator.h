@@ -363,11 +363,11 @@ class NET_EXPORT NetworkQualityEstimator
   void ComputeEffectiveConnectionType();
 
   // Observer list for RTT or throughput estimates. Protected for testing.
-  base::ObserverList<RTTAndThroughputEstimatesObserver>
+  base::ObserverList<RTTAndThroughputEstimatesObserver>::Unchecked
       rtt_and_throughput_estimates_observer_list_;
 
   // Observer list for changes in effective connection type.
-  base::ObserverList<EffectiveConnectionTypeObserver>
+  base::ObserverList<EffectiveConnectionTypeObserver>::Unchecked
       effective_connection_type_observer_list_;
 
   // Params to configure the network quality estimator.
@@ -580,8 +580,8 @@ class NET_EXPORT NetworkQualityEstimator
   EffectiveConnectionType effective_connection_type_at_last_main_frame_;
 
   // Observer lists for round trip times and throughput measurements.
-  base::ObserverList<RTTObserver> rtt_observer_list_;
-  base::ObserverList<ThroughputObserver> throughput_observer_list_;
+  base::ObserverList<RTTObserver>::Unchecked rtt_observer_list_;
+  base::ObserverList<ThroughputObserver>::Unchecked throughput_observer_list_;
 
   std::unique_ptr<nqe::internal::SocketWatcherFactory> watcher_factory_;
 

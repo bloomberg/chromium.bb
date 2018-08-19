@@ -72,7 +72,7 @@ class DriveNotificationManager : public KeyedService,
   static std::string NotificationSourceToString(NotificationSource source);
 
   invalidation::InvalidationService* invalidation_service_;
-  base::ObserverList<DriveNotificationObserver> observers_;
+  base::ObserverList<DriveNotificationObserver>::Unchecked observers_;
 
   // True when Drive File Sync Service is registered for Drive notifications.
   bool push_notification_registered_;

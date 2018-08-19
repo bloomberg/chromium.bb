@@ -89,7 +89,7 @@ class CHROMEOS_EXPORT FakeCrasAudioClient : public CrasAudioClient {
   // By default, immediately sends OutputNodeVolumeChange signal following the
   // SetOutputNodeVolume fake dbus call.
   bool notify_volume_change_with_delay_ = false;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCrasAudioClient);
 };

@@ -431,7 +431,7 @@ class TabSpecificContentSettings
   void MidiDidNavigate(content::NavigationHandle* navigation_handle);
 
   // All currently registered |SiteDataObserver|s.
-  base::ObserverList<SiteDataObserver> observer_list_;
+  base::ObserverList<SiteDataObserver>::Unchecked observer_list_;
 
   struct ContentSettingsStatus {
     bool blocked;

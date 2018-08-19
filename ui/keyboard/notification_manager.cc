@@ -30,7 +30,8 @@ void NotificationManager::SendNotifications(
     bool does_occluded_bounds_affect_layout,
     const gfx::Rect& visual_bounds,
     const gfx::Rect& occluded_bounds,
-    const base::ObserverList<KeyboardControllerObserver>& observers) {
+    const base::ObserverList<KeyboardControllerObserver>::Unchecked&
+        observers) {
   bool is_visible = !visual_bounds.IsEmpty();
   bool send_visibility_notification =
       ShouldSendVisibilityNotification(is_visible);

@@ -201,7 +201,7 @@ class DialRegistry
 
   // Interface from which the DIAL API is notified of DIAL device events. the
   // DIAL API owns this DIAL registry.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Set just after construction, only used on the IO thread.
   net::NetLog* net_log_ = nullptr;

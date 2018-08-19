@@ -147,7 +147,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // is freed.
   std::list<UsbDeviceHandle*> handles_;
 
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDevice);
 };

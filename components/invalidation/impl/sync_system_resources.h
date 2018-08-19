@@ -173,7 +173,7 @@ class INVALIDATION_EXPORT SyncNetworkChannel
 
   int received_messages_count_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 };
 
 class SyncStorage : public invalidation::Storage {

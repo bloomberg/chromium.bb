@@ -164,7 +164,7 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
   ash::AppListState state_ = ash::AppListState::kInvalidState;
   // The AppListView state. Controlled by the AppListView.
   AppListViewState state_fullscreen_ = AppListViewState::CLOSED;
-  base::ObserverList<AppListModelObserver, true> observers_;
+  base::ObserverList<AppListModelObserver, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListModel);
 };

@@ -90,7 +90,7 @@ class ASH_EXPORT TrayAction : public mojom::TrayAction,
   std::unique_ptr<LockScreenNoteDisplayStateHandler>
       lock_screen_note_display_state_handler_;
 
-  base::ObserverList<TrayActionObserver> observers_;
+  base::ObserverList<TrayActionObserver>::Unchecked observers_;
 
   // Bindings for users of the mojo interface.
   mojo::BindingSet<mojom::TrayAction> bindings_;

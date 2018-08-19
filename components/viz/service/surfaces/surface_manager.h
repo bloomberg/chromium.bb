@@ -289,7 +289,7 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   SurfaceDependencyTracker dependency_tracker_;
 
   base::flat_map<SurfaceId, std::unique_ptr<Surface>> surface_map_;
-  base::ObserverList<SurfaceObserver> observer_list_;
+  base::ObserverList<SurfaceObserver>::Unchecked observer_list_;
   base::ThreadChecker thread_checker_;
 
   base::flat_set<SurfaceId> surfaces_to_destroy_;

@@ -32,7 +32,8 @@ class HeadlessFocusClient : public aura::client::FocusClient,
 
   aura::Window* focused_window_;
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
-  base::ObserverList<aura::client::FocusChangeObserver> focus_observers_;
+  base::ObserverList<aura::client::FocusChangeObserver>::Unchecked
+      focus_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessFocusClient);
 };

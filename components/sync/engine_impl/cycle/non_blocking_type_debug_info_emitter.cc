@@ -8,7 +8,7 @@ namespace syncer {
 
 NonBlockingTypeDebugInfoEmitter::NonBlockingTypeDebugInfoEmitter(
     ModelType type,
-    base::ObserverList<TypeDebugInfoObserver>* observers)
+    ObserverListType* observers)
     : DataTypeDebugInfoEmitter(type, observers) {}
 
 NonBlockingTypeDebugInfoEmitter::~NonBlockingTypeDebugInfoEmitter() {}

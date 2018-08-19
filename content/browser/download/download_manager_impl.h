@@ -320,7 +320,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   bool in_progress_cache_initialized_;
 
   // Observers that want to be notified of changes to the set of downloads.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Stores information about in-progress download items.
   std::unique_ptr<download::DownloadItem::Observer>

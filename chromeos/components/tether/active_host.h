@@ -153,7 +153,7 @@ class ActiveHost {
   TetherHostFetcher* tether_host_fetcher_;
   PrefService* pref_service_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::WeakPtrFactory<ActiveHost> weak_ptr_factory_;
 

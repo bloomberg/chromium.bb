@@ -217,7 +217,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
   scoped_refptr<DOMStorageTaskRunner> task_runner_;
 
   // List of objects observing local storage events.
-  base::ObserverList<EventObserver> event_observers_;
+  base::ObserverList<EventObserver>::Unchecked event_observers_;
 
   // For diagnostic purposes.
   base::circular_deque<std::string> recently_deleted_session_ids_;

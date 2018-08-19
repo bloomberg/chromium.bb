@@ -146,10 +146,10 @@ class TestWebState : public WebState {
   CRWWebViewProxyType web_view_proxy_;
 
   // A list of observers notified when page state changes. Weak references.
-  base::ObserverList<WebStateObserver, true> observers_;
+  base::ObserverList<WebStateObserver, true>::Unchecked observers_;
   // All the WebStatePolicyDeciders asked for navigation decision. Weak
   // references.
-  base::ObserverList<WebStatePolicyDecider, true> policy_deciders_;
+  base::ObserverList<WebStatePolicyDecider, true>::Unchecked policy_deciders_;
 };
 
 }  // namespace web

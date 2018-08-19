@@ -76,7 +76,7 @@ class NotificationTrampoline {
   NotificationTrampoline();
   ~NotificationTrampoline();
 
-  base::ObserverList<CookieNotificationObserver> observer_list_;
+  base::ObserverList<CookieNotificationObserver>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationTrampoline);
 

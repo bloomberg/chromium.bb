@@ -224,7 +224,7 @@ class MultiUserWindowManagerChromeOS
   AccountIdToAppWindowObserver account_id_to_app_observer_;
 
   // An observer list to be notified upon window owner changes.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // A map which remembers for owned transient windows their own visibility.
   TransientWindowToVisibility transient_window_to_visibility_;

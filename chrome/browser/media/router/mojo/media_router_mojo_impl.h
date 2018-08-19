@@ -229,7 +229,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     // we need more fine-grained associations between sinks and origins.
     std::vector<url::Origin> origins_;
 
-    base::ObserverList<MediaSinksObserver> observers_;
+    base::ObserverList<MediaSinksObserver>::Unchecked observers_;
 
     DISALLOW_COPY_AND_ASSIGN(MediaSinksQuery);
   };
@@ -287,7 +287,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     base::flat_map<MediaRouteProviderId, std::vector<MediaRoute::Id>>
         providers_to_joinable_routes_;
 
-    base::ObserverList<MediaRoutesObserver> observers_;
+    base::ObserverList<MediaRoutesObserver>::Unchecked observers_;
 
     DISALLOW_COPY_AND_ASSIGN(MediaRoutesQuery);
   };
@@ -409,8 +409,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   base::flat_map<MediaSource::Id, std::unique_ptr<MediaRoutesQuery>>
       routes_queries_;
 
-  base::flat_map<MediaRoute::Id,
-                 std::unique_ptr<base::ObserverList<RouteMessageObserver>>>
+  using RouteMessageObserverList =
+      base::ObserverList<RouteMessageObserver>::Unchecked;
+  base::flat_map<MediaRoute::Id, std::unique_ptr<RouteMessageObserverList>>
       message_observers_;
 
   // GUID unique to each browser run. Component extension uses this to detect

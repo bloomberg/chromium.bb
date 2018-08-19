@@ -176,7 +176,7 @@ class PermissionRequestManager
   std::unordered_multimap<PermissionRequest*, PermissionRequest*>
       duplicate_requests_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
   AutoResponseType auto_response_for_test_;
 
   base::WeakPtrFactory<PermissionRequestManager> weak_factory_;

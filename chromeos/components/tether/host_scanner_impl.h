@@ -139,7 +139,7 @@ class HostScannerImpl : public HostScanner,
   std::unique_ptr<HostScannerOperation> host_scanner_operation_;
   std::unordered_set<std::string> tether_guids_in_cache_before_scan_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
   base::WeakPtrFactory<HostScannerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostScannerImpl);

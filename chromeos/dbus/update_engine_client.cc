@@ -525,7 +525,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   }
 
   dbus::ObjectProxy* update_engine_proxy_;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   Status last_status_;
 
   // True after update_engine's D-Bus service has become available.
@@ -674,7 +674,7 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
     }
   }
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   std::string current_channel_;
   std::string target_channel_;

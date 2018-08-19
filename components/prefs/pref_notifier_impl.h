@@ -55,7 +55,7 @@ class COMPONENTS_PREFS_EXPORT PrefNotifierImpl : public PrefNotifier {
   // A map from pref names to a list of observers. Observers get fired in the
   // order they are added. These should only be accessed externally for unit
   // testing.
-  typedef base::ObserverList<PrefObserver> PrefObserverList;
+  typedef base::ObserverList<PrefObserver>::Unchecked PrefObserverList;
   typedef base::hash_map<std::string, std::unique_ptr<PrefObserverList>>
       PrefObserverMap;
 

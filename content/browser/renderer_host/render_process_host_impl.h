@@ -728,7 +728,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   StoragePartitionImpl* storage_partition_impl_;
 
   // The observers watching our lifetime.
-  base::ObserverList<RenderProcessHostObserver> observers_;
+  base::ObserverList<RenderProcessHostObserver>::Unchecked observers_;
 
   // True if the process can be shut down suddenly.  If this is true, then we're
   // sure that all the RenderViews in the process can be shutdown suddenly.  If

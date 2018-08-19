@@ -133,7 +133,7 @@ class HostScannerOperation : public MessageTransferOperation {
   ConnectionPreserver* connection_preserver_;
   base::Clock* clock_;
   scoped_refptr<base::TaskRunner> task_runner_;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   cryptauth::RemoteDeviceRefList gms_core_notifications_disabled_devices_;
 

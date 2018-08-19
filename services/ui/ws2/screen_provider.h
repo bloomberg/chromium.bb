@@ -64,7 +64,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ScreenProvider
 
   int64_t display_id_for_new_windows_ = display::kInvalidDisplayId;
 
-  base::ObserverList<mojom::ScreenProviderObserver> observers_;
+  base::ObserverList<mojom::ScreenProviderObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenProvider);
 };

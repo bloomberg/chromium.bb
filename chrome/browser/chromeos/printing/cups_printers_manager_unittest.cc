@@ -152,7 +152,7 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
     target->resize(new_end - target->begin());
   }
 
-  base::ObserverList<SyncedPrintersManager::Observer> observers_;
+  base::ObserverList<SyncedPrintersManager::Observer>::Unchecked observers_;
   std::vector<Printer> configured_printers_;
   std::vector<Printer> enterprise_printers_;
 };
@@ -193,7 +193,7 @@ class FakePrinterDetector : public PrinterDetector {
 
  private:
   std::vector<DetectedPrinter> detections_;
-  base::ObserverList<PrinterDetector::Observer> observers_;
+  base::ObserverList<PrinterDetector::Observer>::Unchecked observers_;
 };
 
 // Fake PpdProvider backend.  This fake generates PpdReferences based on

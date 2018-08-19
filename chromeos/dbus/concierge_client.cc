@@ -260,7 +260,7 @@ class ConciergeClientImpl : public ConciergeClient {
 
   dbus::ObjectProxy* concierge_proxy_ = nullptr;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   bool is_container_startup_failed_signal_connected_ = false;
 

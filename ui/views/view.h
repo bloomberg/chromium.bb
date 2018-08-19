@@ -1832,7 +1832,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Observers -------------------------------------------------------------
 
-  base::ObserverList<ViewObserver> observers_;
+  base::ObserverList<ViewObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(View);
 };

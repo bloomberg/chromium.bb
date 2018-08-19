@@ -241,7 +241,7 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   ModuleInspector module_inspector_;
 
   // Holds observers.
-  base::ObserverList<ModuleDatabaseObserver> observer_list_;
+  base::ObserverList<ModuleDatabaseObserver>::Unchecked observer_list_;
 
 #if defined(GOOGLE_CHROME_BUILD)
   std::unique_ptr<ThirdPartyConflictsManager> third_party_conflicts_manager_;

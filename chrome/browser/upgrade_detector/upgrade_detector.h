@@ -267,7 +267,7 @@ class UpgradeDetector {
   // is we should start nagging about upgrading).
   bool notify_upgrade_;
 
-  base::ObserverList<UpgradeObserver> observer_list_;
+  base::ObserverList<UpgradeObserver>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetector);
 };

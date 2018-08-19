@@ -53,7 +53,8 @@ class RecommendAppsScreenHandler : public BaseScreenHandler,
 
   PrefService* pref_service_;
 
-  base::ObserverList<RecommendAppsScreenViewObserver, true> observer_list_;
+  base::ObserverList<RecommendAppsScreenViewObserver, true>::Unchecked
+      observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(RecommendAppsScreenHandler);
 };

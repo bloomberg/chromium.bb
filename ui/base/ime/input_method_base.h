@@ -145,7 +145,7 @@ class UI_BASE_IME_EXPORT InputMethodBase
 
   TextInputClient* text_input_client_;
 
-  base::ObserverList<InputMethodObserver> observer_list_;
+  base::ObserverList<InputMethodObserver>::Unchecked observer_list_;
 
   std::vector<std::unique_ptr<ui::KeyEvent>> key_events_for_testing_;
 

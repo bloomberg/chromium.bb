@@ -453,7 +453,7 @@ class RequestCoordinator : public KeyedService,
   std::unique_ptr<Offliner> offliner_;
   base::Time operation_start_time_;
   // The observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   // Last known conditions for network, battery
   std::unique_ptr<DeviceConditions> current_conditions_;
   // RequestCoordinator takes over ownership of the policy

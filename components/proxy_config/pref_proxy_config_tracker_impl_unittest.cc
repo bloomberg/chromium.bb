@@ -62,7 +62,8 @@ class TestProxyConfigService : public net::ProxyConfigService {
 
   net::ProxyConfigWithAnnotation config_;
   ConfigAvailability availability_;
-  base::ObserverList<net::ProxyConfigService::Observer, true> observers_;
+  base::ObserverList<net::ProxyConfigService::Observer, true>::Unchecked
+      observers_;
 };
 
 // A mock observer for capturing callbacks.

@@ -146,7 +146,7 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
   // connection.
   int auto_connect_reasons_;
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::WeakPtrFactory<AutoConnectHandler> weak_ptr_factory_;
 

@@ -199,7 +199,7 @@ class ASH_EXPORT WindowTreeHostManager
   // The mapping from display ID to its window tree host.
   WindowTreeHostMap window_tree_hosts_;
 
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   // Store the primary window tree host temporarily while replacing
   // display.

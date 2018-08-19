@@ -56,7 +56,7 @@ class FakeSyncEncryptionHandler : public SyncEncryptionHandler,
   Cryptographer* cryptographer() { return &cryptographer_; }
 
  private:
-  base::ObserverList<SyncEncryptionHandler::Observer> observers_;
+  base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;
   ModelTypeSet encrypted_types_;
   bool encrypt_everything_;
   PassphraseType passphrase_type_;

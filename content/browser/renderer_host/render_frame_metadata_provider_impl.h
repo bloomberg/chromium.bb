@@ -65,7 +65,7 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
       const cc::RenderFrameMetadata& metadata) override;
   void OnFrameSubmissionForTesting(uint32_t frame_token) override;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   cc::RenderFrameMetadata last_render_frame_metadata_;
 

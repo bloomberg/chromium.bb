@@ -63,7 +63,7 @@ class GeneratedPref {
   void NotifyObservers(const std::string& pref_name);
 
  private:
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(GeneratedPref);
 };

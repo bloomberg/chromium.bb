@@ -48,7 +48,7 @@ class FakePushClient : public PushClient {
   int sent_pings() const;
 
  private:
-  base::ObserverList<PushClientObserver> observers_;
+  base::ObserverList<PushClientObserver>::Unchecked observers_;
   SubscriptionList subscriptions_;
   std::string email_;
   std::string token_;

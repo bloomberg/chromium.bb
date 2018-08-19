@@ -167,7 +167,7 @@ class ASH_EXPORT ImeController : public mojom::ImeController {
   // True if voice input should be available from the IME menu.
   bool is_voice_enabled_ = false;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   std::unique_ptr<ModeIndicatorObserver> mode_indicator_observer_;
 

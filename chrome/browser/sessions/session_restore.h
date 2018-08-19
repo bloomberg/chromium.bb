@@ -127,7 +127,8 @@ class SessionRestore {
                            TabManagerShouldObserveSessionRestore);
 
   // Session restore observer list.
-  using SessionRestoreObserverList = base::ObserverList<SessionRestoreObserver>;
+  using SessionRestoreObserverList =
+      base::ObserverList<SessionRestoreObserver>::Unchecked;
 
   SessionRestore();
 
@@ -143,7 +144,7 @@ class SessionRestore {
   // return a valid reference.
   static SessionRestoreObserverList* observers() {
     if (!observers_)
-      observers_ = new base::ObserverList<SessionRestoreObserver>();
+      observers_ = new SessionRestoreObserverList();
     return observers_;
   }
 

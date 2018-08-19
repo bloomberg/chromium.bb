@@ -65,7 +65,7 @@ class HostStatusProvider {
       const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
 
  private:
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HostStatusProvider);
 };

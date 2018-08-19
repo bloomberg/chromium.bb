@@ -284,7 +284,7 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
 
   // Observers to be notified of LoginModel events.  This is mutable to allow
   // notification in const member functions.
-  mutable base::ObserverList<LoginModelObserver> observers_;
+  mutable base::ObserverList<LoginModelObserver>::Unchecked observers_;
 
   // Records all visible forms seen during a page load, in all frames of the
   // page. When the page stops loading, the password manager checks if one of

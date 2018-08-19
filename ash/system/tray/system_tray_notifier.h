@@ -76,13 +76,16 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyVirtualKeyboardSuppressionChanged(bool suppressed);
 
  private:
-  base::ObserverList<BluetoothObserver> bluetooth_observers_;
-  base::ObserverList<IMEObserver> ime_observers_;
-  base::ObserverList<NetworkObserver> network_observers_;
-  base::ObserverList<ScreenCaptureObserver> screen_capture_observers_;
-  base::ObserverList<ScreenShareObserver> screen_share_observers_;
-  base::ObserverList<SystemTrayFocusObserver> system_tray_focus_observers_;
-  base::ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
+  base::ObserverList<BluetoothObserver>::Unchecked bluetooth_observers_;
+  base::ObserverList<IMEObserver>::Unchecked ime_observers_;
+  base::ObserverList<NetworkObserver>::Unchecked network_observers_;
+  base::ObserverList<ScreenCaptureObserver>::Unchecked
+      screen_capture_observers_;
+  base::ObserverList<ScreenShareObserver>::Unchecked screen_share_observers_;
+  base::ObserverList<SystemTrayFocusObserver>::Unchecked
+      system_tray_focus_observers_;
+  base::ObserverList<VirtualKeyboardObserver>::Unchecked
+      virtual_keyboard_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayNotifier);
 };

@@ -94,7 +94,7 @@ class KeepAliveRegistry {
   // Used to guard against registering during shutdown.
   bool is_shutting_down_ = false;
 
-  base::ObserverList<KeepAliveStateObserver> observers_;
+  base::ObserverList<KeepAliveStateObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveRegistry);
 };

@@ -112,7 +112,7 @@ class ASH_EXPORT BacklightsForcedOffSetter
   // Number of active backlights forced off requests.
   int active_backlights_forced_off_count_ = 0;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>

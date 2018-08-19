@@ -156,7 +156,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       const url::Origin& origin,
       blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);
 
-  const base::ObserverList<BackgroundFetchDataManagerObserver>& observers() {
+  const base::ObserverList<BackgroundFetchDataManagerObserver>::Unchecked&
+  observers() {
     return observers_;
   }
 
@@ -227,7 +228,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // Invariant: the frontmost task, if any, has already been started.
   base::queue<std::unique_ptr<background_fetch::DatabaseTask>> database_tasks_;
 
-  base::ObserverList<BackgroundFetchDataManagerObserver> observers_;
+  base::ObserverList<BackgroundFetchDataManagerObserver>::Unchecked observers_;
 
   // The |unique_id|s of registrations that have been deactivated since the
   // browser was last started. They will be automatically deleted when the

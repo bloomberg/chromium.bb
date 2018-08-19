@@ -148,7 +148,7 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
                 VoidDBusMethodCallback callback,
                 MountError mount_error);
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
   int unmount_call_count_;
   std::string last_unmount_device_path_;
   UnmountOptions last_unmount_options_;

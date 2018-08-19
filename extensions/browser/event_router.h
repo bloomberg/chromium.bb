@@ -373,7 +373,7 @@ class EventRouter : public KeyedService,
   using ObserverMap = std::unordered_map<std::string, Observer*>;
   ObserverMap observers_;
 
-  base::ObserverList<TestObserver> test_observers_;
+  base::ObserverList<TestObserver>::Unchecked test_observers_;
 
   std::set<content::RenderProcessHost*> observed_process_set_;
 

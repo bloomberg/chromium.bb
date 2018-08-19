@@ -78,7 +78,7 @@ class TopIconAnimationView : public views::View,
 
   bool item_in_folder_icon_;
 
-  base::ObserverList<TopIconAnimationObserver> observers_;
+  base::ObserverList<TopIconAnimationObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TopIconAnimationView);
 };

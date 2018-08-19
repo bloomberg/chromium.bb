@@ -381,7 +381,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   DesktopWindowTreeHostX11* window_parent_;
   std::set<DesktopWindowTreeHostX11*> window_children_;
 
-  base::ObserverList<DesktopWindowTreeHostObserverX11> observer_list_;
+  base::ObserverList<DesktopWindowTreeHostObserverX11>::Unchecked
+      observer_list_;
 
   // The window shape if the window is non-rectangular.
   gfx::XScopedPtr<_XRegion, gfx::XObjectDeleter<_XRegion, int, XDestroyRegion>>

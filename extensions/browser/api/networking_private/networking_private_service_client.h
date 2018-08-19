@@ -174,7 +174,7 @@ class NetworkingPrivateServiceClient
   // Callbacks to run when callback is called from WiFiService.
   ServiceCallbacksMap callbacks_map_;
   // Observers to Network Events.
-  base::ObserverList<NetworkingPrivateDelegateObserver>
+  base::ObserverList<NetworkingPrivateDelegateObserver>::Unchecked
       network_events_observers_;
   // Interface to WiFiService. Used and deleted on the worker thread.
   std::unique_ptr<wifi::WiFiService> wifi_service_;

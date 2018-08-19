@@ -217,7 +217,7 @@ class AutofillWebDataBackendImpl
 
   WebDatabase::State RemoveExpiredFormElementsImpl(WebDatabase* db);
 
-  base::ObserverList<AutofillWebDataServiceObserverOnDBSequence>
+  base::ObserverList<AutofillWebDataServiceObserverOnDBSequence>::Unchecked
       db_observer_list_;
 
   // WebDatabaseBackend allows direct access to DB.

@@ -46,7 +46,8 @@ class POLICY_EXPORT PolicyServiceImpl
   void RefreshPolicies(const base::Closure& callback) override;
 
  private:
-  using Observers = base::ObserverList<PolicyService::Observer, true>;
+  using Observers =
+      base::ObserverList<PolicyService::Observer, true>::Unchecked;
 
   // ConfigurationPolicyProvider::Observer overrides:
   void OnUpdatePolicy(ConfigurationPolicyProvider* provider) override;

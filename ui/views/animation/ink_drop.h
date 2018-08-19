@@ -81,7 +81,7 @@ class VIEWS_EXPORT InkDrop {
   void NotifyInkDropRippleAnimationEnded(InkDropState state);
 
  private:
-  base::ObserverList<InkDropObserver> observers_;
+  base::ObserverList<InkDropObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDrop);
 };

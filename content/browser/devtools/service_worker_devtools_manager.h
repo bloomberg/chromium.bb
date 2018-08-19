@@ -109,7 +109,7 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   ServiceWorkerDevToolsManager();
   ~ServiceWorkerDevToolsManager();
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
   bool debug_service_worker_on_start_;
 
   // We retatin agent hosts as long as the service worker is alive.

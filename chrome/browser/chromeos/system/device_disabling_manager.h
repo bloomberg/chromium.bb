@@ -128,7 +128,7 @@ class DeviceDisablingManager {
   CrosSettings* cros_settings_;
   user_manager::UserManager* user_manager_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   std::unique_ptr<CrosSettings::ObserverSubscription>
       device_disabled_subscription_;

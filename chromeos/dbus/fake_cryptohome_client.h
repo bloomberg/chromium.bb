@@ -359,7 +359,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const std::string& label);
 
   bool service_is_available_;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   int async_call_id_;
   bool unmount_result_;

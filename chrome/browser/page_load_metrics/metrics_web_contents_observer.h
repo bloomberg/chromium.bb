@@ -241,7 +241,7 @@ class MetricsWebContentsObserver
   // Has the MWCO observed at least one navigation?
   bool has_navigated_;
 
-  base::ObserverList<TestingObserver> testing_observers_;
+  base::ObserverList<TestingObserver>::Unchecked testing_observers_;
   content::WebContentsFrameBindingSet<mojom::PageLoadMetrics>
       page_load_metrics_binding_;
 

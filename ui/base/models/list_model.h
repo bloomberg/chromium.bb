@@ -137,7 +137,7 @@ class ListModel {
 
  private:
   ItemList items_;
-  base::ObserverList<ListModelObserver> observers_;
+  base::ObserverList<ListModelObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ListModel<ItemType>);
 };

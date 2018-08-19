@@ -188,7 +188,7 @@ class ScreenlockBridge {
 
   // The last focused user's id.
   AccountId focused_account_id_;
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockBridge);
 };

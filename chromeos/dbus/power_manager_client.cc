@@ -1083,7 +1083,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
   base::PlatformThreadId origin_thread_id_;
 
   dbus::ObjectProxy* power_manager_proxy_ = nullptr;
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // The delay ID obtained from the RegisterSuspendDelay request.
   int32_t suspend_delay_id_ = -1;

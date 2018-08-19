@@ -159,7 +159,7 @@ class ThumbnailCache : ThumbnailDelegate {
 
   ExpiringThumbnailCache cache_;
   ExpiringThumbnailCache approximation_cache_;
-  base::ObserverList<ThumbnailCacheObserver> observers_;
+  base::ObserverList<ThumbnailCacheObserver>::Unchecked observers_;
   ThumbnailMetaDataMap thumbnail_meta_data_;
   TabIdList read_queue_;
   TabIdList visible_ids_;

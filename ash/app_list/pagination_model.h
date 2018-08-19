@@ -144,7 +144,7 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
 
   base::TimeTicks last_overscroll_animation_start_time_;
 
-  base::ObserverList<PaginationModelObserver> observers_;
+  base::ObserverList<PaginationModelObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PaginationModel);
 };

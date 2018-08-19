@@ -292,7 +292,7 @@ class STORAGE_EXPORT DatabaseTracker
   std::unique_ptr<sql::Database> db_;
   std::unique_ptr<DatabasesTable> databases_table_;
   std::unique_ptr<sql::MetaTable> meta_table_;
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
   std::map<std::string, CachedOriginInfo> origins_info_map_;
   DatabaseConnections database_connections_;
 

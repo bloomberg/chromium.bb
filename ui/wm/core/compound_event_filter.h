@@ -83,7 +83,7 @@ class WM_CORE_EXPORT CompoundEventFilter : public ui::EventHandler {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Additional pre-target event handlers.
-  base::ObserverList<ui::EventHandler, true> handlers_;
+  base::ObserverList<ui::EventHandler, true>::Unchecked handlers_;
 
   // Holds the last window that was used to update CursorClient in UpdateCursor.
   aura::WindowTracker last_window_that_provided_cursor_;

@@ -96,8 +96,8 @@ class POLICY_EXPORT SchemaRegistry {
   scoped_refptr<SchemaMap> schema_map_;
 
  private:
-  base::ObserverList<Observer, true> observers_;
-  base::ObserverList<InternalObserver, true> internal_observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
+  base::ObserverList<InternalObserver, true>::Unchecked internal_observers_;
   bool domains_ready_[POLICY_DOMAIN_SIZE];
 
   DISALLOW_COPY_AND_ASSIGN(SchemaRegistry);

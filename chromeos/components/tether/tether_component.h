@@ -55,7 +55,7 @@ class TetherComponent {
 
  private:
   Status status_ = Status::ACTIVE;
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TetherComponent);
 };

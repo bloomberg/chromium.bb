@@ -105,7 +105,7 @@ class ArcFileSystemBridge : public KeyedService, public mojom::FileSystemHost {
 
   Profile* const profile_;
   ArcBridgeService* const bridge_service_;  // Owned by ArcServiceManager
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   // Map from file descriptor IDs to requested URLs.
   std::map<std::string, GURL> id_to_url_;

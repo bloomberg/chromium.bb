@@ -244,7 +244,7 @@ class OAuth2LoginManager : public KeyedService,
   // Makes sure list is empty on destruction.
   // TODO(zelidrag|gspencer): Figure out how to get rid of ProfileHelper so we
   // can change the line below to base::ObserverList<Observer, true>.
-  base::ObserverList<Observer, false> observer_list_;
+  base::ObserverList<Observer, false>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginManager);
 };

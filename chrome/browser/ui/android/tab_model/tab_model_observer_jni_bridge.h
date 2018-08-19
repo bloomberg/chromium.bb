@@ -99,7 +99,7 @@ class TabModelObserverJniBridge {
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   // Observers attached to this bridge.
-  base::ObserverList<TabModelObserver> observers_;
+  base::ObserverList<TabModelObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TabModelObserverJniBridge);
 };

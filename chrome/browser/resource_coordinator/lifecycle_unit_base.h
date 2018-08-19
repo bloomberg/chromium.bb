@@ -89,7 +89,7 @@ class LifecycleUnitBase : public LifecycleUnit {
   // visible.
   base::TimeDelta chrome_usage_time_when_hidden_;
 
-  base::ObserverList<LifecycleUnitObserver> observers_;
+  base::ObserverList<LifecycleUnitObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LifecycleUnitBase);
 };

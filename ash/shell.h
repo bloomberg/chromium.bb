@@ -900,7 +900,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   std::unique_ptr<MessageCenterController> message_center_controller_;
 
-  base::ObserverList<ShellObserver> shell_observers_;
+  base::ObserverList<ShellObserver>::Unchecked shell_observers_;
 
   base::WeakPtrFactory<Shell> weak_factory_;
 

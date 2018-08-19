@@ -48,7 +48,7 @@ class SyncJsController : public JsController,
   void UpdateBackendEventHandler();
 
   WeakHandle<JsBackend> js_backend_;
-  base::ObserverList<JsEventHandler> js_event_handlers_;
+  base::ObserverList<JsEventHandler>::Unchecked js_event_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncJsController);
 };

@@ -296,7 +296,7 @@ class FileSystem : public FileSystemInterface,
 
   std::unique_ptr<internal::SyncClient> sync_client_;
 
-  base::ObserverList<FileSystemObserver> observers_;
+  base::ObserverList<FileSystemObserver>::Unchecked observers_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

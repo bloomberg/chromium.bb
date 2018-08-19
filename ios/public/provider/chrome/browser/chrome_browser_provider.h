@@ -173,7 +173,7 @@ class ChromeBrowserProvider {
   void FireChromeIdentityServiceDidChange(ChromeIdentityService* new_service);
 
  private:
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
   std::unique_ptr<MailtoHandlerProvider> mailto_handler_provider_;
 };
 

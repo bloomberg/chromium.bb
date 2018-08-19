@@ -39,7 +39,7 @@ class SyncErrorController : public SyncServiceObserver {
 
  private:
   SyncService* service_;
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncErrorController);
 };

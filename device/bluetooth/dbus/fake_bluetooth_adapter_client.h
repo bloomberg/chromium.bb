@@ -107,7 +107,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   void PostDelayedTask(base::OnceClosure callback);
 
   // List of observers interested in event notifications from us.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // Static properties we return.
   std::unique_ptr<Properties> properties_;

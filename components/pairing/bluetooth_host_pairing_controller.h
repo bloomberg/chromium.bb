@@ -170,7 +170,7 @@ class BluetoothHostPairingController
 
   device::mojom::InputDeviceManagerPtr input_device_manager_;
   THREAD_CHECKER(thread_checker_);
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
   base::WeakPtrFactory<BluetoothHostPairingController> ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothHostPairingController);

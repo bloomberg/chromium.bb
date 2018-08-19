@@ -72,7 +72,7 @@ class PrefStoreClientMixin : public BasePrefStore,
   // If null, indicates that initialization failed.
   std::unique_ptr<base::DictionaryValue> cached_prefs_;
 
-  base::ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true>::Unchecked observers_;
 
   // Has the PrefStore we're observing been initialized?
   bool initialized_ = false;

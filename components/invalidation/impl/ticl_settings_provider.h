@@ -34,7 +34,7 @@ class TiclSettingsProvider {
   void FireOnUseGCMChannelChanged();
 
  private:
-  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TiclSettingsProvider);
 };

@@ -55,7 +55,7 @@ class TouchSelectionControllerClientManagerAndroid
   float page_scale_factor_;
   gfx::SelectionBound manager_selection_start_;
   gfx::SelectionBound manager_selection_end_;
-  base::ObserverList<TouchSelectionControllerClientManager::Observer>
+  base::ObserverList<TouchSelectionControllerClientManager::Observer>::Unchecked
       observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerClientManagerAndroid);

@@ -85,7 +85,7 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
   // Local State initialization observer.
   void OnLocalStateInitialized(bool initialized);
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // This is non-null only after user logs in.
   PrefService* primary_user_prefs_ = nullptr;

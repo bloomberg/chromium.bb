@@ -466,8 +466,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // The root of the Layer tree drawn by this compositor.
   Layer* root_layer_ = nullptr;
 
-  base::ObserverList<CompositorObserver, true> observer_list_;
-  base::ObserverList<CompositorAnimationObserver> animation_observer_list_;
+  base::ObserverList<CompositorObserver, true>::Unchecked observer_list_;
+  base::ObserverList<CompositorAnimationObserver>::Unchecked
+      animation_observer_list_;
 
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
   // A sequence number of a current compositor frame for use with metrics.

@@ -194,7 +194,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   // historical tab.
   bool restoring_;
 
-  base::ObserverList<TabRestoreServiceObserver> observer_list_;
+  base::ObserverList<TabRestoreServiceObserver>::Unchecked observer_list_;
 
   // Set of contexts that we've received a BrowserClosing method for but no
   // corresponding BrowserClosed. We cache the set of contexts closing to

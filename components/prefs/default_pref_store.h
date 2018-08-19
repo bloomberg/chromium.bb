@@ -48,7 +48,7 @@ class COMPONENTS_PREFS_EXPORT DefaultPrefStore : public PrefStore {
 
   PrefValueMap prefs_;
 
-  base::ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultPrefStore);
 };
