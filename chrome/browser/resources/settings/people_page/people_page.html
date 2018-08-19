@@ -274,13 +274,11 @@
         </template>
 
         <template is="dom-if" if="[[unifiedConsentEnabled_]]">
-          <div class="settings-box" id="sync-setup" on-click="onSyncTap_"
-              actionable>
-            <div class="start">$i18n{syncAndNonPersonalizedServices}</div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label="$i18n{sync}"></button>
-            </paper-icon-button-light>
-          </div>
+          <cr-link-row id="sync-setup"
+              start-icon="settings20:googleg"
+              label="$i18n{syncAndNonPersonalizedServices}"
+              icon-class="subpage-arrow" on-click="onSyncTap_">
+          </cr-link-row>
         </template>
 
         <template is="dom-if" if="[[autofillHomeEnabled]]">
