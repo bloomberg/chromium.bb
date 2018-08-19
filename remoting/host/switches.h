@@ -40,8 +40,6 @@ extern const char kEvaluateCapabilitySwitchName[];
 #if defined(OS_WIN)
 // Executes EvaluateD3D() function.
 extern const char kEvaluateD3D[];
-// Executes Evaluate3dDisplayMode() function.
-extern const char kEvaluate3dDisplayMode[];
 #endif
 
 // Used to pass the HWND for the parent process to a child process.

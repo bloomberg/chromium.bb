@@ -20,10 +20,6 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 
-#if defined(OS_WIN)
-#include "remoting/host/win/evaluate_d3d.h"
-#endif
-
 #if defined(USE_X11)
 #include "remoting/host/linux/x11_util.h"
 #endif
@@ -102,16 +98,6 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 #if defined(USE_X11)
   IgnoreXServerGrabs(desktop_capture_options().x_display()->display(), true);
-#elif defined(OS_WIN)
-  // The options passed to this instance are determined by a process running in
-  // Session 0.  Access to DirectX functions in Session 0 is limited so the
-  // results are not guaranteed to be accurate in the desktop context.  Due to
-  // this problem, we need to requery the following method to make sure we are
-  // still safe to use D3D APIs.  Only overwrite the value if it isn't safe to
-  // use D3D APIs as we don't want to re-enable this setting if it was disabled
-  // via an experiment or client flag.
-  if (!IsD3DAvailable())
-    options_.desktop_capture_options()->set_allow_directx_capturer(false);
 #endif
 }
 
