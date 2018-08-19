@@ -28,6 +28,7 @@
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #include "ui/views/cocoa/cocoa_mouse_capture.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
+#import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget_delegate.h"

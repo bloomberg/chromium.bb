@@ -47,16 +47,6 @@ VIEWS_EXPORT
 // create one.
 - (void)setWindowTouchBarDelegate:(id<WindowTouchBarDelegate>)delegate;
 
-// Override -[NSWindow toggleFullScreen:] to be a no-op for testing.
-- (void)disableToggleFullScreenForTesting;
-
-// Methods to query properties for tests.
-// TODO(ccameron): It may be more appropriate to put testing methods into a
-// separate subclass.
-@property(readonly, nonatomic) int invalidateShadowCountForTesting;
-@property(readonly, nonatomic) int orderWindowCountForTesting;
-@property(readonly, nonatomic) int toggleFullScreenCountForTesting;
-@property(assign, nonatomic) bool* deallocFlagForTesting;
 @end
 
 #endif  // UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NSWINDOW_H_
