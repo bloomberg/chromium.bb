@@ -375,6 +375,10 @@ static_library("content_shell_lib") {
     ]
   }
 
+  if (toolkit_views) {
+    deps += [ "//ui/views" ]
+  }
+
   if (use_aura) {
     deps += [
       "//ui/aura",
@@ -391,7 +395,6 @@ static_library("content_shell_lib") {
       ]
       deps += [
         "//ui/resources",
-        "//ui/views",
         "//ui/views:test_support",
         "//ui/views/controls/webview",
         "//ui/wm:test_support",

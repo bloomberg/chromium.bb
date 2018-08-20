@@ -12,7 +12,7 @@
 #include "base/unguessable_token.h"
 #include "services/content/public/cpp/buildflags.h"
 
-#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#if defined(TOOLKIT_VIEWS)
 #include "ui/views/layout/fill_layout.h"  // nogncheck
 #include "ui/views/view.h"                // nogncheck
 
@@ -21,7 +21,7 @@
 #include "ui/base/ui_base_features.h"                   // nogncheck
 #include "ui/views/mus/remote_view/remote_view_host.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-#endif  // BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#endif  // defined(TOOLKIT_VIEWS)
 
 namespace content {
 
@@ -56,7 +56,7 @@ bool NavigableContentsView::IsClientRunningInServiceProcess() {
 }
 
 NavigableContentsView::NavigableContentsView() {
-#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#if defined(TOOLKIT_VIEWS)
   view_ = std::make_unique<views::View>();
   view_->set_owned_by_client();
   view_->SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -67,12 +67,12 @@ NavigableContentsView::NavigableContentsView() {
     view_->AddChildView(remote_view_host_);
   }
 #endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-#endif  // BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#endif  // defined(TOOLKIT_VIEWS)
 }
 
 void NavigableContentsView::EmbedUsingToken(
     const base::UnguessableToken& token) {
-#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#if defined(TOOLKIT_VIEWS)
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
   if (remote_view_host_) {
     const uint32_t kEmbedFlags =
@@ -97,7 +97,7 @@ void NavigableContentsView::EmbedUsingToken(
   auto callback = std::move(it->second);
   embeddings.erase(it);
   std::move(callback).Run(this);
-#endif  // BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#endif  // defined(TOOLKIT_VIEWS)
 }
 
 // static

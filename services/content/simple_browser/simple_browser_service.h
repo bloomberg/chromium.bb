@@ -11,6 +11,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "services/content/public/cpp/buildflags.h"
 #include "services/service_manager/public/cpp/service.h"
 
 #if defined(OS_LINUX)
@@ -51,7 +52,11 @@ class COMPONENT_EXPORT(SIMPLE_BROWSER) SimpleBrowserService
 #endif
 
   const UIInitializationMode ui_initialization_mode_;
+
+#if defined(USE_AURA) && BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
   std::unique_ptr<views::AuraInit> aura_init_;
+#endif
+
   std::unique_ptr<Window> window_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleBrowserService);

@@ -7,10 +7,13 @@
 #include "build/build_config.h"
 #include "services/content/simple_browser/window.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "ui/views/mus/aura_init.h"
 
 #if defined(OS_LINUX)
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"  // nogncheck
+#endif
+
+#if defined(USE_AURA) && BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
+#include "ui/views/mus/aura_init.h"  // nogncheck
 #endif
 
 namespace simple_browser {
@@ -28,12 +31,17 @@ void SimpleBrowserService::OnStart() {
     SkFontConfigInterface::SetGlobal(font_loader_);
 #endif
 
+#if defined(USE_AURA) && BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
     views::AuraInit::InitParams params;
     params.connector = context()->connector();
     params.identity = context()->identity();
     params.register_path_provider = false;
     aura_init_ = views::AuraInit::Create(params);
     CHECK(aura_init_);
+#else
+    NOTREACHED() << "Remote UI embedding not supported on this platform.";
+
+#endif
   }
 
   window_ = std::make_unique<Window>(context()->connector());

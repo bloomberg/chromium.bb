@@ -11,15 +11,18 @@
 #include "services/content/service.h"
 #include "services/content/service_delegate.h"
 
-#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
-#include "ui/aura/window.h"                             // nogncheck
+#if defined(TOOLKIT_VIEWS)
 #include "ui/views/controls/native/native_view_host.h"  // nogncheck
+
+#if defined(USE_AURA)
+#include "ui/aura/window.h"  // nogncheck
+#endif
 
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
 #include "ui/base/ui_base_features.h"                       // nogncheck
 #include "ui/views/mus/remote_view/remote_view_provider.h"  // nogncheck
 #endif
-#endif  // BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#endif  // defined(TOOLKIT_VIEWS)
 
 namespace content {
 
@@ -82,10 +85,10 @@ void NavigableContentsImpl::CreateView(bool in_service_process,
 void NavigableContentsImpl::OnEmbedTokenReceived(
     CreateViewCallback callback,
     const base::UnguessableToken& token) {
-#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#if defined(TOOLKIT_VIEWS)
   if (native_content_view_)
     native_content_view_->Show();
-#endif  // BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#endif  // defined(TOOLKIT_VIEWS)
   std::move(callback).Run(token);
 }
 #endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
@@ -93,7 +96,7 @@ void NavigableContentsImpl::OnEmbedTokenReceived(
 void NavigableContentsImpl::EmbedInProcessClientView(
     NavigableContentsView* view) {
   DCHECK(native_content_view_);
-#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#if defined(TOOLKIT_VIEWS)
   DCHECK(!local_view_host_);
   local_view_host_ = std::make_unique<views::NativeViewHost>();
   local_view_host_->set_owned_by_client();
@@ -104,7 +107,7 @@ void NavigableContentsImpl::EmbedInProcessClientView(
   // TODO(https://crbug.com/855092): Support embedding of other native client
   // views without Views + Aura.
   NOTREACHED()
-      << "NavigableContents views are currently only supported on Aura.";
+      << "NavigableContents views are currently only supported on Views UI.";
 #endif
 }
 

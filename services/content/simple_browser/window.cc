@@ -96,9 +96,13 @@ class SimpleBrowserUI : public views::WidgetDelegateView,
 
 Window::Window(service_manager::Connector* connector) {
   window_widget_ = views::Widget::CreateWindowWithContextAndBounds(
-      new SimpleBrowserUI(connector), nullptr, gfx::Rect(10, 640, 0, 0));
+      new SimpleBrowserUI(connector), nullptr, gfx::Rect(10, 10, 640, 480));
+
+#if defined(USE_AURA)
   window_widget_->GetNativeWindow()->GetHost()->window()->SetName(
       "SimpleBrowser");
+#endif
+
   window_widget_->Show();
 }
 
