@@ -1061,9 +1061,9 @@ void VrShell::PollCapturingState() {
     }
     if (web_contents->IsConnectedToBluetoothDevice()) {
       if (is_foreground)
-        active_capturing_.screen_capture_enabled = true;
+        active_capturing_.bluetooth_connected = true;
       else
-        background_capturing_.screen_capture_enabled = true;
+        background_capturing_.bluetooth_connected = true;
     }
   }
 
