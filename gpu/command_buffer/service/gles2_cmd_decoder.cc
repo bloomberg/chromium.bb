@@ -3485,7 +3485,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   framebuffer_manager_.reset(new FramebufferManager(
       group_->max_draw_buffers(), group_->max_color_attachments(),
       group_->framebuffer_completeness_cache()));
-  texture_manager()->AddFramebufferManager(framebuffer_manager_.get());
+  group_->texture_manager()->AddFramebufferManager(framebuffer_manager_.get());
 
   query_manager_.reset(new GLES2QueryManager(this, feature_info_.get()));
 
@@ -5121,8 +5121,8 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
       fence->Invalidate();
     }
 
-    if (texture_manager())
-      texture_manager()->MarkContextLost();
+    if (group_ && group_->texture_manager())
+      group_->texture_manager()->MarkContextLost();
     state_.MarkContextLost();
   }
   deschedule_until_finished_fences_.clear();
@@ -5162,8 +5162,9 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 
   if (framebuffer_manager_.get()) {
     framebuffer_manager_->Destroy(have_context);
-    if (texture_manager())
-      texture_manager()->RemoveFramebufferManager(framebuffer_manager_.get());
+    if (group_->texture_manager())
+      group_->texture_manager()->RemoveFramebufferManager(
+          framebuffer_manager_.get());
     framebuffer_manager_.reset();
   }
 
@@ -17755,7 +17756,7 @@ void GLES2DecoderImpl::DoProduceTextureDirectCHROMIUM(
     return;
   }
 
-  mailbox_manager()->ProduceTexture(mailbox, texture_ref->texture());
+  group_->mailbox_manager()->ProduceTexture(mailbox, texture_ref->texture());
 }
 
 void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
@@ -17786,7 +17787,7 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
     return;
   }
   Texture* texture =
-      static_cast<Texture*>(mailbox_manager()->ConsumeTexture(mailbox));
+      static_cast<Texture*>(group_->mailbox_manager()->ConsumeTexture(mailbox));
   if (!texture) {
     // Create texture to handle invalid mailbox (see http://crbug.com/472465).
     bool result = GenTexturesHelper(1, &client_id);
@@ -19803,7 +19804,7 @@ error::Error GLES2DecoderImpl::HandleInitializeDiscardableTextureCHROMIUM(
   size_t size = texture->texture()->estimated_size();
   ServiceDiscardableHandle handle(std::move(buffer), shm_offset, shm_id);
   GetContextGroup()->discardable_manager()->InsertLockedTexture(
-      texture_id, size, texture_manager(), std::move(handle));
+      texture_id, size, group_->texture_manager(), std::move(handle));
   return error::kNoError;
 }
 
@@ -19818,7 +19819,7 @@ error::Error GLES2DecoderImpl::HandleUnlockDiscardableTextureCHROMIUM(
   ServiceDiscardableManager* discardable_manager =
       GetContextGroup()->discardable_manager();
   TextureRef* texture_to_unbind;
-  if (!discardable_manager->UnlockTexture(texture_id, texture_manager(),
+  if (!discardable_manager->UnlockTexture(texture_id, group_->texture_manager(),
                                           &texture_to_unbind)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUnlockDiscardableTextureCHROMIUM",
                        "Texture ID not initialized");
@@ -19837,7 +19838,7 @@ error::Error GLES2DecoderImpl::HandleLockDiscardableTextureCHROMIUM(
           cmd_data);
   GLuint texture_id = c.texture_id;
   if (!GetContextGroup()->discardable_manager()->LockTexture(
-          texture_id, texture_manager())) {
+          texture_id, group_->texture_manager())) {
     // Temporarily log a crash dump for debugging crbug.com/870317.
     base::debug::DumpWithoutCrashing();
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glLockDiscardableTextureCHROMIUM",
