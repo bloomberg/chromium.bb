@@ -16,7 +16,7 @@ class TextInputClient;
 }
 
 namespace views {
-class BridgedNativeWidgetHost;
+class BridgedNativeWidget;
 class View;
 }
 
@@ -28,7 +28,7 @@ class View;
                                                 NSDraggingSource> {
  @private
   // Weak, reset by clearView.
-  views::BridgedNativeWidgetHost* host_;
+  views::BridgedNativeWidget* bridge_;
 
   // Weak. The hosted RootView, owned by hostedView_->GetWidget().
   // TODO(ccameron): Remove this member.
@@ -63,8 +63,8 @@ class View;
 @property(assign, nonatomic) BOOL drawMenuBackgroundForBlur;
 
 // Initialize the NSView -> views::View bridge. |viewToHost| must be non-NULL.
-- (id)initWithHost:(views::BridgedNativeWidgetHost*)host
-              view:(views::View*)viewToHost;
+- (id)initWithBridge:(views::BridgedNativeWidget*)bridge
+                view:(views::View*)viewToHost;
 
 // Clear the hosted view. For example, if it is about to be destroyed.
 - (void)clearView;
