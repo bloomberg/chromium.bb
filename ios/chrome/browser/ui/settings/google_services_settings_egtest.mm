@@ -80,8 +80,7 @@ using unified_consent::prefs::kUnifiedConsentGiven;
   if (!IsUIRefreshPhase1Enabled())
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
-  PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
-  prefService->SetBoolean(kUnifiedConsentGiven, false);
+  [self resetUnifiedConsent];
   [self openGoogleServicesSettings];
   [self assertSyncEverythingSection];
   [self assertPersonalizedServicesCollapsed:NO];
@@ -98,7 +97,8 @@ using unified_consent::prefs::kUnifiedConsentGiven;
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
-  prefService->SetBoolean(kUnifiedConsentGiven, true);
+  GREYAssert(prefService->GetBoolean(kUnifiedConsentGiven),
+             @"Unified consent should be given");
   [self openGoogleServicesSettings];
   [self assertSyncEverythingSection];
   [self assertPersonalizedServicesCollapsed:YES];
@@ -140,8 +140,7 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 - (void)testOpenManageSyncedDataWebPage {
   if (!IsUIRefreshPhase1Enabled())
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
-  PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
-  prefService->SetBoolean(kUnifiedConsentGiven, false);
+  [self resetUnifiedConsent];
   [self openGoogleServicesSettings];
   [self togglePersonalizedServicesSection];
   [[self cellElementInteractionWithTitleID:
@@ -151,14 +150,13 @@ using unified_consent::prefs::kUnifiedConsentGiven;
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests the "Manage synced data" cell closes the settings, to open the web
-// page.
+// Tests the "Manage synced data" cell closes the settings, and opens the web
+// page, while the user is signed in without user consent.
 - (void)testOpenManageSyncedDataWebPageWhileSignedIn {
   if (!IsUIRefreshPhase1Enabled())
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
-  PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
-  prefService->SetBoolean(kUnifiedConsentGiven, false);
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
+  [self resetUnifiedConsent];
   [self openGoogleServicesSettings];
   [[self cellElementInteractionWithTitleID:
              IDS_IOS_GOOGLE_SERVICES_SETTINGS_MANAGED_SYNC_DATA_TEXT
@@ -168,6 +166,12 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 }
 
 #pragma mark - Helpers
+
+// Resets the unified consent given by the user.
+- (void)resetUnifiedConsent {
+  PrefService* prefService = GetOriginalBrowserState()->GetPrefs();
+  prefService->SetBoolean(kUnifiedConsentGiven, false);
+}
 
 - (void)openGoogleServicesSettings {
   [ChromeEarlGreyUI openSettingsMenu];

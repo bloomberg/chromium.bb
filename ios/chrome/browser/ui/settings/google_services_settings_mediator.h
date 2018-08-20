@@ -19,7 +19,10 @@ class SyncSetupService;
 
 namespace browser_sync {
 class ProfileSyncService;
-};
+}  // namespace browser_sync
+namespace unified_consent {
+class UnifiedConsentService;
+}  // namespace unified_consent
 
 // Mediator for the Google services settings.
 @interface GoogleServicesSettingsMediator
@@ -31,12 +34,14 @@ class ProfileSyncService;
 // Authentication service.
 @property(nonatomic, assign) AuthenticationService* authService;
 
-// Designated initializer. |prefService|, |syncService| and |syncSetupService|
-// should not be null.
+// Designated initializer. |prefService|, |syncService|, |syncSetupService| and
+// |unifiedConsentService| should not be null.
 - (instancetype)initWithPrefService:(PrefService*)prefService
                         syncService:
                             (browser_sync::ProfileSyncService*)syncService
                    syncSetupService:(SyncSetupService*)syncSetupService
+              unifiedConsentService:
+                  (unified_consent::UnifiedConsentService*)unifiedConsentService
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
