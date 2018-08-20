@@ -421,13 +421,10 @@ bool PasswordAutofillManager::GetPasswordAndRealmForUsername(
   }
 
   // Scan additional logins for a match.
-  for (autofill::PasswordFormFillData::LoginCollection::const_iterator iter =
-           fill_data.additional_logins.begin();
-       iter != fill_data.additional_logins.end(); ++iter) {
-    if (iter->first == current_username) {
-      *password_and_realm = iter->second;
-      return true;
-    }
+  auto iter = fill_data.additional_logins.find(current_username);
+  if (iter != fill_data.additional_logins.end()) {
+    *password_and_realm = iter->second;
+    return true;
   }
 
   return false;
