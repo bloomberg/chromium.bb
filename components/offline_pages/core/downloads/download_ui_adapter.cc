@@ -240,13 +240,8 @@ void DownloadUIAdapter::GetVisualsForItem(const ContentId& id,
 }
 
 void DownloadUIAdapter::GetShareInfoForItem(const ContentId& id,
-                                            ShareCallback callback) {
-  // TODO(853850): Publish and expose the content URI here instead of in
-  // DownloadUtils.java.
-  // TODO(xingliu): Provide OfflineItemShareInfo to |callback|.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), id,
-                                nullptr /* OfflineItemShareInfo */));
+                                            ShareCallback share_callback) {
+  delegate_->GetShareInfoForItem(id, std::move(share_callback));
 }
 
 void DownloadUIAdapter::OnPageGetForVisuals(const ContentId& id,

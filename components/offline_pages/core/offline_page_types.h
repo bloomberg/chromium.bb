@@ -81,6 +81,15 @@ enum class DeletePageResult {
   RESULT_COUNT,
 };
 
+// The result when trying to share offline page to other apps.
+enum class ShareResult {
+  // Successfully shared.
+  kSuccess,
+
+  // Failed due to no file access permission.
+  kFileAccessPermissionDenied,
+};
+
 typedef std::vector<int64_t> MultipleOfflineIdResult;
 typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;
 

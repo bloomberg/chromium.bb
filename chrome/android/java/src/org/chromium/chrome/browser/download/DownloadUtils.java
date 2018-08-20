@@ -25,6 +25,7 @@ import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -576,6 +577,15 @@ public class DownloadUtils {
         StrictMode.setThreadPolicy(oldPolicy);
 
         return uri;
+    }
+
+    @CalledByNative
+    private static String getUriStringForPath(String filePath) {
+        Uri uri = null;
+        File file = new File(filePath);
+        uri = getUriForItem(file);
+
+        return uri != null ? uri.toString() : new String();
     }
 
     /**

@@ -128,5 +128,8 @@ class DownloadBlockedOfflineContentProvider
     }
 
     @Override
-    public void getShareInfoForItem(ContentId id, ShareCallback callback) {}
+    public void getShareInfoForItem(ContentId id, ShareCallback callback) {
+        assert !LegacyHelpers.isLegacyDownload(id);
+        mProvider.getShareInfoForItem(id, callback);
+    }
 }

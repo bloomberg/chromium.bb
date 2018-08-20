@@ -4,6 +4,7 @@
 
 #include "chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/android/jni_string.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_infobar_delegate.h"
+#include "chrome/browser/offline_pages/android/downloads/offline_page_share_helper.h"
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
+#include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"
@@ -54,11 +57,29 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using ShareCallback =
+    offline_items_collection::OfflineContentProvider::ShareCallback;
 
 namespace offline_pages {
 namespace android {
 
 namespace {
+
+void OnShareInfoRetrieved(std::unique_ptr<OfflinePageShareHelper>,
+                          ShareCallback share_callback,
+                          ShareResult result,
+                          const ContentId& id,
+                          std::unique_ptr<OfflineItemShareInfo> info) {
+  // When |info| is null, the page URL will be used in sharing.
+  if (result != ShareResult::kFileAccessPermissionDenied)
+    std::move(share_callback).Run(id, std::move(info));
+
+  // TODO(jianli, xingliu): When the permission request was denied by the user
+  // and "Never ask again" was checked, we'd better show the permission update
+  // infobar to remind the user. Currently the infobar only works for
+  // ChromeActivities. We need to investigate how to make it work for other
+  // activities.
+}
 
 class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
  public:
@@ -72,6 +93,8 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
                 offline_items_collection::LaunchLocation location) override;
   bool MaybeSuppressNotification(const std::string& origin,
                                  const ClientId& id) override;
+  void GetShareInfoForItem(const ContentId& id,
+                           ShareCallback share_callback) override;
 
  private:
   // Not owned, cached service pointer.
@@ -110,6 +133,15 @@ bool DownloadUIAdapterDelegate::MaybeSuppressNotification(
   return Java_OfflinePageDownloadBridge_maybeSuppressNotification(
       env, ConvertUTF8ToJavaString(env, origin),
       ConvertUTF8ToJavaString(env, id.id));
+}
+
+void DownloadUIAdapterDelegate::GetShareInfoForItem(
+    const ContentId& id,
+    ShareCallback share_callback) {
+  auto share_helper = std::make_unique<OfflinePageShareHelper>(model_);
+  share_helper->GetShareInfo(
+      id, base::BindOnce(&OnShareInfoRetrieved, std::move(share_helper),
+                         std::move(share_callback)));
 }
 
 // TODO(dewittj): Move to Download UI Adapter.
