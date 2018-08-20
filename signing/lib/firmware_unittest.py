@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.signing.lib import firmware
 from chromite.signing.lib import keys
 from chromite.signing.lib import keys_unittest
@@ -91,3 +92,36 @@ class TestECSigner(cros_test_lib.RunCommandTestCase,
                           '--type', 'rwsig',
                           '--prikey', ks.keys['ec'].private,
                           'foo', 'bar'])
+
+
+class ShellballTest(cros_test_lib.RunCommandTestCase,
+                    cros_test_lib.TempDirTestCase):
+  """Verify that shellball is being called with correct arguments."""
+
+  def setUp(self):
+    """Setup simple Shellball instance for mock testing."""
+    self.sb1name = os.path.join(self.tempdir, 'fooball')
+    osutils.Touch(self.sb1name)
+    self.sb1 = firmware.Shellball(self.sb1name)
+
+  def testExtractCall(self):
+    """Test arguments for image extract."""
+    out_dir = 'bar'
+    expected_args = ['--sb_extract', out_dir]
+
+    self.sb1.Extract(out_dir)
+    self.assertCommandContains(expected_args)
+
+  def testRepackCall(self):
+    """Test arguments for image repack."""
+    from_dir = 'bar'
+    expected_args = ['--sb_repack', from_dir]
+
+    self.sb1.Repack(from_dir)
+    self.assertCommandContains(expected_args)
+
+  def testContextManager(self):
+    with self.sb1 as sb_dir:
+      self.assertExists(sb_dir)
+      self.assertCommandContains(['--sb_extract'])
+    self.assertCommandContains(['--sb_repack'])
