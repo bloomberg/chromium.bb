@@ -73,7 +73,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
                               const BackgroundFetchRegistration&)>;
   using NextRequestCallback =
       base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
-  using NumRequestsCallback = base::OnceCallback<void(size_t)>;
 
   BackgroundFetchDataManager(
       BrowserContext* browser_context,
