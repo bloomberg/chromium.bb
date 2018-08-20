@@ -1709,9 +1709,11 @@ static bool PrepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
       ToLayoutBox(root).IsGridItem() || root.IsTablePart())
     return false;
 
-  // Do not lay out objects managed by LayoutNG.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() &&
-      (root.IsLayoutBlock() && IsLayoutNGContainingBlock(ToLayoutBlock(&root))))
+  // Do not pre-layout objects that are fully managed by LayoutNG; it is not
+  // necessary and may lead to double layouts. We do need to pre-layout
+  // objects whose containing block is a legacy object so that it can
+  // properly compute its intrinsic size.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled() && IsManagedByLayoutNG(root))
     return false;
 
   RemoveFloatingObjectsForSubtreeRoot(root);
