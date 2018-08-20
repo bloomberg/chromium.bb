@@ -9,9 +9,11 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/invalidation/impl/json_unsafe_parser.h"
+#include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/http/http_status_code.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -82,11 +84,16 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
   void SetUp() override {
     PerUserTopicRegistrationManager::RegisterProfilePrefs(
         pref_service_.registry());
+    identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
+    identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
+    identity_provider_ =
+        std::make_unique<invalidation::ProfileIdentityProvider>(
+            identity_test_env_.identity_manager());
   }
 
   std::unique_ptr<PerUserTopicRegistrationManager> BuildRegistrationManager() {
     return std::make_unique<PerUserTopicRegistrationManager>(
-        "access_token", &pref_service_, url_loader_factory(),
+        identity_provider_.get(), &pref_service_, url_loader_factory(),
         base::BindRepeating(&syncer::JsonUnsafeParser::Parse));
   }
 
@@ -100,6 +107,9 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
   network::TestURLLoaderFactory url_loader_factory_;
   TestingPrefServiceSimple pref_service_;
+
+  identity::IdentityTestEnvironment identity_test_env_;
+  std::unique_ptr<invalidation::IdentityProvider> identity_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(PerUserTopicRegistrationManagerTest);
 };

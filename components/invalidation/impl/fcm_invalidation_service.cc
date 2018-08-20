@@ -11,35 +11,7 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
-
-const char kFCMOAuthScope[] =
-    "https://www.googleapis.com/auth/firebase.messaging";
-
-static const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
-    // Number of initial errors (in sequence) to ignore before applying
-    // exponential back-off rules.
-    0,
-
-    // Initial delay for exponential back-off in ms.
-    2000,
-
-    // Factor by which the waiting time will be multiplied.
-    2,
-
-    // Fuzzing percentage. ex: 10% will spread requests randomly
-    // between 90%-100% of the calculated time.
-    0.2,  // 20%
-
-    // Maximum amount of time we are willing to delay our request in ms.
-    1000 * 3600 * 4,  // 4 hours.
-
-    // Time to keep an entry from being discarded even when it
-    // has no significant state, -1 to never discard.
-    -1,
-
-    // Don't use initial delay unless the last request was an error.
-    false,
-};
+#include "google_apis/gaia/gaia_constants.h"
 
 namespace invalidation {
 
@@ -50,10 +22,9 @@ FCMInvalidationService::FCMInvalidationService(
     PrefService* pref_service,
     const syncer::ParseJSONCallback& parse_json,
     network::mojom::URLLoaderFactory* loader_factory)
-    : identity_provider_(std::move(identity_provider)),
-      request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
-      gcm_driver_(gcm_driver),
+    : gcm_driver_(gcm_driver),
       instance_id_driver_(instance_id_driver),
+      identity_provider_(std::move(identity_provider)),
       pref_service_(pref_service),
       parse_json_(parse_json),
       loader_factory_(loader_factory) {}
@@ -134,7 +105,6 @@ syncer::InvalidatorState FCMInvalidationService::GetInvalidatorState() const {
 }
 
 std::string FCMInvalidationService::GetInvalidatorClientId() const {
-  NOTREACHED();
   return std::string();
 }
 
@@ -150,64 +120,6 @@ void FCMInvalidationService::RequestDetailedStatus(
   }
 }
 
-void FCMInvalidationService::RequestAccessToken() {
-  // Only one active request at a time.
-  if (access_token_fetcher_ != nullptr)
-    return;
-  request_access_token_retry_timer_.Stop();
-  OAuth2TokenService::ScopeSet oauth2_scopes = {kFCMOAuthScope};
-  // Invalidate previous token, otherwise the identity provider will return the
-  // same token again.
-  identity_provider_->InvalidateAccessToken(oauth2_scopes, access_token_);
-  access_token_.clear();
-  access_token_fetcher_ = identity_provider_->FetchAccessToken(
-      "fcm_invalidation", oauth2_scopes,
-      base::BindOnce(&FCMInvalidationService::OnAccessTokenRequestCompleted,
-                     base::Unretained(this)));
-}
-
-void FCMInvalidationService::OnAccessTokenRequestCompleted(
-    GoogleServiceAuthError error,
-    std::string access_token) {
-  access_token_fetcher_.reset();
-  if (error.state() == GoogleServiceAuthError::NONE)
-    OnAccessTokenRequestSucceeded(access_token);
-  else
-    OnAccessTokenRequestFailed(error);
-}
-
-void FCMInvalidationService::OnAccessTokenRequestSucceeded(
-    std::string access_token) {
-  // Reset backoff time after successful response.
-  request_access_token_backoff_.Reset();
-  access_token_ = access_token;
-  if (!IsStarted() && IsReadyToStart()) {
-    StartInvalidator();
-  } else {
-    UpdateInvalidatorCredentials();
-  }
-}
-
-void FCMInvalidationService::OnAccessTokenRequestFailed(
-    GoogleServiceAuthError error) {
-  DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
-  switch (error.state()) {
-    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS: {
-      invalidator_registrar_.UpdateInvalidatorState(
-          syncer::INVALIDATION_CREDENTIALS_REJECTED);
-      break;
-    }
-    default: {
-      request_access_token_backoff_.InformOfRequest(false);
-      request_access_token_retry_timer_.Start(
-          FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
-          base::BindRepeating(&FCMInvalidationService::RequestAccessToken,
-                              base::Unretained(this)));
-      break;
-    }
-  }
-}
-
 void FCMInvalidationService::OnActiveAccountLogin() {
   if (!IsStarted() && IsReadyToStart())
     StartInvalidator();
@@ -216,20 +128,9 @@ void FCMInvalidationService::OnActiveAccountLogin() {
 void FCMInvalidationService::OnActiveAccountRefreshTokenUpdated() {
   if (!IsStarted() && IsReadyToStart())
     StartInvalidator();
-  else
-    UpdateInvalidatorCredentials();
-}
-
-void FCMInvalidationService::OnActiveAccountRefreshTokenRemoved() {
-  access_token_.clear();
-  if (IsStarted())
-    UpdateInvalidatorCredentials();
 }
 
 void FCMInvalidationService::OnActiveAccountLogout() {
-  access_token_fetcher_.reset();
-  request_access_token_retry_timer_.Stop();
-
   if (IsStarted()) {
     StopInvalidator();
   }
@@ -271,34 +172,16 @@ void FCMInvalidationService::StartInvalidator() {
   DCHECK(!invalidator_);
   DCHECK(IsReadyToStart());
 
-  // access token before sending message to server.
-  if (access_token_.empty()) {
-    // TODO(melandory): move logic for recieving the token directly to
-    // the PerUserTopicRegistrationmanager.
-    DVLOG(1) << "FCMInvalidationService: "
-             << "Deferring start until we have an access token.";
-    RequestAccessToken();
-    return;
-  }
-
   auto network = std::make_unique<syncer::FCMNetworkHandler>(
       gcm_driver_, instance_id_driver_);
   network->StartListening();
   invalidator_ = std::make_unique<syncer::FCMInvalidator>(
-      std::move(network), pref_service_, loader_factory_, parse_json_);
+      std::move(network), identity_provider_.get(), pref_service_,
+      loader_factory_, parse_json_);
 
   invalidator_->RegisterHandler(this);
-  UpdateInvalidatorCredentials();
   CHECK(invalidator_->UpdateRegisteredIds(
       this, invalidator_registrar_.GetAllRegisteredIds()));
-}
-
-void FCMInvalidationService::UpdateInvalidatorCredentials() {
-  std::string email = identity_provider_->GetActiveAccountId();
-
-  DCHECK(!email.empty()) << "Expected user to be signed in.";
-
-  invalidator_->UpdateCredentials(email, access_token_);
 }
 
 void FCMInvalidationService::StopInvalidator() {

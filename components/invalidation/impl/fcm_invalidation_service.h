@@ -63,16 +63,8 @@ class FCMInvalidationService : public InvalidationService,
       base::RepeatingCallback<void(const base::DictionaryValue&)> caller)
       const override;
 
-  void RequestAccessToken();
-
-  void OnAccessTokenRequestCompleted(GoogleServiceAuthError error,
-                                     std::string access_token);
-  void OnAccessTokenRequestSucceeded(std::string access_token);
-  void OnAccessTokenRequestFailed(GoogleServiceAuthError error);
-
   // IdentityProvider::Observer implementation.
   void OnActiveAccountRefreshTokenUpdated() override;
-  void OnActiveAccountRefreshTokenRemoved() override;
   void OnActiveAccountLogin() override;
   void OnActiveAccountLogout() override;
 
@@ -94,21 +86,9 @@ class FCMInvalidationService : public InvalidationService,
 
   void StartInvalidator();
   void StopInvalidator();
-  void UpdateInvalidatorCredentials();
-
-  std::unique_ptr<IdentityProvider> identity_provider_;
-  // FCMInvalidationService needs to hold reference to access_token_fetcher_
-  // for the duration of request in order to receive callbacks.
-  std::unique_ptr<ActiveAccountAccessTokenFetcher> access_token_fetcher_;
-  base::OneShotTimer request_access_token_retry_timer_;
-  net::BackoffEntry request_access_token_backoff_;
 
   syncer::InvalidatorRegistrar invalidator_registrar_;
   std::unique_ptr<syncer::Invalidator> invalidator_;
-
-  // FCMInvalidationService needs to remember access token in order to
-  // invalidate it with IdentityProvider.
-  std::string access_token_;
 
   // The invalidation logger object we use to record state changes
   // and invalidations.
@@ -117,6 +97,7 @@ class FCMInvalidationService : public InvalidationService,
   gcm::GCMDriver* gcm_driver_;
   instance_id::InstanceIDDriver* instance_id_driver_;
 
+  std::unique_ptr<IdentityProvider> identity_provider_;
   PrefService* pref_service_;
   syncer::ParseJSONCallback parse_json_;
   network::mojom::URLLoaderFactory* loader_factory_;

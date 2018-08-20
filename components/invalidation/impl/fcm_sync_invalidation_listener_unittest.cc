@@ -183,7 +183,7 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
  public:
   MockRegistrationManager()
       : PerUserTopicRegistrationManager(
-            "fake_access_token",
+            nullptr /* identity_provider */,
             nullptr /* pref_service */,
             nullptr /* loader_factory */,
             base::BindRepeating(&syncer::JsonUnsafeParser::Parse)) {}
@@ -308,6 +308,7 @@ class FCMSyncInvalidationListenerTest : public testing::Test {
 
   void EnableNotifications() {
     fcm_sync_network_channel_->NotifyChannelStateChange(INVALIDATIONS_ENABLED);
+    listener_.InformTokenRecieved(fake_invalidation_client_, "token");
   }
 
   void DisableNotifications(InvalidatorState state) {
