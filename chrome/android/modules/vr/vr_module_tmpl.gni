@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//base/android/linker/config.gni")
 import("//build/config/android/rules.gni")
 import("//device/vr/buildflags/buildflags.gni")
 
@@ -30,5 +31,6 @@ template("vr_module_tmpl") {
       "//chrome/browser/android/vr:java",
     ]
     proguard_enabled = !is_java_debug
+    uncompress_shared_libraries = chromium_linker_supported
   }
 }

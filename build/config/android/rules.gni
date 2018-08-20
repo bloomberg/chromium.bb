@@ -1897,6 +1897,9 @@ if (enable_java_templates) {
   #   shared_resources_whitelist_target: Optional name of a target specifying
   #     an input R.txt file that lists the resources that can be exported
   #     by the APK when shared_resources or app_as_shared_lib is defined.
+  #   uncompress_shared_libraries: True if shared libraries should be stored
+  #     uncompressed in the APK. Must be unset or true if load_library_from_apk
+  #     is set to true.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
 
@@ -2013,6 +2016,15 @@ if (enable_java_templates) {
                _requires_sdk_api_level_23,
            "load_library_from_apk requires use_chromium_linker " +
                "or requires_sdk_api_level_23")
+
+    # Make sure that uncompress_shared_libraries is set to true if
+    # load_library_from_apk is true.
+    if (defined(invoker.uncompress_shared_libraries)) {
+      _uncompress_shared_libraries = invoker.uncompress_shared_libraries
+      assert(!_load_library_from_apk || _uncompress_shared_libraries)
+    } else {
+      _uncompress_shared_libraries = _load_library_from_apk
+    }
 
     # The dependency that makes the chromium linker, if any is needed.
     _native_libs_deps = []
@@ -2299,7 +2311,6 @@ if (enable_java_templates) {
                                "loadable_modules",
                                "no_build_hooks",
                                "secondary_abi_loadable_modules",
-                               "uncompress_shared_libraries",
                              ])
       if (_is_bundle_module) {
         type = "android_app_bundle_module"
@@ -2352,6 +2363,8 @@ if (enable_java_templates) {
       }
 
       extra_shared_libraries = _extra_native_libs
+
+      uncompress_shared_libraries = _uncompress_shared_libraries
     }
 
     # TODO(cjhopman): This is only ever needed to calculate the list of tests to
@@ -2530,7 +2543,6 @@ if (enable_java_templates) {
                                [
                                  "public_deps",
                                  "shared_resources",
-                                 "uncompress_shared_libraries",
                                  "write_asset_list",
                                ])
         packaged_resources_path = _packaged_resources_path
@@ -2590,6 +2602,8 @@ if (enable_java_templates) {
                                  "native_lib_placeholders",
                                  "secondary_native_lib_placeholders",
                                ])
+
+        uncompress_shared_libraries = _uncompress_shared_libraries
       }
     } else {
       # placeholder native libraries never go into bundles, since they are

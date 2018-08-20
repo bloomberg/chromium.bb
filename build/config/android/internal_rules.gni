@@ -2332,9 +2332,6 @@ if (enable_java_templates) {
                                  "secondary_abi_loadable_modules",
                                  "uncompress_shared_libraries",
                                ])
-        if (!defined(uncompress_shared_libraries)) {
-          uncompress_shared_libraries = _load_library_from_apk
-        }
         _dex_target = "//build/android/incremental_install:bootstrap_java__dex"
         deps = _incremental_deps + [
                  ":${_incremental_compile_resources_target_name}",
