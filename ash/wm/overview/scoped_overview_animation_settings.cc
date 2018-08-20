@@ -33,6 +33,8 @@ constexpr int kFadeInMs = 167;
 // The time duration for widgets to fade out.
 constexpr int kFadeOutMs = 100;
 
+constexpr int kHomeLauncherTransitionMs = 250;
+
 base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
@@ -49,6 +51,9 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
       return base::TimeDelta::FromMilliseconds(kCloseScaleMs);
     case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
       return base::TimeDelta::FromMilliseconds(kCloseFadeOutMs);
+    case OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER:
+    case OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER:
+      return base::TimeDelta::FromMilliseconds(kHomeLauncherTransitionMs);
   }
   NOTREACHED();
   return base::TimeDelta();
@@ -110,10 +115,12 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
       return nullptr;
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
     case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
+    case OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER:
       return g_reporter_enter.Pointer();
     case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO:
+    case OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER:
       return g_reporter_exit.Pointer();
     case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
     case OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM:
@@ -164,6 +171,12 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+      break;
+    case OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER:
+    case OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER:
+      animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+      animation_settings_->SetPreemptionStrategy(
+          ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;
   }
   animation_settings_->SetTransitionDuration(

@@ -27,15 +27,21 @@ bool CanCoverAvailableWorkspace(aura::Window* window);
 
 bool IsOverviewSwipeToCloseEnabled();
 
-// Fades |widget| to opacity one with the enter overview settings.
-void FadeInWidgetOnEnter(views::Widget* widget);
+// Fades |widget| to opacity one with the enter overview settings. Additionally
+// place |widget| closer to the top of screen and slide it down if |slide| is
+// true.
+void FadeOutWidgetAndMaybeSlideOnEnter(views::Widget* widget,
+                                       OverviewAnimationType animation_type,
+                                       bool slide);
 
 // Fades |widget| to opacity zero with animation settings depending on
 // |animation_type|. Used by several classes which need to be destroyed on
 // exiting overview, but have some widgets which need to continue animating.
-// |widget| is destroyed after finishing animation.
-void FadeOutWidgetOnExit(std::unique_ptr<views::Widget> widget,
-                         OverviewAnimationType animation_type);
+// |widget| is destroyed after finishing animation. Additionally slide |widget|
+// towards the top of screen if |slide| is true.
+void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
+                                      OverviewAnimationType animation_type,
+                                      bool slide);
 
 // Creates and returns a background translucent widget parented in
 // |root_window|'s default container and having |background_color|.

@@ -353,8 +353,9 @@ void WindowGrid::Shutdown() {
   if (shield_widget_) {
     // Fade out the shield widget. This animation continues past the lifetime
     // of |this|.
-    FadeOutWidgetOnExit(std::move(shield_widget_),
-                        OVERVIEW_ANIMATION_RESTORE_WINDOW);
+    FadeOutWidgetAndMaybeSlideOnExit(std::move(shield_widget_),
+                                     OVERVIEW_ANIMATION_RESTORE_WINDOW,
+                                     /*slide=*/false);
   }
 }
 
@@ -1040,6 +1041,11 @@ void WindowGrid::UpdateNudge(WindowSelectorItem* item, double value) {
 
 void WindowGrid::EndNudge() {
   nudge_data_.clear();
+}
+
+void WindowGrid::SlideWindowsIn() {
+  for (const auto& window_item : window_list_)
+    window_item->SlideWindowIn();
 }
 
 void WindowGrid::InitShieldWidget() {

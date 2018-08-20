@@ -494,7 +494,8 @@ bool WindowSelectorItem::Contains(const aura::Window* target) const {
 void WindowSelectorItem::RestoreWindow(bool reset_transform) {
   caption_container_view_->listener_button()->ResetListener();
   close_button_->ResetListener();
-  transform_window_.RestoreWindow(reset_transform);
+  transform_window_.RestoreWindow(reset_transform,
+                                  window_selector_->use_slide_animation());
 }
 
 void WindowSelectorItem::EnsureVisible() {
@@ -520,14 +521,32 @@ void WindowSelectorItem::Shutdown() {
   }
   // Fade out the item widget. This animation continues past the lifetime
   // of |this|.
-  FadeOutWidgetOnExit(std::move(item_widget_),
-                      OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT);
+  const bool slide = window_selector_->use_slide_animation();
+  FadeOutWidgetAndMaybeSlideOnExit(
+      std::move(item_widget_),
+      slide ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
+            : OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT,
+      slide);
 }
 
 void WindowSelectorItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
   RestackItemWidget();
   UpdateHeaderLayout(HeaderFadeInMode::kEnter, OVERVIEW_ANIMATION_NONE);
+}
+
+void WindowSelectorItem::SlideWindowIn() {
+  // |transform_window_|'s |minimized_widget| is non null because this only gets
+  // called if we see the home launcher on enter (all windows are minimized).
+  DCHECK(item_widget_);
+  DCHECK(transform_window_.minimized_widget());
+
+  FadeOutWidgetAndMaybeSlideOnEnter(item_widget_.get(),
+                                    OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
+                                    /*slide=*/true);
+  FadeOutWidgetAndMaybeSlideOnEnter(transform_window_.minimized_widget(),
+                                    OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
+                                    /*slide=*/true);
 }
 
 float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
@@ -1040,7 +1059,9 @@ void WindowSelectorItem::UpdateHeaderLayout(
 
   if (!label_view_->visible()) {
     label_view_->SetVisible(true);
-    FadeInWidgetOnEnter(item_widget_.get());
+    FadeOutWidgetAndMaybeSlideOnEnter(
+        item_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+        false);
   }
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();

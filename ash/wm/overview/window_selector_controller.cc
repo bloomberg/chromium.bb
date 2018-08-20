@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -24,6 +25,7 @@
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/wm/core/window_util.h"
@@ -76,6 +78,28 @@ bool ShouldExcludeWindowFromOverview(const aura::Window* window) {
 bool IsBlurAllowed() {
   return !g_disable_wallpaper_blur_for_tests &&
          Shell::Get()->wallpaper_controller()->IsBlurAllowed();
+}
+
+// Returns whether overview mode items should be slid in or out from the top of
+// the screen.
+bool ShouldSlideInOutOverview(const std::vector<aura::Window*>& windows) {
+  // No sliding if home launcher is not available.
+  if (!Shell::Get()
+           ->app_list_controller()
+           ->IsHomeLauncherEnabledInTabletMode()) {
+    return false;
+  }
+
+  if (windows.empty())
+    return false;
+
+  // Only slide in if all windows are minimized.
+  for (const aura::Window* window : windows) {
+    if (!wm::GetWindowState(window)->IsMinimized())
+      return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -233,7 +257,11 @@ bool WindowSelectorController::CanSelect() {
          !session_controller->IsRunningInAppMode();
 }
 
-bool WindowSelectorController::ToggleOverview() {
+bool WindowSelectorController::ToggleOverview(bool toggled_from_home_launcher) {
+  // |toggled_from_home_launcher| should only be true if we are exiting
+  // overview.
+  DCHECK(!(toggled_from_home_launcher && !IsSelecting()));
+
   auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
 
   // Hidden windows will be removed by ShouldExcludeWindowFromOverview so we
@@ -247,10 +275,27 @@ bool WindowSelectorController::ToggleOverview() {
                        ShouldExcludeWindowFromOverview);
   windows.resize(end - windows.begin());
 
+  // We may want to slide the overview grid in or out in some cases.
+  bool should_slide_overview =
+      toggled_from_home_launcher || ShouldSlideInOutOverview(windows);
+
   if (IsSelecting()) {
     // Do not allow ending overview if we're in single split mode.
     if (windows.empty() && Shell::Get()->IsSplitViewModeActive())
       return true;
+
+    if (toggled_from_home_launcher) {
+      // Minimize the windows without animations. Minimized widgets will get
+      // created in their place, and those widgets will be slid out of
+      // overview when the home launcher button is pressed.
+      for (aura::Window* window : windows) {
+        window->SetProperty(aura::client::kAnimationsDisabledKey, true);
+        wm::GetWindowState(window)->Minimize();
+        window->ClearProperty(aura::client::kAnimationsDisabledKey);
+      }
+    }
+
+    window_selector_->set_use_slide_animation(should_slide_overview);
     OnSelectionEnded();
   } else {
     // Don't start overview if window selection is not allowed.
@@ -258,6 +303,7 @@ bool WindowSelectorController::ToggleOverview() {
       return false;
 
     window_selector_.reset(new WindowSelector(this));
+    window_selector_->set_use_slide_animation(should_slide_overview);
     Shell::Get()->NotifyOverviewModeStarting();
     window_selector_->Init(windows, hide_windows);
     if (IsBlurAllowed())

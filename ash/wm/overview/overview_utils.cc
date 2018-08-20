@@ -25,6 +25,10 @@ namespace ash {
 
 namespace {
 
+// The transform applied to a window selector item when animating to or from the
+// home launcher.
+const gfx::Transform kShiftTransform(1, 0, 0, 1, 0, -100);
+
 // BackgroundWith1PxBorder renders a solid background color, with a one pixel
 // border with rounded corners. This accounts for the scaling of the canvas, so
 // that the border is 1 pixel thick regardless of display scaling.
@@ -102,19 +106,35 @@ bool IsOverviewSwipeToCloseEnabled() {
   return base::FeatureList::IsEnabled(features::kOverviewSwipeToClose);
 }
 
-void FadeInWidgetOnEnter(views::Widget* widget) {
+void FadeOutWidgetAndMaybeSlideOnEnter(views::Widget* widget,
+                                       OverviewAnimationType animation_type,
+                                       bool slide) {
   aura::Window* window = widget->GetNativeWindow();
-  if (window->layer()->GetTargetOpacity() == 1.f)
+  if (window->layer()->GetTargetOpacity() == 1.f && !slide)
     return;
 
+  gfx::Transform original_transform = window->transform();
+  if (slide) {
+    // Translate the window up before sliding down to |original_transform|.
+    gfx::Transform new_transform = original_transform;
+    new_transform.ConcatTransform(kShiftTransform);
+    if (window->layer()->GetTargetOpacity() == 1.f &&
+        window->layer()->GetTargetTransform() == new_transform) {
+      return;
+    }
+    window->SetTransform(new_transform);
+  }
   window->layer()->SetOpacity(0.0f);
   ScopedOverviewAnimationSettings scoped_overview_animation_settings(
-      OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN, window);
+      animation_type, window);
   window->layer()->SetOpacity(1.0f);
+  if (slide)
+    window->SetTransform(original_transform);
 }
 
-void FadeOutWidgetOnExit(std::unique_ptr<views::Widget> widget,
-                         OverviewAnimationType animation_type) {
+void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
+                                      OverviewAnimationType animation_type,
+                                      bool slide) {
   // The window selector controller may be nullptr on shutdown.
   WindowSelectorController* controller =
       Shell::Get()->window_selector_controller();
@@ -129,10 +149,9 @@ void FadeOutWidgetOnExit(std::unique_ptr<views::Widget> widget,
   ScopedOverviewAnimationSettings animation_settings(animation_type,
                                                      widget->GetNativeWindow());
   // CleanupAnimationObserver will delete itself (and the widget) when the
-  // opacity animation is complete.
-  // Ownership over the observer is passed to the window selector controller
-  // which has longer lifetime so that animations can continue even after the
-  // overview mode is shut down.
+  // opacity animation is complete. Ownership over the observer is passed to the
+  // window selector controller which has longer lifetime so that animations can
+  // continue even after the overview mode is shut down.
   views::Widget* widget_ptr = widget.get();
   std::unique_ptr<CleanupAnimationObserver> observer(
       new CleanupAnimationObserver(std::move(widget)));
@@ -140,6 +159,11 @@ void FadeOutWidgetOnExit(std::unique_ptr<views::Widget> widget,
 
   controller->AddDelayedAnimationObserver(std::move(observer));
   widget_ptr->SetOpacity(0.f);
+  if (slide) {
+    gfx::Transform new_transform = widget_ptr->GetNativeWindow()->transform();
+    new_transform.ConcatTransform(kShiftTransform);
+    widget_ptr->GetNativeWindow()->SetTransform(new_transform);
+  }
 }
 
 std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,

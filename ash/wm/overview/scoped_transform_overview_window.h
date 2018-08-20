@@ -117,7 +117,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // If |reset_transform| equals false, the window's transform will not be reset
   // to identity transform when exiting the overview mode. See
   // WindowSelectorItem::RestoreWindow() for details why we need this.
-  void RestoreWindow(bool reset_transform);
+  void RestoreWindow(bool reset_transform, bool use_slide_animation);
 
   // Informs the ScopedTransformOverviewWindow that the window being watched was
   // destroyed. This resets the internal window pointer.

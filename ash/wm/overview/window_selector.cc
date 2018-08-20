@@ -353,6 +353,10 @@ void WindowSelector::Init(const WindowList& windows,
           GetDraggedWindow(window_grid->root_window(), mru_window_list);
       if (dragged_window) {
         window_grid->PositionWindows(/*animate=*/false);
+      } else if (use_slide_animation_) {
+        window_grid->PositionWindows(/*animate=*/false);
+        window_grid->SlideWindowsIn();
+        use_slide_animation_ = false;
       } else {
         window_grid->CalculateWindowListAnimationStates(
             /*selected_item=*/nullptr, OverviewTransition::kEnter);
@@ -417,7 +421,9 @@ void WindowSelector::Shutdown() {
   }
 
   // Setting focus after restoring windows' state avoids unnecessary animations.
-  ResetFocusRestoreWindow(true);
+  // No need to restore if we are sliding to the home launcher screen, as all
+  // windows will be minimized.
+  ResetFocusRestoreWindow(!use_slide_animation_);
   RemoveAllObservers();
 
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_)

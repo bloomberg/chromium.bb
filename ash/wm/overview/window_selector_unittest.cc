@@ -216,7 +216,9 @@ class WindowSelectorTest : public AshTestBase {
     return window_selector_controller()->window_selector_.get();
   }
 
-  void ToggleOverview() { window_selector_controller()->ToggleOverview(); }
+  void ToggleOverview(bool toggled_from_home_launcher = false) {
+    window_selector_controller()->ToggleOverview(toggled_from_home_launcher);
+  }
 
   aura::Window* GetOverviewWindowForMinimizedState(int index,
                                                    aura::Window* window) {
@@ -3030,6 +3032,89 @@ TEST_F(WindowSelectorTest, PositionWindows) {
   EXPECT_EQ(bounds1, item1->target_bounds());
   EXPECT_EQ(bounds2, item2->target_bounds());
   EXPECT_NE(bounds3, item3->target_bounds());
+}
+
+namespace {
+
+// Test class that allows us to check what whether the last overview enter or
+// exit was using a slide animation. This is needed because the cached slide
+// animation variable may be reset or the WindowSelector object may not be
+// available after a toggle has completed.
+class TestOverviewAnimationTypeObserver : public ShellObserver {
+ public:
+  TestOverviewAnimationTypeObserver() { Shell::Get()->AddShellObserver(this); }
+  ~TestOverviewAnimationTypeObserver() override {
+    Shell::Get()->RemoveShellObserver(this);
+  }
+
+  // ShellObserver:
+  void OnOverviewModeStarting() override { UpdateLastAnimationWasSlide(); }
+  void OnOverviewModeEnding() override { UpdateLastAnimationWasSlide(); }
+
+  bool last_animation_was_slide() const { return last_animation_was_slide_; }
+
+ private:
+  void UpdateLastAnimationWasSlide() {
+    WindowSelector* selector =
+        Shell::Get()->window_selector_controller()->window_selector();
+    DCHECK(selector);
+    last_animation_was_slide_ = selector->use_slide_animation();
+  }
+
+  bool last_animation_was_slide_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestOverviewAnimationTypeObserver);
+};
+
+}  // namespace
+
+// Tests the slide animation for overview is never used in clamshell.
+TEST_F(WindowSelectorTest, OverviewEnterExitAnimation) {
+  TestOverviewAnimationTypeObserver observer;
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+
+  ToggleOverview();
+  EXPECT_FALSE(observer.last_animation_was_slide());
+
+  ToggleOverview();
+  EXPECT_FALSE(observer.last_animation_was_slide());
+
+  // Even with all window minimized, there should not be a slide animation.
+  ASSERT_FALSE(IsSelecting());
+  wm::GetWindowState(window1.get())->Minimize();
+  ToggleOverview();
+  EXPECT_FALSE(observer.last_animation_was_slide());
+}
+
+// Tests the slide animation for overview is used in tablet if all windows
+// are minimized, and that if overview is exited from the home launcher all
+// windows are minimized.
+TEST_F(WindowSelectorTest, OverviewEnterExitAnimationTablet) {
+  TestOverviewAnimationTypeObserver observer;
+
+  // Ensure calls to EnableTabletModeWindowManager complete.
+  base::RunLoop().RunUntilIdle();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  base::RunLoop().RunUntilIdle();
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+
+  ToggleOverview();
+  EXPECT_FALSE(observer.last_animation_was_slide());
+
+  // Exit to home launcher. Slide animation should be used, and all windows
+  // should be minimized.
+  ToggleOverview(/*toggled_from_home_launcher=*/true);
+  EXPECT_TRUE(observer.last_animation_was_slide());
+  ASSERT_FALSE(IsSelecting());
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
+
+  // All windows are minimized, so we should use the slide animation.
+  ToggleOverview();
+  EXPECT_TRUE(observer.last_animation_was_slide());
 }
 
 class SplitViewWindowSelectorTest : public WindowSelectorTest {
