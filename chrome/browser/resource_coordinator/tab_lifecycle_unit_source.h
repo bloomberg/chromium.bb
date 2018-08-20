@@ -38,6 +38,8 @@ class TabLifecycleUnitSource : public BrowserListObserver,
                                public PageSignalObserver,
                                public TabStripModelObserver {
  public:
+  class TabLifecycleUnit;
+
   explicit TabLifecycleUnitSource(
       InterventionPolicyDatabase* intervention_policy_database,
       UsageClock* usage_clock);
@@ -91,7 +93,6 @@ class TabLifecycleUnitSource : public BrowserListObserver,
                            ProactiveFastShutdownWithUnloadHandler);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            ProactiveFastShutdownWithBeforeunloadHandler);
-  class TabLifecycleUnit;
 
   // Returns the TabLifecycleUnit instance associated with |web_contents|, or
   // nullptr if |web_contents| isn't a tab.

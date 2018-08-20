@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/resource_coordinator/discard_reason.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
@@ -34,9 +33,9 @@
 
 namespace {
 
-resource_coordinator::DiscardReason GetDiscardReason(bool urgent) {
-  return urgent ? resource_coordinator::DiscardReason::kUrgent
-                : resource_coordinator::DiscardReason::kProactive;
+mojom::LifecycleUnitDiscardReason GetDiscardReason(bool urgent) {
+  return urgent ? mojom::LifecycleUnitDiscardReason::URGENT
+                : mojom::LifecycleUnitDiscardReason::PROACTIVE;
 }
 
 mojom::LifecycleUnitVisibility GetLifecycleUnitVisibility(
@@ -127,9 +126,12 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       info->cannot_freeze_reasons = freeze_details.GetFailureReasonStrings();
       resource_coordinator::DecisionDetails discard_details;
       info->can_discard = lifecycle_unit->CanDiscard(
-          resource_coordinator::DiscardReason::kProactive, &discard_details);
+          mojom::LifecycleUnitDiscardReason::PROACTIVE, &discard_details);
       info->cannot_discard_reasons = discard_details.GetFailureReasonStrings();
-      info->discard_count = tab_lifecycle_unit_external->GetDiscardCount();
+      info->discard_count = lifecycle_unit->GetDiscardCount();
+      // This is only valid if the state is PENDING_DISCARD or DISCARD, but the
+      // javascript code takes care of that.
+      info->discard_reason = lifecycle_unit->GetDiscardReason();
       info->utility_rank = rank++;
       const base::TimeTicks last_focused_time =
           lifecycle_unit->GetLastFocusedTime();

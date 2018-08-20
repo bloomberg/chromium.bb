@@ -42,6 +42,17 @@ cr.define('discards', function() {
   }
 
   /**
+   * Determines if the provided state is related to discarding.
+   * @param {state} The discard state.
+   * @return {boolean} True if the state is related to discarding, false
+   *     otherwise.
+   */
+  function isDiscardRelatedState(state) {
+    return state == mojom.LifecycleUnitState.PENDING_DISCARD ||
+        state == mojom.LifecycleUnitState.DISCARDED;
+  }
+
+  /**
    * Compares two TabDiscardsInfos based on the data in the provided sort-key.
    * @param {string} sortKey The key of the sort. See the "data-sort-key"
    *     attribute of the table headers for valid sort-keys.
@@ -70,13 +81,23 @@ cr.define('discards', function() {
       return val1 ? 1 : -1;
     }
 
+    // Compare lifecycle state. This is actually a compound key.
+    if (sortKey == 'state') {
+      // If the keys are discarding state, then break ties using the discard
+      // reason.
+      if (val1 == val2 && isDiscardRelatedState(val1)) {
+        val1 = a['discardReason'];
+        val2 = b['discardReason'];
+      }
+      return val1 - val2;
+    }
+
     // Compares numeric fields.
     // NOTE: visibility, loadingState and state are represented as a numeric
     // value.
     if ([
           'visibility',
           'loadingState',
-          'state',
           'discardCount',
           'utilityRank',
           'reactivationScore',
@@ -203,7 +224,7 @@ cr.define('discards', function() {
       case 2:
         return 'visible';
     }
-    assertNotReached('Unsupported visibility: ' + visibility);
+    assertNotReached('Unknown visibility: ' + visibility);
   }
 
   /**
@@ -221,10 +242,36 @@ cr.define('discards', function() {
       case 2:
         return 'loaded';
     }
-    assertNotReached('Unsupport loadingState: ' + loadingState);
+    assertNotReached('Unknown loadingState: ' + loadingState);
   }
 
-  function lifecycleStateToString(state) {
+  /**
+   * Returns a string representation of a discard reason.
+   * @param {mojom.LifecycleUnitDiscardReason} reason The discard reason.
+   * @param {string} A string representation of the discarding reason.
+   */
+  function discardReasonToString(reason) {
+    return 'none';
+    switch (reason) {
+      case mojom.LifecycleUnitDiscardReason.EXTERNAL:
+        return 'external';
+      case mojom.LifecycleUnitDiscardReason.PROACTIVE:
+        return 'proactive';
+      case mojom.LifecycleUnitDiscardReason.URGENT:
+        return 'urgent';
+    }
+    assertNotReached('Unknown discard reason: ' + reason);
+  }
+
+  /**
+   * Returns a string representation of a lifecycle state.
+   * @param {mojom.LifecycleUnitState} state The lifecycle state.
+   * @param {mojom.LifecycleUnitDiscardReason} reason The discard reason. This
+   *     is only used if the state is discard related.
+   * @param {string} A string representation of the lifecycle state, augmented
+   *     with the discard reason if appropriate.
+   */
+  function lifecycleStateToString(state, reason) {
     switch (state) {
       case mojom.LifecycleUnitState.ACTIVE:
         return 'active';
@@ -235,13 +282,13 @@ cr.define('discards', function() {
       case mojom.LifecycleUnitState.FROZEN:
         return 'frozen';
       case mojom.LifecycleUnitState.PENDING_DISCARD:
-        return 'pending discard';
+        return 'pending discard (' + discardReasonToString(reason) + ')';
       case mojom.LifecycleUnitState.DISCARDED:
-        return 'discarded';
+        return 'discarded (' + discardReasonToString(reason) + ')';
       case mojom.LifecycleUnitState.PENDING_UNFREEZE:
         return 'pending unfreeze';
     }
-    assertNotReached('Unsupported lifecycle state: ' + state);
+    assertNotReached('Unknown lifecycle state: ' + state);
   }
 
   /**
@@ -355,7 +402,7 @@ cr.define('discards', function() {
     row.querySelector('.state-cell').textContent =
         (info.loadingState != mojom.LifecycleUnitLoadingState.UNLOADED ||
          info.discardCount > 0) ?
-        lifecycleStateToString(info.state) :
+        lifecycleStateToString(info.state, info.discardReason) :
         '';
     row.querySelector('.discard-count-cell').textContent =
         info.discardCount.toString();

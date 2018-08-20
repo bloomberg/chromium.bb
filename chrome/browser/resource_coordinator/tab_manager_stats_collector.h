@@ -16,7 +16,6 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/decision_details.h"
-#include "chrome/browser/resource_coordinator/discard_reason.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
@@ -209,7 +208,7 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
   // the provided DecisionDetails and destination lifecycle state.
   static void RecordDecisionDetails(LifecycleUnit* lifecycle_unit,
                                     const DecisionDetails& decision_details,
-                                    ::mojom::LifecycleUnitState new_state);
+                                    LifecycleUnitState new_state);
 
   static const char
       kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration[];

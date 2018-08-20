@@ -486,12 +486,13 @@ void TabManagerStatsCollector::PerformPeriodicSample() {
     DecisionDetails freeze_decision;
     lifecycle_unit->CanFreeze(&freeze_decision);
     RecordDecisionDetails(lifecycle_unit, freeze_decision,
-                          ::mojom::LifecycleUnitState::FROZEN);
+                          LifecycleUnitState::FROZEN);
 
     DecisionDetails discard_decision;
-    lifecycle_unit->CanDiscard(DiscardReason::kProactive, &discard_decision);
+    lifecycle_unit->CanDiscard(LifecycleUnitDiscardReason::PROACTIVE,
+                               &discard_decision);
     RecordDecisionDetails(lifecycle_unit, discard_decision,
-                          ::mojom::LifecycleUnitState::DISCARDED);
+                          LifecycleUnitState::DISCARDED);
   }
 
   // Determine when the next sample should run based on when this cycle
@@ -518,7 +519,7 @@ void TabManagerStatsCollector::PerformPeriodicSample() {
 void TabManagerStatsCollector::RecordDecisionDetails(
     LifecycleUnit* lifecycle_unit,
     const DecisionDetails& decision_details,
-    ::mojom::LifecycleUnitState target_state) {
+    LifecycleUnitState target_state) {
   ukm::SourceId ukm_source_id = lifecycle_unit->GetUkmSourceId();
   if (ukm_source_id == ukm::kInvalidSourceId)
     return;

@@ -40,11 +40,11 @@ class TestLifecycleUnit : public LifecycleUnitBase {
   int GetEstimatedMemoryFreedOnDiscardKB() const override;
   bool CanPurge() const override;
   bool CanFreeze(DecisionDetails* decision_details) const override;
-  bool CanDiscard(DiscardReason reason,
+  bool CanDiscard(LifecycleUnitDiscardReason reason,
                   DecisionDetails* decision_details) const override;
   bool Freeze() override;
   bool Unfreeze() override;
-  bool Discard(DiscardReason discard_reason) override;
+  bool Discard(LifecycleUnitDiscardReason discard_reason) override;
 
  private:
   base::TimeTicks last_focused_time_;
@@ -56,15 +56,15 @@ class TestLifecycleUnit : public LifecycleUnitBase {
 
 // Helper funtions for testing CanDiscard policy.
 void ExpectCanDiscardTrue(const LifecycleUnit* lifecycle_unit,
-                          DiscardReason discard_reason);
+                          LifecycleUnitDiscardReason discard_reason);
 void ExpectCanDiscardTrueAllReasons(const LifecycleUnit* lifecycle_unit);
 void ExpectCanDiscardFalse(const LifecycleUnit* lifecycle_unit,
                            DecisionFailureReason failure_reason,
-                           DiscardReason discard_reason);
+                           LifecycleUnitDiscardReason discard_reason);
 void ExpectCanDiscardFalseAllReasons(const LifecycleUnit* lifecycle_unit,
                                      DecisionFailureReason failure_reason);
 void ExpectCanDiscardFalseTrivial(const LifecycleUnit* lifecycle_unit,
-                                  DiscardReason discard_reason);
+                                  LifecycleUnitDiscardReason discard_reason);
 void ExpectCanDiscardFalseTrivialAllReasons(const LifecycleUnit* lu);
 
 }  // namespace resource_coordinator

@@ -290,8 +290,8 @@ LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
   return sorted_lifecycle_units;
 }
 
-void TabManager::DiscardTab(DiscardReason reason) {
-  if (reason == DiscardReason::kUrgent)
+void TabManager::DiscardTab(LifecycleUnitDiscardReason reason) {
+  if (reason == LifecycleUnitDiscardReason::URGENT)
     stats_collector_->RecordWillDiscardUrgently(GetNumAliveTabs());
 
 #if defined(OS_CHROMEOS)
@@ -312,10 +312,10 @@ WebContents* TabManager::DiscardTabByExtension(content::WebContents* contents) {
     return nullptr;
   }
 
-  return DiscardTabImpl(DiscardReason::kExternal);
+  return DiscardTabImpl(LifecycleUnitDiscardReason::EXTERNAL);
 }
 
-void TabManager::LogMemoryAndDiscardTab(DiscardReason reason) {
+void TabManager::LogMemoryAndDiscardTab(LifecycleUnitDiscardReason reason) {
   // Discard immediately without waiting for LogMemory() (https://crbug/850545).
   // Consider removing LogMemory() at all if nobody cares about the log.
   LogMemory("Tab Discards Memory details");
@@ -390,7 +390,7 @@ bool TabManager::IsTabRestoredInForeground(WebContents* web_contents) {
 // TabManager, private:
 
 // static
-void TabManager::PurgeMemoryAndDiscardTab(DiscardReason reason) {
+void TabManager::PurgeMemoryAndDiscardTab(LifecycleUnitDiscardReason reason) {
   TabManager* manager = g_browser_process->GetTabManager();
   manager->PurgeBrowserMemory();
   manager->DiscardTab(reason);
@@ -537,7 +537,7 @@ void TabManager::OnMemoryPressure(
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      LogMemoryAndDiscardTab(DiscardReason::kUrgent);
+      LogMemoryAndDiscardTab(LifecycleUnitDiscardReason::URGENT);
       break;
     default:
       NOTREACHED();
@@ -644,7 +644,8 @@ TabManager::WebContentsData* TabManager::GetWebContentsData(
 // TODO(jamescook): This should consider tabs with references to other tabs,
 // such as tabs created with JavaScript window.open(). Potentially consider
 // discarding the entire set together, or use that in the priority computation.
-content::WebContents* TabManager::DiscardTabImpl(DiscardReason reason) {
+content::WebContents* TabManager::DiscardTabImpl(
+    LifecycleUnitDiscardReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (LifecycleUnit* lifecycle_unit : GetSortedLifecycleUnits()) {
@@ -966,7 +967,7 @@ void TabManager::PerformStateTransitions() {
     // Keep track of the discardable LifecycleUnit that has been hidden for the
     // longest time. It might be discarded below.
     DecisionDetails discard_details;
-    if (lifecycle_unit->CanDiscard(DiscardReason::kProactive,
+    if (lifecycle_unit->CanDiscard(LifecycleUnitDiscardReason::PROACTIVE,
                                    &discard_details)) {
       if (!oldest_discardable_lifecycle_unit ||
           lifecycle_unit->GetChromeUsageTimeWhenHidden() <
@@ -1070,7 +1071,7 @@ base::TimeTicks TabManager::MaybeDiscardLifecycleUnit(
       GetTimeInBackgroundBeforeProactiveDiscard() - usage_time_not_visible;
 
   if (time_until_discard <= base::TimeDelta()) {
-    lifecycle_unit->Discard(DiscardReason::kProactive);
+    lifecycle_unit->Discard(LifecycleUnitDiscardReason::PROACTIVE);
     // Request another call to check if another discard should happen.
     return base::TimeTicks();
   }
