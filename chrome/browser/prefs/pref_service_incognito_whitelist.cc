@@ -637,18 +637,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kWebShareVisitedTargets,
 
 #if defined(OS_WIN)
-    prefs::kIOSPromotionEligible, prefs::kIOSPromotionDone,
-    prefs::kIOSPromotionSMSEntryPoint, prefs::kIOSPromotionShownEntryPoints,
-    prefs::kIOSPromotionLastImpression, prefs::kIOSPromotionVariationId,
-    prefs::kNumberSavePasswordsBubbleIOSPromoShown,
-    prefs::kSavePasswordsBubbleIOSPromoDismissed,
-    prefs::kNumberBookmarksBubbleIOSPromoShown,
-    prefs::kBookmarksBubbleIOSPromoDismissed,
-    prefs::kNumberBookmarksFootNoteIOSPromoShown,
-    prefs::kBookmarksFootNoteIOSPromoDismissed,
-    prefs::kNumberHistoryPageIOSPromoShown,
-    prefs::kHistoryPageIOSPromoDismissed,
-
 #if defined(GOOGLE_CHROME_BUILD)
     prefs::kIncompatibleApplications, prefs::kModuleBlacklistCacheMD5Digest,
     prefs::kProblematicPrograms, prefs::kThirdPartyBlockingEnabled,
