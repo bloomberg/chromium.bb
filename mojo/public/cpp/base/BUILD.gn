@@ -38,6 +38,8 @@ component("shared_typemap_traits") {
     "shared_memory_mojom_traits.h",
     "time_mojom_traits.cc",
     "time_mojom_traits.h",
+    "unguessable_token_mojom_traits.cc",
+    "unguessable_token_mojom_traits.h",
     "values_mojom_traits.cc",
     "values_mojom_traits.h",
   ]

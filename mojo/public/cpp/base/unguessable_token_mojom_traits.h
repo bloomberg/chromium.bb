@@ -17,7 +17,7 @@ static_assert(sizeof(base::UnguessableToken) == 2 * sizeof(uint64_t),
               "base::UnguessableToken should be of size 2 * sizeof(uint64_t).");
 
 template <>
-struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
+struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
     StructTraits<mojo_base::mojom::UnguessableTokenDataView,
                  base::UnguessableToken> {
   static uint64_t high(const base::UnguessableToken& token) {
