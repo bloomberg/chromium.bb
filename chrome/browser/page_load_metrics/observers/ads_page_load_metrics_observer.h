@@ -16,8 +16,8 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"
-#include "components/ukm/ukm_source.h"
 #include "net/http/http_response_info.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 
 // This observer labels each sub-frame as an ad or not, and keeps track of
 // relevant per-frame and whole-page byte statistics.

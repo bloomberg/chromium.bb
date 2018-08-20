@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "components/ukm/ukm_source.h"
 #include "services/metrics/public/cpp/ukm_decode.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "url/gurl.h"
 
 namespace ukm {

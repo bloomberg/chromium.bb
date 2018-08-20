@@ -21,8 +21,6 @@ static_library("ukm") {
     "ukm_rotation_scheduler.h",
     "ukm_service.cc",
     "ukm_service.h",
-    "ukm_source.cc",
-    "ukm_source.h",
   ]
 
   public_deps = [
