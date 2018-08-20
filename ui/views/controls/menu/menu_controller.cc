@@ -866,6 +866,10 @@ void MenuController::OnGestureEvent(SubmenuView* source,
 }
 
 void MenuController::OnTouchEvent(SubmenuView* source, ui::TouchEvent* event) {
+  // Bail if owner wants the current active gesture sequence.
+  if (owner_ && send_gesture_events_to_owner())
+    return;
+
   if (event->type() == ui::ET_TOUCH_PRESSED) {
     MenuPart part = GetMenuPart(source, event->location());
     if (part.type == MenuPart::NONE) {
