@@ -67,6 +67,8 @@ MessagePopupView::~MessagePopupView() {
 }
 
 void MessagePopupView::UpdateContents(const Notification& notification) {
+  if (!IsWidgetValid())
+    return;
   ui::AXNodeData old_data;
   message_view_->GetAccessibleNodeData(&old_data);
   message_view_->UpdateWithNotification(notification);
@@ -82,26 +84,28 @@ void MessagePopupView::UpdateContents(const Notification& notification) {
 }
 
 float MessagePopupView::GetOpacity() const {
-  if (!GetWidget() || GetWidget()->IsClosed())
+  if (!IsWidgetValid())
     return 0.f;
   return GetWidget()->GetLayer()->opacity();
 }
 
 void MessagePopupView::SetPopupBounds(const gfx::Rect& bounds) {
-  if (!GetWidget() || GetWidget()->IsClosed())
+  if (!IsWidgetValid())
     return;
   GetWidget()->SetBounds(bounds);
 }
 
 void MessagePopupView::SetOpacity(float opacity) {
-  if (!GetWidget() || GetWidget()->IsClosed())
+  if (!IsWidgetValid())
     return;
   GetWidget()->SetOpacity(opacity);
 }
 
 void MessagePopupView::AutoCollapse() {
-  if (is_hovered_ || message_view_->IsManuallyExpandedOrCollapsed())
+  if (!IsWidgetValid() || is_hovered_ ||
+      message_view_->IsManuallyExpandedOrCollapsed()) {
     return;
+  }
   message_view_->SetExpanded(false);
 }
 
@@ -183,11 +187,10 @@ void MessagePopupView::OnDisplayChanged() {
 }
 
 void MessagePopupView::OnWorkAreaChanged() {
-  views::Widget* widget = GetWidget();
-  if (!widget || widget->IsClosed())
+  if (!IsWidgetValid())
     return;
 
-  gfx::NativeView native_view = widget->GetNativeView();
+  gfx::NativeView native_view = GetWidget()->GetNativeView();
   if (!native_view)
     return;
 
@@ -201,6 +204,10 @@ void MessagePopupView::OnWidgetActivationChanged(views::Widget* widget,
                                                  bool active) {
   is_active_ = active;
   popup_collection_->Update();
+}
+
+bool MessagePopupView::IsWidgetValid() const {
+  return GetWidget() && !GetWidget()->IsClosed();
 }
 
 }  // namespace message_center

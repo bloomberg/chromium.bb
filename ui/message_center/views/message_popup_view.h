@@ -71,6 +71,9 @@ class MESSAGE_CENTER_EXPORT MessagePopupView : public views::WidgetDelegateView,
                    MessagePopupCollection* popup_collection);
 
  private:
+  // True if the view has a widget and the widget is not closed.
+  bool IsWidgetValid() const;
+
   // Owned by views hierarchy.
   MessageView* message_view_;
 
