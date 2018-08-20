@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
@@ -376,8 +377,20 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   DCHECK(self.voiceSearchIsEnabled);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisitedVoiceSearch"));
   UIView* voiceSearchButton = base::mac::ObjCCastStrict<UIView>(sender);
-  [NamedGuide guideWithName:kVoiceSearchButtonGuide view:voiceSearchButton]
-      .constrainedView = voiceSearchButton;
+  if (base::ios::IsRunningOnIOS12OrLater()) {
+    [NamedGuide guideWithName:kVoiceSearchButtonGuide view:voiceSearchButton]
+        .constrainedView = voiceSearchButton;
+  } else {
+    // On iOS 11 and below, constraining the layout guide to a view instead of
+    // using frame freeze the app. The root cause wasn't found. See
+    // https://crbug.com/874017.
+    NamedGuide* voiceSearchGuide =
+        [NamedGuide guideWithName:kVoiceSearchButtonGuide
+                             view:voiceSearchButton];
+    voiceSearchGuide.constrainedFrame =
+        [voiceSearchGuide.owningView convertRect:voiceSearchButton.bounds
+                                        fromView:voiceSearchButton];
+  }
   [self.dispatcher startVoiceSearch];
 }
 

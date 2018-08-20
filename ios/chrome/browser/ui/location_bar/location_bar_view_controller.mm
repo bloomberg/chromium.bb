@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_view_controller.h"
 
+#include "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
@@ -404,8 +405,19 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)startVoiceSearch {
-  [NamedGuide guideWithName:kVoiceSearchButtonGuide view:self.view]
-      .constrainedView = self.locationBarSteadyView.trailingButton;
+  if (base::ios::IsRunningOnIOS12OrLater()) {
+    [NamedGuide guideWithName:kVoiceSearchButtonGuide view:self.view]
+        .constrainedView = self.locationBarSteadyView.trailingButton;
+  } else {
+    // On iOS 11 and below, constraining the layout guide to a view instead of
+    // using frame freeze the app. The root cause wasn't found. See
+    // https://crbug.com/874017.
+    NamedGuide* voiceSearchGuide =
+        [NamedGuide guideWithName:kVoiceSearchButtonGuide view:self.view];
+    voiceSearchGuide.constrainedFrame = [voiceSearchGuide.owningView
+        convertRect:self.locationBarSteadyView.trailingButton.bounds
+           fromView:self.locationBarSteadyView.trailingButton];
+  }
   [self.dispatcher startVoiceSearch];
 }
 
