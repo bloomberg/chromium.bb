@@ -446,14 +446,18 @@ class QueryParams {
   bool Check(const std::string& name, const std::string& expected_value) {
     bool found = false;
     for (ParamMap::const_iterator i(params_.begin()); i != params_.end(); ++i) {
-      std::string unescaped_name(net::UnescapeBinaryURLComponent(
-          i->first, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
+      std::string unescaped_name;
+      net::UnescapeBinaryURLComponent(
+          i->first, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE,
+          &unescaped_name);
       if (unescaped_name == name) {
         if (found)
           return false;
         found = true;
-        std::string unescaped_value(net::UnescapeBinaryURLComponent(
-            i->second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
+        std::string unescaped_value;
+        net::UnescapeBinaryURLComponent(
+            i->second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE,
+            &unescaped_value);
         if (unescaped_value != expected_value)
           return false;
       }

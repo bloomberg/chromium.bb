@@ -101,9 +101,8 @@ bool DataURL::Parse(const GURL& url,
   // For base64, we may have url-escaped whitespace which is not part
   // of the data, and should be stripped. Otherwise, the escaped whitespace
   // could be part of the payload, so don't strip it.
-  if (base64_encoded) {
-    temp_data = UnescapeBinaryURLComponent(temp_data);
-  }
+  if (base64_encoded)
+    UnescapeBinaryURLComponent(temp_data, &temp_data);
 
   // Strip whitespace.
   if (base64_encoded || !(mime_type->compare(0, 5, "text/") == 0 ||
@@ -111,9 +110,8 @@ bool DataURL::Parse(const GURL& url,
     base::EraseIf(temp_data, base::IsAsciiWhitespace<wchar_t>);
   }
 
-  if (!base64_encoded) {
-    temp_data = UnescapeBinaryURLComponent(temp_data);
-  }
+  if (!base64_encoded)
+    UnescapeBinaryURLComponent(temp_data, &temp_data);
 
   if (base64_encoded) {
     size_t length = temp_data.length();
