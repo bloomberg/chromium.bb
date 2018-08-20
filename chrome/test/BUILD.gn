@@ -935,6 +935,7 @@ test("browser_tests") {
       "../browser/ui/zoom/zoom_controller_browsertest.cc",
       "../browser/unload_browsertest.cc",
       "../browser/usb/usb_browsertest.cc",
+      "../browser/web_applications/extensions/pending_bookmark_app_manager_browsertest.cc",
       "../browser/web_bluetooth_browsertest.cc",
       "../common/mac/app_mode_chrome_locator_browsertest.mm",
       "../common/mac/mock_launchd.cc",

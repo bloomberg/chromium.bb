@@ -11,7 +11,6 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_shortcut_installation_task.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 
@@ -27,9 +26,7 @@ std::unique_ptr<content::WebContents> WebContentsCreateWrapper(
 
 std::unique_ptr<BookmarkAppInstallationTask> InstallationTaskCreateWrapper(
     Profile* profile) {
-  // TODO(crbug.com/864904): Use an installation task that can install Web Apps
-  // and Web Shortcuts.
-  return std::make_unique<BookmarkAppShortcutInstallationTask>(profile);
+  return std::make_unique<BookmarkAppInstallationTask>(profile);
 }
 
 }  // namespace
@@ -116,8 +113,11 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
 }
 
 void PendingBookmarkAppManager::CreateWebContentsIfNecessary() {
-  if (!web_contents_)
-    web_contents_ = web_contents_factory_.Run(profile_);
+  if (web_contents_)
+    return;
+
+  web_contents_ = web_contents_factory_.Run(profile_);
+  BookmarkAppInstallationTask::CreateTabHelpers(web_contents_.get());
 }
 
 void PendingBookmarkAppManager::OnInstalled(
@@ -155,15 +155,13 @@ void PendingBookmarkAppManager::DidFinishLoad(
 
   Observe(nullptr);
   current_installation_task_ = task_factory_.Run(profile_);
-  static_cast<BookmarkAppShortcutInstallationTask*>(
-      current_installation_task_.get())
-      ->InstallFromWebContents(
-          web_contents_.get(),
-          base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
-                         // Safe because the installation task will not run its
-                         // callback after being deleted and this class owns the
-                         // task.
-                         base::Unretained(this)));
+  current_installation_task_->InstallWebAppOrShortcutFromWebContents(
+      web_contents_.get(),
+      base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
+                     // Safe because the installation task will not run its
+                     // callback after being deleted and this class owns the
+                     // task.
+                     base::Unretained(this)));
 }
 
 void PendingBookmarkAppManager::DidFailLoad(
