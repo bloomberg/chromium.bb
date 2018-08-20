@@ -8,6 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "device/fido/mac/credential_metadata.h"
 
@@ -135,7 +136,7 @@ base::Optional<Credential> FindCredentialInKeychain(
                              CFDataGetBytePtr(application_label) +
                                  CFDataGetLength(application_label));
     if (credential_id_filter.empty() ||
-        credential_id_filter.find(cid) != credential_id_filter.end()) {
+        base::ContainsKey(credential_id_filter, cid)) {
       private_key.reset(key, base::scoped_policy::RETAIN);
       credential_id = std::move(cid);
       break;

@@ -568,11 +568,14 @@ void AuthenticatorImpl::GetAssertion(
   client_data_json_ = SerializeCollectedClientDataToJson(
       client_data::kGetType, caller_origin, std::move(options->challenge));
 
+  auto ctap_request = CreateCtapGetAssertionRequest(
+      ConstructClientDataHash(client_data_json_), std::move(options),
+      alternative_application_parameter_);
+  auto opt_platform_authenticator_info =
+      CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
+          ctap_request);
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
-      connector_, protocols_,
-      CreateCtapGetAssertionRequest(ConstructClientDataHash(client_data_json_),
-                                    std::move(options),
-                                    alternative_application_parameter_),
+      connector_, protocols_, std::move(ctap_request),
       base::BindOnce(&AuthenticatorImpl::OnSignResponse,
                      weak_factory_.GetWeakPtr()));
 
@@ -585,7 +588,7 @@ void AuthenticatorImpl::GetAssertion(
   request_->set_observer(request_delegate_.get());
 
   request_->SetPlatformAuthenticatorOrMarkUnavailable(
-      CreatePlatformAuthenticatorIfAvailable());
+      std::move(opt_platform_authenticator_info));
 }
 
 void AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
@@ -852,26 +855,56 @@ BrowserContext* AuthenticatorImpl::browser_context() const {
       ->GetBrowserContext();
 }
 
-std::unique_ptr<device::FidoAuthenticator>
-AuthenticatorImpl::CreatePlatformAuthenticatorIfAvailable() {
 #if defined(OS_MACOSX)
-  // Incognito mode disables platform authenticators, so check for availability
-  // first.
-  if (!IsUserVerifyingPlatformAuthenticatorAvailableImpl()) {
-    return nullptr;
-  }
-
+namespace {
+std::unique_ptr<device::fido::mac::TouchIdAuthenticator>
+CreateTouchIdAuthenticatorIfAvailable(
+    const AuthenticatorRequestClientDelegate* request_delegate) {
   // Not all embedders may provide an authenticator config.
   auto opt_authenticator_config =
-      request_delegate_->GetTouchIdAuthenticatorConfig();
+      request_delegate->GetTouchIdAuthenticatorConfig();
   if (!opt_authenticator_config) {
     return nullptr;
   }
   return device::fido::mac::TouchIdAuthenticator::CreateIfAvailable(
       std::move(opt_authenticator_config->keychain_access_group),
       std::move(opt_authenticator_config->metadata_secret));
+}
+}  // namespace
+#endif
+
+base::Optional<device::PlatformAuthenticatorInfo>
+AuthenticatorImpl::CreatePlatformAuthenticatorIfAvailable() {
+  // Incognito mode disables platform authenticators, so check for availability
+  // first.
+  if (!IsUserVerifyingPlatformAuthenticatorAvailableImpl()) {
+    return base::nullopt;
+  }
+#if defined(OS_MACOSX)
+  return device::PlatformAuthenticatorInfo(
+      CreateTouchIdAuthenticatorIfAvailable(request_delegate_.get()), false);
 #else
-  return nullptr;
+  return base::nullopt;
+#endif
+}
+
+base::Optional<device::PlatformAuthenticatorInfo> AuthenticatorImpl::
+    CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
+        const device::CtapGetAssertionRequest& request) {
+  // Incognito mode disables platform authenticators, so check for availability
+  // first.
+  if (!IsUserVerifyingPlatformAuthenticatorAvailableImpl()) {
+    return base::nullopt;
+  }
+#if defined(OS_MACOSX)
+  std::unique_ptr<device::fido::mac::TouchIdAuthenticator> authenticator =
+      CreateTouchIdAuthenticatorIfAvailable(request_delegate_.get());
+  const bool has_credential =
+      authenticator->HasCredentialForGetAssertionRequest(request);
+  return device::PlatformAuthenticatorInfo(std::move(authenticator),
+                                           has_credential);
+#else
+  return base::nullopt;
 #endif
 }
 

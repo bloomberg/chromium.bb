@@ -33,6 +33,17 @@ class FidoAuthenticator;
 class FidoDevice;
 class FidoTask;
 
+struct COMPONENT_EXPORT(DEVICE_FIDO) PlatformAuthenticatorInfo {
+  PlatformAuthenticatorInfo(std::unique_ptr<FidoAuthenticator> authenticator,
+                            bool has_recognized_mac_touch_id_credential);
+  PlatformAuthenticatorInfo(PlatformAuthenticatorInfo&&);
+  PlatformAuthenticatorInfo& operator=(PlatformAuthenticatorInfo&& other);
+  ~PlatformAuthenticatorInfo();
+
+  std::unique_ptr<FidoAuthenticator> authenticator;
+  bool has_recognized_mac_touch_id_credential;
+};
+
 // Base class that handles device discovery/removal. Each FidoRequestHandlerBase
 // is owned by FidoRequestManager and its lifetime is equivalent to that of a
 // single WebAuthn request. For each authenticator, the per-device work is
@@ -126,7 +137,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // |AuthenticatorImpl| must call this method after invoking |set_oberver| even
   // if no platform authenticator is available, in which case it passes nullptr.
   void SetPlatformAuthenticatorOrMarkUnavailable(
-      std::unique_ptr<FidoAuthenticator> authenticator);
+      base::Optional<PlatformAuthenticatorInfo> platform_authenticator_info);
 
   TransportAvailabilityInfo& transport_availability_info() {
     return transport_availability_info_;

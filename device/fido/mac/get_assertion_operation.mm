@@ -12,6 +12,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/fido/fido_constants.h"
@@ -55,9 +56,14 @@ void GetAssertionOperation::Run() {
   std::set<std::vector<uint8_t>> allowed_credential_ids;
   if (request().allow_list()) {
     for (const PublicKeyCredentialDescriptor& desc : *request().allow_list()) {
-      if (desc.credential_type() != CredentialType::kPublicKey) {
+      if (desc.credential_type() != CredentialType::kPublicKey)
         continue;
-      }
+
+      if (!desc.transports().empty() &&
+          !base::ContainsKey(desc.transports(),
+                             FidoTransportProtocol::kInternal))
+        continue;
+
       allowed_credential_ids.insert(desc.id());
     }
   }

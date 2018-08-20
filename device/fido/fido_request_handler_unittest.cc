@@ -55,12 +55,18 @@ class TestTransportAvailabilityObserver
   ~TestTransportAvailabilityObserver() override {}
 
   void WaitForAndExpectAvailableTransportsAre(
-      base::flat_set<FidoTransportProtocol> expected_transports) {
+      base::flat_set<FidoTransportProtocol> expected_transports,
+      base::Optional<bool> has_recognized_mac_touch_id_credential =
+          base::nullopt) {
     transport_availability_notification_receiver_.WaitForCallback();
     auto result =
         std::get<0>(*transport_availability_notification_receiver_.result());
     EXPECT_THAT(result.available_transports,
                 ::testing::UnorderedElementsAreArray(expected_transports));
+    if (has_recognized_mac_touch_id_credential) {
+      EXPECT_EQ(*has_recognized_mac_touch_id_credential,
+                result.has_recognized_mac_touch_id_credential);
+    }
   }
 
  protected:
@@ -192,7 +198,7 @@ class FidoRequestHandlerTest : public ::testing::Test {
             {FidoTransportProtocol::kUsbHumanInterfaceDevice,
              FidoTransportProtocol::kBluetoothLowEnergy}),
         cb_.callback());
-    handler->SetPlatformAuthenticatorOrMarkUnavailable(nullptr);
+    handler->SetPlatformAuthenticatorOrMarkUnavailable(base::nullopt);
     return handler;
   }
 
@@ -403,10 +409,43 @@ TEST_F(FidoRequestHandlerTest, TestSetPlatformAuthenticator) {
       callback().callback());
   request_handler->set_observer(&observer);
   request_handler->SetPlatformAuthenticatorOrMarkUnavailable(
-      std::move(authenticator));
+      PlatformAuthenticatorInfo(std::move(authenticator), false));
 
   observer.WaitForAndExpectAvailableTransportsAre(
-      {FidoTransportProtocol::kInternal});
+      {FidoTransportProtocol::kInternal},
+      false /* has_recognized_mac_touch_id_credential */);
+
+  callback().WaitForCallback();
+  EXPECT_TRUE(request_handler->is_complete());
+  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+}
+
+// SetPlatformAuthenticatorOrMarkUnavailable should propagate the
+// has_recognized_mac_touch_id_credential field.
+TEST_F(FidoRequestHandlerTest,
+       TestSetPlatformAuthenticatorHasTouchIdCredential) {
+  // A platform authenticator usually wouldn't usually use a FidoDevice, but
+  // that's not the point of the test here. The test is only trying to ensure
+  // the authenticator gets injected and used.
+  auto device = MockFidoDevice::MakeCtap();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  // Device returns success response.
+  device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                      CreateFakeSuccessDeviceResponse());
+  device->SetDeviceTransport(FidoTransportProtocol::kInternal);
+  auto authenticator = std::make_unique<FakeFidoAuthenticator>(device.get());
+
+  TestTransportAvailabilityObserver observer;
+  auto request_handler = std::make_unique<FakeFidoRequestHandler>(
+      base::flat_set<FidoTransportProtocol>({FidoTransportProtocol::kInternal}),
+      callback().callback());
+  request_handler->set_observer(&observer);
+  request_handler->SetPlatformAuthenticatorOrMarkUnavailable(
+      PlatformAuthenticatorInfo(std::move(authenticator), true));
+
+  observer.WaitForAndExpectAvailableTransportsAre(
+      {FidoTransportProtocol::kInternal},
+      true /* has_recognized_mac_touch_id_credential */);
 
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
@@ -419,7 +458,7 @@ TEST_F(FidoRequestHandlerTest, InternalTransportDisallowedIfMarkedUnavailable) {
       base::flat_set<FidoTransportProtocol>({FidoTransportProtocol::kInternal}),
       callback().callback());
   request_handler->set_observer(&observer);
-  request_handler->SetPlatformAuthenticatorOrMarkUnavailable(nullptr);
+  request_handler->SetPlatformAuthenticatorOrMarkUnavailable(base::nullopt);
 
   observer.WaitForAndExpectAvailableTransportsAre({});
 }

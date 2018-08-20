@@ -19,6 +19,20 @@
 
 namespace device {
 
+// PlatformAuthenticatorInfo --------------------------
+
+PlatformAuthenticatorInfo::PlatformAuthenticatorInfo(
+    std::unique_ptr<FidoAuthenticator> authenticator_,
+    bool has_recognized_mac_touch_id_credential_)
+    : authenticator(std::move(authenticator_)),
+      has_recognized_mac_touch_id_credential(
+          has_recognized_mac_touch_id_credential_) {}
+PlatformAuthenticatorInfo::PlatformAuthenticatorInfo(
+    PlatformAuthenticatorInfo&&) = default;
+PlatformAuthenticatorInfo& PlatformAuthenticatorInfo::operator=(
+    PlatformAuthenticatorInfo&&) = default;
+PlatformAuthenticatorInfo::~PlatformAuthenticatorInfo() = default;
+
 // FidoRequestHandlerBase::TransportAvailabilityInfo --------------------------
 
 FidoRequestHandlerBase::TransportAvailabilityInfo::TransportAvailabilityInfo() =
@@ -208,13 +222,17 @@ void FidoRequestHandlerBase::AddAuthenticator(
 }
 
 void FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(
-    std::unique_ptr<FidoAuthenticator> authenticator) {
-  if (authenticator &&
+    base::Optional<PlatformAuthenticatorInfo> platform_authenticator_info) {
+  if (platform_authenticator_info &&
       base::ContainsKey(transport_availability_info_.available_transports,
                         FidoTransportProtocol::kInternal)) {
-    DCHECK(authenticator->AuthenticatorTransport() ==
-           FidoTransportProtocol::kInternal);
-    AddAuthenticator(std::move(authenticator));
+    DCHECK(platform_authenticator_info->authenticator);
+    DCHECK(
+        (platform_authenticator_info->authenticator->AuthenticatorTransport() ==
+         FidoTransportProtocol::kInternal));
+    transport_availability_info_.has_recognized_mac_touch_id_credential =
+        platform_authenticator_info->has_recognized_mac_touch_id_credential;
+    AddAuthenticator(std::move(platform_authenticator_info->authenticator));
   } else {
     transport_availability_info_.available_transports.erase(
         FidoTransportProtocol::kInternal);
