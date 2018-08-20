@@ -32,23 +32,14 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebThread* CurrentThread() override;
   blink::WebSandboxSupport* GetSandboxSupport() override;
   virtual bool sandboxEnabled();
-  unsigned long long VisitedLinkHash(const char* canonicalURL,
+  unsigned long long VisitedLinkHash(const char* canonical_url,
                                      size_t length) override;
-  bool IsLinkVisited(unsigned long long linkHash) override;
-  virtual void setCookies(const blink::WebURL& url,
-                          const blink::WebURL& site_for_cookies,
-                          const blink::WebString& value);
-  virtual blink::WebString cookies(const blink::WebURL& url,
-                                   const blink::WebURL& site_for_cookies);
+  bool IsLinkVisited(unsigned long long link_hash) override;
   blink::WebString DefaultLocale() override;
   blink::WebThemeEngine* ThemeEngine() override;
   blink::WebData GetDataResource(const char* name) override;
   std::unique_ptr<blink::WebStorageNamespace> CreateLocalStorageNamespace()
       override;
-  virtual void dispatchStorageEvent(const blink::WebString& key,
-      const blink::WebString& oldValue, const blink::WebString& newValue,
-      const blink::WebString& origin, const blink::WebURL& url,
-      bool isLocalStorage);
   int DatabaseDeleteFile(const blink::WebString& vfs_file_name,
                          bool sync_dir) override;
 
