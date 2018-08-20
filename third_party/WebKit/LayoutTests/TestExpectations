@@ -4979,6 +4979,8 @@ crbug.com/873873 virtual/service-worker-servicification/external/wpt/service-wor
 # Tests that work only when LazyImageLoading feature is enabled.
 crbug.com/846170 http/tests/lazyload/lazy.html [ Skip ]
 
+crbug.com/875884 [ Linux Win ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
+
 # Sheriff 2018-08-16
 crbug.com/874733 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash ]
 crbug.com/874733 [ Android ] accessibility/aria-link-supports-press.html [ Crash ]
