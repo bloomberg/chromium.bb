@@ -125,6 +125,10 @@ const char* const kPersistentPrefNames[] = {
     // Google URL prefs don't store user data and just keep track of the URL.
     prefs::kLastKnownGoogleURL, prefs::kLastPromptedGoogleURL,
 
+    // Tab stats metrics are aggregated between regular and incognio mode.
+    prefs::kTabStatsTotalTabCountMax, prefs::kTabStatsMaxTabsPerWindow,
+    prefs::kTabStatsWindowCountMax, prefs::kTabStatsDailySample,
+
     // Rappor preferences are not used in incognito mode, but they are written
     // in startup if they don't exist. So if the startup would be in incognito,
     // they need to be persisted.
@@ -640,10 +644,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif
 
     prefs::kMediaEngagementSchemaVersion,
-
-    // Preferences for recording metrics about tab and window usage.
-    prefs::kTabStatsTotalTabCountMax, prefs::kTabStatsMaxTabsPerWindow,
-    prefs::kTabStatsWindowCountMax, prefs::kTabStatsDailySample,
 
     prefs::kUnsafelyTreatInsecureOriginAsSecure,
 
