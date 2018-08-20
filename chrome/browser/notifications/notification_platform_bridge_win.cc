@@ -843,10 +843,14 @@ bool NotificationPlatformBridgeWin::HandleActivation(
       launch_id.is_for_context_menu() ? NotificationCommon::OPERATION_SETTINGS
                                       : NotificationCommon::OPERATION_CLICK;
 
+  base::Optional<int> action_index;
+  if (launch_id.button_index() != -1)
+    action_index = launch_id.button_index();
+
   ForwardNotificationOperationOnUiThread(
       operation, launch_id.notification_type(), launch_id.origin_url(),
       launch_id.notification_id(), launch_id.profile_id(),
-      launch_id.incognito(), launch_id.button_index(), reply, /*by_user=*/true);
+      launch_id.incognito(), std::move(action_index), reply, /*by_user=*/true);
 
   LogActivationStatus(ActivationStatus::SUCCESS);
   return true;
