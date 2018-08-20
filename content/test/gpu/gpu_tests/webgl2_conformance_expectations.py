@@ -434,6 +434,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['sierra', 'intel'], bug=705865)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['sierra', 'intel'], bug=705865)
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['sierra', 'amd'], bug=870856)
 
     # Regressions in 10.13
     self.Fail('deqp/functional/gles3/fbocolorbuffer/tex2d_00.html',
@@ -646,15 +648,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # self.Fail('conformance2/rendering/texture-switch-performance.html',
     #     ['mac', 'amd'], bug=735483)
 
-    # The following failure is a regression in the Mac AMD OpenGL
-    # driver on 10.13.6 specifically. Unfortunately when the test
-    # fails, it fails three times in a row, so we must mark it failing
-    # rather than flaky.
+    # The following two failures are a regression in the Mac AMD
+    # OpenGL driver on 10.13.6 specifically. Unfortunately when the
+    # tests fail, they fail three times in a row, so we must mark them
+    # failing rather than flaky.
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['highsierra', 'amd'], bug=870856)
-    # The following flaky failure is also a regression on 10.13.6
-    # specifically.
-    self.Flaky('conformance2/textures/misc/tex-base-level-bug.html',
+    self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['highsierra', 'amd'], bug=870856)
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
         ['mac', 'amd'], bug=820225)
