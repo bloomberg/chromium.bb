@@ -20,7 +20,8 @@ dependencies {
     compile "android.arch.lifecycle:common:${archComponentsVersion}"
 
     // Play services libraries
-    def gmsVersion = '12.0.1'
+    // See https://developers.google.com/android/guides/releases for updates
+    def gmsVersion = '15.0.1'
     compile "com.google.android.gms:play-services-basement:${gmsVersion}"
     compile "com.google.android.gms:play-services-tasks:${gmsVersion}"
     compile "com.google.android.gms:play-services-base:${gmsVersion}"

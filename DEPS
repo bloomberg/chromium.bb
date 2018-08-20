@@ -1401,7 +1401,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_auth',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1412,7 +1412,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_auth_api_phone',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1423,7 +1423,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_auth_base',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1434,7 +1434,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_base',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1445,7 +1445,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_basement',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1456,7 +1456,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_cast',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1467,7 +1467,18 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_cast_framework',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_android_gms_play_services_clearcut': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_clearcut',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1478,7 +1489,18 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_fido',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_android_gms_play_services_flags': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_flags',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1489,7 +1511,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_gcm',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1500,7 +1522,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_iid',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1511,7 +1533,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_instantapps',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1522,7 +1544,40 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_location',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_android_gms_play_services_phenotype': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_phenotype',
+              'version': 'version:15.0.1-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_android_gms_play_services_places_placereport': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_places_placereport',
+              'version': 'version:15.0.1-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_android_gms_play_services_stats': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_stats',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1533,7 +1588,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_tasks',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1544,7 +1599,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_vision',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1555,7 +1610,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_vision_common',
-              'version': 'version:12.0.1-cr0',
+              'version': 'version:15.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
