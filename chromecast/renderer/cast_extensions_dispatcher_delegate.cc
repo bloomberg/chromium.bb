@@ -58,6 +58,9 @@ void CastExtensionsDispatcherDelegate::RegisterNativeHandlers(
   module_system->RegisterNativeHandler(
       "i18n", std::unique_ptr<NativeHandler>(
                   new extensions::I18NCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "lazy_background_page",
+      std::make_unique<extensions::LazyBackgroundPageNativeHandler>(context));
 }
 
 void CastExtensionsDispatcherDelegate::PopulateSourceMap(
@@ -67,6 +70,7 @@ void CastExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("automationEvent", IDR_AUTOMATION_EVENT_JS);
   source_map->RegisterSource("automationNode", IDR_AUTOMATION_NODE_JS);
   source_map->RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);
 }
 
 void CastExtensionsDispatcherDelegate::RequireAdditionalModules(
