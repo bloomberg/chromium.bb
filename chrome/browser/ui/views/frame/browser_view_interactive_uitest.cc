@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
 
 // Test whether the top view including toolbar and tab strip appears or hides
 // correctly in tab fullscreen mode.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, TabFullscreenShowTopView) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, DISABLED_TabFullscreenShowTopView) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
 
   // The top view should always show up in regular mode.
