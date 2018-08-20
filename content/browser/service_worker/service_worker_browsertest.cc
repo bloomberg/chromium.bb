@@ -63,6 +63,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -75,15 +76,19 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log_with_source.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_job.h"
+#include "services/network/loader_util.h"
+#include "services/network/public/cpp/features.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -3219,6 +3224,273 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerDisableWebSecurityTest, UpdateNoCrash) {
   const char kWorkerUrl[] = "/service_worker/fetch_event_blob.js";
   RegisterServiceWorkerOnCrossOriginServer(kScopeUrl, kWorkerUrl);
   RunTestWithCrossOriginURL(kPageUrl, kScopeUrl);
+}
+
+class HeaderInjectingThrottle : public URLLoaderThrottle {
+ public:
+  HeaderInjectingThrottle() = default;
+  ~HeaderInjectingThrottle() override = default;
+
+  void WillStartRequest(network::ResourceRequest* request,
+                        bool* defer) override {
+    GURL url = request->url;
+    if (url.query().find("PlzRedirect") != std::string::npos) {
+      GURL::Replacements replacements;
+      replacements.SetQueryStr("DidRedirect");
+      request->url = url.ReplaceComponents(replacements);
+      return;
+    }
+
+    request->headers.SetHeader("x-injected", "injected value");
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HeaderInjectingThrottle);
+};
+
+class ThrottlingContentBrowserClient : public TestContentBrowserClient {
+ public:
+  ThrottlingContentBrowserClient() : TestContentBrowserClient() {}
+  ~ThrottlingContentBrowserClient() override {}
+
+  // ContentBrowserClient overrides:
+  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      ResourceContext* resource_context,
+      const base::RepeatingCallback<WebContents*()>& wc_getter,
+      NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override {
+    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles;
+    auto throttle = std::make_unique<HeaderInjectingThrottle>();
+    throttles.push_back(std::move(throttle));
+    return throttles;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ThrottlingContentBrowserClient);
+};
+
+class ServiceWorkerURLLoaderThrottleTest : public ServiceWorkerBrowserTest {
+ public:
+  ~ServiceWorkerURLLoaderThrottleTest() override {}
+
+  void SetUpOnMainThread() override {
+    ServiceWorkerBrowserTest::SetUpOnMainThread();
+    net::test_server::RegisterDefaultHandlers(embedded_test_server());
+    embedded_test_server()->StartAcceptingConnections();
+  }
+
+  void TearDownOnMainThread() override {
+    ServiceWorkerBrowserTest::TearDownOnMainThread();
+  }
+
+  void NavigateAndWaitForDone(const GURL& url) {
+    const base::string16 title = base::ASCIIToUTF16("DONE");
+    TitleWatcher watcher(shell()->web_contents(), title);
+    watcher.AlsoWaitForTitle(base::ASCIIToUTF16("ERROR"));
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    EXPECT_EQ(title, watcher.WaitAndGetTitle());
+  }
+
+  void RegisterServiceWorker(const std::string& worker_url) {
+    GURL url = embedded_test_server()->GetURL(
+        "/service_worker/create_service_worker.html?worker_url=" + worker_url);
+    NavigateAndWaitForDone(url);
+  }
+
+  void RegisterServiceWorkerWithScope(const std::string& worker_url,
+                                      const std::string& scope) {
+    GURL url = embedded_test_server()->GetURL(
+        "/service_worker/create_service_worker.html?worker_url=" + worker_url +
+        "&scope=" + scope);
+    NavigateAndWaitForDone(url);
+  }
+};
+
+// Test that the throttles can inject headers during navigation that are
+// observable inside the service worker's fetch event.
+//
+// TODO(crbug.com/873575): Disabled until the next patch lands which fixes the
+// test.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
+                       DISABLED_FetchEventForNavigationHasThrottledRequest) {
+  // This tests throttling behavior which only has an effect on service worker
+  // interception when servicification is on.
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    LOG(WARNING)
+        << "This test requires NetworkService or ServiceWorkerServicification.";
+    return;
+  }
+
+  // Add a throttle which injects a header.
+  ThrottlingContentBrowserClient content_browser_client;
+  auto* old_content_browser_client =
+      SetBrowserClientForTesting(&content_browser_client);
+
+  // Register the service worker.
+  RegisterServiceWorker("/service_worker/echo_request_headers.js");
+
+  // Perform a navigation. Add "?dump_headers" to tell the service worker to
+  // respond with the request headers.
+  GURL url =
+      embedded_test_server()->GetURL("/service_worker/empty.html?dump_headers");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Extract the headers.
+  EvalJsResult result = EvalJs(shell()->web_contents()->GetMainFrame(),
+                               "document.body.textContent");
+  ASSERT_TRUE(result.error.empty());
+  std::unique_ptr<base::DictionaryValue> dict = base::DictionaryValue::From(
+      base::JSONReader::Read(result.ExtractString()));
+  ASSERT_TRUE(dict);
+
+  // Default headers are present.
+  EXPECT_TRUE(CheckHeader(*dict, "accept", network::kFrameAcceptHeader));
+  // Injected headers are present.
+  EXPECT_TRUE(CheckHeader(*dict, "x-injected", "injected value"));
+
+  SetBrowserClientForTesting(old_content_browser_client);
+}
+
+// Test that redirects by throttles occur before service worker interception.
+//
+// TODO(crbug.com/873575): Disabled until the next patch lands which fixes the
+// test.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
+                       DISABLED_RedirectOccursBeforeFetchEvent) {
+  // This tests throttling behavior which only has an effect on service worker
+  // interception when servicification is on.
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    LOG(WARNING)
+        << "This test requires NetworkService or ServiceWorkerServicification.";
+    return;
+  }
+
+  // Add a throttle which performs a redirect.
+  ThrottlingContentBrowserClient content_browser_client;
+  auto* old_content_browser_client =
+      SetBrowserClientForTesting(&content_browser_client);
+
+  // Register the service worker.
+  RegisterServiceWorker("/service_worker/fetch_event_pass_through.js");
+
+  // Perform a navigation. Add "?PlzRedirect" to tell the throttle to
+  // redirect to another URL.
+  GURL url =
+      embedded_test_server()->GetURL("/service_worker/empty.html?PlzRedirect");
+  GURL redirect_url =
+      embedded_test_server()->GetURL("/service_worker/empty.html?DidRedirect");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
+  EXPECT_EQ(redirect_url, shell()->web_contents()->GetLastCommittedURL());
+
+  // This script asks the service worker what fetch events it saw.
+  const std::string script = R"(
+      (async () => {
+        const saw_message = new Promise(resolve => {
+          navigator.serviceWorker.onmessage = event => {
+            resolve(event.data);
+          };
+        });
+        const registration = await navigator.serviceWorker.ready;
+        registration.active.postMessage('');
+        return await saw_message;
+      })();
+  )";
+
+  // Ensure the service worker did not see a fetch event for the PlzRedirect
+  // URL, since throttles should have redirected before interception.
+  base::Value list(base::Value::Type::LIST);
+  list.GetList().emplace_back(redirect_url.spec());
+  EXPECT_EQ(list, EvalJs(shell()->web_contents()->GetMainFrame(), script));
+
+  SetBrowserClientForTesting(old_content_browser_client);
+}
+
+// Test that the headers injected by throttles during navigation are
+// present in the network request in the case of network fallback.
+//
+// TODO(crbug.com/873575): Disabled until the next patch lands which fixes the
+// test.
+IN_PROC_BROWSER_TEST_F(
+    ServiceWorkerURLLoaderThrottleTest,
+    DISABLED_NavigationHasThrottledRequestHeadersAfterNetworkFallback) {
+  // This tests throttling behavior on network requests which only has an effect
+  // on headers when NetworkService is on. ServiceWorkerServicification won't
+  // pass this test because it uses throttles before the request to the service
+  // worker but throttle-modified headers are not propagated to network requests
+  // through ResourceDispatcherHost, because the legacy network code has its own
+  // code path that applies the same throttling independent from the
+  // navigation's URLLoaderThrottles.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    LOG(WARNING) << "This test requires NetworkService.";
+    return;
+  }
+
+  // Add a throttle which injects a header.
+  ThrottlingContentBrowserClient content_browser_client;
+  auto* old_content_browser_client =
+      SetBrowserClientForTesting(&content_browser_client);
+
+  // Register the service worker. Use "/" scope so the "/echoheader" default
+  // handler of EmbeddedTestServer is in-scope.
+  RegisterServiceWorkerWithScope("/service_worker/fetch_event_pass_through.js",
+                                 "/");
+
+  // Perform a navigation. Use "/echoheader" which echoes the given header.
+  GURL url = embedded_test_server()->GetURL("/echoheader?x-injected");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Check that there is a controller to check that the test is really testing
+  // service worker network fallback.
+  EXPECT_EQ(true, EvalJs(shell()->web_contents()->GetMainFrame(),
+                         "!!navigator.serviceWorker.controller"));
+  // The injected header should be present.
+  EXPECT_EQ("injected value", EvalJs(shell()->web_contents()->GetMainFrame(),
+                                     "document.body.textContent"));
+
+  SetBrowserClientForTesting(old_content_browser_client);
+}
+
+// Test that the headers injected by throttles during navigation are
+// present in the navigation preload request.
+//
+// TODO(crbug.com/873575): Disabled until the next patch lands which fixes the
+// test.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
+                       DISABLED_NavigationPreloadHasThrottledRequestHeaders) {
+  // This tests throttling behavior which only has an effect on service worker
+  // interception when servicification is on.
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    LOG(WARNING)
+        << "This test requires NetworkService or ServiceWorkerServicification.";
+    return;
+  }
+
+  // Add a throttle which injects a header.
+  ThrottlingContentBrowserClient content_browser_client;
+  auto* old_content_browser_client =
+      SetBrowserClientForTesting(&content_browser_client);
+
+  // Register the service worker. Use "/" scope so the "/echoheader" default
+  // handler of EmbeddedTestServer is in-scope.
+  RegisterServiceWorkerWithScope("/service_worker/navigation_preload_worker.js",
+                                 "/");
+
+  // Perform a navigation. Use "/echoheader" which echoes the given header. The
+  // server responds to the navigation preload request with this echoed
+  // response, and the service worker responds with the navigation preload
+  // response.
+  //
+  // Also test that "Service-Worker-Navigation-Preload" is present to verify
+  // we are testing the navigation preload request.
+  GURL url = embedded_test_server()->GetURL(
+      "/echoheader?Service-Worker-Navigation-Preload&x-injected");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_EQ("true\ninjected value",
+            EvalJs(shell()->web_contents()->GetMainFrame(),
+                   "document.body.textContent"));
+
+  SetBrowserClientForTesting(old_content_browser_client);
 }
 
 }  // namespace content
