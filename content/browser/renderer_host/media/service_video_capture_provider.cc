@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
 
-#include "content/browser/gpu/gpu_client_impl.h"
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
 #include "content/browser/renderer_host/media/video_capture_dependencies.h"
 #include "content/browser/renderer_host/media/video_capture_factory_delegate.h"

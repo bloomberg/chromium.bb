@@ -2,40 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gpu/gpu_client_impl.h"
+#include "components/viz/host/gpu_client.h"
 
 #include "components/viz/host/host_gpu_memory_buffer_manager.h"
-#include "content/browser/gpu/browser_gpu_client_delegate.h"
-#include "content/common/child_process_host_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
-namespace content {
+namespace viz {
 
-// static
-std::unique_ptr<GpuClient, base::OnTaskRunnerDeleter> GpuClient::Create(
-    ui::mojom::GpuRequest request,
-    ConnectionErrorHandlerClosure connection_error_handler,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  const int client_id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
-  const uint64_t client_tracing_id =
-      ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(client_id);
-  std::unique_ptr<GpuClientImpl, base::OnTaskRunnerDeleter> gpu_client(
-      new GpuClientImpl(std::make_unique<BrowserGpuClientDelegate>(), client_id,
-                        client_tracing_id, task_runner),
-      base::OnTaskRunnerDeleter(task_runner));
-  gpu_client->SetConnectionErrorHandler(std::move(connection_error_handler));
-  gpu_client->Add(std::move(request));
-  return gpu_client;
-}
-
-GpuClientImpl::GpuClientImpl(
-    std::unique_ptr<GpuClientDelegate> delegate,
-    int client_id,
-    uint64_t client_tracing_id,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+GpuClient::GpuClient(std::unique_ptr<GpuClientDelegate> delegate,
+                     int client_id,
+                     uint64_t client_tracing_id,
+                     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : delegate_(std::move(delegate)),
       client_id_(client_id),
       client_tracing_id_(client_tracing_id),
@@ -43,22 +23,22 @@ GpuClientImpl::GpuClientImpl(
       weak_factory_(this) {
   DCHECK(delegate_);
   gpu_bindings_.set_connection_error_handler(
-      base::BindRepeating(&GpuClientImpl::OnError, base::Unretained(this),
+      base::BindRepeating(&GpuClient::OnError, base::Unretained(this),
                           ErrorReason::kConnectionLost));
 }
 
-GpuClientImpl::~GpuClientImpl() {
+GpuClient::~GpuClient() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   gpu_bindings_.CloseAllBindings();
   OnError(ErrorReason::kInDestructor);
 }
 
-void GpuClientImpl::Add(ui::mojom::GpuRequest request) {
+void GpuClient::Add(ui::mojom::GpuRequest request) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   gpu_bindings_.AddBinding(this, std::move(request));
 }
 
-void GpuClientImpl::OnError(ErrorReason reason) {
+void GpuClient::OnError(ErrorReason reason) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   ClearCallback();
   if (gpu_bindings_.empty() && delegate_) {
@@ -71,23 +51,23 @@ void GpuClientImpl::OnError(ErrorReason reason) {
     std::move(connection_error_handler_).Run(this);
 }
 
-void GpuClientImpl::PreEstablishGpuChannel() {
+void GpuClient::PreEstablishGpuChannel() {
   if (task_runner_->RunsTasksInCurrentSequence()) {
     EstablishGpuChannel(EstablishGpuChannelCallback());
   } else {
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&GpuClientImpl::EstablishGpuChannel,
-                       base::Unretained(this), EstablishGpuChannelCallback()));
+        base::BindOnce(&GpuClient::EstablishGpuChannel, base::Unretained(this),
+                       EstablishGpuChannelCallback()));
   }
 }
 
-void GpuClientImpl::SetConnectionErrorHandler(
+void GpuClient::SetConnectionErrorHandler(
     ConnectionErrorHandlerClosure connection_error_handler) {
   connection_error_handler_ = std::move(connection_error_handler);
 }
 
-void GpuClientImpl::OnEstablishGpuChannel(
+void GpuClient::OnEstablishGpuChannel(
     mojo::ScopedMessagePipeHandle channel_handle,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
@@ -118,13 +98,12 @@ void GpuClientImpl::OnEstablishGpuChannel(
   }
 }
 
-void GpuClientImpl::OnCreateGpuMemoryBuffer(
-    CreateGpuMemoryBufferCallback callback,
-    gfx::GpuMemoryBufferHandle handle) {
+void GpuClient::OnCreateGpuMemoryBuffer(CreateGpuMemoryBufferCallback callback,
+                                        gfx::GpuMemoryBufferHandle handle) {
   std::move(callback).Run(std::move(handle));
 }
 
-void GpuClientImpl::ClearCallback() {
+void GpuClient::ClearCallback() {
   if (!callback_)
     return;
   EstablishGpuChannelCallback callback = std::move(callback_);
@@ -133,7 +112,7 @@ void GpuClientImpl::ClearCallback() {
   DCHECK(!callback_);
 }
 
-void GpuClientImpl::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
+void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   // At most one channel should be requested. So clear previous request first.
   ClearCallback();
@@ -155,17 +134,17 @@ void GpuClientImpl::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
   gpu_channel_requested_ = true;
   delegate_->EstablishGpuChannel(
       client_id_, client_tracing_id_,
-      base::BindOnce(&GpuClientImpl::OnEstablishGpuChannel,
+      base::BindOnce(&GpuClient::OnEstablishGpuChannel,
                      weak_factory_.GetWeakPtr()));
 }
 
-void GpuClientImpl::CreateJpegDecodeAccelerator(
+void GpuClient::CreateJpegDecodeAccelerator(
     media::mojom::JpegDecodeAcceleratorRequest jda_request) {
   if (auto* gpu_service = delegate_->EnsureGpuService())
     gpu_service->CreateJpegDecodeAccelerator(std::move(jda_request));
 }
 
-void GpuClientImpl::CreateVideoEncodeAcceleratorProvider(
+void GpuClient::CreateVideoEncodeAcceleratorProvider(
     media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {
   if (auto* gpu_service = delegate_->EnsureGpuService()) {
     gpu_service->CreateVideoEncodeAcceleratorProvider(
@@ -173,7 +152,7 @@ void GpuClientImpl::CreateVideoEncodeAcceleratorProvider(
   }
 }
 
-void GpuClientImpl::CreateGpuMemoryBuffer(
+void GpuClient::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
@@ -191,12 +170,12 @@ void GpuClientImpl::CreateGpuMemoryBuffer(
 
   gpu_memory_buffer_manager->AllocateGpuMemoryBuffer(
       id, client_id_, size, format, usage, gpu::kNullSurfaceHandle,
-      base::BindOnce(&GpuClientImpl::OnCreateGpuMemoryBuffer,
+      base::BindOnce(&GpuClient::OnCreateGpuMemoryBuffer,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void GpuClientImpl::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                           const gpu::SyncToken& sync_token) {
+void GpuClient::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                                       const gpu::SyncToken& sync_token) {
   if (auto* gpu_memory_buffer_manager =
           delegate_->GetGpuMemoryBufferManager()) {
     gpu_memory_buffer_manager->DestroyGpuMemoryBuffer(id, client_id_,
@@ -204,9 +183,9 @@ void GpuClientImpl::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
   }
 }
 
-void GpuClientImpl::CreateGpuMemoryBufferFactory(
+void GpuClient::CreateGpuMemoryBufferFactory(
     ui::mojom::GpuMemoryBufferFactoryRequest request) {
   gpu_memory_buffer_factory_bindings_.AddBinding(this, std::move(request));
 }
 
-}  // namespace content
+}  // namespace viz

@@ -24,7 +24,7 @@ class ContentGpuInterfaceProvider::InterfaceBinderImpl
   void BindGpuRequestOnGpuTaskRunner(ui::mojom::GpuRequest request) {
     // The GPU task runner is bound to the IO thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    auto gpu_client = content::GpuClient::Create(
+    auto gpu_client = content::CreateGpuClient(
         std::move(request),
         base::BindOnce(&InterfaceBinderImpl::OnGpuClientConnectionError, this),
         content::BrowserThread::GetTaskRunnerForThread(
@@ -42,14 +42,14 @@ class ContentGpuInterfaceProvider::InterfaceBinderImpl
   friend class base::RefCountedThreadSafe<InterfaceBinderImpl>;
   ~InterfaceBinderImpl() = default;
 
-  void OnGpuClientConnectionError(content::GpuClient* client) {
+  void OnGpuClientConnectionError(viz::GpuClient* client) {
     base::EraseIf(
         gpu_clients_,
-        base::UniquePtrMatcher<content::GpuClient, base::OnTaskRunnerDeleter>(
+        base::UniquePtrMatcher<viz::GpuClient, base::OnTaskRunnerDeleter>(
             client));
   }
 
-  std::vector<std::unique_ptr<content::GpuClient, base::OnTaskRunnerDeleter>>
+  std::vector<std::unique_ptr<viz::GpuClient, base::OnTaskRunnerDeleter>>
       gpu_clients_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceBinderImpl);

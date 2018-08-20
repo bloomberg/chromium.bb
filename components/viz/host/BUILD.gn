@@ -11,6 +11,9 @@ viz_component("host") {
   sources = [
     "client_frame_sink_video_capturer.cc",
     "client_frame_sink_video_capturer.h",
+    "gpu_client.cc",
+    "gpu_client.h",
+    "gpu_client_delegate.h",
     "hit_test/hit_test_query.cc",
     "hit_test/hit_test_query.h",
     "hit_test/hit_test_region_observer.h",
@@ -50,6 +53,7 @@ viz_component("host") {
   public_deps = [
     "//gpu/command_buffer/client",
     "//gpu/ipc/host",
+    "//services/ui/public/interfaces",
     "//services/viz/privileged/interfaces/compositing",
     "//services/viz/public/interfaces",
     "//ui/gfx/geometry",

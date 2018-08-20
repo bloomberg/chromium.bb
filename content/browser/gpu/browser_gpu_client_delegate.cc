@@ -14,7 +14,7 @@ namespace content {
 namespace {
 
 void OnEstablishGpuChannel(
-    GpuClientDelegate::EstablishGpuChannelCallback callback,
+    viz::GpuClientDelegate::EstablishGpuChannelCallback callback,
     mojo::ScopedMessagePipeHandle channel_handle,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
@@ -22,18 +22,19 @@ void OnEstablishGpuChannel(
   if (!callback)
     return;
 
-  GpuClientDelegate::EstablishGpuChannelStatus delegate_status;
+  viz::GpuClientDelegate::EstablishGpuChannelStatus delegate_status;
   switch (status) {
     case GpuProcessHost::EstablishChannelStatus::GPU_ACCESS_DENIED:
       delegate_status =
-          GpuClientDelegate::EstablishGpuChannelStatus::kGpuAccessDenied;
+          viz::GpuClientDelegate::EstablishGpuChannelStatus::kGpuAccessDenied;
       break;
     case GpuProcessHost::EstablishChannelStatus::GPU_HOST_INVALID:
       delegate_status =
-          GpuClientDelegate::EstablishGpuChannelStatus::kGpuHostInvalid;
+          viz::GpuClientDelegate::EstablishGpuChannelStatus::kGpuHostInvalid;
       break;
     case GpuProcessHost::EstablishChannelStatus::SUCCESS:
-      delegate_status = GpuClientDelegate::EstablishGpuChannelStatus::kSuccess;
+      delegate_status =
+          viz::GpuClientDelegate::EstablishGpuChannelStatus::kSuccess;
       break;
   }
   std::move(callback).Run(std::move(channel_handle), gpu_info, gpu_feature_info,
