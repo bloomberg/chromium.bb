@@ -20,9 +20,7 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
@@ -86,8 +84,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         setSessionsId();
 
         // Create the SyncNotificationController.
-        mSyncNotificationController = new SyncNotificationController(
-                PassphraseActivity.class, AccountManagementFragment.class);
+        mSyncNotificationController = new SyncNotificationController();
         mProfileSyncService.addSyncStateChangedListener(mSyncNotificationController);
 
         updateSyncStateFromAndroid();
