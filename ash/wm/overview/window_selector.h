@@ -108,7 +108,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Add |window| to the grid in |grid_list_| with the same root window. Does
   // nothing if the grid already contains |window|. And if |reposition| is true,
   // re-position all windows in the target window grid. If |animate| is true,
-  // re-position with animation. This function may be called in two scenarioes:
+  // re-position with animation. This function may be called in two scenarios:
   // 1) when a item in split view mode was previously snapped but should now be
   // returned to the window grid (e.g. split view divider dragged to either
   // edge, or a window is snapped to a postion that already has a snapped
@@ -175,19 +175,22 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   WindowSelectorDelegate* delegate() { return delegate_; }
 
-  int text_filter_bottom() const { return text_filter_bottom_; }
-
-  const std::vector<std::unique_ptr<WindowGrid>>& grid_list_for_testing()
-      const {
-    return grid_list_;
-  }
-
   SplitViewDragIndicators* split_view_drag_indicators() {
     return split_view_drag_indicators_.get();
   }
 
+  int text_filter_bottom() const { return text_filter_bottom_; }
+
+  bool use_slide_animation() const { return use_slide_animation_; }
+  void set_use_slide_animation(bool val) { use_slide_animation_ = val; }
+
   OverviewWindowDragController* window_drag_controller() {
     return window_drag_controller_.get();
+  }
+
+  const std::vector<std::unique_ptr<WindowGrid>>& grid_list_for_testing()
+      const {
+    return grid_list_;
   }
 
   // display::DisplayObserver:
@@ -299,6 +302,10 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // The distance between the top edge of the screen and the bottom edge of
   // the text filtering textfield.
   int text_filter_bottom_ = 0;
+
+  // If true, slide the overview items from the top of the screen on enter or
+  // slide the overview items to the top of the screen on exit.
+  bool use_slide_animation_ = false;
 
   // The selected item when exiting overview mode. nullptr if no window
   // selected.

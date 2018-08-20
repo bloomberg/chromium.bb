@@ -170,6 +170,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // |item_widget_|'s creation.
   void RestackItemWidget();
 
+  // Shift the window item up and then animates it to its original spot. Used
+  // to transition from the home launcher.
+  void SlideWindowIn();
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

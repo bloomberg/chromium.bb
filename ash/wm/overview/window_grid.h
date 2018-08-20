@@ -186,6 +186,11 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // Clears |nudge_data_|.
   void EndNudge();
 
+  // Called after PositionWindows when entering overview from the home launcher
+  // screen. Translates all windows vertically and animates to their final
+  // locations.
+  void SlideWindowsIn();
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 

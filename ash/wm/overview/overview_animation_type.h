@@ -30,6 +30,10 @@ enum OverviewAnimationType {
   // Used to animate hiding of a window that is closed while overview mode is
   // active.
   OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM,
+  // Used to animate windows upon entering or exiting overview mode to or from
+  // the home launcher.
+  OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
+  OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER,
 };
 
 }  // namespace ash

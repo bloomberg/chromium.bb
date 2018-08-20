@@ -187,7 +187,8 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
 
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() = default;
 
-void ScopedTransformOverviewWindow::RestoreWindow(bool reset_transform) {
+void ScopedTransformOverviewWindow::RestoreWindow(bool reset_transform,
+                                                  bool use_slide_animation) {
   // Shadow controller may be null on shutdown.
   if (Shell::Get()->shadow_controller())
     Shell::Get()->shadow_controller()->UpdateShadowForWindow(window_);
@@ -196,8 +197,11 @@ void ScopedTransformOverviewWindow::RestoreWindow(bool reset_transform) {
     mask_.reset();
     // Fade out the minimized widget. This animation continues past the
     // lifetime of |this|.
-    FadeOutWidgetOnExit(std::move(minimized_widget_),
-                        OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT);
+    FadeOutWidgetAndMaybeSlideOnExit(
+        std::move(minimized_widget_),
+        use_slide_animation ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
+                            : OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT,
+        use_slide_animation);
     return;
   }
 
@@ -586,7 +590,9 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   minimized_widget_->SetBounds(bounds);
   minimized_widget_->Show();
 
-  FadeInWidgetOnEnter(minimized_widget_.get());
+  FadeOutWidgetAndMaybeSlideOnEnter(
+      minimized_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+      /*slide=*/false);
 }
 
 void ScopedTransformOverviewWindow::CreateAndApplyMaskAndShadow() {
