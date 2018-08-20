@@ -763,9 +763,11 @@ static void setup_masks(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
           else
             lfm->lfl_y_hor[row][col] = level;
         } else if (plane == 1) {
-          lfm->lfl_u[row][col] = level;
+          lfm->lfl_u_ver[row][col] = level;
+          lfm->lfl_u_hor[row][col] = level;
         } else {
-          lfm->lfl_v[row][col] = level;
+          lfm->lfl_v_ver[row][col] = level;
+          lfm->lfl_v_hor[row][col] = level;
         }
       }
     }
@@ -1053,11 +1055,13 @@ void av1_setup_bitmask(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
       } else if (plane == 1) {
         av1_zero(lfm->left_u);
         av1_zero(lfm->above_u);
-        av1_zero(lfm->lfl_u);
+        av1_zero(lfm->lfl_u_ver);
+        av1_zero(lfm->lfl_u_hor);
       } else {
         av1_zero(lfm->left_v);
         av1_zero(lfm->above_v);
-        av1_zero(lfm->lfl_v);
+        av1_zero(lfm->lfl_v_ver);
+        av1_zero(lfm->lfl_v_hor);
       }
     }
   }
@@ -1469,6 +1473,7 @@ void av1_build_bitmask_vert_info(
   for (int r = 0; (r << MI_SIZE_LOG2) < plane_ptr->dst.height; r += row_step) {
     const int mi_row = r << subsampling_y;
     const int row = mi_row % MI_SIZE_64X64;
+    const int row_uv = row | subsampling_y;
     int index = 0;
     const int shift = get_index_shift(0, row, &index);
 
@@ -1482,13 +1487,14 @@ void av1_build_bitmask_vert_info(
         const int x = (c + col_in_unit) << MI_SIZE_LOG2;
         if (x >= plane_ptr->dst.width) break;
         const int col = col_in_unit << subsampling_x;
+        const int col_uv = col | subsampling_x;
         const uint64_t mask = ((uint64_t)1 << (shift | col));
         skip = lfm->skip.bits[index] & mask;
         is_coding_block_border = lfm->is_vert_border.bits[index] & mask;
         switch (plane) {
-          case 0: level = lfm->lfl_y_ver[row][col]; break;
-          case 1: level = lfm->lfl_u[row][col]; break;
-          case 2: level = lfm->lfl_v[row][col]; break;
+          case 0: level = lfm->lfl_y_ver[row_uv][col_uv]; break;
+          case 1: level = lfm->lfl_u_ver[row_uv][col_uv]; break;
+          case 2: level = lfm->lfl_v_ver[row_uv][col_uv]; break;
           default: assert(plane >= 0 && plane <= 2); return;
         }
         for (TX_SIZE ts = TX_4X4; ts <= TX_64X64; ++ts) {
@@ -1502,9 +1508,7 @@ void av1_build_bitmask_vert_info(
             (!prev_skip || !skip || is_coding_block_border)) {
           const TX_SIZE min_tx_size =
               AOMMIN(TX_16X16, AOMMIN(tx_size, prev_tx_size));
-          const int tmp_row = (mi_row | subsampling_y) % MI_SIZE_64X64;
-          const int tmp_col = (col | subsampling_x) % MI_SIZE_64X64;
-          const int shift_1 = get_index_shift(tmp_col, tmp_row, &index);
+          const int shift_1 = get_index_shift(col_uv, row_uv, &index);
           const uint64_t mask_1 = ((uint64_t)1 << shift_1);
           switch (plane) {
             case 0: lfm->left_y[min_tx_size].bits[index] |= mask_1; break;
@@ -1514,9 +1518,9 @@ void av1_build_bitmask_vert_info(
           }
           if (level == 0 && prev_level != 0) {
             switch (plane) {
-              case 0: lfm->lfl_y_ver[tmp_row][tmp_col] = prev_level; break;
-              case 1: lfm->lfl_u[tmp_row][tmp_col] = prev_level; break;
-              case 2: lfm->lfl_v[tmp_row][tmp_col] = prev_level; break;
+              case 0: lfm->lfl_y_ver[row_uv][col_uv] = prev_level; break;
+              case 1: lfm->lfl_u_ver[row_uv][col_uv] = prev_level; break;
+              case 2: lfm->lfl_v_ver[row_uv][col_uv] = prev_level; break;
               default: assert(plane >= 0 && plane <= 2); return;
             }
           }
@@ -1548,6 +1552,7 @@ void av1_build_bitmask_horz_info(
   for (int c = 0; (c << MI_SIZE_LOG2) < plane_ptr->dst.width; c += col_step) {
     const int mi_col = c << subsampling_x;
     const int col = mi_col % MI_SIZE_64X64;
+    const int col_uv = col | subsampling_x;
 
     for (int r = 0; (r << MI_SIZE_LOG2) < plane_ptr->dst.height;
          r += (tx_size_high_unit[TX_64X64] >> subsampling_y)) {
@@ -1559,15 +1564,16 @@ void av1_build_bitmask_horz_info(
         const int y = (r + r_in_unit) << MI_SIZE_LOG2;
         if (y >= plane_ptr->dst.height) break;
         const int row = r_in_unit << subsampling_y;
+        const int row_uv = row | subsampling_y;
         int index = 0;
         const int shift = get_index_shift(col, row, &index);
         const uint64_t mask = ((uint64_t)1 << shift);
         skip = lfm->skip.bits[index] & mask;
         is_coding_block_border = lfm->is_horz_border.bits[index] & mask;
         switch (plane) {
-          case 0: level = lfm->lfl_y_hor[row][col]; break;
-          case 1: level = lfm->lfl_u[row][col]; break;
-          case 2: level = lfm->lfl_v[row][col]; break;
+          case 0: level = lfm->lfl_y_hor[row_uv][col_uv]; break;
+          case 1: level = lfm->lfl_u_hor[row_uv][col_uv]; break;
+          case 2: level = lfm->lfl_v_hor[row_uv][col_uv]; break;
           default: assert(plane >= 0 && plane <= 2); return;
         }
         for (TX_SIZE ts = TX_4X4; ts <= TX_64X64; ++ts) {
@@ -1581,9 +1587,7 @@ void av1_build_bitmask_horz_info(
             (!prev_skip || !skip || is_coding_block_border)) {
           const TX_SIZE min_tx_size =
               AOMMIN(TX_16X16, AOMMIN(tx_size, prev_tx_size));
-          const int tmp_row = (row | subsampling_y) % MI_SIZE_64X64;
-          const int tmp_col = (mi_col | subsampling_x) % MI_SIZE_64X64;
-          const int shift_1 = get_index_shift(tmp_col, tmp_row, &index);
+          const int shift_1 = get_index_shift(col_uv, row_uv, &index);
           const uint64_t mask_1 = ((uint64_t)1 << shift_1);
 
           switch (plane) {
@@ -1594,9 +1598,9 @@ void av1_build_bitmask_horz_info(
           }
           if (level == 0 && prev_level != 0) {
             switch (plane) {
-              case 0: lfm->lfl_y_ver[tmp_row][tmp_col] = prev_level; break;
-              case 1: lfm->lfl_u[tmp_row][tmp_col] = prev_level; break;
-              case 2: lfm->lfl_v[tmp_row][tmp_col] = prev_level; break;
+              case 0: lfm->lfl_y_hor[row_uv][col_uv] = prev_level; break;
+              case 1: lfm->lfl_u_hor[row_uv][col_uv] = prev_level; break;
+              case 2: lfm->lfl_v_hor[row_uv][col_uv] = prev_level; break;
               default: assert(plane >= 0 && plane <= 2); return;
             }
           }
@@ -1644,6 +1648,7 @@ void av1_filter_block_plane_bitmask_vert(
     const int shift = get_index_shift(col, row, &index);
     int index_next = 0;
     const int shift_next = get_index_shift(col, row_next, &index_next);
+    const int has_next_row = row_next < cm->mi_rows;
     switch (pl) {
       case 0:
         mask_16x16 = lfm->left_y[TX_16X16].bits[index];
@@ -1656,15 +1661,15 @@ void av1_filter_block_plane_bitmask_vert(
         mask_16x16 = lfm->left_u[TX_16X16].bits[index];
         mask_8x8 = lfm->left_u[TX_8X8].bits[index];
         mask_4x4 = lfm->left_u[TX_4X4].bits[index];
-        lfl = &lfm->lfl_u[row][col];
-        lfl2 = &lfm->lfl_u[row_next][col];
+        lfl = &lfm->lfl_u_ver[row][col];
+        lfl2 = &lfm->lfl_u_ver[row_next][col];
         break;
       case 2:
         mask_16x16 = lfm->left_v[TX_16X16].bits[index];
         mask_8x8 = lfm->left_v[TX_8X8].bits[index];
         mask_4x4 = lfm->left_v[TX_4X4].bits[index];
-        lfl = &lfm->lfl_v[row][col];
-        lfl2 = &lfm->lfl_v[row_next][col];
+        lfl = &lfm->lfl_v_ver[row][col];
+        lfl2 = &lfm->lfl_v_ver[row_next][col];
         break;
       default: assert(pl >= 0 && pl <= 2); return;
     }
@@ -1674,6 +1679,11 @@ void av1_filter_block_plane_bitmask_vert(
     uint64_t mask_16x16_1 = (mask_16x16 >> shift_next) & mask_cutoff;
     uint64_t mask_8x8_1 = (mask_8x8 >> shift_next) & mask_cutoff;
     uint64_t mask_4x4_1 = (mask_4x4 >> shift_next) & mask_cutoff;
+    if (!has_next_row) {
+      mask_16x16_1 = 0;
+      mask_8x8_1 = 0;
+      mask_4x4_1 = 0;
+    }
 
     if (cm->seq_params.use_highbitdepth)
       highbd_filter_selectively_vert_row2(
@@ -1728,13 +1738,13 @@ void av1_filter_block_plane_bitmask_horz(
         mask_16x16 = lfm->above_u[TX_16X16].bits[index];
         mask_8x8 = lfm->above_u[TX_8X8].bits[index];
         mask_4x4 = lfm->above_u[TX_4X4].bits[index];
-        lfl = &lfm->lfl_u[row][col];
+        lfl = &lfm->lfl_u_hor[row][col];
         break;
       case 2:
         mask_16x16 = lfm->above_v[TX_16X16].bits[index];
         mask_8x8 = lfm->above_v[TX_8X8].bits[index];
         mask_4x4 = lfm->above_v[TX_4X4].bits[index];
-        lfl = &lfm->lfl_v[row][col];
+        lfl = &lfm->lfl_v_hor[row][col];
         break;
       default: assert(pl >= 0 && pl <= 2); return;
     }
@@ -1772,10 +1782,10 @@ void av1_filter_block_plane_ver(AV1_COMMON *const cm,
   uint8_t *lfl2;
 
   // filter two rows at a time
-  for (r = 0; r < cm->seq_params.sb_size &&
+  for (r = 0; r < cm->seq_params.mib_size &&
               ((mi_row + r) << MI_SIZE_LOG2 < cm->height);
        r += r_step) {
-    for (c = 0; c < cm->seq_params.sb_size &&
+    for (c = 0; c < cm->seq_params.mib_size &&
                 ((mi_col + c) << MI_SIZE_LOG2 < cm->width);
          c += MI_SIZE_64X64) {
       dst->buf += ((c << MI_SIZE_LOG2) >> ssx);
@@ -1802,15 +1812,15 @@ void av1_filter_block_plane_ver(AV1_COMMON *const cm,
           mask_16x16 = lfm->left_u[TX_16X16].bits[index];
           mask_8x8 = lfm->left_u[TX_8X8].bits[index];
           mask_4x4 = lfm->left_u[TX_4X4].bits[index];
-          lfl = &lfm->lfl_u[row][col];
-          lfl2 = &lfm->lfl_u[row_next][col];
+          lfl = &lfm->lfl_u_ver[row][col];
+          lfl2 = &lfm->lfl_u_ver[row_next][col];
           break;
         case 2:
           mask_16x16 = lfm->left_v[TX_16X16].bits[index];
           mask_8x8 = lfm->left_v[TX_8X8].bits[index];
           mask_4x4 = lfm->left_v[TX_4X4].bits[index];
-          lfl = &lfm->lfl_v[row][col];
-          lfl2 = &lfm->lfl_v[row_next][col];
+          lfl = &lfm->lfl_v_ver[row][col];
+          lfl2 = &lfm->lfl_v_ver[row_next][col];
           break;
         default: assert(pl >= 0 && pl <= 2); return;
       }
@@ -1851,10 +1861,10 @@ void av1_filter_block_plane_hor(AV1_COMMON *const cm,
   uint64_t mask_4x4 = 0;
   uint8_t *lfl;
 
-  for (r = 0; r < cm->seq_params.sb_size &&
+  for (r = 0; r < cm->seq_params.mib_size &&
               ((mi_row + r) << MI_SIZE_LOG2 < cm->height);
        r += r_step) {
-    for (c = 0; c < cm->seq_params.sb_size &&
+    for (c = 0; c < cm->seq_params.mib_size &&
                 ((mi_col + c) << MI_SIZE_LOG2 < cm->width);
          c += MI_SIZE_64X64) {
       if (mi_row + r == 0) continue;
@@ -1877,13 +1887,13 @@ void av1_filter_block_plane_hor(AV1_COMMON *const cm,
           mask_16x16 = lfm->above_u[TX_16X16].bits[index];
           mask_8x8 = lfm->above_u[TX_8X8].bits[index];
           mask_4x4 = lfm->above_u[TX_4X4].bits[index];
-          lfl = &lfm->lfl_u[row][col];
+          lfl = &lfm->lfl_u_hor[row][col];
           break;
         case 2:
           mask_16x16 = lfm->above_v[TX_16X16].bits[index];
           mask_8x8 = lfm->above_v[TX_8X8].bits[index];
           mask_4x4 = lfm->above_v[TX_4X4].bits[index];
-          lfl = &lfm->lfl_v[row][col];
+          lfl = &lfm->lfl_v_hor[row][col];
           break;
         default: assert(pl >= 0 && pl <= 2); return;
       }
@@ -2347,27 +2357,24 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
       av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, 0, 0,
                            plane, plane + 1);
 
-      av1_filter_block_plane_vert_test(cm, xd, plane, &pd[plane], 0, 0);
-      av1_filter_block_plane_horz_test(cm, xd, plane, &pd[plane], 0, 0);
-
       av1_build_bitmask_vert_info(cm, &pd[plane], plane);
       av1_build_bitmask_horz_info(cm, &pd[plane], plane);
 
       // apply loop filtering which only goes through buffer once
       for (mi_row = start; mi_row < stop; mi_row += MI_SIZE_64X64) {
         for (mi_col = col_start; mi_col < col_end; mi_col += MI_SIZE_64X64) {
-          av1_setup_dst_planes(pd, MI_SIZE_64X64, frame_buffer, mi_row, mi_col,
+          av1_setup_dst_planes(pd, BLOCK_64X64, frame_buffer, mi_row, mi_col,
                                plane, plane + 1);
           av1_filter_block_plane_bitmask_vert(cm, &pd[plane], plane, mi_row,
                                               mi_col);
           if (mi_col - MI_SIZE_64X64 >= 0) {
-            av1_setup_dst_planes(pd, MI_SIZE_64X64, frame_buffer, mi_row,
+            av1_setup_dst_planes(pd, BLOCK_64X64, frame_buffer, mi_row,
                                  mi_col - MI_SIZE_64X64, plane, plane + 1);
             av1_filter_block_plane_bitmask_horz(cm, &pd[plane], plane, mi_row,
                                                 mi_col - MI_SIZE_64X64);
           }
         }
-        av1_setup_dst_planes(pd, MI_SIZE_64X64, frame_buffer, mi_row,
+        av1_setup_dst_planes(pd, BLOCK_64X64, frame_buffer, mi_row,
                              mi_col - MI_SIZE_64X64, plane, plane + 1);
         av1_filter_block_plane_bitmask_horz(cm, &pd[plane], plane, mi_row,
                                             mi_col - MI_SIZE_64X64);

@@ -1561,9 +1561,13 @@ static void store_bitmask_other_info(AV1_COMMON *cm, int mi_row, int mi_col,
            sizeof(uint8_t) * mi_size_wide[bsize]);
     memset(&lfm->lfl_y_hor[row][col_start], level_horz_y,
            sizeof(uint8_t) * mi_size_wide[bsize]);
-    memset(&lfm->lfl_u[row][col_start], level_u,
+    memset(&lfm->lfl_u_ver[row][col_start], level_u,
            sizeof(uint8_t) * mi_size_wide[bsize]);
-    memset(&lfm->lfl_v[row][col_start], level_v,
+    memset(&lfm->lfl_u_hor[row][col_start], level_u,
+           sizeof(uint8_t) * mi_size_wide[bsize]);
+    memset(&lfm->lfl_v_ver[row][col_start], level_v,
+           sizeof(uint8_t) * mi_size_wide[bsize]);
+    memset(&lfm->lfl_v_hor[row][col_start], level_v,
            sizeof(uint8_t) * mi_size_wide[bsize]);
   }
 }
