@@ -93,7 +93,6 @@ class CORE_EXPORT PendingScript
   // https://html.spec.whatwg.org/multipage/scripting.html#the-script-is-ready
   virtual bool IsReady() const = 0;
   virtual bool IsExternal() const = 0;
-  virtual bool ErrorOccurred() const = 0;
   virtual bool WasCanceled() const = 0;
 
   // Support for script streaming.

@@ -335,7 +335,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   CheckState();
   DCHECK(IsReady());
 
-  if (ErrorOccurred())
+  if (ready_state_ == kErrorOccurred)
     return nullptr;
 
   if (!is_external_) {
@@ -422,11 +422,6 @@ void ClassicPendingScript::SetStreamer(ScriptStreamer* streamer) {
 bool ClassicPendingScript::IsReady() const {
   CheckState();
   return ready_state_ >= kReady;
-}
-
-bool ClassicPendingScript::ErrorOccurred() const {
-  CheckState();
-  return ready_state_ == kErrorOccurred;
 }
 
 void ClassicPendingScript::AdvanceReadyState(ReadyState new_ready_state) {

@@ -62,7 +62,6 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   ClassicScript* GetSource(const KURL& document_url) const override;
   bool IsReady() const override;
   bool IsExternal() const override { return is_external_; }
-  bool ErrorOccurred() const override;
   bool WasCanceled() const override;
   bool StartStreamingIfPossible(base::OnceClosure) override;
   bool IsCurrentlyStreaming() const override;
