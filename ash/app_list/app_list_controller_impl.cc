@@ -465,12 +465,14 @@ void AppListControllerImpl::OnOverviewModeStarting() {
     DismissAppList();
     return;
   }
-  UpdateHomeLauncherVisibility();
+  presenter_.ScheduleOverviewModeAnimation(true /* start */);
 }
 
 void AppListControllerImpl::OnOverviewModeEnding() {
   in_overview_mode_ = false;
-  UpdateHomeLauncherVisibility();
+
+  if (IsHomeLauncherEnabledInTabletMode())
+    presenter_.ScheduleOverviewModeAnimation(false /* start */);
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {

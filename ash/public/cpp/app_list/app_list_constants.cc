@@ -97,10 +97,6 @@ const int kBottomSeparatorLeftRightPadding = 24;
 // The bottom padding from the bottom separator to the top of the app item.
 const int kBottomSeparatorBottomPadding = 24;
 
-// The padding around the outside of the search box (top and sides).
-const int kSearchBoxPadding = 16;
-const int kSearchBoxTopPadding = 24;
-
 // Bottom padding of search box in peeking state.
 const int kSearchBoxPeekingBottomPadding = 12;
 

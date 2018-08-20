@@ -20,6 +20,7 @@
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -387,7 +388,8 @@ gfx::Rect ContentsView::GetDefaultSearchBoxBounds() const {
   search_box_bounds.set_size(GetSearchBoxView()->GetPreferredSize());
   search_box_bounds.Offset((bounds().width() - search_box_bounds.width()) / 2,
                            0);
-  search_box_bounds.set_y(kSearchBoxTopPadding);
+  search_box_bounds.set_y(
+      AppListConfig::instance().search_box_fullscreen_top_padding());
   return search_box_bounds;
 }
 

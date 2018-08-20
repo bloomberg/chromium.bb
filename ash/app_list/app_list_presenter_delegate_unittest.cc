@@ -1335,8 +1335,8 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseScrollToDismiss) {
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
-// Tests the app list visibility in overview mode.
-TEST_F(AppListPresenterDelegateHomeLauncherTest, VisibilityInOverviewMode) {
+// Tests the app list opacity in overview mode.
+TEST_F(AppListPresenterDelegateHomeLauncherTest, OpacityInOverviewMode) {
   // Show app list in tablet mode.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
@@ -1346,12 +1346,13 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, VisibilityInOverviewMode) {
       Shell::Get()->window_selector_controller();
   window_selector_controller->ToggleOverview();
   EXPECT_TRUE(window_selector_controller->IsSelecting());
-  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  ui::Layer* layer = GetAppListView()->app_list_main_view()->layer();
+  EXPECT_EQ(0.0f, layer->opacity());
 
   // Disable overview mode.
   window_selector_controller->ToggleOverview();
   EXPECT_FALSE(window_selector_controller->IsSelecting());
-  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(1.0f, layer->opacity());
 }
 
 // Tests the app list visibility during wallpaper preview.
@@ -1420,13 +1421,14 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, DragFromShelf) {
 
   // Enable overview mode to hide the app list.
   Shell::Get()->window_selector_controller()->ToggleOverview();
-  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  ui::Layer* layer = GetAppListView()->app_list_main_view()->layer();
+  EXPECT_EQ(0.0f, layer->opacity());
 
   // Drag from the shelf.
   generator->GestureScrollSequence(gfx::Point(540, 890), gfx::Point(540, 0),
                                    base::TimeDelta::FromMilliseconds(100), 10);
   GetAppListTestHelper()->WaitUntilIdle();
-  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  EXPECT_EQ(0.0f, layer->opacity());
 }
 
 // Tests that the app list button will minimize all windows.
