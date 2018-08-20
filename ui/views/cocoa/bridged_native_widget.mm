@@ -393,7 +393,7 @@ void BridgedNativeWidget::SetRootView(views::View* view) {
 
   if (view) {
     bridged_view_.reset(
-        [[BridgedContentView alloc] initWithHost:host_ view:view]);
+        [[BridgedContentView alloc] initWithBridge:this view:view]);
     drag_drop_client_.reset(new DragDropClientMac(this, view));
 
     // Objective C initializers can return nil. However, if |view| is non-NULL

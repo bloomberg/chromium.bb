@@ -204,6 +204,7 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   NativeWidgetMac* native_widget_mac() { return native_widget_mac_; }
   BridgedContentView* ns_view() { return bridged_view_; }
+  BridgedNativeWidgetHost* host() { return host_; }
   NSWindow* ns_window();
 
   TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
@@ -266,6 +267,10 @@ class VIEWS_EXPORT BridgedNativeWidget
   // of TextInputClient out of BridgedContentView.
   void SetTextInputClient(ui::TextInputClient* text_input_client);
 
+  // Compute the window and content size, and forward them to |host_|. This will
+  // update widget and compositor size.
+  void UpdateWindowGeometry();
+
  private:
   friend class test::BridgedNativeWidgetTestApi;
 
@@ -277,10 +282,6 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Installs the NSView for hosting the composited layer.
   void AddCompositorSuperview();
-
-  // Compute the window and content size, and forward them to |host_|. This will
-  // update widget and compositor size.
-  void UpdateWindowGeometry();
 
   // Query the display properties of the monitor that |window_| is on, and
   // forward them to |host_|.

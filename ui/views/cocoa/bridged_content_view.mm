@@ -276,8 +276,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 @synthesize textInputClient = textInputClient_;
 @synthesize drawMenuBackgroundForBlur = drawMenuBackgroundForBlur_;
 
-- (id)initWithHost:(views::BridgedNativeWidgetHost*)host
-              view:(views::View*)viewToHost {
+- (id)initWithBridge:(views::BridgedNativeWidget*)bridge
+                view:(views::View*)viewToHost {
   DCHECK(viewToHost);
   gfx::Rect bounds = viewToHost->bounds();
   // To keep things simple, assume the origin is (0, 0) until there exists a use
@@ -285,7 +285,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   DCHECK(bounds.origin().IsOrigin());
   NSRect initialFrame = NSMakeRect(0, 0, bounds.width(), bounds.height());
   if ((self = [super initWithFrame:initialFrame])) {
-    host_ = host;
+    bridge_ = bridge;
     hostedView_ = viewToHost;
 
     // Apple's documentation says that NSTrackingActiveAlways is incompatible
@@ -327,7 +327,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 - (void)clearView {
   [self setTextInputClient:nullptr];
-  host_ = nullptr;
+  bridge_ = nullptr;
   hostedView_ = nullptr;
   [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
   [cursorTrackingArea_.get() clearOwner];
@@ -400,14 +400,15 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (NSView*)hitTest:(NSPoint)point {
   gfx::Point flippedPoint(point.x, NSHeight(self.superview.bounds) - point.y);
   bool isDraggableBackground = false;
-  host_->GetIsDraggableBackgroundAt(flippedPoint, &isDraggableBackground);
+  bridge_->host()->GetIsDraggableBackgroundAt(flippedPoint,
+                                              &isDraggableBackground);
   if (isDraggableBackground)
     return nil;
   return [super hitTest:point];
 }
 
 - (void)processCapturedMouseEvent:(NSEvent*)theEvent {
-  if (!host_)
+  if (!bridge_)
     return;
 
   NSWindow* source = [theEvent window];
@@ -433,19 +434,19 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (isScrollEvent) {
     ui::ScrollEvent event(theEvent);
     event.set_location(event_location);
-    host_->OnScrollEvent(event);
+    bridge_->host()->OnScrollEvent(event);
   } else {
     ui::MouseEvent event(theEvent);
     event.set_location(event_location);
-    host_->OnMouseEvent(event);
+    bridge_->host()->OnMouseEvent(event);
   }
 }
 
 - (void)updateTooltipIfRequiredAt:(const gfx::Point&)locationInContent {
-  DCHECK(host_);
+  DCHECK(bridge_);
   base::string16 newTooltipText;
 
-  host_->GetTooltipTextAt(locationInContent, &newTooltipText);
+  bridge_->host()->GetTooltipTextAt(locationInContent, &newTooltipText);
   if (newTooltipText != lastTooltipText_) {
     std::swap(newTooltipText, lastTooltipText_);
     [self setToolTipAtMousePoint:base::SysUTF16ToNSString(lastTooltipText_)];
@@ -453,9 +454,9 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (void)updateFullKeyboardAccess {
-  if (!host_)
+  if (!bridge_)
     return;
-  host_->SetKeyboardAccessible([NSApp isFullKeyboardAccessEnabled]);
+  bridge_->host()->SetKeyboardAccessible([NSApp isFullKeyboardAccessEnabled]);
 }
 
 // BridgedContentView private implementation.
@@ -625,9 +626,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (views::DragDropClientMac*)dragDropClient {
-  views::BridgedNativeWidget* bridge =
-      views::NativeWidgetMac::GetBridgeForNativeWindow([self window]);
-  return bridge ? bridge->drag_drop_client() : nullptr;
+  return bridge_ ? bridge_->drag_drop_client() : nullptr;
 }
 
 - (void)undo:(id)sender {
@@ -682,7 +681,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 // Translates the location of |theEvent| to toolkit-views coordinates and passes
 // the event to NativeWidgetMac for handling.
 - (void)mouseEvent:(NSEvent*)theEvent {
-  if (!host_)
+  if (!bridge_)
     return;
 
   DCHECK([theEvent type] != NSScrollWheel);
@@ -692,7 +691,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // Aura updates tooltips with the help of aura::Window::AddPreTargetHandler().
   // Mac hooks in here.
   [self updateTooltipIfRequiredAt:event.location()];
-  host_->OnMouseEvent(event);
+  bridge_->host()->OnMouseEvent(event);
 }
 
 - (void)forceTouchEvent:(NSEvent*)theEvent {
@@ -712,15 +711,15 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if ([[self window] firstResponder] != self)
     return NO;
   BOOL result = [super becomeFirstResponder];
-  if (result && host_)
-    host_->SetIsFirstResponder(true);
+  if (result && bridge_)
+    bridge_->host()->SetIsFirstResponder(true);
   return result;
 }
 
 - (BOOL)resignFirstResponder {
   BOOL result = [super resignFirstResponder];
-  if (result && host_)
-    host_->SetIsFirstResponder(false);
+  if (result && bridge_)
+    bridge_->host()->SetIsFirstResponder(false);
   return result;
 }
 
@@ -739,13 +738,21 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // window containing it, since AppKit requires a titlebar to give frameless
   // windows correct shadows and rounded corners.
   NSWindow* window = [self window];
-  if (window && [window contentView] == self)
+  if (window && [window contentView] == self) {
     newSize = [window contentRectForFrameRect:[window frame]].size;
+    // Ensure that the window geometry be updated on the host side before the
+    // view size is updated.
+    // TODO(ccameron): Consider updating the view size and window size and
+    // position together in UpdateWindowGeometry.
+    // https://crbug.com/875776, https://crbug.com/875731
+    if (bridge_)
+      bridge_->UpdateWindowGeometry();
+  }
 
   [super setFrameSize:newSize];
-  if (!host_)
-    return;
-  host_->SetViewSize(gfx::Size(newSize.width, newSize.height));
+
+  if (bridge_)
+    bridge_->host()->SetViewSize(gfx::Size(newSize.width, newSize.height));
 }
 
 - (BOOL)isOpaque {
@@ -849,7 +856,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (void)scrollWheel:(NSEvent*)theEvent {
-  if (!host_)
+  if (!bridge_)
     return;
 
   ui::ScrollEvent event(theEvent);
@@ -858,13 +865,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // Aura updates tooltips with the help of aura::Window::AddPreTargetHandler().
   // Mac hooks in here.
   [self updateTooltipIfRequiredAt:event.location()];
-  host_->OnScrollEvent(event);
+  bridge_->host()->OnScrollEvent(event);
 }
 
 // Called when we get a three-finger swipe, and they're enabled in System
 // Preferences.
 - (void)swipeWithEvent:(NSEvent*)event {
-  if (!host_)
+  if (!bridge_)
     return;
 
   // themblsha: In my testing all three-finger swipes send only a single event
@@ -885,11 +892,11 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   ui::GestureEvent gestureEvent(location.x(), location.y(),
                                 ui::EventFlagsFromNative(event),
                                 ui::EventTimeFromNative(event), swipeDetails);
-  host_->OnGestureEvent(gestureEvent);
+  bridge_->host()->OnGestureEvent(gestureEvent);
 }
 
 - (void)quickLookWithEvent:(NSEvent*)theEvent {
-  if (!host_)
+  if (!bridge_)
     return;
 
   const gfx::Point locationInContent =
@@ -898,8 +905,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   bool foundWord = false;
   gfx::DecoratedText decoratedWord;
   gfx::Point baselinePoint;
-  host_->GetWordAt(locationInContent, &foundWord, &decoratedWord,
-                   &baselinePoint);
+  bridge_->host()->GetWordAt(locationInContent, &foundWord, &decoratedWord,
+                             &baselinePoint);
   if (!foundWord)
     return;
 
