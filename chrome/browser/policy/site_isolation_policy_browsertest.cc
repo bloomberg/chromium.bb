@@ -116,31 +116,9 @@ class IsolateOriginsPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
 class WebDriverSitePerProcessPolicyBrowserTest
     : public SitePerProcessPolicyBrowserTestEnabled {
  protected:
-  WebDriverSitePerProcessPolicyBrowserTest()
-      : are_sites_isolated_for_testing_(false) {}
+  WebDriverSitePerProcessPolicyBrowserTest() = default;
 
   void SetUpInProcessBrowserTestFixture() override {
-    // First take note if tests are running in site isolated environment as this
-    // will change the outcome of the test. We can't just call this method after
-    // the call to the base setup method because setting the Site Isolation
-    // policy is indistinguishable from setting the the command line flag
-    // directly.
-#if defined(OFFICIAL_BUILD)
-    // Official builds still default to no site isolation (i.e. official builds
-    // are not covered by testing/variations/fieldtrial_testing_config.json).
-    // See also https://crbug.com/836261.
-    are_sites_isolated_for_testing_ = false;
-#else
-    // Otherwise, site-per-process is turned on by default, via field trial
-    // configured with testing/variations/fieldtrial_testing_config.json.
-    // The only exception is the not_site_per_process_browser_tests step run on
-    // some trybots - in this step the --disable-site-isolation-trials flag
-    // counteracts the effects of fieldtrial_testing_config.json.
-    are_sites_isolated_for_testing_ =
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSiteIsolationTrials);
-#endif
-
     // We setup the policy here, because the policy must be 'live' before the
     // renderer is created, since the value for this policy is passed to the
     // renderer via a command-line. Setting the policy in the test itself or in
@@ -155,8 +133,6 @@ class WebDriverSitePerProcessPolicyBrowserTest
                nullptr);
     provider_.UpdateChromePolicy(values);
   }
-
-  bool are_sites_isolated_for_testing_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebDriverSitePerProcessPolicyBrowserTest);
@@ -200,8 +176,8 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPolicyBrowserTest, Simple) {
 
 IN_PROC_BROWSER_TEST_F(WebDriverSitePerProcessPolicyBrowserTest, Simple) {
   Expectations expectations[] = {
-      {"https://foo.com/noodles.html", are_sites_isolated_for_testing_},
-      {"http://example.org/pumpkins.html", are_sites_isolated_for_testing_},
+      {"https://foo.com/noodles.html", true},
+      {"http://example.org/pumpkins.html", true},
   };
   CheckExpectations(expectations, arraysize(expectations));
 }
