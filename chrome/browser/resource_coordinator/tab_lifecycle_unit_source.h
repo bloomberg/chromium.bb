@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_base.h"
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -153,6 +154,10 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // Observers notified when the discarded or auto-discardable state of a tab
   // changes.
   base::ObserverList<TabLifecycleObserver>::Unchecked tab_lifecycle_observers_;
+
+  // PageSignalReceiver is a static singleton so it outlives this object.
+  ScopedObserver<PageSignalReceiver, PageSignalObserver>
+      page_signal_receiver_observer_;
 
   // The intervention policy database used to assist freezing/discarding
   // decisions.
