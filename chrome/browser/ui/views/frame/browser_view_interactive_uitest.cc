@@ -56,9 +56,16 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_FullscreenClearsFocus) {
   EXPECT_FALSE(location_bar_view->Contains(focus_manager->GetFocusedView()));
 }
 
+#if defined(OS_MACOSX)
+// Frequently hits "Check failed: browser_view_->IsTabStripVisible()". See
+// http://crbug.com/875707 for details.
+#define MAYBE_BrowserFullscreenShowTopView DISABLED_BrowserFullscreenShowTopView
+#else
+#define MAYBE_BrowserFullscreenShowTopView BrowserFullscreenShowTopView
+#endif
 // Test whether the top view including toolbar and tab strip shows up or hides
 // correctly in browser fullscreen mode.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_BrowserFullscreenShowTopView) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
 #if defined(OS_MACOSX)
   // First, set the preference to true so we expect to see the top view in
@@ -121,9 +128,16 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
   EXPECT_TRUE(browser_view->IsTabStripVisible());
 }
 
+#if defined(OS_MACOSX)
+// Frequently hits "Check failed: browser_view_->IsTabStripVisible()". See
+// http://crbug.com/875707 for details.
+#define MAYBE_TabFullscreenShowTopView DISABLED_TabFullscreenShowTopView
+#else
+#define MAYBE_TabFullscreenShowTopView TabFullscreenShowTopView
+#endif
 // Test whether the top view including toolbar and tab strip appears or hides
 // correctly in tab fullscreen mode.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, DISABLED_TabFullscreenShowTopView) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_TabFullscreenShowTopView) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
 
   // The top view should always show up in regular mode.
@@ -147,8 +161,15 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, DISABLED_TabFullscreenShowTopView) {
   EXPECT_TRUE(browser_view->IsTabStripVisible());
 }
 
+#if defined(OS_MACOSX)
+// Frequently hits "Check failed: browser_view_->IsTabStripVisible()". See
+// http://crbug.com/875707 for details.
+#define MAYBE_FullscreenShowBookmarkBar DISABLED_FullscreenShowBookmarkBar
+#else
+#define MAYBE_FullscreenShowBookmarkBar FullscreenShowBookmarkBar
+#endif
 // Test whether bookmark bar shows up or hides correctly for fullscreen modes.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, FullscreenShowBookmarkBar) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_FullscreenShowBookmarkBar) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
 
   // If the bookmark bar is not showing, enable showing it so that we can check
