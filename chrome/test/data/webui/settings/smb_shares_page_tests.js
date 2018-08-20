@@ -104,4 +104,18 @@ suite('AddSmbShareDialogTests', function() {
     return smbBrowserProxy.whenCalled('startDiscovery');
   });
 
+  test('ControlledByPolicy', function() {
+    const button = page.$$('#addShare');
+
+    assertFalse(!!page.$$('cr-policy-pref-indicator'));
+    expectFalse(button.disabled);
+
+    page.prefs = {
+      network_file_shares: {allowed: {value: false}},
+    };
+    Polymer.dom.flush();
+
+    assertTrue(!!page.$$('cr-policy-pref-indicator'));
+    assertTrue(button.disabled);
+  });
 });

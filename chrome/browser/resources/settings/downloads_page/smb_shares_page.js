@@ -8,6 +8,14 @@ Polymer({
   behaviors: [WebUIListenerBehavior],
 
   properties: {
+    /**
+     * Preferences state.
+     */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
     /** @private */
     showAddSmbDialog_: Boolean,
 

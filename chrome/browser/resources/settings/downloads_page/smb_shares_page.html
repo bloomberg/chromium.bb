@@ -24,8 +24,16 @@
           $i18n{requireNetworkMessage}
         </div>
       </div>
+      <template is="dom-if" if="[[!prefs.network_file_shares.allowed.value]]"
+          restamp>
+        <cr-policy-pref-indicator
+            pref="[[prefs.network_file_shares.allowed]]"
+            icon-aria-label="$i18n{smbSharesTitle}">
+        </cr-policy-pref-indicator>
+      </template>
       <paper-button class="action-button" id="addShare"
-          on-click="onAddShareTap_">
+          on-click="onAddShareTap_"
+          disabled="[[!prefs.network_file_shares.allowed.value]]">
         $i18n{addSmbShare}
       </paper-button>
     </div>
