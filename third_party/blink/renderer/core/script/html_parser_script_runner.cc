@@ -80,14 +80,9 @@ std::unique_ptr<TracedValue> GetTraceArgsForScriptElement(
 }
 
 void DoExecuteScript(PendingScript* pending_script, const KURL& document_url) {
-  ScriptElementBase* element = pending_script->GetElement();
-  const char* const trace_event_name =
-      pending_script->ErrorOccurred()
-          ? "HTMLParserScriptRunner ExecuteScriptFailed"
-          : "HTMLParserScriptRunner ExecuteScript";
-  TRACE_EVENT_WITH_FLOW1("blink", trace_event_name, element,
-                         TRACE_EVENT_FLAG_FLOW_IN, "data",
-                         GetTraceArgsForScriptElement(pending_script));
+  TRACE_EVENT_WITH_FLOW1("blink", "HTMLParserScriptRunner ExecuteScript",
+                         pending_script->GetElement(), TRACE_EVENT_FLAG_FLOW_IN,
+                         "data", GetTraceArgsForScriptElement(pending_script));
   pending_script->ExecuteScriptBlock(document_url);
 }
 
