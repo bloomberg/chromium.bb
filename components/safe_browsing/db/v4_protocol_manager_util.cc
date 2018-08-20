@@ -45,7 +45,7 @@ std::string Unescape(const std::string& url) {
   int loop_var = 0;
   do {
     old_size = unescaped_str.size();
-    unescaped_str = net::UnescapeBinaryURLComponent(unescaped_str);
+    net::UnescapeBinaryURLComponent(unescaped_str, &unescaped_str);
   } while (old_size != unescaped_str.size() &&
            ++loop_var <= kMaxLoopIterations);
 

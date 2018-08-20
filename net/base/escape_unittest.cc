@@ -411,8 +411,13 @@ TEST(EscapeTest, UnescapeBinaryURLComponent) {
   };
 
   for (const auto& test_case : kTestCases) {
-    EXPECT_EQ(std::string(test_case.output),
-              UnescapeBinaryURLComponent(test_case.input, test_case.rules));
+    std::string output;
+    UnescapeBinaryURLComponent(test_case.input, test_case.rules, &output);
+    EXPECT_EQ(std::string(test_case.output), output);
+    // Also test in-place unescaping.
+    output = test_case.input;
+    UnescapeBinaryURLComponent(output, test_case.rules, &output);
+    EXPECT_EQ(std::string(test_case.output), output);
   }
 
   // Test NULL character unescaping, which can't be tested above since those are
@@ -425,7 +430,13 @@ TEST(EscapeTest, UnescapeBinaryURLComponent) {
   expected.push_back(0);
   expected.push_back(0);
   expected.append("9Test");
-  EXPECT_EQ(expected, UnescapeBinaryURLComponent(input));
+  std::string output;
+  UnescapeBinaryURLComponent(input, &output);
+  EXPECT_EQ(expected, output);
+  // Also test in-place unescaping.
+  output = input;
+  UnescapeBinaryURLComponent(output, &output);
+  EXPECT_EQ(expected, output);
 }
 
 TEST(EscapeTest, EscapeForHTML) {
