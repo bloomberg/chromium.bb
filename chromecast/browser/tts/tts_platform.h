@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// PLEASE NOTE: this is a copy with modifications from chrome/browser/speech.
-// It is temporary until a refactoring to move the chrome TTS implementation up
-// into components and extensions/components can be completed.
-
 #ifndef CHROMECAST_BROWSER_TTS_TTS_PLATFORM_H_
 #define CHROMECAST_BROWSER_TTS_TTS_PLATFORM_H_
 
@@ -29,14 +25,6 @@ class TtsPlatformImpl {
 
   // Returns true if this platform implementation is supported and available.
   virtual bool PlatformImplAvailable() = 0;
-
-  // Some platforms may provide a built-in TTS extension. Returns true
-  // if the extension was not previously loaded and is now loading, and
-  // false if it's already loaded or if there's no extension to load.
-  // Will call TtsController::RetrySpeakingQueuedUtterances when
-  // the extension finishes loading.
-  virtual bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context);
 
   // Speak the given utterance with the given parameters if possible,
   // and return true on success. Utterance will always be nonempty.

@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// PLEASE NOTE: this is a copy with modifications from chrome/browser/speech.
-// It is temporary until a refactoring to move the chrome TTS implementation up
-// into components and extensions/components can be completed.
-
 #ifndef CHROMECAST_BROWSER_TTS_TTS_CONTROLLER_IMPL_H_
 #define CHROMECAST_BROWSER_TTS_TTS_CONTROLLER_IMPL_H_
 
@@ -23,7 +19,7 @@
 
 namespace content {
 class BrowserContext;
-}
+}  // namespace content
 
 // Singleton class that manages text-to-speech for the TTS and TTS engine
 // extension APIs, maintaining a queue of pending utterances and keeping
@@ -45,10 +41,6 @@ class TtsControllerImpl : public TtsController {
                   const std::string& error_message) override;
   void GetVoices(content::BrowserContext* browser_context,
                  std::vector<VoiceData>* out_voices) override;
-  void VoicesChanged() override;
-  void AddVoicesChangedDelegate(VoicesChangedDelegate* delegate) override;
-  void RemoveVoicesChangedDelegate(VoicesChangedDelegate* delegate) override;
-  void RemoveUtteranceEventDelegate(UtteranceEventDelegate* delegate) override;
   void SetPlatformImpl(std::unique_ptr<TtsPlatformImpl> platform_impl) override;
   int QueueSize() override;
 
@@ -86,8 +78,6 @@ class TtsControllerImpl : public TtsController {
   // pulled from user prefs, and may not be the same as other platforms.
   void UpdateUtteranceDefaults(Utterance* utterance);
 
-  friend struct base::DefaultSingletonTraits<TtsControllerImpl>;
-
   // The current utterance being spoken.
   Utterance* current_utterance_;
 
@@ -96,9 +86,6 @@ class TtsControllerImpl : public TtsController {
 
   // A queue of utterances to speak after the current one finishes.
   base::queue<Utterance*> utterance_queue_;
-
-  // A set of delegates that want to be notified when the voices change.
-  std::set<VoicesChangedDelegate*> voices_changed_delegates_;
 
   // A pointer to the platform implementation of text-to-speech.
   std::unique_ptr<TtsPlatformImpl> platform_impl_;
