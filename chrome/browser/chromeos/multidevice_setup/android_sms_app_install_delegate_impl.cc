@@ -35,7 +35,7 @@ void AndroidSmsAppInstallDelegateImpl::InstallAndroidSmsApp() {
   // can easily fail.
   pending_app_manager_->Install(
       web_app::PendingAppManager::AppInfo(
-          chromeos::android_sms::GetAndroidMessagesURL(),
+          chromeos::android_sms::GetAndroidMessagesURLWithExperiments(),
           web_app::PendingAppManager::LaunchContainer::kWindow),
       base::BindOnce(&AndroidSmsAppInstallDelegateImpl::OnAppInstalled,
                      weak_ptr_factory_.GetWeakPtr()));
