@@ -143,7 +143,7 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
   LayoutBlock* new_layout_block = CaretLayoutBlock(caret_position.AnchorNode());
   if (new_layout_block != layout_block_) {
     if (layout_block_)
-      layout_block_->SetMayNeedPaintInvalidation();
+      layout_block_->SetShouldCheckForPaintInvalidation();
     layout_block_ = new_layout_block;
     visual_rect_ = LayoutRect();
     if (new_layout_block) {
@@ -181,7 +181,7 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
   }
 
   if (needs_paint_invalidation_)
-    new_layout_block->SetMayNeedPaintInvalidation();
+    new_layout_block->SetShouldCheckForPaintInvalidation();
 }
 
 void CaretDisplayItemClient::InvalidatePaint(
@@ -241,8 +241,7 @@ void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
     // The caret may change paint offset without changing visual rect, and we
     // need to invalidate the display item client if the block is doing full
     // paint invalidation.
-    if (IsImmediateFullPaintInvalidationReason(
-            layout_block_->FullPaintInvalidationReason())) {
+    if (layout_block_->ShouldDoFullPaintInvalidation()) {
       object_invalidator.InvalidateDisplayItemClient(
           *this, PaintInvalidationReason::kCaret);
     }

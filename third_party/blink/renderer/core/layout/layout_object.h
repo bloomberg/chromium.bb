@@ -238,10 +238,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Do not call VisualRect directly outside of the DisplayItemClient
   // interface, use a per-fragment one on FragmentData instead.
  private:
-  // Hide DisplayItemClient methods whose names are too generic for
-  // LayoutObject. Use LayoutObject methods instead, or explicitly cast.
+  // Hide DisplayItemClient's methods whose names are too generic for
+  // LayoutObjects. Should use LayoutObject's methods instead.
   using DisplayItemClient::Invalidate;
   using DisplayItemClient::IsValid;
+  using DisplayItemClient::GetPaintInvalidationReason;
 
   LayoutRect VisualRect() const final;
 
@@ -1486,17 +1487,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // a small region of a canvas changes.
   void InvalidatePaintRectangle(const LayoutRect&);
 
-  void SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-
   // Returns the rect that should have paint invalidated whenever this object
   // changes. The rect is in the view's coordinate space. This method deals with
   // outlines and overflow.
   virtual LayoutRect AbsoluteVisualRect() const;
 
-  // Returns the rect that should have paint invalidated whenever this object
+  // Returns the rect that should have raster invalidated whenever this object
   // changes. The rect is in the object's local coordinate space. This is for
   // non-SVG objects and LayoutSVGRoot only. SVG objects (except LayoutSVGRoot)
-  // should use visualRectInLocalSVGCoordinates() and map with SVG transforms
+  // should use VisualRectInLocalSVGCoordinates() and map with SVG transforms
   // instead.
   LayoutRect LocalVisualRect() const {
     if (StyleRef().Visibility() != EVisibility::kVisible &&
@@ -1754,32 +1753,34 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual void ClearPreviousVisualRects();
 
   PaintInvalidationReason FullPaintInvalidationReason() const {
-    return bitfields_.FullPaintInvalidationReason();
+    return full_paint_invalidation_reason_;
   }
   bool ShouldDoFullPaintInvalidation() const {
-    return bitfields_.FullPaintInvalidationReason() !=
-           PaintInvalidationReason::kNone;
+    if (!ShouldDelayFullPaintInvalidation() &&
+        full_paint_invalidation_reason_ != PaintInvalidationReason::kNone) {
+      DCHECK(IsFullPaintInvalidationReason(full_paint_invalidation_reason_));
+      DCHECK(ShouldCheckForPaintInvalidation());
+      return true;
+    }
+    return false;
   }
   void SetShouldDoFullPaintInvalidation(
       PaintInvalidationReason = PaintInvalidationReason::kFull);
   void SetShouldDoFullPaintInvalidationWithoutGeometryChange(
       PaintInvalidationReason = PaintInvalidationReason::kFull);
-  void ClearShouldDoFullPaintInvalidation() {
-    bitfields_.SetFullPaintInvalidationReason(PaintInvalidationReason::kNone);
-  }
 
   void ClearPaintInvalidationFlags();
 
-  bool MayNeedPaintInvalidation() const {
-    return bitfields_.MayNeedPaintInvalidation();
+  bool ShouldCheckForPaintInvalidation() const {
+    return bitfields_.ShouldCheckForPaintInvalidation();
   }
-  void SetMayNeedPaintInvalidation();
-  void SetMayNeedPaintInvalidationWithoutGeometryChange();
+  void SetShouldCheckForPaintInvalidation();
+  void SetShouldCheckForPaintInvalidationWithoutGeometryChange();
 
-  bool MayNeedPaintInvalidationSubtree() const {
-    return bitfields_.MayNeedPaintInvalidationSubtree();
+  bool SubtreeShouldCheckForPaintInvalidation() const {
+    return bitfields_.SubtreeShouldCheckForPaintInvalidation();
   }
-  void SetMayNeedPaintInvalidationSubtree();
+  void SetSubtreeShouldCheckForPaintInvalidation();
 
   bool NeedsPaintOffsetAndVisualRectUpdate() const {
     return bitfields_.NeedsPaintOffsetAndVisualRectUpdate();
@@ -1790,20 +1791,33 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void SetMayNeedPaintInvalidationAnimatedBackgroundImage();
 
+  void SetSubtreeShouldDoFullPaintInvalidation(
+      PaintInvalidationReason reason = PaintInvalidationReason::kSubtree);
+  bool SubtreeShouldDoFullPaintInvalidation() const {
+    DCHECK(!bitfields_.SubtreeShouldDoFullPaintInvalidation() ||
+           ShouldDoFullPaintInvalidation());
+    return bitfields_.SubtreeShouldDoFullPaintInvalidation();
+  }
+
+  // If true, it means that invalidation and repainting of the object can be
+  // delayed until a future frame. This can be the case for an object whose
+  // content is not visible to the user.
+  bool ShouldDelayFullPaintInvalidation() const {
+    return bitfields_.ShouldDelayFullPaintInvalidation();
+  }
+  void SetShouldDelayFullPaintInvalidation();
+
   bool ShouldInvalidateSelection() const {
     return bitfields_.ShouldInvalidateSelection();
   }
   void SetShouldInvalidateSelection();
 
-  bool ShouldCheckForPaintInvalidation() const {
-    return MayNeedPaintInvalidation() || ShouldDoFullPaintInvalidation();
-  }
-
   virtual LayoutRect ViewRect() const;
 
-  // New version to replace the above old version.
-  virtual PaintInvalidationReason InvalidatePaint(
-      const PaintInvalidatorContext&) const;
+  // Called by PaintInvalidator during PrePaint. Checks paint invalidation flags
+  // and other changes that will cause different painting, and invalidate
+  // display item clients for painting if needed.
+  virtual void InvalidatePaint(const PaintInvalidatorContext&) const;
 
   // When this object is invalidated for paint, this method is called to
   // invalidate any DisplayItemClients owned by this object, including the
@@ -1886,8 +1900,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.bitfields_
           .SetDescendantEffectiveWhitelistedTouchActionChanged(false);
     }
-    void SetMayNeedPaintInvalidation() {
-      layout_object_.SetMayNeedPaintInvalidation();
+    void SetShouldCheckForPaintInvalidation() {
+      layout_object_.SetShouldCheckForPaintInvalidation();
     }
     void SetShouldDoFullPaintInvalidation(PaintInvalidationReason reason) {
       layout_object_.SetShouldDoFullPaintInvalidation(reason);
@@ -1899,6 +1913,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
     void SetBackgroundChangedSinceLastPaintInvalidation() {
       layout_object_.SetBackgroundChangedSinceLastPaintInvalidation();
+    }
+    void SetShouldDelayFullPaintInvalidation() {
+      layout_object_.SetShouldDelayFullPaintInvalidation();
     }
     void EnsureIsReadyForPaintInvalidation() {
       layout_object_.EnsureIsReadyForPaintInvalidation();
@@ -2219,12 +2236,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                        const LayoutPoint& layer_offset) const {}
 
 #if DCHECK_IS_ON()
-  virtual bool PaintInvalidationStateIsDirty() const {
-    return BackgroundChangedSinceLastPaintInvalidation() ||
-           ShouldCheckForPaintInvalidation() || ShouldInvalidateSelection() ||
-           NeedsPaintOffsetAndVisualRectUpdate() ||
-           !fragment_.PartialInvalidationLocalRect().IsEmpty();
-  }
+  virtual bool PaintInvalidationStateIsDirty() const;
 #endif
 
   // Called before paint invalidation.
@@ -2339,6 +2351,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void ApplyPseudoStyleChanges(const ComputedStyle& old_style);
   void ApplyFirstLineChanges(const ComputedStyle& old_style);
 
+  // This is set by Set[Subtree]ShouldDoFullPaintInvalidation, and cleared
+  // during PrePaint in this object's InvalidatePaint(). It's different from
+  // DisplayItemClient::GetPaintInvalidationReason() which is set during
+  // PrePaint and cleared in PaintController::FinishCycle().
+  // It's defined as the first field so that it can use the memory gap between
+  // DisplayItemClient and LayoutObject's other fields.
+  PaintInvalidationReason full_paint_invalidation_reason_;
+
   scoped_refptr<ComputedStyle> style_;
 
   // Oilpan: This untraced pointer to the owning Node is considered safe.
@@ -2398,10 +2418,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           child_needs_overflow_recalc_after_style_change_(false),
           preferred_logical_widths_dirty_(false),
           needs_collect_inlines_(false),
-          may_need_paint_invalidation_(false),
-          may_need_paint_invalidation_subtree_(false),
+          should_check_for_paint_invalidation_(true),
+          subtree_should_check_for_paint_invalidation_(false),
+          should_delay_full_paint_invalidation_(false),
+          subtree_should_do_full_paint_invalidation_(false),
           may_need_paint_invalidation_animated_background_image_(false),
-          needs_paint_offset_and_visual_rect_update_(false),
+          needs_paint_offset_and_visual_rect_update_(true),
           should_invalidate_selection_(false),
           floating_(false),
           is_anonymous_(!node),
@@ -2445,9 +2467,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           is_effective_root_scroller_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
-          background_obscuration_state_(kBackgroundObscurationStatusInvalid),
-          full_paint_invalidation_reason_(
-              static_cast<unsigned>(PaintInvalidationReason::kNone)) {}
+          background_obscuration_state_(kBackgroundObscurationStatusInvalid) {}
 
     // Self needs layout means that this layout object is marked for a full
     // layout. This is the default layout but it is expensive as it recomputes
@@ -2511,10 +2531,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // Also maybe set to inline boxes to optimize the propagation.
     ADD_BOOLEAN_BITFIELD(needs_collect_inlines_, NeedsCollectInlines);
 
-    ADD_BOOLEAN_BITFIELD(may_need_paint_invalidation_,
-                         MayNeedPaintInvalidation);
-    ADD_BOOLEAN_BITFIELD(may_need_paint_invalidation_subtree_,
-                         MayNeedPaintInvalidationSubtree);
+    ADD_BOOLEAN_BITFIELD(should_check_for_paint_invalidation_,
+                         ShouldCheckForPaintInvalidation);
+    ADD_BOOLEAN_BITFIELD(subtree_should_check_for_paint_invalidation_,
+                         SubtreeShouldCheckForPaintInvalidation);
+    ADD_BOOLEAN_BITFIELD(should_delay_full_paint_invalidation_,
+                         ShouldDelayFullPaintInvalidation);
+    ADD_BOOLEAN_BITFIELD(subtree_should_do_full_paint_invalidation_,
+                         SubtreeShouldDoFullPaintInvalidation);
     ADD_BOOLEAN_BITFIELD(may_need_paint_invalidation_animated_background_image_,
                          MayNeedPaintInvalidationAnimatedBackgroundImage);
     ADD_BOOLEAN_BITFIELD(needs_paint_offset_and_visual_rect_update_,
@@ -2684,11 +2708,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     mutable unsigned
         background_obscuration_state_ : 2;  // BackgroundObscurationState
 
-    unsigned full_paint_invalidation_reason_ : 5;  // PaintInvalidationReason
-    static_assert(static_cast<unsigned>(PaintInvalidationReason::kMax) <
-                      (1u << 5),
-                  "PaintInvalidationReason should fit in the bit field");
-
    public:
     bool IsOutOfFlowPositioned() const {
       return positioned_state_ == kIsOutOfFlowPositioned;
@@ -2748,14 +2767,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ALWAYS_INLINE void SetBackgroundObscurationState(
         BackgroundObscurationState s) const {
       background_obscuration_state_ = s;
-    }
-
-    PaintInvalidationReason FullPaintInvalidationReason() const {
-      return static_cast<PaintInvalidationReason>(
-          full_paint_invalidation_reason_);
-    }
-    void SetFullPaintInvalidationReason(PaintInvalidationReason reason) {
-      full_paint_invalidation_reason_ = static_cast<unsigned>(reason);
     }
   };
 
@@ -2858,7 +2869,7 @@ inline void LayoutObject::SetNeedsLayoutAndFullPaintInvalidation(
 inline void LayoutObject::ClearNeedsLayout() {
   // Set flags for later stages/cycles.
   SetEverHadLayout();
-  SetMayNeedPaintInvalidation();
+  SetShouldCheckForPaintInvalidation();
 
   // Clear needsLayout flags.
   SetSelfNeedsLayout(false);

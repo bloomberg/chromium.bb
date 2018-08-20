@@ -21,7 +21,7 @@ class TablePaintInvalidator {
                         const PaintInvalidatorContext& context)
       : table_(table), context_(context) {}
 
-  PaintInvalidationReason InvalidatePaint();
+  void InvalidatePaint();
 
  private:
   const LayoutTable& table_;
