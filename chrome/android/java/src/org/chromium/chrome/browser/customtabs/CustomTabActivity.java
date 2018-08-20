@@ -660,6 +660,10 @@ public class CustomTabActivity extends ChromeActivity {
         }
 
         if (mTrustedWebActivityUi != null) {
+            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_POST_MESSAGE)) {
+                mConnection.resetPostMessageHandlerForSession(mSession, null);
+            }
+
             mTrustedWebActivityUi.attemptVerificationForInitialUrl(url, getActivityTab());
             mTrustedWebActivityUi.initialShowSnackbarIfNeeded();
         }

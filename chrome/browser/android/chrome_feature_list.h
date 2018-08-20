@@ -84,6 +84,7 @@ extern const base::Feature kSpecialLocaleWrapper;
 extern const base::Feature kTabModalJsDialog;
 extern const base::Feature kTabReparenting;
 extern const base::Feature kTrustedWebActivity;
+extern const base::Feature kTrustedWebActivityPostMessage;
 extern const base::Feature kUserMediaScreenCapturing;
 extern const base::Feature kVideoPersistence;
 extern const base::Feature kVrBrowsingFeedback;

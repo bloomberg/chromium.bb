@@ -273,6 +273,7 @@ public abstract class ChromeFeatureList {
     public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
     public static final String TAB_REPARENTING = "TabReparenting";
     public static final String TRUSTED_WEB_ACTIVITY = "TrustedWebActivity";
+    public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";
     public static final String UNIFIED_CONSENT = "UnifiedConsent";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";
