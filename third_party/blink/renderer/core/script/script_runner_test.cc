@@ -37,7 +37,7 @@ class MockPendingScript : public PendingScript {
 
   MOCK_CONST_METHOD0(GetScriptType, ScriptType());
   MOCK_CONST_METHOD1(CheckMIMETypeBeforeRunScript, bool(Document*));
-  MOCK_CONST_METHOD2(GetSource, Script*(const KURL&, bool&));
+  MOCK_CONST_METHOD1(GetSource, Script*(const KURL&));
   MOCK_CONST_METHOD0(IsExternal, bool());
   MOCK_CONST_METHOD0(ErrorOccurred, bool());
   MOCK_CONST_METHOD0(WasCanceled, bool());

@@ -331,12 +331,13 @@ static SingleCachedMetadataHandler* GetInlineCacheHandler(const String& source,
   return document_cache_handler->HandlerForSource(source);
 }
 
-ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
-                                               bool& error_occurred) const {
+ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   CheckState();
   DCHECK(IsReady());
 
-  error_occurred = ErrorOccurred();
+  if (ErrorOccurred())
+    return nullptr;
+
   if (!is_external_) {
     SingleCachedMetadataHandler* cache_handler = nullptr;
     // We only create an inline cache handler for html-embedded scripts, not
@@ -370,7 +371,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
   if (!AllowedByNosniff::MimeTypeAsScript(
           GetElement()->GetDocument().ContextDocument(),
           resource->GetResponse())) {
-    error_occurred = true;
+    return nullptr;
   }
 
   // Check if we can use the script streamer.
