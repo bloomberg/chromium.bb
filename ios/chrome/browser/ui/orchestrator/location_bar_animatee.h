@@ -31,6 +31,7 @@
 - (void)setSteadyViewHidden:(BOOL)hidden;
 
 // Resets tranforms of edit and steady view. Used for post-animation cleanup.
+// Only resets the translation, and leaves scale intact.
 - (void)resetTransforms;
 
 @end

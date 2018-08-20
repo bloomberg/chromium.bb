@@ -287,8 +287,17 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)resetTransforms {
-  self.editView.transform = CGAffineTransformIdentity;
-  self.locationBarSteadyView.transform = CGAffineTransformIdentity;
+  // Focus/defocus animations only affect translations and not scale. So reset
+  // translation and keep the scale.
+  self.editView.transform = CGAffineTransformMake(
+      self.editView.transform.a, self.editView.transform.b,
+      self.editView.transform.c, self.editView.transform.d, 0, 0);
+  self.locationBarSteadyView.transform =
+      CGAffineTransformMake(self.locationBarSteadyView.transform.a,
+                            self.locationBarSteadyView.transform.b,
+                            self.locationBarSteadyView.transform.c,
+                            self.locationBarSteadyView.transform.d, 0, 0);
+  ;
 }
 
 #pragma mark animation helpers
