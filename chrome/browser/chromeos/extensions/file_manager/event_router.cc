@@ -175,6 +175,9 @@ MountErrorToMountCompletedStatus(chromeos::MountError error) {
           MOUNT_COMPLETED_STATUS_ERROR_UNSUPPORTED_FILESYSTEM;
     case chromeos::MOUNT_ERROR_INVALID_ARCHIVE:
       return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_INVALID_ARCHIVE;
+    // Not a real error.
+    case chromeos::MOUNT_ERROR_COUNT:
+      NOTREACHED();
   }
   NOTREACHED();
   return file_manager_private::MOUNT_COMPLETED_STATUS_NONE;

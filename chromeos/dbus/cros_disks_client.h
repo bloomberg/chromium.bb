@@ -51,6 +51,8 @@ enum DeviceType {
 
 // Mount error code used by cros-disks.
 // These values are not the same as cros_disks::MountErrorType.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum MountError {
   MOUNT_ERROR_NONE,
   MOUNT_ERROR_UNKNOWN,
@@ -69,6 +71,7 @@ enum MountError {
   MOUNT_ERROR_UNKNOWN_FILESYSTEM,
   MOUNT_ERROR_UNSUPPORTED_FILESYSTEM,
   MOUNT_ERROR_INVALID_ARCHIVE,
+  MOUNT_ERROR_COUNT,
 };
 
 // Rename error reported by cros-disks.

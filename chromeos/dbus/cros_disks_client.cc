@@ -16,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -325,7 +326,11 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // Handles the result of Unmount and calls |callback| or |error_callback|.
   void OnUnmount(UnmountCallback callback, dbus::Response* response) {
+    const char kUnmountHistogramName[] = "CrosDisksClient.UnmountError";
+
     if (!response) {
+      UMA_HISTOGRAM_ENUMERATION(kUnmountHistogramName, MOUNT_ERROR_UNKNOWN,
+                                MOUNT_ERROR_COUNT);
       std::move(callback).Run(MOUNT_ERROR_UNKNOWN);
       return;
     }
@@ -345,6 +350,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
       mount_error = CrosDisksMountErrorToChromeMountError(
           static_cast<cros_disks::MountErrorType>(error_code));
     }
+    UMA_HISTOGRAM_ENUMERATION(kUnmountHistogramName, mount_error,
+                              MOUNT_ERROR_COUNT);
     std::move(callback).Run(mount_error);
   }
 
@@ -437,6 +444,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
       return;
     }
 
+    UMA_HISTOGRAM_ENUMERATION("CrosDisksClient.MountCompletedError",
+                              entry.error_code(), MOUNT_ERROR_COUNT);
     for (auto& observer : observer_list_)
       observer.OnMountCompleted(entry);
   }
