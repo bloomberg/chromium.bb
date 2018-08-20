@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -43,6 +44,7 @@ class STHReporter;
 
 namespace network {
 
+class CRLSetDistributor;
 class NetworkContext;
 class NetworkUsageAccumulator;
 class MojoNetLog;
@@ -140,6 +142,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void GetTotalNetworkUsages(
       mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
   void UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) override;
+  void UpdateCRLSet(base::span<const uint8_t> crl_set) override;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void SetCryptConfig(mojom::CryptConfigPtr crypt_config) override;
 #endif
@@ -168,6 +171,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   }
 
   certificate_transparency::STHReporter* sth_reporter();
+  CRLSetDistributor* crl_set_distributor() {
+    return crl_set_distributor_.get();
+  }
 
   bool os_crypt_config_set() const { return os_crypt_config_set_; }
 
@@ -253,6 +259,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   bool os_crypt_config_set_ = false;
 
   std::unique_ptr<certificate_transparency::STHDistributor> sth_distributor_;
+  std::unique_ptr<CRLSetDistributor> crl_set_distributor_;
 
   // A timer that periodically calls UpdateLoadInfo while there are pending
   // loads and not waiting on an ACK from the client for the last sent

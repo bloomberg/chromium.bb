@@ -33,7 +33,6 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
  public:
   using VerifyCompleteCallback =
       base::RepeatingCallback<void(const RequestParams&,
-                                   scoped_refptr<CRLSet> crl_set,
                                    const NetLogWithSource&,
                                    int,
                                    const CertVerifyResult&,
@@ -62,7 +61,6 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
 
   // CertVerifier implementation
   int Verify(const RequestParams& params,
-             CRLSet* crl_set,
              CertVerifyResult* verify_result,
              CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,

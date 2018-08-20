@@ -51,7 +51,6 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
 
   // CertVerifier implementation
   int Verify(const RequestParams& params,
-             net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              net::CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
@@ -74,21 +73,18 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
   class TrialVerificationJob;
 
   void OnPrimaryVerifierComplete(const RequestParams& params,
-                                 scoped_refptr<net::CRLSet> crl_set,
                                  const net::NetLogWithSource& net_log,
                                  int primary_error,
                                  const net::CertVerifyResult& primary_result,
                                  base::TimeDelta primary_latency,
                                  bool is_first_job);
   void OnTrialVerifierComplete(const RequestParams& params,
-                               scoped_refptr<net::CRLSet> crl_set,
                                const net::NetLogWithSource& net_log,
                                int trial_error,
                                const net::CertVerifyResult& trial_result,
                                base::TimeDelta latency,
                                bool is_first_job);
   void MaybeDoTrialVerification(const RequestParams& params,
-                                scoped_refptr<net::CRLSet> crl_set,
                                 const net::NetLogWithSource& net_log,
                                 int primary_error,
                                 const net::CertVerifyResult& primary_result,

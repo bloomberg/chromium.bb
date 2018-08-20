@@ -193,7 +193,6 @@ class WrappedCertVerifierForProfileIODataTesting : public net::CertVerifier {
 
   // CertVerifier implementation
   int Verify(const RequestParams& params,
-             net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              net::CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
@@ -202,7 +201,7 @@ class WrappedCertVerifierForProfileIODataTesting : public net::CertVerifier {
     if (!g_cert_verifier_for_profile_io_data_testing)
       return net::ERR_FAILED;
     return g_cert_verifier_for_profile_io_data_testing->Verify(
-        params, crl_set, verify_result, std::move(callback), out_req, net_log);
+        params, verify_result, std::move(callback), out_req, net_log);
   }
   void SetConfig(const Config& config) override {
     if (!g_cert_verifier_for_profile_io_data_testing)

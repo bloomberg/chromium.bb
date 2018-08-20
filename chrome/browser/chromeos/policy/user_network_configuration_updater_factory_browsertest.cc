@@ -97,7 +97,7 @@ void VerifyTestServerCertOnIOThread(
   *verification_result = test_callback.GetResult(cert_verifier->Verify(
       net::CertVerifier::RequestParams(test_server_cert.get(), "127.0.0.1", 0,
                                        std::string(), net::CertificateList()),
-      nullptr, &verify_result, test_callback.callback(), &request,
+      &verify_result, test_callback.callback(), &request,
       net::NetLogWithSource()));
 }
 

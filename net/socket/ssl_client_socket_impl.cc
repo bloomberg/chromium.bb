@@ -1184,9 +1184,7 @@ int SSLClientSocketImpl::DoVerifyCert(int result) {
       CertVerifier::RequestParams(server_cert_, host_and_port_.host(),
                                   ssl_config_.GetCertVerifyFlags(),
                                   ocsp_response.as_string(), CertificateList()),
-      // TODO(davidben): Route the CRLSet through SSLConfig so
-      // SSLClientSocket doesn't depend on SSLConfigService.
-      SSLConfigService::GetCRLSet().get(), &server_cert_verify_result_,
+      &server_cert_verify_result_,
       base::Bind(&SSLClientSocketImpl::OnHandshakeIOComplete,
                  base::Unretained(this)),
       &cert_verifier_request_, net_log_);

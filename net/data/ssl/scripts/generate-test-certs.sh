@@ -601,7 +601,8 @@ python crlsetutil.py -o ../certificates/crlset_by_root_subject_no_spki.raw \
 {
   "LimitedSubjects": {
     "../certificates/root_ca_cert.pem": []
-  }
+  },
+  "Sequence": 1
 }
 CRLSETBYROOTSUBJECTNOSPKI
 

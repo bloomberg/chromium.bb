@@ -33,9 +33,10 @@ bool IsSubdomain(const base::StringPiece hostname,
 
 SSLConfigServiceMojo::SSLConfigServiceMojo(
     mojom::SSLConfigPtr initial_config,
-    mojom::SSLConfigClientRequest ssl_config_client_request)
+    mojom::SSLConfigClientRequest ssl_config_client_request,
+    CRLSetDistributor* crl_set_distributor)
     : binding_(this),
-
+      crl_set_distributor_(crl_set_distributor),
       client_cert_pooling_policy_(
           initial_config ? initial_config->client_cert_pooling_policy
                          : std::vector<std::string>()) {
@@ -44,11 +45,17 @@ SSLConfigServiceMojo::SSLConfigServiceMojo(
         mojo::ConvertTo<net::CertVerifier::Config>(initial_config->Clone());
     ssl_config_ = mojo::ConvertTo<net::SSLConfig>(std::move(initial_config));
   }
+
   if (ssl_config_client_request)
     binding_.Bind(std::move(ssl_config_client_request));
+
+  crl_set_distributor_->AddObserver(this);
+  cert_verifier_config_.crl_set = crl_set_distributor_->crl_set();
 }
 
-SSLConfigServiceMojo::~SSLConfigServiceMojo() = default;
+SSLConfigServiceMojo::~SSLConfigServiceMojo() {
+  crl_set_distributor_->RemoveObserver(this);
+}
 
 void SSLConfigServiceMojo::SetCertVerifierForConfiguring(
     net::CertVerifier* cert_verifier) {
@@ -70,6 +77,7 @@ void SSLConfigServiceMojo::OnSSLConfigUpdated(mojom::SSLConfigPtr ssl_config) {
   net::CertVerifier::Config old_cert_verifier_config = cert_verifier_config_;
   cert_verifier_config_ =
       mojo::ConvertTo<net::CertVerifier::Config>(std::move(ssl_config));
+  cert_verifier_config_.crl_set = old_cert_verifier_config.crl_set;
   if (cert_verifier_ && (old_cert_verifier_config != cert_verifier_config_)) {
     cert_verifier_->SetConfig(cert_verifier_config_);
   }
@@ -104,6 +112,12 @@ bool SSLConfigServiceMojo::CanShareConnectionWithClientCerts(
     }
   }
   return false;
+}
+
+void SSLConfigServiceMojo::OnNewCRLSet(scoped_refptr<net::CRLSet> crl_set) {
+  cert_verifier_config_.crl_set = crl_set;
+  if (cert_verifier_)
+    cert_verifier_->SetConfig(cert_verifier_config_);
 }
 
 }  // namespace network

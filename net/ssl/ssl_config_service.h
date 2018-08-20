@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "net/base/net_export.h"
-#include "net/cert/crl_set.h"
 #include "net/ssl/ssl_config.h"
 
 namespace net {
@@ -72,20 +71,6 @@ class NET_EXPORT SSLConfigService {
   virtual bool CanShareConnectionWithClientCerts(
       const std::string& hostname) const = 0;
 
-  // Sets the current global CRL set to |crl_set|, if and only if the passed CRL
-  // set has a higher sequence number (as reported by CRLSet::sequence()) than
-  // the current set (or there is no current set). Can be called concurrently
-  // with itself and with GetCRLSet.
-  static void SetCRLSetIfNewer(scoped_refptr<CRLSet> crl_set);
-
-  // Like SetCRLSetIfNewer() but assigns it unconditionally. Should only be used
-  // by test code.
-  static void SetCRLSetForTesting(scoped_refptr<CRLSet> crl_set);
-
-  // Gets the current global CRL set. In the case that none exists, returns
-  // nullptr.
-  static scoped_refptr<CRLSet> GetCRLSet();
-
   // Add an observer of this service.
   void AddObserver(Observer* observer);
 
@@ -107,8 +92,6 @@ class NET_EXPORT SSLConfigService {
   void ProcessConfigUpdate(const SSLConfig& orig_config,
                            const SSLConfig& new_config,
                            bool force_notification);
-
-  static void SetCRLSet(scoped_refptr<CRLSet> crl_set, bool if_newer);
 
  private:
   base::ObserverList<Observer>::Unchecked observer_list_;

@@ -71,7 +71,6 @@ IgnoreErrorsCertVerifier::IgnoreErrorsCertVerifier(
 IgnoreErrorsCertVerifier::~IgnoreErrorsCertVerifier() {}
 
 int IgnoreErrorsCertVerifier::Verify(const RequestParams& params,
-                                     net::CRLSet* crl_set,
                                      net::CertVerifyResult* verify_result,
                                      net::CompletionOnceCallback callback,
                                      std::unique_ptr<Request>* out_req,
@@ -129,8 +128,8 @@ int IgnoreErrorsCertVerifier::Verify(const RequestParams& params,
     return net::OK;
   }
 
-  return verifier_->Verify(params, crl_set, verify_result, std::move(callback),
-                           out_req, net_log);
+  return verifier_->Verify(params, verify_result, std::move(callback), out_req,
+                           net_log);
 }
 
 void IgnoreErrorsCertVerifier::SetConfig(const Config& config) {

@@ -116,7 +116,7 @@ TEST_F(IgnoreErrorsCertVerifierTest, TestNoMatchCertOk) {
   std::unique_ptr<CertVerifier::Request> request;
 
   EXPECT_THAT(callback.GetResult(verifier_.Verify(
-                  MakeRequestParams(test_cert), nullptr, &verify_result,
+                  MakeRequestParams(test_cert), &verify_result,
                   callback.callback(), &request, NetLogWithSource())),
               IsOk());
 }
@@ -129,7 +129,7 @@ TEST_F(IgnoreErrorsCertVerifierTest, TestNoMatchCertError) {
   std::unique_ptr<CertVerifier::Request> request;
 
   EXPECT_THAT(callback.GetResult(verifier_.Verify(
-                  MakeRequestParams(test_cert), nullptr, &verify_result,
+                  MakeRequestParams(test_cert), &verify_result,
                   callback.callback(), &request, NetLogWithSource())),
               IsError(ERR_CERT_INVALID));
 }
@@ -142,7 +142,7 @@ TEST_F(IgnoreErrorsCertVerifierTest, TestMatch) {
   std::unique_ptr<CertVerifier::Request> request;
 
   EXPECT_THAT(callback.GetResult(verifier_.Verify(
-                  MakeRequestParams(test_cert), nullptr, &verify_result,
+                  MakeRequestParams(test_cert), &verify_result,
                   callback.callback(), &request, NetLogWithSource())),
               IsOk());
 }
@@ -180,12 +180,12 @@ TEST_P(IgnoreCertificateErrorsSPKIListFlagTest, TestUserDataDirSwitchRequired) {
 
   if (GetParam()) {
     EXPECT_THAT(callback.GetResult(verifier_->Verify(
-                    MakeRequestParams(test_cert), nullptr, &verify_result,
+                    MakeRequestParams(test_cert), &verify_result,
                     callback.callback(), &request, NetLogWithSource())),
                 IsOk());
   } else {
     EXPECT_THAT(callback.GetResult(verifier_->Verify(
-                    MakeRequestParams(test_cert), nullptr, &verify_result,
+                    MakeRequestParams(test_cert), &verify_result,
                     callback.callback(), &request, NetLogWithSource())),
                 IsError(ERR_CERT_INVALID));
   }

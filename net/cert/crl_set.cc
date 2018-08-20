@@ -333,6 +333,7 @@ scoped_refptr<CRLSet> CRLSet::EmptyCRLSetForTesting() {
   return ForTesting(false, nullptr, "", "", {});
 }
 
+// static
 scoped_refptr<CRLSet> CRLSet::ExpiredCRLSetForTesting() {
   return ForTesting(true, nullptr, "", "", {});
 }
@@ -374,6 +375,7 @@ scoped_refptr<CRLSet> CRLSet::ForTesting(
   }
 
   scoped_refptr<CRLSet> crl_set(new CRLSet);
+  crl_set->sequence_ = 0;
   if (is_expired)
     crl_set->not_after_ = 1;
 

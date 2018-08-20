@@ -4,13 +4,27 @@
 
 #include "services/network/ssl_config_service_mojo.h"
 
+#include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
+#include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "net/base/test_completion_callback.h"
+#include "net/cert/asn1_util.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/cert_verify_result.h"
+#include "net/cert/crl_set.h"
+#include "net/cert/test_root_certs.h"
+#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
+#include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
+#include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -83,7 +97,6 @@ class TestCertVerifierConfigObserver : public net::CertVerifier {
 
   // CertVerifier implementation:
   int Verify(const net::CertVerifier::RequestParams& params,
-             net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              net::CompletionOnceCallback callback,
              std::unique_ptr<net::CertVerifier::Request>* out_req,
@@ -417,47 +430,110 @@ TEST_F(NetworkServiceSSLConfigServiceTest,
 }
 
 TEST_F(NetworkServiceSSLConfigServiceTest, CanShareConnectionWithClientCerts) {
-  // Create an SSLConfigServiceMojo and test that
+  // Create a default NetworkContext and test that
   // CanShareConnectionWithClientCerts returns false.
-  mojom::SSLConfigClientRequest client_request =
-      mojo::MakeRequest(&ssl_config_client_);
-  SSLConfigServiceMojo config_service(mojom::SSLConfig::New(),
-                                      std::move(client_request));
+  SetUpNetworkContext(mojom::NetworkContextParams::New());
 
-  EXPECT_FALSE(config_service.CanShareConnectionWithClientCerts("example.com"));
-  EXPECT_FALSE(config_service.CanShareConnectionWithClientCerts("example.net"));
+  net::SSLConfigService* config_service =
+      network_context_->url_request_context()->ssl_config_service();
+
+  EXPECT_FALSE(
+      config_service->CanShareConnectionWithClientCerts("example.com"));
+  EXPECT_FALSE(
+      config_service->CanShareConnectionWithClientCerts("example.net"));
 
   // Configure policy to allow example.com (but no subdomains), and example.net
   // (including subdomains), update the config, and test that pooling is allowed
   // with this policy.
   mojom::SSLConfigPtr mojo_config = mojom::SSLConfig::New();
   mojo_config->client_cert_pooling_policy = {".example.com", "example.net"};
-  TestSSLConfigServiceObserver observer(&config_service);
+
+  TestSSLConfigServiceObserver observer(config_service);
   ssl_config_client_->OnSSLConfigUpdated(std::move(mojo_config));
   observer.WaitForChange();
 
-  EXPECT_TRUE(config_service.CanShareConnectionWithClientCerts("example.com"));
+  EXPECT_TRUE(config_service->CanShareConnectionWithClientCerts("example.com"));
   EXPECT_FALSE(
-      config_service.CanShareConnectionWithClientCerts("sub.example.com"));
+      config_service->CanShareConnectionWithClientCerts("sub.example.com"));
 
-  EXPECT_TRUE(config_service.CanShareConnectionWithClientCerts("example.net"));
+  EXPECT_TRUE(config_service->CanShareConnectionWithClientCerts("example.net"));
   EXPECT_TRUE(
-      config_service.CanShareConnectionWithClientCerts("sub.example.net"));
+      config_service->CanShareConnectionWithClientCerts("sub.example.net"));
   EXPECT_TRUE(
-      config_service.CanShareConnectionWithClientCerts("sub.sub.example.net"));
+      config_service->CanShareConnectionWithClientCerts("sub.sub.example.net"));
   EXPECT_FALSE(
-      config_service.CanShareConnectionWithClientCerts("notexample.net"));
+      config_service->CanShareConnectionWithClientCerts("notexample.net"));
 
-  EXPECT_FALSE(config_service.CanShareConnectionWithClientCerts("example.org"));
+  EXPECT_FALSE(
+      config_service->CanShareConnectionWithClientCerts("example.org"));
 
   // Reset the configuration to the default and check that pooling is no longer
   // allowed.
   ssl_config_client_->OnSSLConfigUpdated(mojom::SSLConfig::New());
   observer.WaitForChange();
 
-  EXPECT_FALSE(config_service.CanShareConnectionWithClientCerts("example.com"));
-  EXPECT_FALSE(config_service.CanShareConnectionWithClientCerts("example.net"));
+  EXPECT_FALSE(
+      config_service->CanShareConnectionWithClientCerts("example.com"));
+  EXPECT_FALSE(
+      config_service->CanShareConnectionWithClientCerts("example.net"));
 }
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+TEST_F(NetworkServiceSSLConfigServiceTest, CRLSetIsApplied) {
+  SetUpNetworkContext(mojom::NetworkContextParams::New());
+
+  SSLConfigServiceMojo* config_service = static_cast<SSLConfigServiceMojo*>(
+      network_context_->url_request_context()->ssl_config_service());
+
+  scoped_refptr<net::X509Certificate> root_cert =
+      net::CreateCertificateChainFromFile(
+          net::GetTestCertsDirectory(), "root_ca_cert.pem",
+          net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+  ASSERT_TRUE(root_cert);
+  net::ScopedTestRoot test_root(root_cert.get());
+
+  scoped_refptr<net::X509Certificate> cert =
+      net::CreateCertificateChainFromFile(
+          net::GetTestCertsDirectory(), "ok_cert.pem",
+          net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+  ASSERT_TRUE(cert);
+
+  // Ensure that |cert| is trusted without any CRLSet explicitly configured.
+  net::TestCompletionCallback callback1;
+  net::CertVerifyResult cert_verify_result1;
+  std::unique_ptr<net::CertVerifier::Request> request1;
+  int result = network_context_->url_request_context()->cert_verifier()->Verify(
+      net::CertVerifier::RequestParams(cert, "127.0.0.1", 0, std::string(),
+                                       net::CertificateList()),
+      &cert_verify_result1, callback1.callback(), &request1,
+      net::NetLogWithSource());
+  ASSERT_THAT(callback1.GetResult(result), net::test::IsOk());
+
+  // Configure an explicit CRLSet that removes trust in |leaf_cert| by SPKI.
+  base::StringPiece spki;
+  ASSERT_TRUE(net::asn1::ExtractSPKIFromDERCert(
+      net::x509_util::CryptoBufferAsStringPiece(root_cert->cert_buffer()),
+      &spki));
+  net::SHA256HashValue spki_sha256;
+  crypto::SHA256HashString(spki, spki_sha256.data, sizeof(spki_sha256.data));
+
+  config_service->OnNewCRLSet(net::CRLSet::ForTesting(
+      false, &spki_sha256, cert->serial_number(), "", {}));
+
+  // Ensure that |cert| is revoked, due to the CRLSet being applied.
+  net::TestCompletionCallback callback2;
+  net::CertVerifyResult cert_verify_result2;
+  std::unique_ptr<net::CertVerifier::Request> request2;
+  result = network_context_->url_request_context()->cert_verifier()->Verify(
+      net::CertVerifier::RequestParams(cert, "127.0.0.1", 0, std::string(),
+                                       net::CertificateList()),
+      &cert_verify_result2, callback2.callback(), &request2,
+      net::NetLogWithSource());
+  ASSERT_THAT(callback2.GetResult(result),
+              net::test::IsError(net::ERR_CERT_REVOKED));
+}
+
+#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
 
 }  // namespace
 }  // namespace network

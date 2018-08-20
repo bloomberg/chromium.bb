@@ -76,7 +76,6 @@ class FakeCertVerifier : public net::CertVerifier {
   ~FakeCertVerifier() override {}
 
   int Verify(const RequestParams& params,
-             net::CRLSet*,
              net::CertVerifyResult* verify_result,
              net::CompletionOnceCallback,
              std::unique_ptr<Request>*,

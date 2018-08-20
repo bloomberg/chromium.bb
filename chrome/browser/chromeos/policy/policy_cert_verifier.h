@@ -45,7 +45,6 @@ class PolicyCertVerifier : public net::CertVerifier {
 
   // CertVerifier:
   int Verify(const RequestParams& params,
-             net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              net::CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,

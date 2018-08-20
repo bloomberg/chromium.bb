@@ -44,7 +44,6 @@ class FailsTestCertVerifier : public CertVerifier {
 
   // CertVerifier implementation
   int Verify(const RequestParams& params,
-             CRLSet* crl_set,
              CertVerifyResult* verify_result,
              CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,

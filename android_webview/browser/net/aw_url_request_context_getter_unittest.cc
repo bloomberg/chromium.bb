@@ -122,7 +122,7 @@ TEST_F(AwURLRequestContextGetterTest, SymantecPoliciesExempted) {
   int error = context->cert_verifier()->Verify(
       net::CertVerifier::RequestParams(cert, "www.ahrn.com", flags,
                                        std::string(), net::CertificateList()),
-      nullptr, &result, callback.callback(), &request, net::NetLogWithSource());
+      &result, callback.callback(), &request, net::NetLogWithSource());
   EXPECT_THAT(error, net::test::IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -160,7 +160,7 @@ TEST_F(AwURLRequestContextGetterTest, SHA1LocalAnchorsAllowed) {
   int error = context->cert_verifier()->Verify(
       net::CertVerifier::RequestParams(cert, "127.0.0.1", flags, std::string(),
                                        net::CertificateList()),
-      nullptr, &result, callback.callback(), &request, net::NetLogWithSource());
+      &result, callback.callback(), &request, net::NetLogWithSource());
   EXPECT_THAT(error, net::test::IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 

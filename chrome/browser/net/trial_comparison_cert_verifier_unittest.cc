@@ -305,9 +305,8 @@ TEST_F(TrialComparisonCertVerifierTest, NotOptedIn) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -344,9 +343,8 @@ TEST_F(TrialComparisonCertVerifierTest, FeatureDisabled) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -383,9 +381,8 @@ TEST_F(TrialComparisonCertVerifierTest, SameResult) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -418,9 +415,8 @@ TEST_F(TrialComparisonCertVerifierTest, Incognito) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -461,9 +457,8 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierErrorSecondaryOk) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -530,9 +525,8 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierOkSecondaryError) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -602,9 +596,8 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersDifferentErrors) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -673,9 +666,8 @@ TEST_F(TrialComparisonCertVerifierTest,
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -753,9 +745,8 @@ TEST_F(TrialComparisonCertVerifierTest,
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -857,9 +848,8 @@ TEST_F(TrialComparisonCertVerifierTest,
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -911,9 +901,8 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersOkDifferentCertStatus) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -994,9 +983,8 @@ TEST_F(TrialComparisonCertVerifierTest, Coalescing) {
   net::CertVerifyResult result_1;
   std::unique_ptr<net::CertVerifier::Request> request_1;
   net::TestCompletionCallback callback_1;
-  int error = verifier.Verify(params, nullptr /* crl_set */, &result_1,
-                              callback_1.callback(), &request_1,
-                              net::NetLogWithSource());
+  int error = verifier.Verify(params, &result_1, callback_1.callback(),
+                              &request_1, net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request_1);
 
@@ -1004,8 +992,7 @@ TEST_F(TrialComparisonCertVerifierTest, Coalescing) {
   net::CertVerifyResult result_2;
   std::unique_ptr<net::CertVerifier::Request> request_2;
   net::TestCompletionCallback callback_2;
-  error = verifier.Verify(params, nullptr /* crl_set */, &result_2,
-                          callback_2.callback(), &request_2,
+  error = verifier.Verify(params, &result_2, callback_2.callback(), &request_2,
                           net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request_2);
@@ -1079,9 +1066,9 @@ TEST_F(TrialComparisonCertVerifierTest, CancelledDuringPrimaryVerification) {
       std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
   net::CertVerifyResult result;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error = verifier.Verify(params, nullptr /* crl_set */, &result,
-                              base::BindRepeating(&NotCalledCallback), &request,
-                              net::NetLogWithSource());
+  int error =
+      verifier.Verify(params, &result, base::BindRepeating(&NotCalledCallback),
+                      &request, net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -1147,9 +1134,9 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringPrimaryVerification) {
       std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
   net::CertVerifyResult result;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error = verifier->Verify(params, nullptr /* crl_set */, &result,
-                               base::BindRepeating(&NotCalledCallback),
-                               &request, net::NetLogWithSource());
+  int error =
+      verifier->Verify(params, &result, base::BindRepeating(&NotCalledCallback),
+                       &request, net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -1198,9 +1185,8 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedBeforeTrialVerificationStarted) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier->Verify(params, nullptr /* crl_set */, &result,
-                       callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier->Verify(params, &result, callback.callback(), &request,
+                               net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -1255,9 +1241,8 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedAfterTrialVerificationStarted) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier->Verify(params, nullptr /* crl_set */, &result,
-                       callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier->Verify(params, &result, callback.callback(), &request,
+                               net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -1331,9 +1316,8 @@ TEST_F(TrialComparisonCertVerifierTest,
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -1392,9 +1376,8 @@ TEST_F(TrialComparisonCertVerifierTest, MacUndesiredRevocationChecking) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -1460,9 +1443,8 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryRevokedSecondaryOk) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -1542,9 +1524,8 @@ TEST_F(TrialComparisonCertVerifierTest, MultipleEVPolicies) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -1605,9 +1586,8 @@ TEST_F(TrialComparisonCertVerifierTest, MultipleEVPoliciesNoneValidForRoot) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -1676,9 +1656,8 @@ TEST_F(TrialComparisonCertVerifierTest, MultiplePoliciesOnlyOneIsEV) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 
@@ -1727,9 +1706,8 @@ TEST_F(TrialComparisonCertVerifierTest, LocallyTrustedLeaf) {
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
+  int error = verifier.Verify(params, &result, callback.callback(), &request,
+                              net::NetLogWithSource());
   ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
   EXPECT_TRUE(request);
 

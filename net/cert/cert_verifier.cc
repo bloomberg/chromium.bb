@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "net/cert/cert_verify_proc.h"
+#include "net/cert/crl_set.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
@@ -20,6 +21,13 @@
 #endif
 
 namespace net {
+
+CertVerifier::Config::Config() = default;
+CertVerifier::Config::Config(const Config&) = default;
+CertVerifier::Config::Config(Config&&) = default;
+CertVerifier::Config::~Config() = default;
+CertVerifier::Config& CertVerifier::Config::operator=(const Config&) = default;
+CertVerifier::Config& CertVerifier::Config::operator=(Config&&) = default;
 
 CertVerifier::RequestParams::RequestParams(
     scoped_refptr<X509Certificate> certificate,
@@ -83,12 +91,14 @@ std::unique_ptr<CertVerifier> CertVerifier::CreateDefault() {
 
 bool operator==(const CertVerifier::Config& lhs,
                 const CertVerifier::Config& rhs) {
-  return std::tie(
-             lhs.enable_rev_checking, lhs.require_rev_checking_local_anchors,
-             lhs.enable_sha1_local_anchors, lhs.disable_symantec_enforcement) ==
-         std::tie(
-             rhs.enable_rev_checking, rhs.require_rev_checking_local_anchors,
-             rhs.enable_sha1_local_anchors, rhs.disable_symantec_enforcement);
+  return std::tie(lhs.enable_rev_checking,
+                  lhs.require_rev_checking_local_anchors,
+                  lhs.enable_sha1_local_anchors,
+                  lhs.disable_symantec_enforcement, lhs.crl_set) ==
+         std::tie(rhs.enable_rev_checking,
+                  rhs.require_rev_checking_local_anchors,
+                  rhs.enable_sha1_local_anchors,
+                  rhs.disable_symantec_enforcement, rhs.crl_set);
 }
 bool operator!=(const CertVerifier::Config& lhs,
                 const CertVerifier::Config& rhs) {

@@ -110,6 +110,7 @@ mojom("mojom") {
     ":websocket_mojom",
     "//components/content_settings/core/common:mojo_bindings",
     "//mojo/public/mojom/base",
+    "//mojo/public/mojom/base:read_only_buffer",
     "//net/interfaces",
     "//services/proxy_resolver/public/mojom",
     "//url/mojom:url_mojom_gurl",

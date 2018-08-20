@@ -128,7 +128,6 @@ class WrappedTestingCertVerifier : public net::CertVerifier {
 
   // CertVerifier implementation
   int Verify(const RequestParams& params,
-             net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              net::CompletionOnceCallback callback,
              std::unique_ptr<Request>* out_req,
@@ -137,7 +136,7 @@ class WrappedTestingCertVerifier : public net::CertVerifier {
     if (!g_cert_verifier_for_testing)
       return net::ERR_FAILED;
     return g_cert_verifier_for_testing->Verify(
-        params, crl_set, verify_result, std::move(callback), out_req, net_log);
+        params, verify_result, std::move(callback), out_req, net_log);
   }
   void SetConfig(const Config& config) override {
     if (!g_cert_verifier_for_testing)
@@ -1025,7 +1024,8 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   std::unique_ptr<SSLConfigServiceMojo> ssl_config_service =
       std::make_unique<SSLConfigServiceMojo>(
           std::move(params_->initial_ssl_config),
-          std::move(params_->ssl_config_client_request));
+          std::move(params_->ssl_config_client_request),
+          network_service_->crl_set_distributor());
   SSLConfigServiceMojo* ssl_config_service_raw = ssl_config_service.get();
   builder->set_ssl_config_service(std::move(ssl_config_service));
 
