@@ -96,7 +96,7 @@ void AuthenticatorRequestDialogModel::StartFlow(
 
   transport_availability_ = std::move(transport_availability);
   last_used_transport_ = last_used_transport;
-  for (const auto transport : transport_availability.available_transports) {
+  for (const auto transport : transport_availability_.available_transports) {
     transport_list_model_.AppendTransport(ToAuthenticatorTransport(transport));
   }
 
@@ -200,8 +200,12 @@ void AuthenticatorRequestDialogModel::Cancel() {
 void AuthenticatorRequestDialogModel::Back() {
   if (current_step() == Step::kWelcomeScreen) {
     Cancel();
-  } else {
+  } else if (current_step() == Step::kTransportSelection) {
     SetCurrentStep(Step::kWelcomeScreen);
+  } else {
+    SetCurrentStep(transport_availability_.available_transports.size() >= 2u
+                       ? Step::kTransportSelection
+                       : Step::kWelcomeScreen);
   }
 }
 
