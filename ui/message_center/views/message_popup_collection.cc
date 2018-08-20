@@ -141,7 +141,8 @@ void MessagePopupCollection::OnNotificationRemoved(
 
 void MessagePopupCollection::OnNotificationUpdated(
     const std::string& notification_id) {
-  RemoveClosedPopupItems();
+  if (is_updating_)
+    return;
 
   // Find Notification object with |notification_id|.
   const auto& notifications = MessageCenter::Get()->GetPopupNotifications();
@@ -159,11 +160,17 @@ void MessagePopupCollection::OnNotificationUpdated(
     return;
   }
 
-  // Update contents of the notification.
-  for (auto& item : popup_items_) {
-    if (item.id == notification_id) {
-      item.popup->UpdateContents(**it);
-      break;
+  {
+    base::AutoReset<bool> reset(&is_updating_, true);
+
+    RemoveClosedPopupItems();
+
+    // Update contents of the notification.
+    for (const auto& item : popup_items_) {
+      if (item.id == notification_id) {
+        item.popup->UpdateContents(**it);
+        break;
+      }
     }
   }
 

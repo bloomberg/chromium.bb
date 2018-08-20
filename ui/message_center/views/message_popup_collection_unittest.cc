@@ -130,6 +130,9 @@ class MockMessagePopupView : public MessagePopupView {
   }
 
   void UpdateContents(const Notification& notification) override {
+    if (height_after_update_.has_value())
+      SetPreferredHeight(height_after_update_.value());
+    popup_collection_->NotifyPopupResized();
     updated_ = true;
   }
 
@@ -164,12 +167,18 @@ class MockMessagePopupView : public MessagePopupView {
 
   void set_expandable(bool expandable) { expandable_ = expandable; }
 
+  void set_height_after_update(base::Optional<int> height_after_update) {
+    height_after_update_ = height_after_update;
+  }
+
  private:
   MockMessagePopupCollection* const popup_collection_;
 
   std::string id_;
   bool updated_ = false;
   bool expandable_ = false;
+
+  base::Optional<int> height_after_update_;
 };
 
 MessagePopupView* MockMessagePopupCollection::CreatePopup(
@@ -380,6 +389,21 @@ TEST_F(MessagePopupCollectionTest, UpdateContents) {
   MessageCenter::Get()->UpdateNotification(id, std::move(updated_notification));
   EXPECT_EQ(1u, GetPopupCounts());
   EXPECT_TRUE(GetPopup(id)->updated());
+}
+
+TEST_F(MessagePopupCollectionTest, UpdateContentsCausesPopupClose) {
+  std::string id = AddNotification();
+  AnimateToEnd();
+  EXPECT_FALSE(IsAnimating());
+  EXPECT_EQ(1u, GetPopupCounts());
+  EXPECT_FALSE(GetPopup(id)->updated());
+
+  GetPopup(id)->set_height_after_update(2048);
+
+  auto updated_notification = CreateNotification(id);
+  updated_notification->set_message(base::ASCIIToUTF16("updated"));
+  MessageCenter::Get()->UpdateNotification(id, std::move(updated_notification));
+  EXPECT_EQ(0u, GetPopupCounts());
 }
 
 TEST_F(MessagePopupCollectionTest, MarkAllPopupsShown) {
