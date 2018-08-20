@@ -16,10 +16,10 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "components/ukm/ukm_source.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 
 namespace payments {
 

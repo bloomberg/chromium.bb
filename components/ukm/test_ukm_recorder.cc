@@ -11,8 +11,8 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/ukm/ukm_source.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ukm {

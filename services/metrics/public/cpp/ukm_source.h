@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UKM_UKM_SOURCE_H_
-#define COMPONENTS_UKM_UKM_SOURCE_H_
+#ifndef SERVICES_METRICS_PUBLIC_CPP_UKM_SOURCE_H_
+#define SERVICES_METRICS_PUBLIC_CPP_UKM_SOURCE_H_
 
 #include <map>
 
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "services/metrics/public/cpp/metrics_export.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
@@ -18,7 +19,7 @@ namespace ukm {
 class Source;
 
 // Contains UKM URL data for a single source id.
-class UkmSource {
+class METRICS_EXPORT UkmSource {
  public:
   enum CustomTabState {
     kCustomTabUnset,
@@ -71,4 +72,4 @@ class UkmSource {
 
 }  // namespace ukm
 
-#endif  // COMPONENTS_UKM_UKM_SOURCE_H_
+#endif  // SERVICES_METRICS_PUBLIC_CPP_UKM_SOURCE_H_

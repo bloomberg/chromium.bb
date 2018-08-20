@@ -9,7 +9,7 @@
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
-#include "components/ukm/ukm_source.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 
 using base::android::JavaParamRef;
 

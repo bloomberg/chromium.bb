@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "components/ukm/ukm_source.h"
 #include "net/http/http_response_info.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 
 class ProtocolPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {

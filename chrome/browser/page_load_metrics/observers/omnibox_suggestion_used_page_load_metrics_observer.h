@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "components/ukm/ukm_source.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "ui/base/page_transition_types.h"
 
 class OmniboxSuggestionUsedMetricsObserver
