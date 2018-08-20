@@ -279,10 +279,16 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // open the file itself off-thread. May only be called once, and only if the
   // ResourceRequest passed to the constructor had a null |request_body|.
   //
+  // The |offset| and |length| can optionally be set to specify the desired
+  // range of the file to be uploaded. By default the entire file is uploaded.
+  //
   // |content_type| will overwrite any Content-Type header in the
   // ResourceRequest passed to Create().
-  virtual void AttachFileForUpload(const base::FilePath& upload_file_path,
-                                   const std::string& upload_content_type) = 0;
+  virtual void AttachFileForUpload(
+      const base::FilePath& upload_file_path,
+      const std::string& upload_content_type,
+      uint64_t offset = 0,
+      uint64_t length = std::numeric_limits<uint64_t>::max()) = 0;
 
   // Sets the when to try and the max number of times to retry a request, if
   // any. |max_retries| is the number of times to retry the request, not

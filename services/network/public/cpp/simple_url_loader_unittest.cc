@@ -1555,6 +1555,24 @@ TEST_P(SimpleURLLoaderTest, UploadFile) {
   }
 }
 
+TEST_P(SimpleURLLoaderTest, UploadFileRange) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL("/echo"), "POST");
+  // These two values should return the second line of the test file.
+  const uint64_t kOffset = 7;
+  const uint64_t kLength = 13;
+  test_helper->simple_url_loader()->AttachFileForUpload(
+      GetTestFilePath(), "text/plain", kOffset, kLength);
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+
+  if (GetParam() != SimpleLoaderTestHelper::DownloadType::HEADERS_ONLY) {
+    ASSERT_TRUE(test_helper->response_body());
+    EXPECT_EQ(GetTestFileContents().substr(kOffset, kLength),
+              *test_helper->response_body());
+  }
+}
+
 TEST_P(SimpleURLLoaderTest, UploadFileWithPut) {
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
       CreateHelperForURL(test_server_.GetURL("/echo"), "PUT");
