@@ -111,7 +111,7 @@ class Service : public service_manager::Service,
   void OnSpeechRecognitionFinalResult(
       const std::string& final_result) override{};
   void OnSpeechLevelUpdated(float speech_level) override{};
-  void OnTtsStarted() override{};
+  void OnTtsStarted(bool due_to_error) override{};
 
   void BindAssistantSettingsManager(
       mojom::AssistantSettingsManagerRequest request);

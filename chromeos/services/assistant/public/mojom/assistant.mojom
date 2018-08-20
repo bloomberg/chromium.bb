@@ -92,8 +92,9 @@ interface AssistantInteractionSubscriber {
   // Assistant got an instantaneous speech level update in dB.
   OnSpeechLevelUpdated(float speech_level);
 
-  // Assistant has started speaking.
-  OnTtsStarted();
+  // Assistant has started speaking. When TTS is started due to an error that
+  // occurred during the interaction, |due_to_error| is true.
+  OnTtsStarted(bool due_to_error);
 };
 
 // Subscribes to assistant's notification event. These events are server

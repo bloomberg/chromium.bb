@@ -391,7 +391,7 @@ void AssistantManagerServiceImpl::OnRespondingStarted(bool is_error_response) {
       FROM_HERE,
       base::BindOnce(
           &AssistantManagerServiceImpl::OnRespondingStartedOnMainThread,
-          weak_factory_.GetWeakPtr()));
+          weak_factory_.GetWeakPtr(), is_error_response));
 }
 
 void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
@@ -804,8 +804,10 @@ void AssistantManagerServiceImpl::OnRecognitionStateChangedOnMainThread(
   }
 }
 
-void AssistantManagerServiceImpl::OnRespondingStartedOnMainThread() {
-  interaction_subscribers_.ForAllPtrs([](auto* ptr) { ptr->OnTtsStarted(); });
+void AssistantManagerServiceImpl::OnRespondingStartedOnMainThread(
+    bool is_error_response) {
+  interaction_subscribers_.ForAllPtrs(
+      [is_error_response](auto* ptr) { ptr->OnTtsStarted(is_error_response); });
 }
 
 void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(
