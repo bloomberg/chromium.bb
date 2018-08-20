@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <limits>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -214,8 +213,11 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   void SetAllowHttpErrorResults(bool allow_http_error_results) override;
   void AttachStringForUpload(const std::string& upload_data,
                              const std::string& upload_content_type) override;
-  void AttachFileForUpload(const base::FilePath& upload_file_path,
-                           const std::string& upload_content_type) override;
+  void AttachFileForUpload(
+      const base::FilePath& upload_file_path,
+      const std::string& upload_content_type,
+      uint64_t offset = 0,
+      uint64_t length = std::numeric_limits<uint64_t>::max()) override;
   void SetRetryOptions(int max_retries, int retry_mode) override;
   int NetError() const override;
   const ResourceResponseHead* ResponseInfo() const override;
@@ -1273,7 +1275,9 @@ void SimpleURLLoaderImpl::AttachStringForUpload(
 
 void SimpleURLLoaderImpl::AttachFileForUpload(
     const base::FilePath& upload_file_path,
-    const std::string& upload_content_type) {
+    const std::string& upload_content_type,
+    uint64_t offset,
+    uint64_t length) {
   DCHECK(!upload_file_path.empty());
 
   // Currently only allow a single file to be attached.
@@ -1286,8 +1290,8 @@ void SimpleURLLoaderImpl::AttachFileForUpload(
   resource_request_->request_body = new ResourceRequestBody();
   // TODO(mmenke): Open the file in the current process and append the file
   // handle instead of the file path.
-  resource_request_->request_body->AppendFileRange(
-      upload_file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  resource_request_->request_body->AppendFileRange(upload_file_path, offset,
+                                                   length, base::Time());
 
   resource_request_->headers.SetHeader(net::HttpRequestHeaders::kContentType,
                                        upload_content_type);
