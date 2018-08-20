@@ -335,8 +335,8 @@ class SuggestionView extends ViewGroup {
             mContentsView.mTextLine2.setSingleLine();
         }
 
-        boolean sameAsTyped =
-                suggestionItem.getMatchedQuery().equalsIgnoreCase(mSuggestion.getDisplayText());
+        boolean sameAsTyped = suggestionItem.getMatchedQuery().trim().equalsIgnoreCase(
+                mSuggestion.getDisplayText());
         int suggestionType = mSuggestion.getType();
         if (mSuggestion.isUrlSuggestion()) {
             if (mSuggestion.isStarred()) {
