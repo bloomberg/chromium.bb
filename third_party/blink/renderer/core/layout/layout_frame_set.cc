@@ -470,15 +470,15 @@ void LayoutFrameSet::ContinueResizing(GridAxis& axis, int position) {
       LayoutInvalidationReason::kSizeChanged);
 }
 
-bool LayoutFrameSet::UserResize(MouseEvent* evt) {
+bool LayoutFrameSet::UserResize(const MouseEvent& evt) {
   if (!is_resizing_) {
     if (NeedsLayout())
       return false;
-    if (evt->type() == EventTypeNames::mousedown &&
-        evt->button() ==
+    if (evt.type() == EventTypeNames::mousedown &&
+        evt.button() ==
             static_cast<short>(WebPointerProperties::Button::kLeft)) {
       FloatPoint local_pos =
-          AbsoluteToLocal(FloatPoint(evt->AbsoluteLocation()), kUseTransforms);
+          AbsoluteToLocal(FloatPoint(evt.AbsoluteLocation()), kUseTransforms);
       StartResizing(cols_, local_pos.X());
       StartResizing(rows_, local_pos.Y());
       if (cols_.split_being_resized_ != kNoSplit ||
@@ -488,16 +488,16 @@ bool LayoutFrameSet::UserResize(MouseEvent* evt) {
       }
     }
   } else {
-    if (evt->type() == EventTypeNames::mousemove ||
-        (evt->type() == EventTypeNames::mouseup &&
-         evt->button() ==
+    if (evt.type() == EventTypeNames::mousemove ||
+        (evt.type() == EventTypeNames::mouseup &&
+         evt.button() ==
              static_cast<short>(WebPointerProperties::Button::kLeft))) {
       FloatPoint local_pos =
-          AbsoluteToLocal(FloatPoint(evt->AbsoluteLocation()), kUseTransforms);
+          AbsoluteToLocal(FloatPoint(evt.AbsoluteLocation()), kUseTransforms);
       ContinueResizing(cols_, local_pos.X());
       ContinueResizing(rows_, local_pos.Y());
-      if (evt->type() == EventTypeNames::mouseup &&
-          evt->button() ==
+      if (evt.type() == EventTypeNames::mouseup &&
+          evt.button() ==
               static_cast<short>(WebPointerProperties::Button::kLeft)) {
         SetIsResizing(false);
         return true;

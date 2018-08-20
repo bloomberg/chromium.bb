@@ -267,7 +267,7 @@ void CreateAndHandleKeyboardEvent(WebElement* plugin_container_one_element,
   web_keyboard_event.windows_key_code = key_code;
   KeyboardEvent* key_event = KeyboardEvent::Create(web_keyboard_event, nullptr);
   ToWebPluginContainerImpl(plugin_container_one_element->PluginContainer())
-      ->HandleEvent(key_event);
+      ->HandleEvent(*key_event);
 }
 
 void ExecuteContextMenuCommand(WebViewImpl* web_view,

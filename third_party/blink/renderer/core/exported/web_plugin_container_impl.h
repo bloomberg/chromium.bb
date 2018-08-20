@@ -114,7 +114,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   void UpdateAllLifecyclePhases();
   void InvalidateRect(const IntRect&);
   void SetFocused(bool, WebFocusType);
-  void HandleEvent(Event*);
+  void HandleEvent(Event&);
   bool IsErrorplaceholder();
   void EventListenersRemoved();
   void InvalidatePaint() {}
@@ -221,15 +221,15 @@ class CORE_EXPORT WebPluginContainerImpl final
   WebCoalescedInputEvent TransformCoalescedTouchEvent(
       const WebCoalescedInputEvent&);
 
-  void HandleMouseEvent(MouseEvent*);
-  void HandleDragEvent(MouseEvent*);
-  void HandleWheelEvent(WheelEvent*);
-  void HandleKeyboardEvent(KeyboardEvent*);
+  void HandleMouseEvent(MouseEvent&);
+  void HandleDragEvent(MouseEvent&);
+  void HandleWheelEvent(WheelEvent&);
+  void HandleKeyboardEvent(KeyboardEvent&);
   bool HandleCutCopyPasteKeyboardEvent(const WebKeyboardEvent&);
-  void HandleTouchEvent(TouchEvent*);
-  void HandleGestureEvent(GestureEvent*);
+  void HandleTouchEvent(TouchEvent&);
+  void HandleGestureEvent(GestureEvent&);
 
-  void SynthesizeMouseEventIfPossible(TouchEvent*);
+  void SynthesizeMouseEventIfPossible(TouchEvent&);
 
   void FocusPlugin();
 
