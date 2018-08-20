@@ -12,9 +12,14 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 
+namespace media_session {
+namespace mojom {
+enum class AudioFocusType;
+}  // namespace mojom
+}  // namespace media_session
+
 namespace content {
 
-enum class AudioFocusType;
 class AudioFocusObserver;
 class MediaSessionImpl;
 
@@ -23,7 +28,8 @@ class CONTENT_EXPORT AudioFocusManager {
   // Returns Chromium's internal AudioFocusManager.
   static AudioFocusManager* GetInstance();
 
-  void RequestAudioFocus(MediaSessionImpl* media_session, AudioFocusType type);
+  void RequestAudioFocus(MediaSessionImpl* media_session,
+                         media_session::mojom::AudioFocusType type);
 
   void AbandonAudioFocus(MediaSessionImpl* media_session);
 

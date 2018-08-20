@@ -34,6 +34,12 @@ namespace media {
 enum class MediaContentType;
 }  // namespace media
 
+namespace media_session {
+namespace mojom {
+enum class AudioFocusType;
+}  // namespace mojom
+}  // namespace media_session
+
 namespace content {
 
 class AudioFocusDelegate;
@@ -45,8 +51,6 @@ class MediaSessionObserver;
 class MediaSessionPlayerObserver;
 class MediaSessionServiceImpl;
 class MediaSessionServiceImplBrowserTest;
-
-enum class AudioFocusType;
 
 #if defined(OS_ANDROID)
 class MediaSessionAndroid;
@@ -165,7 +169,7 @@ class MediaSessionImpl : public MediaSession,
 
   // Returns the audio focus type. The type is updated everytime after the
   // session requests audio focus.
-  CONTENT_EXPORT AudioFocusType audio_focus_type() const {
+  CONTENT_EXPORT media_session::mojom::AudioFocusType audio_focus_type() const {
     return audio_focus_type_;
   }
 
@@ -203,7 +207,8 @@ class MediaSessionImpl : public MediaSession,
 
   // Requests audio focus to the AudioFocusDelegate.
   // Returns whether the request was granted.
-  CONTENT_EXPORT bool RequestSystemAudioFocus(AudioFocusType audio_focus_type);
+  CONTENT_EXPORT bool RequestSystemAudioFocus(
+      media_session::mojom::AudioFocusType audio_focus_type);
 
   // Returns debugging information to be displayed on chrome://media-internals.
   struct DebugInfo {
@@ -311,7 +316,7 @@ class MediaSessionImpl : public MediaSession,
 
   State audio_focus_state_;
   MediaSession::SuspendType suspend_type_;
-  AudioFocusType audio_focus_type_;
+  media_session::mojom::AudioFocusType audio_focus_type_;
 
   MediaSessionUmaHelper uma_helper_;
 

@@ -33,9 +33,13 @@ namespace media {
 struct MediaLogEvent;
 }
 
-namespace content {
-
+namespace media_session {
+namespace mojom {
 enum class AudioFocusType;
+}  // namespace mojom
+}  // namespace media_session
+
+namespace content {
 
 // This class stores information about currently active media.
 // TODO(crbug.com/812557): Remove inheritance from media::AudioLogFactory once
@@ -123,7 +127,8 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
 
 #if !defined(OS_ANDROID)
   // AudioFocusObserver implementation.
-  void OnFocusGained(MediaSession* media_session, AudioFocusType type) override;
+  void OnFocusGained(MediaSession* media_session,
+                     media_session::mojom::AudioFocusType type) override;
   void OnFocusLost(MediaSession* media_session) override;
 #endif
 

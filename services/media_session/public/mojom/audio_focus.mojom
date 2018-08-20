@@ -1,0 +1,17 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module media_session.mojom;
+
+// These are the different types of audio focus that can be requested.
+enum AudioFocusType {
+  // Request permanent audio focus when you plan to play audio for the
+  // foreseeable future (for example, when playing music) and you expect
+  // the previous holder of audio focus to stop playing.
+  kGain,
+
+  // Request transient focus when you expect to play audio for only a
+  // short time and you expect the previous holder to pause playing.
+  kGainTransientMayDuck,
+};
