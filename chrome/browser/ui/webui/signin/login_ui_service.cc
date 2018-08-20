@@ -116,8 +116,7 @@ class ConsentBumpActivator : public BrowserListObserver,
     unified_consent::UnifiedConsentService* consent_service =
         UnifiedConsentServiceFactory::GetForProfile(profile_);
 
-    consent_service->MarkMigrationComplete(
-        unified_consent::ConsentBumpSuppressReason::kNone);
+    consent_service->MarkConsentBumpShown();
 
     switch (result) {
       case LoginUIService::CONFIGURE_SYNC_FIRST:
