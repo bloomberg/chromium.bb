@@ -888,6 +888,7 @@ bool DocumentLoader::MaybeLoadEmpty() {
       !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     request_.SetURL(BlankURL());
   response_ = ResourceResponse(request_.Url(), "text/html");
+  response_.SetTextEncodingName("utf-8");
   FinishedLoading(CurrentTimeTicks());
   return true;
 }
