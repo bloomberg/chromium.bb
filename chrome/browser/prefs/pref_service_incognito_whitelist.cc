@@ -443,14 +443,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kGoogleServicesPasswordHash,
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-    prefs::kCrossDevicePromoOptedOut, prefs::kCrossDevicePromoShouldBeShown,
-    prefs::kCrossDevicePromoObservedSingleAccountCookie,
-    prefs::kCrossDevicePromoNextFetchListDevicesTime,
-    prefs::kCrossDevicePromoNumDevices,
-    prefs::kCrossDevicePromoLastDeviceActiveTime,
-#endif
-
     prefs::kWebAppCreateOnDesktop, prefs::kWebAppCreateInAppsMenu,
     prefs::kWebAppCreateInQuickLaunchBar,
 
