@@ -547,11 +547,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kSystemTimezoneAutomaticDetectionPolicy,
 #endif  // defined(OS_CHROMEOS)
 
-    prefs::kEnableMediaRouter,
-#if !defined(OS_ANDROID)
-    prefs::kShowCastIconInToolbar,
-#endif  // !defined(OS_ANDROID)
-
 #if !defined(OS_ANDROID)
 #if !defined(OS_CHROMEOS)
     prefs::kRelaunchNotification,
@@ -616,12 +611,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kClickedUpdateMenuItem,
     prefs::kLatestVersionWhenClickedUpdateMenuItem,
 #endif
-
-    prefs::kMediaRouterCloudServicesPrefSet,
-    prefs::kMediaRouterEnableCloudServices,
-    prefs::kMediaRouterFirstRunFlowAcknowledged,
-    prefs::kMediaRouterMediaRemotingEnabled,
-    // prefs::kMediaRouterTabMirroringSources,
 
     prefs::kOriginTrialPublicKey, prefs::kOriginTrialDisabledFeatures,
     prefs::kOriginTrialDisabledTokens,
