@@ -8654,6 +8654,26 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Gzip-compressed Tar"/>
 </enum>
 
+<enum name="CrosDisksClientMountError">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Internal"/>
+  <int value="3" label="Invalid argument"/>
+  <int value="4" label="Invalid path"/>
+  <int value="5" label="Path already mounted"/>
+  <int value="6" label="Path not mounted"/>
+  <int value="7" label="Directory creation failed"/>
+  <int value="8" label="Invalid mount options"/>
+  <int value="9" label="Invalid unmount options"/>
+  <int value="10" label="Insufficient permissions"/>
+  <int value="11" label="Mount program not found"/>
+  <int value="12" label="Mount program failed"/>
+  <int value="13" label="Invalid device path"/>
+  <int value="14" label="Unknown filesystem"/>
+  <int value="15" label="Unsupported filesystem"/>
+  <int value="16" label="Invalid archive"/>
+</enum>
+
 <enum name="CrosDisksDeviceMediaType">
   <int value="0" label="Unknown"/>
   <int value="1" label="USB Drive"/>
