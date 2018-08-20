@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_TRAY_H_
 #define ASH_SYSTEM_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_TRAY_H_
 
-#include "ash/keyboard/keyboard_ui_observer.h"
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
@@ -20,7 +20,7 @@ namespace ash {
 
 // TODO(sky): make this visible on non-chromeos platforms.
 class VirtualKeyboardTray : public TrayBackgroundView,
-                            public KeyboardUIObserver,
+                            public AccessibilityObserver,
                             public keyboard::KeyboardControllerObserver,
                             public ShellObserver,
                             public SessionObserver {
@@ -34,8 +34,8 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   void ClickedOutsideBubble() override;
   bool PerformAction(const ui::Event& event) override;
 
-  // KeyboardUIObserver:
-  void OnKeyboardEnabledStateChanged(bool new_enabled) override;
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override;
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardVisibilityStateChanged(bool is_visible) override;

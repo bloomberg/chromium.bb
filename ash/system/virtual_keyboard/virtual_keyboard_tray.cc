@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/keyboard/keyboard_ui.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
@@ -36,7 +36,7 @@ VirtualKeyboardTray::VirtualKeyboardTray(Shelf* shelf)
 
   // The Shell may not exist in some unit tests.
   if (Shell::HasInstance()) {
-    Shell::Get()->keyboard_ui()->AddObserver(this);
+    Shell::Get()->accessibility_controller()->AddObserver(this);
     Shell::Get()->AddShellObserver(this);
   }
   // Try observing keyboard controller, in case it is already constructed.
@@ -49,7 +49,7 @@ VirtualKeyboardTray::~VirtualKeyboardTray() {
   // The Shell may not exist in some unit tests.
   if (Shell::HasInstance()) {
     Shell::Get()->RemoveShellObserver(this);
-    Shell::Get()->keyboard_ui()->RemoveObserver(this);
+    Shell::Get()->accessibility_controller()->RemoveObserver(this);
   }
 }
 
@@ -66,9 +66,14 @@ void VirtualKeyboardTray::ClickedOutsideBubble() {}
 bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
   UserMetricsRecorder::RecordUserClickOnTray(
       LoginMetricsRecorder::TrayClickTarget::kVirtualKeyboardTray);
-  Shell::Get()->keyboard_ui()->ShowInDisplay(
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          shelf_->GetWindow()));
+
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  // Keyboard may not always be enabled. https://crbug.com/749989
+  if (keyboard_controller->enabled()) {
+    keyboard_controller->ShowKeyboardInDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(
+            shelf_->GetWindow()));
+  }
   // Normally, active status is set when virtual keyboard is shown/hidden,
   // however, showing virtual keyboard happens asynchronously and, especially
   // the first time, takes some time. We need to set active status here to
@@ -78,7 +83,9 @@ bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
   return true;
 }
 
-void VirtualKeyboardTray::OnKeyboardEnabledStateChanged(bool new_enabled) {
+void VirtualKeyboardTray::OnAccessibilityStatusChanged() {
+  bool new_enabled =
+      Shell::Get()->accessibility_controller()->IsVirtualKeyboardEnabled();
   SetVisible(new_enabled);
   if (new_enabled) {
     // Observe keyboard controller to detect when the virtual keyboard is

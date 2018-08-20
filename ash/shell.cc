@@ -55,7 +55,6 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_focus_handler.h"
-#include "ash/keyboard/keyboard_ui.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/login/login_screen_controller.h"
@@ -500,7 +499,6 @@ void Shell::EnableKeyboard() {
 }
 
 void Shell::DisableKeyboard() {
-  keyboard_ui_->Hide();
   if (keyboard_controller_->enabled()) {
     for (auto* const controller : GetAllRootWindowControllers())
       controller->DeactivateKeyboard(keyboard_controller_.get());
@@ -1245,8 +1243,6 @@ void Shell::Init(
   touch_transformer_controller_ = std::make_unique<AshTouchTransformController>(
       display_configurator_.get(), display_manager_.get(),
       std::make_unique<display::DefaultTouchTransformSetter>());
-
-  keyboard_ui_ = KeyboardUI::Create();
 
   // |system_tray_model_| should be available before
   // |system_notification_controller_| is initialized and Shelf is created by

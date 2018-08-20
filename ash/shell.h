@@ -133,7 +133,6 @@ class ImmersiveContextAsh;
 class ImmersiveHandlerFactoryAsh;
 class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
-class KeyboardUI;
 class LaserPointerController;
 class LocaleNotificationController;
 class LockStateController;
@@ -423,7 +422,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   KeyboardBrightnessControlDelegate* keyboard_brightness_control_delegate() {
     return keyboard_brightness_control_delegate_.get();
   }
-  KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
   LaserPointerController* laser_pointer_controller() {
     return laser_pointer_controller_.get();
   }
@@ -753,7 +751,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ImmersiveContextAsh> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
-  std::unique_ptr<KeyboardUI> keyboard_ui_;
   std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
   std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
   std::unique_ptr<LoginScreenController> login_screen_controller_;
