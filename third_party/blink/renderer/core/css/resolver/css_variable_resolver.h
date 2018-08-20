@@ -29,7 +29,7 @@ class StyleInheritedVariables;
 class StyleNonInheritedVariables;
 class StyleResolverState;
 
-class CSSVariableResolver {
+class CORE_EXPORT CSSVariableResolver {
   STACK_ALLOCATED();
 
  public:

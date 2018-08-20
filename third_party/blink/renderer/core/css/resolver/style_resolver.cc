@@ -1713,7 +1713,7 @@ void StyleResolver::ApplyCustomProperties(StyleResolverState& state,
   if (apply_animations == kIncludeAnimations) {
     ApplyAnimatedCustomProperties(state);
   }
-  // TODO(leviw): stop recalculating every time
+
   CSSVariableResolver(state).ResolveVariableDefinitions();
 }
 

@@ -17,7 +17,7 @@
 
 namespace blink {
 
-class StyleNonInheritedVariables {
+class CORE_EXPORT StyleNonInheritedVariables {
  public:
   static std::unique_ptr<StyleNonInheritedVariables> Create() {
     return base::WrapUnique(new StyleNonInheritedVariables);
@@ -34,6 +34,8 @@ class StyleNonInheritedVariables {
 
   void SetVariable(const AtomicString& name,
                    scoped_refptr<CSSVariableData> value) {
+    needs_resolution_ = needs_resolution_ || value->NeedsVariableResolution() ||
+                        value->NeedsUrlResolution();
     data_.Set(name, std::move(value));
   }
   CSSVariableData* GetVariable(const AtomicString& name) const;
@@ -46,14 +48,18 @@ class StyleNonInheritedVariables {
 
   HashSet<AtomicString> GetCustomPropertyNames() const;
 
+  bool NeedsResolution() const { return needs_resolution_; }
+  void ClearNeedsResolution() { needs_resolution_ = false; }
+
  private:
-  StyleNonInheritedVariables() = default;
+  StyleNonInheritedVariables() : needs_resolution_(false) {}
   StyleNonInheritedVariables(StyleNonInheritedVariables&);
 
   friend class CSSVariableResolver;
 
   HashMap<AtomicString, scoped_refptr<CSSVariableData>> data_;
   PersistentHeapHashMap<AtomicString, Member<CSSValue>> registered_data_;
+  bool needs_resolution_;
 };
 
 }  // namespace blink

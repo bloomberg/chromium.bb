@@ -387,14 +387,16 @@ void CSSVariableResolver::ResolveVariableDefinitions() {
     return;
 
   int variable_count = 0;
-  if (inherited_variables_) {
+  if (inherited_variables_ && inherited_variables_->NeedsResolution()) {
     for (auto& variable : inherited_variables_->data_)
       ValueForCustomProperty(variable.key);
+    inherited_variables_->ClearNeedsResolution();
     variable_count += inherited_variables_->data_.size();
   }
-  if (non_inherited_variables_) {
+  if (non_inherited_variables_ && non_inherited_variables_->NeedsResolution()) {
     for (auto& variable : non_inherited_variables_->data_)
       ValueForCustomProperty(variable.key);
+    non_inherited_variables_->ClearNeedsResolution();
     variable_count += non_inherited_variables_->data_.size();
   }
   INCREMENT_STYLE_STATS_COUNTER(state_.GetDocument().GetStyleEngine(),

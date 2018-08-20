@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class CSSCustomPropertyDeclaration : public CSSValue {
+class CORE_EXPORT CSSCustomPropertyDeclaration : public CSSValue {
  public:
   static CSSCustomPropertyDeclaration* Create(
       const AtomicString& name,
