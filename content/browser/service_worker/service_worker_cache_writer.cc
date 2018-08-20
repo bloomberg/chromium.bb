@@ -298,9 +298,7 @@ int ServiceWorkerCacheWriter::DoReadDataForCompareDone(int result) {
     return net::OK;
   }
 
-  // bytes_compared_ only gets incremented when a full block is compared, to
-  // avoid having to use only parts of the buffered network data.
-  bytes_compared_ += result;
+  bytes_compared_ += compare_offset_;
   state_ = STATE_DONE;
   return net::OK;
 }

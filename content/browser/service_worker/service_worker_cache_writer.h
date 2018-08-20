@@ -202,13 +202,24 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
 
   size_t cached_length_;
 
+  // The amount of data from the network (|data_to_write_|) which has already
+  // been compared with data from storage (|data_to_read_|). This is
+  // initialized to 0 for every new arrival of network data.
+  size_t compare_offset_;
+
+  // Count of bytes which has been read from the network for comparison, and
+  // known as identical with the stored scripts. It is incremented only when a
+  // full block of network data is compared, to avoid having to use only
+  // fragments of the buffered network data.
   size_t bytes_compared_;
+
+  // Count of bytes copied from |copy_reader_| to |writer_|.
   size_t bytes_copied_;
+
+  // Count of bytes written back to |writer_|.
   size_t bytes_written_;
 
   bool did_replace_;
-
-  size_t compare_offset_;
 
   std::unique_ptr<ServiceWorkerResponseReader> compare_reader_;
   std::unique_ptr<ServiceWorkerResponseReader> copy_reader_;
