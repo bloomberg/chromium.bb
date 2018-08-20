@@ -277,6 +277,7 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/display/DisplayUtil.java",
     "java/src/org/chromium/ui/display/PhysicalDisplayAndroid.java",
     "java/src/org/chromium/ui/display/VirtualDisplayAndroid.java",
+    "java/src/org/chromium/ui/drawable/AnimationLooper.java",
     "java/src/org/chromium/ui/drawable/StateListDrawableBuilder.java",
     "java/src/org/chromium/ui/events/devices/InputDeviceObserver.java",
     "java/src/org/chromium/ui/gfx/BitmapHelper.java",
