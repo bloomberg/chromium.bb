@@ -317,11 +317,11 @@ def GenerateCipdUploadCommand(cipd_pkg_info):
     A string holding a shell command to upload the package through cipd.
   """
   pkg_path, pkg_name, pkg_tag = cipd_pkg_info
-  return ('(cd {0}; '
+  return ('(cd "{0}"; '
           # Need to skip create step if an instance already exists with the
           # same package name and version tag (thus the use of ||).
-          'cipd describe {1} -version {2} || '
-          'cipd create --pkg-def cipd.yaml -tag {2})').format(
+          'cipd describe "{1}" -version "{2}" || '
+          'cipd create --pkg-def cipd.yaml -tag "{2}")').format(
               pkg_path, pkg_name, pkg_tag)
 
 
