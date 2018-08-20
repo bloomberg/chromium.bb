@@ -17,7 +17,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/window/hit_test_utils.h"
 
 namespace ash {
 
@@ -79,7 +79,7 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
       paint_as_active_(false),
       alpha_(255),
       swap_images_animation_(new gfx::SlideAnimation(this)) {
-  SetProperty(views::kHitTestComponentKey, hit_test_type);
+  views::SetHitTestComponent(this, hit_test_type);
 
   set_animate_on_state_change(true);
   swap_images_animation_->Reset(1);

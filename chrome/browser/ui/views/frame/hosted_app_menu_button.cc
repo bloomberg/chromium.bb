@@ -19,13 +19,13 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/window/hit_test_utils.h"
 
 constexpr int kMenuHighlightFadeDurationMs = 800;
 
 HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
     : AppMenuButton(this), browser_view_(browser_view) {
-  SetProperty(views::kHitTestComponentKey, static_cast<int>(HTMENU));
+  views::SetHitTestComponent(this, static_cast<int>(HTMENU));
 
   SetInkDropMode(InkDropMode::ON);
   // Disable focus ring for consistency with sibling buttons and AppMenuButton.

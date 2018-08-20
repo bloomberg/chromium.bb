@@ -40,6 +40,7 @@
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/win/hwnd_util.h"
 #include "ui/views/window/client_view.h"
+#include "ui/views/window/hit_test_utils.h"
 
 using MD = ui::MaterialDesignController;
 
@@ -308,6 +309,15 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       (profile_switcher_view &&
        profile_switcher_view->GetMirroredBounds().Contains(point))) {
     return HTCLIENT;
+  }
+
+  if (hosted_app_button_container_) {
+    // TODO(alancutter): Assign hit test components to all children and refactor
+    // this entire function call to just be GetHitTestComponent(this, point).
+    int hosted_app_component =
+        views::GetHitTestComponent(hosted_app_button_container_, point);
+    if (hosted_app_component != HTNOWHERE)
+      return hosted_app_component;
   }
 
   int frame_component = frame()->client_view()->NonClientHitTest(point);

@@ -11,6 +11,7 @@
 #include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/hit_test_utils.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace ash {
@@ -51,20 +52,10 @@ int FrameBorderNonClientHitTest(views::NonClientFrameView* view,
 
   // Check if it intersects with children (frame caption button, back button,
   // etc.).
-  gfx::Point point_in_non_client_view(point_in_widget);
-  views::View::ConvertPointFromWidget(widget->non_client_view(),
-                                      &point_in_non_client_view);
-  for (views::View* target_view =
-           widget->non_client_view()->GetEventHandlerForPoint(
-               point_in_non_client_view);
-       target_view; target_view = target_view->parent()) {
-    int target_component =
-        target_view->GetProperty(views::kHitTestComponentKey);
-    if (target_component != HTNOWHERE)
-      return target_component;
-    if (target_view == widget->non_client_view())
-      break;
-  }
+  int hit_test_component =
+      views::GetHitTestComponent(widget->non_client_view(), point_in_widget);
+  if (hit_test_component != HTNOWHERE)
+    return hit_test_component;
 
   // Caption is a safe default.
   return HTCAPTION;

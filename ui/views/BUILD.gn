@@ -244,6 +244,7 @@ jumbo_component("views") {
     "window/dialog_observer.h",
     "window/frame_background.h",
     "window/frame_buttons.h",
+    "window/hit_test_utils.h",
     "window/native_frame_view.h",
     "window/non_client_view.h",
     "window/window_button_order_provider.h",
@@ -418,6 +419,7 @@ jumbo_component("views") {
     "window/dialog_client_view.cc",
     "window/dialog_delegate.cc",
     "window/frame_background.cc",
+    "window/hit_test_utils.cc",
     "window/native_frame_view.cc",
     "window/non_client_view.cc",
     "window/window_button_order_provider.cc",
@@ -1005,6 +1007,7 @@ source_set("views_unittests_sources") {
     "window/custom_frame_view_unittest.cc",
     "window/dialog_client_view_unittest.cc",
     "window/dialog_delegate_unittest.cc",
+    "window/hit_test_utils_unittest.cc",
     "window/non_client_view_unittest.cc",
     "window/window_resize_utils_unittest.cc",
   ]
