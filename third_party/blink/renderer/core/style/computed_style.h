@@ -287,8 +287,8 @@ class ComputedStyle : public ComputedStyleBase,
   StyleDifference VisualInvalidationDiff(const Document&,
                                          const ComputedStyle&) const;
 
-  void InheritFrom(const ComputedStyle& inherit_parent,
-                   IsAtShadowBoundary = kNotAtShadowBoundary);
+  CORE_EXPORT void InheritFrom(const ComputedStyle& inherit_parent,
+                               IsAtShadowBoundary = kNotAtShadowBoundary);
   void CopyNonInheritedFromCached(const ComputedStyle&);
 
   PseudoId StyleType() const { return static_cast<PseudoId>(StyleTypeInternal()); }
@@ -1079,8 +1079,8 @@ class ComputedStyle : public ComputedStyleBase,
   void ClearResetDirectives();
 
   // Variables.
-  StyleInheritedVariables* InheritedVariables() const;
-  StyleNonInheritedVariables* NonInheritedVariables() const;
+  CORE_EXPORT StyleInheritedVariables* InheritedVariables() const;
+  CORE_EXPORT StyleNonInheritedVariables* NonInheritedVariables() const;
 
   void SetUnresolvedInheritedVariable(const AtomicString&,
                                       scoped_refptr<CSSVariableData>);

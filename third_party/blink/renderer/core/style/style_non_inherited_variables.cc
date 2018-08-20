@@ -42,6 +42,7 @@ StyleNonInheritedVariables::StyleNonInheritedVariables(
     StyleNonInheritedVariables& other) {
   data_ = other.data_;
   registered_data_ = other.registered_data_;
+  needs_resolution_ = other.needs_resolution_;
 }
 
 HashSet<AtomicString> StyleNonInheritedVariables::GetCustomPropertyNames()

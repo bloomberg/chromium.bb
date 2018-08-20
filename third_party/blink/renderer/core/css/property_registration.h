@@ -29,6 +29,13 @@ class CORE_EXPORT PropertyRegistration
                                const PropertyDescriptor&,
                                ExceptionState&);
 
+  static PropertyRegistration* Create(
+      const AtomicString& name,
+      const CSSSyntaxDescriptor&,
+      bool inherits,
+      const CSSValue* initial,
+      scoped_refptr<CSSVariableData> initial_variable_data);
+
   const CSSSyntaxDescriptor& Syntax() const { return syntax_; }
   bool Inherits() const { return inherits_; }
   const CSSValue* Initial() const { return initial_; }

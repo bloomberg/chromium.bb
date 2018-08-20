@@ -22,6 +22,16 @@
 
 namespace blink {
 
+PropertyRegistration* PropertyRegistration::Create(
+    const AtomicString& name,
+    const CSSSyntaxDescriptor& syntax,
+    bool inherits,
+    const CSSValue* initial,
+    scoped_refptr<CSSVariableData> initial_variable_data) {
+  return new PropertyRegistration(name, syntax, inherits, initial,
+                                  initial_variable_data);
+}
+
 PropertyRegistration::PropertyRegistration(
     const AtomicString& name,
     const CSSSyntaxDescriptor& syntax,

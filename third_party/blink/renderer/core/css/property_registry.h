@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class PropertyRegistry : public GarbageCollected<PropertyRegistry> {
+class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
  public:
   static PropertyRegistry* Create() { return new PropertyRegistry(); }
 

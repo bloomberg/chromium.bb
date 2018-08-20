@@ -39,6 +39,7 @@ StyleInheritedVariables::StyleInheritedVariables(
     registered_data_ = other.registered_data_;
     root_ = other.root_;
   }
+  needs_resolution_ = other.needs_resolution_;
 }
 
 CSSVariableData* StyleInheritedVariables::GetVariable(
