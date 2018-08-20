@@ -4,6 +4,8 @@
 
 #include "components/drive/local_file_reader.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
@@ -24,7 +26,7 @@ LocalFileReader::~LocalFileReader() = default;
 
 void LocalFileReader::Open(const base::FilePath& file_path,
                            int64_t offset,
-                           const net::CompletionCallback& callback) {
+                           net::CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_ASYNC;
@@ -32,35 +34,35 @@ void LocalFileReader::Open(const base::FilePath& file_path,
   int rv = file_stream_.Open(
       file_path, flags,
       BindOnce(&LocalFileReader::DidOpen, weak_ptr_factory_.GetWeakPtr(),
-               callback, offset));
+               std::move(callback), offset));
   DCHECK_EQ(rv, net::ERR_IO_PENDING);
 }
 
 void LocalFileReader::Read(net::IOBuffer* in_buffer,
                            int buffer_length,
-                           const net::CompletionCallback& callback) {
+                           net::CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(file_stream_.IsOpen());
-  int rv = file_stream_.Read(in_buffer, buffer_length, callback);
+  int rv = file_stream_.Read(in_buffer, buffer_length, std::move(callback));
   DCHECK_EQ(rv, net::ERR_IO_PENDING);
 }
 
-void LocalFileReader::DidOpen(const net::CompletionCallback& callback,
+void LocalFileReader::DidOpen(net::CompletionOnceCallback callback,
                               int64_t offset,
                               int error) {
   if (error != net::OK)
-    return callback.Run(error);
+    return std::move(callback).Run(error);
 
-  int rv = file_stream_.Seek(
-      offset, BindOnce(&LocalFileReader::DidSeek,
-                       weak_ptr_factory_.GetWeakPtr(), callback, offset));
+  int rv = file_stream_.Seek(offset, BindOnce(&LocalFileReader::DidSeek,
+                                              weak_ptr_factory_.GetWeakPtr(),
+                                              std::move(callback), offset));
   DCHECK_EQ(rv, net::ERR_IO_PENDING);
 }
 
-void LocalFileReader::DidSeek(const net::CompletionCallback& callback,
+void LocalFileReader::DidSeek(net::CompletionOnceCallback callback,
                               int64_t offset,
                               int64_t error) {
-  callback.Run(error == offset ? net::OK : net::ERR_FAILED);
+  std::move(callback).Run(error == offset ? net::OK : net::ERR_FAILED);
 }
 
 }  // namespace util

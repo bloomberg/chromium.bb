@@ -52,9 +52,9 @@ class WebkitFileStreamWriterImpl : public storage::FileStreamWriter {
   // FileWriter override.
   int Write(net::IOBuffer* buf,
             int buf_len,
-            const net::CompletionCallback& callback) override;
-  int Cancel(const net::CompletionCallback& callback) override;
-  int Flush(const net::CompletionCallback& callback) override;
+            net::CompletionOnceCallback callback) override;
+  int Cancel(net::CompletionOnceCallback callback) override;
+  int Flush(net::CompletionOnceCallback callback) override;
 
  private:
   // Part of Write(). Called after CreateWritableSnapshotFile is completed.
@@ -65,6 +65,9 @@ class WebkitFileStreamWriterImpl : public storage::FileStreamWriter {
       const base::FilePath& local_path,
       const base::Closure& close_callback_on_ui_thread);
 
+  // Part of Write(). Passed in to FileStreamWriter::Write().
+  void OnWrite(int result);
+
   FileSystemGetter file_system_getter_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
   const base::FilePath file_path_;
@@ -72,8 +75,8 @@ class WebkitFileStreamWriterImpl : public storage::FileStreamWriter {
 
   std::unique_ptr<storage::FileStreamWriter> local_file_writer_;
   base::Closure close_callback_on_ui_thread_;
-  net::CompletionCallback pending_write_callback_;
-  net::CompletionCallback pending_cancel_callback_;
+  net::CompletionOnceCallback pending_write_callback_;
+  net::CompletionOnceCallback pending_cancel_callback_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

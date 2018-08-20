@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -184,14 +185,19 @@ AbortCallback ProvidedFileSystem::RequestUnmount(
 AbortCallback ProvidedFileSystem::GetMetadata(const base::FilePath& entry_path,
                                               MetadataFieldMask fields,
                                               GetMetadataCallback callback) {
+  // Create |copyable_callback| which is copyable, though it can still only be
+  // called at most once.  This is safe, because RequestManager::CreateRequest()
+  // is guaranteed not to call |callback| if it signals an error (by returning
+  // request_id == 0).
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   const int request_id = request_manager_->CreateRequest(
       GET_METADATA,
       std::unique_ptr<RequestManager::HandlerInterface>(
           new operations::GetMetadata(event_router_, file_system_info_,
-                                      entry_path, fields, callback)));
+                                      entry_path, fields, copyable_callback)));
   if (!request_id) {
-    callback.Run(base::WrapUnique<EntryMetadata>(NULL),
-                 base::File::FILE_ERROR_SECURITY);
+    copyable_callback.Run(base::WrapUnique<EntryMetadata>(NULL),
+                          base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
   }
 

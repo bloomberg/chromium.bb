@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "storage/browser/storage_browser_export.h"
 
 namespace base {
@@ -80,8 +80,9 @@ class FileStreamReader {
   //
   // If the stream is deleted while it has an in-flight Read operation
   // |callback| will not be called.
-  virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) = 0;
+  virtual int Read(net::IOBuffer* buf,
+                   int buf_len,
+                   net::CompletionOnceCallback callback) = 0;
 
   // Returns the length of the file if it could successfully retrieve the
   // file info *and* its last modification time equals to
@@ -92,7 +93,7 @@ class FileStreamReader {
   // Note that the return type is int64_t to return a larger file's size (a file
   // larger than 2G) but an error code should fit in the int range (may be
   // smaller than int64_t range).
-  virtual int64_t GetLength(const net::Int64CompletionCallback& callback) = 0;
+  virtual int64_t GetLength(net::Int64CompletionOnceCallback callback) = 0;
 };
 
 }  // namespace storage

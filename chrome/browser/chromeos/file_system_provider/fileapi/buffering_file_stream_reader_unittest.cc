@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -49,13 +50,13 @@ class FakeFileStreamReader : public storage::FileStreamReader {
   // storage::FileStreamReader overrides.
   int Read(net::IOBuffer* buf,
            int buf_len,
-           const net::CompletionCallback& callback) override {
+           net::CompletionOnceCallback callback) override {
     DCHECK(log_);
     log_->push_back(buf_len);
 
     if (return_error_ != net::OK) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(callback, return_error_));
+          FROM_HERE, base::BindOnce(std::move(callback), return_error_));
       return net::ERR_IO_PENDING;
     }
 
@@ -63,14 +64,14 @@ class FakeFileStreamReader : public storage::FileStreamReader {
     memcpy(buf->data(), fake_data.c_str(), buf_len);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, buf_len));
+        FROM_HERE, base::BindOnce(std::move(callback), buf_len));
     return net::ERR_IO_PENDING;
   }
 
-  int64_t GetLength(const net::Int64CompletionCallback& callback) override {
+  int64_t GetLength(net::Int64CompletionOnceCallback callback) override {
     DCHECK_EQ(net::OK, return_error_);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, kFileSize));
+        FROM_HERE, base::BindOnce(std::move(callback), kFileSize));
     return net::ERR_IO_PENDING;
   }
 

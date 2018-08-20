@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -61,24 +63,26 @@ FileStreamReader* FileStreamReader::CreateForLocalFile(
 
 LocalFileStreamReader::~LocalFileStreamReader() = default;
 
-int LocalFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
-                          const net::CompletionCallback& callback) {
+int LocalFileStreamReader::Read(net::IOBuffer* buf,
+                                int buf_len,
+                                net::CompletionOnceCallback callback) {
   DCHECK(!has_pending_open_);
+
   if (stream_impl_)
-    return stream_impl_->Read(buf, buf_len, callback);
-  return Open(base::Bind(&LocalFileStreamReader::DidOpenForRead,
-                         weak_factory_.GetWeakPtr(), base::RetainedRef(buf),
-                         buf_len, callback));
+    return stream_impl_->Read(buf, buf_len, std::move(callback));
+  return Open(base::BindOnce(&LocalFileStreamReader::DidOpenForRead,
+                             weak_factory_.GetWeakPtr(), base::RetainedRef(buf),
+                             buf_len, std::move(callback)));
 }
 
 int64_t LocalFileStreamReader::GetLength(
-    const net::Int64CompletionCallback& callback) {
+    net::Int64CompletionOnceCallback callback) {
   bool posted = base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE, base::BindOnce(&DoGetFileInfo, file_path_),
       base::BindOnce(
           &SendGetFileInfoResults,
           base::BindOnce(&LocalFileStreamReader::DidGetFileInfoForGetLength,
-                         weak_factory_.GetWeakPtr(), callback)));
+                         weak_factory_.GetWeakPtr(), std::move(callback))));
   DCHECK(posted);
   return net::ERR_IO_PENDING;
 }
@@ -95,98 +99,106 @@ LocalFileStreamReader::LocalFileStreamReader(
       has_pending_open_(false),
       weak_factory_(this) {}
 
-int LocalFileStreamReader::Open(const net::CompletionCallback& callback) {
+int LocalFileStreamReader::Open(net::CompletionOnceCallback callback) {
   DCHECK(!has_pending_open_);
   DCHECK(!stream_impl_.get());
   has_pending_open_ = true;
 
   // Call GetLength first to make it perform last-modified-time verification,
   // and then call DidVerifyForOpen for do the rest.
-  return GetLength(base::Bind(&LocalFileStreamReader::DidVerifyForOpen,
-                              weak_factory_.GetWeakPtr(), callback));
+  return GetLength(base::BindOnce(&LocalFileStreamReader::DidVerifyForOpen,
+                                  weak_factory_.GetWeakPtr(),
+                                  std::move(callback)));
 }
 
 void LocalFileStreamReader::DidVerifyForOpen(
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int64_t get_length_result) {
   if (get_length_result < 0) {
-    callback.Run(static_cast<int>(get_length_result));
+    std::move(callback).Run(static_cast<int>(get_length_result));
     return;
   }
 
   stream_impl_.reset(new net::FileStream(task_runner_));
+  callback_ = std::move(callback);
   const int result = stream_impl_->Open(
       file_path_, kOpenFlagsForRead,
       base::BindOnce(&LocalFileStreamReader::DidOpenFileStream,
-                     weak_factory_.GetWeakPtr(), callback));
+                     weak_factory_.GetWeakPtr()));
   if (result != net::ERR_IO_PENDING)
-    callback.Run(result);
+    std::move(callback_).Run(result);
 }
 
 void LocalFileStreamReader::DidOpenFileStream(
-    const net::CompletionCallback& callback,
     int result) {
   if (result != net::OK) {
-    callback.Run(result);
+    std::move(callback_).Run(result);
     return;
   }
   result = stream_impl_->Seek(
       initial_offset_, base::BindOnce(&LocalFileStreamReader::DidSeekFileStream,
-                                      weak_factory_.GetWeakPtr(), callback));
+                                      weak_factory_.GetWeakPtr()));
   if (result != net::ERR_IO_PENDING) {
-    callback.Run(result);
+    std::move(callback_).Run(result);
   }
 }
 
 void LocalFileStreamReader::DidSeekFileStream(
-    const net::CompletionCallback& callback,
     int64_t seek_result) {
   if (seek_result < 0) {
-    callback.Run(static_cast<int>(seek_result));
+    std::move(callback_).Run(static_cast<int>(seek_result));
     return;
   }
   if (seek_result != initial_offset_) {
-    callback.Run(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
+    std::move(callback_).Run(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
     return;
   }
-  callback.Run(net::OK);
+  std::move(callback_).Run(net::OK);
 }
 
-void LocalFileStreamReader::DidOpenForRead(
-    net::IOBuffer* buf,
-    int buf_len,
-    const net::CompletionCallback& callback,
-    int open_result) {
+void LocalFileStreamReader::DidOpenForRead(net::IOBuffer* buf,
+                                           int buf_len,
+                                           net::CompletionOnceCallback callback,
+                                           int open_result) {
   DCHECK(has_pending_open_);
   has_pending_open_ = false;
   if (open_result != net::OK) {
     stream_impl_.reset();
-    callback.Run(open_result);
+    std::move(callback).Run(open_result);
     return;
   }
   DCHECK(stream_impl_.get());
-  const int read_result = stream_impl_->Read(buf, buf_len, callback);
+
+  callback_ = std::move(callback);
+  const int read_result =
+      stream_impl_->Read(buf, buf_len,
+                         base::BindOnce(&LocalFileStreamReader::OnRead,
+                                        weak_factory_.GetWeakPtr()));
   if (read_result != net::ERR_IO_PENDING)
-    callback.Run(read_result);
+    std::move(callback_).Run(read_result);
 }
 
 void LocalFileStreamReader::DidGetFileInfoForGetLength(
-    const net::Int64CompletionCallback& callback,
+    net::Int64CompletionOnceCallback callback,
     base::File::Error error,
     const base::File::Info& file_info) {
   if (file_info.is_directory) {
-    callback.Run(net::ERR_FILE_NOT_FOUND);
+    std::move(callback).Run(net::ERR_FILE_NOT_FOUND);
     return;
   }
   if (error != base::File::FILE_OK) {
-    callback.Run(net::FileErrorToNetError(error));
+    std::move(callback).Run(net::FileErrorToNetError(error));
     return;
   }
   if (!VerifySnapshotTime(expected_modification_time_, file_info)) {
-    callback.Run(net::ERR_UPLOAD_FILE_CHANGED);
+    std::move(callback).Run(net::ERR_UPLOAD_FILE_CHANGED);
     return;
   }
-  callback.Run(file_info.size);
+  std::move(callback).Run(file_info.size);
+}
+
+void LocalFileStreamReader::OnRead(int read_result) {
+  std::move(callback_).Run(read_result);
 }
 
 }  // namespace storage

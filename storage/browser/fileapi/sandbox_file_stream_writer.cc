@@ -8,6 +8,7 @@
 
 #include <limits>
 #include <tuple>
+#include <utility>
 
 #include "base/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -62,34 +63,34 @@ SandboxFileStreamWriter::SandboxFileStreamWriter(
 
 SandboxFileStreamWriter::~SandboxFileStreamWriter() = default;
 
-int SandboxFileStreamWriter::Write(
-    net::IOBuffer* buf, int buf_len,
-    const net::CompletionCallback& callback) {
+int SandboxFileStreamWriter::Write(net::IOBuffer* buf,
+                                   int buf_len,
+                                   net::CompletionOnceCallback callback) {
+  DCHECK(!write_callback_);
   has_pending_operation_ = true;
+  write_callback_ = std::move(callback);
   if (local_file_writer_)
-    return WriteInternal(buf, buf_len, callback);
+    return WriteInternal(buf, buf_len);
 
-  net::CompletionCallback write_task = base::Bind(
+  net::CompletionOnceCallback write_task = base::BindOnce(
       &SandboxFileStreamWriter::DidInitializeForWrite,
-      weak_factory_.GetWeakPtr(), base::RetainedRef(buf), buf_len, callback);
+      weak_factory_.GetWeakPtr(), base::RetainedRef(buf), buf_len);
   file_system_context_->operation_runner()->CreateSnapshotFile(
-      url_, base::Bind(&SandboxFileStreamWriter::DidCreateSnapshotFile,
-                       weak_factory_.GetWeakPtr(), write_task));
+      url_, base::BindOnce(&SandboxFileStreamWriter::DidCreateSnapshotFile,
+                           weak_factory_.GetWeakPtr(), std::move(write_task)));
   return net::ERR_IO_PENDING;
 }
 
-int SandboxFileStreamWriter::Cancel(const net::CompletionCallback& callback) {
+int SandboxFileStreamWriter::Cancel(net::CompletionOnceCallback callback) {
   if (!has_pending_operation_)
     return net::ERR_UNEXPECTED;
 
   DCHECK(!callback.is_null());
-  cancel_callback_ = callback;
+  cancel_callback_ = std::move(callback);
   return net::ERR_IO_PENDING;
 }
 
-int SandboxFileStreamWriter::WriteInternal(
-    net::IOBuffer* buf, int buf_len,
-    const net::CompletionCallback& callback) {
+int SandboxFileStreamWriter::WriteInternal(net::IOBuffer* buf, int buf_len) {
   // allowed_bytes_to_write could be negative if the file size is
   // greater than the current (possibly new) quota.
   DCHECK(total_bytes_written_ <= allowed_bytes_to_write_ ||
@@ -105,15 +106,15 @@ int SandboxFileStreamWriter::WriteInternal(
   DCHECK(local_file_writer_.get());
   const int result = local_file_writer_->Write(
       buf, buf_len,
-      base::Bind(&SandboxFileStreamWriter::DidWrite, weak_factory_.GetWeakPtr(),
-                 callback));
+      base::BindOnce(&SandboxFileStreamWriter::DidWrite,
+                     weak_factory_.GetWeakPtr()));
   if (result != net::ERR_IO_PENDING)
     has_pending_operation_ = false;
   return result;
 }
 
 void SandboxFileStreamWriter::DidCreateSnapshotFile(
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     base::File::Error file_error,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
@@ -123,12 +124,12 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
   if (CancelIfRequested())
     return;
   if (file_error != base::File::FILE_OK) {
-    callback.Run(net::FileErrorToNetError(file_error));
+    std::move(callback).Run(net::FileErrorToNetError(file_error));
     return;
   }
   if (file_info.is_directory) {
     // We should not be writing to a directory.
-    callback.Run(net::ERR_ACCESS_DENIED);
+    std::move(callback).Run(net::ERR_ACCESS_DENIED);
     return;
   }
   file_size_ = file_info.size;
@@ -151,7 +152,7 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
     // If we don't have the quota manager or the requested filesystem type
     // does not support quota, we should be able to let it go.
     allowed_bytes_to_write_ = default_quota_;
-    callback.Run(net::OK);
+    std::move(callback).Run(net::OK);
     return;
   }
 
@@ -162,11 +163,11 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
   quota_manager_proxy->quota_manager()->GetUsageAndQuota(
       url_.origin(), FileSystemTypeToQuotaStorageType(url_.type()),
       base::BindOnce(&SandboxFileStreamWriter::DidGetUsageAndQuota,
-                     weak_factory_.GetWeakPtr(), callback));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void SandboxFileStreamWriter::DidGetUsageAndQuota(
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     blink::mojom::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
@@ -178,7 +179,7 @@ void SandboxFileStreamWriter::DidGetUsageAndQuota(
     // crbug.com/349708
     TRACE_EVENT0("io", "SandboxFileStreamWriter::DidGetUsageAndQuota FAILED");
 
-    callback.Run(net::ERR_FAILED);
+    std::move(callback).Run(net::ERR_FAILED);
     return;
   }
 
@@ -186,37 +187,34 @@ void SandboxFileStreamWriter::DidGetUsageAndQuota(
   TRACE_EVENT0("io", "SandboxFileStreamWriter::DidGetUsageAndQuota OK");
 
   allowed_bytes_to_write_ = quota - usage;
-  callback.Run(net::OK);
+  std::move(callback).Run(net::OK);
 }
 
-void SandboxFileStreamWriter::DidInitializeForWrite(
-    net::IOBuffer* buf, int buf_len,
-    const net::CompletionCallback& callback,
-    int init_status) {
+void SandboxFileStreamWriter::DidInitializeForWrite(net::IOBuffer* buf,
+                                                    int buf_len,
+                                                    int init_status) {
   if (CancelIfRequested())
     return;
   if (init_status != net::OK) {
     has_pending_operation_ = false;
-    callback.Run(init_status);
+    std::move(write_callback_).Run(init_status);
     return;
   }
   allowed_bytes_to_write_ = AdjustQuotaForOverlap(
       allowed_bytes_to_write_, initial_offset_, file_size_);
-  const int result = WriteInternal(buf, buf_len, callback);
+  const int result = WriteInternal(buf, buf_len);
   if (result != net::ERR_IO_PENDING)
-    callback.Run(result);
+    std::move(write_callback_).Run(result);
 }
 
-void SandboxFileStreamWriter::DidWrite(
-    const net::CompletionCallback& callback,
-    int write_response) {
+void SandboxFileStreamWriter::DidWrite(int write_response) {
   DCHECK(has_pending_operation_);
   has_pending_operation_ = false;
 
   if (write_response <= 0) {
     if (CancelIfRequested())
       return;
-    callback.Run(write_response);
+    std::move(write_callback_).Run(write_response);
     return;
   }
 
@@ -231,21 +229,19 @@ void SandboxFileStreamWriter::DidWrite(
 
   if (CancelIfRequested())
     return;
-  callback.Run(write_response);
+  std::move(write_callback_).Run(write_response);
 }
 
 bool SandboxFileStreamWriter::CancelIfRequested() {
   if (cancel_callback_.is_null())
     return false;
 
-  net::CompletionCallback pending_cancel = cancel_callback_;
   has_pending_operation_ = false;
-  cancel_callback_.Reset();
-  pending_cancel.Run(net::OK);
+  std::move(cancel_callback_).Run(net::OK);
   return true;
 }
 
-int SandboxFileStreamWriter::Flush(const net::CompletionCallback& callback) {
+int SandboxFileStreamWriter::Flush(net::CompletionOnceCallback callback) {
   DCHECK(!has_pending_operation_);
   DCHECK(cancel_callback_.is_null());
 
@@ -253,7 +249,7 @@ int SandboxFileStreamWriter::Flush(const net::CompletionCallback& callback) {
   if (!local_file_writer_)
     return net::OK;
 
-  return local_file_writer_->Flush(callback);
+  return local_file_writer_->Flush(std::move(callback));
 }
 
 }  // namespace storage

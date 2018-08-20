@@ -189,7 +189,7 @@ AbortCallback SmbFileSystem::GetMetadata(
 
   auto reply =
       base::BindOnce(&SmbFileSystem::HandleRequestGetMetadataEntryCallback,
-                     AsWeakPtr(), fields, callback);
+                     AsWeakPtr(), fields, std::move(callback));
   SmbTask task = base::BindOnce(&SmbProviderClient::GetMetadataEntry,
                                 GetWeakSmbProviderClient(), GetMountId(),
                                 entry_path, std::move(reply));

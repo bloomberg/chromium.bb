@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -56,32 +57,32 @@ class FakeFileStreamWriter : public storage::FileStreamWriter {
   // storage::FileStreamWriter overrides.
   int Write(net::IOBuffer* buf,
             int buf_len,
-            const net::CompletionCallback& callback) override {
+            net::CompletionOnceCallback callback) override {
     DCHECK(write_log_);
     write_log_->push_back(std::string(buf->data(), buf_len));
     pending_bytes_ += buf_len;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(callback,
+        base::BindOnce(std::move(callback),
                        write_error_ == net::OK ? buf_len : write_error_));
     return net::ERR_IO_PENDING;
   }
 
-  int Cancel(const net::CompletionCallback& callback) override {
+  int Cancel(net::CompletionOnceCallback callback) override {
     DCHECK(cancel_counter_);
     DCHECK_EQ(net::OK, write_error_);
     ++(*cancel_counter_);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, net::OK));
+        FROM_HERE, base::BindOnce(std::move(callback), net::OK));
     return net::ERR_IO_PENDING;
   }
 
-  int Flush(const net::CompletionCallback& callback) override {
+  int Flush(net::CompletionOnceCallback callback) override {
     DCHECK(flush_log_);
     flush_log_->push_back(pending_bytes_);
     pending_bytes_ = 0;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, net::OK));
+        FROM_HERE, base::BindOnce(std::move(callback), net::OK));
     return net::ERR_IO_PENDING;
   }
 
