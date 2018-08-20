@@ -216,6 +216,11 @@ class RuleBasedHostResolverProc : public HostResolverProc {
                                AddressFamily address_family,
                                const std::string& ip_literal);
 
+  void AddRuleWithFlags(const std::string& host_pattern,
+                        const std::string& ip_literal,
+                        HostResolverFlags flags,
+                        const std::string& canonical_name = "");
+
   // Same as AddRule(), but the replacement is expected to be an IPv4 or IPv6
   // literal. This can be used in place of AddRule() to bypass the system's
   // host resolver (the address list will be constructed manually).

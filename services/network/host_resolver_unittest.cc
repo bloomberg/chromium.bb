@@ -198,6 +198,61 @@ TEST_F(HostResolverTest, InitialPriority) {
   EXPECT_EQ(net::HIGHEST, inner_resolver->last_request_priority());
 }
 
+TEST_F(HostResolverTest, IncludeCanonicalName) {
+  auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  inner_resolver->rules()->AddRuleWithFlags("example.com", "123.0.12.24",
+                                            net::HOST_RESOLVER_CANONNAME,
+                                            "canonicalexample.com");
+  net::NetLog net_log;
+
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->include_canonical_name = true;
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
+  resolver.ResolveHost(net::HostPortPair("example.com", 80),
+                       std::move(optional_parameters),
+                       std::move(response_client_ptr));
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  EXPECT_THAT(response_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint("123.0.12.24", 80)));
+  EXPECT_EQ("canonicalexample.com",
+            response_client.result_addresses().value().canonical_name());
+}
+
+TEST_F(HostResolverTest, LoopbackOnly) {
+  auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  inner_resolver->rules()->AddRuleWithFlags("example.com", "127.0.12.24",
+                                            net::HOST_RESOLVER_LOOPBACK_ONLY);
+  net::NetLog net_log;
+
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->loopback_only = true;
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
+  resolver.ResolveHost(net::HostPortPair("example.com", 80),
+                       std::move(optional_parameters),
+                       std::move(response_client_ptr));
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  EXPECT_THAT(response_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint("127.0.12.24", 80)));
+}
+
 TEST_F(HostResolverTest, Failure_Sync) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   inner_resolver->rules()->AddSimulatedFailure("example.com");

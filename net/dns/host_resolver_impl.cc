@@ -636,10 +636,11 @@ class HostResolverImpl::RequestImpl
               base::WeakPtr<HostResolverImpl> resolver)
       : source_net_log_(source_net_log),
         request_host_(request_host),
-        host_resolver_flags_(host_resolver_flags),
         allow_cached_response_(allow_cached_response),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
+        host_resolver_flags_(host_resolver_flags |
+                             ParametersToHostResolverFlags(parameters_)),
         priority_(parameters_.initial_priority),
         job_(nullptr),
         resolver_(resolver),
@@ -726,11 +727,11 @@ class HostResolverImpl::RequestImpl
 
   const HostPortPair& request_host() const { return request_host_; }
 
-  HostResolverFlags host_resolver_flags() const { return host_resolver_flags_; }
-
   bool allow_cached_response() const { return allow_cached_response_; }
 
   const ResolveHostParameters& parameters() const { return parameters_; }
+
+  HostResolverFlags host_resolver_flags() const { return host_resolver_flags_; }
 
   RequestPriority priority() const { return priority_; }
   void set_priority(RequestPriority priority) { priority_ = priority; }
@@ -751,9 +752,9 @@ class HostResolverImpl::RequestImpl
   const NetLogWithSource source_net_log_;
 
   const HostPortPair request_host_;
-  const HostResolverFlags host_resolver_flags_;
   const bool allow_cached_response_;
   const ResolveHostParameters parameters_;
+  const HostResolverFlags host_resolver_flags_;
 
   RequestPriority priority_;
 

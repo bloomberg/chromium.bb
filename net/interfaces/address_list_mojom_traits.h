@@ -5,6 +5,7 @@
 #ifndef NET_INTERFACES_ADDRESS_LIST_MOJOM_TRAITS_H_
 #define NET_INTERFACES_ADDRESS_LIST_MOJOM_TRAITS_H_
 
+#include <string>
 #include <vector>
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
@@ -17,6 +18,10 @@ struct StructTraits<net::interfaces::AddressListDataView, net::AddressList> {
   static const std::vector<net::IPEndPoint>& addresses(
       const net::AddressList& obj) {
     return obj.endpoints();
+  }
+
+  static const std::string& canonical_name(const net::AddressList& obj) {
+    return obj.canonical_name();
   }
 
   static bool Read(net::interfaces::AddressListDataView data,

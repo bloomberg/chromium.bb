@@ -76,14 +76,17 @@ HostResolverImpl::ProcTaskParams DefaultParams(
 class MockHostResolverProc : public HostResolverProc {
  public:
   struct ResolveKey {
-    ResolveKey(const std::string& hostname, AddressFamily address_family)
-        : hostname(hostname), address_family(address_family) {}
+    ResolveKey(const std::string& hostname,
+               AddressFamily address_family,
+               HostResolverFlags flags)
+        : hostname(hostname), address_family(address_family), flags(flags) {}
     bool operator<(const ResolveKey& other) const {
-      return std::tie(address_family, hostname) <
-             std::tie(other.address_family, other.hostname);
+      return std::tie(address_family, hostname, flags) <
+             std::tie(other.address_family, other.hostname, other.flags);
     }
     std::string hostname;
     AddressFamily address_family;
+    HostResolverFlags flags;
   };
 
   typedef std::vector<ResolveKey> CaptureList;
@@ -123,28 +126,35 @@ class MockHostResolverProc : public HostResolverProc {
     slots_available_.Broadcast();
   }
 
-  void AddRule(const std::string& hostname, AddressFamily family,
-               const AddressList& result) {
+  void AddRule(const std::string& hostname,
+               AddressFamily family,
+               const AddressList& result,
+               HostResolverFlags flags = 0) {
     base::AutoLock lock(lock_);
-    rules_[ResolveKey(hostname, family)] = result;
+    rules_[ResolveKey(hostname, family, flags)] = result;
   }
 
-  void AddRule(const std::string& hostname, AddressFamily family,
-               const std::string& ip_list) {
+  void AddRule(const std::string& hostname,
+               AddressFamily family,
+               const std::string& ip_list,
+               HostResolverFlags flags = 0,
+               const std::string& canonical_name = "") {
     AddressList result;
-    int rv = ParseAddressList(ip_list, std::string(), &result);
+    int rv = ParseAddressList(ip_list, canonical_name, &result);
     DCHECK_EQ(OK, rv);
-    AddRule(hostname, family, result);
+    AddRule(hostname, family, result, flags);
   }
 
   void AddRuleForAllFamilies(const std::string& hostname,
-                             const std::string& ip_list) {
+                             const std::string& ip_list,
+                             HostResolverFlags flags = 0,
+                             const std::string& canonical_name = "") {
     AddressList result;
-    int rv = ParseAddressList(ip_list, std::string(), &result);
+    int rv = ParseAddressList(ip_list, canonical_name, &result);
     DCHECK_EQ(OK, rv);
-    AddRule(hostname, ADDRESS_FAMILY_UNSPECIFIED, result);
-    AddRule(hostname, ADDRESS_FAMILY_IPV4, result);
-    AddRule(hostname, ADDRESS_FAMILY_IPV6, result);
+    AddRule(hostname, ADDRESS_FAMILY_UNSPECIFIED, result, flags);
+    AddRule(hostname, ADDRESS_FAMILY_IPV4, result, flags);
+    AddRule(hostname, ADDRESS_FAMILY_IPV6, result, flags);
   }
 
   int Resolve(const std::string& hostname,
@@ -153,7 +163,8 @@ class MockHostResolverProc : public HostResolverProc {
               AddressList* addrlist,
               int* os_error) override {
     base::AutoLock lock(lock_);
-    capture_list_.push_back(ResolveKey(hostname, address_family));
+    capture_list_.push_back(
+        ResolveKey(hostname, address_family, host_resolver_flags));
     ++num_requests_waiting_;
     requests_waiting_.Broadcast();
     {
@@ -170,7 +181,7 @@ class MockHostResolverProc : public HostResolverProc {
       DCHECK_EQ(OK, rv);
       return OK;
     }
-    ResolveKey key(hostname, address_family);
+    ResolveKey key(hostname, address_family, host_resolver_flags);
     if (rules_.count(key) == 0)
       return ERR_NAME_NOT_RESOLVED;
     *addrlist = rules_[key];
@@ -2891,6 +2902,46 @@ TEST_F(HostResolverImplTest, InputObjectsBoundToCallback_Async) {
   EXPECT_TRUE(result_request);
 }
 
+TEST_F(HostResolverImplTest, IncludeCanonicalName) {
+  proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42",
+                               HOST_RESOLVER_CANONNAME, "canon.name");
+  proc_->SignalMultiple(2u);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.include_canonical_name = true;
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("just.testing", 80), NetLogWithSource(), parameters));
+  ResolveHostResponseHelper response_no_flag(resolver_->CreateRequest(
+      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt));
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("192.168.1.42", 80)));
+  EXPECT_EQ("canon.name",
+            response.request()->GetAddressResults().value().canonical_name());
+
+  EXPECT_THAT(response_no_flag.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+}
+
+TEST_F(HostResolverImplTest, LoopbackOnly) {
+  proc_->AddRuleForAllFamilies("otherlocal", "127.0.0.1",
+                               HOST_RESOLVER_LOOPBACK_ONLY);
+  proc_->SignalMultiple(2u);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.loopback_only = true;
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("otherlocal", 80), NetLogWithSource(), parameters));
+  ResolveHostResponseHelper response_no_flag(resolver_->CreateRequest(
+      HostPortPair("otherlocal", 80), NetLogWithSource(), base::nullopt));
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("127.0.0.1", 80)));
+
+  EXPECT_THAT(response_no_flag.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+}
+
 TEST_F(HostResolverImplTest, IsSpeculative_ResolveHost) {
   proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
   proc_->SignalMultiple(1u);
@@ -4462,7 +4513,8 @@ TEST_F(HostResolverImplDnsTest, IPv4EmptyFallback_ResolveHost) {
   config.use_local_ipv6 = false;
   ChangeDnsConfig(config);
 
-  proc_->AddRuleForAllFamilies("empty_fallback", "192.168.0.1");
+  proc_->AddRuleForAllFamilies("empty_fallback", "192.168.0.1",
+                               HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6);
   proc_->SignalMultiple(1u);
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -4849,6 +4901,8 @@ TEST_F(HostResolverImplDnsTest, NoIPv6OnWifi) {
 
   proc_->AddRule("h1", ADDRESS_FAMILY_UNSPECIFIED, "::3");
   proc_->AddRule("h1", ADDRESS_FAMILY_IPV4, "1.0.0.1");
+  proc_->AddRule("h1", ADDRESS_FAMILY_IPV4, "1.0.0.1",
+                 HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6);
   proc_->AddRule("h1", ADDRESS_FAMILY_IPV6, "::2");
 
   CreateRequest("h1", 80, MEDIUM, ADDRESS_FAMILY_UNSPECIFIED);
@@ -4936,6 +4990,8 @@ TEST_F(HostResolverImplDnsTest, NoIPv6OnWifi_ResolveHost) {
 
   proc_->AddRule("h1", ADDRESS_FAMILY_UNSPECIFIED, "::3");
   proc_->AddRule("h1", ADDRESS_FAMILY_IPV4, "1.0.0.1");
+  proc_->AddRule("h1", ADDRESS_FAMILY_IPV4, "1.0.0.1",
+                 HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6);
   proc_->AddRule("h1", ADDRESS_FAMILY_IPV6, "::2");
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
