@@ -97,7 +97,7 @@ std::unique_ptr<HoverButton> CreateTransportListItemView(
 
 void AddSeparatorAsChild(views::View* view) {
   auto separator = std::make_unique<views::Separator>();
-  separator->SetColor(gfx::kGoogleGrey900);
+  separator->SetColor(gfx::kGoogleGrey300);
   view->AddChildView(separator.release());
 }
 

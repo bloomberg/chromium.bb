@@ -25,10 +25,10 @@ class AuthenticatorRequestSheetModel;
 //     the rest of the space.
 //
 // +-------------------------------------------------+
-// | (<-)  . . . . . . . . . . . . . . . . . . . .   |
-// | . . . . . . . . . . . . . . . . . . . . . . .   |
-// | . . . I L L U S T R A T I O N   H E R E . . .   |
-// | . . . . . . . . . . . . . . . . . . . . . . .   |
+// |. . . . . . . . . . . . . . . . . . . . . . . . .|
+// |. (<-). . . . . . . . . . . . . . . . . . . . . .|
+// |. . . . I L L U S T R A T I O N   H E R E . . . .|
+// |. . . . . . . . . . . . . . . . . . . . . . . . .|
 // |                                                 |
 // | Title of the current step                       |
 // |                                                 |
@@ -72,6 +72,10 @@ class AuthenticatorRequestSheetView : public views::View,
   // Creates the upper half of the sheet, consisting of a pretty illustration
   // overlayed with absolutely positioned controls rendered on top.
   std::unique_ptr<views::View> CreateIllustrationWithOverlays();
+
+  // Creates the lower half of the sheet, consisting of the title, description,
+  // and step-specific content, if any.
+  std::unique_ptr<views::View> CreateContentsBelowIllustration();
 
   std::unique_ptr<AuthenticatorRequestSheetModel> model_;
   views::Button* back_arrow_button_ = nullptr;

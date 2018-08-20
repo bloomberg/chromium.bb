@@ -29,33 +29,16 @@ AuthenticatorRequestSheetView::AuthenticatorRequestSheetView(
 AuthenticatorRequestSheetView::~AuthenticatorRequestSheetView() = default;
 
 void AuthenticatorRequestSheetView::InitChildViews() {
-  BoxLayout* box_layout = SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::kVertical, gfx::Insets(),
-      views::LayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
+  // No need to add further spacing between the upper and lower half. The image
+  // is designed to fill the dialog's top half without any border/margins, and
+  // the |lower_half| will already contain the standard dialog borders.
+  SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::kVertical, gfx::Insets(), 0 /* between_child_spacing */));
 
   std::unique_ptr<views::View> upper_half = CreateIllustrationWithOverlays();
+  std::unique_ptr<views::View> lower_half = CreateContentsBelowIllustration();
   AddChildView(upper_half.release());
-
-  auto title_label = std::make_unique<views::Label>(
-      model()->GetStepTitle(), views::style::CONTEXT_DIALOG_TITLE,
-      views::style::STYLE_PRIMARY);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(title_label.release());
-
-  auto description_label = std::make_unique<views::Label>(
-      model()->GetStepDescription(), CONTEXT_BODY_TEXT_LARGE,
-      views::style::STYLE_PRIMARY);
-  description_label->SetMultiLine(true);
-  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(description_label.release());
-
-  std::unique_ptr<views::View> content_view = BuildStepSpecificContent();
-  if (content_view) {
-    auto* content_view_ptr = content_view.get();
-    AddChildView(content_view.release());
-    box_layout->SetFlexForView(content_view_ptr, 1);
-  }
+  AddChildView(lower_half.release());
 }
 
 std::unique_ptr<views::View>
@@ -90,7 +73,6 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     views::SetImageFromVectorIcon(
         back_arrow.get(), vector_icons::kBackArrowIcon,
         color_utils::DeriveDefaultIconColor(color_reference->enabled_color()));
-    back_arrow->SizeToPreferredSize();
     back_arrow_button_ = back_arrow.get();
 
     // The |overlaly_container| will be stretched to fill |image_with_overlays|
@@ -99,7 +81,53 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     auto overlay_container = std::make_unique<views::View>();
     overlay_container->AddChildView(back_arrow.release());
     image_with_overlays->AddChildView(overlay_container.release());
+
+    // Position the back button so that there is the standard amount of padding
+    // between the top/left side of the back button and the dialog borders.
+    gfx::Insets dialog_insets =
+        views::LayoutProvider::Get()->GetDialogInsetsForContentType(
+            views::CONTROL, views::CONTROL);
+    back_arrow_button_->SizeToPreferredSize();
+    back_arrow_button_->SetX(dialog_insets.left());
+    back_arrow_button_->SetY(dialog_insets.top());
   }
 
   return image_with_overlays;
+}
+
+std::unique_ptr<views::View>
+AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
+  auto contents = std::make_unique<views::View>();
+  BoxLayout* box_layout =
+      contents->SetLayoutManager(std::make_unique<BoxLayout>(
+          BoxLayout::kVertical, gfx::Insets(),
+          views::LayoutProvider::Get()->GetDistanceMetric(
+              views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
+  contents->SetBorder(views::CreateEmptyBorder(
+      views::LayoutProvider::Get()->GetDialogInsetsForContentType(
+          views::CONTROL, views::CONTROL)));
+
+  auto title_label = std::make_unique<views::Label>(
+      model()->GetStepTitle(), views::style::CONTEXT_DIALOG_TITLE,
+      views::style::STYLE_PRIMARY);
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  contents->AddChildView(title_label.release());
+
+  auto description_label = std::make_unique<views::Label>(
+      model()->GetStepDescription(),
+      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
+  description_label->SetMultiLine(true);
+  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  contents->AddChildView(description_label.release());
+
+  std::unique_ptr<views::View> step_specific_content =
+      BuildStepSpecificContent();
+  if (step_specific_content) {
+    auto* step_specific_content_ptr = step_specific_content.get();
+    contents->AddChildView(step_specific_content.release());
+    box_layout->SetFlexForView(step_specific_content_ptr, 1);
+  }
+
+  return contents;
 }
