@@ -4549,6 +4549,9 @@ static const char * const connector_type_names[] = {
 	[DRM_MODE_CONNECTOR_VIRTUAL]     = "Virtual",
 	[DRM_MODE_CONNECTOR_DSI]         = "DSI",
 #endif
+#ifdef DRM_MODE_CONNECTOR_DPI
+	[DRM_MODE_CONNECTOR_DPI]         = "DPI",
+#endif
 };
 
 /** Create a name given a DRM connector
