@@ -157,7 +157,6 @@ test("gcm_unit_tests") {
     "engine/mcs_client_unittest.cc",
     "engine/registration_request_unittest.cc",
     "engine/unregistration_request_unittest.cc",
-    "test/run_all_unittests.cc",
   ]
 
   deps = [
@@ -165,7 +164,7 @@ test("gcm_unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//mojo/core/embedder",
+    "//google_apis:run_all_unittests",
     "//mojo/public/cpp/system:system",
     "//net",
     "//net:test_support",
