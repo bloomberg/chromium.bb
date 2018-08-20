@@ -31,10 +31,10 @@ using Service = UnifiedConsentServiceClient::Service;
 using ServiceState = UnifiedConsentServiceClient::ServiceState;
 
 enum class MigrationState : int {
-  kNotInitialized = 0,
-  kInProgressWaitForSyncInit = 1,
-  // Reserve space for other kInProgress* entries to be added here.
-  kCompleted = 10,
+  NOT_INITIALIZED = 0,
+  IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP = 1,
+  // Reserve space for other IN_PROGRESS_* entries to be added here.
+  COMPLETED = 10,
 };
 
 enum class ConsentBumpSuppressReason {
@@ -75,14 +75,19 @@ class UnifiedConsentService : public KeyedService,
   void SetUnifiedConsentGiven(bool unified_consent_given);
   bool IsUnifiedConsentGiven();
 
-  // Returns true if all criteria is met to show the consent bump.
+  // Helper function for the consent bump. The consent bump has to
+  // be shown depending on the migration state.
+  MigrationState GetMigrationState();
+  // Returns true if the consent bump needs to be shown to the user as part
+  // of the migration of the Chrome profile to unified consent.
   bool ShouldShowConsentBump();
-  // Marks the consent bump as shown. Any future calls to
-  // |ShouldShowConsentBump| are guaranteed to return false.
-  void MarkConsentBumpShown();
-  // Records the consent bump suppress reason and updates the state whether the
-  // consent bump should be shown. Note: In some cases, e.g. sync paused,
-  // |ShouldShowConsentBump| will still return true.
+  // Finishes the migration to unified consent. All future calls to
+  // |GetMigrationState| are guranteed to return |MIGRATION_COMPLETED|.
+  // Takes as argument the suppress reason for not showing the consent
+  // bump if it wasn't shown.
+  void MarkMigrationComplete(ConsentBumpSuppressReason suppress_reason);
+  // Records the suppress reason for the consent bump without changing the
+  // migration state.
   void RecordConsentBumpSuppressReason(
       ConsentBumpSuppressReason suppress_reason);
 
@@ -110,27 +115,15 @@ class UnifiedConsentService : public KeyedService,
   // Enables/disables syncing everything if the sync engine is initialized.
   void SetSyncEverythingIfPossible(bool sync_everything);
 
-  // Migration helpers.
-  MigrationState GetMigrationState();
-  void SetMigrationState(MigrationState migration_state);
-  // Called when the unified consent service is created. This sets the
-  // |kShouldShowUnifiedConsentBump| pref to true if the user is eligible and
-  // calls |UpdateSettingsForMigration| at the end.
+  // Called when the unified consent service is created to resolve
+  // inconsistencies with sync-related prefs.
   void MigrateProfileToUnifiedConsent();
-  // Updates the settings preferences for the migration when the sync engine is
-  // initialized. When it is not, this function will be called again from
-  // |OnStateChanged| when the sync engine is initialized.
-  void UpdateSettingsForMigration();
 
   // Returns true if all non-personalized services are enabled.
   bool AreAllNonPersonalizedServicesEnabled();
 
   // Checks if all on-by-default non-personalized services are on.
   bool AreAllOnByDefaultPrivacySettingsOn();
-
-  // Helper that checks whether it's okay to call
-  // |SyncService::OnUserChoseDatatypes|.
-  bool IsSyncConfigurable();
 
   std::unique_ptr<UnifiedConsentServiceClient> service_client_;
   PrefService* pref_service_;

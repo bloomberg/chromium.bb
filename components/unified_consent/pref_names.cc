@@ -7,11 +7,6 @@
 namespace unified_consent {
 namespace prefs {
 
-// Boolean indicating whether all criteria is met for the consent bump to be
-// shown.
-const char kShouldShowUnifiedConsentBump[] =
-    "unified_consent.consent_bump.should_show";
-
 // Boolean that is true when the user opted into unified consent.
 const char kUnifiedConsentGiven[] = "unified_consent_given";
 
