@@ -169,7 +169,7 @@ void V8AbstractEventListener::InvokeEventHandler(
 
     return_value = CallListenerFunction(script_state, js_event, event);
     if (try_catch.HasCaught())
-      event->target()->UncaughtExceptionInEventHandler();
+      event->LegacySetDidListenersThrowFlag();
 
     if (!try_catch.CanContinue()) {  // Result of TerminateExecution().
       ExecutionContext* execution_context = ToExecutionContext(context);

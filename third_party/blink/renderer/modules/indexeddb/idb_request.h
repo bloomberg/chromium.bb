@@ -294,7 +294,6 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   // EventTarget
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const final;
-  void UncaughtExceptionInEventHandler() final;
 
   // Called by a version change transaction that has finished to set this
   // request back from DONE (following "upgradeneeded") back to PENDING (for

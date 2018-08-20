@@ -694,7 +694,6 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
   if (transaction_ && ready_state_ == DONE)
     transaction_->UnregisterRequest(this);
 
-  did_throw_in_event_handler_ = false;
   DispatchEventResult dispatch_result =
       IDBEventDispatcher::Dispatch(event, targets);
 
@@ -703,7 +702,9 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
     // this request doesn't receive a second error) and before deactivating
     // (which might trigger commit).
     if (!request_aborted_) {
-      if (did_throw_in_event_handler_) {
+      // Transactions should be aborted after event dispatch if an exception was
+      // not caught.
+      if (event.LegacyDidListenersThrow()) {
         transaction_->SetError(
             DOMException::Create(DOMExceptionCode::kAbortError,
                                  "Uncaught exception in event handler."));
@@ -730,10 +731,6 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
     has_pending_activity_ = false;
 
   return dispatch_result;
-}
-
-void IDBRequest::UncaughtExceptionInEventHandler() {
-  did_throw_in_event_handler_ = true;
 }
 
 void IDBRequest::TransactionDidFinishAndDispatch() {
