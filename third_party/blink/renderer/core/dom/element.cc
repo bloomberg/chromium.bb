@@ -3949,10 +3949,6 @@ void Element::StoreNonLayoutObjectComputedStyle(
   EnsureElementRareData().SetComputedStyle(std::move(style));
 }
 
-void Element::ClearComputedStyle() {
-  EnsureElementRareData().ClearComputedStyle();
-}
-
 AtomicString Element::ComputeInheritedLanguage() const {
   const Node* n = this;
   AtomicString value;

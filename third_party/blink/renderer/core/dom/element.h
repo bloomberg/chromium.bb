@@ -553,8 +553,6 @@ class CORE_EXPORT Element : public ContainerNode {
   bool ShouldStoreNonLayoutObjectComputedStyle(const ComputedStyle&) const;
   void StoreNonLayoutObjectComputedStyle(scoped_refptr<ComputedStyle>);
 
-  void ClearComputedStyle();
-
   // Methods for indicating the style is affected by dynamic updates (e.g.,
   // children changing, our position changing in our sibling list, etc.)
   bool StyleAffectedByEmpty() const {
