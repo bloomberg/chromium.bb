@@ -37,6 +37,9 @@ std::string GetAppIdFromApplicationName(const std::string& app_name);
 std::string GenerateExtensionIdFromURL(const GURL& url);
 std::string GenerateExtensionKeyFromURL(const GURL& url);
 
+// Returns whether the given |app_url| is a valid bookmark app url.
+bool IsValidWebAppUrl(const GURL& app_url);
+
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_HELPERS_H_
