@@ -3163,6 +3163,11 @@ const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Peeking Launcher and Tab Switcher.";
 
+extern const char kEnableChromeOsAccountManagerName[] =
+    "Enable Account Manager";
+extern const char kEnableChromeOsAccountManagerDescription[] =
+    "Enables the Chrome OS Account Manager";
+
 const char kEnableDragAppsInTabletModeName[] =
     "Enable dragging apps in tablet mode";
 const char kEnableDragAppsInTabletModeDescription[] =

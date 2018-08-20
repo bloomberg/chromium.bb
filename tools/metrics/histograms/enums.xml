@@ -27955,6 +27955,7 @@ from previous Chrome versions.
   <int value="-1961497025" label="tint-gl-composited-content"/>
   <int value="-1961062505" label="VrBrowsingInCustomTab:disabled"/>
   <int value="-1960567385" label="KeepPrefetchedContentSuggestions:enabled"/>
+  <int value="-1959563554" label="ChromeOSAccountManager:enabled"/>
   <int value="-1958315092" label="EnableGamepadButtonAxisEvents:disabled"/>
   <int value="-1957328398" label="MacSystemShareMenu:disabled"/>
   <int value="-1956747298" label="LayeredAPI:enabled"/>
@@ -28408,6 +28409,7 @@ from previous Chrome versions.
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
   <int value="-1143496217" label="enable-oop-rasterization"/>
   <int value="-1143007275" label="EnableNewStyleLauncher:disabled"/>
+  <int value="-1137696948" label="enable-chromeos-account-manager"/>
   <int value="-1137442543" label="enable-slimming-paint"/>
   <int value="-1136627751" label="ignore-autocomplete-off-autofill"/>
   <int value="-1136509631" label="ssl-interstitial-v1"/>
@@ -29313,6 +29315,7 @@ from previous Chrome versions.
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
   <int value="746944193" label="enable-automatic-password-saving:disabled"/>
   <int value="747847237" label="PhysicalWeb:enabled"/>
+  <int value="749312701" label="ChromeOSAccountManager:disabled"/>
   <int value="752194066" label="enable-app-window-cycling"/>
   <int value="752939691" label="disable-tab-for-desktop-share"/>
   <int value="760542355" label="ServiceWorkerScriptFullCodeCache:enabled"/>
