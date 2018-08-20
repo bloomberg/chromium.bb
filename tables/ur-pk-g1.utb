@@ -78,7 +78,6 @@ letter \x0646 1345              Noon                     N
 letter \x0648 2456              Waw                      W
 letter \x064B 23                Fathatan                 2
 letter \x064E 2                 Fatha                    1
-midword \x064E 2                                                        Needed for correct back-translation of dot 2
 letter \x064F 136               Damma                    U
 letter \x0650 15                Kasra                    E
 letter \x0651 6                 Shadda                   ,
@@ -96,7 +95,6 @@ letter \x06A9 13                Keheh                    K
 letter \x06AF 1245              Gaf                      G
 letter \x06BA 56                Noon Ghunna              ;
 letter \x06BE 236               Heh Doachashmee          8
-midendword \x06BE 236
 letter \x06C1 125               Heh Goal                 H                Not 236 as in Duxbury
 letter \x06C3 2345              Teh Marbuta Goal         T                Not 16 as in Duxbury
 letter \x06CC 24                Yeh                      I
@@ -111,12 +109,32 @@ letter \x0647 125               Heh                      H
 letter \x064A 24                Yeh                      I
 
 
-#-----------------------------
+# -----------------------------
 # Numerals
-#-----------------------------
+# -----------------------------
 
-include digits6Dots.uti
-include litdigits6Dots.uti
+# Extended Arabic Numerals - generally used in Urdu
+digit \x06F0 245                0
+digit \x06F1 1                  1
+digit \x06F2 12                 2
+digit \x06F3 14                 3
+digit \x06F4 145                4
+digit \x06F5 15                 5
+digit \x06F6 124                6
+digit \x06F7 1245               7
+digit \x06F8 125                8
+digit \x06F9 24                 9
+
+litdigit \x06F0 245                0
+litdigit \x06F1 1                  1
+litdigit \x06F2 12                 2
+litdigit \x06F3 14                 3
+litdigit \x06F4 145                4
+litdigit \x06F5 15                 5
+litdigit \x06F6 124                6
+litdigit \x06F7 1245               7
+litdigit \x06F8 125                8
+litdigit \x06F9 24                 9
 
 # Arabic numerals
 digit \x0660 245                0
@@ -130,17 +148,21 @@ digit \x0667 1245               7
 digit \x0668 125                8
 digit \x0669 24                 9
 
-# Extended Arabic Numerals
-digit \x06F0 245                0
-digit \x06F1 1                  1
-digit \x06F2 12                 2
-digit \x06F3 14                 3
-digit \x06F4 145                4
-digit \x06F5 15                 5
-digit \x06F6 124                6
-digit \x06F7 1245               7
-digit \x06F8 125                8
-digit \x06F9 24                 9
+litdigit \x0660 245                0
+litdigit \x0661 1                  1
+litdigit \x0662 12                 2
+litdigit \x0663 14                 3
+litdigit \x0664 145                4
+litdigit \x0665 15                 5
+litdigit \x0666 124                6
+litdigit \x0667 1245               7
+litdigit \x0668 125                8
+litdigit \x0669 24                 9
+
+include digits6Dots.uti
+include litdigits6Dots.uti
+
+# --------------------------------
 
 # Hamza above after Waw should go before
 always \x0648\x0654 3-2456
