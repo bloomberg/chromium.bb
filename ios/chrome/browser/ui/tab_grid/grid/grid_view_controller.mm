@@ -154,7 +154,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                               scrollPosition:UICollectionViewScrollPositionTop];
   // Update the delegate, in case it wasn't set when |items| was populated.
   [self.delegate gridViewController:self didChangeItemCount:self.items.count];
-  [self animateEmptyStateOut];
+  [self removeEmptyStateAnimated:NO];
   self.lastInsertedItemID = nil;
 }
 
@@ -369,7 +369,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   };
   auto collectionViewUpdates = ^{
-    [self animateEmptyStateOut];
+    [self removeEmptyStateAnimated:YES];
     [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
   };
   auto completion = ^(BOOL finished) {
@@ -553,20 +553,25 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self.emptyStateAnimator startAnimation];
 }
 
-// Animates the empty state out of view.
-- (void)animateEmptyStateOut {
+// Removes the empty state out of view, with animation if |animated| is YES.
+- (void)removeEmptyStateAnimated:(BOOL)animated {
   // TODO(crbug.com/820410) : Polish the animation, and put constants where they
   // belong.
   [self.emptyStateAnimator stopAnimation:YES];
-  self.emptyStateAnimator = [[UIViewPropertyAnimator alloc]
-      initWithDuration:self.emptyStateView.alpha
-          dampingRatio:1.0
-            animations:^{
-              self.emptyStateView.alpha = 0.0;
-              self.emptyStateView.transform = CGAffineTransformScale(
-                  CGAffineTransformIdentity, /*sx=*/0.9, /*sy=*/0.9);
-            }];
-  [self.emptyStateAnimator startAnimation];
+  auto removeEmptyState = ^{
+    self.emptyStateView.alpha = 0.0;
+    self.emptyStateView.transform = CGAffineTransformScale(
+        CGAffineTransformIdentity, /*sx=*/0.9, /*sy=*/0.9);
+  };
+  if (animated) {
+    self.emptyStateAnimator = [[UIViewPropertyAnimator alloc]
+        initWithDuration:self.emptyStateView.alpha
+            dampingRatio:1.0
+              animations:removeEmptyState];
+    [self.emptyStateAnimator startAnimation];
+  } else {
+    removeEmptyState();
+  }
 }
 
 // Handle the long-press gesture used to reorder cells in the collection view.
