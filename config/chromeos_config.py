@@ -1112,6 +1112,19 @@ def GeneralTemplates(site_config, ge_build_config):
   )
 
   site_config.AddTemplate(
+      'ubsan',
+      site_config.templates.default_hw_tests_override,
+      profile='ubsan',
+      # Need larger rootfs for ubsan builds.
+      disk_layout='16gb-rootfs',
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='smoke')],
+      vm_tests_override=None,
+      doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
+          'TOC-ASAN',
+  )
+
+  site_config.AddTemplate(
       'fuzzer',
       site_config.templates.default_hw_tests_override,
       site_config.templates.full,
@@ -1226,6 +1239,14 @@ def GeneralTemplates(site_config, ge_build_config):
       description='Build TOT Chrome with Address Sanitizer (Clang)',
   )
 
+  site_config.AddTemplate(
+      'tot_ubsan_informational',
+      site_config.templates.chromium_pfq_informational,
+      site_config.templates.ubsan,
+      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
+      unittests=True,
+      description='Build TOT Chrome with Undefined Behavior Sanitizer (Clang)',
+  )
   site_config.AddTemplate(
       'chrome_perf',
       site_config.templates.chrome_pfq_informational,
@@ -2820,6 +2841,15 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       description='Paladin build with Address Sanitizer (Clang)',
   )
 
+  site_config.Add(
+      'amd64-generic-ubsan-paladin',
+      site_config.templates.paladin,
+      site_config.templates.no_hwtest_builder,
+      board_configs['amd64-generic'],
+      site_config.templates.ubsan,
+      description='Paladin build with Undefined Behavior Sanitizer (Clang)',
+  )
+
 
 def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   """Create all incremental build configs.
@@ -3120,6 +3150,21 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=waterfall.WATERFALL_SWARMING,
       # Every 3 hours.
       schedule='0 */3 * * *'
+  )
+
+  site_config.Add(
+      'amd64-generic-ubsan',
+      site_config.templates.ubsan,
+      site_config.templates.incremental,
+      site_config.templates.no_hwtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_CHROME_INFORMATIONAL,
+      boards=['amd64-generic'],
+      description='Build with Undefined Behavior Sanitizer (Clang)',
+      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
+      disk_layout='16gb-rootfs',
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      # Every 3 hours.
+      schedule='0 */3 * * *',
   )
 
   site_config.Add(
