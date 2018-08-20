@@ -97,7 +97,7 @@ TEST_F(ThrottledOfflineContentProviderTest, TestBasicPassthrough) {
   EXPECT_CALL(wrapped_provider_, CancelDownload(id));
   EXPECT_CALL(wrapped_provider_, PauseDownload(id));
   EXPECT_CALL(wrapped_provider_, ResumeDownload(id, true));
-  EXPECT_CALL(wrapped_provider_, GetVisualsForItem(id, _));
+  EXPECT_CALL(wrapped_provider_, GetVisualsForItem_(id, _));
   wrapped_provider_.SetItems(items);
   provider_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id);
   provider_.RemoveItem(id);

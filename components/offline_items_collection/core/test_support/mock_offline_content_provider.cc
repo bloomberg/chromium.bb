@@ -23,6 +23,12 @@ void MockOfflineContentProvider::SetItems(const OfflineItemList& items) {
   items_ = items;
 }
 
+void MockOfflineContentProvider::SetVisuals(
+    std::map<ContentId, OfflineItemVisuals> visuals) {
+  override_visuals_ = true;
+  visuals_ = std::move(visuals);
+}
+
 void MockOfflineContentProvider::NotifyOnItemsAdded(
     const OfflineItemList& items) {
   for (auto& observer : observers_)
@@ -37,6 +43,21 @@ void MockOfflineContentProvider::NotifyOnItemRemoved(const ContentId& id) {
 void MockOfflineContentProvider::NotifyOnItemUpdated(const OfflineItem& item) {
   for (auto& observer : observers_)
     observer.OnItemUpdated(item);
+}
+
+void MockOfflineContentProvider::GetVisualsForItem(const ContentId& id,
+                                                   VisualsCallback callback) {
+  if (!override_visuals_) {
+    GetVisualsForItem_(id, std::move(callback));
+  } else {
+    std::unique_ptr<OfflineItemVisuals> visuals;
+    auto iter = visuals_.find(id);
+    if (iter != visuals_.end()) {
+      visuals = std::make_unique<OfflineItemVisuals>(iter->second);
+    }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), id, std::move(visuals)));
+  }
 }
 
 void MockOfflineContentProvider::GetAllItems(MultipleItemCallback callback) {

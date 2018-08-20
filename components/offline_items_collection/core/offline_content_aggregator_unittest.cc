@@ -185,8 +185,8 @@ TEST_F(OfflineContentAggregatorTest, ActionPropagatesToRightProvider) {
   EXPECT_CALL(provider2, ResumeDownload(id2, true)).Times(1);
   EXPECT_CALL(provider1, PauseDownload(id1)).Times(1);
   EXPECT_CALL(provider2, PauseDownload(id2)).Times(1);
-  EXPECT_CALL(provider1, GetVisualsForItem(id1, _)).Times(1);
-  EXPECT_CALL(provider2, GetVisualsForItem(id2, _)).Times(1);
+  EXPECT_CALL(provider1, GetVisualsForItem_(id1, _)).Times(1);
+  EXPECT_CALL(provider2, GetVisualsForItem_(id2, _)).Times(1);
   EXPECT_CALL(provider1, GetShareInfoForItem(id1, _)).Times(1);
   EXPECT_CALL(provider2, GetShareInfoForItem(id2, _)).Times(1);
   aggregator_.OpenItem(LaunchLocation::DOWNLOAD_HOME, id1);

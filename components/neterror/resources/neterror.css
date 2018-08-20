@@ -367,6 +367,14 @@ html[subframe] body {
   color: rgb(255, 255, 255);
 }
 
+/*
+TODO(https://crbug.com/852872): UI for offline suggested content is incomplete.
+*/
+.suggested-thumbnail {
+  width: 25vw;
+  height: 25vw;
+}
+
 /* Alternate dino page button styles */
 #control-buttons .reload-button-alternate:disabled {
   background: #ccc;
