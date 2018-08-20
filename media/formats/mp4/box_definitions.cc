@@ -703,75 +703,64 @@ FourCC AV1CodecConfigurationRecord::BoxType() const {
   return FOURCC_AV1C;
 }
 
+// Parse the AV1CodecConfigurationRecord, which has the following format:
+// unsigned int (1) marker = 1;
+// unsigned int (7) version = 1;
+// unsigned int (3) seq_profile;
+// unsigned int (5) seq_level_idx_0;
+// unsigned int (1) seq_tier_0;
+// unsigned int (1) high_bitdepth;
+// unsigned int (1) twelve_bit;
+// unsigned int (1) monochrome;
+// unsigned int (1) chroma_subsampling_x;
+// unsigned int (1) chroma_subsampling_y;
+// unsigned int (2) chroma_sample_position;
+// unsigned int (3) reserved = 0;
+//
+// unsigned int (1) initial_presentation_delay_present;
+// if (initial_presentation_delay_present) {
+//   unsigned int (4) initial_presentation_delay_minus_one;
+// } else {
+//   unsigned int (4) reserved = 0;
+// }
+//
+// unsigned int (8)[] configOBUs;
 bool AV1CodecConfigurationRecord::Parse(BoxReader* reader) {
-  RCHECK(reader->ReadFullBoxHeader());
-
-  // Skip over unused parts of the configuration record.
-  RCHECK(reader->SkipBytes(1));
-
-  // We need to scan through the OBUs to find the profile.
-  while (profile == VIDEO_CODEC_PROFILE_UNKNOWN) {
-    // Zero or more OBUs are allowed, when none are present assume main profile.
-    if (!reader->HasBytes(1)) {
-      DVLOG(2) << "No OBU_SEQUENCE_HEADER is present, assuming main profile.";
-      profile = AV1PROFILE_PROFILE_MAIN;
-      return true;
-    }
-
-    uint8_t obu_header;
-    RCHECK(reader->Read1(&obu_header));
-
-    // Skip over the extension header if needed.
-    if (obu_header & 0b100 /* obu_extension_flag */)
-      RCHECK(reader->SkipBytes(1));
-
-    // Low overhead bitstream OBUs, when contained within configOBUs, are
-    // required to have a size field.
-    DCHECK(obu_header & 0b10 /* obu_has_size_field */);
-
-    // Read the size out in LEB128 format. Per spec this must always fit in a
-    // uint32_t, but since the max shift below is 49 (7*7), use a uint64_t to
-    // avoid any undefined behavior.
-    uint64_t obu_size = 0u;
-    for (int i = 0; i < 8; ++i) {
-      uint8_t leb128_byte;
-      RCHECK(reader->Read1(&leb128_byte));
-      obu_size |= static_cast<uint64_t>(leb128_byte & 0x7f) << (i * 7);
-      if (!(leb128_byte & 0x80))
-        break;
-    }
-    RCHECK(reader->HasBytes(obu_size));
-
-    // Clear out everything except for the obu_type.
-    const uint8_t obu_type = (obu_header >> 3) & 0b1111;
-
-    // We only want to look at OBUs of type OBU_SEQUENCE_HEADER.
-    if (obu_type != 1 /* OBU_SEQUENCE_HEADER */) {
-      RCHECK(reader->SkipBytes(obu_size));
-      continue;
-    }
-
-    // Read enough of the sequence header to parse |seq_profile|.
-    uint8_t sequence_header;
-    RCHECK(reader->Read1(&sequence_header));
-
-    const uint8_t seq_profile = sequence_header >> 5;
-    switch (seq_profile) {
-      case 0:
-        profile = AV1PROFILE_PROFILE_MAIN;
-        break;
-      case 1:
-        profile = AV1PROFILE_PROFILE_HIGH;
-        break;
-      case 2:
-        profile = AV1PROFILE_PROFILE_PRO;
-        break;
-      default:
-        MEDIA_LOG(ERROR, reader->media_log())
-            << "Unsupported AV1 profile: 0x" << std::hex << seq_profile;
-        return false;
-    }
+  uint8_t av1c_byte = 0;
+  RCHECK(reader->Read1(&av1c_byte));
+  const uint8_t av1c_marker =  av1c_byte >> 7;
+  if (!av1c_marker) {
+    MEDIA_LOG(ERROR, reader->media_log()) << "Unsupported av1C: marker unset.";
+    return false;
   }
+
+  const uint8_t av1c_version = av1c_byte & 0b01111111;
+  if (av1c_version != 1) {
+    MEDIA_LOG(ERROR, reader->media_log())
+        << "Unsupported av1C: unexpected version number: " << av1c_version;
+    return false;
+  }
+
+  RCHECK(reader->Read1(&av1c_byte));
+  const uint8_t seq_profile = av1c_byte >> 5;
+  switch (seq_profile) {
+    case 0:
+      profile = AV1PROFILE_PROFILE_MAIN;
+      break;
+    case 1:
+      profile = AV1PROFILE_PROFILE_HIGH;
+      break;
+    case 2:
+      profile = AV1PROFILE_PROFILE_PRO;
+      break;
+    default:
+      MEDIA_LOG(ERROR, reader->media_log())
+          << "Unsupported av1C: unknown profile 0x" << std::hex << seq_profile;
+      return false;
+  }
+
+  // The remaining fields are ignored since we don't care about them yet.
+
   return true;
 }
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
