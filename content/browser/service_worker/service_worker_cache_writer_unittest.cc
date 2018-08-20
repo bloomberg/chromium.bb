@@ -832,5 +832,66 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareFailedCopyLong) {
   EXPECT_TRUE(copy_reader->AllExpectedReadsDone());
 }
 
+// Tests behavior when the compare reader does not complete in single try and
+// needs to issue another read.
+TEST_F(ServiceWorkerCacheWriterTest, MultipleComparisonInSingleWrite) {
+  // Data for |compare_reader|.
+  const std::vector<std::string> data_from_cache{"a", "b", "c"};
+
+  // Data for |writer|. The first 2 bytes are provided in a larger chunk than
+  // the |compare_reader| does.
+  const std::vector<std::string> data_from_net{"ab", "x"};
+
+  // Data for |copy_reader|. The comparison between cache and network data fails
+  // at the 3rd byte, so the cache writer will read only first 2 bytes from the
+  // |copy_reader|.
+  const std::vector<std::string> data_to_copy{"ab"};
+
+  // The written data is expected to be identical with |data_from_net|.
+  const std::vector<std::string> data_expected{"ab", "x"};
+
+  size_t bytes_cached = 0;
+  size_t bytes_from_net = 0;
+  size_t bytes_common = 0;
+
+  for (const auto& data : data_from_cache)
+    bytes_cached += data.size();
+
+  for (const auto& data : data_from_net)
+    bytes_from_net += data.size();
+
+  for (const auto& data : data_to_copy)
+    bytes_common += data.size();
+
+  MockServiceWorkerResponseWriter* writer = ExpectWriter();
+  MockServiceWorkerResponseReader* compare_reader = ExpectReader();
+  MockServiceWorkerResponseReader* copy_reader = ExpectReader();
+
+  compare_reader->ExpectReadInfoOk(bytes_cached, false);
+  for (const auto& data : data_from_cache)
+    compare_reader->ExpectReadDataOk(data, false);
+
+  copy_reader->ExpectReadInfoOk(bytes_common, false);
+  for (const auto& data : data_to_copy)
+    copy_reader->ExpectReadDataOk(data, false);
+
+  writer->ExpectWriteInfoOk(bytes_from_net, false);
+  for (const auto& data : data_expected)
+    writer->ExpectWriteDataOk(data.size(), false);
+
+  Initialize();
+
+  net::Error error = WriteHeaders(bytes_from_net);
+  EXPECT_EQ(net::OK, error);
+  for (const auto& data : data_from_net) {
+    error = WriteData(data);
+    EXPECT_EQ(net::OK, error);
+  }
+
+  EXPECT_TRUE(writer->AllExpectedWritesDone());
+  EXPECT_TRUE(compare_reader->AllExpectedReadsDone());
+  EXPECT_TRUE(copy_reader->AllExpectedReadsDone());
+}
+
 }  // namespace
 }  // namespace content
