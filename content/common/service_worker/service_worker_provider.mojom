@@ -95,13 +95,9 @@ struct ServiceWorkerProviderHostInfo {
 };
 
 // ServiceWorkerWorkerClient represents a service worker client that is a worker
-// (i.e., a shared worker or dedicated worker). We use this interface to let the
-// WebWorkerFetchContextImpl in the worker thread know about the change of
-// controlling service worker by calling OnControllerChanged() from the
-// ServiceWorkerProviderContext in the main thread of the renderer process.
-//
-// TODO(horo): We should implement ServiceWorkerProvider in the worker thread
-// instead of using this interface to support WorkerNavigator.serviceWorker.
+// (i.e., a shared worker or dedicated worker). The main thread of
+// the renderer process uses this interface to tell the worker thread
+// when the controller service worker changes.
 interface ServiceWorkerWorkerClient {
   // Called when the worker is controlled by a new service worker. This is only
   // used to let the worker know that we now have a service worker (while there
@@ -124,9 +120,12 @@ interface ServiceWorkerWorkerClientRegistry {
   CloneWorkerClientRegistry(ServiceWorkerWorkerClientRegistry& host);
 };
 
-// Per-process browser-side interface.
-// The renderer uses this interface to tell the browser when potential service
-// worker clients are created and when service workers are starting up.
+// An interface implemented by the browser process, with one implementation per
+// renderer process. The renderer uses this interface to tell the browser when
+// potential service worker clients are created.
+//
+// This interface is on the channel-associated interface to the renderer
+// process.
 interface ServiceWorkerDispatcherHost {
   // Creates a content::ServiceWorkerProviderHost on the browser
   // process. |provider_info| has Mojo endpoints to connect the container host
