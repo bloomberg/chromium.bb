@@ -12,6 +12,5 @@ specific_include_rules = {
   r"|ubertoken_fetcher_unittest\.cc"
   r")": [
     "+services/network/test",
-    "+mojo/core/embedder",
   ],
 }

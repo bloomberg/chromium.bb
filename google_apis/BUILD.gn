@@ -229,6 +229,18 @@ static_library("test_support") {
   }
 }
 
+source_set("run_all_unittests") {
+  testonly = true
+  sources = [
+    "run_all_unittests.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//mojo/core/embedder",
+  ]
+}
+
 test("google_apis_unittests") {
   sources = [
     "gaia/gaia_auth_fetcher_unittest.cc",
@@ -245,7 +257,6 @@ test("google_apis_unittests") {
     "gaia/ubertoken_fetcher_unittest.cc",
     "google_api_keys_unittest.cc",
     "google_api_keys_unittest.h",
-    "test/run_all_unittests.cc",
   ]
 
   data = [
@@ -256,10 +267,10 @@ test("google_apis_unittests") {
 
   deps = [
     ":google_apis",
+    ":run_all_unittests",
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//mojo/core/embedder",
     "//testing/gmock",
     "//testing/gtest",
   ]
