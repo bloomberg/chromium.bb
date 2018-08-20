@@ -41,13 +41,17 @@ class WebGLRenderingContextBase;
 
 // Wrapper class to allow the VRDisplay to distinguish between immersive and
 // non-immersive XRSession events.
-class SessionClientBinding : public device::mojom::blink::XRSessionClient {
+class SessionClientBinding
+    : public GarbageCollectedFinalized<SessionClientBinding>,
+      public device::mojom::blink::XRSessionClient {
  public:
   SessionClientBinding(VRDisplay* display,
                        bool is_immersive,
                        device::mojom::blink::XRSessionClientRequest request);
   ~SessionClientBinding() override;
   void Close();
+
+  void Trace(blink::Visitor*);
 
  private:
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
@@ -57,7 +61,7 @@ class SessionClientBinding : public device::mojom::blink::XRSessionClient {
 
   // VRDisplay keeps all references to SessionClientBinding, so as soon as
   // VRDisplay is destroyed, so is the SessionClientBinding.
-  UntracedMember<VRDisplay> display_;
+  Member<VRDisplay> display_;
   bool is_immersive_;
   mojo::Binding<device::mojom::blink::XRSessionClient> client_binding_;
 };
@@ -250,8 +254,8 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   bool present_image_needs_copy_ = false;
 
-  std::unique_ptr<SessionClientBinding> non_immersive_client_binding_;
-  std::unique_ptr<SessionClientBinding> immersive_client_binding_;
+  Member<SessionClientBinding> non_immersive_client_binding_;
+  Member<SessionClientBinding> immersive_client_binding_;
   mojo::Binding<device::mojom::blink::VRDisplayClient> display_client_binding_;
   device::mojom::blink::XRFrameDataProviderPtr vr_presentation_data_provider_;
   device::mojom::blink::XRPresentationProviderPtr vr_presentation_provider_;

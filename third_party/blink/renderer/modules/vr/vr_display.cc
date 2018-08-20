@@ -120,6 +120,9 @@ void SessionClientBinding::OnBlur() {
 void SessionClientBinding::OnFocus() {
   display_->OnFocus(is_immersive_);
 };
+void SessionClientBinding::Trace(blink::Visitor* visitor) {
+  visitor->Trace(display_);
+}
 
 VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
                      device::mojom::blink::XRDevicePtr device)
@@ -560,7 +563,7 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
 
     if (immersive_client_binding_)
       immersive_client_binding_->Close();
-    immersive_client_binding_ = std::make_unique<SessionClientBinding>(
+    immersive_client_binding_ = new SessionClientBinding(
         this, false, std::move(session->client_request));
 
     Update(std::move(session->display_info));
@@ -585,8 +588,8 @@ void VRDisplay::OnNonImmersiveSessionRequestReturned(
     return;
   }
   non_immersive_provider_.Bind(std::move(session->data_provider));
-  non_immersive_client_binding_ = std::make_unique<SessionClientBinding>(
-      this, false, std::move(session->client_request));
+  non_immersive_client_binding_ =
+      new SessionClientBinding(this, false, std::move(session->client_request));
   RequestVSync();
 }
 
@@ -1184,6 +1187,8 @@ void VRDisplay::Trace(blink::Visitor* visitor) {
   visitor->Trace(rendering_context_);
   visitor->Trace(frame_transport_);
   visitor->Trace(scripted_animation_controller_);
+  visitor->Trace(non_immersive_client_binding_);
+  visitor->Trace(immersive_client_binding_);
   visitor->Trace(pending_present_resolvers_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
