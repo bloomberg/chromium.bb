@@ -138,25 +138,22 @@ class HeapCompact::MovableObjectFixups final {
     // to adjust. If the backing store of such an interior slot hasn't
     // been moved already, update the slot -> real location mapping.
     // When the backing store is eventually moved, it'll use that location.
-    //
     for (size_t offset = 0; offset < size; offset += sizeof(void*)) {
-      if (!range->IsSet(from + offset))
-        continue;
       MovableReference* slot =
           reinterpret_cast<MovableReference*>(from + offset);
+
+      // Early bailout.
+      if (!range->IsSet(reinterpret_cast<Address>(slot)))
+        continue;
+
       auto it = interior_fixups_.find(slot);
       if (it == interior_fixups_.end())
         continue;
 
-      // TODO: with the right sparse bitmap representation, it could be possible
-      // to quickly determine if we've now stepped past the last address
-      // that needed fixup in [address, address + size). Breaking out of this
-      // loop might be worth doing for hash table backing stores with a very
-      // low load factor. But interior fixups are rare.
-
       // If |slot|'s mapping is set, then the slot has been adjusted already.
       if (it->value)
         continue;
+
       Address fixup = to + offset;
       LOG_HEAP_COMPACTION() << "Range interior fixup: " << (from + offset)
                             << " " << it->value << " " << fixup;
@@ -165,6 +162,16 @@ class HeapCompact::MovableObjectFixups final {
       // moved/compacted, it'll update |to + offset| with a pointer to the
       // moved backing store.
       interior_fixups_.Set(slot, fixup);
+
+      // If the |slot|'s content is pointing into the region [from, from + size[
+      // we are dealing with an interior pointer that does not point to a valid
+      // HeapObjectHeader. Such references need to be fixed up immediately.
+      Address slot_contents = reinterpret_cast<Address>(*slot);
+      if (slot_contents > from && slot_contents < (from + size)) {
+        size_t delta_contents = slot_contents - from;
+        *reinterpret_cast<Address*>(to + offset) = to + delta_contents;
+        continue;
+      }
     }
   }
 
@@ -172,16 +179,21 @@ class HeapCompact::MovableObjectFixups final {
     auto it = fixups_.find(from);
     // This means that there is no corresponding slot for a live backing store.
     // This may happen because a mutator may change the slot to point to a
-    // different backing store after an incremental marking traced the slot (and
-    // marked the old backing store as live).
-    // As another case, this may happen becuase we may relocate backings that
-    // were dereferenced in EagerSweep/PreFinalizer/WeapProcessing.
+    // different backing store because e.g.:
+    // - Incremental marking marked a backing store as live that was later on
+    //   replaced.
+    // - Backings were changed when being processed in
+    //   EagerSweep/PreFinalizer/WeakProcessing.
     if (it == fixups_.end())
       return;
+
 #if DCHECK_IS_ON()
     BasePage* from_page = PageFromObject(from);
     DCHECK(relocatable_pages_.Contains(from_page));
 #endif
+
+    // If the object is referenced by a slot that is contained on a compacted
+    // area itself, check whether it can be updated already.
     MovableReference* slot = reinterpret_cast<MovableReference*>(it->value);
     auto interior = interior_fixups_.find(slot);
     if (interior != interior_fixups_.end()) {
@@ -195,6 +207,7 @@ class HeapCompact::MovableObjectFixups final {
         slot = slot_location;
       }
     }
+
     // If the slot has subsequently been updated, a prefinalizer or
     // a destructor having mutated and expanded/shrunk the collection,
     // do not update and relocate the slot -- |from| is no longer valid
@@ -206,32 +219,16 @@ class HeapCompact::MovableObjectFixups final {
       LOG_HEAP_COMPACTION()
           << "No relocation: slot = " << slot << ", *slot = " << *slot
           << ", from = " << from << ", to = " << to;
-#if DCHECK_IS_ON()
-      // Verify that the already updated slot is valid, meaning:
-      //  - has been cleared.
-      //  - has been updated & expanded with a large object backing store.
-      //  - has been updated with a larger, freshly allocated backing store.
-      //    (on a fresh page in a compactable arena that is not being
-      //    compacted.)
-      if (!*slot)
-        return;
-      BasePage* slot_page =
-          heap_->LookupPageForAddress(reinterpret_cast<Address>(*slot));
-      // ref_page is null if *slot is pointing to an off-heap region. This may
-      // happy if *slot is pointing to an inline buffer of HeapVector with
-      // inline capacity.
-      if (!slot_page)
-        return;
-      DCHECK(
-          slot_page->IsLargeObjectPage() ||
-          (HeapCompact::IsCompactableArena(slot_page->Arena()->ArenaIndex()) &&
-           !relocatable_pages_.Contains(slot_page)));
-#endif
+      VerifyUpdatedSlot(slot);
       return;
     }
+
+    // Update the slots new value.
     *slot = to;
 
     size_t size = 0;
+
+    // Execute potential fixup callbacks.
     MovableReference* callback_slot =
         reinterpret_cast<MovableReference*>(it->value);
     auto callback = fixup_callbacks_.find(callback_slot);
@@ -261,6 +258,9 @@ class HeapCompact::MovableObjectFixups final {
 
  private:
   MovableObjectFixups(ThreadHeap* heap) : heap_(heap) {}
+
+  void VerifyUpdatedSlot(MovableReference* slot);
+
   ThreadHeap* heap_;
 
   // Tracking movable and updatable references. For now, we keep a
@@ -286,6 +286,30 @@ class HeapCompact::MovableObjectFixups final {
 
   std::unique_ptr<SparseHeapBitmap> interiors_;
 };
+
+void HeapCompact::MovableObjectFixups::VerifyUpdatedSlot(
+    MovableReference* slot) {
+// Verify that the already updated slot is valid, meaning:
+//  - has been cleared.
+//  - has been updated & expanded with a large object backing store.
+//  - has been updated with a larger, freshly allocated backing store.
+//    (on a fresh page in a compactable arena that is not being
+//    compacted.)
+#if DCHECK_IS_ON()
+  if (!*slot)
+    return;
+  BasePage* slot_page =
+      heap_->LookupPageForAddress(reinterpret_cast<Address>(*slot));
+  // ref_page is null if *slot is pointing to an off-heap region. This may
+  // happy if *slot is pointing to an inline buffer of HeapVector with
+  // inline capacity.
+  if (!slot_page)
+    return;
+  DCHECK(slot_page->IsLargeObjectPage() ||
+         (HeapCompact::IsCompactableArena(slot_page->Arena()->ArenaIndex()) &&
+          !relocatable_pages_.Contains(slot_page)));
+#endif  // DCHECK_IS_ON()
+}
 
 HeapCompact::HeapCompact(ThreadHeap* heap)
     : heap_(heap),

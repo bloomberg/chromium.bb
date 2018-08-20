@@ -491,6 +491,38 @@ TEST(HeapCompactTest, CompactLinkedHashSetNested) {
   }
 }
 
+TEST(HeapCompactTest, CompactInlinedBackingStore) {
+  // Regression test: https://crbug.com/875044
+  //
+  // This test checks that compaction properly updates pointers to statically
+  // allocated inline backings, see e.g. Vector::inline_buffer_.
+
+  // Use a Key with pre-defined hash traits.
+  using Key = Member<IntWrapper>;
+  // Value uses a statically allocated inline backing of size 64. As long as no
+  // more than elements are added no out-of-line allocation is triggered.
+  // The internal forwarding pointer to the inlined storage needs to be handled
+  // by compaction.
+  using Value = HeapVector<Member<IntWrapper>, 64>;
+  using MapWithInlinedBacking = HeapHashMap<Key, Value>;
+
+  Persistent<MapWithInlinedBacking> map = new MapWithInlinedBacking;
+  {
+    // Create a map that is reclaimed during compaction.
+    (new MapWithInlinedBacking)
+        ->insert(IntWrapper::Create(1, HashTablesAreCompacted), Value());
+
+    IntWrapper* wrapper = IntWrapper::Create(1, HashTablesAreCompacted);
+    Value storage;
+    storage.push_front(wrapper);
+    map->insert(wrapper, std::move(storage));
+  }
+  PerformHeapCompaction();
+  // The first GC should update the pointer accordingly and thus not crash on
+  // the second GC.
+  PerformHeapCompaction();
+}
+
 }  // namespace blink
 
 #endif  // ENABLE_HEAP_COMPACTION
