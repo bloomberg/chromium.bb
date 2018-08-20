@@ -58,17 +58,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method postMessage
 [Worker]     setter onmessage
 [Worker]     setter onmessageerror
-[Worker] interface BudgetService
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method getBudget
-[Worker]     method getCost
-[Worker]     method reserve
-[Worker] interface BudgetState
-[Worker]     attribute @@toStringTag
-[Worker]     getter budgetAt
-[Worker]     getter time
-[Worker]     method constructor
 [Worker] interface ByteLengthQueuingStrategy
 [Worker]     method constructor
 [Worker]     method size
@@ -3378,7 +3367,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter appCodeName
 [Worker]     getter appName
 [Worker]     getter appVersion
-[Worker]     getter budget
 [Worker]     getter connection
 [Worker]     getter deviceMemory
 [Worker]     getter hardwareConcurrency

@@ -81,7 +81,6 @@
         "renderer": [
           "autofill.mojom.AutofillDriver",
           "autofill.mojom.PasswordManagerDriver",
-          "blink.mojom.BudgetService",
           "blink.mojom.CredentialManager",
           "blink.mojom.InstalledAppProvider",
           "blink.mojom.MediaDownloadInProductHelp",
@@ -117,27 +116,6 @@
         ],
         "multidevice_setup" : [
           "chromeos.multidevice_setup.mojom.MultiDeviceSetup"
-        ]
-      }
-    },
-    "navigation:dedicated_worker": {
-      "provides": {
-        "renderer": [
-          "blink.mojom.BudgetService"
-        ]
-      }
-    },
-    "navigation:service_worker": {
-      "provides": {
-        "renderer": [
-          "blink.mojom.BudgetService"
-        ]
-      }
-    },
-    "navigation:shared_worker": {
-      "provides": {
-        "renderer": [
-          "blink.mojom.BudgetService"
         ]
       }
     }

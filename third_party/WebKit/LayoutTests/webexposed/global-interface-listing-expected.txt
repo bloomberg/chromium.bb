@@ -538,17 +538,6 @@ interface BroadcastChannel : EventTarget
     method postMessage
     setter onmessage
     setter onmessageerror
-interface BudgetService
-    attribute @@toStringTag
-    method constructor
-    method getBudget
-    method getCost
-    method reserve
-interface BudgetState
-    attribute @@toStringTag
-    getter budgetAt
-    getter time
-    method constructor
 interface ByteLengthQueuingStrategy
     method constructor
     method size
@@ -4644,7 +4633,6 @@ interface Navigator
     getter appCodeName
     getter appName
     getter appVersion
-    getter budget
     getter clipboard
     getter connection
     getter cookieEnabled

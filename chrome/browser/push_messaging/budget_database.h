@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BUDGET_SERVICE_BUDGET_DATABASE_H_
-#define CHROME_BROWSER_BUDGET_SERVICE_BUDGET_DATABASE_H_
+#ifndef CHROME_BROWSER_PUSH_MESSAGING_BUDGET_DATABASE_H_
+#define CHROME_BROWSER_PUSH_MESSAGING_BUDGET_DATABASE_H_
 
 #include <list>
 #include <map>
@@ -14,12 +14,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/leveldb_proto/proto_database.h"
-#include "third_party/blink/public/platform/modules/budget_service/budget_service.mojom.h"
 
 namespace base {
 class Clock;
 class Time;
-}
+}  // namespace base
 
 namespace budget_service {
 class Budget;
@@ -31,31 +30,49 @@ class Origin;
 
 class Profile;
 
+// Structure representing the budget at points in time in the future.
+struct BudgetState {
+  BudgetState();
+  BudgetState(const BudgetState& other);
+  ~BudgetState();
+
+  BudgetState& operator=(const BudgetState& other);
+
+  // Amount of budget that will be available. This should be the lower bound of
+  // the budget between this time and the previous time.
+  double budget_at = 0;
+
+  // Time at which the budget is available, in milliseconds since 00:00:00 UTC
+  // on 1 January 1970, at which the budget_at will be valid.
+  double time = 0;
+};
+
 // A class used to asynchronously read and write details of the budget
 // assigned to an origin. The class uses an underlying LevelDB.
 class BudgetDatabase {
  public:
+  // The default amount of budget that should be spent.
+  static constexpr double kDefaultAmount = 2.0;
+
   // Callback for getting a list of all budget chunks.
-  using GetBudgetCallback = blink::mojom::BudgetService::GetBudgetCallback;
+  using GetBudgetCallback = base::OnceCallback<void(std::vector<BudgetState>)>;
 
   // This is invoked only after the spend has been written to the database.
-  using SpendBudgetCallback =
-      base::Callback<void(blink::mojom::BudgetServiceErrorType error_type,
-                          bool success)>;
+  using SpendBudgetCallback = base::OnceCallback<void(bool success)>;
 
   // The database_dir specifies the location of the budget information on disk.
-  BudgetDatabase(Profile* profile, const base::FilePath& database_dir);
+  explicit BudgetDatabase(Profile* profile);
   ~BudgetDatabase();
 
   // Get the full budget expectation for the origin. This will return a
   // sequence of time points and the expected budget at those times.
   void GetBudgetDetails(const url::Origin& origin, GetBudgetCallback callback);
 
-  // Spend a particular amount of budget for an origin. The callback indicates
-  // whether there was an error and if the origin had enough budget.
+  // Spend a fixed (2.0) amount of budget for an origin. The callback indicates
+  // whether the budget could be spent for the given |origin|.
   void SpendBudget(const url::Origin& origin,
-                   double amount,
-                   SpendBudgetCallback callback);
+                   SpendBudgetCallback callback,
+                   double amount = kDefaultAmount);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BudgetDatabaseTest,
@@ -157,4 +174,4 @@ class BudgetDatabase {
   DISALLOW_COPY_AND_ASSIGN(BudgetDatabase);
 };
 
-#endif  // CHROME_BROWSER_BUDGET_SERVICE_BUDGET_DATABASE_H_
+#endif  // CHROME_BROWSER_PUSH_MESSAGING_BUDGET_DATABASE_H_

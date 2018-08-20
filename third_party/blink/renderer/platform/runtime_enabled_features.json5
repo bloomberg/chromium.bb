@@ -143,9 +143,8 @@
       name: "BlockingDownloadsInSandbox",
     },
     {
-      name: "BudgetQuery",
-      origin_trial_feature_name: "BudgetQuery",
-      status: "experimental",
+      name: "BlockMetaSetCookie",
+      status: "stable"
     },
     {
       name: "CacheInlineScriptCode"

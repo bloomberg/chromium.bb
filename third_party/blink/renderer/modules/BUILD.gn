@@ -97,7 +97,6 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/beacon",
     "//third_party/blink/renderer/modules/bluetooth",
     "//third_party/blink/renderer/modules/broadcastchannel",
-    "//third_party/blink/renderer/modules/budget",
     "//third_party/blink/renderer/modules/cache_storage",
     "//third_party/blink/renderer/modules/canvas",
     "//third_party/blink/renderer/modules/clipboard",

@@ -35,7 +35,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
-#include "chrome/browser/budget_service/budget_service_impl.h"
 #include "chrome/browser/cache_stats_recorder.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
@@ -868,12 +867,6 @@ AppLoadedInTabSource ClassifyAppLoadedInTabSource(
   return APP_LOADED_IN_TAB_SOURCE_OTHER;
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-void CreateBudgetService(blink::mojom::BudgetServiceRequest request,
-                         content::RenderFrameHost* render_frame_host) {
-  BudgetServiceImpl::Create(std::move(request), render_frame_host->GetProcess(),
-                            render_frame_host->GetLastCommittedOrigin());
-}
 
 bool GetDataSaverEnabledPref(const PrefService* prefs) {
   // Enable data saver only when data saver pref is enabled and not part of
@@ -4175,12 +4168,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 #elif defined(OS_LINUX) || defined(OS_WIN)
   frame_interfaces_->AddInterface(base::Bind(&ShareServiceImpl::Create));
 #endif
-
-  frame_interfaces_parameterized_->AddInterface(
-      base::Bind(&CreateBudgetService));
-
-  worker_interfaces_parameterized_->AddInterface(
-      base::Bind(&BudgetServiceImpl::Create));
 
   frame_interfaces_parameterized_->AddInterface(
       base::BindRepeating(&NavigationPredictor::Create));
