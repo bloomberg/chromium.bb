@@ -1631,21 +1631,27 @@ void LockContentsView::DisableLockScreenNote() {
 }
 
 void LockContentsView::RegisterAccelerators() {
-  // TODO: Add more accelerators that are applicable to login screen.
-  accel_map_[ui::Accelerator(ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)] =
-      AcceleratorAction::kShowFeedback;
+  // Accelerators that apply on login and lock:
   accel_map_[ui::Accelerator(ui::VKEY_RIGHT, 0)] =
       AcceleratorAction::kFocusNextUser;
   accel_map_[ui::Accelerator(ui::VKEY_LEFT, 0)] =
       AcceleratorAction::kFocusPreviousUser;
 
-  // Show reset conflicts with rotate screen when --ash-dev-shortcuts is passed.
-  // Favor --ash-dev-shortcuts since that is explicitly added.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDeveloperShortcuts)) {
-    accel_map_[ui::Accelerator(
-        ui::VKEY_R, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN |
-                        ui::EF_ALT_DOWN)] = AcceleratorAction::kShowResetScreen;
+  // Login-only accelerators:
+  if (screen_type_ == LockScreen::ScreenType::kLogin) {
+    accel_map_[ui::Accelerator(ui::VKEY_I,
+                               ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)] =
+        AcceleratorAction::kShowFeedback;
+
+    // Show reset conflicts with rotate screen when --ash-dev-shortcuts is
+    // passed. Favor --ash-dev-shortcuts since that is explicitly added.
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAshDeveloperShortcuts)) {
+      accel_map_[ui::Accelerator(ui::VKEY_R, ui::EF_CONTROL_DOWN |
+                                                 ui::EF_SHIFT_DOWN |
+                                                 ui::EF_ALT_DOWN)] =
+          AcceleratorAction::kShowResetScreen;
+    }
   }
 
   AcceleratorController* controller = Shell::Get()->accelerator_controller();

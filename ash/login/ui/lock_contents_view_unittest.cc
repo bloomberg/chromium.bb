@@ -1821,7 +1821,7 @@ TEST_F(LockContentsViewKeyboardUnitTest, UserSwapFocusesBigView) {
 
 TEST_F(LockContentsViewUnitTest, PowerwashShortcutSendsMojoCall) {
   auto* contents = new LockContentsView(
-      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLogin,
       data_dispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
   SetUserCount(1);
