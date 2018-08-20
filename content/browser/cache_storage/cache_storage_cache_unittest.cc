@@ -495,11 +495,12 @@ class CacheStorageCacheTest : public testing::Test {
   }
 
   CacheStorageError BatchOperation(
-      std::vector<blink::mojom::BatchOperationPtr> operations) {
+      std::vector<blink::mojom::BatchOperationPtr> operations,
+      bool fail_on_duplicates = true) {
     std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
 
     cache_->BatchOperation(
-        std::move(operations),
+        std::move(operations), fail_on_duplicates,
         base::BindOnce(&CacheStorageCacheTest::ErrorTypeCallback,
                        base::Unretained(this), base::Unretained(loop.get())),
         base::BindOnce(&OnBadMessage, base::Unretained(&bad_message_reason_)));
@@ -897,7 +898,7 @@ TEST_P(CacheStorageCacheTestP, PutBodyDropBlobRef) {
   operations.emplace_back(std::move(operation));
   std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
   cache_->BatchOperation(
-      std::move(operations),
+      std::move(operations), true /* fail_on_duplicate */,
       base::BindOnce(&CacheStorageCacheTestP::ErrorTypeCallback,
                      base::Unretained(this), base::Unretained(loop.get())),
       CacheStorageCache::BadMessageCallback());
@@ -910,15 +911,17 @@ TEST_P(CacheStorageCacheTestP, PutBodyDropBlobRef) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutBadMessage) {
+  // Two unique puts that will collectively overflow unit64_t size of the
+  // batch operation.
   blink::mojom::BatchOperationPtr operation1 =
       blink::mojom::BatchOperation::New(blink::mojom::OperationType::kPut,
                                         body_request_, CreateBlobBodyResponse(),
                                         nullptr /* match_params */);
   operation1->response->blob->size = std::numeric_limits<uint64_t>::max();
   blink::mojom::BatchOperationPtr operation2 =
-      blink::mojom::BatchOperation::New(blink::mojom::OperationType::kPut,
-                                        body_request_, CreateBlobBodyResponse(),
-                                        nullptr /* match_params */);
+      blink::mojom::BatchOperation::New(
+          blink::mojom::OperationType::kPut, body_request_with_query_,
+          CreateBlobBodyResponse(), nullptr /* match_params */);
   operation2->response->blob->size = std::numeric_limits<uint64_t>::max();
 
   std::vector<blink::mojom::BatchOperationPtr> operations;
@@ -945,7 +948,7 @@ TEST_P(CacheStorageCacheTestP, PutReplace) {
   EXPECT_FALSE(callback_response_->blob);
 }
 
-TEST_P(CacheStorageCacheTestP, PutReplaceInBatch) {
+TEST_P(CacheStorageCacheTestP, PutReplaceInBatchFails) {
   blink::mojom::BatchOperationPtr operation1 =
       blink::mojom::BatchOperation::New();
   operation1->operation_type = blink::mojom::OperationType::kPut;
@@ -962,7 +965,33 @@ TEST_P(CacheStorageCacheTestP, PutReplaceInBatch) {
   operations.push_back(std::move(operation1));
   operations.push_back(std::move(operation2));
 
-  EXPECT_EQ(CacheStorageError::kSuccess, BatchOperation(std::move(operations)));
+  EXPECT_EQ(CacheStorageError::kErrorDuplicateOperation,
+            BatchOperation(std::move(operations)));
+
+  // Neither operation should have completed.
+  EXPECT_FALSE(Match(body_request_));
+}
+
+TEST_P(CacheStorageCacheTestP, PutReplaceInBatchWithDuplicateCheckingDisabled) {
+  blink::mojom::BatchOperationPtr operation1 =
+      blink::mojom::BatchOperation::New();
+  operation1->operation_type = blink::mojom::OperationType::kPut;
+  operation1->request = body_request_;
+  operation1->response = CreateNoBodyResponse();
+
+  blink::mojom::BatchOperationPtr operation2 =
+      blink::mojom::BatchOperation::New();
+  operation2->operation_type = blink::mojom::OperationType::kPut;
+  operation2->request = body_request_;
+  operation2->response = CreateBlobBodyResponse();
+
+  std::vector<blink::mojom::BatchOperationPtr> operations;
+  operations.push_back(std::move(operation1));
+  operations.push_back(std::move(operation2));
+
+  EXPECT_EQ(
+      CacheStorageError::kSuccess,
+      BatchOperation(std::move(operations), false /* fail_on_duplicates */));
 
   // |operation2| should win.
   EXPECT_TRUE(Match(body_request_));
@@ -1892,7 +1921,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   std::vector<blink::mojom::BatchOperationPtr> operations1;
   operations1.emplace_back(std::move(operation1));
   cache_->BatchOperation(
-      std::move(operations1),
+      std::move(operations1), true /* fail_on_duplicate */,
       base::BindOnce(&CacheStorageCacheTest::SequenceCallback,
                      base::Unretained(this), 1, &sequence_out,
                      close_loop1.get()),
@@ -1912,7 +1941,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   std::vector<blink::mojom::BatchOperationPtr> operations2;
   operations2.emplace_back(std::move(operation2));
   cache_->BatchOperation(
-      std::move(operations2),
+      std::move(operations2), true /* fail_on_duplicate */,
       base::BindOnce(&CacheStorageCacheTest::SequenceCallback,
                      base::Unretained(this), 2, &sequence_out,
                      close_loop2.get()),

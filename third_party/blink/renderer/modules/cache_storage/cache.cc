@@ -184,6 +184,7 @@ class Cache::BarrierCallbackForPut final
     MaybeReportInstalledScripts();
     cache_->cache_ptr_->Batch(
         std::move(batch_operations_),
+        RuntimeEnabledFeatures::CacheStorageAddAllRejectsDuplicatesEnabled(),
         WTF::Bind(
             [](ScriptPromiseResolver* resolver, TimeTicks start_time,
                mojom::blink::CacheStorageError error) {
@@ -692,6 +693,7 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
 
   cache_ptr_->Batch(
       std::move(batch_operations),
+      RuntimeEnabledFeatures::CacheStorageAddAllRejectsDuplicatesEnabled(),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
              mojom::blink::CacheStorageError error) {

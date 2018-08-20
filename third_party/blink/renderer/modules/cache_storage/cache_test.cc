@@ -174,6 +174,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
     std::move(callback).Run(std::move(result));
   }
   void Batch(Vector<mojom::blink::BatchOperationPtr> batch_operations,
+             bool fail_on_duplicates,
              BatchCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchBatch";
     CheckBatchOperationsIfProvided(batch_operations);
@@ -686,6 +687,7 @@ class MatchAllAndBatchTestCache : public NotImplementedErrorCache {
     std::move(callback).Run(std::move(result));
   }
   void Batch(Vector<mojom::blink::BatchOperationPtr> batch_operations,
+             bool fail_on_duplicates,
              BatchCallback callback) override {
     std::move(callback).Run(mojom::blink::CacheStorageError::kSuccess);
   }

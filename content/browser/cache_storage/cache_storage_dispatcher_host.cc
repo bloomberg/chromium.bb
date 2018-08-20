@@ -168,6 +168,7 @@ class CacheStorageDispatcherHost::CacheImpl
   }
 
   void Batch(std::vector<blink::mojom::BatchOperationPtr> batch_operations,
+             bool fail_on_duplicates,
              BatchCallback callback) override {
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -175,7 +176,7 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
     cache->BatchOperation(
-        std::move(batch_operations),
+        std::move(batch_operations), fail_on_duplicates,
         base::BindOnce(&CacheImpl::OnCacheBatchCallback,
                        weak_factory_.GetWeakPtr(), std::move(callback)),
         base::BindOnce(&CacheImpl::OnBadMessage, weak_factory_.GetWeakPtr(),
