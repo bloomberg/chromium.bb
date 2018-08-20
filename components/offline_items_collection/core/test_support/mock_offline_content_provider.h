@@ -31,6 +31,9 @@ class MockOfflineContentProvider : public OfflineContentProvider {
 
   bool HasObserver(Observer* observer);
   void SetItems(const OfflineItemList& items);
+  // Sets visuals returned by |GetVisualsForItem()|. If this is not called,
+  // then the mocked method |GetVisualsForItem_()| is called instead.
+  void SetVisuals(std::map<ContentId, OfflineItemVisuals> visuals);
   void NotifyOnItemsAdded(const OfflineItemList& items);
   void NotifyOnItemRemoved(const ContentId& id);
   void NotifyOnItemUpdated(const OfflineItem& item);
@@ -41,7 +44,10 @@ class MockOfflineContentProvider : public OfflineContentProvider {
   MOCK_METHOD1(CancelDownload, void(const ContentId&));
   MOCK_METHOD1(PauseDownload, void(const ContentId&));
   MOCK_METHOD2(ResumeDownload, void(const ContentId&, bool));
-  MOCK_METHOD2(GetVisualsForItem, void(const ContentId&, VisualsCallback));
+  MOCK_METHOD2(GetVisualsForItem_,
+               void(const ContentId&, const VisualsCallback&));
+  void GetVisualsForItem(const ContentId& id,
+                         VisualsCallback callback) override;
   MOCK_METHOD2(GetShareInfoForItem, void(const ContentId&, ShareCallback));
   void GetAllItems(MultipleItemCallback callback) override;
   void GetItemById(const ContentId& id, SingleItemCallback callback) override;
@@ -51,6 +57,8 @@ class MockOfflineContentProvider : public OfflineContentProvider {
  private:
   base::ObserverList<Observer>::Unchecked observers_;
   OfflineItemList items_;
+  std::map<ContentId, OfflineItemVisuals> visuals_;
+  bool override_visuals_ = false;
 };
 
 }  // namespace offline_items_collection

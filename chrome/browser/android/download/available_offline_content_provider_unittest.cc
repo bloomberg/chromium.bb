@@ -4,15 +4,18 @@
 
 #include "chrome/browser/android/download/available_offline_content_provider.h"
 
+#include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
+#include "components/offline_items_collection/core/offline_item.h"
 #include "components/offline_items_collection/core/test_support/mock_offline_content_provider.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "url/gurl.h"
 
 namespace android {
@@ -20,6 +23,7 @@ namespace {
 
 using offline_items_collection::OfflineContentAggregator;
 using testing::_;
+const char kProviderNamespace[] = "offline_pages";
 
 std::unique_ptr<KeyedService> BuildOfflineContentAggregator(
     content::BrowserContext* context) {
@@ -28,9 +32,10 @@ std::unique_ptr<KeyedService> BuildOfflineContentAggregator(
 
 offline_items_collection::OfflineItem UselessItem() {
   offline_items_collection::OfflineItem item;
-  item.original_url = GURL("https://uesless");
+  item.original_url = GURL("https://useless");
   item.filter = offline_items_collection::FILTER_IMAGE;
   item.id.id = "Useless";
+  item.id.name_space = kProviderNamespace;
   return item;
 }
 
@@ -39,6 +44,7 @@ offline_items_collection::OfflineItem OldOfflinePage() {
   item.original_url = GURL("https://already_read");
   item.filter = offline_items_collection::FILTER_PAGE;
   item.id.id = "AlreadyRead";
+  item.id.name_space = kProviderNamespace;
   item.is_suggested = true;
   item.last_accessed_time = base::Time::Now();
   return item;
@@ -49,7 +55,7 @@ offline_items_collection::OfflineItem SuggestedOfflinePageItem() {
   item.original_url = GURL("https://page");
   item.filter = offline_items_collection::FILTER_PAGE;
   item.id.id = "SuggestedPage";
-  item.id.name_space = "testnamespace";
+  item.id.name_space = kProviderNamespace;
   item.is_suggested = true;
   item.title = "Page Title";
   item.description = "snippet";
@@ -65,6 +71,7 @@ offline_items_collection::OfflineItem VideoItem() {
   item.original_url = GURL("https://video");
   item.filter = offline_items_collection::FILTER_VIDEO;
   item.id.id = "VideoItem";
+  item.id.name_space = kProviderNamespace;
   return item;
 }
 
@@ -73,7 +80,14 @@ offline_items_collection::OfflineItem AudioItem() {
   item.original_url = GURL("https://audio");
   item.filter = offline_items_collection::FILTER_AUDIO;
   item.id.id = "AudioItem";
+  item.id.name_space = kProviderNamespace;
   return item;
+}
+
+offline_items_collection::OfflineItemVisuals TestThumbnail() {
+  offline_items_collection::OfflineItemVisuals visuals;
+  visuals.icon = gfx::test::CreateImage(2, 4);
+  return visuals;
 }
 
 class AvailableOfflineContentTest : public testing::Test {
@@ -81,31 +95,32 @@ class AvailableOfflineContentTest : public testing::Test {
   void SetUp() override {
     // To control the items in the aggregator, we create it and register a
     // single MockOfflineContentProvider.
-    aggregator = static_cast<OfflineContentAggregator*>(
+    aggregator_ = static_cast<OfflineContentAggregator*>(
         OfflineContentAggregatorFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile, &BuildOfflineContentAggregator));
-    aggregator->RegisterProvider("offline_pages", &content_provider);
+            &profile_, &BuildOfflineContentAggregator));
+    aggregator_->RegisterProvider(kProviderNamespace, &content_provider_);
+    content_provider_.SetVisuals({});
   }
 
   std::vector<chrome::mojom::AvailableOfflineContentPtr> ListAndWait() {
     std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
     bool received = false;
-    provider.List(base::BindLambdaForTesting(
+    provider_.List(base::BindLambdaForTesting(
         [&](std::vector<chrome::mojom::AvailableOfflineContentPtr> result) {
           received = true;
           suggestions = std::move(result);
         }));
-    thread_bundle.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
     EXPECT_TRUE(received);
     return suggestions;
   }
 
-  content::TestBrowserThreadBundle thread_bundle;
-  TestingProfile profile;
-  base::test::ScopedFeatureList scoped_feature_list;
-  OfflineContentAggregator* aggregator;
-  offline_items_collection::MockOfflineContentProvider content_provider;
-  AvailableOfflineContentProvider provider{&profile};
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+  OfflineContentAggregator* aggregator_;
+  offline_items_collection::MockOfflineContentProvider content_provider_;
+  AvailableOfflineContentProvider provider_{&profile_};
 };
 
 TEST_F(AvailableOfflineContentTest, NoContent) {
@@ -116,8 +131,9 @@ TEST_F(AvailableOfflineContentTest, NoContent) {
 }
 
 TEST_F(AvailableOfflineContentTest, AllContentFilteredOut) {
-  scoped_feature_list.InitAndEnableFeature(chrome::android::kNewNetErrorPageUI);
-  content_provider.SetItems({UselessItem(), OldOfflinePage()});
+  scoped_feature_list_.InitAndEnableFeature(
+      chrome::android::kNewNetErrorPageUI);
+  content_provider_.SetItems({UselessItem(), OldOfflinePage()});
 
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
       ListAndWait();
@@ -126,10 +142,14 @@ TEST_F(AvailableOfflineContentTest, AllContentFilteredOut) {
 }
 
 TEST_F(AvailableOfflineContentTest, ThreeItems) {
-  scoped_feature_list.InitAndEnableFeature(chrome::android::kNewNetErrorPageUI);
-  content_provider.SetItems({
+  scoped_feature_list_.InitAndEnableFeature(
+      chrome::android::kNewNetErrorPageUI);
+  content_provider_.SetItems({
       UselessItem(), VideoItem(), SuggestedOfflinePageItem(), AudioItem(),
   });
+
+  content_provider_.SetVisuals(
+      {{SuggestedOfflinePageItem().id, TestThumbnail()}});
 
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
       ListAndWait();
@@ -150,15 +170,22 @@ TEST_F(AvailableOfflineContentTest, ThreeItems) {
   EXPECT_EQ(page_item.title, first->title);
   EXPECT_EQ(page_item.description, first->snippet);
   EXPECT_EQ("4 hours ago", first->date_modified);
-  // attribution and thumbnail_data_uri not yet implemented.
+  // At the time of writing this test, the output was:
+  // data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAAECAYAAACk7+45AAAAFk
+  // lEQVQYlWNk+M/wn4GBgYGJAQowGQBCcgIG00vTRwAAAABJRU5ErkJggg==
+  // Since other encodings are possible, just check the prefix. PNGs all have
+  // the same 8 byte header.
+  EXPECT_TRUE(base::StartsWith(first->thumbnail_data_uri.spec(),
+                               "data:image/png;base64,iVBORw0K",
+                               base::CompareCase::SENSITIVE));
+  // TODO(crbug.com/852872): Add attribution.
   EXPECT_EQ("", first->attribution);
-  EXPECT_EQ("", first->thumbnail_data_uri);
 }
 
 TEST_F(AvailableOfflineContentTest, NotEnabled) {
-  scoped_feature_list.InitAndDisableFeature(
+  scoped_feature_list_.InitAndDisableFeature(
       chrome::android::kNewNetErrorPageUI);
-  content_provider.SetItems({SuggestedOfflinePageItem()});
+  content_provider_.SetItems({SuggestedOfflinePageItem()});
 
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
       ListAndWait();

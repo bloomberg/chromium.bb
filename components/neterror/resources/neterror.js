@@ -160,8 +160,16 @@ function offlineContentAvailable(content) {
   var div = document.getElementById('offline-suggestions');
   var suggestionText = [];
   for (var c of content) {
+    var visual = '';
+    if (c.thumbnail_data_uri) {
+      // html_inline.py will try to replace src attributes with data URIs using
+      // a simple regex. The following is obfuscated slightly to avoid that.
+      var src = 'src';
+      visual = `<img ${src}="${c.thumbnail_data_uri}"` +
+        ' class="suggested-thumbnail"></img>';
+    }
     suggestionText.push(
-      `<li>${c.title} ${c.date_modified} ${c.attribution}</li>`);
+      `<li>${visual} ${c.title} ${c.date_modified} ${c.attribution}</li>`);
   }
   var htmlList = document.getElementById('offline-content-list');
   htmlList.innerHTML = suggestionText.join('\n');
