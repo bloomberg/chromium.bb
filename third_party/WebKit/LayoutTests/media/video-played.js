@@ -40,7 +40,7 @@ function willCreateNewRange(expectedStartTimes) {
 
 function callPauseIfTimeIsReached() {
     var playedTime = video.currentTime - startTimeOfPlay;
-    if (playedTime < 0) {
+    if (playedTime <= 0) {
         // Deal with "loop" attribute. This allows only one loop, hence the first warning
         // at the begining of platForDuration().
         playedTime = video.duration - startTimeOfPlay + video.currentTime;
