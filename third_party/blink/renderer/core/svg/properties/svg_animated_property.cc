@@ -64,7 +64,7 @@ void SVGAnimatedPropertyBase::SynchronizeAttribute() {
 }
 
 bool SVGAnimatedPropertyBase::IsSpecified() const {
-  return IsAnimating() || contextElement()->hasAttribute(AttributeName());
+  return IsAnimating() || ContextElement()->hasAttribute(AttributeName());
 }
 
 }  // namespace blink

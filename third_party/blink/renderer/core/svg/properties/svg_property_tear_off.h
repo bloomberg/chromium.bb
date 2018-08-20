@@ -56,7 +56,7 @@ class SVGPropertyTearOffBase : public ScriptWrappable {
 
   virtual void CommitChange();
 
-  SVGElement* contextElement() const { return context_element_; }
+  SVGElement* ContextElement() const { return context_element_; }
 
   const QualifiedName& AttributeName() { return attribute_name_; }
 
@@ -99,7 +99,7 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
  public:
   Property* Target() {
     if (IsAnimVal())
-      contextElement()->EnsureAttributeAnimValUpdated();
+      ContextElement()->EnsureAttributeAnimValUpdated();
 
     return target_.Get();
   }

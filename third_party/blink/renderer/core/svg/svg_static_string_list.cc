@@ -83,10 +83,10 @@ bool SVGStaticStringList::NeedsSynchronizeAttribute() {
 }
 
 SVGStringListTearOff* SVGStaticStringList::TearOff() {
-  if (!tear_off_)
+  if (!tear_off_) {
     tear_off_ = SVGStringListTearOff::Create(
-        value_, contextElement(), kPropertyIsNotAnimVal, AttributeName());
-
+        value_, ContextElement(), kPropertyIsNotAnimVal, AttributeName());
+  }
   return tear_off_.Get();
 }
 
