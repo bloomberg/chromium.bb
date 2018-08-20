@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_encryption_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_collection_view_controller.h"
+#include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_browser_opener.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
@@ -64,10 +65,13 @@
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
   browser_sync::ProfileSyncService* syncService =
       ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+  unified_consent::UnifiedConsentService* unifiedConsentService =
+      UnifiedConsentServiceFactory::GetForBrowserState(self.browserState);
   self.mediator = [[GoogleServicesSettingsMediator alloc]
-      initWithPrefService:self.browserState->GetPrefs()
-              syncService:syncService
-         syncSetupService:syncSetupService];
+        initWithPrefService:self.browserState->GetPrefs()
+                syncService:syncService
+           syncSetupService:syncSetupService
+      unifiedConsentService:unifiedConsentService];
   self.mediator.consumer = viewController;
   self.mediator.authService = self.authService;
   viewController.modelDelegate = self.mediator;

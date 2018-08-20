@@ -16,6 +16,7 @@ UnifiedConsentServiceClientImpl::UnifiedConsentServiceClientImpl(
     : user_pref_service_(user_pref_service),
       local_pref_service_(local_pref_service) {
   DCHECK(user_pref_service_);
+  DCHECK(local_pref_service_);
   ObserveServicePrefChange(Service::kMetricsReporting,
                            metrics::prefs::kMetricsReportingEnabled,
                            local_pref_service);

@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
+#include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -87,6 +88,11 @@ static std::unique_ptr<KeyedService> CreateFakeConsentAuditor(
   return std::make_unique<consent_auditor::FakeConsentAuditor>();
 }
 
+static std::unique_ptr<KeyedService> CreateFakeUnifiedConsentService(
+    web::BrowserState* context) {
+  return nullptr;
+}
+
 // These tests verify that Chrome correctly records user's consent to Chrome
 // Sync, which is a GDPR requirement. None of those tests should be turned off.
 // If one of those tests fails, one of the following methods should be updated
@@ -118,6 +124,8 @@ class ChromeSigninViewControllerTest
 
     builder.AddTestingFactory(ConsentAuditorFactory::GetInstance(),
                               &CreateFakeConsentAuditor);
+    builder.AddTestingFactory(UnifiedConsentServiceFactory::GetInstance(),
+                              &CreateFakeUnifiedConsentService);
     context_ = builder.Build();
     ios::FakeChromeIdentityService* identity_service =
         ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();

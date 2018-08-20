@@ -11,6 +11,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/unified_consent/pref_names.h"
+#include "components/unified_consent/unified_consent_service.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -88,12 +89,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   std::unique_ptr<SyncObserverBridge> _syncObserver;
 }
 
+// Unified consent service.
+@property(nonatomic, assign)
+    unified_consent::UnifiedConsentService* unifiedConsentService;
 // Returns YES if the user is authenticated.
 @property(nonatomic, assign, readonly) BOOL isAuthenticated;
 // Returns YES if the user has given his consent to use Google services.
 @property(nonatomic, assign, readonly) BOOL isConsentGiven;
-// Preference service.
-@property(nonatomic, assign, readonly) PrefService* prefService;
 // Sync setup service.
 @property(nonatomic, assign, readonly) SyncSetupService* syncSetupService;
 // Preference value for the "Autocomplete searches and URLs" feature.
@@ -126,9 +128,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation GoogleServicesSettingsMediator
 
+@synthesize unifiedConsentService = _unifiedConsentService;
 @synthesize consumer = _consumer;
 @synthesize authService = _authService;
-@synthesize prefService = _prefService;
 @synthesize syncSetupService = _syncSetupService;
 @synthesize autocompleteSearchPreference = _autocompleteSearchPreference;
 @synthesize anonymizedDataCollectionPreference =
@@ -145,17 +147,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Load model
 
-- (instancetype)initWithPrefService:(PrefService*)prefService
-                        syncService:
-                            (browser_sync::ProfileSyncService*)syncService
-                   syncSetupService:(SyncSetupService*)syncSetupService {
+- (instancetype)
+  initWithPrefService:(PrefService*)prefService
+          syncService:(browser_sync::ProfileSyncService*)syncService
+     syncSetupService:(SyncSetupService*)syncSetupService
+unifiedConsentService:
+    (unified_consent::UnifiedConsentService*)unifiedConsentService {
   self = [super init];
   if (self) {
     DCHECK(prefService);
     DCHECK(syncService);
     DCHECK(syncSetupService);
-    _prefService = prefService;
+    DCHECK(unifiedConsentService);
     _syncSetupService = syncSetupService;
+    _unifiedConsentService = unifiedConsentService;
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
     prefObserverBridge_ = std::make_unique<PrefObserverBridge>(self);
     prefChangeRegistrar_.Init(prefService);
@@ -229,7 +234,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (BOOL)isConsentGiven {
-  return self.prefService->GetBoolean(kUnifiedConsentGiven);
+  return self.unifiedConsentService->IsUnifiedConsentGiven();
 }
 
 - (CollectionViewItem*)syncEverythingItem {
@@ -535,7 +540,7 @@ textItemWithItemType:(NSInteger)itemType
     return;
   // Mark the switch has being animated to avoid being reloaded.
   base::AutoReset<BOOL> autoReset(&_syncEverythingSwitchBeingAnimated, YES);
-  self.prefService->SetBoolean(kUnifiedConsentGiven, value);
+  self.unifiedConsentService->SetUnifiedConsentGiven(value);
 }
 
 - (void)toggleSyncDataSync:(NSInteger)dataTypeInt withValue:(BOOL)value {

@@ -97,7 +97,7 @@ UnifiedConsentService::UnifiedConsentService(
   sync_service_->AddObserver(this);
 
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-  pref_change_registrar_->Init(pref_service);
+  pref_change_registrar_->Init(pref_service_);
   pref_change_registrar_->Add(
       prefs::kUnifiedConsentGiven,
       base::BindRepeating(
