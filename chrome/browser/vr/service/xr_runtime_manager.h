@@ -49,8 +49,14 @@ class VR_EXPORT XRRuntimeManager {
   BrowserXRRuntime* GetRuntimeForOptions(
       device::mojom::XRSessionOptions* options);
   BrowserXRRuntime* GetImmersiveRuntime();
+  device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo(XRDeviceImpl* device);
+  void OnRendererDeviceRemoved(XRDeviceImpl* device);
 
   bool HasAnyRuntime();
+
+  void SupportsSession(
+      device::mojom::XRSessionOptionsPtr options,
+      device::mojom::XRDevice::SupportsSessionCallback callback);
 
  protected:
   using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;

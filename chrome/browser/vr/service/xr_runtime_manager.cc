@@ -152,6 +152,64 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
   return nullptr;
 }
 
+device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
+    XRDeviceImpl* device) {
+  // Get an immersive_runtime device if there is one.
+  auto* immersive_runtime = GetImmersiveRuntime();
+  if (immersive_runtime) {
+    // Listen to changes for this device.
+    immersive_runtime->OnRendererDeviceAdded(device);
+  }
+
+  // Get an AR device if there is one.
+  device::mojom::XRSessionOptions options = {};
+  options.provide_passthrough_camera = true;
+  auto* ar_runtime = GetRuntimeForOptions(&options);
+  if (ar_runtime) {
+    // Listen to  changes for this device.
+    ar_runtime->OnRendererDeviceAdded(device);
+  }
+
+  // If there is neither, use the generic non-immersive device.
+  if (!ar_runtime && !immersive_runtime) {
+    device::mojom::XRSessionOptions options = {};
+    auto* non_immersive_runtime = GetRuntimeForOptions(&options);
+    if (non_immersive_runtime) {
+      // Listen to changes for this device.
+      non_immersive_runtime->OnRendererDeviceAdded(device);
+    }
+
+    // If we don't have an AR or immersive device, return the generic non-
+    // immersive device's DisplayInfo if we have it.
+    return non_immersive_runtime ? non_immersive_runtime->GetVRDisplayInfo()
+                                 : nullptr;
+  }
+
+  // Use the immersive or AR device. However, if we are using the immersive
+  // device's info, and AR is supported, reflect that in capabilities.
+  device::mojom::VRDisplayInfoPtr device_info =
+      immersive_runtime ? immersive_runtime->GetVRDisplayInfo()
+                        : ar_runtime->GetVRDisplayInfo();
+  device_info->capabilities->can_provide_pass_through_images = !!ar_runtime;
+
+  return device_info;
+}
+
+void XRRuntimeManager::SupportsSession(
+    device::mojom::XRSessionOptionsPtr options,
+    device::mojom::XRDevice::SupportsSessionCallback callback) {
+  auto* runtime = GetRuntimeForOptions(options.get());
+
+  if (!runtime) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // TODO(http://crbug.com/842025): Pass supports session on to the device
+  // runtimes.
+  std::move(callback).Run(true);
+}
+
 bool XRRuntimeManager::HasAnyRuntime() {
   return runtimes_.size() > 0;
 }
@@ -193,6 +251,12 @@ void XRRuntimeManager::RemoveService(VRServiceImpl* service) {
   if (services_.empty()) {
     // Delete the device manager when it has no active connections.
     delete g_xr_runtime_manager;
+  }
+}
+
+void XRRuntimeManager::OnRendererDeviceRemoved(XRDeviceImpl* device) {
+  for (const auto& runtime : runtimes_) {
+    runtime.second->OnRendererDeviceRemoved(device);
   }
 }
 

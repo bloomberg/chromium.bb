@@ -53,56 +53,6 @@ device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
 
 }  // namespace
 
-device::mojom::VRDisplayInfoPtr XRDeviceImpl::GetCurrentVRDisplayInfo() {
-  // Get an immersive_runtime_ device if there is one.
-  if (!immersive_runtime_) {
-    immersive_runtime_ = XRRuntimeManager::GetInstance()->GetImmersiveRuntime();
-    if (immersive_runtime_) {
-      // Listen to changes for this device.
-      immersive_runtime_->OnRendererDeviceAdded(this);
-    }
-  }
-
-  // Get an AR device if there is one.
-  if (!ar_runtime_) {
-    device::mojom::XRSessionOptions options = {};
-    options.provide_passthrough_camera = true;
-    ar_runtime_ =
-        XRRuntimeManager::GetInstance()->GetRuntimeForOptions(&options);
-    if (ar_runtime_) {
-      // Listen to  changes for this device.
-      ar_runtime_->OnRendererDeviceAdded(this);
-    }
-  }
-
-  // If there is neither, use the generic non-immersive device.
-  if (!ar_runtime_ && !immersive_runtime_) {
-    if (!non_immersive_runtime_) {
-      device::mojom::XRSessionOptions options = {};
-      non_immersive_runtime_ =
-          XRRuntimeManager::GetInstance()->GetRuntimeForOptions(&options);
-      if (non_immersive_runtime_) {
-        // Listen to changes for this device.
-        non_immersive_runtime_->OnRendererDeviceAdded(this);
-      }
-    }
-
-    // If we don't have an AR or immersive device, return the generic non-
-    // immersive device's DisplayInfo if we have it.
-    return non_immersive_runtime_ ? non_immersive_runtime_->GetVRDisplayInfo()
-                                  : nullptr;
-  }
-
-  // Use the immersive or AR device.  However, if we are using the immersive
-  // device's info, and AR is supported, reflect that in capabilities.
-  device::mojom::VRDisplayInfoPtr device_info =
-      immersive_runtime_ ? immersive_runtime_->GetVRDisplayInfo()
-                         : ar_runtime_->GetVRDisplayInfo();
-  device_info->capabilities->can_provide_pass_through_images = !!ar_runtime_;
-
-  return device_info;
-}
-
 XRDeviceImpl::XRDeviceImpl(content::RenderFrameHost* render_frame_host,
                            device::mojom::XRDeviceRequest request)
     :  // TODO(https://crbug.com/846392): render_frame_host can be null because
@@ -149,12 +99,7 @@ void XRDeviceImpl::OnSessionCreated(
 }
 
 XRDeviceImpl::~XRDeviceImpl() {
-  if (immersive_runtime_)
-    immersive_runtime_->OnRendererDeviceRemoved(this);
-  if (non_immersive_runtime_)
-    non_immersive_runtime_->OnRendererDeviceRemoved(this);
-  if (ar_runtime_)
-    ar_runtime_->OnRendererDeviceRemoved(this);
+  XRRuntimeManager::GetInstance()->OnRendererDeviceRemoved(this);
 }
 
 void XRDeviceImpl::RequestSession(
@@ -220,11 +165,11 @@ void XRDeviceImpl::RequestSession(
   }
 }
 
-void XRDeviceImpl::SupportsSession(device::mojom::XRSessionOptionsPtr options,
-                                   SupportsSessionCallback callback) {
-  bool supports = XRRuntimeManager::GetInstance()->GetRuntimeForOptions(
-                      options.get()) != nullptr;
-  std::move(callback).Run(supports);
+void XRDeviceImpl::SupportsSession(
+    device::mojom::XRSessionOptionsPtr options,
+    device::mojom::XRDevice::SupportsSessionCallback callback) {
+  XRRuntimeManager::GetInstance()->SupportsSession(std::move(options),
+                                                   std::move(callback));
 }
 
 void XRDeviceImpl::ReportRequestPresent() {
@@ -242,20 +187,19 @@ void XRDeviceImpl::ReportRequestPresent() {
 }
 
 void XRDeviceImpl::ExitPresent() {
-  if (immersive_runtime_)
-    immersive_runtime_->ExitPresent(this);
+  BrowserXRRuntime* immersive_runtime =
+      XRRuntimeManager::GetInstance()->GetImmersiveRuntime();
+  if (immersive_runtime)
+    immersive_runtime->ExitPresent(this);
 }
 
 void XRDeviceImpl::SetListeningForActivate(
     device::mojom::VRDisplayClientPtr client) {
   client_ = std::move(client);
-  if (!immersive_runtime_) {
-    // This function sets the runtimes.
-    GetCurrentVRDisplayInfo();
-  }
-
-  if (immersive_runtime_ && client_) {
-    immersive_runtime_->UpdateListeningForActivate(this);
+  BrowserXRRuntime* immersive_runtime =
+      XRRuntimeManager::GetInstance()->GetImmersiveRuntime();
+  if (immersive_runtime && client) {
+    immersive_runtime->UpdateListeningForActivate(this);
   }
 }
 
@@ -270,10 +214,11 @@ void XRDeviceImpl::GetImmersiveVRDisplayInfo(
 
 void XRDeviceImpl::SetInFocusedFrame(bool in_focused_frame) {
   in_focused_frame_ = in_focused_frame;
-
-  if (ListeningForActivate() && immersive_runtime_) {
-    // No change, except focus.
-    immersive_runtime_->UpdateListeningForActivate(this);
+  if (ListeningForActivate()) {
+    BrowserXRRuntime* immersive_runtime =
+        XRRuntimeManager::GetInstance()->GetImmersiveRuntime();
+    if (immersive_runtime)
+      immersive_runtime->UpdateListeningForActivate(this);
   }
 
   magic_window_controllers_.ForAllPtrs(
@@ -282,8 +227,9 @@ void XRDeviceImpl::SetInFocusedFrame(bool in_focused_frame) {
       });
 }
 
-void XRDeviceImpl::OnChanged() {
-  device::mojom::VRDisplayInfoPtr display_info = GetCurrentVRDisplayInfo();
+void XRDeviceImpl::RuntimesChanged() {
+  device::mojom::VRDisplayInfoPtr display_info =
+      XRRuntimeManager::GetInstance()->GetCurrentVRDisplayInfo(this);
   if (display_info) {
     session_clients_.ForAllPtrs(
         [&display_info](device::mojom::XRSessionClient* client) {
@@ -292,27 +238,6 @@ void XRDeviceImpl::OnChanged() {
   }
 }
 
-void XRDeviceImpl::OnRuntimeRemoved(BrowserXRRuntime* runtime) {
-  if (runtime == immersive_runtime_) {
-    immersive_runtime_ = nullptr;
-  }
-
-  if (runtime == non_immersive_runtime_) {
-    non_immersive_runtime_ = nullptr;
-  }
-
-  if (runtime == ar_runtime_) {
-    ar_runtime_ = nullptr;
-  }
-
-  // Try to update our VRDisplayInfo.
-  OnChanged();
-}
-
-void XRDeviceImpl::OnRuntimeAvailable(BrowserXRRuntime* runtime) {
-  // Try to update our VRDisplayInfo.  That may use the new device.
-  OnChanged();
-}
 
 void XRDeviceImpl::OnExitPresent() {
   session_clients_.ForAllPtrs(
