@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CONTEXTUAL_SEARCH_RENDERER_OVERLAY_JS_RENDER_FRAME_OBSERVER_H_
-#define COMPONENTS_CONTEXTUAL_SEARCH_RENDERER_OVERLAY_JS_RENDER_FRAME_OBSERVER_H_
+#ifndef COMPONENTS_CONTEXTUAL_SEARCH_CONTENT_RENDERER_OVERLAY_JS_RENDER_FRAME_OBSERVER_H_
+#define COMPONENTS_CONTEXTUAL_SEARCH_CONTENT_RENDERER_OVERLAY_JS_RENDER_FRAME_OBSERVER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/contextual_search/common/contextual_search_js_api_service.mojom.h"
+#include "components/contextual_search/content/common/contextual_search_js_api_service.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -56,4 +56,4 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
 
 }  // namespace contextual_search
 
-#endif  // COMPONENTS_CONTEXTUAL_SEARCH_RENDERER_OVERLAY_JS_RENDER_FRAME_OBSERVER_H_
+#endif  // COMPONENTS_CONTEXTUAL_SEARCH_CONTENT_RENDERER_OVERLAY_JS_RENDER_FRAME_OBSERVER_H_

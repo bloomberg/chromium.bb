@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CONTEXTUAL_SEARCH_RENDERER_CONTEXTUAL_SEARCH_WRAPPER_H_
-#define COMPONENTS_CONTEXTUAL_SEARCH_RENDERER_CONTEXTUAL_SEARCH_WRAPPER_H_
+#ifndef COMPONENTS_CONTEXTUAL_SEARCH_CONTENT_RENDERER_CONTEXTUAL_SEARCH_WRAPPER_H_
+#define COMPONENTS_CONTEXTUAL_SEARCH_CONTENT_RENDERER_CONTEXTUAL_SEARCH_WRAPPER_H_
 
 #include "base/macros.h"
-#include "components/contextual_search/common/contextual_search_js_api_service.mojom.h"
+#include "components/contextual_search/content/common/contextual_search_js_api_service.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "gin/handle.h"
@@ -63,4 +63,4 @@ class ContextualSearchWrapper : public gin::Wrappable<ContextualSearchWrapper>,
 
 }  // namespace contextual_search
 
-#endif  // COMPONENTS_CONTEXTUAL_SEARCH_RENDERER_CONTEXTUAL_SEARCH_WRAPPER_H_
+#endif  // COMPONENTS_CONTEXTUAL_SEARCH_CONTENT_RENDERER_CONTEXTUAL_SEARCH_WRAPPER_H_

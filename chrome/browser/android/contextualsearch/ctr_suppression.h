@@ -8,8 +8,8 @@
 #include <stddef.h>
 
 #include "base/android/jni_android.h"
-#include "components/contextual_search/browser/ctr_aggregator.h"
-#include "components/contextual_search/browser/weekly_activity_storage.h"
+#include "components/contextual_search/core/browser/ctr_aggregator.h"
+#include "components/contextual_search/core/browser/weekly_activity_storage.h"
 
 // Provides access to aggregated click-through-rate recording for tap
 // suppression.  Implements a Java conduit to the CtrAggregator in the

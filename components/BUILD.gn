@@ -203,7 +203,7 @@ test("components_unittests") {
       "//components/cast_certificate:unit_tests",
       "//components/cast_channel:unit_tests",
       "//components/certificate_transparency:unit_tests",
-      "//components/contextual_search:unit_tests",
+      "//components/contextual_search/core:unit_tests",
       "//components/crash/content/app:unit_tests",
       "//components/crash/content/browser:unit_tests",
       "//components/crash/core/common:unit_tests",

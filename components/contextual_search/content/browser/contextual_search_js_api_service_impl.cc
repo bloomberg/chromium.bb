@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/contextual_search/browser/contextual_search_js_api_service_impl.h"
+#include "components/contextual_search/content/browser/contextual_search_js_api_service_impl.h"
 
 #include <memory>
 #include <utility>
 
-#include "components/contextual_search/browser/contextual_search_js_api_handler.h"
+#include "components/contextual_search/content/browser/contextual_search_js_api_handler.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace contextual_search {

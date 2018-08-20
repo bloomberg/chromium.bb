@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/contextual_search/browser/weekly_activity_storage.h"
+#include "components/contextual_search/core/browser/weekly_activity_storage.h"
 
 #include <algorithm>  // std::min
 
