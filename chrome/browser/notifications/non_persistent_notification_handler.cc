@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_event_dispatcher.h"
 
 #if !defined(OS_ANDROID)
