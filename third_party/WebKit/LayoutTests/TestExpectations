@@ -268,6 +268,7 @@ crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top.ht
 crbug.com/722825 media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
 crbug.com/722825 virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
 crbug.com/722825 virtual/video-surface-layer/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
+crbug.com/876050 virtual/video-surface-layer/media/controls/text-track-menu-pointer-selection.html [ Pass Failure ]
 
 #### crbug.com/783229 overflow
 crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
