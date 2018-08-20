@@ -1,10 +1,24 @@
 <script>
 const params = new URLSearchParams(location.search);
 async function run() {
-  const reg = await navigator.serviceWorker.register(
-      params.get('worker_url'));
+  let options = {};
+  if (params.get('scope'))
+    options.scope = params.get('scope');
+
+  await navigator.serviceWorker.register(
+      params.get('worker_url'), options);
   await navigator.serviceWorker.ready;
   document.title = 'DONE';
 }
-self.onload = run;
+
+async function setup() {
+  try {
+    await run();
+  } catch (error) {
+    console.error('ERROR: ' + error);
+    document.title = 'ERROR';
+  }
+}
+
+setup();
 </script>
