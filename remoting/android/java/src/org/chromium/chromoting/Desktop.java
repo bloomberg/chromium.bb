@@ -7,6 +7,7 @@ package org.chromium.chromoting;
 import android.annotation.SuppressLint;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.os.Handler;
 import android.support.v7.app.ActionBar.OnMenuVisibilityListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.DisplayCutout;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +23,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.View.OnTouchListener;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
@@ -135,6 +139,15 @@ public class Desktop
         // for our canvas, thus there is a visual artifact when we draw the canvas over the
         // background.  Setting the background color to match our canvas will prevent the flash.
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            // Short edges mode makes DesktopView stretch to the whole screen even if it gets
+            // obstructed by the cutouts.
+            WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+            layoutParams.layoutInDisplayCutoutMode =
+                    LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            getWindow().setAttributes(layoutParams);
+        }
 
         mActivityLifecycleListener = mClient.getCapabilityManager().onActivityAcceptingListener(
                 this, Capabilities.CAST_CAPABILITY);
@@ -460,6 +473,24 @@ public class Desktop
             flags |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
         }
         return flags;
+    }
+
+    /**
+     * @return The insets from each edge on the screen that avoid display cutouts.
+     */
+    @SuppressLint("InlinedApi")
+    public Rect getSafeInsets() {
+        Rect insets = new Rect();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            return insets;
+        }
+
+        DisplayCutout cutout = mRemoteHostDesktop.getRootWindowInsets().getDisplayCutout();
+        if (cutout != null) {
+            insets.set(cutout.getSafeInsetLeft(), cutout.getSafeInsetTop(),
+                    cutout.getSafeInsetRight(), cutout.getSafeInsetBottom());
+        }
+        return insets;
     }
 
     /**
