@@ -681,4 +681,35 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, AbortCopies) {
   ASSERT_FALSE(frame_2);
 }
 
+// Tests that an I420 VideoFrame after an I420A is ignored, i.e. passed through.
+// See e.g. https://crbug.com/875158.
+TEST_F(GpuMemoryBufferVideoFramePoolTest, VideoFrameChangesPixelFormat) {
+  scoped_refptr<VideoFrame> software_frame_1 = CreateTestYUVAVideoFrame(10);
+  scoped_refptr<VideoFrame> frame_1;
+  mock_gpu_factories_->SetVideoFrameOutputFormat(
+      media::GpuVideoAcceleratorFactories::OutputFormat::RGBA);
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame_1,
+      base::BindOnce(MaybeCreateHardwareFrameCallback, &frame_1));
+  RunUntilIdle();
+
+  EXPECT_NE(software_frame_1.get(), frame_1.get());
+  EXPECT_EQ(PIXEL_FORMAT_RGB32, frame_1->format());
+  EXPECT_EQ(1u, frame_1->NumTextures());
+  EXPECT_EQ(1u, gles2_->gen_textures_count());
+  EXPECT_TRUE(frame_1->metadata()->IsTrue(
+      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
+
+  scoped_refptr<VideoFrame> software_frame_2 = CreateTestYUVVideoFrame(10);
+  mock_gpu_factories_->SetVideoFrameOutputFormat(
+      media::GpuVideoAcceleratorFactories::OutputFormat::I420);
+  scoped_refptr<VideoFrame> frame_2;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame_2,
+      base::BindOnce(MaybeCreateHardwareFrameCallback, &frame_2));
+  RunUntilIdle();
+
+  EXPECT_EQ(software_frame_2.get(), frame_2.get());
+}
+
 }  // namespace media
