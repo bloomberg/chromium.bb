@@ -14,9 +14,11 @@
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
 
@@ -158,6 +160,14 @@ void AssistantInteractionController::OnInteractionStarted(
   if (is_voice_interaction) {
     assistant_interaction_model_.SetInputModality(InputModality::kVoice);
     assistant_interaction_model_.SetMicState(MicState::kOpen);
+
+    // When a voice interaction is initiated by hotword, we haven't yet set a
+    // pending query so this is our earliest opportunity.
+    if (assistant_interaction_model_.pending_query().type() ==
+        AssistantQueryType::kNull) {
+      assistant_interaction_model_.SetPendingQuery(
+          std::make_unique<AssistantVoiceQuery>());
+    }
   } else {
     // TODO(b/112000321): It should not be possible to reach this code without
     // having previously pended a query. It does currently happen, however, in
@@ -275,12 +285,7 @@ void AssistantInteractionController::OnTextResponse(
       std::make_unique<AssistantTextElement>(response));
 }
 
-void AssistantInteractionController::OnSpeechRecognitionStarted() {
-  assistant_interaction_model_.SetInputModality(InputModality::kVoice);
-  assistant_interaction_model_.SetMicState(MicState::kOpen);
-  assistant_interaction_model_.SetPendingQuery(
-      std::make_unique<AssistantVoiceQuery>());
-}
+void AssistantInteractionController::OnSpeechRecognitionStarted() {}
 
 void AssistantInteractionController::OnSpeechRecognitionIntermediateResult(
     const std::string& high_confidence_text,
@@ -312,10 +317,29 @@ void AssistantInteractionController::OnSpeechLevelUpdated(float speech_level) {
   assistant_interaction_model_.SetSpeechLevel(speech_level);
 }
 
-void AssistantInteractionController::OnTtsStarted() {
+void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
   if (assistant_interaction_model_.interaction_state() !=
       InteractionState::kActive) {
     return;
+  }
+
+  // Commit the pending query in whatever state it's in. In most cases the
+  // pending query is already committed, but we must always commit the pending
+  // query before finalizing a pending result.
+  if (assistant_interaction_model_.pending_query().type() !=
+      AssistantQueryType::kNull) {
+    assistant_interaction_model_.CommitPendingQuery();
+  }
+
+  if (due_to_error) {
+    // In the case of an error occurring during a voice interaction, this is our
+    // earliest indication that the mic has closed.
+    assistant_interaction_model_.SetMicState(MicState::kClosed);
+
+    // Add an error message to the response.
+    assistant_interaction_model_.pending_response()->AddUiElement(
+        std::make_unique<AssistantTextElement>(
+            l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_ERROR_GENERIC)));
   }
 
   // We have an agreement with the server that TTS will always be the last part
