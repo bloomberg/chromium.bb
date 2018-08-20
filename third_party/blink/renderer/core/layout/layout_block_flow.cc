@@ -2637,9 +2637,6 @@ void LayoutBlockFlow::DeleteLineBoxTree() {
   if (ContainsFloats())
     floating_objects_->ClearLineBoxTreePointers();
 
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    SetPaintFragment(nullptr, nullptr);
-
   line_boxes_.DeleteLineBoxTree();
 }
 
