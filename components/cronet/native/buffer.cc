@@ -4,9 +4,9 @@
 
 #include "components/cronet/native/generated/cronet.idl_impl_interface.h"
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 
 namespace {
@@ -22,9 +22,6 @@ class Cronet_BufferCallbackFree : public Cronet_BufferCallback {
  private:
   DISALLOW_COPY_AND_ASSIGN(Cronet_BufferCallbackFree);
 };
-
-base::LazyInstance<Cronet_BufferCallbackFree>::Leaky
-    g_cronet_buffer_callback_free = LAZY_INSTANCE_INITIALIZER;
 
 // Concrete implementation of abstract Cronet_Buffer interface.
 class Cronet_BufferImpl : public Cronet_Buffer {
@@ -69,7 +66,8 @@ void Cronet_BufferImpl::InitWithAlloc(uint64_t size) {
   if (!data_)
     return;
   size_ = size;
-  callback_ = g_cronet_buffer_callback_free.Pointer();
+  static base::NoDestructor<Cronet_BufferCallbackFree> static_callback;
+  callback_ = static_callback.get();
 }
 
 uint64_t Cronet_BufferImpl::GetSize() {

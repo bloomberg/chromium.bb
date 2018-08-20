@@ -32,6 +32,29 @@ class IOBufferWithCronet_Buffer : public net::WrappedIOBuffer {
   DISALLOW_COPY_AND_ASSIGN(IOBufferWithCronet_Buffer);
 };
 
+// Represents a Cronet_Buffer backed by a net::IOBuffer. Keeps both the
+// net::IOBuffer and the Cronet_Buffer object alive until destroyed.
+class Cronet_BufferWithIOBuffer {
+ public:
+  Cronet_BufferWithIOBuffer(net::IOBuffer* io_buffer, size_t io_buffer_len);
+  ~Cronet_BufferWithIOBuffer();
+
+  const net::IOBuffer* io_buffer() const { return io_buffer_.get(); }
+  size_t io_buffer_len() const { return io_buffer_len_; }
+
+  // Returns pointer to Cronet buffer owned by |this|.
+  Cronet_BufferPtr cronet_buffer() { return cronet_buffer_.get(); }
+
+ private:
+  scoped_refptr<net::IOBuffer> io_buffer_;
+  size_t io_buffer_len_;
+
+  // Cronet buffer owned by |this|.
+  std::unique_ptr<Cronet_Buffer> cronet_buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(Cronet_BufferWithIOBuffer);
+};
+
 }  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_NATIVE_IO_BUFFER_WITH_CRONET_BUFFER_H_

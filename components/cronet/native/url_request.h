@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
 #include "components/cronet/cronet_url_request.h"
 #include "components/cronet/cronet_url_request_context.h"
 #include "components/cronet/native/generated/cronet.idl_impl_interface.h"
@@ -18,6 +17,7 @@
 namespace cronet {
 
 class Cronet_EngineImpl;
+class Cronet_UploadDataSinkImpl;
 
 // Implementation of Cronet_UrlRequest that uses CronetURLRequestContext.
 class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
@@ -38,8 +38,12 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   bool IsDone() override;
   void GetStatus(Cronet_UrlRequestStatusListenerPtr listener) override;
 
+  // Upload data provider has reported error while reading or rewinding
+  // so request must fail.
+  void OnUploadDataProviderError(const std::string& error_message);
+
  private:
-  class Callback;
+  class NetworkTasks;
 
   // Return |true| if request has started and is now done.
   // Must be called under |lock_| held.
@@ -57,6 +61,19 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   bool DestroyRequestUnlessDoneLocked(
       Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason);
 
+  // Helper method to post |task| to the |executor_|.
+  void PostTaskToExecutor(base::OnceClosure task);
+
+  // Helper methods to invoke application |callback_|.
+  void InvokeCallbackOnRedirectReceived();
+  void InvokeCallbackOnResponseStarted();
+  void InvokeCallbackOnReadCompleted(
+      std::unique_ptr<Cronet_Buffer> cronet_buffer,
+      int bytes_read);
+  void InvokeCallbackOnSucceeded();
+  void InvokeCallbackOnFailed();
+  void InvokeCallbackOnCanceled();
+
   // Synchronize access to |request_| and other objects below from different
   // threads.
   base::Lock lock_;
@@ -71,6 +88,14 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   std::unique_ptr<Cronet_UrlResponseInfo> response_info_;
   // The error reported by request. May be nullptr if no error has occurred.
   std::unique_ptr<Cronet_Error> error_;
+
+  // The upload data stream if specified.
+  std::unique_ptr<Cronet_UploadDataSinkImpl> upload_data_sink_;
+
+  // Application callback interface, used, but not owned, by |this|.
+  Cronet_UrlRequestCallbackPtr callback_ = nullptr;
+  // Executor for application callback, used, but not owned, by |this|.
+  Cronet_ExecutorPtr executor_ = nullptr;
 
   // Cronet Engine used to run network operations. Not owned, accessed from
   // client thread. Must outlive this request.

@@ -166,10 +166,10 @@ struct Cronet_UploadDataSink {
   }
   Cronet_ClientContext client_context() const { return client_context_; }
 
-  virtual void OnReadSucceeded(bool final_chunk) = 0;
-  virtual void OnReadError(Cronet_ErrorPtr error) = 0;
-  virtual void OnRewindSucceded() = 0;
-  virtual void OnRewindError(Cronet_ErrorPtr error) = 0;
+  virtual void OnReadSucceeded(uint64_t bytes_read, bool final_chunk) = 0;
+  virtual void OnReadError(Cronet_String error_message) = 0;
+  virtual void OnRewindSucceeded() = 0;
+  virtual void OnRewindError(Cronet_String error_message) = 0;
 
  private:
   Cronet_ClientContext client_context_ = nullptr;

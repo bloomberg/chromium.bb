@@ -468,34 +468,36 @@ Cronet_UploadDataSink_GetClientContext(Cronet_UploadDataSinkPtr self);
 // The app calls them to manipulate Cronet_UploadDataSink.
 CRONET_EXPORT
 void Cronet_UploadDataSink_OnReadSucceeded(Cronet_UploadDataSinkPtr self,
+                                           uint64_t bytes_read,
                                            bool final_chunk);
 CRONET_EXPORT
 void Cronet_UploadDataSink_OnReadError(Cronet_UploadDataSinkPtr self,
-                                       Cronet_ErrorPtr error);
+                                       Cronet_String error_message);
 CRONET_EXPORT
-void Cronet_UploadDataSink_OnRewindSucceded(Cronet_UploadDataSinkPtr self);
+void Cronet_UploadDataSink_OnRewindSucceeded(Cronet_UploadDataSinkPtr self);
 CRONET_EXPORT
 void Cronet_UploadDataSink_OnRewindError(Cronet_UploadDataSinkPtr self,
-                                         Cronet_ErrorPtr error);
+                                         Cronet_String error_message);
 // Concrete interface Cronet_UploadDataSink is implemented by Cronet.
 // The app can implement these for testing / mocking.
 typedef void (*Cronet_UploadDataSink_OnReadSucceededFunc)(
     Cronet_UploadDataSinkPtr self,
+    uint64_t bytes_read,
     bool final_chunk);
 typedef void (*Cronet_UploadDataSink_OnReadErrorFunc)(
     Cronet_UploadDataSinkPtr self,
-    Cronet_ErrorPtr error);
-typedef void (*Cronet_UploadDataSink_OnRewindSuccededFunc)(
+    Cronet_String error_message);
+typedef void (*Cronet_UploadDataSink_OnRewindSucceededFunc)(
     Cronet_UploadDataSinkPtr self);
 typedef void (*Cronet_UploadDataSink_OnRewindErrorFunc)(
     Cronet_UploadDataSinkPtr self,
-    Cronet_ErrorPtr error);
+    Cronet_String error_message);
 // Concrete interface Cronet_UploadDataSink is implemented by Cronet.
 // The app can use this for testing / mocking.
 CRONET_EXPORT Cronet_UploadDataSinkPtr Cronet_UploadDataSink_CreateWith(
     Cronet_UploadDataSink_OnReadSucceededFunc OnReadSucceededFunc,
     Cronet_UploadDataSink_OnReadErrorFunc OnReadErrorFunc,
-    Cronet_UploadDataSink_OnRewindSuccededFunc OnRewindSuccededFunc,
+    Cronet_UploadDataSink_OnRewindSucceededFunc OnRewindSucceededFunc,
     Cronet_UploadDataSink_OnRewindErrorFunc OnRewindErrorFunc);
 
 ///////////////////////
