@@ -125,3 +125,9 @@ set_defaults("blink_core_sources") {
   # support, for lower Windows build times.
   configs += [ "//third_party/blink/renderer/core:blink_core_pch" ]
 }
+
+declare_args() {
+  # Use base::TimeDelta to represent time in renderer/core/animations. See
+  # http://crbug.com/737867
+  blink_animation_use_time_delta = false
+}

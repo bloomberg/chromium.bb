@@ -31,6 +31,9 @@ config("config") {
   if (is_chromecast) {
     defines += [ "BLINK_MEDIA_LOG=LOG(INFO)" ]
   }
+  if (blink_animation_use_time_delta) {
+    defines += [ "BLINK_ANIMATION_USE_TIME_DELTA" ]
+  }
 }
 
 config("core_include_dirs") {
@@ -1690,6 +1693,7 @@ jumbo_source_set("unit_tests") {
     "animation/animation_test.cc",
     "animation/animation_test_helper.cc",
     "animation/animation_test_helper.h",
+    "animation/animation_time_delta_test.cc",
     "animation/compositor_animations_test.cc",
     "animation/css/css_animations_test.cc",
     "animation/css/css_transition_data_test.cc",
@@ -2207,6 +2211,10 @@ jumbo_source_set("unit_tests") {
 
   if (use_default_render_theme) {
     sources += [ "scroll/scrollbar_theme_aura_test.cc" ]
+  }
+
+  if (blink_animation_use_time_delta) {
+    defines = [ "BLINK_ANIMATION_USE_TIME_DELTA" ]
   }
 }
 

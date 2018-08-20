@@ -25,6 +25,8 @@ blink_core_sources("animation") {
     "animation_effect_owner.h",
     "animation_input_helpers.cc",
     "animation_input_helpers.h",
+    "animation_time_delta.cc",
+    "animation_time_delta.h",
     "animation_timeline.h",
     "basic_shape_interpolation_functions.cc",
     "basic_shape_interpolation_functions.h",
