@@ -700,7 +700,7 @@ _KNOWN_ROBOTS = set(
     '%s-chromium-autoroll@skia-buildbots.google.com.iam.gserviceaccount.com' % s
     for s in ('afdo', 'angle', 'catapult', 'chromite', 'depot-tools',
               'fuchsia-sdk', 'nacl', 'pdfium', 'perfetto', 'skia',
-              'src-internal', 'webrtc')
+              'spirv', 'src-internal', 'webrtc')
   ) | set('%s@appspot.gserviceaccount.com' % s for s in ('findit-for-me',)
   ) | set('%s@developer.gserviceaccount.com' % s for s in ('3su6n15k.default',)
   ) | set('%s@chops-service-accounts.iam.gserviceaccount.com' % s
