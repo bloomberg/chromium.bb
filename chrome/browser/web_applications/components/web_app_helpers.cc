@@ -62,4 +62,11 @@ std::string GenerateExtensionKeyFromURL(const GURL& url) {
   return key;
 }
 
+bool IsValidWebAppUrl(const GURL& app_url) {
+  if (app_url.is_empty() || app_url.inner_url())
+    return false;
+
+  return app_url.SchemeIsHTTPOrHTTPS();
+}
+
 }  // namespace web_app

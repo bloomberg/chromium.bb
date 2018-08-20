@@ -32,4 +32,29 @@ TEST(WebAppHelpers, GenerateExtensionIdFromURL) {
           "https://events.google.com/io2016/?utm_source=web_app_manifest")));
 }
 
+TEST(WebAppHelpers, IsValidWebAppUrl) {
+  EXPECT_TRUE(IsValidWebAppUrl(GURL("https://chromium.org")));
+  EXPECT_TRUE(IsValidWebAppUrl(GURL("https://www.chromium.org")));
+  EXPECT_TRUE(
+      IsValidWebAppUrl(GURL("https://www.chromium.org/path/to/page.html")));
+  EXPECT_TRUE(IsValidWebAppUrl(GURL("http://chromium.org")));
+  EXPECT_TRUE(IsValidWebAppUrl(GURL("http://www.chromium.org")));
+  EXPECT_TRUE(
+      IsValidWebAppUrl(GURL("http://www.chromium.org/path/to/page.html")));
+  EXPECT_TRUE(IsValidWebAppUrl(GURL("https://examle.com/foo?bar")));
+  EXPECT_TRUE(IsValidWebAppUrl(GURL("https://examle.com/foo#bar")));
+
+  EXPECT_FALSE(IsValidWebAppUrl(GURL()));
+  EXPECT_FALSE(IsValidWebAppUrl(
+      GURL("chrome-extension://oafaagfgbdpldilgjjfjocjglfbolmac")));
+  EXPECT_FALSE(IsValidWebAppUrl(GURL("ftp://www.chromium.org")));
+  EXPECT_FALSE(IsValidWebAppUrl(GURL("chrome://flags")));
+  EXPECT_FALSE(IsValidWebAppUrl(GURL("about:blank")));
+  EXPECT_FALSE(
+      IsValidWebAppUrl(GURL("file://mhjfbmdgcfjbbpaeojofohoefgiehjai")));
+  EXPECT_FALSE(IsValidWebAppUrl(GURL("chrome://extensions")));
+  EXPECT_FALSE(
+      IsValidWebAppUrl(GURL("filesystem:http://example.com/path/file.html")));
+}
+
 }  // namespace web_app
