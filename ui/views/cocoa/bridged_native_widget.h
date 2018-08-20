@@ -51,6 +51,22 @@ class VIEWS_EXPORT BridgedNativeWidgetPublic {
   // BridgedNativeWidgetHost.
   virtual void InitCompositorView() = 0;
 
+  // Specify initial bounds for the window via |new_bounds| in screen
+  // coordinates. It is invalid for |new_bounds| to have an empty size and
+  // non-zero position. The size of the window will be expanded so that the
+  // content size will be at least |minimum_content_size|. The bounds are offset
+  // by |parent_offset| (this isn't incorporated directly into |new_bounds| for
+  // the aforementioned checks of |new_bounds|' position).
+  virtual void SetInitialBounds(const gfx::Rect& new_bounds,
+                                const gfx::Size& minimum_content_size,
+                                const gfx::Vector2d& parent_offset) = 0;
+
+  // Specify new bounds for the window via |new_bounds| in screen coordinates.
+  // The size of the window will be expanded so that the content size will be
+  // at least |minimum_content_size|.
+  virtual void SetBounds(const gfx::Rect& new_bounds,
+                         const gfx::Size& minimum_content_size) = 0;
+
   // Specify the content to draw in the NSView.
   virtual void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) = 0;
 
@@ -238,6 +254,11 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // views::BridgedNativeWidgetPublic:
   void InitCompositorView() override;
+  void SetInitialBounds(const gfx::Rect& new_bounds,
+                        const gfx::Size& minimum_content_size,
+                        const gfx::Vector2d& parent_offset) override;
+  void SetBounds(const gfx::Rect& new_bounds,
+                 const gfx::Size& minimum_content_size) override;
   void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) override;
   void ClearTouchBar() override;
 
