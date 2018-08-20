@@ -1218,15 +1218,11 @@ public:
   pointer operator->() const { return &deref(); }
 };
 
-} // namespace Json
-
-
-namespace std {
-/// Specialize std::swap() for Json::Value.
-template<>
-inline void swap(Json::Value& a, Json::Value& b) { a.swap(b); }
+inline void swap(Value& a, Value& b) {
+  a.swap(b);
 }
 
+}  // namespace Json
 
 #if defined(JSONCPP_DISABLE_DLL_INTERFACE_WARNING)
 #pragma warning(pop)
