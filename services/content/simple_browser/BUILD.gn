@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+import("//services/content/public/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
 component("simple_browser") {
@@ -28,10 +30,19 @@ component("simple_browser") {
   deps = [
     "//services/content/public/cpp",
     "//services/content/public/mojom",
-    "//ui/aura",
-    "//ui/views",
-    "//ui/views/mus",
   ]
+
+  if (toolkit_views) {
+    deps += [ "//ui/views" ]
+  }
+
+  if (use_aura) {
+    deps += [ "//ui/aura" ]
+  }
+
+  if (enable_remote_navigable_contents_view) {
+    deps += [ "//ui/views/mus" ]
+  }
 
   if (is_linux) {
     public_deps += [

@@ -54,7 +54,7 @@ declare_args() {
   # application which consumes the Content Service. Useful primarily for
   # developer testing.
   enable_simple_browser_service_in_process =
-      use_aura && (is_debug || dcheck_always_on)
+      (use_aura || is_mac) && (is_debug || dcheck_always_on) && !is_chromecast
   enable_simple_browser_service_out_of_process =
       is_chromeos && (is_debug || dcheck_always_on)
 

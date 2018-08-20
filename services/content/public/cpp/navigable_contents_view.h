@@ -23,10 +23,10 @@ class NavigableContentsImpl;
 
 // NavigableContentsView encapsulates cross-platform manipulation and
 // presentation of a NavigableContents within a native application UI based on
-// either Aura, UIKit, AppKit, or the Android Framework.
+// either Views, UIKit, AppKit, or the Android Framework.
 //
 // TODO(https://crbug.com/855092): Actually support UI frameworks other than
-// Aura.
+// Views UI.
 class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
  public:
   ~NavigableContentsView();
@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
   static void SetClientRunningInServiceProcess();
   static bool IsClientRunningInServiceProcess();
 
-#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#if defined(TOOLKIT_VIEWS)
   views::View* view() const { return view_.get(); }
 #endif
 
@@ -59,15 +59,15 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
       const base::UnguessableToken& token,
       base::OnceCallback<void(NavigableContentsView*)> callback);
 
-#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#if defined(TOOLKIT_VIEWS)
   // This NavigableContents's View. Only initialized if |GetView()| is called,
-  // and only on platforms which support View embedding via Aura.
+  // and only on platforms which support Views UI.
   std::unique_ptr<views::View> view_;
 
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
   views::RemoteViewHost* remote_view_host_ = nullptr;
 #endif
-#endif  // BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#endif  // BUILDFLAG(TOOLKIT_VIEWS)
 
   DISALLOW_COPY_AND_ASSIGN(NavigableContentsView);
 };

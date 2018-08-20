@@ -13,13 +13,10 @@
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/context_menu_params.h"
 
-namespace ui {
-class SimpleMenuModel;
-}
-
-namespace views {
-class MenuRunner;
-}
+#if defined(TOOLKIT_VIEWS)
+#include "ui/base/models/simple_menu_model.h"    // nogncheck
+#include "ui/views/controls/menu/menu_runner.h"  // nogncheck
+#endif
 
 namespace content {
 

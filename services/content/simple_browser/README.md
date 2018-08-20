@@ -7,7 +7,7 @@ integration tests.
 The simple_browser application can run in an isolated sandboxed process on
 platforms which support the UI Service (currently only Chrome OS), or within the
 browser process on platforms which otherwise support NavigableContentsView
-embedding (currently Chrome OS, Linux, and Windows).
+embedding (currently Chrome OS, Linux, Mac, and Windows).
 
 To play around with simple_browser today, run a DCHECK-enabled build of Chrome
 with `--launch-in-process-simple-browser` on any supported platform listed

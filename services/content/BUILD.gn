@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
 import("//services/content/public/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
@@ -38,12 +39,15 @@ source_set("impl") {
     "//services/content/public/mojom",
   ]
 
-  if (enable_navigable_contents_view_aura) {
+  if (toolkit_views) {
     deps += [
-      "//ui/aura",
       "//ui/base",
       "//ui/views",
     ]
+
+    if (use_aura) {
+      deps += [ "//ui/aura" ]
+    }
 
     if (enable_remote_navigable_contents_view) {
       deps += [ "//ui/views/mus/remote_view:remote_view_provider" ]

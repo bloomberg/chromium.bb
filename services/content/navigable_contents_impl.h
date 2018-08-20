@@ -62,7 +62,7 @@ class NavigableContentsImpl : public mojom::NavigableContents {
   std::unique_ptr<views::RemoteViewProvider> remote_view_provider_;
 #endif
 
-#if BUILDFLAG(ENABLE_NAVIGABLE_CONTENTS_VIEW_AURA)
+#if defined(TOOLKIT_VIEWS)
   // Used to support local view embedding in cases where remote embedding is
   // not supported and the client controlling this NavigableContents is running
   // within the same process as the Content Service.
