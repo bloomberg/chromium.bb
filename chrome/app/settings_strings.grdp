@@ -3382,10 +3382,10 @@
       Add another
     </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD_LOCK" desc="Text above a password input field that tells the user they need to submit their password to configure these settings.">
-      To set up screen lock, enter your password
+      Enter your password to configure screen lock
     </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD_LOGIN_LOCK" desc="Text above a password input field that tells the user they need to submit their password to configure these settings.">
-      To set up Smart Lock for sign-in, enter your password
+      Enter your password to configure screen lock and sign-in
     </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_PASSWORD_LABEL" desc="An input box label that tells the user to enter their password in that input box.">
       Password
