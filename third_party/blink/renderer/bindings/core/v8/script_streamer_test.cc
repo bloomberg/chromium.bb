@@ -75,6 +75,12 @@ class ScriptStreamingTest : public testing::Test {
     return pending_script_.Get();
   }
 
+  ScriptSourceCode GetScriptSourceCode() const {
+    ClassicScript* classic_script = GetPendingScript()->GetSource(NullURL());
+    DCHECK(classic_script);
+    return classic_script->GetScriptSourceCode();
+  }
+
   Settings* GetSettings() const {
     return &dummy_page_holder_->GetPage().GetSettings();
   }
@@ -165,11 +171,7 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScript) {
   // has completed its tasks.
   ProcessTasksUntilStreamingComplete();
   EXPECT_TRUE(client->Finished());
-  bool error_occurred = false;
-  ScriptSourceCode source_code = GetPendingScript()
-                                     ->GetSource(NullURL(), error_occurred)
-                                     ->GetScriptSourceCode();
-  EXPECT_FALSE(error_occurred);
+  ScriptSourceCode source_code = GetScriptSourceCode();
   EXPECT_TRUE(source_code.Streamer());
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
@@ -212,11 +214,7 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError) {
   Finish();
   EXPECT_TRUE(client->Finished());
 
-  bool error_occurred = false;
-  ScriptSourceCode source_code = GetPendingScript()
-                                     ->GetSource(NullURL(), error_occurred)
-                                     ->GetScriptSourceCode();
-  EXPECT_FALSE(error_occurred);
+  ScriptSourceCode source_code = GetScriptSourceCode();
   EXPECT_TRUE(source_code.Streamer());
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
@@ -288,11 +286,7 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming) {
   ProcessTasksUntilStreamingComplete();
   EXPECT_TRUE(client->Finished());
 
-  bool error_occurred = false;
-  ScriptSourceCode source_code = GetPendingScript()
-                                     ->GetSource(NullURL(), error_occurred)
-                                     ->GetScriptSourceCode();
-  EXPECT_FALSE(error_occurred);
+  ScriptSourceCode source_code = GetScriptSourceCode();
   // ScriptSourceCode doesn't refer to the streamer, since we have suppressed
   // the streaming and resumed the non-streaming code path for script
   // compilation.
@@ -318,11 +312,7 @@ TEST_F(ScriptStreamingTest, EmptyScripts) {
   // through a background thread.
   EXPECT_TRUE(client->Finished());
 
-  bool error_occurred = false;
-  ScriptSourceCode source_code = GetPendingScript()
-                                     ->GetSource(NullURL(), error_occurred)
-                                     ->GetScriptSourceCode();
-  EXPECT_FALSE(error_occurred);
+  ScriptSourceCode source_code = GetScriptSourceCode();
   EXPECT_FALSE(source_code.Streamer());
 }
 
@@ -347,11 +337,7 @@ TEST_F(ScriptStreamingTest, SmallScripts) {
   // through a background thread.
   EXPECT_TRUE(client->Finished());
 
-  bool error_occurred = false;
-  ScriptSourceCode source_code = GetPendingScript()
-                                     ->GetSource(NullURL(), error_occurred)
-                                     ->GetScriptSourceCode();
-  EXPECT_FALSE(error_occurred);
+  ScriptSourceCode source_code = GetScriptSourceCode();
   EXPECT_FALSE(source_code.Streamer());
 }
 
@@ -379,11 +365,7 @@ TEST_F(ScriptStreamingTest, ScriptsWithSmallFirstChunk) {
 
   ProcessTasksUntilStreamingComplete();
   EXPECT_TRUE(client->Finished());
-  bool error_occurred = false;
-  ScriptSourceCode source_code = GetPendingScript()
-                                     ->GetSource(NullURL(), error_occurred)
-                                     ->GetScriptSourceCode();
-  EXPECT_FALSE(error_occurred);
+  ScriptSourceCode source_code = GetScriptSourceCode();
   EXPECT_TRUE(source_code.Streamer());
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
@@ -423,11 +405,7 @@ TEST_F(ScriptStreamingTest, EncodingChanges) {
 
   ProcessTasksUntilStreamingComplete();
   EXPECT_TRUE(client->Finished());
-  bool error_occurred = false;
-  ScriptSourceCode source_code = GetPendingScript()
-                                     ->GetSource(NullURL(), error_occurred)
-                                     ->GetScriptSourceCode();
-  EXPECT_FALSE(error_occurred);
+  ScriptSourceCode source_code = GetScriptSourceCode();
   EXPECT_TRUE(source_code.Streamer());
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
@@ -468,11 +446,7 @@ TEST_F(ScriptStreamingTest, EncodingFromBOM) {
   Finish();
   ProcessTasksUntilStreamingComplete();
   EXPECT_TRUE(client->Finished());
-  bool error_occurred = false;
-  ScriptSourceCode source_code = GetPendingScript()
-                                     ->GetSource(NullURL(), error_occurred)
-                                     ->GetScriptSourceCode();
-  EXPECT_FALSE(error_occurred);
+  ScriptSourceCode source_code = GetScriptSourceCode();
   EXPECT_TRUE(source_code.Streamer());
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;

@@ -65,10 +65,12 @@ void ModulePendingScript::NotifyModuleTreeLoadFinished() {
   PendingScriptFinished();
 }
 
-Script* ModulePendingScript::GetSource(const KURL& document_url,
-                                       bool& error_occurred) const {
+Script* ModulePendingScript::GetSource(const KURL& document_url) const {
   CHECK(IsReady());
-  error_occurred = ErrorOccurred();
+  if (ErrorOccurred())
+    return nullptr;
+
+  DCHECK(GetModuleScript());
   return GetModuleScript();
 }
 

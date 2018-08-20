@@ -87,8 +87,8 @@ class CORE_EXPORT PendingScript
   virtual void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override { return "PendingScript"; }
 
-  virtual Script* GetSource(const KURL& document_url,
-                            bool& error_occurred) const = 0;
+  // Returns nullptr when "script's script is null", i.e. an error occurred.
+  virtual Script* GetSource(const KURL& document_url) const = 0;
 
   // https://html.spec.whatwg.org/multipage/scripting.html#the-script-is-ready
   virtual bool IsReady() const = 0;
@@ -150,7 +150,6 @@ class CORE_EXPORT PendingScript
  private:
   static void ExecuteScriptBlockInternal(
       Script*,
-      bool error_occurred,
       ScriptElementBase*,
       bool was_canceled,
       bool is_external,
