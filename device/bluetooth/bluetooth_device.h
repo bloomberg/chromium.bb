@@ -428,7 +428,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // ignores the |IsPaired()| value.
   //
   // In most cases |Connect()| should be preferred. This method is only
-  // implemented on ChromeOS and Linux.
+  // implemented on ChromeOS, Linux and Windows 10. On Windows, only pairing
+  // with a pin code is currently supported.
   virtual void Pair(PairingDelegate* pairing_delegate,
                     const base::Closure& callback,
                     const ConnectErrorCallback& error_callback);

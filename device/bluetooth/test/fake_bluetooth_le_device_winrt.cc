@@ -192,6 +192,11 @@ void FakeBluetoothLEDeviceWinrt::SimulateDevicePaired(bool is_paired) {
       Make<FakeDeviceInformationPairingWinrt>(is_paired));
 }
 
+void FakeBluetoothLEDeviceWinrt::SimulatePairingPinCode(std::string pin_code) {
+  device_information_ = Make<FakeDeviceInformationWinrt>(
+      Make<FakeDeviceInformationPairingWinrt>(std::move(pin_code)));
+}
+
 void FakeBluetoothLEDeviceWinrt::SimulateGattConnection() {
   status_ = BluetoothConnectionStatus_Connected;
   connection_status_changed_handler_->Invoke(this, nullptr);

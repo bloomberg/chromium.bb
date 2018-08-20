@@ -25,6 +25,7 @@ namespace device {
 
 class BluetoothAdapterWinrt;
 class BluetoothGattDiscovererWinrt;
+class BluetoothPairingWinrt;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
  public:
@@ -65,6 +66,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
   void Connect(PairingDelegate* pairing_delegate,
                const base::Closure& callback,
                const ConnectErrorCallback& error_callback) override;
+  void Pair(PairingDelegate* pairing_delegate,
+            const base::Closure& callback,
+            const ConnectErrorCallback& error_callback) override;
   void SetPinCode(const std::string& pincode) override;
   void SetPasskey(uint32_t passkey) override;
   void ConfirmPairing() override;
@@ -115,9 +119,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
 
   void OnGattDiscoveryComplete(bool success);
 
+  void OnPairingRequested(
+      ABI::Windows::Devices::Enumeration::IDeviceInformationCustomPairing*
+          custom_pairing,
+      ABI::Windows::Devices::Enumeration::IDevicePairingRequestedEventArgs*
+          event_args);
+
   uint64_t raw_address_;
   std::string address_;
   base::Optional<std::string> local_name_;
+
+  std::unique_ptr<BluetoothPairingWinrt> pairing_;
 
   std::unique_ptr<BluetoothGattDiscovererWinrt> gatt_discoverer_;
 

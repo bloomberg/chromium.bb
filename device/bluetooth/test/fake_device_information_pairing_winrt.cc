@@ -4,6 +4,10 @@
 
 #include "device/bluetooth/test/fake_device_information_pairing_winrt.h"
 
+#include <utility>
+
+#include "device/bluetooth/test/fake_device_information_custom_pairing_winrt.h"
+
 namespace device {
 
 namespace {
@@ -14,12 +18,18 @@ using ABI::Windows::Devices::Enumeration::DeviceUnpairingResult;
 using ABI::Windows::Devices::Enumeration::IDeviceInformationCustomPairing;
 using ABI::Windows::Devices::Enumeration::IDevicePairingSettings;
 using ABI::Windows::Foundation::IAsyncOperation;
+using Microsoft::WRL::Make;
 
 }  // namespace
 
 FakeDeviceInformationPairingWinrt::FakeDeviceInformationPairingWinrt(
     bool is_paired)
     : is_paired_(is_paired) {}
+
+FakeDeviceInformationPairingWinrt::FakeDeviceInformationPairingWinrt(
+    std::string pin)
+    : custom_(Make<FakeDeviceInformationCustomPairingWinrt>(this,
+                                                            std::move(pin))) {}
 
 FakeDeviceInformationPairingWinrt::~FakeDeviceInformationPairingWinrt() =
     default;
@@ -51,7 +61,7 @@ HRESULT FakeDeviceInformationPairingWinrt::get_ProtectionLevel(
 
 HRESULT FakeDeviceInformationPairingWinrt::get_Custom(
     IDeviceInformationCustomPairing** value) {
-  return E_NOTIMPL;
+  return custom_.CopyTo(value);
 }
 
 HRESULT

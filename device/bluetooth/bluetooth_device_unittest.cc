@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
+#include "device/bluetooth/test/test_pairing_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -117,6 +118,145 @@ TEST_P(BluetoothTestWinrtOnly, DeviceIsPaired) {
 
   SimulateDevicePaired(device, false);
   EXPECT_FALSE(device->IsPaired());
+}
+
+// Tests that providing a correct pin code results in a paired device.
+TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeCorrect) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(device->IsPaired());
+  EXPECT_FALSE(device->ExpectingPinCode());
+
+  SimulatePairingPinCode(device, "123456");
+  TestPairingDelegate pairing_delegate;
+  device->Pair(&pairing_delegate, GetCallback(Call::EXPECTED),
+               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, pairing_delegate.call_count_);
+  EXPECT_EQ(1, pairing_delegate.request_pincode_count_);
+  EXPECT_TRUE(device->ExpectingPinCode());
+
+  device->SetPinCode("123456");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(device->IsPaired());
+  EXPECT_FALSE(device->ExpectingPinCode());
+}
+
+// Tests that providing a wrong pin code does not result in a paired device.
+TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeWrong) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(device->IsPaired());
+  EXPECT_FALSE(device->ExpectingPinCode());
+
+  SimulatePairingPinCode(device, "123456");
+  TestPairingDelegate pairing_delegate;
+  device->Pair(&pairing_delegate, GetCallback(Call::NOT_EXPECTED),
+               GetConnectErrorCallback(Call::EXPECTED));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, pairing_delegate.call_count_);
+  EXPECT_EQ(1, pairing_delegate.request_pincode_count_);
+  EXPECT_TRUE(device->ExpectingPinCode());
+
+  device->SetPinCode("000000");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(device->IsPaired());
+  EXPECT_FALSE(device->ExpectingPinCode());
+  EXPECT_EQ(BluetoothDevice::ERROR_FAILED, last_connect_error_code_);
+}
+
+// Tests that rejecting the pairing does not result in a paired device.
+TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeRejectPairing) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(device->IsPaired());
+  EXPECT_FALSE(device->ExpectingPinCode());
+
+  SimulatePairingPinCode(device, "123456");
+  TestPairingDelegate pairing_delegate;
+  device->Pair(&pairing_delegate, GetCallback(Call::NOT_EXPECTED),
+               GetConnectErrorCallback(Call::EXPECTED));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, pairing_delegate.call_count_);
+  EXPECT_EQ(1, pairing_delegate.request_pincode_count_);
+  EXPECT_TRUE(device->ExpectingPinCode());
+
+  device->RejectPairing();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(device->IsPaired());
+  EXPECT_FALSE(device->ExpectingPinCode());
+  EXPECT_EQ(BluetoothDevice::ERROR_AUTH_REJECTED, last_connect_error_code_);
+}
+
+// Tests that cancelling the pairing does not result in a paired device.
+TEST_P(BluetoothTestWinrtOnly, DevicePairRequestPinCodeCancelPairing) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(device->IsPaired());
+  EXPECT_FALSE(device->ExpectingPinCode());
+
+  SimulatePairingPinCode(device, "123456");
+  TestPairingDelegate pairing_delegate;
+  device->Pair(&pairing_delegate, GetCallback(Call::NOT_EXPECTED),
+               GetConnectErrorCallback(Call::EXPECTED));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, pairing_delegate.call_count_);
+  EXPECT_EQ(1, pairing_delegate.request_pincode_count_);
+  EXPECT_TRUE(device->ExpectingPinCode());
+
+  device->CancelPairing();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(device->IsPaired());
+  EXPECT_FALSE(device->ExpectingPinCode());
+  EXPECT_EQ(BluetoothDevice::ERROR_AUTH_CANCELED, last_connect_error_code_);
 }
 #endif
 

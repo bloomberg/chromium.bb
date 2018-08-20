@@ -6,9 +6,11 @@
 #define DEVICE_BLUETOOTH_TEST_FAKE_DEVICE_PAIRING_REQUESTED_EVENT_ARGS_WINRT_H_
 
 #include <windows.devices.enumeration.h>
+#include <wrl/client.h>
 #include <wrl/implements.h>
 
 #include "base/macros.h"
+#include "device/bluetooth/test/fake_device_information_custom_pairing_winrt.h"
 
 namespace device {
 
@@ -19,7 +21,9 @@ class FakeDevicePairingRequestedEventArgsWinrt
           ABI::Windows::Devices::Enumeration::
               IDevicePairingRequestedEventArgs> {
  public:
-  FakeDevicePairingRequestedEventArgsWinrt();
+  explicit FakeDevicePairingRequestedEventArgsWinrt(
+      Microsoft::WRL::ComPtr<FakeDeviceInformationCustomPairingWinrt>
+          custom_pairing);
   ~FakeDevicePairingRequestedEventArgsWinrt() override;
 
   // IDevicePairingRequestedEventArgs:
@@ -33,7 +37,12 @@ class FakeDevicePairingRequestedEventArgsWinrt
   IFACEMETHODIMP GetDeferral(
       ABI::Windows::Foundation::IDeferral** result) override;
 
+  void Complete();
+
  private:
+  Microsoft::WRL::ComPtr<FakeDeviceInformationCustomPairingWinrt>
+      custom_pairing_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeDevicePairingRequestedEventArgsWinrt);
 };
 

@@ -682,6 +682,14 @@ void BluetoothTestWinrt::SimulateDevicePaired(BluetoothDevice* device,
   ble_device->SimulateDevicePaired(is_paired);
 }
 
+void BluetoothTestWinrt::SimulatePairingPinCode(BluetoothDevice* device,
+                                                std::string pin_code) {
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulatePairingPinCode(std::move(pin_code));
+}
+
 void BluetoothTestWinrt::SimulateGattConnection(BluetoothDevice* device) {
   if (!GetParam() || !PlatformSupportsLowEnergy())
     return BluetoothTestWin::SimulateGattConnection(device);

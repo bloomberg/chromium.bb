@@ -123,6 +123,8 @@ class BluetoothTestWinrt : public BluetoothTestWin,
   void InitWithFakeAdapter() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
   void SimulateDevicePaired(BluetoothDevice* device, bool is_paired) override;
+  void SimulatePairingPinCode(BluetoothDevice* device,
+                              std::string pin_code) override;
   void SimulateGattConnection(BluetoothDevice* device) override;
   void SimulateGattConnectionError(
       BluetoothDevice* device,
