@@ -230,7 +230,9 @@ def main():
   # Copy a whitelist of files to the directory we're going to tar up.
   # This supports the same patterns that the fnmatch module understands.
   exe_ext = '.exe' if sys.platform == 'win32' else ''
-  want = ['bin/llvm-symbolizer' + exe_ext,
+  want = ['bin/llvm-pdbutil' + exe_ext,
+          'bin/llvm-symbolizer' + exe_ext,
+          'bin/llvm-undname' + exe_ext,
           'bin/sancov' + exe_ext,
           # Copy built-in headers (lib/clang/3.x.y/include).
           'lib/clang/*/include/*',
@@ -300,7 +302,12 @@ def main():
             os.path.splitext(f)[1] in ['.so', '.a']):
         subprocess.call([EU_STRIP, '-g', dest])
 
-  stripped_binaries = ['clang', 'llvm-symbolizer', 'sancov']
+  stripped_binaries = ['clang',
+                       'llvm-pdbutil',
+                       'llvm-symbolizer',
+                       'llvm-undname',
+                       'sancov',
+                       ]
   if sys.platform.startswith('linux'):
     stripped_binaries.append('lld')
     stripped_binaries.append('llvm-ar')
