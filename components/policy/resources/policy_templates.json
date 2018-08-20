@@ -12668,7 +12668,7 @@
         'per_profile': True,
       },
       'supported_on': ['chrome_os:70-'],
-      'caption': '''Contorls Network File Shares for ChromeOS availibility''',
+      'caption': '''Contorls Network File Shares for ChromeOS availability''',
       'example_value': True,
       'desc': '''This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> is allowed for a user.
 
