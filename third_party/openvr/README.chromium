@@ -18,6 +18,8 @@ of JSON_FAIL_MESSAGE because "cannot use 'throw' with exceptions disabled".
 openvr.h has been modified to remove dllimport/dllexport when building a
 non-component build so this can be built as a static library.
 Redefined VRLog to avoid logspam on startup.
+json.h has been modified to convert a std::swap overload to Json::swap, so that
+we can avoid -Wmicrosoft-exception-spec warning.
 
 Copy the correct files with these commands:
 copy %openvrsdk%\README.md %chromium%\src\third_party\openvr\src
