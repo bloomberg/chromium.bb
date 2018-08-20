@@ -15,6 +15,7 @@
 #include "ash/app_list/presenter/app_list_presenter_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -86,6 +87,12 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   bool is_animating_to_close() const { return is_animating_to_close_; }
 
+  // Schedules animation for app list when overview mode starts or ends.
+  void ScheduleOverviewModeAnimation(bool start);
+
+  // Immediately start animation for app list when overview mode starts or ends.
+  void StartOverviewModeAnimation(bool start);
+
  private:
   // Sets the app list view and attempts to show it.
   void SetView(AppListView* view);
@@ -155,6 +162,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // True if app list is running close animation.
   bool is_animating_to_close_ = false;
+
+  // The timer used to delay the start time of an animation.
+  base::OneShotTimer start_animation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterImpl);
 };

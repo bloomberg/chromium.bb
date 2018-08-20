@@ -21,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -29,6 +30,18 @@
 
 namespace app_list {
 namespace {
+
+// The y offset for app list animation when overview mode toggles.
+constexpr int kOverViewAnimationYOffset = 100;
+
+// The delay in milliseconds for app list animation when overview mode ends
+constexpr base::TimeDelta kOverViewEndAnimationDelay =
+    base::TimeDelta::FromMilliseconds(250);
+
+// The duration in milliseconds for app list animation when overview mode
+// toggles.
+constexpr base::TimeDelta kOverViewAnimationDuration =
+    base::TimeDelta::FromMilliseconds(250);
 
 inline ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
@@ -200,6 +213,69 @@ void AppListPresenterImpl::EndDragFromShelf(
 void AppListPresenterImpl::ProcessMouseWheelOffset(int y_scroll_offset) {
   if (view_)
     view_->HandleScroll(y_scroll_offset, ui::ET_MOUSEWHEEL);
+}
+
+void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start) {
+  if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() ==
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {
+    // Start animation immediately in test.
+    StartOverviewModeAnimation(start);
+    return;
+  }
+
+  start_animation_timer_.Stop();
+  start_animation_timer_.Start(
+      FROM_HERE, start ? base::TimeDelta() : kOverViewEndAnimationDelay,
+      base::BindOnce(&AppListPresenterImpl::StartOverviewModeAnimation,
+                     base::Unretained(this), start));
+}
+
+void AppListPresenterImpl::StartOverviewModeAnimation(bool start) {
+  if (!GetTargetVisibility())
+    return;
+
+  // Calculate the source and target parameters used in the animation.
+  gfx::Transform transform;
+  transform.Translate(0, kOverViewAnimationYOffset);
+  const gfx::Transform source_transform = start ? gfx::Transform() : transform;
+  const gfx::Transform target_transform = start ? transform : gfx::Transform();
+  const float source_opacity = start ? 1.0f : 0.0f;
+  const float target_opacity = start ? 0.0f : 1.0f;
+
+  // Start animation to change the opacity and y position of expand arrow,
+  // suggestion chips and apps grid.
+  AppListMainView* app_list_main_view = view_->app_list_main_view();
+  ui::Layer* layer = app_list_main_view->layer();
+  layer->GetAnimator()->StopAnimating();
+  layer->SetTransform(source_transform);
+  layer->SetOpacity(source_opacity);
+
+  {
+    ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+    animation.SetTransitionDuration(kOverViewAnimationDuration);
+    animation.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+    animation.SetAnimationMetricsReporter(
+        state_animation_metrics_reporter_.get());
+    layer->SetTransform(target_transform);
+    layer->SetOpacity(target_opacity);
+  }
+
+  // Start animation to change the opacity and y position of search box.
+  views::Widget* search_box_widget = view_->search_box_widget();
+  ui::Layer* search_box_layer = search_box_widget->GetNativeView()->layer();
+  search_box_layer->GetAnimator()->StopAnimating();
+  search_box_layer->SetTransform(source_transform);
+  search_box_layer->SetOpacity(source_opacity);
+
+  {
+    ui::ScopedLayerAnimationSettings animation(search_box_layer->GetAnimator());
+    animation.SetTransitionDuration(kOverViewAnimationDuration);
+    animation.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+    animation.SetAnimationMetricsReporter(
+        state_animation_metrics_reporter_.get());
+    search_box_layer->SetTransform(target_transform);
+    search_box_layer->SetOpacity(target_opacity);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

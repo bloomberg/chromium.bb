@@ -59,8 +59,6 @@ ASH_PUBLIC_EXPORT extern const int kAppsGridPadding;
 ASH_PUBLIC_EXPORT extern const int kAppsGridLeftRightPadding;
 ASH_PUBLIC_EXPORT extern const int kBottomSeparatorLeftRightPadding;
 ASH_PUBLIC_EXPORT extern const int kBottomSeparatorBottomPadding;
-ASH_PUBLIC_EXPORT extern const int kSearchBoxPadding;
-ASH_PUBLIC_EXPORT extern const int kSearchBoxTopPadding;
 ASH_PUBLIC_EXPORT extern const int kSearchBoxPeekingBottomPadding;
 ASH_PUBLIC_EXPORT extern const int kSearchBoxBottomPadding;
 
