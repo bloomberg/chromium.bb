@@ -27,7 +27,6 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_result.h"
-#include "net/cert/crl_set.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
@@ -184,7 +183,6 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
   TrialVerificationJob(const net::CertVerifier::Config& config,
                        const net::CertVerifier::RequestParams& params,
                        const net::NetLogWithSource& source_net_log,
-                       scoped_refptr<net::CRLSet> crl_set,
                        TrialComparisonCertVerifier* cert_verifier,
                        int primary_error,
                        const net::CertVerifyResult& primary_result,
@@ -195,7 +193,6 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
         net_log_(net::NetLogWithSource::Make(
             source_net_log.net_log(),
             net::NetLogSourceType::TRIAL_CERT_VERIFIER_JOB)),
-        crl_set_(std::move(crl_set)),
         profile_id_(profile_id),
         cert_verifier_(cert_verifier),
         primary_error_(primary_error),
@@ -217,7 +214,7 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
     // Unretained is safe because trial_request_ will cancel the callback on
     // destruction.
     int rv = cert_verifier_->trial_verifier()->Verify(
-        params_, crl_set_.get(), &trial_result_,
+        params_, &trial_result_,
         base::BindOnce(&TrialVerificationJob::OnJobCompleted,
                        base::Unretained(this)),
         &trial_request_, net_log_);
@@ -304,7 +301,7 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
       // enabled, see if it then returns REVOKED.
 
       int rv = cert_verifier_->revocation_trial_verifier()->Verify(
-          params_, crl_set_.get(), &reverification_result_,
+          params_, &reverification_result_,
           base::BindOnce(
               &TrialVerificationJob::OnMacRevcheckingReverificationJobCompleted,
               base::Unretained(this)),
@@ -332,7 +329,7 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
           params_.ocsp_response(), params_.additional_trust_anchors());
 
       int rv = cert_verifier_->primary_reverifier()->Verify(
-          reverification_params, crl_set_.get(), &reverification_result_,
+          reverification_params, &reverification_result_,
           base::BindOnce(&TrialVerificationJob::
                              OnPrimaryReverifiyWithSecondaryChainCompleted,
                          base::Unretained(this)),
@@ -429,7 +426,6 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
   bool config_changed_;
   const net::CertVerifier::RequestParams params_;
   const net::NetLogWithSource net_log_;
-  scoped_refptr<net::CRLSet> crl_set_;
   void* profile_id_;
   TrialComparisonCertVerifier* cert_verifier_;  // Non-owned.
 
@@ -498,15 +494,14 @@ void TrialComparisonCertVerifier::SetFakeOfficialBuildForTesting() {
 }
 
 int TrialComparisonCertVerifier::Verify(const RequestParams& params,
-                                        net::CRLSet* crl_set,
                                         net::CertVerifyResult* verify_result,
                                         net::CompletionOnceCallback callback,
                                         std::unique_ptr<Request>* out_req,
                                         const net::NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  return primary_verifier_->Verify(params, crl_set, verify_result,
-                                   std::move(callback), out_req, net_log);
+  return primary_verifier_->Verify(params, verify_result, std::move(callback),
+                                   out_req, net_log);
 }
 
 void TrialComparisonCertVerifier::SetConfig(const Config& config) {
@@ -530,7 +525,6 @@ void TrialComparisonCertVerifier::SetConfig(const Config& config) {
 
 void TrialComparisonCertVerifier::OnPrimaryVerifierComplete(
     const RequestParams& params,
-    scoped_refptr<net::CRLSet> crl_set,
     const net::NetLogWithSource& net_log,
     int primary_error,
     const net::CertVerifyResult& primary_result,
@@ -552,14 +546,13 @@ void TrialComparisonCertVerifier::OnPrimaryVerifierComplete(
           .get(),
       FROM_HERE, base::BindOnce(CheckTrialEligibility, profile_id_),
       base::BindOnce(&TrialComparisonCertVerifier::MaybeDoTrialVerification,
-                     weak_ptr_factory_.GetWeakPtr(), params, std::move(crl_set),
-                     net_log, primary_error, primary_result, primary_latency,
+                     weak_ptr_factory_.GetWeakPtr(), params, net_log,
+                     primary_error, primary_result, primary_latency,
                      is_first_job, config_id_, profile_id_));
 }
 
 void TrialComparisonCertVerifier::OnTrialVerifierComplete(
     const RequestParams& params,
-    scoped_refptr<net::CRLSet> crl_set,
     const net::NetLogWithSource& net_log,
     int trial_error,
     const net::CertVerifyResult& trial_result,
@@ -580,7 +573,6 @@ void TrialComparisonCertVerifier::OnTrialVerifierComplete(
 
 void TrialComparisonCertVerifier::MaybeDoTrialVerification(
     const RequestParams& params,
-    scoped_refptr<net::CRLSet> crl_set,
     const net::NetLogWithSource& net_log,
     int primary_error,
     const net::CertVerifyResult& primary_result,
@@ -611,9 +603,9 @@ void TrialComparisonCertVerifier::MaybeDoTrialVerification(
   }
 
   std::unique_ptr<TrialVerificationJob> job =
-      std::make_unique<TrialVerificationJob>(
-          config_, params, net_log, std::move(crl_set), this, primary_error,
-          primary_result, profile_id);
+      std::make_unique<TrialVerificationJob>(config_, params, net_log, this,
+                                             primary_error, primary_result,
+                                             profile_id);
   TrialVerificationJob* job_ptr = job.get();
   jobs_.insert(std::move(job));
   job_ptr->Start();

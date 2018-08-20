@@ -6,6 +6,7 @@ module network.mojom;
 
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
@@ -269,10 +270,17 @@ interface NetworkService {
   // Gets the accumulated network usage since the start/restart of the service.
   GetTotalNetworkUsages() => (array<NetworkUsage> total_network_usages);
 
-  // Update Signed Tree Heads (STH) used in the handling of Certificate
+  // Updates Signed Tree Heads (STH) used in the handling of Certificate
   // Transparency. Broadcast to each NetworkContext using the NetworkService.
   // NetworkContextes ignore STHs from unrecognized logs.
   UpdateSignedTreeHead(SignedTreeHead signed_tree_head);
+
+  // Updates the CRLSet used in the verification of certificates. CRLSets that
+  // cannot be parsed using net::CRLSet::Parse will be ignored, as will older
+  // CRLSets (where older is determined by the sequence number). All Network
+  // Contexts created by the Network Service, including those created after
+  // this call, will use the same CRLSet.
+  UpdateCRLSet(mojo_base.mojom.ReadOnlyBuffer crl_set);
 
   // Sets up OSCrypt for the network service process. Must be called before
   // encrypted cookies can be read or set.

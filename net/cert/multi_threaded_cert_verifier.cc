@@ -242,8 +242,7 @@ class CertVerifierJob {
   // has completed, it will call OnJobCompleted() on the origin thread.
   void Start(const scoped_refptr<CertVerifyProc>& verify_proc,
              const CertVerifier::Config& config,
-             uint32_t config_id,
-             const scoped_refptr<CRLSet>& crl_set) {
+             uint32_t config_id) {
     int flags = GetFlagsForConfig(config);
     if (key_.flags() & CertVerifier::VERIFY_DISABLE_NETWORK_FETCHES) {
       flags &= ~CertVerifyProc::VERIFY_REV_CHECKING_ENABLED;
@@ -253,10 +252,10 @@ class CertVerifierJob {
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&DoVerifyOnWorkerThread, verify_proc, key_.certificate(),
-                       key_.hostname(), key_.ocsp_response(), flags, crl_set,
-                       key_.additional_trust_anchors()),
+                       key_.hostname(), key_.ocsp_response(), flags,
+                       config.crl_set, key_.additional_trust_anchors()),
         base::BindOnce(&CertVerifierJob::OnJobCompleted,
-                       weak_ptr_factory_.GetWeakPtr(), config_id, crl_set));
+                       weak_ptr_factory_.GetWeakPtr(), config_id));
   }
 
   ~CertVerifierJob() {
@@ -314,7 +313,6 @@ class CertVerifierJob {
   }
 
   void OnJobCompleted(uint32_t config_id,
-                      scoped_refptr<CRLSet> crl_set,
                       std::unique_ptr<ResultHelper> verify_result) {
     TRACE_EVENT0(kNetTracingCategory, "CertVerifierJob::OnJobCompleted");
     std::unique_ptr<CertVerifierJob> keep_alive =
@@ -324,9 +322,8 @@ class CertVerifierJob {
     if (cert_verifier_->verify_complete_callback_ &&
         config_id == cert_verifier_->config_id_) {
       cert_verifier_->verify_complete_callback_.Run(
-          key_, std::move(crl_set), net_log_, verify_result->error,
-          verify_result->result, base::TimeTicks::Now() - start_time_,
-          is_first_job_);
+          key_, net_log_, verify_result->error, verify_result->result,
+          base::TimeTicks::Now() - start_time_, is_first_job_);
     }
     cert_verifier_ = nullptr;
 
@@ -374,7 +371,6 @@ MultiThreadedCertVerifier::CreateForDualVerificationTrial(
 }
 
 int MultiThreadedCertVerifier::Verify(const RequestParams& params,
-                                      CRLSet* crl_set,
                                       CertVerifyResult* verify_result,
                                       CompletionOnceCallback callback,
                                       std::unique_ptr<Request>* out_req,
@@ -399,7 +395,7 @@ int MultiThreadedCertVerifier::Verify(const RequestParams& params,
     std::unique_ptr<CertVerifierJob> new_job =
         std::make_unique<CertVerifierJob>(params, net_log.net_log(), this);
 
-    new_job->Start(verify_proc_, config_, config_id_, crl_set);
+    new_job->Start(verify_proc_, config_, config_id_);
 
     job = new_job.get();
     joinable_[job] = std::move(new_job);

@@ -27,7 +27,14 @@ class NetLogWithSource;
 // CertVerifiers can handle multiple requests at a time.
 class NET_EXPORT CertVerifier {
  public:
-  struct Config {
+  struct NET_EXPORT Config {
+    Config();
+    Config(const Config&);
+    Config(Config&&);
+    ~Config();
+    Config& operator=(const Config&);
+    Config& operator=(Config&&);
+
     // Enable online revocation checking via CRLs and OCSP for the certificate
     // chain. Note that revocation checking is soft-fail.
     bool enable_rev_checking = false;
@@ -45,6 +52,12 @@ class NET_EXPORT CertVerifier {
     // Disable enforcement of the policies described at
     // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
     bool disable_symantec_enforcement = false;
+
+    // Provides an optional CRLSet structure that can be used to avoid
+    // revocation checks over the network. CRLSets can be used to add
+    // additional certificates to be blacklisted beyond the internal blacklist,
+    // whether leaves or intermediates.
+    scoped_refptr<CRLSet> crl_set;
   };
 
   class Request {
@@ -138,9 +151,6 @@ class NET_EXPORT CertVerifier {
   // |verify_result->cert_status|, and the error code for the most serious
   // error is returned.
   //
-  // |crl_set| points to an optional CRLSet structure which can be used to
-  // avoid revocation checks over the network.
-  //
   // |callback| must not be null.  ERR_IO_PENDING is returned if the operation
   // could not be completed synchronously, in which case the result code will
   // be passed to the callback when available.
@@ -153,7 +163,6 @@ class NET_EXPORT CertVerifier {
   // nullptr. However it is not guaranteed that all implementations will reset
   // it in this case.
   virtual int Verify(const RequestParams& params,
-                     CRLSet* crl_set,
                      CertVerifyResult* verify_result,
                      CompletionOnceCallback callback,
                      std::unique_ptr<Request>* out_req,
@@ -177,6 +186,9 @@ class NET_EXPORT CertVerifier {
   static std::unique_ptr<CertVerifier> CreateDefault();
 };
 
+// Overloads for comparing two configurations. Note, comparison is shallow -
+// that is, two scoped_refptr<CRLSet>s are equal iff they point to the same
+// object.
 NET_EXPORT bool operator==(const CertVerifier::Config& lhs,
                            const CertVerifier::Config& rhs);
 NET_EXPORT bool operator!=(const CertVerifier::Config& lhs,

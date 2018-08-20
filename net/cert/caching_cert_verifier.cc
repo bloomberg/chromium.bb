@@ -35,7 +35,6 @@ CachingCertVerifier::~CachingCertVerifier() {
 }
 
 int CachingCertVerifier::Verify(const CertVerifier::RequestParams& params,
-                                CRLSet* crl_set,
                                 CertVerifyResult* verify_result,
                                 CompletionOnceCallback callback,
                                 std::unique_ptr<Request>* out_req,
@@ -56,7 +55,7 @@ int CachingCertVerifier::Verify(const CertVerifier::RequestParams& params,
   CompletionOnceCallback caching_callback = base::BindOnce(
       &CachingCertVerifier::OnRequestFinished, base::Unretained(this),
       config_id_, params, start_time, std::move(callback), verify_result);
-  int result = verifier_->Verify(params, crl_set, verify_result,
+  int result = verifier_->Verify(params, verify_result,
                                  std::move(caching_callback), out_req, net_log);
   if (result != ERR_IO_PENDING) {
     // Synchronous completion; add directly to cache.

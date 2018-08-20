@@ -110,17 +110,15 @@ class GMockCertVerifier : public net::CertVerifier {
  public:
   // net::CompletionOnceCallback is move-only, which GMock does not support.
   int Verify(const net::CertVerifier::RequestParams& params,
-             net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              net::CompletionOnceCallback callback,
              std::unique_ptr<net::CertVerifier::Request>* out_req,
              const net::NetLogWithSource& net_log) override {
-    return VerifyImpl(params, crl_set, verify_result, out_req, net_log);
+    return VerifyImpl(params, verify_result, out_req, net_log);
   }
 
-  MOCK_METHOD5(VerifyImpl,
+  MOCK_METHOD4(VerifyImpl,
                int(const net::CertVerifier::RequestParams& params,
-                   net::CRLSet* crl_set,
                    net::CertVerifyResult* verify_result,
                    std::unique_ptr<net::CertVerifier::Request>* out_req,
                    const net::NetLogWithSource& net_log));
@@ -710,10 +708,9 @@ TEST_P(SignedExchangeHandlerTest, CertVerifierParams) {
                          CertEqualsIncludingChain(original_cert)),
                 Property(&net::CertVerifier::RequestParams::hostname,
                          "test.example.org")),
-          _ /* crl_set */, _ /* verify_result */, _ /* out_req */,
-          _ /* net_log */
+          _ /* verify_result */, _ /* out_req */, _ /* net_log */
           ))
-      .WillOnce(DoAll(SetArgPointee<2>(fake_result), Return(net::OK)));
+      .WillOnce(DoAll(SetArgPointee<1>(fake_result), Return(net::OK)));
   SetCertVerifier(std::move(gmock_cert_verifier));
 
   std::string contents = GetTestFileContents("test.example.org_test.sxg");

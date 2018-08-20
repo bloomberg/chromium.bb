@@ -30,6 +30,7 @@
 #include "net/log/net_log_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/network/crl_set_distributor.h"
 #include "services/network/mojo_net_log.h"
 #include "services/network/network_context.h"
 #include "services/network/network_usage_accumulator.h"
@@ -184,6 +185,7 @@ NetworkService::NetworkService(
   network_usage_accumulator_ = std::make_unique<NetworkUsageAccumulator>();
   sth_distributor_ =
       std::make_unique<certificate_transparency::STHDistributor>();
+  crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
 }
 
 NetworkService::~NetworkService() {
@@ -407,6 +409,10 @@ void NetworkService::GetTotalNetworkUsages(
 
 void NetworkService::UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) {
   sth_distributor_->NewSTHObserved(sth);
+}
+
+void NetworkService::UpdateCRLSet(base::span<const uint8_t> crl_set) {
+  crl_set_distributor_->OnNewCRLSet(crl_set);
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

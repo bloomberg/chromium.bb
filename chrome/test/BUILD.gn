@@ -2800,6 +2800,14 @@ test("unit_tests") {
     ]
   }
 
+  if (!is_android && !is_ios) {
+    # CRLSets are not supported on Android or iOS, but available on all other
+    # platforms.
+    sources += [
+      "../browser/component_updater/crl_set_component_installer_unittest.cc",
+    ]
+  }
+
   configs += [ "//build/config:precompiled_headers" ]
 
   data_deps = [

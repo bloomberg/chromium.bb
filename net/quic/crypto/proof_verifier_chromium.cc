@@ -23,7 +23,6 @@
 #include "net/cert/ct_verifier.h"
 #include "net/cert/x509_util.h"
 #include "net/http/transport_security_state.h"
-#include "net/ssl/ssl_config_service.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 
 using base::StringPrintf;
@@ -371,7 +370,7 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
   return verifier_->Verify(
       CertVerifier::RequestParams(cert_, hostname_, cert_verify_flags_,
                                   std::string(), CertificateList()),
-      SSLConfigService::GetCRLSet().get(), &verify_details_->cert_verify_result,
+      &verify_details_->cert_verify_result,
       base::Bind(&ProofVerifierChromium::Job::OnIOComplete,
                  base::Unretained(this)),
       &cert_verifier_request_, net_log_);

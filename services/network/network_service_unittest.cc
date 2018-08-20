@@ -5,6 +5,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/span.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/optional.h"
@@ -23,6 +25,7 @@
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/network_context.h"
@@ -895,6 +898,200 @@ TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
   client()->RunUntilComplete();
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
 }
+
+// CRLSets are not supported on iOS and Android system verifiers.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+
+// Verifies CRLSets take effect if configured on the service.
+TEST_F(NetworkServiceTestWithService, CRLSetIsApplied) {
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  test_server.AddDefaultHandlers(base::FilePath(kServicesTestData));
+  ASSERT_TRUE(test_server.Start());
+
+  CreateNetworkContext();
+
+  uint32_t options = mojom::kURLLoadOptionSendSSLInfoWithResponse |
+                     mojom::kURLLoadOptionSendSSLInfoForCertificateError;
+  // Make sure the test server loads fine with no CRLSet.
+  LoadURL(test_server.GetURL("/echo"), options);
+  ASSERT_EQ(net::OK, client()->completion_status().error_code);
+
+  // Send a CRLSet that blocks the leaf cert.
+  std::string crl_set_bytes;
+  EXPECT_TRUE(base::ReadFileToString(
+      net::GetTestCertsDirectory().AppendASCII("crlset_by_leaf_spki.raw"),
+      &crl_set_bytes));
+
+  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
+  network_service_.FlushForTesting();
+
+  // Flush all connections in the context, to force a new connection. A new
+  // verification should be attempted, due to the configuration having
+  // changed, thus forcing the CRLSet to be checked.
+  base::RunLoop run_loop;
+  context()->CloseAllConnections(run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Make sure the connection fails, due to the certificate being revoked.
+  LoadURL(test_server.GetURL("/echo"), options);
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+            client()->completion_status().error_code);
+  ASSERT_TRUE(client()->completion_status().ssl_info.has_value());
+  EXPECT_TRUE(client()->completion_status().ssl_info->cert_status &
+              net::CERT_STATUS_REVOKED);
+}
+
+// Verifies CRLSets configured before creating a new network context are
+// applied to that network context.
+TEST_F(NetworkServiceTestWithService, CRLSetIsPassedToNewContexts) {
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  test_server.AddDefaultHandlers(base::FilePath(kServicesTestData));
+  ASSERT_TRUE(test_server.Start());
+
+  // Send a CRLSet that blocks the leaf cert, even while no NetworkContexts
+  // exist.
+  std::string crl_set_bytes;
+  EXPECT_TRUE(base::ReadFileToString(
+      net::GetTestCertsDirectory().AppendASCII("crlset_by_leaf_spki.raw"),
+      &crl_set_bytes));
+
+  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
+  network_service_.FlushForTesting();
+
+  // Configure a new NetworkContext.
+  CreateNetworkContext();
+
+  uint32_t options = mojom::kURLLoadOptionSendSSLInfoWithResponse |
+                     mojom::kURLLoadOptionSendSSLInfoForCertificateError;
+  // Make sure the connection fails, due to the certificate being revoked.
+  LoadURL(test_server.GetURL("/echo"), options);
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+            client()->completion_status().error_code);
+  ASSERT_TRUE(client()->completion_status().ssl_info.has_value());
+  EXPECT_TRUE(client()->completion_status().ssl_info->cert_status &
+              net::CERT_STATUS_REVOKED);
+}
+
+// Verifies newer CRLSets (by sequence number) are applied.
+TEST_F(NetworkServiceTestWithService, CRLSetIsUpdatedIfNewer) {
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  test_server.AddDefaultHandlers(base::FilePath(kServicesTestData));
+  ASSERT_TRUE(test_server.Start());
+
+  // Send a CRLSet that only allows the root cert if it matches a known SPKI
+  // hash (that matches the test server chain)
+  std::string crl_set_bytes;
+  ASSERT_TRUE(base::ReadFileToString(
+      net::GetTestCertsDirectory().AppendASCII("crlset_by_root_subject.raw"),
+      &crl_set_bytes));
+
+  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
+  network_service_.FlushForTesting();
+
+  CreateNetworkContext();
+
+  uint32_t options = mojom::kURLLoadOptionSendSSLInfoWithResponse |
+                     mojom::kURLLoadOptionSendSSLInfoForCertificateError;
+  // Make sure the connection loads, due to the root being whitelisted.
+  LoadURL(test_server.GetURL("/echo"), options);
+  ASSERT_EQ(net::OK, client()->completion_status().error_code);
+
+  // Send a new CRLSet that removes trust in the root.
+  ASSERT_TRUE(base::ReadFileToString(net::GetTestCertsDirectory().AppendASCII(
+                                         "crlset_by_root_subject_no_spki.raw"),
+                                     &crl_set_bytes));
+
+  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
+  network_service_.FlushForTesting();
+
+  // Flush all connections in the context, to force a new connection. A new
+  // verification should be attempted, due to the configuration having
+  // changed, thus forcing the CRLSet to be checked.
+  base::RunLoop run_loop;
+  context()->CloseAllConnections(run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Make sure the connection fails, due to the certificate being revoked.
+  LoadURL(test_server.GetURL("/echo"), options);
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+            client()->completion_status().error_code);
+  ASSERT_TRUE(client()->completion_status().ssl_info.has_value());
+  EXPECT_TRUE(client()->completion_status().ssl_info->cert_status &
+              net::CERT_STATUS_REVOKED);
+}
+
+// Verifies that attempting to send an older CRLSet (by sequence number)
+// does not apply to existing or new contexts.
+TEST_F(NetworkServiceTestWithService, CRLSetDoesNotDowngrade) {
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  test_server.AddDefaultHandlers(base::FilePath(kServicesTestData));
+  ASSERT_TRUE(test_server.Start());
+
+  // Send a CRLSet that blocks the root certificate by subject name.
+  std::string crl_set_bytes;
+  ASSERT_TRUE(base::ReadFileToString(net::GetTestCertsDirectory().AppendASCII(
+                                         "crlset_by_root_subject_no_spki.raw"),
+                                     &crl_set_bytes));
+
+  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
+  network_service_.FlushForTesting();
+
+  CreateNetworkContext();
+
+  uint32_t options = mojom::kURLLoadOptionSendSSLInfoWithResponse |
+                     mojom::kURLLoadOptionSendSSLInfoForCertificateError;
+  // Make sure the connection fails, due to the certificate being revoked.
+  LoadURL(test_server.GetURL("/echo"), options);
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+            client()->completion_status().error_code);
+  ASSERT_TRUE(client()->completion_status().ssl_info.has_value());
+  EXPECT_TRUE(client()->completion_status().ssl_info->cert_status &
+              net::CERT_STATUS_REVOKED);
+
+  // Attempt to configure an older CRLSet that allowed trust in the root.
+  ASSERT_TRUE(base::ReadFileToString(
+      net::GetTestCertsDirectory().AppendASCII("crlset_by_root_subject.raw"),
+      &crl_set_bytes));
+
+  service()->UpdateCRLSet(base::as_bytes(base::make_span(crl_set_bytes)));
+  network_service_.FlushForTesting();
+
+  // Flush all connections in the context, to force a new connection. A new
+  // verification should be attempted, due to the configuration having
+  // changed, thus forcing the CRLSet to be checked.
+  base::RunLoop run_loop;
+  context()->CloseAllConnections(run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Make sure the connection still fails, due to the newer CRLSet still
+  // applying.
+  LoadURL(test_server.GetURL("/echo"), options);
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+            client()->completion_status().error_code);
+  ASSERT_TRUE(client()->completion_status().ssl_info.has_value());
+  EXPECT_TRUE(client()->completion_status().ssl_info->cert_status &
+              net::CERT_STATUS_REVOKED);
+
+  // Create a new NetworkContext and ensure the latest CRLSet is still
+  // applied.
+  network_context_.reset();
+  CreateNetworkContext();
+
+  // The newer CRLSet that blocks the connection should still apply, even to
+  // new NetworkContexts.
+  LoadURL(test_server.GetURL("/echo"), options);
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+            client()->completion_status().error_code);
+  ASSERT_TRUE(client()->completion_status().ssl_info.has_value());
+  EXPECT_TRUE(client()->completion_status().ssl_info->cert_status &
+              net::CERT_STATUS_REVOKED);
+}
+
+#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
 
 // The SpawnedTestServer does not work on iOS.
 #if !defined(OS_IOS)

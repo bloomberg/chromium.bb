@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -454,6 +455,9 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   chrome::GetDefaultUserDataDirectory(&config->user_data_path);
   content::GetNetworkService()->SetCryptConfig(std::move(config));
 #endif
+
+  // Asynchronously reapply the most recently received CRLSet (if any).
+  component_updater::CRLSetPolicy::ReconfigureAfterNetworkRestart();
 }
 
 void SystemNetworkContextManager::DisableQuic() {

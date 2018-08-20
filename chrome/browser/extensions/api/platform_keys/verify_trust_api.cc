@@ -18,7 +18,6 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log_with_source.h"
-#include "net/ssl/ssl_config_service.h"
 
 namespace extensions {
 
@@ -200,8 +199,7 @@ void VerifyTrustAPI::IOPart::Verify(std::unique_ptr<Params> params,
       net::CertVerifier::RequestParams(std::move(cert_chain), details.hostname,
                                        flags, ocsp_response,
                                        net::CertificateList()),
-      net::SSLConfigService::GetCRLSet().get(), verify_result_ptr,
-      bound_callback, &request_state->request, *net_log);
+      verify_result_ptr, bound_callback, &request_state->request, *net_log);
 
   if (return_value != net::ERR_IO_PENDING) {
     bound_callback.Run(return_value);

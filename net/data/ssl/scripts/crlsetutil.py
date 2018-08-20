@@ -14,6 +14,13 @@ The input is taken on stdin and is a dict with the following keys:
       a filename containing a PEM format certificate, and the ints are the
       serial numbers. The listed serial numbers will be blocked when issued by
       the given certificate.
+  - LimitedSubjects: A dict of string to an array of strings, where the key is
+      a filename containing a PEM format certificate, and the strings are the
+      filenames of PEM format certificates. Certificates that share a Subject
+      with the key will be restricted to the set of SPKIs extracted from the
+      files in the values.
+  - Sequence: An optional integer sequence number to use for the CRLSet. If
+      not present, defaults to 0.
 
 For example:
 
@@ -21,7 +28,14 @@ For example:
   "BlockedBySPKI": ["/tmp/blocked-certificate"],
   "BlockedByHash": {
     "/tmp/intermediate-certificate": [1, 2, 3]
-  }
+  },
+  "LimitedSubjects": {
+    "/tmp/limited-certificate": [
+        "/tmp/limited-certificate",
+        "/tmp/limited-certificate2"
+    ]
+  },
+  "Sequence": 23
 }
 """
 
@@ -222,7 +236,7 @@ def main():
   header_json = {
       'Version': 0,
       'ContentType': 'CRLSet',
-      'Sequence': 0,
+      'Sequence': int(config.get("Sequence", 0)),
       'DeltaFrom': 0,
       'NumParents': len(parents),
       'BlockedSPKIs': blocked_spkis,
