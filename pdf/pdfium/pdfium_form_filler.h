@@ -91,6 +91,9 @@ class PDFiumFormFiller : public FPDF_FORMFILLINFO, public IPDF_JSPLATFORM {
   static int Form_GetPlatform(FPDF_FORMFILLINFO* param,
                               void* platform,
                               int length);
+  static void Form_PageEvent(FPDF_FORMFILLINFO* param,
+                             int page_count,
+                             unsigned long event_type);
   static FPDF_BOOL Form_PopupMenu(FPDF_FORMFILLINFO* param,
                                   FPDF_PAGE page,
                                   FPDF_WIDGET widget,

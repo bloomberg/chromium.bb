@@ -2606,22 +2606,24 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   pp::Size old_document_size = document_size_;
   document_size_ = pp::Size();
   std::vector<pp::Rect> page_rects;
-  int page_count = FPDF_GetPageCount(doc());
+  size_t new_page_count = FPDF_GetPageCount(doc());
+
   bool doc_complete = doc_loader_->IsDocumentComplete();
   bool is_linear =
       FPDFAvail_IsLinearized(fpdf_availability()) == PDF_LINEARIZED;
-  for (int i = 0; i < page_count; ++i) {
+  for (size_t i = 0; i < new_page_count; ++i) {
     if (i != 0) {
       // Add space for horizontal separator.
       document_size_.Enlarge(0, kPageSeparatorThickness);
     }
 
-    // Get page availability. If |reload| == true, then the document has been
-    // constructed already. Get page availability flag from already existing
-    // PDFiumPage class.
-    // If |reload| == false, then the document may not be fully loaded yet.
+    // Get page availability. If |reload| == true and the page is not new,
+    // then the page has been constructed already. Get page availability flag
+    // from already existing PDFiumPage object.
+    // If |reload| == false or the page is new, then the page may not be fully
+    // loaded yet.
     bool page_available;
-    if (reload) {
+    if (reload && i < pages_.size()) {
       page_available = pages_[i]->available();
     } else if (is_linear) {
       FX_DOWNLOADHINTS& download_hints = document_->download_hints();
@@ -2644,20 +2646,32 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     document_size_.Enlarge(0, size.height());
   }
 
-  for (int i = 0; i < page_count; ++i) {
+  for (size_t i = 0; i < new_page_count; ++i) {
     // Center pages relative to the entire document.
     page_rects[i].set_x((document_size_.width() - page_rects[i].width()) / 2);
     pp::Rect page_rect(page_rects[i]);
     page_rect.Inset(kPageShadowLeft, kPageShadowTop, kPageShadowRight,
                     kPageShadowBottom);
-    if (reload) {
-      pages_[i]->set_rect(page_rect);
-    } else {
+    if (!reload) {
       // The page is marked as not being available even if |doc_complete| is
       // true because FPDFAvail_IsPageAvail() still has to be called for this
       // page, which will be done in FinishLoadingDocument().
       pages_.push_back(std::make_unique<PDFiumPage>(this, i, page_rect, false));
+    } else if (i < pages_.size()) {
+      pages_[i]->set_rect(page_rect);
+    } else {
+      bool available = FPDFAvail_IsPageAvail(fpdf_availability(), i, nullptr);
+      pages_.push_back(
+          std::make_unique<PDFiumPage>(this, i, page_rect, available));
     }
+  }
+
+  // Remove pages that do not exist anymore.
+  if (pages_.size() > new_page_count) {
+    for (size_t i = new_page_count; i < pages_.size(); ++i)
+      pages_[i]->Unload();
+
+    pages_.resize(new_page_count);
   }
 
   CalculateVisiblePages();
@@ -3592,6 +3606,12 @@ void PDFiumEngine::GetSelection(uint32_t* selection_start_page_index,
     *selection_end_char_index = selection_[len - 1].char_count();
   }
 }
+
+#if defined(PDF_ENABLE_XFA)
+void PDFiumEngine::UpdatePageCount() {
+  InvalidateAllPages();
+}
+#endif  // defined(PDF_ENABLE_XFA)
 
 PDFiumEngine::ProgressivePaint::ProgressivePaint(int index,
                                                  const pp::Rect& rect)

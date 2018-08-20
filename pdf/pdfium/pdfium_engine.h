@@ -138,6 +138,10 @@ class PDFiumEngine : public PDFEngine,
   void CancelBrowserDownload() override;
   void KillFormFocus() override;
 
+#if defined(PDF_ENABLE_XFA)
+  void UpdatePageCount();
+#endif  // defined(PDF_ENABLE_XFA)
+
   void UnsupportedFeature(const std::string& feature);
   void FontSubstituted();
 
