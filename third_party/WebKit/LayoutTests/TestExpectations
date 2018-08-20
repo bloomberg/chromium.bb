@@ -4640,6 +4640,7 @@ crbug.com/846982 http/tests/devtools/editor/text-editor-formatter.js [ Timeout P
 crbug.com/847094 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Skip ]
 crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pass Timeout ]
 crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
+crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
 
 crbug.com/843135 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Pass Failure ]
 
