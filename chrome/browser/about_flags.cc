@@ -4337,6 +4337,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutoplayUnifiedSoundSettingsDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(media::kAutoplaySoundSettings)},
 
+#if defined(OS_CHROMEOS)
+    {"enable-chromeos-account-manager",
+     flag_descriptions::kEnableChromeOsAccountManagerName,
+     flag_descriptions::kEnableChromeOsAccountManagerDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::switches::kAccountManager)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
