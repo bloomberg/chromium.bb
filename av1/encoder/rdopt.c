@@ -11581,9 +11581,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     const MV_REFERENCE_FRAME second_ref_frame =
         av1_mode_order[mode_index].ref_frame[1];
     assert(ref_frame == INTRA_FRAME);
-
+    if (sf->skip_intra_in_interframe && search_state.skip_intra_modes) break;
     init_mbmi(mbmi, mode_index, cm);
-
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
