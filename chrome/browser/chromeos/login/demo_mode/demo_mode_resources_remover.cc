@@ -14,9 +14,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/idle_detector.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -27,6 +31,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/re2/src/re2/re2.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
 
@@ -37,6 +42,11 @@ DemoModeResourcesRemover* g_instance = nullptr;
 // Name of the pref in local state that indicates whether demo mode resources
 // have been removed from the device.
 constexpr char kDemoModeResourcesRemoved[] = "demo_mode_resources_removed";
+
+// Key for the pref in local state that tracks accumulated device usage time in
+// seconds.
+constexpr char kAccumulatedUsagePref[] =
+    "demo_mode_resources_remover.accumulated_device_usage_s";
 
 // Regex matching legacy demo retail mode domains.
 constexpr char kLegacyDemoRetailModeDomainRegex[] =
@@ -76,10 +86,24 @@ bool IsLegacyDemoRetailModeSession(const user_manager::User* user) {
 
 }  // namespace
 
+DemoModeResourcesRemover::UsageAccumulationConfig::UsageAccumulationConfig()
+    : resources_removal_threshold(base::TimeDelta::FromHours(48)),
+      update_interval(base::TimeDelta::FromMinutes(5)),
+      idle_threshold(base::TimeDelta::FromSeconds(30)) {}
+
+DemoModeResourcesRemover::UsageAccumulationConfig::UsageAccumulationConfig(
+    const base::TimeDelta& resources_removal_threshold,
+    const base::TimeDelta& update_interval,
+    const base::TimeDelta& idle_threshold)
+    : resources_removal_threshold(resources_removal_threshold),
+      update_interval(update_interval),
+      idle_threshold(idle_threshold) {}
+
 // static
 void DemoModeResourcesRemover::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kDemoModeResourcesRemoved, false);
+  registry->RegisterIntegerPref(kAccumulatedUsagePref, 0);
 }
 
 // static
@@ -109,6 +133,9 @@ DemoModeResourcesRemover::~DemoModeResourcesRemover() {
   CHECK_EQ(g_instance, this);
   g_instance = nullptr;
 
+  if (usage_start_.has_value() && usage_end_.has_value())
+    UpdateDeviceUsage(*usage_end_ - *usage_start_);
+
   ChromeUserManager::Get()->RemoveSessionStateObserver(this);
 }
 
@@ -132,10 +159,51 @@ void DemoModeResourcesRemover::ActiveUserChanged(
   // mode domain.
   if (g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
-          ->IsEnterpriseManaged() &&
-      !IsLegacyDemoRetailModeSession(user)) {
-    AttemptRemoval(RemovalReason::kEnterpriseEnrolled, RemovalCallback());
+          ->IsEnterpriseManaged()) {
+    if (!IsLegacyDemoRetailModeSession(user))
+      AttemptRemoval(RemovalReason::kEnterpriseEnrolled, RemovalCallback());
+    return;
   }
+
+  // Start tracking user activity, if it's already not in progress.
+  if (!user_activity_observer_.IsObserving(ui::UserActivityDetector::Get())) {
+    if (!AttemptRemovalIfUsageOverThreshold()) {
+      user_activity_observer_.Add(ui::UserActivityDetector::Get());
+      OnUserActivity(nullptr);
+    }
+  }
+}
+
+void DemoModeResourcesRemover::OnUserActivity(const ui::Event* event) {
+  base::TimeTicks now = tick_clock_->NowTicks();
+
+  if (!usage_start_.has_value()) {
+    usage_start_ = now;
+    usage_end_ = now;
+    return;
+  }
+
+  bool was_idle =
+      usage_end_.has_value() &&
+      (now - *usage_end_) > usage_accumulation_config_.idle_threshold;
+  base::TimeTicks interval_end = was_idle ? *usage_end_ : now;
+  base::TimeDelta duration = interval_end - *usage_start_;
+
+  // If enough time has passed, or the current usage interval was interrupted by
+  // idle period, record the usage.
+  if (was_idle || duration >= usage_accumulation_config_.update_interval) {
+    UpdateDeviceUsage(duration);
+
+    // Attempt to remove resources will stop observing user activity, so no need
+    // to start the next usage interval.
+    if (AttemptRemovalIfUsageOverThreshold())
+      return;
+
+    // Start tracking the next active usage interval.
+    usage_start_ = now;
+  }
+
+  usage_end_ = now;
 }
 
 void DemoModeResourcesRemover::AttemptRemoval(RemovalReason reason,
@@ -172,9 +240,22 @@ void DemoModeResourcesRemover::AttemptRemoval(RemovalReason reason,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void DemoModeResourcesRemover::OverrideTimeForTesting(
+    base::TickClock* tick_clock,
+    const UsageAccumulationConfig& config) {
+  tick_clock_ = tick_clock;
+
+  usage_start_ = base::nullopt;
+  usage_end_ = base::nullopt;
+
+  usage_accumulation_config_ = config;
+}
+
 DemoModeResourcesRemover::DemoModeResourcesRemover(PrefService* local_state)
     : local_state_(local_state),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       cryptohome_observer_(this),
+      user_activity_observer_(this),
       weak_ptr_factory_(this) {
   CHECK(!g_instance);
   g_instance = this;
@@ -183,14 +264,48 @@ DemoModeResourcesRemover::DemoModeResourcesRemover(PrefService* local_state)
   ChromeUserManager::Get()->AddSessionStateObserver(this);
 }
 
+void DemoModeResourcesRemover::UpdateDeviceUsage(
+    const base::TimeDelta& duration) {
+  int accumulated_activity = local_state_->GetInteger(kAccumulatedUsagePref);
+  int64_t removal_threshold_s =
+      usage_accumulation_config_.resources_removal_threshold.InSeconds();
+  if (accumulated_activity < removal_threshold_s)
+    accumulated_activity += std::min(duration.InSeconds(), removal_threshold_s);
+
+  local_state_->SetInteger(kAccumulatedUsagePref, accumulated_activity);
+
+  usage_start_ = base::nullopt;
+  usage_end_ = base::nullopt;
+}
+
+bool DemoModeResourcesRemover::AttemptRemovalIfUsageOverThreshold() {
+  int accumulated_activity = local_state_->GetInteger(kAccumulatedUsagePref);
+  int64_t removal_threshold_s =
+      usage_accumulation_config_.resources_removal_threshold.InSeconds();
+
+  if (accumulated_activity < removal_threshold_s)
+    return false;
+
+  // Stop observing usage.
+  user_activity_observer_.RemoveAll();
+  AttemptRemoval(RemovalReason::kRegularUsage, RemovalCallback());
+  return true;
+}
+
 void DemoModeResourcesRemover::OnRemovalDone(RemovalResult result) {
   DCHECK(removal_in_progress_);
   removal_in_progress_ = false;
 
   if (result == RemovalResult::kNotFound || result == RemovalResult::kSuccess) {
     local_state_->SetBoolean(kDemoModeResourcesRemoved, true);
+    local_state_->ClearPref(kAccumulatedUsagePref);
+
     cryptohome_observer_.RemoveAll();
     ChromeUserManager::Get()->RemoveSessionStateObserver(this);
+
+    user_activity_observer_.RemoveAll();
+    usage_start_ = base::nullopt;
+    usage_end_ = base::nullopt;
   }
 
   UMA_HISTOGRAM_ENUMERATION("DemoMode.ResourcesRemoval.Result", result);

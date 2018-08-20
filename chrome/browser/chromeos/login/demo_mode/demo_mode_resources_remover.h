@@ -12,12 +12,25 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 
 class PrefRegistrySimple;
 class PrefService;
+
+namespace base {
+class TickClock;
+class TimeDelta;
+class TimeTicks;
+}  // namespace base
+
+namespace ui {
+class Event;
+class UserActivityDetector;
+}  // namespace ui
 
 namespace chromeos {
 
@@ -31,11 +44,11 @@ namespace chromeos {
 // of the following conditions are satisfied:
 //   * device is running low on disk space
 //   * device is enrolled in a non-demo-mode domain
-//   * TODO(crbug.com/827368): enough non-demo-mode user activity has been
-//     detected on the device
+//   * enough user activity has been detected on the device
 class DemoModeResourcesRemover
     : public CryptohomeClient::Observer,
-      public user_manager::UserManager::UserSessionStateObserver {
+      public user_manager::UserManager::UserSessionStateObserver,
+      public ui::UserActivityObserver {
  public:
   // The reason a removal was requested.
   // DO NOT REORDER - used to report metrics.
@@ -73,6 +86,30 @@ class DemoModeResourcesRemover
   // partition.
   using RemovalCallback = base::OnceCallback<void(RemovalResult result)>;
 
+  // Configures how DemoModeResourcesRemover tracks the amount of active
+  // device usage in order to determine when demo mode resources are not needed
+  // anymore.
+  struct UsageAccumulationConfig {
+    // Creates the config with default params used in production.
+    UsageAccumulationConfig();
+
+    UsageAccumulationConfig(const base::TimeDelta& resources_removal_threshold,
+                            const base::TimeDelta& update_interval,
+                            const base::TimeDelta& idle_threshold);
+    // Amount of accumulated device usage time that warrants demo mode resources
+    // removal. When this threshold is reached, demo mode resources removal will
+    // be attempted.
+    base::TimeDelta resources_removal_threshold;
+
+    // The interval in which accumulated usage time is updated in prefs (during
+    // active device usage).
+    base::TimeDelta update_interval;
+
+    // The amount of time without user activity after which the device is
+    // considered idle.
+    base::TimeDelta idle_threshold;
+  };
+
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // Gets the demo mode resources remover instance for this process - at most
@@ -104,14 +141,36 @@ class DemoModeResourcesRemover
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(const user_manager::User* user) override;
 
+  // ui::UserActivityObserver:
+  void OnUserActivity(const ui::Event* event) override;
+
   // Requests demo mode resources removal from the disk. If a removal operation
   // is already in progress, this method will schedule the callback to be run
   // with the result of the operation in progress.
   void AttemptRemoval(RemovalReason reason, RemovalCallback callback);
 
+  // Allows tests to override the tick clock and configuration for accumulating
+  // the amount of active device usage.
+  void OverrideTimeForTesting(base::TickClock* tick_clock,
+                              const UsageAccumulationConfig& config);
+
  private:
+  // Defined here so it can be overridden in tests.
+  UsageAccumulationConfig usage_accumulation_config_;
+
   // Use CreateIfNeeded() to create an instance.
   explicit DemoModeResourcesRemover(PrefService* local_state);
+
+  // Updates the accumulated information about the amount of active device
+  // usage, which is used to detect when the device owned by a real user, and
+  // thus does not require demo mode resources.
+  void UpdateDeviceUsage(const base::TimeDelta& duration);
+
+  // If the amount of detected device usage is above the threshold for removing
+  // demo mode resources, attempts the resources removal. If resoruces removal
+  // is requested, stops observing device usage.
+  // Returns whether the resources removal was requested.
+  bool AttemptRemovalIfUsageOverThreshold();
 
   // Passes as the callback to directory removal file operations.
   void OnRemovalDone(RemovalResult result);
@@ -124,8 +183,16 @@ class DemoModeResourcesRemover
   // Callbacks for the resources removal operation, if one is in progress.
   std::vector<RemovalCallback> removal_callbacks_;
 
+  const base::TickClock* tick_clock_;
+
+  // Used to track the duration of last unrecorded interval of user activity.
+  base::Optional<base::TimeTicks> usage_start_;
+  base::Optional<base::TimeTicks> usage_end_;
+
   ScopedObserver<CryptohomeClient, DemoModeResourcesRemover>
       cryptohome_observer_;
+  ScopedObserver<ui::UserActivityDetector, DemoModeResourcesRemover>
+      user_activity_observer_;
 
   base::WeakPtrFactory<DemoModeResourcesRemover> weak_ptr_factory_;
 
