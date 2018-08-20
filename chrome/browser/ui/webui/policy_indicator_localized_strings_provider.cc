@@ -8,6 +8,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#endif
+
 namespace policy_indicator {
 
 struct LocalizedString {
@@ -16,8 +20,13 @@ struct LocalizedString {
 };
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
+  int controlled_setting_policy_id = IDS_CONTROLLED_SETTING_POLICY;
+#if defined(OS_CHROMEOS)
+  if (chromeos::DemoSession::IsDeviceInDemoMode())
+    controlled_setting_policy_id = IDS_CONTROLLED_SETTING_DEMO_SESSION;
+#endif
   LocalizedString localized_strings[] = {
-    {"controlledSettingPolicy", IDS_CONTROLLED_SETTING_POLICY},
+    {"controlledSettingPolicy", controlled_setting_policy_id},
     {"controlledSettingRecommendedMatches", IDS_CONTROLLED_SETTING_RECOMMENDED},
     {"controlledSettingRecommendedDiffers",
      IDS_CONTROLLED_SETTING_HAS_RECOMMENDATION},

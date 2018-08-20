@@ -2770,6 +2770,9 @@
   <message name="IDS_CONTROLLED_SETTING_SHARED" desc="Text displayed in the controlled settings bubble when a setting's value belongs to the primary user but can be edited.">
     This setting belongs to <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
   </message>
+  <message name="IDS_CONTROLLED_SETTING_DEMO_SESSION" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by demo session.">
+    This setting can't be changed in a demo session.
+  </message>
 
   <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
     Disable ChromeVox (spoken feedback)
