@@ -858,7 +858,12 @@ int BookmarkBarView::GetToolbarOverlap() const {
 }
 
 int BookmarkBarView::GetPreferredHeight() const {
-  int height = GetLayoutConstant(BOOKMARK_BAR_HEIGHT);
+  return std::max(GetTallestButtonHeight(),
+                  GetLayoutConstant(BOOKMARK_BAR_HEIGHT));
+}
+
+int BookmarkBarView::GetTallestButtonHeight() const {
+  int height = 0;
   for (int i = 0; i < child_count(); ++i) {
     const views::View* view = child_at(i);
     if (view->visible())
@@ -948,12 +953,15 @@ void BookmarkBarView::Layout() {
   int x = kBookmarkBarHorizontalMargin;
   int width = View::width() - 2 * kBookmarkBarHorizontalMargin;
 
-  int height = GetPreferredHeight();
+  int height = GetTallestButtonHeight();
+
   int y = (GetContentsBounds().height() - height) / 2;
 
   if (browser_view_) {
-    height -= browser_view_->GetAdditionalBookmarkBarBottomMargin();
-    y += browser_view_->GetAdditionalBookmarkBarTopMargin();
+    y += browser_view_->GetBookmarkBarContentVerticalOffset();
+
+    // Ensure y is within bounds of the bookmark bar view.
+    y = std::max(0, y);
   }
 
   gfx::Size other_bookmarks_pref = other_bookmarks_button_->visible() ?

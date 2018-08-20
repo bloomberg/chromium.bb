@@ -24,7 +24,7 @@ gfx::Insets MaterialRefreshLayoutProvider::GetInsetsMetric(int metric) const {
       // circular for favicon-only bookmarks.
       if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
         return gfx::Insets(8, 10);
-      return gfx::Insets(5, 6);
+      break;
   }
   return ChromeLayoutProvider::GetInsetsMetric(metric);
 }

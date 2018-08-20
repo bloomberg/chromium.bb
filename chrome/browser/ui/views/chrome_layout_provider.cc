@@ -71,7 +71,7 @@ gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
     case INSETS_BOOKMARKS_BAR_BUTTON:
       if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
         return gfx::Insets(8, 12);
-      return GetInsetsMetric(views::InsetsMetric::INSETS_LABEL_BUTTON);
+      return gfx::Insets(6);
     case INSETS_TOAST:
       return gfx::Insets(0, kHarmonyLayoutUnit);
     default:

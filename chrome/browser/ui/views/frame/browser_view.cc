@@ -1770,31 +1770,36 @@ FullscreenControlHost* BrowserView::GetFullscreenControlHost() {
   return fullscreen_control_host_.get();
 }
 
-int BrowserView::GetAdditionalBookmarkBarBottomMargin() {
-  // If the bookmark bar is attached, the bottom inset should be the same as the
-  // height between the bottom of the location bar to the bottom of the toolbar,
-  // taking into account the overlap between the bookmark bar and toolbar.
-  if (toolbar_ && bookmark_bar_view_.get() &&
-      !bookmark_bar_view_->IsDetached()) {
-    return (toolbar_->height() - GetLocationBarView()->height() -
-            bookmark_bar_view_->GetToolbarOverlap()) /
-           2;
+int BrowserView::GetBookmarkBarContentVerticalOffset() const {
+  if (!bookmark_bar_view_.get()) {
+    return 0;
+  }
+
+  // If the info bar is visible and the bookmark bar is detached, the info bar
+  // will be rendered above the bookmark bar. When this is the case, the shadow
+  // of the info bar will overlap onto the bookmark bar. The icons on the
+  // bookmark bar should be moved down so the icons appeared centered on the non
+  // shaded parts of the bookmark bar.
+  if (IsInfoBarVisible() && bookmark_bar_view_->IsDetached()) {
+    // 2 is roughly the number of visible pixels of the infobar shadow over the
+    // bookmark bar, so if we shift the top of the bookmark buttons down by this
+    // value, it will appear centered.
+    return 2;
+  }
+
+  // If the bookmark bar is attached, there will appear to be extra space above
+  // the bookmark bar icons due to the space below the location bar on the
+  // toolbar. The bookmark bar icons need to be moved up to compensate.
+  if (!bookmark_bar_view_->IsDetached()) {
+    return -GetBottomInsetOfLocationBarWithinToolbar() / 2;
   }
   return 0;
 }
 
-int BrowserView::GetAdditionalBookmarkBarTopMargin() {
-  // If the infobar is being displayed and the bookmark is detached, there
-  // should be an additional inset at the top to center the bookmarks a bit
-  // below the shadow of the infobar.
-  if (IsInfoBarVisible() && bookmark_bar_view_.get() &&
-      bookmark_bar_view_->IsDetached()) {
-    // 2 is roughly the number of visible pixels of the shadow over the bookmark
-    // bar, so if we shift the top of the bookmark buttons down by this value,
-    // it will appear centered.
-    return 2;
-  }
-  return 0;
+int BrowserView::GetBottomInsetOfLocationBarWithinToolbar() const {
+  return (toolbar_->height() - GetLocationBarView()->height() -
+          bookmark_bar_view_->GetToolbarOverlap()) /
+         2;
 }
 
 views::View* BrowserView::GetInitiallyFocusedView() {

@@ -519,16 +519,10 @@ class BrowserView : public BrowserWindow,
   // not yet exist.
   FullscreenControlHost* GetFullscreenControlHost();
 
-  // Gets the additional bottom margin for the bookmark bar. Returns non-zero
-  // when the bookmark bar is attached. This ensures the buttons appear centered
-  // between the bottom of the omnibox and the bottom of the bookmark bar.
-  int GetAdditionalBookmarkBarBottomMargin();
-
-  // Gets the additional top margin for the bookmark bar. Returns non-zero when
-  // the bookmark bar is detached and an infobar is showing. This ensures the
-  // bookmark buttons appear centered within the area that is not covered by the
-  // infobar's shadow.
-  int GetAdditionalBookmarkBarTopMargin();
+  // Gets the amount to vertically shift the placement of the icons on the
+  // bookmark bar so the icons appear centered relative to the views above and
+  // below them.
+  int GetBookmarkBarContentVerticalOffset() const;
 
  private:
   // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate
@@ -643,6 +637,11 @@ class BrowserView : public BrowserWindow,
   base::string16 GetAccessibleWindowTitleForChannelAndProfile(
       version_info::Channel,
       Profile* profile) const;
+
+  // Returns the amount of space between the bottom of the location bar to the
+  // bottom of the toolbar. This does not include the part of the toolbar that
+  // overlaps with the bookmark bar.
+  int GetBottomInsetOfLocationBarWithinToolbar() const;
 
   // The BrowserFrame that hosts this view.
   BrowserFrame* frame_ = nullptr;

@@ -396,7 +396,12 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // or -1 if |button| is not a bookmark button from this bar.
   int GetIndexForButton(views::View* button);
 
+  // Gets the preferred height of the bookmark bar which is the max of either
+  // the bookmark bar constant or the tallest icon.
   int GetPreferredHeight() const;
+
+  // Gets the height of the tallest visible button on the bookmark bar.
+  int GetTallestButtonHeight() const;
 
   // Needed to react to kShowAppsShortcutInBookmarkBar changes.
   PrefChangeRegistrar profile_pref_registrar_;
