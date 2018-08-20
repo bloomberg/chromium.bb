@@ -162,6 +162,17 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
       GetTestableTransportProtocols();
 };
 
+TEST_F(FidoGetAssertionHandlerTest, TransportAvailabilityInfo) {
+  auto request_handler =
+      CreateGetAssertionHandlerWithRequest(CtapGetAssertionRequest(
+          test_data::kRelyingPartyId, test_data::kClientDataHash));
+
+  EXPECT_EQ(FidoRequestHandlerBase::RequestType::kGetAssertion,
+            request_handler->transport_availability_info().request_type);
+  EXPECT_EQ(test_data::kRelyingPartyId,
+            request_handler->transport_availability_info().rp_id);
+}
+
 TEST_F(FidoGetAssertionHandlerTest, CtapRequestOnSingleDevice) {
   auto request_handler = CreateGetAssertionHandlerCtap();
   discovery()->WaitForCallToStartAndSimulateSuccess();

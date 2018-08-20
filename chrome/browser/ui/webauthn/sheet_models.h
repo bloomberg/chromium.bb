@@ -29,6 +29,9 @@ class AuthenticatorSheetModelBase
   // loads it in Skia format.
   static gfx::ImageSkia* GetImage(int resource_id);
 
+  // Returns a string containing the relying party id for this request.
+  base::string16 GetRelyingPartyIdString() const;
+
   // AuthenticatorRequestSheetModel:
   bool IsBackButtonVisible() const override;
   bool IsCancelButtonVisible() const override;

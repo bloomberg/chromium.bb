@@ -97,6 +97,9 @@ class AuthenticatorRequestDialogModel {
   Step current_step() const { return current_step_; }
 
   TransportListModel* transport_list_model() { return &transport_list_model_; }
+  const TransportAvailabilityInfo* transport_availability() const {
+    return &transport_availability_;
+  }
 
   // Starts the UX flow, by either showing the welcome screen, the transport
   // selection screen, or the guided flow for them most likely transport.

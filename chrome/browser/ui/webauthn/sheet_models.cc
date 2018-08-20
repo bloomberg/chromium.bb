@@ -76,6 +76,11 @@ void AuthenticatorSheetModelBase::OnCancel() {
     dialog_model()->Cancel();
 }
 
+base::string16 AuthenticatorSheetModelBase::GetRelyingPartyIdString() const {
+  DCHECK(!dialog_model()->transport_availability()->rp_id.empty());
+  return base::UTF8ToUTF16(dialog_model()->transport_availability()->rp_id);
+}
+
 void AuthenticatorSheetModelBase::OnModelDestroyed() {
   dialog_model_ = nullptr;
 }
@@ -87,11 +92,8 @@ gfx::ImageSkia* AuthenticatorWelcomeSheetModel::GetStepIllustration() const {
 }
 
 base::string16 AuthenticatorWelcomeSheetModel::GetStepTitle() const {
-  // TODO(hongjunchoi): Insert actual domain name from model to
-  // |application_name|.
-  base::string16 application_name = base::UTF8ToUTF16("example.com");
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_TITLE,
-                                    application_name);
+                                    GetRelyingPartyIdString());
 }
 
 base::string16 AuthenticatorWelcomeSheetModel::GetStepDescription() const {
@@ -123,11 +125,8 @@ gfx::ImageSkia* AuthenticatorTransportSelectorSheetModel::GetStepIllustration()
 }
 
 base::string16 AuthenticatorTransportSelectorSheetModel::GetStepTitle() const {
-  // TODO(hongjunchoi): Insert actual domain name from model to
-  // |application_name|.
-  base::string16 application_name = base::UTF8ToUTF16("example.com");
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TRANSPORT_SELECTION_TITLE,
-                                    application_name);
+                                    GetRelyingPartyIdString());
 }
 
 base::string16 AuthenticatorTransportSelectorSheetModel::GetStepDescription()
@@ -150,11 +149,8 @@ AuthenticatorInsertAndActivateUsbSheetModel::GetStepIllustration() const {
 
 base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepTitle()
     const {
-  // TODO(hongjunchoi): Insert actual domain name from model to
-  // |application_name|.
-  base::string16 application_name = base::UTF8ToUTF16("example.com");
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
-                                    application_name);
+                                    GetRelyingPartyIdString());
 }
 
 base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepDescription()
@@ -279,10 +275,8 @@ gfx::ImageSkia* AuthenticatorBlePinEntrySheetModel::GetStepIllustration()
 }
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepTitle() const {
-  // TODO(hongjunchoi): Insert actual device name from model to |device_name|.
-  base::string16 device_name = base::UTF8ToUTF16("VHGSHSSN");
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE,
-                                    device_name);
+                                    GetRelyingPartyIdString());
 }
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepDescription() const {
@@ -325,11 +319,8 @@ gfx::ImageSkia* AuthenticatorBleActivateSheetModel::GetStepIllustration()
 }
 
 base::string16 AuthenticatorBleActivateSheetModel::GetStepTitle() const {
-  // TODO(hongjunchoi): Insert actual domain name from model to
-  // |application_name|.
-  base::string16 application_name = base::UTF8ToUTF16("example.com");
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
-                                    application_name);
+                                    GetRelyingPartyIdString());
 }
 
 base::string16 AuthenticatorBleActivateSheetModel::GetStepDescription() const {
@@ -349,11 +340,8 @@ gfx::ImageSkia* AuthenticatorTouchIdSheetModel::GetStepIllustration() const {
 
 base::string16 AuthenticatorTouchIdSheetModel::GetStepTitle() const {
 #if defined(OS_MACOSX)
-  // TODO(martinkr): Insert actual domain name from model to
-  // |application_name|.
-  base::string16 application_name = base::UTF8ToUTF16("example.com");
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_TITLE,
-                                    application_name);
+                                    GetRelyingPartyIdString());
 #else
   return base::string16();
 #endif  // defined(OS_MACOSX)
