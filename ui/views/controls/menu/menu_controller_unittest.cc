@@ -1167,6 +1167,8 @@ TEST_F(MenuControllerTest, DoubleAsynchronousNested) {
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
 }
 
+// Tests that setting send_gesture_events_to_owner flag forwards gesture events
+// to owner and the forwarding stops when the current gesture sequence ends.
 TEST_F(MenuControllerTest, PreserveGestureForOwner) {
   MenuController* controller = menu_controller();
   MenuItemView* item = menu_item();
@@ -1201,6 +1203,40 @@ TEST_F(MenuControllerTest, PreserveGestureForOwner) {
   // gesture events should not be sent to the owner.
   controller->OnGestureEvent(sub_menu, &event2);
   EXPECT_EQ(CountOwnerOnGestureEvent(), 2);
+}
+
+// Tests that touch outside menu does not closes the menu when forwarding
+// gesture events to owner.
+TEST_F(MenuControllerTest, NoTouchCloseWhenSendingGesturesToOwner) {
+  MenuController* controller = menu_controller();
+
+  // Owner wants the gesture events.
+  controller->set_send_gesture_events_to_owner(true);
+
+  // Show a sub menu and touch outside of it.
+  MenuItemView* item = menu_item();
+  SubmenuView* sub_menu = item->GetSubmenu();
+  sub_menu->ShowAt(owner(), item->bounds(), false);
+  gfx::Point location(sub_menu->bounds().bottom_right());
+  location.Offset(1, 1);
+  ui::TouchEvent touch_event(
+      ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  controller->OnTouchEvent(sub_menu, &touch_event);
+
+  // Menu should still be visible.
+  EXPECT_TRUE(IsShowing());
+
+  // The current gesture sequence ends.
+  ui::GestureEvent gesture_end_event(
+      location.x(), location.y(), 0, ui::EventTimeForNow(),
+      ui::GestureEventDetails(ui::ET_GESTURE_END));
+  controller->OnGestureEvent(sub_menu, &gesture_end_event);
+
+  // Touch outside again and menu should be closed.
+  controller->OnTouchEvent(sub_menu, &touch_event);
+  EXPECT_FALSE(IsShowing());
+  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
 }
 
 // Tests that a nested menu does not crash when trying to repost events that
