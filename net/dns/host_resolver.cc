@@ -208,6 +208,19 @@ HostResolver::RequestInfoToResolveHostParameters(
   return parameters;
 }
 
+// static
+HostResolverFlags HostResolver::ParametersToHostResolverFlags(
+    const ResolveHostParameters& parameters) {
+  HostResolverFlags flags = 0;
+  if (parameters.include_canonical_name) {
+    flags |= HOST_RESOLVER_CANONNAME;
+  }
+  if (parameters.loopback_only) {
+    flags |= HOST_RESOLVER_LOOPBACK_ONLY;
+  }
+  return flags;
+}
+
 HostResolver::HostResolver() = default;
 
 }  // namespace net

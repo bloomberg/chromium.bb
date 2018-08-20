@@ -13,7 +13,15 @@ namespace mojo {
 bool StructTraits<net::interfaces::AddressListDataView, net::AddressList>::Read(
     net::interfaces::AddressListDataView data,
     net::AddressList* out) {
-  return data.ReadAddresses(&out->endpoints());
+  if (!data.ReadAddresses(&out->endpoints()))
+    return false;
+
+  std::string canonical_name;
+  if (!data.ReadCanonicalName(&canonical_name))
+    return false;
+  out->set_canonical_name(canonical_name);
+
+  return true;
 }
 
 }  // namespace mojo

@@ -197,6 +197,16 @@ class NET_EXPORT HostResolver {
     // The initial net priority for the host resolution request.
     RequestPriority initial_priority = RequestPriority::DEFAULT_PRIORITY;
 
+    // If |true|, requests that the resolver include AddressList::canonical_name
+    // in the results. If the resolver can do so without significant
+    // performance impact, canonical_name may still be included even if
+    // parameter is set to |false|.
+    bool include_canonical_name = false;
+
+    // Hint to the resolver that resolution is only being requested for loopback
+    // hosts.
+    bool loopback_only = false;
+
     // Set |true| iff the host resolve request is only being made speculatively
     // to fill the cache and the result addresses will not be used. The request
     // will receive special logging/observer treatment, and the result addresses
@@ -348,6 +358,8 @@ class NET_EXPORT HostResolver {
   static ResolveHostParameters RequestInfoToResolveHostParameters(
       const RequestInfo& request_info,
       RequestPriority priority);
+  static HostResolverFlags ParametersToHostResolverFlags(
+      const ResolveHostParameters& parameters);
 
  protected:
   HostResolver();

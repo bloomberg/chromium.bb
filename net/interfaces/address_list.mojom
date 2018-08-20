@@ -9,4 +9,5 @@ import "net/interfaces/ip_endpoint.mojom";
 // Mirror of net::AddressList.
 struct AddressList {
   array<IPEndPoint> addresses;
+  string canonical_name;
 };
