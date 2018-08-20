@@ -82,6 +82,10 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   void CloseModalSigninWindow(
       LoginUIService::SyncConfirmationUIClosedResult result);
 
+  // Returns true if this is a unified consent bump dialog, and false if this is
+  // a regular sync confirmation.
+  bool IsUnifiedConsentBumpDialog();
+
  private:
   Profile* profile_;
 

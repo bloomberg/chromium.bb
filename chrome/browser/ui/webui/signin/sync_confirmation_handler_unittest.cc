@@ -10,6 +10,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/scoped_observer.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/values.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/dialog_test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
@@ -62,6 +64,7 @@ class TestingSyncConfirmationHandler : public SyncConfirmationHandler {
   using SyncConfirmationHandler::HandleGoToSettings;
   using SyncConfirmationHandler::RecordConsent;
   using SyncConfirmationHandler::SetUserImageURL;
+  using SyncConfirmationHandler::IsUnifiedConsentBumpDialog;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingSyncConfirmationHandler);
@@ -101,24 +104,35 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     signin_manager()->CompletePendingSignin();
     login_ui_service_observer_.Add(
         LoginUIServiceFactory::GetForProfile(profile()));
+
+    EXPECT_FALSE(handler_->IsUnifiedConsentBumpDialog());
   }
 
   void TearDown() override {
+    bool is_unified_consent_bump_dialog =
+        handler_->IsUnifiedConsentBumpDialog();
+
     login_ui_service_observer_.RemoveAll();
     sync_confirmation_ui_.reset();
     web_ui_.reset();
     BrowserWithTestWindowTest::TearDown();
 
-    if (did_user_explicitly_interact) {
+    if (!did_user_explicitly_interact && is_unified_consent_bump_dialog) {
+      const int kAbort = 4;
+      histogram_tester_.ExpectUniqueSample("UnifiedConsent.ConsentBump.Action",
+                                           kAbort, 1);
       EXPECT_EQ(0, user_action_tester()->GetActionCount("Signin_Abort_Signin"));
     } else {
-      EXPECT_EQ(1, user_action_tester()->GetActionCount("Signin_Abort_Signin"));
+      histogram_tester_.ExpectTotalCount("UnifiedConsent.ConsentBump.Action",
+                                         0);
     }
+
+    EXPECT_EQ(
+        did_user_explicitly_interact || is_unified_consent_bump_dialog ? 0 : 1,
+        user_action_tester()->GetActionCount("Signin_Abort_Signin"));
   }
 
-  TestingSyncConfirmationHandler* handler() {
-    return handler_;
-  }
+  TestingSyncConfirmationHandler* handler() { return handler_; }
 
   content::TestWebUI* web_ui() {
     return web_ui_.get();
@@ -191,6 +205,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
   std::unordered_map<std::string, int> string_to_grd_id_map_;
   ScopedObserver<LoginUIService, LoginUIService::Observer>
       login_ui_service_observer_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandlerTest);
 };
@@ -326,6 +341,31 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {
       "Signin_Signin_WithDefaultSyncSettings"));
   EXPECT_EQ(0, user_action_tester()->GetActionCount(
       "Signin_Signin_WithAdvancedSyncSettings"));
+}
+
+TEST_F(SyncConfirmationHandlerTest, TestConsentBump) {
+  // Enable the consent bump by setting the URL of the web ui.
+  NavigateAndCommit(&web_ui()->GetWebContents()->GetController(),
+                    GURL(chrome::kChromeUISyncConsentBumpURL));
+  EXPECT_TRUE(handler()->IsUnifiedConsentBumpDialog());
+
+  handler()->HandleUndo(nullptr);
+  did_user_explicitly_interact = true;
+  ASSERT_TRUE(on_sync_confirmation_ui_closed_called_);
+  ASSERT_EQ(LoginUIService::ABORT_SIGNIN, sync_confirmation_ui_closed_result_);
+
+  // The regular sync confirmation metrics are not recorded for the consent
+  // bump.
+  EXPECT_EQ(0, user_action_tester()->GetActionCount("Signin_Undo_Signin"));
+}
+
+TEST_F(SyncConfirmationHandlerTest, TestConsentBumpAbort) {
+  // Enable the consent bump by setting the URL of the web ui.
+  NavigateAndCommit(&web_ui()->GetWebContents()->GetController(),
+                    GURL(chrome::kChromeUISyncConsentBumpURL));
+  EXPECT_TRUE(handler()->IsUnifiedConsentBumpDialog());
+
+  // The histogram sample will be tested in TearDown().
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {

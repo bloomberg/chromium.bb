@@ -48059,6 +48059,7 @@ Full version information for the fingerprint enum values:
   <int value="1" label="More options: Opt into Unified Consent was selected"/>
   <int value="2" label="More options: Review settings was selected"/>
   <int value="3" label="More options: Make no changes was selected"/>
+  <int value="4" label="Abort: The user made no action"/>
 </enum>
 
 <enum name="UnifiedConsentBumpSuppressReason">
