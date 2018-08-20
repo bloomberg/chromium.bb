@@ -111,7 +111,7 @@ public class ToolbarButtonInProductHelpController {
             @StringRes int accessibilityStringId, View anchorView, AppMenuHandler appMenuHandler,
             ChromeTabbedActivity activity) {
         // Activity was destroyed; don't show IPH.
-        if (activity.isActivityDestroyed()) return;
+        if (activity.isActivityDestroyed() || anchorView == null) return;
 
         assert(stringId != 0 && accessibilityStringId != 0);
 

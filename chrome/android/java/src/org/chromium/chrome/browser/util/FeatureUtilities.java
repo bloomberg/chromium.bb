@@ -56,6 +56,7 @@ public class FeatureUtilities {
     private static Boolean sIsHomepageTileEnabled;
     private static Boolean sIsNewTabPageButtonEnabled;
     private static Boolean sIsBottomToolbarEnabled;
+    private static Boolean sShouldInflateToolbarOnBackgroundThread;
 
     private static final String NTP_BUTTON_TRIAL_NAME = "NewTabPage";
     private static final String NTP_BUTTON_VARIANT_PARAM_NAME = "variation";
@@ -168,6 +169,7 @@ public class FeatureUtilities {
         cacheHomepageTileEnabled();
         cacheNewTabPageButtonEnabledAndMaybeVariant();
         cacheBottomToolbarEnabled();
+        cacheInflateToolbarOnBackgroundThread();
 
         // Propagate DONT_PREFETCH_LIBRARIES feature value to LibraryLoader. This can't
         // be done in LibraryLoader itself because it lives in //base and can't depend
@@ -230,6 +232,31 @@ public class FeatureUtilities {
      */
     public static void resetHomePageButtonForceEnabledForTests() {
         sIsHomePageButtonForceEnabled = null;
+    }
+
+    /**
+     * Cache whether or not the toolbar should be inflated on a background thread so on next
+     * startup, the value can be made available immediately.
+     */
+    public static void cacheInflateToolbarOnBackgroundThread() {
+        boolean onBackgroundThread =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.INFLATE_TOOLBAR_ON_BACKGROUND_THREAD);
+
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY,
+                onBackgroundThread);
+    }
+
+    public static boolean shouldInflateToolbarOnBackgroundThread() {
+        if (sShouldInflateToolbarOnBackgroundThread == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                sShouldInflateToolbarOnBackgroundThread = prefManager.readBoolean(
+                        ChromePreferenceManager.INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY, false);
+            }
+        }
+        return sShouldInflateToolbarOnBackgroundThread;
     }
 
     /**

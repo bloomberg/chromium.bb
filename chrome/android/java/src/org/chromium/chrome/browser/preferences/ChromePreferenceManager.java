@@ -137,6 +137,13 @@ public class ChromePreferenceManager {
     private static final String NTP_BUTTON_VARIANT_KEY = "ntp_button_variant";
 
     /**
+     * Whether or not to inflate the ChromeTabbedActivity toolbar on a background thread async.
+     * Default value is false.
+     */
+    public static final String INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY =
+            "inflate_toolbar_on_background_thread";
+
+    /**
      * Whether or not the bottom toolbar is enabled.
      * Default value is false.
      */

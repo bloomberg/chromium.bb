@@ -20,12 +20,16 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.resources.ResourceFactory;
 import org.chromium.chrome.browser.contextualsearch.SwipeRecognizer;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.chrome.browser.widget.ViewResourceFrameLayout;
+import org.chromium.ui.AsyncViewProvider;
+import org.chromium.ui.AsyncViewStub;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
@@ -85,27 +89,40 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
     @Override
     public void initWithToolbar(int toolbarLayoutId) {
         try (TraceEvent te = TraceEvent.scoped("ToolbarControlContainer.initWithToolbar")) {
-            ViewStub toolbarStub = (ViewStub) findViewById(R.id.toolbar_stub);
-            toolbarStub.setLayoutResource(toolbarLayoutId);
-            toolbarStub.inflate();
-
-            mToolbar = (Toolbar) findViewById(R.id.toolbar);
             mToolbarContainer =
                     (ToolbarViewResourceFrameLayout) findViewById(R.id.toolbar_container);
-            mToolbarContainer.setToolbar(mToolbar);
+            View viewStub = findViewById(R.id.toolbar_stub);
+            if (viewStub instanceof AsyncViewStub) {
+                AsyncViewStub toolbarStub = (AsyncViewStub) viewStub;
+                toolbarStub.setLayoutResource(toolbarLayoutId);
+                if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) {
+                    toolbarStub.inflate(false);
+                } else {
+                    toolbarStub.inflate(FeatureUtilities.shouldInflateToolbarOnBackgroundThread());
+                }
+                AsyncViewProvider<ToolbarLayout> toolbarProvider =
+                        AsyncViewProvider.of(toolbarStub, R.id.toolbar);
+                toolbarProvider.whenLoaded(this ::onToolbarInflationComplete);
+            } else {
+                ViewStub toolbarStub = (ViewStub) viewStub;
+                toolbarStub.setLayoutResource(toolbarLayoutId);
+                toolbarStub.inflate();
 
-            if (mToolbar instanceof ToolbarTablet) {
-                // On tablet, draw a fake tab strip and toolbar until the compositor is ready to
-                // draw
-
-                // the real tab strip. (On phone, the toolbar is made entirely of Android views,
-                // which
-                // are already initialized.)
-                setBackgroundResource(R.drawable.toolbar_background);
+                onToolbarInflationComplete(findViewById(R.id.toolbar));
             }
-
-            assert mToolbar != null;
         }
+    }
+
+    private void onToolbarInflationComplete(ToolbarLayout toolbar) {
+        mToolbar = toolbar;
+        mToolbarContainer.setToolbar(mToolbar);
+        if (mToolbar instanceof ToolbarTablet) {
+            // On tablet, draw a fake tab strip and toolbar until the compositor is
+            // ready to draw the real tab strip. (On phone, the toolbar is made entirely
+            // of Android views, which are already initialized.)
+            setBackgroundResource(R.drawable.toolbar_background);
+        }
+        assert mToolbar != null;
     }
 
     @Override
