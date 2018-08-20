@@ -1182,8 +1182,9 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest,
 }
 
 // Tests that saving a page from file: URI works.
+// TODO(https://crbug.com/840063): Deflake and reenable.
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest,
-                       ObjectElementsViaFile) {
+                       DISABLED_ObjectElementsViaFile) {
   base::FilePath test_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   GURL url(net::FilePathToFileURL(
