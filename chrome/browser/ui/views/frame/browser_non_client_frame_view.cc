@@ -211,16 +211,15 @@ SkColor BrowserNonClientFrameView::GetTabBackgroundColor(
   // When the background tab color has not been customized, use the actual frame
   // color instead of COLOR_BACKGROUND_TAB; these will differ for single-tab
   // mode and custom window frame colors.
+  const SkColor frame = GetFrameColor(active_state);
   const SkColor background =
       (MD::IsRefreshUi() && !tp->HasCustomColor(color_id))
           ? color_utils::HSLShift(
-                GetFrameColor(),
-                tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB))
+                frame, tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB))
           : GetThemeOrDefaultColor(color_id);
 
-  return opaque
-             ? color_utils::GetResultingPaintColor(background, GetFrameColor())
-             : background;
+  return opaque ? color_utils::GetResultingPaintColor(background, frame)
+                : background;
 }
 
 SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {

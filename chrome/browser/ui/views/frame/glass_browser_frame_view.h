@@ -88,8 +88,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
  private:
   // views::NonClientFrameView:
-  bool DoesIntersectRect(const views::View* target,
-                         const gfx::Rect& rect) const override;
   void ActivationChanged(bool active) override;
 
   // Returns the thickness of the border around the client area (web content,
