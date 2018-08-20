@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/metrics/metrics_pref_names.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -101,6 +102,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Preference value for the "Autocomplete searches and URLs" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* autocompleteSearchPreference;
+// Preference value for the "Preload pages for faster browsing" feature.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* preloadPagesPreference;
+// Preference value for the "Preload pages for faster browsing" for Wifi-Only.
+// TODO(crbug.com/872101): Needs to create the UI to change from Wifi-Only to
+// always
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* preloadPagesWifiOnlyPreference;
+// Preference value for the "Help improve Chromium's features" feature.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* sendDataUsagePreference;
+// Preference value for the "Help improve Chromium's features" for Wifi-Only.
+// TODO(crbug.com/872101): Needs to create the UI to change from Wifi-Only to
+// always
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* sendDataUsageWifiOnlyPreference;
 // Preference value for the "Make searches and browsing better" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* anonymizedDataCollectionPreference;
@@ -133,6 +150,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize authService = _authService;
 @synthesize syncSetupService = _syncSetupService;
 @synthesize autocompleteSearchPreference = _autocompleteSearchPreference;
+@synthesize preloadPagesPreference = _preloadPagesPreference;
+@synthesize preloadPagesWifiOnlyPreference = _preloadPagesWifiOnlyPreference;
+@synthesize sendDataUsagePreference = _sendDataUsagePreference;
+@synthesize sendDataUsageWifiOnlyPreference = _sendDataUsageWifiOnlyPreference;
 @synthesize anonymizedDataCollectionPreference =
     _anonymizedDataCollectionPreference;
 @synthesize syncEverythingSwitchBeingAnimated =
@@ -148,14 +169,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Load model
 
 - (instancetype)
-  initWithPrefService:(PrefService*)prefService
-          syncService:(browser_sync::ProfileSyncService*)syncService
-     syncSetupService:(SyncSetupService*)syncSetupService
-unifiedConsentService:
-    (unified_consent::UnifiedConsentService*)unifiedConsentService {
+initWithUserPrefService:(PrefService*)userPrefService
+       localPrefService:(PrefService*)localPrefService
+            syncService:(browser_sync::ProfileSyncService*)syncService
+       syncSetupService:(SyncSetupService*)syncSetupService
+  unifiedConsentService:
+      (unified_consent::UnifiedConsentService*)unifiedConsentService {
   self = [super init];
   if (self) {
-    DCHECK(prefService);
+    DCHECK(userPrefService);
+    DCHECK(localPrefService);
     DCHECK(syncService);
     DCHECK(syncSetupService);
     DCHECK(unifiedConsentService);
@@ -163,15 +186,29 @@ unifiedConsentService:
     _unifiedConsentService = unifiedConsentService;
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
     prefObserverBridge_ = std::make_unique<PrefObserverBridge>(self);
-    prefChangeRegistrar_.Init(prefService);
+    prefChangeRegistrar_.Init(userPrefService);
     prefObserverBridge_->ObserveChangesForPreference(kUnifiedConsentGiven,
                                                      &prefChangeRegistrar_);
     _autocompleteSearchPreference = [[PrefBackedBoolean alloc]
-        initWithPrefService:prefService
+        initWithPrefService:userPrefService
                    prefName:prefs::kSearchSuggestEnabled];
     [_autocompleteSearchPreference setObserver:self];
+    _preloadPagesPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:prefs::kNetworkPredictionEnabled];
+    [_preloadPagesPreference setObserver:self];
+    _preloadPagesWifiOnlyPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:prefs::kNetworkPredictionWifiOnly];
+    _sendDataUsagePreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:localPrefService
+                   prefName:metrics::prefs::kMetricsReportingEnabled];
+    [_sendDataUsagePreference setObserver:self];
+    _sendDataUsageWifiOnlyPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:localPrefService
+                   prefName:prefs::kMetricsReportingWifiOnly];
     _anonymizedDataCollectionPreference = [[PrefBackedBoolean alloc]
-        initWithPrefService:prefService
+        initWithPrefService:userPrefService
                    prefName:unified_consent::prefs::
                                 kUrlKeyedAnonymizedDataCollectionEnabled];
     [_anonymizedDataCollectionPreference setObserver:self];
@@ -495,10 +532,10 @@ textItemWithItemType:(NSInteger)itemType
           switchItem.on = self.autocompleteSearchPreference.value;
           break;
         case GoogleServicesSettingsCommandIDTogglePreloadPagesService:
-          // Needs to be implemented.
+          switchItem.on = self.preloadPagesPreference.value;
           break;
         case GoogleServicesSettingsCommandIDToggleImproveChromeService:
-          // Needs to be implemented.
+          switchItem.on = self.sendDataUsagePreference.value;
           break;
         case GoogleServicesSettingsCommandIDToggleBetterSearchAndBrowsingService:
           switchItem.on = self.anonymizedDataCollectionPreference.value;
@@ -556,11 +593,19 @@ textItemWithItemType:(NSInteger)itemType
 }
 
 - (void)togglePreloadPagesServiceWithValue:(BOOL)value {
-  // Needs to be implemented.
+  self.preloadPagesPreference.value = value;
+  if (value) {
+    // Should be wifi only, until https://crbug.com/872101 is fixed.
+    self.preloadPagesWifiOnlyPreference.value = YES;
+  }
 }
 
 - (void)toggleImproveChromeServiceWithValue:(BOOL)value {
-  // Needs to be implemented.
+  self.sendDataUsagePreference.value = value;
+  if (value) {
+    // Should be wifi only, until https://crbug.com/872101 is fixed.
+    self.sendDataUsageWifiOnlyPreference.value = YES;
+  }
 }
 
 - (void)toggleBetterSearchAndBrowsingServiceWithValue:(BOOL)value {

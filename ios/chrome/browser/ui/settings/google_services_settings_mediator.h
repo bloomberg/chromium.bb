@@ -34,14 +34,16 @@ class UnifiedConsentService;
 // Authentication service.
 @property(nonatomic, assign) AuthenticationService* authService;
 
-// Designated initializer. |prefService|, |syncService|, |syncSetupService| and
-// |unifiedConsentService| should not be null.
-- (instancetype)initWithPrefService:(PrefService*)prefService
-                        syncService:
-                            (browser_sync::ProfileSyncService*)syncService
-                   syncSetupService:(SyncSetupService*)syncSetupService
-              unifiedConsentService:
-                  (unified_consent::UnifiedConsentService*)unifiedConsentService
+// Designated initializer. All the paramters should not be null.
+// |userPrefService|: preference service from the browser state.
+// |localPrefService|: preference service from the application context.
+- (instancetype)
+initWithUserPrefService:(PrefService*)userPrefService
+       localPrefService:(PrefService*)localPrefService
+            syncService:(browser_sync::ProfileSyncService*)syncService
+       syncSetupService:(SyncSetupService*)syncSetupService
+  unifiedConsentService:
+      (unified_consent::UnifiedConsentService*)unifiedConsentService
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
