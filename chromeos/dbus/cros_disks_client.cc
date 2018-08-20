@@ -177,7 +177,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // CrosDisksClient override.
   void Unmount(const std::string& device_path,
                UnmountOptions options,
-               VoidDBusMethodCallback callback) override {
+               UnmountCallback callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kUnmount);
     dbus::MessageWriter writer(&method_call);
@@ -324,9 +324,9 @@ class CrosDisksClientImpl : public CrosDisksClient {
   }
 
   // Handles the result of Unmount and calls |callback| or |error_callback|.
-  void OnUnmount(VoidDBusMethodCallback callback, dbus::Response* response) {
+  void OnUnmount(UnmountCallback callback, dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(false);
+      std::move(callback).Run(MOUNT_ERROR_UNKNOWN);
       return;
     }
 
@@ -340,15 +340,12 @@ class CrosDisksClientImpl : public CrosDisksClient {
     // the response.
     dbus::MessageReader reader(response);
     uint32_t error_code = 0;
-    if (reader.PopUint32(&error_code) &&
-        CrosDisksMountErrorToChromeMountError(
-            static_cast<cros_disks::MountErrorType>(error_code)) !=
-            MOUNT_ERROR_NONE) {
-      std::move(callback).Run(false);
-      return;
+    MountError mount_error = MOUNT_ERROR_NONE;
+    if (reader.PopUint32(&error_code)) {
+      mount_error = CrosDisksMountErrorToChromeMountError(
+          static_cast<cros_disks::MountErrorType>(error_code));
     }
-
-    std::move(callback).Run(true);
+    std::move(callback).Run(mount_error);
   }
 
   // Handles the result of EnumerateDevices and EnumarateAutoMountableDevices.

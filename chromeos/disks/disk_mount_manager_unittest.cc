@@ -620,7 +620,8 @@ TEST_F(DiskMountManagerTest, Format_FailToUnmount) {
   // In this test unmount will fail, and there should be no attempt to
   // format the device.
 
-  fake_cros_disks_client_->MakeUnmountFail();
+  fake_cros_disks_client_->MakeUnmountFail(
+      chromeos::MOUNT_ERROR_PATH_NOT_MOUNTED);
   // Start test.
   DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
 
@@ -632,7 +633,7 @@ TEST_F(DiskMountManagerTest, Format_FailToUnmount) {
   ASSERT_EQ(2U, observer_->GetEventCount());
   const MountEvent& mount_event = observer_->GetMountEvent(0);
   EXPECT_EQ(DiskMountManager::UNMOUNTING, mount_event.event);
-  EXPECT_EQ(chromeos::MOUNT_ERROR_INTERNAL, mount_event.error_code);
+  EXPECT_EQ(chromeos::MOUNT_ERROR_PATH_NOT_MOUNTED, mount_event.error_code);
   EXPECT_EQ(kDevice1MountPath, mount_event.mount_point.mount_path);
 
   EXPECT_EQ(FormatEvent(DiskMountManager::FORMAT_COMPLETED,
@@ -698,7 +699,8 @@ TEST_F(DiskMountManagerTest, Format_ConcurrentFormatCalls) {
 
   fake_cros_disks_client_->set_unmount_listener(
       base::Bind(&FakeCrosDisksClient::MakeUnmountFail,
-                 base::Unretained(fake_cros_disks_client_)));
+                 base::Unretained(fake_cros_disks_client_),
+                 chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS));
   // Start the test.
   DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
   DiskMountManager::GetInstance()->FormatMountedDevice(kDevice1MountPath);
@@ -1081,7 +1083,7 @@ TEST_F(DiskMountManagerTest, Rename_FailToUnmount) {
   // In this test unmount will fail, and there should be no attempt to
   // rename the device.
 
-  fake_cros_disks_client_->MakeUnmountFail();
+  fake_cros_disks_client_->MakeUnmountFail(chromeos::MOUNT_ERROR_UNKNOWN);
   // Start test.
   DiskMountManager::GetInstance()->RenameMountedDevice(kDevice1MountPath,
                                                        "MYUSB");
@@ -1094,7 +1096,7 @@ TEST_F(DiskMountManagerTest, Rename_FailToUnmount) {
   ASSERT_EQ(2U, observer_->GetEventCount());
   const MountEvent& mount_event = observer_->GetMountEvent(0);
   EXPECT_EQ(DiskMountManager::UNMOUNTING, mount_event.event);
-  EXPECT_EQ(chromeos::MOUNT_ERROR_INTERNAL, mount_event.error_code);
+  EXPECT_EQ(chromeos::MOUNT_ERROR_UNKNOWN, mount_event.error_code);
   EXPECT_EQ(kDevice1MountPath, mount_event.mount_point.mount_path);
 
   EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_COMPLETED,
@@ -1161,7 +1163,8 @@ TEST_F(DiskMountManagerTest, Rename_ConcurrentRenameCalls) {
 
   fake_cros_disks_client_->set_unmount_listener(
       base::Bind(&FakeCrosDisksClient::MakeUnmountFail,
-                 base::Unretained(fake_cros_disks_client_)));
+                 base::Unretained(fake_cros_disks_client_),
+                 chromeos::MOUNT_ERROR_INTERNAL));
   // Start the test.
   DiskMountManager::GetInstance()->RenameMountedDevice(kDevice1MountPath,
                                                        "MYUSB1");

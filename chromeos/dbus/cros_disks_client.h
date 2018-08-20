@@ -283,6 +283,10 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
   typedef base::Callback<void(const DiskInfo& disk_info)>
       GetDevicePropertiesCallback;
 
+  // A callback to handle the result of Unmount.
+  // The argument is the unmount error code.
+  typedef base::OnceCallback<void(MountError error_code)> UnmountCallback;
+
   class Observer {
    public:
     // Called when a mount event signal is received.
@@ -330,10 +334,10 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
                      VoidDBusMethodCallback callback) = 0;
 
   // Calls Unmount method.  On method call completion, |callback| is called
-  // with |true| on success, or with |false| otherwise.
+  // with the error code.
   virtual void Unmount(const std::string& device_path,
                        UnmountOptions options,
-                       VoidDBusMethodCallback callback) = 0;
+                       UnmountCallback callback) = 0;
 
   // Calls EnumerateDevices method.  |callback| is called after the
   // method call succeeds, otherwise, |error_callback| is called.

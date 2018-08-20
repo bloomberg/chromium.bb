@@ -388,10 +388,11 @@ class DiskMountManagerImpl : public DiskMountManager,
   // Callback for UnmountDeviceRecursively.
   void OnUnmountDeviceRecursively(UnmountDeviceRecursivelyCallbackData* cb_data,
                                   const std::string& mount_path,
-                                  bool success) {
+                                  MountError error_code) {
+    bool success = error_code == MOUNT_ERROR_NONE;
     if (success) {
       // Do standard processing for Unmount event.
-      OnUnmountPath(UnmountPathCallback(), mount_path, true /* success */);
+      OnUnmountPath(UnmountPathCallback(), mount_path, MOUNT_ERROR_NONE);
       VLOG(1) << mount_path <<  " unmounted.";
     }
     // This is safe as long as all callbacks are called on the same thread as
@@ -464,7 +465,7 @@ class DiskMountManagerImpl : public DiskMountManager,
   // Callback for UnmountPath.
   void OnUnmountPath(const UnmountPathCallback& callback,
                      const std::string& mount_path,
-                     bool success) {
+                     MountError error_code) {
     MountPointMap::iterator mount_points_it = mount_points_.find(mount_path);
     if (mount_points_it == mount_points_.end()) {
       // The path was unmounted, but not as a result of this unmount request,
@@ -475,26 +476,25 @@ class DiskMountManagerImpl : public DiskMountManager,
     }
 
     NotifyMountStatusUpdate(
-        UNMOUNTING,
-        success ? MOUNT_ERROR_NONE : MOUNT_ERROR_INTERNAL,
+        UNMOUNTING, error_code,
         MountPointInfo(mount_points_it->second.source_path,
                        mount_points_it->second.mount_path,
                        mount_points_it->second.mount_type,
                        mount_points_it->second.mount_condition));
 
     std::string path(mount_points_it->second.source_path);
-    if (success)
+    if (error_code == MOUNT_ERROR_NONE)
       mount_points_.erase(mount_points_it);
 
     DiskMap::iterator disk_iter = disks_.find(path);
     if (disk_iter != disks_.end()) {
       DCHECK(disk_iter->second);
-      if (success)
+      if (error_code == MOUNT_ERROR_NONE)
         disk_iter->second->clear_mount_path();
     }
 
     if (!callback.is_null())
-      callback.Run(success ? MOUNT_ERROR_NONE : MOUNT_ERROR_INTERNAL);
+      callback.Run(error_code);
   }
 
   void OnUnmountPathForFormat(const std::string& device_path,
