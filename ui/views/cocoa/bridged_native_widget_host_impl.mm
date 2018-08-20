@@ -13,11 +13,27 @@
 #include "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_mac.h"
+#include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
 
 namespace views {
+
+namespace {
+
+// Returns true if bounds passed to window in SetBounds should be treated as
+// though they are in screen coordinates.
+bool PositionWindowInScreenCoordinates(Widget* widget,
+                                       Widget::InitParams::Type type) {
+  // Replicate the logic in desktop_aura/desktop_screen_position_client.cc.
+  if (GetAuraWindowTypeForWidgetType(type) == aura::client::WINDOW_TYPE_POPUP)
+    return true;
+
+  return widget && widget->is_top_level();
+}
+
+}  // namespace
 
 BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
     NativeWidgetMac* parent)
@@ -36,6 +52,41 @@ BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
 
 BridgedNativeWidgetPublic* BridgedNativeWidgetHostImpl::bridge() const {
   return bridge_impl_.get();
+}
+
+void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
+  widget_type_ = params.type;
+  bridge_impl_->Init(params);
+
+  // Set a meaningful initial bounds. Note that except for frameless widgets
+  // with no WidgetDelegate, the bounds will be set again by Widget after
+  // initializing the non-client view. In the former case, if bounds were not
+  // set at all, the creator of the Widget is expected to call SetBounds()
+  // before calling Widget::Show() to avoid a kWindowSizeDeterminedLater-sized
+  // (i.e. 1x1) window appearing.
+  bridge()->SetInitialBounds(params.bounds,
+                             native_widget_mac_->GetWidget()->GetMinimumSize(),
+                             GetBoundsOffsetForParent());
+
+  // Widgets for UI controls (usually layered above web contents) start visible.
+  if (widget_type_ == Widget::InitParams::TYPE_CONTROL)
+    bridge_impl_->SetVisibilityState(BridgedNativeWidget::SHOW_INACTIVE);
+}
+
+void BridgedNativeWidgetHostImpl::SetBounds(const gfx::Rect& bounds) {
+  gfx::Rect adjusted_bounds = bounds;
+  adjusted_bounds.Offset(GetBoundsOffsetForParent());
+  bridge()->SetBounds(adjusted_bounds,
+                      native_widget_mac_->GetWidget()->GetMinimumSize());
+}
+
+gfx::Vector2d BridgedNativeWidgetHostImpl::GetBoundsOffsetForParent() const {
+  gfx::Vector2d offset;
+  Widget* widget = native_widget_mac_->GetWidget();
+  BridgedNativeWidgetOwner* parent = bridge_impl_->parent();
+  if (parent && !PositionWindowInScreenCoordinates(widget, widget_type_))
+    offset = parent->GetChildWindowOffset();
+  return offset;
 }
 
 void BridgedNativeWidgetHostImpl::SetRootView(views::View* root_view) {
