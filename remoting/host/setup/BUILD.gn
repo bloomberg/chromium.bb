@@ -34,6 +34,7 @@ source_set("setup") {
   deps = [
     "//base",
     "//google_apis",
+    "//mojo/core/embedder",
     "//remoting/base:authorization",
     "//remoting/host",
     "//remoting/host/native_messaging",

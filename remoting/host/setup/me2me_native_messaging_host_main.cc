@@ -19,6 +19,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "mojo/core/embedder/embedder.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
@@ -88,6 +89,8 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
 #endif  // defined(REMOTING_ENABLE_BREAKPAD)
 
   base::TaskScheduler::CreateAndStartWithDefaultParams("Me2Me");
+
+  mojo::core::Init();
 
   // An IO thread is needed for the pairing registry and URL context getter.
   base::Thread io_thread("io_thread");
