@@ -3322,9 +3322,6 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
   const int bits_used = rc->base_frame_target;
 
-  assert(IMPLIES(cpi->common.show_existing_frame && !rc->is_src_frame_alt_ref,
-                 cpi->common.error_resilient_mode));
-
   // VBR correction is done through rc->vbr_bits_off_target. Based on the
   // sign of this value, a limited % adjustment is made to the target rate
   // of subsequent frames, to try and push it back towards 0. This method
