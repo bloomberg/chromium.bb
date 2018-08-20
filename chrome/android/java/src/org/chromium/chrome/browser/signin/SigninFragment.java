@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -14,6 +13,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -135,9 +135,8 @@ public class SigninFragment extends SigninFragmentBase {
             @Override
             public void onSignInComplete() {
                 if (settingsClicked) {
-                    Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                            getActivity(), AccountManagementFragment.class.getName());
-                    startActivity(intent);
+                    PreferencesLauncher.launchSettingsPage(
+                            getActivity(), SyncAndServicesPreferences.class.getName());
                 }
 
                 recordSigninCompletedHistogramAccountInfo();

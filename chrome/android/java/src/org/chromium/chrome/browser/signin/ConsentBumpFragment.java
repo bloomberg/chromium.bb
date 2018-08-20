@@ -12,6 +12,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
 
 /**
  * This fragment implements the consent bump screen. This is a variation of the sign-in screen that
@@ -52,7 +54,12 @@ public class ConsentBumpFragment extends SigninFragmentBase {
     protected void onSigninAccepted(String accountName, boolean isDefaultAccount,
             boolean settingsClicked, Runnable callback) {
         // TODO(https://crbug.com/869426): Save the consent state.
+        if (settingsClicked) {
+            PreferencesLauncher.launchSettingsPage(
+                    getActivity(), SyncAndServicesPreferences.class.getName());
+        }
         getActivity().finish();
+        callback.run();
     }
 
     @Override

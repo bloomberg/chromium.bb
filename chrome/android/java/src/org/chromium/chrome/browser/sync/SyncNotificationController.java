@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -17,6 +15,7 @@ import android.util.Log;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
@@ -25,7 +24,10 @@ import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
+import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.components.sync.AndroidSyncSettings;
 
 /**
@@ -35,19 +37,14 @@ import org.chromium.components.sync.AndroidSyncSettings;
 public class SyncNotificationController implements ProfileSyncService.SyncStateChangedListener {
     private static final String TAG = "SyncNotificationController";
     private final NotificationManagerProxy mNotificationManager;
-    private final Class<? extends Activity> mPassphraseRequestActivity;
-    private final Class<? extends Fragment> mAccountManagementFragment;
     private final ProfileSyncService mProfileSyncService;
 
-    public SyncNotificationController(Class<? extends Activity> passphraseRequestActivity,
-            Class<? extends Fragment> accountManagementFragment) {
+    public SyncNotificationController() {
         mNotificationManager = new NotificationManagerProxyImpl(
                 (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE));
         mProfileSyncService = ProfileSyncService.get();
         assert mProfileSyncService != null;
-        mPassphraseRequestActivity = passphraseRequestActivity;
-        mAccountManagementFragment = accountManagementFragment;
     }
 
     /**
@@ -151,8 +148,14 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      * @return the intent for opening the settings
      */
     private Intent createSettingsIntent() {
-        return PreferencesLauncher.createIntentForSettingsPage(ContextUtils.getApplicationContext(),
-                mAccountManagementFragment.getCanonicalName());
+        final String fragmentName;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            fragmentName = SyncAndServicesPreferences.class.getName();
+        } else {
+            fragmentName = AccountManagementFragment.class.getName();
+        }
+        return PreferencesLauncher.createIntentForSettingsPage(
+                ContextUtils.getApplicationContext(), fragmentName);
     }
 
     /**
@@ -165,8 +168,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         mProfileSyncService.setPassphrasePrompted(true);
 
         Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.setComponent(new ComponentName(
-                ContextUtils.getApplicationContext(), mPassphraseRequestActivity));
+        intent.setComponent(
+                new ComponentName(ContextUtils.getApplicationContext(), PassphraseActivity.class));
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         // This activity will become the start of a new task on this history stack.
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
