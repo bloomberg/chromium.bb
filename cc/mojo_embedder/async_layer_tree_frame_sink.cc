@@ -133,12 +133,12 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
         local_surface_id_provider_->GetLocalSurfaceIdForFrame(frame);
   } else {
     if (local_surface_id_ == last_submitted_local_surface_id_) {
-      CHECK_EQ(last_submitted_device_scale_factor_,
-               frame.device_scale_factor());
-      CHECK_EQ(last_submitted_size_in_pixels_.height(),
-               frame.size_in_pixels().height());
-      CHECK_EQ(last_submitted_size_in_pixels_.width(),
-               frame.size_in_pixels().width());
+      DCHECK_EQ(last_submitted_device_scale_factor_,
+                frame.device_scale_factor());
+      DCHECK_EQ(last_submitted_size_in_pixels_.height(),
+                frame.size_in_pixels().height());
+      DCHECK_EQ(last_submitted_size_in_pixels_.width(),
+                frame.size_in_pixels().width());
     }
   }
 
