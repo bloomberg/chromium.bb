@@ -49,7 +49,8 @@ class ImageDataFetcher {
   void FetchImageData(
       const GURL& image_url,
       ImageDataFetcherCallback callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation);
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      bool send_cookies = false);
 
   // Like above, but lets the caller set a referrer.
   void FetchImageData(
@@ -57,7 +58,8 @@ class ImageDataFetcher {
       ImageDataFetcherCallback callback,
       const std::string& referrer,
       net::URLRequest::ReferrerPolicy referrer_policy,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation);
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      bool send_cookies = false);
 
   // Test-only method to inject a fetch result directly, w/o regard for how the
   // underlying loading is doing. This requires there to be a single pending

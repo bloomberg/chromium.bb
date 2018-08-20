@@ -29,22 +29,24 @@ IOSImageDataFetcherWrapper::~IOSImageDataFetcherWrapper() {}
 
 void IOSImageDataFetcherWrapper::FetchImageDataWebpDecoded(
     const GURL& image_url,
-    ImageDataFetcherBlock callback) {
+    ImageDataFetcherBlock callback,
+    bool send_cookies) {
   image_data_fetcher_.FetchImageData(image_url,
                                      CallbackForImageDataFetcher(callback),
-                                     NO_TRAFFIC_ANNOTATION_YET);
+                                     NO_TRAFFIC_ANNOTATION_YET, send_cookies);
 }
 
 void IOSImageDataFetcherWrapper::FetchImageDataWebpDecoded(
     const GURL& image_url,
     ImageDataFetcherBlock callback,
     const std::string& referrer,
-    net::URLRequest::ReferrerPolicy referrer_policy) {
+    net::URLRequest::ReferrerPolicy referrer_policy,
+    bool send_cookies) {
   DCHECK(callback);
 
   image_data_fetcher_.FetchImageData(
       image_url, CallbackForImageDataFetcher(callback), referrer,
-      referrer_policy, NO_TRAFFIC_ANNOTATION_YET);
+      referrer_policy, NO_TRAFFIC_ANNOTATION_YET, send_cookies);
 }
 
 void IOSImageDataFetcherWrapper::SetDataUseServiceName(

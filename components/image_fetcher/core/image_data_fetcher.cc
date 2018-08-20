@@ -67,11 +67,12 @@ void ImageDataFetcher::SetImageDownloadLimit(
 void ImageDataFetcher::FetchImageData(
     const GURL& image_url,
     ImageDataFetcherCallback callback,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    bool send_cookies) {
   FetchImageData(
       image_url, std::move(callback), /*referrer=*/std::string(),
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      traffic_annotation);
+      traffic_annotation, send_cookies);
 }
 
 void ImageDataFetcher::FetchImageData(
@@ -79,15 +80,18 @@ void ImageDataFetcher::FetchImageData(
     ImageDataFetcherCallback callback,
     const std::string& referrer,
     net::URLRequest::ReferrerPolicy referrer_policy,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    bool send_cookies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = image_url;
   request->referrer_policy = referrer_policy;
   request->referrer = GURL(referrer);
-  request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES |
-                        net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  if (!send_cookies) {
+    request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
+                          net::LOAD_DO_NOT_SAVE_COOKIES |
+                          net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  }
 
   // TODO(https://crbug.com/808498) re-add data use measurement once
   // SimpleURLLoader supports it.  Parameter:
