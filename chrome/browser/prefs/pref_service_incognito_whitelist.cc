@@ -182,11 +182,10 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #if defined(OS_WIN)
     prefs::kLastProfileResetTimestamp, prefs::kChromeCleanerResetPending,
 #endif
-    prefs::kNewTabPageLocationOverride, prefs::kProfileIconVersion,
-    prefs::kRestoreOnStartup, prefs::kSessionExitedCleanly,
-    prefs::kSessionExitType, prefs::kObservedSessionTime,
-    prefs::kRecurrentSSLInterstitial, prefs::kSiteEngagementLastUpdateTime,
-    prefs::kURLsToRestoreOnStartup,
+    prefs::kNewTabPageLocationOverride, prefs::kRestoreOnStartup,
+    prefs::kSessionExitedCleanly, prefs::kSessionExitType,
+    prefs::kObservedSessionTime, prefs::kRecurrentSSLInterstitial,
+    prefs::kSiteEngagementLastUpdateTime, prefs::kURLsToRestoreOnStartup,
 
 #if BUILDFLAG(ENABLE_RLZ)
     prefs::kRlzPingDelaySeconds,
@@ -234,8 +233,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kSessionWaitForInitialUserActivity, prefs::kLastSessionType,
     prefs::kLastSessionLength, prefs::kTermsOfServiceURL,
     prefs::kAttestationEnabled, prefs::kAttestationExtensionWhitelist,
-    prefs::kMultiProfileNeverShowIntro,
-    prefs::kMultiProfileWarningShowDismissed, prefs::kMultiProfileUserBehavior,
     prefs::kFirstRunTutorialShown, prefs::kSAMLOfflineSigninTimeLimit,
     prefs::kSAMLLastGAIASignInTime, prefs::kTimeOnOobe,
     prefs::kFileSystemProviderMounted, prefs::kTouchVirtualKeyboardEnabled,
@@ -313,14 +310,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kImportDialogBookmarks, prefs::kImportDialogHistory,
     prefs::kImportDialogSavedPasswords, prefs::kImportDialogSearchEngine,
 
-    prefs::kProfileAvatarIndex, prefs::kProfileUsingDefaultName,
-    prefs::kProfileName, prefs::kProfileUsingDefaultAvatar,
-    prefs::kProfileUsingGAIAAvatar,
-
-    prefs::kProfileGAIAInfoUpdateTime, prefs::kProfileGAIAInfoPictureURL,
-
-    prefs::kProfileAvatarTutorialShown,
-
     prefs::kInvertNotificationShown,
 
     prefs::kPrintingEnabled, prefs::kPrintPreviewDisabled,
@@ -373,10 +362,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #if defined(OS_ANDROID)
     prefs::kCrashReportingEnabled,
 #endif  // defined(OS_ANDROID)
-
-    prefs::kProfileLastUsed, prefs::kProfilesLastActive,
-    prefs::kProfilesNumCreated, prefs::kProfileInfoCache,
-    prefs::kProfileCreatedByVersion, prefs::kProfilesDeleted,
 
     prefs::kStabilityOtherUserCrashCount, prefs::kStabilityKernelCrashCount,
     prefs::kStabilitySystemUncleanShutdownCount,
@@ -466,8 +451,7 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kDeviceEnrollmentAutoStart, prefs::kDeviceEnrollmentCanExit,
     prefs::kDeviceDMToken, prefs::kTimesHIDDialogShown,
     prefs::kUsersLastInputMethod, prefs::kEchoCheckedOffers,
-    prefs::kCachedMultiProfileUserBehavior, prefs::kInitialLocale,
-    prefs::kOobeComplete, prefs::kOobeScreenPending,
+    prefs::kInitialLocale, prefs::kOobeComplete, prefs::kOobeScreenPending,
     prefs::kOobeControllerDetected, prefs::kCanShowOobeGoodiesPage,
     prefs::kDeviceRegistered, prefs::kEnrollmentRecoveryRequired,
     prefs::kServerBackedDeviceState, prefs::kCustomizationDefaultWallpaperURL,
