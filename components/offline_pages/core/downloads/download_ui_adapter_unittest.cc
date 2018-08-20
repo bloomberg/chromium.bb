@@ -91,6 +91,8 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
                                  const ClientId& item) override {
     return maybe_suppress_notification_;
   }
+  MOCK_METHOD2(GetShareInfoForItem,
+               void(const ContentId&, OfflineContentProvider::ShareCallback));
 
   bool is_visible = true;
   bool maybe_suppress_notification_ = false;
@@ -679,40 +681,14 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemBadDecode) {
 
 TEST_F(DownloadUIAdapterTest, GetShareInfoForItem) {
   AddInitialPage(kTestClientIdPrefetch);
-  bool called = false;
+
+  EXPECT_CALL(*adapter_delegate, GetShareInfoForItem(kTestContentId1, _));
   auto callback = base::BindLambdaForTesting(
       [&](const offline_items_collection::ContentId& id,
           std::unique_ptr<offline_items_collection::OfflineItemShareInfo>
-              share_info) {
-        EXPECT_EQ(kTestContentId1, id);
-        // TODO(853850): Properly test that the correct URI is used once
-        // supported.
-        EXPECT_FALSE(share_info);
-        called = true;
-      });
-
+              share_info) {});
   adapter->GetShareInfoForItem(kTestContentId1, callback);
   PumpLoop();
-
-  EXPECT_TRUE(called);
-}
-
-TEST_F(DownloadUIAdapterTest, GetShareInfoForItemInvalidItem) {
-  AddInitialPage(kTestClientIdPrefetch);
-  const ContentId kContentID("not", "valid");
-  bool called = false;
-  auto callback = base::BindLambdaForTesting(
-      [&](const offline_items_collection::ContentId& id,
-          std::unique_ptr<offline_items_collection::OfflineItemShareInfo>
-              share_info) {
-        EXPECT_EQ(kContentID, id);
-        EXPECT_FALSE(share_info);
-        called = true;
-      });
-  adapter->GetShareInfoForItem(kContentID, callback);
-  PumpLoop();
-
-  EXPECT_TRUE(called);
 }
 
 TEST_F(DownloadUIAdapterTest, ThumbnailAddedUpdatesItem) {

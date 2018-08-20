@@ -22,10 +22,11 @@
 
 using ContentId = offline_items_collection::ContentId;
 using LaunchLocation = offline_items_collection::LaunchLocation;
-using OfflineItem = offline_items_collection::OfflineItem;
 using OfflineContentProvider = offline_items_collection::OfflineContentProvider;
 using OfflineContentAggregator =
     offline_items_collection::OfflineContentAggregator;
+using OfflineItem = offline_items_collection::OfflineItem;
+using OfflineItemShareInfo = offline_items_collection::OfflineItemShareInfo;
 
 namespace offline_pages {
 class ThumbnailDecoder;
@@ -66,6 +67,10 @@ class DownloadUIAdapter : public OfflineContentProvider,
     // depending on flags and origin.
     virtual bool MaybeSuppressNotification(const std::string& origin,
                                            const ClientId& id) = 0;
+
+    // Share item to other apps.
+    virtual void GetShareInfoForItem(const ContentId& id,
+                                     ShareCallback share_callback) = 0;
   };
 
   // Create the adapter. thumbnail_decoder may be null, in which case,
@@ -96,7 +101,7 @@ class DownloadUIAdapter : public OfflineContentProvider,
   void GetVisualsForItem(const ContentId& id,
                          VisualsCallback callback) override;
   void GetShareInfoForItem(const ContentId& id,
-                           ShareCallback callback) override;
+                           ShareCallback share_callback) override;
   void AddObserver(OfflineContentProvider::Observer* observer) override;
   void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 
