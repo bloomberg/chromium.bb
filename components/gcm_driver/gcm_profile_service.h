@@ -30,10 +30,6 @@ namespace identity {
 class IdentityManager;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -57,7 +53,6 @@ class GCMProfileService : public KeyedService {
   GCMProfileService(
       PrefService* prefs,
       base::FilePath path,
-      net::URLRequestContextGetter* request_context,
       base::RepeatingCallback<
           void(base::WeakPtr<GCMProfileService>,
                network::mojom::ProxyResolvingSocketFactoryRequest)>
