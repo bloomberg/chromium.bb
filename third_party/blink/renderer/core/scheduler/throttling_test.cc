@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 using testing::ElementsAre;
+using testing::AnyOf;
 
 namespace blink {
 
@@ -59,8 +60,7 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
 
 class BackgroundRendererThrottlingTest : public SimTest {};
 
-TEST_F(BackgroundRendererThrottlingTest,
-       DISABLED_BackgroundRenderersAreThrottled) {
+TEST_F(BackgroundRendererThrottlingTest, BackgroundRenderersAreThrottled) {
   SimRequest main_resource("https://example.com/", "text/html");
 
   LoadURL("https://example.com/");
@@ -72,7 +72,7 @@ TEST_F(BackgroundRendererThrottlingTest,
       "     console.log('called f');"
       "     setTimeout(f, 10, repetitions - 1);"
       "  }"
-      "  setTimeout(f, 10, 3);"
+      "  setTimeout(f, 10, 50);"
       "</script>)");
 
   Platform::Current()
@@ -81,12 +81,12 @@ TEST_F(BackgroundRendererThrottlingTest,
       ->GetWebMainThreadSchedulerForTest()
       ->SetRendererBackgrounded(true);
 
-  // Make sure that we run a task once a second.
-  for (int i = 0; i < 3; ++i) {
-    test::RunDelayedTasks(TimeDelta::FromSeconds(1));
-    EXPECT_THAT(ConsoleMessages(), ElementsAre("called f"));
-    ConsoleMessages().clear();
-  }
+  // Make sure that we run no more than one task a second.
+  test::RunDelayedTasks(TimeDelta::FromMilliseconds(3000));
+  EXPECT_THAT(
+      ConsoleMessages(),
+      AnyOf(ElementsAre("called f", "called f", "called f"),
+            ElementsAre("called f", "called f", "called f", "called f")));
 }
 
 }  // namespace blink
