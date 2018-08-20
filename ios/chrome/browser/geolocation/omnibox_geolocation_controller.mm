@@ -457,7 +457,8 @@ const char* const kGeolocationAuthorizationActionNewUser =
     web::NavigationManager* navigationManager =
         tab.webState->GetNavigationManager();
     web::NavigationItem* item = navigationManager->GetVisibleItem();
-    if ([self addLocationToNavigationItem:item browserState:tab.browserState]) {
+    if (item &&
+        [self addLocationToNavigationItem:item browserState:tab.browserState]) {
       navigationManager->Reload(web::ReloadType::NORMAL,
                                 false /* check_for_repost */);
     }
