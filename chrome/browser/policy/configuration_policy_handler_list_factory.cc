@@ -16,19 +16,22 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
+#include "chrome/browser/policy/browsing_history_policy_handler.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/policy/file_selection_dialogs_policy_handler.h"
 #include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #include "chrome/browser/policy/network_prediction_policy_handler.h"
+#include "chrome/browser/profiles/force_safe_search_policy_handler.h"
+#include "chrome/browser/profiles/force_youtube_safety_mode_policy_handler.h"
 #include "chrome/browser/profiles/guest_mode_policy_handler.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
 #include "chrome/browser/spellchecker/spellcheck_language_policy_handler.h"
+#include "chrome/browser/ssl/secure_origin_policy_handler.h"
 #include "chrome/browser/supervised_user/supervised_user_creation_policy_handler.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_address_policy_handler.h"
 #include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
@@ -53,7 +56,6 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
-#include "components/prefs/pref_value_map.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_policy_handler.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -846,133 +848,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 };
 // clang-format on
 
-class ForceSafeSearchPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  ForceSafeSearchPolicyHandler()
-      : TypeCheckingPolicyHandler(key::kForceSafeSearch,
-                                  base::Value::Type::BOOLEAN) {}
-  ~ForceSafeSearchPolicyHandler() override {}
-
-  // ConfigurationPolicyHandler implementation:
-  void ApplyPolicySettings(const PolicyMap& policies,
-                           PrefValueMap* prefs) override {
-    // If either of the new ForceGoogleSafeSearch, ForceYouTubeSafetyMode or
-    // ForceYouTubeRestrict policies are defined, then this one should be
-    // ignored. crbug.com/476908, crbug.com/590478
-    // Note: Those policies are declared in kSimplePolicyMap above, except
-    // ForceYouTubeSafetyMode, which has been replaced by ForceYouTubeRestrict.
-    if (policies.GetValue(key::kForceGoogleSafeSearch) ||
-        policies.GetValue(key::kForceYouTubeSafetyMode) ||
-        policies.GetValue(key::kForceYouTubeRestrict)) {
-      return;
-    }
-    const base::Value* value = policies.GetValue(policy_name());
-    if (value) {
-      bool enabled;
-      prefs->SetValue(prefs::kForceGoogleSafeSearch, value->CreateDeepCopy());
-
-      // Note that ForceYouTubeRestrict is an int policy, we cannot simply deep
-      // copy value, which is a boolean.
-      if (value->GetAsBoolean(&enabled)) {
-        prefs->SetValue(
-            prefs::kForceYouTubeRestrict,
-            std::make_unique<base::Value>(
-                enabled ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
-                        : safe_search_util::YOUTUBE_RESTRICT_OFF));
-      }
-    }
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ForceSafeSearchPolicyHandler);
-};
-
-class ForceYouTubeSafetyModePolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  ForceYouTubeSafetyModePolicyHandler()
-      : TypeCheckingPolicyHandler(key::kForceYouTubeSafetyMode,
-                                  base::Value::Type::BOOLEAN) {}
-  ~ForceYouTubeSafetyModePolicyHandler() override {}
-
-  // ConfigurationPolicyHandler implementation:
-  void ApplyPolicySettings(const PolicyMap& policies,
-                           PrefValueMap* prefs) override {
-    // If only the deprecated ForceYouTubeSafetyMode policy is set,
-    // but not ForceYouTubeRestrict, set ForceYouTubeRestrict to Moderate.
-    if (policies.GetValue(key::kForceYouTubeRestrict))
-      return;
-
-    const base::Value* value = policies.GetValue(policy_name());
-    bool enabled;
-    if (value && value->GetAsBoolean(&enabled)) {
-      prefs->SetValue(prefs::kForceYouTubeRestrict,
-                      std::make_unique<base::Value>(
-                          enabled ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
-                                  : safe_search_util::YOUTUBE_RESTRICT_OFF));
-    }
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ForceYouTubeSafetyModePolicyHandler);
-};
-
-class BrowsingHistoryPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  BrowsingHistoryPolicyHandler()
-      : TypeCheckingPolicyHandler(key::kAllowDeletingBrowserHistory,
-                                  base::Value::Type::BOOLEAN) {}
-  ~BrowsingHistoryPolicyHandler() override {}
-
-  void ApplyPolicySettings(const PolicyMap& policies,
-                           PrefValueMap* prefs) override {
-    const base::Value* value = policies.GetValue(policy_name());
-    bool deleting_history_allowed;
-    if (value && value->GetAsBoolean(&deleting_history_allowed) &&
-        !deleting_history_allowed) {
-      prefs->SetBoolean(
-          browsing_data::prefs::kDeleteBrowsingHistory, false);
-      prefs->SetBoolean(browsing_data::prefs::kDeleteBrowsingHistoryBasic,
-                        false);
-      prefs->SetBoolean(browsing_data::prefs::kDeleteDownloadHistory, false);
-    }
-  }
-};
-
-class SecureOriginPolicyHandler : public SchemaValidatingPolicyHandler {
- public:
-  SecureOriginPolicyHandler(const char* policy_name, Schema schema)
-      : SchemaValidatingPolicyHandler(policy_name,
-                                      schema.GetKnownProperty(policy_name),
-                                      SCHEMA_STRICT) {
-    DCHECK(policy_name == key::kUnsafelyTreatInsecureOriginAsSecure ||
-           policy_name == key::kOverrideSecurityRestrictionsOnInsecureOrigin);
-  }
-
- protected:
-  void ApplyPolicySettings(const PolicyMap& policies,
-                           PrefValueMap* prefs) override {
-    const base::Value* value = policies.GetValue(policy_name());
-    if (!value)
-      return;
-
-    std::string pref_string;
-    for (const auto& list_entry : value->GetList()) {
-      if (!pref_string.empty())
-        pref_string.append(",");
-      pref_string.append(list_entry.GetString());
-    }
-    prefs->SetString(prefs::kUnsafelyTreatInsecureOriginAsSecure, pref_string);
-  }
-};
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void GetExtensionAllowedTypesMap(
     std::vector<std::unique_ptr<StringMappingListPolicyHandler::MappingEntry>>*
         result) {
   // Mapping from extension type names to Manifest::Type.
   for (size_t index = 0;
-       index < extensions::schema_constants::kAllowedTypesMapSize;
-       ++index) {
+       index < extensions::schema_constants::kAllowedTypesMapSize; ++index) {
     const extensions::schema_constants::AllowedTypesMapEntry& entry =
         extensions::schema_constants::kAllowedTypesMap[index];
     result->push_back(
