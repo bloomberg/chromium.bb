@@ -193,11 +193,11 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                                   &tracing_controller_,
                                   PausedStateToString),
       url_tracer_("FrameScheduler.URL", this),
-      task_queue_throttled_(false,
-                            "FrameScheduler.TaskQueueThrottled",
-                            this,
-                            &tracing_controller_,
-                            YesNoStateToString),
+      task_queues_throttled_(false,
+                             "FrameScheduler.TaskQueuesThrottled",
+                             this,
+                             &tracing_controller_,
+                             YesNoStateToString),
       active_connection_count_(0),
       subresource_loading_pause_count_(0u),
       has_active_connection_(false,
@@ -666,27 +666,33 @@ void FrameSchedulerImpl::SetPageKeepActiveForTracing(bool keep_active) {
 }
 
 void FrameSchedulerImpl::UpdatePolicy() {
-  // Per-frame (stoppable) task queues will be frozen after 5mins in
-  // background. They will be resumed when the page is visible.
+  bool task_queues_were_throttled = task_queues_throttled_;
+  task_queues_throttled_ = ShouldThrottleTaskQueues();
+
   for (const auto& task_queue_and_voter :
        frame_task_queue_controller_->GetAllTaskQueuesAndVoters()) {
     UpdateQueuePolicy(task_queue_and_voter.first, task_queue_and_voter.second);
+    if (task_queues_were_throttled != task_queues_throttled_) {
+      UpdateTaskQueueThrottling(task_queue_and_voter.first,
+                                task_queues_throttled_);
+    }
   }
-
-  UpdateThrottling();
 
   NotifyLifecycleObservers();
 }
 
 void FrameSchedulerImpl::UpdateQueuePolicy(
-    const scoped_refptr<MainThreadTaskQueue>& queue,
+    MainThreadTaskQueue* queue,
     TaskQueue::QueueEnabledVoter* voter) {
   DCHECK(queue);
-  UpdatePriority(queue.get());
+  UpdatePriority(queue);
   if (!voter)
     return;
   DCHECK(parent_page_scheduler_);
   bool queue_paused = frame_paused_ && queue->CanBePaused();
+  // Per-frame freezable task queues will be frozen after 5 mins in background
+  // on Android, and if the browser freezes the page in the background. They
+  // will be resumed when the page is visible.
   bool queue_frozen =
       parent_page_scheduler_->IsFrozen() && queue->CanBeFrozen();
   // Override freezing if keep-active is true.
@@ -728,7 +734,7 @@ FrameSchedulerImpl::OnActiveConnectionCreated() {
   return std::make_unique<FrameSchedulerImpl::ActiveConnectionHandleImpl>(this);
 }
 
-bool FrameSchedulerImpl::ShouldThrottleTimers() const {
+bool FrameSchedulerImpl::ShouldThrottleTaskQueues() const {
   if (!RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled())
     return false;
   if (parent_page_scheduler_ && parent_page_scheduler_->IsAudioPlaying())
@@ -739,30 +745,17 @@ bool FrameSchedulerImpl::ShouldThrottleTimers() const {
          !frame_visible_ && IsCrossOrigin();
 }
 
-void FrameSchedulerImpl::UpdateThrottling() {
-  // |task_queue_throttled_| is updated regardless of whether any throttleable
-  // task queues exist so that the ref count for new queues can be initialized
-  // independently. |task_queue_throttled_| should not be change elsewhere, and
-  // neither should the ref counts, except for where new task queues are
-  // initialized.
-  bool should_throttle = ShouldThrottleTimers();
-  if (task_queue_throttled_ == should_throttle)
+void FrameSchedulerImpl::UpdateTaskQueueThrottling(
+    MainThreadTaskQueue* task_queue,
+    bool should_throttle) {
+  if (!task_queue->CanBeThrottled())
     return;
-  task_queue_throttled_ = should_throttle;
-
-  // TODO(altimin): UpdateQueuePolicy already iterates over all task queues
-  // before calling this. Try to fold this into UpdateQueuePolicy.
-  for (const auto& task_queue_and_voter :
-       frame_task_queue_controller_->GetAllTaskQueuesAndVoters()) {
-    if (!task_queue_and_voter.first->CanBeThrottled())
-      continue;
-    if (should_throttle) {
-      main_thread_scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
-          task_queue_and_voter.first);
-    } else {
-      main_thread_scheduler_->task_queue_throttler()->DecreaseThrottleRefCount(
-          task_queue_and_voter.first);
-    }
+  if (should_throttle) {
+    main_thread_scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
+        task_queue);
+  } else {
+    main_thread_scheduler_->task_queue_throttler()->DecreaseThrottleRefCount(
+        task_queue);
   }
 }
 
@@ -912,8 +905,8 @@ void FrameSchedulerImpl::OnTaskQueueCreated(
   DCHECK(parent_page_scheduler_);
 
   task_queue->SetBlameContext(blame_context_);
-  if (voter)
-    voter->SetQueueEnabled(!frame_paused_);
+  UpdateQueuePolicy(task_queue, voter);
+
   if (task_queue->CanBeThrottled()) {
     CPUTimeBudgetPool* time_budget_pool =
         parent_page_scheduler_->BackgroundCPUTimeBudgetPool();
@@ -921,9 +914,8 @@ void FrameSchedulerImpl::OnTaskQueueCreated(
       time_budget_pool->AddQueue(
           main_thread_scheduler_->tick_clock()->NowTicks(), task_queue);
     }
-    if (task_queue_throttled_) {
-      main_thread_scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
-          task_queue);
+    if (task_queues_throttled_) {
+      UpdateTaskQueueThrottling(task_queue, true);
     }
   }
 }
