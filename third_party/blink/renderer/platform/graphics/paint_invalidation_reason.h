@@ -31,6 +31,8 @@ enum class PaintInvalidationReason : uint8_t {
   // Scroll bars, scroll corner, etc.
   kScrollControl,
   kOutline,
+  // The object is invalidated as a part of a subtree full invalidation (forced
+  // by LayoutObject::SetSubtreeShouldDoFullPaintInvalidation()).
   kSubtree,
   kSVGResource,
   kBackground,
@@ -51,13 +53,7 @@ enum class PaintInvalidationReason : uint8_t {
   // invalidation may be implicit, e.g. when a layer is created.
   kFullLayer,
   kForTesting,
-  // kDelayedFull means that kFull is needed in order to fully paint the
-  // content, but that painting of the object can be delayed until a future
-  // frame. This can be the case for an object whose content is not visible to
-  // the user.
-  kDelayedFull,
-
-  kMax = kDelayedFull
+  kMax = kForTesting,
 };
 
 PLATFORM_EXPORT const char* PaintInvalidationReasonToString(
@@ -69,12 +65,6 @@ inline bool IsFullPaintInvalidationReason(PaintInvalidationReason reason) {
   if (RuntimeEnabledFeatures::LayoutNGEnabled())
     return reason >= PaintInvalidationReason::kSelection;
   return reason >= PaintInvalidationReason::kFull;
-}
-
-inline bool IsImmediateFullPaintInvalidationReason(
-    PaintInvalidationReason reason) {
-  return IsFullPaintInvalidationReason(reason) &&
-         reason != PaintInvalidationReason::kDelayedFull;
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,

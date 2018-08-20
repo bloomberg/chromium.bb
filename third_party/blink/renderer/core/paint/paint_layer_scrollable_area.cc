@@ -565,7 +565,7 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
 
   if (requires_paint_invalidation) {
     GetLayoutBox()->SetShouldDoFullPaintInvalidation();
-    GetLayoutBox()->SetMayNeedPaintInvalidationSubtree();
+    GetLayoutBox()->SetSubtreeShouldCheckForPaintInvalidation();
   } else if (!UsesCompositedScrolling()) {
     // If any scrolling content might have ben clipped by a cull rect, then
     // that cull rect could be affected by scroll offset. For composited
@@ -1892,10 +1892,8 @@ bool PaintLayerScrollableArea::HasNonCompositedStickyDescendants() const {
 
 void PaintLayerScrollableArea::InvalidatePaintForStickyDescendants() {
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
-    for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys()) {
-      sticky_layer->GetLayoutObject()
-          .SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-    }
+    for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys())
+      sticky_layer->GetLayoutObject().SetSubtreeShouldDoFullPaintInvalidation();
   }
 }
 
@@ -2779,7 +2777,7 @@ void PaintLayerScrollableArea::SetScrollCornerAndResizerVisualRect(
 }
 
 void PaintLayerScrollableArea::ScrollControlWasSetNeedsPaintInvalidation() {
-  GetLayoutBox()->SetMayNeedPaintInvalidation();
+  GetLayoutBox()->SetShouldCheckForPaintInvalidation();
 }
 
 void PaintLayerScrollableArea::DidScrollWithScrollbar(

@@ -1781,8 +1781,8 @@ void LayoutBox::ImageChanged(WrappedImagePtr image,
     SetNeedsPaintPropertyUpdate();
   }
 
-  // TODO(chrishtr): support PaintInvalidationReason::kDelayedFull for animated
-  // border images.
+  // TODO(chrishtr): support delayed paint invalidation for animated border
+  // images.
   if ((StyleRef().BorderImage().GetImage() &&
        StyleRef().BorderImage().GetImage()->Data() == image) ||
       (StyleRef().MaskBoxImage().GetImage() &&
@@ -1864,14 +1864,14 @@ void LayoutBox::LocationChanged() {
   // The location may change because of layout of other objects. Should check
   // this object for paint invalidation.
   if (!NeedsLayout())
-    SetMayNeedPaintInvalidation();
+    SetShouldCheckForPaintInvalidation();
 }
 
 void LayoutBox::SizeChanged() {
   // The size may change because of layout of other objects. Should check this
   // object for paint invalidation.
   if (!NeedsLayout())
-    SetMayNeedPaintInvalidation();
+    SetShouldCheckForPaintInvalidation();
 
   if (GetNode() && GetNode()->IsElementNode()) {
     Element& element = ToElement(*GetNode());
@@ -1895,25 +1895,23 @@ void LayoutBox::EnsureIsReadyForPaintInvalidation() {
   if (MayNeedPaintInvalidationAnimatedBackgroundImage() &&
       !BackgroundIsKnownToBeObscured()) {
     SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-        PaintInvalidationReason::kDelayedFull);
+        PaintInvalidationReason::kBackground);
+    SetShouldDelayFullPaintInvalidation();
   }
 
-  if (FullPaintInvalidationReason() != PaintInvalidationReason::kDelayedFull ||
-      !IntersectsVisibleViewport())
+  if (!ShouldDelayFullPaintInvalidation() || !IntersectsVisibleViewport())
     return;
 
-  // Do regular full paint invalidation if the object with
-  // PaintInvalidationReason::kDelayedFull is onscreen.
-  // Conservatively assume the delayed paint invalidation was caused by
-  // background image change.
+  // Do regular full paint invalidation if the object with delayed paint
+  // invalidation is onscreen. Conservatively assume the delayed paint
+  // invalidation was caused by background image change.
   SetBackgroundChangedSinceLastPaintInvalidation();
   SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-      PaintInvalidationReason::kFull);
+      FullPaintInvalidationReason());
 }
 
-PaintInvalidationReason LayoutBox::InvalidatePaint(
-    const PaintInvalidatorContext& context) const {
-  return BoxPaintInvalidator(*this, context).InvalidatePaint();
+void LayoutBox::InvalidatePaint(const PaintInvalidatorContext& context) const {
+  BoxPaintInvalidator(*this, context).InvalidatePaint();
 }
 
 LayoutRect LayoutBox::OverflowClipRect(

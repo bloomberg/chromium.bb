@@ -9,12 +9,12 @@
         {
           "object": "LayoutTableRow TR id='row'",
           "rect": [8, 10, 210, 102],
-          "reason": "full"
+          "reason": "background"
         },
         {
           "object": "LayoutImage IMG id='image'",
           "rect": [8, 114, 50, 50],
-          "reason": "full"
+          "reason": "image"
         }
       ]
     }

@@ -340,11 +340,8 @@ inline Element* RangeInputType::SliderTrackElement() const {
 
 void RangeInputType::ListAttributeTargetChanged() {
   tick_mark_values_dirty_ = true;
-  if (GetElement().GetLayoutObject()) {
-    GetElement()
-        .GetLayoutObject()
-        ->SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-  }
+  if (auto* object = GetElement().GetLayoutObject())
+    object->SetSubtreeShouldDoFullPaintInvalidation();
   Element* slider_track_element = SliderTrackElement();
   if (slider_track_element->GetLayoutObject())
     slider_track_element->GetLayoutObject()->SetNeedsLayout(

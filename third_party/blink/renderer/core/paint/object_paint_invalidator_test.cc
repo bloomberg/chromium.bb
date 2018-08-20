@@ -272,7 +272,7 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
   EXPECT_EQ(LayoutRect(10, 10, 50, 50), target->PartialInvalidationLocalRect());
   target->InvalidatePaintRectangle(LayoutRect(30, 30, 60, 60));
   EXPECT_EQ(LayoutRect(10, 10, 80, 80), target->PartialInvalidationLocalRect());
-  EXPECT_TRUE(target->MayNeedPaintInvalidation());
+  EXPECT_TRUE(target->ShouldCheckForPaintInvalidation());
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_EQ(LayoutRect(), target->PartialInvalidationLocalRect());
@@ -331,7 +331,7 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
 
   // Simulate a change without full invalidation or selection change.
   GetDocument().View()->SetTracksPaintInvalidations(true);
-  target->SetMayNeedPaintInvalidation();
+  target->SetShouldCheckForPaintInvalidation();
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_TRUE(graphics_layer->GetRasterInvalidationTracking()
                   ->Invalidations()

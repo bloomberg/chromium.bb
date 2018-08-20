@@ -20,7 +20,7 @@ class BlockPaintInvalidator {
   BlockPaintInvalidator(const LayoutBlock& block) : block_(block) {}
 
   void ClearPreviousVisualRects();
-  PaintInvalidationReason InvalidatePaint(const PaintInvalidatorContext&);
+  void InvalidatePaint(const PaintInvalidatorContext&);
 
  private:
   const LayoutBlock& block_;
