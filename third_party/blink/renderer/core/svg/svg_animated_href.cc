@@ -44,20 +44,20 @@ const SVGString* SVGAnimatedHref::CurrentValue() const {
 }
 
 String SVGAnimatedHref::baseVal() {
-  UseCounter::Count(contextElement()->GetDocument(),
+  UseCounter::Count(ContextElement()->GetDocument(),
                     WebFeature::kSVGHrefBaseVal);
   return BackingString()->SVGAnimatedString::baseVal();
 }
 
 void SVGAnimatedHref::setBaseVal(const String& value,
                                  ExceptionState& exception_state) {
-  UseCounter::Count(contextElement()->GetDocument(),
+  UseCounter::Count(ContextElement()->GetDocument(),
                     WebFeature::kSVGHrefBaseVal);
   return BackingString()->SVGAnimatedString::setBaseVal(value, exception_state);
 }
 
 String SVGAnimatedHref::animVal() {
-  UseCounter::Count(contextElement()->GetDocument(),
+  UseCounter::Count(ContextElement()->GetDocument(),
                     WebFeature::kSVGHrefAnimVal);
   return BackingString()->SVGAnimatedString::animVal();
 }

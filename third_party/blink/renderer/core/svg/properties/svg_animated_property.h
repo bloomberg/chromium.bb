@@ -62,7 +62,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
     return static_cast<AnimatedPropertyType>(type_);
   }
 
-  SVGElement* contextElement() const { return context_element_; }
+  SVGElement* ContextElement() const { return context_element_; }
 
   const QualifiedName& AttributeName() const { return attribute_name_; }
 
@@ -191,12 +191,12 @@ class SVGAnimatedProperty : public SVGAnimatedPropertyCommon<Property> {
     base_value_updated_ = true;
 
     DCHECK(this->AttributeName() != QualifiedName::Null());
-    this->contextElement()->InvalidateSVGAttributes();
-    this->contextElement()->SvgAttributeBaseValChanged(this->AttributeName());
+    this->ContextElement()->InvalidateSVGAttributes();
+    this->ContextElement()->SvgAttributeBaseValChanged(this->AttributeName());
   }
 
   PrimitiveType animVal() {
-    this->contextElement()->EnsureAttributeAnimValUpdated();
+    this->ContextElement()->EnsureAttributeAnimValUpdated();
     return this->CurrentValue()->Value();
   }
 
@@ -255,7 +255,7 @@ class SVGAnimatedProperty<Property, TearOffType, void>
   virtual TearOffType* baseVal() {
     if (!base_val_tear_off_) {
       base_val_tear_off_ =
-          TearOffType::Create(this->BaseValue(), this->contextElement(),
+          TearOffType::Create(this->BaseValue(), this->ContextElement(),
                               kPropertyIsNotAnimVal, this->AttributeName());
     }
     return base_val_tear_off_;
@@ -264,7 +264,7 @@ class SVGAnimatedProperty<Property, TearOffType, void>
   TearOffType* animVal() {
     if (!anim_val_tear_off_) {
       anim_val_tear_off_ =
-          TearOffType::Create(this->CurrentValue(), this->contextElement(),
+          TearOffType::Create(this->CurrentValue(), this->ContextElement(),
                               kPropertyIsAnimVal, this->AttributeName());
     }
     return anim_val_tear_off_;

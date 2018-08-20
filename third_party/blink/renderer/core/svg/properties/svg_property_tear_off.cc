@@ -44,11 +44,11 @@ void SVGPropertyTearOffBase::ThrowReadOnly(ExceptionState& exception_state) {
 
 void SVGPropertyTearOffBase::CommitChange() {
   DCHECK(!IsImmutable());
-  if (!contextElement() || IsAnimVal())
+  if (!ContextElement() || IsAnimVal())
     return;
   DCHECK(attribute_name_ != QualifiedName::Null());
-  contextElement()->InvalidateSVGAttributes();
-  contextElement()->SvgAttributeBaseValChanged(attribute_name_);
+  ContextElement()->InvalidateSVGAttributes();
+  ContextElement()->SvgAttributeBaseValChanged(attribute_name_);
 }
 
 }  // namespace blink

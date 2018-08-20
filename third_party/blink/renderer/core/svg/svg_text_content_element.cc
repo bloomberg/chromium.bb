@@ -59,7 +59,7 @@ class SVGAnimatedTextLength final : public SVGAnimatedLength {
 
   SVGLengthTearOff* baseVal() override {
     SVGTextContentElement* text_content_element =
-        ToSVGTextContentElement(contextElement());
+        ToSVGTextContentElement(ContextElement());
     if (!text_content_element->TextLengthIsSpecifiedByUser())
       BaseValue()->NewValueSpecifiedUnits(
           CSSPrimitiveValue::UnitType::kNumber,

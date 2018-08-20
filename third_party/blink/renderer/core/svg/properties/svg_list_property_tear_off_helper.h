@@ -55,7 +55,7 @@ class ListItemPropertyTraits {
     // the same values as newItem and this item is inserted into the list.
     // Otherwise, newItem itself is inserted into the list.
     if (new_item->IsImmutable() || new_item->Target()->OwnerList() ||
-        new_item->contextElement()) {
+        new_item->ContextElement()) {
       // We have to copy the incoming |newItem|,
       // Otherwise we'll end up having two tearoffs that operate on the same
       // SVGProperty. Consider the example below: SVGRectElements
@@ -195,7 +195,7 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
 
   ItemPropertyType* GetValueForInsertionFromTearOff(ItemTearOffType* new_item) {
     return ItemTraits::GetValueForInsertionFromTearOff(
-        new_item, ToDerived()->contextElement(), ToDerived()->AttributeName());
+        new_item, ToDerived()->ContextElement(), ToDerived()->AttributeName());
   }
 
   ItemTearOffType* CreateItemTearOff(ItemPropertyType* value) {
@@ -203,7 +203,7 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
       return nullptr;
 
     if (value->OwnerList() == ToDerived()->Target())
-      return ItemTraits::CreateTearOff(value, ToDerived()->contextElement(),
+      return ItemTraits::CreateTearOff(value, ToDerived()->ContextElement(),
                                        ToDerived()->PropertyIsAnimVal(),
                                        ToDerived()->AttributeName());
 
