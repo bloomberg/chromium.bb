@@ -181,19 +181,6 @@ bool PpapiBlinkPlatformImpl::IsLinkVisited(unsigned long long link_hash) {
   return false;
 }
 
-void PpapiBlinkPlatformImpl::setCookies(const blink::WebURL& url,
-                                        const blink::WebURL& site_for_cookies,
-                                        const blink::WebString& value) {
-  NOTREACHED();
-}
-
-blink::WebString PpapiBlinkPlatformImpl::cookies(
-    const blink::WebURL& url,
-    const blink::WebURL& site_for_cookies) {
-  NOTREACHED();
-  return blink::WebString();
-}
-
 blink::WebString PpapiBlinkPlatformImpl::DefaultLocale() {
   return blink::WebString::FromUTF8("en");
 }
@@ -212,16 +199,6 @@ std::unique_ptr<blink::WebStorageNamespace>
 PpapiBlinkPlatformImpl::CreateLocalStorageNamespace() {
   NOTREACHED();
   return nullptr;
-}
-
-void PpapiBlinkPlatformImpl::dispatchStorageEvent(
-    const blink::WebString& key,
-    const blink::WebString& old_value,
-    const blink::WebString& new_value,
-    const blink::WebString& origin,
-    const blink::WebURL& url,
-    bool is_local_storage) {
-  NOTREACHED();
 }
 
 int PpapiBlinkPlatformImpl::DatabaseDeleteFile(
