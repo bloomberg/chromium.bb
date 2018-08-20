@@ -37,6 +37,16 @@ declare_args() {
   #   "server" - Windows Server Applications
   #   "desktop" - Windows Desktop Applications
   target_winuwp_family = "app"
+
+  # Set this to use clang style diagnostics format. Available only on clang.
+  # Tune this on for the editor integrations like Emacs compilation mode that
+  # match clang style error messages.
+  # E.g.:
+  #  Without this, clang emits a diagnostic message like this:
+  #    foo/bar.cc(12,34): error: something went wrong
+  #  and with this switch, clang emits it like this:
+  #    foo/bar.cc:12:34: error: something went wrong
+  use_clang_diagnostics_format = false
 }
 
 # This is included by reference in the //build/config/compiler config that
@@ -90,6 +100,15 @@ config("compiler") {
         # cmd.exe doesn't understand ANSI escape codes by default,
         # so only enable them if something emulating them is around.
         "-fansi-escape-codes",
+      ]
+    }
+
+    if (is_clang && use_clang_diagnostics_format) {
+      cflags += [
+        "-Xclang",
+        "-fdiagnostics-format",
+        "-Xclang",
+        "clang",
       ]
     }
 
