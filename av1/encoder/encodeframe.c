@@ -2848,15 +2848,14 @@ static void ml_prune_ab_partition(BLOCK_SIZE bsize, int part_ctx, int var_ctx,
 #define FEATURES 18
 #define LABELS 4
 // Use a ML model to predict if horz4 and vert4 should be considered.
-// TODO(huisu@google.com): x->source_variance may not be the current block's
-// variance. Need to re-train the model to fix it.
-static void ml_prune_4_partition(const AV1_COMP *const cpi,
-                                 const MACROBLOCK *const x, BLOCK_SIZE bsize,
-                                 int part_ctx, int64_t best_rd,
-                                 int64_t horz_rd[2], int64_t vert_rd[2],
-                                 int64_t split_rd[4],
+static void ml_prune_4_partition(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                                 BLOCK_SIZE bsize, int part_ctx,
+                                 int64_t best_rd, int64_t horz_rd[2],
+                                 int64_t vert_rd[2], int64_t split_rd[4],
                                  int *const partition_horz4_allowed,
-                                 int *const partition_vert4_allowed) {
+                                 int *const partition_vert4_allowed,
+                                 unsigned int pb_source_variance, int mi_row,
+                                 int mi_col) {
   if (best_rd >= 1000000000) return;
   const NN_CONFIG *nn_config = NULL;
   switch (bsize) {
@@ -2873,7 +2872,7 @@ static void ml_prune_4_partition(const AV1_COMP *const cpi,
   float features[FEATURES];
   int feature_index = 0;
   features[feature_index++] = (float)part_ctx;
-  features[feature_index++] = (float)get_unsigned_bits(x->source_variance);
+  features[feature_index++] = (float)get_unsigned_bits(pb_source_variance);
 
   const int rdcost = (int)AOMMIN(INT_MAX, best_rd);
   int sub_block_rdcost[8] = { 0 };
@@ -2907,6 +2906,8 @@ static void ml_prune_4_partition(const AV1_COMP *const cpi,
   {
     BLOCK_SIZE horz_4_bs = get_partition_subsize(bsize, PARTITION_HORZ_4);
     BLOCK_SIZE vert_4_bs = get_partition_subsize(bsize, PARTITION_VERT_4);
+    av1_setup_src_planes(x, cpi->source, mi_row, mi_col,
+                         av1_num_planes(&cpi->common));
     const int src_stride = x->plane[0].src.stride;
     const uint8_t *src = x->plane[0].src.buf;
     const MACROBLOCKD *const xd = &x->e_mbd;
@@ -2960,7 +2961,7 @@ static void ml_prune_4_partition(const AV1_COMP *const cpi,
     }
   }
 
-  const float denom = (float)(x->source_variance + 1);
+  const float denom = (float)(pb_source_variance + 1);
   const float low_b = 0.1f;
   const float high_b = 10.0f;
   for (int i = 0; i < 4; ++i) {
@@ -2992,9 +2993,9 @@ static void ml_prune_4_partition(const AV1_COMP *const cpi,
   // Make decisions based on the model scores.
   int thresh = max_score;
   switch (bsize) {
-    case BLOCK_16X16: thresh -= 400; break;
-    case BLOCK_32X32: thresh -= 400; break;
-    case BLOCK_64X64: thresh -= 100; break;
+    case BLOCK_16X16: thresh -= 500; break;
+    case BLOCK_32X32: thresh -= 500; break;
+    case BLOCK_64X64: thresh -= 200; break;
     default: break;
   }
   *partition_horz4_allowed = 0;
@@ -3925,7 +3926,8 @@ BEGIN_PARTITION_SEARCH:
       partition_horz_allowed && partition_vert_allowed) {
     ml_prune_4_partition(cpi, x, bsize, pc_tree->partitioning, best_rdc.rdcost,
                          horz_rd, vert_rd, split_rd, &partition_horz4_allowed,
-                         &partition_vert4_allowed);
+                         &partition_vert4_allowed, pb_source_variance, mi_row,
+                         mi_col);
   }
 
 #if CONFIG_DIST_8X8
