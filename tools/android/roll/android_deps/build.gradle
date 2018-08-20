@@ -21,6 +21,7 @@ dependencies {
 
     // Play services libraries
     // See https://developers.google.com/android/guides/releases for updates
+    // Starting from 15.0.0 these libraries are allowed to update independently
     def gmsVersion = '15.0.1'
     compile "com.google.android.gms:play-services-basement:${gmsVersion}"
     compile "com.google.android.gms:play-services-tasks:${gmsVersion}"

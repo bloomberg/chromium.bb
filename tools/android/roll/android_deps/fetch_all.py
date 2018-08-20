@@ -39,6 +39,7 @@ import os
 import re
 import shutil
 import subprocess
+import zipfile
 
 # Assume this script is stored under tools/android/roll/android_deps/
 _CHROMIUM_SRC = os.path.abspath(
@@ -82,8 +83,8 @@ _COPIED_PATHS = [
   _GRADLE_BUILDSRC_PATH,
 ]
 
-# Matches any string contained within angle brackets (1 deep).
-_RE_LICENSE_FILTER = re.compile('<[^><]*>')
+# If this file exists in an aar file then it is appended to LICENSE
+_THIRD_PARTY_LICENSE_FILENAME = 'third_party_licenses.txt'
 
 @contextlib.contextmanager
 def BuildDir(dirname=None):
@@ -426,7 +427,7 @@ def main():
     gn_args = ['gn', 'format', os.path.join(build_dir, _ANDROID_DEPS_BUILD_GN)]
     RunCommand(gn_args)
 
-    print '# Generate Android .aar info files.'
+    print '# Generate Android .aar info and third-party license files.'
     aar_files = FindInDirectory(libs_dir, '*.aar')
     for aar_file in aar_files:
       aar_dirname = os.path.dirname(aar_file)
@@ -435,6 +436,13 @@ def main():
       if not os.path.exists(aar_info_path):
         logging.info('- %s' % aar_info_name)
         RunCommand([aar_py, 'list', aar_file, '--output', aar_info_path])
+      with zipfile.ZipFile(aar_file) as z:
+        if _THIRD_PARTY_LICENSE_FILENAME in z.namelist():
+          license_path = os.path.join(aar_dirname, 'LICENSE')
+          # Make sure to append as we don't want to lose the existing license.
+          with open(license_path, 'a') as f:
+            f.write(z.read(_THIRD_PARTY_LICENSE_FILENAME))
+
 
     print '# Compare CIPD packages.'
     existing_packages = ParseDeps(chromium_src)
