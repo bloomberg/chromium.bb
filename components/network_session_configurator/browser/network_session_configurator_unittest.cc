@@ -708,23 +708,10 @@ TEST_F(NetworkSessionConfiguratorTest, HostRules) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest, TokenBindingDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kTokenBinding);
-
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   ParseCommandLineAndFieldTrials(command_line);
 
   EXPECT_FALSE(params_.enable_token_binding);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, TokenBindingEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kTokenBinding);
-
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  ParseCommandLineAndFieldTrials(command_line);
-
-  EXPECT_TRUE(params_.enable_token_binding);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, ChannelIDEnabled) {
