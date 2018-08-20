@@ -429,7 +429,13 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreIntoSameWindow) {
 
 // Open a window with two tabs, close the window, then restore the window.
 // Ensure that the restored window has the expected bounds.
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowBounds) {
+#if defined(OS_LINUX)
+// Frequently hits "Check failed: is_loading_". See http://crbug.com/871010.
+#define MAYBE_RestoreWindowBounds DISABLED_RestoreWindowBounds
+#else
+#define MAYBE_RestoreWindowBounds RestoreWindowBounds
+#endif
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, MAYBE_RestoreWindowBounds) {
   // Create a browser window with two tabs.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1_, WindowOpenDisposition::CURRENT_TAB,
