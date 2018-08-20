@@ -514,10 +514,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FragmentUnescapedForDisplay) {
   OmniboxView* view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &view));
   ui_test_utils::NavigateToURL(browser(),
-                               GURL("https://www.google.com/#%E2%98%83"));
+                               GURL("http://example.com/#%E2%98%83"));
 
-  EXPECT_EQ(view->GetText(),
-            base::UTF8ToUTF16("https://www.google.com/#\u2603"));
+  EXPECT_EQ(view->GetText(), base::UTF8ToUTF16("example.com/#\u2603"));
 }
 
 // Ensure that when the user navigates between suggestions, that the accessible
@@ -536,6 +535,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FriendlyAccessibleLabel) {
   match.destination_url = GURL(match_url);
   match.description = base::ASCIIToUTF16("Google");
   match.allowed_to_be_default_match = true;
+
+  // Enter user input mode to prevent spurious unelision.
+  omnibox_view->model()->SetInputInProgress(true);
 
   // Populate suggestions for the omnibox popup.
   AutocompleteController* autocomplete_controller =
@@ -561,6 +563,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FriendlyAccessibleLabel) {
   omnibox_view_views->OnTemporaryTextMaybeChanged(match_url, match, false,
                                                   false);
   omnibox_view->SelectAll(true);
+  EXPECT_EQ(base::ASCIIToUTF16("https://google.com"),
+            omnibox_view_views->GetText());
 
   // Test friendly label.
   const int kFriendlyPrefixLength = match.description.size() + 1;
@@ -588,6 +592,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FriendlyAccessibleLabel) {
   set_selection_action_data.focus_offset = kFriendlyPrefixLength + 1;
   set_selection_action_data.anchor_offset = kFriendlyPrefixLength + 3;
   omnibox_view_views->HandleAccessibleAction(set_selection_action_data);
+
+  EXPECT_EQ(base::ASCIIToUTF16("https://google.com"),
+            omnibox_view_views->GetText());
 
   // Type "x" to replace the selected "tt" with that character.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_X, false,
