@@ -38,7 +38,7 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
         public void bookmarkModelChanged() {
-            onSelectionStateChange(mDelegate.getSelectionDelegate().getSelectedItems());
+            onSelectionStateChange(mDelegate.getSelectionDelegate().getSelectedItemsAsList());
         }
     };
 
@@ -93,7 +93,7 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
 
         SelectionDelegate<BookmarkId> selectionDelegate = mDelegate.getSelectionDelegate();
         if (menuItem.getItemId() == R.id.selection_mode_edit_menu_id) {
-            List<BookmarkId> list = selectionDelegate.getSelectedItems();
+            List<BookmarkId> list = selectionDelegate.getSelectedItemsAsList();
             assert list.size() == 1;
             BookmarkItem item = mDelegate.getModel().getBookmarkById(list.get(0));
             if (item.isFolder()) {
@@ -103,7 +103,7 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
             }
             return true;
         } else if (menuItem.getItemId() == R.id.selection_mode_move_menu_id) {
-            List<BookmarkId> list = selectionDelegate.getSelectedItems();
+            List<BookmarkId> list = selectionDelegate.getSelectedItemsAsList();
             if (list.size() >= 1) {
                 BookmarkFolderSelectActivity.startFolderSelectActivity(getContext(),
                         list.toArray(new BookmarkId[list.size()]));
@@ -114,13 +114,13 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
                     selectionDelegate.getSelectedItems().toArray(new BookmarkId[0]));
             return true;
         } else if (menuItem.getItemId() == R.id.selection_open_in_new_tab_id) {
-            openBookmarksInNewTabs(selectionDelegate.getSelectedItems(), new TabDelegate(false),
-                    mDelegate.getModel());
+            openBookmarksInNewTabs(selectionDelegate.getSelectedItemsAsList(),
+                    new TabDelegate(false), mDelegate.getModel());
             selectionDelegate.clearSelection();
             return true;
         } else if (menuItem.getItemId() == R.id.selection_open_in_incognito_tab_id) {
-            openBookmarksInNewTabs(selectionDelegate.getSelectedItems(), new TabDelegate(true),
-                    mDelegate.getModel());
+            openBookmarksInNewTabs(selectionDelegate.getSelectedItemsAsList(),
+                    new TabDelegate(true), mDelegate.getModel());
             selectionDelegate.clearSelection();
             return true;
         }

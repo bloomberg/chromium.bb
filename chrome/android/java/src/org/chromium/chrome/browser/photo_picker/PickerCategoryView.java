@@ -370,7 +370,7 @@ public class PickerCategoryView extends RelativeLayout
      * Notifies any listeners that one or more photos have been selected.
      */
     private void notifyPhotosSelected() {
-        List<PickerBitmap> selectedFiles = mSelectionDelegate.getSelectedItems();
+        List<PickerBitmap> selectedFiles = mSelectionDelegate.getSelectedItemsAsList();
         Collections.sort(selectedFiles);
         String[] photos = new String[selectedFiles.size()];
         int i = 0;

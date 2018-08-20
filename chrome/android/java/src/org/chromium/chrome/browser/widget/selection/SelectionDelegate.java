@@ -94,9 +94,16 @@ public class SelectionDelegate<E> {
     }
 
     /**
+     * @return The set of selected items.
+     */
+    public Set<E> getSelectedItems() {
+        return mSelectedItems;
+    }
+
+    /**
      * @return The list of selected items.
      */
-    public List<E> getSelectedItems() {
+    public List<E> getSelectedItemsAsList() {
         return new ArrayList<E>(mSelectedItems);
     }
 
@@ -117,7 +124,7 @@ public class SelectionDelegate<E> {
     }
 
     private void notifyObservers() {
-        List<E> selectedItems = getSelectedItems();
+        List<E> selectedItems = getSelectedItemsAsList();
         for (SelectionObserver<E> observer : mObservers) {
             observer.onSelectionStateChange(selectedItems);
         }

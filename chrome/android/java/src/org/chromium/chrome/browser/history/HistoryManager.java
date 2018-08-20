@@ -55,6 +55,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Displays and manages the UI for browsing history.
@@ -200,19 +201,20 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             mActivity.finish();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_open_in_new_tab) {
-            openItemsInNewTabs(mSelectionDelegate.getSelectedItems(), false);
+            openItemsInNewTabs(mSelectionDelegate.getSelectedItemsAsList(), false);
             mSelectionDelegate.clearSelection();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_copy_link) {
             recordUserActionWithOptionalSearch("CopyLink");
-            Clipboard.getInstance().setText(mSelectionDelegate.getSelectedItems().get(0).getUrl());
+            Clipboard.getInstance().setText(
+                    mSelectionDelegate.getSelectedItemsAsList().get(0).getUrl());
             mSelectionDelegate.clearSelection();
             Snackbar snackbar = Snackbar.make(mActivity.getString(R.string.copied), this,
                     Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_HISTORY_LINK_COPIED);
             mSnackbarManager.showSnackbar(snackbar);
             return true;
         } else if (item.getItemId() == R.id.selection_mode_open_in_incognito) {
-            openItemsInNewTabs(mSelectionDelegate.getSelectedItems(), true);
+            openItemsInNewTabs(mSelectionDelegate.getSelectedItemsAsList(), true);
             mSelectionDelegate.clearSelection();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
@@ -436,7 +438,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      * @param action The multi-select action that was performed.
      */
     private void recordSelectionCountHistorgram(String action) {
-        List<HistoryItem> selectedItems = mSelectionDelegate.getSelectedItems();
+        Set<HistoryItem> selectedItems = mSelectionDelegate.getSelectedItems();
         RecordHistogram.recordCount100Histogram(
                 METRICS_PREFIX + action + "Selected", selectedItems.size());
     }
