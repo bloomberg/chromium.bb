@@ -17,6 +17,8 @@ namespace viz {
 namespace mojom {
 class GpuService;
 }
+
+class HostGpuMemoryBufferManager;
 }  // namespace viz
 
 namespace content {
@@ -53,6 +55,9 @@ class GpuClientDelegate {
   virtual void EstablishGpuChannel(int client_id,
                                    uint64_t client_tracing_id,
                                    EstablishGpuChannelCallback callback) = 0;
+
+  // Returns the current viz::HostGpuMemoryBufferManager instance.
+  virtual viz::HostGpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
 };
 
 }  // namespace content

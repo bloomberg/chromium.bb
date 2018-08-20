@@ -41,6 +41,7 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
+#include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
@@ -734,7 +735,7 @@ GpuProcessHost::~GpuProcessHost() {
   if (in_process_gpu_thread_)
     DCHECK(process_);
 
-  SendOutstandingReplies();
+  OnConnectionError();
 
 #if defined(OS_MACOSX)
   if (ca_transaction_gpu_coordinator_) {
@@ -940,6 +941,8 @@ bool GpuProcessHost::Init() {
       mojo::MakeRequest(&gpu_service_ptr_), std::move(host_proxy),
       std::move(discardable_manager_ptr), activity_flags_.CloneHandle(),
       GetFontRenderParamsOnIO().params.subpixel_rendering);
+  gpu_service_ptr_.set_connection_error_handler(base::BindOnce(
+      &GpuProcessHost::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 
 #if defined(USE_OZONE)
   InitOzone();
@@ -959,14 +962,14 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
     return true;
   }
 
-  bool result = process_->Send(msg);
-  if (!result) {
-    // Channel is hosed, but we may not get destroyed for a while. Send
-    // outstanding channel creation failures now so that the caller can restart
-    // with a new process/channel without waiting.
-    SendOutstandingReplies();
-  }
-  return result;
+  return process_->Send(msg);
+}
+
+void GpuProcessHost::OnConnectionError() {
+  SendOutstandingReplies();
+  for (auto& handler : connection_error_handlers_)
+    std::move(handler).Run();
+  connection_error_handlers_.clear();
 }
 
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
@@ -986,6 +989,10 @@ void GpuProcessHost::OnChannelConnected(int32_t peer_pid) {
     Send(queued_messages_.front());
     queued_messages_.pop();
   }
+}
+
+void GpuProcessHost::AddConnectionErrorHandler(base::OnceClosure handler) {
+  connection_error_handlers_.push_back(std::move(handler));
 }
 
 void GpuProcessHost::EstablishGpuChannel(int client_id,
@@ -1038,31 +1045,6 @@ void GpuProcessHost::EstablishGpuChannel(int client_id,
   }
 }
 
-void GpuProcessHost::CreateGpuMemoryBuffer(
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage,
-    int client_id,
-    gpu::SurfaceHandle surface_handle,
-    CreateGpuMemoryBufferCallback callback) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::CreateGpuMemoryBuffer");
-
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  create_gpu_memory_buffer_requests_.push(std::move(callback));
-  gpu_service_ptr_->CreateGpuMemoryBuffer(
-      id, size, format, usage, client_id, surface_handle,
-      base::BindOnce(&GpuProcessHost::OnGpuMemoryBufferCreated,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void GpuProcessHost::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                            int client_id,
-                                            const gpu::SyncToken& sync_token) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::DestroyGpuMemoryBuffer");
-  gpu_service_ptr_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
-}
-
 void GpuProcessHost::ConnectFrameSinkManager(
     viz::mojom::FrameSinkManagerRequest request,
     viz::mojom::FrameSinkManagerClientPtrInfo client) {
@@ -1109,16 +1091,6 @@ void GpuProcessHost::OnChannelEstablished(
   std::move(callback).Run(
       std::move(channel_handle), gpu_data_manager->GetGPUInfo(),
       gpu_data_manager->GetGpuFeatureInfo(), EstablishChannelStatus::SUCCESS);
-}
-
-void GpuProcessHost::OnGpuMemoryBufferCreated(
-    gfx::GpuMemoryBufferHandle handle) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::OnGpuMemoryBufferCreated");
-
-  DCHECK(!create_gpu_memory_buffer_requests_.empty());
-  auto callback = std::move(create_gpu_memory_buffer_requests_.front());
-  create_gpu_memory_buffer_requests_.pop();
-  std::move(callback).Run(std::move(handle), BufferCreationStatus::SUCCESS);
 }
 
 #if defined(OS_ANDROID)
@@ -1174,7 +1146,6 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
           cache_key.first, base::Time(), base::Time::Max(), base::Bind([] {}));
     }
   }
-  SendOutstandingReplies();
 
   ChildProcessTerminationInfo info =
       process_->GetTerminationInfo(true /* known_dead */);
@@ -1470,13 +1441,6 @@ void GpuProcessHost::SendOutstandingReplies() {
     std::move(callback).Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
                             gpu::GpuFeatureInfo(),
                             EstablishChannelStatus::GPU_HOST_INVALID);
-  }
-
-  while (!create_gpu_memory_buffer_requests_.empty()) {
-    auto callback = std::move(create_gpu_memory_buffer_requests_.front());
-    create_gpu_memory_buffer_requests_.pop();
-    std::move(callback).Run(gfx::GpuMemoryBufferHandle(),
-                            BufferCreationStatus::GPU_HOST_INVALID);
   }
 
   if (!send_destroying_video_surface_done_cb_.is_null())

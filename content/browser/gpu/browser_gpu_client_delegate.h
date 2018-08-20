@@ -19,6 +19,7 @@ class BrowserGpuClientDelegate : public GpuClientDelegate {
   void EstablishGpuChannel(int client_id,
                            uint64_t client_tracing_id,
                            EstablishGpuChannelCallback callback) override;
+  viz::HostGpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserGpuClientDelegate);

@@ -4,6 +4,7 @@
 
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
 
+#include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
@@ -67,6 +68,11 @@ void BrowserGpuClientDelegate::EstablishGpuChannel(
   host->EstablishGpuChannel(
       client_id, client_tracing_id, is_gpu_host,
       base::BindOnce(&OnEstablishGpuChannel, std::move(callback)));
+}
+
+viz::HostGpuMemoryBufferManager*
+BrowserGpuClientDelegate::GetGpuMemoryBufferManager() {
+  return GpuMemoryBufferManagerSingleton::GetInstance();
 }
 
 }  // namespace content

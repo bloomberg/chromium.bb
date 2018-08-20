@@ -17,8 +17,8 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
-#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/common/child_process_host_impl.h"
@@ -228,14 +228,6 @@ void BrowserGpuChannelHostFactory::EstablishRequest::Cancel() {
   established_callbacks_.clear();
 }
 
-void BrowserGpuChannelHostFactory::CloseChannel() {
-  DCHECK(instance_);
-  if (instance_->gpu_channel_) {
-    instance_->gpu_channel_->DestroyChannel();
-    instance_->gpu_channel_ = nullptr;
-  }
-}
-
 void BrowserGpuChannelHostFactory::Initialize(bool establish_gpu_channel) {
   DCHECK(!instance_);
   instance_ = new BrowserGpuChannelHostFactory();
@@ -250,13 +242,20 @@ void BrowserGpuChannelHostFactory::Terminate() {
   instance_ = nullptr;
 }
 
+void BrowserGpuChannelHostFactory::CloseChannel() {
+  if (gpu_channel_) {
+    gpu_channel_->DestroyChannel();
+    gpu_channel_ = nullptr;
+  }
+  gpu_memory_buffer_manager_ = nullptr;
+}
+
 BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     : gpu_client_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       gpu_client_tracing_id_(
           memory_instrumentation::mojom::kServiceTracingProcessId),
       gpu_memory_buffer_manager_(
-          new BrowserGpuMemoryBufferManager(gpu_client_id_,
-                                            gpu_client_tracing_id_)) {
+          new GpuMemoryBufferManagerSingleton(gpu_client_id_)) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
     DCHECK(GetContentClient());

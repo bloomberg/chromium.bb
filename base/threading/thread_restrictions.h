@@ -38,7 +38,6 @@ class Predictor;
 }
 namespace content {
 class BrowserGpuChannelHostFactory;
-class BrowserGpuMemoryBufferManager;
 class BrowserMainLoop;
 class BrowserProcessSubThread;
 class BrowserShutdownProfileDumper;
@@ -331,7 +330,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
       LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
   friend class webrtc::DesktopConfigurationMonitor;
   friend class content::ServiceWorkerSubresourceLoader;
-  friend class viz::HostGpuMemoryBufferManager;
 
   ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
@@ -361,6 +359,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class midi::TaskService;  // https://crbug.com/796830
   // Not used in production yet, https://crbug.com/844078.
   friend class service_manager::ServiceProcessLauncher;
+  friend class viz::HostGpuMemoryBufferManager;
 
   ScopedAllowBaseSyncPrimitivesOutsideBlockingScope()
       EMPTY_BODY_IF_DCHECK_IS_OFF;
@@ -488,8 +487,6 @@ class BASE_EXPORT ThreadRestrictions {
   friend class chrome_browser_net::Predictor;     // http://crbug.com/78451
   friend class
       content::BrowserGpuChannelHostFactory;      // http://crbug.com/125248
-  friend class
-      content::BrowserGpuMemoryBufferManager;     // http://crbug.com/420368
   friend class content::TextInputClientMac;       // http://crbug.com/121917
   friend class dbus::Bus;                         // http://crbug.com/125222
   friend class disk_cache::BackendImpl;           // http://crbug.com/74623

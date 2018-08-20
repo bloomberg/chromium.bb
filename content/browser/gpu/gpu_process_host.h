@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/atomicops.h"
 #include "base/callback.h"
@@ -36,8 +37,6 @@
 #include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -50,7 +49,6 @@ struct FontRenderParams;
 
 namespace gpu {
 class ShaderDiskCache;
-struct SyncToken;
 }
 
 namespace content {
@@ -83,14 +81,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                               const gpu::GPUInfo&,
                               const gpu::GpuFeatureInfo&,
                               EstablishChannelStatus status)>;
-
-  enum class BufferCreationStatus {
-    GPU_HOST_INVALID,
-    SUCCESS,
-  };
-  using CreateGpuMemoryBufferCallback =
-      base::OnceCallback<void(gfx::GpuMemoryBufferHandle handle,
-                              BufferCreationStatus status)>;
 
   using RequestHDRStatusCallback = base::RepeatingCallback<void(bool)>;
 
@@ -132,6 +122,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;
 
+  // Adds a connection error handler for the GpuService.
+  void AddConnectionErrorHandler(base::OnceClosure handler);
+
   // Tells the GPU process to create a new channel for communication with a
   // client. Once the GPU process responds asynchronously with the IPC handle
   // and GPUInfo, we call the callback.
@@ -139,20 +132,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                            uint64_t client_tracing_id,
                            bool is_gpu_host,
                            EstablishChannelCallback callback);
-
-  // Tells the GPU process to create a new GPU memory buffer.
-  void CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                             const gfx::Size& size,
-                             gfx::BufferFormat format,
-                             gfx::BufferUsage usage,
-                             int client_id,
-                             gpu::SurfaceHandle surface_handle,
-                             CreateGpuMemoryBufferCallback callback);
-
-  // Tells the GPU process to destroy GPU memory buffer.
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              int client_id,
-                              const gpu::SyncToken& sync_token);
 
   // Connects to FrameSinkManager running in the viz process. In this
   // configuration the display compositor runs in the viz process and the
@@ -206,6 +185,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void InitOzone();
 #endif  // defined(USE_OZONE)
 
+  // Called when GpuService connection is lost.
+  void OnConnectionError();
+
   // BrowserChildProcessHostDelegate implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
@@ -240,7 +222,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   void OnChannelEstablished(int client_id,
                             mojo::ScopedMessagePipeHandle channel_handle);
-  void OnGpuMemoryBufferCreated(gfx::GpuMemoryBufferHandle handle);
 
   // Message handlers.
 #if defined(OS_ANDROID)
@@ -264,12 +245,12 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
 
+  // List of connection error handlers for the GpuService.
+  std::vector<base::OnceClosure> connection_error_handlers_;
+
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.
   base::queue<EstablishChannelCallback> channel_requests_;
-
-  // The pending create gpu memory buffer requests we need to reply to.
-  base::queue<CreateGpuMemoryBufferCallback> create_gpu_memory_buffer_requests_;
 
   // A callback to signal the completion of a SendDestroyingVideoSurface call.
   base::Closure send_destroying_video_surface_done_cb_;

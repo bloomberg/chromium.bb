@@ -4,8 +4,8 @@
 
 #include "content/browser/gpu/gpu_client_impl.h"
 
+#include "components/viz/host/host_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
-#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/common/child_process_host_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
@@ -61,11 +61,11 @@ void GpuClientImpl::Add(ui::mojom::GpuRequest request) {
 void GpuClientImpl::OnError(ErrorReason reason) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   ClearCallback();
-  if (gpu_bindings_.empty()) {
-    BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager =
-        BrowserGpuMemoryBufferManager::current();
-    if (gpu_memory_buffer_manager)
-      gpu_memory_buffer_manager->ProcessRemoved(client_id_);
+  if (gpu_bindings_.empty() && delegate_) {
+    if (auto* gpu_memory_buffer_manager =
+            delegate_->GetGpuMemoryBufferManager()) {
+      gpu_memory_buffer_manager->DestroyAllGpuMemoryBufferForClient(client_id_);
+    }
   }
   if (reason == ErrorReason::kConnectionLost && connection_error_handler_)
     std::move(connection_error_handler_).Run(this);
@@ -179,7 +179,8 @@ void GpuClientImpl::CreateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     ui::mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback) {
-  DCHECK(BrowserGpuMemoryBufferManager::current());
+  auto* gpu_memory_buffer_manager = delegate_->GetGpuMemoryBufferManager();
+  DCHECK(gpu_memory_buffer_manager);
 
   base::CheckedNumeric<int> bytes = size.width();
   bytes *= size.height();
@@ -188,19 +189,19 @@ void GpuClientImpl::CreateGpuMemoryBuffer(
     return;
   }
 
-  BrowserGpuMemoryBufferManager::current()
-      ->AllocateGpuMemoryBufferForChildProcess(
-          id, size, format, usage, client_id_,
-          base::BindOnce(&GpuClientImpl::OnCreateGpuMemoryBuffer,
-                         weak_factory_.GetWeakPtr(), std::move(callback)));
+  gpu_memory_buffer_manager->AllocateGpuMemoryBuffer(
+      id, client_id_, size, format, usage, gpu::kNullSurfaceHandle,
+      base::BindOnce(&GpuClientImpl::OnCreateGpuMemoryBuffer,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void GpuClientImpl::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                            const gpu::SyncToken& sync_token) {
-  DCHECK(BrowserGpuMemoryBufferManager::current());
-
-  BrowserGpuMemoryBufferManager::current()->ChildProcessDeletedGpuMemoryBuffer(
-      id, client_id_, sync_token);
+  if (auto* gpu_memory_buffer_manager =
+          delegate_->GetGpuMemoryBufferManager()) {
+    gpu_memory_buffer_manager->DestroyGpuMemoryBuffer(id, client_id_,
+                                                      sync_token);
+  }
 }
 
 void GpuClientImpl::CreateGpuMemoryBufferFactory(
