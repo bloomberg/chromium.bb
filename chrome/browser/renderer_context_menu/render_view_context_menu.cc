@@ -53,7 +53,6 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -85,6 +84,7 @@
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/experiments.h"
 #include "components/prefs/pref_member.h"
@@ -1582,9 +1582,10 @@ void RenderViewContextMenu::AppendPasswordItems() {
                                       IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD);
       add_separator = true;
     }
-    if (password_manager_util::ManualPasswordGenerationEnabled(
-            ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
-                browser_context_))) {
+    password_manager::ContentPasswordManagerDriver* driver =
+        password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
+            GetRenderFrameHost());
+    if (password_manager_util::ManualPasswordGenerationEnabled(driver)) {
       menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATEPASSWORD,
                                       IDS_CONTENT_CONTEXT_GENERATEPASSWORD);
       add_separator = true;
