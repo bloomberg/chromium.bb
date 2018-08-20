@@ -4688,15 +4688,21 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
-  _injectedScriptManagers = [[NSMutableSet alloc] init];
-  if ([self contentIsHTML] || [self contentIsImage] ||
-      self.webState->GetContentsMimeType().empty()) {
-    // In unit tests MIME type will be empty, because loadHTML:forURL: does not
-    // notify web view delegate about received response, so web controller does
-    // not get a chance to properly update MIME type.
-    [_windowIDJSManager inject];
-    web::WebFramesManagerImpl::FromWebState(self.webState)
-        ->RegisterExistingFrames();
+  // Do not inject window ID if this is a placeholder URL: window ID is not
+  // needed for native view. For WebUI, let the window ID be injected when the
+  // |loadHTMLString:baseURL| navigation is committed.
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
+      !IsPlaceholderUrl(webViewURL)) {
+    _injectedScriptManagers = [[NSMutableSet alloc] init];
+    if ([self contentIsHTML] || [self contentIsImage] ||
+        self.webState->GetContentsMimeType().empty()) {
+      // In unit tests MIME type will be empty, because loadHTML:forURL: does
+      // not notify web view delegate about received response, so web controller
+      // does not get a chance to properly update MIME type.
+      [_windowIDJSManager inject];
+      web::WebFramesManagerImpl::FromWebState(self.webState)
+          ->RegisterExistingFrames();
+    }
   }
 
   if (committedNavigation) {
