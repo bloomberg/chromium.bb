@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import contextlib
+import copy
 import fnmatch
 import json
 import os
@@ -240,19 +241,26 @@ class BuilderStage(object):
     metrics.CumulativeSecondsDistribution(constants.MON_STAGE_DURATION).add(
         elapsed_time_seconds, fields=fields)
     metrics.Counter(constants.MON_STAGE_COMP_COUNT).increment(fields=fields)
+    common_metrics_fields = {
+        'branch_name': self.metrics_branch,
+        'build_config': self.build_config,
+        'tryjob': self.metrics_tryjob,
+    }
+    duration_metrics_fields = copy.deepcopy(common_metrics_fields)
+    duration_metrics_fields.update({'stage': self.name,
+                                    'status': status})
+    if self.metrics_branch is not None:
+      metrics.FloatMetric(constants.MON_STAGE_INSTANCE_DURATION).set(
+          elapsed_time_seconds, fields=duration_metrics_fields)
     if (isinstance(stage_result, BaseException) and
         self._build_stage_id is not None):
-      metrics_fields = {
-          'branch_name': self.metrics_branch,
-          'build_config': self.build_config,
-          'tryjob': self.metrics_tryjob,
-          'failed_stage': self.name,
-          'category': self.category,
-      }
+      failed_metrics_fields = copy.deepcopy(common_metrics_fields)
+      failed_metrics_fields.update({'failed_stage': self.name,
+                                    'category': self.category})
       _, db = self._run.GetCIDBHandle()
       if db:
         failures_lib.ReportStageFailure(db, self._build_stage_id, stage_result,
-                                        metrics_fields=metrics_fields)
+                                        metrics_fields=failed_metrics_fields)
 
   def _StartBuildStageInCIDB(self):
     """Mark the stage as inflight in cidb."""
