@@ -324,6 +324,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIFlagsHost,
     kChromeUIGCMInternalsHost,
     kChromeUIHistoryHost,
+    kChromeUIInterstitialHost,
     kChromeUIInterventionsInternalsHost,
     kChromeUIInvalidationsHost,
     kChromeUILocalStateHost,
