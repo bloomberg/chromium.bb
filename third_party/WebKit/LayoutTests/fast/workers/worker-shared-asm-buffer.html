@@ -7,6 +7,8 @@ function log(message)
     document.getElementById('console').appendChild(document.createTextNode(message + "\n"));
 }
 
+let kHeapSize = 4096;
+
 function runTest()
 {
     log("Test calling asm functions across workers with the same heap.");
@@ -16,7 +18,7 @@ function runTest()
         "    function Module(stdlib, foreign, heap) {",
         "        'use asm';",
         "        var MEM32 = new stdlib.Int32Array(heap);",
-        "        function load() { var res = 0; res = MEM32[255]|0; MEM32[255] = 123457; return res|0; }",
+        "        function load() { var res = 0; res = MEM32[1023]|0; MEM32[1023] = 123457; return res|0; }",
         "        return { load: load };",
         "    }",
         "    var buffer = e.data;",
@@ -30,15 +32,15 @@ function runTest()
     function Module(stdlib, foreign, heap) {
         'use asm';
         var MEM32 = new stdlib.Int32Array(heap);
-        function store() { MEM32[255] = 123456; }
+        function store() { MEM32[1023] = 123456; }
         return { store: store };
     }
-    var buffer = new ArrayBuffer(4 * 256);
+    var buffer = new ArrayBuffer(kHeapSize);
     Module(this, {}, buffer).store();
     worker.onmessage = function(event) {
         try {
             // This buffer may or may not have been neutered, ensure we don't write across threads.
-            for (var i = 0; i < 4 * 256; i++) {
+            for (var i = 0; i < kHeapSize; i++) {
                 buffer[i] = 0;
             }
         } catch(e) {}
