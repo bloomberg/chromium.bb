@@ -121,6 +121,10 @@ constexpr SkColor kBackdropColor = SkColorSetARGB(0x24, 0xFF, 0xFF, 0xFF);
 // swipe to close.
 constexpr int kSwipeToCloseCloseTranslationDp = 96;
 
+// Before dragging an overview window, the window will be scaled up
+// |kPreDragScale| to indicate its selection.
+constexpr float kDragWindowScale = 0.04f;
+
 std::unique_ptr<views::Widget> CreateBackdropWidget(aura::Window* parent) {
   auto widget = CreateBackgroundWidget(
       /*root_window=*/nullptr, ui::LAYER_TEXTURED, kBackdropColor,
@@ -731,6 +735,19 @@ void WindowSelectorItem::UpdateBackdropBounds() {
   ::wm::ConvertRectToScreen(item_widget_->GetNativeWindow(), &backdrop_bounds);
   backdrop_widget_->SetBounds(backdrop_bounds);
   backdrop_widget_->Show();
+}
+
+gfx::Rect WindowSelectorItem::GetBoundsOfSelectedItem() {
+  ScaleUpSelectedItem(OVERVIEW_ANIMATION_NONE);
+  return transform_window_.GetTransformedBounds();
+}
+
+void WindowSelectorItem::ScaleUpSelectedItem(
+    OverviewAnimationType animation_type) {
+  gfx::Rect scaled_bounds(target_bounds());
+  scaled_bounds.Inset(-scaled_bounds.width() * kDragWindowScale,
+                      -scaled_bounds.height() * kDragWindowScale);
+  SetBounds(scaled_bounds, animation_type);
 }
 
 void WindowSelectorItem::SetDimmed(bool dimmed) {

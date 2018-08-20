@@ -101,9 +101,9 @@ class TabletModeWindowDragDelegate {
 
   // Overview mode will be triggered if a window is being dragged, and a new
   // selector item will be created in the overview grid. The variable stores
-  // the new selector item bounds in overview and will be used to calculate
-  // the desired window tranform during dragging.
-  gfx::Rect new_selector_item_bounds_;
+  // the bounds of the selected new selector item in overview and will be used
+  // to calculate the desired window transform during dragging.
+  gfx::Rect bounds_of_selected_new_selector_item_;
 
   // Flag to indicate whether a window is considered as moved. A window needs to
   // be dragged vertically a small amount of distance to be considered as moved.

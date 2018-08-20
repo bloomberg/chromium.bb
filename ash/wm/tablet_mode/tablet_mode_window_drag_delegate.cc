@@ -39,9 +39,9 @@ WindowSelector* GetWindowSelector() {
              : nullptr;
 }
 
-// Gets the new selector item's bounds in overview grid that is displaying in
-// the same root window as |dragged_window|.
-gfx::Rect GetNewSelectorItemBounds(aura::Window* dragged_window) {
+// Gets the bounds of selected new selector item in overview grid that is
+// displaying in the same root window as |dragged_window|.
+gfx::Rect GetBoundsOfSelectedNewSelectorItem(aura::Window* dragged_window) {
   if (!Shell::Get()->window_selector_controller()->IsSelecting())
     return gfx::Rect();
 
@@ -54,7 +54,7 @@ gfx::Rect GetNewSelectorItemBounds(aura::Window* dragged_window) {
   if (!new_selector_item)
     return gfx::Rect();
 
-  return new_selector_item->target_bounds();
+  return new_selector_item->GetBoundsOfSelectedItem();
 }
 
 // Set |transform| to |window| and its transient child windows. |transform| is
@@ -119,7 +119,8 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
                                              /*animate=*/was_overview_open);
   }
 
-  new_selector_item_bounds_ = GetNewSelectorItemBounds(dragged_window_);
+  bounds_of_selected_new_selector_item_ =
+      GetBoundsOfSelectedNewSelectorItem(dragged_window_);
 }
 
 void TabletModeWindowDragDelegate::ContinueWindowDrag(
@@ -333,12 +334,14 @@ void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(
 
   // Calculate the desired scale along the y-axis. The scale of the window
   // during drag is based on the distance from |y_location_in_screen| to the y
-  // position of |new_selector_item_bounds_|. The dragged window will become
-  // smaller when it becomes nearer to the new selector item. And then keep the
-  // minimum scale if it has been dragged further than the new selector item.
-  float scale = static_cast<float>(new_selector_item_bounds_.height()) /
-                static_cast<float>(dragged_window_->bounds().height());
-  int y_full = new_selector_item_bounds_.y();
+  // position of |bounds_of_selected_new_selector_item_|. The dragged window
+  // will become smaller when it becomes nearer to the new selector item. And
+  // then keep the minimum scale if it has been dragged further than the new
+  // selector item.
+  float scale =
+      static_cast<float>(bounds_of_selected_new_selector_item_.height()) /
+      static_cast<float>(dragged_window_->bounds().height());
+  int y_full = bounds_of_selected_new_selector_item_.y();
   int y_diff = y_full - location_in_screen.y();
   if (y_diff >= 0)
     scale = (1.0f - scale) * y_diff / y_full + scale;
