@@ -214,6 +214,11 @@ group("blink_platform_public_deps") {
     "//v8",
   ]
   public_configs = [ "//third_party/blink/renderer:features" ]
+
+  if (is_android) {
+    public_deps +=
+        [ "//third_party/blink/public/common:font_unique_name_table_proto" ]
+  }
 }
 
 declare_args() {
@@ -600,6 +605,8 @@ jumbo_component("platform") {
     "file_metadata.h",
     "fonts/alternate_font_family.h",
     "fonts/android/font_cache_android.cc",
+    "fonts/android/font_unique_name_lookup_android.cc",
+    "fonts/android/font_unique_name_lookup_android.h",
     "fonts/bitmap_glyphs_blacklist.cc",
     "fonts/bitmap_glyphs_blacklist.h",
     "fonts/canvas_rotation_in_vertical.h",
@@ -651,6 +658,8 @@ jumbo_component("platform") {
     "fonts/font_selector_client.h",
     "fonts/font_smoothing_mode.cc",
     "fonts/font_smoothing_mode.h",
+    "fonts/font_unique_name_lookup.cc",
+    "fonts/font_unique_name_lookup.h",
     "fonts/font_variant_east_asian.cc",
     "fonts/font_variant_east_asian.h",
     "fonts/font_variant_numeric.cc",
@@ -1466,6 +1475,7 @@ jumbo_component("platform") {
     "//skia:skcms",
     "//third_party:freetype_harfbuzz",
     "//third_party/blink/public:embedded_frame_sink_mojo_bindings_blink",
+    "//third_party/blink/public/common",
     "//third_party/ced",
     "//third_party/icu",
     "//ui/gfx",

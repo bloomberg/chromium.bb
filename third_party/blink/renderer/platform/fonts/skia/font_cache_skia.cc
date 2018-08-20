@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2006, 2007, 2008, 2009 Google Inc. All rights reserved.
  *
@@ -43,9 +42,12 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
+#include "third_party/blink/renderer/platform/fonts/font_global_context.h"
+#include "third_party/blink/renderer/platform/fonts/font_unique_name_lookup.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -54,6 +56,25 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 
 namespace blink {
+
+#if defined(OS_ANDROID)
+namespace {
+
+static PaintTypeface CreateTypefaceFromUniqueName(
+    const FontFaceCreationParams& creation_params,
+    CString& name) {
+  FontUniqueNameLookup* unique_name_lookup =
+      FontGlobalContext::Get()->GetFontUniqueNameLookup();
+  DCHECK(unique_name_lookup);
+  sk_sp<SkTypeface> uniquely_identified_font =
+      unique_name_lookup->MatchUniqueName(creation_params.Family());
+  if (uniquely_identified_font) {
+    return PaintTypeface::FromSkTypeface(uniquely_identified_font);
+  }
+  return PaintTypeface();
+}
+}  // namespace
+#endif
 
 AtomicString ToAtomicString(const SkString& str) {
   return AtomicString::FromUTF8(str.c_str(), str.size());
@@ -274,10 +295,21 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
     const FontDescription& font_description,
     const FontFaceCreationParams& creation_params,
     float font_size,
-    AlternateFontName) {
+    AlternateFontName alternate_name) {
   CString name;
-  PaintTypeface paint_tf =
-      CreateTypeface(font_description, creation_params, name);
+
+  PaintTypeface paint_tf;
+#if defined(OS_ANDROID)
+  if (alternate_name == AlternateFontName::kLocalUniqueFace &&
+      RuntimeEnabledFeatures::FontSrcLocalMatchingEnabled()) {
+    paint_tf = CreateTypefaceFromUniqueName(creation_params, name);
+  } else {
+    paint_tf = CreateTypeface(font_description, creation_params, name);
+  }
+#else
+  paint_tf = CreateTypeface(font_description, creation_params, name);
+#endif
+
   if (!paint_tf)
     return nullptr;
 
