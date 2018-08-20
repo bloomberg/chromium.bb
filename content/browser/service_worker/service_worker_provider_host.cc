@@ -312,18 +312,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
-  // TODO(crbug.com/838410): The CHECKs are temporary debugging for the linked
-  // bug.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  CHECK(!in_dtor_);
-  in_dtor_ = true;
-
-  if (!service_worker_object_hosts_.empty()) {
-    // Just log when hosts isn't empty. It'd be too noisy to record all provider
-    // ctor/dtor otherwise.
-    ServiceWorkerObjectHost::AddToDebugLog(
-        base::StringPrintf("ProvDtor:prov=%p,type=%d", this, info_->type));
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (context_)
     context_->UnregisterProviderHostByClientID(client_uuid_);
@@ -594,8 +583,8 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerRegistrationObjectHost(
 
 void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
     int64_t version_id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  CHECK(base::ContainsKey(service_worker_object_hosts_, version_id));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(base::ContainsKey(service_worker_object_hosts_, version_id));
   service_worker_object_hosts_.erase(version_id);
 }
 

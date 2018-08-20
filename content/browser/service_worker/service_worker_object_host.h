@@ -7,11 +7,9 @@
 
 #include <memory>
 
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/no_destructor.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -47,8 +45,6 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
                           ServiceWorkerProviderHost* provider_host,
                           scoped_refptr<ServiceWorkerVersion> version);
   ~ServiceWorkerObjectHost() override;
-
-  void CrashOnDoubleDelete();
 
   // ServiceWorkerVersion::Observer overrides.
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
@@ -86,12 +82,6 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
 
   base::WeakPtr<ServiceWorkerObjectHost> AsWeakPtr();
 
-  // TODO(crbug.com/838410): Instrumentation for the linked bug.
-  using DebugLog = base::circular_deque<std::string>;
-  static DebugLog* GetDebugLogInstance();
-  static void AddToDebugLog(const std::string& event);
-  static std::string GetDebugLogString();
-
  private:
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
 
@@ -118,7 +108,6 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
   // don't expect that context to change origins and still hold on to the
   // object.
   const url::Origin provider_origin_;
-  const blink::mojom::ServiceWorkerProviderType provider_type_;
   scoped_refptr<ServiceWorkerVersion> version_;
   // Typically both |bindings_| and |remote_objects_| contain only one Mojo
   // connection, corresponding to the content::WebServiceWorkerImpl in the
@@ -130,9 +119,6 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;
   mojo::AssociatedInterfacePtrSet<blink::mojom::ServiceWorkerObject>
       remote_objects_;
-
-  // TODO(crbug.com/838410): Temporary debugging for the linked bug.
-  bool in_dtor_ = false;
 
   base::WeakPtrFactory<ServiceWorkerObjectHost> weak_ptr_factory_;
 

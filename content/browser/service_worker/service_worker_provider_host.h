@@ -697,9 +697,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // redirects.
   bool is_execution_ready_ = false;
 
-  // TODO(crbug.com/838410): Temporary debugging for the linked bug.
-  bool in_dtor_ = false;
-
   // For service worker clients. The service workers in the chain of redirects
   // during the main resource request for this client. These workers should be
   // updated "soon". See AddServiceWorkerToUpdate() documentation.
