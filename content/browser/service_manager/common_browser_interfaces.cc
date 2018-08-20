@@ -15,9 +15,9 @@
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
+#include "components/viz/host/gpu_client.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
-#include "content/browser/gpu/gpu_client_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/connection_filter.h"
@@ -103,7 +103,7 @@ class ConnectionFilterImpl : public ConnectionFilter {
     const uint64_t gpu_client_tracing_id =
         ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
             gpu_client_id);
-    auto gpu_client = std::make_unique<GpuClientImpl>(
+    auto gpu_client = std::make_unique<viz::GpuClient>(
         std::make_unique<BrowserGpuClientDelegate>(), gpu_client_id,
         gpu_client_tracing_id,
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
@@ -115,7 +115,7 @@ class ConnectionFilterImpl : public ConnectionFilter {
   }
 
   void OnGpuConnectionClosed(const service_manager::Identity& service_identity,
-                             GpuClient* client) {
+                             viz::GpuClient* client) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     gpu_clients_.erase(service_identity);
   }
@@ -133,7 +133,7 @@ class ConnectionFilterImpl : public ConnectionFilter {
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>
       registry_;
-  std::map<service_manager::Identity, std::unique_ptr<GpuClientImpl>>
+  std::map<service_manager::Identity, std::unique_ptr<viz::GpuClient>>
       gpu_clients_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);

@@ -5,11 +5,11 @@
 #ifndef CONTENT_BROWSER_GPU_BROWSER_GPU_CLIENT_DELEGATE_H_
 #define CONTENT_BROWSER_GPU_BROWSER_GPU_CLIENT_DELEGATE_H_
 
-#include "content/browser/gpu/gpu_client_delegate.h"
+#include "components/viz/host/gpu_client_delegate.h"
 
 namespace content {
 
-class BrowserGpuClientDelegate : public GpuClientDelegate {
+class BrowserGpuClientDelegate : public viz::GpuClientDelegate {
  public:
   BrowserGpuClientDelegate();
   ~BrowserGpuClientDelegate() override;

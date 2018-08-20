@@ -65,6 +65,7 @@
 #include "components/metrics/single_sample_metrics.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/common/switches.h"
+#include "components/viz/host/gpu_client.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
@@ -91,7 +92,6 @@
 #include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/gpu/gpu_client_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/histogram_controller.h"
@@ -1467,7 +1467,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
     const int id = GetID();
     const uint64_t tracing_id =
         ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(id);
-    gpu_client_.reset(new GpuClientImpl(
+    gpu_client_.reset(new viz::GpuClient(
         std::make_unique<BrowserGpuClientDelegate>(), id, tracing_id,
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
   }
@@ -1999,7 +1999,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
     // |gpu_client_| outlives the registry, because its destruction is posted to
     // IO thread from the destructor of |this|.
     registry->AddInterface(base::BindRepeating(
-        &GpuClientImpl::Add, base::Unretained(gpu_client_.get())));
+        &viz::GpuClient::Add, base::Unretained(gpu_client_.get())));
   }
 
   registry->AddInterface(

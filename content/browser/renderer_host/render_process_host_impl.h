@@ -72,11 +72,14 @@ class MessageLoop;
 class SharedPersistentMemoryAllocator;
 }
 
+namespace viz {
+class GpuClient;
+}
+
 namespace content {
 class BrowserPluginMessageFilter;
 class ChildConnection;
 class FileSystemManagerImpl;
-class GpuClientImpl;
 class IndexedDBDispatcherHost;
 class InProcessChildThreadParams;
 class MediaStreamTrackMetricsHost;
@@ -824,7 +827,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<ResourceMessageFilter> resource_message_filter_;
   std::unique_ptr<FileSystemManagerImpl, BrowserThread::DeleteOnIOThread>
       file_system_manager_impl_;
-  std::unique_ptr<GpuClientImpl, BrowserThread::DeleteOnIOThread> gpu_client_;
+  std::unique_ptr<viz::GpuClient, BrowserThread::DeleteOnIOThread> gpu_client_;
   std::unique_ptr<PushMessagingManager, BrowserThread::DeleteOnIOThread>
       push_messaging_manager_;
 

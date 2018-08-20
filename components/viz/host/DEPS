@@ -10,6 +10,7 @@ include_rules = [
   "+gpu/ipc/common",
   "+gpu/ipc/host",
   "+mojo/public/cpp",
+  "+services/ui/public/interfaces",
   "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
   "+services/viz/public/interfaces/hit_test",

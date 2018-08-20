@@ -7,24 +7,17 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
+#include "components/viz/host/gpu_client.h"
 #include "content/common/content_export.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 
 namespace content {
 
-// GpuClient provides an implementation of ui::mojom::Gpu.
-class CONTENT_EXPORT GpuClient {
- public:
-  virtual ~GpuClient() {}
-
-  using ConnectionErrorHandlerClosure =
-      base::OnceCallback<void(GpuClient* client)>;
-  static std::unique_ptr<GpuClient, base::OnTaskRunnerDeleter> Create(
-      ui::mojom::GpuRequest request,
-      ConnectionErrorHandlerClosure connection_error_handler,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-};
+CONTENT_EXPORT
+std::unique_ptr<viz::GpuClient, base::OnTaskRunnerDeleter> CreateGpuClient(
+    ui::mojom::GpuRequest request,
+    viz::GpuClient::ConnectionErrorHandlerClosure connection_error_handler,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
 }  // namespace content
 
