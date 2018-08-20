@@ -623,8 +623,13 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
   // Lazily initialize |output_format_| since VideoFrameOutputFormat() has to be
   // called on the media_thread while this object might be instantiated on any.
   const VideoPixelFormat pixel_format = video_frame->format();
-  if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED) {
+  if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED)
     output_format_ = gpu_factories_->VideoFrameOutputFormat(pixel_format);
+  // Bail if we have a change of GpuVideoAcceleratorFactories::OutputFormat;
+  // such changes should not happen in general (see https://crbug.com/875158).
+  if (output_format_ != gpu_factories_->VideoFrameOutputFormat(pixel_format)) {
+    std::move(frame_ready_cb).Run(video_frame);
+    return;
   }
 
   bool is_software_backed_video_frame = !video_frame->HasTextures();
