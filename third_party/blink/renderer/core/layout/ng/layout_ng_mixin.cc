@@ -330,6 +330,15 @@ void LayoutNGMixin<Base>::UpdatePaintFragmentFromCachedLayoutResult(
 }
 
 template <typename Base>
+void LayoutNGMixin<Base>::WillBeDestroyed() {
+  // We should destroy paint fragment tree before destroying descendant layout
+  // objects to allow paint fragment destructor to use associated layout
+  // objects, e.g. NGAbstractInlineTextBox.
+  paint_fragment_.reset();
+  Base::WillBeDestroyed();
+}
+
+template <typename Base>
 void LayoutNGMixin<Base>::InvalidateDisplayItemClients(
     PaintInvalidationReason invalidation_reason) const {
   if (NGPaintFragment* fragment = PaintFragment()) {
