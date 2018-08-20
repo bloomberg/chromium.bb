@@ -162,7 +162,6 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   // javascript originated calls. This method will validate and may adjust
   // the Event object before dispatching.
   bool dispatchEventForBindings(Event*, ExceptionState&);
-  virtual void UncaughtExceptionInEventHandler();
 
   // Used for legacy "onEvent" attribute APIs.
   bool SetAttributeEventListener(const AtomicString& event_type,

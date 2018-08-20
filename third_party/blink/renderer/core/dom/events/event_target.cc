@@ -596,8 +596,6 @@ DispatchEventResult EventTarget::DispatchEventInternal(Event& event) {
   return dispatch_result;
 }
 
-void EventTarget::UncaughtExceptionInEventHandler() {}
-
 static const AtomicString& LegacyType(const Event& event) {
   if (event.type() == EventTypeNames::transitionend)
     return EventTypeNames::webkitTransitionEnd;

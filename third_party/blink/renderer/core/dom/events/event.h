@@ -261,6 +261,14 @@ class CORE_EXPORT Event : public ScriptWrappable {
     executed_listener_or_default_action_ = true;
   }
 
+  bool LegacyDidListenersThrow() const {
+    return legacy_did_listeners_throw_flag_;
+  }
+
+  void LegacySetDidListenersThrowFlag() {
+    legacy_did_listeners_throw_flag_ = true;
+  }
+
   virtual DispatchEventResult DispatchEvent(EventDispatcher&);
 
   void Trace(blink::Visitor*) override;
@@ -319,6 +327,12 @@ class CORE_EXPORT Event : public ScriptWrappable {
   unsigned prevent_default_called_during_passive_ : 1;
   // Whether preventDefault was called on uncancelable event.
   unsigned prevent_default_called_on_uncancelable_event_ : 1;
+
+  // Whether any of listeners have thrown an exception or not.
+  // Corresponds to |legacyOutputDidListenersThrowFlag| in DOM standard.
+  // https://dom.spec.whatwg.org/#dispatching-events
+  // https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
+  unsigned legacy_did_listeners_throw_flag_ : 1;
 
   PassiveMode handling_passive_;
   unsigned short event_phase_;
