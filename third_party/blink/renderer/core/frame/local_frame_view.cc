@@ -2529,8 +2529,8 @@ bool LocalFrameView::RunCompositingLifecyclePhase(
   DCHECK(layout_view);
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    SCOPED_UMA_AND_UKM_TIMER("Blink.CompositingCommit.UpdateTime",
-                             UkmMetricNames::kCompositingCommit);
+    SCOPED_UMA_AND_UKM_TIMER("Blink.Compositing.UpdateTime",
+                             UkmMetricNames::kCompositing);
     layout_view->Compositor()->UpdateIfNeededRecursive(target_state);
   } else {
     ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
@@ -2918,8 +2918,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(
         paint_artifact_compositor_->RootLayer(), &GetFrame());
   }
 
-  SCOPED_UMA_AND_UKM_TIMER("Blink.Compositing.UpdateTime",
-                           UkmMetricNames::kCompositing);
+  SCOPED_UMA_AND_UKM_TIMER("Blink.CompositingCommit.UpdateTime",
+                           UkmMetricNames::kCompositingCommit);
 
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), composited_element_ids,
