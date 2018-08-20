@@ -355,7 +355,7 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
   const int tab_index = tabs_.GetIndexOfView(v);
   if (IsValidModelIndex(tab_index)) {
     Tab* tab = tab_at(tab_index);
-    gfx::Rect tab_drag_handle = tab->bounds();
+    gfx::Rect tab_drag_handle = tab->GetMirroredBounds();
     tab_drag_handle.set_height(drag_handle_extension);
     return extend_drag_handle && !tab->IsActive() &&
            tab_drag_handle.Intersects(rect);
@@ -363,7 +363,7 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
 
   // Similarly, a hit in the new tab button is considered to be in the caption
   // if it's in this thin strip.
-  gfx::Rect new_tab_button_drag_handle = new_tab_button_->bounds();
+  gfx::Rect new_tab_button_drag_handle = new_tab_button_->GetMirroredBounds();
   new_tab_button_drag_handle.set_height(drag_handle_extension);
   if (extend_drag_handle && new_tab_button_drag_handle.Intersects(rect))
     return true;

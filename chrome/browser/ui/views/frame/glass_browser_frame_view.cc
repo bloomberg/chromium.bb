@@ -516,35 +516,11 @@ AvatarButtonStyle GlassBrowserFrameView::GetAvatarButtonStyle() const {
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, private:
 
-// views::NonClientFrameView:
-bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
-                                              const gfx::Rect& rect) const {
-  if (ShouldCustomDrawSystemTitlebar())
-    return BrowserNonClientFrameView::DoesIntersectRect(target, rect);
-
-  // TODO(bsep): This override has "dead zones" where you can't click on the
-  // custom titlebar buttons. It's not clear why it's necessary at all.
-  // Investigate tearing this out.
-  // TODO(pkasting): https://crbug.com/862276  This interferes with drag handle
-  // extension because we never run BrowserNonClientFrameView's code.
-  CHECK_EQ(target, this);
-  bool hit_incognito_icon =
-      profile_indicator_icon() &&
-      profile_indicator_icon()->GetMirroredBounds().Intersects(rect);
-  views::View* profile_switcher_view = GetProfileSwitcherButton();
-  bool hit_profile_switcher_button =
-      profile_switcher_view &&
-      profile_switcher_view->GetMirroredBounds().Intersects(rect);
-  return hit_incognito_icon || hit_profile_switcher_button ||
-         !frame()->client_view()->bounds().Intersects(rect);
-}
-
 void GlassBrowserFrameView::ActivationChanged(bool active) {
   BrowserNonClientFrameView::ActivationChanged(active);
 
-  if (hosted_app_button_container_) {
+  if (hosted_app_button_container_)
     hosted_app_button_container_->SetPaintAsActive(active);
-  }
 }
 
 int GlassBrowserFrameView::ClientBorderThickness(bool restored) const {

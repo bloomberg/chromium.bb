@@ -414,23 +414,11 @@ void NewTabButton::GetBorderPath(float button_y,
                                  float scale,
                                  bool extend_to_top,
                                  SkPath* path) const {
-  const gfx::Rect contents_bounds = GetContentsBounds();
-
-  if (MD::IsRefreshUi()) {
-    // TODO(pkasting): This should really be a circle with (potentially) its top
-    // half extended rectangularly upward... try to reuse
-    // GetTouchOptimizedButtonPath().
-    path->addRect(0, extend_to_top ? 0 : button_y,
-                  contents_bounds.width() * scale,
-                  button_y + contents_bounds.height() * scale);
-    return;
-  }
-
   *path =
-      MD::IsTouchOptimizedUiEnabled()
+      MD::IsNewerMaterialUi()
           ? GetNewerMaterialUiButtonPath(button_y, scale, extend_to_top, false)
-          : GetMaterialUiButtonPath(button_y, contents_bounds.height(), scale,
-                                    extend_to_top, false);
+          : GetMaterialUiButtonPath(button_y, GetContentsBounds().height(),
+                                    scale, extend_to_top, false);
 }
 
 void NewTabButton::PaintFill(bool pressed,
