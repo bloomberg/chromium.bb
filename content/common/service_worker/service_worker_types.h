@@ -121,58 +121,6 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   bool is_history_navigation = false;
 };
 
-// Roughly corresponds to the Fetch API's Response type. This struct has only
-// one user:
-// - Background Fetch API: Uses this type to represent responses to background
-// fetches.
-// Note that the Fetch API does not use this type; it uses ResourceResponse
-// instead.
-// TODO(leonhsl): Remove this struct, instead, use
-// blink::mojom::FetchAPIResponse everywhere.
-struct CONTENT_EXPORT ServiceWorkerResponse {
-  ServiceWorkerResponse();
-  ServiceWorkerResponse(
-      std::unique_ptr<std::vector<GURL>> url_list,
-      int status_code,
-      const std::string& status_text,
-      network::mojom::FetchResponseType response_type,
-      std::unique_ptr<ServiceWorkerHeaderMap> headers,
-      const std::string& blob_uuid,
-      uint64_t blob_size,
-      scoped_refptr<storage::BlobHandle> blob,
-      blink::mojom::ServiceWorkerResponseError error,
-      base::Time response_time,
-      bool is_in_cache_storage,
-      const std::string& cache_storage_cache_name,
-      std::unique_ptr<ServiceWorkerHeaderList> cors_exposed_header_names);
-  ServiceWorkerResponse(const ServiceWorkerResponse& other);
-  ServiceWorkerResponse& operator=(const ServiceWorkerResponse& other);
-  ~ServiceWorkerResponse();
-  size_t EstimatedStructSize();
-
-  // Be sure to update EstimatedStructSize() when adding members.
-  std::vector<GURL> url_list;
-  int status_code;
-  std::string status_text;
-  network::mojom::FetchResponseType response_type;
-  ServiceWorkerHeaderMap headers;
-  // |blob_uuid| and |blob_size| are set when the body is a blob.
-  std::string blob_uuid;
-  uint64_t blob_size;
-  scoped_refptr<storage::BlobHandle> blob;
-  blink::mojom::ServiceWorkerResponseError error;
-  base::Time response_time;
-  bool is_in_cache_storage = false;
-  std::string cache_storage_cache_name;
-  ServiceWorkerHeaderList cors_exposed_header_names;
-
-  // Side data is used to pass the metadata of the response (eg: V8 code cache).
-  std::string side_data_blob_uuid;
-  uint64_t side_data_blob_size = 0;
-  // |side_data_blob| is only used when features::kMojoBlobs is enabled.
-  scoped_refptr<storage::BlobHandle> side_data_blob;
-};
-
 class ChangedVersionAttributesMask {
  public:
   enum {
