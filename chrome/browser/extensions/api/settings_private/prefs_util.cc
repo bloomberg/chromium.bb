@@ -179,6 +179,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[drive::prefs::kDisableDrive] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+#if defined(OS_CHROMEOS)
+  (*s_whitelist)[::prefs::kNetworkFileSharesAllowed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+#endif
 
   // Printing settings.
   (*s_whitelist)[::prefs::kLocalDiscoveryNotificationsEnabled] =
