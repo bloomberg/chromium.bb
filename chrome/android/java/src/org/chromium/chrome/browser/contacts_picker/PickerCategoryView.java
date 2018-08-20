@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.contacts_picker;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A class for keeping track of common data associated with showing contact details in
@@ -47,9 +48,6 @@ public class PickerCategoryView extends RelativeLayout
 
     // The view containing the RecyclerView and the toolbar, etc.
     private SelectableListLayout<ContactDetails> mSelectableListLayout;
-
-    // Our activity.
-    private Activity mActivity;
 
     // The callback to notify the listener of decisions reached in the picker.
     private ContactsPickerListener mListener;
@@ -75,11 +73,18 @@ public class PickerCategoryView extends RelativeLayout
     // The search icon.
     private ImageView mSearchButton;
 
-    // Keeps track of list of last selected contacts.
-    List<ContactDetails> mPreviousSelection;
+    // Keeps track of the set of last selected contacts in the UI.
+    Set<ContactDetails> mPreviousSelection;
 
     // The Done text button that confirms the selection choice.
     private Button mDoneButton;
+
+    // The action button in the bottom right corner.
+    private FloatingActionButton mActionButton;
+
+    // The action button has two modes, Select All and Undo. This keeps track of which mode is
+    // active.
+    private boolean mSelectAllMode = true;
 
     // The MIME types requested.
     private List<String> mMimeTypes;
@@ -87,12 +92,11 @@ public class PickerCategoryView extends RelativeLayout
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public PickerCategoryView(Context context) {
         super(context);
-        mActivity = (Activity) context;
 
         mSelectionDelegate = new SelectionDelegate<ContactDetails>();
         mSelectionDelegate.addObserver(this);
 
-        Resources resources = getActivity().getResources();
+        Resources resources = context.getResources();
         int iconColor =
                 ApiCompatibilityUtils.getColor(resources, R.color.default_favicon_background_color);
         mIconGenerator = new RoundedIconGenerator(resources, ICON_SIZE_DP, ICON_SIZE_DP,
@@ -102,7 +106,7 @@ public class PickerCategoryView extends RelativeLayout
         mSelectableListLayout =
                 (SelectableListLayout<ContactDetails>) root.findViewById(R.id.selectable_list);
 
-        mPickerAdapter = new PickerAdapter(this);
+        mPickerAdapter = new PickerAdapter(this, context.getContentResolver());
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mPickerAdapter);
         mToolbar = (ContactsPickerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.contacts_picker_toolbar, mSelectionDelegate,
@@ -116,9 +120,12 @@ public class PickerCategoryView extends RelativeLayout
         mDoneButton = (Button) mToolbar.findViewById(R.id.done);
         mDoneButton.setOnClickListener(this);
 
-        mLayoutManager = new LinearLayoutManager(mActivity);
+        mLayoutManager = new LinearLayoutManager(context);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        mActionButton = (FloatingActionButton) root.findViewById(R.id.action);
+        mActionButton.setOnClickListener(this);
     }
 
     /**
@@ -193,6 +200,16 @@ public class PickerCategoryView extends RelativeLayout
         if (mToolbar.isSearching() && selectedItems.size() > 0) {
             mToolbar.hideSearchView();
         }
+
+        // If all items have been selected, only show the Undo button if there's a meaningful
+        // state to revert to (one might not exist if they were all selected manually).
+        // TODO(finnur): Add automatic test that exercises the visibility of the action button,
+        //               including when all items are selected manually (special case).
+        mActionButton.setVisibility(!mToolbar.isSearching()
+                                && (selectedItems.size() != mPickerAdapter.getItemCount()
+                                           || mPreviousSelection != null)
+                        ? VISIBLE
+                        : GONE);
     }
 
     // OnClickListener:
@@ -204,16 +221,23 @@ public class PickerCategoryView extends RelativeLayout
             notifyContactsSelected();
         } else if (id == R.id.search) {
             onStartSearch();
+        } else if (id == R.id.action) {
+            if (mSelectAllMode) {
+                mPreviousSelection = mSelectionDelegate.getSelectedItems();
+                mSelectionDelegate.setSelectedItems(mPickerAdapter.getAllContacts());
+                mActionButton.setImageResource(R.drawable.ic_undo);
+            } else {
+                mSelectionDelegate.setSelectedItems(mPreviousSelection);
+                mActionButton.setImageResource(R.drawable.ic_select_all);
+                mPreviousSelection = null;
+            }
+            mSelectAllMode = !mSelectAllMode;
         } else {
             executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null);
         }
     }
 
     // Simple accessors:
-
-    public Activity getActivity() {
-        return mActivity;
-    }
 
     public SelectionDelegate<ContactDetails> getSelectionDelegate() {
         return mSelectionDelegate;
@@ -227,7 +251,7 @@ public class PickerCategoryView extends RelativeLayout
      * Notifies any listeners that one or more contacts have been selected.
      */
     private void notifyContactsSelected() {
-        List<ContactDetails> selectedFiles = mSelectionDelegate.getSelectedItems();
+        List<ContactDetails> selectedFiles = mSelectionDelegate.getSelectedItemsAsList();
         Collections.sort(selectedFiles);
         String[] contacts = new String[selectedFiles.size()];
         int i = 0;

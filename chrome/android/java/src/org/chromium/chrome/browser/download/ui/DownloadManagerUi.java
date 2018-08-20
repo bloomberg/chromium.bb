@@ -382,7 +382,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             return true;
         } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
             List<DownloadHistoryItemWrapper> items =
-                    mBackendProvider.getSelectionDelegate().getSelectedItems();
+                    mBackendProvider.getSelectionDelegate().getSelectedItemsAsList();
             mBackendProvider.getSelectionDelegate().clearSelection();
 
             recordMenuActionHistogram(MenuAction.MULTI_DELETE);
@@ -393,7 +393,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             return true;
         } else if (item.getItemId() == R.id.selection_mode_share_menu_id) {
             List<DownloadHistoryItemWrapper> items =
-                    mBackendProvider.getSelectionDelegate().getSelectedItems();
+                    mBackendProvider.getSelectionDelegate().getSelectedItemsAsList();
             // TODO(twellington): ideally the intent chooser would be started with
             //                    startActivityForResult() and the selection would only be cleared
             //                    after receiving an OK response. See crbug.com/638916.

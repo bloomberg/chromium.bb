@@ -179,7 +179,7 @@ class DownloadManagerCoordinatorImpl
             RecordHistogram.recordCount100Histogram(
                     "Android.DownloadManager.Menu.Delete.SelectedCount",
                     mSelectionDelegate.getSelectedItems().size());
-            mListCoordinator.onDeletionRequested(mSelectionDelegate.getSelectedItems());
+            mListCoordinator.onDeletionRequested(mSelectionDelegate.getSelectedItemsAsList());
             mSelectionDelegate.clearSelection();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_share_menu_id) {
