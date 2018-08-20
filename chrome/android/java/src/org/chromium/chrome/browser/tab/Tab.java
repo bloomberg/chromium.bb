@@ -1699,6 +1699,8 @@ public class Tab
         if (!(getActivity() instanceof ChromeTabbedActivity)) return;
 
         View anchorView = getActivity().getToolbarManager().getMenuButton();
+        if (anchorView == null) return;
+
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
         TextBubble textBubble =
                 new TextBubble(getActivity(), anchorView, R.string.iph_data_saver_detail_text,

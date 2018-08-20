@@ -123,9 +123,27 @@ public class AsyncViewProvider<T extends View> implements Callback<View> {
         }
     }
 
+    /**
+     * Destroy the provider making sure that all queued up after inflate callbacks are no longer
+     * called.
+     */
     public void destroy() {
+        destroy(null);
+    }
+
+    /**
+     * Same as {@link #destroy()} but takes a callback that is ensured to be run (either immediately
+     * if the view is already inflated or after inflation of the {@link AsyncViewStub})).
+     */
+    public void destroy(Callback<T> destroyCallback) {
         mDestroyed = true;
-        mView = null;
-        mViewStub = null;
+        if (mView != null) {
+            destroyCallback.onResult(mView);
+            mView = null;
+        }
+        if (mViewStub != null) {
+            mViewStub.addOnInflateListener((View view) -> { destroyCallback.onResult(mView); });
+            mViewStub = null;
+        }
     }
 }

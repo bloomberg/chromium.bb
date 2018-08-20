@@ -110,6 +110,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kHomepageTile,
     &kHorizontalTabSwitcherAndroid,
     &kImprovedA2HS,
+    &kInflateToolbarOnBackgroundThread,
     &kLanguagesPreference,
     &kLongPressBackForHistory,
     &kLongPressBackNewDesign,
@@ -316,6 +317,9 @@ const base::Feature kHorizontalTabSwitcherAndroid{
 // issues.
 const base::Feature kImprovedA2HS{"ImprovedA2HS",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kInflateToolbarOnBackgroundThread{
+    "BackgroundToolbarInflation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLanguagesPreference{"LanguagesPreference",
                                          base::FEATURE_ENABLED_BY_DEFAULT};

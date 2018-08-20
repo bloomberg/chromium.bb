@@ -544,8 +544,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mToolbarManager = new ToolbarManager(this, toolbarContainer, mAppMenuHandler,
                     mAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator(),
                     urlFocusChangedCallback);
-            mFindToolbarManager = new FindToolbarManager(
-                    this, mToolbarManager.getActionModeController().getActionModeCallback());
+            mFindToolbarManager =
+                    new FindToolbarManager(this, mToolbarManager.getActionModeControllerCallback());
             mAppMenuHandler.addObserver(new AppMenuObserver() {
                 @Override
                 public void onMenuVisibilityChanged(boolean isVisible) {
