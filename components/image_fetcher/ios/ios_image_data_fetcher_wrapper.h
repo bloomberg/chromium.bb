@@ -29,8 +29,9 @@ class IOSImageDataFetcherWrapper {
 
   // Helper to start downloading and possibly decoding the image without a
   // referrer.
-  virtual void FetchImageDataWebpDecoded(const GURL& image_url,
-                                         ImageDataFetcherBlock callback);
+  void FetchImageDataWebpDecoded(const GURL& image_url,
+                                 ImageDataFetcherBlock callback,
+                                 bool send_cookies = false);
 
   // Start downloading the image at the given |image_url|. The |callback| will
   // be called with the downloaded image, or nil if any error happened. If the
@@ -42,7 +43,8 @@ class IOSImageDataFetcherWrapper {
       const GURL& image_url,
       ImageDataFetcherBlock callback,
       const std::string& referrer,
-      net::URLRequest::ReferrerPolicy referrer_policy);
+      net::URLRequest::ReferrerPolicy referrer_policy,
+      bool send_cookies = false);
 
   // Sets a service name against which to track data usage.
   void SetDataUseServiceName(DataUseServiceName data_use_service_name);

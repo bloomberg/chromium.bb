@@ -97,6 +97,42 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(ImageDataFetcherTest, FetchImageDataWithCookies) {
+  std::string content = kURLResponseData;
+
+  image_data_fetcher_.FetchImageData(
+      GURL(kImageURL),
+      base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
+                     base::Unretained(this)),
+      TRAFFIC_ANNOTATION_FOR_TESTS, true);
+
+  RequestMetadata expected_metadata;
+  expected_metadata.mime_type = std::string("image/png");
+  expected_metadata.http_response_code = net::HTTP_OK;
+  EXPECT_CALL(*this, OnImageDataFetched(content, expected_metadata));
+
+  // Check to make sure the request is pending with proper flags, and
+  // provide a response.
+  int pending_load_flags = 0;
+  EXPECT_TRUE(
+      test_url_loader_factory_.IsPending(kImageURL, &pending_load_flags));
+  EXPECT_FALSE(pending_load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
+  EXPECT_FALSE(pending_load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
+  EXPECT_FALSE(pending_load_flags & net::LOAD_DO_NOT_SEND_AUTH_DATA);
+
+  network::ResourceResponseHead head;
+  std::string raw_header =
+      "HTTP/1.1 200 OK\n"
+      "Content-type: image/png\n\n";
+  head.headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(raw_header.c_str(), raw_header.size()));
+  head.mime_type = "image/png";
+  network::URLLoaderCompletionStatus status;
+  status.decoded_body_length = content.size();
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), head, content, status);
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
   std::string content = kURLResponseData;
 
