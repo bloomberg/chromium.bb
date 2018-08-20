@@ -13,8 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/budget_service/budget_manager.h"
-#include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,7 +33,6 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
-#include "third_party/blink/public/platform/modules/budget_service/budget_service.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -93,7 +90,7 @@ NotificationDatabaseData CreateDatabaseData(
 
 PushMessagingNotificationManager::PushMessagingNotificationManager(
     Profile* profile)
-    : profile_(profile), weak_factory_(this) {}
+    : profile_(profile), budget_database_(profile), weak_factory_(this) {}
 
 PushMessagingNotificationManager::~PushMessagingNotificationManager() {}
 
@@ -195,13 +192,12 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   if (notification_needed && !notification_shown) {
     // If the worker needed to show a notification and didn't, see if a silent
     // push was allowed.
-    BudgetManager* manager = BudgetManagerFactory::GetForProfile(profile_);
-    manager->Consume(
+    budget_database_.SpendBudget(
         url::Origin::Create(origin),
-        blink::mojom::BudgetOperationType::SILENT_PUSH,
-        base::Bind(&PushMessagingNotificationManager::ProcessSilentPush,
-                   weak_factory_.GetWeakPtr(), origin,
-                   service_worker_registration_id, message_handled_closure));
+        base::BindOnce(&PushMessagingNotificationManager::ProcessSilentPush,
+                       weak_factory_.GetWeakPtr(), origin,
+                       service_worker_registration_id,
+                       message_handled_closure));
     return;
   }
 

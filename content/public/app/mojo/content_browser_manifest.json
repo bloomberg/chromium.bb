@@ -154,7 +154,6 @@
           "blink.mojom.AnchorElementMetricsHost",
           "blink.mojom.Authenticator",
           "blink.mojom.BackgroundFetchService",
-          "blink.mojom.BudgetService",
           "blink.mojom.CacheStorage",
           "blink.mojom.ColorChooserFactory",
           "blink.mojom.CredentialManager",
@@ -223,7 +222,6 @@
     "navigation:dedicated_worker": {
       "provides": {
         "renderer": [
-          "blink.mojom.BudgetService",
           "blink.mojom.CacheStorage",
           "blink.mojom.DedicatedWorkerFactory",
           "blink.mojom.LockManager",
@@ -243,7 +241,6 @@
       "provides": {
         "renderer": [
           "blink.mojom.BackgroundFetchService",
-          "blink.mojom.BudgetService",
           "blink.mojom.CacheStorage",
           "blink.mojom.CookieStore",
           "blink.mojom.LockManager",
@@ -262,7 +259,6 @@
     "navigation:shared_worker": {
       "provides": {
         "renderer": [
-          "blink.mojom.BudgetService",
           "blink.mojom.CacheStorage",
           "blink.mojom.LockManager",
           "blink.mojom.NotificationService",

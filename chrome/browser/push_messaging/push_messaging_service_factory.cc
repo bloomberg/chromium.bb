@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -45,11 +45,11 @@ PushMessagingServiceFactory::PushMessagingServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "PushMessagingProfileService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(BudgetManagerFactory::GetInstance());
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
   DependsOn(instance_id::InstanceIDProfileServiceFactory::GetInstance());
   DependsOn(HostContentSettingsMapFactory::GetInstance());
   DependsOn(PermissionManagerFactory::GetInstance());
+  DependsOn(SiteEngagementServiceFactory::GetInstance());
 }
 
 PushMessagingServiceFactory::~PushMessagingServiceFactory() {}

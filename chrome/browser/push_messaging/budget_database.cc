@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/budget_service/budget_database.h"
+#include "chrome/browser/push_messaging/budget_database.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
-#include "chrome/browser/budget_service/budget.pb.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/push_messaging/budget.pb.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -38,17 +38,22 @@ constexpr double kMaximumHourlyBudget = 12.0 / 24.0;
 
 }  // namespace
 
-BudgetDatabase::BudgetInfo::BudgetInfo() {}
+BudgetState::BudgetState() = default;
+BudgetState::BudgetState(const BudgetState& other) = default;
+BudgetState::~BudgetState() = default;
+
+BudgetState& BudgetState::operator=(const BudgetState& other) = default;
+
+BudgetDatabase::BudgetInfo::BudgetInfo() = default;
 
 BudgetDatabase::BudgetInfo::BudgetInfo(const BudgetInfo&& other)
     : last_engagement_award(other.last_engagement_award) {
   chunks = std::move(other.chunks);
 }
 
-BudgetDatabase::BudgetInfo::~BudgetInfo() {}
+BudgetDatabase::BudgetInfo::~BudgetInfo() = default;
 
-BudgetDatabase::BudgetDatabase(Profile* profile,
-                               const base::FilePath& database_dir)
+BudgetDatabase::BudgetDatabase(Profile* profile)
     : profile_(profile),
       db_(new leveldb_proto::ProtoDatabaseImpl<budget_service::Budget>(
           base::CreateSequencedTaskRunnerWithTraits(
@@ -56,13 +61,14 @@ BudgetDatabase::BudgetDatabase(Profile* profile,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),
       clock_(base::WrapUnique(new base::DefaultClock)),
       weak_ptr_factory_(this) {
-  db_->Init(kDatabaseUMAName, database_dir,
+  db_->Init(kDatabaseUMAName,
+            profile->GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase")),
             leveldb_proto::CreateSimpleOptions(),
             base::BindOnce(&BudgetDatabase::OnDatabaseInit,
                            weak_ptr_factory_.GetWeakPtr()));
 }
 
-BudgetDatabase::~BudgetDatabase() {}
+BudgetDatabase::~BudgetDatabase() = default;
 
 void BudgetDatabase::GetBudgetDetails(const url::Origin& origin,
                                       GetBudgetCallback callback) {
@@ -72,8 +78,8 @@ void BudgetDatabase::GetBudgetDetails(const url::Origin& origin,
 }
 
 void BudgetDatabase::SpendBudget(const url::Origin& origin,
-                                 double amount,
-                                 SpendBudgetCallback callback) {
+                                 SpendBudgetCallback callback,
+                                 double amount) {
   SyncCache(origin, base::BindOnce(&BudgetDatabase::SpendBudgetAfterSync,
                                    weak_ptr_factory_.GetWeakPtr(), origin,
                                    amount, std::move(callback)));
@@ -138,14 +144,12 @@ void BudgetDatabase::AddToCache(
 void BudgetDatabase::GetBudgetAfterSync(const url::Origin& origin,
                                         GetBudgetCallback callback,
                                         bool success) {
-  std::vector<blink::mojom::BudgetStatePtr> predictions;
+  std::vector<BudgetState> predictions;
 
   // If the database wasn't able to read the information, return the
   // failure and an empty predictions array.
   if (!success) {
-    std::move(callback).Run(
-        blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
-        std::move(predictions));
+    std::move(callback).Run(std::move(predictions));
     return;
   }
 
@@ -156,24 +160,23 @@ void BudgetDatabase::GetBudgetAfterSync(const url::Origin& origin,
   double total = GetBudget(origin);
 
   // Always add one entry at the front of the list for the total budget now.
-  blink::mojom::BudgetStatePtr prediction(blink::mojom::BudgetState::New());
-  prediction->budget_at = total;
-  prediction->time = clock_->Now().ToJsTime();
-  predictions.push_back(std::move(prediction));
+  BudgetState prediction;
+  prediction.budget_at = total;
+  prediction.time = clock_->Now().ToJsTime();
+  predictions.push_back(prediction);
 
   // Starting with the soonest expiring chunks, add entries for the
   // expiration times going forward.
   const BudgetChunks& chunks = budget_map_[origin].chunks;
   for (const auto& chunk : chunks) {
-    blink::mojom::BudgetStatePtr prediction(blink::mojom::BudgetState::New());
+    BudgetState prediction;
     total -= chunk.amount;
-    prediction->budget_at = total;
-    prediction->time = chunk.expiration.ToJsTime();
-    predictions.push_back(std::move(prediction));
+    prediction.budget_at = total;
+    prediction.time = chunk.expiration.ToJsTime();
+    predictions.push_back(prediction);
   }
 
-  std::move(callback).Run(blink::mojom::BudgetServiceErrorType::NONE,
-                          std::move(predictions));
+  std::move(callback).Run(std::move(predictions));
 }
 
 void BudgetDatabase::SpendBudgetAfterSync(const url::Origin& origin,
@@ -181,9 +184,7 @@ void BudgetDatabase::SpendBudgetAfterSync(const url::Origin& origin,
                                           SpendBudgetCallback callback,
                                           bool success) {
   if (!success) {
-    std::move(callback).Run(
-        blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
-        false /* success */);
+    std::move(callback).Run(false /* success */);
     return;
   }
 
@@ -198,8 +199,7 @@ void BudgetDatabase::SpendBudgetAfterSync(const url::Origin& origin,
 
   if (total < amount) {
     UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForNoBudgetOrigin", score);
-    std::move(callback).Run(blink::mojom::BudgetServiceErrorType::NONE,
-                            false /* success */);
+    std::move(callback).Run(false /* success */);
     return;
   } else if (total < amount * 2) {
     UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForLowBudgetOrigin", score);
@@ -234,13 +234,10 @@ void BudgetDatabase::SpendBudgetAfterWrite(SpendBudgetCallback callback,
   // TODO(harkness): If the database write fails, the cache will be out of sync
   // with the database. Consider ways to mitigate this.
   if (!write_successful) {
-    std::move(callback).Run(
-        blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
-        false /* success */);
+    std::move(callback).Run(false /* success */);
     return;
   }
-  std::move(callback).Run(blink::mojom::BudgetServiceErrorType::NONE,
-                          true /* success */);
+  std::move(callback).Run(true /* success */);
 }
 
 void BudgetDatabase::WriteCachedValuesToDatabase(const url::Origin& origin,

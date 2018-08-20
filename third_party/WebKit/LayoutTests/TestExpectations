@@ -2677,7 +2677,6 @@ crbug.com/626703 http/tests/devtools/extensions/extensions-sidebar.js [ Pass Fai
 crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 [ Mac Win ] editing/selection/modify_extend/extend_by_character.html [ Failure Pass ]
 crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
-crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 crbug.com/800898 external/wpt/FileAPI/url/url-with-fetch.any.worker.html [ Pass Failure ]
 crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
@@ -2718,9 +2717,6 @@ crbug.com/870526 external/wpt/background-fetch/idlharness.https.any.serviceworke
 crbug.com/870526 external/wpt/notifications/idlharness.https.any.serviceworker.html [ Skip ]
 crbug.com/870526 external/wpt/payment-handler/idlharness.https.any.serviceworker.html [ Skip ]
 crbug.com/870526 external/wpt/push-api/idlharness.https.any.serviceworker.html [ Skip ]
-crbug.com/870526 external/wpt/budget-api/idlharness.https.any.worker.html [ Skip ]
-
-crbug.com/873540 external/wpt/budget-api/idlharness.https.any.html [ Timeout Crash ]
 
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 

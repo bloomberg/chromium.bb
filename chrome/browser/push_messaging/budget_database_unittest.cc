@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/budget_service/budget_database.h"
+#include "chrome/browser/push_messaging/budget_database.h"
 
 #include <math.h>
 #include <vector>
@@ -11,9 +11,9 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
-#include "chrome/browser/budget_service/budget.pb.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/push_messaging/budget.pb.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/proto_database_impl.h"
@@ -39,32 +39,28 @@ class BudgetDatabaseTest : public ::testing::Test {
  public:
   BudgetDatabaseTest()
       : success_(false),
-        db_(&profile_,
-            profile_.GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase"))),
+        db_(&profile_),
         origin_(url::Origin::Create(GURL(kTestOrigin))) {}
 
-  void WriteBudgetComplete(base::Closure run_loop_closure,
-                           blink::mojom::BudgetServiceErrorType error,
-                           bool success) {
-    success_ = (error == blink::mojom::BudgetServiceErrorType::NONE) && success;
+  void WriteBudgetComplete(base::Closure run_loop_closure, bool success) {
+    success_ = success;
     run_loop_closure.Run();
   }
 
   // Spend budget for the origin.
   bool SpendBudget(double amount) {
     base::RunLoop run_loop;
-    db_.SpendBudget(origin(), amount,
+    db_.SpendBudget(origin(),
                     base::Bind(&BudgetDatabaseTest::WriteBudgetComplete,
-                               base::Unretained(this), run_loop.QuitClosure()));
+                               base::Unretained(this), run_loop.QuitClosure()),
+                    amount);
     run_loop.Run();
     return success_;
   }
 
-  void GetBudgetDetailsComplete(
-      base::Closure run_loop_closure,
-      blink::mojom::BudgetServiceErrorType error,
-      std::vector<blink::mojom::BudgetStatePtr> predictions) {
-    success_ = (error == blink::mojom::BudgetServiceErrorType::NONE);
+  void GetBudgetDetailsComplete(base::Closure run_loop_closure,
+                                std::vector<BudgetState> predictions) {
+    success_ = !predictions.empty();
     prediction_.swap(predictions);
     run_loop_closure.Run();
   }
@@ -98,11 +94,10 @@ class BudgetDatabaseTest : public ::testing::Test {
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
   bool success_;
-  std::vector<blink::mojom::BudgetStatePtr> prediction_;
+  std::vector<BudgetState> prediction_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<budget_service::Budget> budget_;
   TestingProfile profile_;
   BudgetDatabase db_;
   base::HistogramTester histogram_tester_;
@@ -113,7 +108,7 @@ TEST_F(BudgetDatabaseTest, GetBudgetNoBudgetOrSES) {
   GetBudgetDetails();
   ASSERT_TRUE(success_);
   ASSERT_EQ(2U, prediction_.size());
-  EXPECT_EQ(0, prediction_[0]->budget_at);
+  EXPECT_EQ(0, prediction_[0].budget_at);
 }
 
 TEST_F(BudgetDatabaseTest, AddEngagementBudgetTest) {
@@ -132,9 +127,9 @@ TEST_F(BudgetDatabaseTest, AddEngagementBudgetTest) {
   ASSERT_TRUE(success_);
   ASSERT_EQ(2U, prediction_.size());
   ASSERT_DOUBLE_EQ(daily_budget * kDefaultExpirationInDays,
-                   prediction_[0]->budget_at);
-  ASSERT_EQ(0, prediction_[1]->budget_at);
-  ASSERT_EQ(expiration_time.ToJsTime(), prediction_[1]->time);
+                   prediction_[0].budget_at);
+  ASSERT_EQ(0, prediction_[1].budget_at);
+  ASSERT_EQ(expiration_time.ToJsTime(), prediction_[1].time);
 
   // Advance time 1 day and add more engagement budget.
   clock->Advance(base::TimeDelta::FromDays(1));
@@ -144,12 +139,12 @@ TEST_F(BudgetDatabaseTest, AddEngagementBudgetTest) {
   ASSERT_TRUE(success_);
   ASSERT_EQ(3U, prediction_.size());
   ASSERT_DOUBLE_EQ(daily_budget * (kDefaultExpirationInDays + 1),
-                   prediction_[0]->budget_at);
-  ASSERT_DOUBLE_EQ(daily_budget, prediction_[1]->budget_at);
-  ASSERT_EQ(expiration_time.ToJsTime(), prediction_[1]->time);
-  ASSERT_DOUBLE_EQ(0, prediction_[2]->budget_at);
+                   prediction_[0].budget_at);
+  ASSERT_DOUBLE_EQ(daily_budget, prediction_[1].budget_at);
+  ASSERT_EQ(expiration_time.ToJsTime(), prediction_[1].time);
+  ASSERT_DOUBLE_EQ(0, prediction_[2].budget_at);
   ASSERT_EQ((expiration_time + base::TimeDelta::FromDays(1)).ToJsTime(),
-            prediction_[2]->time);
+            prediction_[2].time);
 
   // Advance time by 59 minutes and check that no engagement budget is added
   // since budget should only be added for > 1 hour increments.
@@ -160,7 +155,7 @@ TEST_F(BudgetDatabaseTest, AddEngagementBudgetTest) {
   ASSERT_TRUE(success_);
   ASSERT_EQ(3U, prediction_.size());
   ASSERT_DOUBLE_EQ(daily_budget * (kDefaultExpirationInDays + 1),
-                   prediction_[0]->budget_at);
+                   prediction_[0].budget_at);
 }
 
 TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
@@ -186,24 +181,24 @@ TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
       kMaxDailyBudget * (kEngagement / SiteEngagementScore::kMaxPoints);
   ASSERT_EQ(4U, prediction_.size());
   ASSERT_DOUBLE_EQ((2 + kDefaultExpirationInDays) * daily_budget - 1,
-                   prediction_[0]->budget_at);
-  ASSERT_DOUBLE_EQ(daily_budget * 2, prediction_[1]->budget_at);
-  ASSERT_DOUBLE_EQ(daily_budget, prediction_[2]->budget_at);
-  ASSERT_DOUBLE_EQ(0, prediction_[3]->budget_at);
+                   prediction_[0].budget_at);
+  ASSERT_DOUBLE_EQ(daily_budget * 2, prediction_[1].budget_at);
+  ASSERT_DOUBLE_EQ(daily_budget, prediction_[2].budget_at);
+  ASSERT_DOUBLE_EQ(0, prediction_[3].budget_at);
 
   // Now spend enough that it will use up the rest of the first chunk and all of
   // the second chunk, but not all of the third chunk.
   ASSERT_TRUE(SpendBudget((1 + kDefaultExpirationInDays) * daily_budget));
   GetBudgetDetails();
   ASSERT_EQ(2U, prediction_.size());
-  ASSERT_DOUBLE_EQ(daily_budget - 1, prediction_[0]->budget_at);
+  ASSERT_DOUBLE_EQ(daily_budget - 1, prediction_[0].budget_at);
 
   // Validate that the code returns false if SpendBudget tries to spend more
   // budget than the origin has.
   EXPECT_FALSE(SpendBudget(kEngagement));
   GetBudgetDetails();
   ASSERT_EQ(2U, prediction_.size());
-  ASSERT_DOUBLE_EQ(daily_budget - 1, prediction_[0]->budget_at);
+  ASSERT_DOUBLE_EQ(daily_budget - 1, prediction_[0].budget_at);
 
   // Advance time until the last remaining chunk should be expired, then query
   // for the full engagement worth of budget.
@@ -228,7 +223,7 @@ TEST_F(BudgetDatabaseTest, GetBudgetNegativeTime) {
 
   // Save off the budget total.
   ASSERT_EQ(3U, prediction_.size());
-  double budget = prediction_[0]->budget_at;
+  double budget = prediction_[0].budget_at;
 
   // Move the clock backwards in time to before the budget awards.
   clock->SetNow(clock->Now() - base::TimeDelta::FromDays(5));
@@ -236,14 +231,14 @@ TEST_F(BudgetDatabaseTest, GetBudgetNegativeTime) {
   // Make sure the budget is the same.
   GetBudgetDetails();
   ASSERT_EQ(3U, prediction_.size());
-  ASSERT_EQ(budget, prediction_[0]->budget_at);
+  ASSERT_EQ(budget, prediction_[0].budget_at);
 
   // Now move the clock back to the original time and check that no extra budget
   // is awarded.
   clock->SetNow(clock->Now() + base::TimeDelta::FromDays(5));
   GetBudgetDetails();
   ASSERT_EQ(3U, prediction_.size());
-  ASSERT_EQ(budget, prediction_[0]->budget_at);
+  ASSERT_EQ(budget, prediction_[0].budget_at);
 }
 
 TEST_F(BudgetDatabaseTest, CheckBackgroundBudgetHistogram) {
@@ -330,14 +325,12 @@ TEST_F(BudgetDatabaseTest, CheckEngagementHistograms) {
 
 TEST_F(BudgetDatabaseTest, DefaultSiteEngagementInIncognitoProfile) {
   TestingProfile second_profile;
-  TestingProfile* second_profile_incognito =
-      TestingProfile::Builder().BuildIncognito(&second_profile);
+  Profile* second_profile_incognito = second_profile.GetOffTheRecordProfile();
 
   // Create a second BudgetDatabase instance for the off-the-record version of
   // a second profile. This will not have been influenced by the |profile_|.
   std::unique_ptr<BudgetDatabase> second_database =
-      std::make_unique<BudgetDatabase>(second_profile_incognito,
-                                       base::FilePath() /* in memory */);
+      std::make_unique<BudgetDatabase>(second_profile_incognito);
 
   ASSERT_FALSE(profile()->IsOffTheRecord());
   ASSERT_FALSE(second_profile.IsOffTheRecord());

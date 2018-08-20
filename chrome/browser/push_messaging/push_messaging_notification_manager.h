@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/push_messaging/budget_database.h"
 
 class GURL;
 class Profile;
@@ -95,6 +96,8 @@ class PushMessagingNotificationManager {
 
   // Weak. This manager is owned by a keyed service on this profile.
   Profile* profile_;
+
+  BudgetDatabase budget_database_;
 
   base::WeakPtrFactory<PushMessagingNotificationManager> weak_factory_;
 
