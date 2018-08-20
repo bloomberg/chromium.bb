@@ -206,7 +206,7 @@ inline EventDispatchContinuation EventDispatcher::DispatchEventPreProcess(
   // legacy-pre-activation behavior.
   if (activation_target) {
     pre_dispatch_event_handler_result =
-        activation_target->PreDispatchEventHandler(event_.Get());
+        activation_target->PreDispatchEventHandler(*event_);
   }
   return (event_->GetEventPath().IsEmpty() || event_->PropagationStopped())
              ? kDoneDispatching
