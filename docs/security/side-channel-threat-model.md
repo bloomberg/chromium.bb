@@ -140,14 +140,12 @@ malicious website from pulling in sensitive cross-origin data. Otherwise, an
 attacker could use markup like `<img src="http://example.com/secret.json">` to
 get cross-origin data within reach of Spectre or other OOB-read exploits.
 
-As of M63, CORB protects:
+As of M65, CORB protects:
 
 * HTML, JSON, and XML responses.
-   * Protection requires the resource to be served with the correct
-     `Content-Type` header. [We recommend using `X-Content-Type-Options:
-     nosniff`](https://www.chromium.org/Home/chromium-security/ssca).
-   * In M65 we broadened which content types are considered JSON and XML. (E.g.
-     M63 didn’t consider `*+xml`.)
+  Protection requires the resource to be served with the correct
+  `Content-Type` header. [We recommend using `X-Content-Type-Options:
+  nosniff`](https://www.chromium.org/Home/chromium-security/ssca).
 * text/plain responses which sniff as HTML, XML, or JSON.
 
 Today, CORB doesn’t protect:
@@ -161,6 +159,7 @@ Today, CORB doesn’t protect:
    * `font/*`
    * `application/javascript`
    * PDFs, ZIPs, and other unrecognized MIME types
+* Responses to requests initiated from the Flash plugin.
 
 Site operators should read and follow, where applicable, [our guidance for
 maximizing CORB and other defensive
@@ -210,8 +209,13 @@ tracked this as [Issue
 ###### Flash
 
 Click To Play greatly reduces the risk that Flash-borne Spectre (and other)
-exploits will be effective at scale. Even so, [we might want to consider SI for
-Flash](https://bugs.chromium.org/p/chromium/issues/detail?id=816318).
+exploits will be effective at scale.  Additionally, the enterprise policies
+[PluginsBlockedForUrls](https://www.chromium.org/administrators/policy-list-3#PluginsBlockedForUrls)
+and
+[PluginsAllowedForUrls](https://www.chromium.org/administrators/policy-list-3#PluginsAllowedForUrls)
+can be combined to restrict Flash to specific websites.
+Even so,
+[we might want to consider teaching CORB about Flash flavour of CORS](https://crbug.com/816318).
 
 ##### All Frames In A `<webview>` Run In The Same Process
 
