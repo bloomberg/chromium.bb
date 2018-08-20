@@ -187,7 +187,11 @@ const CGFloat kBubblePresentationDelay = 1;
   NSString* text = l10n_util::GetNSStringWithFixup(
       IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_TEXT);
   CGPoint searchButtonAnchor =
-      [self anchorPointToGuide:kTabSwitcherGuide direction:arrowDirection];
+      IsRegularXRegularSizeClass()
+          ? [self anchorPointToGuide:kTabStripTabSwitcherGuide
+                           direction:arrowDirection]
+          : [self anchorPointToGuide:kTabSwitcherGuide
+                           direction:arrowDirection];
 
   // If the feature engagement tracker does not consider it valid to display
   // the tip, then end early to prevent the potential reassignment of the
