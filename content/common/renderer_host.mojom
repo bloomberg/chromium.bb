@@ -16,8 +16,4 @@ interface RendererHost {
   // Notify the browser that this render process can or can't be suddenly
   // terminated.
   SuddenTerminationChanged(bool enabled);
-
-  // Request a child_control.Shutdown message to be sent to the renderer. This
-  // may not initiate a shutdown sequence in some cases.
-  ShutdownRequest();
 };

@@ -1645,15 +1645,13 @@ void RenderThreadImpl::OnChannelError() {
 }
 
 void RenderThreadImpl::OnProcessFinalRelease() {
-  if (on_channel_error_called())
-    return;
-  // The child process shutdown sequence is a request response based mechanism,
-  // where we send out an initial feeler request to the child process host
-  // instance in the browser to verify if it's ok to shutdown the child process.
-  // The browser then sends back a response if it's ok to shutdown. This avoids
-  // race conditions if the process refcount is 0 but there's an IPC message
-  // inflight that would addref it.
-  GetRendererHost()->ShutdownRequest();
+  // Do not shutdown the process. The browser process is the only one
+  // responsible for renderer shutdown.
+  //
+  // Renderer process used to request self shutdown. It has been removed. It
+  // caused race conditions, where the browser process was reusing renderer
+  // processes that were shutting down.
+  // See https://crbug.com/535246 or https://crbug.com/873541/#c8.
 }
 
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
