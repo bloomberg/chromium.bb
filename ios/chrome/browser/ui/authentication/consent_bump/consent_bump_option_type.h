@@ -10,9 +10,10 @@
 // Different option types.
 typedef NS_ENUM(NSInteger, ConsentBumpOptionType) {
   ConsentBumpOptionTypeNotSet = 0,
-  ConsentBumpOptionTypeNoChange,
-  ConsentBumpOptionTypeReview,
-  ConsentBumpOptionTypeTurnOn
+  ConsentBumpOptionTypeDefaultYesImIn,
+  ConsentBumpOptionTypeMoreOptionsNoChange,
+  ConsentBumpOptionTypeMoreOptionsReview,
+  ConsentBumpOptionTypeMoreOptionsTurnOn,
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_CONSENT_BUMP_CONSENT_BUMP_OPTION_TYPE_H_

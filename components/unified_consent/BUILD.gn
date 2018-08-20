@@ -8,6 +8,8 @@ static_library("unified_consent") {
     "feature.h",
     "pref_names.cc",
     "pref_names.h",
+    "unified_consent_metrics.cc",
+    "unified_consent_metrics.h",
     "unified_consent_service.cc",
     "unified_consent_service.h",
     "unified_consent_service_client.cc",
