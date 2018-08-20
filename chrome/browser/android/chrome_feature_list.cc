@@ -138,6 +138,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSpecialLocaleWrapper,
     &kTabReparenting,
     &kTrustedWebActivity,
+    &kTrustedWebActivityPostMessage,
     &kVideoPersistence,
     &kVrBrowsingFeedback,
     &kVrBrowsingNativeAndroidUi,
@@ -401,6 +402,9 @@ const base::Feature kTabReparenting{"TabReparenting",
 
 const base::Feature kTrustedWebActivity{"TrustedWebActivity",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kTrustedWebActivityPostMessage{
+    "TrustedWebActivityPostMessage", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUserMediaScreenCapturing{
     "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
