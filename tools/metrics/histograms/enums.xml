@@ -35674,6 +35674,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OfflinePrefetchArchiveActualSizeVsExpected">
+  <obsolete>
+    Deprecated 8/2018.
+  </obsolete>
   <summary>
     Percentage ranges for the ratios of actual downloaded size of a prefetched
     offline page archive versus its expected size.

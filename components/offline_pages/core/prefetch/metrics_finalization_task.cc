@@ -116,50 +116,6 @@ void CountEntriesInEachState(sql::Database* db) {
   }
 }
 
-// These constants represent important indexes in the
-// OfflinePrefetchArchiveActualSizeVsExpected histogram enum.
-const int kEnumZeroArchiveBodyLength = 0;
-const int kEnumRange0To100Min = 1;
-const int kEnumRange0To100Max = 10;
-const int kEnumSizeMatches100 = 11;
-const int kEnumRange100To200OrMoreMin = 12;
-const int kEnumRange100To200OrMoreMax = 22;
-
-// Value meaning the file size should not be reported (not a valid index in the
-// OfflinePrefetchArchiveActualSizeVsExpected enum).
-const int kShouldNotReportFileSize = -1;
-
-// Returned values conform to the definition of the
-// OfflinePrefetchArchiveActualSizeVsExpected histogram enum. Except for -1
-// which means "do not report".
-int GetFileSizeEnumValueFor(int64_t archive_body_length, int64_t file_size) {
-  // Archiving service reported body length as zero.
-  if (archive_body_length == 0)
-    return kEnumZeroArchiveBodyLength;
-
-  // For other cases, reporting should only happen if both size values were set
-  // meaning the item reached at least the successfully downloaded state.
-  if (archive_body_length < 0 || file_size < 0)
-    return kShouldNotReportFileSize;
-
-  if (archive_body_length == file_size)
-    return kEnumSizeMatches100;
-
-  // For smaller sizes than expected, return an index in the 0% <= ratio < 100%
-  // range.
-  double ratio = static_cast<double>(file_size) / archive_body_length;
-  if (archive_body_length > file_size) {
-    return std::max(
-        kEnumRange0To100Min,
-        std::min(kEnumRange0To100Max, static_cast<int>(ratio * 10) + 1));
-  }
-
-  // Otherwise return an index in the 100% < ratio range.
-  return std::max(
-      kEnumRange100To200OrMoreMin,
-      std::min(kEnumRange100To200OrMoreMax, static_cast<int>(ratio * 10) + 2));
-}
-
 void ReportMetricsFor(const PrefetchItemStats& url, const base::Time now) {
   // Lifetime reporting.
   static const int kFourWeeksInSeconds =
@@ -178,15 +134,6 @@ void ReportMetricsFor(const PrefetchItemStats& url, const base::Time now) {
   // Error code reporting.
   base::UmaHistogramSparse("OfflinePages.Prefetching.FinishedItemErrorCode",
                            static_cast<int>(url.error_code));
-
-  // Unexpected file size reporting.
-  int file_size_enum_value =
-      GetFileSizeEnumValueFor(url.archive_body_length, url.file_size);
-  if (file_size_enum_value != kShouldNotReportFileSize) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected",
-        file_size_enum_value, kEnumRange100To200OrMoreMax);
-  }
 
   // Attempt counts reporting.
   static const int kMaxPossibleRetries = 20;
