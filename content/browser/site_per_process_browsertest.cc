@@ -5425,19 +5425,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // RenderFrameHost should be pending deletion after the last navigation.
   EXPECT_FALSE(rfh->is_active());
 
-  // Wait for process A to exit so we can reinitialize it cleanly for the next
-  // navigation.  Since process A doesn't have any active views, it will
-  // initiate shutdown via ChildProcessHostMsg_ShutdownRequest.  After process
-  // A shuts down, the |rfh| and |rvh| should get destroyed via
-  // OnRenderProcessGone.
-  //
-  // Not waiting for process shutdown here could lead to the |rvh| being
-  // reused, now that there is no notion of pending deletion RenderViewHosts.
-  // This would also be fine; however, the race in https://crbug.com/535246
-  // still needs to be addressed and tested in that case.
-  RenderProcessHostWatcher process_exit_observer(
-      rvh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  process_exit_observer.Wait();
+  // Without the SwapOut ACK and timer, the process A will never shutdown.
+  // Simulate the process being killed now.
+  content::RenderProcessHostWatcher crash_observer(
+      rvh->GetProcess(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(rvh->GetProcess()->Shutdown(0));
+  crash_observer.Wait();
 
   // Verify that the RVH and RFH for A were cleaned up.
   EXPECT_FALSE(root->frame_tree()->GetRenderViewHost(site_instance));
@@ -7210,29 +7204,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(rvh->is_swapped_out_);
 }
 
-// Helper class to wait for a ShutdownRequest message to arrive.
-class ShutdownObserver : public RenderProcessHostObserver {
- public:
-  ShutdownObserver() = default;
-
-  void RenderProcessShutdownRequested(RenderProcessHost* host) override {
-    has_received_shutdown_request_ = true;
-    run_loop_.Quit();
-  }
-
-  void Wait() { run_loop_.Run(); }
-
-  bool has_received_shutdown_request() {
-    return has_received_shutdown_request_;
-  }
-
- private:
-  base::RunLoop run_loop_;
-  bool has_received_shutdown_request_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ShutdownObserver);
-};
-
 // Test for https://crbug.com/568836.  From an A-embed-B page, navigate the
 // subframe from B to A.  This cleans up the process for B, but the test delays
 // the browser side from killing the B process right away.  This allows the
@@ -7269,26 +7240,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Navigate the subframe away from b.com.  Since this is the last active
   // frame in the b.com process, this causes the RenderWidget and RenderView to
-  // be closed.  If this succeeds without crashing, the renderer will release
-  // the process and send a ShutdownRequest to the browser
-  // process to ask whether it's ok to terminate.  Thus, wait for this message
-  // to ensure that the RenderView and widget were closed without crashing.
-  ShutdownObserver shutdown_observer;
-  subframe_process->AddObserver(&shutdown_observer);
+  // be closed.
   NavigateFrameToURL(root->child_at(0),
                      embedded_test_server()->GetURL("a.com", "/title1.html"));
-  shutdown_observer.Wait();
-  subframe_process->RemoveObserver(&shutdown_observer);
 
-  // TODO(alexmos): Navigating the subframe back to b.com at this point would
-  // trigger the race in https://crbug.com/535246, where the browser process
-  // tries to reuse the b.com process thinking it's still initialized, whereas
-  // the process has actually been destroyed by the renderer (but the browser
-  // process hasn't heard the OnChannelError yet).  This race will need to be
-  // fixed.
-
+  // Release the process.
+  RenderProcessHostWatcher process_shutdown_observer(
+      subframe_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   subframe_process->DecrementKeepAliveRefCount(
       RenderProcessHostImpl::KeepAliveClientType::kFetch);
+  process_shutdown_observer.Wait();
 }
 
 // Tests that an input event targeted to a out-of-process iframe correctly
@@ -11908,14 +11869,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 namespace {
 
 // A helper class that watches for SwapOut ACK messages, allowing them
-// to go through but remembering that the message was received.  It also
-// watches for any ShutdownRequests coming from the renderer and ensures that
-// the SwapOut ACK is received prior to those.
+// to go through but remembering that the message was received.
 class SwapoutACKReceivedFilter : public BrowserMessageFilter {
  public:
   explicit SwapoutACKReceivedFilter(RenderProcessHost* process)
       : BrowserMessageFilter(FrameMsgStart) {
-    process->AddObserver(&shutdown_observer_);
     process->AddFilter(this);
   }
 
@@ -11928,17 +11886,12 @@ class SwapoutACKReceivedFilter : public BrowserMessageFilter {
   // BrowserMessageFilter:
   bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() == FrameHostMsg_SwapOut_ACK::ID) {
-      // This ensures that the SwapOut ACK arrived before any
-      // renderer-initiated process shutdown requests.
-      EXPECT_FALSE(shutdown_observer_.has_received_shutdown_request())
-          << " Shutdown request should be received after the swapout ACK";
       received_ = true;
     }
     return false;
   }
 
   bool received_ = false;
-  ShutdownObserver shutdown_observer_;
   DISALLOW_COPY_AND_ASSIGN(SwapoutACKReceivedFilter);
 };
 

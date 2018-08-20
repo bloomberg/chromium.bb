@@ -136,38 +136,6 @@ class NonSpareRendererContentBrowserClient : public TestContentBrowserClient {
   DISALLOW_COPY_AND_ASSIGN(NonSpareRendererContentBrowserClient);
 };
 
-// Sometimes the renderer process's ShutdownRequest (corresponding to the
-// ViewMsg_WasSwappedOut from a previous navigation) doesn't arrive until after
-// the browser process decides to re-use the renderer for a new purpose.  This
-// test makes sure the browser doesn't let the renderer die in that case.  See
-// http://crbug.com/87176.
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
-                       ShutdownRequestFromActiveTabIgnored) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateToURL(shell(), test_url);
-  RenderProcessHost* rph =
-      shell()->web_contents()->GetMainFrame()->GetProcess();
-
-  host_destructions_ = 0;
-  process_exits_ = 0;
-
-  rph->AddObserver(this);
-
-  static_cast<mojom::RendererHost*>(static_cast<RenderProcessHostImpl*>(rph))
-      ->ShutdownRequest();
-
-  // If the RPH sends a mistaken ProcessShutdown, the renderer process
-  // will take some time to die. Wait for a second tab to load in order to give
-  // that time to happen.
-  NavigateToURL(CreateBrowser(), test_url);
-
-  EXPECT_EQ(0, process_exits_);
-  if (!host_destructions_)
-    rph->RemoveObserver(this);
-}
-
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                        GuestsAreNotSuitableHosts) {
   // Set max renderers to 1 to force running out of processes.

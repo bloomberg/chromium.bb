@@ -484,7 +484,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void GetBrowserHistogram(const std::string& name,
                            BrowserHistogramCallback callback) override;
   void SuddenTerminationChanged(bool enabled) override;
-  void ShutdownRequest() override;
 
   void BindRouteProvider(mojom::RouteProviderAssociatedRequest request);
 

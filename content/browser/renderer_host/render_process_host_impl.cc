@@ -4048,22 +4048,6 @@ void RenderProcessHostImpl::ReleaseOnCloseACK(
   holder->Hold(sessions, view_route_id);
 }
 
-void RenderProcessHostImpl::ShutdownRequest() {
-  // Notify any contents that the renderer might shut down.
-  for (auto& observer : observers_) {
-    observer.RenderProcessShutdownRequested(this);
-  }
-
-  // Don't shut down if there are active RenderViews, or if there are pending
-  // RenderViews being swapped back in.
-  // In single process mode, we never shutdown the renderer.
-  if (pending_views_ || run_renderer_in_process() || GetActiveViewCount() > 0) {
-    return;
-  }
-
-  child_control_interface_->ProcessShutdown();
-}
-
 void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
   SetSuddenTerminationAllowed(enabled);
 }
