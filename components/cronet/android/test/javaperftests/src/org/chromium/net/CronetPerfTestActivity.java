@@ -622,6 +622,6 @@ public class CronetPerfTestActivity extends Activity {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         mConfig = getIntent().getData();
         // Execute benchmarks on another thread to avoid networking on main thread.
-        new BenchmarkTask().execute();
+        new BenchmarkTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 }
