@@ -150,10 +150,6 @@ TEST_F(MetricsFinalizationTaskTest, MetricsAreReported) {
       "OfflinePages.Prefetching.FinishedItemErrorCode",
       static_cast<int>(PrefetchItemErrorCode::ARCHIVING_FAILED), 1);
 
-  // One sample at the "size matches (100%)" bucket.
-  histogram_tester.ExpectUniqueSample(
-      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 11, 1);
-
   // Attempt values match what was set above (non set values default to 0).
   histogram_tester.ExpectTotalCount(
       "OfflinePages.Prefetching.ActionAttempts.GeneratePageBundle", 2);
@@ -173,65 +169,6 @@ TEST_F(MetricsFinalizationTaskTest, MetricsAreReported) {
       "OfflinePages.Prefetching.ActionAttempts.DownloadInitiation", 0, 1);
   histogram_tester.ExpectBucketCount(
       "OfflinePages.Prefetching.ActionAttempts.DownloadInitiation", 1, 1);
-}
-
-TEST_F(MetricsFinalizationTaskTest, FileSizeMetricsAreReportedCorrectly) {
-  PrefetchItem zero_body_length =
-      item_generator()->CreateItem(PrefetchItemState::RECEIVED_BUNDLE);
-  zero_body_length.state = PrefetchItemState::FINISHED;
-  zero_body_length.archive_body_length = 0;
-  zero_body_length.file_size = -1;
-  ASSERT_TRUE(store_util()->InsertPrefetchItem(zero_body_length));
-
-  PrefetchItem smaller_than_expected =
-      item_generator()->CreateItem(PrefetchItemState::FINISHED);
-  smaller_than_expected.archive_body_length = 1000;
-  smaller_than_expected.file_size = 999;
-  ASSERT_TRUE(store_util()->InsertPrefetchItem(smaller_than_expected));
-
-  PrefetchItem sizes_match =
-      item_generator()->CreateItem(PrefetchItemState::FINISHED);
-  sizes_match.archive_body_length = 1000;
-  sizes_match.file_size = 1000;
-  ASSERT_TRUE(store_util()->InsertPrefetchItem(sizes_match));
-
-  PrefetchItem larger_than_expected =
-      item_generator()->CreateItem(PrefetchItemState::FINISHED);
-  larger_than_expected.archive_body_length = 1000;
-  larger_than_expected.file_size = 1001;
-  ASSERT_TRUE(store_util()->InsertPrefetchItem(larger_than_expected));
-
-  PrefetchItem much_larger_than_expected =
-      item_generator()->CreateItem(PrefetchItemState::FINISHED);
-  much_larger_than_expected.archive_body_length = 1000;
-  much_larger_than_expected.file_size = 10000;
-  ASSERT_TRUE(store_util()->InsertPrefetchItem(much_larger_than_expected));
-
-  // Execute the metrics task.
-  base::HistogramTester histogram_tester;
-  RunTask(metrics_finalization_task_.get());
-
-  std::set<PrefetchItem> all_items;
-  EXPECT_EQ(5U, store_util()->GetAllItems(&all_items));
-  EXPECT_EQ(5U, FilterByState(all_items, PrefetchItemState::ZOMBIE).size());
-
-  histogram_tester.ExpectTotalCount(
-      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 5);
-  // One sample at the "archive_body_length = 0" bucket.
-  histogram_tester.ExpectBucketCount(
-      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 0, 1);
-  // One sample at the "90% to 100%" bucket.
-  histogram_tester.ExpectBucketCount(
-      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 10, 1);
-  // One sample at the "size matches (100%)" bucket.
-  histogram_tester.ExpectBucketCount(
-      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 11, 1);
-  // One sample at the "100% to 110%" bucket.
-  histogram_tester.ExpectBucketCount(
-      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 12, 1);
-  // One sample at the "above 200%" bucket.
-  histogram_tester.ExpectBucketCount(
-      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 22, 1);
 }
 
 // Verifies that items from all states are counted properly.
