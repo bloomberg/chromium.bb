@@ -24,6 +24,7 @@ class URLRequestContextGetter;
 }
 
 namespace password_manager {
+class PasswordManagerDriver;
 class PasswordManagerClient;
 class PasswordStore;
 }
@@ -71,9 +72,9 @@ void TrimUsernameOnlyCredentials(
 // and required to always return non-null.
 bool IsLoggingActive(const password_manager::PasswordManagerClient* client);
 
-// True iff the manual password generation is enabled and the user is sync user
-// without custom passphrase.
-bool ManualPasswordGenerationEnabled(syncer::SyncService* sync_service);
+// True iff the manual password generation is enabled for the current site.
+bool ManualPasswordGenerationEnabled(
+    password_manager::PasswordManagerDriver* driver);
 
 // Returns true iff the "Show all saved passwords" option should be shown in
 // Context Menu. Also records metric, that the Context Menu will have "Show all

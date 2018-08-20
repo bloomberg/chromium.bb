@@ -18,7 +18,9 @@
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/log_manager.h"
+#include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -338,11 +340,15 @@ bool IsLoggingActive(const password_manager::PasswordManagerClient* client) {
   return log_manager && log_manager->IsLoggingActive();
 }
 
-bool ManualPasswordGenerationEnabled(syncer::SyncService* sync_service) {
-  if (password_manager_util::GetPasswordSyncState(sync_service) !=
-      password_manager::SYNCING_NORMAL_ENCRYPTION) {
+bool ManualPasswordGenerationEnabled(
+    password_manager::PasswordManagerDriver* driver) {
+  password_manager::PasswordGenerationManager* password_generation_manager =
+      driver ? driver->GetPasswordGenerationManager() : nullptr;
+  if (!password_generation_manager ||
+      !password_generation_manager->IsGenerationEnabled(false /*logging*/)) {
     return false;
   }
+
   LogPasswordGenerationEvent(
       autofill::password_generation::PASSWORD_GENERATION_CONTEXT_MENU_SHOWN);
   return true;
