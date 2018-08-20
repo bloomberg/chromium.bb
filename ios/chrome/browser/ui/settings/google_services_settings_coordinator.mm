@@ -68,10 +68,11 @@
   unified_consent::UnifiedConsentService* unifiedConsentService =
       UnifiedConsentServiceFactory::GetForBrowserState(self.browserState);
   self.mediator = [[GoogleServicesSettingsMediator alloc]
-        initWithPrefService:self.browserState->GetPrefs()
-                syncService:syncService
-           syncSetupService:syncSetupService
-      unifiedConsentService:unifiedConsentService];
+      initWithUserPrefService:self.browserState->GetPrefs()
+             localPrefService:GetApplicationContext()->GetLocalState()
+                  syncService:syncService
+             syncSetupService:syncSetupService
+        unifiedConsentService:unifiedConsentService];
   self.mediator.consumer = viewController;
   self.mediator.authService = self.authService;
   viewController.modelDelegate = self.mediator;
