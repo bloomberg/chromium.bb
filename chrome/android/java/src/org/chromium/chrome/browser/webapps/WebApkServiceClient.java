@@ -80,8 +80,10 @@ public class WebApkServiceClient {
         final ApiUseCallback connectionCallback = new ApiUseCallback() {
             @Override
             public void useApi(IWebApkApi api) throws RemoteException {
-                int smallIconId = api.getSmallIconId();
-                notificationBuilder.setSmallIconForRemoteApp(smallIconId, webApkPackage);
+                if (!notificationBuilder.hasSmallIconBitmap()) {
+                    notificationBuilder.setSmallIconForRemoteApp(
+                            api.getSmallIconId(), webApkPackage);
+                }
 
                 boolean notificationPermissionEnabled = api.notificationPermissionEnabled();
                 if (notificationPermissionEnabled) {

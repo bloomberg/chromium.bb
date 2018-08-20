@@ -63,11 +63,12 @@ public class TrustedWebActivityClient {
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
 
         mConnection.execute(scope, new Origin(scope).toString(), service -> {
-            int smallIconId = service.getSmallIconId();
-
-            if (smallIconId != -1) {
-                builder.setSmallIconForRemoteApp(smallIconId,
-                        service.getComponentName().getPackageName());
+            if (!builder.hasSmallIconBitmap()) {
+                int smallIconId = service.getSmallIconId();
+                if (smallIconId != -1) {
+                    builder.setSmallIconForRemoteApp(
+                            smallIconId, service.getComponentName().getPackageName());
+                }
             }
 
             Notification notification = builder.build();

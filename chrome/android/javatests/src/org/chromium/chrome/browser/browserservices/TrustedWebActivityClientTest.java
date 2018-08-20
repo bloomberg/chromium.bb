@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.browserservices;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -161,11 +162,36 @@ public class TrustedWebActivityClientTest {
         mResponseHandler.mGetSmallIconId.waitForCallback(0);
         mResponseHandler.mNotifyNotification.waitForCallback(0);
 
+        Assert.assertEquals(1, mResponseHandler.mGetSmallIconId.getCallCount());
+
         Assert.assertEquals(mResponseHandler.mNotificationTag, NOTIFICATION_TAG);
         Assert.assertEquals(mResponseHandler.mNotificationId, NOTIFICATION_ID);
         Assert.assertEquals(mResponseHandler.mNotificationChannel,
                 mTargetContext.getResources().getString(
                         R.string.notification_category_group_general));
+    }
+
+    /**
+     * Tests that #notifyNotification does not overwrite the small icon if a bitmap
+     * was already provided.
+     */
+    @Test
+    @SmallTest
+    public void testSmallIconNotOverwritten() throws TimeoutException, InterruptedException {
+        Assert.assertEquals(0, mResponseHandler.mGetSmallIconId.getCallCount());
+        Assert.assertEquals(0, mResponseHandler.mNotifyNotification.getCallCount());
+
+        ThreadUtils.runOnUiThread(() -> {
+            NotificationBuilderBase builder = new StandardNotificationBuilder(mTargetContext);
+            // Set a custom small icon.
+            builder.setSmallIcon(BitmapFactory.decodeResource(
+                    mTargetContext.getResources(), R.drawable.ic_chrome));
+            mClient.notifyNotification(SCOPE, NOTIFICATION_TAG, NOTIFICATION_ID, builder);
+        });
+
+        mResponseHandler.mNotifyNotification.waitForCallback(0);
+
+        Assert.assertEquals(0, mResponseHandler.mGetSmallIconId.getCallCount());
     }
 
     /**
