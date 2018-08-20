@@ -28,7 +28,6 @@
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_service_listener.h"
@@ -71,6 +70,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
+#include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/public/cros_features.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
@@ -482,7 +482,7 @@ MediaStreamManager::MediaStreamManager(
 #if defined(OS_CHROMEOS)
     if (media::ShouldUseCrosCameraService()) {
       media::VideoCaptureDeviceFactoryChromeOS::SetGpuBufferManager(
-          BrowserGpuMemoryBufferManager::current());
+          GpuMemoryBufferManagerSingleton::GetInstance());
       media::CameraHalDispatcherImpl::GetInstance()->Start(
           base::BindRepeating(
               &VideoCaptureDependencies::CreateJpegDecodeAccelerator),

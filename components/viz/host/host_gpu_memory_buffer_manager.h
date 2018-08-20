@@ -67,6 +67,9 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
       gpu::SurfaceHandle surface_handle,
       base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback);
 
+  bool IsNativeGpuMemoryBufferConfiguration(gfx::BufferFormat format,
+                                            gfx::BufferUsage usage) const;
+
   // Overridden from gpu::GpuMemoryBufferManager:
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,

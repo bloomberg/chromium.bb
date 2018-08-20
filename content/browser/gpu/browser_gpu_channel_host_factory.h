@@ -17,11 +17,15 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/message_filter.h"
 
+namespace gpu {
+class GpuMemoryBufferManager;
+}
+
 namespace content {
-class BrowserGpuMemoryBufferManager;
 
 class CONTENT_EXPORT BrowserGpuChannelHostFactory
     : public gpu::GpuChannelEstablishFactory {
@@ -62,7 +66,8 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
-  std::unique_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<gpu::GpuMemoryBufferManager, BrowserThread::DeleteOnIOThread>
+      gpu_memory_buffer_manager_;
   scoped_refptr<EstablishRequest> pending_request_;
 
   base::OneShotTimer timeout_;

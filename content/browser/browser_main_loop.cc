@@ -68,7 +68,7 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
-#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
+#include "content/browser/gpu/browser_gpu_client_delegate.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -1124,9 +1124,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   device_monitor_mac_.reset();
 #endif
 
-  if (BrowserGpuChannelHostFactory::instance()) {
+  if (BrowserGpuChannelHostFactory::instance())
     BrowserGpuChannelHostFactory::instance()->CloseChannel();
-  }
 
   // Shutdown the Service Manager and IPC.
   service_manager_context_.reset();

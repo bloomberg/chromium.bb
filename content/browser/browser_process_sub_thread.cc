@@ -11,7 +11,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/notification_service_impl.h"
 #include "content/browser/utility_process_host.h"
 #include "content/common/child_process_host_impl.h"
@@ -222,10 +221,6 @@ void BrowserProcessSubThread::IOThreadCleanUp() {
   // and delete the BrowserChildProcessHost instances to release whatever
   // IO thread only resources they are referencing.
   BrowserChildProcessHostImpl::TerminateAll();
-
-  // Unregister GpuMemoryBuffer dump provider before IO thread is shut down.
-  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-      BrowserGpuMemoryBufferManager::current());
 }
 
 }  // namespace content
