@@ -96,9 +96,6 @@ ChromeChannelForHistogram GetChromeChannelForHistogram(
 
 }  // namespace
 
-static base::LazyInstance<ChromeExtensionsClient>::Leaky g_client =
-    LAZY_INSTANCE_INITIALIZER;
-
 ChromeExtensionsClient::ChromeExtensionsClient() {}
 
 ChromeExtensionsClient::~ChromeExtensionsClient() {
@@ -343,11 +340,6 @@ bool ChromeExtensionsClient::ExtensionAPIEnabledInExtensionServiceWorkers()
 
 std::string ChromeExtensionsClient::GetUserAgent() const {
   return ::GetUserAgent();
-}
-
-// static
-ChromeExtensionsClient* ChromeExtensionsClient::GetInstance() {
-  return g_client.Pointer();
 }
 
 }  // namespace extensions
