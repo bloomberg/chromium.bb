@@ -23,19 +23,6 @@
 #include "av1/common/arm/av1_inv_txfm_neon.h"
 #include "av1/common/arm/transpose_neon.h"
 
-static INLINE TxSetType find_TxSetType(TX_SIZE tx_size) {
-  const TX_SIZE tx_size_sqr_up = txsize_sqr_up_map[tx_size];
-  TxSetType tx_set_type;
-  if (tx_size_sqr_up > TX_32X32) {
-    tx_set_type = EXT_TX_SET_DCTONLY;
-  } else if (tx_size_sqr_up == TX_32X32) {
-    tx_set_type = EXT_TX_SET_DCT_IDTX;
-  } else {
-    tx_set_type = EXT_TX_SET_ALL16;
-  }
-  return tx_set_type;
-}
-
 // 1D itx types
 typedef enum ATTRIBUTE_PACKED {
   IDCT_1D,
