@@ -157,6 +157,13 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void DisableBackdrop();
   void UpdateBackdropBounds();
 
+  // Returns the bounds of the selected item, which will be scaled up a little
+  // bit and header view will be hidden after being selected.
+  gfx::Rect GetBoundsOfSelectedItem();
+
+  // Increases the bounds of the dragged item.
+  void ScaleUpSelectedItem(OverviewAnimationType animation_type);
+
   // Sets if the item is dimmed in the overview. Changing the value will also
   // change the visibility of the transform windows.
   void SetDimmed(bool dimmed);

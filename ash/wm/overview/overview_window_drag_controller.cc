@@ -23,10 +23,6 @@ namespace ash {
 
 namespace {
 
-// Before dragging an overview window, the window will scale up |kPreDragScale|
-// to indicate its selection.
-constexpr float kDragWindowScale = 0.04f;
-
 // The amount of distance from the start of drag the item needs to be dragged
 // vertically for it to be closed on release.
 constexpr float kDragToCloseDistanceThresholdDp = 160.f;
@@ -173,11 +169,7 @@ void OverviewWindowDragController::CompleteDrag(
 
 void OverviewWindowDragController::StartSplitViewDragMode(
     const gfx::Point& location_in_screen) {
-  // Increase the bounds of the dragged item.
-  gfx::Rect scaled_bounds(item_->target_bounds());
-  scaled_bounds.Inset(-scaled_bounds.width() * kDragWindowScale,
-                      -scaled_bounds.height() * kDragWindowScale);
-  item_->SetBounds(scaled_bounds, OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS);
+  item_->ScaleUpSelectedItem(OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS);
 
   did_move_ = true;
   current_drag_behavior_ = DragBehavior::kDragToSnap;
