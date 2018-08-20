@@ -142,7 +142,6 @@ GCMProfileService::GCMProfileService(
 GCMProfileService::GCMProfileService(
     PrefService* prefs,
     base::FilePath path,
-    net::URLRequestContextGetter* request_context,
     base::RepeatingCallback<
         void(base::WeakPtr<GCMProfileService>,
              network::mojom::ProxyResolvingSocketFactoryRequest)>

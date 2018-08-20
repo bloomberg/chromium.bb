@@ -111,7 +111,7 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
       new GCMProfileService(profile->GetPath(), blocking_task_runner));
 #else
   service = std::make_unique<GCMProfileService>(
-      profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
+      profile->GetPrefs(), profile->GetPath(),
       base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
