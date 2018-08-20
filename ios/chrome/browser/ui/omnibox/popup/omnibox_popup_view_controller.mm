@@ -66,6 +66,11 @@ UIColor* BackgroundColorIncognito() {
 
 @property(nonatomic, strong) UITableView* tableView;
 
+// Flag that enables forwarding scroll events to the delegate. Disabled while
+// updating the cells to avoid defocusing the omnibox when the omnibox popup
+// changes size and table view issues a scroll event.
+@property(nonatomic, assign) BOOL forwardsScrollEvents;
+
 @end
 
 @implementation OmniboxPopupViewController
@@ -74,12 +79,13 @@ UIColor* BackgroundColorIncognito() {
 @synthesize imageRetriever = _imageRetriever;
 @synthesize highlightedIndexPath = _highlightedIndexPath;
 @synthesize tableView = _tableView;
-
+@synthesize forwardsScrollEvents = _forwardsScrollEvents;
 #pragma mark -
 #pragma mark Initialization
 
 - (instancetype)init {
   if (self = [super initWithNibName:nil bundle:nil]) {
+    _forwardsScrollEvents = YES;
     if (IsIPadIdiom()) {
       // The iPad keyboard can cover some of the rows of the scroll view. The
       // scroll view's content inset may need to be updated when the keyboard is
@@ -209,6 +215,7 @@ UIColor* BackgroundColorIncognito() {
 
 - (void)updateMatches:(NSArray<id<AutocompleteSuggestion>>*)result
         withAnimation:(BOOL)animation {
+  self.forwardsScrollEvents = NO;
   // Reset highlight state.
   if (self.highlightedIndexPath) {
     [self unhighlightRowAtIndexPath:self.highlightedIndexPath];
@@ -222,6 +229,7 @@ UIColor* BackgroundColorIncognito() {
   if (animation && size > 0) {
     [self fadeInRows];
   }
+  self.forwardsScrollEvents = YES;
 }
 
 #pragma mark -
@@ -502,7 +510,8 @@ UIColor* BackgroundColorIncognito() {
       return;
   }
 
-  [self.delegate autocompleteResultConsumerDidScroll:self];
+  if (self.forwardsScrollEvents)
+    [self.delegate autocompleteResultConsumerDidScroll:self];
   for (OmniboxPopupRow* row in _rows) {
     row.highlighted = NO;
   }
