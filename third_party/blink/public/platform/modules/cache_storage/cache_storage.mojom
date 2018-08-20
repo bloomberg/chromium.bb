@@ -21,6 +21,7 @@ enum CacheStorageError {
   kErrorQueryTooLarge = 6,
   // TODO(cmumford): kErrorNotImplemented is deprecated. Remove use in code.
   kErrorNotImplemented = 7,
+  kErrorDuplicateOperation = 8,
   // Add new values here.
 };
 
@@ -98,7 +99,8 @@ interface CacheStorageCache {
       => (CacheKeysResult result);
 
   // Perform a batch of operations, used for PUT and DELETE operations.
-  Batch(array<BatchOperation> batch_operations) => (CacheStorageError result);
+  Batch(array<BatchOperation> batch_operations, bool fail_on_duplicates)
+      => (CacheStorageError result);
 };
 
 // Handles global CacheStorage methods, directly relates to methods available on

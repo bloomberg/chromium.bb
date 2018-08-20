@@ -161,6 +161,8 @@ CString CacheStorageErrorString(mojom::blink::CacheStorageError error) {
       return CString("operation too large.");
     case mojom::blink::CacheStorageError::kErrorStorage:
       return CString("storage failure.");
+    case mojom::blink::CacheStorageError::kErrorDuplicateOperation:
+      return CString("duplicate operation.");
     case mojom::blink::CacheStorageError::kSuccess:
       // This function should only be called upon error.
       break;
@@ -554,7 +556,7 @@ void InspectorCacheStorageAgent::deleteEntry(
               cache_ptr.Bind(std::move(result->get_cache()));
               auto* cache = cache_ptr.get();
               cache->Batch(
-                  std::move(batch_operations),
+                  std::move(batch_operations), true /* fail_on_duplicates */,
                   WTF::Bind(
                       [](mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr,
                          std::unique_ptr<DeleteEntryCallback> callback,

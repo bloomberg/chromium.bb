@@ -144,6 +144,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // TODO(nhiroki): This function should run all operations atomically.
   // http://crbug.com/486637
   void BatchOperation(std::vector<blink::mojom::BatchOperationPtr> operations,
+                      bool fail_on_duplicates,
                       ErrorCallback callback,
                       BadMessageCallback bad_message_callback);
   void BatchDidGetUsageAndQuota(

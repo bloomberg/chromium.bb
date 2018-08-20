@@ -452,7 +452,7 @@ class BackgroundFetchDataManagerTest
       operation_ptr_vec[0]->request = request;
 
       handle.value()->BatchOperation(
-          std::move(operation_ptr_vec),
+          std::move(operation_ptr_vec), true /* fail_on_duplicates */,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteFromCache,
                          base::Unretained(this), run_loop.QuitClosure()),
           base::DoNothing());

@@ -150,6 +150,10 @@
       name: "CacheInlineScriptCode"
     },
     {
+      name: "CacheStorageAddAllRejectsDuplicates",
+      status: "experimental",
+    },
+    {
       name: "CacheStyleSheetWithMediaQueries",
       status: "experimental",
     },
