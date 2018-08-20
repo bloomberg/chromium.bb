@@ -173,6 +173,7 @@ extern const char kDeprecatedChromeUIHistoryFrameURL[];
 extern const char kChromeUIEocInternalsHost[];
 extern const char kChromeUIJavaCrashURL[];
 extern const char kChromeUINativeBookmarksURL[];
+extern const char kChromeUINativeExploreURL[];
 extern const char kChromeUINativeHistoryURL[];
 extern const char kChromeUINativeNewTabURL[];
 extern const char kChromeUINativePhysicalWebDiagnosticsURL[];
