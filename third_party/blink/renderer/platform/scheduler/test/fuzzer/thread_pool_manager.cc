@@ -1,11 +1,11 @@
-#include "third_party/blink/renderer/platform/scheduler/base/thread_pool_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fuzzer/thread_pool_manager.h"
 
 #include <algorithm>
 
 #include "base/bind.h"
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_fuzzer_processor.h"
-#include "third_party/blink/renderer/platform/scheduler/base/simple_thread_impl.h"
-#include "third_party/blink/renderer/platform/scheduler/base/thread_data.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fuzzer/sequence_manager_fuzzer_processor.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fuzzer/simple_thread_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fuzzer/thread_manager.h"
 
 namespace base {
 namespace sequence_manager {
@@ -37,9 +37,9 @@ void ThreadPoolManager::CreateThread(
   {
     AutoLock lock(lock_);
     threads_.push_back(std::make_unique<SimpleThreadImpl>(
+        this, time,
         BindOnce(&ThreadPoolManager::StartThread, Unretained(this),
-                 initial_thread_actions),
-        time));
+                 initial_thread_actions)));
     thread = threads_.back().get();
   }
   thread->Start();
@@ -48,30 +48,26 @@ void ThreadPoolManager::CreateThread(
 void ThreadPoolManager::StartThread(
     const google::protobuf::RepeatedPtrField<
         SequenceManagerTestDescription::Action>& initial_thread_actions,
-    ThreadData* thread_data) {
+    ThreadManager* thread_manager) {
   {
     AutoLock lock(lock_);
     while (!initial_threads_created_)
       ready_to_execute_threads_.Wait();
   }
-  processor_->ExecuteThread(thread_data, initial_thread_actions);
+  thread_manager->ExecuteThread(initial_thread_actions);
 }
 
 void ThreadPoolManager::AdvanceClockSynchronouslyByPendingTaskDelay(
-    ThreadData* thread_data) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_data->thread_checker_);
-
+    ThreadManager* thread_manager) {
   ThreadReadyToComputeTime();
 
   {
     AutoLock lock(lock_);
     while (threads_waiting_to_compute_time_ != threads_.size())
       ready_to_compute_time_.Wait();
-    next_time_ = std::min(
-        next_time_,
-        thread_data->test_task_runner_->GetMockTickClock()->NowTicks() +
-            std::max(TimeDelta::FromMilliseconds(0),
-                     thread_data->test_task_runner_->NextPendingTaskDelay()));
+    next_time_ =
+        std::min(next_time_, thread_manager->NowTicks() +
+                                 thread_manager->NextPendingTaskDelay());
     threads_waiting_to_advance_time_++;
     if (threads_waiting_to_advance_time_ == threads_.size()) {
       threads_waiting_to_compute_time_ = 0;
@@ -79,11 +75,12 @@ void ThreadPoolManager::AdvanceClockSynchronouslyByPendingTaskDelay(
     }
   }
 
-  AdvanceThreadClock(thread_data);
+  AdvanceThreadClock(thread_manager);
 }
 
-void ThreadPoolManager::AdvanceClockSynchronouslyToTime(ThreadData* thread_data,
-                                                        TimeTicks time) {
+void ThreadPoolManager::AdvanceClockSynchronouslyToTime(
+    ThreadManager* thread_manager,
+    TimeTicks time) {
   ThreadReadyToComputeTime();
   {
     AutoLock lock(lock_);
@@ -96,7 +93,7 @@ void ThreadPoolManager::AdvanceClockSynchronouslyToTime(ThreadData* thread_data,
       ready_to_advance_time_.Broadcast();
     }
   }
-  AdvanceThreadClock(thread_data);
+  AdvanceThreadClock(thread_manager);
 }
 
 void ThreadPoolManager::ThreadReadyToComputeTime() {
@@ -110,13 +107,11 @@ void ThreadPoolManager::ThreadReadyToComputeTime() {
   }
 }
 
-void ThreadPoolManager::AdvanceThreadClock(ThreadData* thread_data) {
+void ThreadPoolManager::AdvanceThreadClock(ThreadManager* thread_manager) {
   AutoLock lock(lock_);
   while (threads_waiting_to_advance_time_ != threads_.size())
     ready_to_advance_time_.Wait();
-  thread_data->test_task_runner_->AdvanceMockTickClock(
-      next_time_ -
-      thread_data->test_task_runner_->GetMockTickClock()->NowTicks());
+  thread_manager->AdvanceMockTickClock(next_time_ - thread_manager->NowTicks());
   threads_ready_for_next_round_++;
   if (threads_ready_for_next_round_ == threads_.size()) {
     threads_waiting_to_advance_time_ = 0;
@@ -153,8 +148,12 @@ void ThreadPoolManager::ThreadDone() {
 }
 
 const std::vector<std::unique_ptr<SimpleThreadImpl>>&
-ThreadPoolManager::threads() {
+ThreadPoolManager::threads() const {
   return threads_;
+}
+
+SequenceManagerFuzzerProcessor* ThreadPoolManager::processor() const {
+  return processor_;
 }
 
 }  // namespace sequence_manager

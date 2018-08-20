@@ -152,7 +152,7 @@ message SequenceManagerTestDescription {
     repeated Action initial_thread_actions = 1;
   }
 
-  message InitialThread {
+  message CreateInitialThreadAction {
     // NEXT ID = 3
 
     optional uint64 action_id = 1;
@@ -160,5 +160,5 @@ message SequenceManagerTestDescription {
     required CreateThreadAction create_thread = 2;
   }
 
-  repeated InitialThread main_thread_actions = 1;
+  repeated CreateInitialThreadAction main_thread_actions = 1;
 }

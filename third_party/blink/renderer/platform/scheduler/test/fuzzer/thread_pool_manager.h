@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_POOL_MANAGER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_POOL_MANAGER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_FUZZER_THREAD_POOL_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_FUZZER_THREAD_POOL_MANAGER_H_
 
 #include <memory>
 #include <vector>
@@ -12,14 +12,14 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/proto/sequence_manager_test_description.pb.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fuzzer/proto/sequence_manager_test_description.pb.h"
 
 namespace base {
 namespace sequence_manager {
 
 class SequenceManagerFuzzerProcessor;
 class SimpleThreadImpl;
-class ThreadData;
+class ThreadManager;
 
 // Used by the SequenceManagerFuzzerProcessor to manage threads and synchronize
 // their clocks.
@@ -28,23 +28,24 @@ class PLATFORM_EXPORT ThreadPoolManager {
   explicit ThreadPoolManager(SequenceManagerFuzzerProcessor* processor);
   ~ThreadPoolManager();
 
-  // |time| is the virtual time in which the thread is created. The virtual time
-  // is controlled by |this| and synchronized for all the threads it owns.
+  // |initial_time| is the time in which the thread is created.
   void CreateThread(
       const google::protobuf::RepeatedPtrField<
           SequenceManagerTestDescription::Action>& initial_thread_actions,
-      TimeTicks time);
+      TimeTicks initial_time);
 
   // Advances the mock tick clock of all the threads synchronously.
   // Note that this doesn't guarantee advancing the thread's clock to |time|.
   // The clock is advanced to the minimum desired time of all the owned threads.
-  void AdvanceClockSynchronouslyToTime(ThreadData* thread_data, TimeTicks time);
+  void AdvanceClockSynchronouslyToTime(ThreadManager* thread_manager,
+                                       TimeTicks time);
 
   // Advances the mock tick clock of all the threads synchronously.
   // Note that this doesn't guarantee advancing the thread's clock by the next
   // pending task delay. The clock is advanced to the minimum desired time of
   // all the owned threads.
-  void AdvanceClockSynchronouslyByPendingTaskDelay(ThreadData* thread_data);
+  void AdvanceClockSynchronouslyByPendingTaskDelay(
+      ThreadManager* thread_manager);
 
   // Used by a thread to notify the thread manager that it is done executing the
   // thread actions passed to ThreadPoolManager::CreateThread.
@@ -57,13 +58,15 @@ class PLATFORM_EXPORT ThreadPoolManager {
   // the threads are not terminated until |this| gets destructed.
   void WaitForAllThreads();
 
-  const std::vector<std::unique_ptr<SimpleThreadImpl>>& threads();
+  const std::vector<std::unique_ptr<SimpleThreadImpl>>& threads() const;
+
+  SequenceManagerFuzzerProcessor* processor() const;
 
  private:
   void StartThread(
       const google::protobuf::RepeatedPtrField<
           SequenceManagerTestDescription::Action>& initial_thread_actions,
-      ThreadData* thread_data);
+      ThreadManager* thread_manager);
 
   // Helper function used by AdvanceClockSynchronouslyToTime and
   // AdvanceClockSynchronouslyByPendingTaskDelay to notify the manager when all
@@ -72,9 +75,9 @@ class PLATFORM_EXPORT ThreadPoolManager {
 
   // Helper function used by AdvanceClockSynchronouslyToTime and
   // AdvanceClockSynchronouslyByPendingTaskDelay to advance the thread's clock
-  // to |next_time_|. Note that this function waits until all owned threads have
+  // to |next_time_|. Note that this function waits until all threads have
   // voted on the value of |next_time_|.
-  void AdvanceThreadClock(ThreadData* thread_data);
+  void AdvanceThreadClock(ThreadManager* thread_manager);
 
   // Owner of this class.
   SequenceManagerFuzzerProcessor* const processor_;

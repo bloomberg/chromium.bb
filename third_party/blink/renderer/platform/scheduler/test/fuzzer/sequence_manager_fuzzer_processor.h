@@ -2,34 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_FUZZER_PROCESSOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_FUZZER_PROCESSOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_FUZZER_SEQUENCE_MANAGER_FUZZER_PROCESSOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_FUZZER_SEQUENCE_MANAGER_FUZZER_PROCESSOR_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/proto/sequence_manager_test_description.pb.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fuzzer/proto/sequence_manager_test_description.pb.h"
 
 namespace base {
 namespace sequence_manager {
 
-class ThreadData;
+class ThreadManager;
 class ThreadPoolManager;
 
 // Provides functionality to parse the fuzzer's test description and run the
 // relevant APIs.
 //
-// Warning: For unit testing purposes, the thread data of the threads managed by
-// the |thread_pool_manager_| should live for the scope of the main thread
+// Warning: For unit testing purposes, the thread manager of the threads managed
+// by the |thread_pool_manager_| should live for the scope of the main thread
 // entry function i.e RunTest.
 class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
  public:
   // Public interface used to parse the fuzzer's test description and
   // run the relevant APIs.
   static void ParseAndRun(const SequenceManagerTestDescription& description);
+
+  ThreadPoolManager* thread_pool_manager() const;
 
  protected:
   struct TaskForTest {
@@ -64,19 +65,6 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
     uint64_t start_time_ms;
   };
 
-  class Task {
-   public:
-    Task(ThreadData* thread_data, SequenceManagerFuzzerProcessor* processor);
-    ~Task() = default;
-
-    void Execute(const SequenceManagerTestDescription::Task& task);
-
-    bool is_running;
-    SequenceManagerFuzzerProcessor* processor_;
-    ThreadData* thread_data_;
-    base::WeakPtrFactory<Task> weak_ptr_factory_;
-  };
-
   SequenceManagerFuzzerProcessor();
 
   explicit SequenceManagerFuzzerProcessor(bool log_for_testing);
@@ -84,11 +72,6 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
   ~SequenceManagerFuzzerProcessor();
 
   void RunTest(const SequenceManagerTestDescription& description);
-
-  void ExecuteThread(
-      ThreadData* thread_data,
-      const google::protobuf::RepeatedPtrField<
-          SequenceManagerTestDescription::Action>& initial_thread_actions);
 
   // Returns an ordered list of tasks executed on each thread. Note that the
   // ordering of the threads isn't deterministic since it follows the order in
@@ -104,78 +87,32 @@ class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
   const std::vector<std::vector<ActionForTest>>& ordered_actions() const;
 
  private:
-  friend class ThreadData;
-  friend class ThreadPoolManager;
+  friend class ThreadManager;
 
-  void RunAction(ThreadData* thread_data,
-                 const SequenceManagerTestDescription::Action& action);
-
-  void ExecuteCreateThreadAction(
-      ThreadData* thread_data,
-      uint64_t action_id,
-      const SequenceManagerTestDescription::CreateThreadAction& action);
-  void ExecuteCreateTaskQueueAction(
-      ThreadData* thread_data,
-      uint64_t action_id,
-      const SequenceManagerTestDescription::CreateTaskQueueAction& action);
-  void ExecutePostDelayedTaskAction(
-      ThreadData* thread_data,
-      uint64_t action_id,
-      const SequenceManagerTestDescription::PostDelayedTaskAction& action);
-  void ExecuteSetQueuePriorityAction(
-      ThreadData* thread_data,
-      uint64_t action_id,
-      const SequenceManagerTestDescription::SetQueuePriorityAction& action);
-  void ExecuteSetQueueEnabledAction(
-      ThreadData* thread_data,
-      uint64_t action_id,
-      const SequenceManagerTestDescription::SetQueueEnabledAction& action);
-  void ExecuteCreateQueueVoterAction(
-      ThreadData* thread_data,
-      uint64_t action_id,
-      const SequenceManagerTestDescription::CreateQueueVoterAction& action);
-  void ExecuteShutdownTaskQueueAction(
-      ThreadData* thread_data,
-      uint64_t action_id,
-      const SequenceManagerTestDescription::ShutdownTaskQueueAction& action);
-  void ExecuteCancelTaskAction(
-      ThreadData* thread_data,
-      uint64_t action_id,
-      const SequenceManagerTestDescription::CancelTaskAction& action);
-  void ExecuteInsertFenceAction(
-      ThreadData* thread_data,
-      uint64_t action_id,
-      const SequenceManagerTestDescription::InsertFenceAction& action);
-  void ExecuteRemoveFenceAction(
-      ThreadData* thread_data,
-      uint64_t action_id,
-      const SequenceManagerTestDescription::RemoveFenceAction& action);
-
-  void ExecuteTask(ThreadData* thread_data,
-                   const SequenceManagerTestDescription::Task& task);
-
-  void DeleteTask(Task* task);
-
-  void LogTaskForTesting(ThreadData* thread_data,
+  // Logs the task defined by the parameters passed to |ordered_tasks| if
+  // |log_for_testing_| is enabled.
+  void LogTaskForTesting(std::vector<TaskForTest>* ordered_tasks,
                          uint64_t task_id,
                          TimeTicks start_time,
                          TimeTicks end_time);
 
-  void LogActionForTesting(ThreadData* thread_data,
+  // Logs the action defined by the parameters passed to |ordered_actions| if
+  // |log_for_testing_| is enabled.
+  void LogActionForTesting(std::vector<ActionForTest>* ordered_actions,
                            uint64_t action_id,
                            ActionForTest::ActionType type,
                            TimeTicks start_time);
 
   const bool log_for_testing_;
 
-  TimeTicks initial_time_;
+  const TimeTicks initial_time_;
 
-  std::unique_ptr<ThreadPoolManager> thread_pool_manager_;
+  const std::unique_ptr<ThreadPoolManager> thread_pool_manager_;
 
-  // The clock of the main thread data task runner is initialized to
+  // The clock of the main thread manager task runner is initialized to
   // |initial_time_| and never advanced, since it can only execute actions at
   // the start of the program.
-  std::unique_ptr<ThreadData> main_thread_data_;
+  const std::unique_ptr<ThreadManager> main_thread_manager_;
 
   // For Testing. Each entry contains the ordered list of tasks for one of the
   // created threads. The first entry is reserved for the main thread (which is

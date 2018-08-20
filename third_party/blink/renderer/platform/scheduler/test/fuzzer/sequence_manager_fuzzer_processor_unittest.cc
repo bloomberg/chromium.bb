@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_fuzzer_processor.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fuzzer/sequence_manager_fuzzer_processor.h"
 
 #include <memory>
 
@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/scheduler/base/proto/sequence_manager_test_description.pb.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fuzzer/proto/sequence_manager_test_description.pb.h"
 #include "third_party/protobuf/src/google/protobuf/text_format.h"
 #include "third_party/protobuf/src/google/protobuf/util/message_differencer.h"
 
@@ -149,7 +149,7 @@ TEST(SequenceManagerFuzzerProcessorTest, CreateQueueVoter) {
   EXPECT_THAT(executed_actions, ContainerEq(expected_actions));
 }
 
-TEST(SequenceManagerFuzzerProcessorTest, PostDelayedTaskWithDuration) {
+TEST(SequenceManagerFuzzerProcessorTest, PostDelayedTaskWDuration) {
   std::vector<TaskForTest> executed_tasks;
   std::vector<ActionForTest> executed_actions;
 
@@ -278,12 +278,12 @@ TEST(SequenceManagerFuzzerProcessorTest, SetQueueEnabled) {
 
   EXPECT_THAT(executed_actions, ContainerEq(expected_actions));
 
-  // All the tasks posted to the task queue with id 1 do not get executed since
+  // All the tasks posted to the task queue w id 1 do not get executed since
   // this task queue is disabled.
   EXPECT_THAT(executed_tasks, IsEmpty());
 }
 
-TEST(SequenceManagerFuzzerProcessorTest, SetQueueEnabledWithDelays) {
+TEST(SequenceManagerFuzzerProcessorTest, SetQueueEnabledWDelays) {
   std::vector<TaskForTest> executed_tasks;
 
   // Describes a test that posts two tasks to disable and enable a queue after
@@ -522,7 +522,7 @@ TEST(SequenceManagerFuzzerProcessorTest, ShutdownTaskQueue) {
 
   std::vector<TaskForTest> expected_tasks;
 
-  // Note that the task with id 4 isn't posted to the queue that was shutdown,
+  // Note that the task w id 4 isn't posted to the queue that was shutdown,
   // since that was posted to the first available queue (Check
   // sequence_manager_test_description.proto for more details).
   expected_tasks.emplace_back(4, 0, 0);
@@ -755,7 +755,7 @@ TEST(SequenceManagerFuzzerProcessorTest,
 
   std::vector<TaskForTest> expected_tasks;
 
-  // Task with id 2 is expected to run first and block the other task until it
+  // Task w id 2 is expected to run first and block the other task until it
   // done.
   expected_tasks.emplace_back(2, 0, 40);
   expected_tasks.emplace_back(1, 40, 60);
@@ -770,7 +770,7 @@ TEST(SequenceManagerFuzzerProcessorTest,
 }
 
 TEST(SequenceManagerFuzzerProcessorTest,
-     TaskDurationBlocksOtherNonNestableTaskWhenPostedFromTheWithinTask) {
+     TaskDurationBlocksOtherNonNestableTaskWhenPostedFromTheWinTask) {
   std::vector<TaskForTest> executed_tasks;
 
   // Posts an instant task of duration 40 ms that posts another non-nested
@@ -796,9 +796,9 @@ TEST(SequenceManagerFuzzerProcessorTest,
 
   std::vector<TaskForTest> expected_tasks;
 
-  // Task with task id 1 is expected to run for 40 ms, and block the other
-  // posted task from running until its done. Note that the task with id 2 is
-  // blocked since it is non-nested, so it is not supposed to run from within
+  // Task w task id 1 is expected to run for 40 ms, and block the other
+  // posted task from running until its done. Note that the task w id 2 is
+  // blocked since it is non-nested, so it is not supposed to run from win
   // the posting task.
   expected_tasks.emplace_back(1, 0, 40);
   expected_tasks.emplace_back(2, 40, 40);
@@ -865,9 +865,9 @@ TEST(SequenceManagerFuzzerProcessorTest, PostNonEmptyTask) {
 
   std::vector<TaskForTest> expected_tasks;
 
-  // Task with task id 1 is expected to run first, and block all other pending
+  // Task w task id 1 is expected to run first, and block all other pending
   // tasks until its done. The remaining tasks will be executed in
-  // non-decreasing order of the delay parameter with ties broken by
+  // non-decreasing order of the delay parameter w ties broken by
   // the post order.
   expected_tasks.emplace_back(1, 5, 45);
   expected_tasks.emplace_back(3, 45, 45);
@@ -950,8 +950,8 @@ TEST(SequenceManagerFuzzerProcessorTest, OrderOfSimpleUnnestedExecutedActions) {
 
   std::vector<TaskForTest> expected_tasks;
 
-  // Tasks are expected to run in order of non-decreasing delay with ties broken
-  // by order of posting. Note that the task with id 3 will block the task with
+  // Tasks are expected to run in order of non-decreasing delay w ties broken
+  // by order of posting. Note that the task w id 3 will block the task with
   // id 2 from running at its scheduled time.
   expected_tasks.emplace_back(1, 10, 10);
   expected_tasks.emplace_back(3, 15, 25);
@@ -1052,7 +1052,7 @@ TEST(SequenceManagerFuzzerProcessorTest, InsertAndRemoveFence) {
   expected_tasks.emplace_back(1, 20, 20);
   expected_tasks.emplace_back(2, 30, 30);
 
-  // Task with id 3 will not execute until the fence is removed from the task
+  // Task w id 3 will not execute until the fence is removed from the task
   // queue it was posted to.
   expected_tasks.emplace_back(3, 30, 30);
 
@@ -1091,7 +1091,7 @@ TEST(SequenceManagerFuzzerProcessorTest, ThrottleTaskQueue) {
 
   EXPECT_THAT(executed_actions, ContainerEq(expected_actions));
 
-  // Task queue with id 1 is throttled, so posted tasks will not get executed.
+  // Task queue w id 1 is throttled, so posted tasks will not get executed.
   EXPECT_THAT(executed_tasks, IsEmpty());
 }
 
@@ -1151,7 +1151,7 @@ TEST(SequenceManagerFuzzerProcessorTest, MultipleThreadsButNotInteracting) {
         }
       })";
 
-  // Threads initialized with same list of actions.
+  // Threads initialized w same list of actions.
   std::vector<std::string> threads{thread_actions, thread_actions,
                                    thread_actions, thread_actions,
                                    thread_actions};
@@ -1168,8 +1168,8 @@ TEST(SequenceManagerFuzzerProcessorTest, MultipleThreadsButNotInteracting) {
 
   for (int i = 1; i <= 5; i++) {
     // Created thread tasks: tasks are expected to run in order of
-    // non-decreasing delay with ties broken by order of posting. Note that the
-    // task with id 3 will block the task with id 2 from running at its
+    // non-decreasing delay w ties broken by order of posting. Note that the
+    // task w id 3 will block the task with id 2 from running at its
     // scheduled time.
     expected_tasks[i].emplace_back(1, 10, 10);
     expected_tasks[i].emplace_back(3, 15, 25);
