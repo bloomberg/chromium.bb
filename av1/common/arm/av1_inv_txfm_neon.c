@@ -104,14 +104,6 @@ static INLINE void lowbd_inv_txfm2d_memset_neon(int16x8_t *a, int size,
     a[i] = vdupq_n_s16((int16_t)value);
   }
 }
-static INLINE void dct_const_round_shift_low_8_dual(const int32x4_t *t32,
-                                                    int16x8_t *d0,
-                                                    int16x8_t *d1) {
-  *d0 = vcombine_s16(vrshrn_n_s32(t32[0], INV_COS_BIT),
-                     vrshrn_n_s32(t32[1], INV_COS_BIT));
-  *d1 = vcombine_s16(vrshrn_n_s32(t32[2], INV_COS_BIT),
-                     vrshrn_n_s32(t32[3], INV_COS_BIT));
-}
 
 static INLINE void btf_16_lane_0_1_neon(const int16x8_t in0,
                                         const int16x8_t in1, const int16x4_t c,
