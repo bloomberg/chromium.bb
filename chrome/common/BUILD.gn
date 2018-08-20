@@ -369,6 +369,8 @@ static_library("common") {
       "extensions/sync_helper.h",
       "extensions/webstore_install_result.cc",
       "extensions/webstore_install_result.h",
+      "initialize_extensions_client.cc",
+      "initialize_extensions_client.h",
     ]
     public_deps += [
       "//chrome/common/extensions:mojo_bindings",
