@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 
 namespace base {
@@ -46,30 +46,33 @@ class WebkitFileStreamReaderImpl : public storage::FileStreamReader {
   // storage::FileStreamReader override.
   int Read(net::IOBuffer* buffer,
            int buffer_length,
-           const net::CompletionCallback& callback) override;
-  int64_t GetLength(const net::Int64CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
+  int64_t GetLength(net::Int64CompletionOnceCallback callback) override;
 
  private:
   // Called upon the initialization completion of |stream_reader_|.
   // Processes the result of the initialization with checking last
   // modified time, and calls |callback| with net::Error code as its result.
-  void OnStreamReaderInitialized(const net::CompletionCallback& callback,
+  void OnStreamReaderInitialized(net::CompletionOnceCallback callback,
                                  int error,
                                  std::unique_ptr<ResourceEntry> entry);
 
   // Part of Read(). Called after all the initialization process is completed.
-  void ReadAfterStreamReaderInitialized(
-      scoped_refptr<net::IOBuffer> buffer,
-      int buffer_length,
-      const net::CompletionCallback& callback,
-      int initialization_result);
+  void ReadAfterStreamReaderInitialized(scoped_refptr<net::IOBuffer> buffer,
+                                        int buffer_length,
+                                        net::CompletionOnceCallback callback,
+                                        int initialization_result);
+
+  // Part of Read().  Passed in to DriveFileStreamReader::Read().
+  void OnRead(int result);
 
   // Part of GetLength(). Called after all the initialization process is
   // completed.
   void GetLengthAfterStreamReaderInitialized(
-      const net::Int64CompletionCallback& callback,
+      net::Int64CompletionOnceCallback callback,
       int initialization_result);
 
+  net::CompletionOnceCallback read_callback_;
   std::unique_ptr<DriveFileStreamReader> stream_reader_;
   const base::FilePath drive_file_path_;
   const int64_t offset_;

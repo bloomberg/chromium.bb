@@ -22,7 +22,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -239,12 +239,12 @@ class FakeFileStreamReader : public FileStreamReader {
 
   int Read(net::IOBuffer* buf,
            int buf_length,
-           const net::CompletionCallback& done) override {
+           net::CompletionOnceCallback done) override {
     DCHECK(buf);
     // When async_task_runner_ is not set, return synchronously.
     if (!async_task_runner_.get()) {
       if (net_error_ == net::OK) {
-        return ReadImpl(buf, buf_length, net::CompletionCallback());
+        return ReadImpl(buf, buf_length, net::CompletionOnceCallback());
       } else {
         return net_error_;
       }
@@ -256,15 +256,15 @@ class FakeFileStreamReader : public FileStreamReader {
           FROM_HERE,
           base::BindOnce(base::IgnoreResult(&FakeFileStreamReader::ReadImpl),
                          base::Unretained(this), base::WrapRefCounted(buf),
-                         buf_length, done));
+                         buf_length, std::move(done)));
     } else {
-      async_task_runner_->PostTask(FROM_HERE, base::BindOnce(done, net_error_));
+      async_task_runner_->PostTask(FROM_HERE,
+                                   base::BindOnce(std::move(done), net_error_));
     }
     return net::ERR_IO_PENDING;
   }
 
-  int64_t GetLength(
-      const net::Int64CompletionCallback& size_callback) override {
+  int64_t GetLength(net::Int64CompletionOnceCallback size_callback) override {
     // When async_task_runner_ is not set, return synchronously.
     if (!async_task_runner_.get()) {
       if (net_error_ == net::OK) {
@@ -274,12 +274,12 @@ class FakeFileStreamReader : public FileStreamReader {
       }
     }
     if (net_error_ == net::OK) {
-      async_task_runner_->PostTask(FROM_HERE,
-                                   base::BindOnce(size_callback, size_));
+      async_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(std::move(size_callback), size_));
     } else {
       async_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(size_callback, static_cast<int64_t>(net_error_)));
+          FROM_HERE, base::BindOnce(std::move(size_callback),
+                                    static_cast<int64_t>(net_error_)));
     }
     return net::ERR_IO_PENDING;
   }
@@ -287,7 +287,7 @@ class FakeFileStreamReader : public FileStreamReader {
  private:
   int ReadImpl(scoped_refptr<net::IOBuffer> buf,
                int buf_length,
-               const net::CompletionCallback& done) {
+               net::CompletionOnceCallback done) {
     CHECK_GE(buf_length, 0);
     int length = std::min(buf_length, buffer_->BytesRemaining());
     memcpy(buf->data(), buffer_->data(), length);
@@ -295,7 +295,7 @@ class FakeFileStreamReader : public FileStreamReader {
     if (done.is_null()) {
       return length;
     }
-    done.Run(length);
+    std::move(done).Run(length);
     return net::ERR_IO_PENDING;
   }
 

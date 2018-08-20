@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/completion_once_callback.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
 
 namespace net {
@@ -38,9 +39,9 @@ class BufferingFileStreamWriter : public storage::FileStreamWriter {
   // storage::FileStreamWriter overrides.
   int Write(net::IOBuffer* buf,
             int buf_len,
-            const net::CompletionCallback& callback) override;
-  int Cancel(const net::CompletionCallback& callback) override;
-  int Flush(const net::CompletionCallback& callback) override;
+            net::CompletionOnceCallback callback) override;
+  int Cancel(net::CompletionOnceCallback callback) override;
+  int Flush(net::CompletionOnceCallback callback) override;
 
  private:
   // Copies |buffer_length| bytes of data from the |buffer| starting at
@@ -52,21 +53,20 @@ class BufferingFileStreamWriter : public storage::FileStreamWriter {
 
   // Flushes all of the bytes in the intermediate buffer to the inner file
   // stream writer.
-  void FlushIntermediateBuffer(const net::CompletionCallback& callback);
+  void FlushIntermediateBuffer(net::CompletionOnceCallback callback);
 
   // Called when flushing the intermediate buffer is completed with either
   // a success or an error.
-  void OnFlushIntermediateBufferCompleted(
-      int length,
-      const net::CompletionCallback& callback,
-      int result);
+  void OnFlushIntermediateBufferCompleted(int length,
+                                          net::CompletionOnceCallback callback,
+                                          int result);
 
   // Called when flushing the intermediate buffer for direct write is completed
   // with either a success or an error.
   void OnFlushIntermediateBufferForDirectWriteCompleted(
       scoped_refptr<net::IOBuffer> buffer,
       int length,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       int result);
 
   // Called when flushing the intermediate buffer for a buffered write is
@@ -75,13 +75,13 @@ class BufferingFileStreamWriter : public storage::FileStreamWriter {
       scoped_refptr<net::IOBuffer> buffer,
       int buffered_bytes,
       int bytes_left,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       int result);
 
   // Called when flushing the intermediate buffer for a flush call is completed
   // with either a success or an error.
   void OnFlushIntermediateBufferForFlushCompleted(
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       int result);
 
   std::unique_ptr<storage::FileStreamWriter> file_stream_writer_;

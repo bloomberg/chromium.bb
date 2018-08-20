@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "storage/browser/storage_browser_export.h"
 
 namespace base {
@@ -59,8 +59,9 @@ class FileStreamWriter {
   //      or there is not enough room left on the disk.
   //
   // It is invalid to call Write while there is an in-flight async operation.
-  virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) = 0;
+  virtual int Write(net::IOBuffer* buf,
+                    int buf_len,
+                    net::CompletionOnceCallback callback) = 0;
 
   // Cancels an in-flight async operation.
   //
@@ -74,7 +75,7 @@ class FileStreamWriter {
   // In either case, the callback function passed to the in-flight async
   // operation is dismissed immediately when Cancel() is called, and thus
   // will never be called.
-  virtual int Cancel(const net::CompletionCallback& callback) = 0;
+  virtual int Cancel(net::CompletionOnceCallback callback) = 0;
 
   // Flushes the data written so far.
   //
@@ -84,7 +85,7 @@ class FileStreamWriter {
   // called when the flush has completed.
   //
   // It is invalid to call Flush while there is an in-flight async operation.
-  virtual int Flush(const net::CompletionCallback& callback) = 0;
+  virtual int Flush(net::CompletionOnceCallback callback) = 0;
 };
 
 }  // namespace storage

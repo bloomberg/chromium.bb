@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
+#include "net/base/completion_once_callback.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/storage_browser_export.h"
@@ -33,27 +35,37 @@ class MTPFileStreamReader : public storage::FileStreamReader {
   // FileStreamReader overrides.
   int Read(net::IOBuffer* buf,
            int buf_len,
-           const net::CompletionCallback& callback) override;
-  int64_t GetLength(const net::Int64CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
+  int64_t GetLength(net::Int64CompletionOnceCallback callback) override;
 
  private:
   void FinishValidateMediaHeader(
       net::IOBuffer* header_buf,
       net::IOBuffer* buf, int buf_len,
-      const net::CompletionCallback& callback,
       const base::File::Info& file_info,
       int header_bytes_read);
 
-  void FinishRead(const net::CompletionCallback& callback,
-                  const base::File::Info& file_info, int bytes_read);
+  void FinishRead(const base::File::Info& file_info, int bytes_read);
 
-  void FinishGetLength(const net::Int64CompletionCallback& callback,
-                       const base::File::Info& file_info);
+  void FinishGetLength(const base::File::Info& file_info);
+
+  void CallReadCallbackwithPlatformFileError(base::File::Error file_error);
+
+  void CallGetLengthCallbackWithPlatformFileError(base::File::Error file_error);
+
+  void ReadBytes(
+      const storage::FileSystemURL& url,
+      const scoped_refptr<net::IOBuffer>& buf,
+      int64_t offset,
+      int buf_len,
+      const MTPDeviceAsyncDelegate::ReadBytesSuccessCallback& success_callback);
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   storage::FileSystemURL url_;
   int64_t current_offset_;
   const base::Time expected_modification_time_;
+  net::CompletionOnceCallback read_callback_;
+  net::Int64CompletionOnceCallback get_length_callback_;
 
   bool media_header_validated_;
 

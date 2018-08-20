@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
@@ -57,63 +59,64 @@ ArcContentFileSystemFileStreamReader::~ArcContentFileSystemFileStreamReader() {
 int ArcContentFileSystemFileStreamReader::Read(
     net::IOBuffer* buffer,
     int buffer_length,
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (file_) {
-    ReadInternal(buffer, buffer_length, callback);
+    ReadInternal(buffer, buffer_length, std::move(callback));
     return net::ERR_IO_PENDING;
   }
   file_system_operation_runner_util::OpenFileToReadOnIOThread(
       arc_url_,
       base::BindOnce(&ArcContentFileSystemFileStreamReader::OnOpenFile,
                      weak_ptr_factory_.GetWeakPtr(),
-                     base::WrapRefCounted(buffer), buffer_length, callback));
+                     base::WrapRefCounted(buffer), buffer_length,
+                     std::move(callback)));
   return net::ERR_IO_PENDING;
 }
 
 int64_t ArcContentFileSystemFileStreamReader::GetLength(
-    const net::Int64CompletionCallback& callback) {
+    net::Int64CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   file_system_operation_runner_util::GetFileSizeOnIOThread(
       arc_url_,
       base::BindOnce(&ArcContentFileSystemFileStreamReader::OnGetFileSize,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   return net::ERR_IO_PENDING;
 }
 
 void ArcContentFileSystemFileStreamReader::ReadInternal(
     net::IOBuffer* buffer,
     int buffer_length,
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(file_);
   DCHECK(file_->IsValid());
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&ReadFile, file_.get(), base::WrapRefCounted(buffer),
-                 buffer_length),
-      base::Bind(&ArcContentFileSystemFileStreamReader::OnRead,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&ReadFile, file_.get(), base::WrapRefCounted(buffer),
+                     buffer_length),
+      base::BindOnce(&ArcContentFileSystemFileStreamReader::OnRead,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ArcContentFileSystemFileStreamReader::OnRead(
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  callback.Run(result < 0 ? net::ERR_FAILED : result);
+  std::move(callback).Run(result < 0 ? net::ERR_FAILED : result);
 }
 
 void ArcContentFileSystemFileStreamReader::OnGetFileSize(
-    const net::Int64CompletionCallback& callback,
+    net::Int64CompletionOnceCallback callback,
     int64_t size) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  callback.Run(size < 0 ? net::ERR_FAILED : size);
+  std::move(callback).Run(size < 0 ? net::ERR_FAILED : size);
 }
 
 void ArcContentFileSystemFileStreamReader::OnOpenFile(
     scoped_refptr<net::IOBuffer> buf,
     int buffer_length,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     mojo::ScopedHandle handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!file_);
@@ -122,26 +125,27 @@ void ArcContentFileSystemFileStreamReader::OnOpenFile(
       mojo::UnwrapPlatformHandle(std::move(handle));
   if (!platform_handle.is_valid()) {
     LOG(ERROR) << "PassWrappedInternalPlatformHandle failed";
-    callback.Run(net::ERR_FAILED);
+    std::move(callback).Run(net::ERR_FAILED);
     return;
   }
   file_ = std::make_unique<base::File>(platform_handle.ReleaseFD());
   if (!file_->IsValid()) {
     LOG(ERROR) << "Invalid file.";
-    callback.Run(net::ERR_FAILED);
+    std::move(callback).Run(net::ERR_FAILED);
     return;
   }
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&SeekFile, file_.get(), offset_),
-      base::Bind(&ArcContentFileSystemFileStreamReader::OnSeekFile,
-                 weak_ptr_factory_.GetWeakPtr(), buf, buffer_length, callback));
+      base::BindOnce(&SeekFile, file_.get(), offset_),
+      base::BindOnce(&ArcContentFileSystemFileStreamReader::OnSeekFile,
+                     weak_ptr_factory_.GetWeakPtr(), buf, buffer_length,
+                     std::move(callback)));
 }
 
 void ArcContentFileSystemFileStreamReader::OnSeekFile(
     scoped_refptr<net::IOBuffer> buf,
     int buffer_length,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int seek_result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(file_);
@@ -149,20 +153,20 @@ void ArcContentFileSystemFileStreamReader::OnSeekFile(
   switch (seek_result) {
     case 0:
       // File stream is ready. Resume Read().
-      ReadInternal(buf.get(), buffer_length, callback);
+      ReadInternal(buf.get(), buffer_length, std::move(callback));
       break;
     case ESPIPE: {
       // Pipe is not seekable. Just consume the contents.
       const size_t kTemporaryBufferSize = 1024 * 1024;
       auto temporary_buffer =
           base::MakeRefCounted<net::IOBufferWithSize>(kTemporaryBufferSize);
-      ConsumeFileContents(buf, buffer_length, callback, temporary_buffer,
-                          offset_);
+      ConsumeFileContents(buf, buffer_length, std::move(callback),
+                          temporary_buffer, offset_);
       break;
     }
     default:
       LOG(ERROR) << "Failed to seek: " << seek_result;
-      callback.Run(net::FileErrorToNetError(
+      std::move(callback).Run(net::FileErrorToNetError(
           base::File::OSErrorToFileError(seek_result)));
   }
 }
@@ -170,7 +174,7 @@ void ArcContentFileSystemFileStreamReader::OnSeekFile(
 void ArcContentFileSystemFileStreamReader::ConsumeFileContents(
     scoped_refptr<net::IOBuffer> buf,
     int buffer_length,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     scoped_refptr<net::IOBufferWithSize> temporary_buffer,
     int64_t num_bytes_to_consume) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -178,7 +182,7 @@ void ArcContentFileSystemFileStreamReader::ConsumeFileContents(
   DCHECK(file_->IsValid());
   if (num_bytes_to_consume == 0) {
     // File stream is ready. Resume Read().
-    ReadInternal(buf.get(), buffer_length, callback);
+    ReadInternal(buf.get(), buffer_length, std::move(callback));
     return;
   }
   auto num_bytes_to_read = std::min(
@@ -186,28 +190,30 @@ void ArcContentFileSystemFileStreamReader::ConsumeFileContents(
   // TODO(hashimoto): This may block the worker thread forever. crbug.com/673222
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&ReadFile, file_.get(), temporary_buffer, num_bytes_to_read),
-      base::Bind(&ArcContentFileSystemFileStreamReader::OnConsumeFileContents,
-                 weak_ptr_factory_.GetWeakPtr(), buf, buffer_length, callback,
-                 temporary_buffer, num_bytes_to_consume));
+      base::BindOnce(&ReadFile, file_.get(), temporary_buffer,
+                     num_bytes_to_read),
+      base::BindOnce(
+          &ArcContentFileSystemFileStreamReader::OnConsumeFileContents,
+          weak_ptr_factory_.GetWeakPtr(), buf, buffer_length,
+          std::move(callback), temporary_buffer, num_bytes_to_consume));
 }
 
 void ArcContentFileSystemFileStreamReader::OnConsumeFileContents(
     scoped_refptr<net::IOBuffer> buf,
     int buffer_length,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     scoped_refptr<net::IOBufferWithSize> temporary_buffer,
     int64_t num_bytes_to_consume,
     int read_result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (read_result < 0) {
     LOG(ERROR) << "Failed to consume the file stream.";
-    callback.Run(net::ERR_FAILED);
+    std::move(callback).Run(net::ERR_FAILED);
     return;
   }
   DCHECK_GE(num_bytes_to_consume, read_result);
   num_bytes_to_consume -= read_result;
-  ConsumeFileContents(buf, buffer_length, callback, temporary_buffer,
+  ConsumeFileContents(buf, buffer_length, std::move(callback), temporary_buffer,
                       num_bytes_to_consume);
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/fileapi/webkit_file_stream_reader_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -40,31 +42,31 @@ WebkitFileStreamReaderImpl::~WebkitFileStreamReaderImpl() = default;
 
 int WebkitFileStreamReaderImpl::Read(net::IOBuffer* buffer,
                                      int buffer_length,
-                                     const net::CompletionCallback& callback) {
+                                     net::CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(stream_reader_);
   DCHECK(buffer);
   DCHECK(callback);
 
   if (stream_reader_->IsInitialized())
-    return stream_reader_->Read(buffer, buffer_length, callback);
+    return stream_reader_->Read(buffer, buffer_length, std::move(callback));
 
   net::HttpByteRange byte_range;
   byte_range.set_first_byte_position(offset_);
   stream_reader_->Initialize(
       drive_file_path_, byte_range,
-      base::Bind(
+      base::BindOnce(
           &WebkitFileStreamReaderImpl::OnStreamReaderInitialized,
           weak_ptr_factory_.GetWeakPtr(),
-          base::Bind(
-              &WebkitFileStreamReaderImpl ::ReadAfterStreamReaderInitialized,
+          base::BindOnce(
+              &WebkitFileStreamReaderImpl::ReadAfterStreamReaderInitialized,
               weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(buffer),
-              buffer_length, callback)));
+              buffer_length, std::move(callback))));
   return net::ERR_IO_PENDING;
 }
 
 int64_t WebkitFileStreamReaderImpl::GetLength(
-    const net::Int64CompletionCallback& callback) {
+    net::Int64CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(stream_reader_);
   DCHECK(callback);
@@ -77,19 +79,18 @@ int64_t WebkitFileStreamReaderImpl::GetLength(
   net::HttpByteRange byte_range;
   byte_range.set_first_byte_position(offset_);
   stream_reader_->Initialize(
-      drive_file_path_,
-      byte_range,
-      base::Bind(&WebkitFileStreamReaderImpl::OnStreamReaderInitialized,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Bind(&WebkitFileStreamReaderImpl
-                                ::GetLengthAfterStreamReaderInitialized,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            callback)));
+      drive_file_path_, byte_range,
+      base::BindOnce(
+          &WebkitFileStreamReaderImpl::OnStreamReaderInitialized,
+          weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(&WebkitFileStreamReaderImpl::
+                             GetLengthAfterStreamReaderInitialized,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
   return net::ERR_IO_PENDING;
 }
 
 void WebkitFileStreamReaderImpl::OnStreamReaderInitialized(
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int error,
     std::unique_ptr<ResourceEntry> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -101,47 +102,55 @@ void WebkitFileStreamReaderImpl::OnStreamReaderInitialized(
   if (error != net::OK) {
     // Found an error. Close the |stream_reader_| and notify it to the caller.
     stream_reader_.reset();
-    callback.Run(error);
+    std::move(callback).Run(error);
     return;
   }
 
   // Remember the size of the file.
   file_size_ = entry->file_info().size();
-  callback.Run(net::OK);
+  std::move(callback).Run(net::OK);
 }
 
 void WebkitFileStreamReaderImpl::ReadAfterStreamReaderInitialized(
     scoped_refptr<net::IOBuffer> buffer,
     int buffer_length,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int initialization_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(callback);
 
   if (initialization_result != net::OK) {
-    callback.Run(initialization_result);
+    std::move(callback).Run(initialization_result);
     return;
   }
 
   DCHECK(stream_reader_);
-  int result = stream_reader_->Read(buffer.get(), buffer_length, callback);
+  read_callback_ = std::move(callback);
+  int result =
+      stream_reader_->Read(buffer.get(), buffer_length,
+                           base::BindOnce(&WebkitFileStreamReaderImpl::OnRead,
+                                          weak_ptr_factory_.GetWeakPtr()));
   if (result != net::ERR_IO_PENDING)
-    callback.Run(result);
+    std::move(read_callback_).Run(result);
+}
+
+void WebkitFileStreamReaderImpl::OnRead(int result) {
+  std::move(read_callback_).Run(result);
 }
 
 void WebkitFileStreamReaderImpl::GetLengthAfterStreamReaderInitialized(
-    const net::Int64CompletionCallback& callback,
+    net::Int64CompletionOnceCallback callback,
     int initialization_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(callback);
 
   if (initialization_result != net::OK) {
-    callback.Run(initialization_result);
+    std::move(callback).Run(initialization_result);
     return;
   }
 
   DCHECK_GE(file_size_, 0);
-  callback.Run(file_size_);
+  std::move(callback).Run(file_size_);
 }
 
 }  // namespace internal

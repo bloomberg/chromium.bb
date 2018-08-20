@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/completion_once_callback.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 
 namespace net {
@@ -41,8 +42,8 @@ class BufferingFileStreamReader : public storage::FileStreamReader {
   // storage::FileStreamReader overrides.
   int Read(net::IOBuffer* buf,
            int buf_len,
-           const net::CompletionCallback& callback) override;
-  int64_t GetLength(const net::Int64CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
+  int64_t GetLength(net::Int64CompletionOnceCallback callback) override;
 
  private:
   // Copies data from the preloading buffer and updates the internal iterator.
@@ -51,15 +52,15 @@ class BufferingFileStreamReader : public storage::FileStreamReader {
                                int buffer_length);
 
   // Preloads data from the internal stream reader and calls the |callback|.
-  void Preload(const net::CompletionCallback& callback);
+  void Preload(net::CompletionOnceCallback callback);
 
-  void OnReadCompleted(const net::CompletionCallback& callback, int result);
+  void OnReadCompleted(net::CompletionOnceCallback callback, int result);
 
   // Called when preloading of a buffer chunk is finished. Updates state of the
   // preloading buffer and copied requested data to the |buffer|.
   void OnPreloadCompleted(scoped_refptr<net::IOBuffer> buffer,
                           int buffer_length,
-                          const net::CompletionCallback& callback,
+                          net::CompletionOnceCallback callback,
                           int result);
 
   std::unique_ptr<storage::FileStreamReader> file_stream_reader_;

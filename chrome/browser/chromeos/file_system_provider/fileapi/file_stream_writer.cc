@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_writer.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -193,7 +195,7 @@ void FileStreamWriter::OnOpenFileCompleted(
 
 int FileStreamWriter::Write(net::IOBuffer* buffer,
                             int buffer_length,
-                            const net::CompletionCallback& callback) {
+                            net::CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_ASYNC_BEGIN1("file_system_provider",
                            "FileStreamWriter::Write",
@@ -201,17 +203,17 @@ int FileStreamWriter::Write(net::IOBuffer* buffer,
                            "buffer_length",
                            buffer_length);
 
+  write_callback_ = std::move(callback);
   switch (state_) {
     case NOT_INITIALIZED:
       // Lazily initialize with the first call to Write().
-      Initialize(
-          base::Bind(&FileStreamWriter::WriteAfterInitialized,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::WrapRefCounted(buffer), buffer_length,
-                     base::Bind(&FileStreamWriter::OnWriteCompleted,
-                                weak_ptr_factory_.GetWeakPtr(), callback)),
-          base::Bind(&FileStreamWriter::OnWriteCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+      Initialize(base::Bind(&FileStreamWriter::WriteAfterInitialized,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            base::WrapRefCounted(buffer), buffer_length,
+                            base::Bind(&FileStreamWriter::OnWriteCompleted,
+                                       weak_ptr_factory_.GetWeakPtr())),
+                 base::Bind(&FileStreamWriter::OnWriteCompleted,
+                            weak_ptr_factory_.GetWeakPtr()));
       break;
 
     case INITIALIZING:
@@ -219,11 +221,9 @@ int FileStreamWriter::Write(net::IOBuffer* buffer,
       break;
 
     case INITIALIZED:
-      WriteAfterInitialized(buffer,
-                            buffer_length,
+      WriteAfterInitialized(buffer, buffer_length,
                             base::Bind(&FileStreamWriter::OnWriteCompleted,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       callback));
+                                       weak_ptr_factory_.GetWeakPtr()));
       break;
 
     case EXECUTING:
@@ -236,7 +236,7 @@ int FileStreamWriter::Write(net::IOBuffer* buffer,
   return net::ERR_IO_PENDING;
 }
 
-int FileStreamWriter::Cancel(const net::CompletionCallback& callback) {
+int FileStreamWriter::Cancel(net::CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (state_ != INITIALIZING && state_ != EXECUTING)
@@ -251,7 +251,7 @@ int FileStreamWriter::Cancel(const net::CompletionCallback& callback) {
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&OperationRunner::CloseRunnerOnUIThread, runner_));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, net::OK));
+      FROM_HERE, base::BindOnce(std::move(callback), net::OK));
 
   // If a write is in progress, mark it as completed.
   TRACE_EVENT_ASYNC_END0("file_system_provider", "FileStreamWriter::Write",
@@ -260,13 +260,13 @@ int FileStreamWriter::Cancel(const net::CompletionCallback& callback) {
   return net::ERR_IO_PENDING;
 }
 
-int FileStreamWriter::Flush(const net::CompletionCallback& callback) {
+int FileStreamWriter::Flush(net::CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(CANCELLING, state_);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(callback,
+      base::BindOnce(std::move(callback),
                      state_ == INITIALIZED ? net::OK : net::ERR_FAILED));
 
   return net::ERR_IO_PENDING;
@@ -293,11 +293,10 @@ void FileStreamWriter::OnWriteFileCompleted(
   callback.Run(buffer_length);
 }
 
-void FileStreamWriter::OnWriteCompleted(net::CompletionCallback callback,
-                                        int result) {
+void FileStreamWriter::OnWriteCompleted(int result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ != CANCELLING)
-    callback.Run(result);
+    std::move(write_callback_).Run(result);
 
   TRACE_EVENT_ASYNC_END0(
       "file_system_provider", "FileStreamWriter::Write", this);

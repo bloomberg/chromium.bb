@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -32,8 +33,8 @@ class LocalFileReaderAdapter {
   explicit LocalFileReaderAdapter(LocalFileReader* reader) : reader_(reader) {}
   int Read(net::IOBuffer* buffer,
            int buffer_length,
-           const net::CompletionCallback& callback) {
-    reader_->Read(buffer, buffer_length, callback);
+           net::CompletionOnceCallback callback) {
+    reader_->Read(buffer, buffer_length, std::move(callback));
     // As LocalFileReader::Read always works asynchronously,
     // return ERR_IO_PENDING.
     return net::ERR_IO_PENDING;

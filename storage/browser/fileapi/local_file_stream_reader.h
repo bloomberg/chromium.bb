@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "net/base/completion_once_callback.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/storage_browser_export.h"
 
@@ -40,8 +41,8 @@ class STORAGE_EXPORT LocalFileStreamReader : public FileStreamReader {
   // FileStreamReader overrides.
   int Read(net::IOBuffer* buf,
            int buf_len,
-           const net::CompletionCallback& callback) override;
-  int64_t GetLength(const net::Int64CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
+  int64_t GetLength(net::Int64CompletionOnceCallback callback) override;
 
  private:
   friend class FileStreamReader;
@@ -51,24 +52,24 @@ class STORAGE_EXPORT LocalFileStreamReader : public FileStreamReader {
                         const base::FilePath& file_path,
                         int64_t initial_offset,
                         const base::Time& expected_modification_time);
-  int Open(const net::CompletionCallback& callback);
+  int Open(net::CompletionOnceCallback callback);
 
   // Callbacks that are chained from Open for Read.
-  void DidVerifyForOpen(const net::CompletionCallback& callback,
+  void DidVerifyForOpen(net::CompletionOnceCallback callback,
                         int64_t get_length_result);
-  void DidOpenFileStream(const net::CompletionCallback& callback,
-                         int result);
-  void DidSeekFileStream(const net::CompletionCallback& callback,
-                         int64_t seek_result);
+  void DidOpenFileStream(int result);
+  void DidSeekFileStream(int64_t seek_result);
   void DidOpenForRead(net::IOBuffer* buf,
                       int buf_len,
-                      const net::CompletionCallback& callback,
+                      net::CompletionOnceCallback callback,
                       int open_result);
+  void OnRead(int read_result);
 
-  void DidGetFileInfoForGetLength(const net::Int64CompletionCallback& callback,
+  void DidGetFileInfoForGetLength(net::Int64CompletionOnceCallback callback,
                                   base::File::Error error,
                                   const base::File::Info& file_info);
 
+  net::CompletionOnceCallback callback_;
   scoped_refptr<base::TaskRunner> task_runner_;
   std::unique_ptr<net::FileStream> stream_impl_;
   const base::FilePath file_path_;

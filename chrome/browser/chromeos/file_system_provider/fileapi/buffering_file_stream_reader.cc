@@ -32,7 +32,7 @@ BufferingFileStreamReader::~BufferingFileStreamReader() {
 
 int BufferingFileStreamReader::Read(net::IOBuffer* buffer,
                                     int buffer_length,
-                                    const net::CompletionCallback& callback) {
+                                    net::CompletionOnceCallback callback) {
   // Return as much as available in the internal buffer. It may be less than
   // |buffer_length|, what is valid.
   const int bytes_read =
@@ -44,29 +44,28 @@ int BufferingFileStreamReader::Read(net::IOBuffer* buffer,
   // size is requested, then call the internal file stream reader directly.
   if (buffer_length >= preloading_buffer_length_) {
     const int result = file_stream_reader_->Read(
-        buffer,
-        buffer_length,
-        base::Bind(&BufferingFileStreamReader::OnReadCompleted,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        buffer, buffer_length,
+        base::BindOnce(&BufferingFileStreamReader::OnReadCompleted,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     DCHECK_EQ(result, net::ERR_IO_PENDING);
     return result;
   }
 
   // Nothing copied, so contents have to be preloaded.
-  Preload(base::Bind(
+  Preload(base::BindOnce(
       &BufferingFileStreamReader::OnReadCompleted,
       weak_ptr_factory_.GetWeakPtr(),
-      base::Bind(&BufferingFileStreamReader::OnPreloadCompleted,
-                 weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(buffer),
-                 buffer_length, callback)));
+      base::BindOnce(&BufferingFileStreamReader::OnPreloadCompleted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::WrapRefCounted(buffer), buffer_length,
+                     std::move(callback))));
 
   return net::ERR_IO_PENDING;
 }
 
 int64_t BufferingFileStreamReader::GetLength(
-    const net::Int64CompletionCallback& callback) {
-  const int64_t result = file_stream_reader_->GetLength(callback);
+    net::Int64CompletionOnceCallback callback) {
+  const int64_t result = file_stream_reader_->GetLength(std::move(callback));
   DCHECK_EQ(net::ERR_IO_PENDING, result);
 
   return result;
@@ -86,38 +85,37 @@ int BufferingFileStreamReader::CopyFromPreloadingBuffer(
   return read_bytes;
 }
 
-void BufferingFileStreamReader::Preload(
-    const net::CompletionCallback& callback) {
+void BufferingFileStreamReader::Preload(net::CompletionOnceCallback callback) {
   const int preload_bytes =
       std::min(static_cast<int64_t>(preloading_buffer_length_),
                max_bytes_to_read_ - bytes_read_);
 
   const int result = file_stream_reader_->Read(
-      preloading_buffer_.get(), preload_bytes, callback);
+      preloading_buffer_.get(), preload_bytes, std::move(callback));
   DCHECK_EQ(result, net::ERR_IO_PENDING);
 }
 
 void BufferingFileStreamReader::OnPreloadCompleted(
     scoped_refptr<net::IOBuffer> buffer,
     int buffer_length,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int result) {
   if (result < 0) {
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
   preloading_buffer_offset_ = 0;
   preloaded_bytes_ = result;
 
-  callback.Run(CopyFromPreloadingBuffer(buffer, buffer_length));
+  std::move(callback).Run(CopyFromPreloadingBuffer(buffer, buffer_length));
 }
 
 void BufferingFileStreamReader::OnReadCompleted(
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int result) {
   if (result < 0) {
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
@@ -125,14 +123,14 @@ void BufferingFileStreamReader::OnReadCompleted(
   // emit an
   // error.
   if (result > max_bytes_to_read_ - bytes_read_) {
-    callback.Run(net::ERR_FAILED);
+    std::move(callback).Run(net::ERR_FAILED);
     return;
   }
 
   bytes_read_ += result;
   DCHECK_LE(bytes_read_, max_bytes_to_read_);
 
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 }  // namespace file_system_provider

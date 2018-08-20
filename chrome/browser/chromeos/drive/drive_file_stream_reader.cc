@@ -109,8 +109,9 @@ LocalReaderProxy::LocalReaderProxy(
 
 LocalReaderProxy::~LocalReaderProxy() = default;
 
-int LocalReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
-                           const net::CompletionCallback& callback) {
+int LocalReaderProxy::Read(net::IOBuffer* buffer,
+                           int buffer_length,
+                           net::CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(file_reader_);
 
@@ -122,9 +123,10 @@ int LocalReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
   if (!buffer_length)
     return 0;
 
-  file_reader_->Read(buffer, buffer_length,
-                     base::Bind(&LocalReaderProxy::OnReadCompleted,
-                                weak_ptr_factory_.GetWeakPtr(), callback));
+  file_reader_->Read(
+      buffer, buffer_length,
+      base::BindOnce(&LocalReaderProxy::OnReadCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   return net::ERR_IO_PENDING;
 }
 
@@ -139,7 +141,7 @@ void LocalReaderProxy::OnCompleted(FileError error) {
   DCHECK_EQ(FILE_ERROR_OK, error);
 }
 
-void LocalReaderProxy::OnReadCompleted(const net::CompletionCallback& callback,
+void LocalReaderProxy::OnReadCompleted(net::CompletionOnceCallback callback,
                                        int read_result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(file_reader_);
@@ -152,7 +154,7 @@ void LocalReaderProxy::OnReadCompleted(const net::CompletionCallback& callback,
     // An error occurs. Close the |file_reader_|.
     file_reader_.reset();
   }
-  callback.Run(read_result);
+  std::move(callback).Run(read_result);
 }
 
 NetworkReaderProxy::NetworkReaderProxy(int64_t offset,
@@ -172,8 +174,9 @@ NetworkReaderProxy::~NetworkReaderProxy() {
   }
 }
 
-int NetworkReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
-                             const net::CompletionCallback& callback) {
+int NetworkReaderProxy::Read(net::IOBuffer* buffer,
+                             int buffer_length,
+                             net::CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Check if there is no pending Read operation.
   DCHECK(!buffer_.get());
@@ -203,7 +206,7 @@ int NetworkReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
     // No data is available. Keep the arguments, and return pending status.
     buffer_ = buffer;
     buffer_length_ = buffer_length;
-    callback_ = callback;
+    callback_ = std::move(callback);
     return net::ERR_IO_PENDING;
   }
 
@@ -348,34 +351,32 @@ bool DriveFileStreamReader::IsInitialized() const {
 void DriveFileStreamReader::Initialize(
     const base::FilePath& drive_file_path,
     const net::HttpByteRange& byte_range,
-    const InitializeCompletionCallback& callback) {
+    InitializeCompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
+  init_callback_ = std::move(callback);
   GetFileContent(
-      file_system_getter_,
-      drive_file_path,
-      base::Bind(&DriveFileStreamReader
-                     ::InitializeAfterGetFileContentInitialized,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 byte_range,
-                 callback),
+      file_system_getter_, drive_file_path,
+      base::Bind(
+          &DriveFileStreamReader ::InitializeAfterGetFileContentInitialized,
+          weak_ptr_factory_.GetWeakPtr(), byte_range),
       base::Bind(&DriveFileStreamReader::OnGetContent,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&DriveFileStreamReader::OnGetFileContentCompletion,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback),
+                 weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&DriveFileStreamReader::StoreCancelDownloadClosure,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-int DriveFileStreamReader::Read(net::IOBuffer* buffer, int buffer_length,
-                                const net::CompletionCallback& callback) {
+int DriveFileStreamReader::Read(net::IOBuffer* buffer,
+                                int buffer_length,
+                                net::CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(reader_proxy_);
   DCHECK(buffer);
   DCHECK(callback);
-  return reader_proxy_->Read(buffer, buffer_length, callback);
+  return reader_proxy_->Read(buffer, buffer_length, std::move(callback));
 }
 
 void DriveFileStreamReader::StoreCancelDownloadClosure(
@@ -386,7 +387,6 @@ void DriveFileStreamReader::StoreCancelDownloadClosure(
 
 void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
     const net::HttpByteRange& byte_range,
-    const InitializeCompletionCallback& callback,
     FileError error,
     const base::FilePath& local_cache_file_path,
     std::unique_ptr<ResourceEntry> entry) {
@@ -395,7 +395,8 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
   DCHECK(!cancel_download_closure_.is_null());
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(FileErrorToNetError(error), std::unique_ptr<ResourceEntry>());
+    std::move(init_callback_)
+        .Run(FileErrorToNetError(error), std::unique_ptr<ResourceEntry>());
     return;
   }
   DCHECK(entry);
@@ -409,8 +410,9 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
     // receive unwanted callbacks.
     cancel_download_closure_.Run();
     weak_ptr_factory_.InvalidateWeakPtrs();
-    callback.Run(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE,
-                 std::unique_ptr<ResourceEntry>());
+    std::move(init_callback_)
+        .Run(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE,
+             std::unique_ptr<ResourceEntry>());
     return;
   }
 
@@ -419,7 +421,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
     reader_proxy_ = std::make_unique<internal::NetworkReaderProxy>(
         range_start, range_length, entry->file_info().size(),
         cancel_download_closure_);
-    callback.Run(net::OK, std::move(entry));
+    std::move(init_callback_).Run(net::OK, std::move(entry));
     return;
   }
 
@@ -434,27 +436,26 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
           &DriveFileStreamReader::InitializeAfterLocalFileOpen,
           weak_ptr_factory_.GetWeakPtr(),
           range_length,
-          callback,
           base::Passed(&entry),
           base::Passed(&file_reader)));
 }
 
 void DriveFileStreamReader::InitializeAfterLocalFileOpen(
     int64_t length,
-    const InitializeCompletionCallback& callback,
     std::unique_ptr<ResourceEntry> entry,
     std::unique_ptr<util::LocalFileReader> file_reader,
     int open_result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (open_result != net::OK) {
-    callback.Run(net::ERR_FAILED, std::unique_ptr<ResourceEntry>());
+    std::move(init_callback_)
+        .Run(net::ERR_FAILED, std::unique_ptr<ResourceEntry>());
     return;
   }
 
   reader_proxy_ = std::make_unique<internal::LocalReaderProxy>(
       std::move(file_reader), length);
-  callback.Run(net::OK, std::move(entry));
+  std::move(init_callback_).Run(net::OK, std::move(entry));
 }
 
 void DriveFileStreamReader::OnGetContent(
@@ -466,7 +467,6 @@ void DriveFileStreamReader::OnGetContent(
 }
 
 void DriveFileStreamReader::OnGetFileContentCompletion(
-    const InitializeCompletionCallback& callback,
     FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -484,8 +484,8 @@ void DriveFileStreamReader::OnGetFileContentCompletion(
     // or may not be called. This is timing issue, and it is difficult to avoid
     // unfortunately.
     if (error != FILE_ERROR_OK) {
-      callback.Run(FileErrorToNetError(error),
-                   std::unique_ptr<ResourceEntry>());
+      std::move(init_callback_)
+          .Run(FileErrorToNetError(error), std::unique_ptr<ResourceEntry>());
     }
   }
 }

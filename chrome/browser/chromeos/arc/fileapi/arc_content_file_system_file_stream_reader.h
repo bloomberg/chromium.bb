@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/system/handle.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "url/gurl.h"
 
@@ -35,39 +35,38 @@ class ArcContentFileSystemFileStreamReader : public storage::FileStreamReader {
   // storage::FileStreamReader override:
   int Read(net::IOBuffer* buffer,
            int buffer_length,
-           const net::CompletionCallback& callback) override;
-  int64_t GetLength(const net::Int64CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
+  int64_t GetLength(net::Int64CompletionOnceCallback callback) override;
 
  private:
   // Actually performs read.
   void ReadInternal(net::IOBuffer* buffer,
                     int buffer_length,
-                    const net::CompletionCallback& callback);
+                    net::CompletionOnceCallback callback);
 
   // Called when read completes.
-  void OnRead(const net::CompletionCallback& callback, int result);
+  void OnRead(net::CompletionOnceCallback callback, int result);
 
   // Called when GetFileSize() completes.
-  void OnGetFileSize(const net::Int64CompletionCallback& callback,
-                     int64_t size);
+  void OnGetFileSize(net::Int64CompletionOnceCallback callback, int64_t size);
 
   // Called when opening file completes.
   void OnOpenFile(scoped_refptr<net::IOBuffer> buf,
                   int buffer_length,
-                  const net::CompletionCallback& callback,
+                  net::CompletionOnceCallback callback,
                   mojo::ScopedHandle handle);
 
   // Called when seek completes.
   void OnSeekFile(scoped_refptr<net::IOBuffer> buf,
                   int buffer_length,
-                  const net::CompletionCallback& callback,
+                  net::CompletionOnceCallback callback,
                   int seek_result);
 
   // Reads the contents of the file to reach the offset.
   void ConsumeFileContents(
       scoped_refptr<net::IOBuffer> buf,
       int buffer_length,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       scoped_refptr<net::IOBufferWithSize> temporary_buffer,
       int64_t num_bytes_to_consume);
 
@@ -75,7 +74,7 @@ class ArcContentFileSystemFileStreamReader : public storage::FileStreamReader {
   void OnConsumeFileContents(
       scoped_refptr<net::IOBuffer> buf,
       int buffer_length,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       scoped_refptr<net::IOBufferWithSize> temporary_buffer,
       int64_t num_bytes_to_consume,
       int read_result);

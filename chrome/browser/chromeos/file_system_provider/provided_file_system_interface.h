@@ -109,8 +109,8 @@ class ProvidedFileSystemInterface {
       void(int chunk_length, bool has_more, base::File::Error result)>
       ReadChunkReceivedCallback;
 
-  typedef base::Callback<void(std::unique_ptr<EntryMetadata> entry_metadata,
-                              base::File::Error result)>
+  typedef base::OnceCallback<void(std::unique_ptr<EntryMetadata> entry_metadata,
+                                  base::File::Error result)>
       GetMetadataCallback;
 
   typedef base::Callback<void(const Actions& actions, base::File::Error result)>

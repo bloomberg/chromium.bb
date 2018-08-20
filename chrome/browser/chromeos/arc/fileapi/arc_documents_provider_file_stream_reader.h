@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/completion_once_callback.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 
 class GURL;
@@ -35,20 +36,20 @@ class ArcDocumentsProviderFileStreamReader : public storage::FileStreamReader {
   // storage::FileStreamReader override:
   int Read(net::IOBuffer* buffer,
            int buffer_length,
-           const net::CompletionCallback& callback) override;
-  int64_t GetLength(const net::Int64CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
+  int64_t GetLength(net::Int64CompletionOnceCallback callback) override;
 
  private:
   void OnResolveToContentUrl(const GURL& content_url);
   void RunPendingRead(scoped_refptr<net::IOBuffer> buffer,
                       int buffer_length,
-                      const net::CompletionCallback& callback);
-  void RunPendingGetLength(const net::Int64CompletionCallback& callback);
+                      net::CompletionOnceCallback callback);
+  void RunPendingGetLength(net::Int64CompletionOnceCallback callback);
 
   const int64_t offset_;
   bool content_url_resolved_;
   std::unique_ptr<storage::FileStreamReader> underlying_reader_;
-  std::vector<base::Closure> pending_operations_;
+  std::vector<base::OnceClosure> pending_operations_;
 
   base::WeakPtrFactory<ArcDocumentsProviderFileStreamReader> weak_ptr_factory_;
 

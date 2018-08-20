@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/file_stream.h"
 
 namespace base {
@@ -40,7 +40,7 @@ class LocalFileReader {
   // |callback| must not be null.
   void Open(const base::FilePath& file_path,
             int64_t offset,
-            const net::CompletionCallback& callback);
+            net::CompletionOnceCallback callback);
 
   // Reads the file and copies the data into |buffer|. |buffer_length|
   // is the length of |buffer|.
@@ -48,13 +48,11 @@ class LocalFileReader {
   // |callback| must not be null.
   void Read(net::IOBuffer* buffer,
             int buffer_length,
-            const net::CompletionCallback& callback);
+            net::CompletionOnceCallback callback);
 
  private:
-  void DidOpen(const net::CompletionCallback& callback,
-               int64_t offset,
-               int error);
-  void DidSeek(const net::CompletionCallback& callback,
+  void DidOpen(net::CompletionOnceCallback callback, int64_t offset, int error);
+  void DidSeek(net::CompletionOnceCallback callback,
                int64_t offset,
                int64_t error);
 

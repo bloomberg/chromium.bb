@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
@@ -29,9 +31,9 @@ class FileStreamWriter : public storage::FileStreamWriter {
   // storage::FileStreamWriter overrides.
   int Write(net::IOBuffer* buf,
             int buf_len,
-            const net::CompletionCallback& callback) override;
-  int Cancel(const net::CompletionCallback& callback) override;
-  int Flush(const net::CompletionCallback& callback) override;
+            net::CompletionOnceCallback callback) override;
+  int Cancel(net::CompletionOnceCallback callback) override;
+  int Flush(net::CompletionOnceCallback callback) override;
 
  private:
   // Helper class for executing operations on the provided file system. All
@@ -56,7 +58,7 @@ class FileStreamWriter : public storage::FileStreamWriter {
 
   // Called when Write() operation is completed with either a success or an
   // error.
-  void OnWriteCompleted(net::CompletionCallback callback, int result);
+  void OnWriteCompleted(int result);
 
   // Initializes the writer by opening the file. When completed with success,
   // runs the |pending_closure|. Otherwise, calls the |error_callback|.
@@ -74,6 +76,7 @@ class FileStreamWriter : public storage::FileStreamWriter {
                              int buffer_length,
                              const net::CompletionCallback& callback);
 
+  net::CompletionOnceCallback write_callback_;
   storage::FileSystemURL url_;
   int64_t current_offset_;
   scoped_refptr<OperationRunner> runner_;

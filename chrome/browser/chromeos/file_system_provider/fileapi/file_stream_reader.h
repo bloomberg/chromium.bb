@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
@@ -42,8 +44,8 @@ class FileStreamReader : public storage::FileStreamReader {
   // storage::FileStreamReader overrides.
   int Read(net::IOBuffer* buf,
            int buf_len,
-           const net::CompletionCallback& callback) override;
-  int64_t GetLength(const net::Int64CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
+  int64_t GetLength(net::Int64CompletionOnceCallback callback) override;
 
  private:
   // Helper class for executing operations on the provided file system. All
@@ -54,9 +56,13 @@ class FileStreamReader : public storage::FileStreamReader {
   // State of the file stream reader.
   enum State { NOT_INITIALIZED, INITIALIZING, INITIALIZED, FAILED };
 
-  // Called when Read() operation is completed with either a success of an
+  // Called when Read() operation is completed with either a success or an
   // error.
-  void OnReadCompleted(net::CompletionCallback callback, int result);
+  void OnReadCompleted(int result);
+
+  // Called when GetLength() operation is completed with either a success of an
+  // error.
+  void OnGetLengthCompleted(int64_t result);
 
   // Initializes the reader by opening the file. When completed with success,
   // runs the |pending_closure|. Otherwise, calls the |error_callback|.
@@ -87,7 +93,6 @@ class FileStreamReader : public storage::FileStreamReader {
   // Called when fetching length of the file is completed with either a success
   // or an error.
   void OnGetMetadataForGetLengthReceived(
-      const net::Int64CompletionCallback& callback,
       std::unique_ptr<EntryMetadata> metadata,
       base::File::Error result);
 
@@ -97,8 +102,10 @@ class FileStreamReader : public storage::FileStreamReader {
                             const net::CompletionCallback& callback);
 
   // Same as GetLength(), but called after initializing is completed.
-  void GetLengthAfterInitialized(const net::Int64CompletionCallback& callback);
+  void GetLengthAfterInitialized();
 
+  net::CompletionOnceCallback read_callback_;
+  net::Int64CompletionOnceCallback get_length_callback_;
   storage::FileSystemURL url_;
   int64_t current_offset_;
   int64_t current_length_;

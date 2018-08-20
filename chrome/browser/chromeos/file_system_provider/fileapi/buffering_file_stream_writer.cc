@@ -29,21 +29,22 @@ BufferingFileStreamWriter::~BufferingFileStreamWriter() {
 
 int BufferingFileStreamWriter::Write(net::IOBuffer* buffer,
                                      int buffer_length,
-                                     const net::CompletionCallback& callback) {
+                                     net::CompletionOnceCallback callback) {
   // If |buffer_length| is larger than the intermediate buffer, then call the
   // inner file stream writer directly. Note, that the intermediate buffer
   // (used for buffering) must be flushed first.
   if (buffer_length > intermediate_buffer_length_) {
     if (buffered_bytes_) {
-      FlushIntermediateBuffer(
-          base::Bind(&BufferingFileStreamWriter::
-                         OnFlushIntermediateBufferForDirectWriteCompleted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::WrapRefCounted(buffer), buffer_length, callback));
+      FlushIntermediateBuffer(base::BindOnce(
+          &BufferingFileStreamWriter::
+              OnFlushIntermediateBufferForDirectWriteCompleted,
+          weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(buffer),
+          buffer_length, std::move(callback)));
     } else {
       // Nothing to flush, so skip it.
       OnFlushIntermediateBufferForDirectWriteCompleted(
-          base::WrapRefCounted(buffer), buffer_length, callback, net::OK);
+          base::WrapRefCounted(buffer), buffer_length, std::move(callback),
+          net::OK);
     }
     return net::ERR_IO_PENDING;
   }
@@ -57,11 +58,11 @@ int BufferingFileStreamWriter::Write(net::IOBuffer* buffer,
   const int bytes_left = buffer_length - buffer_bytes;
 
   if (buffered_bytes_ == intermediate_buffer_length_) {
-    FlushIntermediateBuffer(
-        base::Bind(&BufferingFileStreamWriter::
-                       OnFlushIntermediateBufferForBufferedWriteCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(buffer),
-                   buffer_bytes, bytes_left, callback));
+    FlushIntermediateBuffer(base::BindOnce(
+        &BufferingFileStreamWriter::
+            OnFlushIntermediateBufferForBufferedWriteCompleted,
+        weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(buffer),
+        buffer_bytes, bytes_left, std::move(callback)));
     return net::ERR_IO_PENDING;
   }
 
@@ -69,19 +70,18 @@ int BufferingFileStreamWriter::Write(net::IOBuffer* buffer,
   return buffer_length;
 }
 
-int BufferingFileStreamWriter::Cancel(const net::CompletionCallback& callback) {
+int BufferingFileStreamWriter::Cancel(net::CompletionOnceCallback callback) {
   // Since there is no any asynchronous call in this class other than on
   // |file_stream_writer_|, then there must be an in-flight operation going on.
-  return file_stream_writer_->Cancel(callback);
+  return file_stream_writer_->Cancel(std::move(callback));
 }
 
-int BufferingFileStreamWriter::Flush(const net::CompletionCallback& callback) {
+int BufferingFileStreamWriter::Flush(net::CompletionOnceCallback callback) {
   // Flush all the buffered bytes first, then invoke Flush() on the inner file
   // stream writer.
-  FlushIntermediateBuffer(base::Bind(
+  FlushIntermediateBuffer(base::BindOnce(
       &BufferingFileStreamWriter::OnFlushIntermediateBufferForFlushCompleted,
-      weak_ptr_factory_.GetWeakPtr(),
-      callback));
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   return net::ERR_IO_PENDING;
 }
 
@@ -97,40 +97,39 @@ void BufferingFileStreamWriter::CopyToIntermediateBuffer(
 }
 
 void BufferingFileStreamWriter::FlushIntermediateBuffer(
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   const int result = file_stream_writer_->Write(
-      intermediate_buffer_.get(),
-      buffered_bytes_,
-      base::Bind(&BufferingFileStreamWriter::OnFlushIntermediateBufferCompleted,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 buffered_bytes_,
-                 callback));
+      intermediate_buffer_.get(), buffered_bytes_,
+      base::BindOnce(
+          &BufferingFileStreamWriter::OnFlushIntermediateBufferCompleted,
+          weak_ptr_factory_.GetWeakPtr(), buffered_bytes_,
+          std::move(callback)));
   DCHECK_EQ(net::ERR_IO_PENDING, result);
 }
 
 void BufferingFileStreamWriter::OnFlushIntermediateBufferCompleted(
     int length,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int result) {
   if (result < 0) {
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
   DCHECK_EQ(length, result) << "Partial writes are not supported.";
   buffered_bytes_ = 0;
 
-  callback.Run(net::OK);
+  std::move(callback).Run(net::OK);
 }
 
-void
-BufferingFileStreamWriter::OnFlushIntermediateBufferForDirectWriteCompleted(
-    scoped_refptr<net::IOBuffer> buffer,
-    int length,
-    const net::CompletionCallback& callback,
-    int result) {
+void BufferingFileStreamWriter::
+    OnFlushIntermediateBufferForDirectWriteCompleted(
+        scoped_refptr<net::IOBuffer> buffer,
+        int length,
+        net::CompletionOnceCallback callback,
+        int result) {
   if (result < 0) {
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
@@ -138,19 +137,19 @@ BufferingFileStreamWriter::OnFlushIntermediateBufferForDirectWriteCompleted(
   DCHECK_EQ(0, buffered_bytes_);
 
   const int write_result =
-      file_stream_writer_->Write(buffer.get(), length, callback);
+      file_stream_writer_->Write(buffer.get(), length, std::move(callback));
   DCHECK_EQ(net::ERR_IO_PENDING, write_result);
 }
 
-void
-BufferingFileStreamWriter::OnFlushIntermediateBufferForBufferedWriteCompleted(
-    scoped_refptr<net::IOBuffer> buffer,
-    int buffered_bytes,
-    int bytes_left,
-    const net::CompletionCallback& callback,
-    int result) {
+void BufferingFileStreamWriter::
+    OnFlushIntermediateBufferForBufferedWriteCompleted(
+        scoped_refptr<net::IOBuffer> buffer,
+        int buffered_bytes,
+        int bytes_left,
+        net::CompletionOnceCallback callback,
+        int result) {
   if (result < 0) {
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
@@ -160,18 +159,18 @@ BufferingFileStreamWriter::OnFlushIntermediateBufferForBufferedWriteCompleted(
   DCHECK_GE(intermediate_buffer_length_, bytes_left);
   CopyToIntermediateBuffer(buffer, buffered_bytes, bytes_left);
 
-  callback.Run(buffered_bytes + bytes_left);
+  std::move(callback).Run(buffered_bytes + bytes_left);
 }
 
 void BufferingFileStreamWriter::OnFlushIntermediateBufferForFlushCompleted(
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int result) {
   if (result < 0) {
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
-  const int flush_result = file_stream_writer_->Flush(callback);
+  const int flush_result = file_stream_writer_->Flush(std::move(callback));
   DCHECK_EQ(net::ERR_IO_PENDING, flush_result);
 }
 
