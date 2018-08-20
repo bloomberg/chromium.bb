@@ -1284,6 +1284,21 @@ const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
      {"kalman", kResamplingInputEventsKalmanEnabled,
       base::size(kResamplingInputEventsKalmanEnabled), nullptr}};
 
+#if !defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kAutofillDropdownLayoutLeadingIcon[] = {
+    {autofill::kAutofillDropdownLayoutParameterName,
+     autofill::kAutofillDropdownLayoutParameterLeadingIcon}};
+const FeatureEntry::FeatureParam kAutofillDropdownLayoutTrailingIcon[] = {
+    {autofill::kAutofillDropdownLayoutParameterName,
+     autofill::kAutofillDropdownLayoutParameterTrailingIcon}};
+
+const FeatureEntry::FeatureVariation kAutofillDropdownLayoutVariations[] = {
+    {"(leading icon)", kAutofillDropdownLayoutLeadingIcon,
+     base::size(kAutofillDropdownLayoutLeadingIcon), nullptr},
+    {"(trailing icon)", kAutofillDropdownLayoutTrailingIcon,
+     base::size(kAutofillDropdownLayoutTrailingIcon), nullptr}};
+#endif  // !defined(OS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -4340,6 +4355,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableChromeOsAccountManagerDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::switches::kAccountManager)},
 #endif
+
+#if !defined(OS_ANDROID)
+    {"autofill-dropdown-layout", flag_descriptions::kAutofillDropdownLayoutName,
+     flag_descriptions::kAutofillDropdownLayoutDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(autofill::kAutofillDropdownLayoutExperiment,
+                                    kAutofillDropdownLayoutVariations,
+                                    "AutofillDropdownLayout")},
+#endif  // OS_ANDROID
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

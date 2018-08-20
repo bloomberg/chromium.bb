@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/chrome_typography_provider.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -74,16 +75,25 @@ enum class PopupItemLayoutType {
   kTrailingIcon  // Icon (if any) shown on the trailing (right in LTR) side.
 };
 
-// Returns the icon alignment for the drop down of type |frontend_id|. See
-// PopupItemId for allowed values.
+// By default, this returns kLeadingIcon for passwords and kTrailingIcon for all
+// other contexts. When a study parameter is present for
+// kAutofillDropdownLayoutExperiment, this will return the layout type which
+// corresponds to that parameter.
 PopupItemLayoutType GetLayoutType(int frontend_id) {
-  switch (frontend_id) {
-    case autofill::PopupItemId::POPUP_ITEM_ID_USERNAME_ENTRY:
-    case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ENTRY:
-    case autofill::PopupItemId::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY:
+  switch (GetForcedPopupLayoutState()) {
+    case ForcedPopupLayoutState::kLeadingIcon:
       return PopupItemLayoutType::kLeadingIcon;
-    default:
+    case ForcedPopupLayoutState::kTrailingIcon:
       return PopupItemLayoutType::kTrailingIcon;
+    case ForcedPopupLayoutState::kDefault:
+      switch (frontend_id) {
+        case autofill::PopupItemId::POPUP_ITEM_ID_USERNAME_ENTRY:
+        case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ENTRY:
+        case autofill::PopupItemId::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY:
+          return PopupItemLayoutType::kLeadingIcon;
+        default:
+          return PopupItemLayoutType::kTrailingIcon;
+      }
   }
 }
 
@@ -134,6 +144,17 @@ class AutofillPopupItemView : public AutofillPopupRowView {
                         int line_number,
                         int extra_height = 0)
       : AutofillPopupRowView(popup_view, line_number),
+        layout_type_(GetLayoutType(popup_view_->controller()
+                                       ->GetSuggestionAt(line_number_)
+                                       .frontend_id)),
+        extra_height_(extra_height) {}
+
+  AutofillPopupItemView(AutofillPopupViewNativeViews* popup_view,
+                        int line_number,
+                        PopupItemLayoutType override_layout_type,
+                        int extra_height = 0)
+      : AutofillPopupRowView(popup_view, line_number),
+        layout_type_(override_layout_type),
         extra_height_(extra_height) {}
 
   // AutofillPopupRowView:
@@ -154,6 +175,7 @@ class AutofillPopupItemView : public AutofillPopupRowView {
                          bool resize,
                          views::BoxLayout* layout);
 
+  const PopupItemLayoutType layout_type_;
   const int extra_height_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupItemView);
@@ -343,38 +365,35 @@ void AutofillPopupItemView::OnMouseReleased(const ui::MouseEvent& event) {
 
 void AutofillPopupItemView::CreateContent() {
   AutofillPopupController* controller = popup_view_->controller();
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+  auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(0, GetHorizontalMargin())));
 
-  layout->set_cross_axis_alignment(
+  layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_STRETCH);
-  layout->set_minimum_cross_axis_size(
+  layout_manager->set_minimum_cross_axis_size(
       views::MenuConfig::instance().touchable_menu_height + extra_height_);
 
   const gfx::ImageSkia icon =
       controller->layout_model().GetIconImage(line_number_);
-  int frontend_id = controller->GetSuggestionAt(line_number_).frontend_id;
 
-  if (!icon.isNull() &&
-      GetLayoutType(frontend_id) == PopupItemLayoutType::kLeadingIcon) {
+  if (!icon.isNull() && layout_type_ == PopupItemLayoutType::kLeadingIcon) {
     AddIcon(icon);
     AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
-                      /*resize=*/false, layout);
+                      /*resize=*/false, layout_manager);
   }
 
   AddChildView(CreateValueLabel());
 
   AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
-                    /*resize=*/true, layout);
+                    /*resize=*/true, layout_manager);
 
   views::View* description_label = CreateDescriptionLabel();
   if (description_label)
     AddChildView(description_label);
 
-  if (!icon.isNull() &&
-      GetLayoutType(frontend_id) == PopupItemLayoutType::kTrailingIcon) {
+  if (!icon.isNull() && layout_type_ == PopupItemLayoutType::kTrailingIcon) {
     AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
-                      /*resize=*/false, layout);
+                      /*resize=*/false, layout_manager);
     AddIcon(icon);
   }
 }
@@ -529,6 +548,7 @@ AutofillPopupFooterView::AutofillPopupFooterView(
     int line_number)
     : AutofillPopupItemView(popup_view,
                             line_number,
+                            PopupItemLayoutType::kTrailingIcon,
                             AutofillPopupBaseView::GetCornerRadius()) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }

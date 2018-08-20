@@ -2746,6 +2746,11 @@ const char kAccountConsistencyDescription[] =
 const char kAccountConsistencyChoiceMirror[] = "Mirror";
 const char kAccountConsistencyChoiceDice[] = "Dice";
 
+const char kAutofillDropdownLayoutName[] =
+    "Autofill Dropdown Layout Experiment";
+const char kAutofillDropdownLayoutDescription[] =
+    "Alternate visual designs for the Autofill dropdown.";
+
 const char kDoodlesOnLocalNtpName[] = "Enable doodles on the local NTP";
 const char kDoodlesOnLocalNtpDescription[] =
     "Show doodles on the local New Tab page if Google is the default search "

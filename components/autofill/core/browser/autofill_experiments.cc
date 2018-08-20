@@ -90,6 +90,14 @@ const base::Feature kMacViewsAutofillPopup{"MacViewsAutofillPopup",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
+#if !defined(OS_ANDROID)
+const base::Feature kAutofillDropdownLayoutExperiment{
+    "AutofillDropdownLayout", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kAutofillDropdownLayoutParameterName[] = "variant";
+const char kAutofillDropdownLayoutParameterLeadingIcon[] = "leading-icon";
+const char kAutofillDropdownLayoutParameterTrailingIcon[] = "trailing-icon";
+#endif  // !defined(OS_ANDROID)
+
 bool IsInAutofillSuggestionsDisabledExperiment() {
   std::string group_name =
       base::FieldTrialList::FindFullName("AutofillEnabled");
@@ -235,5 +243,27 @@ bool IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled() {
   return base::FeatureList::IsEnabled(
       kAutofillSaveCardDialogUnlabeledExpirationDate);
 }
+
+#if !defined(OS_ANDROID)
+ForcedPopupLayoutState GetForcedPopupLayoutState() {
+  if (!base::FeatureList::IsEnabled(
+          autofill::kAutofillDropdownLayoutExperiment))
+    return ForcedPopupLayoutState::kDefault;
+
+  std::string param = base::GetFieldTrialParamValueByFeature(
+      autofill::kAutofillDropdownLayoutExperiment,
+      autofill::kAutofillDropdownLayoutParameterName);
+
+  if (param == autofill::kAutofillDropdownLayoutParameterLeadingIcon) {
+    return ForcedPopupLayoutState::kLeadingIcon;
+  } else if (param == autofill::kAutofillDropdownLayoutParameterTrailingIcon) {
+    return ForcedPopupLayoutState::kTrailingIcon;
+  }
+
+  // Unknown parameter value.
+  NOTREACHED();
+  return ForcedPopupLayoutState::kDefault;
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace autofill
