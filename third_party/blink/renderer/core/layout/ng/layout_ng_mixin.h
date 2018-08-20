@@ -80,6 +80,7 @@ class LayoutNGMixin : public Base {
   bool IsOfType(LayoutObject::LayoutObjectType) const override;
 
   void AddOverflowFromChildren() override;
+  void WillBeDestroyed() override;
 
  private:
   void AddScrollingOverflowFromChildren();
