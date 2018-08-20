@@ -168,12 +168,29 @@
 
   # https://crbug.com/330260
   'win': [
+    # These two targets force symbol_level to be at least 1, they will work
+    # once we've figured out the PDB aging field.
     'crashpad_snapshot_test_image_reader.exe',
     'crashpad_snapshot_test_image_reader_module.dll',
+
+    # TODO(thakis): Figure out what's up with these two.
     'mini_installer.exe',
     'previous_version_mini_installer.exe',
 
+    # These probably have mtimes in the zip headers and the scripts creating
+    # them probably should use build_utils.ZipDir() instead.
+    'mini_installer_tests.zip',
+    'policy_templates.zip',
+
+    # TODO(tikuta): Remove this when crbug.com/870611 is fixed.
+    'remoting-me2me-host-win.zip',
+    'remoting-webapp.v2.zip',
+
     # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
     'v8_context_snapshot.bin',
+
+    # TODO(thakis): Figure out what's up with these two.
+    'ppapi_nacl_tests_pnacl_newlib_x32.nexe',
+    'ppapi_nacl_tests_pnacl_newlib_x64.nexe',
   ],
 }
