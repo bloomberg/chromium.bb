@@ -87,7 +87,7 @@ class LayoutFrameSet final : public LayoutBox {
 
   FrameEdgeInfo EdgeInfo() const;
 
-  bool UserResize(MouseEvent*);
+  bool UserResize(const MouseEvent&);
 
   bool CanResizeRow(const IntPoint&) const;
   bool CanResizeColumn(const IntPoint&) const;

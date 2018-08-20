@@ -106,13 +106,13 @@ LayoutObject* SVGAElement::CreateLayoutObject(const ComputedStyle&) {
 
 void SVGAElement::DefaultEventHandler(Event& event) {
   if (IsLink()) {
-    if (IsFocused() && IsEnterKeyKeydownEvent(&event)) {
+    if (IsFocused() && IsEnterKeyKeydownEvent(event)) {
       event.SetDefaultHandled();
       DispatchSimulatedClick(&event);
       return;
     }
 
-    if (IsLinkClick(&event)) {
+    if (IsLinkClick(event)) {
       String url = StripLeadingAndTrailingHTMLSpaces(HrefString());
 
       if (url[0] == '#') {

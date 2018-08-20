@@ -1211,7 +1211,7 @@ bool HTMLElement::IsInteractiveContent() const {
 
 void HTMLElement::DefaultEventHandler(Event& event) {
   if (event.type() == EventTypeNames::keypress && event.IsKeyboardEvent()) {
-    HandleKeypressEvent(ToKeyboardEvent(&event));
+    HandleKeypressEvent(ToKeyboardEvent(event));
     if (event.DefaultHandled())
       return;
   }
@@ -1238,7 +1238,7 @@ bool HTMLElement::MatchesReadWritePseudoClass() const {
   return parentElement() && HasEditableStyle(*parentElement());
 }
 
-void HTMLElement::HandleKeypressEvent(KeyboardEvent* event) {
+void HTMLElement::HandleKeypressEvent(KeyboardEvent& event) {
   if (!IsSpatialNavigationEnabled(GetDocument().GetFrame()) || !SupportsFocus())
     return;
   GetDocument().UpdateStyleAndLayoutTree();
@@ -1248,10 +1248,10 @@ void HTMLElement::HandleKeypressEvent(KeyboardEvent* event) {
   // action.
   if (IsTextControl() || HasEditableStyle(*this))
     return;
-  int char_code = event->charCode();
+  int char_code = event.charCode();
   if (char_code == '\r' || char_code == ' ') {
-    DispatchSimulatedClick(event);
-    event->SetDefaultHandled();
+    DispatchSimulatedClick(&event);
+    event.SetDefaultHandled();
   }
 }
 

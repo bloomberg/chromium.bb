@@ -457,7 +457,7 @@ void HTMLPlugInElement::DefaultEventHandler(Event& event) {
   WebPluginContainerImpl* plugin = OwnedPlugin();
   if (!plugin)
     return;
-  plugin->HandleEvent(&event);
+  plugin->HandleEvent(event);
   if (event.DefaultHandled())
     return;
   HTMLFrameOwnerElement::DefaultEventHandler(event);

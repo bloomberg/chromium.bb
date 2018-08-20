@@ -121,7 +121,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   bool draggable() const final;
   bool IsInteractiveContent() const final;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void HandleClick(Event*);
+  void HandleClick(Event&);
 
   unsigned link_relations_ : 31;
   mutable LinkHash cached_visited_link_hash_;
@@ -137,8 +137,8 @@ inline LinkHash HTMLAnchorElement::VisitedLinkHash() const {
 
 // Functions shared with the other anchor elements (i.e., SVG).
 
-bool IsEnterKeyKeydownEvent(Event*);
-bool IsLinkClick(Event*);
+bool IsEnterKeyKeydownEvent(Event&);
+bool IsLinkClick(Event&);
 
 }  // namespace blink
 

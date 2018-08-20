@@ -178,7 +178,7 @@ class CORE_EXPORT HTMLElement : public Element {
 
   TranslateAttributeMode GetTranslateAttributeMode() const;
 
-  void HandleKeypressEvent(KeyboardEvent*);
+  void HandleKeypressEvent(KeyboardEvent&);
 
   static AttributeTriggers* TriggersForAttributeName(
       const QualifiedName& attr_name);

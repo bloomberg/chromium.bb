@@ -145,14 +145,14 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
 
 void HTMLAnchorElement::DefaultEventHandler(Event& event) {
   if (IsLink()) {
-    if (IsFocused() && IsEnterKeyKeydownEvent(&event) && IsLiveLink()) {
+    if (IsFocused() && IsEnterKeyKeydownEvent(event) && IsLiveLink()) {
       event.SetDefaultHandled();
       DispatchSimulatedClick(&event);
       return;
     }
 
-    if (IsLinkClick(&event) && IsLiveLink()) {
-      HandleClick(&event);
+    if (IsLinkClick(event) && IsLiveLink()) {
+      HandleClick(event);
       return;
     }
   }
@@ -329,8 +329,8 @@ void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
   }
 }
 
-void HTMLAnchorElement::HandleClick(Event* event) {
-  event->SetDefaultHandled();
+void HTMLAnchorElement::HandleClick(Event& event) {
+  event.SetDefaultHandled();
 
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame)
@@ -345,7 +345,7 @@ void HTMLAnchorElement::HandleClick(Event* event) {
 
   StringBuilder url;
   url.Append(StripLeadingAndTrailingHTMLSpaces(FastGetAttribute(hrefAttr)));
-  AppendServerMapMousePosition(url, event);
+  AppendServerMapMousePosition(url, &event);
   KURL completed_url = GetDocument().CompleteURL(url.ToString());
 
   // Schedule the ping before the frame load. Prerender in Chrome may kill the
@@ -377,7 +377,7 @@ void HTMLAnchorElement::HandleClick(Event* event) {
     }
     // Ignore the download attribute if we either can't read the content, or
     // the event is an alt-click or similar.
-    if (NavigationPolicyFromEvent(event) != kNavigationPolicyDownload &&
+    if (NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
         GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
       request.SetSuggestedFilename(
           static_cast<String>(FastGetAttribute(downloadAttr)));
@@ -398,28 +398,28 @@ void HTMLAnchorElement::HandleClick(Event* event) {
   if (HasRel(kRelationNoOpener))
     frame_request.SetShouldSetOpener(kNeverSetOpener);
   frame_request.SetTriggeringEventInfo(
-      event->isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
-                         : WebTriggeringEventInfo::kFromUntrustedEvent);
+      event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
+                        : WebTriggeringEventInfo::kFromUntrustedEvent);
   // TODO(japhet): Link clicks can be emulated via JS without a user gesture.
   // Why doesn't this go through NavigationScheduler?
   frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard,
-                                  NavigationPolicyFromEvent(event));
+                                  NavigationPolicyFromEvent(&event));
 }
 
-bool IsEnterKeyKeydownEvent(Event* event) {
-  return event->type() == EventTypeNames::keydown && event->IsKeyboardEvent() &&
-         ToKeyboardEvent(event)->key() == "Enter" &&
-         !ToKeyboardEvent(event)->repeat();
+bool IsEnterKeyKeydownEvent(Event& event) {
+  return event.type() == EventTypeNames::keydown && event.IsKeyboardEvent() &&
+         ToKeyboardEvent(event).key() == "Enter" &&
+         !ToKeyboardEvent(event).repeat();
 }
 
-bool IsLinkClick(Event* event) {
-  if ((event->type() != EventTypeNames::click &&
-       event->type() != EventTypeNames::auxclick) ||
-      !event->IsMouseEvent()) {
+bool IsLinkClick(Event& event) {
+  if ((event.type() != EventTypeNames::click &&
+       event.type() != EventTypeNames::auxclick) ||
+      !event.IsMouseEvent()) {
     return false;
   }
-  MouseEvent* mouse_event = ToMouseEvent(event);
-  short button = mouse_event->button();
+  auto& mouse_event = ToMouseEvent(event);
+  short button = mouse_event.button();
   return (button == static_cast<short>(WebPointerProperties::Button::kLeft) ||
           button == static_cast<short>(WebPointerProperties::Button::kMiddle));
 }
