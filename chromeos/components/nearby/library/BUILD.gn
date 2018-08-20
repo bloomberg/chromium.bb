@@ -6,6 +6,8 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("library") {
   sources = [
+    "atomic_boolean.h",
+    "atomic_reference.h",
     "byte_array.h",
     "count_down_latch.h",
     "exception.h",
