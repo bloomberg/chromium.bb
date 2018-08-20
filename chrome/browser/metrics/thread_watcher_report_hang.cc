@@ -4,11 +4,6 @@
 
 #include "chrome/browser/metrics/thread_watcher_report_hang.h"
 
-// We disable optimizations for the whole file so the compiler doesn't merge
-// them all together.
-MSVC_DISABLE_OPTIMIZE()
-MSVC_PUSH_DISABLE_WARNING(4748)
-
 #include "base/debug/debugger.h"
 #include "base/debug/dump_without_crashing.h"
 
@@ -72,5 +67,3 @@ NOINLINE void CrashBecauseThreadWasUnresponsive(
 
 }  // namespace metrics
 
-MSVC_POP_WARNING()
-MSVC_ENABLE_OPTIMIZE();
