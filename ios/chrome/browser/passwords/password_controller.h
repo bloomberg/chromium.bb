@@ -78,10 +78,6 @@ class PasswordManagerDriver;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Releases all tab-specific members. Must be called when the Tab is closing,
-// otherwise invalid memory might be accessed during destruction.
-- (void)detach;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_PASSWORDS_PASSWORD_CONTROLLER_H_

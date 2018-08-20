@@ -54,6 +54,5 @@ PasswordTabHelper::PasswordTabHelper(web::WebState* web_state)
 
 void PasswordTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);
-  [controller_ detach];
   controller_ = nil;
 }
