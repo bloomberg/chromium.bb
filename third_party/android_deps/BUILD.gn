@@ -345,7 +345,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_basement_java") {
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_cast_java") {
-  aar_path = "libs/com_google_android_gms_play_services_cast/play-services-cast-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_cast/play-services-cast-16.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_cast/com_google_android_gms_play_services_cast.info"
   deps = [
     ":com_android_support_mediarouter_v7_java",
@@ -358,7 +358,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_cast_java") {
 
 android_aar_prebuilt(
     "com_google_android_gms_play_services_cast_framework_java") {
-  aar_path = "libs/com_google_android_gms_play_services_cast_framework/play-services-cast-framework-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_cast_framework/play-services-cast-framework-16.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_cast_framework/com_google_android_gms_play_services_cast_framework.info"
   deps = [
     ":com_android_support_mediarouter_v7_java",
@@ -402,7 +402,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_iid_java") {
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_instantapps_java") {
-  aar_path = "libs/com_google_android_gms_play_services_instantapps/play-services-instantapps-15.0.1.aar"
+  aar_path = "libs/com_google_android_gms_play_services_instantapps/play-services-instantapps-16.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_instantapps/com_google_android_gms_play_services_instantapps.info"
   deps = [
     ":com_google_android_gms_play_services_base_java",

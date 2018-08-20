@@ -1456,7 +1456,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_cast',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:16.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1467,7 +1467,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_cast_framework',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:16.0.1-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1533,7 +1533,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_instantapps',
-              'version': 'version:15.0.1-cr0',
+              'version': 'version:16.0.0-cr0',
           },
       ],
       'condition': 'checkout_android',
