@@ -15,7 +15,6 @@
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
-#include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/onc/onc_pref_names.h"
@@ -223,14 +222,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kResolveTimezoneByGeolocation,
     prefs::kResolveTimezoneByGeolocationMethod,
     prefs::kResolveTimezoneByGeolocationMigratedToMethod,
-    prefs::kLanguageCurrentInputMethod, prefs::kLanguagePreviousInputMethod,
-    prefs::kLanguageAllowedInputMethods, prefs::kLanguagePreferredLanguages,
-    prefs::kLanguagePreferredLanguagesSyncable, prefs::kLanguagePreloadEngines,
-    prefs::kLanguagePreloadEnginesSyncable, prefs::kLanguageEnabledImes,
-    prefs::kLanguageEnabledImesSyncable, prefs::kLanguageImeMenuActivated,
-    prefs::kLanguageShouldMergeInputMethods, prefs::kLanguageSendFunctionKeys,
-    prefs::kLanguageXkbAutoRepeatEnabled, prefs::kLanguageXkbAutoRepeatDelay,
-    prefs::kLanguageXkbAutoRepeatInterval,
 
     prefs::kLabsAdvancedFilesystemEnabled, prefs::kLabsMediaplayerEnabled,
     prefs::kShow3gPromoNotification, prefs::kDataSaverPromptsShown,
@@ -671,9 +662,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     invalidation::prefs::kInvalidatorSavedInvalidations,
     invalidation::prefs::kInvalidationServiceUseGCMChannel,
 
-    // components/language/core/browser/pref_names.h
-    language::prefs::kApplicationLocale, language::prefs::kUserLanguageProfile,
-
     // components/omnibox/browser/omnibox_pref_names.h
     omnibox::kZeroSuggestCachedResults,
 
@@ -700,7 +688,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     // TODO(https://crbug.com/861722): Check with code owners why this pref is
     // required in tests, if possible, update tests and remove.
     chromeos::extension_ime_util::kBrailleImeEngineId,
-    chromeos::extension_ime_util::kArcImeLanguage,
 #endif  // defined(OS_CHROMEOS)
 };
 
