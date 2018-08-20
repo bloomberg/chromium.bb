@@ -15,7 +15,6 @@
 
 IOSWebViewSigninClient::IOSWebViewSigninClient(
     PrefService* pref_service,
-    net::URLRequestContextGetter* url_request_context,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     network::mojom::CookieManager* cookie_manager,
     SigninErrorController* signin_error_controller,
@@ -24,7 +23,6 @@ IOSWebViewSigninClient::IOSWebViewSigninClient(
     : network_callback_helper_(
           std::make_unique<WaitForNetworkCallbackHelper>()),
       pref_service_(pref_service),
-      url_request_context_(url_request_context),
       url_loader_factory_(url_loader_factory),
       cookie_manager_(cookie_manager),
       signin_error_controller_(signin_error_controller),
@@ -55,10 +53,6 @@ base::Time IOSWebViewSigninClient::GetInstallDate() {
 
 PrefService* IOSWebViewSigninClient::GetPrefs() {
   return pref_service_;
-}
-
-net::URLRequestContextGetter* IOSWebViewSigninClient::GetURLRequestContext() {
-  return url_request_context_;
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

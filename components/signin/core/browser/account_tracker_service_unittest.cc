@@ -9,6 +9,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/image_fetcher/core/image_data_fetcher.h"
@@ -292,8 +293,6 @@ class AccountTrackerServiceTest : public testing::Test {
     pref_service_.registry()->RegisterInt64Pref(
         AccountFetcherService::kLastUpdatePref, 0);
     signin_client_.reset(new TestSigninClient(&pref_service_));
-    signin_client_->SetURLRequestContext(new net::TestURLRequestContextGetter(
-        scoped_task_environment_.GetMainThreadTaskRunner()));
 
     account_tracker_.reset(new AccountTrackerService());
     account_tracker_->Initialize(signin_client_.get());

@@ -93,10 +93,6 @@ PrefService* IOSChromeSigninClient::GetPrefs() {
   return browser_state_->GetPrefs();
 }
 
-net::URLRequestContextGetter* IOSChromeSigninClient::GetURLRequestContext() {
-  return browser_state_->GetRequestContext();
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 IOSChromeSigninClient::GetURLLoaderFactory() {
   return browser_state_->GetSharedURLLoaderFactory();

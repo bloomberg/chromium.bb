@@ -47,7 +47,6 @@ class ChromeSigninClient
   // SigninClient implementation.
   PrefService* GetPrefs() override;
   void OnSignedOut() override;
-  net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network::mojom::CookieManager* GetCookieManager() override;
   bool IsFirstRun() const override;

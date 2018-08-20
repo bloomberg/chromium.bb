@@ -13,7 +13,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "components/os_crypt/os_crypt_mocker.h"
@@ -38,7 +40,6 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -106,8 +107,6 @@ class MutableProfileOAuth2TokenServiceDelegateTest
         AccountTrackerService::MIGRATION_NOT_STARTED);
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
     client_.reset(new TestSigninClient(&pref_service_));
-    client_->SetURLRequestContext(new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get()));
     client_->test_url_loader_factory()->AddResponse(
         GaiaUrls::GetInstance()->oauth2_revoke_url().spec(), "");
     LoadTokenDatabase();
@@ -950,7 +949,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RetryBackoff) {
   EXPECT_EQ(1, access_token_failure_count_);
   // Expect a positive backoff time.
   EXPECT_GT(oauth2_service_delegate_->backoff_entry_.GetTimeUntilRelease(),
-            TimeDelta());
+            base::TimeDelta());
 
   // Pretend that backoff has expired and try again.
   oauth2_service_delegate_->backoff_entry_.SetCustomReleaseTime(
