@@ -48,13 +48,18 @@ class TestWindowService : public service_manager::Service,
   TestWindowService() = default;
 
   ~TestWindowService() override {
-    aura::client::SetScreenPositionClient(aura_test_helper_->root_window(),
-                                          nullptr);
     // WindowService depends upon Screen, which is owned by AuraTestHelper.
     service_context_.reset();
-    // AuraTestHelper expects TearDown() to be called.
-    aura_test_helper_->TearDown();
-    aura_test_helper_.reset();
+
+    // |aura_test_helper_| could be null when exiting before fully initialized.
+    if (aura_test_helper_) {
+      aura::client::SetScreenPositionClient(aura_test_helper_->root_window(),
+                                            nullptr);
+      // AuraTestHelper expects TearDown() to be called.
+      aura_test_helper_->TearDown();
+      aura_test_helper_.reset();
+    }
+
     ui::TerminateContextFactoryForTests();
   }
 
