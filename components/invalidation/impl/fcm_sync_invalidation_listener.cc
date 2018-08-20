@@ -84,7 +84,7 @@ void FCMSyncInvalidationListener::Start(
 void FCMSyncInvalidationListener::UpdateRegisteredIds(const ObjectIdSet& ids) {
   registered_ids_ = ConvertToInvalidationObjectIdSet(ids);
   if (ticl_state_ == INVALIDATIONS_ENABLED &&
-      per_user_topic_registration_manager_)
+      per_user_topic_registration_manager_ && !token_.empty())
     DoRegistrationUpdate();
 }
 
@@ -191,6 +191,7 @@ void FCMSyncInvalidationListener::InformTokenRecieved(
     const std::string& token) {
   DCHECK_EQ(client, invalidation_client_.get());
   token_ = token;
+  DoRegistrationUpdate();
 }
 
 void FCMSyncInvalidationListener::Acknowledge(const invalidation::ObjectId& id,

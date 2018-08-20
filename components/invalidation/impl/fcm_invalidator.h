@@ -15,6 +15,10 @@
 
 class PrefService;
 
+namespace invalidation {
+class IdentityProvider;
+}
+
 namespace syncer {
 
 class FCMSyncNetworkChannel;
@@ -25,6 +29,7 @@ class FCMInvalidator : public Invalidator,
                        public FCMSyncInvalidationListener::Delegate {
  public:
   FCMInvalidator(std::unique_ptr<FCMSyncNetworkChannel> network_channel,
+                 invalidation::IdentityProvider* identity_provider,
                  PrefService* pref_service,
                  network::mojom::URLLoaderFactory* loader_factory,
                  const ParseJSONCallback& parse_json);
@@ -52,12 +57,6 @@ class FCMInvalidator : public Invalidator,
 
   bool is_started_ = false;
   InvalidatorRegistrar registrar_;
-
-  // Needed for the creation of the registration manager.
-  std::string instance_id_token_;
-  PrefService* pref_service_;
-  network::mojom::URLLoaderFactory* loader_factory_ = nullptr;
-  syncer::ParseJSONCallback parse_json_;
 
   // The invalidation listener.
   FCMSyncInvalidationListener invalidation_listener_;

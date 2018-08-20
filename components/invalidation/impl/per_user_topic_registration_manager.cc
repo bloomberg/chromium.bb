@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_object_id.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -34,6 +35,35 @@ const char kInvalidationRegistrationScope[] =
     "https://firebaseperusertopics-pa.googleapis.com";
 
 const char kProjectId[] = "8181035976";
+
+const char kFCMOAuthScope[] =
+    "https://www.googleapis.com/auth/firebase.messaging";
+
+static const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
+
+    // Initial delay for exponential back-off in ms.
+    2000,
+
+    // Factor by which the waiting time will be multiplied.
+    2,
+
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0.2,  // 20%
+
+    // Maximum amount of time we are willing to delay our request in ms.
+    1000 * 3600 * 4,  // 4 hours.
+
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
+
+    // Don't use initial delay unless the last request was an error.
+    false,
+};
 
 }  // namespace
 
@@ -106,12 +136,13 @@ void PerUserTopicRegistrationManager::RegistrationEntry::RegistrationFinished(
 }
 
 PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
-    const std::string& access_token,
+    invalidation::IdentityProvider* identity_provider,
     PrefService* local_state,
     network::mojom::URLLoaderFactory* url_loader_factory,
     const ParseJSONCallback& parse_json)
     : local_state_(local_state),
-      access_token_(access_token),
+      identity_provider_(identity_provider),
+      request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       parse_json_(parse_json),
       url_loader_factory_(url_loader_factory) {}
 
@@ -129,18 +160,23 @@ void PerUserTopicRegistrationManager::UpdateRegisteredIds(
       registration_statuses_[objectId] =
           std::make_unique<RegistrationEntry>(objectId, local_state_);
     }
-    if (registration_statuses_[objectId]->state ==
-        RegistrationEntry::UNREGISTERED) {
-      TryToRegisterId(objectId);
+  }
+  RequestAccessToken();
+}
+
+void PerUserTopicRegistrationManager::DoRegistrationUpdate() {
+  for (const auto& registration_status : registration_statuses_) {
+    if (registration_status.second->state == RegistrationEntry::UNREGISTERED) {
+      StartRegistrationRequest(registration_status.first);
     }
   }
 }
 
-void PerUserTopicRegistrationManager::TryToRegisterId(
+void PerUserTopicRegistrationManager::StartRegistrationRequest(
     const invalidation::InvalidationObjectId& id) {
   auto it = registration_statuses_.find(id);
   if (it == registration_statuses_.end()) {
-    NOTREACHED() << "TryToRegisterId called on "
+    NOTREACHED() << "StartRegistrationRequest called on "
                  << InvalidationObjectIdToString(id)
                  << " which is not in the registration map";
     return;
@@ -172,6 +208,57 @@ InvalidationObjectIdSet PerUserTopicRegistrationManager::GetRegisteredIds()
     }
   }
   return ids;
+}
+
+void PerUserTopicRegistrationManager::RequestAccessToken() {
+  // TODO(melandory): Implement traffic optimisation.
+  // * Before sending request to server ask for access token from identity
+  //   provider (don't invalidate previous token).
+  //   Identity provider will take care of retrieving/caching.
+  // * Only invalidate access token when server didn't accept it.
+
+  // Only one active request at a time.
+  if (access_token_fetcher_ != nullptr)
+    return;
+  request_access_token_retry_timer_.Stop();
+  OAuth2TokenService::ScopeSet oauth2_scopes = {kFCMOAuthScope};
+  // Invalidate previous token, otherwise the identity provider will return the
+  // same token again.
+  identity_provider_->InvalidateAccessToken(oauth2_scopes, access_token_);
+  access_token_.clear();
+  access_token_fetcher_ = identity_provider_->FetchAccessToken(
+      "fcm_invalidation", oauth2_scopes,
+      base::BindOnce(
+          &PerUserTopicRegistrationManager::OnAccessTokenRequestCompleted,
+          base::Unretained(this)));
+}
+
+void PerUserTopicRegistrationManager::OnAccessTokenRequestCompleted(
+    GoogleServiceAuthError error,
+    std::string access_token) {
+  access_token_fetcher_.reset();
+  if (error.state() == GoogleServiceAuthError::NONE)
+    OnAccessTokenRequestSucceeded(access_token);
+  else
+    OnAccessTokenRequestFailed(error);
+}
+
+void PerUserTopicRegistrationManager::OnAccessTokenRequestSucceeded(
+    std::string access_token) {
+  // Reset backoff time after successful response.
+  request_access_token_backoff_.Reset();
+  access_token_ = access_token;
+  DoRegistrationUpdate();
+}
+
+void PerUserTopicRegistrationManager::OnAccessTokenRequestFailed(
+    GoogleServiceAuthError error) {
+  DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
+  request_access_token_backoff_.InformOfRequest(false);
+  request_access_token_retry_timer_.Start(
+      FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
+      base::BindRepeating(&PerUserTopicRegistrationManager::RequestAccessToken,
+                          base::Unretained(this)));
 }
 
 }  // namespace syncer
