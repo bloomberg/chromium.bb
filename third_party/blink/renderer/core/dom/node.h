@@ -771,7 +771,7 @@ class CORE_EXPORT Node : public EventTarget {
   // Handlers to do/undo actions on the target node before an event is
   // dispatched to it and after the event has been dispatched.  The data pointer
   // is handed back by the preDispatch and passed to postDispatch.
-  virtual EventDispatchHandlingState* PreDispatchEventHandler(Event*) {
+  virtual EventDispatchHandlingState* PreDispatchEventHandler(Event&) {
     return nullptr;
   }
   virtual void PostDispatchEventHandler(Event*, EventDispatchHandlingState*) {}
