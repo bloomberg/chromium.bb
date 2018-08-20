@@ -40,8 +40,9 @@ class XRDeviceImpl : public device::mojom::XRDevice {
       device::mojom::XRSessionOptionsPtr options,
       bool triggered_by_displayactive,
       device::mojom::XRDevice::RequestSessionCallback callback) override;
-  void SupportsSession(device::mojom::XRSessionOptionsPtr options,
-                       SupportsSessionCallback callback) override;
+  void SupportsSession(
+      device::mojom::XRSessionOptionsPtr options,
+      device::mojom::XRDevice::SupportsSessionCallback callback) override;
   void ExitPresent() override;
   // device::mojom::XRDevice WebVR compatibility functions
   void GetImmersiveVRDisplayInfo(
@@ -52,12 +53,8 @@ class XRDeviceImpl : public device::mojom::XRDevice {
 
   void SetInFocusedFrame(bool in_focused_frame);
 
-  // Notifications when devices are added/removed.
-  void OnRuntimeRemoved(BrowserXRRuntime* device);
-  void OnRuntimeAvailable(BrowserXRRuntime* device);
-
   // Notifications/calls from BrowserXRRuntime:
-  void OnChanged();
+  void RuntimesChanged();
   void OnExitPresent();
   void OnBlur();
   void OnFocus();
@@ -88,8 +85,6 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   // object.
   bool IsSecureContextRequirementSatisfied();
 
-  device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo();
-
   bool in_focused_frame_ = false;
 
   content::RenderFrameHost* render_frame_host_;
@@ -101,12 +96,6 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   mojo::InterfacePtrSet<device::mojom::XRSessionController>
       magic_window_controllers_;
   int next_key_ = 0;
-
-  // If we start an immersive session, or are listening to immersive activation,
-  // notify this device if we are destroyed.
-  BrowserXRRuntime* immersive_runtime_ = nullptr;
-  BrowserXRRuntime* non_immersive_runtime_ = nullptr;
-  BrowserXRRuntime* ar_runtime_ = nullptr;
 
   base::WeakPtrFactory<XRDeviceImpl> weak_ptr_factory_;
 

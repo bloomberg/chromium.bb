@@ -99,7 +99,7 @@ void VRServiceImpl::ConnectRuntime(BrowserXRRuntime* runtime) {
   // We just need to notify device_ when new capabilities were added after
   // initialization.
   if (device_) {
-    device_->OnRuntimeAvailable(runtime);
+    device_->RuntimesChanged();
   }
 
   if (client_) {
@@ -109,7 +109,7 @@ void VRServiceImpl::ConnectRuntime(BrowserXRRuntime* runtime) {
 
 void VRServiceImpl::RemoveRuntime(BrowserXRRuntime* runtime) {
   if (device_) {
-    device_->OnRuntimeRemoved(runtime);
+    device_->RuntimesChanged();
   }
 
   if (client_) {

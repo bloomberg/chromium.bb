@@ -37,7 +37,7 @@ void BrowserXRRuntime::OnDisplayInfoChanged(
     device::mojom::VRDisplayInfoPtr vr_device_info) {
   display_info_ = std::move(vr_device_info);
   for (XRDeviceImpl* device : renderer_device_connections_) {
-    device->OnChanged();
+    device->RuntimesChanged();
   }
 }
 
