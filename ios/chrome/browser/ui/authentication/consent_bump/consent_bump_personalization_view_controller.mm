@@ -108,15 +108,15 @@ const CGFloat kOptionsVerticalMargin = 16;
                                   text:
                                       l10n_util::GetNSString(
                                           IDS_IOS_CONSENT_BUMP_NO_CHANGE_TEXT)];
-  noChangeOption.type = ConsentBumpOptionTypeNoChange;
+  noChangeOption.type = ConsentBumpOptionTypeMoreOptionsNoChange;
   noChangeOption.checked = YES;
-  self.selectedOption = ConsentBumpOptionTypeNoChange;
+  self.selectedOption = ConsentBumpOptionTypeMoreOptionsNoChange;
 
   ConsentBumpOptionButton* reviewOption = [ConsentBumpOptionButton
       consentBumpOptionButtonWithTitle:l10n_util::GetNSString(
                                            IDS_IOS_CONSENT_BUMP_REVIEW_TITLE)
                                   text:nil];
-  reviewOption.type = ConsentBumpOptionTypeReview;
+  reviewOption.type = ConsentBumpOptionTypeMoreOptionsReview;
   reviewOption.checked = NO;
 
   ConsentBumpOptionButton* turnOnOption = [ConsentBumpOptionButton
@@ -124,7 +124,7 @@ const CGFloat kOptionsVerticalMargin = 16;
                                            IDS_IOS_CONSENT_BUMP_TURN_ON_TITLE)
                                   text:l10n_util::GetNSString(
                                            IDS_IOS_CONSENT_BUMP_TURN_ON_TEXT)];
-  turnOnOption.type = ConsentBumpOptionTypeTurnOn;
+  turnOnOption.type = ConsentBumpOptionTypeMoreOptionsTurnOn;
   turnOnOption.checked = NO;
 
   self.options = @[ noChangeOption, reviewOption, turnOnOption ];

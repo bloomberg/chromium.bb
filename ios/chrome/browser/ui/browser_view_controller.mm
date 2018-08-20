@@ -5054,7 +5054,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return;
   }
   self.consentBumpCoordinator =
-      [[ConsentBumpCoordinator alloc] initWithBaseViewController:self];
+      [[ConsentBumpCoordinator alloc] initWithBaseViewController:self
+                                                    browserState:_browserState];
   self.consentBumpCoordinator.delegate = self;
   [self.consentBumpCoordinator start];
   self.consentBumpCoordinator.viewController.modalPresentationStyle =

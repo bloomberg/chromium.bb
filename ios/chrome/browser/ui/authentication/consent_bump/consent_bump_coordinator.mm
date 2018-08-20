@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
 
 #include "base/logging.h"
+#include "components/unified_consent/unified_consent_metrics.h"
 #include "components/unified_consent/unified_consent_service.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_mediator.h"
@@ -17,6 +18,39 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using unified_consent::metrics::UnifiedConsentBumpAction;
+using unified_consent::metrics::RecordConsentBumpMetric;
+
+namespace {
+
+void RecordMetricWithConsentBumpOptionType(ConsentBumpOptionType type) {
+  UnifiedConsentBumpAction action;
+  switch (type) {
+    case ConsentBumpOptionTypeNotSet:
+      NOTREACHED();
+      action = UnifiedConsentBumpAction::kUnifiedConsentBumpActionDefaultOptIn;
+      break;
+    case ConsentBumpOptionTypeDefaultYesImIn:
+      action = UnifiedConsentBumpAction::kUnifiedConsentBumpActionDefaultOptIn;
+      break;
+    case ConsentBumpOptionTypeMoreOptionsNoChange:
+      action = UnifiedConsentBumpAction::
+          kUnifiedConsentBumpActionMoreOptionsNoChanges;
+      break;
+    case ConsentBumpOptionTypeMoreOptionsReview:
+      action = UnifiedConsentBumpAction::
+          kUnifiedConsentBumpActionMoreOptionsReviewSettings;
+      break;
+    case ConsentBumpOptionTypeMoreOptionsTurnOn:
+      action =
+          UnifiedConsentBumpAction::kUnifiedConsentBumpActionMoreOptionsOptIn;
+      break;
+  }
+  RecordConsentBumpMetric(action);
+}
+
+}  // namespace
 
 @interface ConsentBumpCoordinator ()<ConsentBumpViewControllerDelegate,
                                      UnifiedConsentCoordinatorDelegate>
@@ -70,6 +104,7 @@
 #pragma mark - ChromeCoordinator
 
 - (void)start {
+  DCHECK(self.browserState);
   self.consentBumpViewController = [[ConsentBumpViewController alloc] init];
   self.consentBumpViewController.delegate = self;
 
@@ -100,28 +135,32 @@
   ConsentBumpOptionType type = ConsentBumpOptionTypeNotSet;
   switch (self.presentedCoordinatorType) {
     case ConsentBumpScreenUnifiedConsent:
-      type = ConsentBumpOptionTypeTurnOn;
+      type = ConsentBumpOptionTypeDefaultYesImIn;
       break;
     case ConsentBumpScreenPersonalization:
       type = self.personalizationCoordinator.selectedOption;
+      DCHECK_NE(ConsentBumpOptionTypeDefaultYesImIn, type);
       break;
   }
+  unified_consent::UnifiedConsentService* unifiedConsentService =
+      UnifiedConsentServiceFactory::GetForBrowserState(self.browserState);
+  DCHECK(unifiedConsentService);
   switch (type) {
-    case ConsentBumpOptionTypeNoChange:
-      // TODO(crbug.com/866506): Implement metrics.
+    case ConsentBumpOptionTypeDefaultYesImIn:
+    case ConsentBumpOptionTypeMoreOptionsTurnOn:
+    case ConsentBumpOptionTypeMoreOptionsReview:
+      unifiedConsentService->SetUnifiedConsentGiven(true);
       break;
-    case ConsentBumpOptionTypeReview:
-      // TODO(crbug.com/866506): Implement metrics.
-      break;
-    case ConsentBumpOptionTypeTurnOn:
-      // TODO(crbug.com/866506): Implement metrics + sync updates.
+    case ConsentBumpOptionTypeMoreOptionsNoChange:
       break;
     case ConsentBumpOptionTypeNotSet:
       NOTREACHED();
       break;
   }
+  RecordMetricWithConsentBumpOptionType(type);
+  BOOL showSettings = type == ConsentBumpOptionTypeMoreOptionsReview;
   [self.delegate consentBumpCoordinator:self
-         didFinishNeedingToShowSettings:(type == ConsentBumpOptionTypeReview)];
+         didFinishNeedingToShowSettings:showSettings];
 }
 
 - (void)consentBumpViewControllerDidTapSecondaryButton:
