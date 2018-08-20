@@ -112,9 +112,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 @interface PasswordController ()
 
-// This is set to YES as soon as the associated WebState is destroyed.
-@property(readonly) BOOL isWebStateDestroyed;
-
 // View controller for auto sign-in notification, owned by this
 // PasswordController.
 @property(nonatomic, strong)
@@ -281,8 +278,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
       formActivityObserverBridge_;
 }
 
-@synthesize isWebStateDestroyed = _isWebStateDestroyed;
-
 @synthesize baseViewController = _baseViewController;
 
 @synthesize dispatcher = _dispatcher;
@@ -342,13 +337,9 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 }
 
 - (void)dealloc {
-  [self detach];
-
   if (webState_) {
-    formActivityObserverBridge_.reset();
+    webState_->RemoveScriptCommandCallback(kCommandPrefix);
     webState_->RemoveObserver(webStateObserverBridge_.get());
-    webStateObserverBridge_.reset();
-    webState_ = nullptr;
   }
 }
 
@@ -360,21 +351,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 - (const GURL&)lastCommittedURL {
   return webState_ ? webState_->GetLastCommittedURL() : GURL::EmptyGURL();
-}
-
-- (void)detach {
-  if (webState_) {
-    formActivityObserverBridge_.reset();
-    webState_->RemoveScriptCommandCallback(kCommandPrefix);
-    webState_->RemoveObserver(webStateObserverBridge_.get());
-    webStateObserverBridge_.reset();
-    webState_ = nullptr;
-  }
-
-  passwordManagerDriver_.reset();
-  passwordManager_.reset();
-  passwordManagerClient_.reset();
-  credentialManager_.reset();
 }
 
 #pragma mark -
@@ -424,8 +400,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   // TODO(crbug.com/418827): Fix this by passing in more data from the JS side.
   id completionHandler = ^(BOOL found, const autofill::PasswordForm& form) {
     PasswordController* strongSelf = weakSelf;
-    if (!strongSelf || [strongSelf isWebStateDestroyed] ||
-        !strongSelf.passwordManager) {
+    if (!strongSelf || !strongSelf->webState_ || !strongSelf.passwordManager) {
       return;
     }
     if (formInMainFrame) {
@@ -492,8 +467,17 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(webState_, webState);
-  _isWebStateDestroyed = YES;
-  [self detach];
+  if (webState_) {
+    formActivityObserverBridge_.reset();
+    webState_->RemoveScriptCommandCallback(kCommandPrefix);
+    webState_->RemoveObserver(webStateObserverBridge_.get());
+    webStateObserverBridge_.reset();
+    webState_ = nullptr;
+  }
+  passwordManagerDriver_.reset();
+  passwordManager_.reset();
+  passwordManagerClient_.reset();
+  credentialManager_.reset();
 }
 
 #pragma mark - Private methods.
@@ -866,7 +850,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   if (!form)
     return NO;
 
-  if (![self isWebStateDestroyed]) {
+  if (webState_) {
     self.passwordManager->OnPasswordFormSubmitted(self.passwordManagerDriver,
                                                   *form);
     return YES;
