@@ -413,8 +413,12 @@ const int styleCount = 2;
 
   [self configureButton:omniboxButton width:kOmniboxButtonWidth];
   [omniboxButton addTarget:self.dispatcher
+                    action:@selector(closeFindInPage)
+          forControlEvents:UIControlEventTouchUpInside];
+  [omniboxButton addTarget:self.dispatcher
                     action:@selector(focusOmniboxFromSearchButton)
           forControlEvents:UIControlEventTouchUpInside];
+
   omniboxButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_TOOLBAR_SEARCH);
   omniboxButton.accessibilityIdentifier = kToolbarOmniboxButtonIdentifier;
