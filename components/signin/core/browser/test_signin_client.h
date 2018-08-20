@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -51,16 +50,7 @@ class TestSigninClient : public SigninClient {
   // Returns the empty string.
   std::string GetProductVersion() override;
 
-  // Returns a manually provided URLRequestContextGetter.
-  net::URLRequestContextGetter* GetURLRequestContext() override;
-
-  // Tells GetURLRequestContext() what to return.
-  void SetURLRequestContext(net::URLRequestContextGetter* request_context);
-
-  // Wraps the test_url_loader_factory(). Note that this is totally independent
-  // of GetURLRequestContext(), so you may need to set some things differently
-  // based on what API the consumer is using, while transition away from
-  // URLRequestContextGetter is going on.
+  // Wraps the test_url_loader_factory().
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
   // Returns nullptr.
@@ -97,7 +87,6 @@ class TestSigninClient : public SigninClient {
   void PreGaiaLogout(base::OnceClosure callback) override;
 
  private:
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 

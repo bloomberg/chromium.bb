@@ -14,7 +14,6 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/ios/browser/wait_for_network_callback_helper.h"
 #include "net/cookies/cookie_change_dispatcher.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -48,7 +47,6 @@ class IOSChromeSigninClient : public SigninClient,
       override;
   void PreGaiaLogout(base::OnceClosure callback) override;
   PrefService* GetPrefs() override;
-  net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network::mojom::CookieManager* GetCookieManager() override;
   void DoFinalInit() override;

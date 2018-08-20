@@ -14,7 +14,6 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/ios/browser/wait_for_network_callback_helper.h"
 #include "net/cookies/cookie_change_dispatcher.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 // iOS WebView specific signin client.
@@ -23,7 +22,6 @@ class IOSWebViewSigninClient : public SigninClient,
  public:
   IOSWebViewSigninClient(
       PrefService* pref_service,
-      net::URLRequestContextGetter* url_request_context,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       network::mojom::CookieManager* cookie_manager,
       SigninErrorController* signin_error_controller,
@@ -39,7 +37,6 @@ class IOSWebViewSigninClient : public SigninClient,
   std::string GetProductVersion() override;
   base::Time GetInstallDate() override;
   PrefService* GetPrefs() override;
-  net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network::mojom::CookieManager* GetCookieManager() override;
   void DoFinalInit() override;
@@ -65,8 +62,6 @@ class IOSWebViewSigninClient : public SigninClient,
   std::unique_ptr<WaitForNetworkCallbackHelper> network_callback_helper_;
   // The PrefService associated with this service.
   PrefService* pref_service_;
-  // The URLRequestContext associated with this service.
-  net::URLRequestContextGetter* url_request_context_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   network::mojom::CookieManager* cookie_manager_;
   // Used to check for errors related to signing in.

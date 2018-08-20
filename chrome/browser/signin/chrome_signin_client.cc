@@ -46,7 +46,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -114,10 +113,6 @@ void ChromeSigninClient::OnSignedOut() {
   entry->SetLocalAuthCredentials(std::string());
   entry->SetAuthInfo(std::string(), base::string16());
   entry->SetIsSigninRequired(false);
-}
-
-net::URLRequestContextGetter* ChromeSigninClient::GetURLRequestContext() {
-  return profile_->GetRequestContext();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

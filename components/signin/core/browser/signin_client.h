@@ -24,19 +24,12 @@ namespace content_settings {
 class Observer;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
 namespace network {
 class SharedURLLoaderFactory;
 
 namespace mojom {
 class CookieManager;
 }
-}
-
-namespace network {
-class SharedURLLoaderFactory;
 }
 
 // An interface that needs to be supplied to the Signin component by its
@@ -60,10 +53,6 @@ class SigninClient : public KeyedService {
 
   // Gets the preferences associated with the client.
   virtual PrefService* GetPrefs() = 0;
-
-  // Returns the URL request context information associated with the client.
-  // DEPRECATED, new code should be using GetURLLoaderFactory instead.
-  virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
 
   // Returns the SharedURLLoaderFactory that should be used to fetch resources
   // associated with the client.

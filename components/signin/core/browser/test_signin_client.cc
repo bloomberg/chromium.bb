@@ -36,10 +36,6 @@ void TestSigninClient::PostSignedIn(const std::string& account_id,
   signed_in_password_ = password;
 }
 
-net::URLRequestContextGetter* TestSigninClient::GetURLRequestContext() {
-  return request_context_.get();
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 TestSigninClient::GetURLLoaderFactory() {
   return shared_factory_;
@@ -47,11 +43,6 @@ TestSigninClient::GetURLLoaderFactory() {
 
 network::mojom::CookieManager* TestSigninClient::GetCookieManager() {
   return nullptr;
-}
-
-void TestSigninClient::SetURLRequestContext(
-    net::URLRequestContextGetter* request_context) {
-  request_context_ = request_context;
 }
 
 std::string TestSigninClient::GetProductVersion() { return ""; }

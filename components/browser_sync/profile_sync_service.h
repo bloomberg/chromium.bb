@@ -52,6 +52,10 @@ namespace base {
 class MessageLoop;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
