@@ -5,9 +5,9 @@
 #include "content/browser/media/session/audio_focus_delegate_android.h"
 
 #include "base/android/jni_android.h"
-#include "content/browser/media/session/audio_focus_type.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "jni/AudioFocusDelegate_jni.h"
+#include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 using base::android::JavaParamRef;
 
@@ -31,12 +31,13 @@ void AudioFocusDelegateAndroid::Initialize() {
 }
 
 bool AudioFocusDelegateAndroid::RequestAudioFocus(
-    AudioFocusType audio_focus_type) {
+    media_session::mojom::AudioFocusType audio_focus_type) {
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
   return Java_AudioFocusDelegate_requestAudioFocus(
       env, j_media_session_delegate_,
-      audio_focus_type == AudioFocusType::GainTransientMayDuck);
+      audio_focus_type ==
+          media_session::mojom::AudioFocusType::kGainTransientMayDuck);
 }
 
 void AudioFocusDelegateAndroid::AbandonAudioFocus() {

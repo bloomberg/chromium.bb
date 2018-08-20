@@ -6,10 +6,12 @@
 
 #include "base/command_line.h"
 #include "content/browser/media/session/audio_focus_manager.h"
-#include "content/browser/media/session/audio_focus_type.h"
 #include "media/base/media_switches.h"
+#include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
+
+using AudioFocusType = media_session::mojom::AudioFocusType;
 
 namespace {
 

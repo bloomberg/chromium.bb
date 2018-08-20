@@ -10,6 +10,12 @@
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 
+namespace media_session {
+namespace mojom {
+enum class AudioFocusType;
+}  // namespace mojom
+}  // namespace media_session
+
 namespace content {
 
 enum class AudioFocusType;
@@ -23,7 +29,8 @@ class AudioFocusDelegateAndroid : public AudioFocusDelegate {
 
   void Initialize();
 
-  bool RequestAudioFocus(AudioFocusType audio_focus_type) override;
+  bool RequestAudioFocus(
+      media_session::mojom::AudioFocusType audio_focus_type) override;
   void AbandonAudioFocus() override;
 
   // Called when the Android system requests the MediaSession to be suspended.

@@ -8,9 +8,14 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 
+namespace media_session {
+namespace mojom {
+enum class AudioFocusType;
+}  // namespace mojom
+}  // namespace media_session
+
 namespace content {
 
-enum class AudioFocusType;
 class MediaSession;
 
 // The observer for observing audio focus events. This will not work on Android
@@ -21,7 +26,8 @@ class CONTENT_EXPORT AudioFocusObserver {
   ~AudioFocusObserver();
 
   // The given |MediaSession| gained audio focus with the specified type.
-  virtual void OnFocusGained(MediaSession*, AudioFocusType) = 0;
+  virtual void OnFocusGained(MediaSession*,
+                             media_session::mojom::AudioFocusType) = 0;
 
   // The given |NediaSession| lost audio focus.
   virtual void OnFocusLost(MediaSession*) = 0;

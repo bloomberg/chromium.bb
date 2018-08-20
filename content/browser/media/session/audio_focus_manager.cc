@@ -5,11 +5,13 @@
 #include "content/browser/media/session/audio_focus_manager.h"
 
 #include "content/browser/media/session/audio_focus_observer.h"
-#include "content/browser/media/session/audio_focus_type.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/public/browser/web_contents.h"
+#include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
+
+using AudioFocusType = media_session::mojom::AudioFocusType;
 
 // static
 AudioFocusManager* AudioFocusManager::GetInstance() {
@@ -34,7 +36,7 @@ void AudioFocusManager::RequestAudioFocus(MediaSessionImpl* media_session,
   // too much. Maybe it's better to do some abstraction and refactoring to clean
   // up the relation between AudioFocusManager and MediaSessionImpl.
   // See https://crbug.com/651069
-  if (type == AudioFocusType::GainTransientMayDuck) {
+  if (type == AudioFocusType::kGainTransientMayDuck) {
     for (auto* old_session : audio_focus_stack_) {
       old_session->StartDucking();
     }

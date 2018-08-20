@@ -17,7 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/audio_focus_manager.h"
-#include "content/browser/media/session/audio_focus_type.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -26,6 +25,7 @@
 #include "media/base/channel_layout.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -103,6 +103,8 @@ class MediaInternalsTestBase {
 }  // namespace
 
 namespace content {
+
+using AudioFocusType = media_session::mojom::AudioFocusType;
 
 class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
                                              public MediaInternalsTestBase {
@@ -352,7 +354,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   std::unique_ptr<TestWebContents> web_contents1 = CreateWebContents();
   web_contents1->SetTitle(base::UTF8ToUTF16(kTestTitle1));
   MediaSessionImpl* media_session1 = MediaSessionImpl::Get(web_contents1.get());
-  media_session1->RequestSystemAudioFocus(AudioFocusType::Gain);
+  media_session1->RequestSystemAudioFocus(AudioFocusType::kGain);
   base::RunLoop().RunUntilIdle();
 
   // Check JSON is what we expect.
@@ -371,7 +373,8 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   std::unique_ptr<TestWebContents> web_contents2 = CreateWebContents();
   web_contents2->SetTitle(base::UTF8ToUTF16(kTestTitle2));
   MediaSessionImpl* media_session2 = MediaSessionImpl::Get(web_contents2.get());
-  media_session2->RequestSystemAudioFocus(AudioFocusType::GainTransientMayDuck);
+  media_session2->RequestSystemAudioFocus(
+      AudioFocusType::kGainTransientMayDuck);
   base::RunLoop().RunUntilIdle();
 
   // Check JSON is what we expect.

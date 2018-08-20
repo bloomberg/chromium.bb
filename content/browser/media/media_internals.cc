@@ -810,7 +810,7 @@ void MediaInternals::OnProcessTerminatedForTesting(int process_id) {
 
 #if !defined(OS_ANDROID)
 void MediaInternals::OnFocusGained(MediaSession* media_session,
-                                   AudioFocusType type) {
+                                   media_session::mojom::AudioFocusType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
