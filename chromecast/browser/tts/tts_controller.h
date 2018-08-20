@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// PLEASE NOTE: this is a copy with modifications from chrome/browser/speech.
-// It is temporary until a refactoring to move the chrome TTS implementation up
-// into components and extensions/components can be completed.
-
 #ifndef CHROMECAST_BROWSER_TTS_TTS_CONTROLLER_H_
 #define CHROMECAST_BROWSER_TTS_TTS_CONTROLLER_H_
 
@@ -24,11 +20,11 @@ class TtsPlatformImpl;
 
 namespace base {
 class Value;
-}
+}  // namespace base
 
 namespace content {
 class BrowserContext;
-}
+}  // namespace content
 
 // Events sent back from the TTS engine indicating the progress.
 enum TtsEventType {
@@ -68,7 +64,7 @@ struct VoiceData {
   std::string name;
   std::string lang;
   TtsGenderType gender;
-  std::string extension_id;
+  std::string extension_id;  // Not used in cast.
   std::set<TtsEventType> events;
 
   // If true, the synthesis engine is a remote network resource.
@@ -89,14 +85,6 @@ class UtteranceEventDelegate {
                           TtsEventType event_type,
                           int char_index,
                           const std::string& error_message) = 0;
-};
-
-// Class that wants to be notified when the set of
-// voices has changed.
-class VoicesChangedDelegate {
- public:
-  virtual ~VoicesChangedDelegate() {}
-  virtual void OnVoicesChanged() = 0;
 };
 
 // One speech utterance.
@@ -234,9 +222,9 @@ class Utterance {
   bool finished_;
 };
 
-// Singleton class that manages text-to-speech for the TTS and TTS engine
-// extension APIs, maintaining a queue of pending utterances and keeping
-// track of all state.
+// Singleton class that manages text-to-speech for the TTS extension APIs,
+// potentially maintaining a queue of pending utterances and keeping track of
+// all state.
 class TtsController {
  public:
   virtual ~TtsController() = default;
@@ -278,22 +266,6 @@ class TtsController {
   // if supported, and all voices registered by extensions.
   virtual void GetVoices(content::BrowserContext* browser_context,
                          std::vector<VoiceData>* out_voices) = 0;
-
-  // Called by the extension system or platform implementation when the
-  // list of voices may have changed and should be re-queried.
-  virtual void VoicesChanged() = 0;
-
-  // Add a delegate that wants to be notified when the set of voices changes.
-  virtual void AddVoicesChangedDelegate(VoicesChangedDelegate* delegate) = 0;
-
-  // Remove delegate that wants to be notified when the set of voices changes.
-  virtual void RemoveVoicesChangedDelegate(VoicesChangedDelegate* delegate) = 0;
-
-  // Remove delegate that wants to be notified when an utterance fires an event.
-  // Note: this cancels speech from any utterance with this delegate, and
-  // removes any utterances with this delegate from the queue.
-  virtual void RemoveUtteranceEventDelegate(
-      UtteranceEventDelegate* delegate) = 0;
 
   // For unit testing.
   virtual int QueueSize() = 0;

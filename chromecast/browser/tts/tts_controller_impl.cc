@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// PLEASE NOTE: this is a copy with modifications from chrome/browser/speech.
-// It is temporary until a refactoring to move the chrome TTS implementation up
-// into components and extensions/components can be completed.
-
 #include "chromecast/browser/tts/tts_controller_impl.h"
 
 #include <stddef.h>
@@ -171,11 +167,6 @@ void TtsControllerImpl::SpeakOrEnqueue(Utterance* utterance) {
 }
 
 void TtsControllerImpl::SpeakNow(Utterance* utterance) {
-  // Ensure we have all built-in voices loaded. This is a no-op if already
-  // loaded.
-  bool loaded_built_in =
-      GetPlatformImpl()->LoadBuiltInTtsExtension(utterance->browser_context());
-
   // Get all available voices and try to find a matching voice.
   std::vector<VoiceData> voices;
   GetVoices(utterance->browser_context(), &voices);
@@ -234,17 +225,8 @@ void TtsControllerImpl::SpeakNow(Utterance* utterance) {
     bool success = GetPlatformImpl()->Speak(utterance->id(), utterance->text(),
                                             utterance->lang(), voice,
                                             utterance->continuous_parameters());
-    if (!success)
-      current_utterance_ = nullptr;
-
-    // If the native voice wasn't able to process this speech, see if
-    // the browser has built-in TTS that isn't loaded yet.
-    if (!success && loaded_built_in) {
-      utterance_queue_.push(utterance);
-      return;
-    }
-
     if (!success) {
+      current_utterance_ = nullptr;
       utterance->OnTtsEvent(TTS_EVENT_ERROR, kInvalidCharIndex,
                             GetPlatformImpl()->error());
       delete utterance;
@@ -353,7 +335,6 @@ void TtsControllerImpl::GetVoices(content::BrowserContext* browser_context,
   if (platform_impl) {
     // Ensure we have all built-in voices loaded. This is a no-op if already
     // loaded.
-    platform_impl->LoadBuiltInTtsExtension(browser_context);
     if (platform_impl->PlatformImplAvailable())
       platform_impl->GetVoices(out_voices);
   }
@@ -524,52 +505,4 @@ void TtsControllerImpl::UpdateUtteranceDefaults(Utterance* utterance) {
   if (volume == blink::SpeechSynthesisConstants::kDoublePrefNotSet)
     volume = blink::SpeechSynthesisConstants::kDefaultTextToSpeechVolume;
   utterance->set_continuous_parameters(rate, pitch, volume);
-}
-
-void TtsControllerImpl::VoicesChanged() {
-  // Existence of platform tts indicates explicit requests to tts. Since
-  // |VoicesChanged| can occur implicitly, only send if needed.
-  if (!GetPlatformImpl())
-    return;
-
-  for (std::set<VoicesChangedDelegate*>::iterator iter =
-           voices_changed_delegates_.begin();
-       iter != voices_changed_delegates_.end(); ++iter) {
-    (*iter)->OnVoicesChanged();
-  }
-}
-
-void TtsControllerImpl::AddVoicesChangedDelegate(
-    VoicesChangedDelegate* delegate) {
-  voices_changed_delegates_.insert(delegate);
-}
-
-void TtsControllerImpl::RemoveVoicesChangedDelegate(
-    VoicesChangedDelegate* delegate) {
-  voices_changed_delegates_.erase(delegate);
-}
-
-void TtsControllerImpl::RemoveUtteranceEventDelegate(
-    UtteranceEventDelegate* delegate) {
-  // First clear any pending utterances with this delegate.
-  base::queue<Utterance*> old_queue = utterance_queue_;
-  utterance_queue_ = base::queue<Utterance*>();
-  while (!old_queue.empty()) {
-    Utterance* utterance = old_queue.front();
-    old_queue.pop();
-    if (utterance->event_delegate() != delegate)
-      utterance_queue_.push(utterance);
-    else
-      delete utterance;
-  }
-
-  if (current_utterance_ && current_utterance_->event_delegate() == delegate) {
-    current_utterance_->set_event_delegate(nullptr);
-    GetPlatformImpl()->clear_error();
-    GetPlatformImpl()->StopSpeaking();
-
-    FinishCurrentUtterance();
-    if (!paused_)
-      SpeakNextUtterance();
-  }
 }

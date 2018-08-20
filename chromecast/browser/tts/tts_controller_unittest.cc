@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// PLEASE NOTE: this is a copy with modifications from chrome/browser/speech.
-// It is temporary until a refactoring to move the chrome TTS implementation up
-// into components and extensions/components can be completed.
-
 // Unit tests for the TTS Controller.
 
 #include "base/values.h"
@@ -15,6 +11,8 @@
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
+
+namespace chromecast {
 
 class TtsControllerTest : public testing::Test {};
 
@@ -155,41 +153,4 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
   }
 }
 
-#if defined(OS_CHROMEOS)
-TEST_F(TtsControllerTest, TestTtsControllerUtteranceDefaults) {
-  std::unique_ptr<TestableTtsController> controller =
-      std::make_unique<TestableTtsController>();
-
-  std::unique_ptr<Utterance> utterance1 = std::make_unique<Utterance>(nullptr);
-  // Initialized to default (unset constant) values.
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDoublePrefNotSet,
-            utterance1->continuous_parameters().rate);
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDoublePrefNotSet,
-            utterance1->continuous_parameters().pitch);
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDoublePrefNotSet,
-            utterance1->continuous_parameters().volume);
-
-  controller->UpdateUtteranceDefaults(utterance1.get());
-  // Updated to global defaults.
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDefaultTextToSpeechRate,
-            utterance1->continuous_parameters().rate);
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDefaultTextToSpeechPitch,
-            utterance1->continuous_parameters().pitch);
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDefaultTextToSpeechVolume,
-            utterance1->continuous_parameters().volume);
-
-  // Now we will set prefs and expect those to be used as defaults.
-  TestingPrefServiceSimple pref_service_;
-  pref_service_.registry()->RegisterDoublePref(prefs::kTextToSpeechRate, 1.5);
-  pref_service_.registry()->RegisterDoublePref(prefs::kTextToSpeechPitch, 2.0);
-  pref_service_.registry()->RegisterDoublePref(prefs::kTextToSpeechVolume, 0.5);
-
-  controller->pref_service_for_testing_ = &pref_service_;
-  std::unique_ptr<Utterance> utterance2 = std::make_unique<Utterance>(nullptr);
-  controller->UpdateUtteranceDefaults(utterance2.get());
-  // Updated to pref values.
-  EXPECT_EQ(1.5f, utterance2->continuous_parameters().rate);
-  EXPECT_EQ(2.0f, utterance2->continuous_parameters().pitch);
-  EXPECT_EQ(0.5f, utterance2->continuous_parameters().volume);
-}
-#endif  // defined(OS_CHROMEOS)
+}  // namespace chromecast
