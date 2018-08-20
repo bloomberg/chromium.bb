@@ -818,13 +818,20 @@ class ChromeSDKCommand(command.CliCommand):
     env['AR_host'] = os.path.join(binutils_path, 'ar')
     env['NM_host'] = os.path.join(binutils_path, 'nm')
 
-  def _RelativizeToolchainPath(self, compiler):
-    """Relativize toolchain path for GN."""
+  def _ModifyPathForGomaBuild(self, compiler, tc_path=None):
+    """Modify toolchain path for goma build.
+
+    This function relativizes path of -B flag, but absolutize compiler path.
+    Compiler path will be relativized in build/toolchain/cros/BUILD.gn for
+    directory independent cache sharing in some distributed build system.
+    """
     args = []
-    for i in compiler.split():
-      if i.startswith('-B'):
-        i = '-B' + os.path.relpath(i[len('-B'):], self._BuildDir())
-      args.append(i)
+    for i, v in enumerate(compiler.split()):
+      if v.startswith('-B'):
+        v = '-B' + os.path.relpath(v[len('-B'):], self._BuildDir())
+      elif i == 0 and os.path.basename(v) == v:
+        v = os.path.join(tc_path, 'bin', v)
+      args.append(v)
     return ' '.join(args)
 
   def _SetupEnvironment(self, board, sdk_ctx, options, goma_dir=None,
@@ -925,19 +932,26 @@ class ChromeSDKCommand(command.CliCommand):
     # See crosbug/618346.
     gn_args['cros_v8_snapshot_is_clang'] = True
     #
-    gn_args['cros_target_cc'] = self._RelativizeToolchainPath(env['CC'])
-    gn_args['cros_target_cxx'] = self._RelativizeToolchainPath(env['CXX'])
+    target_tc_path = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
+    modified_env_cc =  self._ModifyPathForGomaBuild(env['CC'], target_tc_path)
+    modified_env_cxx =  self._ModifyPathForGomaBuild(env['CXX'], target_tc_path)
+    gn_args['cros_target_cc'] = modified_env_cc.split()[0]
+    gn_args['cros_target_cxx'] = modified_env_cxx.split()[0]
     gn_args['cros_target_ld'] = env['LD']
     gn_args['cros_target_nm'] = env['NM']
-    gn_args['cros_target_extra_cflags'] = env.get('CFLAGS', '')
-    gn_args['cros_target_extra_cxxflags'] = env.get('CXXFLAGS', '')
-    gn_args['cros_host_cc'] = env['CC_host']
-    gn_args['cros_host_cxx'] = env['CXX_host']
+    gn_args['cros_target_extra_cflags'] = ' '.join(
+        [env.get('CFLAGS', '')] + modified_env_cc.split()[1:])
+    gn_args['cros_target_extra_cxxflags'] = ' '.join(
+        [env.get('CXXFLAGS', '')] + modified_env_cxx.split()[1:])
+    gn_args['cros_host_cc'] = self._ModifyPathForGomaBuild(env['CC_host'])
+    gn_args['cros_host_cxx'] = self._ModifyPathForGomaBuild(env['CXX_host'])
     gn_args['cros_host_ld'] = env['LD_host']
     gn_args['cros_host_nm'] = env['NM_host']
     gn_args['cros_host_ar'] = env['AR_host']
-    gn_args['cros_v8_snapshot_cc'] = env['CC_host']
-    gn_args['cros_v8_snapshot_cxx'] = env['CXX_host']
+    gn_args['cros_v8_snapshot_cc'] = self._ModifyPathForGomaBuild(
+        env['CC_host'])
+    gn_args['cros_v8_snapshot_cxx'] = self._ModifyPathForGomaBuild(
+        env['CXX_host'])
     gn_args['cros_v8_snapshot_ld'] = env['LD_host']
     gn_args['cros_v8_snapshot_nm'] = env['NM_host']
     gn_args['cros_v8_snapshot_ar'] = env['AR_host']
