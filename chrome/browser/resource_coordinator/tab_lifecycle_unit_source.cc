@@ -56,6 +56,7 @@ TabLifecycleUnitSource::TabLifecycleUnitSource(
     InterventionPolicyDatabase* intervention_policy_database,
     UsageClock* usage_clock)
     : browser_tab_strip_tracker_(this, nullptr, this),
+      page_signal_receiver_observer_(this),
       intervention_policy_database_(intervention_policy_database),
       usage_clock_(usage_clock) {
   DCHECK(!instance_);
@@ -66,15 +67,11 @@ TabLifecycleUnitSource::TabLifecycleUnitSource(
   DCHECK(intervention_policy_database_);
   browser_tab_strip_tracker_.Init();
   instance_ = this;
-  // TODO(chrisha): Create a ScopedPageSignalObserver helper class to clean up
-  // this manual lifetime management.
   if (auto* page_signal_receiver = PageSignalReceiver::GetInstance())
-    page_signal_receiver->AddObserver(this);
+    page_signal_receiver_observer_.Add(page_signal_receiver);
 }
 
 TabLifecycleUnitSource::~TabLifecycleUnitSource() {
-  if (auto* page_signal_receiver = PageSignalReceiver::GetInstance())
-    page_signal_receiver->RemoveObserver(this);
   DCHECK_EQ(instance_, this);
   instance_ = nullptr;
 }
