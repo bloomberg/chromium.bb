@@ -14,6 +14,7 @@
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
+#include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/unified_consent_service_client.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +39,10 @@ class TestSyncService : public syncer::FakeSyncService {
     chosen_types_ = chosen_types;
   }
   syncer::ModelTypeSet GetPreferredDataTypes() const override {
-    return chosen_types_;
+    syncer::ModelTypeSet preferred = chosen_types_;
+    // Add this for the Migration_UpdateSettings test.
+    preferred.Put(syncer::HISTORY_DELETE_DIRECTIVES);
+    return preferred;
   }
   bool IsUsingSecondaryPassphrase() const override {
     return is_using_passphrase_;
@@ -135,6 +139,11 @@ class UnifiedConsentServiceTest : public testing::Test {
   }
 
   void CreateConsentService(bool client_services_on_by_default = false) {
+    if (!scoped_unified_consent_) {
+      SetUnifiedConsentFeatureState(
+          unified_consent::UnifiedConsentFeatureState::kEnabledWithBump);
+    }
+
     auto client =
         std::make_unique<FakeUnifiedConsentServiceClient>(&pref_service_);
     if (client_services_on_by_default) {
@@ -152,12 +161,28 @@ class UnifiedConsentServiceTest : public testing::Test {
                           consent_service_->service_client_.get();
   }
 
+  void SetUnifiedConsentFeatureState(
+      unified_consent::UnifiedConsentFeatureState feature_state) {
+    // First reset |scoped_unified_consent_| to nullptr in case it was set
+    // before and then initialize it with the new value. This makes sure that
+    // the old scoped object is deleted before the new one is created.
+    scoped_unified_consent_.reset();
+    scoped_unified_consent_.reset(
+        new unified_consent::ScopedUnifiedConsent(feature_state));
+  }
+
   bool AreAllNonPersonalizedServicesEnabled() {
     return consent_service_->AreAllNonPersonalizedServicesEnabled();
   }
 
   bool AreAllOnByDefaultPrivacySettingsOn() {
     return consent_service_->AreAllOnByDefaultPrivacySettingsOn();
+  }
+
+  unified_consent::MigrationState GetMigrationState() {
+    int migration_state_int =
+        pref_service_.GetInteger(prefs::kUnifiedConsentMigrationState);
+    return static_cast<unified_consent::MigrationState>(migration_state_int);
   }
 
  protected:
@@ -167,6 +192,8 @@ class UnifiedConsentServiceTest : public testing::Test {
   TestSyncService sync_service_;
   std::unique_ptr<UnifiedConsentService> consent_service_;
   FakeUnifiedConsentServiceClient* service_client_ = nullptr;
+
+  std::unique_ptr<ScopedUnifiedConsent> scoped_unified_consent_;
 };
 
 TEST_F(UnifiedConsentServiceTest, DefaultValuesWhenSignedOut) {
@@ -331,26 +358,36 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndAllServicesOn) {
   syncer::SyncPrefs sync_prefs(&pref_service_);
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION);
+  EXPECT_FALSE(sync_service_.IsSyncActive());
 
   CreateConsentService(true /* client services on by default */);
   EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
-  // After the creation of the consent service, inconsistencies are resolved and
-  // the migration state should be in-progress (i.e. the consent bump should be
-  // shown).
+  // After the creation of the consent service, the profile started to migrate
+  // (but waiting for sync init) and |ShouldShowConsentBump| should return true.
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_EQ(GetMigrationState(),
+            unified_consent::MigrationState::kInProgressWaitForSyncInit);
+  EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
+  // Sync-everything is still on because sync is not active yet.
+  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+
+  // When sync is active, the migration should continue and finish.
+  sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  sync_service_.FireStateChanged();
   EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
-  EXPECT_EQ(
-      consent_service_->GetMigrationState(),
-      unified_consent::MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP);
+
   // No metric for the consent bump suppress reason should have been recorded at
   // this point.
   histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
                                     0);
 
-  // When the user signs out, the migration state changes to completed.
+  // When the user signs out, the migration state changes to completed and the
+  // consent bump doesn't need to be shown anymore.
   identity_test_environment_.ClearPrimaryAccount();
-  EXPECT_EQ(consent_service_->GetMigrationState(),
-            unified_consent::MigrationState::COMPLETED);
+  EXPECT_EQ(GetMigrationState(), unified_consent::MigrationState::kCompleted);
+  EXPECT_FALSE(consent_service_->ShouldShowConsentBump());
   // A metric for the consent bump suppress reason should have been recorded at
   // this point.
   histogram_tester.ExpectBucketCount(
@@ -367,16 +404,16 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndServicesOff) {
   syncer::SyncPrefs sync_prefs(&pref_service_);
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_TRUE(sync_service_.IsSyncActive());
 
   CreateConsentService();
   EXPECT_FALSE(AreAllOnByDefaultPrivacySettingsOn());
-  // After the creation of the consent service, inconsistencies are resolved and
-  // the migration state should be completed because not all on-by-default
-  // privacy settings were on.
+  // After the creation of the consent service, the profile is migrated and
+  // |ShouldShowConsentBump| should return false.
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
-  EXPECT_EQ(consent_service_->GetMigrationState(),
-            unified_consent::MigrationState::COMPLETED);
+  EXPECT_EQ(GetMigrationState(), unified_consent::MigrationState::kCompleted);
+  EXPECT_FALSE(consent_service_->ShouldShowConsentBump());
 
   // A metric for the consent bump suppress reason should have been recorded at
   // this point.
@@ -396,14 +433,35 @@ TEST_F(UnifiedConsentServiceTest, Migration_NotSyncingEverything) {
   EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
 
   CreateConsentService();
-  // Since there were not inconsistencies, the migration is completed after the
-  // creation of the consent service.
-  EXPECT_EQ(consent_service_->GetMigrationState(),
-            unified_consent::MigrationState::COMPLETED);
+  // When the user is not syncing everything the migration is completed after
+  // the creation of the consent service.
+  EXPECT_EQ(GetMigrationState(), unified_consent::MigrationState::kCompleted);
   // The suppress reason for not showing the consent bump should be recorded.
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.ConsentBump.SuppressReason",
       unified_consent::ConsentBumpSuppressReason::kSyncEverythingOff, 1);
+}
+
+TEST_F(UnifiedConsentServiceTest, Migration_UpdateSettings) {
+  // Create user that syncs everything
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  syncer::SyncPrefs sync_prefs(&pref_service_);
+  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.IsSyncActive());
+  EXPECT_TRUE(sync_service_.GetPreferredDataTypes().Has(syncer::USER_EVENTS));
+  // Url keyed data collection is off before the migration.
+  EXPECT_FALSE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
+
+  CreateConsentService();
+  EXPECT_EQ(GetMigrationState(), unified_consent::MigrationState::kCompleted);
+  // During the migration USER_EVENTS is disabled and Url keyed data collection
+  // is enabled.
+  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(sync_service_.GetPreferredDataTypes().Has(syncer::USER_EVENTS));
+  EXPECT_TRUE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 }
 
 #if !defined(OS_CHROMEOS)
@@ -449,8 +507,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_NotSignedIn) {
   CreateConsentService();
   // Since there were not inconsistencies, the migration is completed after the
   // creation of the consent service.
-  EXPECT_EQ(consent_service_->GetMigrationState(),
-            unified_consent::MigrationState::COMPLETED);
+  EXPECT_EQ(GetMigrationState(), unified_consent::MigrationState::kCompleted);
   // The suppress reason for not showing the consent bump should be recorded.
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.ConsentBump.SuppressReason",
@@ -469,20 +526,19 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasSyncingEverything) {
   // Check expectations after migration.
   EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_EQ(
-      unified_consent::MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP,
-      consent_service_->GetMigrationState());
+  EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
+  EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
 
   consent_service_->Shutdown();
   consent_service_.reset();
+  SetUnifiedConsentFeatureState(UnifiedConsentFeatureState::kDisabled);
 
   // Rollback
   UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_);
   // Unified consent prefs should be cleared.
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_EQ(static_cast<int>(unified_consent::MigrationState::NOT_INITIALIZED),
-            pref_service_.GetInteger(
-                unified_consent::prefs::kUnifiedConsentMigrationState));
+  EXPECT_EQ(unified_consent::MigrationState::kNotInitialized,
+            GetMigrationState());
   // Sync everything should be back on.
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
 
@@ -505,8 +561,7 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasNotSyncingEverything) {
   // Check expectations after migration.
   EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_EQ(unified_consent::MigrationState::COMPLETED,
-            consent_service_->GetMigrationState());
+  EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
 
   consent_service_->Shutdown();
   consent_service_.reset();
@@ -515,9 +570,9 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasNotSyncingEverything) {
   UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_);
   // Unified consent prefs should be cleared.
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_EQ(static_cast<int>(unified_consent::MigrationState::NOT_INITIALIZED),
-            pref_service_.GetInteger(
-                unified_consent::prefs::kUnifiedConsentMigrationState));
+  EXPECT_EQ(unified_consent::MigrationState::kNotInitialized,
+            GetMigrationState());
+
   // Sync everything should be off because not all user types were on.
   EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
 
