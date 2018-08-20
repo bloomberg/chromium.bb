@@ -6,6 +6,9 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("nearby") {
   sources = [
+    "atomic_boolean_impl.cc",
+    "atomic_boolean_impl.h",
+    "atomic_reference_impl.h",
     "count_down_latch_impl.cc",
     "count_down_latch_impl.h",
     "hash_utils_impl.cc",
@@ -28,6 +31,8 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "atomic_boolean_impl_unittests.cc",
+    "atomic_reference_impl_unittests.cc",
     "count_down_latch_impl_unittests.cc",
     "hash_utils_impl_unittests.cc",
     "settable_future_impl_unittests.cc",
