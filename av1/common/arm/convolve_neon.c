@@ -68,6 +68,7 @@ static INLINE uint8x8_t convolve8_horiz_8x8(
   return vqmovun_s16(sum);
 }
 
+#if !defined(__aarch64__)
 static INLINE uint8x8_t convolve8_horiz_4x1(
     const int16x4_t s0, const int16x4_t s1, const int16x4_t s2,
     const int16x4_t s3, const int16x4_t s4, const int16x4_t s5,
@@ -92,6 +93,7 @@ static INLINE uint8x8_t convolve8_horiz_4x1(
 
   return vqmovun_s16(vcombine_s16(sum, sum));
 }
+#endif  // !defined(__arch64__)
 
 static INLINE uint8x8_t convolve8_vert_8x4(
     const int16x8_t s0, const int16x8_t s1, const int16x8_t s2,

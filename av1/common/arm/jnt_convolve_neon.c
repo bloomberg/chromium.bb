@@ -22,6 +22,7 @@
 #include "av1/common/arm/mem_neon.h"
 #include "av1/common/arm/transpose_neon.h"
 
+#if !defined(__aarch64__)
 static INLINE void compute_avg_4x1(uint16x4_t res0, uint16x4_t d0,
                                    const uint16_t fwd_offset,
                                    const uint16_t bck_offset,
@@ -115,6 +116,7 @@ static INLINE void compute_avg_8x1(uint16x8_t res0, uint16x8_t d0,
     *t0 = vqmovun_s16(f0);
   }
 }
+#endif  // !defined(__arch64__)
 
 static INLINE void compute_avg_4x4(
     uint16x4_t res0, uint16x4_t res1, uint16x4_t res2, uint16x4_t res3,
