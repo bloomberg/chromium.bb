@@ -52,7 +52,7 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
   FPDF_FORMFILLINFO::FFI_GetCurrentPageIndex = Form_GetCurrentPageIndex;
   FPDF_FORMFILLINFO::FFI_GetPageViewRect = Form_GetPageViewRect;
   FPDF_FORMFILLINFO::FFI_GetPlatform = Form_GetPlatform;
-  FPDF_FORMFILLINFO::FFI_PageEvent = nullptr;
+  FPDF_FORMFILLINFO::FFI_PageEvent = Form_PageEvent;
   FPDF_FORMFILLINFO::FFI_PopupMenu = Form_PopupMenu;
   FPDF_FORMFILLINFO::FFI_PostRequestURL = Form_PostRequestURL;
   FPDF_FORMFILLINFO::FFI_PutRequestURL = Form_PutRequestURL;
@@ -391,6 +391,18 @@ int PDFiumFormFiller::Form_GetPlatform(FPDF_FORMFILLINFO* param,
       "alert(\"Platform:" + base::NumberToString(platform_flag) + "\")";
 
   return platform_flag;
+}
+
+// static
+void PDFiumFormFiller::Form_PageEvent(FPDF_FORMFILLINFO* param,
+                                      int page_count,
+                                      unsigned long event_type) {
+  DCHECK(page_count != 0);
+  DCHECK(event_type == FXFA_PAGEVIEWEVENT_POSTADDED ||
+         event_type == FXFA_PAGEVIEWEVENT_POSTREMOVED);
+
+  PDFiumEngine* engine = GetEngine(param);
+  engine->UpdatePageCount();
 }
 
 // static
