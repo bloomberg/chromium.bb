@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_unique_name_lookup.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
 namespace blink {
@@ -19,6 +20,16 @@ FontGlobalContext* FontGlobalContext::Get(CreateIfNeeded create_if_needed) {
 }
 
 FontGlobalContext::FontGlobalContext() : harfbuzz_font_funcs_(nullptr) {}
+
+FontGlobalContext::~FontGlobalContext() = default;
+
+FontUniqueNameLookup* FontGlobalContext::GetFontUniqueNameLookup() {
+  if (!Get()->font_unique_name_lookup_) {
+    Get()->font_unique_name_lookup_ =
+        FontUniqueNameLookup::GetPlatformUniqueNameLookup();
+  }
+  return Get()->font_unique_name_lookup_.get();
+}
 
 void FontGlobalContext::ClearMemory() {
   if (!Get(kDoNotCreate))

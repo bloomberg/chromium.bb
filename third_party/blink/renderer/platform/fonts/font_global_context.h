@@ -15,6 +15,7 @@ struct hb_font_funcs_t;
 namespace blink {
 
 class FontCache;
+class FontUniqueNameLookup;
 
 enum CreateIfNeeded { kDoNotCreate, kCreate };
 
@@ -40,6 +41,8 @@ class PLATFORM_EXPORT FontGlobalContext {
     Get()->harfbuzz_font_funcs_ = funcs;
   }
 
+  static FontUniqueNameLookup* GetFontUniqueNameLookup();
+
   // Called by MemoryCoordinator to clear memory.
   static void ClearMemory();
 
@@ -49,11 +52,12 @@ class PLATFORM_EXPORT FontGlobalContext {
   friend class WTF::ThreadSpecific<FontGlobalContext>;
 
   FontGlobalContext();
-  ~FontGlobalContext() = default;
+  ~FontGlobalContext();
 
   FontCache font_cache_;
   HarfBuzzFontCache harfbuzz_font_cache_;
   hb_font_funcs_t* harfbuzz_font_funcs_;
+  std::unique_ptr<FontUniqueNameLookup> font_unique_name_lookup_;
 };
 
 }  // namespace blink

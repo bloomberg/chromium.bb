@@ -87,6 +87,9 @@ TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
 }
 
 TEST_F(StyleEngineTest, AnalyzedInject) {
+  // TODO(crbug.com/875805): src: local() lookups do not work in DummyPageHolder
+  // on platforms where out of process lookups are needed for src: local()
+  // lookups.
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
      @font-face {
