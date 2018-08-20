@@ -11,6 +11,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+const base::flat_set<device::FidoTransportProtocol> kAllTransports = {
+    device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
+    device::FidoTransportProtocol::kNearFieldCommunication,
+    device::FidoTransportProtocol::kBluetoothLowEnergy,
+    device::FidoTransportProtocol::kInternal,
+    device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+};
+}
+
 class AuthenticatorRequestDialogModelTest : public ::testing::Test {
  public:
   AuthenticatorRequestDialogModelTest() {}
@@ -23,14 +34,6 @@ class AuthenticatorRequestDialogModelTest : public ::testing::Test {
 TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
   using FidoTransportProtocol = ::device::FidoTransportProtocol;
   using Step = AuthenticatorRequestDialogModel::Step;
-
-  const base::flat_set<FidoTransportProtocol> kAllTransports = {
-      FidoTransportProtocol::kUsbHumanInterfaceDevice,
-      FidoTransportProtocol::kNearFieldCommunication,
-      FidoTransportProtocol::kBluetoothLowEnergy,
-      FidoTransportProtocol::kInternal,
-      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
-  };
 
   const struct {
     base::flat_set<FidoTransportProtocol> available_transports;
@@ -110,22 +113,23 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       ASSERT_EQ(Step::kWelcomeScreen, model.current_step());
       model.StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
     }
-
     EXPECT_EQ(test_case.expected_first_step, model.current_step());
+
+    if (model.current_step() == Step::kTransportSelection)
+      continue;
+
+    model.Back();
+    if (test_case.available_transports.size() >= 2u) {
+      EXPECT_EQ(Step::kTransportSelection, model.current_step());
+    } else {
+      EXPECT_EQ(Step::kWelcomeScreen, model.current_step());
+    }
   }
 }
 
 TEST_F(AuthenticatorRequestDialogModelTest, TransportList) {
-  using FidoTransportProtocol = ::device::FidoTransportProtocol;
-
   ::device::FidoRequestHandlerBase::TransportAvailabilityInfo transports_info_1;
-  transports_info_1.available_transports = {
-      FidoTransportProtocol::kUsbHumanInterfaceDevice,
-      FidoTransportProtocol::kNearFieldCommunication,
-      FidoTransportProtocol::kBluetoothLowEnergy,
-      FidoTransportProtocol::kInternal,
-      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
-  };
+  transports_info_1.available_transports = kAllTransports;
 
   AuthenticatorRequestDialogModel model;
   model.StartFlow(std::move(transports_info_1), base::nullopt);
