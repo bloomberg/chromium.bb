@@ -320,6 +320,18 @@ class ASyncHWTestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
     self.wait_for_results = False
 
 
+class ASyncSkylabHWTestStage(SkylabHWTestStage,
+                             generic_stages.ForgivingBuilderStage):
+  """Stage that fires and forgets skylab hw test suites to the Autotest lab."""
+
+  stage_name = "ASyncSkylabHWTest"
+  category = constants.TEST_INFRA_STAGE
+
+  def __init__(self, *args, **kwargs):
+    super(ASyncSkylabHWTestStage, self).__init__(*args, **kwargs)
+    self.wait_for_results = False
+
+
 class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
                      generic_stages.ArchivingStageMixin):
   """Stage that launches tests on the produced disk image."""

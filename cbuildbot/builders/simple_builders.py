@@ -154,10 +154,11 @@ class SimpleBuilder(generic_builders.Builder):
       else:
         stage_class = test_stages.HWTestStage
 
-      # TODO (xixuan): Add AsyncSkylabHWTestStage here at
-      # the end of launch testing.
       if builder_run.config.enable_skylab_hw_tests:
-        stage_class = test_stages.SkylabHWTestStage
+        if suite_config.async:
+          stage_class = test_stages.ASyncSkylabHWTestStage
+        else:
+          stage_class = test_stages.SkylabHWTestStage
 
       result = self._GetStageInstance(stage_class,
                                       board,
