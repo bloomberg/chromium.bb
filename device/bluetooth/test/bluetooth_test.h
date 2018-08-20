@@ -251,6 +251,10 @@ class BluetoothTestBase : public testing::Test {
   // Simulates a change in |device|'s pairing state.
   virtual void SimulateDevicePaired(BluetoothDevice* device, bool is_paired) {}
 
+  // Sets |device|'s pairing code to |pin_code|.
+  virtual void SimulatePairingPinCode(BluetoothDevice* device,
+                                      std::string pin_code) {}
+
   // Remembers |device|'s platform specific object to be used in a
   // subsequent call to methods such as SimulateGattServicesDiscovered that
   // accept a nullptr value to select this remembered characteristic. This

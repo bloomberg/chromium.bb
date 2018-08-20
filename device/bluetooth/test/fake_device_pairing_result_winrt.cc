@@ -13,13 +13,16 @@ using ABI::Windows::Devices::Enumeration::DevicePairingResultStatus;
 
 namespace device {
 
-FakeDevicePairingResultWinrt::FakeDevicePairingResultWinrt() = default;
+FakeDevicePairingResultWinrt::FakeDevicePairingResultWinrt(
+    DevicePairingResultStatus status)
+    : status_(status) {}
 
 FakeDevicePairingResultWinrt::~FakeDevicePairingResultWinrt() = default;
 
 HRESULT FakeDevicePairingResultWinrt::get_Status(
     DevicePairingResultStatus* status) {
-  return E_NOTIMPL;
+  *status = status_;
+  return S_OK;
 }
 
 HRESULT FakeDevicePairingResultWinrt::get_ProtectionLevelUsed(

@@ -6,9 +6,14 @@
 #define DEVICE_BLUETOOTH_TEST_FAKE_DEVICE_INFORMATION_CUSTOM_PAIRING_WINRT_H_
 
 #include <windows.devices.enumeration.h>
+#include <wrl/client.h>
 #include <wrl/implements.h>
 
+#include <string>
+
+#include "base/callback.h"
 #include "base/macros.h"
+#include "device/bluetooth/test/fake_device_information_pairing_winrt.h"
 
 namespace device {
 
@@ -18,7 +23,9 @@ class FakeDeviceInformationCustomPairingWinrt
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::Devices::Enumeration::IDeviceInformationCustomPairing> {
  public:
-  FakeDeviceInformationCustomPairingWinrt();
+  FakeDeviceInformationCustomPairingWinrt(
+      Microsoft::WRL::ComPtr<FakeDeviceInformationPairingWinrt> pairing,
+      std::string pin);
   ~FakeDeviceInformationCustomPairingWinrt() override;
 
   // IDeviceInformationCustomPairing:
@@ -54,7 +61,24 @@ class FakeDeviceInformationCustomPairingWinrt
       EventRegistrationToken* token) override;
   IFACEMETHODIMP remove_PairingRequested(EventRegistrationToken token) override;
 
+  void AcceptWithPin(std::string pin);
+  void Complete();
+
  private:
+  Microsoft::WRL::ComPtr<FakeDeviceInformationPairingWinrt> pairing_;
+  std::string pin_;
+  std::string accepted_pin_;
+
+  base::OnceCallback<void(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Devices::Enumeration::IDevicePairingResult>)>
+      pair_callback_;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Enumeration::DeviceInformationCustomPairing*,
+      ABI::Windows::Devices::Enumeration::DevicePairingRequestedEventArgs*>>
+      pairing_requested_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceInformationCustomPairingWinrt);
 };
 

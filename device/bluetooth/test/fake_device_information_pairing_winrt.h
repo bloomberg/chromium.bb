@@ -9,6 +9,8 @@
 #include <wrl/client.h>
 #include <wrl/implements.h>
 
+#include <string>
+
 #include "base/macros.h"
 
 namespace device {
@@ -21,6 +23,7 @@ class FakeDeviceInformationPairingWinrt
           ABI::Windows::Devices::Enumeration::IDeviceInformationPairing2> {
  public:
   explicit FakeDeviceInformationPairingWinrt(bool is_paired);
+  explicit FakeDeviceInformationPairingWinrt(std::string pin);
   ~FakeDeviceInformationPairingWinrt() override;
 
   // IDeviceInformationPairing:
@@ -57,8 +60,13 @@ class FakeDeviceInformationPairingWinrt
           ABI::Windows::Devices::Enumeration::DeviceUnpairingResult*>** result)
       override;
 
+  void set_paired(bool is_paired) { is_paired_ = is_paired; }
+
  private:
   bool is_paired_ = false;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Devices::Enumeration::IDeviceInformationCustomPairing>
+      custom_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceInformationPairingWinrt);
 };

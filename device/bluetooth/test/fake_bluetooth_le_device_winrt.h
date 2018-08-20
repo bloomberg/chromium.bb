@@ -115,6 +115,7 @@ class FakeBluetoothLEDeviceWinrt
   IFACEMETHODIMP Close() override;
 
   void SimulateDevicePaired(bool is_paired);
+  void SimulatePairingPinCode(std::string pin_code);
   void SimulateGattConnection();
   void SimulateGattConnectionError(
       BluetoothDevice::ConnectErrorCode error_code);

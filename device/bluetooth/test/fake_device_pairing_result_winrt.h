@@ -18,7 +18,8 @@ class FakeDevicePairingResultWinrt
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::Devices::Enumeration::IDevicePairingResult> {
  public:
-  FakeDevicePairingResultWinrt();
+  explicit FakeDevicePairingResultWinrt(
+      ABI::Windows::Devices::Enumeration::DevicePairingResultStatus status);
   ~FakeDevicePairingResultWinrt() override;
 
   // IDevicePairingResult:
@@ -30,6 +31,8 @@ class FakeDevicePairingResultWinrt
       override;
 
  private:
+  ABI::Windows::Devices::Enumeration::DevicePairingResultStatus status_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeDevicePairingResultWinrt);
 };
 

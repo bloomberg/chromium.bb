@@ -250,6 +250,8 @@ component("bluetooth") {
       "bluetooth_device_winrt.h",
       "bluetooth_gatt_discoverer_winrt.cc",
       "bluetooth_gatt_discoverer_winrt.h",
+      "bluetooth_pairing_winrt.cc",
+      "bluetooth_pairing_winrt.h",
       "bluetooth_remote_gatt_characteristic_winrt.cc",
       "bluetooth_remote_gatt_characteristic_winrt.h",
       "bluetooth_remote_gatt_descriptor_winrt.cc",
