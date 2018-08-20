@@ -18,6 +18,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/notifications/metrics/mock_notification_metrics_logger.h"
 #include "chrome/browser/notifications/metrics/notification_metrics_logger_factory.h"
+#include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/common/chrome_features.h"
@@ -203,24 +204,36 @@ TEST_F(PlatformNotificationServiceTest, OnPersistentNotificationClick) {
   profile_.SetNotificationPermissionStatus(
       blink::mojom::PermissionStatus::DENIED);
 
-  service()->OnPersistentNotificationClick(
-      &profile_, "jskdcjdslkcjlds", GURL("https://example.com/"), base::nullopt,
-      base::nullopt, base::DoNothing());
+  NotificationHandler* handler =
+      NotificationDisplayServiceImpl::GetForProfile(&profile_)
+          ->GetNotificationHandler(NotificationHandler::Type::WEB_PERSISTENT);
+
+  handler->OnClick(&profile_, GURL("https://example.com/"),
+                   "fake_notification_id", base::nullopt /* action_index */,
+                   base::nullopt /* reply */, base::DoNothing());
 }
 
 TEST_F(PlatformNotificationServiceTest, OnPersistentNotificationClosedByUser) {
   EXPECT_CALL(*mock_logger_, LogPersistentNotificationClosedByUser());
-  service()->OnPersistentNotificationClose(
-      &profile_, "some_random_id_123", GURL("https://example.com/"),
-      true /* by_user */, base::DoNothing());
+  NotificationHandler* handler =
+      NotificationDisplayServiceImpl::GetForProfile(&profile_)
+          ->GetNotificationHandler(NotificationHandler::Type::WEB_PERSISTENT);
+
+  handler->OnClose(&profile_, GURL("https://example.com/"),
+                   "fake_notification_id", true /* by_user */,
+                   base::DoNothing());
 }
 
 TEST_F(PlatformNotificationServiceTest,
        OnPersistentNotificationClosedProgrammatically) {
   EXPECT_CALL(*mock_logger_, LogPersistentNotificationClosedProgrammatically());
-  service()->OnPersistentNotificationClose(
-      &profile_, "some_random_id_738", GURL("https://example.com/"),
-      false /* by_user */, base::DoNothing());
+  NotificationHandler* handler =
+      NotificationDisplayServiceImpl::GetForProfile(&profile_)
+          ->GetNotificationHandler(NotificationHandler::Type::WEB_PERSISTENT);
+
+  handler->OnClose(&profile_, GURL("https://example.com/"),
+                   "fake_notification_id", false /* by_user */,
+                   base::DoNothing());
 }
 
 TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
@@ -468,8 +481,7 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   GURL origin("https://chrome.com/");
 
   Notification notification = service()->CreateNotificationFromData(
-      &profile_, origin, "id", notification_data, NotificationResources(),
-      nullptr /* delegate */);
+      &profile_, origin, "id", notification_data, NotificationResources());
   EXPECT_TRUE(notification.context_message().empty());
 
   // Create a mocked extension.
@@ -491,7 +503,7 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   notification = service()->CreateNotificationFromData(
       &profile_,
       GURL("chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"),
-      "id", notification_data, NotificationResources(), nullptr /* delegate */);
+      "id", notification_data, NotificationResources());
   EXPECT_EQ("NotificationTest",
             base::UTF16ToUTF8(notification.context_message()));
 }

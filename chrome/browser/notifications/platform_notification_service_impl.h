@@ -7,17 +7,12 @@
 
 #include <stdint.h>
 
-#include <map>
-#include <memory>
-#include <set>
 #include <string>
 #include <unordered_set>
 
-#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -26,21 +21,15 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "content/public/browser/platform_notification_service.h"
-#include "content/public/common/persistent_notification_status.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "ui/message_center/public/cpp/notification.h"
 
-class NotificationDelegate;
-class ScopedKeepAlive;
+class GURL;
+class Profile;
 
 namespace content {
 class BrowserContext;
 struct NotificationResources;
-}
-
-namespace gcm {
-class PushMessagingBrowserTest;
-}
+}  // namespace content
 
 // The platform notification service is the profile-agnostic entry point through
 // which Web Notifications can be controlled.
@@ -54,26 +43,9 @@ class PlatformNotificationServiceImpl
   // be called from any thread.
   static PlatformNotificationServiceImpl* GetInstance();
 
-  // To be called when a persistent notification has been clicked on. The
-  // Service Worker associated with the registration will be started if
-  // needed, on which the event will be fired. Must be called on the UI thread.
-  void OnPersistentNotificationClick(
-      content::BrowserContext* browser_context,
-      const std::string& notification_id,
-      const GURL& origin,
-      const base::Optional<int>& action_index,
-      const base::Optional<base::string16>& reply,
-      base::OnceClosure completed_closure);
-
-  // To be called when a persistent notification has been closed. The data
-  // associated with the notification has to be pruned from the database in this
-  // case, to make sure that it continues to be in sync. Must be called on the
-  // UI thread.
-  void OnPersistentNotificationClose(content::BrowserContext* browser_context,
-                                     const std::string& notification_id,
-                                     const GURL& origin,
-                                     bool by_user,
-                                     base::OnceClosure completed_closure);
+  // Returns whether the notification identified by |notification_id| was
+  // closed programmatically through ClosePersistentNotification().
+  bool WasClosedProgrammatically(const std::string& notification_id);
 
   // content::PlatformNotificationService implementation.
   void DisplayNotification(
@@ -122,12 +94,6 @@ class PlatformNotificationServiceImpl
   PlatformNotificationServiceImpl();
   ~PlatformNotificationServiceImpl() override;
 
-  void OnClickEventDispatchComplete(
-      base::OnceClosure completed_closure,
-      content::PersistentNotificationStatus status);
-  void OnCloseEventDispatchComplete(
-      base::OnceClosure completed_closure,
-      content::PersistentNotificationStatus status);
   void OnUrlHistoryQueryComplete(const content::NotificationDatabaseData& data,
                                  bool found_url,
                                  const history::URLRow& url_row,
@@ -135,32 +101,16 @@ class PlatformNotificationServiceImpl
 
   // Creates a new Web Notification-based Notification object. Should only be
   // called when the notification is first shown.
-  // TODO(peter): |delegate| can be a scoped_refptr, but properly passing this
-  // through requires changing a whole lot of Notification constructor calls.
   message_center::Notification CreateNotificationFromData(
       Profile* profile,
       const GURL& origin,
       const std::string& notification_id,
       const content::PlatformNotificationData& notification_data,
-      const content::NotificationResources& notification_resources,
-      scoped_refptr<message_center::NotificationDelegate> delegate) const;
+      const content::NotificationResources& notification_resources) const;
 
   // Returns a display name for an origin, to be used in the context message
   base::string16 DisplayNameForContextMessage(Profile* profile,
                                               const GURL& origin) const;
-
-  void RecordSiteEngagement(content::BrowserContext* browser_context,
-                            const GURL& origin);
-
-#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
-  // Makes sure we keep the browser alive while the event in being processed.
-  // As we have no control on the click handling, the notification could be
-  // closed before a browser is brought up, thus terminating Chrome if it was
-  // the last KeepAlive. (see https://crbug.com/612815)
-  std::unique_ptr<ScopedKeepAlive> click_dispatch_keep_alive_;
-
-  int pending_click_dispatch_events_;
-#endif
 
   // Tracks the id of persistent notifications that have been closed
   // programmatically to avoid dispatching close events for them.
