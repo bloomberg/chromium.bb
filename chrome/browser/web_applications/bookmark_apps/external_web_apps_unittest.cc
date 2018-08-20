@@ -17,8 +17,8 @@ namespace {
 static constexpr char kWebAppDefaultApps[] = "web_app_default_apps";
 
 // Returns the chrome/test/data/web_app_default_apps/sub_dir directory that
-// holds the *.json data files from which ScanDirForExternalWebApps should
-// extract URLs from.
+// holds the *.json data files from which ScanDirForExternalWebAppsForTesting
+// should extract URLs from.
 static base::FilePath test_dir(const char* sub_dir) {
   base::FilePath dir;
   if (!base::PathService::Get(chrome::DIR_TEST_DATA, &dir)) {
@@ -35,7 +35,8 @@ using AppInfos = std::vector<web_app::PendingAppManager::AppInfo>;
 class ScanDirForExternalWebAppsTest : public testing::Test {};
 
 TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
-  auto app_infos = web_app::ScanDirForExternalWebApps(test_dir("good_json"));
+  auto app_infos =
+      web_app::ScanDirForExternalWebAppsForTesting(test_dir("good_json"));
 
   // The good_json directory contains two good JSON files:
   // chrome_platform_status.json and google_io_2016.json.
@@ -55,7 +56,8 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, BadJson) {
-  auto app_infos = web_app::ScanDirForExternalWebApps(test_dir("bad_json"));
+  auto app_infos =
+      web_app::ScanDirForExternalWebAppsForTesting(test_dir("bad_json"));
 
   // The bad_json directory contains one (malformed) JSON file.
   EXPECT_EQ(0u, app_infos.size());
@@ -63,7 +65,7 @@ TEST_F(ScanDirForExternalWebAppsTest, BadJson) {
 
 TEST_F(ScanDirForExternalWebAppsTest, TxtButNoJson) {
   auto app_infos =
-      web_app::ScanDirForExternalWebApps(test_dir("txt_but_no_json"));
+      web_app::ScanDirForExternalWebAppsForTesting(test_dir("txt_but_no_json"));
 
   // The txt_but_no_json directory contains one file, and the contents of that
   // file is valid JSON, but that file's name does not end with ".json".
@@ -71,11 +73,12 @@ TEST_F(ScanDirForExternalWebAppsTest, TxtButNoJson) {
 }
 
 TEST_F(ScanDirForExternalWebAppsTest, MixedJson) {
-  auto app_infos = web_app::ScanDirForExternalWebApps(test_dir("mixed_json"));
+  auto app_infos =
+      web_app::ScanDirForExternalWebAppsForTesting(test_dir("mixed_json"));
 
   // The mixed_json directory contains one empty JSON file, one malformed JSON
-  // file and one good JSON file. ScanDirForExternalWebApps should still pick
-  // up that one good JSON file: polytimer.json.
+  // file and one good JSON file. ScanDirForExternalWebAppsForTesting should
+  // still pick up that one good JSON file: polytimer.json.
   EXPECT_EQ(1u, app_infos.size());
   if (app_infos.size() == 1) {
     EXPECT_EQ(app_infos[0].url.spec(),

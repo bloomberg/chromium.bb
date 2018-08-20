@@ -42,8 +42,7 @@ class WebAppProvider : public KeyedService {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  void ScanForExternalWebApps();
-  void ScanForExternalWebAppsCallback(
+  void OnScanForExternalWebApps(
       std::vector<web_app::PendingAppManager::AppInfo>);
 
   std::unique_ptr<PendingAppManager> pending_app_manager_;
