@@ -20,6 +20,12 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget_observer.h"
 
+#if defined(USE_AURA)
+namespace aura {
+class Env;
+}
+#endif
+
 namespace ui {
 class EventHandler;
 class ListSelectionModel;
@@ -497,10 +503,11 @@ class TabDragController : public views::WidgetObserver,
 
   EventSource event_source_;
 
-  // The TabStrip the drag originated from.
+  // The TabStrip the drag originated from. This is set to null if destroyed
+  // during the drag.
   TabStrip* source_tabstrip_;
 
-  // The TabStrip the dragged Tab is currently attached to, or NULL if the
+  // The TabStrip the dragged Tab is currently attached to, or null if the
   // dragged Tab is detached.
   TabStrip* attached_tabstrip_;
 
@@ -646,6 +653,10 @@ class TabDragController : public views::WidgetObserver,
   std::unique_ptr<ui::EventHandler> escape_tracker_;
 
   std::unique_ptr<WindowFinder> window_finder_;
+
+#if defined(USE_AURA)
+  aura::Env* env_ = nullptr;
+#endif
 
   base::WeakPtrFactory<TabDragController> weak_factory_;
 

@@ -432,6 +432,10 @@ void TabDragController::Init(TabStrip* source_tabstrip,
   if (event_source == EVENT_SOURCE_TOUCH)
     source_tabstrip_->GetWidget()->SetCapture(source_tabstrip_);
 
+#if defined(USE_AURA)
+  env_ = source_tabstrip_->GetWidget()->GetNativeWindow()->env();
+#endif
+
 #if defined(OS_CHROMEOS)
   if (TabletModeClient::Get()->tablet_mode_enabled() &&
       !base::FeatureList::IsEnabled(ash::features::kDragTabsInTabletMode)) {
@@ -2003,8 +2007,7 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
   // recognizer in mash until the mus side/window manager side RunMoveLoop() is
   // fixed to understand routing touch events. crbug.com/769507
   if (features::IsAshInBrowserProcess() &&
-      event_source_ == EVENT_SOURCE_TOUCH &&
-      aura::Env::GetInstance()->is_touch_down()) {
+      event_source_ == EVENT_SOURCE_TOUCH && env_->is_touch_down()) {
     views::Widget* widget = GetAttachedBrowserWidget();
     DCHECK(widget);
     aura::Window* widget_window = widget->GetNativeWindow();
