@@ -56,7 +56,7 @@ MountError PerformFakeMount(const std::string& source_path,
 
 FakeCrosDisksClient::FakeCrosDisksClient()
     : unmount_call_count_(0),
-      unmount_success_(true),
+      unmount_error_(MOUNT_ERROR_NONE),
       format_call_count_(0),
       format_success_(true),
       rename_call_count_(0),
@@ -144,7 +144,7 @@ void FakeCrosDisksClient::DidMount(const std::string& source_path,
 
 void FakeCrosDisksClient::Unmount(const std::string& device_path,
                                   UnmountOptions options,
-                                  VoidDBusMethodCallback callback) {
+                                  UnmountCallback callback) {
   DCHECK(!callback.is_null());
 
   unmount_call_count_++;
@@ -160,10 +160,10 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
         base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                        base::FilePath::FromUTF8Unsafe(device_path),
                        true /* recursive */),
-        base::BindOnce(std::move(callback), unmount_success_));
+        base::BindOnce(std::move(callback), unmount_error_));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), unmount_success_));
+        FROM_HERE, base::BindOnce(std::move(callback), unmount_error_));
   }
   if (!unmount_listener_.is_null())
     unmount_listener_.Run();
