@@ -77,13 +77,6 @@ class IOSTranslateDriver : public TranslateDriver,
                              int page_seq_no,
                              const std::string& original_page_language,
                              double translation_time);
-  // Checks if the current running page translation is finished or errored and
-  // notifies the browser accordingly.  If the translation has not terminated,
-  // posts a task to check again later.
-  // Similar to TranslateHelper::CheckTranslateStatus on desktop.
-  void CheckTranslateStatus(const std::string& source_language,
-                            const std::string& target_language,
-                            int page_seq_no);
 
   // Returns true if the user has not navigated away and the the page is not
   // being destroyed.

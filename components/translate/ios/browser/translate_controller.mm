@@ -50,7 +50,6 @@ void TranslateController::InjectTranslateScript(
     const std::string& translate_script) {
   [js_manager_ setScript:base::SysUTF8ToNSString(translate_script)];
   [js_manager_ inject];
-  [js_manager_ injectWaitUntilTranslateReadyScript];
 }
 
 void TranslateController::RevertTranslation() {
@@ -60,10 +59,6 @@ void TranslateController::RevertTranslation() {
 void TranslateController::StartTranslation(const std::string& source_language,
                                            const std::string& target_language) {
   [js_manager_ startTranslationFrom:source_language to:target_language];
-}
-
-void TranslateController::CheckTranslateStatus() {
-  [js_manager_ injectTranslateStatusScript];
 }
 
 void TranslateController::SetJsTranslateManagerForTesting(
