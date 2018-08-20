@@ -18,8 +18,6 @@ namespace content {
 
 namespace {
 
-const int kMaxDebugLogSize = 256;
-
 using StatusCallback = base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
 using PrepareExtendableMessageEventCallback =
     base::OnceCallback<bool(mojom::ExtendableMessageEventPtr*)>;
@@ -192,37 +190,19 @@ ServiceWorkerObjectHost::ServiceWorkerObjectHost(
     : context_(context),
       provider_host_(provider_host),
       provider_origin_(url::Origin::Create(provider_host->document_url())),
-      provider_type_(provider_host->provider_type()),
       version_(std::move(version)),
       weak_ptr_factory_(this) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context_ && provider_host_ && version_);
   DCHECK(context_->GetLiveRegistration(version_->registration_id()));
   version_->AddObserver(this);
-  AddToDebugLog(base::StringPrintf("ObjCtor:prov=%p,type=%d,this=%p",
-                                   provider_host_, provider_type_, this));
   bindings_.set_connection_error_handler(base::BindRepeating(
       &ServiceWorkerObjectHost::OnConnectionError, base::Unretained(this)));
 }
 
 ServiceWorkerObjectHost::~ServiceWorkerObjectHost() {
-  // TODO(crbug.com/838410): These CHECKs are temporary debugging for the linked
-  // bug.
-  AddToDebugLog(base::StringPrintf("ObjDtor:prov=%p,type=%d,this=%p",
-                                   provider_host_, provider_type_, this));
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (in_dtor_) {
-    CrashOnDoubleDelete();
-    return;
-  }
-  in_dtor_ = true;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   version_->RemoveObserver(this);
-}
-
-void ServiceWorkerObjectHost::CrashOnDoubleDelete() {
-  std::string log = ServiceWorkerObjectHost::GetDebugLogString();
-  DEBUG_ALIAS_FOR_CSTR(debug_log, log.c_str(), 2048);
-  CHECK(false);
 }
 
 void ServiceWorkerObjectHost::OnVersionStateChanged(
@@ -334,34 +314,7 @@ void ServiceWorkerObjectHost::OnConnectionError() {
   if (!bindings_.empty())
     return;
   // Will destroy |this|.
-  AddToDebugLog(base::StringPrintf("HostErr:this=%p", this));
   provider_host_->RemoveServiceWorkerObjectHost(version_->version_id());
-}
-
-// static
-ServiceWorkerObjectHost::DebugLog*
-ServiceWorkerObjectHost::GetDebugLogInstance() {
-  static base::NoDestructor<DebugLog> g_log;
-  return g_log.get();
-}
-
-// static
-void ServiceWorkerObjectHost::AddToDebugLog(const std::string& event) {
-  DebugLog* log = GetDebugLogInstance();
-  log->push_back(event);
-  if (log->size() > kMaxDebugLogSize)
-    log->pop_front();
-}
-
-// static
-std::string ServiceWorkerObjectHost::GetDebugLogString() {
-  DebugLog* log = GetDebugLogInstance();
-  std::string result;
-  // Traverse from the end so if the string gets truncated we still
-  // have the most recent events.
-  for (auto iter = log->rbegin(); iter != log->rend(); ++iter)
-    result += *iter + "\n";
-  return result;
 }
 
 }  // namespace content
