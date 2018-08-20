@@ -159,18 +159,16 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // or return false on failure.
   bool InitializeFBConfig();
 
-  // Callback to be executed once we have a |va_surface| to be output and
-  // an available |picture| to use for output.
-  // Puts contents of |va_surface| into given |picture|, releases the surface
-  // and passes the resulting picture to client to output the given
-  // |visible_rect| part of it.
+  // Callback to be executed once we have a |va_surface| to be output and an
+  // available VaapiPicture in |available_picture_buffers_| for output. Puts
+  // contents of |va_surface| into the latter, releases the surface and passes
+  // the resulting picture to |client_| along with |visible_rect|.
   void OutputPicture(const scoped_refptr<VASurface>& va_surface,
                      int32_t input_id,
-                     gfx::Rect visible_rect,
-                     VaapiPicture* picture);
+                     gfx::Rect visible_rect);
 
   // Try to OutputPicture() if we have both a ready surface and picture.
-  void TryOutputSurface();
+  void TryOutputPicture();
 
   // Called when a VASurface is no longer in use by the decoder or is not being
   // synced/waiting to be synced to a picture. Returns it to available surfaces
@@ -198,12 +196,13 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
     kDestroying,
   };
 
-  // Protects input buffer and surface queues and state_.
+  // |lock_| protects |input_buffers_|, |curr_input_buffer_|, |state_| and
+  // |available_picture_buffers_|.
   base::Lock lock_;
   State state_;
   Config::OutputMode output_mode_;
 
-  // Queue of available InputBuffers (picture_buffer_ids).
+  // Queue of available InputBuffers.
   base::queue<std::unique_ptr<InputBuffer>> input_buffers_;
   // Signalled when input buffers are queued onto |input_buffers_| queue.
   base::ConditionVariable input_ready_;
@@ -211,9 +210,9 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // Current input buffer at decoder.
   std::unique_ptr<InputBuffer> curr_input_buffer_;
 
-  // Queue for incoming output buffers (texture ids).
-  using OutputBuffers = base::queue<int32_t>;
-  OutputBuffers output_buffers_;
+  // List of PictureBuffer ids available to be sent to |client_| via
+  // OutputPicture() (|client_| returns them via ReusePictureBuffer()).
+  std::list<int32_t> available_picture_buffers_;
 
   std::unique_ptr<VaapiPictureFactory> vaapi_picture_factory_;
 
@@ -227,11 +226,10 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // pictures are destroyed before this is destroyed.
   base::small_map<std::map<int32_t, std::unique_ptr<VaapiPicture>>> pictures_;
 
-  // VA Surfaces no longer in use that can be passed back to the decoder for
+  // VASurfaceIDs no longer in use that can be passed back to |decoder_| for
   // reuse, once it requests them.
   std::list<VASurfaceID> available_va_surfaces_;
-  // Signalled when output surfaces are queued onto the available_va_surfaces_
-  // queue.
+  // Signalled when output surfaces are queued into |available_va_surfaces_|.
   base::ConditionVariable surfaces_available_;
 
   // Pending output requests from the decoder. When it indicates that we should
@@ -240,11 +238,13 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // will put the contents of the surface into the picture and return it to
   // the client, releasing the surface as well.
   // If we don't have any available |pictures_| at the time when the decoder
-  // requests output, we'll store the request on pending_output_cbs_ queue for
-  // later and run it once the client gives us more textures
-  // via ReusePictureBuffer().
-  using OutputCB = base::Callback<void(VaapiPicture*)>;
-  base::queue<OutputCB> pending_output_cbs_;
+  // requests output, we'll store the request in this queue for later and run it
+  // once the client gives us more textures via ReusePictureBuffer().
+  base::queue<base::OnceClosure> pending_output_cbs_;
+
+  // Under some circumstances, we can pass to libva our own VASurfaceIDs to
+  // decode onto, which skips one copy.
+  bool decode_using_client_picture_buffers_;
 
   // ChildThread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
