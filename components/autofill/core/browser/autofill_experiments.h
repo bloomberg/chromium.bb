@@ -22,6 +22,8 @@ class SyncService;
 
 namespace autofill {
 
+// Boolean Features
+
 extern const base::Feature kAutofillAlwaysFillAddresses;
 extern const base::Feature kAutofillCreateDataForTest;
 extern const base::Feature kAutofillCreditCardAssist;
@@ -56,6 +58,15 @@ extern const char
 #if defined(OS_MACOSX)
 extern const base::Feature kMacViewsAutofillPopup;
 #endif  // defined(OS_MACOSX)
+
+// Parameterized Features (grouped with parameter name and options)
+
+#if !defined(OS_ANDROID)
+extern const base::Feature kAutofillDropdownLayoutExperiment;
+extern const char kAutofillDropdownLayoutParameterName[];
+extern const char kAutofillDropdownLayoutParameterLeadingIcon[];
+extern const char kAutofillDropdownLayoutParameterTrailingIcon[];
+#endif  // !defined(OS_ANDROID)
 
 // Returns true if autofill suggestions are disabled via experiment. The
 // disabled experiment isn't the same as disabling autofill completely since we
@@ -138,6 +149,20 @@ bool ShouldUseNativeViews();
 // Returns true if expiration dates on the save card dialog should be
 // unlabeled, i.e. not preceded by "Exp."
 bool IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled();
+
+#if !defined(OS_ANDROID)
+enum class ForcedPopupLayoutState {
+  kDefault,       // No popup layout forced by experiment.
+  kLeadingIcon,   // Experiment forces leading (left in LTR) icon layout.
+  kTrailingIcon,  // Experiment forces trailing (right in LTR) icon layout.
+};
+
+// Returns kDefault if no experimental behavior is enabled for
+// kAutofillDropdownLayoutExperiment; returns kLeftIcon or kRightIcon
+// if the experiment param matches kAutofillDropdownLayoutParameterLeadingIcon
+// or kAutofillDropdownLayoutParameterTrailingIcon, respectively.
+ForcedPopupLayoutState GetForcedPopupLayoutState();
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace autofill
 
