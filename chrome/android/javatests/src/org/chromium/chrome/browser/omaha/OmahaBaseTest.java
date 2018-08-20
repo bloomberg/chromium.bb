@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.omaha;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.IntDef;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -29,8 +28,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -75,8 +72,7 @@ public class OmahaBaseTest {
         private TimestampPair mTimestampsOnRegisterNewRequest;
         private TimestampPair mTimestampsOnSaveState;
 
-        MockOmahaDelegate(
-                Context context, DeviceType deviceType, @InstallSource int installSource) {
+        MockOmahaDelegate(Context context, DeviceType deviceType, InstallSource installSource) {
             mContext = context;
             mIsOnTablet = deviceType == DeviceType.TABLET;
             mIsInForeground = true;
@@ -147,40 +143,11 @@ public class OmahaBaseTest {
         }
     }
 
-    @IntDef({InstallSource.SYSTEM_IMAGE, InstallSource.ORGANIC})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface InstallSource {
-        int SYSTEM_IMAGE = 0;
-        int ORGANIC = 1;
-    }
-
-    @IntDef({ServerResponse.SUCCESS, ServerResponse.FAILURE})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ServerResponse {
-        int SUCCESS = 0;
-        int FAILURE = 1;
-    }
-
-    @IntDef({ConnectionStatus.RESPONDS, ConnectionStatus.TIMES_OUT})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ConnectionStatus {
-        int RESPONDS = 0;
-        int TIMES_OUT = 1;
-    }
-
-    @IntDef({InstallEvent.SEND, InstallEvent.DONT_SEND})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface InstallEvent {
-        int SEND = 0;
-        int DONT_SEND = 1;
-    }
-
-    @IntDef({PostStatus.DUE, PostStatus.NOT_DUE})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface PostStatus {
-        int DUE = 0;
-        int NOT_DUE = 1;
-    }
+    private enum InstallSource { SYSTEM_IMAGE, ORGANIC }
+    private enum ServerResponse { SUCCESS, FAILURE }
+    private enum ConnectionStatus { RESPONDS, TIMES_OUT }
+    private enum InstallEvent { SEND, DONT_SEND }
+    private enum PostStatus { DUE, NOT_DUE }
 
     private AdvancedMockContext mContext;
     private MockOmahaDelegate mDelegate;
@@ -192,7 +159,7 @@ public class OmahaBaseTest {
     }
 
     private MockOmahaBase createOmahaBase(
-            @ServerResponse int response, @ConnectionStatus int status, DeviceType deviceType) {
+            ServerResponse response, ConnectionStatus status, DeviceType deviceType) {
         MockOmahaBase omahaClient = new MockOmahaBase(mDelegate, response, status, deviceType);
         return omahaClient;
     }
@@ -216,8 +183,8 @@ public class OmahaBaseTest {
         private final boolean mConnectionTimesOut;
         private final boolean mIsOnTablet;
 
-        public MockOmahaBase(OmahaDelegate delegate, @ServerResponse int serverResponse,
-                @ConnectionStatus int connectionStatus, DeviceType deviceType) {
+        public MockOmahaBase(OmahaDelegate delegate, ServerResponse serverResponse,
+                ConnectionStatus connectionStatus, DeviceType deviceType) {
             super(delegate);
             mSendValidResponse = serverResponse == ServerResponse.SUCCESS;
             mConnectionTimesOut = connectionStatus == ConnectionStatus.TIMES_OUT;
@@ -621,9 +588,9 @@ public class OmahaBaseTest {
             mConnectionTimesOut = connectionTimesOut;
 
             if (sendValidResponse) {
-                mHTTPResponseCode = HttpURLConnection.HTTP_OK; // 200
+                mHTTPResponseCode = 200;
             } else {
-                mHTTPResponseCode = HttpURLConnection.HTTP_NOT_FOUND; // 404
+                mHTTPResponseCode = 404;
             }
         }
 

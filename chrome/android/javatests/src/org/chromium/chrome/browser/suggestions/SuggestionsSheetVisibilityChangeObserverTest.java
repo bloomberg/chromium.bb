@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.suggestions;
 import static org.junit.Assert.assertEquals;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+import static org.chromium.chrome.browser.suggestions.SuggestionsSheetVisibilityChangeObserverTest.TestVisibilityChangeObserver.Event.Hidden;
+import static org.chromium.chrome.browser.suggestions.SuggestionsSheetVisibilityChangeObserverTest.TestVisibilityChangeObserver.Event.InitialReveal;
+import static org.chromium.chrome.browser.suggestions.SuggestionsSheetVisibilityChangeObserverTest.TestVisibilityChangeObserver.Event.StateChange;
 
-import android.support.annotation.IntDef;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.action.ViewActions;
@@ -27,7 +29,6 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
-import org.chromium.chrome.browser.suggestions.SuggestionsSheetVisibilityChangeObserverTest.TestVisibilityChangeObserver.Event;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -35,8 +36,6 @@ import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsEventRe
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -76,16 +75,16 @@ public class SuggestionsSheetVisibilityChangeObserverTest {
     public void testHomeSheetVisibilityOnWebPage() {
         // Pull sheet to half. We use the animated variants to be closer to user triggered events.
         mActivityRule.setSheetState(BottomSheet.SheetState.HALF, true);
-        mObserver.expectEvents(Event.INITIAL_REVEAL, Event.STATE_CHANGE);
+        mObserver.expectEvents(InitialReveal, StateChange);
         mEventReporter.surfaceOpenedHelper.waitForCallback();
 
         // Pull sheet to full.
         mActivityRule.setSheetState(BottomSheet.SheetState.FULL, true);
-        mObserver.expectEvents(Event.STATE_CHANGE);
+        mObserver.expectEvents(StateChange);
 
         // close
         Espresso.pressBack();
-        mObserver.expectEvents(Event.HIDDEN, Event.STATE_CHANGE, Event.STATE_CHANGE);
+        mObserver.expectEvents(Hidden, StateChange, StateChange);
     }
 
     @Test
@@ -120,26 +119,19 @@ public class SuggestionsSheetVisibilityChangeObserverTest {
 
         // Changing the state of the sheet closes the omnibox suggestions and shows the home sheet.
         mActivityRule.setSheetState(BottomSheet.SheetState.HALF, true);
-        mObserver.expectEvents(Event.INITIAL_REVEAL, Event.STATE_CHANGE);
+        mObserver.expectEvents(InitialReveal, StateChange);
         mEventReporter.surfaceOpenedHelper.waitForCallback();
 
         // Back closes the bottom sheet.
         Espresso.pressBack();
-        mObserver.expectEvents(Event.HIDDEN, Event.STATE_CHANGE, Event.STATE_CHANGE);
+        mObserver.expectEvents(Hidden, StateChange, StateChange);
         assertEquals(BottomSheet.SheetState.PEEK, mActivityRule.getBottomSheet().getSheetState());
 
         mEventReporter.surfaceOpenedHelper.verifyCallCount();
     }
 
     static class TestVisibilityChangeObserver extends SuggestionsSheetVisibilityChangeObserver {
-        @IntDef({Event.INITIAL_REVEAL, Event.SHOWN, Event.HIDDEN, Event.STATE_CHANGE})
-        @Retention(RetentionPolicy.SOURCE)
-        public @interface Event {
-            int INITIAL_REVEAL = 0;
-            int SHOWN = 1;
-            int HIDDEN = 2;
-            int STATE_CHANGE = 3;
-        }
+        public enum Event { InitialReveal, Shown, Hidden, StateChange }
 
         private final ChromeActivity mActivity;
 
@@ -175,19 +167,19 @@ public class SuggestionsSheetVisibilityChangeObserverTest {
             mStateChangedHelper.notifyCalled();
         }
 
-        public void expectEvents(@Event int... events) {
-            for (@Event int e : events) {
+        public void expectEvents(Event... events) {
+            for (Event e : events) {
                 switch (e) {
-                    case Event.INITIAL_REVEAL:
+                    case InitialReveal:
                         mInitialRevealHelper.waitForCallback();
                         break;
-                    case Event.SHOWN:
+                    case Shown:
                         mShownHelper.waitForCallback();
                         break;
-                    case Event.HIDDEN:
+                    case Hidden:
                         mHiddenHelper.waitForCallback();
                         break;
-                    case Event.STATE_CHANGE:
+                    case StateChange:
                         mStateChangedHelper.waitForCallback();
                         break;
                 }
