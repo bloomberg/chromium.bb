@@ -145,6 +145,7 @@ jumbo_static_library("test_support") {
     "//extensions/browser:test_support",
     "//extensions/browser/api:api_registration",
     "//extensions/common",
+    "//extensions/common:core_api_provider",
     "//extensions/common/api",
     "//extensions/common/api:extensions_features",
     "//net:test_support",

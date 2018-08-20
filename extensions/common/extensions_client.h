@@ -24,6 +24,7 @@ namespace extensions {
 
 class APIPermissionSet;
 class Extension;
+class ExtensionsAPIProvider;
 class FeatureProvider;
 class JSONFeatureProviderSource;
 class PermissionMessageProvider;
@@ -35,7 +36,34 @@ class ExtensionsClient {
  public:
   typedef std::vector<std::string> ScriptingWhitelist;
 
-  virtual ~ExtensionsClient() {}
+  // Return the extensions client.
+  static ExtensionsClient* Get();
+
+  // Initialize the extensions system with this extensions client.
+  static void Set(ExtensionsClient* client);
+
+  ExtensionsClient();
+  virtual ~ExtensionsClient();
+
+  // Create a FeatureProvider for a specific feature type, e.g. "permission".
+  std::unique_ptr<FeatureProvider> CreateFeatureProvider(
+      const std::string& name) const;
+
+  // Returns the dictionary of the API features json file.
+  // TODO(devlin): We should find a way to remove this.
+  std::unique_ptr<JSONFeatureProviderSource> CreateAPIFeatureSource() const;
+
+  // Returns true iff a schema named |name| is generated.
+  bool IsAPISchemaGenerated(const std::string& name) const;
+
+  // Gets the generated API schema named |name|.
+  base::StringPiece GetAPISchema(const std::string& name) const;
+
+  // Adds a new API provider.
+  void AddAPIProvider(std::unique_ptr<ExtensionsAPIProvider> provider);
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Virtual Functions:
 
   // Initializes global state. Not done in the constructor because unit tests
   // can create additional ExtensionsClients because the utility thread runs
@@ -53,15 +81,6 @@ class ExtensionsClient {
 
   // Returns the application name. For example, "Chromium" or "app_shell".
   virtual const std::string GetProductName() = 0;
-
-  // Create a FeatureProvider for a specific feature type, e.g. "permission".
-  virtual std::unique_ptr<FeatureProvider> CreateFeatureProvider(
-      const std::string& name) const = 0;
-
-  // Returns the dictionary of the API features json file.
-  // TODO(devlin): We should find a way to remove this.
-  virtual std::unique_ptr<JSONFeatureProviderSource> CreateAPIFeatureSource()
-      const = 0;
 
   // Takes the list of all hosts and filters out those with special
   // permission strings. Adds the regular hosts to |new_hosts|,
@@ -88,12 +107,6 @@ class ExtensionsClient {
 
   // Returns false if content scripts are forbidden from running on |url|.
   virtual bool IsScriptableURL(const GURL& url, std::string* error) const = 0;
-
-  // Returns true iff a schema named |name| is generated.
-  virtual bool IsAPISchemaGenerated(const std::string& name) const = 0;
-
-  // Gets the generated API schema named |name|.
-  virtual base::StringPiece GetAPISchema(const std::string& name) const = 0;
 
   // Determines if certain fatal extensions errors should be surpressed
   // (i.e., only logged) or allowed (i.e., logged before crashing).
@@ -137,11 +150,10 @@ class ExtensionsClient {
   // Returns the user agent used by the content module.
   virtual std::string GetUserAgent() const;
 
-  // Return the extensions client.
-  static ExtensionsClient* Get();
+ private:
+  std::vector<std::unique_ptr<ExtensionsAPIProvider>> api_providers_;
 
-  // Initialize the extensions system with this extensions client.
-  static void Set(ExtensionsClient* client);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionsClient);
 };
 
 }  // namespace extensions
