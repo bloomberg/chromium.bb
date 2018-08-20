@@ -11,16 +11,10 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
-#include "extensions/common/api/api_features.h"
-#include "extensions/common/api/behavior_features.h"
-#include "extensions/common/api/generated_schemas.h"
-#include "extensions/common/api/manifest_features.h"
-#include "extensions/common/api/permission_features.h"
 #include "extensions/common/common_manifest_handlers.h"
+#include "extensions/common/core_extensions_api_provider.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_aliases.h"
-#include "extensions/common/features/feature_provider.h"
-#include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/extensions_api_permissions.h"
 #include "extensions/common/permissions/permissions_info.h"
@@ -32,7 +26,9 @@ namespace extensions {
 
 TestExtensionsClient::TestExtensionsClient()
     : webstore_base_url_(extension_urls::kChromeWebstoreBaseURL),
-      webstore_update_url_(extension_urls::kChromeWebstoreUpdateURL) {}
+      webstore_update_url_(extension_urls::kChromeWebstoreUpdateURL) {
+  AddAPIProvider(std::make_unique<CoreExtensionsAPIProvider>());
+}
 
 TestExtensionsClient::~TestExtensionsClient() {
 }
@@ -81,31 +77,6 @@ const std::string TestExtensionsClient::GetProductName() {
   return "extensions_test";
 }
 
-std::unique_ptr<FeatureProvider> TestExtensionsClient::CreateFeatureProvider(
-    const std::string& name) const {
-  auto provider = std::make_unique<FeatureProvider>();
-  if (name == "api") {
-    AddCoreAPIFeatures(provider.get());
-  } else if (name == "manifest") {
-    AddCoreManifestFeatures(provider.get());
-  } else if (name == "permission") {
-    AddCorePermissionFeatures(provider.get());
-  } else if (name == "behavior") {
-    AddCoreBehaviorFeatures(provider.get());
-  } else {
-    NOTREACHED();
-  }
-  return provider;
-}
-
-std::unique_ptr<JSONFeatureProviderSource>
-TestExtensionsClient::CreateAPIFeatureSource() const {
-  std::unique_ptr<JSONFeatureProviderSource> source(
-      new JSONFeatureProviderSource("api"));
-  source->LoadJSON(IDR_EXTENSION_API_FEATURES);
-  return source;
-}
-
 void TestExtensionsClient::FilterHostPermissions(
     const URLPatternSet& hosts,
     URLPatternSet* new_hosts,
@@ -132,16 +103,6 @@ URLPatternSet TestExtensionsClient::GetPermittedChromeSchemeHosts(
 bool TestExtensionsClient::IsScriptableURL(const GURL& url,
                                            std::string* error) const {
   return true;
-}
-
-bool TestExtensionsClient::IsAPISchemaGenerated(
-    const std::string& name) const {
-  return api::GeneratedSchemas::IsGenerated(name);
-}
-
-base::StringPiece TestExtensionsClient::GetAPISchema(
-    const std::string& name) const {
-  return api::GeneratedSchemas::Get(name);
 }
 
 bool TestExtensionsClient::ShouldSuppressFatalErrors() const {

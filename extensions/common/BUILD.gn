@@ -356,6 +356,21 @@ if (enable_extensions) {
     }
   }
 
+  # NOTE: This is separate from ":common" because it depends on
+  # extensions/common/api:extensions_features, which in turn depends on
+  # :common.
+  source_set("core_api_provider") {
+    sources = [
+      "core_extensions_api_provider.cc",
+      "core_extensions_api_provider.h",
+    ]
+
+    deps = [
+      ":common",
+      "//extensions/common/api:extensions_features",
+    ]
+  }
+
   source_set("test_support") {
     testonly = true
 

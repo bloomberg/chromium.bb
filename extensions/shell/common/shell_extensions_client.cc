@@ -12,26 +12,17 @@
 #include "base/macros.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/user_agent.h"
-#include "extensions/common/api/api_features.h"
-#include "extensions/common/api/behavior_features.h"
-#include "extensions/common/api/generated_schemas.h"
-#include "extensions/common/api/manifest_features.h"
-#include "extensions/common/api/permission_features.h"
 #include "extensions/common/common_manifest_handlers.h"
+#include "extensions/common/core_extensions_api_provider.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_aliases.h"
-#include "extensions/common/features/feature_provider.h"
-#include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/permissions_provider.h"
 #include "extensions/common/url_pattern_set.h"
-#include "extensions/grit/extensions_resources.h"
-#include "extensions/shell/common/api/generated_schemas.h"
-#include "extensions/shell/common/api/shell_api_features.h"
-#include "extensions/shell/grit/app_shell_resources.h"
+#include "extensions/shell/common/shell_extensions_api_provider.h"
 
 namespace extensions {
 
@@ -76,7 +67,10 @@ base::LazyInstance<ShellPermissionMessageProvider>::DestructorAtExit
 ShellExtensionsClient::ShellExtensionsClient()
     : extensions_api_permissions_(ExtensionsAPIPermissions()),
       webstore_base_url_(extension_urls::kChromeWebstoreBaseURL),
-      webstore_update_url_(extension_urls::kChromeWebstoreUpdateURL) {}
+      webstore_update_url_(extension_urls::kChromeWebstoreUpdateURL) {
+  AddAPIProvider(std::make_unique<CoreExtensionsAPIProvider>());
+  AddAPIProvider(std::make_unique<ShellExtensionsAPIProvider>());
+}
 
 ShellExtensionsClient::~ShellExtensionsClient() {
 }
@@ -101,33 +95,6 @@ ShellExtensionsClient::GetPermissionMessageProvider() const {
 
 const std::string ShellExtensionsClient::GetProductName() {
   return "app_shell";
-}
-
-std::unique_ptr<FeatureProvider> ShellExtensionsClient::CreateFeatureProvider(
-    const std::string& name) const {
-  auto provider = std::make_unique<FeatureProvider>();
-  if (name == "api") {
-    AddCoreAPIFeatures(provider.get());
-    AddShellAPIFeatures(provider.get());
-  } else if (name == "manifest") {
-    AddCoreManifestFeatures(provider.get());
-  } else if (name == "permission") {
-    AddCorePermissionFeatures(provider.get());
-  } else if (name == "behavior") {
-    AddCoreBehaviorFeatures(provider.get());
-  } else {
-    NOTREACHED();
-  }
-  return provider;
-}
-
-std::unique_ptr<JSONFeatureProviderSource>
-ShellExtensionsClient::CreateAPIFeatureSource() const {
-  std::unique_ptr<JSONFeatureProviderSource> source(
-      new JSONFeatureProviderSource("api"));
-  source->LoadJSON(IDR_EXTENSION_API_FEATURES);
-  source->LoadJSON(IDR_SHELL_EXTENSION_API_FEATURES);
-  return source;
 }
 
 void ShellExtensionsClient::FilterHostPermissions(
@@ -159,22 +126,6 @@ bool ShellExtensionsClient::IsScriptableURL(const GURL& url,
                                             std::string* error) const {
   // No restrictions on URLs.
   return true;
-}
-
-bool ShellExtensionsClient::IsAPISchemaGenerated(
-    const std::string& name) const {
-  return api::GeneratedSchemas::IsGenerated(name) ||
-         shell::api::ShellGeneratedSchemas::IsGenerated(name);
-}
-
-base::StringPiece ShellExtensionsClient::GetAPISchema(
-    const std::string& name) const {
-  // Schema for app_shell-only APIs.
-  if (shell::api::ShellGeneratedSchemas::IsGenerated(name))
-    return shell::api::ShellGeneratedSchemas::Get(name);
-
-  // Core extensions APIs.
-  return api::GeneratedSchemas::Get(name);
 }
 
 bool ShellExtensionsClient::ShouldSuppressFatalErrors() const {
