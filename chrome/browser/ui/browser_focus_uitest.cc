@@ -671,13 +671,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
   EXPECT_FALSE(IsViewFocused(VIEW_ID_OMNIBOX));
 }
 
-// Flaky on Mac, ChromeOS and Win (http://crbug.com/665296).
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_WIN)
-#define MAYBE_FocusOnNavigate DISABLED_FocusOnNavigate
-#else
-#define MAYBE_FocusOnNavigate FocusOnNavigate
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnNavigate) {
+// Flaky on all platforms (http://crbug.com/665296).
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnNavigate) {
   // Needed on Mac.
   // TODO(warx): check why it is needed on Mac.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
