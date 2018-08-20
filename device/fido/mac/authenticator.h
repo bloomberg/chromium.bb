@@ -44,6 +44,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
 
   ~TouchIdAuthenticator() override;
 
+  bool HasCredentialForGetAssertionRequest(
+      const CtapGetAssertionRequest& request);
+
   // FidoAuthenticator
   void MakeCredential(CtapMakeCredentialRequest request,
                       MakeCredentialCallback callback) override;

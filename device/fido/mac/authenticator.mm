@@ -4,12 +4,15 @@
 
 #include "device/fido/mac/authenticator.h"
 
+#include <algorithm>
+
 #import <LocalAuthentication/LocalAuthentication.h>
 
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "device/base/features.h"
 #include "device/fido/authenticator_supported_options.h"
@@ -54,6 +57,35 @@ std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateForTesting(
 }
 
 TouchIdAuthenticator::~TouchIdAuthenticator() = default;
+
+bool TouchIdAuthenticator::HasCredentialForGetAssertionRequest(
+    const CtapGetAssertionRequest& request) {
+  if (__builtin_available(macOS 10.12.2, *)) {
+    std::set<std::vector<uint8_t>> allow_list_credential_ids;
+    // Extract applicable credential IDs from the allowList, if the request has
+    // one. If not, any credential matching the RP works.
+    if (request.allow_list()) {
+      for (const auto& credential_descriptor : *request.allow_list()) {
+        if (credential_descriptor.credential_type() !=
+            CredentialType::kPublicKey)
+          continue;
+
+        if (!credential_descriptor.transports().empty() &&
+            !base::ContainsKey(credential_descriptor.transports(),
+                               FidoTransportProtocol::kInternal))
+          continue;
+
+        allow_list_credential_ids.insert(credential_descriptor.id());
+      }
+    }
+
+    return FindCredentialInKeychain(keychain_access_group_, metadata_secret_,
+                                    request.rp_id(), allow_list_credential_ids,
+                                    nullptr /* LAContext */) != base::nullopt;
+  }
+  NOTREACHED();
+  return false;
+}
 
 void TouchIdAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
                                           MakeCredentialCallback callback) {

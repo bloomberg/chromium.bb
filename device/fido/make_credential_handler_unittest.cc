@@ -141,11 +141,12 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   }
 
  protected:
-  std::unique_ptr<FidoAuthenticator> CreatePlatformAuthenticator() {
+  base::Optional<PlatformAuthenticatorInfo> CreatePlatformAuthenticator() {
     if (!mock_platform_device_)
-      return nullptr;
-    return std::make_unique<FidoDeviceAuthenticator>(
-        mock_platform_device_.get());
+      return base::nullopt;
+    return PlatformAuthenticatorInfo(
+        std::make_unique<FidoDeviceAuthenticator>(mock_platform_device_.get()),
+        false /* has_recognized_mac_touch_id_credential_available */);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
