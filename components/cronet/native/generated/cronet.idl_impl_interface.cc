@@ -577,26 +577,27 @@ Cronet_ClientContext Cronet_UploadDataSink_GetClientContext(
 }
 
 void Cronet_UploadDataSink_OnReadSucceeded(Cronet_UploadDataSinkPtr self,
+                                           uint64_t bytes_read,
                                            bool final_chunk) {
   DCHECK(self);
-  self->OnReadSucceeded(final_chunk);
+  self->OnReadSucceeded(bytes_read, final_chunk);
 }
 
 void Cronet_UploadDataSink_OnReadError(Cronet_UploadDataSinkPtr self,
-                                       Cronet_ErrorPtr error) {
+                                       Cronet_String error_message) {
   DCHECK(self);
-  self->OnReadError(error);
+  self->OnReadError(error_message);
 }
 
-void Cronet_UploadDataSink_OnRewindSucceded(Cronet_UploadDataSinkPtr self) {
+void Cronet_UploadDataSink_OnRewindSucceeded(Cronet_UploadDataSinkPtr self) {
   DCHECK(self);
-  self->OnRewindSucceded();
+  self->OnRewindSucceeded();
 }
 
 void Cronet_UploadDataSink_OnRewindError(Cronet_UploadDataSinkPtr self,
-                                         Cronet_ErrorPtr error) {
+                                         Cronet_String error_message) {
   DCHECK(self);
-  self->OnRewindError(error);
+  self->OnRewindError(error_message);
 }
 
 // Implementation of Cronet_UploadDataSink that forwards calls to C functions
@@ -606,34 +607,34 @@ class Cronet_UploadDataSinkStub : public Cronet_UploadDataSink {
   Cronet_UploadDataSinkStub(
       Cronet_UploadDataSink_OnReadSucceededFunc OnReadSucceededFunc,
       Cronet_UploadDataSink_OnReadErrorFunc OnReadErrorFunc,
-      Cronet_UploadDataSink_OnRewindSuccededFunc OnRewindSuccededFunc,
+      Cronet_UploadDataSink_OnRewindSucceededFunc OnRewindSucceededFunc,
       Cronet_UploadDataSink_OnRewindErrorFunc OnRewindErrorFunc)
       : OnReadSucceededFunc_(OnReadSucceededFunc),
         OnReadErrorFunc_(OnReadErrorFunc),
-        OnRewindSuccededFunc_(OnRewindSuccededFunc),
+        OnRewindSucceededFunc_(OnRewindSucceededFunc),
         OnRewindErrorFunc_(OnRewindErrorFunc) {}
 
   ~Cronet_UploadDataSinkStub() override {}
 
  protected:
-  void OnReadSucceeded(bool final_chunk) override {
-    OnReadSucceededFunc_(this, final_chunk);
+  void OnReadSucceeded(uint64_t bytes_read, bool final_chunk) override {
+    OnReadSucceededFunc_(this, bytes_read, final_chunk);
   }
 
-  void OnReadError(Cronet_ErrorPtr error) override {
-    OnReadErrorFunc_(this, error);
+  void OnReadError(Cronet_String error_message) override {
+    OnReadErrorFunc_(this, error_message);
   }
 
-  void OnRewindSucceded() override { OnRewindSuccededFunc_(this); }
+  void OnRewindSucceeded() override { OnRewindSucceededFunc_(this); }
 
-  void OnRewindError(Cronet_ErrorPtr error) override {
-    OnRewindErrorFunc_(this, error);
+  void OnRewindError(Cronet_String error_message) override {
+    OnRewindErrorFunc_(this, error_message);
   }
 
  private:
   const Cronet_UploadDataSink_OnReadSucceededFunc OnReadSucceededFunc_;
   const Cronet_UploadDataSink_OnReadErrorFunc OnReadErrorFunc_;
-  const Cronet_UploadDataSink_OnRewindSuccededFunc OnRewindSuccededFunc_;
+  const Cronet_UploadDataSink_OnRewindSucceededFunc OnRewindSucceededFunc_;
   const Cronet_UploadDataSink_OnRewindErrorFunc OnRewindErrorFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_UploadDataSinkStub);
@@ -642,10 +643,11 @@ class Cronet_UploadDataSinkStub : public Cronet_UploadDataSink {
 Cronet_UploadDataSinkPtr Cronet_UploadDataSink_CreateWith(
     Cronet_UploadDataSink_OnReadSucceededFunc OnReadSucceededFunc,
     Cronet_UploadDataSink_OnReadErrorFunc OnReadErrorFunc,
-    Cronet_UploadDataSink_OnRewindSuccededFunc OnRewindSuccededFunc,
+    Cronet_UploadDataSink_OnRewindSucceededFunc OnRewindSucceededFunc,
     Cronet_UploadDataSink_OnRewindErrorFunc OnRewindErrorFunc) {
   return new Cronet_UploadDataSinkStub(OnReadSucceededFunc, OnReadErrorFunc,
-                                       OnRewindSuccededFunc, OnRewindErrorFunc);
+                                       OnRewindSucceededFunc,
+                                       OnRewindErrorFunc);
 }
 
 // C functions of Cronet_UploadDataProvider that forward calls to C++

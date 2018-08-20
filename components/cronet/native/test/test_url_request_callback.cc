@@ -68,15 +68,21 @@ TestUrlRequestCallback::~TestUrlRequestCallback() {
 }
 
 Cronet_ExecutorPtr TestUrlRequestCallback::GetExecutor(bool direct) {
-  CHECK(!executor_);
+  if (executor_) {
+    CHECK(direct == allow_direct_executor_);
+    return executor_;
+  }
   allow_direct_executor_ = direct;
-  if (direct)
-    return Cronet_Executor_CreateWith(TestUrlRequestCallback::ExecuteDirect);
-  executor_thread_ =
-      std::make_unique<base::Thread>("TestUrlRequestCallback executor");
-  executor_thread_->Start();
-  executor_ = Cronet_Executor_CreateWith(TestUrlRequestCallback::Execute);
-  Cronet_Executor_SetClientContext(executor_, this);
+  if (direct) {
+    executor_ =
+        Cronet_Executor_CreateWith(TestUrlRequestCallback::ExecuteDirect);
+  } else {
+    executor_thread_ =
+        std::make_unique<base::Thread>("TestUrlRequestCallback executor");
+    executor_thread_->Start();
+    executor_ = Cronet_Executor_CreateWith(TestUrlRequestCallback::Execute);
+    Cronet_Executor_SetClientContext(executor_, this);
+  }
   return executor_;
 }
 
@@ -186,6 +192,8 @@ void TestUrlRequestCallback::OnFailed(Cronet_UrlRequestPtr request,
   if (info)
     response_info_ = std::make_unique<UrlResponseInfo>(info);
   last_error_ = error;
+  last_error_code_ = Cronet_Error_error_code_get(error);
+  last_error_message_ = Cronet_Error_message_get(error);
   SignalDone();
   MaybeCancelOrPause(request);
 }

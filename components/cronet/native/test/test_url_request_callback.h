@@ -72,6 +72,10 @@ class TestUrlRequestCallback {
   std::unique_ptr<UrlResponseInfo> response_info_;
   // Owned by UrlRequest, only valid until UrlRequest is destroyed.
   Cronet_ErrorPtr last_error_ = nullptr;
+  // Values copied from |last_error_| valid after UrlRequest is destroyed.
+  Cronet_Error_ERROR_CODE last_error_code_ =
+      Cronet_Error_ERROR_CODE_ERROR_OTHER;
+  std::string last_error_message_;
 
   ResponseStep response_step_ = NOTHING;
 

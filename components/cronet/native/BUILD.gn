@@ -55,6 +55,8 @@ source_set("cronet_native_impl") {
     "io_buffer_with_cronet_buffer.h",
     "runnables.cc",
     "runnables.h",
+    "upload_data_sink.cc",
+    "upload_data_sink.h",
     "url_request.cc",
     "url_request.h",
 

@@ -66,7 +66,7 @@ Cronet_RawDataPtr TestCronet_Buffer_GetData(Cronet_BufferPtr self) {
   CHECK(test);
   test->GetData_called_ = true;
 
-  return static_cast<Cronet_RawDataPtr>(nullptr);
+  return static_cast<Cronet_RawDataPtr>(0);
 }
 }  // namespace
 
@@ -276,7 +276,7 @@ Cronet_String TestCronet_Engine_GetVersionString(Cronet_EnginePtr self) {
   CHECK(test);
   test->GetVersionString_called_ = true;
 
-  return static_cast<Cronet_String>(nullptr);
+  return static_cast<Cronet_String>(0);
 }
 Cronet_String TestCronet_Engine_GetDefaultUserAgent(Cronet_EnginePtr self) {
   CHECK(self);
@@ -285,7 +285,7 @@ Cronet_String TestCronet_Engine_GetDefaultUserAgent(Cronet_EnginePtr self) {
   CHECK(test);
   test->GetDefaultUserAgent_called_ = true;
 
-  return static_cast<Cronet_String>(nullptr);
+  return static_cast<Cronet_String>(0);
 }
 }  // namespace
 
@@ -485,7 +485,7 @@ class Cronet_UploadDataSinkTest : public ::testing::Test {
  public:
   bool OnReadSucceeded_called_ = false;
   bool OnReadError_called_ = false;
-  bool OnRewindSucceded_called_ = false;
+  bool OnRewindSucceeded_called_ = false;
   bool OnRewindError_called_ = false;
 
  private:
@@ -495,6 +495,7 @@ class Cronet_UploadDataSinkTest : public ::testing::Test {
 namespace {
 // Implementation of Cronet_UploadDataSink methods for testing.
 void TestCronet_UploadDataSink_OnReadSucceeded(Cronet_UploadDataSinkPtr self,
+                                               uint64_t bytes_read,
                                                bool final_chunk) {
   CHECK(self);
   Cronet_ClientContext client_context =
@@ -504,7 +505,7 @@ void TestCronet_UploadDataSink_OnReadSucceeded(Cronet_UploadDataSinkPtr self,
   test->OnReadSucceeded_called_ = true;
 }
 void TestCronet_UploadDataSink_OnReadError(Cronet_UploadDataSinkPtr self,
-                                           Cronet_ErrorPtr error) {
+                                           Cronet_String error_message) {
   CHECK(self);
   Cronet_ClientContext client_context =
       Cronet_UploadDataSink_GetClientContext(self);
@@ -512,16 +513,17 @@ void TestCronet_UploadDataSink_OnReadError(Cronet_UploadDataSinkPtr self,
   CHECK(test);
   test->OnReadError_called_ = true;
 }
-void TestCronet_UploadDataSink_OnRewindSucceded(Cronet_UploadDataSinkPtr self) {
+void TestCronet_UploadDataSink_OnRewindSucceeded(
+    Cronet_UploadDataSinkPtr self) {
   CHECK(self);
   Cronet_ClientContext client_context =
       Cronet_UploadDataSink_GetClientContext(self);
   auto* test = static_cast<Cronet_UploadDataSinkTest*>(client_context);
   CHECK(test);
-  test->OnRewindSucceded_called_ = true;
+  test->OnRewindSucceeded_called_ = true;
 }
 void TestCronet_UploadDataSink_OnRewindError(Cronet_UploadDataSinkPtr self,
-                                             Cronet_ErrorPtr error) {
+                                             Cronet_String error_message) {
   CHECK(self);
   Cronet_ClientContext client_context =
       Cronet_UploadDataSink_GetClientContext(self);
@@ -536,14 +538,14 @@ TEST_F(Cronet_UploadDataSinkTest, TestCreate) {
   Cronet_UploadDataSinkPtr test = Cronet_UploadDataSink_CreateWith(
       TestCronet_UploadDataSink_OnReadSucceeded,
       TestCronet_UploadDataSink_OnReadError,
-      TestCronet_UploadDataSink_OnRewindSucceded,
+      TestCronet_UploadDataSink_OnRewindSucceeded,
       TestCronet_UploadDataSink_OnRewindError);
   CHECK(test);
   Cronet_UploadDataSink_SetClientContext(test, this);
   CHECK(!OnReadSucceeded_called_);
   CHECK(!OnReadError_called_);
-  Cronet_UploadDataSink_OnRewindSucceded(test);
-  CHECK(OnRewindSucceded_called_);
+  Cronet_UploadDataSink_OnRewindSucceeded(test);
+  CHECK(OnRewindSucceeded_called_);
   CHECK(!OnRewindError_called_);
 
   Cronet_UploadDataSink_Destroy(test);

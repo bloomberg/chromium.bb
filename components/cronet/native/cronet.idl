@@ -855,28 +855,29 @@ interface UploadDataSink {
   /**
    * Called by UploadDataProvider when a read succeeds.
    *
+   * @param bytes_read number of bytes read into buffer passed to read().
    * @param final_chunk For chunked uploads, |true| if this is the final
    *     read. It must be |false| for non-chunked uploads.
    */
-  OnReadSucceeded(bool final_chunk);
+  OnReadSucceeded(uint64 bytes_read, bool final_chunk);
 
   /**
    * Called by UploadDataProvider when a read fails.
-   * @param error to pass on to UrlRequestCallback.onFailed().
+   * @param error_message to pass on to UrlRequestCallback.onFailed().
    */
-  OnReadError(Error error);
+  OnReadError(string error_message);
 
   /**
    * Called by UploadDataProvider when a rewind succeeds.
    */
-  OnRewindSucceded();
+  OnRewindSucceeded();
 
   /**
    * Called by UploadDataProvider when a rewind fails, or if rewinding
    * uploads is not supported.
-   * @param error to pass on to UrlRequestCallback.onFailed().
+   * @param error_message to pass on to UrlRequestCallback.onFailed().
    */
-  OnRewindError(Error error);
+  OnRewindError(string error_message);
 };
 
 /**
@@ -898,9 +899,7 @@ interface UploadDataProvider {
   GetLength() => (int64 length);
 
   /**
-   * Reads upload data into |buffer|. Upon completion, the buffer's
-   * position is updated to the end of the bytes that were read. The buffer's
-   * limit is not changed. Each call of this method must be followed be a
+   * Reads upload data into |buffer|. Each call of this method must be followed be a
    * single call, either synchronous or asynchronous, to
    * UploadDataSink.onReadSucceeded() on success
    * or UploadDataSink.onReadError() on failure. Neither read nor rewind
@@ -910,8 +909,7 @@ interface UploadDataProvider {
    *
    * @param upload_data_sink The object to notify when the read has completed,
    *            successfully or otherwise.
-   * @param buffer The buffer to copy the read bytes into. Do not change
-   *            byteBuffer's limit.
+   * @param buffer The buffer to copy the read bytes into.
    */
   Read(UploadDataSink upload_data_sink, Buffer buffer);
 
