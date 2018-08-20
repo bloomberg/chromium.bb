@@ -2,8 +2,8 @@
 #include <iostream>
 
 #include "testing/libfuzzer/proto/lpm_interface.h"
-#include "third_party/blink/renderer/platform/scheduler/base/proto/sequence_manager_test_description.pb.h"
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_fuzzer_processor.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fuzzer/proto/sequence_manager_test_description.pb.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fuzzer/sequence_manager_fuzzer_processor.h"
 
 // Tests some APIs in base::sequence_manager::SequenceManager (ones defined in
 // SequenceManagerTesrDescription proto) for crashes, hangs, memory leaks,

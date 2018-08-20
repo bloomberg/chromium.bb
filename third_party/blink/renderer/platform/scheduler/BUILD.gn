@@ -242,15 +242,15 @@ source_set("scheduler_fuzzer_tests") {
 
   if (is_linux) {
     sources += [
-      "base/sequence_manager_fuzzer_processor.cc",
-      "base/sequence_manager_fuzzer_processor.h",
-      "base/sequence_manager_fuzzer_processor_unittest.cc",
-      "base/simple_thread_impl.cc",
-      "base/simple_thread_impl.h",
-      "base/thread_data.cc",
-      "base/thread_data.h",
-      "base/thread_pool_manager.cc",
-      "base/thread_pool_manager.h",
+      "test/fuzzer/sequence_manager_fuzzer_processor.cc",
+      "test/fuzzer/sequence_manager_fuzzer_processor.h",
+      "test/fuzzer/sequence_manager_fuzzer_processor_unittest.cc",
+      "test/fuzzer/simple_thread_impl.cc",
+      "test/fuzzer/simple_thread_impl.h",
+      "test/fuzzer/thread_manager.cc",
+      "test/fuzzer/thread_manager.h",
+      "test/fuzzer/thread_pool_manager.cc",
+      "test/fuzzer/thread_pool_manager.h",
     ]
 
     deps += [
@@ -264,15 +264,15 @@ source_set("scheduler_fuzzer_tests") {
 
 fuzzer_test("sequence_manager_fuzzer") {
   sources = [
-    "base/sequence_manager_fuzzer.cc",
-    "base/sequence_manager_fuzzer_processor.cc",
-    "base/sequence_manager_fuzzer_processor.h",
-    "base/simple_thread_impl.cc",
-    "base/simple_thread_impl.h",
-    "base/thread_data.cc",
-    "base/thread_data.h",
-    "base/thread_pool_manager.cc",
-    "base/thread_pool_manager.h",
+    "test/fuzzer/sequence_manager_fuzzer.cc",
+    "test/fuzzer/sequence_manager_fuzzer_processor.cc",
+    "test/fuzzer/sequence_manager_fuzzer_processor.h",
+    "test/fuzzer/simple_thread_impl.cc",
+    "test/fuzzer/simple_thread_impl.h",
+    "test/fuzzer/thread_manager.cc",
+    "test/fuzzer/thread_manager.h",
+    "test/fuzzer/thread_pool_manager.cc",
+    "test/fuzzer/thread_pool_manager.h",
   ]
 
   deps = [
@@ -285,6 +285,6 @@ fuzzer_test("sequence_manager_fuzzer") {
 
 proto_library("sequence_manager_test_description_proto") {
   sources = [
-    "base/proto/sequence_manager_test_description.proto",
+    "test/fuzzer/proto/sequence_manager_test_description.proto",
   ]
 }
