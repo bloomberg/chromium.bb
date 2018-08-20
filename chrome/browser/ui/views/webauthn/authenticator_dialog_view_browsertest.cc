@@ -100,9 +100,8 @@ class AuthenticatorDialogViewTest : public DialogBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
 
     auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>();
-    dialog_model->StartFlow(
-        ::device::FidoRequestHandlerBase::TransportAvailabilityInfo(),
-        base::nullopt);
+    dialog_model->SetCurrentStep(
+        AuthenticatorRequestDialogModel::Step::kErrorTimedOut);
     auto dialog = std::make_unique<AuthenticatorRequestDialogView>(
         web_contents, std::move(dialog_model));
 
