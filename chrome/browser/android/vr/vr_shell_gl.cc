@@ -1233,11 +1233,9 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
 
   UpdateUi(render_info_, current_time, is_webxr_frame ? kWebXrFrame : kUiFrame);
 
-  gvr::Sizei primary_render_size =
-      is_webxr_frame ? swap_chain_.GetBufferSize(kNoMultiSampleBuffer)
-                     : swap_chain_.GetBufferSize(kMultiSampleBuffer);
-  UpdateEyeInfos(render_info_.head_pose, main_viewport_,
-                 {primary_render_size.width, primary_render_size.height},
+  gfx::Size render_size =
+      is_webxr_frame ? render_size_webvr_ui_ : render_size_default_;
+  UpdateEyeInfos(render_info_.head_pose, main_viewport_, render_size,
                  &render_info_);
   ui_->OnProjMatrixChanged(render_info_.left_eye_model.proj_matrix);
 
@@ -1317,25 +1315,21 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
     const auto& fov_recommended_right =
         ToUiFovRect(main_viewport_.right.GetSourceFov());
 
-    // Set render info to recommended setting. It will be used as our base for
-    // optimization.
-    RenderInfo render_info_webvr_browser_ui;
-    render_info_webvr_browser_ui.head_pose = render_info_.head_pose;
-
-    UpdateEyeInfos(render_info_webvr_browser_ui.head_pose,
-                   webvr_overlay_viewport_, render_size_webvr_ui_,
-                   &render_info_webvr_browser_ui);
     auto fovs = ui_->GetMinimalFovForWebXrOverlayElements(
-        render_info_webvr_browser_ui.left_eye_model.view_matrix,
-        fov_recommended_left,
-        render_info_webvr_browser_ui.right_eye_model.view_matrix,
-        fov_recommended_right, kZNear);
+        render_info_.left_eye_model.view_matrix, fov_recommended_left,
+        render_info_.right_eye_model.view_matrix, fov_recommended_right,
+        kZNear);
     webvr_overlay_viewport_.left.SetSourceFov(ToGvrRectf(fovs.first));
     webvr_overlay_viewport_.right.SetSourceFov(ToGvrRectf(fovs.second));
 
     DCHECK_EQ(viewport_list_.GetSize(), 2U);
     viewport_list_.SetBufferViewport(2, webvr_overlay_viewport_.left);
     viewport_list_.SetBufferViewport(3, webvr_overlay_viewport_.right);
+
+    // Set render info to recommended setting. It will be used as our base for
+    // optimization.
+    RenderInfo render_info_webvr_browser_ui;
+    render_info_webvr_browser_ui.head_pose = render_info_.head_pose;
     UpdateEyeInfos(render_info_webvr_browser_ui.head_pose,
                    webvr_overlay_viewport_, render_size_webvr_ui_,
                    &render_info_webvr_browser_ui);
