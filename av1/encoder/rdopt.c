@@ -1783,12 +1783,14 @@ static void model_rd_from_sse(const AV1_COMP *const cpi,
   // Fast approximate the modelling function.
   if (cpi->sf.simple_model_rd_from_var) {
     const int64_t square_error = sse;
-    int quantizer = (pd->dequant_Q3[1] >> dequant_shift);
+    int quantizer = pd->dequant_Q3[1] >> dequant_shift;
     if (quantizer < 120)
-      *rate = (int)((square_error * (280 - quantizer)) >>
-                    (16 - AV1_PROB_COST_SHIFT));
+      *rate = (int)AOMMIN(
+          (square_error * (280 - quantizer)) >> (16 - AV1_PROB_COST_SHIFT),
+          INT_MAX);
     else
       *rate = 0;
+    assert(*rate >= 0);
     *dist = (square_error * quantizer) >> 8;
   } else {
     av1_model_rd_from_var_lapndz(sse, num_pels_log2_lookup[plane_bsize],
@@ -1870,6 +1872,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     if (plane_rate) plane_rate[plane] = rate;
     if (plane_sse) plane_sse[plane] = sse;
     if (plane_dist) plane_dist[plane] = dist;
+    assert(rate_sum >= 0);
   }
 
   if (skip_txfm_sb) *skip_txfm_sb = total_sse == 0;
