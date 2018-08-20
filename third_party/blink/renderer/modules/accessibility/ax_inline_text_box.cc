@@ -75,9 +75,8 @@ void AXInlineTextBox::GetRelativeBounds(AXObject** out_container,
 
   // Subtract the local bounding box of the parent because they're
   // both in the same coordinate system.
-  LayoutObject* parent_layout_object = ParentObject()->GetLayoutObject();
   FloatRect parent_bounding_box =
-      parent_layout_object->LocalBoundingBoxRectForAccessibility();
+      ParentObject()->LocalBoundingBoxRectForAccessibility();
   out_bounds_in_container.MoveBy(-parent_bounding_box.Location());
 }
 

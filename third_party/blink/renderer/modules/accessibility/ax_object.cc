@@ -899,6 +899,11 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
     if (parent)
       parent->ChildrenChanged();
   }
+
+  if (GetLayoutObject() && GetLayoutObject()->IsText()) {
+    cached_local_bounding_box_rect_for_accessibility_ =
+        GetLayoutObject()->LocalBoundingBoxRectForAccessibility();
+  }
 }
 
 bool AXObject::AccessibilityIsIgnoredByDefault(
@@ -2794,6 +2799,14 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
   } else {
     out_container_transform = TransformationMatrix::ToSkMatrix44(transform);
   }
+}
+
+FloatRect AXObject::LocalBoundingBoxRectForAccessibility() {
+  if (!GetLayoutObject())
+    return FloatRect();
+  DCHECK(GetLayoutObject()->IsText());
+  UpdateCachedAttributeValuesIfNeeded();
+  return cached_local_bounding_box_rect_for_accessibility_;
 }
 
 LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
