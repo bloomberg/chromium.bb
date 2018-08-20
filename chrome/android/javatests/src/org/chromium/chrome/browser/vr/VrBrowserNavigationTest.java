@@ -11,7 +11,6 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.graphics.PointF;
-import android.support.annotation.IntDef;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
@@ -44,8 +43,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
@@ -75,28 +72,9 @@ public class VrBrowserNavigationTest {
     private static final String TEST_PAGE_WEBXR_URL =
             WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webxr_page");
 
-    @IntDef({Page.PAGE_2D, Page.PAGE_2D_2, Page.PAGE_WEBVR, Page.PAGE_WEBXR})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface Page {
-        int PAGE_2D = 0;
-        int PAGE_2D_2 = 1;
-        int PAGE_WEBVR = 2;
-        int PAGE_WEBXR = 3;
-    }
-
-    @IntDef({PresentationMode.NON_PRESENTING, PresentationMode.PRESENTING})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface PresentationMode {
-        int NON_PRESENTING = 0;
-        int PRESENTING = 1;
-    }
-
-    @IntDef({FullscreenMode.NON_FULLSCREENED, FullscreenMode.FULLSCREENED})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface FullscreenMode {
-        int NON_FULLSCREENED = 0;
-        int FULLSCREENED = 1;
-    }
+    private enum Page { PAGE_2D, PAGE_2D_2, PAGE_WEBVR, PAGE_WEBXR }
+    private enum PresentationMode { NON_PRESENTING, PRESENTING }
+    private enum FullscreenMode { NON_FULLSCREENED, FULLSCREENED }
 
     @Before
     public void setUp() throws Exception {
@@ -106,15 +84,15 @@ public class VrBrowserNavigationTest {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
     }
 
-    private String getUrl(@Page int page) {
+    private String getUrl(Page page) {
         switch (page) {
-            case Page.PAGE_2D:
+            case PAGE_2D:
                 return TEST_PAGE_2D_URL;
-            case Page.PAGE_2D_2:
+            case PAGE_2D_2:
                 return TEST_PAGE_2D_2_URL;
-            case Page.PAGE_WEBVR:
+            case PAGE_WEBVR:
                 return TEST_PAGE_WEBVR_URL;
-            case Page.PAGE_WEBXR:
+            case PAGE_WEBXR:
                 return TEST_PAGE_WEBXR_URL;
             default:
                 throw new UnsupportedOperationException("Don't know page type " + page);
@@ -126,7 +104,7 @@ public class VrBrowserNavigationTest {
      * {@link ChromeActivityTestRule#loadUrl loadUrl} but makes sure page initiates the
      * navigation. This is desirable since we are testing navigation transitions end-to-end.
      */
-    private void navigateTo(final @Page int to) throws InterruptedException {
+    private void navigateTo(final Page to) throws InterruptedException {
         ChromeTabUtils.waitForTabPageLoaded(mTestRule.getActivity().getActivityTab(), () -> {
             mVrBrowserTestFramework.runJavaScriptOrFail(
                     "window.location.href = '" + getUrl(to) + "';", POLL_TIMEOUT_SHORT_MS);
@@ -140,8 +118,8 @@ public class VrBrowserNavigationTest {
         Assert.assertTrue("Failed to enter fullscreen", DOMUtils.isFullscreen(webContents));
     }
 
-    private void assertState(WebContents wc, @Page int page, @PresentationMode int presentationMode,
-            @FullscreenMode int fullscreenMode) throws InterruptedException, TimeoutException {
+    private void assertState(WebContents wc, Page page, PresentationMode presentationMode,
+            FullscreenMode fullscreenMode) throws InterruptedException, TimeoutException {
         Assert.assertTrue("Browser is not in VR", VrShellDelegate.isInVr());
         Assert.assertEquals("Browser is not on correct web site", getUrl(page), wc.getVisibleUrl());
         Assert.assertEquals("Browser's presentation mode does not match expectation",
@@ -214,7 +192,7 @@ public class VrBrowserNavigationTest {
         impl2dToWeb(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void impl2dToWeb(@Page int page, WebXrVrTestFramework framework)
+    private void impl2dToWeb(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
@@ -247,7 +225,7 @@ public class VrBrowserNavigationTest {
         impl2dFullscreenToWeb(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void impl2dFullscreenToWeb(@Page int page, WebXrVrTestFramework framework)
+    private void impl2dFullscreenToWeb(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
         enterFullscreenOrFail(framework.getFirstTabWebContents());
@@ -281,7 +259,7 @@ public class VrBrowserNavigationTest {
         webTo2dImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webTo2dImpl(@Page int page, WebXrVrTestFramework framework)
+    private void webTo2dImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
 
@@ -314,7 +292,7 @@ public class VrBrowserNavigationTest {
         webToWebImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webToWebImpl(@Page int page, WebXrVrTestFramework framework)
+    private void webToWebImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
 
@@ -347,7 +325,7 @@ public class VrBrowserNavigationTest {
         webPresentingTo2dImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webPresentingTo2dImpl(@Page int page, WebXrVrTestFramework framework)
+    private void webPresentingTo2dImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
@@ -381,7 +359,7 @@ public class VrBrowserNavigationTest {
         webPresentingToWebImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webPresentingToWebImpl(@Page int page, WebXrVrTestFramework framework)
+    private void webPresentingToWebImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
@@ -415,7 +393,7 @@ public class VrBrowserNavigationTest {
         webFullscreenTo2dImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webFullscreenTo2dImpl(@Page int page, WebXrVrTestFramework framework)
+    private void webFullscreenTo2dImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
         enterFullscreenOrFail(framework.getFirstTabWebContents());
@@ -449,7 +427,7 @@ public class VrBrowserNavigationTest {
         webFullscreenToWebImpl(Page.PAGE_WEBXR, mWebXrVrTestFramework);
     }
 
-    private void webFullscreenToWebImpl(@Page int page, WebXrVrTestFramework framework)
+    private void webFullscreenToWebImpl(Page page, WebXrVrTestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
         enterFullscreenOrFail(framework.getFirstTabWebContents());

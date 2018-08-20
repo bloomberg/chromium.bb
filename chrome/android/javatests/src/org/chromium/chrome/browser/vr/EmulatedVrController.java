@@ -6,14 +6,11 @@ package org.chromium.chrome.browser.vr;
 
 import android.content.Context;
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
 
 import com.google.vr.testframework.controller.ControllerTestApi;
 
 import org.junit.Assert;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,15 +23,7 @@ import java.util.concurrent.TimeUnit;
  *   - PairedControllerAddress: "FOO"
  */
 public class EmulatedVrController {
-    @IntDef({ScrollDirection.UP, ScrollDirection.DOWN, ScrollDirection.LEFT, ScrollDirection.RIGHT})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ScrollDirection {
-        int UP = 0;
-        int DOWN = 1;
-        int LEFT = 2;
-        int RIGHT = 3;
-    }
-
+    public enum ScrollDirection { UP, DOWN, LEFT, RIGHT }
     private static final int FIRST_INPUT_DELAY_MS = 500;
     private final ControllerTestApi mApi;
     private boolean mHaveSentInputSinceEnteringVr;
@@ -136,23 +125,23 @@ public class EmulatedVrController {
      * @param speed how long to wait between steps in the scroll, with higher
      *        numbers resulting in a faster scroll.
      */
-    public void scroll(@ScrollDirection int direction, int steps, int speed) {
+    public void scroll(ScrollDirection direction, int steps, int speed) {
         float startX, startY, endX, endY;
         startX = startY = endX = endY = 0.5f;
         switch (direction) {
-            case ScrollDirection.UP:
+            case UP:
                 startY = 0.1f;
                 endY = 0.9f;
                 break;
-            case ScrollDirection.DOWN:
+            case DOWN:
                 startY = 0.9f;
                 endY = 0.1f;
                 break;
-            case ScrollDirection.LEFT:
+            case LEFT:
                 startX = 0.1f;
                 endX = 0.9f;
                 break;
-            case ScrollDirection.RIGHT:
+            case RIGHT:
                 startX = 0.9f;
                 endX = 0.1f;
                 break;
