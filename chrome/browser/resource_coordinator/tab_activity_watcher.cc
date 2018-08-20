@@ -91,10 +91,6 @@ class TabActivityWatcher::WebContentsData
     // Copy the replaced tab's stats.
     tab_metrics_.page_metrics = replaced_tab.tab_metrics_.page_metrics;
     tab_metrics_.page_transition = replaced_tab.tab_metrics_.page_transition;
-
-    // Copy ukm_source_id_ and discarded state.
-    discarded_since_backgrounded_ = replaced_tab.discarded_since_backgrounded_;
-    previous_ukm_source_id_ = replaced_tab.ukm_source_id_;
   }
 
   // Call when the WebContents is detached from its tab. If the tab is later
@@ -173,7 +169,6 @@ class TabActivityWatcher::WebContentsData
     }
 
     backgrounded_time_ = NowTicks();
-    discarded_since_backgrounded_ = false;
     LogTabIfBackgrounded();
   }
 
@@ -186,13 +181,9 @@ class TabActivityWatcher::WebContentsData
       return;
 
     // Log the event before updating times.
-    const ukm::SourceId source_id = discarded_since_backgrounded_
-                                        ? previous_ukm_source_id_
-                                        : ukm_source_id_;
     TabActivityWatcher::GetInstance()
         ->tab_metrics_logger_->LogBackgroundTabShown(
-            source_id, NowTicks() - backgrounded_time_, GetMRUFeatures(),
-            discarded_since_backgrounded_);
+            ukm_source_id_, NowTicks() - backgrounded_time_, GetMRUFeatures());
 
     backgrounded_time_ = base::TimeTicks();
     foregrounded_time_ = NowTicks();
@@ -357,8 +348,6 @@ class TabActivityWatcher::WebContentsData
 
   // Updated when a navigation is finished.
   ukm::SourceId ukm_source_id_ = 0;
-  // Recorded when a WebContents is replaced by another.
-  ukm::SourceId previous_ukm_source_id_ = 0;
 
   // When the tab was created.
   base::TimeTicks creation_time_;
@@ -393,9 +382,6 @@ class TabActivityWatcher::WebContentsData
   // MRUFeatures of this WebContents, updated only before ForegroundedOrClosed
   // event is logged.
   tab_ranker::MRUFeatures mru_features_;
-
-  // Whether this tab is currently in discarded state.
-  bool discarded_since_backgrounded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
@@ -549,28 +535,15 @@ void TabActivityWatcher::OnTabClosed(WebContentsData* web_contents_data) {
       NowTicks() - web_contents_data->navigation_time_);
 
   // Log ForegroundedOrClosed event.
-  const ukm::SourceId source_id =
-      web_contents_data->discarded_since_backgrounded_
-          ? web_contents_data->previous_ukm_source_id_
-          : web_contents_data->ukm_source_id_;
   if (!web_contents_data->backgrounded_time_.is_null()) {
     tab_metrics_logger_->LogBackgroundTabClosed(
-        source_id, NowTicks() - web_contents_data->backgrounded_time_,
-        web_contents_data->GetMRUFeatures(),
-        web_contents_data->discarded_since_backgrounded_);
+        web_contents_data->ukm_source_id_,
+        NowTicks() - web_contents_data->backgrounded_time_,
+        web_contents_data->GetMRUFeatures());
   }
 
   // Erase the pointer in |all_closing_tabs_| only when all logging finished.
   all_closing_tabs_.erase(web_contents_data);
 }
 
-void TabActivityWatcher::OnDiscardedStateChange(content::WebContents* contents,
-                                                bool is_discarded) {
-  WebContentsData::FromWebContents(contents)->discarded_since_backgrounded_ |=
-      is_discarded;
-}
-
-void TabActivityWatcher::OnAutoDiscardableStateChange(
-    content::WebContents* contents,
-    bool is_auto_discardable) {}
 }  // namespace resource_coordinator
