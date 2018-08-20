@@ -15,7 +15,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_shortcut_installation_task.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/web_contents_tester.h"
@@ -50,14 +50,13 @@ web_app::PendingAppManager::AppInfo GetQuxAppInfo() {
 
 }  // namespace
 
-class TestBookmarkAppShortcutInstallationTask
-    : public BookmarkAppShortcutInstallationTask {
+class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
  public:
-  TestBookmarkAppShortcutInstallationTask(Profile* profile, bool succeeds)
-      : BookmarkAppShortcutInstallationTask(profile), succeeds_(succeeds) {}
-  ~TestBookmarkAppShortcutInstallationTask() override = default;
+  TestBookmarkAppInstallationTask(Profile* profile, bool succeeds)
+      : BookmarkAppInstallationTask(profile), succeeds_(succeeds) {}
+  ~TestBookmarkAppInstallationTask() override = default;
 
-  void InstallFromWebContents(
+  void InstallWebAppOrShortcutFromWebContents(
       content::WebContents* web_contents,
       BookmarkAppInstallationTask::ResultCallback callback) override {
     std::move(callback).Run(
@@ -72,7 +71,7 @@ class TestBookmarkAppShortcutInstallationTask
  private:
   bool succeeds_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppShortcutInstallationTask);
+  DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppInstallationTask);
 };
 
 class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
@@ -111,14 +110,12 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<BookmarkAppInstallationTask> CreateSuccessfulInstallationTask(
       Profile* profile) {
-    return std::make_unique<TestBookmarkAppShortcutInstallationTask>(profile,
-                                                                     true);
+    return std::make_unique<TestBookmarkAppInstallationTask>(profile, true);
   }
 
   std::unique_ptr<BookmarkAppInstallationTask> CreateFailingInstallationTask(
       Profile* profile) {
-    return std::make_unique<TestBookmarkAppShortcutInstallationTask>(profile,
-                                                                     false);
+    return std::make_unique<TestBookmarkAppInstallationTask>(profile, false);
   }
 
   void InstallCallback(const GURL& url, const std::string& app_id) {
