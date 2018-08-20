@@ -124,7 +124,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         mDisplayName.setText(displayName);
         mEmails.setText(contactDetails.getEmailsAsString());
         Bitmap icon = mCategoryView.getIconGenerator().generateIconForText(
-                contactDetails.getDisplayNameAbbreviation());
+                contactDetails.getDisplayNameAbbreviation(), 2);
         mImage.setImageBitmap(icon);
 
         updateSelectionState();
