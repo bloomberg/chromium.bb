@@ -110,9 +110,8 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_pairing_begin) {
   ShowAndVerifyUi();
 }
 
-// Disabled because flaky on bots. http://crbug.com/875531.
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
-                       DISABLE_InvokeUi_ble_enter_pairing_mode) {
+                       InvokeUi_ble_enter_pairing_mode) {
   ShowAndVerifyUi();
 }
 

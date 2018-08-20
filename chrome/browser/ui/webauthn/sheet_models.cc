@@ -245,11 +245,7 @@ AuthenticatorBleEnterPairingModeSheetModel::GetStepIllustration() const {
 
 base::string16 AuthenticatorBleEnterPairingModeSheetModel::GetStepTitle()
     const {
-  // TODO(hongjunchoi): Insert actual domain name from model to
-  // |application_name|.
-  base::string16 application_name = base::UTF8ToUTF16("example.com");
-  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_BLE_ENTER_PAIRING_MODE_TITLE,
-                                    application_name);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_ENTER_PAIRING_MODE_TITLE);
 }
 
 base::string16 AuthenticatorBleEnterPairingModeSheetModel::GetStepDescription()
