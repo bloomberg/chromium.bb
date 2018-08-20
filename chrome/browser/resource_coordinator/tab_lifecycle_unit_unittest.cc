@@ -204,8 +204,8 @@ void TabLifecycleUnitTest::TestCannotDiscardBasedOnHeuristicUsage(
   }
   {
     DecisionDetails decision_details;
-    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive,
-                                               &decision_details));
+    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
+        LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
     EXPECT_FALSE(decision_details.IsPositive());
     EXPECT_EQ(failure_reason, decision_details.FailureReason());
     // There should only be one reason (e.g. no duplicates).
@@ -217,14 +217,14 @@ void TabLifecycleUnitTest::TestCannotDiscardBasedOnHeuristicUsage(
   // Heuristics shouldn't be considered for urgent or external tab discarding.
   {
     DecisionDetails decision_details;
-    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal,
-                                              &decision_details));
+    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
+        LifecycleUnitDiscardReason::EXTERNAL, &decision_details));
     EXPECT_TRUE(decision_details.IsPositive());
   }
   {
     DecisionDetails decision_details;
-    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent,
-                                              &decision_details));
+    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
+        LifecycleUnitDiscardReason::URGENT, &decision_details));
     EXPECT_TRUE(decision_details.IsPositive());
   }
 
@@ -236,8 +236,7 @@ TEST_F(TabLifecycleUnitTest, AsTabLifecycleUnitExternal) {
   TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
-  EXPECT_EQ(&tab_lifecycle_unit,
-            tab_lifecycle_unit.AsTabLifecycleUnitExternal());
+  EXPECT_TRUE(tab_lifecycle_unit.AsTabLifecycleUnitExternal());
 }
 
 TEST_F(TabLifecycleUnitTest, CanDiscardByDefault) {
@@ -516,8 +515,8 @@ TEST_F(TabLifecycleUnitTest, CannotProactivelyDiscardTabIfOriginOptedOut) {
   // should still be possible.
   {
     DecisionDetails decision_details;
-    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive,
-                                               &decision_details));
+    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
+        LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
     EXPECT_FALSE(decision_details.IsPositive());
     EXPECT_EQ(DecisionFailureReason::GLOBAL_BLACKLIST,
               decision_details.FailureReason());
@@ -525,14 +524,14 @@ TEST_F(TabLifecycleUnitTest, CannotProactivelyDiscardTabIfOriginOptedOut) {
   }
   {
     DecisionDetails decision_details;
-    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent,
-                                              &decision_details));
+    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
+        LifecycleUnitDiscardReason::URGENT, &decision_details));
     EXPECT_TRUE(decision_details.IsPositive());
   }
   {
     DecisionDetails decision_details;
-    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal,
-                                              &decision_details));
+    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
+        LifecycleUnitDiscardReason::EXTERNAL, &decision_details));
     EXPECT_TRUE(decision_details.IsPositive());
   }
 }
@@ -574,8 +573,8 @@ TEST_F(TabLifecycleUnitTest, OptInTabsGetsDiscarded) {
   tab_lifecycle_unit.SetRecentlyAudible(true);
 
   DecisionDetails decision_details;
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive,
-                                            &decision_details));
+  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
+      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
   EXPECT_TRUE(decision_details.IsPositive());
   EXPECT_EQ(DecisionSuccessReason::GLOBAL_WHITELIST,
             decision_details.SuccessReason());
@@ -690,8 +689,8 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardIfSharingBrowsingInstance) {
 
     decision_details.Clear();
 
-    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive,
-                                               &decision_details));
+    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
+        LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
     EXPECT_FALSE(decision_details.IsPositive());
     EXPECT_EQ(DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE,
               decision_details.FailureReason());

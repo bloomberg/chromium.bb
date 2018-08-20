@@ -34,11 +34,17 @@ class LifecycleUnitBase : public LifecycleUnit {
   base::TimeDelta GetChromeUsageTimeWhenHidden() const override;
   LifecycleUnitState GetState() const override;
   base::TimeTicks GetStateChangeTime() const override;
+  bool Discard(LifecycleUnitDiscardReason discard_reason) override;
+  size_t GetDiscardCount() const override;
+  LifecycleUnitDiscardReason GetDiscardReason() const override;
   void AddObserver(LifecycleUnitObserver* observer) override;
   void RemoveObserver(LifecycleUnitObserver* observer) override;
   ukm::SourceId GetUkmSourceId() const override;
 
  protected:
+  // TODO(chrisha|fdoray): Clean up the virtual methods below and make them
+  // pure virtual.
+
   // Sets the state of this LifecycleUnit to |state| and notifies observers.
   // |reason| indicates what caused the state change.
   void SetState(LifecycleUnitState state,
@@ -51,6 +57,11 @@ class LifecycleUnitBase : public LifecycleUnit {
   virtual void OnLifecycleUnitStateChanged(
       LifecycleUnitState last_state,
       LifecycleUnitStateChangeReason reason);
+
+  // Invoked to dispatch a call to Discard. The base class takes care of
+  // maintaining |discard_count_| and |discard_reason_|, and delegates the
+  // actually discarding to this.
+  virtual bool DiscardImpl(LifecycleUnitDiscardReason discard_reason);
 
   // Notifies observers that the visibility of the LifecycleUnit has changed.
   void OnLifecycleUnitVisibilityChanged(content::Visibility visibility);
@@ -88,6 +99,14 @@ class LifecycleUnitBase : public LifecycleUnit {
   // was last hidden, or TimeDelta::Max() if this LifecycleUnit is currently
   // visible.
   base::TimeDelta chrome_usage_time_when_hidden_;
+
+  // The number of times that this lifecycle unit has been discarded.
+  int discard_count_ = 0;
+
+  // Maintains the most recent LifecycleUnitDiscardReason that was passed into
+  // Discard().
+  LifecycleUnitDiscardReason discard_reason_ =
+      LifecycleUnitDiscardReason::EXTERNAL;
 
   base::ObserverList<LifecycleUnitObserver>::Unchecked observers_;
 

@@ -257,9 +257,9 @@ class TabLifecycleUnitSourceTest
   }
 
   void TransitionFromPendingDiscardToDiscardedIfNeeded(
-      DiscardReason reason,
+      LifecycleUnitDiscardReason reason,
       LifecycleUnit* lifecycle_unit) {
-    if (reason == DiscardReason::kProactive) {
+    if (reason == LifecycleUnitDiscardReason::PROACTIVE) {
       EXPECT_EQ(LifecycleUnitState::PENDING_DISCARD,
                 lifecycle_unit->GetState());
       task_runner_->FastForwardBy(kProactiveDiscardFreezeTimeout);
@@ -269,7 +269,7 @@ class TabLifecycleUnitSourceTest
 
   void DiscardAndAttachTabHelpers(LifecycleUnit* lifecycle_unit) {}
 
-  void DetachWebContentsTest(DiscardReason reason) {
+  void DetachWebContentsTest(LifecycleUnitDiscardReason reason) {
     LifecycleUnit* first_lifecycle_unit = nullptr;
     LifecycleUnit* second_lifecycle_unit = nullptr;
     CreateTwoTabs(true /* focus_tab_strip */, &first_lifecycle_unit,
@@ -310,7 +310,7 @@ class TabLifecycleUnitSourceTest
                                     {first_lifecycle_unit});
   }
 
-  void DiscardTest(DiscardReason reason) {
+  void DiscardTest(LifecycleUnitDiscardReason reason) {
     const base::TimeTicks kDummyLastActiveTime =
         base::TimeTicks() + kShortDelay;
 
@@ -344,7 +344,7 @@ class TabLifecycleUnitSourceTest
     source_->SetFocusedTabStripModelForTesting(nullptr);
   }
 
-  void DiscardAndActivateTest(DiscardReason reason) {
+  void DiscardAndActivateTest(LifecycleUnitDiscardReason reason) {
     LifecycleUnit* background_lifecycle_unit = nullptr;
     LifecycleUnit* foreground_lifecycle_unit = nullptr;
     CreateTwoTabs(true /* focus_tab_strip */, &background_lifecycle_unit,
@@ -378,7 +378,7 @@ class TabLifecycleUnitSourceTest
                     .GetPendingEntry());
   }
 
-  void DiscardAndExplicitlyReloadTest(DiscardReason reason) {
+  void DiscardAndExplicitlyReloadTest(LifecycleUnitDiscardReason reason) {
     LifecycleUnit* background_lifecycle_unit = nullptr;
     LifecycleUnit* foreground_lifecycle_unit = nullptr;
     CreateTwoTabs(true /* focus_tab_strip */, &background_lifecycle_unit,
@@ -519,15 +519,15 @@ TEST_F(TabLifecycleUnitSourceTest, ReplaceWebContents) {
 }
 
 TEST_F(TabLifecycleUnitSourceTest, DetachWebContents_Urgent) {
-  DetachWebContentsTest(DiscardReason::kUrgent);
+  DetachWebContentsTest(LifecycleUnitDiscardReason::URGENT);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, DetachWebContents_Proactive) {
-  DetachWebContentsTest(DiscardReason::kProactive);
+  DetachWebContentsTest(LifecycleUnitDiscardReason::PROACTIVE);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, DetachWebContents_External) {
-  DetachWebContentsTest(DiscardReason::kExternal);
+  DetachWebContentsTest(LifecycleUnitDiscardReason::EXTERNAL);
 }
 
 // Regression test for https://crbug.com/818454. Previously, TabLifecycleUnits
@@ -558,39 +558,39 @@ TEST_F(TabLifecycleUnitSourceTest, DetachAndDeleteWebContents) {
 // WebContents in the TabLifecycleUnit.
 
 TEST_F(TabLifecycleUnitSourceTest, Discard_Proactive) {
-  DiscardTest(DiscardReason::kProactive);
+  DiscardTest(LifecycleUnitDiscardReason::PROACTIVE);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, Discard_Urgent) {
-  DiscardTest(DiscardReason::kUrgent);
+  DiscardTest(LifecycleUnitDiscardReason::URGENT);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, Discard_External) {
-  DiscardTest(DiscardReason::kExternal);
+  DiscardTest(LifecycleUnitDiscardReason::EXTERNAL);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, DiscardAndActivate_Urgent) {
-  DiscardAndActivateTest(DiscardReason::kUrgent);
+  DiscardAndActivateTest(LifecycleUnitDiscardReason::URGENT);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, DiscardAndActivate_Proactive) {
-  DiscardAndActivateTest(DiscardReason::kProactive);
+  DiscardAndActivateTest(LifecycleUnitDiscardReason::PROACTIVE);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, DiscardAndActivate_External) {
-  DiscardAndActivateTest(DiscardReason::kExternal);
+  DiscardAndActivateTest(LifecycleUnitDiscardReason::EXTERNAL);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, DiscardAndExplicitlyReload_Urgent) {
-  DiscardAndExplicitlyReloadTest(DiscardReason::kUrgent);
+  DiscardAndExplicitlyReloadTest(LifecycleUnitDiscardReason::URGENT);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, DiscardAndExplicitlyReload_Proactive) {
-  DiscardAndExplicitlyReloadTest(DiscardReason::kProactive);
+  DiscardAndExplicitlyReloadTest(LifecycleUnitDiscardReason::PROACTIVE);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, DiscardAndExplicitlyReload_External) {
-  DiscardAndExplicitlyReloadTest(DiscardReason::kExternal);
+  DiscardAndExplicitlyReloadTest(LifecycleUnitDiscardReason::EXTERNAL);
 }
 
 TEST_F(TabLifecycleUnitSourceTest, CannotFreezeADiscardedTab) {
@@ -605,14 +605,15 @@ TEST_F(TabLifecycleUnitSourceTest, CannotFreezeADiscardedTab) {
   // It should be possible to discard the background tab.
   ExpectCanDiscardTrueAllReasons(background_lifecycle_unit);
 
-  // Discard the tab. Use DiscardReason::kUrgent to force the discard.
+  // Discard the tab. Use LifecycleUnitDiscardReason::URGENT to force the
+  // discard.
   EXPECT_EQ(LifecycleUnitState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_CALL(tab_observer_, OnDiscardedStateChange(::testing::_, true));
-  background_lifecycle_unit->Discard(DiscardReason::kUrgent);
+  background_lifecycle_unit->Discard(LifecycleUnitDiscardReason::URGENT);
 
   ::testing::Mock::VerifyAndClear(&tab_observer_);
-  TransitionFromPendingDiscardToDiscardedIfNeeded(DiscardReason::kUrgent,
-                                                  background_lifecycle_unit);
+  TransitionFromPendingDiscardToDiscardedIfNeeded(
+      LifecycleUnitDiscardReason::URGENT, background_lifecycle_unit);
   EXPECT_EQ(LifecycleUnitState::DISCARDED,
             background_lifecycle_unit->GetState());
   EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));
@@ -644,7 +645,7 @@ TEST_F(TabLifecycleUnitSourceTest, TabProactiveDiscardedByFrozenCallback) {
 
   EXPECT_CALL(tab_observer_, OnDiscardedStateChange(::testing::_, true));
 
-  background_lifecycle_unit->Discard(DiscardReason::kProactive);
+  background_lifecycle_unit->Discard(LifecycleUnitDiscardReason::PROACTIVE);
   EXPECT_EQ(LifecycleUnitState::PENDING_DISCARD,
             background_lifecycle_unit->GetState());
 
@@ -668,11 +669,11 @@ TEST_F(TabLifecycleUnitSourceTest, TabProactiveDiscardedByFrozenTimeout) {
   EXPECT_EQ(LifecycleUnitState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_CALL(tab_observer_, OnDiscardedStateChange(::testing::_, true));
 
-  background_lifecycle_unit->Discard(DiscardReason::kProactive);
+  background_lifecycle_unit->Discard(LifecycleUnitDiscardReason::PROACTIVE);
   EXPECT_EQ(LifecycleUnitState::PENDING_DISCARD,
             background_lifecycle_unit->GetState());
-  TransitionFromPendingDiscardToDiscardedIfNeeded(DiscardReason::kProactive,
-                                                  background_lifecycle_unit);
+  TransitionFromPendingDiscardToDiscardedIfNeeded(
+      LifecycleUnitDiscardReason::PROACTIVE, background_lifecycle_unit);
 
   EXPECT_EQ(LifecycleUnitState::DISCARDED,
             background_lifecycle_unit->GetState());

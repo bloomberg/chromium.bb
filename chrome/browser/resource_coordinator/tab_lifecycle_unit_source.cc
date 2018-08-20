@@ -83,7 +83,10 @@ TabLifecycleUnitSource* TabLifecycleUnitSource::GetInstance() {
 
 TabLifecycleUnitExternal* TabLifecycleUnitSource::GetTabLifecycleUnitExternal(
     content::WebContents* web_contents) const {
-  return GetTabLifecycleUnit(web_contents);
+  auto* lu = GetTabLifecycleUnit(web_contents);
+  if (!lu)
+    return nullptr;
+  return lu->AsTabLifecycleUnitExternal();
 }
 
 void TabLifecycleUnitSource::AddTabLifecycleObserver(

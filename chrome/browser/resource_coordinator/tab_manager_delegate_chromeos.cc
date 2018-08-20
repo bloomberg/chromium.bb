@@ -146,8 +146,9 @@ ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
     if (lifecycle_unit_sort_key_.last_focused_time == base::TimeTicks::Max())
       return ProcessType::FOCUSED_TAB;
     DecisionDetails decision_details;
-    if (!lifecycle_unit()->CanDiscard(DiscardReason::kProactive,
-                                      &decision_details)) {
+    if (!lifecycle_unit()->CanDiscard(
+            ::mojom::LifecycleUnitDiscardReason::PROACTIVE,
+            &decision_details)) {
       return ProcessType::PROTECTED_BACKGROUND_TAB;
     }
     return ProcessType::BACKGROUND_TAB;
@@ -337,7 +338,8 @@ void TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment() {
 
 // If able to get the list of ARC procsses, prioritize tabs and apps as a whole.
 // Otherwise try to kill tabs only.
-void TabManagerDelegate::LowMemoryKill(DiscardReason reason) {
+void TabManagerDelegate::LowMemoryKill(
+    ::mojom::LifecycleUnitDiscardReason reason) {
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
   base::TimeTicks now = base::TimeTicks::Now();
   if (arc_process_service &&
@@ -536,7 +538,7 @@ bool TabManagerDelegate::KillArcProcess(const int nspid) {
 }
 
 bool TabManagerDelegate::KillTab(LifecycleUnit* lifecycle_unit,
-                                 DiscardReason reason) {
+                                 ::mojom::LifecycleUnitDiscardReason reason) {
   DecisionDetails decision_details;
   if (!lifecycle_unit->CanDiscard(reason, &decision_details))
     return false;
@@ -550,7 +552,7 @@ chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
 
 void TabManagerDelegate::LowMemoryKillImpl(
     base::TimeTicks start_time,
-    DiscardReason reason,
+    ::mojom::LifecycleUnitDiscardReason reason,
     std::vector<arc::ArcProcess> arc_processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   VLOG(2) << "LowMemoryKillImpl";

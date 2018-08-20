@@ -14,13 +14,13 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/decision_details.h"
-#include "chrome/browser/resource_coordinator/discard_reason.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "content/public/browser/visibility.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace resource_coordinator {
 
+using ::mojom::LifecycleUnitDiscardReason;
 using ::mojom::LifecycleUnitLoadingState;
 using ::mojom::LifecycleUnitState;
 
@@ -118,7 +118,7 @@ class LifecycleUnit {
   // replaced with a method that returns a numeric value representing the
   // expected user pain caused by a discard. A values above a given threshold
   // would be equivalent to CanDiscard() returning false for a given
-  // DiscardReason. https://crbug.com/775644
+  // mojom::LifecycleUnitDiscardReason. https://crbug.com/775644
   virtual SortKey GetSortKey() const = 0;
 
   // Returns the current state of this LifecycleUnit.
@@ -158,7 +158,7 @@ class LifecycleUnit {
   // Returning false but with an empty |decision_details| means the transition
   // is not possible for a trivial reason that doesn't need to be reported
   // (ie, the page is already discarded).
-  virtual bool CanDiscard(DiscardReason reason,
+  virtual bool CanDiscard(LifecycleUnitDiscardReason reason,
                           DecisionDetails* decision_details) const = 0;
 
   // Request that the LifecycleUnit be frozen, return true if the request is
@@ -175,7 +175,14 @@ class LifecycleUnit {
   // is easier to achieve that if we discard a group of LifecycleUnits that live
   // in the same process(es) than if we discard individual LifecycleUnits.
   // https://crbug.com/775644
-  virtual bool Discard(DiscardReason discard_reason) = 0;
+  virtual bool Discard(LifecycleUnitDiscardReason discard_reason) = 0;
+
+  // Returns the number of times this lifecycle unit has been discarded.
+  virtual size_t GetDiscardCount() const = 0;
+
+  // Returns the most recent discard reason that was applied to this lifecycle
+  // unit. This only makes sense if the lifecycle unit has ever been discarded.
+  virtual LifecycleUnitDiscardReason GetDiscardReason() const = 0;
 
   // Adds/removes an observer to this LifecycleUnit.
   virtual void AddObserver(LifecycleUnitObserver* observer) = 0;

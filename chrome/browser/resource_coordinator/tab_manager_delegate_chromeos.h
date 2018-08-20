@@ -19,6 +19,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chromeos/dbus/debug_daemon_client.h"
@@ -74,7 +75,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
                          aura::Window* lost_active) override;
 
   // Kills a process on memory pressure.
-  void LowMemoryKill(DiscardReason reason);
+  void LowMemoryKill(::mojom::LifecycleUnitDiscardReason reason);
 
   // Returns oom_score_adj of a process if the score is cached by |this|.
   // If couldn't find the score in the cache, returns -1001 since the valid
@@ -96,7 +97,8 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
 
   // Kills a tab. Returns true if the tab is killed successfully.
   // Virtual for unit testing.
-  virtual bool KillTab(LifecycleUnit* lifecycle_unit, DiscardReason reason);
+  virtual bool KillTab(LifecycleUnit* lifecycle_unit,
+                       ::mojom::LifecycleUnitDiscardReason reason);
 
   // Get debugd client instance. Virtual for unit testing.
   virtual chromeos::DebugDaemonClient* GetDebugDaemonClient();
@@ -144,7 +146,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
 
   // Kills a process after getting all info of tabs and apps.
   void LowMemoryKillImpl(base::TimeTicks start_time,
-                         DiscardReason reason,
+                         ::mojom::LifecycleUnitDiscardReason reason,
                          std::vector<arc::ArcProcess> arc_processes);
 
   // Sets a newly focused tab the highest priority process if it wasn't.

@@ -37,6 +37,8 @@ struct TabDiscardsInfo {
   // The number of times this tab has been discarded in the current browser
   // session.
   int32 discard_count;
+  // If the tab is currently discarded, the discard reason.
+  LifecycleUnitDiscardReason discard_reason;
   // The rank of the tab in the "importance to user" list. The tab with 1 is the
   // most important, the tab with N is the least important.
   int32 utility_rank;

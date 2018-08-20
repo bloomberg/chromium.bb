@@ -20,7 +20,6 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
-#include "chrome/browser/resource_coordinator/discard_reason.h"
 #include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
@@ -108,7 +107,7 @@ class TabManager : public LifecycleUnitObserver,
   // urgent, an aggressive fast-kill will be attempted if the sudden termination
   // disablers are allowed to be ignored (e.g. On ChromeOS, we can ignore an
   // unload handler and fast-kill the tab regardless).
-  void DiscardTab(DiscardReason reason);
+  void DiscardTab(LifecycleUnitDiscardReason reason);
 
   // Method used by the extensions API to discard tabs. If |contents| is null,
   // discards the least important tab using DiscardTab(). Otherwise discards
@@ -119,7 +118,7 @@ class TabManager : public LifecycleUnitObserver,
   // Log memory statistics for the running processes, then discards a tab.
   // Tab discard happens sometime later, as collecting the statistics touches
   // multiple threads and takes time.
-  void LogMemoryAndDiscardTab(DiscardReason reason);
+  void LogMemoryAndDiscardTab(LifecycleUnitDiscardReason reason);
 
   // Log memory statistics for the running processes.
   void LogMemory(const std::string& title);
@@ -266,7 +265,7 @@ class TabManager : public LifecycleUnitObserver,
   // min time to purge times this value.
   const int kDefaultMinMaxTimeToPurgeRatio = 4;
 
-  static void PurgeMemoryAndDiscardTab(DiscardReason reason);
+  static void PurgeMemoryAndDiscardTab(LifecycleUnitDiscardReason reason);
 
   // Returns true if the |url| represents an internal Chrome web UI page that
   // can be easily reloaded and hence makes a good choice to discard.
@@ -344,7 +343,7 @@ class TabManager : public LifecycleUnitObserver,
 
   // Discards the less important LifecycleUnit that supports discarding under
   // |reason|.
-  content::WebContents* DiscardTabImpl(DiscardReason reason);
+  content::WebContents* DiscardTabImpl(LifecycleUnitDiscardReason reason);
 
   void OnSessionRestoreStartedLoadingTabs();
   void OnSessionRestoreFinishedLoadingTabs();
