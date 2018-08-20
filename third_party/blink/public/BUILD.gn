@@ -191,7 +191,6 @@ source_set("blink_headers") {
     "platform/scheduler/child/webthread_base.h",
     "platform/scheduler/renderer_process_type.h",
     "platform/scheduler/single_thread_idle_task_runner.h",
-    "platform/scheduler/web_main_thread_scheduler.h",
     "platform/scheduler/web_rail_mode_observer.h",
     "platform/scheduler/web_render_widget_scheduling_state.h",
     "platform/scheduler/web_resource_loading_task_runner_handle.h",

@@ -209,13 +209,17 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool(
       MainThreadTaskQueue*);
   void ApplyPolicyToThrottleableQueue();
-  bool ShouldThrottleTimers() const;
+  bool ShouldThrottleTaskQueues() const;
   SchedulingLifecycleState CalculateLifecycleState(
       ObserverType type) const override;
   void UpdateQueuePolicy(
-      const scoped_refptr<MainThreadTaskQueue>& queue,
+      MainThreadTaskQueue* queue,
       base::sequence_manager::TaskQueue::QueueEnabledVoter* voter);
-  void UpdateThrottling();
+  // Update throttling for |task_queue|. This changes the throttling ref counts
+  // and should only be called for new queues if throttling is enabled, or if
+  // the throttling state changes.
+  void UpdateTaskQueueThrottling(MainThreadTaskQueue* task_queue,
+                                 bool should_throttle);
 
   void DidOpenActiveConnection();
   void DidCloseActiveConnection();
@@ -266,8 +270,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   TraceableState<FrameOriginType, kTracingCategoryNameInfo> frame_origin_type_;
   TraceableState<bool, kTracingCategoryNameInfo> subresource_loading_paused_;
   StateTracer<kTracingCategoryNameInfo> url_tracer_;
-  // |task_queue_throttled_| is false if |throttleable_task_queue_| is absent.
-  TraceableState<bool, kTracingCategoryNameInfo> task_queue_throttled_;
+  TraceableState<bool, kTracingCategoryNameInfo> task_queues_throttled_;
   // TODO(kraynov): https://crbug.com/827113
   // Trace active connection count.
   int active_connection_count_;
