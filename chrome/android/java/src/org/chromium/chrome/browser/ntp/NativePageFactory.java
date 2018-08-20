@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.download.DownloadPage;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesPage;
 import org.chromium.chrome.browser.feed.FeedNewTabPage;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.tab.Tab;
@@ -55,6 +56,10 @@ public class NativePageFactory {
             return new DownloadPage(activity, new TabShim(tab));
         }
 
+        protected NativePage buildExploreSitesPage(ChromeActivity activity, Tab tab) {
+            return new ExploreSitesPage(activity, new TabShim(tab));
+        }
+
         protected NativePage buildHistoryPage(ChromeActivity activity, Tab tab) {
             return new HistoryPage(activity, new TabShim(tab));
         }
@@ -68,7 +73,7 @@ public class NativePageFactory {
 
     @IntDef({NativePageType.NONE, NativePageType.CANDIDATE, NativePageType.NTP,
             NativePageType.BOOKMARKS, NativePageType.RECENT_TABS, NativePageType.DOWNLOADS,
-            NativePageType.HISTORY})
+            NativePageType.HISTORY, NativePageType.EXPLORE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface NativePageType {
         int NONE = 0;
@@ -78,6 +83,7 @@ public class NativePageFactory {
         int RECENT_TABS = 4;
         int DOWNLOADS = 5;
         int HISTORY = 6;
+        int EXPLORE = 7;
     }
 
     private static @NativePageType int nativePageType(
@@ -104,6 +110,8 @@ public class NativePageFactory {
             return NativePageType.HISTORY;
         } else if (UrlConstants.RECENT_TABS_HOST.equals(host) && !isIncognito) {
             return NativePageType.RECENT_TABS;
+        } else if (UrlConstants.EXPLORE_HOST.equals(host)) {
+            return NativePageType.EXPLORE;
         } else {
             return NativePageType.NONE;
         }
@@ -153,6 +161,9 @@ public class NativePageFactory {
                 break;
             case NativePageType.RECENT_TABS:
                 page = sNativePageBuilder.buildRecentTabsPage(activity, tab);
+                break;
+            case NativePageType.EXPLORE:
+                page = sNativePageBuilder.buildExploreSitesPage(activity, tab);
                 break;
             default:
                 assert false;
