@@ -20,6 +20,7 @@ cr.define('sync.confirmation', function() {
     MORE_OPTIONS_OPT_IN: 1,
     MORE_OPTIONS_REVIEW_SETTINGS: 2,
     MORE_OPTIONS_MAKE_NO_CHANGES: 3,
+    ABORT: 4,  // Not actually used in JS, but here to match the C++ type.
   };
 
   /**
