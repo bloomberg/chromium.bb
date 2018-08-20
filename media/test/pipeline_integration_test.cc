@@ -1760,7 +1760,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHi12PVP9) {
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_MP4) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeature(kAv1Decoder);
-  MockMediaSource source("bear-av1.mp4", kMP4AV1, 24723);
+  MockMediaSource source("bear-av1.mp4", kMP4AV1, 24355);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
 
