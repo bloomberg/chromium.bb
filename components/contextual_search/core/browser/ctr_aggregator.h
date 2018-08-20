@@ -9,14 +9,14 @@
 // Used by Contextual Search to record impressions of the Bar and CTR of
 // panel opens to use as signals for Tap triggering.
 
-#ifndef COMPONENTS_CONTEXTUAL_SEARCH_BROWSER_CTR_AGGREGATOR_H_
-#define COMPONENTS_CONTEXTUAL_SEARCH_BROWSER_CTR_AGGREGATOR_H_
+#ifndef COMPONENTS_CONTEXTUAL_SEARCH_CORE_BROWSER_CTR_AGGREGATOR_H_
+#define COMPONENTS_CONTEXTUAL_SEARCH_CORE_BROWSER_CTR_AGGREGATOR_H_
 
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "components/contextual_search/browser/weekly_activity_storage.h"
+#include "components/contextual_search/core/browser/weekly_activity_storage.h"
 
 namespace contextual_search {
 
@@ -115,4 +115,4 @@ class CtrAggregator {
 
 }  // namespace contextual_search
 
-#endif  // COMPONENTS_CONTEXTUAL_SEARCH_BROWSER_CTR_AGGREGATOR_H_
+#endif  // COMPONENTS_CONTEXTUAL_SEARCH_CORE_BROWSER_CTR_AGGREGATOR_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CONTEXTUAL_SEARCH_BROWSER_CONTEXTUAL_SEARCH_JS_API_HANDLER_H_
-#define COMPONENTS_CONTEXTUAL_SEARCH_BROWSER_CONTEXTUAL_SEARCH_JS_API_HANDLER_H_
+#ifndef COMPONENTS_CONTEXTUAL_SEARCH_CONTENT_BROWSER_CONTEXTUAL_SEARCH_JS_API_HANDLER_H_
+#define COMPONENTS_CONTEXTUAL_SEARCH_CONTENT_BROWSER_CONTEXTUAL_SEARCH_JS_API_HANDLER_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "components/contextual_search/common/contextual_search_js_api_service.mojom.h"
+#include "components/contextual_search/content/common/contextual_search_js_api_service.mojom.h"
 
 namespace contextual_search {
 
@@ -45,4 +45,4 @@ class ContextualSearchJsApiHandler {
 
 }  // namespace contextual_search
 
-#endif  // COMPONENTS_CONTEXTUAL_SEARCH_BROWSER_CONTEXTUAL_SEARCH_JS_API_HANDLER_H_
+#endif  // COMPONENTS_CONTEXTUAL_SEARCH_CONTENT_BROWSER_CONTEXTUAL_SEARCH_JS_API_HANDLER_H_

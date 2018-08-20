@@ -124,7 +124,7 @@ jumbo_static_library("renderer") {
     "//chrome/common/net",
     "//components/autofill/content/renderer",
     "//components/cdm/renderer",
-    "//components/contextual_search:renderer",
+    "//components/contextual_search/content:renderer",
     "//components/data_reduction_proxy/content/renderer",
     "//components/data_reduction_proxy/core/common",
     "//components/dom_distiller/content/renderer",

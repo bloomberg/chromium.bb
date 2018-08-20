@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/contextual_search/renderer/overlay_js_render_frame_observer.h"
+#include "components/contextual_search/content/renderer/overlay_js_render_frame_observer.h"
 
 #include <utility>
 
 #include "base/bind.h"
-#include "components/contextual_search/renderer/contextual_search_wrapper.h"
+#include "components/contextual_search/content/renderer/contextual_search_wrapper.h"
 #include "content/public/renderer/render_frame.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"

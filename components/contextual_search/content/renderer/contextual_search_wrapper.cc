@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/contextual_search/renderer/contextual_search_wrapper.h"
+#include "components/contextual_search/content/renderer/contextual_search_wrapper.h"
 
 #include "base/strings/string_util.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
@@ -35,7 +35,7 @@ void ContextualSearchWrapper::Install(content::RenderFrame* render_frame) {
   // way to implement a communication channel between the page and Chrome,
   // but found nothing better.
   // TODO(donnd): use a better communication channel once that becomes
-  // available, e.g. navigator.connect API. See crbug.com/541683.
+  // available, e.g. navigator.connect API. See https://crbug.com/541683.
   // TODO(donnd): refactor some of this boilerplate into a reusable
   // method.  This was cribbed from MemoryBenchmarkingExtension.
   v8::Isolate* isolate = blink::MainThreadIsolate();
@@ -74,7 +74,7 @@ gin::ObjectTemplateBuilder ContextualSearchWrapper::GetObjectTemplateBuilder(
 
 bool ContextualSearchWrapper::EnsureServiceConnected() {
   if (render_frame() && (!contextual_search_js_api_service_ ||
-      !contextual_search_js_api_service_.is_bound())) {
+                         !contextual_search_js_api_service_.is_bound())) {
     render_frame()->GetRemoteInterfaces()->GetInterface(
         &contextual_search_js_api_service_);
     return true;
