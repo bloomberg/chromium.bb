@@ -3,7 +3,7 @@
     "Run tests on iOS12beta track on 64-bit iOS 12 simulators.",
     "Note: Xcode 10 requires OSX 10.13.4 hence 'host os'"
   ],
-  "xcode build version": "10L221o",
+  "xcode build version": "10l232m",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "additional_target_cpus=[\"x86\"]",
