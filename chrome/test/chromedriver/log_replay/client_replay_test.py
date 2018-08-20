@@ -33,6 +33,15 @@ import webserver
 sys.path.remove(_TEST_DIR)
 # pylint: enable=g-import-not-at-top, g-bad-import-order
 
+_VERSION_SPECIFIC_NEGATIVE_FILTER = {}
+
+_VERSION_SPECIFIC_NEGATIVE_FILTER["67"] = [
+    # The wording of an error changed between Chrome 67 and 68 that makes
+    # testCloseWindow fail because we compare the newer error in the log
+    # file to the old error given by Chrome 67 and find a difference.
+    "*testCloseWindow"
+]
+
 
 def SubstituteVariableEntries(s):
   """Identifies and removes items that can legitimately vary between runs."""
@@ -197,6 +206,14 @@ class ChromeDriverClientReplayTest(unittest.TestCase):
   def testChromeBinary(self):
     self.runTest("test_data/testChromeBinary.log")
 
+
+def GetNegativeFilter(chrome_version):
+  if chrome_version in _VERSION_SPECIFIC_FILTER:
+    negative_filter = _VERSION_SPECIFIC_FILTER[chrome_version]
+    return "*-" + ":__main__.".join([""] + negative_filter)
+  return "*"
+
+
 def main():
   usage = "usage: %prog <chromedriver binary> [options]"
   parser = optparse.OptionParser(usage=usage)
@@ -206,11 +223,17 @@ def main():
   parser.add_option(
       "", "--chrome", help="Path to the desired Chrome binary.")
   parser.add_option(
-      "", "--filter", type="string", default="*",
-      help="Filter for specifying what tests to run, \"*\" will run all. E.g., "
-      "*testRunMethod")
+      "", "--chrome-version", default="HEAD",
+      help="Version of Chrome. Default is 'HEAD'.")
+  parser.add_option(
+      "", "--filter", type="string", default="",
+      help="Filter for specifying what tests to run, \"*\" will run all,"
+      "including tests excluded by default. E.g., *testRunMethod")
 
+  # Need global to access these from the test runner.
+  # pylint: disable=global-variable-undefined
   global _OPTIONS, _CHROMEDRIVER
+  # pylint: enable=global-variable-undefined
   _OPTIONS, args = parser.parse_args()
   _CHROMEDRIVER = util.GetAbsolutePathOfUserPath(args[0])
   if not os.path.exists(_CHROMEDRIVER):
@@ -222,7 +245,11 @@ def main():
 
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
       sys.modules[__name__])
-  tests = unittest_util.FilterTestSuite(all_tests_suite, _OPTIONS.filter)
+
+  test_filter = (GetNegativeFilter(_OPTIONS.chrome_version)
+                 if _OPTIONS.filter == "" else _OPTIONS.filter)
+
+  tests = unittest_util.FilterTestSuite(all_tests_suite, test_filter)
   result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(tests)
   sys.exit(len(result.failures) + len(result.errors))
 
