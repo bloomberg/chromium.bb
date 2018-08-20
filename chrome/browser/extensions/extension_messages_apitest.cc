@@ -1146,8 +1146,7 @@ IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTest,
   std::string expected_tls_channel_id_value =
       CreateTlsChannelId(profile()->GetRequestContext(), chromium_org_url());
   bool expect_empty_id = false;
-  if (!base::FeatureList::IsEnabled(::features::kChannelID) &&
-      !base::FeatureList::IsEnabled(::features::kTokenBinding)) {
+  if (!base::FeatureList::IsEnabled(::features::kChannelID)) {
     expected_tls_channel_id_value = "";
     expect_empty_id = true;
   }
@@ -1208,10 +1207,7 @@ class ExternallyConnectableMessagingTestNoChannelID
   ~ExternallyConnectableMessagingTestNoChannelID() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features = {::features::kChannelID,
-                                                    ::features::kTokenBinding};
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+    scoped_feature_list_.InitAndDisableFeature(::features::kChannelID);
     ExternallyConnectableMessagingTest::SetUpCommandLine(command_line);
   }
 
@@ -1470,8 +1466,7 @@ IN_PROC_BROWSER_TEST_P(MessagingApiTest,
   std::string tls_channel_id = CreateTlsChannelId(
       app_storage_partition->GetURLRequestContext(), background_url);
   ASSERT_FALSE(tls_channel_id.empty());
-  if (!base::FeatureList::IsEnabled(::features::kChannelID) &&
-      !base::FeatureList::IsEnabled(::features::kTokenBinding)) {
+  if (!base::FeatureList::IsEnabled(::features::kChannelID)) {
     tls_channel_id = "undefined";
   }
 

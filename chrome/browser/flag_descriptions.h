@@ -479,9 +479,6 @@ extern const char kEnableSyncUSSBookmarksDescription[];
 extern const char kEnableSyncUSSSessionsName[];
 extern const char kEnableSyncUSSSessionsDescription[];
 
-extern const char kEnableTokenBindingName[];
-extern const char kEnableTokenBindingDescription[];
-
 extern const char kEnableUseZoomForDsfName[];
 extern const char kEnableUseZoomForDsfDescription[];
 extern const char kEnableUseZoomForDsfChoiceDefault[];

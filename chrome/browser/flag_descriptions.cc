@@ -766,9 +766,6 @@ const char kEnableSyncUSSSessionsDescription[] =
     "Enables the new, experimental implementation of session sync (aka tab "
     "sync).";
 
-const char kEnableTokenBindingName[] = "Token Binding.";
-const char kEnableTokenBindingDescription[] = "Enable Token Binding support.";
-
 const char kEnableUseZoomForDsfName[] =
     "Use Blink's zoom for device scale factor.";
 const char kEnableUseZoomForDsfDescription[] =
