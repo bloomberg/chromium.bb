@@ -136,6 +136,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   blink::WebRTCSessionDescription PendingLocalDescription() override;
   blink::WebRTCSessionDescription PendingRemoteDescription() override;
 
+  const webrtc::PeerConnectionInterface::RTCConfiguration& GetConfiguration()
+      const override;
   webrtc::RTCErrorType SetConfiguration(
       const webrtc::PeerConnectionInterface::RTCConfiguration& configuration)
       override;

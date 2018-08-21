@@ -126,6 +126,7 @@ class MODULES_EXPORT RTCPeerConnection final
 
   String signalingState() const;
 
+  void getConfiguration(RTCConfiguration&);
   void setConfiguration(ScriptState*, const RTCConfiguration&, ExceptionState&);
 
   // Certificate management

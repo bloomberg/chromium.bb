@@ -85,6 +85,8 @@ class WebRTCPeerConnectionHandler {
   virtual WebRTCSessionDescription CurrentRemoteDescription() = 0;
   virtual WebRTCSessionDescription PendingLocalDescription() = 0;
   virtual WebRTCSessionDescription PendingRemoteDescription() = 0;
+  virtual const webrtc::PeerConnectionInterface::RTCConfiguration&
+  GetConfiguration() const = 0;
   virtual webrtc::RTCErrorType SetConfiguration(
       const webrtc::PeerConnectionInterface::RTCConfiguration&) = 0;
 
