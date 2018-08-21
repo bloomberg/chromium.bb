@@ -40,7 +40,8 @@ class SurfaceObserver {
   // in response to a BeginFrame, or a CopyOutputRequest is issued.
   //
   // |ack.sequence_number| is only valid if called in response to a BeginFrame.
-  // Should return true if this causes a Display to be damaged.
+  // Should return true if this causes a Display to be damaged resulting in a
+  // draw.
   virtual bool OnSurfaceDamaged(const SurfaceId& surface_id,
                                 const BeginFrameAck& ack) = 0;
 

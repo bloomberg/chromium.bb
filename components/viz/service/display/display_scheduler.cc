@@ -329,7 +329,11 @@ bool DisplayScheduler::OnSurfaceDamaged(const SurfaceId& surface_id,
   bool damaged = client_->SurfaceDamaged(surface_id, ack);
   ProcessSurfaceDamage(surface_id, ack, damaged);
 
-  return damaged;
+  // If we are not visible, return false. We may never draw in this
+  // state, and other displays may have embedded this surface without
+  // damage. Those displays shouldn't have their frame production
+  // blocked by waiting for this ack.
+  return damaged && visible_;
 }
 
 void DisplayScheduler::OnSurfaceDiscarded(const SurfaceId& surface_id) {
