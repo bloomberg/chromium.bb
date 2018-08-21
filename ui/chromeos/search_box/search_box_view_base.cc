@@ -408,6 +408,7 @@ void SearchBoxViewBase::ButtonPressed(views::Button* sender,
 void SearchBoxViewBase::OnTabletModeChanged(bool started) {
   is_tablet_mode_ = started;
   UpdateKeyboardVisibility();
+  UpdateSearchBoxBorder();
 }
 
 void SearchBoxViewBase::OnOnSearchBoxFocusedChanged() {
