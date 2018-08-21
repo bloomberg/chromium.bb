@@ -50,13 +50,11 @@ TEST(ShelfApplicationMenuModelTest, VerifyContentsWithNoMenuItems) {
   base::string16 title = base::ASCIIToUTF16("title");
   ShelfApplicationMenuModel menu(title, std::vector<mojom::MenuItemPtr>(),
                                  nullptr);
-  // Expect the title with separators.
-  ASSERT_EQ(static_cast<int>(3), menu.GetItemCount());
-  EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(0));
-  EXPECT_EQ(ui::MenuModel::TYPE_COMMAND, menu.GetTypeAt(1));
-  EXPECT_EQ(title, menu.GetLabelAt(1));
-  EXPECT_FALSE(menu.IsEnabledAt(1));
-  EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(2));
+  // Expect the title.
+  ASSERT_EQ(static_cast<int>(1), menu.GetItemCount());
+  EXPECT_EQ(ui::MenuModel::TYPE_COMMAND, menu.GetTypeAt(0));
+  EXPECT_EQ(title, menu.GetLabelAt(0));
+  EXPECT_FALSE(menu.IsEnabledAt(0));
 }
 
 // Verifies the menu contents given a non-empty item list.
@@ -76,23 +74,23 @@ TEST(ShelfApplicationMenuModelTest, VerifyContentsWithMenuItems) {
   ShelfApplicationMenuModel menu(title, std::move(items), nullptr);
   ShelfApplicationMenuModelTestAPI menu_test_api(&menu);
 
-  // Expect the title with separators, the enabled items, and another separator.
-  ASSERT_EQ(static_cast<int>(7), menu.GetItemCount());
-  EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(0));
+  // Expect the title and the enabled items.
+  ASSERT_EQ(static_cast<int>(5), menu.GetItemCount());
+
+  // The label title should not be enabled.
+  EXPECT_EQ(ui::MenuModel::TYPE_COMMAND, menu.GetTypeAt(0));
+  EXPECT_EQ(title, menu.GetLabelAt(0));
+  EXPECT_FALSE(menu.IsEnabledAt(0));
+
   EXPECT_EQ(ui::MenuModel::TYPE_COMMAND, menu.GetTypeAt(1));
-  EXPECT_EQ(title, menu.GetLabelAt(1));
-  EXPECT_FALSE(menu.IsEnabledAt(1));
-  EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(2));
+  EXPECT_EQ(title1, menu.GetLabelAt(1));
+  EXPECT_TRUE(menu.IsEnabledAt(1));
+  EXPECT_EQ(ui::MenuModel::TYPE_COMMAND, menu.GetTypeAt(2));
+  EXPECT_EQ(title2, menu.GetLabelAt(2));
+  EXPECT_TRUE(menu.IsEnabledAt(2));
   EXPECT_EQ(ui::MenuModel::TYPE_COMMAND, menu.GetTypeAt(3));
-  EXPECT_EQ(title1, menu.GetLabelAt(3));
+  EXPECT_EQ(title3, menu.GetLabelAt(3));
   EXPECT_TRUE(menu.IsEnabledAt(3));
-  EXPECT_EQ(ui::MenuModel::TYPE_COMMAND, menu.GetTypeAt(4));
-  EXPECT_EQ(title2, menu.GetLabelAt(4));
-  EXPECT_TRUE(menu.IsEnabledAt(4));
-  EXPECT_EQ(ui::MenuModel::TYPE_COMMAND, menu.GetTypeAt(5));
-  EXPECT_EQ(title3, menu.GetLabelAt(5));
-  EXPECT_TRUE(menu.IsEnabledAt(5));
-  EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(6));
 }
 
 // Verifies RecordMenuItemSelectedMetrics uses the correct histogram buckets.

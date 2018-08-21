@@ -1993,18 +1993,6 @@ TEST_F(ShelfViewTest, TabletModeStartAndEndClosesContextMenu) {
   EXPECT_FALSE(test_api_->CloseMenu());
 }
 
-// Tests that the app list button shows a context menu on right click when
-// touchable app context menus are not enabled.
-TEST_F(ShelfViewTest, AppListButtonShowsContextMenu) {
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  AppListButton* app_list_button = shelf_view_->GetAppListButton();
-
-  generator->MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
-  generator->PressRightButton();
-
-  EXPECT_TRUE(test_api_->CloseMenu());
-}
-
 // Tests that the back button does not show a context menu.
 TEST_F(ShelfViewTest, NoContextMenuOnBackButton) {
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -2032,23 +2020,6 @@ TEST_F(ShelfViewTest, NoContextMenuOnOverflowButton) {
   generator->PressRightButton();
 
   EXPECT_FALSE(test_api_->CloseMenu());
-}
-
-// Tests that a ShelfButton ink drop highlight is set to ACTIVATED when a menu
-// is shown by mouse.
-TEST_F(ShelfViewTest, ShelfButtonShowsInkDropHighlightOnMenuShow) {
-  const ShelfID id_0 = AddApp();
-  ShelfButton* button_0 = GetButtonByID(id_0);
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->MoveMouseTo(button_0->GetBoundsInScreen().CenterPoint());
-  generator->PressRightButton();
-  EXPECT_EQ(views::InkDropState::ACTIVATED,
-            button_0->GetInkDropForTesting()->GetTargetInkDropState());
-
-  // Close the menu, the InkDropState should transition to HIDDEN.
-  EXPECT_TRUE(test_api_->CloseMenu());
-  EXPECT_EQ(views::InkDropState::HIDDEN,
-            button_0->GetInkDropForTesting()->GetTargetInkDropState());
 }
 
 // Tests that ShelfWindowWatcher buttons show a context menu on right click.
@@ -2798,7 +2769,10 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithMenuPressRelease) {
                                mouse_location, ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseReleased(release_event);
-  test_api_->CloseMenu();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            browser_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_TRUE(test_api_->CloseMenu());
+
   EXPECT_EQ(views::InkDropState::HIDDEN,
             browser_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(browser_button_ink_drop_->GetAndResetRequestedStates(),
