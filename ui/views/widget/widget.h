@@ -886,7 +886,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   internal::NativeWidgetPrivate* native_widget_;
 
-  base::ObserverList<WidgetObserver>::Unchecked observers_;
+  base::ObserverList<WidgetObserver> observers_;
 
   base::ObserverList<WidgetRemovalsObserver>::Unchecked removals_observers_;
 

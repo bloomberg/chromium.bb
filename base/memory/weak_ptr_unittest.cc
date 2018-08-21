@@ -392,6 +392,49 @@ TEST(WeakPtrTest, InvalidateWeakPtrs) {
   EXPECT_FALSE(factory.HasWeakPtrs());
 }
 
+// Tests that WasInvalidated() is true only for invalidated WeakPtrs (not
+// nullptr) and doesn't DCHECK.
+TEST(WeakPtrTest, WasInvalidatedByFactoryDestruction) {
+  WeakPtr<int> ptr;
+  EXPECT_FALSE(ptr.WasInvalidated());
+
+  // Test |data| destroyed.
+  {
+    int data;
+    WeakPtrFactory<int> factory(&data);
+    ptr = factory.GetWeakPtr();
+
+    EXPECT_FALSE(ptr.WasInvalidated());
+  }
+  EXPECT_TRUE(ptr.WasInvalidated());  // Shouldn't tickle asan.
+  ptr = nullptr;
+  EXPECT_FALSE(ptr.WasInvalidated());
+}
+
+// As above, but testing InvalidateWeakPtrs().
+TEST(WeakPtrTest, WasInvalidatedByInvalidateWeakPtrs) {
+  int data;
+  WeakPtrFactory<int> factory(&data);
+  WeakPtr<int> ptr = factory.GetWeakPtr();
+  EXPECT_FALSE(ptr.WasInvalidated());
+  factory.InvalidateWeakPtrs();
+  EXPECT_TRUE(ptr.WasInvalidated());
+  ptr = nullptr;
+  EXPECT_FALSE(ptr.WasInvalidated());
+}
+
+// Test WasInvalidated() when assigning null before invalidating.
+TEST(WeakPtrTest, WasInvalidatedWhilstNull) {
+  int data;
+  WeakPtrFactory<int> factory(&data);
+  WeakPtr<int> ptr = factory.GetWeakPtr();
+  EXPECT_FALSE(ptr.WasInvalidated());
+  ptr = nullptr;
+  EXPECT_FALSE(ptr.WasInvalidated());
+  factory.InvalidateWeakPtrs();
+  EXPECT_FALSE(ptr.WasInvalidated());
+}
+
 TEST(WeakPtrTest, MaybeValidOnSameSequence) {
   int data;
   WeakPtrFactory<int> factory(&data);
