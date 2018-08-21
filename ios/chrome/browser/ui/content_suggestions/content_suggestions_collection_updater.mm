@@ -331,12 +331,6 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
 
   NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
 
-  NSMutableArray* oldItems = [NSMutableArray array];
-  NSInteger numberOfItems = [model numberOfItemsInSection:section];
-  for (NSInteger i = 0; i < numberOfItems; i++) {
-    [oldItems addObject:[NSIndexPath indexPathForItem:i inSection:section]];
-  }
-
   // Reset collection model data for |sectionIdentifier|
   [self.collectionViewController.collectionViewModel
                      setFooter:nil
@@ -364,9 +358,12 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
     [self.collectionViewController.collectionView
         insertItemsAtIndexPaths:addedItems];
   };
-  [self.collectionViewController.collectionView
-      performBatchUpdates:addSectionBlock
-               completion:nil];
+  [UIView animateWithDuration:0
+                   animations:^{
+                     [self.collectionViewController.collectionView
+                         performBatchUpdates:addSectionBlock
+                                  completion:nil];
+                   }];
 
   // Make sure we get the right index for the section.
   section = [model sectionForSectionIdentifier:sectionIdentifier];
