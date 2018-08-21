@@ -1,6 +1,7 @@
 include_rules = [
   "+google_apis",
   "+jingle/glue",
+  "+mojo/core/embedder",
   "+net",
   "+remoting/client",
   "+remoting/codec",

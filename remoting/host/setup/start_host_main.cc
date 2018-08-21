@@ -16,6 +16,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "mojo/core/embedder/embedder.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/logging.h"
@@ -138,6 +139,8 @@ int StartHostMain(int argc, char** argv) {
   logging::InitLogging(settings);
 
   base::TaskScheduler::CreateAndStartWithDefaultParams("RemotingHostSetup");
+
+  mojo::core::Init();
 
   std::string host_name = command_line->GetSwitchValueASCII("name");
   std::string host_pin = command_line->GetSwitchValueASCII("pin");
