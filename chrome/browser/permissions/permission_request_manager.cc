@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
-#include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
+#include "chrome/browser/vr/ui_suppressed_element.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/url_formatter/elide_url.h"
@@ -25,9 +25,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "url/origin.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
-#else  // !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "extensions/common/constants.h"
 #endif
@@ -96,14 +94,16 @@ PermissionRequestManager::~PermissionRequestManager() {
 }
 
 void PermissionRequestManager::AddRequest(PermissionRequest* request) {
-#if defined(OS_ANDROID)
-  DCHECK(!vr::VrTabHelper::IsInVr(web_contents()) ||
-         base::FeatureList::IsEnabled(
-             chrome::android::kVrBrowsingNativeAndroidUi));
-#endif
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDenyPermissionPrompts)) {
+    request->PermissionDenied();
+    request->RequestFinished();
+    return;
+  }
+
+  if (vr::VrTabHelper::IsUiSuppressedInVr(
+          web_contents(), vr::UiSuppressedElement::kPermissionBubbleRequest)) {
     request->PermissionDenied();
     request->RequestFinished();
     return;

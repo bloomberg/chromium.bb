@@ -49703,6 +49703,7 @@ Full version information for the fingerprint enum values:
   <int value="13"
       label="Media router presentation request dialog was suppressed in VR"/>
   <int value="14" label="Context menu was suppressed in VR"/>
+  <int value="15" label="Permission Bubble was suppressed in VR"/>
 </enum>
 
 <enum name="VRUnsupportedMode">
