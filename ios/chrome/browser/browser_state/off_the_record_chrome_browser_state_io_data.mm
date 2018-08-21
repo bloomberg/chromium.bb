@@ -195,7 +195,7 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
           cookie_path_,
           cookie_util::CookieStoreConfig::RESTORED_SESSION_COOKIES,
           cookie_util::CookieStoreConfig::COOKIE_STORE_IOS, nullptr),
-      std::move(profile_params->system_cookie_store));
+      std::move(profile_params->system_cookie_store), io_thread->net_log());
   main_context->set_cookie_store(main_cookie_store_.get());
   main_cookie_store_->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 

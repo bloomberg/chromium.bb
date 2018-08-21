@@ -31,6 +31,8 @@
 
 namespace net {
 
+class NetLog;
+
 // Observer for changes on |NSHTTPCookieStorge sharedHTTPCookieStorage|.
 class CookieNotificationObserver {
  public:
@@ -58,12 +60,17 @@ class CookieStoreIOS : public net::CookieStore,
   // as its default backend and is initially synchronized with it.
   // Apple does not persist the cookies' creation dates in NSHTTPCookieStorage,
   // so callers should not expect these values to be populated.
-  explicit CookieStoreIOS(std::unique_ptr<SystemCookieStore> system_store);
+  CookieStoreIOS(std::unique_ptr<SystemCookieStore> system_store,
+                 NetLog* net_log);
 
-  // Used by ChromeSigninCookieManager/Cronet
+  // Used by ChromeSigninCookieManager/Cronet.
+  // TODO(crbug.com/801910): Remove this constructor once the internal
+  // chrome_signin_cookie_manager.mm is converted to using the one with NetLog.
+  explicit CookieStoreIOS(NSHTTPCookieStorage* ns_cookie_store);
+
   // TODO(crbug.com/759226): Remove once the migration to use SystemCookieStore
   // is finished.
-  explicit CookieStoreIOS(NSHTTPCookieStorage* ns_cookie_store);
+  CookieStoreIOS(NSHTTPCookieStorage* ns_cookie_store, NetLog* net_log);
 
   ~CookieStoreIOS() override;
 
@@ -108,7 +115,8 @@ class CookieStoreIOS : public net::CookieStore,
 
  protected:
   CookieStoreIOS(net::CookieMonster::PersistentCookieStore* persistent_store,
-                 std::unique_ptr<SystemCookieStore> system_store);
+                 std::unique_ptr<SystemCookieStore> system_store,
+                 NetLog* net_log);
 
   // These three functions are used for wrapping user-supplied callbacks given
   // to CookieStoreIOS mutator methods. Given a callback, they return a new
