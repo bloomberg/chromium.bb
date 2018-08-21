@@ -165,11 +165,13 @@ NGLayoutOpportunity CreateLayoutOpportunity(
 NGExclusionSpace::NGExclusionSpace()
     : exclusions_(RefVector<scoped_refptr<const NGExclusion>>::Create()),
       num_exclusions_(0),
+      both_clear_offset_(LayoutUnit::Min()),
       derived_geometry_(nullptr) {}
 
 NGExclusionSpace::NGExclusionSpace(const NGExclusionSpace& other)
     : exclusions_(other.exclusions_),
       num_exclusions_(other.num_exclusions_),
+      both_clear_offset_(other.both_clear_offset_),
       derived_geometry_(std::move(other.derived_geometry_)) {
   // This copy-constructor does fun things. It moves the derived_geometry_ to
   // the newly created exclusion space where it'll more-likely be used.
@@ -202,6 +204,9 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
 
   if (derived_geometry_)
     derived_geometry_->Add(exclusion);
+
+  both_clear_offset_ =
+      std::max(both_clear_offset_, exclusion->rect.BlockEndOffset());
 
   exclusions_->push_back(std::move(exclusion));
   num_exclusions_++;

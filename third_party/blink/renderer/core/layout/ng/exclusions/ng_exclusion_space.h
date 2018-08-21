@@ -38,6 +38,15 @@ class CORE_EXPORT NGExclusionSpace {
       const NGBfcOffset& offset,
       const LayoutUnit available_inline_size,
       const NGLogicalSize& minimum_size) const {
+    // If the area clears all floats, we can just return the layout opportunity
+    // which matches the available space.
+    if (offset.block_offset >= both_clear_offset_) {
+      NGBfcOffset end_offset(
+          offset.line_offset + available_inline_size.ClampNegativeToZero(),
+          LayoutUnit::Max());
+      return NGLayoutOpportunity(NGBfcRect(offset, end_offset), nullptr);
+    }
+
     return GetDerivedGeometry().FindLayoutOpportunity(
         offset, available_inline_size, minimum_size);
   }
@@ -45,12 +54,25 @@ class CORE_EXPORT NGExclusionSpace {
   Vector<NGLayoutOpportunity> AllLayoutOpportunities(
       const NGBfcOffset& offset,
       const LayoutUnit available_inline_size) const {
+    // If the area clears all floats, we can just return a single layout
+    // opportunity which matches the available space.
+    if (offset.block_offset >= both_clear_offset_) {
+      NGBfcOffset end_offset(
+          offset.line_offset + available_inline_size.ClampNegativeToZero(),
+          LayoutUnit::Max());
+      return Vector<NGLayoutOpportunity>(
+          {NGLayoutOpportunity(NGBfcRect(offset, end_offset), nullptr)});
+    }
+
     return GetDerivedGeometry().AllLayoutOpportunities(offset,
                                                        available_inline_size);
   }
 
   // Returns the clearance offset based on the provided {@code clear_type}.
   LayoutUnit ClearanceOffset(EClear clear_type) const {
+    if (clear_type == EClear::kNone)
+      return LayoutUnit::Min();
+
     return GetDerivedGeometry().ClearanceOffset(clear_type);
   }
 
@@ -144,6 +166,7 @@ class CORE_EXPORT NGExclusionSpace {
   // space has, which may differ to the number of exclusions in the Vector.
   scoped_refptr<RefVector<scoped_refptr<const NGExclusion>>> exclusions_;
   size_t num_exclusions_;
+  LayoutUnit both_clear_offset_;
 
   // The derived geometry struct, is the data-structure which handles all of the
   // queries on the exclusion space. It can always be rebuilt from exclusions_
