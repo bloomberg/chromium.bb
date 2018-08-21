@@ -8,7 +8,9 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
 
@@ -46,7 +48,8 @@ OomInterventionImpl::~OomInterventionImpl() {}
 void OomInterventionImpl::StartDetection(
     mojom::blink::OomInterventionHostPtr host,
     mojom::blink::DetectionArgsPtr detection_args,
-    bool trigger_intervention) {
+    bool renderer_pause_enabled,
+    bool navigate_ads_enabled) {
   host_ = std::move(host);
 
   // Disable intervention if we cannot get memory details of current process.
@@ -55,14 +58,14 @@ void OomInterventionImpl::StartDetection(
         RendererInterventionEnabledStatus::kDisabledFailedMemoryMetricsFetch);
     return;
   }
-
   RecordEnabledStatus(
-      trigger_intervention
+      renderer_pause_enabled || navigate_ads_enabled
           ? RendererInterventionEnabledStatus::kTriggerEnabled
           : RendererInterventionEnabledStatus::kDetectionOnlyEnabled);
 
   detection_args_ = std::move(detection_args);
-  trigger_intervention_ = trigger_intervention;
+  renderer_pause_enabled_ = renderer_pause_enabled;
+  navigate_ads_enabled_ = navigate_ads_enabled;
 
   timer_.Start(TimeDelta(), TimeDelta::FromSeconds(1), FROM_HERE);
 }
@@ -91,13 +94,22 @@ void OomInterventionImpl::Check(TimerBase*) {
                       detection_args_->virtual_memory_thresold;
 
   if (oom_detected) {
-    host_->OnHighMemoryUsage(trigger_intervention_);
+    if (navigate_ads_enabled_) {
+      for (const auto& page : Page::OrdinaryPages()) {
+        if (page->MainFrame()->IsLocalFrame()) {
+          ToLocalFrame(page->MainFrame())
+              ->GetDocument()
+              ->NavigateLocalAdsFrames();
+        }
+      }
+    }
 
-    if (trigger_intervention_) {
+    if (renderer_pause_enabled_) {
       // The ScopedPagePauser is destroyed when the intervention is declined and
       // mojo strong binding is disconnected.
       pauser_.reset(new ScopedPagePauser);
     }
+    host_->OnHighMemoryUsage();
     timer_.Stop();
   }
   CrashMemoryMetricsReporterImpl::Instance().WriteIntoSharedMemory(

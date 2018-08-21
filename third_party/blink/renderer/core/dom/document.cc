@@ -7478,6 +7478,22 @@ bool Document::NextFrameHasPendingRAF() const {
          scripted_animation_controller_->NextFrameHasPendingRAF();
 }
 
+void Document::NavigateLocalAdsFrames() {
+  // This navigates all the frames detected as an advertisement to about:blank.
+  DCHECK(frame_);
+  for (Frame* child = frame_->Tree().FirstChild(); child;
+       child = child->Tree().TraverseNext(frame_)) {
+    if (child->IsLocalFrame()) {
+      if (ToLocalFrame(child)->IsAdSubframe()) {
+        ToLocalFrame(child)->Navigate(
+            FrameLoadRequest(this, ResourceRequest(BlankURL())));
+      }
+    }
+    // TODO(yuzus): Once AdsTracker for remote frames is implemented and OOPIF
+    // is enabled on low-end devices, navigate remote ads as well.
+  }
+}
+
 SlotAssignmentEngine& Document::GetSlotAssignmentEngine() {
   if (!slot_assignment_engine_)
     slot_assignment_engine_ = SlotAssignmentEngine::Create();

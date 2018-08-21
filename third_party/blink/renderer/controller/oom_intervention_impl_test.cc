@@ -16,9 +16,12 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 namespace blink {
 
@@ -35,7 +38,7 @@ class MockOomInterventionHost : public mojom::blink::OomInterventionHost {
       : binding_(this, std::move(request)) {}
   ~MockOomInterventionHost() override = default;
 
-  void OnHighMemoryUsage(bool intervention_triggered) override {}
+  void OnHighMemoryUsage() override {}
 
  private:
   mojo::Binding<mojom::blink::OomInterventionHost> binding_;
@@ -74,9 +77,14 @@ class OomInterventionImplTest : public testing::Test {
   }
 
   Page* DetectOnceOnBlankPage() {
-    WebViewImpl* web_view = web_view_helper_.InitializeAndLoad("about::blank");
+    WebViewImpl* web_view = web_view_helper_.InitializeAndLoad("about:blank");
     Page* page = web_view->MainFrameImpl()->GetFrame()->GetPage();
     EXPECT_FALSE(page->Paused());
+    RunDetection(true, false);
+    return page;
+  }
+
+  void RunDetection(bool renderer_pause_enabled, bool navigate_ads_enabled) {
     mojom::blink::OomInterventionHostPtr host_ptr;
     MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
 
@@ -87,14 +95,14 @@ class OomInterventionImplTest : public testing::Test {
     args->virtual_memory_thresold = kTestVmSizeThreshold;
 
     intervention_->StartDetection(std::move(host_ptr), std::move(args),
-                                  true /*trigger_intervention*/);
+                                  renderer_pause_enabled, navigate_ads_enabled);
     test::RunDelayedTasks(TimeDelta::FromSeconds(1));
-    return page;
   }
 
  protected:
   std::unique_ptr<MockOomInterventionImpl> intervention_;
   FrameTestHelpers::WebViewHelper web_view_helper_;
+  std::unique_ptr<SimRequest> main_resource_;
 };
 
 TEST_F(OomInterventionImplTest, NoDetectionOnBelowThreshold) {
@@ -234,7 +242,8 @@ TEST_F(OomInterventionImplTest, CalculateProcessFootprint) {
   MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
   mojom::blink::DetectionArgsPtr args(mojom::blink::DetectionArgs::New());
   intervention_->StartDetection(std::move(host_ptr), std::move(args),
-                                false /*trigger_intervention*/);
+                                false /*renderer_pause_enabled*/,
+                                false /*navigate_ads_enabled*/);
   // Create unsafe shared memory region to write metrics in reporter.
   base::UnsafeSharedMemoryRegion shm =
       base::UnsafeSharedMemoryRegion::Create(sizeof(OomInterventionMetrics));
@@ -251,6 +260,48 @@ TEST_F(OomInterventionImplTest, CalculateProcessFootprint) {
             metrics->current_private_footprint_kb);
   EXPECT_EQ(expected_swap_kb, metrics->current_swap_kb);
   EXPECT_EQ(expected_vm_size_kb, metrics->current_vm_size_kb);
+}
+
+// TODO(yuzus): Once OOPIF unit test infrastructure is ready, add a test case
+// with OOPIF enabled.
+TEST_F(OomInterventionImplTest, V1DetectionAdsNavigation) {
+  OomInterventionMetrics mock_metrics = {};
+  mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) - 1;
+  mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) - 1;
+  mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) - 1;
+  // Set value more than the threshold to trigger intervention.
+  mock_metrics.current_vm_size_kb = (kTestVmSizeThreshold / 1024) + 1;
+  intervention_->SetMetrics(mock_metrics);
+
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad("about:blank");
+  Page* page = web_view->MainFrameImpl()->GetFrame()->GetPage();
+
+  web_view->MainFrameImpl()
+      ->GetFrame()
+      ->GetDocument()
+      ->body()
+      ->SetInnerHTMLFromString(
+          "<iframe name='ad' src='data:text/html,'></iframe><iframe "
+          "name='non-ad' src='data:text/html,'>");
+
+  WebFrame* ad_iframe = web_view_helper_.LocalMainFrame()->FindFrameByName(
+      WebString::FromUTF8("ad"));
+  WebFrame* non_ad_iframe = web_view_helper_.LocalMainFrame()->FindFrameByName(
+      WebString::FromUTF8("non-ad"));
+
+  LocalFrame* local_adframe = ToLocalFrame(WebFrame::ToCoreFrame(*ad_iframe));
+  local_adframe->SetIsAdSubframe();
+  LocalFrame* local_non_adframe =
+      ToLocalFrame(WebFrame::ToCoreFrame(*non_ad_iframe));
+
+  EXPECT_TRUE(local_adframe->IsAdSubframe());
+  EXPECT_FALSE(local_non_adframe->IsAdSubframe());
+
+  RunDetection(true, true);
+
+  EXPECT_EQ(local_adframe->GetDocument()->Url().GetString(), "about:blank");
+  EXPECT_NE(local_non_adframe->GetDocument()->Url().GetString(), "about:blank");
+  EXPECT_TRUE(page->Paused());
 }
 
 }  // namespace blink
