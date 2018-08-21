@@ -29,6 +29,9 @@ SavePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       static_cast<SavePasswordInfoBarDelegate*>(delegate());
   ScopedJavaLocalRef<jstring> ok_button_text = ConvertUTF16ToJavaString(
       env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK));
+  ScopedJavaLocalRef<jstring> cancel_button_text =
+      base::android::ConvertUTF16ToJavaString(
+          env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL));
   ScopedJavaLocalRef<jstring> message_text =
       ConvertUTF16ToJavaString(env, save_password_delegate->GetMessageText());
   ScopedJavaLocalRef<jstring> details_message_text = ConvertUTF16ToJavaString(
@@ -39,7 +42,7 @@ SavePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, GetEnumeratedIconId(), message_text,
       save_password_delegate->message_link_range().start(),
       save_password_delegate->message_link_range().end(), details_message_text,
-      ok_button_text));
+      ok_button_text, cancel_button_text));
 
   java_infobar_.Reset(env, infobar.obj());
   return infobar;

@@ -19,14 +19,17 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
 
     @CalledByNative
     private static InfoBar show(int enumeratedIconId, String message, int titleLinkStart,
-            int titleLinkEnd, String detailsMessage, String primaryButtonText) {
+            int titleLinkEnd, String detailsMessage, String primaryButtonText,
+            String secondaryButtonText) {
         return new SavePasswordInfoBar(ResourceId.mapToDrawableId(enumeratedIconId), message,
-                titleLinkStart, titleLinkEnd, detailsMessage, primaryButtonText);
+                titleLinkStart, titleLinkEnd, detailsMessage, primaryButtonText,
+                secondaryButtonText);
     }
 
     private SavePasswordInfoBar(int iconDrawbleId, String message, int titleLinkStart,
-            int titleLinkEnd, String detailsMessage, String primaryButtonText) {
-        super(iconDrawbleId, null, message, null, primaryButtonText, null);
+            int titleLinkEnd, String detailsMessage, String primaryButtonText,
+            String secondaryButtonText) {
+        super(iconDrawbleId, null, message, null, primaryButtonText, secondaryButtonText);
         mTitleLinkRangeStart = titleLinkStart;
         mTitleLinkRangeEnd = titleLinkEnd;
         mDetailsMessage = detailsMessage;
