@@ -21,6 +21,7 @@
       "name": "LayoutBlockFlow DIV",
       "position": [8, 8],
       "bounds": [200, 200],
+      "contentsOpaque": true,
       "backgroundColor": "#D3D3D3"
     },
     {
@@ -33,7 +34,6 @@
       "name": "Scrolling Contents Layer",
       "position": [8, 8],
       "bounds": [300, 300],
-      "contentsOpaque": true,
       "backgroundColor": "#D3D3D3"
     },
     {
