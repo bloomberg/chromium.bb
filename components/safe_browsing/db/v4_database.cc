@@ -280,9 +280,18 @@ void V4Database::VerifyChecksum(
     stores.push_back(std::make_pair(next_store.first, next_store.second.get()));
   }
 
-  base::PostTaskAndReplyWithResult(db_task_runner_.get(), FROM_HERE,
-                                   base::Bind(&VerifyChecksums, stores),
-                                   db_ready_for_updates_callback);
+  base::PostTaskAndReplyWithResult(
+      db_task_runner_.get(), FROM_HERE, base::Bind(&VerifyChecksums, stores),
+      base::Bind(&V4Database::OnChecksumVerified,
+                 weak_factory_on_io_.GetWeakPtr(),
+                 std::move(db_ready_for_updates_callback)));
+}
+
+void V4Database::OnChecksumVerified(
+    DatabaseReadyForUpdatesCallback db_ready_for_updates_callback,
+    const std::vector<ListIdentifier>& stores_to_reset) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  db_ready_for_updates_callback.Run(stores_to_reset);
 }
 
 bool V4Database::IsStoreAvailable(const ListIdentifier& identifier) const {
