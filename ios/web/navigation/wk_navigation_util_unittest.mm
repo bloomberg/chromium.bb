@@ -80,7 +80,8 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForLargeSession) {
 
   // Extract session JSON from restoration URL.
   NSString* fragment = net::NSURLWithGURL(restore_session_url).fragment;
-  NSString* encoded_session = [fragment substringFromIndex:strlen("session=")];
+  NSString* encoded_session =
+      [fragment substringFromIndex:strlen(kRestoreSessionSessionHashPrefix)];
   std::string session_json = net::UnescapeURLComponent(
       base::SysNSStringToUTF8(encoded_session),
       net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
