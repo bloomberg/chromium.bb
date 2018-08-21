@@ -33,6 +33,28 @@
           Če je ta nastavitev onemogočena ali ni konfigurirana, se gostitelj za oddaljeno pomoč izvaja v uporabnikovem kontekstu in oddaljeni uporabniki ne morejo uporabljati oken s skrbniškimi pravicami na namizju.</translation>
 <translation id="1096105751829466145">Privzeti iskalnik</translation>
 <translation id="1099282607296956954">Omogočanje osamitve spletnega mesta za vsako spletno mesto</translation>
+<translation id="1100570158310952027">
+      Pravilnik določa seznam izvorov (URL-jev) ali vzorcev imen gostitelja (na primer
+      »*.example.com«), za katere se varnostne omejitve v izvorih, ki niso varni,
+      ne uporabljajo.
+
+      Namen tega je omogočiti organizacijam nastavitev izvorov, uvrščenih na seznam dovoljenih, za starejše
+      aplikacije, ki ne morejo uvesti šifriranja TLS, ali nastavitev preizkusnega produkcijskega strežnika
+      za notranje spletno razvijanje, tako da lahko razvijalci preizkušajo funkcije,
+      ki zahtevajo varne kontekste, ne da bi bilo treba uvesti TLS v preizkusnem produkcijskem
+      strežniku. Ta pravilnik prav tako prepreči, da bi imel izvor v naslovni vrstici
+      oznako »Ni varno«.
+
+      Nastavitev seznama URL-jev v tem pravilniku ima enak učinek kot nastavitev
+      zastavice ukazne vrstice »--unsafely-treat-insecure-origin-as-secure« na seznamu,
+      ločenemu z vejicami, istih URL-jev. Če je pravilnik nastavljen,
+      preglasi zastavico ukazne vrstice.
+
+      Ta pravilnik preglasi pravilnik UnsafelyTreatInsecureOriginAsSecure, če je na voljo.
+
+      Več informacij o varnih kontekstih je na voljo na
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Rutine za obravnavo protokolov, nastavljene s tem pravilnikom, se ne uporabljajo pri obravnavi namer za Android.</translation>
 <translation id="1118093128235245168">Dovoli spletnim mestom, da od uporabnika zahtevajo, da omogoči dostop do povezane naprave USB</translation>
 <translation id="1128903365609589950">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih datotek na disk.
@@ -80,6 +102,8 @@
       Če pravilnik ni nastavljen ali je onemogočen, šifrirane zbirke v protokolu TLS ne bodo omogočene, sicer pa je lahko omogočen zaradi ohranjanja združljivosti z zastarelim strežnikom. To je začasen ukrep in strežnik je treba na novo konfigurirati.</translation>
 <translation id="1297182715641689552">Uporabi skript .pac za proxy</translation>
 <translation id="1304973015437969093">ID-ji razširitev/aplikacij in URL-ji posodobitev se namestijo brez obveščanja</translation>
+<translation id="1307454923744766368">Izvori ali vzorci imena gostitelja, za katere se omejitve glede
+      izvorov, ki niso varni, ne smejo uporabljati</translation>
 <translation id="1313457536529613143">Določa odstotek spremembe zakasnitve zatemnitve zaslona, kadar se zazna dejavnost uporabnika, medtem ko je zaslon v zatemnjenem načinu ali kmalu potem ko je bil izklopljen.
 
 Če je nastavljen ta pravilnik, določa odstotek spremembe zakasnitve zatemnitve zaslona, kadar se zazna dejavnost uporabnika, medtem ko je zaslon v zatemnjenem načinu ali kmalu potem ko je bil izklopljen. S prilagoditvijo zatemnitve zaslona se prilagodijo tudi zakasnitve za izklop zaslona, zaklepanje zaslona in čas nedejavnosti, tako da se ohranijo enake razdalje od prvotno nastavljene zakasnitve za zatemnitev zaslona.
@@ -91,6 +115,11 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1327466551276625742">Omogočanje poziva za konfiguracijo omrežja v stanju brez povezave</translation>
 <translation id="1330145147221172764">Omogoči zaslonsko tipkovnico</translation>
 <translation id="13356285923490863">Ime pravilnika</translation>
+<translation id="1352174694615491349">Ta pravilnik omogoča združevanje povezav HTTP/2, ko se uporabljajo potrdila odjemalca. Če želite združiti povezavi, se morata tako ime gostitelja morebitne nove povezave kot ime gostitelja obstoječe povezave ujemati z enim od vzorcev, ki jih opisuje ta pravilnik. Pravilnik sestavlja seznam gostiteljev, ki uporabljajo obliko filtra URLBlacklist: »example.com« se ujema z »example.com« in vsemi poddomenami (npr. »sub.example.com«), medtem ko se ».example.net« ujema točno z »example.net«.
+
+      Zahteve za združevanje, poslane različnim gostiteljem prek povezav, ki uporabljajo potrdila odjemalca, lahko povzročijo varnostne težave in težave glede zasebnosti, saj bo lokalno pooblastilo preneseno na vse zahteve, tudi če uporabnik tega ni izrecno odobril. Ta pravilnik je začasen in bo odstranjen v eni od prihodnjih različic. Glejte https://crbug.com/855690.
+
+      Če ta pravilnik ni nastavljen, bo uporabljeno privzeto delovanje, po katerem ni dovoljeno nobeno združevanje povezav HTTP/2 pri povezavah, ki uporabljajo potrdila odjemalca.</translation>
 <translation id="1353966721814789986">Začetne strani</translation>
 <translation id="1359553908012294236">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> omogoči prijave gostov. Prijave gostov so profili v brskalniku <ph name="PRODUCT_NAME" />, v katerih so vsa okna v načinu brez beleženja zgodovine.
 
@@ -184,6 +213,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1583248206450240930">Privzeto uporabi <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">Omogočanje osamitve spletnih mest za določene izvore v napravah Android</translation>
 <translation id="1608755754295374538">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem zvoka</translation>
+<translation id="1615221548356595305">Dovoli združevanje povezav HTTP/2 za te gostitelje, tudi če se uporabljajo potrdila odjemalca</translation>
 <translation id="1617235075406854669">Omogočanje brisanja zgodovine brskalnika in prenosov</translation>
 <translation id="163200210584085447">Vzorci na tem seznamu se bodo primerjali z varnostnim
       izvorom zahtevajočega URL-ja. Če bo najdeno ujemanje, bo dostop
@@ -1200,7 +1230,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če ta pravilnik ni nastavljen, bo zbiranje anonimiziranih podatkov, ki vključujejo URL-je, omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Jezik na zaslonu za prijavo v napravi</translation>
-<translation id="4264607809747169568">Nadzira razpoložljivost omrežnih naprav za skupno rabo datotek v okolju OS Chrome</translation>
 <translation id="427220754384423013">Določa tiskalnike, ki jih uporabnik lahko uporablja.
 
       Ta pravilnik se uporablja samo, če je za pravilnik <ph name="BULK_PRINTERS_ACCESS_MODE" /> izbrana možnost <ph name="PRINTERS_WHITELIST" />.
@@ -1359,6 +1388,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je ta pravilnik omogočen, bo spletnim mestom dovoljeno hkratno premikanje in odpiranje novih oken/zavihkov.
       Če je ta pravilnik onemogočen ali ni nastavljen, spletnim mestom ne bo dovoljeno hkratno premikanje in odpiranje novih oken/zavihkov.</translation>
 <translation id="4680961954980851756">Omogoči samodejno izpolnjevanje</translation>
+<translation id="4703402283970867140">Omogoči pametni model zatemnitve za podaljšanje časa do zatemnitve zaslona</translation>
 <translation id="4722122254122249791">Omogočanje osamitve spletnih mest za določene izvore</translation>
 <translation id="4722399051042571387">Če je nastavitev onemogočena, uporabniki ne bodo mogli nastaviti kod PIN, ki so šibke in jih je mogoče preprosto uganiti.
 
@@ -1588,13 +1618,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »AskNotifications« in uporabnik bo lahko to spremenil.</translation>
 <translation id="538108065117008131">Dovoli, da <ph name="PRODUCT_FRAME_NAME" /> obravnava te vrste vsebine.</translation>
-<translation id="5391363090783552279">Če je ta pravilnik nastavljen na »true«, se bo izdelek <ph name="PRODUCT_NAME" /> povezal z napravami za predvajanje na vseh naslovih IP, ne samo na zasebnih naslovih RFC1918/RFC4913.
-
-          Če je ta pravilnik nastavljen na »false«, se bo izdelek <ph name="PRODUCT_NAME" /> povezal samo z napravami za predvajanje na zasebnih naslovih RFC1918/RFC4913.
-
-          Če ta pravilnik ni nastavljen, se bo izdelek <ph name="PRODUCT_NAME" /> povezal samo z napravami za predvajanje na zasebnih naslovih RFC1918/RFC4913, razen če je omogočena funkcija CastAllowAllIPs.
-
-          Če je pravilnik »EnableMediaRouter« nastavljen na »false«, vrednost tega pravilnika ne bo imela nobenega vpliva.</translation>
 <translation id="5392172595902933844">Podatki o stanju Androida se pošljejo nazaj v
       strežnik.
 
@@ -2167,6 +2190,10 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6943577887654905793">Ime nastavitve za Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter, ki omogoča funkcijo iskanja po sliki za privzetega ponudnika iskanja</translation>
 <translation id="6956272732789158625">Spletnim mestom ne dovoli uporabe ustvarjanja ključev</translation>
+<translation id="6965859329738616662">Določa, ali je pametnemu modelu zatemnitve dovoljeno podaljšati čas do zatemnitve zaslona.
+
+      Preden se zaslon zatemni, pametni model zatemnitve oceni, ali je treba zatemnitev zaslona odložiti. Če pametni model zatemnitve odloži zatemnitev zaslona, dejansko podaljša čas do zatemnitve zaslona. V tem primeru se časovna zamika izklopa zaslona in zaklepanja zaslona ter časovni zamik ob nedejavnosti prilagodijo, da ohranijo enako časovno razdaljo od prvotno konfigurirane zakasnitve zatemnitve zaslona.
+      Če je pravilnik omogočen ali ni nastavljen, je pametni model zatemnitve omogočen in sme podaljšati čas do zatemnitve zaslona. Če je pravilnik onemogočen, pametni model zatemnitve na zatemnitev zaslona ne vpliva.</translation>
 <translation id="6982028490425791294">
       Če je pravilnik omogočen, <ph name="PRODUCT_NAME" /> sme zbirati dnevnike dogodkov tehnologije WebRTC iz Googlovih storitev (npr. iz Googla Meet) in te dnevnike nalagati v Google.
 
@@ -2616,6 +2643,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7980227303582973781">Ni posebnih omejitev</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Sukanje zaslona za 0 stopinj</translation>
+<translation id="8033913082323846868">Ta pravilnik je zastarel v različici M70; namesto tega uporabite pravilnika AutofillAddressEnabled in AutofillCreditCardEnabled.
+
+      Omogoči funkcijo samodejnega izpolnjevanja v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom omogoča samodejno izpolnjevanje spletnih obrazcev s shranjenimi podatki, kot so naslov in podatki o kreditni kartici.
+
+      Če to nastavitev onemogočite, uporabniki ne bodo imeli dostopa do samodejnega izpolnjevanja.
+
+      Če to nastavitev omogočite ali ne nastavitev vrednosti, bo samodejno izpolnjevanje ostalo pod nadzorom uporabnika. Tako bo uporabnik lahko konfiguriral profile samodejnega izpolnjevanja in samodejno izpolnjevanje poljubno vklapljal in izklapljal.</translation>
 <translation id="8044493735196713914">Pošiljanje podatkov o načinu zagona naprave</translation>
 <translation id="8050080920415773384">Izvorno tiskanje</translation>
 <translation id="8059164285174960932">URL, na katerem morajo odjemalci za oddaljeni dostop pridobiti žeton za preverjanje pristnosti</translation>
@@ -2948,6 +2982,33 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
       Določa, kateri pravilnik o dostopu se uporablja za konfiguracijo tiskalnikov v velikem obsegu. Če je izbrana možnost <ph name="PRINTERS_ALLOW_ALL" />, so prikazani vsi tiskalniki. Če je izbrana možnost <ph name="PRINTERS_BLACKLIST" />, se omeji dostop do določenih tiskalnikov s pravilnikom <ph name="DEVICE_PRINTERS_BLACKLIST" />. Če je izbrana možnost <ph name="PRINTERS_WHITELIST" />, pravilnik <ph name="DEVICE_PRINTERS_WHITELIST" /> določa samo tiste tiskalnike, ki jih je mogoče izbrati.
 
       Če ta pravilnik ni nastavljen, se predvideva uporaba pravilnika <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Zastarel v različici M69. Namesto tega uporabite pravilnik
+      OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Pravilnik določa seznam izvorov (URL-jev) ali vzorcev imen gostitelja (na primer
+      »*.example.com«), za katere se varnostne omejitve v izvorih, ki niso varni,
+      ne uporabljajo.
+
+      Namen tega je omogočiti organizacijam nastavitev izvorov, uvrščenih na seznam dovoljenih, za starejše
+      aplikacije, ki ne morejo uvesti šifriranja TLS, ali nastavitev preizkusnega produkcijskega strežnika
+      za notranje spletno razvijanje, tako da lahko razvijalci preizkušajo funkcije,
+      ki zahtevajo varne kontekste, ne da bi bilo treba uvesti TLS v preizkusnem produkcijskem
+      strežniku. Ta pravilnik prav tako prepreči, da bi imel izvor v naslovni vrstici
+      oznako »Ni varno«.
+
+      Nastavitev seznama URL-jev v tem pravilniku ima enak učinek kot nastavitev
+      zastavice ukazne vrstice »--unsafely-treat-insecure-origin-as-secure« na seznamu,
+      ločenemu z vejicami, istih URL-jev. Če je pravilnik nastavljen,
+      preglasi zastavico ukazne vrstice.
+
+      Ta pravilnik je zastarel v različici M69 in je bil nadomeščen s pravilnikom
+      OverrideSecurityRestrictionsOnInsecureOrigin. Če sta na voljo oba,
+      pravilnik OverrideSecurityRestrictionsOnInsecureOrigin preglasi ta
+      pravilnik.
+
+      Več informacij o varnih kontekstih je na voljo na
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Ta pravilnik nadzira, ali je soglasje za sinhronizacijo lahko prikazano uporabniku med prvo prijavo. Če soglasja za sinhronizacijo ne potrebujete za uporabnika, mora biti pravilnik onemogočen.
       Če je onemogočen, soglasje za sinhronizacijo ne bo prikazano.

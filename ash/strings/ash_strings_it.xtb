@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">I metodi di immissione vengono configurati dall'amministratore.</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1761222317188459878">Attiva/disattiva connessione di rete. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Cosa c'è sul mio schermo?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (caricamento…)</translation>
 <translation id="1841545962859478868">L'amministratore del dispositivo potrebbe monitorare i seguenti elementi:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Aggiungi connessione</translation>
 <translation id="2961963223658824723">Si è verificato un problema. Riprova tra qualche secondo.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Mostra tutti i contenuti della notifica</translation>
 <translation id="2995447421581609334">Mostra dispositivi di trasmissione.</translation>
 <translation id="2996462380875591307">Lente d'ingrandimento ancorata attivata. Premi di nuovo CTRL + tasto per la ricerca + D per disattivarla.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> è una sessione pubblica gestita da <ph name="DOMAIN" /></translation>
@@ -211,12 +213,14 @@
 <translation id="4628757576491864469">Dispositivi</translation>
 <translation id="4659419629803378708">ChromeVox attivato</translation>
 <translation id="4734965478015604180">Orizzontale</translation>
+<translation id="476166673298332917">L'amministratore di questo dispositivo ha accesso a tutte le attività, comprese password e comunicazioni.</translation>
 <translation id="4776917500594043016">Password per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">ricerca</translation>
 <translation id="4804818685124855865">Disconnetti</translation>
 <translation id="4849058404725798627">Evidenzia oggetto con stato attivo della tastiera</translation>
 <translation id="4872237917498892622">Alt+tasto per la ricerca o Maiusc</translation>
 <translation id="4890187583552566966">L'Assistente Google è stato disattivato dall'amministratore.</translation>
+<translation id="4893522937062257019">Nella schermata di blocco</translation>
 <translation id="4895488851634969361">La batteria è carica.</translation>
 <translation id="490375751687810070">Verticale</translation>
 <translation id="4905614135390995787">La scorciatoia per attivare/disattivare la modalità ad alto contrasto è cambiata. Usa <ph name="NEW_SHORTCUT" /> anziché <ph name="OLD_SHORTCUT" />.</translation>
@@ -232,6 +236,7 @@
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
 <translation id="5313326810920013265">Impostazioni Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta posteriore sinistra)</translation>
+<translation id="5379115545237091094">Troppi tentativi</translation>
 <translation id="5397578532367286026">L'utilizzo e la cronologia di questo utente possono essere esaminati dal gestore (<ph name="MANAGER_EMAIL" />) su chrome.com.</translation>
 <translation id="5430931332414098647">Tethering istantaneo</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -263,6 +268,7 @@
 <translation id="5895138241574237353">Riavvia</translation>
 <translation id="5901316534475909376">MAIUSC+ESC</translation>
 <translation id="5911533659001334206">Visualizzatore scorciatoie</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="592343074608792716">Questo Chromebook e il telefono si connetteranno automaticamente</translation>
 <translation id="5947494881799873997">Ripristina</translation>
@@ -332,6 +338,7 @@
 <translation id="6972754398087986839">Inizia</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
 <translation id="698231206551913481">Tutti i file e i dati locali associati a questo utente verranno eliminati definitivamente in seguito alla rimozione dell'utente.</translation>
+<translation id="7007100238996585961">Risposta su un altro dispositivo</translation>
 <translation id="7015766095477679451">Ritorna alle ore <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Esci da sessione</translation>
 <translation id="7037152028959403492">Hai premuto la scorciatoia per l'alto contrasto. Vuoi attivarlo?</translation>
@@ -353,6 +360,7 @@
 <translation id="7398254312354928459">Connessione di rete automatica</translation>
 <translation id="742594950370306541">La videocamera è in uso.</translation>
 <translation id="743058460480092004">Videocamera e microfono sono in uso.</translation>
+<translation id="7497767806359279797">Scegli la lingua e la tastiera</translation>
 <translation id="7510334386202674593">CTRL+MAIUSC+L</translation>
 <translation id="7526573455193969409">La rete potrebbe essere monitorata</translation>
 <translation id="7536035074519304529">Indirizzo IP: <ph name="ADDRESS" /></translation>
@@ -362,6 +370,7 @@
 <translation id="7569509451529460200">Braille e ChromeVox attivati</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
 <translation id="7604942372593434070">Accedi alla tua attività di navigazione</translation>
+<translation id="7642778300616172920">Nascondi contenuti sensibili</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietario)</translation>
 <translation id="7647488630410863958">Sblocca il dispositivo per visualizzare le notifiche</translation>
 <translation id="7649070708921625228">Guida</translation>
@@ -377,6 +386,7 @@
 <translation id="7842211907556571265">Connessione alla rete <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Avviso: funzione sperimentale</translation>
 <translation id="7846634333498149051">Tastiera</translation>
+<translation id="7886277072580235377">La sessione verrà cancellata al momento dell'uscita dall'account. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Modifica delle impostazioni relative alla privacy</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
 <translation id="7933084174919150729">L'Assistente Google è disponibile solo per il profilo principale.</translation>
@@ -417,6 +427,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: riconnessione in corso...</translation>
 <translation id="8513108775083588393">Rotazione automatica</translation>
 <translation id="8517041960877371778">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso.</translation>
+<translation id="8592141010104017453">Non visualizzare del tutto le notifiche</translation>
 <translation id="8627191004499078455">Connesso a <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> rimanente</translation>
 <translation id="8649101189709089199">Seleziona per ascoltare</translation>

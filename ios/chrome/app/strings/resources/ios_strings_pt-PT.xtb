@@ -54,6 +54,7 @@ Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados nou
 <translation id="1690731385917361335">Sem itens</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selecionados</translation>
 <translation id="1740468249224277719">Toque duas vezes para instalar.</translation>
+<translation id="1746815479209538200">Para navegar na Web, adicione um novo separador.</translation>
 <translation id="17513872634828108">Separadores abertos</translation>
 <translation id="1752547299766512813">Guardar Palavras-passe</translation>
 <translation id="1753905327828125965">Mais visitados</translation>
@@ -392,12 +393,15 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7638584964844754484">Frase de acesso incorreta</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
+<translation id="766891008101699113">Para navegar na Web em privado, adicione um novo separador.</translation>
 <translation id="7671141431838911305">INSTALAR</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7769602470925380267">Aceitar e terminar sessão</translation>
 <translation id="7772032839648071052">Confirmar frase de acesso</translation>
+<translation id="7781829728241885113">Ontem</translation>
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7830720446622801252">Serviços não personalizados</translation>
+<translation id="7840771868269352570">Os itens selec. são removidos.</translation>
 <translation id="7856733331829174190">Impossível transferir</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>
 <translation id="7918293828610777738">A sua lista de leitura está disponível offline. Para adicionar uma página à mesma, toque em <ph name="SHARE_OPENING_ICON" /> e, em seguida, em <ph name="READ_LATER_TEXT" />.</translation>

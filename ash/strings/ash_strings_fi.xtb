@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Järjestelmänvalvoja on määrittänyt syöttötavat.</translation>
 <translation id="1747827819627189109">Ruutunäppäimistö otettiin käyttöön</translation>
 <translation id="1761222317188459878">Ota verkkoyhteys käyttöön tai poista se käytöstä. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Mitä näytölläni näkyy?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (ladataan…)</translation>
 <translation id="1841545962859478868">Laitteen järjestelmänvalvoja voi seurata näitä:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Lisää yhteys</translation>
 <translation id="2961963223658824723">Jokin meni pieleen. Yritä uudelleen parin sekunnin kuluttua.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Näytä ilmoitusten koko sisältö</translation>
 <translation id="2995447421581609334">Näytä Cast-laitteet.</translation>
 <translation id="2996462380875591307">Kiinnitetty suurennus on käytössä. Poista se käytöstä painamalla uudelleen Ctrl + haku + D.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> on julkinen käyttökerta, jota hallinnoi <ph name="DOMAIN" /></translation>
@@ -211,12 +213,14 @@
 <translation id="4628757576491864469">Laitteet</translation>
 <translation id="4659419629803378708">ChromeVox käytössä</translation>
 <translation id="4734965478015604180">Vaakasuora</translation>
+<translation id="476166673298332917">Tämän laitteen järjestelmänvalvojalla on pääsy kaikkeen toimintaan, mukaan lukien salasanoihin ja viestintään.</translation>
 <translation id="4776917500594043016">Osoitteen <ph name="USER_EMAIL_ADDRESS" /> salasana</translation>
 <translation id="479989351350248267">haku</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
 <translation id="4849058404725798627">Korosta tekstin syöttökohde</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
 <translation id="4890187583552566966">Järjestelmänvalvoja on poistanut Google Assistantin käytöstä.</translation>
+<translation id="4893522937062257019">Lukitusnäytöllä</translation>
 <translation id="4895488851634969361">Akku on täynnä.</translation>
 <translation id="490375751687810070">Pystysuora</translation>
 <translation id="4905614135390995787">Suuren kontrastin tilan pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
@@ -232,6 +236,7 @@
 <translation id="523505283826916779">Käytettävyysasetukset</translation>
 <translation id="5313326810920013265">Bluetooth-asetukset</translation>
 <translation id="5331975486040154427">C-tyypin USB-laite (vasemman sivun taaimmainen portti)</translation>
+<translation id="5379115545237091094">Liian monta yritystä</translation>
 <translation id="5397578532367286026">Hallinnoija (<ph name="MANAGER_EMAIL" />) voi tarkkailla tämän käyttäjän käyttö- ja historiatietoja osoitteessa chrome.com.</translation>
 <translation id="5430931332414098647">Yhteyden pikajakaminen</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -263,6 +268,7 @@
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">Pikanäppäimet</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Käytössä</translation>
 <translation id="592343074608792716">Puhelin muodostaa yhteyden Chromebookiin automaattisesti</translation>
 <translation id="5947494881799873997">Palauta</translation>
@@ -334,6 +340,7 @@
 <translation id="6972754398087986839">Aloitusopas</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="698231206551913481">Kun käyttäjä poistetaan, kaikki kyseiseen käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan pysyvästi.</translation>
+<translation id="7007100238996585961">Toinen laite vastaa</translation>
 <translation id="7015766095477679451">Palaa kello <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
 <translation id="7037152028959403492">Painoit suuren kontrastin pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
@@ -355,6 +362,7 @@
 <translation id="7398254312354928459">Verkko vaihdettu</translation>
 <translation id="742594950370306541">Kamera on käytössä.</translation>
 <translation id="743058460480092004">Kamera ja mikrofoni ovat käytössä.</translation>
+<translation id="7497767806359279797">Valitse kieli ja näppäimistö</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Verkkoa saatetaan valvoa</translation>
 <translation id="7536035074519304529">IP-osoite: <ph name="ADDRESS" /></translation>
@@ -364,6 +372,7 @@
 <translation id="7569509451529460200">Pistekirjoitus ja ChromeVox käytössä</translation>
 <translation id="7593891976182323525">Haku tai Shift</translation>
 <translation id="7604942372593434070">Tarkastele selaustoimintaasi</translation>
+<translation id="7642778300616172920">Piilota arkaluontoinen sisältö</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (omistaja)</translation>
 <translation id="7647488630410863958">Katso ilmoitukset avaamalla laitteesi lukitus.</translation>
 <translation id="7649070708921625228">Ohje</translation>
@@ -379,6 +388,7 @@
 <translation id="7842211907556571265">Yhdistetään: <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Varoitus: Kokeellinen ominaisuus</translation>
 <translation id="7846634333498149051">Näppäimistö</translation>
+<translation id="7886277072580235377">Internetin käyttökertasi tyhjennetään kirjautuessasi ulos. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Muokata tietosuojaan liittyviä asetuksia</translation>
 <translation id="7904094684485781019">Tämän tilin järjestelmänvalvoja on estänyt useisiin tileihin kirjautumisen.</translation>
 <translation id="7933084174919150729">Google Assistant on käytettävissä vain ensisijaisella profiililla.</translation>
@@ -419,6 +429,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Yhdistetään uudelleen…</translation>
 <translation id="8513108775083588393">Automaattinen kääntö</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ei välttämättä lataudu, kun se on käynnissä.</translation>
+<translation id="8592141010104017453">Älä näytä ilmoituksia lainkaan</translation>
 <translation id="8627191004499078455">Yhdistetty: <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> jäljellä</translation>
 <translation id="8649101189709089199">Teksti puhuttuna</translation>

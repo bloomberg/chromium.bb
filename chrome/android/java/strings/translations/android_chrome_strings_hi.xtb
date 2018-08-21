@@ -120,6 +120,7 @@
 <translation id="1891331835972267886"><ph name="APP_NAME" /> Chrome में खुलेगा. जारी रखकर, आप Chrome की <ph name="BEGIN_LINK1" />सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />निजता सूचना<ph name="END_LINK2" /> से सहमत होते हैं.</translation>
 <translation id="189172778771606813">मार्गदर्शक ड्रॉवर बंद करें</translation>
 <translation id="1919345977826869612">विज्ञापन</translation>
+<translation id="1919950603503897840">संपर्कों को चुनें</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">चयनित टैब</translation>
 <translation id="1938981467853765413">सुझाव दें</translation>
@@ -291,6 +292,7 @@
 <translation id="3282568296779691940">Chrome में प्रवेश करें</translation>
 <translation id="32895400574683172">सूचनाओं की अनुमति है</translation>
 <translation id="3295602654194328831">जानकारी छिपाएं</translation>
+<translation id="3298243779924642547">लाइट</translation>
 <translation id="3303414029551471755">सामग्री डाउनलोड करने के लिए आगे बढ़ें?</translation>
 <translation id="3328801116991980348">साइट जानकारी</translation>
 <translation id="3341058695485821946">देखें कि आपने कितना डेटा बचाया है</translation>
@@ -855,6 +857,7 @@
 <translation id="7791543448312431591">जोड़ें</translation>
 <translation id="780301667611848630">जी नहीं, रहने दें </translation>
 <translation id="7810647596859435254">इसमें खोलें…</translation>
+<translation id="7821588508402923572">आपकी डेटा बचत यहां दिखाई देगी</translation>
 <translation id="7832327313660264358">Google में सिंक किए गए डेटा और आपके इस्तेमाल किए जा रहे फ़ीचर में कोई बदलाव नहीं होगा</translation>
 <translation id="7837721118676387834">किसी विशिष्ट साइट के लिए, म्यूट किए गए वीडियो स्वत: चलाने दें.</translation>
 <translation id="7846076177841592234">चयन हटाएं</translation>

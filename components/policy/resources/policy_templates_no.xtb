@@ -33,6 +33,17 @@
           Hvis denne innstillingen er slått av eller ikke er angitt, kjøres verten for fjernhjelp i brukerens kontekst. Eksterne brukere kan i så fall ikke kommunisere via uthevede vinduer på skrivebordet.</translation>
 <translation id="1096105751829466145">Standard søkeleverandør</translation>
 <translation id="1099282607296956954">Slå på nettstedsisolering for alle nettsteder</translation>
+<translation id="1100570158310952027">
+      Denne regelen spesifiserer en liste med opprinnelser (nettadresser) eller mønstre for vertsnavn (for eksempel «*.example.com») der sikkerhetsbegrensninger for usikre opprinnelser ikke gjelder.
+
+Hensikten er å la organisasjoner godkjenne opprinnelser for eldre versjoner av programmer som ikke kan implementere TLS, eller å konfigurere en testtjener for intern nettutvikling, slik at utviklerne kan teste ut funksjoner som krever sikre kontekster uten å måtte implementere TLS på testtjeneren. Denne regelen hindrer også opprinnelsen fra å merkes som «Ikke sikker» i multifunksjonsfeltet.
+
+Når en liste med nettadresser angis i denne regelen, har det samme effekt som å angi kommandolinjeflagget «--unsafely-treat-unsecure-origin-as-secure» til en kommadelt liste med de samme nettadressene. Hvis regelen er angitt, overstyrer den kommandolinjeflagget.
+
+Denne regelen overstyrer UnsafelyTreatInsecureOriginAsSecure, hvis den regelen er til stede.
+
+For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Protokollbehandlere som angis via denne regelen, brukes ikke når Android-intensjoner behandles.</translation>
 <translation id="1118093128235245168">La nettsteder be brukeren om tilgang til tilkoblede USB-enheter</translation>
 <translation id="1128903365609589950">Konfigurerer katalogen som <ph name="PRODUCT_NAME" /> skal bruke for å lagre bufrede filer på disken.
@@ -80,6 +91,7 @@
       Hvis regelen ikke er angitt eller er satt til false (usann), er ikke RC4-chifferserier i TLS slått på. Ellers kan den settes til true (sann) for å sikre kompatibilitet med en utdatert tjener. Dette er en midlertidig løsning, og tjeneren bør konfigureres på nytt.</translation>
 <translation id="1297182715641689552">Bruk et .pac-skript for mellomtjener</translation>
 <translation id="1304973015437969093">ID-er for utvidelser/apper og oppdateringsnettadresser som skal installeres stille</translation>
+<translation id="1307454923744766368">Opprinnelser eller mønstre for vertsnavn der begrensninger for usikre opprinnelser ikke skal gjelde</translation>
 <translation id="1313457536529613143">Angir hvordan prosentandelen for forsinkelse av skjermdemping skaleres når brukeraktiviteten observeres mens skjermen er dempet, eller kort tid etter skjermen er slått av.
 
           Hvis denne innstillingen angis, spesifiserer den hvordan prosentandelen for forsinkelse av skjermdemping skaleres når brukeraktiviteten observeres mens skjermen dempes, eller kort tid etter skjermen er slått av. Når dempingsforsinkelsen er skalert, blir forsinkelsen for avslått, låst og inaktiv skjerm justert slik at de har samme lengde fra skjermdempingsforsinkelsen som i den opprinnelige konfigurasjonen.
@@ -91,6 +103,11 @@
 <translation id="1327466551276625742">Aktiver melding om nettverkskonfigurasjon når du er uten nett.</translation>
 <translation id="1330145147221172764">Slå på skjermtastaturet</translation>
 <translation id="13356285923490863">Navn på retningslinje</translation>
+<translation id="1352174694615491349">Denne regelen tillater sammenslåing av HTTP/2-tilkoblinger når klientsertifikater brukes. For å utføre sammenslåingen må vertsnavnet til den potensielle nye tilkoblingen og vertsnavnet til en eksisterende tilkobling samsvare med ett eller flere mønstre beskrevet i denne regelen. Regelen er en liste over verter som bruker URLBlacklist-filterformatet: «example.com» samsvarer med «example.com» og alle underdomener (f.eks. «sub.example.com»), mens «.example.net» samsvarer nøyaktig med «example.net».
+
+      Forespørsler om sammenslåing til forskjellige verter over tilkoblinger som bruker klientsertifikater, kan føre til problemer med sikkerhet og personvern, fordi den passive instansen sendes til alle forespørsler, selv om brukere ikke uttrykkelig har godkjent dette. Denne regelen er midlertidig og blir fjernet i en fremtidig utgivelse. Gå til https://crbug.com/855690.
+
+      Hvis denne regelen ikke angis, brukes standardfunksjonaliteten der sammenslåing av HTTP/2-tilkoblinger der klientsertifikater brukes, ikke tillates.</translation>
 <translation id="1353966721814789986">Oppstartsider</translation>
 <translation id="1359553908012294236">Hvis denne regelen settes til true (sann) eller ikke konfigureres, slås gjestepålogginger på i <ph name="PRODUCT_NAME" />. Gjestepålogginger er <ph name="PRODUCT_NAME" />-profiler der alle vinduene er i inkognitomodus.
 
@@ -185,6 +202,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="1583248206450240930">Bruk <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1599424828227887013">Slå på nettstedsisolering for spesifiserte opprinnelser på Android-enheter</translation>
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
+<translation id="1615221548356595305">Tillat sammenslåing av HTTP/2-tilkoblinger for disse vertene selv når klientsertifikater brukes</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
 <translation id="163200210584085447">Mønstrene på denne listen stilles opp mot sikkerhetskilden
       til nettadressen forespørselen kommer fra. Hvis det finnes samsvar, blir det gitt
@@ -1176,7 +1194,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis du ikke angir noen innstilling for denne regelen, er anonymisert datainnsamling med nettadressenøkkel aktiv, men brukeren kan endre den.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="4261820385751181068">Lokalitet for påloggingsskjermen på enheten</translation>
-<translation id="4264607809747169568">Kontroller tilgjengeligheten for delte nettverksressurser for ChromeOS</translation>
 <translation id="427220754384423013">Angir skriverne som en bruker kan bruke.
 
       Denne regelen brukes bare hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1334,6 +1351,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis denne regelen er aktivert, kan nettsteder navigere og åpne nye vinduer eller faner samtidig.
       Hvis denne regelen er deaktivert eller ikke er angitt, kan ikke nettsteder navigere og åpne nye vinduer eller faner samtidig.</translation>
 <translation id="4680961954980851756">Aktiver Autofyll</translation>
+<translation id="4703402283970867140">Slå på den smarte modellen for nedtoning for å forlenge tiden det tar før skjermen nedtones</translation>
 <translation id="4722122254122249791">Slå på nettstedsisolering for spesifiserte opprinnelser</translation>
 <translation id="4722399051042571387">Hvis denne regelen er angitt som «false» (usann), kan ikke brukerne angi PIN-koder som er svake og enkle å gjette.
 
@@ -1558,13 +1576,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
           Hvis denne retningslinjen ikke angis, brukes AskNotification, og brukeren kan endre på dette.</translation>
 <translation id="538108065117008131">Gi <ph name="PRODUCT_FRAME_NAME" /> tillatelse til å håndtere følgende innholdstyper.</translation>
-<translation id="5391363090783552279">Hvis denne regelen angis som «true» (sann), kobles <ph name="PRODUCT_NAME" /> til Cast-enheter på alle IP-adresser, ikke bare private RFC1918/RFC4913-adresser.
-
-          Hvis denne regelen angis som «false» (usann), kobles <ph name="PRODUCT_NAME" /> bare til Cast-enheter på private RFC1918/RFC4913-adresser.
-
-          Hvis denne regelen ikke er angitt, kobles <ph name="PRODUCT_NAME" /> bare til Cast-enheter på private RFC1918/RFC4913-adresser, med mindre CastAllowAllIPs-funksjonen er aktivert.
-
-          Hvis «EnableMediaRouter»-regelen er angitt som «false» (usann), har verdien for denne regelen ingen virkning.</translation>
 <translation id="5392172595902933844">Informasjon om Android-statusen sendes tilbake til
       tjeneren.
 
@@ -2137,6 +2148,10 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
 <translation id="6956272732789158625">Ikke tillat noen nettsteder å bruke nøkkelgenerering</translation>
+<translation id="6965859329738616662">Angir om en smart modell for nedtoning kan forlenge tiden det tar før skjermen nedtones.
+
+      Like før skjermen nedtones, evaluerer den smarte modellen for nedtoning om nedtoning av skjermen bør utsettes. Hvis den smarte modellen for nedtoning utsetter nedtoning av skjermen, forlenges tiden det tar før skjermen nedtones. I dette tilfellet blir utsettelsen av avslått skjerm, låseskjerm og inaktivitet justert til å samsvare med tidsrommet fra nedtoningsutsettelsen slik det ble konfigurert opprinnelig.
+      Hvis denne regelen er angitt som «True» (sann), eller hvis den ikke er angitt, slås den smarte modellen for nedtoning på, og den kan forlenge tiden det tar før skjermen nedtones. Hvis denne regelen er angitt som «False» (usann), påvirkes ikke nedtoning av skjermen av den smarte modellen for nedtoning.</translation>
 <translation id="6982028490425791294">
       Hvis regelen er satt til sann (true), tillater <ph name="PRODUCT_NAME" /> innhenting av WebRTC-aktivitetslogger fra Google-tjenester (f.eks. Google Meet) og opplasting av disse loggene til Google.
 
@@ -2583,6 +2598,13 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
 <translation id="7980227303582973781">Ingen spesielle begrensninger</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotér skjermen 0 grader</translation>
+<translation id="8033913082323846868">Denne regelen er avviklet i M70. Bruk AutofillAddressEnabled og AutofillCreditCardEnabled i stedet.
+
+      Slå på autofyllfunksjonen i <ph name="PRODUCT_NAME" />, og gjør det mulig for brukere å fylle ut nettskjemaer automatisk ved hjelp av tidligere lagret informasjon, for eksempel adresser og kredittkortinformasjon.
+
+      Hvis du slår av denne innstillingen, blir autofyll utilgjengelig for brukerne.
+
+      Hvis du slår på denne innstillingen eller ikke angir noen verdi, kan brukeren kontrollere all funksjonalitet for autofyllfunksjonen. På den måten kan vedkommende konfigurere autofyllprofiler og slå av og på autofyllfunksjonen etter eget ønske.</translation>
 <translation id="8044493735196713914">Rapportering av oppstartsmodus for enhet</translation>
 <translation id="8050080920415773384">Integrert utskrift</translation>
 <translation id="8059164285174960932">Nettadressen der klienter for ekstern tilgang skal hente autentiseringstokenet sitt fra</translation>
@@ -2909,6 +2931,18 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Bestemmer hvilken tilgangsregel som brukes for konfigurering av flere skrivere om gangen. Hvis <ph name="PRINTERS_ALLOW_ALL" /> er valgt, vises alle skrivere. Hvis <ph name="PRINTERS_BLACKLIST" /> er valgt, brukes <ph name="DEVICE_PRINTERS_BLACKLIST" /> til å begrense tilgangen til de angitte skriverne. Hvis <ph name="PRINTERS_WHITELIST" /> er valgt, angir <ph name="DEVICE_PRINTERS_WHITELIST" /> bare hvilke skrivere som kan velges.
 
       Hvis regelen ikke er angitt, brukes <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Avviklet i M69. Bruk OverrideSecurityRestrictionsOnInsecureOrigin i stedet.
+
+Denne regelen spesifiserer en liste med opprinnelser (nettadresser) eller mønstre for vertsnavn (for eksempel «*.example.com») der sikkerhetsbegrensninger for usikre opprinnelser ikke gjelder.
+
+Hensikten er å la organisasjoner godkjenne opprinnelser for eldre versjoner av programmer som ikke kan implementere TLS, eller å konfigurere en testtjener for intern nettutvikling, slik at utviklerne kan teste ut funksjoner som krever sikre kontekster, uten å måtte implementere TLS på testtjeneren. Denne regelen hindrer også opprinnelsen fra å merkes som «Ikke sikker» i multifunksjonsfeltet.
+
+Når en liste med nettadresser angis i denne regelen, har det samme effekt som å angi kommandolinjeflagget «--unsafely-treat-unsecure-origin-as-secure» til en kommadelt liste med de samme nettadressene. Hvis regelen er angitt, overstyrer den kommandolinjeflagget.
+
+Denne regelen er avviklet i M69 til fordel for OverrideSecurityRestrictionsOnInsecureOrigin. Hvis begge reglene er til stede, overstyrer OverrideSecurityRestrictionsOnInsecureOrigin denne regelen.
+
+For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Denne regelen bestemmer om samtykke for synkronisering skal vises til brukeren ved første pålogging. Den skal angis som «False» (usann) hvis samtykke for synkronisering ikke er nødvendig for denne brukeren.
       Hvis regelen er angitt som «False» (usann), vises ikke samtykke for synkronisering.

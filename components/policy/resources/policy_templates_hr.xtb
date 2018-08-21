@@ -33,6 +33,17 @@
           Ako je ta postavka onemogućena ili nije konfigurirana, host daljinske pomoći pokrenut će se u kontekstu korisnika i udaljeni korisnici neće moći pristupiti privilegiranim prozorima na računalu.</translation>
 <translation id="1096105751829466145">Zadani davatelj usluga pretraživanja</translation>
 <translation id="1099282607296956954">Omogući izolaciju web-lokacije za sve web-lokacije</translation>
+<translation id="1100570158310952027">
+      U pravilu se navodi popis polazišta (URL-ova) ili uzoraka naziva hosta (primjerice "*.example.com") na koje se neće primjenjivati sigurnosna ograničenja.
+
+      Namjera je omogućiti organizacijama da postave popis dopuštenih polazišta za stare aplikacije koje ne mogu upotrebljavati TLS ili da postave pripremni (engl. staging) poslužitelj za interni mrežni razvoj kako bi njihovi razvojni programeri mogli testirati značajke kojima su potrebni sigurni konteksti bez upotrebe TLS-a na pripremnom (engl. staging) poslužitelju. Tim će se pravilima također spriječiti da polazište bude označeno kao "Nesigurno" u višenamjenskom okviru.
+
+      Postavljanje popisa URL-ova u ovim pravilima ima jednak učinak kao i postavljanje oznake naredbenog retka '--unsafely-treat-insecure-origin-as-secure' na popis jednakih URL-ova odijeljenih zarezom. Ako je pravilo postavljeno, ono će nadjačati oznaku naredbenog retka.
+      Ovo pravilo nadjačava opciju UnsafelyTreatInsecureOriginAsSecure ako je ona prisutna.
+
+      Za više informacija o sigurnim kontekstima pogledajte
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Rukovatelji protokolom postavljeni putem ovog pravila ne upotrebljavaju se prilikom upotrebe Androidovih namjera.</translation>
 <translation id="1118093128235245168">Dopusti web-lokacijama da traže dopuštenje korisnika za pristup povezanom USB uređaju</translation>
 <translation id="1128903365609589950">Konfigurira direktorij koji će <ph name="PRODUCT_NAME" /> koristiti za pohranu predmemoriranih datoteka na disku.
@@ -80,6 +91,7 @@
       Ako se to pravilo ne postavi ili se postavi na "False", RC4 paketi šifri u TLS-u neće biti omogućeni. U protivnom se može postaviti na "True" radi održanja kompatibilnosti sa zastarjelim poslužiteljem. To je privremena mjera i poslužitelj se treba ponovo konfigurirati.</translation>
 <translation id="1297182715641689552">Upotrijebi .pac proxy skriptu</translation>
 <translation id="1304973015437969093">ID-jevi proširenja/aplikacija i URL-ovi ažuriranja koja će se instalirati u pozadini</translation>
+<translation id="1307454923744766368">Uzorci polazišta ili naziva hosta na koje se ograničenja o nesigurnim polazištima ne bi trebala primjenjivati</translation>
 <translation id="1313457536529613143">Određuje postotak odgode skaliranja zatamnjivanja zaslona kada se uoči aktivnosti korisnika dok se zaslon zatamnjuje ili ubrzo nakon što se zaslon isključi.
 
           Ako se to pravilo postavi, ono određuje postotak odgode skaliranja zatamnjivanja zaslona kada se uoči aktivnosti korisnika dok se zaslon zatamnjuje ili ubrzo nakon što se zaslon isključi. Kada se odgoda zatamnjivanja skalira, odgode isključivanja zaslona, zaključavanja zaslona i mirovanja podešavaju se kako bi se zadržali isti vremenski odmaci za odgodu zatamnjivanja zaslona koji su izvorno konfigurirani.
@@ -91,6 +103,11 @@
 <translation id="1327466551276625742">Omogući odzivnu poruku za konfiguraciju mreže tijekom izvanmrežnog rada</translation>
 <translation id="1330145147221172764">Omogući tipkovnicu na zaslonu</translation>
 <translation id="13356285923490863">Naziv pravila</translation>
+<translation id="1352174694615491349">Ovim pravilom omogućuje se spajanje HTTP/2 veze kad se upotrebljava certifikat klijenta, Kako bi se spojili, i naziv hosta potencijalne nove veze i naziv hosta postojeće veze moraju se podudarati s jednim uzorkom ili više uzoraka opisanih u ovom pravilu. Pravilo je popis hostova koji upotrebljavaju format filtra za URLBlacklist: "example.com" podudara se s "example.com" i svim poddomenama (npr. "sub.example.com"), dok se ".example.net" točno podudara s "example.net".
+
+      Zahtjevi za spajanje na različite hostove preko veza koje upotrebljavaju certifikate klijenta mogu dovesti do problema sa sigurnošću i privatnošću jer će okolno tijelo biti preneseno svim zahtjevima, čak i ako korisnik to nije izričito odobrio. Ovo je pravilo privremeno i bit će uklonjeno u budućem izdanju. Pogledajte https://crbug.com/855690.
+
+      Ako se ovo pravilo ne postavi, upotrebljavat će se zadano ponašanje u kojemu se nijednoj HTTP/2 vezi ne dopušta spajanje s vezama koje upotrebljavaju certifikate klijenta.</translation>
 <translation id="1353966721814789986">Početne stranice</translation>
 <translation id="1359553908012294236">Ako se pravilo postavi na "True" ili se ne konfigurira, <ph name="PRODUCT_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju profile preglednika <ph name="PRODUCT_NAME" /> u kojima se svi prozori otvaraju u anonimnom načinu.
 
@@ -184,6 +201,7 @@
 <translation id="1583248206450240930">Upotrijebi <ph name="PRODUCT_FRAME_NAME" /> kao zadano</translation>
 <translation id="1599424828227887013">Omogućivanje izolacije web-lokacije za određena polazišta na Android uređajima</translation>
 <translation id="1608755754295374538">URL-ovi koji će dobiti pristup uređajima za snimanje zvuka bez postavljanja upita</translation>
+<translation id="1615221548356595305">Dopustite spajanje HTTP/2 veza za te hostove čak i kad se upotrebljavaju certifikati klijenta</translation>
 <translation id="1617235075406854669">Omogući brisanje povijesti preglednika i preuzimanja</translation>
 <translation id="163200210584085447">Uzorci na tom popisu usporedit će se sa sigurnosnim
       izvorištem URL-a koji šalje zahtjev. Ako se podudaranje pronađe, pristup
@@ -1155,7 +1173,6 @@
       Ako se to pravilo ne postavi, prikupljanje anonimiziranih podataka zaključano URL-om bit će omogućeno, no korisnik će to moći promijeniti.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Oznaka zemlje/jezika za zaslon za prijavu na uređaju</translation>
-<translation id="4264607809747169568">Određuje dostupnost mrežnog dijeljenja datoteka za OS Chrome</translation>
 <translation id="427220754384423013">Određuje pisače koje korisnik može upotrebljavati.
 
       To se pravilo upotrebljava samo ako je pravilo <ph name="PRINTERS_WHITELIST" /> odabrano za <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1306,6 +1323,7 @@
       Ako se to pravilo omogući, web-lokacijama će se omogućiti istovremena navigacija i otvaranje novih prozora ili kartica.
       Ako se to pravilo onemogući ili se ne postavi, web-lokacijama će se onemogućiti istovremena navigacija i otvaranje novih prozora ili kartica.</translation>
 <translation id="4680961954980851756">Omogući Automatsko popunjavanje</translation>
+<translation id="4703402283970867140">Omogućite model pametnog zatamnjenja kako bi se produljilo vrijeme do zatamnjenja zaslona</translation>
 <translation id="4722122254122249791">Omogući izolaciju web-lokacije za određene izvore</translation>
 <translation id="4722399051042571387">Ako se postavi na False, korisnici neće moći postavljati PIN-ove koji su slabi ili ih je lako odgonetnuti.
 
@@ -1523,13 +1541,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="5370279767682621504">Omogući podršku za HTTP/0.9 na priključcima koji nisu zadani</translation>
 <translation id="5378985487213287085">Omogućuje da postavite smiju li web-lokacije prikazivati obavijesti radne površine. Prikazivanje obavijesti radne površine može biti dopušteno prema zadanim postavkama, odbijeno prema zadanim postavkama ili korisnik može primiti upit svaki put kad web-lokacija želi prikazati obavijest radne površine. Ako to pravilo nije postavljeno, upotrebljavat će se pravilo "AskNotifications", a korisnik će to moći promijeniti.</translation>
 <translation id="538108065117008131">Dopusti da <ph name="PRODUCT_FRAME_NAME" /> rukuje sljedećim vrstama sadržaja.</translation>
-<translation id="5391363090783552279">Ako se to pravilo postavi na True, usluga <ph name="PRODUCT_NAME" /> povezat će se s uređajima za emitiranje na svim IP adresama, a ne samo privatnim adresama RFC1918/RFC4913.
-
-          Ako se to pravilo postavi na False, usluga <ph name="PRODUCT_NAME" /> povezat će se s uređajima za emitiranje samo na privatnim adresama RFC1918/RFC4913.
-
-          Ako se to pravilo ne postavi, usluga <ph name="PRODUCT_NAME" /> povezat će se s uređajima za emitiranje samo na privatnim adresama RFC1918/RFC4913, osim ako se omogući značajka CastAllowAllIPs.
-
-          Ako se pravilo "EnableMediaRouter" postavi na False, vrijednost ovog pravila nema utjecaja.</translation>
 <translation id="5392172595902933844">Informacije o statusu Androida šalju se
       poslužitelju.
 
@@ -2075,6 +2086,10 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="6943577887654905793">Naziv Mac/Linux preferencije:</translation>
 <translation id="69525503251220566">Značajka pretraživanja po slici koja pruža parametre za zadanog davatelja usluge pretraživanja</translation>
 <translation id="6956272732789158625">Nemoj dopustiti nijednoj web-lokaciji da upotrebljava generiranje ključeva</translation>
+<translation id="6965859329738616662">Navodi se je li dopušten model pametnog zatamnjenja kako bi se produljilo vrijeme do zatamnjenja zaslona.
+
+      Prije nego što se zaslon zatamni, model pametnog zatamnjenja procjenjuje treba li odgoditi zatamnjenje zaslona. Ako model pametnog zatamnjenja odgodi zatamnjenje zaslona, on učinkovito produljuje vrijeme dok zaslon ne bude zatamnjen. U tom se slučaju isključivanje zaslona, zaključavanje zaslona i odgode  mirovanja prilagođavaju kako bi zadržale jednaku udaljenost od odgode zatamnjenja zaslona kako je izvorno konfigurirano.
+      Ako je ovo pravilo postavljeno na True ili nije postavljeno, bit će omogućen model pametnog zatamnjenja te će biti dopušteno produljiti vrijeme dok zaslon ne bude zatamnjen. Ako je ovo pravilo postavljeno na False, model pametnog zatamnjenja neće utjecati na zatamnjenje zaslona.</translation>
 <translation id="6982028490425791294">
       Ako se pravilo postavi na True, <ph name="PRODUCT_NAME" /> ima dopuštenje prikupljati zapisnike događaja WebRTC s Googleovih usluga (npr. Google Meet) i prenijeti te zapisnike na Google.
 
@@ -2499,6 +2514,13 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7980227303582973781">Nema posebnih ograničenja</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Zakreni zaslon 0 stupnjeva</translation>
+<translation id="8033913082323846868">Ovo pravilo obustavljeno je u M70 te umjesto njega upotrebljavajte AutofillAddressEnabled i AutofillCreditCardEnabled.
+
+      Omogućuje značajku <ph name="PRODUCT_NAME" /> Automatskog popunjavanja i dopušta korisnicima da samostalno popune web-obrasce služeći se prethodno pohranjenim informacijama kao što su adresa ili podaci o kreditnoj kartici.
+
+      Ako onemogućite ovu postavku, značajka Automatskog popunjavanja neće biti dostupna korisnicima.
+
+      Ako omogućite ovu postavku ili ako ne postavite vrijednost, značajku Automatskog popunjavanja i dalje će kontrolirati korisnik. To im omogućuje konfiguraciju profila Automatskog popunjavanja te uključivanje ili isključivanje značajke Automatskog popunjavanja po vlastitom nahođenju.</translation>
 <translation id="8044493735196713914">Izvješće načina pokretanja uređaja</translation>
 <translation id="8050080920415773384">Nativni ispis</translation>
 <translation id="8059164285174960932">URL na kojem bi klijenti za daljinski pristup trebali dobiti token za autentifikaciju</translation>
@@ -2824,6 +2846,19 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
       Određuje koje se pravilo za pristup upotrebljava za skupnu konfiguraciju pisača. Ako se odabere <ph name="PRINTERS_ALLOW_ALL" />, prikazuju se svi pisači. Ako se odabere <ph name="PRINTERS_BLACKLIST" />, <ph name="DEVICE_PRINTERS_BLACKLIST" /> upotrebljava se za ograničenje pristupa navedenim pisačima. Ako se odabere <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> određuje samo one pisače koji se mogu odabrati.
 
       Ako se to pravilo ne postavi, pretpostavlja se da vrijedi <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Obustavljeno u M69. Umjesto toga upotrebljavajte      OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Pravilom se navodi popis polazišta (URLs) ili uzoraka naziva hosta (primjerice "*.example.com") na koje se neće primjenjivati sigurnosna ograničenja o nesigurnim polazištima.
+
+      Namjera je omogućiti organizacijama da postave popis dopuštenih polazišta za stare aplikacije koje ne mogu upotrebljavati TLS ili da postave pripremni (engl. staging) poslužitelj za interni mrežni razvoj kako bi njihovi razvojni programeri mogli testirati značajke kojima su potrebni sigurni konteksti bez upotrebe TLS-a na pripremnom (engl. staging) poslužitelju. Tim će se pravilom također spriječiti da polazište bude označeno kao "Nesigurno" u višenamjenskom okviru.
+
+      Postavljanje popisa URL-ova u ovim pravilima ima jednak učinak kao i postavljanje oznake naredbenog retka '--unsafely-treat-insecure-origin-as-secure' na popis jednakih URL-ova odijeljenih zarezom. Ako se to pravilo postavi, nadjačat će oznaku naredbenog retka.
+      Ovo je pravilo obustavljeno u M69 u korist pravila
+      OverrideSecurityRestrictionsOnInsecureOrigin. Ako su prisutna oba pravila, pravilo OverrideSecurityRestrictionsOnInsecureOrigin nadjačava ovo pravilo.
+
+     Za više informacija o sigurnim kontekstima pogledajte
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Ovo pravilo određuje može li se prilikom prve prijave korisniku prikazivati pristanak na sinkronizaciju. Treba ga postaviti na False ako pristanak na sinkronizaciju nikad nije potreban za korisnika.
       Ako se postavi na False, pristanak na sinkronizaciju neće se prikazivati.

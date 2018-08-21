@@ -33,6 +33,30 @@
           Als deze instelling is uitgeschakeld of niet geconfigureerd, wordt de host voor ondersteuning op afstand uitgevoerd in de context van de gebruiker en kan de externe gebruiker geen vensters met een verhoogde bevoegdheid op de desktop gebruiken.</translation>
 <translation id="1096105751829466145">Standaardzoekprovider</translation>
 <translation id="1099282607296956954">Site-isolatie inschakelen voor elke site</translation>
+<translation id="1100570158310952027">
+      Dit beleid definieert een lijst met beginpunten (URL's) of hostnaampatronen (zoals
+      '*.example.com') waarop beveiligingsbeperkingen voor onveilige beginpunten
+      niet van toepassing zijn.
+
+      De bedoeling is organisaties toe te staan beginpunten voor verouderde
+      apps die geen TLS kunnen implementeren, op de witte lijst te zetten,
+      of een faserende server voor interne webontwikkelingen in te stellen,
+      zodat de ontwikkelaars functies die een veilige context vereisen, kunnen
+      testen zonder TLS te hoeven implementeren op de faserende
+      server. Dit beleid verhindert ook dat het beginpunt wordt aangeduid als
+      onveilig in de omnibox.
+
+      Wanneer er een lijst met URL's wordt ingesteld in dit beleid,
+      heeft dit hetzelfde effect als wanneer de opdrachtregelmarkering
+      '--unsafely-treat-insecure-origin-as-secure' wordt ingesteld
+      op een door komma's gescheiden lijst met dezelfde URL's.
+      Als het beleid is ingesteld, wordt de opdrachtregelmarkering overschreven.
+
+      Dit beleid overschrijft UnsafelyTreatInsecureOriginAsSecure, indien aanwezig.
+
+      Voor meer informatie over een veilige context ga je naar
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">De protocolhandlers die via dit beleid zijn ingesteld, worden niet gebruikt bij de verwerking van Android-intenties.</translation>
 <translation id="1118093128235245168">Toestaan dat sites de gebruiker vragen om toegang te verlenen tot een aangesloten USB-apparaat</translation>
 <translation id="1128903365609589950">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME" /> gebruikt om gecachte bestanden op schijf op te slaan.
@@ -79,6 +103,8 @@
       Als het beleid niet is ingesteld of is ingesteld op 'onwaar', worden de RC4-coderingssuites in TLS niet ingeschakeld. Anders kan het worden ingesteld op 'waar' om compatibiliteit met een verouderde server te behouden. Dit is een tijdelijke oplossing en de server moet opnieuw worden geconfigureerd.</translation>
 <translation id="1297182715641689552">Een PAC-script voor de proxy gebruiken</translation>
 <translation id="1304973015437969093">ID's voor extensies/apps en URL's voor updates die op de achtergrond moeten worden geïnstalleerd</translation>
+<translation id="1307454923744766368">Beginpunten of hostnaampatronen waarvoor er geen beperkingen voor
+      onveilige beginpunten zouden moeten gelden.</translation>
 <translation id="1313457536529613143">Bepaalt het percentage waarmee de dimvertraging van het scherm wordt geschaald wanneer er activiteit van de gebruiker wordt waargenomen terwijl het scherm is gedimd of kort nadat het scherm is uitgeschakeld.
 
           Als dit beleid is ingeschakeld, bepaalt het het percentage waarmee de dimvertraging van het scherm wordt geschaald wanneer er activiteit van de gebruiker wordt waargenomen terwijl het scherm is gedimd of kort nadat het scherm is uitgeschakeld. Wanneer de dimvertraging is geschaald, worden de vertragingen 'Scherm uit', 'Schermvergrendeling' en 'Inactief' aangepast om dezelfde afstand van de dimvertraging van het scherm te behouden zoals oorspronkelijk was geconfigureerd.
@@ -90,6 +116,11 @@
 <translation id="1327466551276625742">Prompt voor netwerkconfiguratie inschakelen als je offline bent</translation>
 <translation id="1330145147221172764">Schermtoetsenbord inschakelen</translation>
 <translation id="13356285923490863">Naam van beleid</translation>
+<translation id="1352174694615491349">Dit beleid staat toe dat HTTP/2-verbindingen kunnen worden samengevoegd wanneer clientcertificaten worden gebruikt. De verbindingen kunnen alleen worden samengevoegd als zowel de hostnaam van de potentiële nieuwe verbinding als de hostnaam van een bestaande verbinding overeenkomen met een of meer patronen die in dit beleid worden beschreven. Dit beleid bestaat uit een lijst van hosts die de filterindeling URLBlacklist gebruiken: 'example.com' komt overeen met 'example.com' en alle subdomeinen (zoals 'sub.example.com'), terwijl '.example.net' exact overeenkomt met 'example.net'.
+
+      Er kunnen beveiligings- of privacyproblemen ontstaan bij samenvoegingsverzoeken voor verschillende hosts via verbindingen die clientcertificaten gebruiken. De ambient authority wordt namelijk toegepast op alle verzoeken, zelfs als de gebruiker hiervoor niet rechtstreeks een machtiging voor heeft gegeven. Dit beleid is tijdelijk en wordt verwijderd in een toekomstige release. Zie https://crbug.com/855690.
+
+      Als dit beleid niet wordt ingesteld, wordt het standaardgedrag toegepast. Dit houdt in dat HTTP/2-verbindingen niet kunnen worden samengevoegd voor verbindingen die clientcertificaten gebruiken.</translation>
 <translation id="1353966721814789986">Homepage's</translation>
 <translation id="1359553908012294236">Als dit beleid is ingesteld op 'waar' of niet is geconfigureerd, schakelt <ph name="PRODUCT_NAME" /> gast-logins in. Gast-logins zijn profielen van <ph name="PRODUCT_NAME" /> waarbij alle vensters in de incognitomodus worden geopend.
 
@@ -175,6 +206,7 @@
 <translation id="1583248206450240930"><ph name="PRODUCT_FRAME_NAME" /> standaard gebruiken</translation>
 <translation id="1599424828227887013">Site-isolatie inschakelen voor gespecificeerde herkomsten op Android-apparaten</translation>
 <translation id="1608755754295374538">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van audio</translation>
+<translation id="1615221548356595305">Toestaan dat HTTP/2-verbindingen voor deze hosts kunnen worden samengevoegd, zelfs als clientcertificaten worden gebruikt</translation>
 <translation id="1617235075406854669">Verwijderen van browser- en downloadgeschiedenis inschakelen</translation>
 <translation id="163200210584085447">Patronen in deze lijst worden vergeleken met de
       beveiligingsoorsprong van de aanvragende URL. Als een overeenkomst
@@ -1180,7 +1212,6 @@
       Als dit beleid niet wordt ingesteld, worden aan URL's gekoppelde, geanonimiseerde gegevens verzameld, maar kan de gebruiker dit wijzigen.</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="4261820385751181068">Taal voor inlogscherm van apparaat</translation>
-<translation id="4264607809747169568">Beheert Network File Shares voor Chrome OS-beschikbaarheid</translation>
 <translation id="427220754384423013">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
 
       Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_WHITELIST" /> is gekozen voor <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1339,6 +1370,7 @@
       Als je dit beleid inschakelt, kunnen sites tegelijkertijd navigeren en nieuwe vensters/tabbladen openen.
       Als dit beleid is uitgeschakeld of niet is ingesteld, kunnen sites niet tegelijkertijd navigeren en nieuwe vensters/tabbladen openen.</translation>
 <translation id="4680961954980851756">Automatisch aanvullen inschakelen</translation>
+<translation id="4703402283970867140">Slim dimmodel inschakelen, zodat het langer duurt tot het scherm wordt gedimd</translation>
 <translation id="4722122254122249791">Site-isolatie inschakelen voor gespecificeerde herkomsten</translation>
 <translation id="4722399051042571387">Als dit is ingesteld op 'false' (onwaar), kunnen gebruikers geen pincodes instellen die als zwak worden beschouwd en gemakkelijk kunnen worden geraden.
 
@@ -1564,13 +1596,6 @@
 
           Als dit beleid niet wordt ingesteld, wordt 'AskNotifications' gebruikt en kan de gebruiker dit aanpassen.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" /> toestaan de volgende soorten content te verwerken.</translation>
-<translation id="5391363090783552279">Als dit beleid is ingesteld op true (waar), maakt <ph name="PRODUCT_NAME" /> verbinding met Cast-apparaten op alle IP-adressen en niet alleen op RFC1918/RFC4913-privéadressen.
-
-          Als dit beleid is ingesteld op false (onwaar), maakt <ph name="PRODUCT_NAME" /> alleen verbinding met Cast-apparaten op RFC1918/RFC4913-privéadressen.
-
-          Als dit beleid niet is ingesteld, maakt <ph name="PRODUCT_NAME" /> alleen verbinding met Cast-apparaten op RFC1918/RFC4913-privéadressen, tenzij de functie CastAllowAllIPs is ingeschakeld.
-
-          Als het beleid EnableMediaRouter is ingesteld op false (onwaar), heeft de waarde van dit beleid geen effect.</translation>
 <translation id="5392172595902933844">Informatie over de status van Android wordt teruggestuurd naar de
       server.
 
@@ -2134,6 +2159,10 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="6943577887654905793">Voorkeursnaam voor Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter die een functie voor zoeken op afbeelding levert voor de standaardzoekprovider</translation>
 <translation id="6956272732789158625">Sites niet toestaan sleutels te genereren</translation>
+<translation id="6965859329738616662">Bepaalt of een slim dimmodel ervoor mag zorgen dat het langer duurt tot het scherm wordt gedimd.
+
+      Wanneer het scherm bijna wordt gedimd, evalueert het slimme dimmodel of het dimmen moet worden uitgesteld, waardoor het langer duurt tot het scherm wordt gedimd. In dit geval worden de vertragingen aangepast voordat het scherm wordt uitgeschakeld, wordt vergrendeld of inactief wordt, zodat de tijden vanaf het moment dat het scherm wordt gedimd, zo blijven zoals oorspronkelijk is ingesteld.
+      Als dit beleid wordt ingesteld op 'waar' of niet wordt ingesteld, wordt het slimme dimmodel ingeschakeld, zodat het langer duurt voordat het scherm wordt gedimd. Als dit beleid wordt ingesteld op 'onwaar', heeft het slimme dimmodel geen invloed op het dimmen van het scherm.</translation>
 <translation id="6982028490425791294">
       Als het beleid is ingesteld op 'true' (waar), mag <ph name="PRODUCT_NAME" /> WebRTC-gebeurtenislogboeken van Google-services (zoals Google Meet) verzamelen en die logboeken uploaden naar Google.
 
@@ -2578,6 +2607,13 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7980227303582973781">Geen speciale beperkingen</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Scherm 0 graden draaien</translation>
+<translation id="8033913082323846868">Dit beleid is beëindigd in M70. Gebruik in plaats hiervan AutofillAddressEnabled en AutofillCreditCardEnabled.
+
+      Hiermee wordt de functie 'Automatisch aanvullen' van <ph name="PRODUCT_NAME" /> ingeschakeld en wordt gebruikers toegestaan webformulieren automatisch in te vullen met eerder opgeslagen informatie zoals adres- of creditcardgegevens.
+
+      Als je deze instelling uitschakelt, kunnen gebruikers de functie 'Automatisch aanvullen' niet gebruiken.
+
+      Als je de instelling inschakelt of geen waarde instelt, kunnen gebruikers de opties voor 'Automatisch aanvullen' zelf beheren. Zo kunnen ze profielen voor 'Automatisch aanvullen' configureren en de functie naar wens in- of uitschakelen.</translation>
 <translation id="8044493735196713914">Opstartmodus van apparaat melden</translation>
 <translation id="8050080920415773384">Systeemeigen printer</translation>
 <translation id="8059164285174960932">URL waarbij clients met externe toegang hun verificatietoken moeten ophalen</translation>
@@ -2910,6 +2946,35 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Hiermee wordt aangegeven welk toegangsbeleid wordt gebruikt voor bulksgewijze printerconfiguratie. Als <ph name="PRINTERS_ALLOW_ALL" /> is geselecteerd, worden alle printers weergegeven. Als <ph name="PRINTERS_BLACKLIST" /> is geselecteerd, wordt <ph name="DEVICE_PRINTERS_BLACKLIST" /> gebruikt om de toegang tot de opgegeven printers te beperken. Als <ph name="PRINTERS_WHITELIST" /> is geselecteerd, geeft <ph name="DEVICE_PRINTERS_WHITELIST" /> alleen die printers aan die kunnen worden geselecteerd.
 
       Als dit beleid niet is ingesteld, wordt er uitgegaan van <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Beëindigd in M69. Gebruik in plaats hiervan
+      OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Dit beleid definieert een lijst met beginpunten (URL's) of hostnaampatronen
+      (zoals '*.example.com') waarop beveiligingsbeperkingen voor onveilige
+      beginpunten niet van toepassing zijn.
+
+      De bedoeling is organisaties toe te staan beginpunten voor
+      verouderde apps die geen TLS kunnen implementeren, op
+      de witte lijst te zetten, of een faserende server voor interne
+      webontwikkelingen in te stellen, zodat de ontwikkelaars functies die een
+      veilige context vereisen, kunnen testen zonder TLS te hoeven implementeren
+      op de faserende server. Dit beleid verhindert ook dat het beginpunt wordt
+      aangeduid als onveilig in de omnibox.
+
+      Wanneer er een lijst met URL's wordt ingesteld
+      in dit beleid, heeft dit hetzelfde effect als wanneer de
+      opdrachtregelmarkering '--unsafely-treat-insecure-origin-as-secure' wordt
+      ingesteld op een door komma's gescheiden lijst met dezelfde URL's. Als het
+      beleid is ingesteld, wordt de opdrachtregelmarkering overschreven.
+
+      Dit beleid is beëindigd in M69 en is vervangen door
+      OverrideSecurityRestrictionsOnInsecureOrigin. Als beide beleidsvormen
+      aanwezig zijn, overschrijft OverrideSecurityRestrictionsOnInsecureOrigin
+      dit beleid.
+
+      Voor meer informatie over een veilige context ga je naar
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Dit beleid bepaalt of er informatie over toestemming voor synchronisatie mag worden getoond aan de gebruiker wanneer deze voor het eerst inlogt. De waarde moet op 'false' (onwaar) worden ingesteld als er nooit toestemming voor synchronisatie is vereist voor de gebruiker.
       Als dit is ingesteld op 'false' (onwaar), wordt er geen informatie over toestemming voor synchronisatie weergegeven.

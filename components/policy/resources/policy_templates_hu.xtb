@@ -33,6 +33,28 @@
           Ha a beállítás ki van kapcsolva vagy nincs beállítva, a távoli támogatás gazdagépe a felhasználó kontextusában fut, és a távoli felhasználók nem tudnak interakcióba lépni a kiemelt ablakokkal az asztali számítógépen.</translation>
 <translation id="1096105751829466145">Alapértelmezett keresési szolgáltató</translation>
 <translation id="1099282607296956954">Webhely-izoláció engedélyezése minden webhelynél</translation>
+<translation id="1100570158310952027">
+      Ez a házirend meghatározza azon eredetek (URL-ek) vagy gazdagépnévminták
+      (pl. „*.example.com”) listáját, amelyekre nem érvényesek a nem biztonságos
+      eredetekre vonatkozó biztonsági korlátozások.
+
+      A cél az, hogy a szervezetek beállíthassanak engedélyezőlistás eredeteket
+      a régi, TLS megvalósítására képtelen alkalmazások számára, vagy hogy
+      belső webfejlesztés céljából beállítsanak közzétételi szervert, amellyel a
+      fejlesztők anélkül tesztelhetik a biztonságos környezetet igénylő funkciókat,
+      hogy telepíteniük kellene a TLS-t. Ez a házirend azt is megakadályozza,
+      hogy a cím- és keresősáv nem biztonságosként jelölje meg az eredetet.
+
+      Az URL-ek listájának beállítása ugyanazt eredményezi, mint a parancssori
+      „--unsafely-treat-insecure-origin-as-secure” jelző beállítása ugyanazon URL-ek
+      vesszővel elválasztott listájánál. Ha a házirend be van állítva,
+      felülbírálja a parancssori jelzőt.
+
+      Ha az UnsafelyTreatInsecureOriginAsSecure házirend be van állítva, ez a házirend felülbírálja.
+
+      További információ a biztonságos környezetekről:
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Az ezen a házirenden keresztül megadott protokollkezelők az androidos „intent” elemek kezelésekor használaton kívül maradnak.</translation>
 <translation id="1118093128235245168">Engedélyezi azt, hogy a webhelyek hozzáférést kérjenek a felhasználótól a csatlakoztatott USB-eszközök használatára</translation>
 <translation id="1128903365609589950">Konfigurálja azt a könyvtárat, amelyet a <ph name="PRODUCT_NAME" /> a gyorsítótárazott fájlok lemezen történő tárolására fog használni.
@@ -80,6 +102,8 @@
       Ha a házirend nincs beállítva, illetve értéke hamis, akkor a TLS protokoll RC4 rejtjelezési csomagjai nem lesznek engedélyezve. Igaz értékre állítva megmarad a kompatibilitás az elavult szerverekkel. Ez átmeneti intézkedés, a szervert újra kell konfigurálni.</translation>
 <translation id="1297182715641689552">Használjon .pac proxyszkriptet</translation>
 <translation id="1304973015437969093">Bővítmény- és alkalmazásazonosítók és frissítési URL-ek csendes telepítése</translation>
+<translation id="1307454923744766368">Eredetek vagy gazdagépnévminták, melyekre nem érvényesek
+      a nem biztonságos eredetekre vonatkozó korlátozások</translation>
 <translation id="1313457536529613143">Azt a százalékot adja meg, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, ha az elsötétedés során, vagy röviddel a képernyő kikapcsolódása után felhasználói tevékenység történik.
 
           Ha a házirend be van állítva, megadja azt a százalékos értéket, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, ha az elsötétedés során, vagy röviddel a képernyő kikapcsolódása után felhasználói tevékenység történik. Az elsötétedési késleltetés skálázása esetén a képernyő-kikapcsolási, képernyő-zárolási és tétlenségi késleltetések is módosulnak, hogy ugyanannyi idő teljen el köztük a képernyő-elsötétítési késleltetéstől számítva, mint ami eredetileg be lett állítva.
@@ -91,6 +115,11 @@
 <translation id="1327466551276625742">Hálózati konfigurációs értesítés offline állapotban való megjelenítésének engedélyezése</translation>
 <translation id="1330145147221172764">Képernyő-billentyűzet engedélyezése</translation>
 <translation id="13356285923490863">A szabály neve</translation>
+<translation id="1352174694615491349">Ez a házirend lehetővé teszi a HTTP/2-kapcsolatok egyesítését (coalescing) ügyféltanúsítványok használata esetén. Az egyesítés végrehajtásához a lehetséges új és a meglévő kapcsolat gazdagépnevének egyaránt egyeznie kell a házirend által meghatározott minták legalább egyikével. A házirend gazdagépek listáját tartalmazza az URLBlacklist szűrőformátummal: az „example.com” egyezik az „example.com” webhellyel és az összes aldomainjével (pl. „sub.example.com”), míg a „.example.net” pontosan egyezik az „example.net” webhellyel.
+
+      Az ügyféltanúsítványokat használó kapcsolatokon keresztül különböző gazdagépeknek küldött egyesítési kérelmek biztonsági és adatvédelmi problémákat vethetnek fel, ugyanis a környezeti jogosultságok az összes kérelemnek átadásra kerülnek, még akkor is, ha a felhasználó nem adott erre kifejezett engedélyt. Ez a házirend ideiglenes jellegű, valamelyik jövőbeni kiadásban megszűnik. Lásd: https://crbug.com/855690.
+
+      Ha nem állítja be ezt a házirendet, akkor a böngésző az alapértelmezett viselkedést mutatja, azaz nem engedélyezi a HTTP/2-kapcsolatok egyesítését az ügyféltanúsítványokat használó kapcsolatok esetében.</translation>
 <translation id="1353966721814789986">Kezdőoldalak</translation>
 <translation id="1359553908012294236">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> engedélyezi a vendégüzemmódban történő bejelentkezést. A vendégüzemmód olyan profil a <ph name="PRODUCT_NAME" /> böngészőben, amelyben az összes ablak inkognitómódban van.
 
@@ -182,6 +211,7 @@
 <translation id="1583248206450240930">A <ph name="PRODUCT_FRAME_NAME" /> használata alapértelmezés szerint</translation>
 <translation id="1599424828227887013">Webhely-izoláció engedélyezése meghatározott forrásoknál androidos eszközökön</translation>
 <translation id="1608755754295374538">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a hangrögzítő eszközökhöz</translation>
+<translation id="1615221548356595305">A HTTP/2-kapcsolatok egyesítésének engedélyezése ezeknél a gazdagépeknél még ügyféltanúsítványok használata esetén is</translation>
 <translation id="1617235075406854669">Böngészési és letöltési előzmények törlésének engedélyezése</translation>
 <translation id="163200210584085447">A listában szereplő mintákat a rendszer egyezteti a kérelmező
       URL biztonsági eredetével. Ha van egyezés, a böngésző a SAML
@@ -1151,7 +1181,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend beállítatlanul marad, az URL-alapú anonimizált adatgyűjtés aktív lesz, de a felhasználó kikapcsolhatja.</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="4261820385751181068">Az eszköz bejelentkezési képernyőjének nyelv- és országkódja</translation>
-<translation id="4264607809747169568">A ChromeOS rendelkezésre állására vonatkozó hálózati fájlmegosztásokat szabályozza</translation>
 <translation id="427220754384423013">Meghatározza, hogy mely nyomtatókat használhatja a felhasználó.
 
       A házirend csak akkor van használatban, ha a(z) <ph name="PRINTERS_WHITELIST" /> lehetőség van kiválasztva a(z) <ph name="BULK_PRINTERS_ACCESS_MODE" /> házirendnél.
@@ -1302,6 +1331,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha engedélyezett ez a házirend, a webhelyeknek engedélyezve lesz, hogy egyszerre navigáljanak és nyissanak meg új ablakokat és lapokat.
       Ha le van tiltva ez a házirend, illetve nincs beállítva, a webhelyek számára le lesz tiltva, hogy egyszerre navigáljanak és nyissanak meg új ablakokat és lapokat.</translation>
 <translation id="4680961954980851756">Automatikus kitöltés engedélyezése</translation>
+<translation id="4703402283970867140">Intelligens elsötétítési modell engedélyezése a képernyő elsötétítési időtartamának növeléséhez</translation>
 <translation id="4722122254122249791">Webhely-izoláció engedélyezése meghatározott forrásoknál</translation>
 <translation id="4722399051042571387">Ha hamisra van állítva, a felhasználók nem tudnak majd gyenge vagy könnyen kitalálható jelszót beállítani.
 
@@ -1513,13 +1543,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5370279767682621504">A HTTP/0.9 támogatás engedélyezése a nem alapértelmezett portokon</translation>
 <translation id="5378985487213287085">Meghatározhatja, hogy a weboldalak megjeleníthessenek-e asztali értesítéseket. Az asztali értesítések megjelenítése lehet alapértelmezés szerint engedélyezett, alapértelmezés szerint tiltott, vagy megkérdezheti a felhasználót minden alkalommal, amikor egy webhely asztali értesítéseket kíván megjeleníteni. Ha a házirend konfigurálatlanul marad, a rendszer az "AskNotifications" értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="538108065117008131">A következő tartalomtípusok kezelésének engedélyezése a <ph name="PRODUCT_FRAME_NAME" /> számára.</translation>
-<translation id="5391363090783552279">Ha a házirend igaz értékre van állítva, a <ph name="PRODUCT_NAME" /> minden IP-cím esetén csatlakozik a Cast-eszközökhöz, nem csak RFC1918/RFC4913 privát címek esetén.
-
-          Ha a házirend értéke igaz, a <ph name="PRODUCT_NAME" /> csak a RFC1918/RFC4913 privát címeken lévő Cast-eszközökhöz csatlakozik.
-
-          Ha nincs beállítva a házirend, a <ph name="PRODUCT_NAME" /> csak a RFC1918/RFC4913 privát címeknél csatlakozik Cast-eszközökre, kivéve ha engedélyezve van a CastAllowAllIPs funkció.
-
-          Ha az „EnableMediaRouter” házirend értéke hamis, akkor hatástalan ennek a házirendnek az értéke.</translation>
 <translation id="5392172595902933844">Információk küldése az Android állapotáról a
       szervernek.
 
@@ -2074,6 +2097,10 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6943577887654905793">Mac/Linux preferencia neve:</translation>
 <translation id="69525503251220566">Paraméter az alapértelmezett keresési szolgáltatóval végezhető képalapú keresési funkció biztosításához</translation>
 <translation id="6956272732789158625">A kulcsgenerálás használatának letiltása minden webhelyen</translation>
+<translation id="6965859329738616662">Meghatározza, hogy lehet-e használni intelligens elsötétítési modellt, amely lehetővé teszi a képernyő elsötétített állapotáig tartó időtartam növelését.
+
+      Amikor a képernyő elsötétítésére kerül sor, az intelligens elsötétítési modell megállapítja, hogy el kell-e halasztani az elsötétítést. Ha a halasztás mellett dönt, meghosszabbítja az elsötétítésig hátralévő időt. Ebben az esetben a képernyő kikapcsolását és lezárását, illetve az üresjárati késleltetést úgy korrigálja, hogy megtartsa a képernyő elsötétítésénél eredetileg beállított időtávolságot.
+      Ha a házirend értéke Igaz, vagy ha nincs beállítva, akkor az intelligens elsötétítési modell aktiválódik, és lehetővé teszi a képernyő elsötétítéséig hátralévő idő növelését. Ha a házirend értéke Hamis, akkor az intelligens elsötétítési modell nem befolyásolja a képernyő elsötétítését.</translation>
 <translation id="6982028490425791294">
       Ha a házirend értéke igaz, a(z) <ph name="PRODUCT_NAME" /> engedélyt kap a WebRTC-eseménynaplók begyűjtésére a Google-szolgáltatásokból (pl. a Google Meet felületéről), valamint azok feltöltésére a Google rendszerébe.
 
@@ -2499,6 +2526,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7980227303582973781">Speciális korlátozás nélkül</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Képernyő elforgatása 0 fokkal</translation>
+<translation id="8033913082323846868">Ez a házirend megszűnt az M70-es kiadásban. Használja helyette az AutofillAddressEnabled és az AutofillCreditCardEnabled házirendeket.
+
+      Engedélyezi a <ph name="PRODUCT_NAME" /> automatikus kitöltés funkcióját, és lehetővé teszi a felhasználók számára az internetes űrlapok korábban tárolt adatokkal, például a címmel vagy a bankkártyaadatokkal történő automatikus kitöltését.
+
+      Ha letiltja a beállítást, a felhasználók nem használhatják az automatikus kitöltést.
+
+      Ha engedélyezi ezt a beállítást, vagy nem állítja be az értékét, az automatikus kitöltés funkció a felhasználó ellenőrzése alatt marad. Ez lehetővé teszi, hogy a felhasználók automatikus kitöltési profilokat állítsanak be, és saját belátásuk szerint kapcsolják ki vagy be az automatikus kitöltést.</translation>
 <translation id="8044493735196713914">Az eszköz indítási módjának jelentése</translation>
 <translation id="8050080920415773384">Natív nyomtatás</translation>
 <translation id="8059164285174960932">Az URL, ahol a távoli hozzáférésű kliensnek be kell szereznie a hitelesítési tokent</translation>
@@ -2820,6 +2854,33 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Kijelöli, hogy melyik hozzáférési házirend van használatban a tömeges nyomtatóbeállításhoz. Ha a(z) <ph name="PRINTERS_ALLOW_ALL" /> van kiválasztva, minden nyomtató megjelenik. Ha a(z) <ph name="PRINTERS_BLACKLIST" /> van kiválasztva, a(z) <ph name="DEVICE_PRINTERS_BLACKLIST" /> házirend korlátozza a megadott nyomtatókhoz való hozzáférést. Ha a(z) <ph name="PRINTERS_WHITELIST" /> van kiválasztva, a(z) <ph name="DEVICE_PRINTERS_WHITELIST" /> csak a kiválasztható nyomtatókat jelöli ki.
 
       Ha a házirend nincs beállítva, a(z) <ph name="PRINTERS_ALLOW_ALL" /> van érvényben.
+      </translation>
+<translation id="8938932171964587769">Megszűnt az M69-es kiadásban. Használja helyette az
+      OverrideSecurityRestrictionsOnInsecureOrigin házirendet.
+
+      Ez a házirend meghatározza azon eredetek (URL-ek) vagy 
+      gazdagépnévminták (pl. „*.example.com”) listáját, amelyekre nem érvényesek
+      a nem biztonságos eredetekre vonatkozó biztonsági korlátozások.
+
+      A cél az, hogy a szervezetek beállíthassanak engedélyezőlistás eredeteket
+      a régi, TLS megvalósítására képtelen alkalmazások számára, vagy hogy
+      belső webfejlesztés céljából beállítsanak közzétételi szervert, amellyel a
+      fejlesztők anélkül tesztelhetik a biztonságos környezetet igénylő funkciókat,
+      hogy telepíteniük kellene a TLS-t. Ez a házirend azt is megakadályozza,
+      hogy a cím- és keresősáv nem biztonságosként jelölje meg az eredetet.
+
+      Az URL-ek listájának beállítása ugyanazt eredményezi, mint a parancssori
+      „--unsafely-treat-insecure-origin-as-secure” jelző beállítása ugyanazon URL-ek
+      vesszővel elválasztott listájánál. Ha a házirend be van állítva,
+      felülbírálja a parancssori jelzőt.
+
+      Ez a házirend megszűnt az M69-es kiadásba, helyére az
+      OverrideSecurityRestrictionsOnInsecureOrigin lépett. Ha mindkét házirend
+      engedélyezett, az OverrideSecurityRestrictionsOnInsecureOrigin
+      felülbírálja ezt a házirendet.
+
+      További információ a biztonságos környezetekről:
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Ez a házirend vezérli, hogy megjeleníthető-e szinkronizáláshoz való hozzájárulás a felhasználó számára az első bejelentkezés során. Értékét hamisra kell állítani, ha a felhasználónak sosincs szüksége a szinkronizáláshoz való hozzájáruláshoz.
       Ha a beállítás értéke hamis, a szinkronizáláshoz való hozzájárulás nem jelenik meg.

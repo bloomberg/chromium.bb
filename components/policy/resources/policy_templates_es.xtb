@@ -33,6 +33,31 @@
           Si esta opción no se configura o se inhabilita, el host de asistencia remota se ejecutará en el contexto del usuario y los usuarios remotos no podrán interactuar con las ventanas que requieren permisos de administrador en el ordenador.</translation>
 <translation id="1096105751829466145">Proveedor de búsquedas predeterminadas</translation>
 <translation id="1099282607296956954">Habilitar el aislamiento de todos los sitios web</translation>
+<translation id="1100570158310952027">
+      La política define una lista de orígenes (URLs) o de patrones de nombre de host
+      (como "*.example.com") para los que no se aplican las restricciones de
+      seguridad de orígenes inseguros.
+
+      La intención es permitir que las organizaciones definan orígenes
+
+      incluidos en listas blancas para aplicaciones antiguas que no pueden
+      implementar TLS, o bien configuren un servidor provisional para desarrollar
+
+      web internas y conseguir que los desarrolladores puedan probar las
+      funciones que necesiten en contextos seguros sin tener que implementar
+      TLS en el servidor provisional. Esta política también evita que el origen
+      aparezca con la etiqueta No es seguro en el omnibox.
+
+      Definir la lista de URLs de esta política tiene el mismo resultado que
+      asignar el indicador de línea de comandos "--unsafely-treat-insecure-origin-
+      as-secure" a una lista de URL separadas por comas.
+      Al habilitar la política, se anula el indicador de línea de comandos.
+
+      Esta política anula UnsafelyTreatInsecureOriginAsSecure si está presente.
+
+      Para obtener más información sobre los contextos seguros, consulta la
+      página https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Los controladores de protocolo configurados a través de esta política no se utilizan al procesar los intents de Android.</translation>
 <translation id="1118093128235245168">Permitir que los sitios web pidan permiso al usuario para acceder a un dispositivo USB conectado</translation>
 <translation id="1128903365609589950">Configura el directorio que <ph name="PRODUCT_NAME" /> utilizará para guardar los archivos almacenados en la memoria caché en el disco.
@@ -79,6 +104,8 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
       Si la política no se establece o se le asigna el valor false, no se habilitarán los conjuntos de cifrado de RC4 en TLS. Si por el contrario se le asigna el valor true, mantendrá la compatibilidad con un servidor obsoleto. Se trata de una medida provisional y el servidor se debería volver a configurar.</translation>
 <translation id="1297182715641689552">Utilizar una secuencia de comandos .pac de proxy</translation>
 <translation id="1304973015437969093">IDs de extensiones/aplicaciones y URLs de actualización que se instalan automáticamente</translation>
+<translation id="1307454923744766368">Orígenes o patrones de nombres de host en los que no se deben
+      aplicar restricciones de orígenes inseguros</translation>
 <translation id="1313457536529613143">Especifica el porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando se observa la actividad del usuario con la pantalla oscurecida o poco después de que esta se haya desactivado.
 
           Si se establece esta política, se especificará el porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando se observe la actividad del usuario con la pantalla oscurecida o poco después de que esta se haya desactivado. Cuando se ajusta el tiempo de espera de inactividad de la pantalla, se ajustan los retrasos de desconexión, bloqueo y desactivación de la pantalla para mantener las mismas distancias del tiempo de espera de inactividad de la pantalla que la configuración original.
@@ -90,6 +117,11 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 <translation id="1327466551276625742">Habilitar mensaje de configuración de red si no hay conexión</translation>
 <translation id="1330145147221172764">Habilitar teclado en pantalla</translation>
 <translation id="13356285923490863">Nombre de la política</translation>
+<translation id="1352174694615491349">Esta política permite la fusión de conexiones HTTP/2 cuando se usan certificados de cliente. Para que se fusionen, tanto el nombre de host de la nueva conexión posible como el de la conexión presente deben coincidir con uno o varios patrones descritos en esta política. La política es una lista de hosts que utilizan el formato de filtro URLBlacklist: "example.com" coincide con "example.com" y todos sus subdominios (como "sub.example.com"), mientras que ".example.net" coincide de forma exacta con "example.net".
+
+      Las solicitudes de fusión a diferentes hosts para conexiones que utilizan certificados de cliente pueden dar lugar a problemas de seguridad y privacidad, ya que a la autoridad de certificación se le presentarán todas las solicitudes, aunque el usuario no lo autorice de forma explícita. Esta política es temporal y se retirará en una versión futura. Consulta la página https://crbug.com/855690.
+
+      Si no se configura esta política, se realizará la acción predeterminada: no permitir la fusión de ninguna conexión HTTP/2 en conexiones que utilicen certificados de cliente.</translation>
 <translation id="1353966721814789986">Páginas de inicio</translation>
 <translation id="1359553908012294236">Si se asigna el valor true a esta política o si esta no se configura, <ph name="PRODUCT_NAME" /> habilitará los inicios de sesión como invitado. Los inicios de sesión como invitado son perfiles de <ph name="PRODUCT_NAME" /> en los que todas las ventanas están en modo de incógnito.
 
@@ -180,6 +212,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de forma predeterminada</translation>
 <translation id="1599424828227887013">Habilitar el aislamiento de sitios web específicos en dispositivos Android</translation>
 <translation id="1608755754295374538">URLs a las que se concederá acceso a dispositivos de captura de audio sin confirmación</translation>
+<translation id="1615221548356595305">Permitir la fusión de conexiones HTTP/2 para estos hosts aunque se utilicen certificados de cliente</translation>
 <translation id="1617235075406854669">Habilitar eliminación de historial de navegación y de descargas</translation>
 <translation id="163200210584085447">Los patrones de esta lista se compararán con el origen de seguridad
       de la URL solicitante. Si se encuentra alguna coincidencia, se concederá acceso a dispositivos de captura de vídeo
@@ -1193,7 +1226,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Si dejas esta política sin configurar, la recogida de datos anónima con clave de URL se habilitará, pero el usuario podrá cambiar la opción.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuración regional para la pantalla de inicio de sesión del dispositivo</translation>
-<translation id="4264607809747169568">Controla si el uso compartido de archivos del sistema estará disponible en Chrome OS</translation>
 <translation id="427220754384423013">Especifica las impresoras que puede utilizar un usuario.
 
 
@@ -1354,6 +1386,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se habilita esta política, los sitios web podrán abrir nuevas ventanas y pestañas y navegar de forma simultánea.
       Si se inhabilita esta política o no se configura, los sitios web no podrán abrir ventanas ni pestañas nuevas ni navegar de forma simultánea.</translation>
 <translation id="4680961954980851756">Habilitar Autocompletar</translation>
+<translation id="4703402283970867140">Habilitar el modelo de atenuación inteligente para alargar el tiempo que pasa hasta que la pantalla se atenúe.</translation>
 <translation id="4722122254122249791">Habilitar el aislamiento de sitios web específicos</translation>
 <translation id="4722399051042571387">Si se le asigna el valor false, los usuarios no podrán definir ningún PIN que no se considere seguro y que sea fácil de adivinar.
 
@@ -1585,13 +1618,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si no se establece esta política, se usará la política AskNotifications y el usuario podrá modificarla.</translation>
 <translation id="538108065117008131">Permitir que <ph name="PRODUCT_FRAME_NAME" /> gestione los tipos de contenido que se indican a continuación.</translation>
-<translation id="5391363090783552279">Si se le asigna el valor "True" a esta política, <ph name="PRODUCT_NAME" /> se conectará a dispositivos de transmisión de todas las direcciones IP y no solo de las direcciones privadas de RFC1918 y RFC4913.
-
-          Si se le asigna el valor "False" a esta política", <ph name="PRODUCT_NAME" /> solo se conectará a los dispositivos de transmisión de las direcciones privadas de RFC1918 y RFC4913.
-
-          Si no se le asigna ningún valor a esta política, <ph name="PRODUCT_NAME" /> solo se conectará a los dispositivos de transmisión de las direcciones privadas de RFC1918 y RFC4913, a menos que se habilite la función CastAllowAllIPs.
-
-          Si se le asigna el valor "False" a la política "EnableMediaRouter", el valor de esta política no tendrá ningún efecto.</translation>
 <translation id="5392172595902933844">La información sobre el estado de Android se envía al servidor.
 
       Si se asigna el valor false a la política o no se le asigna ningún valor, no se proporciona información sobre el estado.
@@ -2163,6 +2189,10 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
 <translation id="6943577887654905793">Nombre de preferencia en Mac/Linux:</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6956272732789158625">No permitir que los sitios web utilicen la generación de claves</translation>
+<translation id="6965859329738616662">Especifica si a un modelo de atenuación inteligente se le permite alargar el tiempo que debe pasar hasta que la pantalla se atenúe.
+
+      Cuando la pantalla esté a punto de atenuarse, el modelo de atenuación inteligente evaluará si esta acción debe aplazarse. Si esto ocurre, este modelo alargará el tiempo que debe pasar hasta que la pantalla se atenúe. En este caso, los retrasos por inactividad, para apagar la pantalla o para bloquearla se ajustan para que mantengan las mismas distancias con la atenuación de pantalla que se configuraron al principio.
+      Si a esta política se le asigna el valor "True" o no se le asigna ningún valor, el modelo de atenuación inteligente se habilitará y podrá alargar el tiempo que debe pasar hasta que la pantalla se atenúe. Si se le asigna el valor "False", este modelo no afectará a la atenuación de la pantalla.</translation>
 <translation id="6982028490425791294">
       Si se le asigna el valor "True" a esta política", <ph name="PRODUCT_NAME" /> puede recopilar registros de eventos WebRTC de los servicios de Google (p. ej., Google Meet) y subirlos a Google.
 
@@ -2617,6 +2647,13 @@ NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</tr
 <translation id="7980227303582973781">Sin restricciones especiales</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Girar la pantalla 0 grados</translation>
+<translation id="8033913082323846868">Esta política está obsoleta en M70. Utiliza en su lugar AutofillAddressEnabled y AutofillCreditCardEnabled.
+
+      Habilita la función Autocompletar de <ph name="PRODUCT_NAME" /> y permite que los usuarios rellenen formularios web automáticamente con información almacenada anteriormente, como la dirección o la tarjeta de crédito.
+
+      Si se inhabilita esta opción, los usuarios no podrán acceder a la función Autocompletar.
+
+      Si se habilita esta opción o no se le asigna ningún valor, los usuarios controlarán la función Autocompletar: podrán configurar perfiles de Autocompletar y activarla o desactivarla según sus preferencias.</translation>
 <translation id="8044493735196713914">Notificar modo de inicio de dispositivo</translation>
 <translation id="8050080920415773384">Impresión nativa</translation>
 <translation id="8059164285174960932">URL en la que los clientes de acceso remoto deben obtener su token de autenticación</translation>
@@ -2948,6 +2985,34 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
       Designa qué política de acceso se utiliza para configurar impresoras en bloque. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, se mostrarán todas las impresoras. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, se utilizará <ph name="DEVICE_PRINTERS_BLACKLIST" /> para restringir el acceso a impresoras específicas. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> designará únicamente las impresoras que se puedan seleccionar.
 
       Si no se establece esta política, se utilizará <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Obsoleta en M69. Utiliza en su lugar
+      OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      La política define una lista de orígenes (URLs) o de patrones de
+      nombres de host (como "*.example.com") para los que no se aplican las
+      restricciones de seguridad de orígenes inseguros.
+
+      La intención es permitir que las organizaciones definan orígenes incluidos
+      en listas blancas para aplicaciones antiguas que no pueden implementar
+      TLS, o bien configuren un servidor provisional para desarrollar web internas
+      y conseguir que los desarrolladores puedan probar las funciones que
+      necesiten en contextos seguros sin tener que implementar TLS en el
+      servidor provisional. Esta política también evita que el origen aparezca con
+      la etiqueta No es seguro en el omnibox.
+
+      Definir la lista de URLs de esta política tiene el mismo resultado que
+      asignar el indicador de línea de comandos "--unsafely-treat-insecure-origin-
+      as-secure" a una lista de URL separadas por comas.
+      Al habilitar la política, se anula el indicador de línea de comandos.
+
+      Esta política está obsoleta en M69 y la sustituye
+      OverrideSecurityRestrictionsOnInsecureOrigin. Si ambas políticas están
+      presentes, OverrideSecurityRestrictionsOnInsecureOrigin anulará esta
+      política.
+
+      Para obtener más información sobre contextos seguros, consulta la página
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Esta política controla si se muestra Sync Consent al usuario durante el primer inicio de sesión. Se le debería asignar el valor "False" si no es necesario mostrar Sync Consent al usuario en ningún caso.
       Si se le asigna el valor "False", Sync Consent no se mostrará.

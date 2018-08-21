@@ -118,7 +118,6 @@
 <translation id="1171135284592304528">Открояване на елемента, върху който е фокусирана клавиатурата, когато той се промени</translation>
 <translation id="1173894706177603556">Преименуване</translation>
 <translation id="1174073918202301297">Прекият път бе добавен</translation>
-<translation id="1174808551768282258">Отключвайте своя Chromebook посредством телефона си. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" />.</translation>
 <translation id="1175364870820465910">&amp;Печат...</translation>
 <translation id="117624967391683467">„<ph name="FILE_NAME" />“ се копира...</translation>
 <translation id="1177138678118607465">Може да използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google. В състояние сте да промените това по всяко време на адрес myaccount.google.com/activitycontrols/search</translation>
@@ -126,7 +125,6 @@
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="1183237619868651138">„<ph name="EXTERNAL_CRX_FILE" />“ не може да се инсталира в локалния кеш.</translation>
-<translation id="1183378459020939734">Готови ли сте да сдвоите ключа си за сигурност?</translation>
 <translation id="1185924365081634987">Може също да опитате <ph name="GUEST_SIGNIN_LINK_START" />да сърфирате като гост<ph name="GUEST_SIGNIN_LINK_END" />, за да се отстрани тази грешка в мрежата.</translation>
 <translation id="1186771945450942097">Премахнете опасния софтуер</translation>
 <translation id="1187722533808055681">Събуждания при неактивност</translation>
@@ -213,6 +211,7 @@
 <translation id="1303671224831497365">Няма намерени устройства с Bluetooth</translation>
 <translation id="1306606229401759371">Промяна на настройките</translation>
 <translation id="1307559529304613120">Ами сега!  Системата не успя да съхрани дългосрочното означение за достъп на това устройство до приложния програмен интерфейс (API).</translation>
+<translation id="1307931752636661898">Файловете за Linux не могат да бъдат показани</translation>
 <translation id="1313405956111467313">Автоматична конфигурация на прокси сървър</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313705515580255288">Вашите отметки, история и други настройки ще се синхронизират с профила ви в Google.</translation>
@@ -364,6 +363,7 @@
 <translation id="1530838837447122178">Отваряне на настройките за мишката и сензорния панел</translation>
 <translation id="1531004739673299060">Прозорец на приложението</translation>
 <translation id="15373452373711364">Голям курсор на мишката</translation>
+<translation id="1538729222189715449">Файловете за Linux се отварят...</translation>
 <translation id="1540605929960647700">Активиране на демонстрационния режим</translation>
 <translation id="1543284117603151572">Импортирани от Edge</translation>
 <translation id="1545177026077493356">Автоматичен павилионен режим</translation>
@@ -539,7 +539,6 @@
 <translation id="1782530111891678861">Промяна на режима на дисплея за точките на докосване</translation>
 <translation id="1784849162047402014">Дисковото пространство на устройството е малко</translation>
 <translation id="1786636458339910689">Екипни дискове</translation>
-<translation id="1792161662640298233">Ключът за сигурност се потвърждава</translation>
 <translation id="1792619191750875668">Разширен екран</translation>
 <translation id="1794791083288629568">Изпращане на отзиви, за да ни помогнете да отстраним този проблем.</translation>
 <translation id="1795214765651529549">Използване на класическата тема</translation>
@@ -622,7 +621,6 @@
 <translation id="1910721550319506122">Добре дошли!</translation>
 <translation id="1914326953223720820">Услуга за разкомпресиране</translation>
 <translation id="1915073950770830761">canary</translation>
-<translation id="1915543339027206592">В зависимост от настройките на профила ви работата ви с Асистент може да е ограничена до определени неща, като например резултати от мрежата, шеги и местна информация.</translation>
 <translation id="1916502483199172559">Стандартен червен аватар</translation>
 <translation id="1918141783557917887">&amp;По-малък</translation>
 <translation id="1919345977826869612">Реклами</translation>
@@ -791,6 +789,7 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> от <ph name="PEPPER_PLUGIN_DOMAIN" /> иска да осъществи достъп до компютъра ви</translation>
 <translation id="2178614541317717477">Компрометиране на сертифициращия орган</translation>
 <translation id="218070003709087997">Използвайте число, за да укажете колко копия да се отпечатат (от 1 до 999).</translation>
+<translation id="2184515124301515068">Нека Chrome избира кога сайтовете да могат да възпроизвеждат звук (препоръчително)</translation>
 <translation id="2187895286714876935">Грешка при импортирането на сертификат на сървър</translation>
 <translation id="2187906491731510095">Разширенията бяха актуализирани</translation>
 <translation id="2188881192257509750">Отваряне на <ph name="APPLICATION" /></translation>
@@ -835,6 +834,7 @@
 <translation id="2241053333139545397">Четене и промяна на данните ви в няколко уебсайта.</translation>
 <translation id="2242687258748107519">Информация за файла</translation>
 <translation id="2243194103992005307">За да премахнете приложения, отворете „Настройки“ &gt; „Приложения“ или мениджъра на приложенията. Докоснете това, което искате да деинсталирате (може да се наложи да прекарате пръст надясно или наляво, за да го намерите). Докоснете „Деинсталиране“ или „Деактивиране“.</translation>
+<translation id="224940702122312781">Тази страница ще използва много данни.</translation>
 <translation id="2249605167705922988">напр. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Отваряне със системния визуализатор</translation>
 <translation id="225163402930830576">Опресняване на мрежите</translation>
@@ -875,14 +875,13 @@
 <translation id="2307462900900812319">Конфигуриране на мрежата</translation>
 <translation id="230927227160767054">Тази страница иска да инсталира манипулатор на услуги.</translation>
 <translation id="2309620859903500144">Достъпът на този сайт до сензорите ви за движение или светлина е блокиран.</translation>
-<translation id="2311075084924370935">За да ви помага с календара, напомнянията, полетите и още много други неща, Асистент се нуждае от настройките „Активност в мрежата и приложенията“, „Информация за устройството“ и „Гласова и аудиоактивност“.</translation>
+<translation id="2315414688463285945">При конфигурирането на файловете за Linux възникна грешка. Моля, опитайте отново.</translation>
 <translation id="2315821125498993513">Не можа да се установи връзка с телефона. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" />.</translation>
 <translation id="2316129865977710310">Не, благодаря</translation>
 <translation id="2317842250900878657">Завършено: <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Размер на хартията</translation>
 <translation id="2318817390901984578">За да използвате приложения за Android, заредете и актуализирайте своя <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2318923050469484167">Текущата сесия в режим „инкогнито“ (<ph name="EMBEDDING" />)</translation>
-<translation id="2321482478556590128">Използване на ключа ви за сигурност с(ъс) <ph name="APP_NAME" /></translation>
 <translation id="2322193970951063277">Горен и долен колонтитул</translation>
 <translation id="2325650632570794183">Този файлов тип не се поддържа. Моля, посетете уеб магазина на Chrome, за да намерите приложение, което може да отвори съответния тип.</translation>
 <translation id="2326931316514688470">&amp;Презареждане на приложението</translation>
@@ -916,7 +915,6 @@
 <translation id="2367199180085172140">Добавяне на споделяне на файл</translation>
 <translation id="2367972762794486313">Показване на приложенията</translation>
 <translation id="2369536625682139252">Ще бъдат изтрити всички съхранявани от <ph name="SITE" /> данни освен „бисквитките“.</translation>
-<translation id="237058345584060620">Сдвоете ключа си с това устройство, за да можете да използвате ключа за вход в профила си</translation>
 <translation id="2371076942591664043">Отваряне &amp;след изтегляне</translation>
 <translation id="2377319039870049694">Превключване към списъчен изглед</translation>
 <translation id="2377667304966270281">Съществени грешки</translation>
@@ -983,7 +981,6 @@
 <translation id="248861575772995840">Телефонът ви не може да бъде намерен. Уверете се, че функцията за Bluetooth на вашия <ph name="DEVICE_TYPE" /> е включена. &lt;a&gt;Научете повече&lt;/a&gt;</translation>
 <translation id="2489918096470125693">Добавяне на &amp;папка...</translation>
 <translation id="249113932447298600">За съжаление понастоящем устройството <ph name="DEVICE_LABEL" /> не се поддържа.</translation>
-<translation id="2492040222276243256">Натиснете бутона на ключа си за сигурност и го задръжте поне 5 секунди</translation>
 <translation id="2493021387995458222">Избиране на дума по дума</translation>
 <translation id="249303669840926644">Регистрацията не можа да завърши</translation>
 <translation id="2495777824269688114">Открийте още функции или получете отговори. Изберете „?“ за помощ.</translation>
@@ -1053,6 +1050,7 @@
 <translation id="2580924999637585241">Общо: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Дълго</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
+<translation id="2585724835339714757">Чрез този раздел се споделя екранът ви.</translation>
 <translation id="2586657967955657006">Буферна памет</translation>
 <translation id="2586672484245266891">Моля, въведете по-кратък URL адрес</translation>
 <translation id="2587922270115112871">Създаването на контролиран потребител не създава профил в Google и настройките
@@ -1088,7 +1086,6 @@
 <translation id="2633199387167390344"><ph name="NAME" /> използва <ph name="USAGE" /> МБ място на диска.</translation>
 <translation id="2633212996805280240">Да се премахне ли „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> не успя да завърши инсталацията, но ще продължи да работи от образа си на диска.</translation>
-<translation id="2633326789677284179">Намерете името, отпечатано на гърба на ключа</translation>
 <translation id="2635276683026132559">Подписване</translation>
 <translation id="2636625531157955190">Chrome няма достъп до изображението.</translation>
 <translation id="2638087589890736295">За стартиране на синхронизирането е необходим пропуск</translation>
@@ -1256,7 +1253,6 @@
 <translation id="287286579981869940">Добавяне на <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2874343608108773609">Влезте в Chrome, за да получите паролите си на всичките си устройства.</translation>
 <translation id="2875698561019555027">(Страници с грешки в Chrome)</translation>
-<translation id="2876441201733326392">Използване на USB ключ за сигурност</translation>
 <translation id="288042212351694283">Да осъществява достъп до устройствата ви, използвани като универсален втори фактор за удостоверяване.</translation>
 <translation id="2881966438216424900">Последен достъп:</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> незабавно ще се рестартира и настройките му ще се нулират</translation>
@@ -1324,7 +1320,6 @@
 <translation id="2982970937345031">Подаване на анонимен сигнал</translation>
 <translation id="2984337792991268709">Днес, <ph name="TODAY_DAYTIME" /></translation>
 <translation id="2986010903908656993">Пълният контрол над MIDI устройствата е блокиран за тази страница.</translation>
-<translation id="2988599644347283908">Забележка: За да получавате персонализирана практическа работа и полезни реклами, контролираните от тези настройки данни може да се запазват и използват от всяка услуга на Google, в която сте влезли в профила си. В състояние сте да преглеждате и изтривате данните си и да променяте настройките си на адрес account.google.com.</translation>
 <translation id="2989474696604907455">не е свързано</translation>
 <translation id="2989786307324390836">DER кодирано двоично, единичен сертификат</translation>
 <translation id="2993517869960930405">Информация за приложението</translation>
@@ -1377,7 +1372,6 @@
 <translation id="304826556400666995">Включване отново на звука на разделите</translation>
 <translation id="3053013834507634016">Използване на ключа на сертификата</translation>
 <translation id="3057861065630527966">Създаване на резервни копия на снимките и видеоклиповете ви</translation>
-<translation id="3059313675706898490">Android Messages</translation>
 <translation id="3060379269883947824">Активиране на функцията Прочитане на глас</translation>
 <translation id="3061707000357573562">Услуга за корекции</translation>
 <translation id="3064410671692449875">Недостатъчно данни</translation>
@@ -1406,7 +1400,6 @@
 <translation id="3090819949319990166">Външният crx файл не може да се копира в/ъв „<ph name="TEMP_CRX_FILE" />“.</translation>
 <translation id="3090871774332213558">Успешно сдвояване на <ph name="DEVICE_NAME" /></translation>
 <translation id="3101709781009526431">Дата и час</translation>
-<translation id="3104900172193317662">Разрешаване на използването на ключа ви за сигурност</translation>
 <translation id="310671807099593501">Сайтът използва Bluetooth</translation>
 <translation id="3115128645424181617">Телефонът ви не може да бъде намерен. Уверете се, че е подръка и че функцията за Bluetooth е включена.</translation>
 <translation id="3115147772012638511">Кешът се изчаква...</translation>
@@ -1490,7 +1483,6 @@
 <translation id="3251759466064201842">&lt;Не е част от сертификата&gt;</translation>
 <translation id="3254434849914415189">Избиране на приложението по подразбиране за файлове от тип <ph name="FILE_TYPE" />:</translation>
 <translation id="3254516606912442756">Автоматичното установяване на часовата зона е деактивирано</translation>
-<translation id="3254772308201947812">Да, приемам</translation>
 <translation id="3264544094376351444">Безсерифен шрифт</translation>
 <translation id="3264547943200567728">Настройването на мрежата на вашия Chromebox не бе успешно</translation>
 <translation id="3264582393905923483">Контекст</translation>
@@ -1814,7 +1806,6 @@
 <translation id="3735740477244556633">Сортиране по</translation>
 <translation id="3737274407993947948">Грешка при инсталирането на Linux...</translation>
 <translation id="3737536731758327622">Изтеглените от вас неща ще се показват тук</translation>
-<translation id="3738671331307774213">Потвърждаването на самоличността ви помага за защитата на частните ви данни</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">Да се отвори ли <ph name="APPLICATION" />?</translation>
 <translation id="3741158646617793859">„<ph name="DEVICE_NAME" />“ вече ще се показва в Admin console</translation>
@@ -1909,6 +1900,7 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: синхронизирането е на пауза</translation>
 <translation id="3860381078714302691">Добре дошли в Hangouts Meet</translation>
+<translation id="3861241522664181545">Страницата е поставена на пауза.</translation>
 <translation id="3862134173397075045">Представяме ви функцията за предаване в Chrome!</translation>
 <translation id="3862788408946266506">Приложенията с атрибут „kiosk_only“ в манифеста трябва да бъдат инсталирани в павилионния режим на Chrome OS</translation>
 <translation id="3865414814144988605">Разделителна способност</translation>
@@ -1923,7 +1915,6 @@
 <translation id="3873315167136380065">За да включите тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" />, така че да премахнете съответния си пропуск</translation>
 <translation id="3878840326289104869">Създаване на контролиран потребител</translation>
 <translation id="3879748587602334249">Мениджър на изтеглянията</translation>
-<translation id="3880709822663530586">Ключът ви за сигурност работи само когато сте включили Bluetooth на устройството си</translation>
 <translation id="3888550877729210209">Водене на бележки с/ъс <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Добавяне на OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">Да чете и променя настройките ви за достъпност</translation>
@@ -2069,6 +2060,7 @@
 <translation id="4096824249111507322">Модулът за сигурност се подготвя. Моля, изчакайте (това може да отнеме няколко минути)...</translation>
 <translation id="4099060993766194518">Да се възстанови ли основната търсеща машина?</translation>
 <translation id="4100733287846229632">Мястото на устройството е критично малко</translation>
+<translation id="4103091233824664032">Въведете паролата си, за да конфигурирате заключването на екрана и влизането в профила</translation>
 <translation id="4104163789986725820">Екс&amp;портиране...</translation>
 <translation id="4105563239298244027">Получете 1 ТБ безплатно с Google Диск</translation>
 <translation id="4107048419833779140">Идентифициране и изваждане на устройства за съхранение</translation>
@@ -2089,7 +2081,6 @@
 <translation id="4136203100490971508">Нощното осветление ще се изключи автоматично по изгрев</translation>
 <translation id="4138267921960073861">Потребителските имена и снимките да се показват на екрана за вход</translation>
 <translation id="4144218403971135344">Гледайте видео с по-добро качество и удължете живота на батерията. Видеото ще се възпроизвежда само на екрана ви, поддържащ Cast.</translation>
-<translation id="414599683948988413">Използване на ключа ви за сигурност чрез USB</translation>
 <translation id="4146026355784316281">Отваряне винаги със системния визуализатор</translation>
 <translation id="4146785383423576110">Нулиране на настройките и почистване</translation>
 <translation id="4147897805161313378">Google Снимки</translation>
@@ -2224,6 +2215,7 @@
 <translation id="4394049700291259645">Деактивиране</translation>
 <translation id="4400367121200150367">Тук ще се покажат сайтовете, паролата за които никога не се запазва</translation>
 <translation id="4400632832271803360">Натиснете и задръжте клавиша за стартовия панел, за да промените поведението на клавишите от най-горния ред.</translation>
+<translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
 <translation id="4408599188496843485">Помо&amp;щ</translation>
 <translation id="4409697491990005945">Полета</translation>
 <translation id="4411578466613447185">Подписване на код</translation>
@@ -2272,6 +2264,7 @@
 <translation id="4480590691557335796">Chrome може да намери опасния софтуер на компютъра ви и да го премахне</translation>
 <translation id="4481530544597605423">Несдвоени устройства</translation>
 <translation id="4482194545587547824">Възможно е да използваме историята ви на сърфиране, за да персонализираме търсенето и други услуги на Google</translation>
+<translation id="4493287891836751813">Запознайте се с Google Асистент</translation>
 <translation id="4495419450179050807">Да не се показва на тази страница</translation>
 <translation id="4499718683476608392">Активирайте автоматичното попълване на кредитни карти, за да ги въвеждате във формуляри само с едно кликване</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> претърпя срив</translation>
@@ -2432,6 +2425,7 @@
 <translation id="474217410105706308">Спиране на звука на раздела</translation>
 <translation id="4742746985488890273">Фиксиране в лавицата</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Научете как да актуализирате приложения<ph name="END_LINK" /></translation>
+<translation id="4746351372139058112">Messages</translation>
 <translation id="4746971725921104503">Изглежда, че вече управлявате потребител с това име. Искате ли <ph name="LINK_START" />да импортирате <ph name="USER_DISPLAY_NAME" /> на устройството<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Изисква се разширение от уеб магазина на Chrome</translation>
 <translation id="4750394297954878236">Предложения</translation>
@@ -2473,6 +2467,7 @@
 <translation id="4821935166599369261">&amp;Профилирането е активирано</translation>
 <translation id="4823484602432206655">Четене и промяна на настройките на потребителите и устройството</translation>
 <translation id="4823651846660089135">Устройството е само за четене</translation>
+<translation id="4823955295535347797">Осъществявайте достъп до Асистент всеки път, когато кажете „Ok Google“ при включен екран.</translation>
 <translation id="4828937774870308359">Обратно</translation>
 <translation id="4829768588131278040">Настройване на ПИН</translation>
 <translation id="4830502475412647084">Актуализацията на операционната система се инсталира</translation>
@@ -2513,6 +2508,7 @@
 <translation id="4876273079589074638">Помогнете на инженерите ни да открият и отстранят причината за този срив. Ако е възможно, посочете точните стъпки. Всяка подробност е важна!</translation>
 <translation id="4876895919560854374">Заключване и отключване на екрана</translation>
 <translation id="4877017884043316611">Сдвояване с Chromebox</translation>
+<translation id="4879491255372875719">Автоматично (стандартно)</translation>
 <translation id="4880214202172289027">Плъзгач за силата на звука</translation>
 <translation id="4880328057631981605">Име на точката за достъп</translation>
 <translation id="4880520557730313061">Автокоригиране</translation>
@@ -2666,7 +2662,6 @@
 <translation id="5099354524039520280">нагоре</translation>
 <translation id="5100114659116077956">За да получите най-новите функции, вашият Chromebox трябва да се актуализира.</translation>
 <translation id="5101042277149003567">Отваряне на всички отметки</translation>
-<translation id="5104546332954397226">Използване на телефона ви като ключ за сигурност</translation>
 <translation id="5105855035535475848">Фиксиране на разделите</translation>
 <translation id="5108967062857032718">Настройки – Премахване на приложенията за Android</translation>
 <translation id="5109044022078737958">Мия</translation>
@@ -2797,7 +2792,6 @@
 <translation id="5288678174502918605">По&amp;вторно отваряне на затворения раздел</translation>
 <translation id="52912272896845572">Файлът с личен ключ е невалиден.</translation>
 <translation id="529175790091471945">Форматиране на това устройство</translation>
-<translation id="5292195676005197571">За да използвате повечето ключове, трябва само да натиснете бутона</translation>
 <translation id="5293170712604732402">Възстановяване на настройките към първоначалните им стандартни стойности</translation>
 <translation id="5297082477358294722">Паролата е запазена. Преглеждайте и управлявайте запазените пароли в <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Темата е създадена от</translation>
@@ -2823,6 +2817,7 @@
 <translation id="532776649628038357">Приемам</translation>
 <translation id="532943162177641444">Докоснете известието на телефона си <ph name="PHONE_NAME" />, за да настроите мобилната точка за достъп, която да може да се използва от това устройство.</translation>
 <translation id="5329858601952122676">&amp;Изтриване</translation>
+<translation id="5329945517224105597">Асистент може да ви дава по-подходящи предложения и конкретни действия, свързани с това, което е на екрана ви. Можете да промените това от настройките му.</translation>
 <translation id="5330145655348521461">Тези файлове се отвориха на друг работен плот. Преминете към <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), за да ги прегледате.</translation>
 <translation id="5330512191124428349">Получаване на информация</translation>
 <translation id="5331069282670671859">Нямате сертификати от тази категория</translation>
@@ -2867,7 +2862,6 @@
 <translation id="5390100381392048184">Разрешаване на сайтовете да възпроизвеждат звук</translation>
 <translation id="5390284375844109566">Индексирана база от данни</translation>
 <translation id="5390743329570580756">Изпращане за</translation>
-<translation id="5392327114396848796">Използване на вграден ключ за сигурност</translation>
 <translation id="5397794290049113714">Вие</translation>
 <translation id="5398572795982417028">Посочената страница е извън обхват. Ограничението е <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Рекламите са блокирани</translation>
@@ -3076,6 +3070,7 @@
    <ph name="LINE_BREAKS" />
    Затворете всички файлове от архива или виртуалния диск и опитайте отново.</translation>
 <translation id="5687326903064479980">Часова зона</translation>
+<translation id="568824803367507355">Откриване на „Ok Google“</translation>
 <translation id="5689516760719285838">Местоположение</translation>
 <translation id="56907980372820799">Свързване на данните</translation>
 <translation id="5691511426247308406">Семейство</translation>
@@ -3173,7 +3168,6 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – записва се чрез камерата или микрофона</translation>
 <translation id="5835754902560991078">изключително кратко (0,6 сек)</translation>
 <translation id="5838456317242088717">Текущата сесия в режим „инкогнито“</translation>
-<translation id="5842053879378944309">Използване на USB ключ за сигурност с(ъс) <ph name="APP_NAME" /></translation>
 <translation id="5842497610951477805">Активиране на Bluetooth</translation>
 <translation id="5843250171025351504">Устройството ви вече не отговаря на посочените от администратора ви изисквания за минимална версия на клиентската програма. Моля, актуализирайте я, за да влезете.</translation>
 <translation id="5846929185714966548">Раздел 4</translation>
@@ -3491,7 +3485,6 @@
 <translation id="6317318380444133405">Вече не се поддържа.</translation>
 <translation id="6317369057005134371">Прозорецът на приложението се изчаква...</translation>
 <translation id="6318407754858604988">Изтеглянето започна</translation>
-<translation id="6322653941595359182">Изпращайте и получавайте SMS съобщения от своя Chromebook</translation>
 <translation id="6324916366299863871">Редактиране на прекия път</translation>
 <translation id="6325191661371220117">Деактивиране на автоматичното стартиране</translation>
 <translation id="6326175484149238433">Премахване от Chrome</translation>
@@ -3535,6 +3528,7 @@
 <translation id="6395423953133416962">Изпращане на <ph name="BEGIN_LINK1" />системна информация<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />показатели<ph name="END_LINK2" /></translation>
 <translation id="6397094776139756010">Опции за синхронизиране и персонализиране</translation>
 <translation id="6397592254427394018">Отваряне на всички отметки в прозорец в режим „&amp;инкогнито“</translation>
+<translation id="639777613761517128">За да отваряте файлове с(ъс) $1, първо копирайте в папката с файлове на Linux.</translation>
 <translation id="6398715114293939307">Премахване на Google Play Магазин</translation>
 <translation id="6398765197997659313">Изход от цял екран</translation>
 <translation id="6399774419735315745">Шпионин</translation>
@@ -3560,7 +3554,6 @@
 <translation id="642282551015776456">Това име не може да се използва като име на файл или на папка</translation>
 <translation id="642469772702851743">Това устройство (сериен № <ph name="SERIAL_NUMBER" />) бе заключено от собственика.</translation>
 <translation id="6426200009596957090">Отваряне на настройките на ChromeVox</translation>
-<translation id="6427415464407526111">Избиране на ключ за сигурност</translation>
 <translation id="6429384232893414837">Грешка при актуализирането</translation>
 <translation id="6430814529589430811">ASCII с кодиране Base64, единичен сертификат</translation>
 <translation id="6431217872648827691">Всички данни бяха шифровани с паролата ви за Google на
@@ -3718,7 +3711,6 @@
 <translation id="6655190889273724601">Режим за програмисти</translation>
 <translation id="6655458902729017087">Скриване на профилите</translation>
 <translation id="6657585470893396449">Парола</translation>
-<translation id="6658023813581644008">За да настроите Smart Lock за влизане в профила, въведете паролата си</translation>
 <translation id="6659213950629089752">Мащабът на тази страница бе променен от разширението <ph name="NAME" /></translation>
 <translation id="6659594942844771486">Раздел</translation>
 <translation id="6664237456442406323">За съжаление компютърът ви е конфигуриран с неправилно образуван идентификационен номер на хардуера. Това не позволява на Chrome OS да се актуализира с най-новите корекции за сигурност и машината ви <ph name="BEGIN_BOLD" />може да е уязвима към злонамерени атаки<ph name="END_BOLD" />.</translation>
@@ -3854,7 +3846,6 @@
 <translation id="6885771755599377173">Преглед на системната информация</translation>
 <translation id="6886871292305414135">О&amp;тваряне на връзката в нов раздел</translation>
 <translation id="6892812721183419409">Отваряне на връзката като <ph name="USER" /></translation>
-<translation id="6896398788631624004">Включете ключа си за сигурност и го активирайте</translation>
 <translation id="6896758677409633944">Копиране</translation>
 <translation id="6898440773573063262">Сега приложенията в павилионен режим могат да се конфигурират да стартират автоматично на това устройство.</translation>
 <translation id="6898699227549475383">Организация (О)</translation>
@@ -3873,6 +3864,7 @@
 <translation id="6915804003454593391">Потребител:</translation>
 <translation id="6916590542764765824">Управление на разширенията</translation>
 <translation id="6920989436227028121">Отваряне като нормален раздел</translation>
+<translation id="6921709132208495314">Спиране на използването на данни на тази страница</translation>
 <translation id="6922128026973287222">Използвайте по-малко данни и сърфирайте по-бързо посредством Google Икономия на данни. Кликнете, за да научите повече.</translation>
 <translation id="6923132443355966645">Превъртане/кликване</translation>
 <translation id="6930242544192836755">Продължителност</translation>
@@ -3895,6 +3887,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Порт</translation>
 <translation id="6965978654500191972">Устройство</translation>
+<translation id="6968288415730398122">Въведете паролата си, за да конфигурирате заключването на екрана</translation>
 <translation id="6970480684834282392">Тип стартиране</translation>
 <translation id="6970856801391541997">Отпечатване на конкретни страници</translation>
 <translation id="6972180789171089114">Аудио/видео</translation>
@@ -3905,6 +3898,7 @@
 <translation id="6978121630131642226">Търсещи машини</translation>
 <translation id="6978611942794658017">Този файл е предназначен за компютри със софтуер Windows и не е съвместим с устройството ви с Chrome OS. Моля, потърсете в уеб магазина на Chrome подходящо приложение със същата функционалност.</translation>
 <translation id="6979158407327259162">Google Диск</translation>
+<translation id="6979440798594660689">Заглушаване (стандартно)</translation>
 <translation id="6979737339423435258">За цялото време</translation>
 <translation id="6980462514016882061">Възможно е да използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google</translation>
 <translation id="6981982820502123353">Достъпност</translation>
@@ -4053,6 +4047,7 @@
 <translation id="7197160646667308890"><ph name="BEGIN_PARAGRAPH1" />Това е обща информация за устройството ви и начините, по които го използвате (например ниво на батерията, използване на приложения и свързаност с мрежи). Тя служи за подобряване на продуктите и услугите ни за всички потребители. Част от обобщената информация ще помогне и на партньорите ни – например програмисти за Android – да направят приложенията и продуктите си по-добри.<ph name="END_PARAGRAPH1" />
 <ph name="BEGIN_PARAGRAPH2" />Изключването на тази функция няма да засегне възможността на устройството ви да изпраща информацията, необходима за получаването на основни услуги, като системни актуализации и подобрения в сигурността.<ph name="END_PARAGRAPH2" />
 <ph name="BEGIN_PARAGRAPH3" />Можете да контролирате тази функция от „Настройки“ &gt; „Google“. Изберете „Употреба и диагностика“ от менюто.<ph name="END_PARAGRAPH3" /></translation>
+<translation id="7197632491113152433">Открихме <ph name="NUMBER_OF_APPS" /> приложения от профила ви, които могат да се използват на това устройство.</translation>
 <translation id="7199158086730159431">Получаване на помощ</translation>
 <translation id="7200083590239651963">Избиране на конфигурация</translation>
 <translation id="720110658997053098">Това устройство да е постоянно в павилионен режим</translation>
@@ -4073,7 +4068,6 @@
 <translation id="7228523857728654909">Заключване на екрана и влизане в профила</translation>
 <translation id="7229570126336867161">Необходим е EVDO</translation>
 <translation id="7230787553283372882">Персонализирайте размера на текста</translation>
-<translation id="7231589788477569369">Възползвайте се пълноценно от Асистент чрез тези настройки</translation>
 <translation id="7232750842195536390">Преименуването не бе успешно</translation>
 <translation id="7234406375359457793">Възникна грешка при свързването на посочения дял. Той не се поддържа.</translation>
 <translation id="7238585580608191973">Пръстов отпечатък SHA-256</translation>
@@ -4083,7 +4077,6 @@
 <translation id="7243632151880336635">Изчистване и изход</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (най-добро)</translation>
 <translation id="7246339268451149667">Да се активира ли отключването с отпечатък?</translation>
-<translation id="7246489301073081944">Натиснете и задръжте |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| + |<ph name="ACCELERATOR3" />| за изход</translation>
 <translation id="7246947237293279874">FTP прокси сървър</translation>
 <translation id="725109152065019550">За съжаление администраторът ви е деактивирал външното хранилище за профила ви.</translation>
 <translation id="7253521419891527137">&amp;Научете повече</translation>
@@ -4236,7 +4229,6 @@
 <translation id="7489605380874780575">Проверка дали отговаряте на условията</translation>
 <translation id="749028671485790643">Човек <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC адрес</translation>
-<translation id="7490950320178383728">Използване на ключа ви за сигурност чрез Bluetooth</translation>
 <translation id="7491962110804786152">раздел</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> може да събира целия въведен от вас текст, включително лични данни, като пароли и номера на кредитни карти. Искате ли да използвате това разширение?</translation>
 <translation id="7494065396242762445">Отваряне на настройките на Windows</translation>
@@ -4486,7 +4478,6 @@
 <translation id="7850851215703745691">Тези файлове в Диск още не са споделени</translation>
 <translation id="7851457902707056880">Влизането е ограничено само до профила на собственика. Моля, рестартирайте и влезте с този профил. Машината ще се рестартира автоматично след 30 секунди.</translation>
 <translation id="7851716364080026749">Достъпът до камерата и микрофона да се блокира винаги</translation>
-<translation id="7851816139220202929">Използване на ключа ви за сигурност чрез КБП</translation>
 <translation id="7853747251428735">Още инструмен&amp;ти</translation>
 <translation id="7856006446339184955">Изпращане на системни данни. Понастоящем до Google автоматично се изпращат диагностична информация и данни за употребата на устройството и приложенията. Тази <ph name="BEGIN_LINK1" />настройка<ph name="END_LINK1" /> е наложена от собственика. Ако сте включили Допълнителна активност в мрежата и приложенията, съответната информация ще се съхранява в профила ви, така че можете да я управлявате от „Моята активност“. <ph name="BEGIN_LINK2" />Научете повече<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">Добавяне на изключение</translation>
@@ -4569,6 +4560,7 @@
 <translation id="7973962044839454485">Удостоверяването през PPP не бе успешно поради неправилно потребителско име или парола</translation>
 <translation id="7974566588408714340">Нов опит посредством <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Допълнителна област</translation>
+<translation id="79766959863778284">Услуга за изолирани устройства за XR</translation>
 <translation id="7977551819349545646">Chromebox се актуализира...</translation>
 <translation id="7978412674231730200">Личен ключ</translation>
 <translation id="7978450511781612192">Така ще излезете от профилите си в Google. Вашите отметки, история, пароли и др. повече няма да се синхронизират.</translation>
@@ -4619,7 +4611,6 @@
 <translation id="8030656706657716245">Добавяне на принтер</translation>
 <translation id="8032244173881942855">Предаването на раздела не е възможно.</translation>
 <translation id="8033827949643255796">откроени</translation>
-<translation id="8033958968890501070">Времето за изчакване изтече</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Отваряне на всички в прозорец в режим „&amp;инкогнито“}=1{Отваряне в прозорец в режим „&amp;инкогнито“}other{Отваряне на всички (#) в прозорец в режим „&amp;инкогнито“}}</translation>
 <translation id="8037117027592400564">Четене на целия текст, произнесен посредством синтезирания говор</translation>
 <translation id="8037357227543935929">Извеждане на запитване (по подразбиране)</translation>
@@ -4792,6 +4783,7 @@
 <translation id="8320459152843401447">Целият ви екран</translation>
 <translation id="8322814362483282060">Достъпът на тази страница до микрофона ви е блокиран.</translation>
 <translation id="8326478304147373412">PKCS 7, верига сертификати</translation>
+<translation id="8327039559959785305">При свързването на файловете за Linux възникна грешка. Моля, опитайте отново.</translation>
 <translation id="8329978297633540474">Неформатиран текст</translation>
 <translation id="8335587457941836791">Освобождаване от лавицата</translation>
 <translation id="8336153091935557858">Вчера, <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -4842,7 +4834,6 @@
 <translation id="8425213833346101688">Промяна</translation>
 <translation id="8425492902634685834">Фиксиране в лентата на задачите</translation>
 <translation id="8425755597197517046">Поставяне и търсе&amp;не</translation>
-<translation id="8426117172745886547">Извеждане на предупреждение преди изход (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="8426713856918551002">Активира се</translation>
 <translation id="8427292751741042100">вградена в който и да е хост</translation>
 <translation id="8428213095426709021">Настройки</translation>
@@ -4930,7 +4921,6 @@
 <translation id="8551388862522347954">Лицензи</translation>
 <translation id="8553342806078037065">Управление на другите хора</translation>
 <translation id="8554899698005018844">Без език</translation>
-<translation id="8557347704037207368">Изпращане на известия до вас от Android Web Messages</translation>
 <translation id="855773602626431402">На тази страница бе предотвратено изпълняването на приставка извън тестова среда.</translation>
 <translation id="8557930019681227453">Манифест</translation>
 <translation id="8559694214572302298">Декодиране на изображения</translation>
@@ -5043,6 +5033,7 @@
 <translation id="8714154114375107944">Край на поддръжката</translation>
 <translation id="8714838604780058252">Фонова графика</translation>
 <translation id="8715480913140015283">Раздел на заден план използва камерата ви</translation>
+<translation id="8716931980467311658">Да се изтрият ли всички приложения за Linux и данни в папката с файлове за Linux от това устройство <ph name="DEVICE_TYPE" />?</translation>
 <translation id="8719653885894320876">Изтеглянето на <ph name="PLUGIN_NAME" /> не бе успешно</translation>
 <translation id="8723829621484579639">Подрамки в режим „инкогнито“ за: <ph name="PARENT_SITE" /></translation>
 <translation id="8724859055372736596">&amp;Показване в папката</translation>
@@ -5206,7 +5197,6 @@
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – възникна срив</translation>
 <translation id="8983677657449185470">Помощ за подобряването на Безопасно сърфиране</translation>
 <translation id="8984654317541110628">URL адрес за споделяне на файлове</translation>
-<translation id="8984872292925913496">Намерете шестцифрения ПИН на гърба на ключа си</translation>
 <translation id="8986362086234534611">Забравяне</translation>
 <translation id="8986494364107987395">Автоматично изпращане до Google на статистически данни за използването на Chrome и сигнали за сривове</translation>
 <translation id="8987927404178983737">Месец</translation>

@@ -33,6 +33,28 @@
           Kung naka-disable o hindi naka-configure ang setting na ito, ang host ng remote na tulong ay patatakbuhin sa konteksto ng user at hindi magagawa ng mga remote na user na makipag-ugnayan sa mga elevated window sa desktop.</translation>
 <translation id="1096105751829466145">Default na provider ng paghahanap</translation>
 <translation id="1099282607296956954">I-enable ang Paghihiwalay ng Site para sa bawat site</translation>
+<translation id="1100570158310952027">
+      Tumutukoy ang patakaran ng isang listahan ng mga pinagmulan (mga URL) o pattern ng hostname (tulad
+      ng "*.example.com") kung saan hindi malalapat ang mga paghihigpit sa seguridad sa mga
+      hindi secure na pinagmulan.
+
+      Ang layunin ay payagan ang mga organisasyong magtakda ng mga pinagmulan ng whitelist para sa mga legacy
+      application kung saan hindi maaaring i-deploy ang TLS, o mag-set up ng staging server para sa
+      internal na pag-develop sa web nang sa gayon ay masubukan ng mga developer ng mga ito ang mga feature
+      na nangangailangan ng mga secure na konteksto nang hindi kinakailangang i-deploy ang TLS sa staging
+      server. Mapipigilan din ng patakarang ito na magkaroon ng label na
+      "Hindi Secure" ang origin sa omnibox.
+
+      Ang pagtatakda ng listahan ng mga URL sa patakarang ito ay may epektong katulad sa pagtatakda sa
+      command-line flag na '--unsafely-treat-insecure-origin-as-secure' sa isang
+      comma-separated list ng mga parehong URL. Kung itatakda ang patakaran,
+      io-override nito ang command-line flag.
+
+      Io-override ng patakarang ito ang UnsafelyTreatInsecureOriginAsSecure, kung mayroon man.
+
+      Para sa higit pang impormasyon sa mga secure na konteksto, tingnan sa
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Ang mga tagapangasiwa ng protocol na itinakda sa pamamagitan ng patakarang ito ay hindi ginagamit kapag nangangasiwa ng mga intent sa Android.</translation>
 <translation id="1118093128235245168">Payagan ang mga site na hilingin sa user na magbigay ng access sa isang nakakonektang USB device</translation>
 <translation id="1128903365609589950">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_NAME" /> para sa pag-iimbak ng mga naka-cache na file sa disk.
@@ -80,6 +102,8 @@
       Kung hindi itatakda ang patakaran, o kung itatakda ito sa false, hindi mae-enable ang mga RC4 na cipher suite sa TLS. Maaari itong itakda sa true upang manatili itong compatible sa isang lumang server. Isa lang itong pansamantalang solusyon at dapat pa ring i-configure ang server.</translation>
 <translation id="1297182715641689552">Gumamit ng .pac proxy script</translation>
 <translation id="1304973015437969093">Ang mga extension/app ID at URL sa pag-update na tahimik na ii-install</translation>
+<translation id="1307454923744766368">Mga pinagmulan o pattern ng hostname kung saan hindi dapat ilapat ang mga paghihigpit sa
+      mga hindi secure na pinagmulan</translation>
 <translation id="1313457536529613143">Tinutukoy ang porsyento ng pag-scale sa pag-aantala ng pagdilim ng screen kapag napansin ang pagkilos ng user habang madilim ang screen o kaagad pagkatapos i-off ang screen.
 
           Kung nakatakda ang patakarang ito, tinutukoy nito ang porsyento ng pag-scale sa pag-aantala ng pagdilim ng screen kapag napansin ang pagkilos ng user habang madilim ang screen o kaagad pagkatapos i-off ang screen. Kapag naka-scale ang pagkaantala ng pagdilim, masasaayos ang mga pagkaantala ng screen off, screen lock at idle upang panatilihin ang parehong agwat mula sa pag-aantala ng pagdilim ng screen gaya ng orihinal na pagkaka-configure.
@@ -91,6 +115,11 @@
 <translation id="1327466551276625742">I-enable ang prompt ng configuration ng network kapag offline</translation>
 <translation id="1330145147221172764">I-enable ang on-screen na keyboard</translation>
 <translation id="13356285923490863">Pangalan ng Patakaran</translation>
+<translation id="1352174694615491349">Pinapayagan ng patakarang ito na pag-isahin ang HTTP/2 na koneksyon kapag gumagamit ng mga client certificate. Para pag-isahin, ang hostname ng posibleng bagong koneksyon at ang hostname ng kasalukuyang koneksyon ay dapat may magkatugmang isa o higit pang pattern na nakasaad sa patakarang ito. Ang patakaran ay isang listahan ng mga host gamit ang format ng filter ng URLBlacklist: Tumutugma ang "example.com" sa "example.com" at sa lahat ng subdomain (hal. "sub.example.com"), habang eksaktong tumutugma ang ".example.net" sa "example.net".
+
+      Ang mga kahilingan sa pag-iisa sa iba't ibang host sa pamamagitan ng mga koneksyong gumagamit ng mga client certificate ay maaaring makagawa ng mga isyu sa seguridad at privacy, dahil maipaparating ang ambient na awtoridad sa lahat ng kahilingan, kahit na hindi ito tahasang pinahintulutan ng user. Ang patakarang ito ay pansamantala at maaalis sa release sa hinaharap. Tingnan sa https://crbug.com/855690.
+
+      Kung hahayaang hindi nakatakda ang patakarang ito, gagamitin ang default na kagawian na hindi payagan ang anumang pag-iisa ng HTTP/2 na koneksyon sa mga koneksyong gumagamit ng mga client certificate.</translation>
 <translation id="1353966721814789986">Mga page sa startup</translation>
 <translation id="1359553908012294236">Kung itatakda ang patakarang ito sa true o kung hindi ito iko-configure, ie-enable ng <ph name="PRODUCT_NAME" /> ang mga pag-log in ng bisita. Ang mga pag-log in ng bisita ay mga profile sa <ph name="PRODUCT_NAME" /> kung saan nasa incognito mode ang lahat ng window.
 
@@ -184,6 +213,7 @@
 <translation id="1583248206450240930">Gamitin ang <ph name="PRODUCT_FRAME_NAME" /> bilang default</translation>
 <translation id="1599424828227887013">I-enable ang Pag-isolate ng Site para sa mga partikular na pinagmulan sa mga Android device</translation>
 <translation id="1608755754295374538">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng audio nang walang prompt</translation>
+<translation id="1615221548356595305">Payagan ang pag-iisa ng mga HTTP/2 na koneksyon para sa mga host na ito kahit na gumamit ng mga client certificate</translation>
 <translation id="1617235075406854669">Paganahin ang pagtatanggal ng browser at kasaysayan ng pag-download</translation>
 <translation id="163200210584085447">Itutugma ang mga pattern na nasa listahang ito sa security
       origin ng humihiling na URL.  Kung may makikitang katugma, magbibigay ng access sa mga device na nagka-capture ng video sa mga page ng pag-login ng SAML.  Kung walang makitang
@@ -1185,7 +1215,6 @@
       Kung hahayaang hindi nakatakda ang patakarang ito, ie-enable ang pangongolekta ng naka-anonymize na data na may key ng URL ngunit mababago ito ng user.</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="4261820385751181068">Lokal ng screen sa pag-sign in ng device</translation>
-<translation id="4264607809747169568">Kumokontrol sa Mga File Share sa Network para sa availability ng ChromeOS</translation>
 <translation id="427220754384423013">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
 
       Gagamitin lang ang patakarang ito kung napili ang <ph name="PRINTERS_WHITELIST" /> para sa <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1344,6 +1373,7 @@
       Kung ie-enable ang patakarang ito, papayagan ang mga site na sabay-sabay na mag-navigate at magbukas ng mga bagong window/tab.
       Kung idi-disable o hindi itatakda ang patakarang ito, hindi papayagan ang mga site na sabay-sabay na mag-navigate at magbukas ng bagong window/tab.</translation>
 <translation id="4680961954980851756">Paganahin ang AutoFill</translation>
+<translation id="4703402283970867140">I-enable ang smart dim model para patagalin ang oras bago ma-dim ang screen</translation>
 <translation id="4722122254122249791">I-enable ang Paghihiwalay ng Site para sa mga tinukoy na pinagmulan</translation>
 <translation id="4722399051042571387">Kung false, hindi makakapagtakda ang mga user ng mga madaling mahulaan na PIN.
 
@@ -1571,13 +1601,6 @@
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskNotifications' at magagawa ng user na baguhin ito.</translation>
 <translation id="538108065117008131">Payagan ang <ph name="PRODUCT_FRAME_NAME" /> na pamahalaan ang mga sumusunod na uri ng nilalaman.</translation>
-<translation id="5391363090783552279">Kung itatakda ang patakarang ito sa true, kokonekta ang <ph name="PRODUCT_NAME" /> sa mga Cast device sa lahat ng IP address, hindi lang sa mga pribadong address ng RFC1918/RFC4913.
-
-          Kung nakatakda ang patakarang ito sa false, kokonekta ang <ph name="PRODUCT_NAME" /> sa mga Cast device sa mga pribadong address ng RFC1918/RFC4913 lang.
-
-          Kung hindi nakatakda ang patakarang ito, kokonekta ang <ph name="PRODUCT_NAME" /> sa mga Cast device sa mga pribadong address ng RFC1918/RFC4913 lang, maliban na lang kung naka-enable ang feature na CastAllowAllIPs.
-
-          Kung nakatakda ang patakarang "EnableMediaRouter" sa false, walang magiging epekto ang value ng patakarang ito.</translation>
 <translation id="5392172595902933844">Ibinabalik ang impormasyon tungkol sa status ng Android sa server.
 
       Kung itatakda sa false o hahayaang hindi nakatakda ang patakaran, walang iuulat na impormasyon ng status.
@@ -2150,6 +2173,10 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6943577887654905793">Kagustuhang pangalan ng Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter na nagbibigay ng tampok na maghanap sa pamamagitan ng larawan para sa default na provider ng paghahanap</translation>
 <translation id="6956272732789158625">Huwag payagan ang anumang site na gumamit ng pagbuo ng key</translation>
+<translation id="6965859329738616662">Tinutukoy kung papayagan ang smart dim model na patagalin ang oras bago ma-dim ang screen.
+
+      Kapag malapit nang ma-dim ang screen, sinusuri ng smart dim model kung dapat bang ipagpaliban ang pag-dim ng screen. Kung ipapagpaliban ng smart dim model ang pag-dim ng screen, papatagalin din nito ang oras bago ma-dim ang screen. Sa ganitong sitwasyon, maisasaayos ang pag-off ng screen, lock ng screen, at ang mga pagkaantala ng idle para mapanatili ang parehong mga pagitan mula sa pagkaantala ng pag-dim ng screen gaya ng orihinal na na-configure.
+      Kung itatakda ang patakarang ito sa True o hahayaang hindi nakatakda, mae-enable ang smart dim model at papayagang patagalin ang oras bago ma-dim ang screen. Kung itatakda ang patakarang ito sa False, hindi maaapektuhan ng smart dim model ang pag-dim ng screen.</translation>
 <translation id="6982028490425791294">
       Kung nakatakda ang patakaran sa true, pinapayagan ang <ph name="PRODUCT_NAME" /> na kolektahin ang mga log ng event sa WebRTC mula sa mga serbisyo ng Google (hal. Google Meet), at i-upload ang mga log na iyon sa Google.
 
@@ -2601,6 +2628,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7980227303582973781">Walang espesyal na paghihigpit</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">I-rotate ang screen nang 0 degrees</translation>
+<translation id="8033913082323846868">Hindi na ginagamit ang patakarang ito sa M70, pakigamit na lang ang AutofillAddressEnabled at AutofillCreditCardEnabled.
+
+      Ine-enable ang feature na AutoFill ng <ph name="PRODUCT_NAME" /> at binibigyang-daan ang mga user na awtomatikong kumpletuhin ang mga web form gamit ang mga dati nang na-store na impormasyon gaya ng address o impormasyon ng credit card.
+
+      Kung idi-disable mo ang setting na ito, hindi na maa-access ng mga user ang AutoFill.
+
+      Kung ie-enable mo ang setting na ito o hindi ka magtatakda ng value, mananatiling nasa kontrol ng user ang AutoFill. Sa pamamagitan nito, magagawa niyang i-configure ang mga profile ng AutoFill at i-on o i-off ang AutoFill kung gugustuhin niya.</translation>
 <translation id="8044493735196713914">Iulat ang boot mode ng device</translation>
 <translation id="8050080920415773384">Native na Pag-print</translation>
 <translation id="8059164285174960932">URL kung saan dapat makuha ng mga client ng malayuang pag-access ang kanilang token sa pagpapatotoo</translation>
@@ -2930,6 +2964,33 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Nagtatalaga kung aling patakaran sa pag-access ang gagamitin para sa maramihang pag-configure ng printer. Kung pinili ang <ph name="PRINTERS_ALLOW_ALL" />, ipapakita ang lahat ng printer. Kung pinili ang <ph name="PRINTERS_BLACKLIST" />, gagamitin ang <ph name="DEVICE_PRINTERS_BLACKLIST" /> upang paghigpitan ang access sa mga natukoy na printer.  Kung pinili ang <ph name="PRINTERS_WHITELIST" />, itatalaga lang ng <ph name="DEVICE_PRINTERS_WHITELIST" /> ang mga printer na mapipili.
 
       Kung hindi nakatakda ang patakaran, ipagpapalagay ang <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Hindi na magagamit sa M69. Gamitin na lang ang
+      OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Tumutukoy ang patakaran ng listahan ng mga pinagmulan (mga URL) o pattern ng hostname (tulad
+      ng "*.example.com") kung saan hindi malalapat ang mga paghihigpit sa seguridad sa mga
+      hindi secure na pinagmulan.
+
+      Ang layunin ay payagan ang mga organisasyong magtakda ng mga pinagmulan ng whitelist para sa mga legacy
+      application kung saan hindi maaaring i-deploy ang TLS, o mag-set up ng staging server para sa
+      internal na pag-develop sa web nang sa gayon ay masubukan ng mga developer ng mga ito ang mga feature
+      na nangangailangan ng mga secure na konteksto nang hindi kinakailangang i-deploy ang TLS sa staging
+      server. Mapipigilan din ng patakarang ito na magkaroon ng label na
+      "Hindi Secure" ang origin sa omnibox.
+
+      Ang pagtatakda ng listahan ng mga URL sa patakarang ito ay may epektong katulad sa pagtatakda sa
+      command-line flag na '--unsafely-treat-insecure-origin-as-secure' sa isang
+      comma-separated list ng mga parehong URL. Kung itatakda ang patakaran,
+      io-override nito ang command-line flag.
+
+      Hindi na ginagamit ang patakarang ito sa M69 kapalit ng
+      OverrideSecurityRestrictionsOnInsecureOrigin. Kung mayroon ng parehong
+      patakaran, io-override ng OverrideSecurityRestrictionsOnInsecureOrigin ang
+      patakarang ito.
+
+      Para sa higit pang impormasyon sa mga secure na konteksto, tingnan sa
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Kinokontrol ng patakarang ito kung maaaring ipakita sa user ang Pahintulot sa Pag-sync sa panahon ng unang pag-sign in. Dapat ay nakatakda ito sa false kung hindi kailanman kinakailangan ang Pahintulot sa Pag-sync para sa user.
       Kung itatakda sa false, hindi ipapakita ang Pahintulot sa Pag-sync.

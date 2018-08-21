@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
 <translation id="100812568230599391">ప్రదర్శన శైలిని ఇంటర్‌లీవ్‌కి మార్చండి.</translation>
+<translation id="1011903154582639569">కీని కనుగొని, టైప్ చేయడానికి ఎత్తండి</translation>
 <translation id="1012173283529841972">జాబితా అంశం</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">మీరు ChromeVox ప్రసంగ రూప అభిప్రాయాన్ని మొదటిసారిగా ఉపయోగిస్తున్నారా? ఈ శీఘ్ర ట్యుటోరియల్ ChromeVoxను ప్రారంభించడం కోసం అవసరమైన ముఖ్యమైన వాటి గురించి వివరిస్తుంది.</translation>
@@ -163,6 +164,7 @@
 <translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">సమూహం</translation>
 <translation id="2582407057977008361">ప్రక్కన</translation>
+<translation id="2592212930811759050">సవరణను ప్రారంభించడానికి రెండుసార్లు నొక్కండి</translation>
 <translation id="2606210917827248971">{COUNT,plural, =1{# అంశంతో}other{# అంశాలతో}}</translation>
 <translation id="2614981083756825552">గణిత ML లేఅవుట్</translation>
 <translation id="2624431853467395961">తెలుసుకునే మోడ్‌ను తెరవండి</translation>

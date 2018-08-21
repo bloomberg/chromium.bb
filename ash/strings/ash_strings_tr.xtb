@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Giriş yöntemleri, yöneticiniz tarafından yapılandırılır.</translation>
 <translation id="1747827819627189109">Dokunmatik klavye etkin</translation>
 <translation id="1761222317188459878">Ağ bağlantısını aç/kapat. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Ekranımda ne var?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistan (yükleniyor...)</translation>
 <translation id="1841545962859478868">Cihaz yöneticisi aşağıdakileri izleyebilir:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Bağlantı ekle</translation>
 <translation id="2961963223658824723">Bir sorun oluştu. Birkaç saniye sonra tekrar deneyin.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Bildirim içeriğinin tamamını göster</translation>
 <translation id="2995447421581609334">Yayın cihazlarını göster.</translation>
 <translation id="2996462380875591307">Yerleştirilmiş Büyüteç etkinleştirildi. Kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" />, <ph name="DOMAIN" /> tarafından yönetilen herkese açık bir oturumdur</translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">Cihazlar</translation>
 <translation id="4659419629803378708">ChromeVox etkinleştirildi</translation>
 <translation id="4734965478015604180">Yatay</translation>
+<translation id="476166673298332917">Bu cihazın yöneticisinin, şifreler ve iletişimler dahil olmak üzere tüm etkinliklere erişimi var.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> için şifre</translation>
 <translation id="479989351350248267">ara</translation>
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
 <translation id="4849058404725798627">Klavye odağının olduğu nesneyi vurgula</translation>
 <translation id="4872237917498892622">Alt+Arama veya Üst Karakter</translation>
 <translation id="4890187583552566966">Google Asistan, yöneticiniz tarafından devre dışı bırakıldı.</translation>
+<translation id="4893522937062257019">Kilit ekranında</translation>
 <translation id="4895488851634969361">Pil dolu.</translation>
 <translation id="490375751687810070">Dikey</translation>
 <translation id="4905614135390995787">Yüksek Kontrast Modunu açma/kapatma kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> tuşlarını kullanın.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">Erişilebilirlik ayarları</translation>
 <translation id="5313326810920013265">Bluetooth ayarları</translation>
 <translation id="5331975486040154427">USB-C cihaz (sol arka bağlantı noktası)</translation>
+<translation id="5379115545237091094">Çok fazla deneme yapıldı</translation>
 <translation id="5397578532367286026">Bu kullanıcıyla ilgili kullanım ve geçmiş bilgileri, yönetici (<ph name="MANAGER_EMAIL" />) tarafından chrome.com adresinden incelenebilir.</translation>
 <translation id="5430931332414098647">Anında Tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5901316534475909376">Üst Karakter+Esc</translation>
 <translation id="5911533659001334206">Kısayol görüntüleyici</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Açık</translation>
 <translation id="592343074608792716">Bu Chromebook ve telefonunuz otomatik olarak bağlanacaktır</translation>
 <translation id="5947494881799873997">Geri döndür</translation>
@@ -332,6 +338,7 @@
 <translation id="6972754398087986839">Başlarken</translation>
 <translation id="6981982820502123353">Erişilebilirlik</translation>
 <translation id="698231206551913481">Bu kullanıcıyla ilişkilendirilen tüm dosyalar ve yerel veriler, bu kullanıcı kaldırıldıktan sonra kalıcı olarak silinir.</translation>
+<translation id="7007100238996585961">Başka bir cihazda yanıtlama</translation>
 <translation id="7015766095477679451">Saat <ph name="COME_BACK_TIME" /> olduğunda geri gelin.</translation>
 <translation id="7029814467594812963">Oturumdan çık</translation>
 <translation id="7037152028959403492">Yüksek kontrast kısayoluna bastınız. Bu özelliği açmak istiyor musunuz?</translation>
@@ -353,6 +360,7 @@
 <translation id="7398254312354928459">Ağ bağlantısı değiştirildi</translation>
 <translation id="742594950370306541">Kamera kullanımda.</translation>
 <translation id="743058460480092004">Kamera ve mikrofon kullanımda.</translation>
+<translation id="7497767806359279797">Dil ve klavye seçin</translation>
 <translation id="7510334386202674593">Ctrl + Üst Karakter + L</translation>
 <translation id="7526573455193969409">Ağ trafiği izleniyor olabilir</translation>
 <translation id="7536035074519304529">IP adresi: <ph name="ADDRESS" /></translation>
@@ -362,6 +370,7 @@
 <translation id="7569509451529460200">Braille ve ChromeVox etkinleştirildi</translation>
 <translation id="7593891976182323525">Arama veya Üst Karakter</translation>
 <translation id="7604942372593434070">Göz atma etkinliğinize erişim sağlama</translation>
+<translation id="7642778300616172920">Hassas içeriği gizle</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (cihaz sahibi)</translation>
 <translation id="7647488630410863958">Bildirimlerinizi görüntülemek için cihazınızın kilidini açın</translation>
 <translation id="7649070708921625228">Yardım</translation>
@@ -377,6 +386,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> ağına bağlanılıyor</translation>
 <translation id="7842569679327885685">Uyarı: Deneysel özellik</translation>
 <translation id="7846634333498149051">Klavye</translation>
+<translation id="7886277072580235377">Oturumu kapattığınızda internet oturumunuz temizlenecektir. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Gizlilikle ilgili ayarları değiştirme</translation>
 <translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>
 <translation id="7933084174919150729">Google Asistan yalnızca birincil profilde kullanılabilir.</translation>
@@ -417,6 +427,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Yeniden bağlanılıyor...</translation>
 <translation id="8513108775083588393">Otomatik döndür</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir.</translation>
+<translation id="8592141010104017453">Bildirimleri hiç gösterme</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> cihazına bağlandı</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> kaldı</translation>
 <translation id="8649101189709089199">Seç ve Dinle</translation>

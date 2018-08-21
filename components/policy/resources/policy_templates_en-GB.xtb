@@ -1226,7 +1226,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is left not set, URL-keyed anonymised data collection will be enabled but the user will be able to change it.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Device sign-in screen locale</translation>
-<translation id="4264607809747169568">Contorls Network File Shares for ChromeOS availibility</translation>
 <translation id="427220754384423013">Specifies the printers which a user can use.
 
       This policy is only used if <ph name="PRINTERS_WHITELIST" /> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1617,13 +1616,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left not set, 'AskNotifications' will be used and the user will be able to change it.</translation>
 <translation id="538108065117008131">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types.</translation>
-<translation id="5391363090783552279">If this policy is set to true, <ph name="PRODUCT_NAME" /> will connect to Cast devices on all IP addresses, not just RFC1918/RFC4913 private addresses.
-
-          If this policy is set to false, <ph name="PRODUCT_NAME" /> will connect to Cast devices on RFC1918/RFC4913 private addresses only.
-
-          If this policy is not set, <ph name="PRODUCT_NAME" /> will connect to Cast devices on RFC1918/RFC4913 private addresses only, unless the CastAllowAllIPs feature is enabled.
-
-          If the policy 'EnableMediaRouter' is set to false, then this policy's value would have no effect.</translation>
 <translation id="5392172595902933844">Information about the status of Android is sent back to the
       server.
 

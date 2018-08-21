@@ -31,6 +31,29 @@
           Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, host pomocy zdalnej będzie uruchamiany w kontekście użytkownika, a użytkownicy zdalni nie będą mieć dostępu do okien z podwyższonym poziomem uprawnień na komputerze.</translation>
 <translation id="1096105751829466145">Domyślny dostawca wyszukiwania</translation>
 <translation id="1099282607296956954">Włącz izolację każdej witryny</translation>
+<translation id="1100570158310952027">
+      Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
+      (np. „*.example.com”), dla których nie będą stosowane ograniczenia
+      dotyczące niezabezpieczonych źródeł.
+
+      Ta zasada pozwala organizacjom skonfigurować białą listę źródeł dla
+      starszych aplikacji, które nie mogą używać TLS. Umożliwia też skonfigurowanie
+      wewnętrznego serwera do testowania własnych stron internetowych, by 
+      programiści mogli testować funkcje, które wymagają bezpiecznych kontekstów,
+      bez wdrażania TLS na tym serwerze. Oprócz tego zasada powoduje, że źródło
+      nie będzie oznaczane jako strona „Niezabezpieczona” w omniboksie.
+
+      Określenie listy adresów URL w tej zasadzie działa tak samo jak podanie
+      tych adresów, oddzielonych przecinkami, we fladze wiersza poleceń
+      „--unsafely-treat-insecure-origin-as-secure”. Jeśli ta zasada jest skonfigurowana,
+      zastępuje flagę wiersza poleceń.
+
+      Ta zasada zastępuje zasadę UnsafelyTreatInsecureOriginAsSecure, jeśli obie
+      są skonfigurowane.
+
+      Więcej informacji o bezpiecznych kontekstach znajdziesz na stronie
+      https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="1117535567637097036">Moduły obsługi protokołów ustawiane przez tę zasadę nie są używane podczas obsługi intencji Androida.</translation>
 <translation id="1118093128235245168">Zezwól, by strony prosiły użytkownika o przyznanie dostępu do podłączonych urządzeń USB</translation>
 <translation id="1128903365609589950">Pozwala skonfigurować katalog, w którym przeglądarka <ph name="PRODUCT_NAME" /> będzie przechowywać na dysku urządzenia pliki z pamięci podręcznej.
@@ -78,6 +101,8 @@
       Jeśli ta zasada nie jest ustawiona lub jest wyłączona, to mechanizmy szyfrowania RC4 w TLS będą wyłączone. Można ją włączyć dla zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.</translation>
 <translation id="1297182715641689552">Używaj skryptu PAC serwera proxy</translation>
 <translation id="1304973015437969093">Identyfikatory rozszerzeń/aplikacji i adresy URL aktualizacji, które mają być instalowane dyskretnie</translation>
+<translation id="1307454923744766368">Źródła lub wzorce nazw hosta, dla których nie należy stosować
+      ograniczeń dla niezabezpieczonych źródeł</translation>
 <translation id="1313457536529613143">Określa wartość procentową skalowania opóźnienia przyciemnienia ekranu, gdy aktywność użytkownika zostanie wykryta po przyciemnieniu lub wkrótce po wyłączeniu ekranu.
 
           Ustawienie tej zasady pozwala określić wartość procentową skalowania opóźnienia przyciemnienia ekranu, gdy aktywność użytkownika zostanie wykryta po przyciemnieniu lub wkrótce po wyłączeniu ekranu. Skalowanie opóźnienia przyciemnienia powoduje, że opóźnienia wyłączenia i zablokowania ekranu oraz opóźnienie bezczynności są tak dostosowywane, by zachować pierwotnie ustawione odstępy od opóźnienia przyciemnienia ekranu.
@@ -89,6 +114,11 @@
 <translation id="1327466551276625742">Włącza pytanie o konfigurację sieci wyświetlane w trybie offline</translation>
 <translation id="1330145147221172764">Włącz klawiaturę ekranową</translation>
 <translation id="13356285923490863">Nazwa zasady</translation>
+<translation id="1352174694615491349">Ta zasada zezwala na zespolenie połączeń HTTP/2, gdy używane są certyfikaty klienta. Aby połączenia zostały zespolone, nazwa hosta potencjalnego nowego połączenia i nazwa hosta istniejącego połączenia muszą pasować do co najmniej jednego wzorca ustawionego w tej zasadzie. Zasada zawiera listę hostów w formacie filtra URLBlacklist: „example.com” pasuje do „example.com” i wszystkich subdomen (np. „sub.example.com”), a „.example.net” pasuje tylko do „example.net”.
+
+      Zespalanie żądań do różnych hostów, gdy połączenia używają certyfikatów klienta, może obniżać poziom bezpieczeństwa i prywatności, ponieważ uprawnienie uzyskane z otoczenia (ambient authority) będzie przekazywane wszystkim żądaniom – również wtedy, gdy użytkownik nie dał na to wyraźnej zgody. Ta zasada jest tymczasowa i zostanie usunięta w jednej z przyszłych wersji. Zobacz https://crbug.com/855690.
+
+      Jeśli ta zasada będzie nieskonfigurowana, stosowane będzie domyślne rozwiązanie: połączenia HTTP/2, które używają certyfikatów klienta, nie będą zespalane.</translation>
 <translation id="1353966721814789986">Strony otwierane po uruchomieniu</translation>
 <translation id="1359553908012294236">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_NAME" /> będzie umożliwiać logowanie się w trybie gościa. Dane logowania gościa to profile <ph name="PRODUCT_NAME" />, dla których wszystkie okna otwierają się w trybie incognito.
 
@@ -180,6 +210,7 @@
 <translation id="1583248206450240930">Używaj domyślnie wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">Włącz izolację witryn z określonych źródeł na urządzeniach z Androidem</translation>
 <translation id="1608755754295374538">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania dźwięku</translation>
+<translation id="1615221548356595305">Zezwól na zespalanie połączeń HTTP/2 z wymienionymi hostami nawet wtedy, gdy używane są certyfikaty klienta</translation>
 <translation id="1617235075406854669">Włącz usuwanie historii przeglądarki i pobierania</translation>
 <translation id="163200210584085447">Wzorce na tej liście są dopasowywane do źródła zabezpieczeń adresu URL,
       z którego pochodzi żądanie. Po znalezieniu odpowiednika dostęp do urządzeń
@@ -1149,7 +1180,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada nie została skonfigurowana, zbieranie zanonimizowanych danych z URL-em jako kluczem będzie włączone, ale użytkownik może to zmienić.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4261820385751181068">Ustawienia regionalne na ekranie logowania na urządzeniu</translation>
-<translation id="4264607809747169568">Określa dostępność sieciowych magazynów plików w Chrome OS</translation>
 <translation id="427220754384423013">Określa drukarki, z których może korzystać użytkownik.
 
       Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="BULK_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_WHITELIST" />.
@@ -1300,6 +1330,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada zostanie włączona, strony będą mogły otwierać nowe okna/karty podczas nawigowania.
       Jeśli ta zasada zostanie wyłączona lub nie zostanie ustawiona, strony nie będą mogły otwierać nowych okien/kart podczas nawigowania.</translation>
 <translation id="4680961954980851756">Włącz autouzupełnianie</translation>
+<translation id="4703402283970867140">Włącz model inteligentnego przyciemniania, by opóźniać przyciemnienie ekranu</translation>
 <translation id="4722122254122249791">Włącz izolację witryn z określonych źródeł</translation>
 <translation id="4722399051042571387">Jeśli to ustawienie jest wyłączone, użytkownicy nie mogą ustawiać kodów PIN, które są słabe i łatwe do odgadnięcia. Słabe kody PIN to na przykład ciągi takich samych cyfr (1111), kolejnych cyfr w porządku rosnącym (1234) lub malejącym (4321) i ciągi często używane. Domyślnie po wpisaniu słabego kodu PIN nie pojawia się komunikat o błędzie, a tylko ostrzeżenie.</translation>
 <translation id="4723829699367336876">Włącz omijanie zapory sieciowej przez klienta dostępu zdalnego</translation>
@@ -1507,13 +1538,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5370279767682621504">Włącz obsługę HTTP/0.9 w portach innych niż domyślne</translation>
 <translation id="5378985487213287085">Umożliwia określenie, czy witryny mogą wyświetlać powiadomienia na pulpicie. Wyświetlanie powiadomień na pulpicie może być domyślnie dozwolone lub zabronione bądź użytkownikowi może być wyświetlany monit za każdym razem, gdy witryna chce wyświetlić takie powiadomienie. W przypadku nieskonfigurowania tej zasady będzie używana zasada „AskNotifications”, a użytkownik będzie mógł zmienić to ustawienie.</translation>
 <translation id="538108065117008131">Zezwalaj wtyczce <ph name="PRODUCT_FRAME_NAME" /> na obsługę następujących typów treści</translation>
-<translation id="5391363090783552279">Jeśli ta zasada ma wartość true, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi pod wszystkimi adresami IP, a nie tylko pod adresami prywatnymi RFC1918/RFC4913.
-
-          Jeśli ta zasada ma wartość false, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi tylko pod adresami prywatnymi RFC1918/RFC4913.
-
-          Jeśli ta zasada nie zostanie ustawiona, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi tylko pod prywatnymi adresami RFC1918/RFC4913, chyba że zostanie włączona funkcja CastAllowAllIPs.
-
-          Jeśli zasada „EnableMediaRouter” będzie mieć wartość false, wartość ustawiona dla tej zasady nie będzie miała znaczenia.</translation>
 <translation id="5392172595902933844">Informacje o stanie Androida są wysyłane z powrotem na serwer.
 
       Jeśli zasada jest wyłączona lub nieskonfigurowana, nie są wysyłane żadne informacje o stanie.
@@ -2056,6 +2080,10 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6943577887654905793">Nazwa ustawienia w systemie macOS/Linux:</translation>
 <translation id="69525503251220566">Parametr udostępniający funkcję wyszukiwania obrazem dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="6956272732789158625">Nie zezwalaj na generowanie kluczy w żadnej witrynie</translation>
+<translation id="6965859329738616662">Określa, czy model inteligentnego przyciemniania może opóźniać przyciemnienie ekranu.
+
+      W momencie, gdy ekran powinien zostać przyciemniony, model inteligentnego przyciemniania ocenia, czy należy opóźnić to działanie. Jeśli model inteligentnego przyciemniania opóźni przyciemnienie, to wydłuży czas, po którym ono nastąpi, a także skoryguje czas wyłączenia ekranu, zablokowania ekranu i bezczynności, by te działania nastąpiły w takim samym odstępie czasu od przyciemnienia, jak w oryginalnej konfiguracji.
+      Jeśli ta zasada ma wartość Prawda lub jest nieskonfigurowana, model inteligentnego przyciemniania będzie włączony i będzie mógł opóźniać przyciemnienie ekranu. Jeśli zasada ma wartość Fałsz, model inteligentnego przyciemniania nie będzie zmieniać czasu przyciemnienia.</translation>
 <translation id="6982028490425791294">
       Jeśli ta zasada ma wartość Fałsz, <ph name="PRODUCT_NAME" /> może zbierać dzienniki zdarzeń WebRTC z naszych usług (np. Google Meet) i przesyłać te dane do Google.
 
@@ -2485,6 +2513,13 @@ optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym c
 <translation id="7980227303582973781">Brak ograniczeń specjalnych</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Obróć ekran o 0 stopni</translation>
+<translation id="8033913082323846868">Ta zasada została wycofana w M70. Zamiast niej należy używać zasad AutofillAddressEnabled i AutofillCreditCardEnabled.
+
+      Włącza funkcję autouzupełniania w <ph name="PRODUCT_NAME" /> i umożliwia użytkownikom automatyczne wypełnianie formularzy internetowych za pomocą zapisanych wcześniej informacji, takich jak adres czy dane karty kredytowej.
+
+      Jeśli wyłączysz to ustawienie, autouzupełnianie będzie niedostępne dla użytkowników.
+
+      Jeśli ustawienie jest włączone lub nieskonfigurowane, użytkownik zachowuje kontrolę nad autouzupełnianiem. Może wówczas konfigurować profile autouzupełniania oraz włączać i wyłączać tę funkcję według własnego uznania.</translation>
 <translation id="8044493735196713914">Zgłoś tryb uruchomienia urządzenia</translation>
 <translation id="8050080920415773384">Drukowanie natywne</translation>
 <translation id="8059164285174960932">Adres URL, dla którego klienty dostępu zdalnego powinny uzyskać token uwierzytelniania</translation>
@@ -2812,6 +2847,32 @@ Alerty dotyczące ochrony hasła ostrzegają użytkowników, gdy użyją oni swo
       Wskazuje zasadę dostępu, która jest używana do zbiorczego skonfigurowania drukarek. Jeśli wybrano opcję <ph name="PRINTERS_ALLOW_ALL" />, pokazywane są wszystkie drukarki. Jeśli wybrano opcję <ph name="PRINTERS_BLACKLIST" />, zasada <ph name="DEVICE_PRINTERS_BLACKLIST" /> jest używana do ograniczania dostępu do określonych drukarek. Jeśli wybrano opcję <ph name="PRINTERS_WHITELIST" />, zasada <ph name="DEVICE_PRINTERS_WHITELIST" /> wskazuje tylko te drukarki, które można wybrać.
 
       Jeśli ta zasada nie została skonfigurowana, domyślnie stosowana jest opcja <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Wycofana w M69. Zamiast niej należy używać zasady
+      OverrideSecurityRestrictionsOnInsecureOrigin.
+
+Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
+      (np. „*.example.com”), dla których nie będą stosowane ograniczenia
+      dotyczące niezabezpieczonych źródeł.
+
+      Ta zasada pozwala organizacjom skonfigurować białą listę źródeł dla
+      starszych aplikacji, które nie mogą używać TLS. TLS. Umożliwia też skonfigurowanie
+      wewnętrznego serwera do testowania własnych stron internetowych, by
+      programiści mogli testować funkcje, które wymagają bezpiecznych kontekstów,
+      bez wdrażania TLS na tym serwerze. Oprócz tego zasada powoduje, że źródło
+      nie będzie oznaczane jako strona „Niezabezpieczona” w omniboksie.
+
+      Określenie listy adresów URL w tej zasadzie działa tak samo jak podanie
+      tych adresów, oddzielonych przecinkami, we fladze wiersza poleceń
+      „--unsafely-treat-insecure-origin-as-secure”. Jeśli ta zasada jest skonfigurowana,
+      zastępuje flagę wiersza poleceń.
+
+      Ta zasada została wycofana w M69. Zastępuje ją zasada
+      OverrideSecurityRestrictionsOnInsecureOrigin. Jeśli obie zasady są skonfigurowane,
+      stosowana jest wyłącznie zasada OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Więcej informacji o bezpiecznych kontekstach znajdziesz na stronie
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Ta zasada określa, czy pytanie o synchronizację jest wyświetlane podczas pierwszego logowania. Jeśli nie ma potrzeby, by użytkownicy korzystali z pytania o synchronizację, należy wybrać wartość false.
       Jeśli wybierzesz wartość false, pytanie o synchronizację nie będzie wyświetlane.

@@ -120,6 +120,7 @@
 <translation id="1891331835972267886"><ph name="APP_NAME" /> ще се отвори в Chrome. С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на браузъра.</translation>
 <translation id="189172778771606813">Затваряне на слоя за навигация</translation>
 <translation id="1919345977826869612">Реклами</translation>
+<translation id="1919950603503897840">Избор на контакти</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> от <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Избран раздел</translation>
 <translation id="1938981467853765413">Изпратете отзив</translation>
@@ -291,6 +292,7 @@
 <translation id="3282568296779691940">Вход в Chrome</translation>
 <translation id="32895400574683172">Известията са разрешени</translation>
 <translation id="3295602654194328831">Скриване на информацията</translation>
+<translation id="3298243779924642547">Олекотена</translation>
 <translation id="3303414029551471755">Искате ли да продължите с изтеглянето на съдържанието?</translation>
 <translation id="3328801116991980348">Информация за сайта</translation>
 <translation id="3341058695485821946">Вижте колко данни сте спестили</translation>
@@ -856,6 +858,7 @@
 <translation id="7791543448312431591">Добавяне</translation>
 <translation id="780301667611848630">Не, благодаря</translation>
 <translation id="7810647596859435254">Отваряне със…</translation>
+<translation id="7821588508402923572">Тук ще се показва количеството икономисани данни</translation>
 <translation id="7832327313660264358">Данните, които синхронизирате с Google, и използваните от вас функции няма да се променят</translation>
 <translation id="7837721118676387834">Разрешаване на автоматичното възпроизвеждане на видеоклипове със заглушен звук за конкретен сайт.</translation>
 <translation id="7846076177841592234">Анулиране на избора</translation>

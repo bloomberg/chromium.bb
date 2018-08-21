@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">तुमच्या प्रशासकाद्वारे कॉन्फिगर केलेल्या इनपुट पद्धती.</translation>
 <translation id="1747827819627189109">ऑन-स्क्रीन कीबोर्ड सक्षम</translation>
 <translation id="1761222317188459878">नेटवर्क कनेक्शन टॉगल करा. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">माझ्या स्क्रीनवर काय आहे?</translation>
 <translation id="1823873187264960516">इथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">साहाय्यक (लोड होत आहे...)</translation>
 <translation id="1841545962859478868">डिव्हाइस प्रशासक कदाचित खालील गोष्टींचे परीक्षण करू शकतो:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">कनेक्शन जोडा</translation>
 <translation id="2961963223658824723">काहीतरी चूक झाली. काही सेकंदांनी पुन्हा प्रयत्न करा.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">सर्व सूचना आशय दाखवा</translation>
 <translation id="2995447421581609334">कास्‍ट डिव्‍हाइस दाखवा.</translation>
 <translation id="2996462380875591307">डॉक केलेले मॅग्निफायर सुरू केले. ते टॉगल करून बंद करण्यासाठी पुन्हा Ctrl+Search+D दाबा.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> हे <ph name="DOMAIN" /> द्वारे व्यवस्थापित कलेले एक सावर्जनिक सत्र आहे</translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">डिव्हाइसेस</translation>
 <translation id="4659419629803378708">ChromeVox चालू केले</translation>
 <translation id="4734965478015604180">आडवा</translation>
+<translation id="476166673298332917">या डिव्हाइसच्या अॅडमिनिस्ट्रेटरकडे पासवर्ड आणि कम्युनिकेशनेसह सर्व अॅक्टिव्हिटीचा अॅक्सेस आहे.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> साठी पासवर्ड</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">‍डिस्कनेक्ट</translation>
 <translation id="4849058404725798627">कीबोर्ड फोकससह ऑब्जेक्ट हायलाइट करा</translation>
 <translation id="4872237917498892622">Alt+Search किंवा Shift</translation>
 <translation id="4890187583552566966">तुमच्या अ‍ॅडमिनिस्ट्रेटरने Google Assistant बंद केलेले आहे.</translation>
+<translation id="4893522937062257019">लॉक स्क्रीनवर</translation>
 <translation id="4895488851634969361">बॅटरी भरली आहे.</translation>
 <translation id="490375751687810070">उभा</translation>
 <translation id="4905614135390995787">उच्च तीव्रता मोड टॉगल करण्यासाठी शॉर्टकट बदलला आहे. कृपया <ph name="OLD_SHORTCUT" /> ऐवजी <ph name="NEW_SHORTCUT" /> वापरा.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">प्रवेशयोग्यता सेटिंग्ज</translation>
 <translation id="5313326810920013265">Bluetooth सेटिंग्ज</translation>
 <translation id="5331975486040154427">USB-C डिव्‍हाइस (डाव्या बाजूचे मागील पोर्ट)</translation>
+<translation id="5379115545237091094">खूप जास्त प्रयत्न</translation>
 <translation id="5397578532367286026">या वापरकर्त्याच्या वापर आणि इतिहासाचे chrome.com वरील व्यवस्थापकाद्वारे (<ph name="MANAGER_EMAIL" />) पुनरावलोकन केले जाऊ शकते.</translation>
 <translation id="5430931332414098647">झटपट टिथरिंग</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">शॉर्टकट दर्शक</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">चालू</translation>
 <translation id="592343074608792716">हे Chromebook आणि तुमचा फोन आपोआप कनेक्ट होतील</translation>
 <translation id="5947494881799873997">परत करा</translation>
@@ -331,6 +337,7 @@
 <translation id="6972754398087986839">प्रारंभ करा</translation>
 <translation id="6981982820502123353">प्रवेशयोग्यता</translation>
 <translation id="698231206551913481">एकदा हा वापरकर्ता काढल्यानंतर या वापरकर्त्याशी संबद्ध सर्व फायली आणि स्थानिक डेटा कायमचा हटवला जाईल.</translation>
+<translation id="7007100238996585961">दुसऱ्या डिव्हाइसवर उत्तर देत आहे</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> वाजता परत या.</translation>
 <translation id="7029814467594812963">सत्र निर्गमन करा</translation>
 <translation id="7037152028959403492">तुम्ही उच्च कॉंट्रास्टसाठीचा शॉर्टकट दाबला. तुम्हाला ते सुरू करायचे आहे का?</translation>
@@ -352,6 +359,7 @@
 <translation id="7398254312354928459">नेटवर्क कनेक्शन स्विच केले</translation>
 <translation id="742594950370306541">कॅमेरा वापरात आहे.</translation>
 <translation id="743058460480092004">कॅमेरा आणि मायक्रोफोन वापरात आहेत.</translation>
+<translation id="7497767806359279797">भाषा आणि कीबोर्ड निवडा</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">नेटवर्कचे परीक्षण केले जाऊ शकते</translation>
 <translation id="7536035074519304529">IP पत्ता: <ph name="ADDRESS" /></translation>
@@ -361,6 +369,7 @@
 <translation id="7569509451529460200">ब्रेल आणि ChromeVox चालू केलेले आहेत</translation>
 <translation id="7593891976182323525">Search किंवा Shift</translation>
 <translation id="7604942372593434070">आपल्या ब्राउझिंग क्रियाकलापामध्ये प्रवेश करा</translation>
+<translation id="7642778300616172920">संवेदनशील आशय लपवा</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालक)</translation>
 <translation id="7647488630410863958">आपल्या सूचना पाहण्यासाठी डिव्हाइस अनलॉक करा</translation>
 <translation id="7649070708921625228">मदत</translation>
@@ -376,6 +385,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> शी कनेक्ट करत आहे</translation>
 <translation id="7842569679327885685">चेतावणी: प्रयोगात्मक वैशिष्ट्य</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
+<translation id="7886277072580235377">तुम्ही साइन आउट केल्यावर तुमचे इंटरनेट सेशन साफ केले जाईल. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">गोपनीयतेशी-संबद्ध सेटिंग्ज कुशलतेने हाताळा</translation>
 <translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="7933084174919150729">Google Assistant फक्त प्राथमिक प्रोफाइलवर उपलब्ध आहे.</translation>
@@ -416,6 +426,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: पुन्हा कनेक्ट करीत आहे...</translation>
 <translation id="8513108775083588393">ऑटो-रोटेट</translation>
 <translation id="8517041960877371778">आपले <ph name="DEVICE_TYPE" /> चालू केले असताना कदाचित चार्ज होणार नाही.</translation>
+<translation id="8592141010104017453">सूचना अजिबात दाखवू नका</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> शी कनेक्ट केले</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> शिल्लक</translation>
 <translation id="8649101189709089199">बोलण्यासाठी निवडा</translation>

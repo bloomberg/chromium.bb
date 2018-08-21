@@ -33,6 +33,28 @@
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, nuotolinės pagalbos prieglobos serveris bus vykdomas naudotojo kontekste ir nuotoliniai naudotojai negalės sąveikauti su pakeltais langais staliniame kompiuteryje.</translation>
 <translation id="1096105751829466145">Numatytasis paieškos teikėjas</translation>
 <translation id="1099282607296956954">Įgalinti visų svetainių atskyrimą</translation>
+<translation id="1100570158310952027">
+      Politikoje nurodytas šaltinių (URL) arba prieglobos serverio pavadinimo šablonų
+      (pvz., *.example.com), kuriems nebus taikomi nesaugių šaltinių apribojimai,
+      sąrašas.
+
+      Siekiama leisti organizacijoms nustatyti pasenusių programų, negalinčių
+      taikyti TLS, baltojo sąrašo šaltinius arba darbinį serverį vidiniams žiniatinklio
+      tobulinimams atlikti, kad organizacijų kūrėjai galėtų išbandyti funkcijas,
+      kurioms reikia saugaus konteksto, ir darbiniame serveryje nereikėtų diegti
+      TLS. Ši politika taip pat neleis, kad „omnibox“ šaltinis būtų pažymėtas kaip
+      „Nesaugus“.
+
+      Šioje politikoje nustačius URL sąrašą poveikis toks pat, kaip nustačius
+      komandinės eilutės žymą „--unsafely-treat-insecure-origin-as-secure“ į
+      kableliais atskirtų tų pačių URL sąrašą. Jei ši politika nustatyta, bus
+      nepaisoma komandinės eilutės žymos.
+
+      Ši politika nepaisys „UnsafelyTreatInsecureOriginAsSecure“ (jei yra).
+
+      Daugiau informacijos apie saugius kontekstus pateikiama adresu
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Protokolų doroklės, nustatytos pagal šią politiką, nenaudojamos apdorojant „Android“ tikslus.</translation>
 <translation id="1118093128235245168">Leisti svetainėms prašyti naudotojo suteikti galimybę pasiekti prijungtą USB įrenginį</translation>
 <translation id="1128903365609589950">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos, kad išsaugotų talpykloje saugomus failus diske.
@@ -80,6 +102,8 @@
       Jei politika nenustatyta arba nustatyta į „false“, TLS RC4 šifruotieji programų komplektai nebus įgalinti. Priešingu atveju ją galima nustatyti į „true“, kad būtų išsaugotas suderinamumas su pasenusiu serveriu. Tai laikina priemonė; serverį reikia iš naujo sukonfigūruoti.</translation>
 <translation id="1297182715641689552">Naudoti .pac tarpinio serverio scenarijų</translation>
 <translation id="1304973015437969093">Automatiškai diegiami plėtinių / programų ID ir atnaujinimo URL</translation>
+<translation id="1307454923744766368">Šaltiniai arba prieglobos serverio pavadinimo šablonai, kuriems netaikomi
+      nesaugių šaltinių apribojimai</translation>
 <translation id="1313457536529613143">Nurodomas ekrano užtemdymo delsos mastelio keitimo procentas, kai aptinkama naudotojo veikla ekranui esant užtemdytam ar iškart po to, kai ekranas išjungiamas.
 
          Jei ši politika nustatyta, ji nurodo ekrano užtemdymo delsos mastelio keitimo procentą, kai aptinkama naudotojo veikla ekranui esant užtemdytam ar iškart po to, kai ekranas išjungiamas. Kai užtemdymo delsa nustatyta, ekrano išjungimo, užrakinimo ir neveikos būsenos delsos koreguojamos siekiant išlaikyti vienodą laiką nuo pirminės sukonfigūruotos užtemdymo delsos.
@@ -91,6 +115,11 @@
 <translation id="1327466551276625742">Įgalinti tinklo konfigūracijos raginimą, kai esate neprisijungę</translation>
 <translation id="1330145147221172764">Įgalinti ekrano klaviatūrą</translation>
 <translation id="13356285923490863">Politikos pavadinimas</translation>
+<translation id="1352174694615491349">Taikant šią politiką leidžiamas HTTP/2 ryšių susijungimas, kai naudojami kliento sertifikatai. Kad galėtų įvykti susijungimas, galimo naujo ryšio prieglobos serverio pavadinimas ir esamo ryšio prieglobos serverio pavadinimas turi atitikti vieną arba daugiau šioje politikoje aprašytų šablonų. Politika yra prieglobų sąrašas, kuriame naudojamas „URLBlacklist“ filtro formatas: example.com atitinka example.com ir visus padomenius (pvz., sub.example.com), o .example.net tiksliai atitinka .example.net.
+
+      Dėl susijungimo užklausų įvairioms priegloboms per ryšius, kuriuose naudojami kliento sertifikatai, gali kilti saugos ir privatumo problemų, nes visoms užklausoms bus suteiktos adaptyviosios prieigos teisės, net jei naudotojas tam tiesiogiai nesuteikė leidimo. Ši politika yra laikina ir būsimame leidime bus pašalinta. Žr. adresu https://crbug.com/855690.
+
+      Jei ši politika nenustatyta, bus taikoma numatytoji elgsena – neleisti HTTP/2 ryšiui susijungti su ryšiais, kuriuose naudojami kliento sertifikatai.</translation>
 <translation id="1353966721814789986">Paleisties puslapiai</translation>
 <translation id="1359553908012294236">Jei ši politika nustatyta į „true“ arba yra nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ įgalins svečių prisijungimą. Svečių prisijungimas yra „<ph name="PRODUCT_NAME" />“ profiliai, kur visi langai naudojami inkognito režimu.
 
@@ -184,6 +213,7 @@
 <translation id="1583248206450240930">Naudoti „<ph name="PRODUCT_FRAME_NAME" />“ pagal numatytuosius nustatymus</translation>
 <translation id="1599424828227887013">Įgalinti nurodytų šaltinių svetainių atskyrimą „Android“ įrenginiuose</translation>
 <translation id="1608755754295374538">URL, kuriems bus suteikta prieiga prie garso užfiksavimo įrenginių be paraginimo</translation>
+<translation id="1615221548356595305">Leisti šių prieglobų HTTP/2 ryšių susijungimą, net jei naudojami kliento sertifikatai</translation>
 <translation id="1617235075406854669">Įgalinti naršyklės ištrynimą ir atsisiuntimo istoriją</translation>
 <translation id="163200210584085447">Šiame sąraše pateikti šablonai bus atitaikomi
       pagal užklausą pateikiančio URL saugos kilmę. Jei bus rasta atitiktis, prieiga prie vaizdo įrašus
@@ -1194,7 +1224,6 @@
       Jei ši politika bus palikta nenustatyta, URL pagrįsto anonimizuotų duomenų rinkimo funkcija bus įgalinta, bet naudotojas galės ją pakeisti.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Įrenginio prisijungimo ekrano lokalė</translation>
-<translation id="4264607809747169568">Valdomas „Chrome“ OS skirtų tinklo failų bendrinimo įrenginių pasiekiamumas</translation>
 <translation id="427220754384423013">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
 
       Ši politika naudojama, tik jei pasirinktas politikos „<ph name="BULK_PRINTERS_ACCESS_MODE" />“ nustatymas „<ph name="PRINTERS_WHITELIST" />“.
@@ -1353,6 +1382,7 @@
       Jei ši politika įgalinta, svetainėms bus leidžiama vienu metu naršyti ir atidaryti naujus langus / skirtukus.
       Jei ši politika išjungta arba nenustatyta, svetainėms nebus leidžiama vienu metu naršyti ir atidaryti naujų langų / skirtukų.</translation>
 <translation id="4680961954980851756">Įgalinti automatinį pildymą</translation>
+<translation id="4703402283970867140">Įgalinti išmanųjį pritemdymo modelį, kad būtų pratęstas laikas iki ekrano pritemdymo</translation>
 <translation id="4722122254122249791">Įgalinti konkrečių šaltinių svetainių atskyrimą</translation>
 <translation id="4722399051042571387">Jei ši politika nustatyta į „false“, naudotojai negalės nustatyti PIN kodų, kurie yra nesaugūs ir lengvai atspėjami.
 
@@ -1583,13 +1613,6 @@
 
           Nenustačius šios politikos, bus naudojama „Paklausti dėl pranešimų“ ir naudotojas (-a) galės tai pakeisti.</translation>
 <translation id="538108065117008131">Leisti „<ph name="PRODUCT_FRAME_NAME" />“ naudoti šio tipo turinį.</translation>
-<translation id="5391363090783552279">Jei ši politika nustatyta į „true“, „<ph name="PRODUCT_NAME" />“ prisijungs prie perdavimo įrenginių, pasiekiamų visais IP adresais, o ne tik RFC1918 / RFC4913 privačiais adresais.
-
-          Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ prisijungs prie perdavimo įrenginių, pasiekiamų tik RFC1918 / RFC4913 privačiais adresais.
-
-          Jei ši politika nenustatyta, „<ph name="PRODUCT_NAME" />“ prisijungs prie perdavimo įrenginių, pasiekiamų tik RFC1918 / RFC4913 privačiais adresais, nebent įgalinta funkcija „CastAllowAllIPs“.
-
-          Jei politika „EnableMediaRouter“ nustatyta į „false“, šios politikos vertė nedaro jokio poveikio.</translation>
 <translation id="5392172595902933844">Informacija apie „Android“ būseną siunčiama atgal į 
       serverį.
 
@@ -2160,6 +2183,10 @@
 <translation id="6943577887654905793">„Mac“ / „Linux“ nuostatos pavadinimas:</translation>
 <translation id="69525503251220566">Parametras, nurodantis paieškos pagal vaizdą funkciją numatytajam paieškos teikėjui</translation>
 <translation id="6956272732789158625">Neleisti jokiai svetainei naudoti rakto generavimo</translation>
+<translation id="6965859329738616662">Nurodoma, ar išmaniajam pritemdymo modeliui leidžiama pratęsti laiką iki ekrano pritemdymo.
+
+      Kai ekranas turėtų būti pritemdomas, išmanusis pritemdymo modelis įvertina, ar ekrano pritemdymo nereikia atidėti. Jei išmanusis pritemdymo modelis atideda ekrano pritemdymą, jis veiksmingai pratęsia laiką iki ekrano pritemdymo. Tokiu atveju ekrano išjungimo, ekrano užrakto ir neveikos būsenos delsos koreguojamos siekiant išlaikyti vienodą laiką nuo pirminės sukonfigūruotos pritemdymo delsos.
+      Jei ši politika nustatyta kaip „True“ arba paliekama nenustatyta, išmanusis pritemdymo modelis bus įgalintas ir jam bus leista pratęsti laiką iki ekrano pritemdymo. Jei ši politika nustatyta kaip „False“, išmanusis pritemdymo modelis neturės įtakos ekrano pritemdymui.</translation>
 <translation id="6982028490425791294">
       Jei ši politika nustatyta kaip „True“, „<ph name="PRODUCT_NAME" />“ leidžiama rinkti „WebRTC“ įvykių žurnalus iš „Google“ paslaugų (pvz., „Google Meet“) ir įkelti šiuos žurnalus į „Google“.
 
@@ -2610,6 +2637,13 @@
 <translation id="7980227303582973781">Nėra specialių apribojimų</translation>
 <translation id="7985242821674907985">„<ph name="PRODUCT_NAME" />“</translation>
 <translation id="802147957407376460">Pasukti ekraną 0 laipsnių kampu</translation>
+<translation id="8033913082323846868">Ši politika nebenaudojama naudojant M70. Naudokite „AutofillAddressEnabled“ ir „AutofillCreditCardEnabled“.
+
+      Įgalinama „<ph name="PRODUCT_NAME" />“ automatinio pildymo funkcija ir naudotojams leidžiama automatiškai pildyti žiniatinklio formas naudojant anksčiau išsaugotą informaciją, pvz., adresą arba kredito kortelės informaciją.
+
+      Jei šio nustatymo neleisite, naudotojai negalės naudoti automatinio pildymo funkcijos.
+
+      Jei šį nustatymą įgalinsite arba vertės nenustatysite, naudotojai ir toliau galės valdyti Automatinį pildymą. Taip jie galės konfigūruoti automatinio pildymo profilius ir savo nuožiūra įjungti arba išjungti Automatinio pildymo funkciją.</translation>
 <translation id="8044493735196713914">Pranešti įrenginio operacinės sistemos paleidimo būseną</translation>
 <translation id="8050080920415773384">Vietinis spausdinimas</translation>
 <translation id="8059164285174960932">URL, kur nuotolinės prieigos klientai turėtų gauti autentifikavimo prieigos raktą</translation>
@@ -2941,6 +2975,32 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Nustatoma, kuri pasiekiamumo politika naudojama masinei spausdintuvų konfigūracijai. Jei pasirinkta „<ph name="PRINTERS_ALLOW_ALL" />“, rodomi visi spausdintuvai. Jei pasirinkta „<ph name="PRINTERS_BLACKLIST" />“, „<ph name="DEVICE_PRINTERS_BLACKLIST" />“ naudojama pasiekiamumui prie nurodytų spausdintuvų apriboti. Jei pasirinkta „<ph name="PRINTERS_WHITELIST" />“, „<ph name="DEVICE_PRINTERS_WHITELIST" />“ nustato tik tuos spausdintuvus, kuriuos galima pasirinkti.
 
       Jei ši politika nenustatyta, taikoma „<ph name="PRINTERS_ALLOW_ALL" />“.
+      </translation>
+<translation id="8938932171964587769">Ši politika nebenaudojama naudojant M69. Naudokite
+      „OverrideSecurityRestrictionsOnInsecureOrigin“.
+
+      Politikoje nurodytas šaltinių (URL) arba prieglobos serverio pavadinimo 
+      šablonų (pvz., *.example.com), kuriems nebus taikomi nesaugių šaltinių 
+      apribojimai, sąrašas.
+
+      Siekiama leisti organizacijoms nustatyti pasenusių programų, negalinčių taikyti
+      TLS, baltojo sąrašo šaltinius arba darbinį serverį vidiniams žiniatinklio
+      tobulinimams atlikti, kad organizacijų kūrėjai galėtų išbandyti funkcijas,
+      kurioms reikia saugaus konteksto, ir darbiniame serveryje nereikėtų diegti
+      TLS. Ši politika taip pat neleis, kad „omnibox“ šaltinis būtų pažymėtas kaip
+      „Nesaugus“.
+
+      Šioje politikoje nustačius URL sąrašą poveikis toks pat, kaip nustačius
+      komandinės eilutės žymą „--unsafely-treat-insecure-origin-as-secure“ į
+      kableliais atskirtų tų pačių URL sąrašą. Jei ši politika nustatyta, bus
+      nepaisoma komandinės eilutės žymos.
+
+      Vietoj šios politikos M69 naudojama
+      „OverrideSecurityRestrictionsOnInsecureOrigin“. Jei yra abi politikos,
+      „OverrideSecurityRestrictionsOnInsecureOrigin“ pakeis šią politiką.
+
+      Daugiau informacijos apie saugius kontekstus pateikiama adresu
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Pagal šią politiką valdoma, ar sutikimas sinchronizuoti gali būti rodomas naudotojui prisijungiant pirmą kartą. Ji turi būti nustatyta kaip „false“, jei naudotojui niekada nereikia sutikimo sinchronizuoti.
       Nustačius kaip „false“, sutikimas sinchronizuoti nebus pateikiamas.

@@ -120,6 +120,7 @@
 <translation id="1891331835972267886">Додаток <ph name="APP_NAME" /> відкриватиметься в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="189172778771606813">Закрити панель навігації</translation>
 <translation id="1919345977826869612">Оголошення</translation>
+<translation id="1919950603503897840">Виберіть контакти</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Вибрана вкладка</translation>
 <translation id="1938981467853765413">Надіслати відгук</translation>
@@ -291,6 +292,7 @@
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="32895400574683172">Сповіщення дозволено</translation>
 <translation id="3295602654194328831">Сховати інформацію</translation>
+<translation id="3298243779924642547">Спрощена</translation>
 <translation id="3303414029551471755">Завантажити вміст?</translation>
 <translation id="3328801116991980348">Інформація про сайт</translation>
 <translation id="3341058695485821946">Перевірте обсяг збережених даних</translation>
@@ -855,6 +857,7 @@
 <translation id="7791543448312431591">Додати</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7810647596859435254">Відкрити за допомогою…</translation>
+<translation id="7821588508402923572">Тут буде вказано обсяг заощадженого трафіку</translation>
 <translation id="7832327313660264358">Синхронізовані з Google дані та функції, що використовуються, не зміняться.</translation>
 <translation id="7837721118676387834">Дозволити автоматичне відтворення відео з вимкненим звуком для певних сайтів.</translation>
 <translation id="7846076177841592234">Скасувати вибір</translation>

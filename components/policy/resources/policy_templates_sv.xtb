@@ -33,6 +33,28 @@
           Om inställningen är inaktiverad eller inte konfigurerad körs fjärrhjälpsvärden i användarens kontext och fjärranvändare kan inte interagera med fönster som öppnats med högre behörighet på datorn.</translation>
 <translation id="1096105751829466145">Standardsökleverantör</translation>
 <translation id="1099282607296956954">Aktivera webbplatsisolering för alla webbplatser</translation>
+<translation id="1100570158310952027">
+      Principen anger en lista över ursprung (webbadresser) eller värdnamnsmönster (till
+      exempel *.example.com) för vilka säkerhetsbegränsningarna för osäkra ursprung
+      inte ska gälla.
+
+      Avsikten är att tillåta att organisationer vitlistar ursprung för äldre
+      program som inte klarar TLS, eller att konfigurera en provkörningsserver för
+      intern webbutveckling så att deras utvecklare kan testa funktioner
+      som kräver säkra sammanhang utan att behöva köra TLS på
+      provkörningsservern. Med den här principen förhindras också att ursprunget märks
+      som Inte säker i adressfältet.
+
+      Att ange en lista över webbadresser i den här principen har samma effekt som
+      att ställa in kommandoradsflaggan --unsafely-treat-insecure-origin-as-secure
+      på en kommaavgränsad lista över samma webbadresser. Om principen anges
+      åsidosätts kommandoradsflaggan.
+
+      Med den här principen åsidosätts UnsafelyTreatInsecureOriginAsSecure om den används.
+
+      Mer information om säkra sammanhang finns på
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Protokollhanterarna som ställs in via den här principen används inte för intent i Android.</translation>
 <translation id="1118093128235245168">Tillåt att webbplatser begär åtkomst till en ansluten USB-enhet</translation>
 <translation id="1128903365609589950">Konfigurerar den katalog som <ph name="PRODUCT_NAME" /> ska använda för att lagra cachade filer på hårddisken.
@@ -80,6 +102,8 @@
       Om principen inte har ställts in eller är inställd på falskt kommer RC4-krypteringssviter inte att aktiveras. Principen kan ställas in som sant om kompatibilitet med en föråldrad server önskas bibehållas. Detta är en nödlösning, och servern bör omkonfigureras.</translation>
 <translation id="1297182715641689552">Använd en PAC-proxyskript</translation>
 <translation id="1304973015437969093">Tilläggs-/app-id:n och uppdateringsadresser som ska installeras obemärkt</translation>
+<translation id="1307454923744766368">Ursprung eller värdnamnsmönster som begränsningar av
+      osäkra ursprung inte ska gälla för</translation>
 <translation id="1313457536529613143">Anger den procentsats med vilken fördröjningen av skärmdämpningen skalanpassas när användaren gör något då skärmen är dämpad eller strax efter det att skärmen har stängts av.
 
           Om den här principen är inställd anges den procentsats med vilken fördröjningen av skärmdämpningen skalanpassas när användaren gör något eller strax efter det att skärmen har stängts av. När dämpningsfördröjningen skalanpassas anpassas fördröjningen av avstängningen av skärmen, skärmlåset och dödtiden så att samma avstånd från den ursprungligen angivna fördröjningen av skärmdämpningen bibehålls.
@@ -91,6 +115,11 @@
 <translation id="1327466551276625742">Aktivera uppmaning att konfigurera nätverk om enheten är offline</translation>
 <translation id="1330145147221172764">Aktivera skärmtangentbordet</translation>
 <translation id="13356285923490863">Policynamn</translation>
+<translation id="1352174694615491349">Den här principen innebär att HTTP/2-anslutningar kombineras när klientcertifikat används. För att kunna kombineras måste värdnamnet för den potentiella nya anslutningen och värdnamnet för en befintlig anslutning stämma överens med ett eller flera mönster som beskrivs i den här principen. Principen är en lista över värdar i filterformatet URLBlacklist: example.com stämmer överens med example.com och alla underdomäner (t. ex. sub.example.com) medan .example.net stämmer exakt överens med example.net.
+
+      Kombinationsförfrågningar till olika värdar via anslutningar som använder klientcertifikat kan skapa säkerhets- och sekretessproblem eftersom den befintliga auktoriteten förmedlas till alla förfrågningar även om användaren inte uttryckligen auktoriserade detta. Den här principen är tillfällig och tas bort i en framtida version. Se https://crbug.com/855690.
+
+      Om den här principen inte anges används standardbeteendet att inte tillåta någon kombinering av HTTP/2-anslutningar för anslutningar som använder klientcertifikat.</translation>
 <translation id="1353966721814789986">Startsidor</translation>
 <translation id="1359553908012294236">Om den här principen är inställd på sant, eller om den inte är konfigurerad, aktiveras gästinloggning i <ph name="PRODUCT_NAME" />. Gästinloggningar är profiler i <ph name="PRODUCT_NAME" /> där alla fönster öppnas i inkognitoläge.
 
@@ -184,6 +213,7 @@
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1599424828227887013">Aktivera webbplatsisolering för angivna ursprung på Android-enheter</translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
+<translation id="1615221548356595305">TIllåt att HTTP/2-anslutningar kombineras för dessa värdar även när klientcertifikat används</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
 <translation id="163200210584085447">Mönster på den här listan kommer att matchas mot den begärande
       webbadressens säkerhetsursprung. Om det blir en träff får adressen
@@ -1195,7 +1225,6 @@
       Om principen lämnas utan inställning aktiveras insamling av anonymiserad data kopplad till webbadresser men användaren kan ändra detta.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4261820385751181068">Språkkod för enhetens inloggningsskärm</translation>
-<translation id="4264607809747169568">Styr om Network File Share är tillgängligt i ChromeOS</translation>
 <translation id="427220754384423013">Anger vilka skrivare som får användas.
 
       Den här principen används bara när <ph name="BULK_PRINTERS_ACCESS_MODE" /> är inställd på <ph name="PRINTERS_WHITELIST" />.
@@ -1354,6 +1383,7 @@
       Om den här principen är aktiverad kan webbplatser navigera och öppna nya fönster eller flikar samtidigt.
       Om den här principen är inaktiverad eller inte anges kan webbplatser inte navigera och öppna nya fönster eller flikar samtidigt.</translation>
 <translation id="4680961954980851756">Aktivera Autofyll</translation>
+<translation id="4703402283970867140">Aktivera smart dämpningsmodell för att förlänga tiden tills skärmen dämpas</translation>
 <translation id="4722122254122249791">Aktivera webbplatsisolering för enskilda ursprung</translation>
 <translation id="4722399051042571387">Om inställningen har konfigurerats som falsk kan inte användare ange pinkoder som är osäkra och lätta att gissa.
 
@@ -1585,13 +1615,6 @@
 
           Om policyn inte anges används AskNotifications och användaren kan ändra inställningen.</translation>
 <translation id="538108065117008131">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar följande innehållstyper.</translation>
-<translation id="5391363090783552279">Om den här policyn är inställd på sant ansluter <ph name="PRODUCT_NAME" /> till Cast-enheter på alla IP-adresser, inte bara privata RFC1918/RFC4913-adresser.
-
-          Om den här policyn är inställd på falskt ansluter <ph name="PRODUCT_NAME" /> bara till Cast-enheter på privata RFC1918/RFC4913-adresser.
-
-          Om den här policyn inte är inställd ansluter <ph name="PRODUCT_NAME" /> bara till Cast-enheter på privata RFC1918/RFC4913-adresser, om inte funktionen CastAllowAllIPs är aktiverad.
-
-          Om policyn EnableMediaRouter är inställd på falskt har den här policyns värde ingen effekt.</translation>
 <translation id="5392172595902933844">Android-statusrapporter skickas till servern.
 
       Om principen har ställts in på falskt eller lämnats utan värde skickas ingen statusinformation.
@@ -2164,6 +2187,10 @@
 <translation id="6943577887654905793">Namn för Mac/Linux-inställning:</translation>
 <translation id="69525503251220566">Parameter som anger bildsökningsfunktionen för sökleverantören som är standard</translation>
 <translation id="6956272732789158625">Tillåt inte att någon webbplats använder nyckelgenerering</translation>
+<translation id="6965859329738616662">Anger om en smart modell för nedtoning får utöka tiden tills skärmen tonas ned.
+
+      När skärmen ska tonas ned utvärderar den smarta modellen för nedtoning om skärmens nedtoning ska skjutas upp. Om den smarta modellen för nedtoning skjuter upp nedtoningen, utökas tiden tills skärmen tonas ned. Då justeras även fördröjningarna för skärmavstängning, skärmlåsning och viloläge så att tiden från skärmens nedtoning blir samma som ursprungligen ställdes in.
+      Om den här principen är inställd på Sant eller inte ställs in aktiveras den smarta modellen för nedtoning och kan utöka tiden tills skärmen tonas ned. Om principen ställs in på Falskt påverkar inte den smarta modellen för nedtoning skärmens ljusstyrka.</translation>
 <translation id="6982028490425791294">
       Om principen är inställd på sant får <ph name="PRODUCT_NAME" /> samla in WebRTC-händelseloggar från Googles tjänster (t.ex. Google Meet) och ladda upp dem till Google.
 
@@ -2612,6 +2639,13 @@
 <translation id="7980227303582973781">Inga särskilda begränsningar</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotera skärmen 0 grader</translation>
+<translation id="8033913082323846868">Den här principen fasas ut i M70. Använd AutofillAddressEnabled och AutofillCreditCardEnabled i stället.
+
+      Aktiverar funktionen Autofyll för <ph name="PRODUCT_NAME" /> och tillåter att användare fyller i webbformulär automatiskt med tidigare lagrade uppgifter som adress och kreditkortsuppgifter.
+
+      Om du inaktiverar inställningen kan användarna inte använda Autofyll.
+
+      Om du inte aktiverar inställningen eller inte ställer in ett värde, förblir Autofyll under användarens kontroll. Det innebär att användaren kan konfigurera Autofyll-profiler och aktivera eller inaktivera Autofyll efter eget omdöme.</translation>
 <translation id="8044493735196713914">Rapportera omstartsläge för enhet</translation>
 <translation id="8050080920415773384">Integrerad utskrift</translation>
 <translation id="8059164285174960932">Webbadress där fjärråtkomstklienter erhåller sin autentiseringstoken</translation>
@@ -2943,6 +2977,32 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Anger vilken åtkomstprincip som gäller vid gruppkonfigurering av skrivare. Med alternativet <ph name="PRINTERS_ALLOW_ALL" /> visas alla skrivare. Med alternativet <ph name="PRINTERS_BLACKLIST" /> begränsas åtkomsten till de angivna skrivarna med hjälp av <ph name="DEVICE_PRINTERS_BLACKLIST" />. Med alternativet <ph name="PRINTERS_WHITELIST" /> används <ph name="DEVICE_PRINTERS_WHITELIST" /> för att ange enbart de skrivare som finns att välja på.
 
       Om inget värde anges för principen används <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Utfasat i M69. Använd
+      OverrideSecurityRestrictionsOnInsecureOrigin istället.
+
+      Principen anger en lista över ursprung (webbadresser) eller värdnamnsmönster
+      (som .example.com) för vilka säkerhetsbegränsningar för osäkra ursprung
+      inte ska gälla.
+
+      Avsikten är att tillåta att organisationer vitlistar ursprung för äldre
+      program som inte kan köra TLS, eller att konfigurera en provkörningsserver
+      för intern webbutveckling så att utvecklarna kan testa funktioner som kräver
+      säkra sammanhang utan att behöva köra TLS på provkörningsservern.
+      Med den här principen förhindras också att ursprunget märks som
+      Inte säkert i adressfältet.
+
+      Att ange en lista med webbadresser i den här principen har samma effekt
+      som att ställa in kommandoradsflaggan --unsafely-treat-insecure-origin-as-secure på en
+      kommaavgränsad lista över samma webbadresser. Om principen ställs in
+      åsidosätts kommandoradsflaggan.
+
+      Principen fasas ut i M69 och ersätts av
+      OverrideSecurityRestrictionsOnInsecureOrigin. Om båda principerna används
+      åsidosätts den här principen av OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Mer information om säkra sammanhang finns på
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Den här principen styr om samtycke till synkronisering får visas för användaren vid den första inloggningen. Den ska ställas in på falskt om samtycke till synkronisering aldrig behövs för användaren.
       Om principen är inställd på falskt visas inget samtycke till synkronisering.

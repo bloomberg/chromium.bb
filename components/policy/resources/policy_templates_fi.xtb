@@ -33,6 +33,28 @@
           Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, etätuen isäntä suoritetaan käyttäjän kontekstissa, jolloin etäkäyttäjä ei voi käyttää työpöydällä olevia järjestelmänvalvojan oikeuksia edellyttäviä ikkunoita.</translation>
 <translation id="1096105751829466145">Oletushakupalvelu</translation>
 <translation id="1099282607296956954">Ota sivuston eristäminen käyttöön kaikilla sivustoilla</translation>
+<translation id="1100570158310952027">
+      Käytäntö määrittelee ne alkuperät (URL-osoitteet) tai isäntänimimallit (esim.
+      *.example.com), joihin ei sovelleta suojaamattomien alkuperien
+      tietoturvarajoituksia.
+
+      Tällöin organisaatiot voivat määrittää sallittujen alkuperien luettelon vanhoille
+      sovelluksille, jotka eivät voi ottaa käyttöön TLS:ää, tai määrittää 
+      valmistelupalvelimen, jota käytetään sisäiseen verkkokehitykseen, jotta
+      kehittäjät voivat testata turvallisia konteksteja edellyttäviä ominaisuuksia ilman
+      TLS:n käyttöä valmistelupalvelimella. Tämä käytäntö myös estää lähteen
+      merkitsemisen ei-turvalliseksi omniboxissa.
+
+      Kun URL-osoitteita määritetään tällä käytännöllä, tämä vastaa
+      --unsafely-treat-insecure-origin-as-secure‑merkinnän antamista pilkuilla erotetuille
+      osoitteille komentorivillä. Jos tämä käytäntö on määritetty, se ohittaa 
+      komentorivimerkinnän.
+
+      Tämä käytäntö korvaa UnsafelyTreatInsecureOriginAsSecuren, jos se on käytössä.
+
+      Lisätietoja turvallisista konteksteista on osoitteessa
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Tämän käytännön kautta määritettyjä protokollan käsittelijöitä ei käytetä Android-tavoitteisiin.</translation>
 <translation id="1118093128235245168">Salli sivustojen pyytää käyttäjältä yhdistetyn USB-laitteen käyttöoikeutta</translation>
 <translation id="1128903365609589950">Määrittää levyllä sijaitsevan hakemiston, johon <ph name="PRODUCT_NAME" /> tallentaa välimuistitiedostot.
@@ -80,6 +102,8 @@
       Jos tätä käytäntöä ei aseteta tai jos sen arvo on epätosi, TLS:n RC4-salaustekniikoita ei oteta käyttöön. Jos yhteensopivuus vanhentuneen palvelimen kanssa täytyy varmistaa, arvoksi voidaan asettaa tosi. Tämä on kuitenkin tilapäinen toimenpide, ja palvelimen määritykset tulee tehdä uudelleen.</translation>
 <translation id="1297182715641689552">Käytä .pac-välityspalvelinkoodia</translation>
 <translation id="1304973015437969093">Laajennuksien ja sovellusten tunnukset ja päivitys-URL-osoitteet asennetaan taustalla</translation>
+<translation id="1307454923744766368">Alkuperät tai isäntänimimallit, joihin ei sovelleta
+      suojaamattomien alkuperien rajoituksia</translation>
 <translation id="1313457536529613143">Määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun käyttäjän toimia huomataan näytön ollessa himmennettynä tai pian näytön sammuttamisen jälkeen.
 
           Jos tämä käytäntö on asetettu, se määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun käyttäjän toimia huomataan näytön ollessa himmennettynä tai pian näytön sammuttamisen jälkeen. Kun himmennyksen viive on skaalattu, näytön sammutus-, lukitus- ja käyttämättömyysviiveet säädetään ylläpitämään samoja etäisyyksiä näytön himmennyksen viiveestä kuin alunperin määritettiin.
@@ -91,6 +115,11 @@
 <translation id="1327466551276625742">Ota käyttöön verkon määrityskehote offline-tilassa</translation>
 <translation id="1330145147221172764">Ota ruutunäppäimistö käyttöön</translation>
 <translation id="13356285923490863">Käytännön nimi</translation>
+<translation id="1352174694615491349">Tämä käytäntö sallii HTTP/2-yhteyden yhdistämisen, kun käyttöoikeusvarmenteet ovat käytössä. Jotta ne voidaan yhdistää, sekä mahdollisen uuden yhteyden että olemassa olevan yhteyden isäntänimien on vastattava vähintään yhtä tässä käytännössä kuvattua mallia. Käytäntö on luettelo isäntiä, jotka käyttävät URLBlacklist-suodatinmuotoa: example.comin vastaavuuksia ovat example.com ja kaikki sen aliverkkotunnukset (esim. sub.example.com), kun taas .example.netin vastaavuus on vain example.net.
+
+      Eri käyttöoikeusvarmenteita käyttävien yhteyksien isännille lähetettävät yhdistämispyynnot voivat aiheuttaa tietoturva- ja yksityisyysongelmia, koska ympäristön relevanttius välitetään kaikille pyynnöille, vaikka käyttäjä ei nimenomaisesti vahvistanut tätä. Käytäntö on väliaikainen ja se poistetaan tulevassa julkaisussa. Lisätietoja: https://crbug.com/855690.
+
+      Jos käytäntöä ei ole määritetty, käytetään oletuskäytöstä eli sallitaan kaikkien sellaisten HTTP/2-yhteyksien yhdistäminen, joiden yhteydet käyttävät käyttöoikeusvarmenteita.</translation>
 <translation id="1353966721814789986">Käynnistyssivut:</translation>
 <translation id="1359553908012294236">Jos tämän käytännön arvoksi asetetaan Tosi tai sitä ei määritetä, <ph name="PRODUCT_NAME" /> sallii vieraskirjautumisen. Vieraskirjautumisessa <ph name="PRODUCT_NAME" /> käyttää profiilia, jonka kaikki ikkunat avataan incognito-tilassa.
 
@@ -182,6 +211,7 @@
 <translation id="1583248206450240930">Käytä tuotetta <ph name="PRODUCT_FRAME_NAME" /> oletuksena</translation>
 <translation id="1599424828227887013">Ota sivuston eristäminen käyttöön tiettyjen alkuperien kohdalla Android-laitteilla</translation>
 <translation id="1608755754295374538">URL-osoitteet, joille on myönnetty pääsy äänikaappauslaitteisiin ilman erillisen luvan pyytämistä</translation>
+<translation id="1615221548356595305">Salli HTTP/2-yhteyksien yhdistäminen näille isännille, vaikka käyttöoikeusvarmenteet olisivat käytössä</translation>
 <translation id="1617235075406854669">Salli selaus- ja lataushistorian poistaminen</translation>
 <translation id="163200210584085447">Tämän luettelon osoitemalleja verrataan pyytävän URL-osoitteen
       suojaustiedon alkuperään. Jos vastaavuus havaitaan, videontallennuslaitteiden
@@ -1156,7 +1186,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos tätä käytäntöä ei ole määritetty, anonymisoidun datan kerääminen URL-avaimella on käytössä, mutta käyttäjä voi muuttaa asetusta.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4261820385751181068">Laitteen kirjautumisnäytön kieli- ja maa-asetus</translation>
-<translation id="4264607809747169568">Määrittää, onko Verkkotiedostojen jakaminen käytettävissä Chrome-käyttöjärjestelmässä</translation>
 <translation id="427220754384423013">Määritä tulostimet, joita käyttäjä voi käyttää.
 
       Tätä käytäntöä käytetään vain, jos <ph name="PRINTERS_WHITELIST" /> on valittuna asetuksen <ph name="BULK_PRINTERS_ACCESS_MODE" /> arvoksi.
@@ -1307,6 +1336,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos tämä käytäntö on otettu käyttöön, sivustot saavat käyttää siirtymistoimintoja ja avata uusia ikkunoita tai välilehtiä samanaikaisesti.
       Jos tämä käytäntö on poistettu käytöstä tai sitä ei ole määritetty, sivustoja estetään käyttämästä siirtymistoimintoja ja avaamasta uusia ikkunoita tai välilehtiä samanaikaisesti.</translation>
 <translation id="4680961954980851756">Ota automaattinen täyttö käyttöön</translation>
+<translation id="4703402283970867140">Ota käyttöön älykäs himmennysmalli pidentääksesi näytön himmennysaikaa</translation>
 <translation id="4722122254122249791">Ota sivuston eristäminen käyttöön tiettyjen alkuperien kohdalla</translation>
 <translation id="4722399051042571387">Jos asetuksen arvo on epätosi, käyttäjät eivät voi asettaa heikkoja tai helposti arvattavia PIN-koodeja.
 
@@ -1517,13 +1547,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="5370279767682621504">Ota käyttöön HTTP/0.9-tuki muissa kuin oletusporteissa</translation>
 <translation id="5378985487213287085">Voit määrittää, saavatko sivustot näyttää työpöytäilmoituksia. Työpöytäilmoituksien näyttäminen voidaan sallia oletuksena, kieltää oletuksena, tai käyttäjältä voidaan kysyä aina sivuston halutessa näyttää työpöytäilmoituksia. Jos tätä käytäntöä ei ole määritetty, käytetään AskNotifications-käytäntöä, ja käyttäjä voi muuttaa sitä.</translation>
 <translation id="538108065117008131">Anna tuotteen <ph name="PRODUCT_FRAME_NAME" /> käsitellä seuraavia sisältötyyppejä.</translation>
-<translation id="5391363090783552279">Jos tämän käytännön arvo on tosi, <ph name="PRODUCT_NAME" /> yhdistää kaikkiin Cast-laitteisiin kaikissa IP-osoitteissa, ei vain yksityisissä RFC1918- tai RFC4913-osoitteissa.
-
-          Jos tämän käytännön arvo on epätosi, <ph name="PRODUCT_NAME" /> yhdistää vain yksityisissä RFC1918- tai RFC4913-osoitteissa oleviin Cast-laitteisiin.
-
-          Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> yhdistää vain yksityisissä RFC1918- tai RFC4913-osoitteissa oleviin Cast-laitteisiin, paitsi jos CastAllowAllIPs-ominaisuus on käytössä.
-
-          Jos EnableMediaRouter-käytännön arvo on epätosi, tämän käytännön arvolla ei ole merkitystä.</translation>
 <translation id="5392172595902933844">Androidin tilatietoja lähetetään takaisin
       palvelimelle.
 
@@ -2074,6 +2097,10 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="6943577887654905793">Mac/Linux-asetuksen nimi:</translation>
 <translation id="69525503251220566">Parametri, joka tarjoaa kuvan perusteella haku -ominaisuuden oletushakupalvelulle</translation>
 <translation id="6956272732789158625">Älä salli sivustojen käyttää avainten luomistoimintoa.</translation>
+<translation id="6965859329738616662">Määrittää, saako älykäs himmennysmalli pidentää näytön himmennysaikaa
+
+      Kun näyttöä ollaan himmentämässä, älykäs himmennysmalli arvioi, pitäisikö näytön himmennystä viivästyttää. Jos älykäs himmennysmalli viivästyttää näytön himmennystä, se pidentää sen myötä näytön himmennysaikaa. Tässä tapauksessa näytön sammuttamisen, näytön lukituksen ja käyttämättömyysajan viivästykset säädetään niin, että niissä pysyy samat etäisyydet näytön himmennysviiveeseen kuin alkuperäisissä asetuksissa.
+      Jos käytännön arvoksi on merkitty tosi tai sitä ei ole määritetty, älykäs himmennysmalli otetaan käyttöö ja sen annetaan pidentää näytön himmennysaikaa. Jos käytännön arvoksi on merkitty epätosi, älykäs himmennysmalli ei vaikuta näytön himmennykseen.</translation>
 <translation id="6982028490425791294">
       Jos tämän käytännön arvo on tosi, <ph name="PRODUCT_NAME" /> saa kerätä WebRTC-tapahtumalokeja Googlen palveluista (esim. Google Meet) ja lähettää niitä Googlelle.
 
@@ -2499,6 +2526,13 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7980227303582973781">Ei erikoisrajoituksia</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Kierrä näyttöä 0 astetta.</translation>
+<translation id="8033913082323846868">Tämä käytäntö on poistettu käytöstä M70:ssä, käytä sen sijaan AutofillAddressEnabled- ja AutofillCreditCardEnabled-käytäntöjä.
+
+      Ottaa käyttöön tuotteen <ph name="PRODUCT_NAME" /> automaattinen täyttö ‑ominaisuuden ja antaa käyttäjien täydentää verkkolomakkeita automaattisesti aiemmin tallennetuilla tiedoilla, kuten osoitteilla tai luottokorttitiedoilla.
+
+      Jos poistat tämän asetuksen käytöstä, automaattista täyttöä ei voi käyttää. 
+
+      Jos otat asetuksen käyttöön tai et määritä asetusta, automaattinen täyttö pysyy käyttäjän hallinnassa. Käyttäjä voi tällöin määrittää automaattisen täytön profiileja ja ottaa halutessaan automaattisen täytön käyttöön tai poistaa sen käytöstä.</translation>
 <translation id="8044493735196713914">Ilmoita laitteen tila uudelleenkäynnistyksen yhteydessä</translation>
 <translation id="8050080920415773384">Natiivitulostus</translation>
 <translation id="8059164285174960932">URL-osoite, josta etäkäytön asiakkaiden tulisi saada todennustunnus</translation>
@@ -2820,6 +2854,32 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
       Määrittää, mitä käyttöoikeuskäytäntöä käytetään tulostinjoukon määrittämiseen. Jos <ph name="PRINTERS_ALLOW_ALL" /> on valittu, kaikki tulostimet näytetään. Jos <ph name="PRINTERS_BLACKLIST" /> on valittu, arvoa <ph name="DEVICE_PRINTERS_BLACKLIST" /> käytetään määritettyjen tulostimien käytön rajoittamiseen. Jos <ph name="PRINTERS_WHITELIST" /> on valittu, <ph name="DEVICE_PRINTERS_WHITELIST" /> määrittää vain valittavissa olevat tulostimet.
 
       Jos tätä käytäntöä ei ole määritetty, oletusarvo on <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Poistettu käytöstä M69:ssä. Käytä sen sijaan
+      OverrideSecurityRestrictionsOnInsecureOrigin-käytäntöä.
+
+      Käytäntö määrittelee ne alkuperät (URL-osoitteet) tai isäntänimimallit
+      (esim. *.example.com), joihin ei sovelleta suojaamattomien alkuperien 
+      tietoturvarajoituksia.
+
+      Tällöin organisaatiot voivat määrittää sallittujen alkuperien luettelon
+      vanhoille sovelluksille, jotka eivät voi ottaa käyttöön TLS:ää, tai määrittää 
+      valmistelupalvelimen, jota käytetään sisäiseen verkkokehitykseen, jotta
+      kehittäjät voivat testata turvallisia konteksteja edellyttäviä ominaisuuksia ilman 
+      TLS:n käyttöä valmistelupalvelimella. Tämä käytäntö myös estää lähteen
+      merkitsemisen ei-turvalliseksi omniboxissa.
+
+      Kun URL-osoitteita määritetään tällä käytännöllä, tämä vastaa
+      --unsafely-treat-insecure-origin-as-securemerkinnän antamista pilkuilla erotetuille
+      osoitteille komentorivillä. Jos tämä käytäntö on määritetty, 
+      se ohittaa komentorivimerkinnän.
+
+      Käytäntö on poistettu käytöstä M69:ssä ja sen tilalla on nyt
+      OverrideSecurityRestrictionsOnInsecureOrigin. Jos molemmat käytännöt ovat
+      käytössä, OverrideSecurityRestrictionsOnInsecureOrigin korvaa tämän käytännön.
+
+      Lisätietoja turvallisista konteksteista on osoitteessa
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Tällä käytännöllä määritetään, voiko suostumuksen synkronointia näyttää käyttäjälle ensimmäisen kirjautumisen aikana. Arvon pitäisi olla epätosi, jos käyttäjän ei koskaan tarvitse käyttää suostumuksen synkronointia.
       Jos arvoksi on asetettu epätosi, suostumuksen synkronointia ei näytetä.

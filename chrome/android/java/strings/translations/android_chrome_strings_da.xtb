@@ -120,6 +120,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="1891331835972267886"><ph name="APP_NAME" /> åbnes i Chrome. Når du fortsætter, accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Luk sidemenuen</translation>
 <translation id="1919345977826869612">Annoncer</translation>
+<translation id="1919950603503897840">Vælg kontakter</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Valgt fane</translation>
 <translation id="1938981467853765413">Giv feedback</translation>
@@ -291,6 +292,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="3282568296779691940">Log ind i Chrome</translation>
 <translation id="32895400574683172">Underretninger er tilladt</translation>
 <translation id="3295602654194328831">Skjul oplysninger</translation>
+<translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Vil du fortsætte og downloade indholdet?</translation>
 <translation id="3328801116991980348">Webstedoplysninger</translation>
 <translation id="3341058695485821946">Se, hvor meget data du har gemt</translation>
@@ -855,6 +857,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7791543448312431591">Tilføj</translation>
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7810647596859435254">Åbn med…</translation>
+<translation id="7821588508402923572">Din databesparelse vises her</translation>
 <translation id="7832327313660264358">De data, du synkroniserer med Google, og de funktioner, du bruger, ændres ikke</translation>
 <translation id="7837721118676387834">Tillad automatisk afspilning af videoer, hvor lyden er slået fra, for et bestemt website.</translation>
 <translation id="7846076177841592234">Annuller valg</translation>

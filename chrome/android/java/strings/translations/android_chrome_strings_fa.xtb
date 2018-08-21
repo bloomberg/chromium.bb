@@ -120,6 +120,7 @@
 <translation id="1891331835972267886">‏<ph name="APP_NAME" /> در Chrome باز می‌شود. درصورت ادامه دادن، با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> Chrome موافقت می‌کنید.</translation>
 <translation id="189172778771606813">بستن کشوی پیمایش</translation>
 <translation id="1919345977826869612">آگهی‌ها</translation>
+<translation id="1919950603503897840">انتخاب مخاطبین</translation>
 <translation id="1923695749281512248">‎<ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" />‎</translation>
 <translation id="1933845786846280168">برگه انتخاب‌شده</translation>
 <translation id="1938981467853765413">ارائه بازخورد</translation>
@@ -291,6 +292,7 @@
 <translation id="3282568296779691940">‏ورود به Chrome</translation>
 <translation id="32895400574683172">اعلان‌ها مجاز هستند</translation>
 <translation id="3295602654194328831">پنهان کردن اطلاعات</translation>
+<translation id="3298243779924642547">ساده</translation>
 <translation id="3303414029551471755">ادامه می‌دهید و محتوا را بارگیری می‌کنید؟</translation>
 <translation id="3328801116991980348">اطلاعات سایت</translation>
 <translation id="3341058695485821946">ببینید چه مقدار داده صرفه‌جویی کرده‌اید</translation>
@@ -854,6 +856,7 @@
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7810647596859435254">باز کردن با…</translation>
+<translation id="7821588508402923572">میزان داده صرفه‌جویی‌شده اینجا نشان داده می‌شود</translation>
 <translation id="7832327313660264358">‏داده‌هایی که با Google همگام‌سازی می‌کنید و قابلیت‌هایی که استفاده می‌کنید تغییر نخواهد کرد.</translation>
 <translation id="7837721118676387834">به پخش‌خودکار ویدیو‌های صامت‌شده برای سایتی خاص امکان دهید.</translation>
 <translation id="7846076177841592234">لغو انتخاب</translation>

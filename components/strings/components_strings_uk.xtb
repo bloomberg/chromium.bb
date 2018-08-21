@@ -99,6 +99,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Не вдається встановити конфіденційне з’єднання із сайтом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на вашому пристрої неправильно налаштовано дату й час (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
 
       &lt;p&gt;Налаштуйте дату й час у розділі &lt;strong&gt;Загальні&lt;/strong&gt; додатка &lt;strong&gt;Налаштування&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Під час показу цієї сторінки сталася помилка.</translation>
 <translation id="1592005682883173041">Доступ до локальних даних</translation>
 <translation id="1594030484168838125">Вибрати</translation>
@@ -138,6 +139,7 @@
 <translation id="1821930232296380041">Недійсний запит або параметри запиту</translation>
 <translation id="1826516787628120939">Перевірка</translation>
 <translation id="1834321415901700177">Цей сайт містить шкідливі програми</translation>
+<translation id="1839551713262164453">Не вдалося перевірити значення правила. Знайдено помилки</translation>
 <translation id="1840414022444569775">Цей номер картки вже використовується</translation>
 <translation id="1842969606798536927">Оплатити</translation>
 <translation id="1871208020102129563">Проксі-сервер налаштовано на використання фіксованих проксі-серверів, а не URL-адреси сценарію .pac.</translation>
@@ -208,6 +210,7 @@
 <translation id="2356070529366658676">Запитати</translation>
 <translation id="2359629602545592467">Декілька</translation>
 <translation id="2359808026110333948">Продовжити</translation>
+<translation id="2360873523816792727">Щоб використовувати картки на всіх своїх пристроях, увімкніть синхронізацію.</translation>
 <translation id="2365563543831475020">Звіт про аварійне завершення роботи о <ph name="CRASH_TIME" /> не завантажено</translation>
 <translation id="2367567093518048410">Рівень</translation>
 <translation id="2378238891085281592">Ви перейшли в приватний режим</translation>
@@ -351,11 +354,13 @@
           <ph name="LIST_ITEM" />файли cookie та дані із сайтів
           <ph name="LIST_ITEM" />дані, які ви заповнюєте у формах
         <ph name="END_LIST" /></translation>
+<translation id="3366477098757335611">Переглянути картки</translation>
 <translation id="3369192424181595722">Помилка годинника</translation>
 <translation id="337363190475750230">Деініціалізовано</translation>
 <translation id="3377188786107721145">Помилка аналізу правила</translation>
 <translation id="3380365263193509176">Невідома помилка</translation>
 <translation id="3380864720620200369">Ідентифікатор клієнта:</translation>
+<translation id="3387261909427947069">Способи оплати</translation>
 <translation id="3391030046425686457">Адреса доставки</translation>
 <translation id="3395827396354264108">Спосіб отримання</translation>
 <translation id="3399952811970034796">Адреса доставки</translation>
@@ -452,6 +457,7 @@
 <translation id="4110652170750985508">Переглянути платіж</translation>
 <translation id="4116663294526079822">Завжди дозволяти на цьому сайті</translation>
 <translation id="4117700440116928470">Правило не підтримується.</translation>
+<translation id="4119109454650683048">Перевірте інформацію нижче та виправте помилки (якщо потрібно).</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{і ще 1 елемент даних}one{і ще # елемент даних}few{і ще # елементи даних}many{і ще # елементів даних}other{і ще # елемента даних}}</translation>
 <translation id="4130226655945681476">перевірити мережевий кабель, модем і маршрутизатор</translation>
 <translation id="413544239732274901">Докладніше</translation>
@@ -557,6 +563,7 @@
 <translation id="4854362297993841467">Цей спосіб доставки недоступний. Виберіть інший спосіб.</translation>
 <translation id="4858792381671956233">Ви надіслали батькам запит на перегляд цього сайту</translation>
 <translation id="4876305945144899064">Немає імені користувача</translation>
+<translation id="4879491255372875719">Автоматично (за умовчанням)</translation>
 <translation id="4880827082731008257">Пошук в історії</translation>
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -622,6 +629,7 @@
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Показати всі збережені паролі</translation>
 <translation id="5287240709317226393">Показати cookie-файли</translation>
+<translation id="5288108484102287882">Під час перевірки значень правила виявлено застереження</translation>
 <translation id="5299298092464848405">Помилка аналізу правила</translation>
 <translation id="5308380583665731573">Під’єднатися</translation>
 <translation id="5308689395849655368">Повідомлення про аварійне завершення роботи вимкнено.</translation>
@@ -634,6 +642,7 @@
 <translation id="536296301121032821">Помилка збереження налаштувань правила</translation>
 <translation id="5371425731340848620">Оновити картку</translation>
 <translation id="5377026284221673050">"Ваш годинник відстає", "Ваш годинник спішить" або "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5384855140246857529">Щоб використовувати картки на всіх своїх пристроях, увійдіть в обліковий запис і ввімкніть синхронізацію.</translation>
 <translation id="5386426401304769735">Ланцюжок сертифіката цього сайту містить сертифікат, підписаний за допомогою SHA-1.</translation>
 <translation id="5387961145478138773">Отримуйте швидкий доступ до улюблених додатків Google</translation>
 <translation id="540969355065856584">Серверу не вдалося підтвердити, що це <ph name="DOMAIN" />. Його сертифікат безпеки зараз недійсний. Можливі причини: неправильна конфігурація або хтось перехопив ваше з’єднання.</translation>
@@ -709,6 +718,7 @@
 <translation id="5893752035575986141">Кредитні картки, які приймаються.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (синхронізовано)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Використовується 1 файл}one{Використовується # файл}few{Використовуються # файли}many{Використовуються # файлів}other{Використовуються # файлу}}</translation>
+<translation id="5922853866070715753">Майже готово</translation>
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="5967592137238574583">Змініть контактну інформацію</translation>
 <translation id="5967867314010545767">Видалити з історії</translation>
@@ -729,6 +739,7 @@
 <translation id="6051221802930200923">Зараз не можна перейти на сторінку <ph name="SITE" />, оскільки цей веб-сайт використовує закріплення сертифікатів. Помилки мережі й атаки зазвичай тимчасові, тому ця сторінка, скоріш за все, запрацює пізніше.</translation>
 <translation id="6059925163896151826">Пристрої USB</translation>
 <translation id="6071091556643036997">Це правило недійсне.</translation>
+<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Цю картку буде збережено в обліковому записі Google для швидшої оплати на різних пристроях.}one{Ці картки буде збережено в обліковому записі Google для швидшої оплати на різних пристроях.}few{Ці картки буде збережено в обліковому записі Google для швидшої оплати на різних пристроях.}many{Ці картки буде збережено в обліковому записі Google для швидшої оплати на різних пристроях.}other{Ці картки буде збережено в обліковому записі Google для швидшої оплати на різних пристроях.}}</translation>
 <translation id="6080696365213338172">Ви отримали доступ до вмісту, використовуючи наданий адміністратором сертифікат. Адміністратор може перехоплювати дані, які ви надасте домену <ph name="DOMAIN" />.</translation>
 <translation id="610911394827799129">У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Немає}=1{1 пароль (синхронізовано)}one{# пароль (синхронізовано)}few{# паролі (синхронізовано)}many{# паролів (синхронізовано)}other{# пароля (синхронізовано)}}</translation>
@@ -831,6 +842,7 @@
 <translation id="6965978654500191972">Пристрій</translation>
 <translation id="6970216967273061347">Район або округ</translation>
 <translation id="6973656660372572881">Указано фіксовані проксі-сервери та URL-адреса сценарію .pac.</translation>
+<translation id="6979440798594660689">Без звуку (за умовчанням)</translation>
 <translation id="6984479912851154518">Щоб оплатити в зовнішньому додатку, ви вийдете з приватного режиму. Продовжити?</translation>
 <translation id="6989763994942163495">Показати розширені налаштування...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -851,6 +863,7 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="717330890047184534">Ідентифікатор GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="7179323680825933600">Зберігати й заповнювати способи оплати</translation>
 <translation id="7180611975245234373">Оновити</translation>
 <translation id="7182878459783632708">Правила не встановлено</translation>
 <translation id="7186367841673660872">Цю сторінку перекладено. Мова оригіналу:<ph name="ORIGINAL_LANGUAGE" />мова перекладу:<ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -862,6 +875,9 @@
 <translation id="7220786058474068424">Обробка</translation>
 <translation id="724691107663265825">Сайт містить зловмисне програмне забезпечення</translation>
 <translation id="724975217298816891">Введіть термін дії та код CVC картки <ph name="CREDIT_CARD" />, щоб оновити її дані. Щойно ви підтвердите дані картки, цей сайт отримає доступ до них.</translation>
+<translation id="7251437084390964440">Конфігурація мережі не відповідає стандарту ONC. Вона може імпортуватися частково.
+Додаткові відомості:
+<ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Не вдається встановити конфіденційне з’єднання з <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на комп’ютері встановлено неправильні дату й час (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Скасувати доступ</translation>
 <translation id="7271803869921933038">Передплачені картки, які приймаються до оплати</translation>
@@ -1039,6 +1055,9 @@
 <translation id="8398259832188219207">Дата завантаження звіту про аварійне завершення роботи: <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Аварійне завершення роботи (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Потрібно двічі ввести однакову парольну фразу.</translation>
+<translation id="8416694386774425977">Конфігурація мережі недійсна та не може імпортуватися.
+Додаткові відомості:
+<ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8433057134996913067">Ви вийдете з облікового запису на більшості веб-сайтів.</translation>
@@ -1071,13 +1090,16 @@
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8728672262656704056">Ви перейшли в режим анонімного перегляду</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="8733831205558190772">Усі ваші картки в хмарі</translation>
 <translation id="8738058698779197622">Щоб установити безпечне з’єднання, потрібно правильно вказати час, оскільки сертифікати, які веб-сайти використовують для самоідентифікації дійсні лише протягом певного періоду часу. Час на вашому пристрої неправильний, тому Chromium не може перевірити сертифікати.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Адресу DNS&lt;/abbr&gt; хосту <ph name="HOST_NAME" /> не знайдено. Діагностика проблеми.</translation>
 <translation id="874846938927089722">Кредитні та передплачені картки, які приймаються до оплати</translation>
 <translation id="8759274551635299824">Термін дії цієї картки минув</translation>
 <translation id="8761567432415473239">Функція безпечного перегляду від Google нещодавно <ph name="BEGIN_LINK" />виявила шкідливі програми<ph name="END_LINK" /> на сайті <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Пристрій USB</translation>
+<translation id="8768895707659403558">Щоб використовувати картки на всіх своїх пристроях, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Повторити видалення</translation>
+<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Цю картку додано в обліковий запис Google. Тепер нею можна користуватися на будь-якому пристрої, де ви ввійшли в обліковий запис.}one{Ці картки додано в обліковий запис Google. Тепер ними можна користуватися на будь-якому пристрої, де ви ввійшли в обліковий запис.}few{Ці картки додано в обліковий запис Google. Тепер ними можна користуватися на будь-якому пристрої, де ви ввійшли в обліковий запис.}many{Ці картки додано в обліковий запис Google. Тепер ними можна користуватися на будь-якому пристрої, де ви ввійшли в обліковий запис.}other{Ці картки додано в обліковий запис Google. Тепер ними можна користуватися на будь-якому пристрої, де ви ввійшли в обліковий запис.}}</translation>
 <translation id="8792621596287649091">Ви можете втратити доступ до облікового запису, який вам надає <ph name="ORG_NAME" />, або хтось може викрасти вашу особисту інформацію. Chromium радить змінити пароль.</translation>
 <translation id="8800988563907321413">Тут відображатимуться пропозиції</translation>
 <translation id="8820817407110198400">Закладки</translation>

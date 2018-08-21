@@ -1114,7 +1114,6 @@
       如果未设置此政策，系统将启用包含网址的匿名化数据收集功能，但用户将能够更改此设置。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4261820385751181068">设备登录屏幕语言区域</translation>
-<translation id="4264607809747169568">控制是否允许在 Chrome 操作系统中使用网络文件共享功能</translation>
 <translation id="427220754384423013">指定用户可以使用的打印机。
 
       仅当为 <ph name="BULK_PRINTERS_ACCESS_MODE" /> 选择了 <ph name="PRINTERS_WHITELIST" /> 时，才可使用此政策。
@@ -1473,13 +1472,6 @@
 <translation id="5370279767682621504">在非默认端口上启用 HTTP/0.9 支持</translation>
 <translation id="5378985487213287085">可让您设置是否允许网站显示桌面通知。默认情况下，可以允许或拒绝显示桌面通知，也可以在每次网站要显示桌面通知时询问用户。如果未设置此政策，系统将使用“AskNotifications”并允许用户更改此设置。</translation>
 <translation id="538108065117008131">允许“<ph name="PRODUCT_FRAME_NAME" />”处理以下内容类型。</translation>
-<translation id="5391363090783552279">如果此政策设为 true，<ph name="PRODUCT_NAME" /> 将连接到位于所有 IP 地址的 Cast 设备，而不是只连接到位于 RFC1918/RFC4913 私有地址的 Cast 设备。
-
-          如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将只连接到位于 RFC1918/RFC4913 私有地址的 Cast 设备。
-
-          如果此政策未设置，那么除非已启用 CastAllowAllIPs 功能，否则 <ph name="PRODUCT_NAME" /> 将只连接到位于 RFC1918/RFC4913 私有地址的 Cast 设备。
-
-          如果“EnableMediaRouter”政策设为 false，那么此政策的值将不会发挥任何作用。</translation>
 <translation id="5392172595902933844">系统会将有关 Android 状态的信息发送回服务器。
 
       如果此政策设为 false 或未设置，系统便不会报告状态信息。

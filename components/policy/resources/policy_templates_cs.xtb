@@ -33,6 +33,17 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
           Pokud je toto nastavení vypnuto nebo není nakonfigurováno, hostitel vzdálené pomoci poběží v kontextu uživatele a vzdálení uživatelé na počítači nebudou moci provádět interakci s okny, která vyžadují zvýšená oprávnění.</translation>
 <translation id="1096105751829466145">Výchozí poskytovatel vyhledávání</translation>
 <translation id="1099282607296956954">Aktivace izolace webů u všech webů</translation>
+<translation id="1100570158310952027">
+      Tato zásada určuje seznam zdrojů (adres URL) nebo vzorů názvů hostitelů (například „*.example.com“), na které se nebudou vztahovat bezpečnostní omezení nezabezpečených zdrojů.
+
+      Cílem je umožnit organizacím nastavit seznam povolených zdrojů pro starší aplikace, do kterých nelze implementovat protokol TLS, nebo nastavit zkušební server pro vývoj interních webových stránek, aby vývojáři mohli testovat funkce, které vyžadují zabezpečené kontexty, aniž by na testovacím serveru museli implementovat protokol TLS. Tato zásada také zabrání označení zdroje jako nezabezpečeného v omniboxu.
+
+      Nastavení seznamu adres URL v této zásadě má stejný dopad jako nastavení příznaku příkazového řádku --unsafely-treat-insecure-origin-as-secure na čárkami oddělený seznam stejných adres URL. Je-li nastavena tato zásada, bude jí příznak příkazového řádku přepsán.
+
+      Pokud je nastavená zásada UnsafelyTreatInsecureOriginAsSecure, tato zásada ji přepíše.
+
+      Další informace o bezpečných kontextech najdete na stránce https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Obslužné nástroje protokolů nastavené pomocí této zásady se nepoužívají při zpracovávání zpráv Intent systému Android.</translation>
 <translation id="1118093128235245168">Povolit webům žádat uživatele o udělení přístupu k připojenému zařízení USB</translation>
 <translation id="1128903365609589950">Slouží ke konfiguraci adresáře, který bude <ph name="PRODUCT_NAME" /> používat k ukládání souborů do mezipaměti na disku.
@@ -79,6 +90,7 @@ Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální po
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, v protokolu TLS nebudou povoleny šifrovací sady RC4. Nastavením této zásady na hodnotu true je možné zajistit kompatibilitu se zastaralým serverem. Toto nastavení by však mělo být použito pouze jako dočasné nouzové opatření a server by měl být překonfigurován.</translation>
 <translation id="1297182715641689552">Použít skript proxy serveru ve formátu PAC</translation>
 <translation id="1304973015437969093">ID aplikací/rozšíření a adresy URL aktualizací, které se mají nainstalovat na pozadí</translation>
+<translation id="1307454923744766368">Vzory zdrojů nebo názvů hostitelů, na které se nemají vztahovat omezení ohledně nezabezpečených zdrojů.</translation>
 <translation id="1313457536529613143">Určuje, o kolik procent bude prodloužena prodleva ztmavení obrazovky, když je v případě ztmavené obrazovky nebo záhy po vypnutí obrazovky zaznamenána aktivita uživatele.
 
 Pokud je tato zásada nastavena, udává procento, o které bude prodloužena prodleva ztmavení obrazovky, když je v případě ztmavené obrazovky nebo záhy po vypnutí obrazovky zaznamenána aktivita uživatele. Při prodloužení prodlevy ztmavení budou prodlouženy i prodlevy vypnutí, uzamčení obrazovky a nečinnosti tak, aby mezi nimi a prodlevou ztmavení zůstala stejná doba.
@@ -90,6 +102,11 @@ Hodnota prodloužení musí být 100 % nebo více.</translation>
 <translation id="1327466551276625742">Povolit zobrazení výzvy ke konfiguraci sítě v režimu offline</translation>
 <translation id="1330145147221172764">Povolit softwarovou klávesnici</translation>
 <translation id="13356285923490863">Název zásady</translation>
+<translation id="1352174694615491349">Tato zásada umožňuje slučování připojení HTTP/2 při použití certifikátů klienta. Aby připojení bylo možné sloučit, musí název hostitele potenciálního nového připojení i název hostitele existujícího připojení odpovídat alespoň jednomu ze vzorů zadaných v této zásadě. Tato zásada je seznam hostitelů ve formátu filtru URLBlacklist: „example.com“ odpovídá doméně „example.com“ a všem subdoménám (např. „sub.example.com“), „.example.net“ však odpovídá pouze doméně „example.net“.
+
+      Slučování požadavků pro různé hostitele přes připojení, která používají certifikáty klientů, může vést k problémům se zabezpečením a ochranou soukromí, protože bude u všech požadavků použita ambientní autorita i v případě, že to uživatel výslovně nepovolil. Tato zásada je dočasná a v budoucím vydání bude odstraněna. Viz https://crbug.com/855690.
+
+      Je-li tato zásada ponechána nenastavená, použije se výchozí chování, při němž slučování připojení HTTP/2, která používají certifikáty klienta, není povoleno.</translation>
 <translation id="1353966721814789986">Stránky otevírané při spuštění</translation>
 <translation id="1359553908012294236">Pokud je tato zásada nastavena na hodnotu True nebo nastavena není, prohlížeč <ph name="PRODUCT_NAME" /> povolí přihlášení hosta. Přihlášení hosta v prohlížeči <ph name="PRODUCT_NAME" /> jsou profily, ve kterých jsou všechna okna v anonymním režimu.
 
@@ -170,6 +187,7 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
 <translation id="1583248206450240930">Ve výchozím nastavení používat plugin <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">Aktivovat izolaci webů u určených zdrojů na zařízeních Android</translation>
 <translation id="1608755754295374538">Adresy URL, kterým bude udělen přístup pro záznam zvuku bez zobrazení výzvy</translation>
+<translation id="1615221548356595305">Pro tyto hostitele povolit slučování připojení HTTP/2 i při použití certifikátů klienta</translation>
 <translation id="1617235075406854669">Aktivovat smazání historie prohlížeče a stahování</translation>
 <translation id="163200210584085447">Vzory v tomto seznamu budou porovnány s žádající adresou URL. Pokud bude nalezena shoda, bude na přihlašovacích stránkách SAML udělen přístup k zařízením pro záznam videa. Pokud shoda nalezena nebude, přístup bude automaticky odepřen. Vzory se zástupnými znaky nejsou povoleny.</translation>
 <translation id="1634989431648355062">Povolit plugin <ph name="FLASH_PLUGIN_NAME" /> na těchto webech</translation>
@@ -1153,7 +1171,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
       Pokud tuto zásadu ponecháte nenastavenou, bude shromažďování anonymizovaných dat zapnuto, ale uživatel to bude moci změnit.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Jazyk přihlašovací obrazovky zařízení</translation>
-<translation id="4264607809747169568">Ovládá dostupnost sdílených síťových složek pro Chrome OS</translation>
 <translation id="427220754384423013">Určuje, které tiskárny uživatel může používat.
 
 Tato zásada se použije, jen pokud je v zásadě <ph name="PRINTERS_WHITELIST" /> vybrána možnost <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1312,6 +1329,7 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
       Je-li tato zásada aktivována, budou weby moci zároveň provádět navigaci a otevírat nová okna/karty.
       Pokud je tato zásada zakázána nebo není nastavena, budou mít weby současné provádění navigace a otevírání nových oken/karet zakázáno.</translation>
 <translation id="4680961954980851756">Aktivovat Automatické vyplňování</translation>
+<translation id="4703402283970867140">Povolit chytrému modelu ztmavování prodloužit dobu do ztmavení obrazovky</translation>
 <translation id="4722122254122249791">Aktivace izolace webů u určených zdrojů</translation>
 <translation id="4722399051042571387">Pokud je tato zásada nastavena na hodnotu false, uživatelé nebudou moci nastavit PIN, který je slabý a lze jej snadno uhodnout.
 
@@ -1539,13 +1557,6 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
 
           Pokud tuto zásadu nenastavíte, použije se zásada AskNotifications a uživatelé ji budou moci změnit.</translation>
 <translation id="538108065117008131">Umožňuje pluginu <ph name="PRODUCT_FRAME_NAME" /> zpracovávat následující typy obsahu.</translation>
-<translation id="5391363090783552279">Je-li tato zásada nastavena na hodnotu true, bude se <ph name="PRODUCT_NAME" /> připojovat k zařízením Cast na všech IP adresách, nikoliv pouze na soukromých adresách RFC1918/RFC4913.
-
-          Je-li tato zásada nastavena na hodnotu false, bude se <ph name="PRODUCT_NAME" /> připojovat pouze k zařízením Cast na soukromých adresách RFC1918/RFC4913.
-
-          Pokud tato zásada není nastavena, bude se <ph name="PRODUCT_NAME" /> připojovat pouze k zařízením Cast na soukromých adresách RFC1918/RFC4913 s výjimkou případů, kdy je aktivována funkce CastAllowAllIPs.
-
-          Je-li zásada EnableMediaRouter nastavena na hodnotu false, hodnoty této zásady se nijak neprojeví.</translation>
 <translation id="5392172595902933844">Informace o stavu systému Android se odesílají zpět na server.
 
       Je-li tato zásada nastavena na hodnotu False nebo nenastavena, nebudou hlášeny žádné informace o stavu.
@@ -2104,6 +2115,10 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
 <translation id="6943577887654905793">Název nastavení v systémech Mac/Linux:</translation>
 <translation id="69525503251220566">Parametr poskytující funkci vyhledávání podle obrázku pro výchozího poskytovatele vyhledávání</translation>
 <translation id="6956272732789158625">Nepovolit žádnému webu generovat klíče</translation>
+<translation id="6965859329738616662">Udává, zda chytrý model ztmavování může prodloužit dobu do ztmavení obrazovky.
+
+      Když se má obrazovka ztmavit, chytrý model ztmavování posoudí, zda by se ztmavení obrazovky nemělo odložit. Pokud chytrý model ztmavování ztmavení obrazovky odloží, prodlouží se tím doba do ztmavení obrazovky. Prodlevy vypnutí obrazovky, uzamčení obrazovky a nečinnosti se v tomto případě upraví tak, aby mezi nimi a prodlevou ztmavení zůstala původně nakonfigurovaná doba.
+      Pokud je tato zásada nastavená na hodnotu True nebo není nastavená, bude chytrý model ztmavování zapnut a bude mít povoleno prodloužit dobu do ztmavení obrazovky. Pokud je tato zásada nastavená na hodnotu False, chytrý model ztmavování na ztmavení obrazovky nebude mít vliv.</translation>
 <translation id="6982028490425791294">
       Je-li tato zásada nastavena na hodnotu true, má <ph name="PRODUCT_NAME" /> povoleno shromažďovat protokoly událostí WebRTC ze služeb Google (např. Google Meet) a nahrávat je do Googlu.
 
@@ -2546,6 +2561,13 @@ V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou ho
 <translation id="7980227303582973781">Bez zvláštních omezení</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Otočit obrazovku o 0 stupňů</translation>
+<translation id="8033913082323846868">Podpora této zásada byla ve verzi M70 ukončena. Použijte namísto ní zásady AutofillAddressEnabled a AutofillCreditCardEnabled.
+
+      Aktivuje v aplikaci <ph name="PRODUCT_NAME" /> funkci Automatické vyplňování a umožní uživatelům automaticky vyplňovat pole webových formulářů pomocí dříve uložených informací (například adres nebo čísel platebních karet).
+
+      Pokud toto nastavení deaktivujete, uživatelé nebudou mít k funkci Automatické vyplňování přístup.
+
+      Pokud toto nastavení aktivujete nebo nenastavíte žádnou hodnotu, zůstane funkce Automatické vyplňování pod kontrolou uživatelů. Budou moci nakonfigurovat profily této funkce a podle vlastního uvážení ji zapínat nebo vypínat.</translation>
 <translation id="8044493735196713914">Hlásit režim spuštění zařízení</translation>
 <translation id="8050080920415773384">Nativní tisk</translation>
 <translation id="8059164285174960932">Adresa URL, u které by klienti vzdáleného připojení měli obdržet ověřovací token</translation>
@@ -2867,6 +2889,18 @@ Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <p
       Stanovuje, která zásada přístupu se použije pro hromadnou konfiguraci tiskáren. Je-li vybrána možnost <ph name="PRINTERS_ALLOW_ALL" />, budou zobrazeny všechny tiskárny. Je-li vybrána možnost <ph name="PRINTERS_BLACKLIST" />, bude zakázán přístup k tiskárnám uvedeným v zásadě <ph name="DEVICE_PRINTERS_BLACKLIST" />. Je-li vybrána možnost <ph name="PRINTERS_WHITELIST" />, bude možné vybrat pouze tiskárny uvedené v zásadě <ph name="DEVICE_PRINTERS_WHITELIST" />.
 
       Pokud tato zásada není nastavena, předpokládá se použití možnosti <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Od verze M69 tato zásada již není podporována. Použijte namísto ní zásadu OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Tato zásada určuje seznam zdrojů (adres URL) nebo vzorů názvů hostitelů (například „*.example.com“), na které se nebudou vztahovat bezpečnostní omezení nezabezpečených zdrojů.
+
+      Cílem je umožnit organizacím vytvořit seznam povolených zdrojů pro starší aplikace, do kterých nelze implementovat protokol TLS, nebo nastavit zkušební server pro vývoj interních webových stránek, aby vývojáři mohli testovat funkce, které vyžadují zabezpečené kontexty, aniž by na testovacím serveru museli implementovat protokol TLS. Tato zásada také zabrání označení zdroje jako nezabezpečeného v omniboxu.
+
+      Nastavení seznamu adres URL v této zásadě má stejný dopad jako nastavení příznaku příkazového řádku --unsafely-treat-insecure-origin-as-secure na čárkami oddělený seznam stejných adres URL. Je-li nastavena tato zásada, bude jí příznak příkazového řádku přepsán.
+
+      Podpora této zásady byla ve verzi M69 ukončena a byla nahrazena zásadou OverrideSecurityRestrictionsOnInsecureOrigin. Pokud jsou nastaveny obě tyto zásady, zásada OverrideSecurityRestrictionsOnInsecureOrigin tuto zásadu přepíše.
+
+      Další informace o bezpečných kontextech najdete na stránce https://www.w3.org/TR/secure-contexts/.
       </translation>
 <translation id="8942616385591203339">Tato zásada určuje, zda je možné uživateli při prvním přihlášení zobrazit žádost o souhlas se synchronizací. Pokud žádost o souhlas se synchronizací u uživatele není potřeba, měla by být nastavena na hodnotu false.
       Pokud je nastavena na hodnotu false, žádost o souhlas se synchronizací se nebude zobrazovat.

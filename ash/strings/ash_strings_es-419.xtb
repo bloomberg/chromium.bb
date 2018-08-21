@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Tu administrador configura los métodos de entrada.</translation>
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="1761222317188459878">Activar o desactivar la conexión de red: <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">¿Qué hay en mi pantalla?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistente (cargando…)</translation>
 <translation id="1841545962859478868">Es posible que el administrador de dispositivos supervise lo siguiente:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Agregar conexión</translation>
 <translation id="2961963223658824723">Se produjo un error. Vuelve a intentarlo en unos segundos.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Mostrar todo el contenido de notificaciones</translation>
 <translation id="2995447421581609334">Mostrar dispositivos de transmisión</translation>
 <translation id="2996462380875591307">Se habilitó la lupa con vista acoplada. Presiona Ctrl+Buscar+D de nuevo para desactivarla.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> es una sesión pública administrada por <ph name="DOMAIN" />.</translation>
@@ -211,12 +213,14 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4659419629803378708">Se habilitó ChromeVox</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">El administrador de este dispositivo tiene acceso a toda la actividad, incluidas las contraseñas y comunicaciones.</translation>
 <translation id="4776917500594043016">Contraseña para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4849058404725798627">Resaltar el objeto con el enfoque del teclado</translation>
 <translation id="4872237917498892622">Alt+tecla de búsqueda o Mayús</translation>
 <translation id="4890187583552566966">Tu administrador inhabilitó el Asistente de Google.</translation>
+<translation id="4893522937062257019">En la pantalla bloqueada</translation>
 <translation id="4895488851634969361">La batería está completa.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">Se cambió el acceso directo para activar o desactivar el Modo de contraste alto. Usa <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
@@ -232,6 +236,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
 <translation id="5313326810920013265">Configuración de Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (puerto lateral izquierdo trasero)</translation>
+<translation id="5379115545237091094">Realizaste demasiados intentos</translation>
 <translation id="5397578532367286026">El administrador (<ph name="MANAGER_EMAIL" />) puede revisar el uso y el historial de este usuario en la página chrome.com.</translation>
 <translation id="5430931332414098647">Conexión instantánea mediante dispositivo portátil</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -263,6 +268,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Mayúscula + Esc</translation>
 <translation id="5911533659001334206">Visualizador de combinaciones de teclas</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Activada</translation>
 <translation id="592343074608792716">La Chromebook y el teléfono se conectarán automáticamente</translation>
 <translation id="5947494881799873997">Revertir</translation>
@@ -332,6 +338,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6972754398087986839">Comenzar</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="698231206551913481">Todos los archivos y datos locales asociados a este usuario se borrarán de forma permanente una vez que se quite este usuario.</translation>
+<translation id="7007100238996585961">Se responderá en otro dispositivo</translation>
 <translation id="7015766095477679451">Regresa a las <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Salir de la sesión</translation>
 <translation id="7037152028959403492">Presionaste la combinación de teclas para activar el modo de contraste alto. ¿Quieres activarlo?</translation>
@@ -353,6 +360,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7398254312354928459">Se cambió la conexión de red</translation>
 <translation id="742594950370306541">Cámara en uso</translation>
 <translation id="743058460480092004">Cámara y micrófono en uso</translation>
+<translation id="7497767806359279797">Elegir idioma y teclado</translation>
 <translation id="7510334386202674593">Ctrl + mayúscula + L</translation>
 <translation id="7526573455193969409">Es posible que la red esté supervisada</translation>
 <translation id="7536035074519304529">Dirección IP: <ph name="ADDRESS" /></translation>
@@ -362,6 +370,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7569509451529460200">Se habilitaron el braille y ChromeVox</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7604942372593434070">Se accederá a tu actividad de navegación</translation>
+<translation id="7642778300616172920">Ocultar contenido confidencial</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propietario/a)</translation>
 <translation id="7647488630410863958">Desbloquea el dispositivo para ver tus notificaciones</translation>
 <translation id="7649070708921625228">Ayuda</translation>
@@ -377,6 +386,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7842211907556571265">Conectando a <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advertencia: Función experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
+<translation id="7886277072580235377">Cuando salgas, se borrarán los datos de tu sesión de Internet. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Manipular la configuración relacionada con la privacidad</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta inhabilitó el acceso múltiple.</translation>
 <translation id="7933084174919150729">El Asistente de Google solo está disponible para el perfil principal.</translation>
@@ -417,6 +427,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Restableciendo conexión…</translation>
 <translation id="8513108775083588393">Giro automático</translation>
 <translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
+<translation id="8592141010104017453">No mostrar ninguna notificación</translation>
 <translation id="8627191004499078455">Conectado a <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
 <translation id="8649101189709089199">Seleccionar para pronunciar</translation>
