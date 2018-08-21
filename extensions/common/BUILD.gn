@@ -22,6 +22,7 @@ source_set("common_constants") {
 
   deps = [
     "//base",
+    "//ui/base",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -367,6 +368,8 @@ if (enable_extensions) {
 
     deps = [
       ":common",
+      "//extensions:extensions_resources",
+      "//extensions/common/api",
       "//extensions/common/api:extensions_features",
     ]
   }

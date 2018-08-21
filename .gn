@@ -90,6 +90,7 @@ check_targets = [
   "//chrome/browser/accessibility/*",
   "//chrome/browser/android/*",
   "//chrome/browser/app_mode/*",
+
   #"//chrome/browser/apps/*",  # 2 errors
   "//chrome/browser/assist_ranker/*",
   "//chrome/browser/autocomplete/*",
@@ -116,6 +117,7 @@ check_targets = [
   "//chrome/browser/data_saver/*",
   "//chrome/browser/data_use_measurement/*",
   "//chrome/browser/dbus/*",
+
   #"//chrome/browser/devtools/*",  # 93 errors
   "//chrome/browser/diagnostics/*",
   "//chrome/browser/domain_reliability/*",
@@ -147,9 +149,11 @@ check_targets = [
   "//chrome/browser/invalidation/*",
   "//chrome/browser/language/*",
   "//chrome/browser/lifetime/*",
+
   #"//chrome/browser/loader/*",  # 2 errors
   "//chrome/browser/local_discovery/*",
   "//chrome/browser/mac/*",
+
   #"//chrome/browser/media/*",  # 74 errors
   "//chrome/browser/media_galleries/*",
   "//chrome/browser/memory/*",
@@ -171,6 +175,7 @@ check_targets = [
   "//chrome/browser/permissions/*",
   "//chrome/browser/picture_in_picture/*",
   "//chrome/browser/plugins/*",
+
   # "//chrome/browser/policy/*",  # 1 error on Windows
   "//chrome/browser/predictors/*",
   "//chrome/browser/prefetch/*",
@@ -180,14 +185,17 @@ check_targets = [
   "//chrome/browser/printing/*",
   "//chrome/browser/profile_resetter/*",
   "//chrome/browser/profiles/*",
+
   #"//chrome/browser/profiling_host/*",  # 16 errors
   "//chrome/browser/push_messaging/*",
   "//chrome/browser/recovery/*",
   "//chrome/browser/renderer_context_menu/*",
   "//chrome/browser/renderer_host/*",
   "//chrome/browser/resource_coordinator/*",
+
   #"//chrome/browser/resources/*",  # 18 errors on ChromeOS
   "//chrome/browser/rlz/*",
+
   #"//chrome/browser/safe_browsing/*",  # 239 errors
   "//chrome/browser/search/*",
   "//chrome/browser/search_engines/*",
@@ -217,21 +225,27 @@ check_targets = [
   "//chrome/browser/upgrade_detector/*",
   "//chrome/browser/usb/*",
   "//chrome/browser/vr/*",
+
   #"//chrome/browser/web_applications/*",  # 66 errors
   "//chrome/browser/webauthn/*",
   "//chrome/browser/webshare/*",
   "//chrome/browser/win/*",
 
   "//chrome/build/*",
+
   #"//chrome/child/*",  # 1 error on Windows
   "//chrome/chrome_cleaner/*",
+
   #"//chrome/chrome_watcher/*",  # 3 errors on Windows
   "//chrome/common/*",
+
   #"//chrome/elevation_service/*",  # 1 error on Windows
   #"//chrome/gpu/*",  # 7 errors
   "//chrome/installer/*",
+
   #"//chrome/install_static/*",  # 8 errors on Windows
   "//chrome/nacl/*",
+
   #"//chrome/notification_helper/*",  # 4 errors on Windows
   #"//chrome/renderer/*",  # ~30 errors
   #"//chrome/service/*",  # 2 errors
@@ -254,14 +268,19 @@ check_targets = [
   "//device/*",
 
   #"//extensions/*",  # Lots of errors.
+  "//extensions:extensions_resources",
+  "//extensions:extensions_browsertests",
   "//extensions:extensions_unittests",
+  "//extensions/browser",
   "//extensions/browser:browser_tests",
   "//extensions/browser:unit_tests",
   "//extensions/browser/install:*",
-  "//extensions/common:common",
-  "//extensions/common:unit_tests",
+  "//extensions/common/*",
+  "//extensions/components/javascript_dialog_extensions_client",
+  "//extensions/components/native_app_window",
   "//extensions/renderer:unit_tests",
   "//extensions/shell/*",
+  "//extensions/strings/*",
   "//gin/*",
   "//google_apis/*",
   "//google_update/*",
