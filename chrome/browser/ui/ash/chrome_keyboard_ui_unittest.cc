@@ -4,37 +4,41 @@
 
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 
-#include "base/macros.h"
+#include <memory>
+
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/public/browser/web_contents.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
-#include "ui/gfx/geometry/rect.h"
+#include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_controller.h"
+#include "url/gurl.h"
 
 namespace {
 
-class TestChromeKeyboardUI : public ChromeKeyboardUI {
+class ChromeKeyboardUITest : public ChromeRenderViewHostTestHarness {
  public:
-  explicit TestChromeKeyboardUI(std::unique_ptr<content::WebContents> contents)
-      : ChromeKeyboardUI(contents->GetBrowserContext()),
-        contents_(std::move(contents)) {}
-  ~TestChromeKeyboardUI() override {}
+  ChromeKeyboardUITest() = default;
+  ~ChromeKeyboardUITest() override = default;
 
-  ui::InputMethod* GetInputMethod() override { return nullptr; }
-  void RequestAudioInput(content::WebContents* web_contents,
-                         const content::MediaStreamRequest& request,
-                         content::MediaResponseCallback callback) {}
-
-  std::unique_ptr<content::WebContents> CreateWebContents() override {
-    return std::move(contents_);
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    chrome_keyboard_ui_ = std::make_unique<ChromeKeyboardUI>(profile());
   }
 
- private:
-  std::unique_ptr<content::WebContents> contents_;
+  void TearDown() override {
+    chrome_keyboard_ui_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(TestChromeKeyboardUI);
+ protected:
+  std::unique_ptr<ChromeKeyboardUI> chrome_keyboard_ui_;
 };
 
 }  // namespace
 
-using ChromeKeyboardUITest = ChromeRenderViewHostTestHarness;
+// Ensure ChromeKeyboardContentsDelegate is successfully constructed and has
+// a valid aura::Window when GetKeyboardWindow() is called.
+TEST_F(ChromeKeyboardUITest, ChromeKeyboardContentsDelegate) {
+  aura::Window* window = chrome_keyboard_ui_->GetKeyboardWindow();
+  ASSERT_TRUE(window);
+}
