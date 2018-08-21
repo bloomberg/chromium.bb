@@ -117,8 +117,6 @@ void ErrorScreen::FixCaptivePortal() {
         network_state_informer_.get(), web_contents));
   }
   captive_portal_window_proxy_->ShowIfRedirected();
-
-  LoginDisplayHost::default_host()->ShowDialogForCaptivePortal();
 }
 
 NetworkError::UIState ErrorScreen::GetUIState() const {
@@ -214,7 +212,6 @@ void ErrorScreen::OnHide() {
   }
   network_portal_detector::GetInstance()->SetStrategy(
       PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
-  LoginDisplayHost::default_host()->HideDialogForCaptivePortal();
 }
 
 void ErrorScreen::OnUserAction(const std::string& action_id) {

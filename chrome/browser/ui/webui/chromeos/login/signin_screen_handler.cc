@@ -839,7 +839,7 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
     // error screen (offline, proxy).
     if (IsGaiaVisible() ||
         (error_screen_->GetErrorState() != NetworkError::ERROR_STATE_PORTAL)) {
-      error_screen_->FixCaptivePortal();
+      LoginDisplayHost::default_host()->HandleDisplayCaptivePortal();
     }
     const std::string network_name = GetNetworkName(network_path);
     error_screen_->SetErrorState(NetworkError::ERROR_STATE_PORTAL,

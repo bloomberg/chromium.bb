@@ -1170,11 +1170,9 @@ void LoginDisplayHostWebUI::ShowResetScreen() {
   NOTREACHED();
 }
 
-// This is handled differently in webui.
-void LoginDisplayHostWebUI::ShowDialogForCaptivePortal() {}
-
-// This is handled differently in webui.
-void LoginDisplayHostWebUI::HideDialogForCaptivePortal() {}
+void LoginDisplayHostWebUI::HandleDisplayCaptivePortal() {
+  GetOobeUI()->GetErrorScreen()->FixCaptivePortal();
+}
 
 void LoginDisplayHostWebUI::OnCancelPasswordChangedFlow() {}
 

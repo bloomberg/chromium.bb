@@ -119,6 +119,10 @@ content::WebContents* OobeUIDialogDelegate::GetWebContents() {
   return dialog_view_->web_contents();
 }
 
+bool OobeUIDialogDelegate::IsVisible() {
+  return dialog_widget_->IsVisible();
+}
+
 void OobeUIDialogDelegate::Show() {
   LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(true);
   dialog_widget_->Show();

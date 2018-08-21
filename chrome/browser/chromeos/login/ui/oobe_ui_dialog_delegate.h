@@ -72,6 +72,9 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   // Hide the dialog widget, but do not shut it down.
   void Hide();
 
+  // Returns whether the dialog is currently visible.
+  bool IsVisible();
+
   content::WebContents* GetWebContents();
 
   void UpdateSizeAndPosition(int width, int height);

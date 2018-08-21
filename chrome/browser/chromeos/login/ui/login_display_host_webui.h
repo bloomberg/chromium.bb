@@ -81,8 +81,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   const user_manager::UserList GetUsers() override;
   void ShowFeedback() override;
   void ShowResetScreen() override;
-  void ShowDialogForCaptivePortal() override;
-  void HideDialogForCaptivePortal() override;
+  void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
 
   void OnCancelPasswordChangedFlow() override;
