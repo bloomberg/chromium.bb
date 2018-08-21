@@ -53,8 +53,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CRLSetDistributor {
  private:
   void OnCRLSetParsed(scoped_refptr<net::CRLSet> crl_set);
 
-  base::ObserverList<Observer, true /*check_empty*/, false /*allow_reentrancy*/>
-      observers_;
+  base::ObserverList<Observer,
+                     true /*check_empty*/,
+                     false /*allow_reentrancy*/>::Unchecked observers_;
   scoped_refptr<net::CRLSet> crl_set_;
 
   base::WeakPtrFactory<CRLSetDistributor> weak_factory_;
