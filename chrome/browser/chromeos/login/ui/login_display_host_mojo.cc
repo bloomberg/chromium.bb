@@ -105,12 +105,11 @@ void LoginDisplayHostMojo::ShowSigninUI(const std::string& email) {
   dialog_->Show();
 }
 
-void LoginDisplayHostMojo::ShowDialogForCaptivePortal() {
-  dialog_->Show();
-}
-
-void LoginDisplayHostMojo::HideDialogForCaptivePortal() {
-  dialog_->Hide();
+void LoginDisplayHostMojo::HandleDisplayCaptivePortal() {
+  if (dialog_->IsVisible())
+    GetOobeUI()->GetErrorScreen()->FixCaptivePortal();
+  else
+    should_display_captive_portal_ = true;
 }
 
 LoginDisplay* LoginDisplayHostMojo::GetLoginDisplay() {
@@ -279,7 +278,11 @@ void LoginDisplayHostMojo::ShowGaiaDialog(
   }
 
   dialog_->Show();
-  return;
+
+  if (should_display_captive_portal_) {
+    GetOobeUI()->GetErrorScreen()->FixCaptivePortal();
+    should_display_captive_portal_ = false;
+  }
 }
 
 void LoginDisplayHostMojo::HideOobeDialog() {

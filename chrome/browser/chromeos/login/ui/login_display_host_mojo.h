@@ -93,8 +93,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void OnCancelPasswordChangedFlow() override;
   void ShowFeedback() override;
   void ShowResetScreen() override;
-  void ShowDialogForCaptivePortal() override;
-  void HideDialogForCaptivePortal() override;
+  void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
 
   // LoginScreenClient::Delegate:
@@ -161,6 +160,10 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // user cancels the Powerwash dialog in the login screen. Set to true on the
   // first OnStartSigninScreen and remains true afterward.
   bool signin_screen_started_ = false;
+
+  // Whether the captive portal screen should be shown the next time the Gaia
+  // dialog is opened.
+  bool should_display_captive_portal_ = false;
 
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 

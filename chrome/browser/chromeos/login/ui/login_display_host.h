@@ -197,13 +197,10 @@ class LoginDisplayHost {
   // Shows the powerwash dialog.
   virtual void ShowResetScreen() = 0;
 
-  // In the views case, make the OobeUIDialogDelegate visible so that Captive
-  // Portal web modal can be seen. In webui login, this should be a no-op.
-  virtual void ShowDialogForCaptivePortal() = 0;
-
-  // Hide the captive portal signin dialog (e.g. when authentication is
-  // complete). In webui login, this should be a no-op.
-  virtual void HideDialogForCaptivePortal() = 0;
+  // Handles a request to show the captive portal web dialog. For webui, the
+  // dialog is displayed immediately. For views, the dialog is displayed as soon
+  // as the OOBE dialog is visible.
+  virtual void HandleDisplayCaptivePortal() = 0;
 
   // Update status of add user button in the shelf.
   virtual void UpdateAddUserButtonStatus() = 0;

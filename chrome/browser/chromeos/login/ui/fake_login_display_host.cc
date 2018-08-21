@@ -142,9 +142,7 @@ void FakeLoginDisplayHost::ShowFeedback() {}
 
 void FakeLoginDisplayHost::ShowResetScreen() {}
 
-void FakeLoginDisplayHost::ShowDialogForCaptivePortal() {}
-
-void FakeLoginDisplayHost::HideDialogForCaptivePortal() {}
+void FakeLoginDisplayHost::HandleDisplayCaptivePortal() {}
 
 void FakeLoginDisplayHost::UpdateAddUserButtonStatus() {}
 
