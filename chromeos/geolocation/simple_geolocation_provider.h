@@ -16,8 +16,8 @@
 #include "chromeos/geolocation/simple_geolocation_request.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace chromeos {
@@ -31,8 +31,9 @@ namespace chromeos {
 // WizardController for now.
 class CHROMEOS_EXPORT SimpleGeolocationProvider {
  public:
-  SimpleGeolocationProvider(net::URLRequestContextGetter* url_context_getter,
-                            const GURL& url);
+  SimpleGeolocationProvider(
+      scoped_refptr<network::SharedURLLoaderFactory> factory,
+      const GURL& url);
   virtual ~SimpleGeolocationProvider();
 
   // Initiates new request. If |send_wifi_access_points|, WiFi AP information
@@ -48,7 +49,7 @@ class CHROMEOS_EXPORT SimpleGeolocationProvider {
   static GURL DefaultGeolocationProviderURL();
 
  private:
-  friend class TestGeolocationAPIURLFetcherCallback;
+  friend class TestGeolocationAPILoaderFactory;
 
   // Geolocation response callback. Deletes request from requests_.
   void OnGeolocationResponse(
@@ -58,7 +59,7 @@ class CHROMEOS_EXPORT SimpleGeolocationProvider {
       bool server_error,
       const base::TimeDelta elapsed);
 
-  scoped_refptr<net::URLRequestContextGetter> url_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   // URL of the Google Maps Geolocation API.
   const GURL url_;

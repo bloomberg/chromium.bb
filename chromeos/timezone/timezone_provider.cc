@@ -12,15 +12,14 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/geolocation/geoposition.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
 TimeZoneProvider::TimeZoneProvider(
-    net::URLRequestContextGetter* url_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> factory,
     const GURL& url)
-    : url_context_getter_(url_context_getter), url_(url) {
-}
+    : shared_url_loader_factory_(std::move(factory)), url_(url) {}
 
 TimeZoneProvider::~TimeZoneProvider() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -30,8 +29,8 @@ void TimeZoneProvider::RequestTimezone(
     const Geoposition& position,
     base::TimeDelta timeout,
     TimeZoneRequest::TimeZoneResponseCallback callback) {
-  TimeZoneRequest* request(new TimeZoneRequest(
-      url_context_getter_.get(), url_, position,timeout));
+  TimeZoneRequest* request(
+      new TimeZoneRequest(shared_url_loader_factory_, url_, position, timeout));
   requests_.push_back(base::WrapUnique(request));
 
   // TimeZoneProvider owns all requests. It is safe to pass unretained "this"

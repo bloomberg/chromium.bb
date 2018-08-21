@@ -19,8 +19,11 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace chromeos {
 
@@ -306,11 +309,11 @@ GURL DefaultTimezoneProviderURL() {
 }
 
 TimeZoneRequest::TimeZoneRequest(
-    net::URLRequestContextGetter* url_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> factory,
     const GURL& service_url,
     const Geoposition& geoposition,
     base::TimeDelta retry_timeout)
-    : url_context_getter_(url_context_getter),
+    : shared_url_loader_factory_(std::move(factory)),
       service_url_(service_url),
       geoposition_(geoposition),
       retry_timeout_abs_(base::Time::Now() + retry_timeout),
@@ -318,8 +321,7 @@ TimeZoneRequest::TimeZoneRequest(
           kResolveTimeZoneRetrySleepOnServerErrorSeconds)),
       retry_sleep_on_bad_response_(base::TimeDelta::FromSeconds(
           kResolveTimeZoneRetrySleepBadResponseSeconds)),
-      retries_(0) {
-}
+      retries_(0) {}
 
 TimeZoneRequest::~TimeZoneRequest() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -337,12 +339,17 @@ void TimeZoneRequest::StartRequest() {
   request_started_at_ = base::Time::Now();
   ++retries_;
 
-  url_fetcher_ =
-      net::URLFetcher::Create(request_url_, net::URLFetcher::GET, this);
-  url_fetcher_->SetRequestContext(url_context_getter_.get());
-  url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE);
-  url_fetcher_->SetAllowCredentials(false);
-  url_fetcher_->Start();
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = request_url_;
+  request->load_flags = net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
+  request->allow_credentials = false;
+  url_loader_ = network::SimpleURLLoader::Create(std::move(request),
+                                                 NO_TRAFFIC_ANNOTATION_YET);
+
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      shared_url_loader_factory_.get(),
+      base::BindOnce(&TimeZoneRequest::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 }
 
 void TimeZoneRequest::MakeRequest(TimeZoneResponseCallback callback) {
@@ -359,22 +366,23 @@ void TimeZoneRequest::Retry(bool server_error) {
       FROM_HERE, delay, this, &TimeZoneRequest::StartRequest);
 }
 
-void TimeZoneRequest::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK_EQ(url_fetcher_.get(), source);
-
-  net::URLRequestStatus status = source->GetStatus();
-  int response_code = source->GetResponseCode();
+void TimeZoneRequest::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  bool is_success = !!response_body;
+  int response_code = -1;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
   RecordUmaResponseCode(response_code);
 
   std::string data;
-  source->GetResponseAsString(&data);
   std::unique_ptr<TimeZoneResponseData> timezone = GetTimeZoneFromResponse(
-      status.is_success(), response_code, data, source->GetURL());
+      is_success, response_code, is_success ? *response_body : std::string(),
+      url_loader_->GetFinalURL());
   const bool server_error =
-      !status.is_success() || (response_code >= 500 && response_code < 600);
-  url_fetcher_.reset();
+      !is_success || (response_code >= 500 && response_code < 600);
+  url_loader_.reset();
 
-  DVLOG(1) << "TimeZoneRequest::OnURLFetchComplete(): timezone={"
+  DVLOG(1) << "TimeZoneRequest::OnSimpleLoaderComplete(): timezone={"
            << timezone->ToStringForDebug() << "}";
 
   const base::Time now = base::Time::Now();

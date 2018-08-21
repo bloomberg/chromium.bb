@@ -57,6 +57,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
@@ -272,7 +273,7 @@ void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
 
   if (ash::features::IsNightLightEnabled()) {
     night_light_client_ = std::make_unique<NightLightClient>(
-        g_browser_process->system_request_context());
+        g_browser_process->shared_url_loader_factory());
     night_light_client_->Start();
   }
 }

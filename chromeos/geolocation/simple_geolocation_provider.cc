@@ -13,7 +13,7 @@
 #include "chromeos/geolocation/geoposition.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "chromeos/network/network_handler.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
@@ -25,10 +25,9 @@ const char kDefaultGeolocationProviderUrl[] =
 }  // namespace
 
 SimpleGeolocationProvider::SimpleGeolocationProvider(
-    net::URLRequestContextGetter* url_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> factory,
     const GURL& url)
-    : url_context_getter_(url_context_getter), url_(url) {
-}
+    : shared_url_loader_factory_(std::move(factory)), url_(url) {}
 
 SimpleGeolocationProvider::~SimpleGeolocationProvider() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -58,7 +57,7 @@ void SimpleGeolocationProvider::RequestGeolocation(
     cell_vector = nullptr;
 
   SimpleGeolocationRequest* request(new SimpleGeolocationRequest(
-      url_context_getter_.get(), url_, timeout, std::move(wifi_vector),
+      shared_url_loader_factory_, url_, timeout, std::move(wifi_vector),
       std::move(cell_vector)));
   requests_.push_back(base::WrapUnique(request));
 
