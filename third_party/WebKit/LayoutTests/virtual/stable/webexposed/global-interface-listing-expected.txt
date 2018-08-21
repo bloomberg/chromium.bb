@@ -4834,6 +4834,7 @@ interface RTCPeerConnection : EventTarget
     method createDTMFSender
     method createDataChannel
     method createOffer
+    method getConfiguration
     method getLocalStreams
     method getReceivers
     method getRemoteStreams
@@ -8370,6 +8371,7 @@ interface webkitRTCPeerConnection : EventTarget
     method createDTMFSender
     method createDataChannel
     method createOffer
+    method getConfiguration
     method getLocalStreams
     method getReceivers
     method getRemoteStreams

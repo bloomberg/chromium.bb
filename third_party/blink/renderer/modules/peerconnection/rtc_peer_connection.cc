@@ -1004,6 +1004,88 @@ RTCSessionDescription* RTCPeerConnection::pendingRemoteDescription() {
   return RTCSessionDescription::Create(web_session_description);
 }
 
+void RTCPeerConnection::getConfiguration(RTCConfiguration& result) {
+  const auto& webrtc_configuration = peer_handler_->GetConfiguration();
+
+  switch (webrtc_configuration.type) {
+    case webrtc::PeerConnectionInterface::kRelay:
+      result.setIceTransportPolicy("relay");
+      break;
+    case webrtc::PeerConnectionInterface::kAll:
+      result.setIceTransportPolicy("all");
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  switch (webrtc_configuration.bundle_policy) {
+    case webrtc::PeerConnectionInterface::kBundlePolicyMaxCompat:
+      result.setBundlePolicy("max-compat");
+      break;
+    case webrtc::PeerConnectionInterface::kBundlePolicyMaxBundle:
+      result.setBundlePolicy("max-bundle");
+      break;
+    case webrtc::PeerConnectionInterface::kBundlePolicyBalanced:
+      result.setBundlePolicy("balanced");
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  switch (webrtc_configuration.rtcp_mux_policy) {
+    case webrtc::PeerConnectionInterface::kRtcpMuxPolicyNegotiate:
+      result.setRtcpMuxPolicy("negotiate");
+      break;
+    case webrtc::PeerConnectionInterface::kRtcpMuxPolicyRequire:
+      result.setRtcpMuxPolicy("require");
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  switch (webrtc_configuration.sdp_semantics) {
+    case webrtc::SdpSemantics::kPlanB:
+      result.setSdpSemantics("plan-b");
+      break;
+    case webrtc::SdpSemantics::kUnifiedPlan:
+      result.setSdpSemantics("unified-plan");
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  HeapVector<RTCIceServer> ice_servers;
+  ice_servers.ReserveCapacity(webrtc_configuration.servers.size());
+  for (const auto& webrtc_server : webrtc_configuration.servers) {
+    ice_servers.emplace_back();
+    auto& ice_server = ice_servers.back();
+
+    StringOrStringSequence urls;
+    Vector<String> url_vector;
+    url_vector.ReserveCapacity(webrtc_server.urls.size());
+    for (const auto& url : webrtc_server.urls) {
+      url_vector.emplace_back(url.c_str());
+    }
+    urls.SetStringSequence(std::move(url_vector));
+
+    ice_server.setURLs(urls);
+    ice_server.setUsername(webrtc_server.username.c_str());
+    ice_server.setCredential(webrtc_server.password.c_str());
+  }
+  result.setIceServers(ice_servers);
+
+  if (!webrtc_configuration.certificates.empty()) {
+    HeapVector<blink::Member<RTCCertificate>> certificates;
+    certificates.ReserveCapacity(webrtc_configuration.certificates.size());
+    for (const auto& webrtc_certificate : webrtc_configuration.certificates) {
+      certificates.emplace_back(new RTCCertificate(webrtc_certificate));
+    }
+    result.setCertificates(certificates);
+  }
+
+  result.setIceCandidatePoolSize(webrtc_configuration.ice_candidate_pool_size);
+}
+
 void RTCPeerConnection::setConfiguration(
     ScriptState* script_state,
     const RTCConfiguration& rtc_configuration,

@@ -1365,6 +1365,11 @@ RTCPeerConnectionHandler::PendingRemoteDescription() {
       std::move(description_cb), "pendingRemoteDescription");
 }
 
+const webrtc::PeerConnectionInterface::RTCConfiguration&
+RTCPeerConnectionHandler::GetConfiguration() const {
+  return configuration_;
+}
+
 webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
     const webrtc::PeerConnectionInterface::RTCConfiguration& blink_config) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());

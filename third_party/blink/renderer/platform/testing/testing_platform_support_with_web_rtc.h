@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
 
 namespace blink {
 
@@ -37,6 +38,8 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   WebRTCSessionDescription CurrentRemoteDescription() override;
   WebRTCSessionDescription PendingLocalDescription() override;
   WebRTCSessionDescription PendingRemoteDescription() override;
+  const webrtc::PeerConnectionInterface::RTCConfiguration& GetConfiguration()
+      const override;
   webrtc::RTCErrorType SetConfiguration(
       const webrtc::PeerConnectionInterface::RTCConfiguration&) override;
   void GetStats(const WebRTCStatsRequest&) override;

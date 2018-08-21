@@ -153,6 +153,12 @@ MockWebRTCPeerConnectionHandler::PendingRemoteDescription() {
   return WebRTCSessionDescription();
 }
 
+const webrtc::PeerConnectionInterface::RTCConfiguration&
+MockWebRTCPeerConnectionHandler::GetConfiguration() const {
+  static webrtc::PeerConnectionInterface::RTCConfiguration configuration;
+  return configuration;
+}
+
 webrtc::RTCErrorType MockWebRTCPeerConnectionHandler::SetConfiguration(
     const webrtc::PeerConnectionInterface::RTCConfiguration&) {
   return webrtc::RTCErrorType::NONE;

@@ -33,7 +33,7 @@ PASS RTCPeerConnection interface: attribute iceConnectionState
 FAIL RTCPeerConnection interface: attribute connectionState assert_true: The prototype object must have a property "connectionState" expected true got false
 FAIL RTCPeerConnection interface: attribute canTrickleIceCandidates assert_true: The prototype object must have a property "canTrickleIceCandidates" expected true got false
 FAIL RTCPeerConnection interface: operation getDefaultIceServers() assert_own_property: interface object missing static operation expected property "getDefaultIceServers" missing
-FAIL RTCPeerConnection interface: operation getConfiguration() assert_own_property: interface prototype object missing non-static operation expected property "getConfiguration" missing
+PASS RTCPeerConnection interface: operation getConfiguration()
 PASS RTCPeerConnection interface: operation setConfiguration(RTCConfiguration)
 PASS RTCPeerConnection interface: operation close()
 PASS RTCPeerConnection interface: attribute onnegotiationneeded
@@ -85,7 +85,7 @@ PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property 
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "connectionState" with the proper type assert_inherits: property "connectionState" not found in prototype chain
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "canTrickleIceCandidates" with the proper type assert_inherits: property "canTrickleIceCandidates" not found in prototype chain
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getDefaultIceServers()" with the proper type
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getConfiguration()" with the proper type assert_inherits: property "getConfiguration" not found in prototype chain
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getConfiguration()" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "setConfiguration(RTCConfiguration)" with the proper type
 PASS RTCPeerConnection interface: calling setConfiguration(RTCConfiguration) on new RTCPeerConnection() with too few arguments must throw TypeError
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "close()" with the proper type
