@@ -218,7 +218,7 @@ class ManualFillingMediator
 
     void dismiss() {
         mKeyboardAccessory.dismiss();
-        UiUtils.hideKeyboard(mActivity.getCurrentFocus());
+        if (getContentView() != null) UiUtils.hideKeyboard(getContentView());
     }
 
     void notifyPopupOpened(DropdownPopupWindow popup) {
@@ -239,17 +239,16 @@ class ManualFillingMediator
         mAccessorySheet.setActiveTab(tabIndex);
         if (mPopup != null && mPopup.isShowing()) mPopup.dismiss();
         // If there is a keyboard, update the accessory sheet's height and hide the keyboard.
-        View focusedView = mActivity.getCurrentFocus();
-        if (focusedView != null) {
-            mAccessorySheet.setHeight(calculateAccessorySheetHeight(focusedView.getRootView()));
-            UiUtils.hideKeyboard(focusedView);
+        if (getContentView() != null && getContentView().getRootView() != null) {
+            mAccessorySheet.setHeight(
+                    calculateAccessorySheetHeight(getContentView().getRootView()));
+            UiUtils.hideKeyboard(getContentView());
         }
     }
 
     @Override
     public void onCloseAccessorySheet() {
-        View focusedView = mActivity.getCurrentFocus();
-        if (focusedView == null || UiUtils.isKeyboardShowing(mActivity, focusedView)) {
+        if (getContentView() == null || UiUtils.isKeyboardShowing(mActivity, getContentView())) {
             return; // If the keyboard is showing or is starting to show, the sheet closes gently.
         }
         mActivity.getFullscreenManager().setBottomControlsHeight(mPreviousControlHeight);
@@ -262,7 +261,7 @@ class ManualFillingMediator
     public void onOpenKeyboard() {
         assert mActivity != null : "ManualFillingMediator needs initialization.";
         mActivity.getFullscreenManager().setBottomControlsHeight(calculateAccessoryBarHeight());
-        UiUtils.showKeyboard(mActivity.getCurrentFocus());
+        if (mActivity.getCurrentFocus() != null) UiUtils.showKeyboard(mActivity.getCurrentFocus());
     }
 
     @Override
@@ -273,6 +272,20 @@ class ManualFillingMediator
             newControlsHeight += mAccessorySheet.getHeight();
         }
         mActivity.getFullscreenManager().setBottomControlsHeight(newControlsHeight);
+    }
+
+    /**
+     * When trying to get the content of the active tab, there are several cases where a component
+     * can be null - usually use before initialization or after destruction.
+     * This helper ensures that the IDE warns about unchecked use of the all Nullable methods and
+     * provides a shorthand for checking that all components are ready to use.
+     * @return The content {@link View} of the held {@link ChromeActivity} or null if any part of it
+     *         isn't ready to use.
+     */
+    private @Nullable View getContentView() {
+        if (mActivity == null) return null;
+        if (mActivity.getActivityTab() == null) return null;
+        return mActivity.getActivityTab().getContentView();
     }
 
     private AccessoryState getOrCreateAccessoryState(Tab tab) {
