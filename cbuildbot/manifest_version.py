@@ -17,7 +17,6 @@ import tempfile
 from xml.dom import minidom
 
 from chromite.cbuildbot import build_status
-from chromite.cbuildbot import repository
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
@@ -340,6 +339,175 @@ class VersionInfo(object):
 
   def __str__(self):
     return '%s(%s)' % (self.__class__, self.VersionString())
+
+
+def OfficialBuildSpecPath(version_info):
+  """Generate an offical build version build spec file path.
+
+  Args:
+    version_info: VersionInfo instance describing the current version.
+
+  Returns:
+    Path for buildspec, relative to manifest_versions root.
+  """
+  return os.path.join(
+      'buildspecs',
+      str(version_info.chrome_branch),
+      '%s.xml' % version_info.VersionString())
+
+
+def CandidateBuildSpecPath(version_info,
+                           category,
+                           manifest_versions):
+  """Generate a unique candidate build spec path.
+
+  This probes manifest versions for previously created buildspec candidates,
+  and creates a new name for a unique one.
+
+  Args:
+    version_info: VersionInfo instance describing the current version.
+    category: String, manifest_versions subdir specific to a build group.
+              Ex: 'full', 'paladin', etc.
+    manifest_versions: Directory that holds a manifest-version
+                       checkout of previous buildspecs for the category.
+
+  Returns:
+    Path for buildspec, relative to manifest_versions root.
+  """
+  rc_version = 0
+  while True:
+    rc_version += 1
+    spec_path = os.path.join(
+        category,
+        'buildspecs',
+        str(version_info.chrome_branch),
+        '%s-rc%d.xml' % (version_info.VersionString(), rc_version))
+
+    if not os.path.exists(os.path.join(manifest_versions, spec_path)):
+      return spec_path
+
+
+def _CommitAndPush(manifest_repo, buildspec, contents, dryrun):
+  """Helper for committing and pushing buildspecs.
+
+  Args:
+    manifest_repo: Path to root of git repo for manifest_versions (int or ext).
+    buildspec: Relative path to buildspec in  repo.
+    contents: String constaining contents of buildspec manifest.
+    dryrun: Git push --dry-run if set to True.
+
+  Returns:
+    Full path to buildspec created.
+  """
+  filename = os.path.join(manifest_repo, buildspec)
+  assert not os.path.exists(filename)
+
+  git.CreatePushBranch(PUSH_BRANCH, manifest_repo, sync=False)
+  osutils.WriteFile(filename, contents, makedirs=True)
+  git.PushBranch(PUSH_BRANCH, manifest_repo, dryrun=dryrun)
+
+  return filename
+
+
+def PopulateAndPublishBuildSpec(rel_build_spec,
+                                manifest,
+                                manifest_versions_int,
+                                manifest_versions_ext=None,
+                                dryrun=True):
+  """Create build spec based on current source checkout.
+
+  This assumes that the current checkout is 100% clean, and that local SHAs
+  exist in GoB.
+
+  The new buildspec is created in manifest_versions and pushed remotely.
+
+  Args:
+    rel_build_spec: Path relative to manifest_verions root for buildspec.
+    manifest: Contents of the manifest to publish as a string.
+    manifest_versions_int: Path to manifest-versions-internal checkout.
+    manifest_versions_ext: Path to manifest-versions checkout (public).
+    dryrun: Git push --dry-run if set to True.
+  """
+  # Create and push internal buildspec.
+  build_spec = _CommitAndPush(
+      manifest_versions_int, rel_build_spec, manifest, dryrun)
+
+  if manifest_versions_ext:
+    # Create the external only manifest in a tmp file, read into string.
+    whitelisted_remotes = config_lib.GetSiteParams().EXTERNAL_REMOTES
+    tmp_manifest = FilterManifest(build_spec,
+                                  whitelisted_remotes=whitelisted_remotes)
+    manifest_ext = osutils.ReadFile(tmp_manifest)
+
+    _CommitAndPush(manifest_versions_ext, rel_build_spec, manifest_ext, dryrun)
+
+
+def GenerateAndPublishOfficialAndBuildSpec(
+    repo,
+    incr_type,
+    manifest_versions_int,
+    manifest_versions_ext=None,
+    dryrun=True):
+  """Increment the ChromeOS version number, and publish matching build spec.
+
+  This assumes that the current checkout is 100% clean, and that local SHAs
+  exist in GoB.
+
+  The new build spec is created in manifest-versions-internal, and an
+  external/filtered version is created in manifest-versions.
+
+  Args:
+    repo: Repository.RepoRepository instance.
+    incr_type: If this is an offical build spec, how we should increment the
+               version? See VersionInfo.
+    manifest_versions_int: Path to manifest-versions-internal checkout.
+    manifest_versions_ext: Path to manifest-versions checkout (public).
+    dryrun: Git push --dry-run if set to True.
+  """
+  version_info = VersionInfo.from_repo(repo.directory, incr_type=incr_type)
+
+  # Increment the version and push the new version file.
+  version_info.IncrementVersion()
+  msg = 'Incremented to version: %s' % version_info.VersionString()
+  version_info.UpdateVersionFile(msg, dryrun)
+
+  PopulateAndPublishBuildSpec(
+      OfficialBuildSpecPath(version_info),
+      repo.ExportManifest(mark_revision=True),
+      manifest_versions_int,
+      manifest_versions_ext,
+      dryrun)
+
+
+def GenerateAndPublishReleaseCandidateBuildSpec(
+    repo,
+    category,
+    manifest_versions_int,
+    manifest_versions_ext=None,
+    dryrun=True):
+  """Create build spec based on current source checkout.
+
+  This assumes that the current checkout is 100% clean, and that local SHAs
+  exist in GoB.
+
+  The new buildspec is created in manifest_versions and pushed remotely.
+
+  Args:
+    repo: Repository.RepoRepository instance.
+    category: String, manifest_versions subdir specific to a build group.
+              Ex: 'full', 'paladin', etc.
+    manifest_versions_int: Path to manifest-versions-internal checkout.
+    manifest_versions_ext: Path to manifest-versions checkout (public).
+    dryrun: Git push --dry-run if set to True.
+  """
+  version_info = VersionInfo.from_repo(repo.directory)
+
+  PopulateAndPublishBuildSpec(
+      CandidateBuildSpecPath(version_info, category, manifest_versions_int),
+      repo.ExportManifest(mark_revision=True),
+      manifest_versions_int,
+      manifest_versions_ext,
+      dryrun)
 
 
 class BuildSpecsManager(object):
