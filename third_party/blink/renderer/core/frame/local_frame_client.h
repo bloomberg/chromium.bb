@@ -131,8 +131,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                                WebHistoryCommitType,
                                                bool content_initiated) {}
   virtual void DispatchWillCommitProvisionalLoad() = 0;
-  virtual void DispatchDidStartProvisionalLoad(DocumentLoader*,
-                                               ResourceRequest&) = 0;
+  virtual void DispatchDidStartProvisionalLoad(
+      DocumentLoader*,
+      ResourceRequest&,
+      const base::TimeTicks& input_start) = 0;
   virtual void DispatchDidReceiveTitle(const String&) = 0;
   virtual void DispatchDidChangeIcons(IconType) = 0;
   virtual void DispatchDidCommitLoad(HistoryItem*,

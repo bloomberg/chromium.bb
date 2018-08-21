@@ -80,6 +80,13 @@ extern const char kHistogramTotalCompletedResources[];
 extern const char kHistogramNetworkCompletedResources[];
 extern const char kHistogramCacheCompletedResources[];
 
+extern const char kHistogramInputToNavigation[];
+extern const char kBackgroundHistogramInputToNavigation[];
+extern const char kHistogramInputToFirstPaint[];
+extern const char kBackgroundHistogramInputToFirstPaint[];
+extern const char kHistogramInputToFirstContentfulPaint[];
+extern const char kBackgroundHistogramInputToFirstContentfulPaint[];
+
 enum FirstMeaningfulPaintStatus {
   FIRST_MEANINGFUL_PAINT_RECORDED,
   FIRST_MEANINGFUL_PAINT_BACKGROUNDED,

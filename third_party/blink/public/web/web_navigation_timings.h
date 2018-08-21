@@ -10,6 +10,7 @@
 namespace blink {
 
 struct WebNavigationTimings {
+  base::TimeTicks input_start;
   base::TimeTicks navigation_start;
   base::TimeTicks redirect_start;
   base::TimeTicks redirect_end;

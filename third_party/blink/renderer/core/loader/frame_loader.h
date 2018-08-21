@@ -99,7 +99,8 @@ class CORE_EXPORT FrameLoader final {
   // will be computed).
   void StartNavigation(const FrameLoadRequest&,
                        WebFrameLoadType = WebFrameLoadType::kStandard,
-                       NavigationPolicy = kNavigationPolicyCurrentTab);
+                       NavigationPolicy = kNavigationPolicyCurrentTab,
+                       const base::TimeTicks& input_start = base::TimeTicks());
 
   // Called when the browser process has asked this renderer process to commit
   // a navigation in this frame. This method skips most of the checks assuming

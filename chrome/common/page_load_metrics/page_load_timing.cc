@@ -10,7 +10,8 @@ mojom::PageLoadTimingPtr CreatePageLoadTiming() {
   return mojom::PageLoadTiming::New(
       base::Time(), base::Optional<base::TimeDelta>(),
       mojom::DocumentTiming::New(), mojom::InteractiveTiming::New(),
-      mojom::PaintTiming::New(), mojom::ParseTiming::New());
+      mojom::PaintTiming::New(), mojom::ParseTiming::New(),
+      base::Optional<base::TimeDelta>());
 }
 
 bool IsEmpty(const page_load_metrics::mojom::DocumentTiming& timing) {

@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_LOAD_TIMING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_LOAD_TIMING_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -48,6 +49,8 @@ class CORE_EXPORT DocumentLoadTiming final {
 
   void MarkNavigationStart();
   void SetNavigationStart(TimeTicks);
+
+  void SetInputStart(TimeTicks);
 
   void AddRedirect(const KURL& redirecting_url, const KURL& redirected_url);
   void SetRedirectStart(TimeTicks);
@@ -72,6 +75,7 @@ class CORE_EXPORT DocumentLoadTiming final {
     has_same_origin_as_previous_document_ = value;
   }
 
+  TimeTicks InputStart() const { return input_start_; }
   TimeTicks NavigationStart() const { return navigation_start_; }
   TimeTicks UnloadEventStart() const { return unload_event_start_; }
   TimeTicks UnloadEventEnd() const { return unload_event_end_; }
@@ -100,6 +104,7 @@ class CORE_EXPORT DocumentLoadTiming final {
 
   TimeTicks reference_monotonic_time_;
   TimeDelta reference_wall_time_;
+  TimeTicks input_start_;
   TimeTicks navigation_start_;
   TimeTicks unload_event_start_;
   TimeTicks unload_event_end_;

@@ -120,6 +120,11 @@ void DocumentLoadTiming::SetNavigationStart(TimeTicks navigation_start) {
   NotifyDocumentTimingChanged();
 }
 
+void DocumentLoadTiming::SetInputStart(TimeTicks input_start) {
+  input_start_ = input_start;
+  NotifyDocumentTimingChanged();
+}
+
 void DocumentLoadTiming::AddRedirect(const KURL& redirecting_url,
                                      const KURL& redirected_url) {
   redirect_count_++;

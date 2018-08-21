@@ -140,7 +140,8 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     ui::PageTransition transition,
     bool is_external_protocol,
     RequestContextType request_context_type,
-    blink::WebMixedContentContextType mixed_content_context_type) {
+    blink::WebMixedContentContextType mixed_content_context_type,
+    const base::TimeTicks& input_start) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
       url, redirect_chain, frame_tree_node, is_renderer_initiated,
       is_same_document, navigation_start, pending_nav_entry_id,
@@ -148,7 +149,7 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
       is_form_submission, std::move(navigation_ui_data), method,
       std::move(request_headers), resource_request_body, sanitized_referrer,
       has_user_gesture, transition, is_external_protocol, request_context_type,
-      mixed_content_context_type));
+      mixed_content_context_type, input_start));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
@@ -171,7 +172,8 @@ NavigationHandleImpl::NavigationHandleImpl(
     ui::PageTransition transition,
     bool is_external_protocol,
     RequestContextType request_context_type,
-    blink::WebMixedContentContextType mixed_content_context_type)
+    blink::WebMixedContentContextType mixed_content_context_type,
+    const base::TimeTicks& input_start)
     : url_(url),
       has_user_gesture_(has_user_gesture),
       transition_(transition),
@@ -192,6 +194,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       frame_tree_node_(frame_tree_node),
       next_index_(0),
       navigation_start_(navigation_start),
+      input_start_(input_start),
       pending_nav_entry_id_(pending_nav_entry_id),
       request_context_type_(request_context_type),
       mixed_content_context_type_(mixed_content_context_type),
@@ -357,6 +360,10 @@ RenderFrameHostImpl* NavigationHandleImpl::GetParentFrame() {
 
 const base::TimeTicks& NavigationHandleImpl::NavigationStart() {
   return navigation_start_;
+}
+
+const base::TimeTicks& NavigationHandleImpl::NavigationInputStart() {
+  return input_start_;
 }
 
 bool NavigationHandleImpl::IsPost() {

@@ -80,7 +80,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       RequestContextType request_context_type =
           REQUEST_CONTEXT_TYPE_UNSPECIFIED,
       blink::WebMixedContentContextType mixed_content_context_type =
-          blink::WebMixedContentContextType::kBlockable);
+          blink::WebMixedContentContextType::kBlockable,
+      const base::TimeTicks& input_start = base::TimeTicks());
 
   ~NavigationHandleImpl() override;
 
@@ -113,6 +114,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   int GetFrameTreeNodeId() override;
   RenderFrameHostImpl* GetParentFrame() override;
   const base::TimeTicks& NavigationStart() override;
+  const base::TimeTicks& NavigationInputStart() override;
   bool IsPost() override;
   const scoped_refptr<network::ResourceRequestBody>& GetResourceRequestBody()
       override;
@@ -406,7 +408,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       ui::PageTransition transition,
       bool is_external_protocol,
       RequestContextType request_context_type,
-      blink::WebMixedContentContextType mixed_content_context_type);
+      blink::WebMixedContentContextType mixed_content_context_type,
+      const base::TimeTicks& input_start);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
   NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();
@@ -503,6 +506,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The time this navigation started.
   const base::TimeTicks navigation_start_;
+
+  // The time the input event that lead to this navigation started.
+  // Currently available only if the navigation was initiated by
+  // the user clicking a link in the renderer.
+  const base::TimeTicks input_start_;
 
   // The time this naviagtion was ready to commit.
   base::TimeTicks ready_to_commit_time_;

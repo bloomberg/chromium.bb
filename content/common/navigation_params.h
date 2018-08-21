@@ -77,7 +77,8 @@ struct CONTENT_EXPORT CommonNavigationParams {
       bool started_from_context_menu,
       bool has_user_gesture,
       const std::vector<ContentSecurityPolicy>& initiator_csp,
-      const base::Optional<CSPSource>& initiator_self_source);
+      const base::Optional<CSPSource>& initiator_self_source,
+      const base::TimeTicks& input_start = base::TimeTicks());
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
 
@@ -160,6 +161,11 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // The current origin policy for this request's origin.
   // (Empty if none applies.)
   std::string origin_policy;
+
+  // The time the input event leading to the navigation occurred. This will
+  // not always be set; it depends on the creator of the CommonNavigationParams
+  // setting it.
+  base::TimeTicks input_start;
 };
 
 // Provided by the browser -----------------------------------------------------
