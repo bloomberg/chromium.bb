@@ -46,6 +46,8 @@ blink_core_sources("timing") {
     "sub_task_attribution.h",
     "task_attribution_timing.cc",
     "task_attribution_timing.h",
+    "time_clamper.cc",
+    "time_clamper.h",
     "window_performance.cc",
     "window_performance.h",
     "worker_global_scope_performance.cc",

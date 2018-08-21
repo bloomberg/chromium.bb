@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TIME_CLAMPER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TIME_CLAMPER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_TIME_CLAMPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_TIME_CLAMPER_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 #include <stdint.h>
 
 namespace blink {
 
-class PLATFORM_EXPORT TimeClamper {
+class CORE_EXPORT TimeClamper {
  public:
   static constexpr double kResolutionSeconds = 0.0001;
 
@@ -39,4 +39,4 @@ class PLATFORM_EXPORT TimeClamper {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TIME_CLAMPER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_TIME_CLAMPER_H_
