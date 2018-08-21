@@ -218,9 +218,9 @@ class V4Database {
                          std::unique_ptr<V4Store> store);
 
   // See |VerifyChecksum|.
-  void VerifyChecksumOnTaskRunner(
-      const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
-      DatabaseReadyForUpdatesCallback db_ready_for_updates_callback);
+  void OnChecksumVerified(
+      DatabaseReadyForUpdatesCallback db_ready_for_updates_callback,
+      const std::vector<ListIdentifier>& stores_to_reset);
 
   bool IsStoreAvailable(const ListIdentifier& identifier) const;
 

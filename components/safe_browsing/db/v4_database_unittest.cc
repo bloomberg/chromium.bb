@@ -452,6 +452,27 @@ TEST_F(V4DatabaseTest, VerifyChecksumCalledAsync) {
   EXPECT_TRUE(verify_checksum_called_back_);
 }
 
+TEST_F(V4DatabaseTest, VerifyChecksumCancelled) {
+  bool hash_prefix_matches = true;
+  RegisterFactory(hash_prefix_matches);
+
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
+                     callback_db_ready_);
+  created_but_not_called_back_ = true;
+  WaitForTasksOnTaskRunner();
+  EXPECT_EQ(true, created_and_called_back_);
+
+  EXPECT_FALSE(verify_checksum_called_back_);
+  v4_database_->VerifyChecksum(base::Bind(
+      &V4DatabaseTest::VerifyChecksumCallback, base::Unretained(this)));
+  EXPECT_FALSE(verify_checksum_called_back_);
+  // Destroy database.
+  V4Database::Destroy(std::move(v4_database_));
+  WaitForTasksOnTaskRunner();
+  // Callback should not be called since database is destroyed.
+  EXPECT_FALSE(verify_checksum_called_back_);
+}
+
 // Test that we can properly check for unsupported stores
 TEST_F(V4DatabaseTest, TestStoresAvailable) {
   bool hash_prefix_matches = false;
