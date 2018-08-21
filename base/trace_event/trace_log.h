@@ -369,6 +369,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
                            ConvertTraceConfigToInternalOptions);
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
                            TraceRecordAsMuchAsPossibleMode);
+  FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture, ConfigTraceBufferLimit);
 
   friend class base::NoDestructor<TraceLog>;
 

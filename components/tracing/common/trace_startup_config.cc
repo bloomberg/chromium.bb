@@ -67,6 +67,8 @@ TraceStartupConfig::GetDefaultBrowserStartupConfig() {
   // Filter only browser process events.
   base::trace_event::TraceConfig::ProcessFilterConfig process_config(
       {base::GetCurrentProcId()});
+  // First 10k events at start are sufficient to debug startup traces.
+  trace_config.SetTraceBufferSizeInEvents(10000);
   trace_config.SetProcessFilterConfig(process_config);
   // Enable argument filter since we could be background tracing.
   trace_config.EnableArgumentFilter();

@@ -226,10 +226,16 @@ class BASE_EXPORT TraceConfig {
   TraceConfig& operator=(const TraceConfig& rhs);
 
   TraceRecordMode GetTraceRecordMode() const { return record_mode_; }
+  size_t GetTraceBufferSizeInEvents() const {
+    return trace_buffer_size_in_events_;
+  }
   bool IsSystraceEnabled() const { return enable_systrace_; }
   bool IsArgumentFilterEnabled() const { return enable_argument_filter_; }
 
   void SetTraceRecordMode(TraceRecordMode mode) { record_mode_ = mode; }
+  void SetTraceBufferSizeInEvents(size_t size) {
+    trace_buffer_size_in_events_ = size;
+  }
   void EnableSystrace() { enable_systrace_ = true; }
   void EnableArgumentFilter() { enable_argument_filter_ = true; }
 
@@ -304,6 +310,7 @@ class BASE_EXPORT TraceConfig {
   std::string ToTraceOptionsString() const;
 
   TraceRecordMode record_mode_;
+  size_t trace_buffer_size_in_events_ = 0;  // 0 specifies default size
   bool enable_systrace_ : 1;
   bool enable_argument_filter_ : 1;
 

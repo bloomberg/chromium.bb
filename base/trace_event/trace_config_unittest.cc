@@ -60,7 +60,8 @@ const char kCustomTraceConfigString[] =
     "}"
     "]"
     "},"
-    "\"record_mode\":\"record-continuously\""
+    "\"record_mode\":\"record-continuously\","
+    "\"trace_buffer_size_in_events\":100"
     "}";
 
 void CheckDefaultTraceConfigBehavior(const TraceConfig& tc) {
@@ -348,6 +349,7 @@ TEST(TraceConfigTest, TraceConfigFromDict) {
   EXPECT_EQ(RECORD_CONTINUOUSLY, custom_tc.GetTraceRecordMode());
   EXPECT_TRUE(custom_tc.IsSystraceEnabled());
   EXPECT_TRUE(custom_tc.IsArgumentFilterEnabled());
+  EXPECT_EQ(100u, custom_tc.GetTraceBufferSizeInEvents());
   EXPECT_STREQ(
       "included,inc_pattern*,"
       "disabled-by-default-cc,disabled-by-default-memory-infra,"
