@@ -7,9 +7,11 @@
 #include <string>
 #include <utility>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
@@ -26,11 +28,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
-
-#if !defined(OFFICIAL_BUILD)
-#include "base/base_paths.h"
-#include "base/path_service.h"
-#endif
 
 namespace {
 
@@ -311,24 +308,28 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
     return;
   }
 
-// For developer builds only, whitelist modules in the same directory as the
-// executable.
-#if !defined(OFFICIAL_BUILD)
-  base::FilePath exe_path;
-  if (base::PathService::Get(base::DIR_EXE, &exe_path) &&
-      exe_path.DirName().IsParent(module_key.module_path)) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedSameDirectory;
-    return;
-  }
-#endif
-
   // Second, check if the module is seemingly signed by Microsoft. Again, no
   // attempt is made to check the validity of the certificate.
   if (IsMicrosoftModule(
           module_data.inspection_result->certificate_info.subject)) {
     module_warning_decisions_[module_key.module_id] =
         ModuleWarningDecision::kAllowedMicrosoft;
+    return;
+  }
+
+  // Whitelist modules in the same directory as the executable. This serves 2
+  // purposes:
+  // - In unsigned builds, this whitelists all of the DLL that are part of
+  //   Chrome.
+  // - It avoids an issue with the simple heuristic used to determine to which
+  //   application a DLL belongs. Without this, if an injected third-party DLL
+  //   is first copied into Chrome's directory, Chrome will blame itself as an
+  //   incompatible application.
+  base::FilePath exe_path;
+  if (base::PathService::Get(base::DIR_EXE, &exe_path) &&
+      exe_path.DirName().IsParent(module_key.module_path)) {
+    module_warning_decisions_[module_key.module_id] =
+        ModuleWarningDecision::kAllowedSameDirectory;
     return;
   }
 

@@ -47,7 +47,7 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
     // validated.
     kAllowedSameCertificate,
     // Allowed because the path of the executable is the parent of the path of
-    // the module. Only used in non-official builds.
+    // the module.
     kAllowedSameDirectory,
     // Allowed because it is signed by Microsoft. The certificate is not
     // validated.
