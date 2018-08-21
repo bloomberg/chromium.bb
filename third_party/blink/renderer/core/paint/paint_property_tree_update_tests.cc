@@ -270,7 +270,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
                    ->HasBackgroundAttachmentFixedDescendants());
 
   // TODO(bokan): Viewport property node generation has been disabled
-  // temporarily with the flag off to diagnose https//crbug.com/868927.
+  // temporarily with the flag off to diagnose https://crbug.com/868927.
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     EXPECT_EQ(visual_viewport.GetScrollNode(), overflow_b->GetLayoutObject()
                                                    ->FirstFragment()
@@ -801,6 +801,32 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
                              ->ScrollNode());
   EXPECT_EQ(IntRect(0, 0, 100, 100), scroll_node->ContainerRect());
   EXPECT_EQ(IntRect(0, 0, 200, 300), scroll_node->ContentsRect());
+}
+
+// The scrollbars are attached to the visual viewport but created by (and have
+// space saved by) the frame view. So we need to exclude them from the container
+// rect but also from the contents rect because we don't want to be able to
+// scroll into the region saved for scrollbars.
+TEST_P(PaintPropertyTreeUpdateTest,
+       ViewportContentsAndContainerRectsDoNotIncludeScrollbar) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar {width: 20px; height: 20px}
+      body {height: 10000px; width: 10000px; margin: 0;}
+    </style>
+  )HTML");
+
+  VisualViewport& visual_viewport =
+      GetDocument().GetPage()->GetVisualViewport();
+
+  // TODO(bokan): Viewport property node generation has been disabled
+  // temporarily with the flag off to diagnose https://crbug.com/868927.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(IntRect(0, 0, 780, 580),
+              visual_viewport.GetScrollNode()->ContainerRect());
+    EXPECT_EQ(IntRect(0, 0, 780, 580),
+              visual_viewport.GetScrollNode()->ContentsRect());
+  }
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
