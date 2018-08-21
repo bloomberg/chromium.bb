@@ -10,6 +10,7 @@
 #include <ostream>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
@@ -241,7 +242,7 @@ class BlinkTestController : public WebContentsObserver,
                                          const std::string& argument);
   void OnBlockThirdPartyCookies(bool block);
   mojom::LayoutTestControl* GetLayoutTestControlPtr(RenderFrameHost* frame);
-  void HandleLayoutTestControlError(RenderFrameHost* frame);
+  void HandleLayoutTestControlError(const std::pair<int, int>& key);
 
   void OnCleanupFinished();
   void OnCaptureDumpCompleted(mojom::LayoutTestDumpPtr dump);
@@ -327,7 +328,11 @@ class BlinkTestController : public WebContentsObserver,
   bool waiting_for_main_frame_dump_ = false;
 
   // Map from one frame to one mojo pipe.
-  std::map<RenderFrameHost*, mojom::LayoutTestControlAssociatedPtr>
+  //
+  // The key is a pair of (process id, frame routing id).
+  // TODO(lukasza): Use content::GlobalFrameRoutingID instead of std::pair<...>
+  // once it is exposed via content/public/browser API.
+  std::map<std::pair<int, int>, mojom::LayoutTestControlAssociatedPtr>
       layout_test_control_map_;
 #if defined(OS_ANDROID)
   // Because of the nested message pump implementation, Android needs to allow
