@@ -1,4 +1,5 @@
-This directory contains shared code used to implement D-Bus services.
+Under multi-process ash (mash), these D-Bus services will be owned by the ash
+process. See `//ash/README.md` for details on mash.
 
 Please see [Chrome OS D-Bus Usage in Chrome] for information about adding D-Bus
 services.
