@@ -59,20 +59,21 @@ suite('Multidevice', function() {
     assertEquals(settings.getCurrentRoute(), settings.routes.LOCK_SCREEN);
   });
 
-  test('AndroidMessages item shows correct input control', function() {
-    const inputControl = multideviceSubpage.$$(
-        '#android-messages-item > div[slot=feature-controller]');
+  test('AndroidMessages item shows button when not set up', function() {
+    const messagesItem = multideviceSubpage.$$('#android-messages-item');
 
     multideviceSubpage.androidMessagesRequiresSetup_ = true;
     Polymer.dom.flush();
-    assertTrue(!!inputControl.querySelector('paper-button'));
-    assertFalse(
-        !!inputControl.querySelector('settings-multidevice-feature-toggle'));
+
+    const controllerSelector =
+        '#android-messages-item > [slot=feature-controller]';
+    assertTrue(!!multideviceSubpage.$$(controllerSelector));
+    assertTrue(
+        multideviceSubpage.$$(controllerSelector).tagName.includes('BUTTON'));
 
     multideviceSubpage.androidMessagesRequiresSetup_ = false;
     Polymer.dom.flush();
-    assertFalse(!!inputControl.querySelector('paper-button'));
-    assertTrue(
-        !!inputControl.querySelector('settings-multidevice-feature-toggle'));
+
+    assertFalse(!!multideviceSubpage.$$(controllerSelector));
   });
 });

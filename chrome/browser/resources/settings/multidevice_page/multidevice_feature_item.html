@@ -10,6 +10,7 @@
 <link rel="import" href="../settings_vars_css.html">
 <link rel="import" href="multidevice_constants.html">
 <link rel="import" href="multidevice_feature_behavior.html">
+<link rel="import" href="multidevice_feature_toggle.html">
 
 <dom-module id="settings-multidevice-feature-item">
   <template>
@@ -43,7 +44,14 @@
         </paper-icon-button-light>
         <div class="separator"></div>
       </template>
-      <slot name="feature-controller"></slot>
+      <slot name="feature-controller">
+        <!-- This settings-multidevice-feature-toggle is the default controller.
+        If an element with slot="feature-controller" is attached, it will
+        replace this one. -->
+        <settings-multidevice-feature-toggle feature="[[feature]]"
+            page-content-data="[[pageContentData]]">
+        </settings-multidevice-feature-toggle>
+      </slot>
     </div>
   </template>
   <script src="multidevice_feature_item.js"></script>

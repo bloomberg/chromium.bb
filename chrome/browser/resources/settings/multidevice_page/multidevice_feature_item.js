@@ -22,8 +22,8 @@ Polymer({
     feature: Number,
 
     /**
-     * If it is non-null, the item should be actionable and clicking on it
-     * should navigate there. If it is undefined, the item is simply not
+     * If it is truthy, the item should be actionable and clicking on it should
+     * navigate to the provided route. Otherwise, the item is simply not
      * actionable.
      * @type {settings.Route|undefined}
      */

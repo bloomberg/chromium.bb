@@ -21,12 +21,6 @@ Polymer({
   behaviors: [MultiDeviceFeatureBehavior, WebUIListenerBehavior],
 
   properties: {
-    /** SettingsPrefsElement 'prefs' Object reference. See prefs.js. */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-
     /**
      * Whether a phone was found on the account that is either connected to the
      * Chromebook or has the potential to be.
