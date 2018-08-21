@@ -34,6 +34,7 @@ class TestSheetModel : public AuthenticatorRequestSheetModel {
 
  private:
   // AuthenticatorRequestSheetModel:
+  bool IsActivityIndicatorVisible() const override { return true; }
   bool IsBackButtonVisible() const override { return true; }
   bool IsCancelButtonVisible() const override { return true; }
   base::string16 GetCancelButtonLabel() const override {

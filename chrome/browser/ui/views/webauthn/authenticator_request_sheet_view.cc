@@ -17,8 +17,22 @@
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+
+namespace {
+
+// Fixed height of the illustration shown in the top half of the sheet.
+constexpr int kIllustrationHeight = 148;
+
+// Foreground/background color, and the height of the progress bar style
+// activity indicator shown at the top of some sheets.
+constexpr SkColor kActivityIndicateFgColor = SkColorSetRGB(0xf2, 0x99, 0x00);
+constexpr SkColor kActivityIndicateBkColor = SkColorSetRGB(0xf6, 0xe6, 0xc8);
+constexpr int kActivityIndicatorHeight = 4;
+
+}  // namespace
 
 using views::BoxLayout;
 
@@ -54,12 +68,32 @@ void AuthenticatorRequestSheetView::ButtonPressed(views::Button* sender,
 
 std::unique_ptr<views::View>
 AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
+  const int illustration_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
+  const gfx::Size illustration_size(illustration_width, kIllustrationHeight);
+
+  // The container view has no layout, so its preferred size is hardcoded to
+  // match the size of the image, and all overlays are absolutely positioned.
   auto image_with_overlays = std::make_unique<views::View>();
-  image_with_overlays->SetLayoutManager(std::make_unique<views::FillLayout>());
+  image_with_overlays->SetPreferredSize(illustration_size);
 
   auto image_view = std::make_unique<views::ImageView>();
   image_view->SetImage(model()->GetStepIllustration());
+  image_view->SetPreferredSize(illustration_size);
+  image_view->SizeToPreferredSize();
   image_with_overlays->AddChildView(image_view.release());
+
+  if (model()->IsActivityIndicatorVisible()) {
+    auto activity_indicator = std::make_unique<views::ProgressBar>(
+        kActivityIndicatorHeight, false /* allow_round_corner */);
+    activity_indicator->SetValue(-1 /* inifinite animation */);
+    activity_indicator->set_foreground_color(kActivityIndicateFgColor);
+    activity_indicator->set_background_color(kActivityIndicateBkColor);
+    activity_indicator->SetPreferredSize(
+        gfx::Size(illustration_width, kActivityIndicatorHeight));
+    activity_indicator->SizeToPreferredSize();
+    image_with_overlays->AddChildView(activity_indicator.release());
+  }
 
   if (model()->IsBackButtonVisible()) {
     std::unique_ptr<views::ImageButton> back_arrow(
@@ -67,29 +101,22 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     back_arrow->SetFocusForPlatform();
     back_arrow->SetAccessibleName(l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
 
+    // Position the back button so that there is the standard amount of padding
+    // between the top/left side of the back button and the dialog borders.
+    const gfx::Insets dialog_insets =
+        views::LayoutProvider::Get()->GetDialogInsetsForContentType(
+            views::CONTROL, views::CONTROL);
     auto color_reference = std::make_unique<views::Label>(
         base::string16(), views::style::CONTEXT_DIALOG_TITLE,
         views::style::STYLE_PRIMARY);
     views::SetImageFromVectorIcon(
         back_arrow.get(), vector_icons::kBackArrowIcon,
         color_utils::DeriveDefaultIconColor(color_reference->enabled_color()));
+    back_arrow->SizeToPreferredSize();
+    back_arrow->SetX(dialog_insets.left());
+    back_arrow->SetY(dialog_insets.top());
     back_arrow_button_ = back_arrow.get();
-
-    // The |overlaly_container| will be stretched to fill |image_with_overlays|
-    // while allowing |back_arrow| to be absolutely positioned inside it, and
-    // rendered on top of the image due to being higher in the z-order.
-    auto overlay_container = std::make_unique<views::View>();
-    overlay_container->AddChildView(back_arrow.release());
-    image_with_overlays->AddChildView(overlay_container.release());
-
-    // Position the back button so that there is the standard amount of padding
-    // between the top/left side of the back button and the dialog borders.
-    gfx::Insets dialog_insets =
-        views::LayoutProvider::Get()->GetDialogInsetsForContentType(
-            views::CONTROL, views::CONTROL);
-    back_arrow_button_->SizeToPreferredSize();
-    back_arrow_button_->SetX(dialog_insets.left());
-    back_arrow_button_->SetY(dialog_insets.top());
+    image_with_overlays->AddChildView(back_arrow.release());
   }
 
   return image_with_overlays;

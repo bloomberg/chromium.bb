@@ -33,6 +33,7 @@ class AuthenticatorSheetModelBase
   base::string16 GetRelyingPartyIdString() const;
 
   // AuthenticatorRequestSheetModel:
+  bool IsActivityIndicatorVisible() const override;
   bool IsBackButtonVisible() const override;
   bool IsCancelButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
@@ -93,6 +94,7 @@ class AuthenticatorInsertAndActivateUsbSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsActivityIndicatorVisible() const override;
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -172,6 +174,7 @@ class AuthenticatorBleDeviceSelectionSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsActivityIndicatorVisible() const override;
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -197,6 +200,7 @@ class AuthenticatorBleVerifyingSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsActivityIndicatorVisible() const override;
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -208,6 +212,7 @@ class AuthenticatorBleActivateSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsActivityIndicatorVisible() const override;
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -219,6 +224,7 @@ class AuthenticatorTouchIdSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsActivityIndicatorVisible() const override;
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
@@ -230,6 +236,7 @@ class AuthenticatorPaaskSheetModel : public AuthenticatorSheetModelBase {
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsActivityIndicatorVisible() const override;
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;

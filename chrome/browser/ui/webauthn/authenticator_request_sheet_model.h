@@ -36,6 +36,7 @@ class AuthenticatorRequestSheetModel {
  public:
   virtual ~AuthenticatorRequestSheetModel() {}
 
+  virtual bool IsActivityIndicatorVisible() const = 0;
   virtual bool IsBackButtonVisible() const = 0;
 
   virtual bool IsCancelButtonVisible() const = 0;
