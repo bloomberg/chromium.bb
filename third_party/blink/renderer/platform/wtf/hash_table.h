@@ -2067,6 +2067,9 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
     if (!table->table_)
       return;
 
+    // Only trace the backing store. Its fields will be processed below.
+    Allocator::template TraceHashTableBackingOnly<ValueType, HashTableType>(
+        visitor, table->table_, &(table->table_));
     // Now perform weak processing (this is a no-op if the backing was
     // accessible through an iterator and was already marked strongly).
     for (ValueType* element = table->table_ + table->table_size_ - 1;
@@ -2127,12 +2130,6 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     Allocator::template TraceHashTableBackingStrongly<ValueType, HashTable>(
         visitor, table_, &table_);
   } else {
-    // Only trace the backing store. The elements will be processed in the weak
-    // processing callback.
-    Allocator::template TraceHashTableBackingOnly<ValueType, HashTable>(
-        visitor, table_, &table_);
-    if (!table_)
-      return;
     // Weak HashTable. The HashTable may be held alive strongly from somewhere
     // else, e.g., an iterator.
 
