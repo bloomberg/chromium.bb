@@ -50,6 +50,12 @@ const UiPageContainerBehaviorImpl = {
     },
 
     /**
+     * Whether the forward button should be disabled.
+     * @type {boolean}
+     */
+    forwardButtonDisabled: {type: Boolean, value: false},
+
+    /**
      * Translated text to display on the backward-naviation button.
      *
      * Undefined if the visible page has no backward-navigation button.
@@ -81,6 +87,19 @@ const UiPageContainerBehaviorImpl = {
       type: String,
       computed: 'computeLocalizedText_(messageId)',
     },
+  },
+
+  /**
+   * Returns a promise which always resolves and returns a boolean representing
+   * whether it should be possible to navigate forward. This function is called
+   * before forward navigation is requested; if false is returned, the active
+   * page does not change.
+   * @return {!Promise}
+   */
+  getCanNavigateToNextPage: function() {
+    return new Promise((resolve) => {
+      resolve(true /* canNavigate */);
+    });
   },
 
   /**

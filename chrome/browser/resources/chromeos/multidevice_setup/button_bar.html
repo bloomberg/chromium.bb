@@ -30,6 +30,7 @@ on the MultiDeviceSetup.uiMode property. -->
     <paper-button id="forward"
         on-click="onForwardButtonClicked_"
         class="action-button"
+        disabled$="[[forwardButtonDisabled]]"
         hidden$="[[!forwardButtonText]]">
       [[forwardButtonText]]
     </paper-button>
