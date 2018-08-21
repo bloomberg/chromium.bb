@@ -4824,7 +4824,6 @@ crbug.com/824539 [ Android ] editing/selection/previous-line-position.html [ Fai
 crbug.com/824539 [ Android ] editing/style/block-styles-007.html [ Failure ]
 crbug.com/824539 [ Android ] external/wpt/bluetooth/requestDevice/canonicalizeFilter/no-arguments.https.html [ Crash Failure ]
 crbug.com/824539 [ Android ] external/wpt/gamepad/idlharness.html [ Failure ]
-crbug.com/824539 [ Android ] external/wpt/input-events/idlharness.html [ Failure ]
 crbug.com/824539 [ Android ] external/wpt/web-animations/timing-model/animations/finishing-an-animation.html [ Failure ]
 crbug.com/824539 [ Android ] fast/backgrounds/background-clip-text.html [ Failure ]
 crbug.com/824539 [ Android ] fast/block/basic/018.html [ Failure ]
