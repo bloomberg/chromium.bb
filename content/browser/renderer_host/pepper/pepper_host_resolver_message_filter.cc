@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
-#include "content/browser/renderer_host/pepper/pepper_lookup_request.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -18,9 +17,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/address_list.h"
-#include "net/dns/host_resolver.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -38,28 +34,22 @@ namespace content {
 namespace {
 
 void PrepareRequestInfo(const PP_HostResolver_Private_Hint& hint,
-                        net::HostResolver::RequestInfo* request_info) {
-  DCHECK(request_info);
-
-  net::AddressFamily address_family;
+                        network::mojom::ResolveHostParameters* params) {
   switch (hint.family) {
     case PP_NETADDRESSFAMILY_PRIVATE_IPV4:
-      address_family = net::ADDRESS_FAMILY_IPV4;
+      params->dns_query_type = net::HostResolver::DnsQueryType::A;
       break;
     case PP_NETADDRESSFAMILY_PRIVATE_IPV6:
-      address_family = net::ADDRESS_FAMILY_IPV6;
+      params->dns_query_type = net::HostResolver::DnsQueryType::AAAA;
       break;
     default:
-      address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
+      params->dns_query_type = net::HostResolver::DnsQueryType::UNSPECIFIED;
   }
-  request_info->set_address_family(address_family);
 
-  net::HostResolverFlags host_resolver_flags = 0;
   if (hint.flags & PP_HOST_RESOLVER_PRIVATE_FLAGS_CANONNAME)
-    host_resolver_flags |= net::HOST_RESOLVER_CANONNAME;
+    params->include_canonical_name = true;
   if (hint.flags & PP_HOST_RESOLVER_PRIVATE_FLAGS_LOOPBACK_ONLY)
-    host_resolver_flags |= net::HOST_RESOLVER_LOOPBACK_ONLY;
-  request_info->set_host_resolver_flags(host_resolver_flags);
+    params->loopback_only = true;
 }
 
 void CreateNetAddressListFromAddressList(
@@ -90,7 +80,8 @@ PepperHostResolverMessageFilter::PepperHostResolverMessageFilter(
     : external_plugin_(host->external_plugin()),
       private_api_(private_api),
       render_process_id_(0),
-      render_frame_id_(0) {
+      render_frame_id_(0),
+      binding_(this) {
   DCHECK(host);
 
   if (!host->GetRenderFrameIDsForInstance(
@@ -142,63 +133,56 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
     return PP_ERROR_FAILED;
   auto* storage_partition = render_process_host->GetStoragePartition();
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &PepperHostResolverMessageFilter::DoResolve, this,
-          context->MakeReplyMessageContext(), host_port, hint,
-          base::WrapRefCounted(storage_partition->GetURLRequestContext())));
+  // Grab a reference to this class to ensure that it's fully alive if a
+  // connection error occurs (i.e. ref count is higher than 0 and there's no
+  // task from ResourceMessageFilterDeleteTraits to delete this object on the IO
+  // thread pending). Balanced in OnComplete();
+  AddRef();
+
+  network::mojom::ResolveHostClientPtr client_ptr;
+  binding_.Bind(mojo::MakeRequest(&client_ptr));
+  binding_.set_connection_error_handler(
+      base::BindOnce(&PepperHostResolverMessageFilter::OnComplete,
+                     base::Unretained(this), net::ERR_FAILED, base::nullopt));
+
+  network::mojom::ResolveHostParametersPtr parameters =
+      network::mojom::ResolveHostParameters::New();
+  PrepareRequestInfo(hint, parameters.get());
+
+  storage_partition->GetNetworkContext()->ResolveHost(
+      net::HostPortPair(host_port.host, host_port.port), std::move(parameters),
+      std::move(client_ptr));
+  host_resolve_context_ = context->MakeReplyMessageContext();
+
   return PP_OK_COMPLETIONPENDING;
 }
 
-void PepperHostResolverMessageFilter::DoResolve(
-    const ReplyMessageContext& context,
-    const ppapi::HostPortPair& host_port,
-    const PP_HostResolver_Private_Hint& hint,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void PepperHostResolverMessageFilter::OnComplete(
+    int result,
+    const base::Optional<net::AddressList>& resolved_addresses) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  binding_.Close();
 
-  auto* url_request_context =
-      url_request_context_getter->GetURLRequestContext();
-  if (!url_request_context) {
-    SendResolveError(PP_ERROR_FAILED, context);
-    return;
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PepperHostResolverMessageFilter::OnLookupFinished, this,
+                     result, std::move(resolved_addresses),
+                     host_resolve_context_));
+  host_resolve_context_ = ppapi::host::ReplyMessageContext();
 
-  net::HostResolver* host_resolver = url_request_context->host_resolver();
-  if (!host_resolver) {
-    SendResolveError(PP_ERROR_FAILED, context);
-    return;
-  }
-
-  net::HostResolver::RequestInfo request_info(
-      net::HostPortPair(host_port.host, host_port.port));
-  PrepareRequestInfo(hint, &request_info);
-
-  std::unique_ptr<ReplyMessageContext> bound_info(
-      new ReplyMessageContext(context));
-
-  // The lookup request will delete itself on completion.
-  PepperLookupRequest<ReplyMessageContext>* lookup_request =
-      new PepperLookupRequest<ReplyMessageContext>(
-          host_resolver,
-          request_info,
-          net::DEFAULT_PRIORITY,
-          bound_info.release(),
-          base::Bind(&PepperHostResolverMessageFilter::OnLookupFinished, this));
-  lookup_request->Start();
+  Release();  // Balances AddRef in OnMsgResolve.
 }
 
 void PepperHostResolverMessageFilter::OnLookupFinished(
     int net_result,
-    const net::AddressList& addresses,
+    const base::Optional<net::AddressList>& addresses,
     const ReplyMessageContext& context) {
   if (net_result != net::OK) {
     SendResolveError(NetErrorToPepperError(net_result), context);
   } else {
-    const std::string& canonical_name = addresses.canonical_name();
+    const std::string& canonical_name = addresses.value().canonical_name();
     NetAddressList net_address_list;
-    CreateNetAddressListFromAddressList(addresses, &net_address_list);
+    CreateNetAddressListFromAddressList(addresses.value(), &net_address_list);
     if (net_address_list.empty())
       SendResolveError(PP_ERROR_FAILED, context);
     else

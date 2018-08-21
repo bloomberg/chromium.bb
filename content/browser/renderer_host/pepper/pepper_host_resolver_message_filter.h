@@ -14,15 +14,16 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/host/resource_message_filter.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 struct PP_HostResolver_Private_Hint;
 struct PP_NetAddress_Private;
 
 namespace net {
 class AddressList;
-class URLRequestContextGetter;
 }
 
 namespace ppapi {
@@ -38,7 +39,8 @@ namespace content {
 class BrowserPpapiHostImpl;
 
 class CONTENT_EXPORT PepperHostResolverMessageFilter
-    : public ppapi::host::ResourceMessageFilter {
+    : public ppapi::host::ResourceMessageFilter,
+      public network::mojom::ResolveHostClient {
  public:
   PepperHostResolverMessageFilter(BrowserPpapiHostImpl* host,
                                   PP_Instance instance,
@@ -61,16 +63,13 @@ class CONTENT_EXPORT PepperHostResolverMessageFilter
                        const ppapi::HostPortPair& host_port,
                        const PP_HostResolver_Private_Hint& hint);
 
-  // Backend for OnMsgResolve(). Delegates host resolution to the
-  // Browser's HostResolver. Must be called on the IO thread.
-  void DoResolve(
-      const ppapi::host::ReplyMessageContext& context,
-      const ppapi::HostPortPair& host_port,
-      const PP_HostResolver_Private_Hint& hint,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+  // network::mojom::ResolveHostClient overrides.
+  void OnComplete(
+      int result,
+      const base::Optional<net::AddressList>& resolved_addresses) override;
 
   void OnLookupFinished(int net_result,
-                        const net::AddressList& addresses,
+                        const base::Optional<net::AddressList>& addresses,
                         const ppapi::host::ReplyMessageContext& bound_info);
   void SendResolveReply(int32_t result,
                         const std::string& canonical_name,
@@ -79,10 +78,20 @@ class CONTENT_EXPORT PepperHostResolverMessageFilter
   void SendResolveError(int32_t error,
                         const ppapi::host::ReplyMessageContext& context);
 
+  // The following members are only accessed on the IO thread.
+
   bool external_plugin_;
   bool private_api_;
   int render_process_id_;
   int render_frame_id_;
+
+  // The following members are only accessed on the UI thread.
+
+  // A reference to |this| must always be taken while |binding_| is bound to
+  // ensure that if the error callback is called the object is alive.
+  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+
+  ppapi::host::ReplyMessageContext host_resolve_context_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperHostResolverMessageFilter);
 };

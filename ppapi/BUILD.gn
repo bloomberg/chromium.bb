@@ -60,6 +60,8 @@ test_common_source_files = [
   "tests/test_graphics_3d.h",
   "tests/test_host_resolver.cc",
   "tests/test_host_resolver.h",
+  "tests/test_host_resolver_crash.cc",
+  "tests/test_host_resolver_crash.h",
   "tests/test_host_resolver_private.cc",
   "tests/test_host_resolver_private.h",
   "tests/test_host_resolver_private_disallowed.cc",

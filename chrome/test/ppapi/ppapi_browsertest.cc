@@ -395,6 +395,21 @@ TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
       LIST_TEST(HostResolver_ResolveIPv4) \
   )
 
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolverCrash_Basic) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      content::IsNetworkServiceRunningInProcess())
+    return;
+
+  network::mojom::NetworkServiceTestPtr network_service_test;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(content::mojom::kNetworkServiceName,
+                      &network_service_test);
+  network_service_test->CrashOnResolveHost("crash.com");
+
+  RunTestViaHTTP(STRIP_PREFIXES(HostResolverCrash_Basic));
+}
+
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolver) {
   RUN_HOST_RESOLVER_SUBTESTS;
 }
