@@ -5015,3 +5015,7 @@ crbug.com/862589 [ Linux Mac Win ] virtual/threaded/fast/idle-callback/long_idle
 
 # Sheriff 2018-08-21
 crbug.com/873829 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-iframe-no-scrolling.html [ Timeout Pass ]
+
+# Failures on 32-bit Android when using GPU instead of software rendering
+crbug.com/875172 [ Android ] external/wpt/web-animations/interfaces/Animatable/animate.html [ Pass Failure ]
+crbug.com/875172 [ Android ] http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
