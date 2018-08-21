@@ -57,9 +57,10 @@ class GL_EXPORT ScopedJavaSurface {
  private:
   // Performs destructive move from |other| to this.
   void MoveFrom(ScopedJavaSurface& other);
+  void ReleaseSurfaceIfNeeded();
 
-  bool auto_release_;
-  bool is_protected_;
+  bool auto_release_ = true;
+  bool is_protected_ = false;
 
   base::android::ScopedJavaGlobalRef<jobject> j_surface_;
 
