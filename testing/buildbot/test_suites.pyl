@@ -1619,8 +1619,8 @@
   'leak_detection_isolated_scripts': {
     'memory.leak_detection': {
       'args': [
+        '--benchmarks=memory.leak_detection',
         '--smoke-test-mode',
-        '--test-shard-map-filename=linux_leak_detection_shard_map.json',
         '--upload-results',
         '--output-format=histograms',
         '--browser=release',
@@ -1641,7 +1641,6 @@
         'hard_timeout': 10800,
         'ignore_task_failure': False,
         'io_timeout': 3600,
-        'shards': 10
       },
     },
   },
