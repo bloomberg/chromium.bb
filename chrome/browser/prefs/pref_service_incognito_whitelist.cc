@@ -11,7 +11,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/consent_auditor/pref_names.h"
-#include "components/dom_distiller/core/pref_names.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
@@ -631,11 +630,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     // components/consent_auditor/pref_names.h
     consent_auditor::prefs::kLocalConsentsDictionary,
-
-    // components/dom_distiller/core/pref_names.h
-    dom_distiller::prefs::kFont, dom_distiller::prefs::kTheme,
-    dom_distiller::prefs::kFontScale,
-    dom_distiller::prefs::kReaderForAccessibility,
 
     // components/flags_ui/flags_ui_pref_names.h
     flags_ui::prefs::kEnabledLabsExperiments,
