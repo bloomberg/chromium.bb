@@ -15,7 +15,6 @@ Polymer({
   behaviors: [
     MultiDeviceFeatureBehavior,
     CrNetworkListenerBehavior,
-    PrefsBehavior,
   ],
 
   properties: {
@@ -43,8 +42,8 @@ Polymer({
       value: () => ['settings-multidevice-tether-item'],
     },
 
-    // TODO(jordynass): Set this variable once the information can be retrieved
-    // by whatever implementation we use (possibly an IPC or from prefs).
+    // TODO(jordynass): Once the service provides this data via pageContentData,
+    // replace this property with that path.
     /**
      * If SMS Connect requires setup, it displays a paper button prompting the
      * setup flow. If it is already set up, it displays a regular toggle for the
@@ -60,7 +59,6 @@ Polymer({
   /** @private */
   handleAndroidMessagesButtonClick_: function() {
     this.androidMessagesRequiresSetup_ = false;
-    this.setPrefValue('multidevice.sms_connect_enabled', true);
   },
 
   listeners: {
@@ -93,8 +91,7 @@ Polymer({
    * @private
    */
   getStatusText_: function() {
-    return this.getPref('multidevice_setup.suite_enabled').value ?
-        this.i18n('multideviceEnabled') :
-        this.i18n('multideviceDisabled');
+    return this.isSuiteOn() ? this.i18n('multideviceEnabled') :
+                              this.i18n('multideviceDisabled');
   },
 });

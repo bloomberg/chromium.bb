@@ -4,28 +4,71 @@
 
 /**
  * @fileoverview
- * Toggle button with the SettingsBooleanControlBehavior of the
- * settings-toggle-button element. This is needed because the
- * settings-toggle-button is styled to take up an entire row but the row is not
- * well suited to the MultiDevice Setting UI use case (see the description of CL
- * 1149001 for more details).
+ * A toggle button specially suited for the MultiDevice Settings UI use-case.
+ * Instead of changing on clicks, it requests a pref change from the
+ * MultiDevice service and/or triggers a password check to grab an auth token
+ * for the user. It also receives real time updates on feature states and
+ * reflects them in the toggle status.
  */
 Polymer({
   is: 'settings-multidevice-feature-toggle',
 
-  behaviors: [SettingsBooleanControlBehavior],
+  behaviors: [MultiDeviceFeatureBehavior],
+
+  properties: {
+    /** @type {!settings.MultiDeviceFeature} */
+    feature: Number,
+
+    /** @private {boolean} */
+    checked_: Boolean,
+  },
+
+  listeners: {
+    'click': 'onDisabledInnerToggleClick_',
+  },
+
+  // Note that, although this.feature does not change throughout the element's
+  // lifecycle, it must be listed as an observer dependency to ensure that
+  // this.feature is defined by the time of the observer's first call.
+  observers: ['resetChecked_(feature, pageContentData)'],
 
   /**
-   * @param {!CustomEvent} event
+   * Because MultiDevice prefs are only meant to be controlled via the
+   * MultiDevice mojo service, we need the cr-toggle to appear not to change
+   * when pressed. This method resets it before a change is visible to the
+   * user.
    * @private
    */
-  onChange_: function(event) {
-    this.checked = event.detail;
-    // TODO(jordynass): Check for auth token if necessary for pref change. This
-    // requires both JavaScript and C++ changes, most likely using a
-    // EasyUnlockBrowserProxy (in people_page/easy_unlock_browser_proxy.js) as
-    // in people_page/lock_screen.
-    this.notifyChangedByUserInteraction();
-    this.resetToPrefValue();
+  resetChecked_: function() {
+    this.checked_ = this.getFeatureState(this.feature) ===
+        settings.MultiDeviceFeatureState.ENABLED_BY_USER;
+  },
+
+  /**
+   * This handles the edge case in which the inner toggle (i.e., the cr-toggle)
+   * is disabled. For context, the cr-toggle element naturally stops clicks
+   * from propagating as long as its disabled attribute is false. However, if
+   * the cr-toggle's disabled attribute is set to true, its pointer-event CSS
+   * property is set to 'none' automatically. Thus, if the cr-toggle is clicked
+   * while it is disabled, the click event targets the parent element directly
+   * instead of propagating through the cr-toggle. This handler prevents such a
+   * click from unintentionally bubbling up the tree.
+   * @private
+   */
+  onDisabledInnerToggleClick_: function(event) {
+    event.stopPropagation();
+  },
+
+  /**
+   * Callback for clicking on the toggle. It attempts to toggle the feature's
+   * status if the user is allowed.
+   * @private
+   */
+  onChange_: function() {
+    this.resetChecked_();
+    // TODO(hansberry): Do a password check when this.feature is SMART_LOCK or
+    // BETTER_TOGETHER_SUITE.
+    // TODO(jordynass): Have this request a change in the feature's status via
+    // the browserProxy.
   },
 });

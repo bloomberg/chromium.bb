@@ -1826,54 +1826,6 @@ TEST_F('CrSettingsSmbPageTest', 'All', function() {
 });
 
 /**
- * Test fixture for the multidevice settings subpage feature item.
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
-function CrSettingsMultideviceFeatureItemTest() {}
-
-CrSettingsMultideviceFeatureItemTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://settings/multidevice_page/multidevice_feature_item.html',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'multidevice_feature_item_tests.js',
-  ]),
-};
-
-TEST_F('CrSettingsMultideviceFeatureItemTest', 'All', function() {
-  mocha.run();
-});
-
-/**
- * Test fixture for the multidevice settings subpage feature toggle.
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
-function CrSettingsMultideviceFeatureToggleTest() {}
-
-CrSettingsMultideviceFeatureToggleTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://settings/multidevice_page/multidevice_feature_toggle.html',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'multidevice_feature_toggle_tests.js',
-  ]),
-};
-
-TEST_F('CrSettingsMultideviceFeatureToggleTest', 'All', function() {
-  mocha.run();
-});
-
-/**
  * Test fixture for the multidevice settings page container.
  * @constructor
  * @extends {CrSettingsBrowserTest}

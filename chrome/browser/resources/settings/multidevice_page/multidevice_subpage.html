@@ -6,7 +6,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../i18n_setup.html">
-<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
@@ -46,13 +45,15 @@
       }
     </style>
     <div class="settings-box first">
-      <div id="status-text-container" class="start"
-          enabled$="[[prefs.multidevice_setup.suite_enabled.value]]">
-        [[getStatusText_(prefs.multidevice_setup.suite_enabled.value)]]
+      <div id="status-text-container"
+          class="start"
+          enabled$="[[isSuiteOn(pageContentData)]]">
+        [[getStatusText_(pageContentData)]]
       </div>
-      <settings-multidevice-feature-toggle
-          pref="{{prefs.multidevice_setup.suite_enabled}}">
-      </settings-multidevice-feature-toggle>
+        <settings-multidevice-feature-toggle
+            feature="[[MultiDeviceFeature.BETTER_TOGETHER_SUITE]]"
+            page-content-data="[[pageContentData]]">
+        </settings-multidevice-feature-toggle>
     </div>
     <template is="dom-if"
         if="[[shouldShowIndividualFeatures_(pageContentData)]]"
@@ -62,36 +63,18 @@
             feature="[[MultiDeviceFeature.SMART_LOCK]]"
             page-content-data="[[pageContentData]]"
             subpage-route="[[routes.LOCK_SCREEN]]">
-          <div slot="feature-controller">
-            <!-- TODO (jordynass): Change the pref property to the pref
-                 controlling Easy Unlock and make sure it's effectively
-                 password protected. -->
-            <settings-multidevice-feature-toggle
-                pref="{{prefs.multidevice_setup.suite_enabled}}">
-            </settings-multidevice-feature-toggle>
-          </div>
         </settings-multidevice-feature-item>
         <settings-multidevice-tether-item>
         </settings-multidevice-tether-item>
         <settings-multidevice-feature-item id="android-messages-item"
             feature="[[MultiDeviceFeature.MESSAGES]]"
             page-content-data="[[pageContentData]]">
-          <div slot="feature-controller">
-            <template is="dom-if"
-                if="[[androidMessagesRequiresSetup_]]"
-                restamp>
-              <paper-button on-click="handleAndroidMessagesButtonClick_">
-                $i18n{multideviceSetupButton}
-              </paper-button>
-            </template>
-            <template is="dom-if"
-                if="[[!androidMessagesRequiresSetup_]]"
-                restamp>
-              <settings-multidevice-feature-toggle
-                  pref="{{prefs.multidevice.sms_connect_enabled}}">
-              </settings-multidevice-feature-toggle>
-            </template>
-          </div>
+          <template is="dom-if" if="[[androidMessagesRequiresSetup_]]" restamp>
+            <paper-button on-click="handleAndroidMessagesButtonClick_"
+                slot="feature-controller">
+              $i18n{multideviceSetupButton}
+            </paper-button>
+          </template>
         </settings-multidevice-feature-item>
       </div>
     </template>

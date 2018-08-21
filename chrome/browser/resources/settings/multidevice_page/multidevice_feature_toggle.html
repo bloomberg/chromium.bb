@@ -1,13 +1,16 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
-<link rel="import" href="../controls/settings_boolean_control_behavior.html">
+<link rel="import" href="multidevice_constants.html">
+<link rel="import" href="multidevice_feature_behavior.html">
 
 <dom-module id="settings-multidevice-feature-toggle">
   <template>
-      <cr-toggle disabled="[[disabled]]"
-          checked="{{checked}}"
-          on-change="onChange_"></cr-toggle>
+    <cr-toggle id="toggle"
+        checked="{{checked_}}"
+        disabled="[[!isFeatureStateEditable(feature, pageContentData)]]"
+        on-change="onChange_">
+    </cr-toggle>
   </template>
   <script src="multidevice_feature_toggle.js"></script>
 </dom-module>

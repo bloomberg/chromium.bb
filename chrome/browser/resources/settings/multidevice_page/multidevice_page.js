@@ -11,7 +11,7 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-page',
 
-  behaviors: [MultiDeviceFeatureBehavior, PrefsBehavior],
+  behaviors: [MultiDeviceFeatureBehavior],
 
   properties: {
     /**
@@ -63,9 +63,8 @@ Polymer({
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
         return this.i18nAdvanced('multideviceVerificationText');
       default:
-        return this.getPref('multidevice_setup.suite_enabled').value ?
-            this.i18n('multideviceEnabled') :
-            this.i18n('multideviceDisabled');
+        return this.isSuiteOn() ? this.i18n('multideviceEnabled') :
+                                  this.i18n('multideviceDisabled');
     }
   },
 
