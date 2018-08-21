@@ -981,6 +981,8 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter',
       ],
     },
+    'webrunner_browsertests': {},
+    'webrunner_unittests': {},
   },
 
   'goma_gtests': {

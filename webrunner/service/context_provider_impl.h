@@ -6,6 +6,7 @@
 #define WEBRUNNER_SERVICE_CONTEXT_PROVIDER_IMPL_H_
 
 #include <lib/fidl/cpp/binding_set.h>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -26,6 +27,11 @@ class WEBRUNNER_EXPORT ContextProviderImpl
   ContextProviderImpl();
   ~ContextProviderImpl() override;
 
+  // Creates a ContextProviderImpl that shares its /tmp directory with its child
+  // processes. This is useful for GTest processes, which depend on a shared
+  // tmpdir for storing startup flags and retrieving test result files.
+  static std::unique_ptr<ContextProviderImpl> CreateForTest();
+
   // Binds |this| object instance to |request|.
   // The service will persist and continue to serve other channels in the event
   // that a bound channel is dropped.
@@ -38,10 +44,12 @@ class WEBRUNNER_EXPORT ContextProviderImpl
 
  private:
   using LaunchContextProcessCallback = base::RepeatingCallback<base::Process(
-      base::CommandLine command,
+      const base::CommandLine& command,
       const base::LaunchOptions& options)>;
 
   friend class ContextProviderImplTest;
+
+  explicit ContextProviderImpl(bool use_shared_tmp);
 
   // Overrides the default child process launching logic to call |launch|
   // instead.
@@ -49,6 +57,9 @@ class WEBRUNNER_EXPORT ContextProviderImpl
 
   // Spawns a Context child process.
   LaunchContextProcessCallback launch_;
+
+  // If set, then the ContextProvider will share /tmp with its child processes.
+  bool use_shared_tmp_ = true;
 
   fidl::BindingSet<chromium::web::ContextProvider> bindings_;
 

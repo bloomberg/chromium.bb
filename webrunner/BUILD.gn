@@ -190,8 +190,7 @@ test("webrunner_browsertests") {
 
 test("webrunner_unittests") {
   sources = [
-    # TODO(kmarshall): Uncomment this when the tests are fixed.
-    # "service/context_provider_impl_unittest.cc",
+    "service/context_provider_impl_unittest.cc",
   ]
   deps = [
     ":fidl",
