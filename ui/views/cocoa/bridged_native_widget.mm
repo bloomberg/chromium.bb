@@ -14,6 +14,7 @@
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -711,10 +712,8 @@ void BridgedNativeWidget::OnVisibilityChanged() {
   if (window_visible && ![window_ isOpaque])
     invalidate_shadow_on_frame_swap_ = true;
 
-  UpdateCompositorVisibility();
   NotifyVisibilityChangeDown();
-  native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(
-      window_visible_);
+  host_->OnVisibilityChanged(window_visible_);
 
   // Toolkit-views suppresses redraws while not visible. To prevent Cocoa asking
   // for an "empty" draw, disable auto-display while hidden. For example, this
@@ -732,23 +731,9 @@ void BridgedNativeWidget::OnBackingPropertiesChanged() {
 }
 
 void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
-  Widget* widget = native_widget_mac()->GetWidget();
-  if (!widget->OnNativeWidgetActivationChanged(is_key))
-    return;
-  // The contentView is the BridgedContentView hosting the views::RootView. The
-  // focus manager will already know if a native subview has focus.
-  if ([window_ contentView] == [window_ firstResponder]) {
-    if (is_key) {
-      widget->OnNativeFocus();
-      // Explicitly set the keyboard accessibility state on regaining key
-      // window status.
-      [bridged_view_ updateFullKeyboardAccess];
-      widget->GetFocusManager()->RestoreFocusedView();
-    } else {
-      widget->OnNativeBlur();
-      widget->GetFocusManager()->StoreFocusedView(true);
-    }
-  }
+  host_->OnWindowKeyStatusChanged(
+      is_key, [window_ contentView] == [window_ firstResponder],
+      [NSApp isFullKeyboardAccessEnabled]);
 }
 
 void BridgedNativeWidget::SetSizeConstraints(const gfx::Size& min_size,
@@ -801,10 +786,6 @@ void BridgedNativeWidget::InitCompositorView() {
   // will be forwarded.
   UpdateWindowDisplay();
   UpdateWindowGeometry();
-
-  // Note, except for controls, this will set the layer to be hidden, since it
-  // is only called during initialization.
-  UpdateCompositorVisibility();
 }
 
 void BridgedNativeWidget::SetAssociationForView(const views::View* view,
@@ -947,10 +928,37 @@ NSWindow* BridgedNativeWidget::GetWindow() const {
 // TODO(ccameron): Update class names to:
 // BridgedNativeWidgetImpl, BridgedNativeWidget:
 
+void BridgedNativeWidget::SetVisibleOnAllSpaces(bool always_visible) {
+  gfx::SetNSWindowVisibleOnAllWorkspaces(window_, always_visible);
+}
+
 void BridgedNativeWidget::SetFullscreen(bool fullscreen) {
   if (fullscreen == target_fullscreen_state_)
     return;
   ToggleDesiredFullscreenState();
+}
+
+void BridgedNativeWidget::SetMiniaturized(bool miniaturized) {
+  if (miniaturized) {
+    // Calling performMiniaturize: will momentarily highlight the button, but
+    // AppKit will reject it if there is no miniaturize button.
+    if ([window_ styleMask] & NSMiniaturizableWindowMask)
+      [window_ performMiniaturize:nil];
+    else
+      [window_ miniaturize:nil];
+  } else {
+    [window_ deminiaturize:nil];
+  }
+}
+
+void BridgedNativeWidget::SetOpacity(float opacity) {
+  [window_ setAlphaValue:opacity];
+}
+
+void BridgedNativeWidget::SetContentAspectRatio(
+    const gfx::SizeF& aspect_ratio) {
+  [window_ setContentAspectRatio:NSMakeSize(aspect_ratio.width(),
+                                            aspect_ratio.height())];
 }
 
 void BridgedNativeWidget::SetCALayerParams(
@@ -974,6 +982,15 @@ void BridgedNativeWidget::SetCALayerParams(
     invalidate_shadow_on_frame_swap_ = false;
     [window_ invalidateShadow];
   }
+}
+
+void BridgedNativeWidget::MakeFirstResponder() {
+  [window_ makeFirstResponder:bridged_view_];
+}
+
+void BridgedNativeWidget::SetWindowTitle(const base::string16& title) {
+  NSString* new_title = base::SysUTF16ToNSString(title);
+  [window_ setTitle:new_title];
 }
 
 void BridgedNativeWidget::ClearTouchBar() {
@@ -1137,8 +1154,7 @@ void BridgedNativeWidget::ShowAsModalSheet() {
   // So that it doesn't animate a fully transparent window, first wait for a
   // frame. The first step is to pretend that the window is already visible.
   window_visible_ = true;
-  UpdateCompositorVisibility();
-  native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(true);
+  host_->OnVisibilityChanged(window_visible_);
 
   NSWindow* parent_window = parent_->GetNSWindow();
   DCHECK(parent_window);
@@ -1163,14 +1179,6 @@ NSMutableDictionary* BridgedNativeWidget::GetWindowProperties() const {
                              properties, OBJC_ASSOCIATION_RETAIN);
   }
   return properties;
-}
-
-void BridgedNativeWidget::UpdateCompositorVisibility() {
-  // Avoid transient updates during initialization by waiting until after
-  // |compositor_superview_| is created.
-  if (!compositor_superview_)
-    return;
-  host_->SetCompositorVisibility(window_visible_);
 }
 
 }  // namespace views

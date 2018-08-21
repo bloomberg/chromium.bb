@@ -9,6 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#include "ui/views/cocoa/bridged_native_widget_host.h"
 #include "ui/views/widget/native_widget_mac.h"
 
 @implementation ViewsNSWindowDelegate
@@ -155,10 +156,12 @@
 }
 
 - (void)windowDidMiniaturize:(NSNotification*)notification {
+  parent_->host()->OnWindowMiniaturizedChanged(true);
   parent_->OnVisibilityChanged();
 }
 
 - (void)windowDidDeminiaturize:(NSNotification*)notification {
+  parent_->host()->OnWindowMiniaturizedChanged(false);
   parent_->OnVisibilityChanged();
 }
 

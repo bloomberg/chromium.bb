@@ -70,7 +70,7 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
 
   // Widgets for UI controls (usually layered above web contents) start visible.
   if (widget_type_ == Widget::InitParams::TYPE_CONTROL)
-    bridge_impl_->SetVisibilityState(BridgedNativeWidget::SHOW_INACTIVE);
+    bridge()->SetVisibilityState(BridgedNativeWidgetPublic::SHOW_INACTIVE);
 }
 
 void BridgedNativeWidgetHostImpl::SetBounds(const gfx::Rect& bounds) {
@@ -134,10 +134,24 @@ void BridgedNativeWidgetHostImpl::CreateCompositor(
       translucent ? SK_ColorTRANSPARENT : SK_ColorWHITE);
   compositor_->compositor()->SetRootLayer(layer());
 
-  // The compositor is initially locked (prevented from producing frames), and
-  // is only unlocked when the BridgedNativeWidget calls back via
-  // SetCompositorVisibility.
+  // The compositor is locked (prevented from producing frames) until the widget
+  // is made visible.
+  UpdateCompositorProperties();
+  layer()->SetVisible(is_visible_);
+  if (is_visible_)
+    compositor_->Unsuspend();
+
   bridge()->InitCompositorView();
+}
+
+void BridgedNativeWidgetHostImpl::UpdateCompositorProperties() {
+  if (!compositor_)
+    return;
+  gfx::Size surface_size_in_dip = content_bounds_in_screen_.size();
+  layer()->SetBounds(gfx::Rect(surface_size_in_dip));
+  compositor_->UpdateSurface(
+      ConvertSizeToPixel(display_.device_scale_factor(), surface_size_in_dip),
+      display_.device_scale_factor());
 }
 
 void BridgedNativeWidgetHostImpl::DestroyCompositor() {
@@ -179,6 +193,14 @@ void BridgedNativeWidgetHostImpl::SetFocusManager(FocusManager* focus_manager) {
     OnDidChangeFocus(nullptr, new_focus);
 }
 
+bool BridgedNativeWidgetHostImpl::SetWindowTitle(const base::string16& title) {
+  if (window_title_ == title)
+    return false;
+  window_title_ = title;
+  bridge()->SetWindowTitle(window_title_);
+  return true;
+}
+
 void BridgedNativeWidgetHostImpl::OnWidgetInitDone() {
   Widget* widget = native_widget_mac_->GetWidget();
   if (DialogDelegate* dialog = widget->widget_delegate()->AsDialogDelegate())
@@ -204,14 +226,19 @@ gfx::Rect BridgedNativeWidgetHostImpl::GetRestoredBounds() const {
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl, views::BridgedNativeWidgetHost:
 
-void BridgedNativeWidgetHostImpl::SetCompositorVisibility(bool window_visible) {
-  layer()->SetVisible(window_visible);
-  if (window_visible) {
-    compositor_->Unsuspend();
-    layer()->SchedulePaint(layer()->bounds());
-  } else {
-    compositor_->Suspend();
+void BridgedNativeWidgetHostImpl::OnVisibilityChanged(bool window_visible) {
+  is_visible_ = window_visible;
+  if (compositor_) {
+    layer()->SetVisible(window_visible);
+    if (window_visible) {
+      compositor_->Unsuspend();
+      layer()->SchedulePaint(layer()->bounds());
+    } else {
+      compositor_->Suspend();
+    }
   }
+  native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(
+      window_visible);
 }
 
 void BridgedNativeWidgetHostImpl::OnScrollEvent(
@@ -325,13 +352,7 @@ void BridgedNativeWidgetHostImpl::OnWindowGeometryChanged(
         content_bounds_in_screen_.size());
 
   // Update the compositor surface and layer size.
-  if (compositor_) {
-    gfx::Size surface_size_in_dip = content_bounds_in_screen_.size();
-    layer()->SetBounds(gfx::Rect(surface_size_in_dip));
-    compositor_->UpdateSurface(
-        ConvertSizeToPixel(display_.device_scale_factor(), surface_size_in_dip),
-        display_.device_scale_factor());
-  }
+  UpdateCompositorProperties();
 }
 
 void BridgedNativeWidgetHostImpl::OnWindowFullscreenTransitionStart(
@@ -353,6 +374,11 @@ void BridgedNativeWidgetHostImpl::OnWindowFullscreenTransitionComplete(
 
   // Ensure constraints are re-applied when completing a transition.
   native_widget_mac_->OnSizeConstraintsChanged();
+}
+
+void BridgedNativeWidgetHostImpl::OnWindowMiniaturizedChanged(
+    bool miniaturized) {
+  is_miniaturized_ = miniaturized;
 }
 
 void BridgedNativeWidgetHostImpl::OnWindowDisplayChanged(
@@ -377,6 +403,30 @@ void BridgedNativeWidgetHostImpl::OnWindowWillClose() {
 
 void BridgedNativeWidgetHostImpl::OnWindowHasClosed() {
   native_widget_mac_->WindowDestroyed();
+}
+
+void BridgedNativeWidgetHostImpl::OnWindowKeyStatusChanged(
+    bool is_key,
+    bool is_content_first_responder,
+    bool full_keyboard_access_enabled) {
+  is_window_key_ = is_key;
+  Widget* widget = native_widget_mac_->GetWidget();
+  if (!widget->OnNativeWidgetActivationChanged(is_key))
+    return;
+  // The contentView is the BridgedContentView hosting the views::RootView. The
+  // focus manager will already know if a native subview has focus.
+  if (is_content_first_responder) {
+    if (is_key) {
+      widget->OnNativeFocus();
+      // Explicitly set the keyboard accessibility state on regaining key
+      // window status.
+      SetKeyboardAccessible(full_keyboard_access_enabled);
+      widget->GetFocusManager()->RestoreFocusedView();
+    } else {
+      widget->OnNativeBlur();
+      widget->GetFocusManager()->StoreFocusedView(true);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
