@@ -34,6 +34,7 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content/browser/test/ContentJUnit4ClassRunner.java",
     "javatests/src/org/chromium/content/browser/test/InterstitialPageDelegateAndroid.java",
     "javatests/src/org/chromium/content/browser/test/NativeLibraryTestRule.java",
+    "javatests/src/org/chromium/content/browser/test/RenderFrameHostTestExt.java",
     "javatests/src/org/chromium/content/browser/test/mock/MockRenderFrameHost.java",
     "javatests/src/org/chromium/content/browser/test/mock/MockWebContents.java",
     "javatests/src/org/chromium/content/browser/test/util/ClickUtils.java",
@@ -62,6 +63,7 @@ generate_jni("content_test_jni") {
   jni_package = "content/public/test"
   sources = [
     "javatests/src/org/chromium/content/browser/test/InterstitialPageDelegateAndroid.java",
+    "javatests/src/org/chromium/content/browser/test/RenderFrameHostTestExt.java",
     "javatests/src/org/chromium/content/browser/test/util/DOMUtils.java",
     "javatests/src/org/chromium/content/browser/test/util/WebContentsUtils.java",
   ]
@@ -80,6 +82,7 @@ static_library("content_native_test_support") {
     "dom_utils.cc",
     "interstitial_page_delegate_android.cc",
     "interstitial_page_delegate_android.h",
+    "render_frame_host_test_ext.cc",
     "web_contents_utils.cc",
   ]
   deps = [
