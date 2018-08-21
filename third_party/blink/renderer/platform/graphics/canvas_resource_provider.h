@@ -164,6 +164,13 @@ class PLATFORM_EXPORT CanvasResourceProvider
                          base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
                          base::WeakPtr<CanvasResourceDispatcher>);
 
+  // Its important to use this method for generating PaintImage wrapped canvas
+  // snapshots to get a cache hit from cc's ImageDecodeCache. This method
+  // ensures that the PaintImage ID for the snapshot, used for keying
+  // decodes/uploads in the cache is invalidated only when the canvas contents
+  // change.
+  cc::PaintImage MakeImageSnapshot();
+
  private:
   class CanvasImageProvider : public cc::ImageProvider {
    public:
