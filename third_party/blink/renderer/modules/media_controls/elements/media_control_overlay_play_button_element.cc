@@ -300,6 +300,10 @@ bool MediaControlOverlayPlayButtonElement::IsMouseEventOnInternalButton(
   if (!mouse_event.HasPosition())
     return true;
 
+  // If there is no layout view, default to yes.
+  if (!GetDocument().GetLayoutView())
+    return true;
+
   // Find the zoom-adjusted internal button bounding box.
   DOMRect* box = internal_button_->getBoundingClientRect();
   float zoom = ComputedStyleRef().EffectiveZoom() /
