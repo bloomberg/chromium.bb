@@ -102,6 +102,8 @@ class UpdateService : public KeyedService,
   void AddUpdateClientObserver(update_client::UpdateClient::Observer* observer);
   void RemoveUpdateClientObserver(
       update_client::UpdateClient::Observer* observer);
+  void HandleComponentUpdateErrorEvent(const std::string& extension_id) const;
+  void HandleComponentUpdateFoundEvent(const std::string& extension_id) const;
 
  private:
   content::BrowserContext* browser_context_;
