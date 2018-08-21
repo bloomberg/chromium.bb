@@ -6,6 +6,7 @@
 #define CHROME_COMMON_EXTENSIONS_CHROME_EXTENSIONS_API_PROVIDER_H_
 
 #include "base/macros.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "extensions/common/extensions_api_provider.h"
 
 namespace extensions {
@@ -23,8 +24,11 @@ class ChromeExtensionsAPIProvider : public ExtensionsAPIProvider {
   void AddAPIJSONSources(JSONFeatureProviderSource* json_source) override;
   bool IsAPISchemaGenerated(const std::string& name) override;
   base::StringPiece GetAPISchema(const std::string& name) override;
+  void AddPermissionsProviders(PermissionsInfo* permissions_info) override;
 
  private:
+  const ChromeAPIPermissions api_permissions_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIProvider);
 };
 

@@ -9,12 +9,14 @@
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/api/manifest_features.h"
 #include "extensions/common/api/permission_features.h"
+#include "extensions/common/extensions_aliases.h"
 #include "extensions/common/features/json_feature_provider_source.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "extensions/grit/extensions_resources.h"
 
 namespace extensions {
 
-CoreExtensionsAPIProvider::CoreExtensionsAPIProvider() = default;
+CoreExtensionsAPIProvider::CoreExtensionsAPIProvider() {}
 CoreExtensionsAPIProvider::~CoreExtensionsAPIProvider() = default;
 
 void CoreExtensionsAPIProvider::AddAPIFeatures(FeatureProvider* provider) {
@@ -46,6 +48,12 @@ bool CoreExtensionsAPIProvider::IsAPISchemaGenerated(const std::string& name) {
 base::StringPiece CoreExtensionsAPIProvider::GetAPISchema(
     const std::string& name) {
   return api::GeneratedSchemas::Get(name);
+}
+
+void CoreExtensionsAPIProvider::AddPermissionsProviders(
+    PermissionsInfo* permissions_info) {
+  permissions_info->AddProvider(api_permissions_,
+                                GetExtensionsPermissionAliases());
 }
 
 }  // namespace extensions

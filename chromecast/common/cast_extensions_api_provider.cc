@@ -4,17 +4,19 @@
 
 #include "chromecast/common/cast_extensions_api_provider.h"
 
+#include "chromecast/common/extensions_api/cast_aliases.h"
 #include "chromecast/common/extensions_api/cast_api_features.h"
 #include "chromecast/common/extensions_api/cast_api_permissions.h"
 #include "chromecast/common/extensions_api/cast_manifest_features.h"
 #include "chromecast/common/extensions_api/cast_permission_features.h"
 #include "chromecast/common/extensions_api/generated_schemas.h"
 #include "extensions/common/features/json_feature_provider_source.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "extensions/shell/grit/app_shell_resources.h"
 
 namespace extensions {
 
-CastExtensionsAPIProvider::CastExtensionsAPIProvider() = default;
+CastExtensionsAPIProvider::CastExtensionsAPIProvider() {}
 CastExtensionsAPIProvider::~CastExtensionsAPIProvider() = default;
 
 void CastExtensionsAPIProvider::AddAPIFeatures(FeatureProvider* provider) {
@@ -46,6 +48,11 @@ bool CastExtensionsAPIProvider::IsAPISchemaGenerated(const std::string& name) {
 base::StringPiece CastExtensionsAPIProvider::GetAPISchema(
     const std::string& name) {
   return cast::api::CastGeneratedSchemas::Get(name);
+}
+
+void CastExtensionsAPIProvider::AddPermissionsProviders(
+    PermissionsInfo* permissions_info) {
+  permissions_info->AddProvider(api_permissions_, GetCastPermissionAliases());
 }
 
 }  // namespace extensions

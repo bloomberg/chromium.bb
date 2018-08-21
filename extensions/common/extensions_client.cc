@@ -10,6 +10,7 @@
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/permissions/permissions_info.h"
 
 namespace extensions {
 
@@ -29,7 +30,7 @@ void ExtensionsClient::Set(ExtensionsClient* client) {
   if (g_client)
     return;
   g_client = client;
-  g_client->Initialize();
+  g_client->DoInitialize();
 }
 
 ExtensionsClient::ExtensionsClient() = default;
@@ -85,6 +86,8 @@ base::StringPiece ExtensionsClient::GetAPISchema(
 
 void ExtensionsClient::AddAPIProvider(
     std::unique_ptr<ExtensionsAPIProvider> provider) {
+  DCHECK(!initialize_called_)
+      << "APIProviders can only be added before client initialization.";
   api_providers_.push_back(std::move(provider));
 }
 
@@ -101,6 +104,16 @@ bool ExtensionsClient::ExtensionAPIEnabledInExtensionServiceWorkers() const {
 
 std::string ExtensionsClient::GetUserAgent() const {
   return std::string();
+}
+
+void ExtensionsClient::DoInitialize() {
+  initialize_called_ = true;
+
+  PermissionsInfo* permissions_info = PermissionsInfo::GetInstance();
+  for (const auto& provider : api_providers_)
+    provider->AddPermissionsProviders(permissions_info);
+
+  Initialize();
 }
 
 }  // namespace extensions

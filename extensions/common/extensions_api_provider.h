@@ -13,6 +13,7 @@
 namespace extensions {
 class FeatureProvider;
 class JSONFeatureProviderSource;
+class PermissionsInfo;
 
 // A class to provide API-specific bits and bobs to the extensions system.
 // This allows for composition of multiple providers, so that we can easily
@@ -38,6 +39,9 @@ class ExtensionsAPIProvider {
   // Returns a the contents of the generated schema for the given api |name|,
   // or an empty string if this provider doesn't know of the generated API.
   virtual base::StringPiece GetAPISchema(const std::string& name) = 0;
+
+  // Adds any associated permissions.
+  virtual void AddPermissionsProviders(PermissionsInfo* permissions_info) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionsAPIProvider);

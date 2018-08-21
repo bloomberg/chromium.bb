@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "chrome/common/extensions/chrome_aliases.h"
 #include "chrome/common/extensions/chrome_extensions_api_provider.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
@@ -31,13 +30,11 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/extensions_aliases.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -103,12 +100,6 @@ void ChromeExtensionsClient::Initialize() {
     RegisterChromeManifestHandlers();
     ManifestHandler::FinalizeRegistration();
   }
-
-  // Set up permissions.
-  PermissionsInfo::GetInstance()->AddProvider(chrome_api_permissions_,
-                                              GetChromePermissionAliases());
-  PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions_,
-                                              GetExtensionsPermissionAliases());
 
   // Set up the scripting whitelist.
   // Whitelist ChromeVox, an accessibility extension from Google that needs

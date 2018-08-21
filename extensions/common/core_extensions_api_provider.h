@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "extensions/common/extensions_api_provider.h"
+#include "extensions/common/permissions/extensions_api_permissions.h"
 
 namespace extensions {
 
@@ -23,8 +24,11 @@ class CoreExtensionsAPIProvider : public ExtensionsAPIProvider {
   void AddAPIJSONSources(JSONFeatureProviderSource* json_source) override;
   bool IsAPISchemaGenerated(const std::string& name) override;
   base::StringPiece GetAPISchema(const std::string& name) override;
+  void AddPermissionsProviders(PermissionsInfo* permissions_info) override;
 
  private:
+  const ExtensionsAPIPermissions api_permissions_;
+
   DISALLOW_COPY_AND_ASSIGN(CoreExtensionsAPIProvider);
 };
 

@@ -14,10 +14,7 @@
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/core_extensions_api_provider.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/extensions_aliases.h"
 #include "extensions/common/manifest_handler.h"
-#include "extensions/common/permissions/extensions_api_permissions.h"
-#include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/grit/extensions_resources.h"
 #include "extensions/test/test_permission_message_provider.h"
@@ -50,11 +47,6 @@ void TestExtensionsClient::Initialize() {
     RegisterCommonManifestHandlers();
     ManifestHandler::FinalizeRegistration();
   }
-
-  // Allow the core API permissions.
-  static ExtensionsAPIPermissions extensions_api_permissions;
-  PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions,
-                                              GetExtensionsPermissionAliases());
 }
 
 void TestExtensionsClient::InitializeWebStoreUrls(
