@@ -84,8 +84,6 @@ crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-ant
 
 crbug.com/619103 paint/invalidation/background/background-resize-width.html [ Failure Pass ]
 
-crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
-
 crbug.com/784956 fast/history/frameset-repeated-name.html [ Pass Failure ]
 
 crbug.com/829740 fast/history/history-back-twice-with-subframes-assert.html [ Pass Timeout ]
