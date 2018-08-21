@@ -216,8 +216,6 @@ source_set("objects") {
     "private/flash.h",
     "private/flash_clipboard.cc",
     "private/flash_clipboard.h",
-    "private/flash_device_id.cc",
-    "private/flash_device_id.h",
     "private/flash_drm.cc",
     "private/flash_drm.h",
     "private/flash_file.cc",

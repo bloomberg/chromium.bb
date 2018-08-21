@@ -125,7 +125,6 @@ source_set("c") {
     "private/ppb_find_private.h",
     "private/ppb_flash.h",
     "private/ppb_flash_clipboard.h",
-    "private/ppb_flash_device_id.h",
     "private/ppb_flash_drm.h",
     "private/ppb_flash_file.h",
     "private/ppb_flash_font_file.h",
