@@ -2648,7 +2648,8 @@ static void write_sb_size(SequenceHeader *seq_params,
   aom_wb_write_bit(wb, seq_params->sb_size == BLOCK_128X128 ? 1 : 0);
 }
 
-void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
+static void write_sequence_header(AV1_COMP *cpi,
+                                  struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
   SequenceHeader *seq_params = &cm->seq_params;
 
@@ -3473,7 +3474,7 @@ static void write_bitstream_level(BitstreamLevel bl,
   aom_wb_write_literal(wb, seq_level_idx, LEVEL_BITS);
 }
 
-static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
+uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   AV1_COMMON *const cm = &cpi->common;
   struct aom_write_bit_buffer wb = { dst, 0 };
   uint32_t size = 0;

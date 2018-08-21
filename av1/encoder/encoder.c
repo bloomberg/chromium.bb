@@ -1067,9 +1067,30 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
         10;  // Default value (not signaled)
   }
 
-  if (cm->seq_params.bit_depth == AOM_BITS_12) {
-    cm->seq_params.subsampling_x = oxcf->chroma_subsampling_x;
-    cm->seq_params.subsampling_y = oxcf->chroma_subsampling_y;
+  if (cm->seq_params.monochrome) {
+    cm->seq_params.subsampling_x = 1;
+    cm->seq_params.subsampling_y = 1;
+  } else if (cm->seq_params.color_primaries == AOM_CICP_CP_BT_709 &&
+             cm->seq_params.transfer_characteristics == AOM_CICP_TC_SRGB &&
+             cm->seq_params.matrix_coefficients == AOM_CICP_MC_IDENTITY) {
+    cm->seq_params.subsampling_x = 0;
+    cm->seq_params.subsampling_y = 0;
+  } else {
+    if (cm->seq_params.profile == 0) {
+      cm->seq_params.subsampling_x = 1;
+      cm->seq_params.subsampling_y = 1;
+    } else if (cm->seq_params.profile == 1) {
+      cm->seq_params.subsampling_x = 0;
+      cm->seq_params.subsampling_y = 0;
+    } else {
+      if (cm->seq_params.bit_depth == AOM_BITS_12) {
+        cm->seq_params.subsampling_x = oxcf->chroma_subsampling_x;
+        cm->seq_params.subsampling_y = oxcf->chroma_subsampling_y;
+      } else {
+        cm->seq_params.subsampling_x = 1;
+        cm->seq_params.subsampling_y = 0;
+      }
+    }
   }
 
   cm->width = oxcf->width;
@@ -6376,4 +6397,51 @@ int64_t timebase_units_to_ticks(const aom_rational_t *timebase, int64_t n) {
 int64_t ticks_to_timebase_units(const aom_rational_t *timebase, int64_t n) {
   const int64_t round = TICKS_PER_SEC * timebase->num / 2 - 1;
   return (n * timebase->den + round) / timebase->num / TICKS_PER_SEC;
+}
+
+aom_fixed_buf_t *av1_get_global_headers(AV1_COMP *cpi) {
+  if (!cpi) return NULL;
+
+  uint8_t header_buf[512] = { 0 };
+  const uint32_t sequence_header_size =
+      write_sequence_header_obu(cpi, &header_buf[0]);
+  assert(sequence_header_size <= sizeof(header_buf));
+  if (sequence_header_size == 0) return NULL;
+
+  const size_t obu_header_size = 1;
+  const size_t size_field_size = aom_uleb_size_in_bytes(sequence_header_size);
+  const size_t payload_offset = obu_header_size + size_field_size;
+
+  if (payload_offset + sequence_header_size > sizeof(header_buf)) return NULL;
+  memmove(&header_buf[payload_offset], &header_buf[0], sequence_header_size);
+
+  if (write_obu_header(OBU_SEQUENCE_HEADER, 0, &header_buf[0]) !=
+      obu_header_size) {
+    return NULL;
+  }
+
+  size_t coded_size_field_size = 0;
+  if (aom_uleb_encode(sequence_header_size, size_field_size,
+                      &header_buf[obu_header_size],
+                      &coded_size_field_size) != 0) {
+    return NULL;
+  }
+  assert(coded_size_field_size == size_field_size);
+
+  aom_fixed_buf_t *global_headers =
+      (aom_fixed_buf_t *)malloc(sizeof(*global_headers));
+  if (!global_headers) return NULL;
+
+  const size_t global_header_buf_size =
+      obu_header_size + size_field_size + sequence_header_size;
+
+  global_headers->buf = malloc(global_header_buf_size);
+  if (!global_headers->buf) {
+    free(global_headers);
+    return NULL;
+  }
+
+  memcpy(global_headers->buf, &header_buf[0], global_header_buf_size);
+  global_headers->sz = global_header_buf_size;
+  return global_headers;
 }

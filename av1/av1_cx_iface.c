@@ -757,6 +757,10 @@ static aom_codec_err_t encoder_set_config(aom_codec_alg_priv_t *ctx,
   return res;
 }
 
+static aom_fixed_buf_t *encoder_get_global_headers(aom_codec_alg_priv_t *ctx) {
+  return av1_get_global_headers(ctx->cpi);
+}
+
 static aom_codec_err_t ctrl_get_quantizer(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   int *const arg = va_arg(args, int *);
@@ -1892,13 +1896,13 @@ CODEC_INTERFACE(aom_codec_av1_cx) = {
   },
   {
       // NOLINT
-      1,                      // 1 cfg map
-      encoder_usage_cfg_map,  // aom_codec_enc_cfg_map_t
-      encoder_encode,         // aom_codec_encode_fn_t
-      encoder_get_cxdata,     // aom_codec_get_cx_data_fn_t
-      encoder_set_config,     // aom_codec_enc_config_set_fn_t
-      NULL,                   // aom_codec_get_global_headers_fn_t
-      encoder_get_preview,    // aom_codec_get_preview_frame_fn_t
-      NULL                    // aom_codec_enc_mr_get_mem_loc_fn_t
+      1,                           // 1 cfg map
+      encoder_usage_cfg_map,       // aom_codec_enc_cfg_map_t
+      encoder_encode,              // aom_codec_encode_fn_t
+      encoder_get_cxdata,          // aom_codec_get_cx_data_fn_t
+      encoder_set_config,          // aom_codec_enc_config_set_fn_t
+      encoder_get_global_headers,  // aom_codec_get_global_headers_fn_t
+      encoder_get_preview,         // aom_codec_get_preview_frame_fn_t
+      NULL                         // aom_codec_enc_mr_get_mem_loc_fn_t
   }
 };
