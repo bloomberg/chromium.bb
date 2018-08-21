@@ -4861,7 +4861,7 @@
   <message name="IDS_ASSISTANT_READY_SCREEN_MESSAGE" desc="Message for assistant ready screen.">
     When your Chromebook is set up, press the Assistant button or say "Ok Google" to get help from your Assistant anytime.
   </message>
-  <message name="IDS_ASSISTANT_THIRD_PARTY_SCREEN_TITLE" desc="Title for assitant third party screen.">
+  <message name="IDS_ASSISTANT_THIRD_PARTY_SCREEN_TITLE" desc="Title for assistant third party screen.">
     Google Partners work with your Assistant to help you
   </message>
   <message name="IDS_ASSISTANT_CONTINUE_BUTTON" desc="Continue button for asssitant optin flow.">
@@ -4878,6 +4878,12 @@
   </message>
   <message name="IDS_ASSISTANT_ACTIVITY_CONTROL_POPUP_LINK" desc="Link text for activity control details popup.">
     Learn more
+  </message>
+  <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE" desc="Title for assistant timer notification.">
+    Timer done
+  </message>
+  <message name="IDS_ASSISTANT_STOP_TIMER_QUERY" desc="Query for stopping assistant timer.">
+    stop timer
   </message>
 
   <!-- Print Job Notification -->
