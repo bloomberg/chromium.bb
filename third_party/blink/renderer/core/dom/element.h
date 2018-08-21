@@ -989,6 +989,7 @@ class CORE_EXPORT Element : public ContainerNode {
   bool ShouldCallRecalcStyleForChildren(StyleRecalcChange);
 
   void RebuildPseudoElementLayoutTree(PseudoId, WhitespaceAttacher&);
+  void RebuildFirstLetterLayoutTree();
   void RebuildShadowRootLayoutTree(WhitespaceAttacher&);
   inline void CheckForEmptyStyleChange(const Node* node_before_change,
                                        const Node* node_after_change);
