@@ -53,16 +53,18 @@ TEST(CallStackProfileBuilderTest, SetProcessMilestone) {
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
 
-  ASSERT_EQ(2, profile.sample_size());
+  ASSERT_EQ(2, profile.deprecated_sample_size());
 
   uint32_t process_milestones = 0;
-  for (int i = 0; i < profile.sample(0).process_phase().size(); ++i)
-    process_milestones |= 1U << profile.sample(0).process_phase().Get(i);
+  for (int i = 0; i < profile.deprecated_sample(0).process_phase().size(); ++i)
+    process_milestones |=
+        1U << profile.deprecated_sample(0).process_phase().Get(i);
   EXPECT_EQ(0U, process_milestones);
 
   process_milestones = 0;
-  for (int i = 0; i < profile.sample(1).process_phase().size(); ++i)
-    process_milestones |= 1U << profile.sample(1).process_phase().Get(i);
+  for (int i = 0; i < profile.deprecated_sample(1).process_phase().size(); ++i)
+    process_milestones |=
+        1U << profile.deprecated_sample(1).process_phase().Get(i);
   EXPECT_EQ(1U << 1, process_milestones);
 }
 
@@ -112,15 +114,15 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
 
-  ASSERT_EQ(2, profile.sample_size());
-  ASSERT_EQ(2, profile.sample(0).frame_size());
-  ASSERT_TRUE(profile.sample(0).frame(0).has_module_id_index());
-  EXPECT_EQ(0, profile.sample(0).frame(0).module_id_index());
-  ASSERT_TRUE(profile.sample(0).frame(1).has_module_id_index());
-  EXPECT_EQ(1, profile.sample(0).frame(1).module_id_index());
-  ASSERT_EQ(1, profile.sample(1).frame_size());
-  ASSERT_TRUE(profile.sample(1).frame(0).has_module_id_index());
-  EXPECT_EQ(2, profile.sample(1).frame(0).module_id_index());
+  ASSERT_EQ(2, profile.deprecated_sample_size());
+  ASSERT_EQ(2, profile.deprecated_sample(0).frame_size());
+  ASSERT_TRUE(profile.deprecated_sample(0).frame(0).has_module_id_index());
+  EXPECT_EQ(0, profile.deprecated_sample(0).frame(0).module_id_index());
+  ASSERT_TRUE(profile.deprecated_sample(0).frame(1).has_module_id_index());
+  EXPECT_EQ(1, profile.deprecated_sample(0).frame(1).module_id_index());
+  ASSERT_EQ(1, profile.deprecated_sample(1).frame_size());
+  ASSERT_TRUE(profile.deprecated_sample(1).frame(0).has_module_id_index());
+  EXPECT_EQ(2, profile.deprecated_sample(1).frame(0).module_id_index());
 
   ASSERT_EQ(3, profile.module_id().size());
   ASSERT_TRUE(profile.module_id(0).has_build_id());
@@ -186,7 +188,7 @@ TEST(CallStackProfileBuilderTest, SamplesDeduped) {
   ASSERT_EQ(SampledProfile::PROCESS_STARTUP, proto.trigger_event());
 
   ASSERT_TRUE(proto.has_call_stack_profile());
-  ASSERT_EQ(1, proto.call_stack_profile().sample_size());
+  ASSERT_EQ(1, proto.call_stack_profile().deprecated_sample_size());
 }
 
 TEST(CallStackProfileBuilderTest, SamplesNotDeduped) {
@@ -233,7 +235,7 @@ TEST(CallStackProfileBuilderTest, SamplesNotDeduped) {
   ASSERT_EQ(SampledProfile::PROCESS_STARTUP, proto.trigger_event());
 
   ASSERT_TRUE(proto.has_call_stack_profile());
-  ASSERT_EQ(2, proto.call_stack_profile().sample_size());
+  ASSERT_EQ(2, proto.call_stack_profile().deprecated_sample_size());
 }
 
 TEST(CallStackProfileBuilderTest, Modules) {
@@ -267,16 +269,16 @@ TEST(CallStackProfileBuilderTest, Modules) {
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
 
-  ASSERT_EQ(1, profile.sample_size());
-  ASSERT_EQ(2, profile.sample(0).frame_size());
+  ASSERT_EQ(1, profile.deprecated_sample_size());
+  ASSERT_EQ(2, profile.deprecated_sample(0).frame_size());
 
-  ASSERT_FALSE(profile.sample(0).frame(0).has_module_id_index());
-  ASSERT_FALSE(profile.sample(0).frame(0).has_address());
+  ASSERT_FALSE(profile.deprecated_sample(0).frame(0).has_module_id_index());
+  ASSERT_FALSE(profile.deprecated_sample(0).frame(0).has_address());
 
-  ASSERT_TRUE(profile.sample(0).frame(1).has_module_id_index());
-  EXPECT_EQ(0, profile.sample(0).frame(1).module_id_index());
-  ASSERT_TRUE(profile.sample(0).frame(1).has_address());
-  EXPECT_EQ(0x10ULL, profile.sample(0).frame(1).address());
+  ASSERT_TRUE(profile.deprecated_sample(0).frame(1).has_module_id_index());
+  EXPECT_EQ(0, profile.deprecated_sample(0).frame(1).module_id_index());
+  ASSERT_TRUE(profile.deprecated_sample(0).frame(1).has_address());
+  EXPECT_EQ(0x10ULL, profile.deprecated_sample(0).frame(1).address());
 
   ASSERT_EQ(1, profile.module_id().size());
   ASSERT_TRUE(profile.module_id(0).has_build_id());
@@ -317,20 +319,20 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
 
-  ASSERT_EQ(1, profile.sample_size());
-  ASSERT_EQ(2, profile.sample(0).frame_size());
+  ASSERT_EQ(1, profile.deprecated_sample_size());
+  ASSERT_EQ(2, profile.deprecated_sample(0).frame_size());
 
   // Since module1 and module2 have the same base address, they are considered
   // the same module and therefore deduped.
-  ASSERT_TRUE(profile.sample(0).frame(0).has_module_id_index());
-  EXPECT_EQ(0, profile.sample(0).frame(0).module_id_index());
-  ASSERT_TRUE(profile.sample(0).frame(0).has_address());
-  EXPECT_EQ(0x10ULL, profile.sample(0).frame(0).address());
+  ASSERT_TRUE(profile.deprecated_sample(0).frame(0).has_module_id_index());
+  EXPECT_EQ(0, profile.deprecated_sample(0).frame(0).module_id_index());
+  ASSERT_TRUE(profile.deprecated_sample(0).frame(0).has_address());
+  EXPECT_EQ(0x10ULL, profile.deprecated_sample(0).frame(0).address());
 
-  ASSERT_TRUE(profile.sample(0).frame(1).has_module_id_index());
-  EXPECT_EQ(0, profile.sample(0).frame(1).module_id_index());
-  ASSERT_TRUE(profile.sample(0).frame(1).has_address());
-  EXPECT_EQ(0x20ULL, profile.sample(0).frame(1).address());
+  ASSERT_TRUE(profile.deprecated_sample(0).frame(1).has_module_id_index());
+  EXPECT_EQ(0, profile.deprecated_sample(0).frame(1).module_id_index());
+  ASSERT_TRUE(profile.deprecated_sample(0).frame(1).has_address());
+  EXPECT_EQ(0x20ULL, profile.deprecated_sample(0).frame(1).address());
 
   ASSERT_EQ(1, profile.module_id().size());
   ASSERT_TRUE(profile.module_id(0).has_build_id());
