@@ -131,7 +131,13 @@ bool LayoutTreeBuilderForElement::ShouldCreateLayoutObject() const {
 }
 
 ComputedStyle& LayoutTreeBuilderForElement::Style() const {
-  DCHECK(style_);
+  if (!style_) {
+    // TODO(futhark@chromium.org): this should never happen, but we currently
+    // have crashes in the wild because of this (https://crbug.com/875796).
+    // Please report if you ever end up here.
+    NOTREACHED();
+    style_ = node_->StyleForLayoutObject();
+  }
   return *style_;
 }
 
