@@ -110,6 +110,9 @@ void RegisterAutofillPrefs(user_prefs::PrefRegistrySyncable* registry) {
       autofill::prefs::kAutofillLastVersionDisusedAddressesDeleted, 0);
   registry->RegisterIntegerPref(
       autofill::prefs::kAutofillLastVersionDisusedCreditCardsDeleted, 0);
+  registry->RegisterStringPref(
+      autofill::prefs::kAutofillProfileValidity, "",
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 }
 
 void RunAndSignal(base::OnceClosure cb, WaitableEvent* event) {

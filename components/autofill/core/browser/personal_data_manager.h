@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
+#include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
@@ -424,6 +425,7 @@ class PersonalDataManager : public KeyedService,
                            ClearCreditCardNonSettingsOrigins);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            MoveJapanCityToStreetAddress);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, RequestProfileValidity);
 
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -520,6 +522,9 @@ class PersonalDataManager : public KeyedService,
   // TODO(rouslan): Remove this migration in or after October 2019. See bug:
   // https://crbug.com/871301
   void MoveJapanCityToStreetAddress();
+
+  // Get the profiles fields validity map by |guid|.
+  const ProfileValidityMap& GetProfileValidityByGUID(std::string& guid);
 
   // Decides which database type to use for server and local cards.
   std::unique_ptr<PersonalDatabaseHelper> database_helper_;
@@ -681,6 +686,9 @@ class PersonalDataManager : public KeyedService,
   // Applies various fixes and cleanups on autofill credit cards.
   void ApplyCardFixesAndCleanups();
 
+  // Resets |synced_profile_validity_|.
+  void ResetProfileValidity() { synced_profile_validity_.reset(); };
+
   const std::string app_locale_;
 
   // The default country code for new addresses.
@@ -688,6 +696,13 @@ class PersonalDataManager : public KeyedService,
 
   // The PrefService that this instance uses. Must outlive this instance.
   PrefService* pref_service_ = nullptr;
+
+  // Pref registrar for managing the change observers.
+  PrefChangeRegistrar pref_registrar_;
+
+  // Profiles validity read from the prefs. They are kept updated by
+  // observing changes in pref_services.
+  std::unique_ptr<UserProfileValidityMap> synced_profile_validity_;
 
   // The identity manager that this instance uses. Must outlive this instance.
   identity::IdentityManager* identity_manager_ = nullptr;

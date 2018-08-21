@@ -21,6 +21,9 @@ const char kAutofillAcceptSaveCreditCardPromptState[] =
 // preference.
 const char kAutofillBillingCustomerNumber[] = "billing_customer_number";
 
+// The field type, validity state map of all profiles.
+const char kAutofillProfileValidity[] = "autofill.profile_validity";
+
 // Boolean that is true if Autofill is enabled and allowed to save credit card
 // data.
 const char kAutofillCreditCardEnabled[] = "autofill.credit_card_enabled";
@@ -98,6 +101,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kAutofillLastVersionDisusedCreditCardsDeleted, 0);
   registry->RegisterBooleanPref(prefs::kAutofillCreditCardEnabled, true);
   registry->RegisterBooleanPref(prefs::kAutofillOrphanRowsRemoved, false);
+  registry->RegisterStringPref(
+      prefs::kAutofillProfileValidity, "",
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 }
 
 bool IsAutocompleteEnabled(const PrefService* prefs) {
@@ -139,6 +145,10 @@ bool IsPaymentsIntegrationEnabled(const PrefService* prefs) {
 
 void SetPaymentsIntegrationEnabled(PrefService* prefs, bool enabled) {
   prefs->SetBoolean(kAutofillWalletImportEnabled, enabled);
+}
+
+std::string GetAllProfilesValidityMapsEncodedString(const PrefService* prefs) {
+  return prefs->GetString(kAutofillProfileValidity);
 }
 
 }  // namespace prefs

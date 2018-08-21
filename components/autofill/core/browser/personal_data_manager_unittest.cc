@@ -6601,4 +6601,80 @@ TEST_F(PersonalDataManagerTest, UseCorrectStorageForDifferentCards) {
   EXPECT_EQ(profile, *profiles[0]);
 }
 
+// Requests profiles fields validities: empty profiles, non-existent profiles,
+// and normal ones.
+TEST_F(PersonalDataManagerTest, RequestProfileValidity) {
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  ProfileValidityMap profile_validity_map;
+  UserProfileValidityMap user_profile_validity_map;
+  std::string autofill_profile_validity;
+
+  // Empty validity map.
+  ASSERT_TRUE(
+      user_profile_validity_map.SerializeToString(&autofill_profile_validity));
+  personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
+                                           autofill_profile_validity);
+
+  std::string guid = "00000000-0000-0000-0000-0000000000001";
+  EXPECT_TRUE(personal_data_->GetProfileValidityByGUID(guid)
+                  .field_validity_states()
+                  .empty());
+
+  // Non-empty validity map.
+  std::vector<ServerFieldType> types = {
+      ADDRESS_HOME_LINE1, ADDRESS_HOME_STATE, ADDRESS_HOME_COUNTRY,
+      EMAIL_ADDRESS,      ADDRESS_HOME_ZIP,   NAME_FULL};
+  std::vector<AutofillProfile::ValidityState> states = {
+      AutofillProfile::UNSUPPORTED, AutofillProfile::EMPTY,
+      AutofillProfile::INVALID,     AutofillProfile::VALID,
+      AutofillProfile::UNVALIDATED, AutofillProfile::INVALID};
+  ASSERT_EQ(types.size(), states.size());
+  for (unsigned long i = 0; i < types.size(); ++i) {
+    (*profile_validity_map
+          .mutable_field_validity_states())[static_cast<int>(types[i])] =
+        static_cast<int>(states[i]);
+  }
+  (*user_profile_validity_map.mutable_profile_validity())[guid] =
+      profile_validity_map;
+  ASSERT_TRUE(
+      user_profile_validity_map.SerializeToString(&autofill_profile_validity));
+  personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
+                                           autofill_profile_validity);
+
+  // Add another non-empty valdity profile.
+  guid = "00000000-0000-0000-0000-0000000000002";
+  profile_validity_map.Clear();
+  autofill_profile_validity.clear();
+  (*profile_validity_map
+        .mutable_field_validity_states())[static_cast<int>(EMAIL_ADDRESS)] =
+      static_cast<int>(AutofillProfile::VALID);
+  (*user_profile_validity_map.mutable_profile_validity())[guid] =
+      profile_validity_map;
+  ASSERT_TRUE(
+      user_profile_validity_map.SerializeToString(&autofill_profile_validity));
+  personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
+                                           autofill_profile_validity);
+
+  // Profile not found.
+  guid = "00000000-0000-0000-0000-0000000000003";
+  EXPECT_TRUE(personal_data_->GetProfileValidityByGUID(guid)
+                  .field_validity_states()
+                  .empty());
+
+  // Existing Profiles.
+  guid = "00000000-0000-0000-0000-0000000000001";
+  auto validities =
+      personal_data_->GetProfileValidityByGUID(guid).field_validity_states();
+  ASSERT_EQ(validities.size(), types.size());
+  for (unsigned long i = 0; i < types.size(); ++i)
+    EXPECT_EQ(validities.at(types[i]), states[i]);
+
+  guid = "00000000-0000-0000-0000-0000000000002";
+  validities =
+      personal_data_->GetProfileValidityByGUID(guid).field_validity_states();
+  ASSERT_FALSE(validities.empty());
+  EXPECT_EQ(validities.at(EMAIL_ADDRESS), AutofillProfile::VALID);
+}
+
 }  // namespace autofill
