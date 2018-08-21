@@ -270,6 +270,10 @@ TEST_F('PrintPreviewPagesSettingsTest', 'InvalidPageRanges', function() {
   this.runMochaTest(pages_settings_test.TestNames.InvalidPageRanges);
 });
 
+TEST_F('PrintPreviewPagesSettingsTest', 'NupChangesPages', function() {
+  this.runMochaTest(pages_settings_test.TestNames.NupChangesPages);
+});
+
 PrintPreviewRestoreStateTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
@@ -836,11 +840,6 @@ TEST_F('PrintPreviewHeaderTest', 'HeaderWithDuplex', function() {
 
 TEST_F('PrintPreviewHeaderTest', 'HeaderWithCopies', function() {
   this.runMochaTest(header_test.TestNames.HeaderWithCopies);
-});
-
-TEST_F('PrintPreviewHeaderTest', 'HeaderWithNup', function() {
-  loadTimeData.overrideValues({pagesPerSheetEnabled: true});
-  this.runMochaTest(header_test.TestNames.HeaderWithNup);
 });
 
 TEST_F('PrintPreviewHeaderTest', 'HeaderChangesForState', function() {

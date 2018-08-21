@@ -76,7 +76,8 @@ Polymer({
   },
 
   observers: [
-    'onRangeChange_(errorState_, rangesToPrint_, settings.pages)',
+    'onRangeChange_(errorState_, rangesToPrint_, settings.pages, ' +
+        'settings.pagesPerSheet.value)',
     'onRadioChange_(allSelected_, customSelected_)'
   ],
 
@@ -114,6 +115,15 @@ Polymer({
    * @private
    */
   computeAllPagesArray_: function() {
+    // This computed function will unnecessarily get triggered if
+    // this.documentInfo is set to a new object, which happens whenever the
+    // preview refreshes, but the page count is the same as before. We do not
+    // want to trigger all observers unnecessarily.
+    if (!!this.allPagesArray_ &&
+        this.allPagesArray_.length == this.documentInfo.pageCount) {
+      return this.allPagesArray_;
+    }
+
     const array = new Array(this.documentInfo.pageCount);
     for (let i = 0; i < array.length; i++)
       array[i] = i + 1;
@@ -216,17 +226,22 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Whether pages setting and pagesToPrint_ match.
+   * @return {!Array<number>} The final page numbers, reflecting N-up setting.
+   *     Page numbers are 1 indexed, since these numbers are displayed to the
+   *     user.
+   * @private
    */
-  settingMatches_: function() {
-    const setting = this.getSetting('pages').value;
-    if (setting.length != this.pagesToPrint_.length)
-      return false;
-    for (let index = 0; index < this.pagesToPrint_.length; index++) {
-      if (this.pagesToPrint_[index] != setting[index])
-        return false;
-    }
-    return true;
+  getNupPages_: function() {
+    const pagesPerSheet =
+        /** @type {number} */ (this.getSettingValue('pagesPerSheet'));
+    if (pagesPerSheet <= 1 || this.pagesToPrint_.length == 0)
+      return this.pagesToPrint_;
+
+    const numPages = Math.ceil(this.pagesToPrint_.length / pagesPerSheet);
+    const nupPages = new Array(numPages);
+    for (let i = 0; i < nupPages.length; i++)
+      nupPages[i] = i + 1;
+    return nupPages;
   },
 
   /**
@@ -245,10 +260,16 @@ Polymer({
     }
     this.$.pageSettingsCustomInput.classList.remove('invalid');
     this.setSettingValid('pages', true);
-    if (!this.settingMatches_()) {
-      this.setSetting('pages', this.pagesToPrint_);
-      this.setSetting('ranges', this.rangesToPrint_);
+    const nupPages = this.getNupPages_();
+    const rangesChanged = !areRangesEqual(
+        this.rangesToPrint_,
+        /** @type {!Array} */ (this.getSettingValue('ranges')));
+    if (rangesChanged ||
+        nupPages.length != this.getSettingValue('pages').length) {
+      this.setSetting('pages', nupPages);
     }
+    if (rangesChanged)
+      this.setSetting('ranges', this.rangesToPrint_);
   },
 
   /** @private */

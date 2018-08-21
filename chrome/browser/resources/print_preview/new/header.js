@@ -49,8 +49,7 @@ Polymer({
 
   observers:
       ['update_(settings.copies.value, settings.duplex.value, ' +
-       'settings.pages.value, settings.pagesPerSheet.value, state, ' +
-       'destination.id)'],
+       'settings.pages.value, state, destination.id)'],
 
   /** @private {!print_preview_new.State} */
   lastState_: print_preview_new.State.NOT_READY,
@@ -96,14 +95,6 @@ Polymer({
     let numSheets = numPages;
     if (!saveToPdfOrDrive && this.getSettingValue('duplex')) {
       numSheets = Math.ceil(numPages / 2);
-    }
-
-    const pagesPerSheet = parseInt(this.getSettingValue('pagesPerSheet'), 10);
-
-    if (!Number.isNaN(pagesPerSheet)) {
-      assert(pagesPerSheet > 0);
-      numSheets = Math.ceil(numSheets / pagesPerSheet);
-      numPages = Math.ceil(numPages / pagesPerSheet);
     }
 
     const copies = parseInt(this.getSettingValue('copies'), 10);

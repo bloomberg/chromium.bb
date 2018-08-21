@@ -351,24 +351,10 @@ Polymer({
           this.onPreviewVisualStateChange_.bind(this));
     }
 
-    const pageNumbers =
-        /** @type {!Array<number>} */ (this.getSetting('pages').value);
-    let pageLabels = [];
-    const pagesPerSheet =
-        /** @type {number} */ (this.getSettingValue('pagesPerSheet'));
-    // When pagesPerSheet > 1, page labels should always refer to the N-up
-    // pages.
-    if (pagesPerSheet > 1) {
-      const nupPageCount = Math.ceil(pageNumbers.length / pagesPerSheet);
-      for (let index = 1; index <= nupPageCount; index++)
-        pageLabels.push(index);
-    } else {
-      pageLabels = pageNumbers;
-    }
-
     this.pluginLoaded_ = false;
     this.pluginProxy_.resetPrintPreviewMode(
-        previewUid, index, !this.getSettingValue('color'), pageLabels,
+        previewUid, index, !this.getSettingValue('color'),
+        /** @type {!Array<number>} */ (this.getSettingValue('pages')),
         this.documentInfo.isModifiable);
   },
 
