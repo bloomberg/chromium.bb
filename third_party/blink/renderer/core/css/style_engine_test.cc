@@ -87,14 +87,11 @@ TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
 }
 
 TEST_F(StyleEngineTest, AnalyzedInject) {
-  // TODO(crbug.com/875805): src: local() lookups do not work in DummyPageHolder
-  // on platforms where out of process lookups are needed for src: local()
-  // lookups.
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
      @font-face {
       font-family: 'Cool Font';
-      src: local(monospace);
+      src: url(dummy);
       font-weight: bold;
      }
      :root {
@@ -252,11 +249,10 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   font_face_parsed_sheet->ParseString(
       "@font-face {"
       " font-family: 'Cool Font';"
-      " src: local(monospace);"
+      " src: url(dummy);"
       " font-weight: bold;"
       " font-style: italic;"
-      "}"
-    );
+      "}");
   StyleSheetKey font_face_key("font_face");
   GetStyleEngine().InjectSheet(font_face_key, font_face_parsed_sheet,
                                WebDocument::kUserOrigin);
@@ -281,11 +277,10 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   style_element->SetInnerHTMLFromString(
       "@font-face {"
       " font-family: 'Cool Font';"
-      " src: local(monospace);"
+      " src: url(dummy);"
       " font-weight: normal;"
       " font-style: italic;"
-      "}"
-    );
+      "}");
   GetDocument().body()->AppendChild(style_element);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
