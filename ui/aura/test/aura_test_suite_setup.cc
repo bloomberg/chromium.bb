@@ -41,7 +41,7 @@ AuraTestSuiteSetup::AuraTestSuiteSetup() {
   DCHECK(!Env::HasInstance());
 #if BUILDFLAG(ENABLE_MUS)
   const Env::Mode env_mode =
-      features::IsAshInBrowserProcess() ? Env::Mode::LOCAL : Env::Mode::MUS;
+      features::IsUsingWindowService() ? Env::Mode::MUS : Env::Mode::LOCAL;
   env_ = Env::CreateInstance(env_mode);
   if (env_mode == Env::Mode::MUS)
     ConfigureMus();
