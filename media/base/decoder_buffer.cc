@@ -132,9 +132,9 @@ std::string DecoderBuffer::AsHumanReadableString() const {
     << " duration=" << duration_.InMicroseconds() << " size=" << size_
     << " side_data_size=" << side_data_size_
     << " is_key_frame=" << is_key_frame_
-    << " encrypted=" << (decrypt_config_ != NULL) << " discard_padding (ms)=("
-    << discard_padding_.first.InMilliseconds() << ", "
-    << discard_padding_.second.InMilliseconds() << ")";
+    << " encrypted=" << (decrypt_config_ != NULL) << " discard_padding (us)=("
+    << discard_padding_.first.InMicroseconds() << ", "
+    << discard_padding_.second.InMicroseconds() << ")";
 
   if (decrypt_config_)
     s << " decrypt=" << (*decrypt_config_);
