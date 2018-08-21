@@ -12515,6 +12515,8 @@ TEST_F(WebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
   cc_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
 }
 
+// Tests the integration between blink and cc with slimming paint where a layer
+// list is sent to cc.
 class SlimmingPaintWebFrameTest : public PaintTestConfigurations,
                                   public WebFrameTest {
  public:
@@ -12544,6 +12546,13 @@ class SlimmingPaintWebFrameTest : public PaintTestConfigurations,
         ->content_layers.size();
   }
 
+  cc::Layer* ContentLayerAt(size_t index) {
+    return paint_artifact_compositor()
+        ->GetExtraDataForTesting()
+        ->content_layers[index]
+        .get();
+  }
+
   size_t ScrollHitTestLayerCount() {
     return paint_artifact_compositor()
         ->GetExtraDataForTesting()
@@ -12564,11 +12573,9 @@ class SlimmingPaintWebFrameTest : public PaintTestConfigurations,
   std::unique_ptr<FrameTestHelpers::WebViewHelper> web_view_helper_;
 };
 
-INSTANTIATE_SPV2_TEST_CASE_P(SlimmingPaintWebFrameTest);
+INSTANTIATE_LAYER_LIST_TEST_CASE_P(SlimmingPaintWebFrameTest);
 
 TEST_P(SlimmingPaintWebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(),
                      "<style>"
                      "  #scrollable {"
@@ -12592,13 +12599,23 @@ TEST_P(SlimmingPaintWebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
       ToLayoutBox(scrollable->GetLayoutObject())->GetScrollableArea();
   EXPECT_NE(nullptr, scrollable_area);
 
-  EXPECT_EQ(ContentLayerCount(), 2u);
-  EXPECT_EQ(ScrollHitTestLayerCount(), 1u);
+  auto initial_content_layer_count = ContentLayerCount();
+  auto initial_scroll_hit_test_layer_count = ScrollHitTestLayerCount();
+
+  cc::Layer* overflow_scroll_layer = nullptr;
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    overflow_scroll_layer = ScrollHitTestLayerAt(ScrollHitTestLayerCount() - 1);
+  } else {
+    overflow_scroll_layer = ContentLayerAt(ContentLayerCount() - 2);
+  }
+  EXPECT_TRUE(overflow_scroll_layer->scrollable());
+  EXPECT_EQ(overflow_scroll_layer->scroll_container_bounds(),
+            gfx::Size(100, 100));
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
   // area using the DidScroll callback.
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
-  ScrollHitTestLayerAt(0)->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 1));
+  overflow_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 1));
   WebView()->UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 
@@ -12615,17 +12632,18 @@ TEST_P(SlimmingPaintWebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
 
   // The web scroll layer has not been deleted yet and we should be able to
   // apply impl-side offsets without crashing.
-  EXPECT_EQ(ScrollHitTestLayerCount(), 1u);
-  ScrollHitTestLayerAt(0)->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
+  EXPECT_EQ(ContentLayerCount(), initial_content_layer_count);
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_EQ(ScrollHitTestLayerCount(), initial_scroll_hit_test_layer_count);
+  overflow_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
 
   WebView()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(ContentLayerCount(), 1u);
-  EXPECT_EQ(ScrollHitTestLayerCount(), 0u);
+  EXPECT_LT(ContentLayerCount(), initial_content_layer_count);
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_LT(ScrollHitTestLayerCount(), initial_scroll_hit_test_layer_count);
 }
 
 TEST_P(SlimmingPaintWebFrameTest, FrameViewScroll) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(),
                      "<style>"
                      "  #forceScroll {"
@@ -12640,12 +12658,25 @@ TEST_P(SlimmingPaintWebFrameTest, FrameViewScroll) {
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
   EXPECT_NE(nullptr, scrollable_area);
 
-  EXPECT_EQ(ScrollHitTestLayerCount(), 1u);
+  cc::Layer* scroll_layer = nullptr;
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_EQ(ScrollHitTestLayerCount(), 1u);
+    scroll_layer = ScrollHitTestLayerAt(0);
+  } else {
+    // Find the last scroll layer.
+    for (size_t index = ContentLayerCount() - 1; index >= 0; index--) {
+      if (ContentLayerAt(index)->scrollable()) {
+        scroll_layer = ContentLayerAt(index);
+        break;
+      }
+    }
+  }
+  EXPECT_TRUE(scroll_layer->scrollable());
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
   // area using the DidScroll callback.
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
-  ScrollHitTestLayerAt(0)->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 1));
+  scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 1));
   WebView()->UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 }
