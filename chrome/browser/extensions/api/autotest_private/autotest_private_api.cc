@@ -43,6 +43,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "components/arc/arc_prefs.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -576,6 +577,8 @@ AutotestPrivateSetPlayStoreEnabledFunction::Run() {
       return RespondNow(
           Error("ARC enabled state cannot be changed for the current user"));
     }
+    profile->GetPrefs()->SetBoolean(arc::prefs::kArcLocationServiceEnabled,
+                                    true);
     return RespondNow(NoArguments());
   } else {
     return RespondNow(Error("ARC is not available for the current user"));
