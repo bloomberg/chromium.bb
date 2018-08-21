@@ -10,7 +10,6 @@
   (regex (user-homedir-path #"/Library/Preferences/com.apple.coreaudio.*"))
   (subpath (user-homedir-path "/Library/Audio/Plug-Ins"))
   (subpath "/Library/Audio/Plug-Ins")
-  (subpath "/Library/Video/Plug-Ins")
   (subpath "/Library/QuickTime")
   (subpath "/System/Library/Components")
   (subpath "/System/Library/Extensions"))
