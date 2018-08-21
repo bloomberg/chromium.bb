@@ -22,11 +22,6 @@ extern const CGFloat kTableViewSubViewHorizontalSpacing;
 // Animation duration for highlighting selected section header.
 extern const CGFloat kTableViewCellSelectionAnimationDuration;
 
-// Color and alpha used to highlight a cell with a middle gray color to
-// represent a user tap.
-extern const CGFloat kTableViewHighlightedCellColor;
-extern const CGFloat kTableViewHighlightedCellColorAlpha;
-
 // Setting the font size to 0 for a custom preferred font lets iOS manage
 // sizing.
 extern const CGFloat kUseDefaultFontSize;
