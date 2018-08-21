@@ -24,7 +24,6 @@ cr.define('multidevice_setup', () => {
        */
       let backwardButton;
 
-      const FAILURE = 'setup-failed-page';
       const SUCCESS = 'setup-succeeded-page';
       const START = 'start-setup-page';
 
@@ -40,27 +39,16 @@ cr.define('multidevice_setup', () => {
             multiDeviceSetupElement.$$('button-bar /deep/ #backward');
       });
 
-      // From SetupFailedPage
-
-      test('SetupFailedPage backward button closes UI', done => {
-        multiDeviceSetupElement.addEventListener('setup-exited', () => done());
-        multiDeviceSetupElement.visiblePageName_ = FAILURE;
-        backwardButton.click();
-      });
-
-      test('SetupFailedPage forward button goes to start page', () => {
-        multiDeviceSetupElement.visiblePageName_ = FAILURE;
-        forwardButton.click();
+      /** @param {string} visiblePageName */
+      function setVisiblePage(visiblePageName) {
+        multiDeviceSetupElement.visiblePageName_ = visiblePageName;
         Polymer.dom.flush();
-        assertEquals(
-            multiDeviceSetupElement.$$('iron-pages > .iron-selected').is,
-            START);
-      });
+      }
 
       // From SetupSucceededPage
 
       test('SetupSucceededPage forward button closes UI', done => {
-        multiDeviceSetupElement.visiblePageName_ = SUCCESS;
+        setVisiblePage(SUCCESS);
         multiDeviceSetupElement.addEventListener('setup-exited', () => done());
         forwardButton.click();
       });
@@ -74,7 +62,7 @@ cr.define('multidevice_setup', () => {
           done();
         });
 
-        multiDeviceSetupElement.visiblePageName_ = START;
+        setVisiblePage(START);
         multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed = true;
         multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.OOBE;
 
@@ -89,7 +77,7 @@ cr.define('multidevice_setup', () => {
               done();
             });
 
-            multiDeviceSetupElement.visiblePageName_ = START;
+            setVisiblePage(START);
             multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed =
                 true;
             multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.OOBE;
@@ -102,7 +90,7 @@ cr.define('multidevice_setup', () => {
       test('StartSetupPage backward button closes UI (post-OOBE)', done => {
         multiDeviceSetupElement.addEventListener('setup-exited', () => done());
 
-        multiDeviceSetupElement.visiblePageName_ = START;
+        setVisiblePage(START);
         multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed = true;
         multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
 
@@ -120,7 +108,7 @@ cr.define('multidevice_setup', () => {
                     done();
                 });
 
-            multiDeviceSetupElement.visiblePageName_ = START;
+            setVisiblePage(START);
             multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed =
                 true;
             multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;

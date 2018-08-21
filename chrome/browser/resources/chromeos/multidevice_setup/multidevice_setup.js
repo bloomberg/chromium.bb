@@ -95,6 +95,15 @@ cr.define('multidevice_setup', function() {
 
     /** @private */
     onForwardNavigationRequested_: function() {
+      this.visiblePage_.getCanNavigateToNextPage().then((canNavigate) => {
+        if (!canNavigate)
+          return;
+        this.navigateForward_();
+      });
+    },
+
+    /** @private */
+    navigateForward_: function() {
       switch (this.visiblePageName_) {
         case PageName.FAILURE:
           this.visiblePageName_ = PageName.START;
