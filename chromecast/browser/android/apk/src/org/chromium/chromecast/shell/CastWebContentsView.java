@@ -77,7 +77,13 @@ class CastWebContentsView {
                     contentView, window, WebContents.createDefaultInternalsHolder());
             // Enable display of current webContents.
             webContents.onShow();
-            return webContents::onHide;
+            return () -> {
+                if (!webContents.isDestroyed()) {
+                    // WebContents can be destroyed by the app before CastWebContentsComponent
+                    // unbinds, which is why we need this check.
+                    webContents.onHide();
+                }
+            };
         };
     }
 }
