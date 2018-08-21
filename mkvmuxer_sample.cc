@@ -543,46 +543,48 @@ int main(int argc, char* argv[]) {
         video->set_frame_rate(rate);
       }
 
-      if (vp9_profile >= 0 || vp9_level >= 0) {
-        const int kMaxVp9PrivateSize = 6;
-        unsigned char private_data[kMaxVp9PrivateSize];
-        int private_size = 0;
-        if (vp9_profile >= 0) {
-          if (vp9_profile < 0 || vp9_profile > 3) {
-            printf("\n VP9 profile(%d) is not valid.\n", vp9_profile);
-            return EXIT_FAILURE;
-          }
-          const uint8_t kVp9ProfileId = 1;
-          const uint8_t kVp9ProfileIdLength = 1;
-          private_data[private_size++] = kVp9ProfileId;
-          private_data[private_size++] = kVp9ProfileIdLength;
-          private_data[private_size++] = vp9_profile;
-        }
-
-        if (vp9_level >= 0) {
-          const int kNumLevels = 14;
-          const int levels[kNumLevels] = {10, 11, 20, 21, 30, 31, 40,
-                                          41, 50, 51, 52, 60, 61, 62};
-          bool level_is_valid = false;
-          for (int i = 0; i < kNumLevels; ++i) {
-            if (vp9_level == levels[i]) {
-              level_is_valid = true;
-              break;
+      if (!strcmp(video->codec_id(), mkvmuxer::Tracks::kVp9CodecId)) {
+        if (vp9_profile >= 0 || vp9_level >= 0) {
+          const int kMaxVp9PrivateSize = 6;
+          unsigned char private_data[kMaxVp9PrivateSize];
+          int private_size = 0;
+          if (vp9_profile >= 0) {
+            if (vp9_profile < 0 || vp9_profile > 3) {
+              printf("\n VP9 profile(%d) is not valid.\n", vp9_profile);
+              return EXIT_FAILURE;
             }
+            const uint8_t kVp9ProfileId = 1;
+            const uint8_t kVp9ProfileIdLength = 1;
+            private_data[private_size++] = kVp9ProfileId;
+            private_data[private_size++] = kVp9ProfileIdLength;
+            private_data[private_size++] = vp9_profile;
           }
-          if (!level_is_valid) {
-            printf("\n VP9 level(%d) is not valid.\n", vp9_level);
+
+          if (vp9_level >= 0) {
+            const int kNumLevels = 14;
+            const int levels[kNumLevels] = {10, 11, 20, 21, 30, 31, 40,
+                                            41, 50, 51, 52, 60, 61, 62};
+            bool level_is_valid = false;
+            for (int i = 0; i < kNumLevels; ++i) {
+              if (vp9_level == levels[i]) {
+                level_is_valid = true;
+                break;
+              }
+            }
+            if (!level_is_valid) {
+              printf("\n VP9 level(%d) is not valid.\n", vp9_level);
+              return EXIT_FAILURE;
+            }
+            const uint8_t kVp9LevelId = 2;
+            const uint8_t kVp9LevelIdLength = 1;
+            private_data[private_size++] = kVp9LevelId;
+            private_data[private_size++] = kVp9LevelIdLength;
+            private_data[private_size++] = vp9_level;
+          }
+          if (!video->SetCodecPrivate(private_data, private_size)) {
+            printf("\n Could not add video private data.\n");
             return EXIT_FAILURE;
           }
-          const uint8_t kVp9LevelId = 2;
-          const uint8_t kVp9LevelIdLength = 1;
-          private_data[private_size++] = kVp9LevelId;
-          private_data[private_size++] = kVp9LevelIdLength;
-          private_data[private_size++] = vp9_level;
-        }
-        if (!video->SetCodecPrivate(private_data, private_size)) {
-          printf("\n Could not add video private data.\n");
-          return EXIT_FAILURE;
         }
       }
     } else if (track_type == Track::kAudio && output_audio) {
