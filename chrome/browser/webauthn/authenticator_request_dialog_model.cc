@@ -116,9 +116,11 @@ void AuthenticatorRequestDialogModel::
   if (most_likely_transport) {
     StartGuidedFlowForTransport(
         ToAuthenticatorTransport(*most_likely_transport));
-  } else {
-    // TODO(engedy): Show error screen if no transport available at all.
+  } else if (!transport_availability_.available_transports.empty()) {
+    DCHECK_GE(transport_availability_.available_transports.size(), 2u);
     SetCurrentStep(Step::kTransportSelection);
+  } else {
+    SetCurrentStep(Step::kErrorNoAvailableTransports);
   }
 }
 

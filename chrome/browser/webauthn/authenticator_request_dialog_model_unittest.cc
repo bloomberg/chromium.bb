@@ -94,8 +94,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       {{},
        FidoTransportProtocol::kNearFieldCommunication,
        false,
-       // TODO: Update this when the error screen is implemented.
-       Step::kTransportSelection},
+       Step::kErrorNoAvailableTransports},
   };
 
   for (const auto& test_case : kTestCases) {

@@ -109,6 +109,20 @@ class AuthenticatorTimeoutErrorModel : public AuthenticatorSheetModelBase {
   base::string16 GetStepDescription() const override;
 };
 
+class AuthenticatorNoAvailableTransportsErrorModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  bool IsBackButtonVisible() const override;
+  base::string16 GetCancelButtonLabel() const override;
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+};
+
 class AuthenticatorBlePowerOnManualSheetModel
     : public AuthenticatorSheetModelBase {
  public:
