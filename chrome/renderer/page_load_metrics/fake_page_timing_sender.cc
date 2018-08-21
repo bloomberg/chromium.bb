@@ -18,8 +18,10 @@ void FakePageTimingSender::SendTiming(
     const mojom::PageLoadTimingPtr& timing,
     const mojom::PageLoadMetadataPtr& metadata,
     mojom::PageLoadFeaturesPtr new_features,
+    mojom::PageLoadDataUsePtr new_data_use,
     std::vector<mojom::ResourceDataUpdatePtr> resources) {
-  validator_->UpdateTiming(timing, metadata, new_features, resources);
+  validator_->UpdateTiming(timing, metadata, new_features, new_data_use,
+                           resources);
 }
 
 FakePageTimingSender::PageTimingValidator::PageTimingValidator() {}
@@ -95,6 +97,7 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
     const mojom::PageLoadTimingPtr& timing,
     const mojom::PageLoadMetadataPtr& metadata,
     const mojom::PageLoadFeaturesPtr& new_features,
+    const mojom::PageLoadDataUsePtr& new_data_use,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
   actual_timings_.push_back(timing.Clone());
   for (const auto feature : new_features->features) {

@@ -420,6 +420,14 @@ class PageLoadMetricsObserver {
   virtual void OnFeaturesUsageObserved(const mojom::PageLoadFeatures& features,
                                        const PageLoadExtraInfo& extra_info) {}
 
+  // Invoked when data use is observed for the page load across all frames.
+  // These bytes are the additional bytes reported since the last call to
+  // OnDataUseObserved. |received_data_length| is the received network bytes.
+  // |data_reduction_proxy_bytes_saved| is the bytes saved by the data reduction
+  // proxy, which could be negative if the proxy had inflated the resource.
+  virtual void OnDataUseObserved(int64_t received_data_length,
+                                 int64_t data_reduction_proxy_bytes_saved) {}
+
   // Invoked when there is data use for loading a resource on the page
   // acrosss all frames. This only contains resources that have had new
   // data use since the last callback.

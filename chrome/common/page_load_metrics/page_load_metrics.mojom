@@ -155,6 +155,19 @@ struct PageLoadFeatures {
   array<int32> animated_css_properties;
 };
 
+// Data used for the page load.
+// TODO(johnidel): Remove/deprecate this struct once per resource updates are
+// being sent to the browser
+struct PageLoadDataUse {
+  // Network bytes received for the page load.
+  int64 received_data_length = 0;
+
+  // The number of bytes saved by the data reduction proxy. Will be zero when
+  // data reduction proxy is not used. Can be negative if the proxy inflated the
+  // resource.
+  int64 data_reduction_proxy_bytes_saved = 0;
+};
+
 struct ResourceDataUpdate {
   // The id for the resource request.
   int32 request_id = 0;
@@ -169,10 +182,6 @@ struct ResourceDataUpdate {
 
   // Whether this resource load has completed.
   bool is_complete;
-
-  // Compression ratio estimated from the response headers if data saver was
-  // used.
-  double data_reduction_proxy_compression_ratio_estimate;
 };
 
 // Sent from renderer to browser process when the PageLoadTiming for the
@@ -181,5 +190,6 @@ interface PageLoadMetrics {
   UpdateTiming(PageLoadTiming page_load_timing,
                PageLoadMetadata page_load_metadata,
                PageLoadFeatures new_features,
+               PageLoadDataUse data_use,
                array<ResourceDataUpdate> resources);
 };

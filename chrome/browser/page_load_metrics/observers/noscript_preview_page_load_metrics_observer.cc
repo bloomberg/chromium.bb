@@ -178,12 +178,10 @@ void NoScriptPreviewPageLoadMetricsObserver::RecordTimingMetrics(
   }
 }
 
-void NoScriptPreviewPageLoadMetricsObserver::OnResourceDataUseObserved(
-    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
-        resources) {
-  for (auto const& resource : resources) {
-    total_network_bytes_ += resource->delta_bytes;
-  }
+void NoScriptPreviewPageLoadMetricsObserver::OnDataUseObserved(
+    int64_t received_data_length,
+    int64_t data_reduction_proxy_bytes_saved) {
+  total_network_bytes_ += received_data_length;
 }
 
 void NoScriptPreviewPageLoadMetricsObserver::WriteToSavings(

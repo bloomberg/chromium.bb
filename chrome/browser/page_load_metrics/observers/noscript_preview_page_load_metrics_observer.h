@@ -53,9 +53,8 @@ class NoScriptPreviewPageLoadMetricsObserver
   void OnLoadEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnResourceDataUseObserved(
-      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
-          resources) override;
+  void OnDataUseObserved(int64_t received_data_length,
+                         int64_t data_reduction_proxy_bytes_saved) override;
 
  protected:
   // Virtual for testing. Writes the savings to the data saver feature.

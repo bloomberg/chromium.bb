@@ -30,9 +30,8 @@ class DataSaverSiteBreakdownMetricsObserver
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
 
-  void OnResourceDataUseObserved(
-      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
-          resources) override;
+  void OnDataUseObserved(int64_t received_data_length,
+                         int64_t data_reduction_proxy_bytes_saved) override;
 
   std::string committed_host_;
 

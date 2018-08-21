@@ -38,7 +38,8 @@ class PageTimingMetricsSender {
   PageTimingMetricsSender(std::unique_ptr<PageTimingSender> sender,
                           std::unique_ptr<base::OneShotTimer> timer,
                           mojom::PageLoadTimingPtr initial_timing,
-                          std::unique_ptr<PageResourceDataUse> initial_request);
+                          std::unique_ptr<PageResourceDataUse> initial_request,
+                          mojom::PageLoadDataUsePtr initial_data_use);
   ~PageTimingMetricsSender();
 
   void DidObserveLoadingBehavior(blink::WebLoadingBehaviorFlag behavior);
@@ -71,6 +72,8 @@ class PageTimingMetricsSender {
   // A list of newly observed features during page load, to be sent to the
   // browser.
   mojom::PageLoadFeaturesPtr new_features_;
+  // Additional data use observed during the page load.
+  mojom::PageLoadDataUsePtr new_data_use_;
 
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       features_sent_;
