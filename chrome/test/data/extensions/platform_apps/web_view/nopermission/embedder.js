@@ -5,21 +5,44 @@
 // This test verifies that the <webview> API is undefined if the webview
 // permission is not specified in the manifest file.
 function testAPIMethodExistence() {
-  var apiMethodsToCheck = [
+  // See public-facing API functions in web_view_api_methods.js
+  var WEB_VIEW_API_METHODS = [
+    'addContentScripts',
     'back',
     'canGoBack',
     'canGoForward',
+    'captureVisibleRegion',
+    'clearData',
+    'executeScript',
+    'find',
     'forward',
+    'getAudioState',
     'getProcessId',
+    'getUserAgent',
+    'getZoom',
+    'getZoomMode',
     'go',
+    'insertCSS',
+    'isAudioMuted',
+    'isUserAgentOverridden',
+    'loadDataWithBaseUrl',
+    'print',
+    'removeContentScripts',
     'reload',
+    'setAudioMuted',
+    'setUserAgentOverride',
+    'setZoom',
+    'setZoomMode',
     'stop',
+    'stopFinding',
     'terminate'
   ];
+
   var webview = document.createElement('webview');
-  for (var i = 0; i < apiMethodsToCheck.length; ++i) {
-    chrome.test.assertEq('undefined',
-                         typeof webview[apiMethodsToCheck[i]]);
+  for (var methodName of WEB_VIEW_API_METHODS) {
+    chrome.test.assertEq(
+        'undefined', typeof webview[methodName],
+        'Method should not be defined: ' + methodName);
   }
 
   // Check contentWindow.

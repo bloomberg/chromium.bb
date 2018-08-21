@@ -381,6 +381,10 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAPIMethodExistence) {
   RunTest("testAPIMethodExistence", "web_view/apitest");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestCustomElementCallbacksInaccessible) {
+  RunTest("testCustomElementCallbacksInaccessible", "web_view/apitest");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAssignSrcAfterCrash) {
   RunTest("testAssignSrcAfterCrash", "web_view/apitest");
 }
