@@ -6639,7 +6639,7 @@ static int mov_read_dops(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     const int OPUS_SEEK_PREROLL_MS = 80;
     AVStream *st;
     size_t size;
-    int16_t pre_skip;
+    uint16_t pre_skip;
 
     if (c->fc->nb_streams < 1)
         return 0;
