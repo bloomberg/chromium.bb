@@ -37,6 +37,9 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   static const SkColor kSeparatorColor;
   static const SkColor kWarningColor;
 
+  // Horizontal spacing between value and description in the row.
+  static const int kValueLabelPadding = 24;
+
   static int GetCornerRadius();
 
  protected:
