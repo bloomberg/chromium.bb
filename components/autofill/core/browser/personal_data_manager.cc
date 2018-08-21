@@ -468,7 +468,16 @@ void PersonalDataManager::Init(
     bool is_off_the_record) {
   CountryNames::SetLocaleString(app_locale_);
   database_helper_->Init(profile_database, account_database);
+
   SetPrefService(pref_service);
+
+  // Listen for the preference changes.
+  pref_registrar_.Init(pref_service);
+  pref_registrar_.Add(
+      prefs::kAutofillProfileValidity,
+      base::BindRepeating(&PersonalDataManager::ResetProfileValidity,
+                          base::Unretained(this)));
+
   identity_manager_ = identity_manager;
   is_off_the_record_ = is_off_the_record;
 
@@ -1539,6 +1548,22 @@ void PersonalDataManager::MoveJapanCityToStreetAddress() {
 
   // Set the pref so that this migration is never run again.
   pref_service_->SetBoolean(prefs::kAutofillJapanCityFieldMigrated, true);
+}
+
+const ProfileValidityMap& PersonalDataManager::GetProfileValidityByGUID(
+    std::string& guid) {
+  static const ProfileValidityMap& empty_validity_map = ProfileValidityMap();
+  if (!synced_profile_validity_) {
+    synced_profile_validity_ = std::make_unique<UserProfileValidityMap>();
+    if (!synced_profile_validity_->ParseFromString(
+            ::autofill::prefs::GetAllProfilesValidityMapsEncodedString(
+                pref_service_)))
+      return empty_validity_map;
+  }
+  auto it = synced_profile_validity_->profile_validity().find(guid);
+  if (it != synced_profile_validity_->profile_validity().end())
+    return it->second;
+  return empty_validity_map;
 }
 
 // TODO(crbug.com/618448): Refactor MergeProfile to not depend on class

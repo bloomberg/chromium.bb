@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_PREFS_H_
 #define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_PREFS_H_
 
+#include <string>
+
 class PrefService;
 
 namespace user_prefs {
@@ -30,6 +32,7 @@ extern const char kAutofillOrphanRowsRemoved[];
 extern const char kAutofillProfileEnabled[];
 extern const char kAutofillWalletImportEnabled[];
 extern const char kAutofillWalletImportStorageCheckboxState[];
+extern const char kAutofillProfileValidity[];
 
 // Possible values for previous user decision when we displayed a save credit
 // card prompt.
@@ -62,6 +65,8 @@ void SetCreditCardAutofillEnabled(PrefService* prefs, bool enabled);
 bool IsPaymentsIntegrationEnabled(const PrefService* prefs);
 
 void SetPaymentsIntegrationEnabled(PrefService* prefs, bool enabled);
+
+std::string GetAllProfilesValidityMapsEncodedString(const PrefService* prefs);
 
 }  // namespace prefs
 }  // namespace autofill
