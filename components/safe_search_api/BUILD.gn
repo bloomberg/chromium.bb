@@ -18,10 +18,11 @@ source_set("safe_search_api") {
   ]
 }
 
-source_set("unit_tests") {
+source_set("test_support") {
   testonly = true
   sources = [
-    "url_checker_unittest.cc",
+    "stub_url_checker.cc",
+    "stub_url_checker.h",
   ]
   deps = [
     ":safe_search_api",
@@ -31,6 +32,21 @@ source_set("unit_tests") {
     "//net/traffic_annotation:test_support",
     "//services/network:test_support",
     "//services/network/public/cpp",
+    "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "url_checker_unittest.cc",
+  ]
+  deps = [
+    ":safe_search_api",
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//net",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

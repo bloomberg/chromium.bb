@@ -27,6 +27,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "components/policy/core/browser/url_blacklist_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -513,6 +514,9 @@ void URLBlacklistManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(policy_prefs::kUrlBlacklist);
   registry->RegisterListPref(policy_prefs::kUrlWhitelist);
+  registry->RegisterIntegerPref(
+      policy_prefs::kSafeSitesFilterBehavior,
+      static_cast<int>(SafeSitesFilterBehavior::kSafeSitesFilterDisabled));
 }
 
 }  // namespace policy

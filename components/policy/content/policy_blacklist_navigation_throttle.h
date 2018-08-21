@@ -5,57 +5,24 @@
 #ifndef COMPONENTS_POLICY_CONTENT_POLICY_BLACKLIST_NAVIGATION_THROTTLE_H_
 #define COMPONENTS_POLICY_CONTENT_POLICY_BLACKLIST_NAVIGATION_THROTTLE_H_
 
-#include "base/memory/singleton.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "components/keyed_service/core/keyed_service.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/navigation_throttle.h"
 
-// PolicyBlacklistService and PolicyBlacklistFactory provide a way for
-// us to access URLBlacklistManager, a policy block list service based on
-// the Preference Service. The URLBlacklistManager responses to permission
-// changes and is per Profile.  From the PolicyBlacklistNavigationThrottle,
-// we access this service to provide information about what we should block.
-class PolicyBlacklistService : public KeyedService {
- public:
-  explicit PolicyBlacklistService(
-      std::unique_ptr<policy::URLBlacklistManager> url_blacklist_manager);
-  ~PolicyBlacklistService() override;
+class PolicyBlacklistService;
+class PrefService;
 
-  bool IsURLBlocked(const GURL& url) const;
-  policy::URLBlacklist::URLBlacklistState GetURLBlacklistState(
-      const GURL& url) const;
-
- private:
-  std::unique_ptr<policy::URLBlacklistManager> url_blacklist_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyBlacklistService);
-};
-
-class PolicyBlacklistFactory : public BrowserContextKeyedServiceFactory {
- public:
-  static PolicyBlacklistFactory* GetInstance();
-  static PolicyBlacklistService* GetForProfile(
-      content::BrowserContext* context);
-
- private:
-  PolicyBlacklistFactory();
-  ~PolicyBlacklistFactory() override;
-  friend struct base::DefaultSingletonTraits<PolicyBlacklistFactory>;
-
-  // BrowserContextKeyedServiceFactory implementation
-  KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const override;
-
-  // Finds which browser context (if any) to use.
-  content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyBlacklistFactory);
-};
+namespace content {
+class BrowserContext;
+class NavigationHandle;
+}  // namespace content
 
 // PolicyBlacklistNavigationThrottle provides a simple way to block a navigation
-// based on the URLBlacklistManager.
+// based on the URLBlacklistManager and Safe Search API. If the URL is
+// blacklisted or whitelisted, the throttle will immediately block or allow the
+// navigation. Otherwise, the URL will be checked against the Safe Search API if
+// the SafeSitesFilterBehavior policy is enabled. This final check may be
+// asynchronous if the result hasn't been cached yet.
 class PolicyBlacklistNavigationThrottle : public content::NavigationThrottle {
  public:
   PolicyBlacklistNavigationThrottle(
@@ -70,7 +37,22 @@ class PolicyBlacklistNavigationThrottle : public content::NavigationThrottle {
   const char* GetNameForLogging() override;
 
  private:
+  // Callback from PolicyBlacklistService.
+  void CheckSafeSearchCallback(bool is_safe);
+
   PolicyBlacklistService* blacklist_service_;
+
+  PrefService* prefs_;
+
+  // Whether the request was deferred in order to check the Safe Search API.
+  bool deferred_ = false;
+
+  // Whether the Safe Search API callback determined the in-progress navigation
+  // should be canceled.
+  bool should_cancel_ = false;
+
+  base::WeakPtrFactory<PolicyBlacklistNavigationThrottle> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(PolicyBlacklistNavigationThrottle);
 };
 

@@ -188,6 +188,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/payments/content/payment_request_display_manager.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
+#include "components/policy/content/policy_blacklist_service.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -950,7 +951,7 @@ void LaunchURL(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PolicyBlacklistService* service =
-      PolicyBlacklistFactory::GetForProfile(profile);
+      PolicyBlacklistFactory::GetForBrowserContext(profile);
   if (service) {
     const policy::URLBlacklist::URLBlacklistState url_state =
         service->GetURLBlacklistState(url);

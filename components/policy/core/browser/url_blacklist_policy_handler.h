@@ -12,6 +12,13 @@
 
 namespace policy {
 
+// Possible values for kSafeSitesFilterBehavior pref from policy. Values must
+// coincide with SafeSitesFilterBehavior from policy_templates.json.
+enum class SafeSitesFilterBehavior {
+  kSafeSitesFilterDisabled = 0,
+  kSafeSitesFilterEnabled = 1,
+};
+
 // Handles URLBlacklist policies.
 class POLICY_EXPORT URLBlacklistPolicyHandler
     : public ConfigurationPolicyHandler {
