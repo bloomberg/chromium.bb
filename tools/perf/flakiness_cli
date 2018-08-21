@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""This tool provides a command line interface for the flakiness dashboard."""
+
+import argparse
+import sys
+
+from test_results import api
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  subparsers = parser.add_subparsers(dest='action')
+  subparsers.required = True
+  subparser = subparsers.add_parser('builders')
+  subparser = subparsers.add_parser('results')
+  subparser.add_argument('master')
+  subparser.add_argument('builder')
+  subparser.add_argument('test_type')
+  args = parser.parse_args()
+
+  if args.action == 'builders':
+    print api.GetBuilders()
+  elif args.action == 'results':
+    print api.GetTestResults(args.master, args.builder, args.test_type)
+  else:
+    raise NotImplementedError(args.action)
+
+
+if __name__ == '__main__':
+  sys.exit(main())
