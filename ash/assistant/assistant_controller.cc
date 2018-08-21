@@ -193,7 +193,6 @@ void AssistantController::OnDeepLinkReceived(
       Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
       break;
     case DeepLinkType::kUnsupported:
-    case DeepLinkType::kExplore:
     case DeepLinkType::kOnboarding:
     case DeepLinkType::kQuery:
     case DeepLinkType::kReminders:

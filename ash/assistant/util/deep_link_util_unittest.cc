@@ -127,7 +127,6 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsBool) {
 TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
   const std::map<std::string, DeepLinkType> test_cases = {
       // OK: Supported deep links.
-      {"googleassistant://explore", DeepLinkType::kExplore},
       {"googleassistant://onboarding", DeepLinkType::kOnboarding},
       {"googleassistant://reminders", DeepLinkType::kReminders},
       {"googleassistant://send-feedback", DeepLinkType::kFeedback},
@@ -137,7 +136,6 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
       {"googleassistant://whats-on-my-screen", DeepLinkType::kWhatsOnMyScreen},
 
       // OK: Parameterized deep links.
-      {"googleassistant://explore?param=true", DeepLinkType::kExplore},
       {"googleassistant://onboarding?param=true", DeepLinkType::kOnboarding},
       {"googleassistant://reminders?param=true", DeepLinkType::kReminders},
       {"googleassistant://send-feedback?param=true", DeepLinkType::kFeedback},
@@ -149,7 +147,6 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
        DeepLinkType::kWhatsOnMyScreen},
 
       // UNSUPPORTED: Deep links are case sensitive.
-      {"GOOGLEASSISTANT://EXPLORE", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://ONBOARDING", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://REMINDERS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://SEND-FEEDBACK", DeepLinkType::kUnsupported},
@@ -174,7 +171,6 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
 TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
   const std::map<std::string, DeepLinkType> test_cases = {
       // OK: Supported deep link types.
-      {"googleassistant://explore", DeepLinkType::kExplore},
       {"googleassistant://onboarding", DeepLinkType::kOnboarding},
       {"googleassistant://reminders", DeepLinkType::kReminders},
       {"googleassistant://send-feedback", DeepLinkType::kFeedback},
@@ -184,7 +180,6 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
       {"googleassistant://whats-on-my-screen", DeepLinkType::kWhatsOnMyScreen},
 
       // OK: Parameterized deep link types.
-      {"googleassistant://explore?param=true", DeepLinkType::kExplore},
       {"googleassistant://onboarding?param=true", DeepLinkType::kOnboarding},
       {"googleassistant://reminders?param=true", DeepLinkType::kReminders},
       {"googleassistant://send-feedback?param=true", DeepLinkType::kFeedback},
@@ -196,7 +191,6 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
        DeepLinkType::kWhatsOnMyScreen},
 
       // UNSUPPORTED: Deep links are case sensitive.
-      {"GOOGLEASSISTANT://EXPLORE", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://ONBOARDING", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://REMINDERS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://SEND-FEEDBACK", DeepLinkType::kUnsupported},
@@ -218,7 +212,6 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
 TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
   const std::map<std::string, bool> test_cases = {
       // OK: Supported deep links.
-      {"googleassistant://explore", true},
       {"googleassistant://onboarding", true},
       {"googleassistant://reminders", true},
       {"googleassistant://send-feedback", true},
@@ -228,7 +221,6 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
       {"googleassistant://whats-on-my-screen", true},
 
       // OK: Parameterized deep links.
-      {"googleassistant://explore?param=true", true},
       {"googleassistant://onboarding?param=true", true},
       {"googleassistant://reminders?param=true", true},
       {"googleassistant://send-feedback?param=true", true},
@@ -238,7 +230,6 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
       {"googleassistant://whats-on-my-screen?param=true", true},
 
       // FAIL: Deep links are case sensitive.
-      {"GOOGLEASSISTANT://EXPLORE", false},
       {"GOOGLEASSISTANT://ONBOARDING", false},
       {"GOOGLEASSISTANT://REMINDERS", false},
       {"GOOGLEASSISTANT://SEND-FEEDBACK", false},
@@ -263,17 +254,14 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
 TEST_F(DeepLinkUnitTest, GetWebUrl) {
   const std::map<std::string, bool> test_cases = {
       // OK: Supported web deep links.
-      {"googleassistant://explore", true},
       {"googleassistant://reminders", true},
       {"googleassistant://settings", true},
 
       // OK: Parameterized deep links.
-      {"googleassistant://explore?param=true", true},
       {"googleassistant://reminders?param=true", true},
       {"googleassistant://settings?param=true", true},
 
       // FAIL: Deep links are case sensitive.
-      {"GOOGLEASSISTANT://EXPLORE", false},
       {"GOOGLEASSISTANT://REMINDERS", false},
       {"GOOGLEASSISTANT://SETTINGS", false},
 
@@ -296,7 +284,6 @@ TEST_F(DeepLinkUnitTest, GetWebUrl) {
 TEST_F(DeepLinkUnitTest, GetWebUrlByType) {
   const std::map<DeepLinkType, bool> test_cases = {
       // OK: Supported web deep link types.
-      {DeepLinkType::kExplore, true},
       {DeepLinkType::kReminders, true},
       {DeepLinkType::kSettings, true},
 
@@ -317,17 +304,14 @@ TEST_F(DeepLinkUnitTest, GetWebUrlByType) {
 TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
   const std::map<std::string, bool> test_cases = {
       // OK: Supported web deep links.
-      {"googleassistant://explore", true},
       {"googleassistant://reminders", true},
       {"googleassistant://settings", true},
 
       // OK: Parameterized deep links.
-      {"googleassistant://explore?param=true", true},
       {"googleassistant://reminders?param=true", true},
       {"googleassistant://settings?param=true", true},
 
       // FAIL: Deep links are case sensitive.
-      {"GOOGLEASSISTANT://EXPLORE", false},
       {"GOOGLEASSISTANT://REMINDERS", false},
       {"GOOGLEASSISTANT://SETTINGS", false},
 
@@ -349,7 +333,6 @@ TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
 TEST_F(DeepLinkUnitTest, IsWebDeepLinkType) {
   const std::map<DeepLinkType, bool> test_cases = {
       // OK: Supported web deep link types.
-      {DeepLinkType::kExplore, true},
       {DeepLinkType::kReminders, true},
       {DeepLinkType::kSettings, true},
 
