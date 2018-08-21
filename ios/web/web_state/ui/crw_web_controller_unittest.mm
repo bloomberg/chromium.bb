@@ -804,10 +804,12 @@ TEST_P(CRWWebControllerDownloadTest, DataUrlResponse) {
 
 // Tests |currentURLWithTrustLevel:| method.
 TEST_P(CRWWebControllerTest, CurrentUrlWithTrustLevel) {
-  AddPendingItem(GURL("http://chromium.test"), ui::PAGE_TRANSITION_TYPED);
+  GURL url("http://chromium.test");
+  AddPendingItem(url, ui::PAGE_TRANSITION_TYPED);
 
   [[[mock_web_view_ stub] andReturnBool:NO] hasOnlySecureContent];
   [static_cast<WKWebView*>([[mock_web_view_ stub] andReturn:@""]) title];
+  SetWebViewURL(@"http://chromium.test");
 
   // Stub out the injection process.
   [[mock_web_view_ stub] evaluateJavaScript:OCMOCK_ANY
@@ -820,9 +822,7 @@ TEST_P(CRWWebControllerTest, CurrentUrlWithTrustLevel) {
   [navigation_delegate_ webView:mock_web_view_ didCommitNavigation:nil];
 
   URLVerificationTrustLevel trust_level = kNone;
-  GURL url = [web_controller() currentURLWithTrustLevel:&trust_level];
-
-  EXPECT_EQ(GURL(kTestURLString), url);
+  EXPECT_EQ(url, [web_controller() currentURLWithTrustLevel:&trust_level]);
   EXPECT_EQ(kAbsolute, trust_level);
 }
 
