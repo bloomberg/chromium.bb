@@ -4,6 +4,7 @@
 
 #include "components/unified_consent/unified_consent_service.h"
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -18,7 +19,47 @@
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service_client.h"
 
+namespace unified_consent {
+
 namespace {
+
+// Histogram recorded at startup to log which Google services are enabled.
+const char kSyncAndGoogleServicesSettingsHistogram[] =
+    "UnifiedConsent.SyncAndGoogleServicesSettings";
+
+// Records a sample in the kSyncAndGoogleServicesSettingsHistogram. Wrapped in a
+// function to avoid code size issues caused by histogram macros.
+void RecordSettingsHistogramSample(SettingsHistogramValue value) {
+  UMA_HISTOGRAM_ENUMERATION(kSyncAndGoogleServicesSettingsHistogram, value);
+}
+
+// Checks if a pref is enabled and if so, records a sample in the
+// kSyncAndGoogleServicesSettingsHistogram. Returns true if a sample was
+// recorded.
+bool RecordSettingsHistogramFromPref(const char* pref_name,
+                                     PrefService* pref_service,
+                                     SettingsHistogramValue value) {
+  if (!pref_service->GetBoolean(pref_name))
+    return false;
+  RecordSettingsHistogramSample(value);
+  return true;
+}
+
+// Checks if a service is enabled and if so, records a sample in the
+// kSyncAndGoogleServicesSettingsHistogram. Returns true if a sample was
+// recorded.
+bool RecordSettingsHistogramFromService(
+    UnifiedConsentServiceClient* client,
+    UnifiedConsentServiceClient::Service service,
+    SettingsHistogramValue value) {
+  if (client->GetServiceState(service) !=
+      UnifiedConsentServiceClient::ServiceState::kEnabled) {
+    return false;
+  }
+
+  RecordSettingsHistogramSample(value);
+  return true;
+}
 
 // Used for observing the sync service and finishing the rollback once the sync
 // engine is initialized.
@@ -77,8 +118,6 @@ void RollbackHelper::DoRollbackIfPossibleAndDie(
 
 }  // namespace
 
-namespace unified_consent {
-
 UnifiedConsentService::UnifiedConsentService(
     std::unique_ptr<UnifiedConsentServiceClient> service_client,
     PrefService* pref_service,
@@ -113,6 +152,8 @@ UnifiedConsentService::UnifiedConsentService(
   if (!AreAllNonPersonalizedServicesEnabled() && IsUnifiedConsentGiven()) {
     SetUnifiedConsentGiven(false);
   }
+
+  RecordSettingsHistogram();
 }
 
 UnifiedConsentService::~UnifiedConsentService() {}
@@ -158,6 +199,8 @@ void UnifiedConsentService::RollbackIfNeeded(
 }
 
 void UnifiedConsentService::SetUnifiedConsentGiven(bool unified_consent_given) {
+  // Unified consent cannot be enabled if the user is not signed in.
+  DCHECK(!unified_consent_given || identity_manager_->HasPrimaryAccount());
   pref_service_->SetBoolean(prefs::kUnifiedConsentGiven, unified_consent_given);
 }
 
@@ -166,7 +209,7 @@ bool UnifiedConsentService::IsUnifiedConsentGiven() {
 }
 
 bool UnifiedConsentService::ShouldShowConsentBump() {
-  if (base::FeatureList::IsEnabled(unified_consent::kForceUnifiedConsentBump))
+  if (base::FeatureList::IsEnabled(kForceUnifiedConsentBump))
     return true;
 
   return pref_service_->GetBoolean(prefs::kShouldShowUnifiedConsentBump);
@@ -418,6 +461,33 @@ bool UnifiedConsentService::AreAllOnByDefaultPrivacySettingsOn() {
 bool UnifiedConsentService::IsSyncConfigurable() {
   return sync_service_->GetTransportState() ==
          syncer::SyncService::TransportState::ACTIVE;
+}
+
+void UnifiedConsentService::RecordSettingsHistogram() {
+  bool metric_recorded = false;
+
+  if (IsUnifiedConsentGiven()) {
+    RecordSettingsHistogramSample(SettingsHistogramValue::kUnifiedConsentGiven);
+    metric_recorded = true;
+  }
+  if (identity_manager_->HasPrimaryAccount() &&
+      sync_service_->GetPreferredDataTypes().Has(syncer::USER_EVENTS)) {
+    RecordSettingsHistogramSample(SettingsHistogramValue::kUserEvents);
+    metric_recorded = true;
+  }
+  metric_recorded |= RecordSettingsHistogramFromPref(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled, pref_service_,
+      SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection);
+  metric_recorded |= RecordSettingsHistogramFromService(
+      service_client_.get(),
+      UnifiedConsentServiceClient::Service::kSafeBrowsingExtendedReporting,
+      SettingsHistogramValue::kSafeBrowsingExtendedReporting);
+  metric_recorded |= RecordSettingsHistogramFromService(
+      service_client_.get(), UnifiedConsentServiceClient::Service::kSpellCheck,
+      SettingsHistogramValue::kSpellCheck);
+
+  if (!metric_recorded)
+    RecordSettingsHistogramSample(SettingsHistogramValue::kNone);
 }
 
 }  //  namespace unified_consent

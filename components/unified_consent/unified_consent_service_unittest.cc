@@ -580,4 +580,60 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasNotSyncingEverything) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(UnifiedConsentServiceTest, SettingsHistogram_None) {
+  base::HistogramTester histogram_tester;
+  // Disable all services.
+  sync_service_.OnUserChoseDatatypes(false, syncer::ModelTypeSet());
+  CreateConsentService();
+
+  histogram_tester.ExpectUniqueSample(
+      "UnifiedConsent.SyncAndGoogleServicesSettings",
+      SettingsHistogramValue::kNone, 1);
+}
+
+TEST_F(UnifiedConsentServiceTest, SettingsHistogram_UnifiedConsentGiven) {
+  base::HistogramTester histogram_tester;
+  // Unified consent is given.
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  pref_service_.SetInteger(
+      prefs::kUnifiedConsentMigrationState,
+      static_cast<int>(unified_consent::MigrationState::kCompleted));
+  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, true);
+  CreateConsentService(true);
+
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.SyncAndGoogleServicesSettings",
+      SettingsHistogramValue::kNone, 0);
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.SyncAndGoogleServicesSettings",
+      SettingsHistogramValue::kUnifiedConsentGiven, 1);
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.SyncAndGoogleServicesSettings",
+      SettingsHistogramValue::kUserEvents, 1);
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.SyncAndGoogleServicesSettings",
+      SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection, 1);
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.SyncAndGoogleServicesSettings",
+      SettingsHistogramValue::kSafeBrowsingExtendedReporting, 1);
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.SyncAndGoogleServicesSettings",
+      SettingsHistogramValue::kSpellCheck, 1);
+  histogram_tester.ExpectTotalCount(
+      "UnifiedConsent.SyncAndGoogleServicesSettings", 5);
+}
+
+TEST_F(UnifiedConsentServiceTest, SettingsHistogram_NoUnifiedConsentGiven) {
+  base::HistogramTester histogram_tester;
+  // Unified consent is not given. Only spellcheck is enabled.
+  pref_service_.SetBoolean(kSpellCheckDummyEnabled, true);
+  CreateConsentService();
+
+  // kUserEvents should have no sample even though the sync preference is set,
+  // because the user is not signed in.
+  histogram_tester.ExpectUniqueSample(
+      "UnifiedConsent.SyncAndGoogleServicesSettings",
+      SettingsHistogramValue::kSpellCheck, 1);
+}
+
 }  // namespace unified_consent

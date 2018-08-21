@@ -48085,6 +48085,15 @@ Full version information for the fingerprint enum values:
   <int value="6" label="Sync was paused"/>
 </enum>
 
+<enum name="UnifiedConsentSyncAndGoogleServicesSettings">
+  <int value="0" label="None of the services are enabled"/>
+  <int value="1" label="'Sync and all Google services' is enabled"/>
+  <int value="2" label="'Activity and interactions' is enabled"/>
+  <int value="3" label="'Make searches and browsing better' is enabled"/>
+  <int value="4" label="'Safe browsing extended reporting' is enabled"/>
+  <int value="5" label="'Enhanced spell check' is enabled"/>
+</enum>
+
 <enum name="UniformityTrialGroupNotActive">
   <int value="0" label="Invalid"/>
   <int value="1" label="Group not reported"/>
