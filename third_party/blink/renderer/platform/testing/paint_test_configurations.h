@@ -42,6 +42,11 @@ class PaintTestConfigurations
 #define INSTANTIATE_SPV2_TEST_CASE_P(test_class) \
   INSTANTIATE_TEST_CASE_P(All, test_class, ::testing::Values(kSlimmingPaintV2))
 
+#define INSTANTIATE_LAYER_LIST_TEST_CASE_P(test_class) \
+  INSTANTIATE_TEST_CASE_P(                             \
+      All, test_class,                                 \
+      ::testing::Values(kBlinkGenPropertyTrees, kSlimmingPaintV2))
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_PAINT_TEST_CONFIGURATIONS_H_
