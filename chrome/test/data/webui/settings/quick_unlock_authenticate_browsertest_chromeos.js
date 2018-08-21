@@ -62,6 +62,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
   function registerAuthenticateTests() {
     suite('authenticate', function() {
+      let passwordPromptDialog = null;
       let passwordElement = null;
 
       setup(function() {
@@ -70,39 +71,43 @@ cr.define('settings_people_page_quick_unlock', function() {
         quickUnlockPrivateApi = new settings.FakeQuickUnlockPrivate();
         fakeUma = new settings.FakeQuickUnlockUma();
 
-        testElement = document.createElement('settings-password-prompt-dialog');
-        testElement.quickUnlockPrivate = quickUnlockPrivateApi;
+        testElement = document.createElement(
+            'settings-lock-screen-password-prompt-dialog');
         testElement.writeUma_ = fakeUma.recordProgress.bind(fakeUma);
+
+        passwordPromptDialog = getFromElement('#passwordPrompt');
+        passwordPromptDialog.quickUnlockPrivate = quickUnlockPrivateApi;
+
         Polymer.dom.flush();
         document.body.appendChild(testElement);
 
-        passwordElement = getFromElement('#passwordInput');
+        passwordElement = passwordPromptDialog.$$('#passwordInput');
       });
 
       test('PasswordCheckDoesNotChangeActiveMode', function() {
         // No active modes.
         quickUnlockPrivateApi.activeModes = [];
         passwordElement.value = 'foo';
-        testElement.submitPassword_();
+        passwordPromptDialog.submitPassword_();
         assertDeepEquals([], quickUnlockPrivateApi.activeModes);
         assertDeepEquals([], quickUnlockPrivateApi.credentials);
 
         // PIN is active.
         quickUnlockPrivateApi.activeModes = [QuickUnlockMode.PIN];
         passwordElement.value = 'foo';
-        testElement.submitPassword_();
+        passwordPromptDialog.submitPassword_();
         assertDeepEquals(
             [QuickUnlockMode.PIN], quickUnlockPrivateApi.activeModes);
         assertDeepEquals([], quickUnlockPrivateApi.credentials);
       });
 
       test('InvalidPasswordInteractions', function() {
-        const confirmButton = getFromElement('#confirmButton');
+        const confirmButton = passwordPromptDialog.$$('#confirmButton');
         quickUnlockPrivateApi.accountPassword = 'bar';
         passwordElement.value = 'foo';
         Polymer.dom.flush();
 
-        getFromElement('paper-button[class="action-button"]').click();
+        passwordPromptDialog.$$('paper-button[class="action-button"]').click();
         Polymer.dom.flush();
 
         assertEquals(0, passwordElement.inputElement.selectionStart);
@@ -120,10 +125,10 @@ cr.define('settings_people_page_quick_unlock', function() {
       });
 
       test('TapConfirmButtonWithWrongPasswordRestoresFocus', function() {
-        const confirmButton = getFromElement('#confirmButton');
+        const confirmButton = passwordPromptDialog.$$('#confirmButton');
         quickUnlockPrivateApi.accountPassword = 'bar';
         passwordElement.value = 'foo';
-        getFromElement('paper-button[class="action-button"]').click();
+        passwordPromptDialog.$$('paper-button[class="action-button"]').click();
 
         assertTrue(passwordElement.hasAttribute('focused_'));
       });
@@ -134,7 +139,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         quickUnlockPrivateApi.accountPassword = 'bar';
 
         passwordElement.value = 'foo';
-        testElement.submitPassword_();
+        passwordPromptDialog.submitPassword_();
 
         assertEquals(
             0,
@@ -149,7 +154,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         quickUnlockPrivateApi.accountPassword = 'foo';
 
         passwordElement.value = 'foo';
-        testElement.submitPassword_();
+        passwordPromptDialog.submitPassword_();
 
         assertEquals(
             1,
@@ -163,7 +168,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         quickUnlockPrivateApi.accountPassword = 'foo';
 
         passwordElement.value = 'foo';
-        testElement.submitPassword_();
+        passwordPromptDialog.submitPassword_();
         // Fake lifetime is 0 so setModes should be reset in next frame.
         setTimeout(function() {
           assertFalse(!!testElement.setModes);
@@ -173,7 +178,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
       test('ConfirmButtonDisabledWhenEmpty', function() {
         // Confirm button is diabled when there is nothing entered.
-        let confirmButton = testElement.$$('#confirmButton');
+        let confirmButton = passwordPromptDialog.$$('#confirmButton');
         assertTrue(!!confirmButton);
         assertTrue(confirmButton.disabled);
 

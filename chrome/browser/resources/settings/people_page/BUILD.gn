@@ -18,10 +18,10 @@ js_type_check("closure_compile") {
     ":import_data_dialog",
     ":lock_screen",
     ":lock_screen_constants",
+    ":lock_screen_password_prompt_dialog",
     ":lock_state_behavior",
     ":manage_profile",
     ":manage_profile_browser_proxy",
-    ":password_prompt_dialog",
     ":people_page",
     ":profile_info_browser_proxy",
     ":setup_fingerprint_dialog",
@@ -121,8 +121,8 @@ js_library("lock_screen") {
     ":easy_unlock_turn_off_dialog",
     ":fingerprint_browser_proxy",
     ":lock_screen_constants",
+    ":lock_screen_password_prompt_dialog",
     ":lock_state_behavior",
-    ":password_prompt_dialog",
     "..:route",
     "../controls:settings_dropdown_menu",
     "../controls:settings_toggle_button",
@@ -169,14 +169,12 @@ js_library("manage_profile_browser_proxy") {
   ]
 }
 
-js_library("password_prompt_dialog") {
+js_library("lock_screen_password_prompt_dialog") {
   deps = [
     ":lock_screen_constants",
-    "..:route",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
+    ":lock_state_behavior",
+    "../controls:password_prompt_dialog",
   ]
-  externs_list = [ "$externs_path/quick_unlock_private.js" ]
-  extra_sources = [ "$interfaces_path/quick_unlock_private_interface.js" ]
 }
 
 js_library("people_page") {
@@ -218,7 +216,7 @@ js_library("setup_fingerprint_dialog") {
 js_library("setup_pin_dialog") {
   deps = [
     ":lock_screen_constants",
-    ":password_prompt_dialog",
+    ":lock_screen_password_prompt_dialog",
     "..:route",
     "//ui/webui/resources/js:i18n_behavior",
   ]
