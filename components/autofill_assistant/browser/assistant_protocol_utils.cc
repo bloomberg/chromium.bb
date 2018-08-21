@@ -19,14 +19,11 @@ namespace autofill_assistant {
 // static
 std::string AssistantProtocolUtils::CreateGetScriptsRequest(const GURL& url) {
   DCHECK(!url.is_empty());
-  ClientContextProto context_proto;
-  context_proto.set_chrome_version(
-      version_info::GetProductNameAndVersionForUserAgent());
 
   SupportsScriptRequestProto script_proto;
   script_proto.set_url(url.spec());
-  script_proto.set_allocated_client_context(&context_proto);
-
+  script_proto.mutable_client_context()->set_chrome_version(
+      version_info::GetProductNameAndVersionForUserAgent());
   std::string serialized_script_proto;
   bool success = script_proto.SerializeToString(&serialized_script_proto);
   DCHECK(success);
