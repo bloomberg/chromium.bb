@@ -9,9 +9,7 @@ namespace base {
 DispatchSourceMach::DispatchSourceMach(const char* name,
                                        mach_port_t port,
                                        void (^event_handler)())
-    // TODO(rsesek): Specify DISPATCH_QUEUE_SERIAL, in the 10.7 SDK. NULL
-    // means the same thing but is not symbolically clear.
-    : DispatchSourceMach(dispatch_queue_create(name, NULL),
+    : DispatchSourceMach(dispatch_queue_create(name, DISPATCH_QUEUE_SERIAL),
                          port,
                          event_handler) {
   // Since the queue was created above in the delegated constructor, and it was
