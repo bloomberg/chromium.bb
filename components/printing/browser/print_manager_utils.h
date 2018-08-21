@@ -15,7 +15,6 @@ namespace printing {
 
 class PrintSettings;
 
-void SetOopifEnabled(bool enabled);
 bool IsOopifEnabled();
 
 // Check on the current feature settings to decide whether we need to
