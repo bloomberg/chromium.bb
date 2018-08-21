@@ -43,7 +43,7 @@ var OobeDialogHostBehavior = {
    * Pass down fullScreenDialog attribute.
    */
   onBeforeShow: function() {
-    if (document.documentElement.getAttribute('full-screen-dialog'))
+    if (document.documentElement.hasAttribute('full-screen-dialog'))
       this.fullScreenDialog = true;
 
     this.propagateFullScreenMode();

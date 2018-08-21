@@ -83,17 +83,18 @@ Polymer({
   },
 
   onBeforeShow: function() {
-    if (document.documentElement.getAttribute('full-screen-dialog'))
-      this.fullScreenDialog = true;
-
-    if (this.fullScreenDialog) {
-      this.$.welcomeScreen.fullScreenDialog = true;
-    }
-
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
     });
+
+    if (this.fullScreenDialog)
+      this.$.welcomeScreen.fullScreenDialog = true;
+
+    this.$.welcomeScreen.onBeforeShow();
+    let dialogs = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
+    for (let dialog of dialogs)
+      dialog.onBeforeShow();
 
     let activeScreen = this.getActiveScreen_();
     if (activeScreen.show)
