@@ -31,13 +31,17 @@ bool InitializeGLOneOffHelper(bool init_extensions) {
   }
 
   std::vector<GLImplementation> allowed_impls = GetAllowedGLImplementations();
-  DCHECK(!allowed_impls.empty());
 
   if (cmd->HasSwitch(switches::kDisableES3GLContext)) {
     auto iter = std::find(allowed_impls.begin(), allowed_impls.end(),
                           kGLImplementationDesktopGLCoreProfile);
     if (iter != allowed_impls.end())
       allowed_impls.erase(iter);
+  }
+
+  if (allowed_impls.empty()) {
+    LOG(ERROR) << "List of allowed GL implementations is empty.";
+    return false;
   }
 
   // The default implementation is always the first one in list.
