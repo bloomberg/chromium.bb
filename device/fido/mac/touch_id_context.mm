@@ -26,7 +26,7 @@ base::ScopedCFTypeRef<SecAccessControlRef> DefaultAccessControl() {
   return base::ScopedCFTypeRef<SecAccessControlRef>(
       SecAccessControlCreateWithFlags(
           kCFAllocatorDefault, kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-          kSecAccessControlPrivateKeyUsage | kSecAccessControlTouchIDAny,
+          kSecAccessControlPrivateKeyUsage | kSecAccessControlUserPresence,
           nullptr));
 }
 }  // namespace
