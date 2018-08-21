@@ -42,7 +42,6 @@
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
-#include "third_party/blink/public/platform/web_rtc_configuration.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_legacy_stats.h"
@@ -187,38 +186,6 @@ void GetWebRTCSessionDescriptionFromSessionDescriptionCallback(
 }
 
 // Converter functions from Blink types to WebRTC types.
-
-// This function doesn't assume |webrtc_config| is empty. Any fields in
-// |blink_config| replace the corresponding fields in |webrtc_config|, but
-// fields that only exist in |webrtc_config| are left alone.
-void GetNativeRtcConfiguration(
-    const blink::WebRTCConfiguration& blink_config,
-    webrtc::PeerConnectionInterface::RTCConfiguration* webrtc_config) {
-  DCHECK(webrtc_config);
-
-  webrtc_config->servers = blink_config.ice_servers;
-  webrtc_config->type = blink_config.ice_transport_policy;
-  webrtc_config->bundle_policy = blink_config.bundle_policy;
-  webrtc_config->rtcp_mux_policy = blink_config.rtcp_mux_policy;
-
-  switch (blink_config.sdp_semantics) {
-    case blink::WebRTCSdpSemantics::kPlanB:
-      webrtc_config->sdp_semantics = webrtc::SdpSemantics::kPlanB;
-      break;
-    case blink::WebRTCSdpSemantics::kUnifiedPlan:
-      webrtc_config->sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
-      break;
-    case blink::WebRTCSdpSemantics::kDefault:
-      NOTREACHED();
-  }
-
-  webrtc_config->certificates.clear();
-  for (const auto& blink_certificate : blink_config.certificates) {
-    webrtc_config->certificates.push_back(blink_certificate);
-  }
-
-  webrtc_config->ice_candidate_pool_size = blink_config.ice_candidate_pool_size;
-}
 
 absl::optional<bool> ConstraintToOptional(
     const blink::WebMediaConstraints& constraints,
@@ -665,26 +632,6 @@ bool IsRemoteStream(
   return false;
 }
 
-enum SdpSemanticRequested {
-  kSdpSemanticRequestedDefault,
-  kSdpSemanticRequestedPlanB,
-  kSdpSemanticRequestedUnifiedPlan,
-  kSdpSemanticRequestedMax
-};
-
-SdpSemanticRequested GetSdpSemanticRequested(
-    blink::WebRTCSdpSemantics sdp_semantics) {
-  switch (sdp_semantics) {
-    case blink::WebRTCSdpSemantics::kDefault:
-      return kSdpSemanticRequestedDefault;
-    case blink::WebRTCSdpSemantics::kPlanB:
-      return kSdpSemanticRequestedPlanB;
-    case blink::WebRTCSdpSemantics::kUnifiedPlan:
-      return kSdpSemanticRequestedUnifiedPlan;
-  }
-  NOTREACHED();
-  return kSdpSemanticRequestedDefault;
-}
 
 MediaStreamTrackMetrics::Kind MediaStreamTrackMetricsKind(
     const blink::WebMediaStreamTrack& track) {
@@ -741,16 +688,13 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
       base::WeakPtr<PeerConnectionTracker> tracker,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       PeerConnectionTracker::Action action,
-      blink::WebRTCSdpSemantics sdp_semantics)
+      webrtc::SdpSemantics sdp_semantics)
       : handler_(handler),
         main_thread_(task_runner),
         web_request_(web_request),
         tracker_(tracker),
         action_(action),
-        sdp_semantics_(sdp_semantics) {
-    DCHECK(sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB ||
-           sdp_semantics_ == blink::WebRTCSdpSemantics::kUnifiedPlan);
-  }
+        sdp_semantics_(sdp_semantics) {}
 
   void OnSetDescriptionComplete(
       webrtc::RTCError error,
@@ -770,10 +714,10 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
 
       // Process the rest of the state changes differently depending on SDP
       // semantics.
-      if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB) {
+      if (sdp_semantics_ == webrtc::SdpSemantics::kPlanB) {
         ProcessStateChangesPlanB(std::move(states));
       } else {
-        DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+        DCHECK_EQ(sdp_semantics_, webrtc::SdpSemantics::kUnifiedPlan);
         ProcessStateChangesUnifiedPlan(std::move(states));
       }
 
@@ -811,7 +755,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
   }
 
   void ProcessStateChangesPlanB(WebRtcSetDescriptionObserver::States states) {
-    DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kPlanB);
+    DCHECK_EQ(sdp_semantics_, webrtc::SdpSemantics::kPlanB);
     // Determine which receivers have been removed before processing the
     // removal as to not invalidate the iterator.
     std::vector<RTCRtpReceiver*> removed_receivers;
@@ -858,7 +802,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
 
   void ProcessStateChangesUnifiedPlan(
       WebRtcSetDescriptionObserver::States states) {
-    DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+    DCHECK_EQ(sdp_semantics_, webrtc::SdpSemantics::kUnifiedPlan);
     handler_->OnModifyTransceivers(
         std::move(states.transceiver_states),
         action_ == PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION);
@@ -869,7 +813,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
   blink::WebRTCVoidRequest web_request_;
   base::WeakPtr<PeerConnectionTracker> tracker_;
   PeerConnectionTracker::Action action_;
-  blink::WebRTCSdpSemantics sdp_semantics_;
+  webrtc::SdpSemantics sdp_semantics_;
 };
 
 // Receives notifications from a PeerConnection object about state changes. The
@@ -1020,8 +964,6 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       track_adapter_map_(
           new WebRtcMediaStreamTrackAdapterMap(dependency_factory_,
                                                task_runner)),
-      // This will be overwritten to the actual value used at Initialize().
-      sdp_semantics_(blink::WebRTCSdpSemantics::kDefault),
       task_runner_(std::move(task_runner)),
       weak_factory_(this) {
   CHECK(client_);
@@ -1049,9 +991,9 @@ void RTCPeerConnectionHandler::associateWithFrame(blink::WebLocalFrame* frame) {
 }
 
 bool RTCPeerConnectionHandler::Initialize(
-    const blink::WebRTCConfiguration& server_configuration,
-    const blink::WebMediaConstraints& options,
-    blink::WebRTCSdpSemantics original_sdp_semantics_value) {
+    const webrtc::PeerConnectionInterface::RTCConfiguration&
+        server_configuration,
+    const blink::WebMediaConstraints& options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(frame_);
 
@@ -1061,10 +1003,7 @@ bool RTCPeerConnectionHandler::Initialize(
   peer_connection_tracker_ =
       RenderThreadImpl::current()->peer_connection_tracker()->AsWeakPtr();
 
-  sdp_semantics_ = server_configuration.sdp_semantics;
-  DCHECK(sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB ||
-         sdp_semantics_ == blink::WebRTCSdpSemantics::kUnifiedPlan);
-  GetNativeRtcConfiguration(server_configuration, &configuration_);
+  configuration_ = server_configuration;
 
   // Choose between RTC smoothness algorithm and prerenderer smoothing.
   // Prerenderer smoothing is turned on if RTC smoothness is turned off.
@@ -1093,16 +1032,12 @@ bool RTCPeerConnectionHandler::Initialize(
                                                      options, frame_);
   }
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "WebRTC.PeerConnection.SdpSemanticRequested",
-      GetSdpSemanticRequested(original_sdp_semantics_value),
-      kSdpSemanticRequestedMax);
-
   return true;
 }
 
 bool RTCPeerConnectionHandler::InitializeForTest(
-    const blink::WebRTCConfiguration& server_configuration,
+    const webrtc::PeerConnectionInterface::RTCConfiguration&
+        server_configuration,
     const blink::WebMediaConstraints& options,
     const base::WeakPtr<PeerConnectionTracker>& peer_connection_tracker) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -1110,10 +1045,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
   CHECK(!initialize_called_);
   initialize_called_ = true;
 
-  sdp_semantics_ = server_configuration.sdp_semantics;
-  DCHECK(sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB ||
-         sdp_semantics_ == blink::WebRTCSdpSemantics::kUnifiedPlan);
-  GetNativeRtcConfiguration(server_configuration, &configuration_);
+  configuration_ = server_configuration;
 
   peer_connection_observer_ =
       new Observer(weak_factory_.GetWeakPtr(), task_runner_);
@@ -1266,10 +1198,10 @@ void RTCPeerConnectionHandler::SetLocalDescription(
       new WebRtcSetDescriptionObserverImpl(
           weak_factory_.GetWeakPtr(), request, peer_connection_tracker_,
           task_runner_, PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION,
-          sdp_semantics_));
+          configuration_.sdp_semantics));
 
   bool surface_receivers_only =
-      (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB);
+      (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB);
   scoped_refptr<webrtc::SetSessionDescriptionObserver> webrtc_observer(
       WebRtcSetLocalDescriptionObserverHandler::Create(
           task_runner_, signaling_thread(), native_peer_connection_,
@@ -1335,10 +1267,10 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
       new WebRtcSetDescriptionObserverImpl(
           weak_factory_.GetWeakPtr(), request, peer_connection_tracker_,
           task_runner_, PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION,
-          sdp_semantics_));
+          configuration_.sdp_semantics));
 
   bool surface_receivers_only =
-      (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB);
+      (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB);
   rtc::scoped_refptr<webrtc::SetRemoteDescriptionObserverInterface>
       webrtc_observer(WebRtcSetRemoteDescriptionObserverHandler::Create(
                           task_runner_, signaling_thread(),
@@ -1434,20 +1366,36 @@ RTCPeerConnectionHandler::PendingRemoteDescription() {
 }
 
 webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
-    const blink::WebRTCConfiguration& blink_config) {
+    const webrtc::PeerConnectionInterface::RTCConfiguration& blink_config) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setConfiguration");
-  GetNativeRtcConfiguration(blink_config, &configuration_);
+
+  // Update the configuration with the potentially modified fields
+  webrtc::PeerConnectionInterface::RTCConfiguration new_configuration =
+      configuration_;
+  new_configuration.servers = blink_config.servers;
+  new_configuration.type = blink_config.type;
+  new_configuration.bundle_policy = blink_config.bundle_policy;
+  new_configuration.rtcp_mux_policy = blink_config.rtcp_mux_policy;
+  new_configuration.sdp_semantics = blink_config.sdp_semantics;
+  new_configuration.certificates = blink_config.certificates;
+  new_configuration.ice_candidate_pool_size =
+      blink_config.ice_candidate_pool_size;
 
   if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackSetConfiguration(this, configuration_);
+    peer_connection_tracker_->TrackSetConfiguration(this, new_configuration);
 
   webrtc::RTCError webrtc_error;
-  bool ret =
-      native_peer_connection_->SetConfiguration(configuration_, &webrtc_error);
+  bool ret = native_peer_connection_->SetConfiguration(new_configuration,
+                                                       &webrtc_error);
   // The boolean return value is made redundant by the error output param; just
   // DCHECK that they're consistent.
   DCHECK_EQ(ret, webrtc_error.type() == webrtc::RTCErrorType::NONE);
+
+  if (webrtc_error.ok()) {
+    configuration_ = new_configuration;
+  }
+
   return webrtc_error.type();
 }
 
@@ -1570,7 +1518,7 @@ webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::AddTransceiverWithTrack(
     const blink::WebMediaStreamTrack& web_track,
     const webrtc::RtpTransceiverInit& init) {
-  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+  DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref =
       track_adapter_map_->GetOrCreateLocalTrackAdapter(web_track);
@@ -1617,7 +1565,7 @@ webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::AddTransceiverWithKind(
     std::string kind,
     const webrtc::RtpTransceiverInit& init) {
-  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+  DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   cricket::MediaType media_type;
   if (kind == webrtc::MediaStreamTrackInterface::kAudioKind) {
@@ -1709,7 +1657,7 @@ RTCPeerConnectionHandler::AddTrack(
   auto transceiver_state = std::move(transceiver_states[0]);
 
   std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver;
-  if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB) {
+  if (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB) {
     // Plan B: Create sender only.
     DCHECK(transceiver_state.sender_state());
     auto webrtc_sender = transceiver_state.sender_state()->webrtc_sender();
@@ -1722,7 +1670,7 @@ RTCPeerConnectionHandler::AddTrack(
     web_transceiver = std::make_unique<RTCRtpSenderOnlyTransceiver>(
         std::make_unique<RTCRtpSender>(*rtp_senders_.back().get()));
   } else {
-    DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+    DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
     // Unified Plan: Create or recycle a transceiver.
     auto transceiver = CreateOrUpdateTransceiver(std::move(transceiver_state));
     web_transceiver = std::move(transceiver);
@@ -1752,10 +1700,11 @@ void RTCPeerConnectionHandler::AddTrackOnSignalingThread(
   std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> transceivers;
   if (error_or_sender->ok()) {
     auto sender = error_or_sender->value();
-    if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB) {
+    if (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB) {
       transceivers = {new SurfaceSenderStateOnly(sender)};
     } else {
-      DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+      DCHECK_EQ(configuration_.sdp_semantics,
+                webrtc::SdpSemantics::kUnifiedPlan);
       rtc::scoped_refptr<webrtc::RtpTransceiverInterface>
           transceiver_for_sender = nullptr;
       for (const auto& transceiver :
@@ -1777,7 +1726,7 @@ webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::RemoveTrack");
-  if (sdp_semantics_ == blink::WebRTCSdpSemantics::kPlanB) {
+  if (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB) {
     if (RemoveTrackPlanB(web_sender)) {
       // In Plan B, null indicates success.
       std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver = nullptr;
@@ -1787,13 +1736,13 @@ RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
     // peerconnectioninterface.h is updated. https://crbug.com/webrtc/9534
     return webrtc::RTCError(webrtc::RTCErrorType::INVALID_STATE);
   }
-  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+  DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   return RemoveTrackUnifiedPlan(web_sender);
 }
 
 bool RTCPeerConnectionHandler::RemoveTrackPlanB(
     blink::WebRTCRtpSender* web_sender) {
-  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kPlanB);
+  DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kPlanB);
   auto web_track = web_sender->Track();
   auto it = FindSender(web_sender->Id());
   if (it == rtp_senders_.end())
@@ -1827,7 +1776,7 @@ webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::RemoveTrackUnifiedPlan(
     blink::WebRTCRtpSender* web_sender) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+  DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   auto it = FindSender(web_sender->Id());
   if (it == rtp_senders_.end())
     return webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER);
@@ -2139,7 +2088,7 @@ void RTCPeerConnectionHandler::OnRemoveReceiverPlanB(uintptr_t receiver_id) {
 void RTCPeerConnectionHandler::OnModifyTransceivers(
     std::vector<RtpTransceiverState> transceiver_states,
     bool is_remote_description) {
-  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+  DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> web_transceivers(
       transceiver_states.size());
   PeerConnectionTracker::TransceiverUpdatedReason update_reason =
@@ -2342,7 +2291,7 @@ size_t RTCPeerConnectionHandler::GetTransceiverIndex(
 std::unique_ptr<RTCRtpTransceiver>
 RTCPeerConnectionHandler::CreateOrUpdateTransceiver(
     RtpTransceiverState transceiver_state) {
-  DCHECK_EQ(sdp_semantics_, blink::WebRTCSdpSemantics::kUnifiedPlan);
+  DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   DCHECK(transceiver_state.is_initialized());
   DCHECK(transceiver_state.sender_state());
   DCHECK(transceiver_state.receiver_state());

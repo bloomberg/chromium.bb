@@ -44,7 +44,6 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_configuration.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_handler.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
@@ -279,8 +278,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     mock_dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     pc_handler_ = CreateRTCPeerConnectionHandlerUnderTest();
     mock_tracker_.reset(new NiceMock<MockPeerConnectionTracker>());
-    blink::WebRTCConfiguration config;
-    config.sdp_semantics = blink::WebRTCSdpSemantics::kPlanB;
+    webrtc::PeerConnectionInterface::RTCConfiguration config;
+    config.sdp_semantics = webrtc::SdpSemantics::kPlanB;
     blink::WebMediaConstraints constraints;
     EXPECT_TRUE(pc_handler_->InitializeForTest(
         config, constraints, mock_tracker_.get()->AsWeakPtr()));
@@ -764,22 +763,19 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescriptionParseError) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setConfiguration) {
-  blink::WebRTCConfiguration config;
-  config.sdp_semantics = blink::WebRTCSdpSemantics::kPlanB;
+  webrtc::PeerConnectionInterface::RTCConfiguration config;
+  config.sdp_semantics = webrtc::SdpSemantics::kPlanB;
 
   EXPECT_CALL(*mock_tracker_.get(),
               TrackSetConfiguration(pc_handler_.get(), _));
-  // TODO(perkj): Test that the parameters in |config| can be translated when a
-  // WebRTCConfiguration can be constructed. It's WebKit class and can't be
-  // initialized from a test.
   EXPECT_EQ(webrtc::RTCErrorType::NONE, pc_handler_->SetConfiguration(config));
 }
 
 // Test that when an error occurs in SetConfiguration, it's converted to a
 // blink error and false is returned.
 TEST_F(RTCPeerConnectionHandlerTest, setConfigurationError) {
-  blink::WebRTCConfiguration config;
-  config.sdp_semantics = blink::WebRTCSdpSemantics::kPlanB;
+  webrtc::PeerConnectionInterface::RTCConfiguration config;
+  config.sdp_semantics = webrtc::SdpSemantics::kPlanB;
 
   mock_peer_connection_->set_setconfiguration_error_type(
       webrtc::RTCErrorType::INVALID_MODIFICATION);

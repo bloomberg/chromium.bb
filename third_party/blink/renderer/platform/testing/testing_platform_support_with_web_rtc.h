@@ -16,9 +16,8 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   MockWebRTCPeerConnectionHandler();
   ~MockWebRTCPeerConnectionHandler() override;
 
-  bool Initialize(const WebRTCConfiguration&,
-                  const WebMediaConstraints&,
-                  WebRTCSdpSemantics original_sdp_semantics_value) override;
+  bool Initialize(const webrtc::PeerConnectionInterface::RTCConfiguration&,
+                  const WebMediaConstraints&) override;
 
   void CreateOffer(const WebRTCSessionDescriptionRequest&,
                    const WebMediaConstraints&) override;
@@ -38,7 +37,8 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   WebRTCSessionDescription CurrentRemoteDescription() override;
   WebRTCSessionDescription PendingLocalDescription() override;
   WebRTCSessionDescription PendingRemoteDescription() override;
-  webrtc::RTCErrorType SetConfiguration(const WebRTCConfiguration&) override;
+  webrtc::RTCErrorType SetConfiguration(
+      const webrtc::PeerConnectionInterface::RTCConfiguration&) override;
   void GetStats(const WebRTCStatsRequest&) override;
   void GetStats(std::unique_ptr<WebRTCStatsReportCallback>) override;
   webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>

@@ -95,9 +95,9 @@ MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler() = default;
 
 MockWebRTCPeerConnectionHandler::~MockWebRTCPeerConnectionHandler() = default;
 
-bool MockWebRTCPeerConnectionHandler::Initialize(const WebRTCConfiguration&,
-                                                 const WebMediaConstraints&,
-                                                 WebRTCSdpSemantics) {
+bool MockWebRTCPeerConnectionHandler::Initialize(
+    const webrtc::PeerConnectionInterface::RTCConfiguration&,
+    const WebMediaConstraints&) {
   return true;
 }
 
@@ -154,7 +154,7 @@ MockWebRTCPeerConnectionHandler::PendingRemoteDescription() {
 }
 
 webrtc::RTCErrorType MockWebRTCPeerConnectionHandler::SetConfiguration(
-    const WebRTCConfiguration&) {
+    const webrtc::PeerConnectionInterface::RTCConfiguration&) {
   return webrtc::RTCErrorType::NONE;
 }
 
