@@ -67,7 +67,8 @@ public class AutofillTest {
 
             mWindowAndroid = new ActivityWindowAndroid(activity);
             mAutofillPopup = new AutofillPopup(activity, anchorView, mMockAutofillCallback);
-            mAutofillPopup.filterAndShow(new AutofillSuggestion[0], false /* isRtl */);
+            mAutofillPopup.filterAndShow(
+                    new AutofillSuggestion[0], /* isRtl= */ false, /* isRefresh= */ false);
         });
     }
 
@@ -133,7 +134,9 @@ public class AutofillTest {
 
     public void openAutofillPopupAndWaitUntilReady(final AutofillSuggestion[] suggestions) {
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mAutofillPopup.filterAndShow(suggestions, false /* isRtl */));
+                ()
+                        -> mAutofillPopup.filterAndShow(
+                                suggestions, /* isRtl= */ false, /* isRefresh= */ false));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
