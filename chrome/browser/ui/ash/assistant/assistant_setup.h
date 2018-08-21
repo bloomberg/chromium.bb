@@ -8,6 +8,7 @@
 #include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
+#include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace service_manager {
@@ -29,6 +30,11 @@ class AssistantSetup : public ash::mojom::AssistantSetup,
   // arc::VoiceInteractionControllerClient::Observer overrides
   void OnStateChanged(ash::mojom::VoiceInteractionState state) override;
 
+  void SyncActivityControlState();
+  void OnGetSettingsResponse(const std::string& settings);
+
+  service_manager::Connector* connector_;
+  chromeos::assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
   mojo::Binding<ash::mojom::AssistantSetup> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantSetup);

@@ -15,6 +15,8 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
+#include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -22,6 +24,8 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
+
+using chromeos::assistant::ConsentFlowUi;
 
 namespace {
 
@@ -71,10 +75,10 @@ class AssistantHotwordNotificationDelegate
 }  // namespace
 
 AssistantSetup::AssistantSetup(service_manager::Connector* connector)
-    : binding_(this) {
+    : connector_(connector), binding_(this) {
   // Bind to the Assistant controller in ash.
   ash::mojom::AssistantControllerPtr assistant_controller;
-  connector->BindInterface(ash::mojom::kServiceName, &assistant_controller);
+  connector_->BindInterface(ash::mojom::kServiceName, &assistant_controller);
   ash::mojom::AssistantSetupPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
   assistant_controller->SetAssistantSetup(std::move(ptr));
@@ -97,6 +101,10 @@ void AssistantSetup::StartAssistantOptInFlow(
 void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
   if (state == ash::mojom::VoiceInteractionState::NOT_READY)
     return;
+
+  // Sync activity control state when assistant service started.
+  if (!settings_manager_)
+    SyncActivityControlState();
 
   // If the optin flow is active, no need to show the notification since it is
   // included in the flow.
@@ -129,4 +137,46 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
 
   NotificationDisplayService::GetForProfile(profile)->Display(
       NotificationHandler::Type::TRANSIENT, *notification);
+}
+
+void AssistantSetup::SyncActivityControlState() {
+  // Set up settings mojom.
+  connector_->BindInterface(chromeos::assistant::mojom::kServiceName,
+                            mojo::MakeRequest(&settings_manager_));
+
+  chromeos::assistant::SettingsUiSelector selector;
+  chromeos::assistant::ConsentFlowUiSelector* consent_flow_ui =
+      selector.mutable_consent_flow_ui_selector();
+  consent_flow_ui->set_flow_id(
+      chromeos::assistant::ActivityControlSettingsUiSelector::
+          ASSISTANT_SUW_ONBOARDING_ON_CHROME_OS);
+  settings_manager_->GetSettings(
+      selector.SerializeAsString(),
+      base::BindOnce(&AssistantSetup::OnGetSettingsResponse,
+                     base::Unretained(this)));
+}
+
+void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
+  chromeos::assistant::SettingsUi settings_ui;
+  settings_ui.ParseFromString(settings);
+  if (!settings_ui.has_consent_flow_ui()) {
+    LOG(ERROR) << "Failed to get activity control status.";
+    return;
+  }
+
+  auto consent_status = settings_ui.consent_flow_ui().consent_status();
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  PrefService* prefs = profile->GetPrefs();
+  switch (consent_status) {
+    case ConsentFlowUi::ASK_FOR_CONSENT:
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
+                        false);
+      break;
+    case ConsentFlowUi::ALREADY_CONSENTED:
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
+                        true);
+      break;
+    default:
+      LOG(ERROR) << "Invalid activity control consent status.";
+  }
 }
