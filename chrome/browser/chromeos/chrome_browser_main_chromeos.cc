@@ -45,12 +45,17 @@
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolution_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_virtual_file_request_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
+#include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/chromeos/dbus/finch_features_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
+#include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
+#include "chrome/browser/chromeos/dbus/virtual_file_request_service_provider.h"
+#include "chrome/browser/chromeos/dbus/vm_applications_service_provider.h"
 #include "chrome/browser/chromeos/dbus/vm_applications_service_provider_delegate.h"
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
@@ -117,7 +122,6 @@
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/components/drivefs/drive_file_stream_service_provider_delegate.h"
 #include "chromeos/components/drivefs/fake_drivefs_launcher_client.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -126,13 +130,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
-#include "chromeos/dbus/services/chrome_features_service_provider.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
-#include "chromeos/dbus/services/drive_file_stream_service_provider.h"
-#include "chromeos/dbus/services/liveness_service_provider.h"
-#include "chromeos/dbus/services/proxy_resolution_service_provider.h"
-#include "chromeos/dbus/services/virtual_file_request_service_provider.h"
-#include "chromeos/dbus/services/vm_applications_service_provider.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -342,11 +340,6 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<KioskInfoService>()));
 
-    liveness_service_ = CrosDBusService::Create(
-        kLivenessServiceName, dbus::ObjectPath(kLivenessServicePath),
-        CrosDBusService::CreateServiceProviderList(
-            std::make_unique<LivenessServiceProvider>()));
-
     screen_lock_service_ = CrosDBusService::Create(
         kScreenLockServiceName, dbus::ObjectPath(kScreenLockServicePath),
         CrosDBusService::CreateServiceProviderList(
@@ -385,9 +378,7 @@ class DBusServices {
         drivefs::kDriveFileStreamServiceName,
         dbus::ObjectPath(drivefs::kDriveFileStreamServicePath),
         CrosDBusService::CreateServiceProviderList(
-            std::make_unique<DriveFileStreamServiceProvider>(
-                std::make_unique<
-                    drivefs::DriveFileStreamServiceProviderDelegate>())));
+            std::make_unique<DriveFileStreamServiceProvider>()));
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
@@ -426,7 +417,6 @@ class DBusServices {
     TPMTokenLoader::Shutdown();
     proxy_resolution_service_.reset();
     kiosk_info_service_.reset();
-    liveness_service_.reset();
     virtual_file_request_service_.reset();
     component_updater_service_.reset();
     finch_features_service_.reset();
@@ -443,7 +433,6 @@ class DBusServices {
  private:
   std::unique_ptr<CrosDBusService> proxy_resolution_service_;
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
-  std::unique_ptr<CrosDBusService> liveness_service_;
   std::unique_ptr<CrosDBusService> screen_lock_service_;
   std::unique_ptr<CrosDBusService> virtual_file_request_service_;
   std::unique_ptr<CrosDBusService> component_updater_service_;

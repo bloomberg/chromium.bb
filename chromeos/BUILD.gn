@@ -58,9 +58,6 @@ component("chromeos") {
     "//ui/gfx/geometry",  # For accelerometer.
     "//url",
   ]
-  data_deps = [
-    ":dbus_service_files",
-  ]
   sources = [
     "accelerometer/accelerometer_reader.cc",
     "accelerometer/accelerometer_reader.h",
@@ -279,20 +276,8 @@ component("chromeos") {
     "dbus/power_manager_client.h",
     "dbus/power_policy_controller.cc",
     "dbus/power_policy_controller.h",
-    "dbus/services/chrome_features_service_provider.cc",
-    "dbus/services/chrome_features_service_provider.h",
     "dbus/services/cros_dbus_service.cc",
     "dbus/services/cros_dbus_service.h",
-    "dbus/services/drive_file_stream_service_provider.cc",
-    "dbus/services/drive_file_stream_service_provider.h",
-    "dbus/services/liveness_service_provider.cc",
-    "dbus/services/liveness_service_provider.h",
-    "dbus/services/proxy_resolution_service_provider.cc",
-    "dbus/services/proxy_resolution_service_provider.h",
-    "dbus/services/virtual_file_request_service_provider.cc",
-    "dbus/services/virtual_file_request_service_provider.h",
-    "dbus/services/vm_applications_service_provider.cc",
-    "dbus/services/vm_applications_service_provider.h",
     "dbus/session_manager_client.cc",
     "dbus/session_manager_client.h",
     "dbus/shill_client_helper.cc",
@@ -567,22 +552,6 @@ component("chromeos") {
   }
 }
 
-copy("dbus_service_files") {
-  sources = [
-    "dbus/services/org.chromium.ChromeFeaturesService.conf",
-    "dbus/services/org.chromium.DisplayService.conf",
-    "dbus/services/org.chromium.DriveFileStreamService.conf",
-    "dbus/services/org.chromium.KioskAppService.conf",
-    "dbus/services/org.chromium.LivenessService.conf",
-    "dbus/services/org.chromium.NetworkProxyService.conf",
-    "dbus/services/org.chromium.VirtualFileRequestService.conf",
-    "dbus/services/org.chromium.VmApplicationsService.conf",
-  ]
-  outputs = [
-    "$root_out_dir/dbus/{{source_file_part}}",
-  ]
-}
-
 # This must be a static library instead of a source set because some of the
 # files pull in things with dependencies that aren't linked in all cases.
 #
@@ -738,7 +707,6 @@ test("chromeos_unittests") {
     "dbus/power_manager_client_unittest.cc",
     "dbus/power_policy_controller_unittest.cc",
     "dbus/services/cros_dbus_service_unittest.cc",
-    "dbus/services/proxy_resolution_service_provider_unittest.cc",
     "dbus/shill_client_unittest_base.cc",
     "dbus/shill_client_unittest_base.h",
     "dbus/shill_device_client_unittest.cc",

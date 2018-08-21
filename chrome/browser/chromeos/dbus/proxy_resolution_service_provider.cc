@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/services/proxy_resolution_service_provider.h"
+#include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 
 #include <memory>
 #include <utility>
@@ -146,7 +146,8 @@ void ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread(
              ->BelongsToCurrentThread());
 
   net::ProxyResolutionService* proxy_resolution_service =
-      request->context_getter->GetURLRequestContext()->proxy_resolution_service();
+      request->context_getter->GetURLRequestContext()
+          ->proxy_resolution_service();
   if (!proxy_resolution_service) {
     request->error = "No proxy service in chrome";
     OnResolutionComplete(std::move(request), notify_thread, notify_callback,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/services/chrome_features_service_provider.h"
+#include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 
 #include <utility>
 

@@ -109,6 +109,7 @@ component("ash") {
     "client_image_registry.h",
     "dbus/ash_dbus_services.h",
     "dbus/display_service_provider.h",
+    "dbus/liveness_service_provider.h",
     "dbus/url_handler_service_provider.h",
     "debug.h",
     "detachable_base/detachable_base_handler.h",
@@ -769,6 +770,7 @@ component("ash") {
     "client_image_registry.cc",
     "dbus/ash_dbus_services.cc",
     "dbus/display_service_provider.cc",
+    "dbus/liveness_service_provider.cc",
     "dbus/url_handler_service_provider.cc",
     "debug.cc",
     "detachable_base/detachable_base_handler.cc",
@@ -1604,6 +1606,8 @@ static_library("ash_shell_lib_with_content") {
 
 copy("dbus_service_files") {
   sources = [
+    "dbus/org.chromium.DisplayService.conf",
+    "dbus/org.chromium.LivenessService.conf",
     "dbus/org.chromium.UrlHandlerService.conf",
   ]
   outputs = [

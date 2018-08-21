@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_SERVICES_CHROME_FEATURES_SERVICE_PROVIDER_H_
-#define CHROMEOS_DBUS_SERVICES_CHROME_FEATURES_SERVICE_PROVIDER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DBUS_CHROME_FEATURES_SERVICE_PROVIDER_H_
+#define CHROME_BROWSER_CHROMEOS_DBUS_CHROME_FEATURES_SERVICE_PROVIDER_H_
 
 #include <memory>
 
@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
@@ -30,7 +29,7 @@ namespace chromeos {
 //     org.chromium.ChromeFeaturesServiceInterface.IsCrostiniEnabled
 //
 // % (returns true if Crostini is enabled, otherwise returns false)
-class CHROMEOS_EXPORT ChromeFeaturesServiceProvider
+class ChromeFeaturesServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
   // Delegate interface providing additional resources to
@@ -80,4 +79,4 @@ class CHROMEOS_EXPORT ChromeFeaturesServiceProvider
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_SERVICES_CHROME_FEATURES_SERVICE_PROVIDER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DBUS_CHROME_FEATURES_SERVICE_PROVIDER_H_

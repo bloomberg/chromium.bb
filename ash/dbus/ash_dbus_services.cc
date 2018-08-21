@@ -5,6 +5,7 @@
 #include "ash/dbus/ash_dbus_services.h"
 
 #include "ash/dbus/display_service_provider.h"
+#include "ash/dbus/liveness_service_provider.h"
 #include "ash/dbus/url_handler_service_provider.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
@@ -26,17 +27,21 @@ AshDBusServices::AshDBusServices() {
     initialized_dbus_thread_ = true;
   }
 
-  url_handler_service_ = chromeos::CrosDBusService::Create(
-      chromeos::kUrlHandlerServiceName,
-      dbus::ObjectPath(chromeos::kUrlHandlerServicePath),
-      chromeos::CrosDBusService::CreateServiceProviderList(
-          std::make_unique<UrlHandlerServiceProvider>()));
-
   display_service_ = chromeos::CrosDBusService::Create(
       chromeos::kDisplayServiceName,
       dbus::ObjectPath(chromeos::kDisplayServicePath),
       chromeos::CrosDBusService::CreateServiceProviderList(
           std::make_unique<DisplayServiceProvider>()));
+  liveness_service_ = chromeos::CrosDBusService::Create(
+      chromeos::kLivenessServiceName,
+      dbus::ObjectPath(chromeos::kLivenessServicePath),
+      chromeos::CrosDBusService::CreateServiceProviderList(
+          std::make_unique<LivenessServiceProvider>()));
+  url_handler_service_ = chromeos::CrosDBusService::Create(
+      chromeos::kUrlHandlerServiceName,
+      dbus::ObjectPath(chromeos::kUrlHandlerServicePath),
+      chromeos::CrosDBusService::CreateServiceProviderList(
+          std::make_unique<UrlHandlerServiceProvider>()));
 }
 
 void AshDBusServices::EmitAshInitialized() {
@@ -47,6 +52,7 @@ void AshDBusServices::EmitAshInitialized() {
 
 AshDBusServices::~AshDBusServices() {
   display_service_.reset();
+  liveness_service_.reset();
   url_handler_service_.reset();
   if (initialized_dbus_thread_) {
     chromeos::DBusThreadManager::Shutdown();

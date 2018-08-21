@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_SERVICES_VIRTUAL_FILE_REQUEST_SERVICE_PROVIDER_H_
-#define CHROMEOS_DBUS_SERVICES_VIRTUAL_FILE_REQUEST_SERVICE_PROVIDER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DBUS_VIRTUAL_FILE_REQUEST_SERVICE_PROVIDER_H_
+#define CHROME_BROWSER_CHROMEOS_DBUS_VIRTUAL_FILE_REQUEST_SERVICE_PROVIDER_H_
 
 #include <stdint.h>
 
@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
@@ -27,9 +26,10 @@ namespace chromeos {
 
 // VirtualFileRequestServiceProvider exposes D-Bus methods which will be
 // called by the VirtualFileProvider service.
-class CHROMEOS_EXPORT VirtualFileRequestServiceProvider
+class VirtualFileRequestServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
+  // TODO(derat): Move the delegate into this class.
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -69,4 +69,4 @@ class CHROMEOS_EXPORT VirtualFileRequestServiceProvider
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_SERVICES_VIRTUAL_FILE_REQUEST_SERVICE_PROVIDER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DBUS_VIRTUAL_FILE_REQUEST_SERVICE_PROVIDER_H_

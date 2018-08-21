@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_SERVICES_LIVENESS_SERVICE_PROVIDER_H_
-#define CHROMEOS_DBUS_SERVICES_LIVENESS_SERVICE_PROVIDER_H_
+#ifndef ASH_DBUS_LIVENESS_SERVICE_PROVIDER_H_
+#define ASH_DBUS_LIVENESS_SERVICE_PROVIDER_H_
 
 #include <string>
 
@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
@@ -19,27 +18,27 @@ namespace dbus {
 class MethodCall;
 }
 
-namespace chromeos {
+namespace ash {
 
 // This class exports a "CheckLiveness" D-Bus method that the session manager
 // calls periodically to confirm that Chrome's UI thread is responsive to D-Bus
 // messages.  It can be tested with the following command:
 //
 // % dbus-send --system --type=method_call --print-reply
-//     --dest=org.chromium.LibCrosService
-//     /org/chromium/LibCrosService
-//     org.chromium.LibCrosServiceInterface.CheckLiveness
+//     --dest=org.chromium.LivenessService
+//     /org/chromium/LivenessService
+//     org.chromium.LivenessServiceInterface.CheckLiveness
 //
 // -> method return sender=:1.9 -> dest=:1.27 reply_serial=2
 //
 // (An empty response should be returned.)
-class CHROMEOS_EXPORT LivenessServiceProvider
-    : public CrosDBusService::ServiceProviderInterface {
+class LivenessServiceProvider
+    : public chromeos::CrosDBusService::ServiceProviderInterface {
  public:
   LivenessServiceProvider();
   ~LivenessServiceProvider() override;
 
-  // CrosDBusService::ServiceProviderInterface overrides:
+  // chromeos::CrosDBusService::ServiceProviderInterface overrides:
   void Start(scoped_refptr<dbus::ExportedObject> exported_object) override;
 
  private:
@@ -60,6 +59,6 @@ class CHROMEOS_EXPORT LivenessServiceProvider
   DISALLOW_COPY_AND_ASSIGN(LivenessServiceProvider);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROMEOS_DBUS_SERVICES_LIVENESS_SERVICE_PROVIDER_H_
+#endif  // ASH_DBUS_LIVENESS_SERVICE_PROVIDER_H_

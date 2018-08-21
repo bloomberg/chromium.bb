@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
@@ -43,7 +42,7 @@ namespace chromeos {
 //     "string:|component name|"
 //
 // % (returns empty response on success and error response on failure)
-class CHROMEOS_EXPORT ComponentUpdaterServiceProvider
+class ComponentUpdaterServiceProvider
     : public CrosDBusService::ServiceProviderInterface,
       public component_updater::CrOSComponentManager::Delegate {
  public:

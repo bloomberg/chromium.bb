@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/services/virtual_file_request_service_provider.h"
+#include "chrome/browser/chromeos/dbus/virtual_file_request_service_provider.h"
 
 namespace chromeos {
 

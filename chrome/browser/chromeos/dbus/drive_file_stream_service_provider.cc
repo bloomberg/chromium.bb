@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/services/drive_file_stream_service_provider.h"
+#include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 
 #include <utility>
 
 #include "base/bind.h"
+#include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
-DriveFileStreamServiceProvider::DriveFileStreamServiceProvider(
-    std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)), weak_ptr_factory_(this) {}
+DriveFileStreamServiceProvider::DriveFileStreamServiceProvider()
+    : weak_ptr_factory_(this) {}
 
 DriveFileStreamServiceProvider::~DriveFileStreamServiceProvider() = default;
 
@@ -48,7 +48,8 @@ void DriveFileStreamServiceProvider::HandleOpenIpcChannel(
         method_call, DBUS_ERROR_INVALID_ARGS, "Second argument is not FD."));
     return;
   }
-  if (!delegate_->OpenIpcChannel(id, std::move(fd))) {
+  if (!drivefs::PendingConnectionManager::Get().OpenIpcChannel(id,
+                                                               std::move(fd))) {
     response_sender.Run(dbus::ErrorResponse::FromMethodCall(
         method_call, DBUS_ERROR_FAILED, "Failed to open IPC"));
     return;

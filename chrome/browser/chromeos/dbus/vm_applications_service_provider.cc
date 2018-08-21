@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/services/vm_applications_service_provider.h"
+#include "chrome/browser/chromeos/dbus/vm_applications_service_provider.h"
 
 #include "base/bind.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
