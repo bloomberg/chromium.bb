@@ -281,15 +281,15 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   auto* request = GetPendingRequest(1);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, responses[1]);
-  histogram.ExpectBucketCount("Autofill.Upload.HttpResponseCode", net::HTTP_OK,
-                              1);
+  histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
+                              net::HTTP_OK, 1);
 
   // Request 2: Unsuccessful upload.
   request = GetPendingRequest(2);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, network::CreateResourceResponseHead(net::HTTP_NOT_FOUND),
       responses[2], network::URLLoaderCompletionStatus(net::OK));
-  histogram.ExpectBucketCount("Autofill.Upload.HttpResponseCode",
+  histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
                               net::HTTP_NOT_FOUND, 1);
 
   // Request 0: Successful query.
@@ -298,8 +298,8 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
       request, responses[0]);
   EXPECT_EQ(3U, responses_.size());
   histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
-  histogram.ExpectBucketCount("Autofill.Query.HttpResponseCode", net::HTTP_OK,
-                              1);
+  histogram.ExpectBucketCount("Autofill.Query.HttpResponseOrErrorCode",
+                              net::HTTP_OK, 1);
 
   // Check Request 1.
   EXPECT_EQ(AutofillDownloadManagerTest::UPLOAD_SUCCESSFULL,
@@ -346,7 +346,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
       request,
       network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
       responses[0], network::URLLoaderCompletionStatus(net::OK));
-  histogram.ExpectBucketCount("Autofill.Query.HttpResponseCode",
+  histogram.ExpectBucketCount("Autofill.Query.HttpResponseOrErrorCode",
                               net::HTTP_INTERNAL_SERVER_ERROR, 1);
 
   // Check Request 4.
@@ -465,7 +465,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {
 
   // There should not be an additional retry.
   ASSERT_EQ(test_url_loader_factory_.NumPending(), 0);
-  histogram.ExpectBucketCount("Autofill.Query.HttpResponseCode",
+  histogram.ExpectBucketCount("Autofill.Query.HttpResponseOrErrorCode",
                               net::HTTP_REQUEST_ENTITY_TOO_LARGE, 1);
   auto buckets = histogram.GetAllSamples("Autofill.Query.FailingPayloadSize");
   ASSERT_EQ(1U, buckets.size());
@@ -550,7 +550,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
       network::CreateResourceResponseHead(net::HTTP_REQUEST_ENTITY_TOO_LARGE),
       "", network::URLLoaderCompletionStatus(net::OK));
   ASSERT_EQ(test_url_loader_factory_.NumPending(), 0);
-  histogram.ExpectBucketCount("Autofill.Upload.HttpResponseCode",
+  histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
                               net::HTTP_REQUEST_ENTITY_TOO_LARGE, 1);
   auto buckets = histogram.GetAllSamples("Autofill.Upload.FailingPayloadSize");
   ASSERT_EQ(1U, buckets.size());

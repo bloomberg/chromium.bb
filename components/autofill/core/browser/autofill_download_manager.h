@@ -135,6 +135,7 @@ class AutofillDownloadManager {
   void OnSimpleLoaderComplete(
       std::list<std::unique_ptr<network::SimpleURLLoader>>::iterator it,
       FormRequestData request_data,
+      base::TimeTicks request_start,
       std::unique_ptr<std::string> response_body);
 
   // The AutofillDriver that this instance will use. Must not be null, and must
