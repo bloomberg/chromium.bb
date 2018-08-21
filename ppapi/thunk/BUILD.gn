@@ -167,7 +167,6 @@ source_set("thunk") {
       "ppb_buffer_thunk.cc",
       "ppb_char_set_thunk.cc",
       "ppb_flash_clipboard_thunk.cc",
-      "ppb_flash_device_id_thunk.cc",
       "ppb_flash_drm_thunk.cc",
       "ppb_flash_file_fileref_thunk.cc",
       "ppb_flash_file_modulelocal_thunk.cc",

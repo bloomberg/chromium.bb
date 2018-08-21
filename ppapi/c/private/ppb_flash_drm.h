@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_drm.idl modified Mon Nov 11 14:49:53 2013. */
+/* From private/ppb_flash_drm.idl modified Fri Aug  3 10:01:34 2018. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_DRM_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_DRM_H_
@@ -16,7 +16,6 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_FLASH_DRM_INTERFACE_1_0 "PPB_Flash_DRM;1.0"
 #define PPB_FLASH_DRM_INTERFACE_1_1 "PPB_Flash_DRM;1.1"
 #define PPB_FLASH_DRM_INTERFACE PPB_FLASH_DRM_INTERFACE_1_1
 
@@ -74,17 +73,6 @@ struct PPB_Flash_DRM_1_1 {
 };
 
 typedef struct PPB_Flash_DRM_1_1 PPB_Flash_DRM;
-
-struct PPB_Flash_DRM_1_0 {
-  PP_Resource (*Create)(PP_Instance instance);
-  int32_t (*GetDeviceID)(PP_Resource drm,
-                         struct PP_Var* id,
-                         struct PP_CompletionCallback callback);
-  PP_Bool (*GetHmonitor)(PP_Resource drm, int64_t* hmonitor);
-  int32_t (*GetVoucherFile)(PP_Resource drm,
-                            PP_Resource* file_ref,
-                            struct PP_CompletionCallback callback);
-};
 /**
  * @}
  */

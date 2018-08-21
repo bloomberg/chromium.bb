@@ -10,7 +10,6 @@
 [generate_thunk]
 
 label Chrome {
-  M29 = 1.0,
   M33 = 1.1
 };
 

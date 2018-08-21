@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_flash_drm.idl modified Wed Jan 27 17:10:16 2016.
+// From private/ppb_flash_drm.idl modified Fri Aug  3 10:01:34 2018.
 
 #include <stdint.h>
 
@@ -67,17 +67,10 @@ int32_t MonitorIsExternal(PP_Resource drm,
       enter.object()->MonitorIsExternal(is_external, enter.callback()));
 }
 
-const PPB_Flash_DRM_1_0 g_ppb_flash_drm_thunk_1_0 = {
-    &Create, &GetDeviceID, &GetHmonitor, &GetVoucherFile};
-
 const PPB_Flash_DRM_1_1 g_ppb_flash_drm_thunk_1_1 = {
     &Create, &GetDeviceID, &GetHmonitor, &GetVoucherFile, &MonitorIsExternal};
 
 }  // namespace
-
-PPAPI_THUNK_EXPORT const PPB_Flash_DRM_1_0* GetPPB_Flash_DRM_1_0_Thunk() {
-  return &g_ppb_flash_drm_thunk_1_0;
-}
 
 PPAPI_THUNK_EXPORT const PPB_Flash_DRM_1_1* GetPPB_Flash_DRM_1_1_Thunk() {
   return &g_ppb_flash_drm_thunk_1_1;
