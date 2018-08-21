@@ -1458,13 +1458,7 @@ for_updatePositions(const widechar *outChars, int inLength, int outLength, int s
 		}
 	} else if (*cursorStatus == 2 && *cursorPosition == pos)
 		*cursorPosition = output->length;
-	if (outLength <= inLength) {
-		for (k = 0; k < outLength; k++) posMapping[output->length + k] = pos + shift;
-	} else {
-		for (k = 0; k < inLength; k++) posMapping[output->length + k] = pos + shift;
-		for (k = inLength; k < outLength; k++)
-			posMapping[output->length + k] = pos + shift;
-	}
+	for (k = 0; k < outLength; k++) posMapping[output->length + k] = pos + shift;
 	output->length += outLength;
 	return 1;
 }
