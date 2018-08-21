@@ -63,9 +63,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
-  switch (indexPath.section) {
-    case 0: {
-      ListItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  DCHECK_EQ(0, indexPath.section);
+  ListItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  switch ((ItemType)item.type) {
+    case IdentityItemType: {
       IdentityChooserItem* identityChooserItem =
           base::mac::ObjCCastStrict<IdentityChooserItem>(item);
       DCHECK(identityChooserItem);
@@ -74,8 +75,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
             didSelectIdentityWithGaiaID:identityChooserItem.gaiaID];
       break;
     }
-    case 1:
-      DCHECK_EQ(0, indexPath.row);
+    case AddAccountItemType:
       [self.presentationDelegate
           identityChooserViewControllerDidTapOnAddAccount:self];
       break;
