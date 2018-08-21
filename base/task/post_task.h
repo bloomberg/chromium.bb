@@ -24,43 +24,44 @@
 
 namespace base {
 
-// This is the interface to post tasks to the TaskScheduler.
+// This is the interface to post tasks.
 //
-// To post a simple one-off task with default traits:
-//     PostTask(FROM_HERE, Bind(...));
+// To post a simple one-off task with default traits: PostTask(FROM_HERE,
+//     Bind(...));
 //
 // To post a high priority one-off task to respond to a user interaction:
-//     PostTaskWithTraits(
-//         FROM_HERE,
-//         {TaskPriority::USER_BLOCKING},
-//         Bind(...));
+//     PostTaskWithTraits(FROM_HERE, {TaskPriority::USER_BLOCKING}, Bind(...));
 //
 // To post tasks that must run in sequence with default traits:
 //     scoped_refptr<SequencedTaskRunner> task_runner =
-//         CreateSequencedTaskRunnerWithTraits(TaskTraits());
+//     CreateSequencedTaskRunnerWithTraits(TaskTraits());
 //     task_runner.PostTask(FROM_HERE, Bind(...));
 //     task_runner.PostTask(FROM_HERE, Bind(...));
 //
 // To post tasks that may block, must run in sequence and can be skipped on
-// shutdown:
-//     scoped_refptr<SequencedTaskRunner> task_runner =
-//         CreateSequencedTaskRunnerWithTraits(
-//             {MayBlock(), TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-//     task_runner.PostTask(FROM_HERE, Bind(...));
-//     task_runner.PostTask(FROM_HERE, Bind(...));
+// shutdown: scoped_refptr<SequencedTaskRunner> task_runner =
+// CreateSequencedTaskRunnerWithTraits({MayBlock(),
+// TaskShutdownBehavior::SKIP_ON_SHUTDOWN}); task_runner.PostTask(FROM_HERE,
+// Bind(...)); task_runner.PostTask(FROM_HERE, Bind(...));
 //
-// The default traits apply to tasks that:
-//     (1) don't block (ref. MayBlock() and WithBaseSyncPrimitives()),
-//     (2) prefer inheriting the current priority to specifying their own, and
-//     (3) can either block shutdown or be skipped on shutdown
-//         (TaskScheduler implementation is free to choose a fitting default).
-// Explicit traits must be specified for tasks for which these loose
-// requirements are not sufficient.
+// The default traits apply to tasks that: (1) don't block (ref. MayBlock() and
+//     WithBaseSyncPrimitives()), (2) prefer inheriting the current priority to
+//     specifying their own, and (3) can either block shutdown or be skipped on
+//     shutdown (implementation is free to choose a fitting default). Explicit
+//     traits must be specified for tasks for which these loose requirements are
+//     not sufficient.
 //
-// Tasks posted through functions below will run on threads owned by the
-// registered TaskScheduler (i.e. not on the main thread). Tasks posted through
-// functions below with a delay may be coalesced (i.e. delays may be adjusted to
-// reduce the number of wakeups and hence power consumption).
+// Tasks posted with only traits defined in base/task/task_traits.h run on
+// threads owned by the registered TaskScheduler (i.e. not on the main thread).
+// An embedder (e.g. Chrome) can define additional traits to make tasks run on
+// threads of their choosing. TODO(https://crbug.com/863341): Make this a
+// reality.
+//
+// Tasks posted with the same traits will be scheduled in the order they were
+// posted. IMPORTANT: Please note however that, unless the traits imply a
+// single thread or sequence, this doesn't guarantee any *execution ordering*
+// for tasks posted in a given order (being scheduled first doesn't mean it will
+// run first -- could run in parallel or have its physical thread preempted).
 //
 // Prerequisite: A TaskScheduler must have been registered for the current
 // process via TaskScheduler::SetInstance() before the functions below are
@@ -69,40 +70,30 @@ namespace base {
 // have to worry about this. You will encounter DCHECKs or nullptr dereferences
 // if this is violated. For tests, prefer base::test::ScopedTaskEnvironment.
 
-// Posts |task| to the TaskScheduler. Calling this is equivalent to calling
-// PostTaskWithTraits with plain TaskTraits.
-BASE_EXPORT void PostTask(const Location& from_here, OnceClosure task);
+// Equivalent to calling PostTaskWithTraits with default TaskTraits.
+BASE_EXPORT bool PostTask(const Location& from_here, OnceClosure task);
 
-// Posts |task| to the TaskScheduler. |task| will not run before |delay|
-// expires. Calling this is equivalent to calling PostDelayedTaskWithTraits with
-// plain TaskTraits.
+// Equivalent to calling PostDelayedTaskWithTraits with default TaskTraits.
 //
 // Use PostDelayedTaskWithTraits to specify a BEST_EFFORT priority if the task
 // doesn't have to run as soon as |delay| expires.
-BASE_EXPORT void PostDelayedTask(const Location& from_here,
+BASE_EXPORT bool PostDelayedTask(const Location& from_here,
                                  OnceClosure task,
                                  TimeDelta delay);
 
-// Posts |task| to the TaskScheduler and posts |reply| on the caller's execution
-// context (i.e. same sequence or thread and same TaskTraits if applicable) when
-// |task| completes. Calling this is equivalent to calling
-// PostTaskWithTraitsAndReply with plain TaskTraits. Can only be called when
-// SequencedTaskRunnerHandle::IsSet().
-BASE_EXPORT void PostTaskAndReply(const Location& from_here,
+// Equivalent to calling PostTaskWithTraitsAndReply with default TaskTraits.
+BASE_EXPORT bool PostTaskAndReply(const Location& from_here,
                                   OnceClosure task,
                                   OnceClosure reply);
 
-// Posts |task| to the TaskScheduler and posts |reply| with the return value of
-// |task| as argument on the caller's execution context (i.e. same sequence or
-// thread and same TaskTraits if applicable) when |task| completes. Calling this
-// is equivalent to calling PostTaskWithTraitsAndReplyWithResult with plain
-// TaskTraits. Can only be called when SequencedTaskRunnerHandle::IsSet().
+// Equivalent to calling PostTaskWithTraitsAndReplyWithResult with default
+// TaskTraits.
 template <typename TaskReturnType, typename ReplyArgType>
-void PostTaskAndReplyWithResult(const Location& from_here,
+bool PostTaskAndReplyWithResult(const Location& from_here,
                                 OnceCallback<TaskReturnType()> task,
                                 OnceCallback<void(ReplyArgType)> reply) {
-  PostTaskWithTraitsAndReplyWithResult(from_here, TaskTraits(), std::move(task),
-                                       std::move(reply));
+  return PostTaskWithTraitsAndReplyWithResult(
+      from_here, TaskTraits(), std::move(task), std::move(reply));
 }
 
 // Callback version of PostTaskAndReplyWithResult above.
@@ -111,44 +102,48 @@ void PostTaskAndReplyWithResult(const Location& from_here,
 // overload resolution.
 // TODO(tzik): Update all callers of the Callback version to use OnceCallback.
 template <typename TaskReturnType, typename ReplyArgType>
-void PostTaskAndReplyWithResult(const Location& from_here,
+bool PostTaskAndReplyWithResult(const Location& from_here,
                                 Callback<TaskReturnType()> task,
                                 Callback<void(ReplyArgType)> reply) {
-  PostTaskAndReplyWithResult(
+  return PostTaskAndReplyWithResult(
       from_here, OnceCallback<TaskReturnType()>(std::move(task)),
       OnceCallback<void(ReplyArgType)>(std::move(reply)));
 }
 
-// Posts |task| with specific |traits| to the TaskScheduler.
-BASE_EXPORT void PostTaskWithTraits(const Location& from_here,
+// Posts |task| with specific |traits|. Returns false if the task definitely
+// won't run because of current shutdown state.
+BASE_EXPORT bool PostTaskWithTraits(const Location& from_here,
                                     const TaskTraits& traits,
                                     OnceClosure task);
 
-// Posts |task| with specific |traits| to the TaskScheduler. |task| will not run
-// before |delay| expires.
+// Posts |task| with specific |traits|. |task| will not run before |delay|
+// expires. Returns false if the task definitely won't run because of current
+// shutdown state.
 //
 // Specify a BEST_EFFORT priority via |traits| if the task doesn't have to run
 // as soon as |delay| expires.
-BASE_EXPORT void PostDelayedTaskWithTraits(const Location& from_here,
+BASE_EXPORT bool PostDelayedTaskWithTraits(const Location& from_here,
                                            const TaskTraits& traits,
                                            OnceClosure task,
                                            TimeDelta delay);
 
-// Posts |task| with specific |traits| to the TaskScheduler and posts |reply| on
-// the caller's execution context (i.e. same sequence or thread and same
-// TaskTraits if applicable) when |task| completes. Can only be called when
+// Posts |task| with specific |traits| and posts |reply| on the caller's
+// execution context (i.e. same sequence or thread and same TaskTraits if
+// applicable) when |task| completes. Returns false if the task definitely won't
+// run because of current shutdown state. Can only be called when
 // SequencedTaskRunnerHandle::IsSet().
-BASE_EXPORT void PostTaskWithTraitsAndReply(const Location& from_here,
+BASE_EXPORT bool PostTaskWithTraitsAndReply(const Location& from_here,
                                             const TaskTraits& traits,
                                             OnceClosure task,
                                             OnceClosure reply);
 
-// Posts |task| with specific |traits| to the TaskScheduler and posts |reply|
-// with the return value of |task| as argument on the caller's execution context
-// (i.e. same sequence or thread and same TaskTraits if applicable) when |task|
-// completes. Can only be called when SequencedTaskRunnerHandle::IsSet().
+// Posts |task| with specific |traits| and posts |reply| with the return value
+// of |task| as argument on the caller's execution context (i.e. same sequence
+// or thread and same TaskTraits if applicable) when |task| completes. Returns
+// false if the task definitely won't run because of current shutdown state. Can
+// only be called when SequencedTaskRunnerHandle::IsSet().
 template <typename TaskReturnType, typename ReplyArgType>
-void PostTaskWithTraitsAndReplyWithResult(
+bool PostTaskWithTraitsAndReplyWithResult(
     const Location& from_here,
     const TaskTraits& traits,
     OnceCallback<TaskReturnType()> task,
@@ -168,11 +163,11 @@ void PostTaskWithTraitsAndReplyWithResult(
 // overload resolution.
 // TODO(tzik): Update all callers of the Callback version to use OnceCallback.
 template <typename TaskReturnType, typename ReplyArgType>
-void PostTaskWithTraitsAndReplyWithResult(const Location& from_here,
+bool PostTaskWithTraitsAndReplyWithResult(const Location& from_here,
                                           const TaskTraits& traits,
                                           Callback<TaskReturnType()> task,
                                           Callback<void(ReplyArgType)> reply) {
-  PostTaskWithTraitsAndReplyWithResult(
+  return PostTaskWithTraitsAndReplyWithResult(
       from_here, traits, OnceCallback<TaskReturnType()>(std::move(task)),
       OnceCallback<void(ReplyArgType)>(std::move(reply)));
 }
@@ -190,7 +185,9 @@ CreateSequencedTaskRunnerWithTraits(const TaskTraits& traits);
 // Returns a SingleThreadTaskRunner whose PostTask invocations result in
 // scheduling tasks using |traits| on a thread determined by |thread_mode|. See
 // base/task/single_thread_task_runner_thread_mode.h for |thread_mode| details.
-// Tasks run on a single thread in posting order.
+// If |traits| identifies an existing thread,
+// SingleThreadTaskRunnerThreadMode::SHARED must be used. Tasks run on a single
+// thread in posting order.
 //
 // If all you need is to make sure that tasks don't run concurrently (e.g.
 // because they access a data structure which is not thread-safe), use
@@ -209,12 +206,14 @@ CreateSingleThreadTaskRunnerWithTraits(
 // scheduling tasks using |traits| in a COM Single-Threaded Apartment on a
 // thread determined by |thread_mode|. See
 // base/task/single_thread_task_runner_thread_mode.h for |thread_mode| details.
-// Tasks run in the same Single-Threaded Apartment in posting order for the
-// returned SingleThreadTaskRunner. There is not necessarily a one-to-one
-// correspondence between SingleThreadTaskRunners and Single-Threaded
-// Apartments. The implementation is free to share apartments or create new
-// apartments as necessary. In either case, care should be taken to make sure
-// COM pointers are not smuggled across apartments.
+// If |traits| identifies an existing thread,
+// SingleThreadTaskRunnerThreadMode::SHARED must be used. Tasks run in the same
+// Single-Threaded Apartment in posting order for the returned
+// SingleThreadTaskRunner. There is not necessarily a one-to-one correspondence
+// between SingleThreadTaskRunners and Single-Threaded Apartments. The
+// implementation is free to share apartments or create new apartments as
+// necessary. In either case, care should be taken to make sure COM pointers are
+// not smuggled across apartments.
 BASE_EXPORT scoped_refptr<SingleThreadTaskRunner>
 CreateCOMSTATaskRunnerWithTraits(const TaskTraits& traits,
                                  SingleThreadTaskRunnerThreadMode thread_mode =
