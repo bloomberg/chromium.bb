@@ -2443,6 +2443,44 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   CompleteDrag(std::move(resizer));
 }
 
+// Tests that a dragged window's bounds should be updated before dropping onto
+// the new selector item to add into overview.
+TEST_F(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  const gfx::Rect tablet_mode_bounds = window1->bounds();
+  EXPECT_NE(bounds, tablet_mode_bounds);
+
+  // Drag |window1|. Overview should open behind the dragged window.
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(window1.get(), window1.get());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+
+  // Change the |window1|'s bounds to simulate what might happen in reality.
+  window1->SetBounds(bounds);
+  EXPECT_EQ(bounds, window1->bounds());
+
+  // Drop |window1| to the new selector item in overview.
+  WindowSelector* window_selector =
+      Shell::Get()->window_selector_controller()->window_selector();
+  WindowGrid* current_grid =
+      window_selector->GetGridWithRootWindow(window1->GetRootWindow());
+  ASSERT_TRUE(current_grid);
+  EXPECT_EQ(1u, current_grid->window_list().size());
+
+  WindowSelectorItem* new_selector_item = current_grid->GetNewSelectorItem();
+  ASSERT_TRUE(new_selector_item);
+  const gfx::Rect new_selector_bounds = new_selector_item->target_bounds();
+  DragWindowTo(resizer.get(), new_selector_bounds.CenterPoint());
+
+  CompleteDrag(std::move(resizer));
+  // |window1| should have been merged into overview.
+  EXPECT_EQ(current_grid->window_list().size(), 1u);
+  EXPECT_TRUE(window_selector->IsWindowInOverview(window1.get()));
+  // |wiindow1|'s bounds should have been updated to its tablet mode bounds.
+  EXPECT_EQ(tablet_mode_bounds, window1->bounds());
+}
+
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
   TestWindowDelegateWithWidget(bool can_activate)

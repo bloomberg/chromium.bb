@@ -31,6 +31,7 @@
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "base/i18n/string_search.h"
 #include "base/numerics/ranges.h"
@@ -700,6 +701,21 @@ void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
   // end of this function.
   if (SelectedWindow()) {
     if (IsNewSelectorItemWindow(SelectedWindow()->GetWindow())) {
+      // Update the dragged window's bounds before adding it to overview. The
+      // dragged window might have resized to a smaller size if the drag
+      // happens on tab(s).
+      const gfx::Rect old_bounds = dragged_window->bounds();
+      TabletModeWindowState::UpdateWindowPosition(
+          wm::GetWindowState(dragged_window));
+      const gfx::Rect new_bounds = dragged_window->bounds();
+      if (old_bounds != new_bounds) {
+        // It's for smoother animation.
+        gfx::Transform transform =
+            ScopedTransformOverviewWindow::GetTransformForRect(new_bounds,
+                                                               old_bounds);
+        dragged_window->SetTransform(transform);
+      }
+
       window_selector_->AddItem(dragged_window, /*reposition=*/false,
                                 /*animate=*/false);
     }
