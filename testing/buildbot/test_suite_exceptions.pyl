@@ -1473,7 +1473,7 @@
           '--android',
           # TODO(crbug.com/875172): run on the real GPU since the
           # software fallback, SwiftShader, isn't yet for 32-bit ARM.
-          '--use-gpu-in-tests',
+          '--additional-driver-flag=--use-gpu-in-tests',
         ],
         'experiment_percentage': 100, # crbug.com/824539
       },

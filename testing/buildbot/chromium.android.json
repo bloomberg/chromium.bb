@@ -3158,7 +3158,7 @@
         "args": [
           "--debug",
           "--android",
-          "--use-gpu-in-tests"
+          "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "experiment_percentage": 100,
         "isolate_name": "webkit_layout_tests_exparchive",
