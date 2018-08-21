@@ -15,8 +15,10 @@
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 #include "content/public/browser/audio_loopback_stream_creator.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -69,7 +71,54 @@ content::WebContents* GetContents(
                                        id.main_render_frame_id));
 }
 
+content::DesktopMediaID BuildMediaIdForWebContents(
+    content::WebContents* contents) {
+  content::DesktopMediaID media_id;
+  if (!contents)
+    return media_id;
+  media_id.type = content::DesktopMediaID::TYPE_WEB_CONTENTS;
+  media_id.web_contents_id = content::WebContentsMediaCaptureId(
+      contents->GetMainFrame()->GetProcess()->GetID(),
+      contents->GetMainFrame()->GetRoutingID(),
+      true /* enable_audio_throttling */, true /* disable_local_echo */);
+  return media_id;
+}
+
 }  // namespace
+
+// static
+void CastMirroringServiceHost::GetForTab(
+    content::WebContents* target_contents,
+    mojom::MirroringServiceHostRequest request) {
+  if (target_contents) {
+    const content::DesktopMediaID media_id =
+        BuildMediaIdForWebContents(target_contents);
+    mojo::MakeStrongBinding(
+        std::make_unique<mirroring::CastMirroringServiceHost>(media_id),
+        std::move(request));
+  }
+}
+
+// static
+void CastMirroringServiceHost::GetForDesktop(
+    content::WebContents* initiator_contents,
+    const std::string& desktop_stream_id,
+    mojom::MirroringServiceHostRequest request) {
+  DCHECK(!desktop_stream_id.empty());
+  if (initiator_contents) {
+    std::string original_extension_name;
+    const content::DesktopMediaID media_id =
+        content::DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(
+            desktop_stream_id,
+            initiator_contents->GetMainFrame()->GetProcess()->GetID(),
+            initiator_contents->GetMainFrame()->GetRoutingID(),
+            initiator_contents->GetVisibleURL().GetOrigin(),
+            &original_extension_name, content::kRegistryStreamTypeDesktop);
+    mojo::MakeStrongBinding(
+        std::make_unique<mirroring::CastMirroringServiceHost>(media_id),
+        std::move(request));
+  }
+}
 
 CastMirroringServiceHost::CastMirroringServiceHost(
     content::DesktopMediaID source_media_id)

@@ -12,6 +12,10 @@ mojo.config.autoLoadMojomDeps = false;
 loadScript('chrome/common/media_router/mojo/media_controller.mojom');
 loadScript('chrome/common/media_router/mojo/media_router.mojom');
 loadScript('chrome/common/media_router/mojo/media_status.mojom');
+loadScript('components/mirroring/mojom/cast_message_channel.mojom');
+loadScript('components/mirroring/mojom/mirroring_service_host.mojom');
+loadScript('components/mirroring/mojom/session_observer.mojom');
+loadScript('components/mirroring/mojom/session_parameters.mojom');
 loadScript('extensions/common/mojo/keep_alive.mojom');
 loadScript('media/mojo/interfaces/mirror_service_remoting.mojom');
 loadScript('media/mojo/interfaces/remoting_common.mojom');
@@ -746,6 +750,17 @@ MediaRouter.prototype.getMojoExports = function() {
     MediaController: mediaRouter.mojom.MediaController,
     MediaStatus: MediaStatusAdapter,
     MediaStatusObserverPtr: mediaRouter.mojom.MediaStatusObserverPtr,
+    MirroringCastMessage: mirroring.mojom.CastMessage,
+    MirroringCastMessageChannel: mirroring.mojom.CastMessageChannel,
+    MirroringCastMessageChannelPtr: mirroring.mojom.CastMessageChannelPtr,
+    MirroringServiceHostPtr: mirroring.mojom.MirroringServiceHostPtr,
+    MirroringSessionError: mirroring.mojom.SessionError,
+    MirroringSessionObserver: mirroring.mojom.SessionObserver,
+    MirroringSessionObserverPtr: mirroring.mojom.SessionObserverPtr,
+    MirroringSessionParameters: mirroring.mojom.SessionParameters,
+    MirroringSessionType: mirroring.mojom.SessionType,
+    MirroringRemotingNamespace: mirroring.mojom.kRemotingNamespace,
+    MirroringWebRtcNamespace: mirroring.mojom.kWebRtcNamespace,
     MirrorServiceRemoter: MirrorServiceRemoterAdapter,
     MirrorServiceRemoterPtr: MirrorServiceRemoterPtrAdapter,
     MirrorServiceRemotingSourcePtr: MirrorServiceRemotingSourcePtrAdapter,
@@ -982,6 +997,26 @@ MediaRouter.prototype.onMediaRemoterCreated = function(tabId, remoter,
  */
 MediaRouter.prototype.getMediaSinkServiceStatus = function() {
   return this.service_.getMediaSinkServiceStatus();
+}
+
+/**
+ * @param {int32} target_tab_id
+ * @param {!mojo.InterfaceRequest} request
+ */
+MediaRouter.prototype.getMirroringServiceHostForTab = function(
+    target_tab_id, request) {
+  this.service_.getMirroringServiceHostForTab(target_tab_id, request);
+}
+
+/**
+ * @param {int32} initiator_tab_id
+ * @param {!string} desktop_stream_id
+ * @param {!mojo.InterfaceRequest} request
+ */
+MediaRouter.prototype.getMirroringServiceHostForDesktop = function(
+    initiator_tab_id, desktop_stream_id, request) {
+  this.service_.getMirroringServiceHostForDesktop(initiator_tab_id,
+      desktop_stream_id, request);
 }
 
 /**

@@ -12,6 +12,7 @@
 
 namespace content {
 class AudioLoopbackStreamCreator;
+class WebContents;
 }  // namespace content
 
 namespace mirroring {
@@ -23,6 +24,13 @@ namespace mirroring {
 class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
                                        public mojom::ResourceProvider {
  public:
+  static void GetForTab(content::WebContents* target_contents,
+                        mojom::MirroringServiceHostRequest request);
+
+  static void GetForDesktop(content::WebContents* initiator_contents,
+                            const std::string& desktop_stream_id,
+                            mojom::MirroringServiceHostRequest request);
+
   // |source_media_id| indicates the mirroring source.
   explicit CastMirroringServiceHost(content::DesktopMediaID source_media_id);
 

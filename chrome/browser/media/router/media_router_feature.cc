@@ -154,7 +154,6 @@ bool ShouldUseViewsDialog() {
 bool ShouldUseMirroringService() {
   return base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
          base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
-         base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) &&
          base::FeatureList::IsEnabled(network::features::kNetworkService);
 }
 

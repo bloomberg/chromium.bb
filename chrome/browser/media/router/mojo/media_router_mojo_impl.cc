@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/media/cast_mirroring_service_host.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -27,6 +28,9 @@
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -82,6 +86,37 @@ blink::mojom::PresentationConnectionState PresentationConnectionStateToBlink(
   }
   NOTREACHED() << "Unknown PresentationConnectionState " << state;
   return blink::mojom::PresentationConnectionState::CONNECTING;
+}
+
+// Get the WebContents associated with the given tab id. Returns nullptr if the
+// tab id is invalid, or if the searching fails.
+// TODO(xjz): Move this to SessionTabHelper to allow it being used by
+// extensions::ExtensionTabUtil::GetTabById() as well.
+content::WebContents* GetWebContentsFromId(
+    int32_t tab_id,
+    content::BrowserContext* browser_context,
+    bool include_incognito) {
+  if (tab_id < 0)
+    return nullptr;
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  Profile* incognito_profile =
+      include_incognito && profile->HasOffTheRecordProfile()
+          ? profile->GetOffTheRecordProfile()
+          : nullptr;
+  for (auto* target_browser : *BrowserList::GetInstance()) {
+    if (target_browser->profile() == profile ||
+        target_browser->profile() == incognito_profile) {
+      TabStripModel* target_tab_strip = target_browser->tab_strip_model();
+      for (int i = 0; i < target_tab_strip->count(); ++i) {
+        content::WebContents* target_contents =
+            target_tab_strip->GetWebContentsAt(i);
+        if (SessionTabHelper::IdForTab(target_contents).id() == tab_id) {
+          return target_contents;
+        }
+      }
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -958,6 +993,29 @@ void MediaRouterMojoImpl::GetMediaSinkServiceStatus(
     mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) {
   MediaSinkServiceStatus status;
   std::move(callback).Run(status.GetStatusAsJSONString());
+}
+
+void MediaRouterMojoImpl::GetMirroringServiceHostForTab(
+    int32_t target_tab_id,
+    mirroring::mojom::MirroringServiceHostRequest request) {
+  if (ShouldUseMirroringService()) {
+    mirroring::CastMirroringServiceHost::GetForTab(
+        GetWebContentsFromId(target_tab_id, context_,
+                             true /* include_incognito */),
+        std::move(request));
+  }
+}
+
+void MediaRouterMojoImpl::GetMirroringServiceHostForDesktop(
+    int32_t initiator_tab_id,
+    const std::string& desktop_stream_id,
+    mirroring::mojom::MirroringServiceHostRequest request) {
+  if (ShouldUseMirroringService()) {
+    mirroring::CastMirroringServiceHost::GetForDesktop(
+        GetWebContentsFromId(initiator_tab_id, context_,
+                             true /* include_incognito */),
+        desktop_stream_id, std::move(request));
+  }
 }
 
 void MediaRouterMojoImpl::BindToMojoRequest(

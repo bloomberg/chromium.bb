@@ -22,6 +22,7 @@ mojom("media_router") {
 
   public_deps = [
     ":media_controller",
+    "//components/mirroring/mojom:host",
     "//media/mojo/interfaces:mirror_service_remoting",
     "//mojo/public/mojom/base",
     "//net/interfaces:interfaces",

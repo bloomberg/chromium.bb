@@ -277,6 +277,18 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource(
       "media/mojo/interfaces/mirror_service_remoting.mojom",
       IDR_MEDIA_REMOTING_JS);
+  source_map->RegisterSource(
+      "components/mirroring/mojom/mirroring_service_host.mojom",
+      IDR_MIRRORING_SERVICE_HOST_MOJOM_JS);
+  source_map->RegisterSource(
+      "components/mirroring/mojom/cast_message_channel.mojom",
+      IDR_MIRRORING_CAST_MESSAGE_CHANNEL_MOJOM_JS);
+  source_map->RegisterSource(
+      "components/mirroring/mojom/session_observer.mojom",
+      IDR_MIRRORING_SESSION_OBSERVER_MOJOM_JS);
+  source_map->RegisterSource(
+      "components/mirroring/mojom/session_parameters.mojom",
+      IDR_MIRRORING_SESSION_PARAMETERS_JS);
 
   // These bindings are unnecessary with native bindings enabled.
   if (!base::FeatureList::IsEnabled(extensions::features::kNativeCrxBindings)) {
