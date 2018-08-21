@@ -25,6 +25,10 @@ class OomInterventionConfig {
   // paused.
   bool is_renderer_pause_enabled() const { return is_renderer_pause_enabled_; }
 
+  // True if on detection of near OOM condition the ad iframes should be
+  // navigated.
+  bool is_navigate_ads_enabled() const { return is_navigate_ads_enabled_; }
+
   // True if detection should be enabled on renderers.
   bool should_detect_in_renderer() const { return should_detect_in_renderer_; }
 
@@ -44,6 +48,7 @@ class OomInterventionConfig {
   bool use_components_callback_ = false;
 
   bool is_renderer_pause_enabled_ = false;
+  bool is_navigate_ads_enabled_ = false;
   bool should_detect_in_renderer_ = false;
 
   uint64_t swapfree_threshold_ = 0;

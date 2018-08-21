@@ -17,9 +17,8 @@ import "mojo/public/mojom/base/shared_memory.mojom";
 // Browser side interface for OOM intervention. This interface is used to check
 // high memory usage in a renderer.
 interface OomInterventionHost {
-  // Called when a renderer detects high memory usage. |intervention_triggered|
-  // is set to true when the OOM intervention is activated in the renderer.
-  OnHighMemoryUsage(bool intervention_triggered);
+  // Called when a renderer detects high memory usage.
+  OnHighMemoryUsage();
 };
 
 // Arguments set by field trials to configure various thresholds for detecting
@@ -44,10 +43,12 @@ struct DetectionArgs {
 // It monitors memory usage in renderer side to detect near-OOM situation.
 interface OomIntervention {
   // Starts monitoring memory usage in renderer side. When the renderer's
-  // memory usage exceeds |memory_workload_threshold| (in bytes) the renderer
-  // calls host->OnHighMemoryUsage(). The renderer also triggers OOM
-  // intervention when |trigger_intervention| is true.
+  // memory usage exceeds |detection_args| memory thresholds (pmf, swap, virtual
+  // memory usage and blink memory usage), the renderer calls
+  // host->OnHighMemoryUsage(). The renderer also triggers OOM intervention when
+  // |renderer_pause_enabled| or |navigate_ads_enabled| is true.
   StartDetection(OomInterventionHost host,
                  DetectionArgs detection_args,
-                 bool trigger_intervention);
+                 bool renderer_pause_enabled,
+                 bool navigate_ads_enabled);
 };

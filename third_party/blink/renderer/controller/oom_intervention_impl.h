@@ -9,6 +9,7 @@
 #include "third_party/blink/public/common/oom_intervention/oom_intervention_types.h"
 #include "third_party/blink/public/platform/oom_intervention.mojom-blink.h"
 #include "third_party/blink/renderer/controller/controller_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
@@ -29,7 +30,8 @@ class CONTROLLER_EXPORT OomInterventionImpl
   // mojom::blink::OomIntervention:
   void StartDetection(mojom::blink::OomInterventionHostPtr,
                       mojom::blink::DetectionArgsPtr detection_args,
-                      bool trigger_intervention) override;
+                      bool renderer_pause_enabled,
+                      bool navigate_ads_enabled) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, DetectedAndDeclined);
@@ -37,16 +39,17 @@ class CONTROLLER_EXPORT OomInterventionImpl
   FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, StopWatchingAfterDetection);
   FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest,
                            ContinueWatchingWithoutDetection);
+  FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, V1DetectionAdsNavigation);
 
   // Overridden by test.
   virtual OomInterventionMetrics GetCurrentMemoryMetrics();
   void Check(TimerBase*);
 
-
   mojom::blink::DetectionArgsPtr detection_args_;
 
   mojom::blink::OomInterventionHostPtr host_;
-  bool trigger_intervention_ = false;
+  bool renderer_pause_enabled_ = false;
+  bool navigate_ads_enabled_ = false;
   TaskRunnerTimer<OomInterventionImpl> timer_;
   std::unique_ptr<ScopedPagePauser> pauser_;
 };
