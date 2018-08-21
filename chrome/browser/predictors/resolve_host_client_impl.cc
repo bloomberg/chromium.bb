@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
@@ -22,7 +23,12 @@ ResolveHostClientImpl::ResolveHostClientImpl(
     : binding_(this), callback_(std::move(callback)) {
   network::mojom::ResolveHostClientPtr resolve_host_client_ptr;
   binding_.Bind(mojo::MakeRequest(&resolve_host_client_ptr));
-  network_context->ResolveHost(net::HostPortPair::FromURL(url), nullptr,
+  network::mojom::ResolveHostParametersPtr parameters =
+      network::mojom::ResolveHostParameters::New();
+  parameters->initial_priority = net::RequestPriority::IDLE;
+  parameters->is_speculative = true;
+  network_context->ResolveHost(net::HostPortPair::FromURL(url),
+                               std::move(parameters),
                                std::move(resolve_host_client_ptr));
   binding_.set_connection_error_handler(base::BindOnce(
       &ResolveHostClientImpl::OnConnectionError, base::Unretained(this)));
