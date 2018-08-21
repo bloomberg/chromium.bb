@@ -13,7 +13,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewStub;
-import android.widget.FrameLayout;
 
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
@@ -31,11 +30,12 @@ import org.chromium.ui.AsyncViewStub;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
+import org.chromium.ui.widget.OptimizedFrameLayout;
 
 /**
  * Layout for the browser controls (omnibox, menu, tab strip, etc..).
  */
-public class ToolbarControlContainer extends FrameLayout implements ControlContainer {
+public class ToolbarControlContainer extends OptimizedFrameLayout implements ControlContainer {
     private final float mTabStripHeight;
 
     private Toolbar mToolbar;
