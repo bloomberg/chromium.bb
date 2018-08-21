@@ -625,7 +625,11 @@ void TraceLog::SetEnabled(const TraceConfig& trace_config,
     if (!(modes_to_enable & RECORDING_MODE) || already_recording)
       return;
 
-    if (new_options != old_options) {
+    // Discard events if new trace options are different. Reducing trace buffer
+    // size is not supported while already recording, so only replace trace
+    // buffer if we were not already recording.
+    if (new_options != old_options ||
+        (trace_config_.GetTraceBufferSizeInEvents() && !already_recording)) {
       subtle::NoBarrier_Store(&trace_options_, new_options);
       UseNextTraceBuffer();
     }
@@ -1718,20 +1722,26 @@ void TraceLog::SetCurrentThreadBlocksMessageLoop() {
 TraceBuffer* TraceLog::CreateTraceBuffer() {
   HEAP_PROFILER_SCOPED_IGNORE;
   InternalTraceOptions options = trace_options();
+  const size_t config_buffer_chunks =
+      trace_config_.GetTraceBufferSizeInEvents() / kTraceBufferChunkSize;
   if (options & kInternalRecordContinuously) {
     return TraceBuffer::CreateTraceBufferRingBuffer(
-        kTraceEventRingBufferChunks);
+        config_buffer_chunks > 0 ? config_buffer_chunks
+                                 : kTraceEventRingBufferChunks);
   }
   if (options & kInternalEchoToConsole) {
     return TraceBuffer::CreateTraceBufferRingBuffer(
-        kEchoToConsoleTraceEventBufferChunks);
+        config_buffer_chunks > 0 ? config_buffer_chunks
+                                 : kEchoToConsoleTraceEventBufferChunks);
   }
   if (options & kInternalRecordAsMuchAsPossible) {
     return TraceBuffer::CreateTraceBufferVectorOfSize(
-        kTraceEventVectorBigBufferChunks);
+        config_buffer_chunks > 0 ? config_buffer_chunks
+                                 : kTraceEventVectorBigBufferChunks);
   }
   return TraceBuffer::CreateTraceBufferVectorOfSize(
-      kTraceEventVectorBufferChunks);
+      config_buffer_chunks > 0 ? config_buffer_chunks
+                               : kTraceEventVectorBufferChunks);
 }
 
 #if defined(OS_WIN)
