@@ -204,7 +204,7 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
   const bool is_touch_ui =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
 #else
-  const bool is_refresh_ui = false;
+  const bool is_refresh_ui = true;
   const bool is_touch_ui = false;
 #endif
 
