@@ -113,7 +113,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
   // Exclude metalayer-related layers. This will also include other layers
   // under kShellWindowId_OverlayContainer which is fine.
   // TODO(crbug.com/757012): Mash support.
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsMultiProcessMash()) {
     aura::Window* overlay_container = ash::Shell::GetContainer(
         root_window, ash::kShellWindowId_OverlayContainer);
     if (overlay_container != nullptr)
@@ -284,7 +284,7 @@ void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
   // Since ARC currently only runs in primary display, we restrict
   // the screenshot to it.
   // TODO(crbug.com/757012): Mash support.
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsMultiProcessMash()) {
     std::move(callback).Run(std::vector<uint8_t>{});
     return;
   }
@@ -576,7 +576,7 @@ void ArcVoiceInteractionFrameworkService::
 bool ArcVoiceInteractionFrameworkService::IsHomescreenActive() {
   // Homescreen is considered to be active if there are no active windows.
   // TODO(crbug.com/757012): Mash support.
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsMultiProcessMash())
     return false;
   return !ash::Shell::Get()->activation_client()->GetActiveWindow();
 }

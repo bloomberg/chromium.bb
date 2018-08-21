@@ -169,8 +169,8 @@ void OnStatusLogCollected(
 
 // Collect touch HUD debug logs. This needs to be done on the UI thread.
 void CollectTouchHudDebugLog(system_logs::SystemLogsResponse* response) {
-  // TODO(mash): Collect this data from window server over mojo.
-  if (!features::IsAshInBrowserProcess()) {
+  // TODO(crbug.com/807408): Collect this data from window server over mojo.
+  if (features::IsMultiProcessMash()) {
     NOTIMPLEMENTED();
     return;
   }

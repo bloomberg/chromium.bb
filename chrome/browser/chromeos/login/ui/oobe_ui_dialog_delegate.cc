@@ -71,9 +71,9 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
       keyboard_observer_(this) {
   display_observer_.Add(display::Screen::GetScreen());
   tablet_mode_observer_.Add(TabletModeClient::Get());
-  // TODO(mash): Support virtual keyboard under MASH. There is no
+  // TODO(crbug.com/646565): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     keyboard_observer_.Add(keyboard::KeyboardController::Get());
   } else {
     NOTIMPLEMENTED();

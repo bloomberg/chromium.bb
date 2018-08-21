@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event_sink.h"
 #endif
 
@@ -233,6 +234,12 @@ AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
+  // TODO(crbug.com/876043): Mash support.
+  if (features::IsUsingWindowService()) {
+    NOTIMPLEMENTED();
+    return RespondNow(NoArguments());
+  }
+
   std::unique_ptr<accessibility_private::SendSyntheticKeyEvent::Params> params =
       accessibility_private::SendSyntheticKeyEvent::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);

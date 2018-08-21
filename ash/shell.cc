@@ -485,11 +485,15 @@ void Shell::EnableKeyboard() {
       controller->DeactivateKeyboard(keyboard_controller_.get());
   }
 
-  // TODO(crbug.com/646565): ShellDelegateMash does not support keyboard ui yet.
-  auto keyboard_ui = shell_delegate_->CreateKeyboardUI();
-  if (!keyboard_ui && !::features::IsAshInBrowserProcess())
+  // TODO(crbug.com/646565): The keyboard UI uses a WebContents that is
+  // created by chrome code but parented to an ash-created container window.
+  // See ChromeKeyboardUI and keyboard::KeyboardController. This needs to be
+  // fixed for both SingleProcessMash and MultiProcessMash.
+  if (::features::IsUsingWindowService())
     return;
 
+  auto keyboard_ui = shell_delegate_->CreateKeyboardUI();
+  DCHECK(keyboard_ui);
   keyboard_controller_->EnableKeyboard(std::move(keyboard_ui),
                                        virtual_keyboard_controller_.get());
   for (auto& observer : shell_observers_)

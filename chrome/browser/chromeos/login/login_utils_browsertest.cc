@@ -79,7 +79,9 @@ class LoginUtilsTest : public OobeBaseTest {
 
 // Exercises login, like the desktopui_MashLogin Chrome OS autotest.
 IN_PROC_BROWSER_TEST_F(LoginUtilsTest, MashLogin) {
-  if (features::IsAshInBrowserProcess())
+  // Test is relevant for both SingleProcessMash and MultiProcessMash, but
+  // not classic ash.
+  if (!features::IsUsingWindowService())
     return;
 
   WaitForSigninScreen();

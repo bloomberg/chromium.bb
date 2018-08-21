@@ -315,7 +315,7 @@ SigninScreenHandler::SigninScreenHandler(
   WallpaperControllerClient::Get()->AddObserver(std::move(ptr_info));
   // TODO(tbarzic): This is needed for login UI - remove it when login switches
   // to views implementation (or otherwise, make it work under mash).
-  if (features::IsAshInBrowserProcess())
+  if (!features::IsMultiProcessMash())
     detachable_base_observer_.Add(ash::Shell::Get()->detachable_base_handler());
 }
 
@@ -1765,7 +1765,7 @@ void SigninScreenHandler::OnDetachableBaseRequiresUpdateChanged(
     bool requires_update) {}
 
 void SigninScreenHandler::UpdateDetachableBaseChangedError() {
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsMultiProcessMash())
     return;
 
   auto pairing_status =

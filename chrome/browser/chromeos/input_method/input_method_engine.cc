@@ -215,9 +215,9 @@ bool InputMethodEngine::IsActive() const {
 }
 
 void InputMethodEngine::HideInputView() {
-  // TODO(mash): Support virtual keyboard under MASH. There is no
+  // TODO(crbug.com/756059): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled()) {
       keyboard_controller->HideKeyboardByUser();
@@ -229,9 +229,9 @@ void InputMethodEngine::EnableInputView() {
   input_method::InputMethodManager::Get()
       ->GetActiveIMEState()
       ->EnableInputView();
-  // TODO(mash): Support virtual keyboard under MASH. There is no
+  // TODO(crbug.com/756059): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled())
       keyboard_controller->Reload();
