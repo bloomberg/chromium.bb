@@ -530,7 +530,34 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
 void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
     const UpdateResponseDataList& updates) {
+  if (type_ == AUTOFILL_WALLET_DATA) {
+    // The client tag based processor requires client tags to function properly.
+    // However, the wallet data type does not have any client tags. This hacky
+    // code manually asks the bridge to create the client tags for each update,
+    // so that we can still use this processor. A proper fix would be to either
+    // fully use client tags, or to use a different processor.
+    // TODO(crbug.com/874001): Remove this feature-specific logic when the right
+    // solution for Wallet data has been decided.
+    // TODO(crbug.com/874001): Restructure this method so we don't need the
+    // OnUpdateReceivedInternal method if creating tags on the client is the way
+    // we want to move forward.
+    UpdateResponseDataList updates_with_client_tags;
+    for (UpdateResponseData update : updates) {
+      update.entity = update.entity->UpdateClientTagHash(
+          GetHashForTag(bridge_->GetClientTag(update.entity.value())));
+      updates_with_client_tags.push_back(update);
+    }
+    OnUpdateReceivedInternal(model_type_state, updates_with_client_tags);
+  } else {
+    OnUpdateReceivedInternal(model_type_state, updates);
+  }
+}
+
+void ClientTagBasedModelTypeProcessor::OnUpdateReceivedInternal(
+    const sync_pb::ModelTypeState& model_type_state,
+    const UpdateResponseDataList& updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!model_type_state_.initial_sync_done()) {
     OnInitialUpdateReceived(model_type_state, updates);
     return;

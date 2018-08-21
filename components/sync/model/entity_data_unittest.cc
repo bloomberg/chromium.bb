@@ -66,4 +66,12 @@ TEST_F(EntityDataTest, Swap) {
   EXPECT_EQ(false, data.is_folder);
 }
 
+TEST_F(EntityDataTest, UpdateClientTagHash) {
+  EntityData data;
+  ASSERT_TRUE(data.client_tag_hash.empty());
+
+  EntityDataPtr new_data(data.UpdateClientTagHash("test!"));
+  EXPECT_EQ("test!", new_data->client_tag_hash);
+}
+
 }  // namespace syncer

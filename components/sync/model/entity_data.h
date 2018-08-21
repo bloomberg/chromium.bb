@@ -94,6 +94,14 @@ struct EntityData {
   // local change is cached in ProcessorEntityTracker.
   EntityDataPtr UpdateId(const std::string& new_id) const WARN_UNUSED_RESULT;
 
+  // Makes a copy of EntityData and updates its client tag hash to
+  // |new_client_tag_hash|. This is needed when a Wallet entity id is updated
+  // and it has no client_tag_hash.
+  // TODO(crbug.com/874001): Remove this when we have a longer term fix for
+  // wallet data.
+  EntityDataPtr UpdateClientTagHash(
+      const std::string& new_client_tag_hash) const WARN_UNUSED_RESULT;
+
   // Makes a copy of EntityData and updates its specifics to |new_specifics|.
   // This is needed when specifics is updated after decryption in the
   // ModelTypeWorker::DecryptStoredEntities().
