@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -36,15 +38,17 @@
 namespace autofill {
 
 SaveCardBubbleViews::SyncPromoDelegate::SyncPromoDelegate(
-    SaveCardBubbleController* controller)
-    : controller_(controller) {
+    SaveCardBubbleController* controller,
+    signin_metrics::AccessPoint access_point)
+    : controller_(controller), access_point_(access_point) {
   DCHECK(controller_);
 }
 
 void SaveCardBubbleViews::SyncPromoDelegate::OnEnableSync(
     const AccountInfo& account,
     bool is_default_promo_account) {
-  controller_->OnSyncPromoAccepted(account, is_default_promo_account);
+  controller_->OnSyncPromoAccepted(account, access_point_,
+                                   is_default_promo_account);
 }
 
 SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,

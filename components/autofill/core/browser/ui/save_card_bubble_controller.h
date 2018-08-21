@@ -16,6 +16,10 @@
 
 class Profile;
 
+namespace signin_metrics {
+enum class AccessPoint;
+}
+
 namespace autofill {
 
 class CreditCard;
@@ -57,6 +61,7 @@ class SaveCardBubbleController {
   // Interaction.
   // OnSyncPromoAccepted is called when the Dice Sign-in promo is clicked.
   virtual void OnSyncPromoAccepted(const AccountInfo& account,
+                                   signin_metrics::AccessPoint access_point,
                                    bool is_default_promo_account) = 0;
   // OnSaveButton takes in a string value representing the cardholder name
   // confirmed/entered by the user if it was requested, or an empty string
