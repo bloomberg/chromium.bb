@@ -8,7 +8,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
@@ -24,14 +23,11 @@
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
-#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
-#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 
@@ -49,7 +45,7 @@ void StopWorker(int document_cookie) {
       g_browser_process->print_job_manager()->queue();
   scoped_refptr<PrinterQuery> printer_query =
       queue->PopPrinterQuery(document_cookie);
-  if (printer_query.get()) {
+  if (printer_query) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&PrinterQuery::StopWorker, printer_query));
@@ -145,12 +141,11 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
 
     // Use utility process to convert skia metafile to pdf.
     client->DoCompositePageToPdf(
-        params.document_cookie, render_frame_host, params.page_number,
+        params.document_cookie, render_frame_host, page_number,
         content.metafile_data_handle, content.data_size,
         content.subframe_content_info,
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
-                       weak_ptr_factory_.GetWeakPtr(), params.page_number,
-                       ids));
+                       weak_ptr_factory_.GetWeakPtr(), page_number, ids));
   } else {
     NotifyUIPreviewPageReady(
         page_number, ids,
@@ -291,7 +286,7 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     const PrintHostMsg_PreviewIds& ids,
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status != mojom::PdfCompositor::Status::SUCCESS) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;
@@ -306,7 +301,7 @@ void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     const PrintHostMsg_PreviewIds& ids,
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status != mojom::PdfCompositor::Status::SUCCESS) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;

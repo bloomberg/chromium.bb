@@ -5,10 +5,8 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_PREVIEW_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_MESSAGE_HANDLER_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -21,6 +19,10 @@ struct PrintHostMsg_DidPreviewPage_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
 struct PrintHostMsg_SetOptionsFromDocument_Params;
+
+namespace base {
+class RefCountedMemory;
+}
 
 namespace content {
 class RenderFrameHost;
@@ -47,8 +49,9 @@ class PrintPreviewMessageHandler
                          content::RenderFrameHost* render_frame_host) override;
 
  private:
-  explicit PrintPreviewMessageHandler(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PrintPreviewMessageHandler>;
+
+  explicit PrintPreviewMessageHandler(content::WebContents* web_contents);
 
   // Gets the print preview dialog associated with the WebContents being
   // observed.
