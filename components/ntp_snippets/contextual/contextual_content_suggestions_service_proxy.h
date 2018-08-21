@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_PROXY_H_
-#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_PROXY_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_PROXY_H_
+#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_PROXY_H_
 
 #include <map>
 #include <memory>
@@ -52,6 +52,7 @@ class ContextualContentSuggestionsServiceProxy {
   // Reports user interface event to the service.
   void ReportEvent(ukm::SourceId,
                    const std::string& url,
+                   ArticleSource article_source,
                    ContextualSuggestionsEvent event);
 
   // Ensures that all metrics are properly flushed.
@@ -86,4 +87,4 @@ class ContextualContentSuggestionsServiceProxy {
 
 }  // namespace contextual_suggestions
 
-#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_PROXY_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_PROXY_H_

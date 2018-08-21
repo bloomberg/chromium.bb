@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_metrics_reporter.h"
 
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_ukm_entry.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_ukm_entry.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace contextual_suggestions {
@@ -27,6 +27,7 @@ ContextualSuggestionsMetricsReporter::~ContextualSuggestionsMetricsReporter() {
 
 void ContextualSuggestionsMetricsReporter::SetupForPage(
     const std::string& url,
+    ArticleSource article_source,
     ukm::SourceId source_id) {
   DCHECK(!ukm_entry_) << "Flush should be called before SetupForPage!";
   DCHECK(source_id != ukm::kInvalidSourceId);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_H_
-#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_H_
+#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_H_
 
 #include <map>
 #include <memory>
@@ -17,9 +17,9 @@
 #include "components/ntp_snippets/callbacks.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_cache.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_debugging_reporter.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_reporter.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_debugging_reporter.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_reporter.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace ntp_snippets {
@@ -106,4 +106,4 @@ class ContextualContentSuggestionsService : public KeyedService {
 
 }  // namespace contextual_suggestions
 
-#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_CONTENT_SUGGESTIONS_SERVICE_H_

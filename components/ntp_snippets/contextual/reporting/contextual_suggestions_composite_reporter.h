@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_COMPOSITE_REPORTER_H_
-#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_COMPOSITE_REPORTER_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_SUGGESTIONS_COMPOSITE_REPORTER_H_
+#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_SUGGESTIONS_COMPOSITE_REPORTER_H_
 
 #include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_reporter.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_reporter.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace contextual_suggestions {
@@ -25,7 +25,9 @@ class ContextualSuggestionsCompositeReporter
   ~ContextualSuggestionsCompositeReporter() override;
 
   // ContextualSuggestionsReporter
-  void SetupForPage(const std::string& url, ukm::SourceId source_id) override;
+  void SetupForPage(const std::string& url,
+                    ArticleSource article_source,
+                    ukm::SourceId source_id) override;
   void RecordEvent(ContextualSuggestionsEvent event) override;
   void Flush() override;
 
@@ -49,4 +51,4 @@ class ContextualSuggestionsCompositeReporter
 };
 }  // namespace contextual_suggestions
 
-#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_COMPOSITE_REPORTER_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_SUGGESTIONS_COMPOSITE_REPORTER_H_
