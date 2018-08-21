@@ -13,7 +13,6 @@
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/site_isolation_policy.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/navigation_simulator.h"
@@ -166,9 +165,6 @@ TEST_F(GeolocationServiceTest, PermissionGrantedPolicyViolation) {
   }
 
   // The embedded frame is not whitelisted.
-  ScopedFeatureList feature_list;
-  feature_list.InitFromCommandLine(
-      features::kUseFeaturePolicyForPermissions.name, std::string());
   CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/false);
 
   permission_manager()->SetRequestCallback(
@@ -197,9 +193,6 @@ TEST_F(GeolocationServiceTest, PermissionGrantedNoPolicyViolation) {
   }
 
   // Whitelist the embedded frame.
-  ScopedFeatureList feature_list;
-  feature_list.InitFromCommandLine(
-      features::kUseFeaturePolicyForPermissions.name, std::string());
   CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
 
   permission_manager()->SetRequestCallback(
