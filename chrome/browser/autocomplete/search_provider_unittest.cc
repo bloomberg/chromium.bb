@@ -3566,21 +3566,8 @@ TEST_F(SearchProviderTest, AnswersCache) {
   base::string16 query = base::ASCIIToUTF16("weather los angeles");
   SearchSuggestionParser::SuggestResult suggest_result(
       query, AutocompleteMatchType::SEARCH_HISTORY,
-      /*subtype_identifier=*/0,
-      /*match_contents=*/query,
-      /*match_contents_prefix=*/base::string16(),
-      /*annotation=*/base::string16(),
-      /*answer_contents=*/base::string16(),
-      /*answer_type=*/base::string16(),
-      /*answer=*/nullptr,
-      /*suggest_query_params=*/std::string(),
-      /*deletion_url=*/std::string(),
-      /*image_dominant_color=*/std::string(),
-      /*image_url=*/std::string(),
-      /*from_keyword_provider=*/false,
-      /*relevance=*/1200,
-      /*relevance_from_server=*/false,
-      /*should_prefetch=*/false,
+      /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
+      /*relevance=*/1200, /*relevance_from_server=*/false,
       /*input_text=*/query);
   QueryForInput(ASCIIToUTF16("weather l"), false, false);
   provider_->transformed_default_history_results_.push_back(suggest_result);

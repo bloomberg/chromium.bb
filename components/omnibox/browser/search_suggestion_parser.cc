@@ -82,12 +82,33 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
     int subtype_identifier,
+    bool from_keyword_provider,
+    int relevance,
+    bool relevance_from_server,
+    const base::string16& input_text)
+    : SuggestResult(suggestion,
+                    type,
+                    subtype_identifier,
+                    suggestion,
+                    /*match_contents_prefix=*/base::string16(),
+                    /*annotation=*/base::string16(),
+                    /*suggest_query_params=*/"",
+                    /*deletion_url=*/"",
+                    /*image_dominant_color=*/"",
+                    /*image_url=*/"",
+                    from_keyword_provider,
+                    relevance,
+                    relevance_from_server,
+                    /*should_prefetch=*/false,
+                    input_text) {}
+
+SearchSuggestionParser::SuggestResult::SuggestResult(
+    const base::string16& suggestion,
+    AutocompleteMatchType::Type type,
+    int subtype_identifier,
     const base::string16& match_contents,
     const base::string16& match_contents_prefix,
     const base::string16& annotation,
-    const base::string16& answer_contents,
-    const base::string16& answer_type,
-    std::unique_ptr<SuggestionAnswer> answer,
     const std::string& suggest_query_params,
     const std::string& deletion_url,
     const std::string& image_dominant_color,
@@ -107,9 +128,6 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
       match_contents_prefix_(match_contents_prefix),
       annotation_(annotation),
       suggest_query_params_(suggest_query_params),
-      answer_contents_(answer_contents),
-      answer_type_(answer_type),
-      answer_(std::move(answer)),
       image_dominant_color_(image_dominant_color),
       image_url_(image_url),
       should_prefetch_(should_prefetch) {
@@ -226,6 +244,15 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
     match_contents_class_.push_back(
         ACMatchClassification(0, ACMatchClassification::NONE));
   }
+}
+
+void SearchSuggestionParser::SuggestResult::SetAnswer(
+    const base::string16& answer_contents,
+    const base::string16& answer_type,
+    std::unique_ptr<SuggestionAnswer> answer) {
+  answer_contents_ = answer_contents;
+  answer_type_ = answer_type;
+  answer_ = std::move(answer);
 }
 
 int SearchSuggestionParser::SuggestResult::CalculateRelevance(
@@ -601,12 +628,23 @@ bool SearchSuggestionParser::ParseSuggestResults(
 
       bool should_prefetch = static_cast<int>(index) == prefetch_index;
       results->suggest_results.push_back(SuggestResult(
-          base::CollapseWhitespace(suggestion, false), match_type,
-          subtype_identifier, base::CollapseWhitespace(match_contents, false),
-          match_contents_prefix, annotation, answer_contents, answer_type_str,
-          std::move(answer), suggest_query_params, deletion_url,
-          image_dominant_color, image_url, is_keyword_result, relevance,
-          relevances != nullptr, should_prefetch, trimmed_input));
+          base::CollapseWhitespace(suggestion, false),
+          match_type,
+          subtype_identifier,
+          base::CollapseWhitespace(match_contents, false),
+          match_contents_prefix,
+          annotation,
+          suggest_query_params,
+          deletion_url,
+          image_dominant_color,
+          image_url,
+          is_keyword_result,
+          relevance,
+          relevances != nullptr,
+          should_prefetch,
+          trimmed_input));
+      results->suggest_results.back().SetAnswer(answer_contents,
+          answer_type_str, std::move(answer));
     }
   }
   results->relevances_from_server = relevances != nullptr;
