@@ -95,11 +95,24 @@ int GetDraggedX(const gfx::Rect& dragged_bounds) {
 }
 
 #if defined(OS_CHROMEOS)
+
+// Returns the aura::Window which stores the window properties for tab-dragging.
+// It should return the root window when WindowService is used, since it is
+// corresponded with a widget in Ash.
+aura::Window* GetWindowForTabDraggingProperties(const TabStrip* tab_strip) {
+  if (!tab_strip)
+    return nullptr;
+  aura::Window* window = tab_strip->GetWidget()->GetNativeWindow();
+  if (features::IsUsingWindowService())
+    return window->GetRootWindow();
+  return window;
+}
+
 // Returns true if |tab_strip| browser window is snapped.
 bool IsSnapped(const TabStrip* tab_strip) {
   DCHECK(tab_strip);
   ash::mojom::WindowStateType type =
-      tab_strip->GetWidget()->GetNativeWindow()->GetProperty(
+      GetWindowForTabDraggingProperties(tab_strip)->GetProperty(
           ash::kWindowStateTypeKey);
   return type == ash::mojom::WindowStateType::LEFT_SNAPPED ||
          type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
@@ -134,7 +147,7 @@ void StoreCurrentDraggedBrowserBoundsInTabletMode(
 // Returns true if |tabstrip| is currently showing in overview mode in Chrome
 // OS.
 bool IsShowingInOverview(TabStrip* tabstrip) {
-  return tabstrip && tabstrip->GetWidget()->GetNativeWindow()->GetProperty(
+  return tabstrip && GetWindowForTabDraggingProperties(tabstrip)->GetProperty(
                          ash::kIsShowingInOverviewKey);
 }
 
@@ -150,7 +163,7 @@ bool ShouldAttachOnEnd(TabStrip* target_tabstrip) {
 // Returns true if |tabstrip| can detach from the current tabstrip and attach
 // into another eligible browser window's tabstrip.
 bool CanDetachFromTabStrip(TabStrip* tabstrip) {
-  return tabstrip && tabstrip->GetWidget()->GetNativeWindow()->GetProperty(
+  return tabstrip && GetWindowForTabDraggingProperties(tabstrip)->GetProperty(
                          ash::kCanAttachToAnotherWindowKey);
 }
 
@@ -255,8 +268,8 @@ class TabDragController::DeferredTargetTabstripObserver
   DeferredTargetTabstripObserver() = default;
   ~DeferredTargetTabstripObserver() override {
     if (deferred_target_tabstrip_) {
-      deferred_target_tabstrip_->GetWidget()->GetNativeWindow()->RemoveObserver(
-          this);
+      GetWindowForTabDraggingProperties(deferred_target_tabstrip_)
+          ->RemoveObserver(this);
       deferred_target_tabstrip_ = nullptr;
     }
   }
@@ -268,7 +281,7 @@ class TabDragController::DeferredTargetTabstripObserver
     // Clear the window property on the previous |deferred_target_tabstrip_|.
     if (deferred_target_tabstrip_) {
       aura::Window* old_window =
-          deferred_target_tabstrip_->GetWidget()->GetNativeWindow();
+          GetWindowForTabDraggingProperties(deferred_target_tabstrip_);
       old_window->RemoveObserver(this);
       old_window->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
     }
@@ -278,7 +291,7 @@ class TabDragController::DeferredTargetTabstripObserver
     // Set the window property on the new |deferred_target_tabstrip_|.
     if (deferred_target_tabstrip_) {
       aura::Window* new_window =
-          deferred_target_tabstrip_->GetWidget()->GetNativeWindow();
+          GetWindowForTabDraggingProperties(deferred_target_tabstrip_);
       new_window->SetProperty(ash::kIsDeferredTabDraggingTargetWindowKey, true);
       new_window->AddObserver(this);
     }
@@ -289,7 +302,7 @@ class TabDragController::DeferredTargetTabstripObserver
                                const void* key,
                                intptr_t old) override {
     DCHECK_EQ(window,
-              deferred_target_tabstrip_->GetWidget()->GetNativeWindow());
+              GetWindowForTabDraggingProperties(deferred_target_tabstrip_));
 
     if (key == ash::kIsDeferredTabDraggingTargetWindowKey &&
         !window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
@@ -302,7 +315,7 @@ class TabDragController::DeferredTargetTabstripObserver
 
   void OnWindowDestroying(aura::Window* window) override {
     DCHECK_EQ(window,
-              deferred_target_tabstrip_->GetWidget()->GetNativeWindow());
+              GetWindowForTabDraggingProperties(deferred_target_tabstrip_));
     SetDeferredTargetTabstrip(nullptr);
   }
 
@@ -585,8 +598,8 @@ void TabDragController::TabStripEmpty() {
 #if defined(OS_CHROMEOS)
   // Also update the source window info for the current dragged window.
   if (attached_tabstrip_) {
-    attached_tabstrip_->GetWidget()->GetNativeWindow()->ClearProperty(
-        ash::kTabDraggingSourceWindowKey);
+    GetWindowForTabDraggingProperties(attached_tabstrip_)
+        ->ClearProperty(ash::kTabDraggingSourceWindowKey);
   }
 #endif
 }
@@ -2070,10 +2083,9 @@ void TabDragController::SetTabDraggingInfo() {
   DCHECK(dragged_tabstrip->IsDragSessionActive() && active_);
 
   aura::Window* dragged_window =
-      dragged_tabstrip->GetWidget()->GetNativeWindow();
+      GetWindowForTabDraggingProperties(dragged_tabstrip);
   aura::Window* source_window =
-      source_tabstrip_ ? source_tabstrip_->GetWidget()->GetNativeWindow()
-                       : nullptr;
+      GetWindowForTabDraggingProperties(source_tabstrip_);
   dragged_window->SetProperty(ash::kIsDraggingTabsKey, true);
   if (source_window != dragged_window) {
     dragged_window->SetProperty(ash::kTabDraggingSourceWindowKey,
@@ -2096,7 +2108,7 @@ void TabDragController::ClearTabDraggingInfo() {
     return;
 
   aura::Window* dragged_window =
-      dragged_tabstrip->GetWidget()->GetNativeWindow();
+      GetWindowForTabDraggingProperties(dragged_tabstrip);
   dragged_window->ClearProperty(ash::kIsDraggingTabsKey);
   dragged_window->ClearProperty(ash::kTabDraggingSourceWindowKey);
 #endif
