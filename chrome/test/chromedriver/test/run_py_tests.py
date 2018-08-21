@@ -1067,11 +1067,11 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         '/chromedriver/pending_console_log.html'))
     logs = self._driver.GetLog('browser')
     self.assertEqual('console-api', logs[0]['source'])
-    self.assertTrue('InitialError' in logs[0]['message'])
+    self.assertTrue('"InitialError" 2018 "Third"' in logs[0]['message'])
 
-    self.WaitForCondition(lambda: len(GetPendingLogs(self._driver)) > 0 , 11)
+    self.WaitForCondition(lambda: len(GetPendingLogs(self._driver)) > 0 , 6)
     self.assertEqual('console-api', new_logs[0][0]['source'])
-    self.assertTrue('RepeatedError' in new_logs[0][0]['message'])
+    self.assertTrue('"RepeatedError" "Second" "Third"' in new_logs[0][0]['message'])
 
   def testGetLogOnClosedWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
