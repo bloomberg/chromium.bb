@@ -9,8 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/cast_remoting_connector.h"
-#include "chrome/browser/net/default_network_context_params.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 #include "content/public/browser/audio_loopback_stream_creator.h"
 #include "content/public/browser/browser_thread.h"
@@ -102,7 +103,8 @@ void CastMirroringServiceHost::GetVideoCaptureHost(
 void CastMirroringServiceHost::GetNetworkContext(
     network::mojom::NetworkContextRequest request) {
   network::mojom::NetworkContextParamsPtr network_context_params =
-      CreateDefaultNetworkContextParams();
+      g_browser_process->system_network_context_manager()
+          ->CreateDefaultNetworkContextParams();
   network_context_params->context_name = "mirroring";
   content::GetNetworkService()->CreateNetworkContext(
       std::move(request), std::move(network_context_params));

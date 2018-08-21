@@ -44,7 +44,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
-#include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -655,6 +654,11 @@ class SSLUITestBase : public InProcessBrowserTest,
       security_interstitials::SecurityInterstitialCommand command) {
     tab->GetInterstitialPage()->GetDelegateForTesting()->CommandReceived(
         base::IntToString(command));
+  }
+
+  network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
+    return g_browser_process->system_network_context_manager()
+        ->CreateDefaultNetworkContextParams();
   }
 
   static void GetFilePathWithHostAndPortReplacement(

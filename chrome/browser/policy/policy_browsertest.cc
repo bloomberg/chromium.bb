@@ -73,8 +73,8 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
-#include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/prediction_options.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -1863,7 +1863,8 @@ namespace {
 
 bool GetPacHttpsUrlStrippingEnabled() {
   network::mojom::NetworkContextParamsPtr network_context_params =
-      CreateDefaultNetworkContextParams();
+      g_browser_process->system_network_context_manager()
+          ->CreateDefaultNetworkContextParams();
   return !network_context_params->dangerously_allow_pac_access_to_secure_urls;
 }
 

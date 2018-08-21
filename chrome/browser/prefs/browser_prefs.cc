@@ -32,7 +32,6 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
-#include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/predictor.h"
@@ -396,7 +395,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ProfileInfoCache::RegisterPrefs(registry);
   profiles::RegisterPrefs(registry);
   rappor::RapporServiceImpl::RegisterPrefs(registry);
-  RegisterNetworkContextCreationPrefs(registry);
   RegisterScreenshotPrefs(registry);
   safe_browsing::RegisterLocalStatePrefs(registry);
   sessions::SessionIdGenerator::RegisterPrefs(registry);

@@ -111,6 +111,9 @@ class SystemNetworkContextManager {
   void AddSSLConfigToNetworkContextParams(
       network::mojom::NetworkContextParams* network_context_params);
 
+  // Returns default set of parameters for configuring the network service.
+  network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams();
+
   // Flushes all pending SSL configuration changes.
   void FlushSSLConfigManagerForTesting();
 

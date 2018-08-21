@@ -790,8 +790,6 @@ jumbo_split_static_library("browser") {
     "net/chrome_report_sender.h",
     "net/chrome_url_request_context_getter.cc",
     "net/chrome_url_request_context_getter.h",
-    "net/default_network_context_params.cc",
-    "net/default_network_context_params.h",
     "net/dns_probe_runner.cc",
     "net/dns_probe_runner.h",
     "net/dns_probe_service.cc",
