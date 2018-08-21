@@ -79,12 +79,15 @@ void LeScanManagerImpl::RemoveObserver(Observer* observer) {
 
 void LeScanManagerImpl::RequestScan(RequestScanCallback cb) {
   MAKE_SURE_IO_THREAD(RequestScan, BindToCurrentSequence(std::move(cb)));
+  LOG(INFO) << __func__;
+
   if (scan_handle_ids_.empty()) {
     if (!le_scanner_->StartScan()) {
       LOG(ERROR) << "Failed to enable scanning";
       std::move(cb).Run(nullptr);
       return;
     }
+    LOG(INFO) << "Enabling scan";
     observers_->Notify(FROM_HERE, &Observer::OnScanEnableChanged, true);
   }
 
@@ -163,6 +166,7 @@ void LeScanManagerImpl::NotifyScanHandleDestroyed(int32_t id) {
     if (!le_scanner_->StopScan()) {
       LOG(ERROR) << "Failed to disable scanning";
     } else {
+      LOG(INFO) << "Disabling scan";
       observers_->Notify(FROM_HERE, &Observer::OnScanEnableChanged, false);
     }
   }

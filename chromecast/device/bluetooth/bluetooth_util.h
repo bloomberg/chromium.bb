@@ -21,6 +21,10 @@ extern const bluetooth_v2_shlib::Uuid kUuidBase;
 // (1a:2b:3c:4e:5f:60). Hex digits are lower case.
 std::string AddrToString(const bluetooth_v2_shlib::Addr& addr);
 
+// Get the last byte of |addr| as a hex string. This is used for logging since
+// full address is PII.
+std::string AddrLastByteString(const bluetooth_v2_shlib::Addr& addr);
+
 // Parse |str| as the canonical text representation of a 48 bit mac
 // address (1a:2b:3c:4e:5f:60). Hex digits may be either upper or lower case.
 //
