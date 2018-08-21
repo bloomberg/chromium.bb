@@ -86,6 +86,7 @@ bool VrTabHelper::IsUiSuppressedInVr(content::WebContents* contents,
     case UiSuppressedElement::kJavascriptDialog:
     case UiSuppressedElement::kMediaPermission:
     case UiSuppressedElement::kQuotaPermission:
+    case UiSuppressedElement::kPermissionBubbleRequest:
 #if defined(OS_ANDROID)
       suppress = !base::FeatureList::IsEnabled(
           chrome::android::kVrBrowsingNativeAndroidUi);
