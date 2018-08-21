@@ -179,17 +179,6 @@ TEST_F(InputControllerTest, CreateRecordAndClose) {
   task_environment_.RunUntilIdle();
 }
 
-// Test that InputController rejects insanely large packet sizes.
-TEST_F(InputControllerTest, SamplesPerPacketTooLarge) {
-  // Create an audio device with a very large packet size.
-  params_.set_frames_per_buffer(1000000);
-
-  // OnCreated() shall not be called in this test.
-  EXPECT_CALL(event_handler_, OnCreated(_)).Times(Exactly(0));
-  CreateAudioController();
-  ASSERT_FALSE(controller_.get());
-}
-
 TEST_F(InputControllerTest, CloseTwice) {
   EXPECT_CALL(event_handler_, OnCreated(_));
   CreateAudioController();

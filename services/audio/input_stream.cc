@@ -59,6 +59,7 @@ InputStream::InputStream(CreatedCallback created_callback,
   DCHECK(client_.is_bound());
   DCHECK(created_callback_);
   DCHECK(delete_callback_);
+  DCHECK(params.IsValid());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("audio", "audio::InputStream", this);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2("audio", "InputStream", this, "device id",
                                     device_id, "params",
@@ -78,7 +79,7 @@ InputStream::InputStream(CreatedCallback created_callback,
 
   // Only MONO, STEREO and STEREO_AND_KEYBOARD_MIC channel layouts are expected,
   // see AudioManagerBase::MakeAudioInputStream().
-  if (!params.IsValid() || (params.channels() > kMaxInputChannels)) {
+  if (params.channels() > kMaxInputChannels) {
     OnStreamError(true);
     return;
   }

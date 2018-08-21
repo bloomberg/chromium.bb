@@ -209,10 +209,9 @@ std::unique_ptr<InputController> InputController::Create(
   DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(sync_writer);
   DCHECK(event_handler);
+  DCHECK(params.IsValid());
 
-  // TODO(https://crbug.com/803102): remove check after switching to input
-  // stream factory.
-  if (!params.IsValid() || (params.channels() > kMaxInputChannels))
+  if (params.channels() > kMaxInputChannels)
     return nullptr;
 
   // Create the InputController object and ensure that it runs on
