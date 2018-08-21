@@ -368,9 +368,9 @@ void CompositedLayerMapping::UpdateStickyConstraints(
   constraint.top_offset = constraints.TopOffset();
   constraint.bottom_offset = constraints.BottomOffset();
   constraint.scroll_container_relative_sticky_box_rect =
-      EnclosingIntRect(constraints.ScrollContainerRelativeStickyBoxRect());
-  constraint.scroll_container_relative_containing_block_rect = EnclosingIntRect(
-      constraints.ScrollContainerRelativeContainingBlockRect());
+      RoundedIntRect(constraints.ScrollContainerRelativeStickyBoxRect());
+  constraint.scroll_container_relative_containing_block_rect =
+      RoundedIntRect(constraints.ScrollContainerRelativeContainingBlockRect());
   PaintLayer* sticky_box_shifting_ancestor =
       constraints.NearestStickyLayerShiftingStickyBox();
   if (sticky_box_shifting_ancestor &&
