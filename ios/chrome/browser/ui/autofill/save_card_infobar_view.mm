@@ -284,7 +284,9 @@ UIFont* InfoBarMessageFont() {
   // Add the close button. The close button is fixed to the trailing edge of the
   // infobar since it cannot expand.
   DCHECK(self.closeButtonImage);
-  UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  UIButton* closeButton =
+      [UIButton buttonWithType:IsRefreshInfobarEnabled() ? UIButtonTypeSystem
+                                                         : UIButtonTypeCustom];
   closeButton.translatesAutoresizingMaskIntoConstraints = NO;
   [closeButton setImage:self.closeButtonImage forState:UIControlStateNormal];
   closeButton.contentEdgeInsets =
