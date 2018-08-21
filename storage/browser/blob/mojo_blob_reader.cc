@@ -145,6 +145,7 @@ void MojoBlobReader::DidReadSideData(BlobReader::Status status) {
 
 void MojoBlobReader::StartReading() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!response_body_stream_);
 
   response_body_stream_ = delegate_->PassDataPipe();
   peer_closed_handle_watcher_.Watch(
@@ -165,8 +166,9 @@ void MojoBlobReader::StartReading() {
 void MojoBlobReader::ReadMore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!pending_write_.get());
+  DCHECK(response_body_stream_);
 
-  uint32_t num_bytes;
+  uint32_t num_bytes = 0;
   // TODO: we should use the abstractions in MojoAsyncResourceHandler.
   MojoResult result = network::NetToMojoPendingBuffer::BeginWrite(
       &response_body_stream_, &pending_write_, &num_bytes);
@@ -184,9 +186,10 @@ void MojoBlobReader::ReadMore() {
 
   TRACE_EVENT_ASYNC_BEGIN0("Blob", "BlobReader::ReadMore", this);
   CHECK_GT(static_cast<uint32_t>(std::numeric_limits<int>::max()), num_bytes);
+  DCHECK(pending_write_);
   auto buf =
       base::MakeRefCounted<network::NetToMojoIOBuffer>(pending_write_.get());
-  int bytes_read;
+  int bytes_read = 0;
   BlobReader::Status read_status = blob_reader_->Read(
       buf.get(), static_cast<int>(num_bytes), &bytes_read,
       base::BindOnce(&MojoBlobReader::DidRead, base::Unretained(this), false));
