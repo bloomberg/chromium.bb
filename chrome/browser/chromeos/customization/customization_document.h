@@ -17,7 +17,6 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
@@ -32,8 +31,9 @@ namespace extensions {
 class ExternalLoader;
 }
 
-namespace net {
-class URLFetcher;
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
 }
 
 namespace user_prefs {
@@ -141,8 +141,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
 // outside this class by calling StartFetching() or EnsureCustomizationApplied()
 // methods.
 // User of the file should check IsReady before use it.
-class ServicesCustomizationDocument : public CustomizationDocument,
-                                      private net::URLFetcherDelegate {
+class ServicesCustomizationDocument : public CustomizationDocument {
  public:
   static ServicesCustomizationDocument* GetInstance();
 
@@ -185,7 +184,8 @@ class ServicesCustomizationDocument : public CustomizationDocument,
 
   // Initialize instance of ServicesCustomizationDocument for tests that will
   // override singleton until ShutdownForTesting is called.
-  static void InitializeForTesting();
+  static void InitializeForTesting(
+      scoped_refptr<network::SharedURLLoaderFactory> factory);
 
   // Remove instance of ServicesCustomizationDocument for tests.
   static void ShutdownForTesting();
@@ -227,8 +227,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // Overriden from CustomizationDocument:
   bool LoadManifestFromString(const std::string& manifest) override;
 
-  // Overriden from net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Initiate file fetching. Wait for online status.
   void StartFileFetch();
@@ -293,14 +292,14 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   // Services customization manifest URL.
   GURL url_;
 
-  // URLFetcher instance.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  // SimpleURLLoader instance.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // How many times we already tried to fetch customization manifest file.
   int num_retries_;
 
   // Manifest fetch is already in progress.
-  bool fetch_started_;
+  bool load_started_;
 
   // Delay between checks for network online state.
   base::TimeDelta network_delay_;
