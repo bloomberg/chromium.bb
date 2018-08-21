@@ -53,7 +53,8 @@ bool FileSystemBackend::CanHandleURL(const storage::FileSystemURL& url) {
          url.type() == storage::kFileSystemTypeProvided ||
          url.type() == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
          url.type() == storage::kFileSystemTypeArcContent ||
-         url.type() == storage::kFileSystemTypeArcDocumentsProvider;
+         url.type() == storage::kFileSystemTypeArcDocumentsProvider ||
+         url.type() == storage::kFileSystemTypeDriveFs;
 }
 
 FileSystemBackend::FileSystemBackend(
@@ -62,6 +63,7 @@ FileSystemBackend::FileSystemBackend(
     std::unique_ptr<FileSystemBackendDelegate> mtp_delegate,
     std::unique_ptr<FileSystemBackendDelegate> arc_content_delegate,
     std::unique_ptr<FileSystemBackendDelegate> arc_documents_provider_delegate,
+    std::unique_ptr<FileSystemBackendDelegate> drivefs_delegate,
     scoped_refptr<storage::ExternalMountPoints> mount_points,
     storage::ExternalMountPoints* system_mount_points)
     : file_access_permissions_(new FileAccessPermissions()),
@@ -72,6 +74,7 @@ FileSystemBackend::FileSystemBackend(
       arc_content_delegate_(std::move(arc_content_delegate)),
       arc_documents_provider_delegate_(
           std::move(arc_documents_provider_delegate)),
+      drivefs_delegate_(std::move(drivefs_delegate)),
       mount_points_(mount_points),
       system_mount_points_(system_mount_points) {}
 
@@ -109,6 +112,7 @@ bool FileSystemBackend::CanHandleType(storage::FileSystemType type) const {
     case storage::kFileSystemTypeProvided:
     case storage::kFileSystemTypeArcContent:
     case storage::kFileSystemTypeArcDocumentsProvider:
+    case storage::kFileSystemTypeDriveFs:
       return true;
     default:
       return false;
@@ -285,6 +289,8 @@ storage::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
       return arc_content_delegate_->GetAsyncFileUtil(type);
     case storage::kFileSystemTypeArcDocumentsProvider:
       return arc_documents_provider_delegate_->GetAsyncFileUtil(type);
+    case storage::kFileSystemTypeDriveFs:
+      return drivefs_delegate_->GetAsyncFileUtil(type);
     default:
       NOTREACHED();
   }
@@ -342,7 +348,8 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
          url.type() == storage::kFileSystemTypeDrive ||
          url.type() == storage::kFileSystemTypeProvided ||
          url.type() == storage::kFileSystemTypeArcContent ||
-         url.type() == storage::kFileSystemTypeArcDocumentsProvider);
+         url.type() == storage::kFileSystemTypeArcDocumentsProvider ||
+         url.type() == storage::kFileSystemTypeDriveFs);
   return storage::FileSystemOperation::Create(
       url, context,
       std::make_unique<storage::FileSystemOperationContext>(context));
@@ -368,6 +375,7 @@ bool FileSystemBackend::HasInplaceCopyImplementation(
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeArcContent:
     case storage::kFileSystemTypeArcDocumentsProvider:
+    case storage::kFileSystemTypeDriveFs:
       return false;
     default:
       NOTREACHED();
@@ -396,6 +404,7 @@ FileSystemBackend::CreateFileStreamReader(
           url, offset, max_bytes_to_read, expected_modification_time, context);
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeRestrictedNativeLocal:
+    case storage::kFileSystemTypeDriveFs:
       return std::unique_ptr<storage::FileStreamReader>(
           storage::FileStreamReader::CreateForFileSystemFile(
               context, url, offset, expected_modification_time));
@@ -431,6 +440,7 @@ FileSystemBackend::CreateFileStreamWriter(
       return file_system_provider_delegate_->CreateFileStreamWriter(
           url, offset, context);
     case storage::kFileSystemTypeNativeLocal:
+    case storage::kFileSystemTypeDriveFs:
       return std::unique_ptr<storage::FileStreamWriter>(
           storage::FileStreamWriter::CreateForLocalFile(
               context->default_file_task_runner(), url.path(), offset,
@@ -477,6 +487,7 @@ void FileSystemBackend::GetRedirectURLForContents(
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeArcContent:
     case storage::kFileSystemTypeArcDocumentsProvider:
+    case storage::kFileSystemTypeDriveFs:
       callback.Run(GURL());
       return;
     default:

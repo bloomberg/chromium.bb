@@ -838,7 +838,7 @@ bool FileManagerPrivateInternalGetEntryPropertiesFunction::RunAsync() {
                            CompleteGetEntryProperties,
                        this, i, file_system_url));
         break;
-      case storage::kFileSystemTypeNativeLocal:
+      case storage::kFileSystemTypeDriveFs:
         SingleEntryPropertiesGetterForDriveFs::Start(
             file_system_url.path(),
             names_as_set.count(
@@ -903,7 +903,7 @@ bool FileManagerPrivateInternalPinDriveFileFunction::RunAsync() {
     case storage::kFileSystemTypeDrive:
       return RunAsyncForDrive(url, params->pin);
 
-    case storage::kFileSystemTypeNativeLocal:
+    case storage::kFileSystemTypeDriveFs:
       return RunAsyncForDriveFs(file_system_url, params->pin);
 
     default:
@@ -1452,7 +1452,7 @@ bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsync() {
   switch (file_system_url.type()) {
     case storage::kFileSystemTypeDrive:
       return RunAsyncForDrive(url);
-    case storage::kFileSystemTypeNativeLocal:
+    case storage::kFileSystemTypeDriveFs:
       return RunAsyncForDriveFs(file_system_url);
     default:
       return false;

@@ -123,7 +123,10 @@ enum FileSystemType {
   // A filesystem to provide access to documents providers in ARC.
   kFileSystemTypeArcDocumentsProvider,
 
-  kFileSystemTypeLast = kFileSystemTypeArcDocumentsProvider,
+  // Indicates a DriveFS filesystem which provides access to Google Drive.
+  kFileSystemTypeDriveFs,
+
+  kFileSystemTypeLast = kFileSystemTypeDriveFs,
 
   // --------------------------------------------------------------------
   // Marks the end of internal type enum. (This is not the actual fs type)

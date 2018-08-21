@@ -676,7 +676,7 @@ void DriveIntegrationService::AddDriveMountPointAfterMounted() {
 
   bool success = mount_points->RegisterFileSystem(
       mount_point_name_,
-      drivefs_holder_ ? storage::kFileSystemTypeNativeLocal
+      drivefs_holder_ ? storage::kFileSystemTypeDriveFs
                       : storage::kFileSystemTypeDrive,
       storage::FileSystemMountOption(), drive_mount_point);
 

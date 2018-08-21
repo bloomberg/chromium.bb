@@ -43,6 +43,7 @@ struct TypeConverter<blink::mojom::FileSystemType, storage::FileSystemType> {
       case storage::FileSystemType::kFileSystemTypeDeviceMediaAsFileStorage:
       case storage::FileSystemType::kFileSystemTypeArcContent:
       case storage::FileSystemType::kFileSystemTypeArcDocumentsProvider:
+      case storage::FileSystemType::kFileSystemTypeDriveFs:
       case storage::FileSystemType::kFileSystemInternalTypeEnumEnd:
         NOTREACHED();
         return blink::mojom::FileSystemType::kTemporary;
