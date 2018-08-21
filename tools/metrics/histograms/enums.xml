@@ -10692,6 +10692,8 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Returned stale cached result; network was too slow."/>
   <int value="4" label="Canceled; no stale cached result was available."/>
   <int value="5" label="Canceled; stale cached result was available."/>
+  <int value="6"
+      label="Returned stale cached result; network got NAME_NOT_RESOLVED"/>
 </enum>
 
 <enum name="DNSEmptyAddressListAndNoError">

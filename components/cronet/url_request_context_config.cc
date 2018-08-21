@@ -107,6 +107,10 @@ const char kStaleDnsPersist[] = "persist_to_disk";
 // cache persistence. Default value is one minute. Only relevant if
 // "persist_to_disk" is true.
 const char kStaleDnsPersistTimer[] = "persist_delay_ms";
+// Name of boolean to allow use of stale DNS results when network resolver
+// returns ERR_NAME_NOT_RESOLVED.
+const char kStaleDnsUseStaleOnNameNotResolved[] =
+    "use_stale_on_name_not_resolved";
 
 // Rules to override DNS resolution. Intended for testing.
 // See explanation of format in net/dns/mapped_host_resolver.h.
@@ -434,6 +438,12 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
         int persist_timer;
         if (stale_dns_args->GetInteger(kStaleDnsPersistTimer, &persist_timer))
           host_cache_persistence_delay_ms = persist_timer;
+        bool use_stale_on_name_not_resolved;
+        if (stale_dns_args->GetBoolean(kStaleDnsUseStaleOnNameNotResolved,
+                                       &use_stale_on_name_not_resolved)) {
+          stale_dns_options.use_stale_on_name_not_resolved =
+              use_stale_on_name_not_resolved;
+        }
       }
     } else if (it.key() == kHostResolverRulesFieldTrialName) {
       const base::DictionaryValue* host_resolver_rules_args = nullptr;

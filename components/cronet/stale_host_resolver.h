@@ -50,6 +50,10 @@ class StaleHostResolver : public net::HostResolver {
     // If positive, the maximum number of times a stale entry can be used. If
     // zero, there is no limit.
     int max_stale_uses;
+
+    // If network resolution returns ERR_NAME_NOT_RESOLVED, use stale result if
+    // available.
+    bool use_stale_on_name_not_resolved;
   };
 
   // Creates a StaleHostResolver that uses |inner_resolver| for actual
