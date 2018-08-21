@@ -23,6 +23,7 @@ class ShellExtensionsAPIProvider : public ExtensionsAPIProvider {
   void AddAPIJSONSources(JSONFeatureProviderSource* json_source) override;
   bool IsAPISchemaGenerated(const std::string& name) override;
   base::StringPiece GetAPISchema(const std::string& name) override;
+  void AddPermissionsProviders(PermissionsInfo* permissions_info) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionsAPIProvider);

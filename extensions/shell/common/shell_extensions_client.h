@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "extensions/common/extensions_client.h"
-#include "extensions/common/permissions/extensions_api_permissions.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -42,8 +41,6 @@ class ShellExtensionsClient : public ExtensionsClient {
   std::string GetUserAgent() const override;
 
  private:
-  const ExtensionsAPIPermissions extensions_api_permissions_;
-
   ScriptingWhitelist scripting_whitelist_;
 
   const GURL webstore_base_url_;

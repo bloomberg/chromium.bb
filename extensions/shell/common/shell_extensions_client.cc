@@ -15,11 +15,9 @@
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/core_extensions_api_provider.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/extensions_aliases.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
-#include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/permissions_provider.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/shell/common/shell_extensions_api_provider.h"
@@ -65,8 +63,7 @@ base::LazyInstance<ShellPermissionMessageProvider>::DestructorAtExit
 }  // namespace
 
 ShellExtensionsClient::ShellExtensionsClient()
-    : extensions_api_permissions_(ExtensionsAPIPermissions()),
-      webstore_base_url_(extension_urls::kChromeWebstoreBaseURL),
+    : webstore_base_url_(extension_urls::kChromeWebstoreBaseURL),
       webstore_update_url_(extension_urls::kChromeWebstoreUpdateURL) {
   AddAPIProvider(std::make_unique<CoreExtensionsAPIProvider>());
   AddAPIProvider(std::make_unique<ShellExtensionsAPIProvider>());
@@ -79,9 +76,6 @@ void ShellExtensionsClient::Initialize() {
   RegisterCommonManifestHandlers();
   ManifestHandler::FinalizeRegistration();
   // TODO(jamescook): Do we need to whitelist any extensions?
-
-  PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions_,
-                                              GetExtensionsPermissionAliases());
 }
 
 void ShellExtensionsClient::InitializeWebStoreUrls(

@@ -47,4 +47,7 @@ base::StringPiece ShellExtensionsAPIProvider::GetAPISchema(
   return shell::api::ShellGeneratedSchemas::Get(name);
 }
 
+void ShellExtensionsAPIProvider::AddPermissionsProviders(
+    PermissionsInfo* permissions_info) {}
+
 }  // namespace extensions

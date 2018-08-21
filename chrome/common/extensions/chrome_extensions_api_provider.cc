@@ -8,12 +8,14 @@
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/api/manifest_features.h"
 #include "chrome/common/extensions/api/permission_features.h"
+#include "chrome/common/extensions/chrome_aliases.h"
 #include "chrome/grit/common_resources.h"
 #include "extensions/common/features/json_feature_provider_source.h"
+#include "extensions/common/permissions/permissions_info.h"
 
 namespace extensions {
 
-ChromeExtensionsAPIProvider::ChromeExtensionsAPIProvider() = default;
+ChromeExtensionsAPIProvider::ChromeExtensionsAPIProvider() {}
 ChromeExtensionsAPIProvider::~ChromeExtensionsAPIProvider() = default;
 
 void ChromeExtensionsAPIProvider::AddAPIFeatures(FeatureProvider* provider) {
@@ -48,6 +50,11 @@ bool ChromeExtensionsAPIProvider::IsAPISchemaGenerated(
 base::StringPiece ChromeExtensionsAPIProvider::GetAPISchema(
     const std::string& name) {
   return api::ChromeGeneratedSchemas::Get(name);
+}
+
+void ChromeExtensionsAPIProvider::AddPermissionsProviders(
+    PermissionsInfo* permissions_info) {
+  permissions_info->AddProvider(api_permissions_, GetChromePermissionAliases());
 }
 
 }  // namespace extensions

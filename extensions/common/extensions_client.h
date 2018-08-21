@@ -151,7 +151,14 @@ class ExtensionsClient {
   virtual std::string GetUserAgent() const;
 
  private:
+  // Performs common initialization and calls Initialize() to allow subclasses
+  // to do any extra initialization.
+  void DoInitialize();
+
   std::vector<std::unique_ptr<ExtensionsAPIProvider>> api_providers_;
+
+  // Whether DoInitialize() has been called.
+  bool initialize_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsClient);
 };
