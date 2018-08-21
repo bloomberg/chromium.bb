@@ -1474,9 +1474,9 @@
       },
       {
         "args": [
-          "--enable-features=Mash"
+          "--enable-features=SingleProcessMash"
         ],
-        "name": "mash_content_unittests",
+        "name": "single_process_mash_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },

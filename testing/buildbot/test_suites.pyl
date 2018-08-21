@@ -1718,10 +1718,10 @@
         'shards': 10,
       },
     },
-    'mash_content_unittests': {
+    'single_process_mash_content_unittests': {
       'test': 'content_unittests',
       'args': [
-        '--enable-features=Mash',
+        '--enable-features=SingleProcessMash',
       ],
     },
   },
