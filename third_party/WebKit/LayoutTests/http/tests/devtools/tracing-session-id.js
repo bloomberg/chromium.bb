@@ -19,16 +19,20 @@
 
   await PerformanceTestRunner.invokeAsyncWithTimeline('waitForRaf');
 
-  let frameId = '';
-  PerformanceTestRunner.tracingModel().sortedProcesses().forEach(process =>
-    process.sortedThreads().forEach(thread => thread.events().forEach(processEvent))
-  );
+  PerformanceTestRunner.tracingModel().sortedProcesses().forEach(function(process) {
+    process.sortedThreads().forEach(function(thread) {
+      thread.events().forEach(processEvent);
+    });
+  });
   TestRunner.completeTest();
+
+  var frameId = '';
 
   function processEvent(event) {
     if (!event.hasCategory(SDK.TracingModel.DevToolsMetadataEventCategory))
       return;
-    if (event.name === TimelineModel.TimelineModel.DevToolsMetadataEvent.TracingStartedInBrowser) {
+
+    if (event.name === TimelineModel.TimelineModel.RecordType.TracingStartedInPage) {
       TestRunner.addResult('Got DevTools metadata event: ' + event.name);
       frameId = event.args['data']['frames'][0]['frame'];
     } else if (event.name === TimelineModel.TimelineModel.RecordType.SetLayerTreeId) {

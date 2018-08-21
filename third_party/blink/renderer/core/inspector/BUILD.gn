@@ -85,6 +85,8 @@ blink_core_sources("inspector") {
     "inspector_task_runner.h",
     "inspector_trace_events.cc",
     "inspector_trace_events.h",
+    "inspector_tracing_agent.cc",
+    "inspector_tracing_agent.h",
     "inspector_worker_agent.cc",
     "inspector_worker_agent.h",
     "main_thread_debugger.cc",

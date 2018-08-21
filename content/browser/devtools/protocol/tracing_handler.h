@@ -69,7 +69,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
              Maybe<std::string> transfer_compression,
              Maybe<Tracing::TraceConfig> config,
              std::unique_ptr<StartCallback> callback) override;
-  Response End() override;
+  void End(std::unique_ptr<EndCallback> callback) override;
   void GetCategories(std::unique_ptr<GetCategoriesCallback> callback) override;
   void RequestMemoryDump(
       std::unique_ptr<RequestMemoryDumpCallback> callback) override;

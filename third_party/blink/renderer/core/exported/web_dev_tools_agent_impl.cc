@@ -76,6 +76,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
 #include "third_party/blink/renderer/core/inspector/inspector_session.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
+#include "third_party/blink/renderer/core/inspector/inspector_tracing_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_worker_agent.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -215,6 +216,7 @@ class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
   InspectorSession* inspector_session() { return inspector_session_.Get(); }
   InspectorNetworkAgent* network_agent() { return network_agent_.Get(); }
   InspectorPageAgent* page_agent() { return page_agent_.Get(); }
+  InspectorTracingAgent* tracing_agent() { return tracing_agent_.Get(); }
   InspectorOverlayAgent* overlay_agent() { return overlay_agent_.Get(); }
 
  private:
@@ -250,6 +252,7 @@ class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
   Member<InspectorSession> inspector_session_;
   Member<InspectorNetworkAgent> network_agent_;
   Member<InspectorPageAgent> page_agent_;
+  Member<InspectorTracingAgent> tracing_agent_;
   Member<InspectorOverlayAgent> overlay_agent_;
   bool detached_ = false;
 
@@ -336,6 +339,7 @@ void WebDevToolsAgentImpl::Session::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspector_session_);
   visitor->Trace(network_agent_);
   visitor->Trace(page_agent_);
+  visitor->Trace(tracing_agent_);
   visitor->Trace(overlay_agent_);
 }
 
@@ -444,6 +448,9 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
 
   inspector_session_->Append(
       new InspectorWorkerAgent(inspected_frames, nullptr));
+
+  tracing_agent_ = new InspectorTracingAgent(inspected_frames);
+  inspector_session_->Append(tracing_agent_);
 
   page_agent_ = InspectorPageAgent::Create(
       inspected_frames, agent_, agent_->resource_content_loader_.Get(),

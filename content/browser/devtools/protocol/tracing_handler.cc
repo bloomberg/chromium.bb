@@ -404,6 +404,11 @@ void TracingHandler::Start(Maybe<std::string> categories,
                                                    options.fromMaybe(""));
   }
 
+  // If inspected target is a render process Tracing.start will be handled by
+  // tracing agent in the renderer.
+  if (frame_tree_node_)
+    callback->fallThrough();
+
   SetupProcessFilter(nullptr);
 
   TracingController::GetInstance()->StartTracing(
@@ -457,12 +462,14 @@ void TracingHandler::OnProcessReady(RenderProcessHost* process_host) {
       trace_config_, base::RepeatingCallback<void()>());
 }
 
-Response TracingHandler::End() {
+void TracingHandler::End(std::unique_ptr<EndCallback> callback) {
   // Startup tracing triggered by --trace-config-file is a special case, where
   // tracing is started automatically upon browser startup and can be stopped
   // via DevTools.
-  if (!did_initiate_recording_ && !IsStartupTracingActive())
-    return Response::Error("Tracing is not started");
+  if (!did_initiate_recording_ && !IsStartupTracingActive()) {
+    callback->sendFailure(Response::Error("Tracing is not started"));
+    return;
+  }
 
   scoped_refptr<TracingController::TraceDataEndpoint> endpoint;
   if (return_as_stream_) {
@@ -481,8 +488,12 @@ Response TracingHandler::End() {
     endpoint = new DevToolsTraceEndpointProxy(weak_factory_.GetWeakPtr());
     StopTracing(endpoint, tracing::mojom::kChromeTraceEventLabel);
   }
-
-  return Response::OK();
+  // If inspected target is a render process Tracing.end will be handled by
+  // tracing agent in the renderer.
+  if (frame_tree_node_)
+    callback->fallThrough();
+  else
+    callback->sendSuccess();
 }
 
 void TracingHandler::GetCategories(
@@ -497,7 +508,8 @@ void TracingHandler::OnRecordingEnabled(
     std::unique_ptr<StartCallback> callback) {
   EmitFrameTree();
 
-  callback->sendSuccess();
+  if (!frame_tree_node_)
+    callback->sendSuccess();
 
   bool screenshot_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
