@@ -414,10 +414,6 @@ void BrowserCompositorMac::DidNavigate() {
   is_first_navigation_ = false;
 }
 
-void BrowserCompositorMac::DidReceiveFirstFrameAfterNavigation() {
-  client_->DidReceiveFirstFrameAfterNavigation();
-}
-
 bool BrowserCompositorMac::ShouldContinueToPauseForFrame() const {
   if (state_ == UseParentLayerCompositor)
     return false;

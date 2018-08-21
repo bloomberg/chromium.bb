@@ -53,8 +53,4 @@ void DelegatedFrameHostClientAura::OnFrameTokenChanged(uint32_t frame_token) {
   render_widget_host_view_->OnFrameTokenChangedForView(frame_token);
 }
 
-void DelegatedFrameHostClientAura::DidReceiveFirstFrameAfterNavigation() {
-  render_widget_host_view_->host_->DidReceiveFirstFrameAfterNavigation();
-}
-
 }  // namespace content

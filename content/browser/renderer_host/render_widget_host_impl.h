@@ -684,8 +684,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool FlingCancellationIsDeferred() const;
   void SetNeedsBeginFrameForFlingProgress();
 
-  void DidReceiveFirstFrameAfterNavigation();
-
   // The RenderWidgetHostImpl will keep showing the old page (for a while) after
   // navigation until the first frame of the new page arrives. This reduces
   // flicker. However, if for some reason it is known that the frames won't be

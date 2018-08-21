@@ -970,10 +970,6 @@ void RenderWidgetHostViewAndroid::OnFrameTokenChanged(uint32_t frame_token) {
   OnFrameTokenChangedForView(frame_token);
 }
 
-void RenderWidgetHostViewAndroid::DidReceiveFirstFrameAfterNavigation() {
-  host_->DidReceiveFirstFrameAfterNavigation();
-}
-
 void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   if (!delegated_frame_host_) {
@@ -1046,6 +1042,11 @@ void RenderWidgetHostViewAndroid::OnDidNotProduceFrame(
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
   EvictDelegatedFrame();
+}
+
+void RenderWidgetHostViewAndroid::ResetFallbackToFirstNavigationSurface() {
+  if (delegated_frame_host_)
+    delegated_frame_host_->ResetFallbackToFirstNavigationSurface();
 }
 
 bool RenderWidgetHostViewAndroid::RequestRepaintForTesting() {

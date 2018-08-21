@@ -296,6 +296,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // with what is visible on screen.
   virtual void ClearCompositorFrame() = 0;
 
+  // This method will reset the fallback to the first surface after navigation.
+  virtual void ResetFallbackToFirstNavigationSurface() = 0;
+
   // Requests a new CompositorFrame from the renderer. This is done by
   // allocating a new viz::LocalSurfaceId which forces a commit and draw.
   virtual bool RequestRepaintForTesting();

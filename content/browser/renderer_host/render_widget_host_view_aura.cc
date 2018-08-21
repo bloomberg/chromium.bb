@@ -885,6 +885,11 @@ void RenderWidgetHostViewAura::ClearCompositorFrame() {
     delegated_frame_host_->ClearDelegatedFrame();
 }
 
+void RenderWidgetHostViewAura::ResetFallbackToFirstNavigationSurface() {
+  if (delegated_frame_host_)
+    delegated_frame_host_->ResetFallbackToFirstNavigationSurface();
+}
+
 bool RenderWidgetHostViewAura::RequestRepaintForTesting() {
   return SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                                      base::nullopt);

@@ -33,7 +33,6 @@ class CONTENT_EXPORT DelegatedFrameHostClientAura
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnBeginFrame(base::TimeTicks frame_time) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
-  void DidReceiveFirstFrameAfterNavigation() override;
 
  private:
   RenderWidgetHostViewAura* render_widget_host_view_;

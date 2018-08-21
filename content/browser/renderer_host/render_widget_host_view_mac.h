@@ -149,6 +149,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       base::Optional<viz::HitTestRegionList> hit_test_region_list) override;
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   void ClearCompositorFrame() override;
+  void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
@@ -394,7 +395,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   SkColor BrowserCompositorMacGetGutterColor() const override;
   void BrowserCompositorMacOnBeginFrame(base::TimeTicks frame_time) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
-  void DidReceiveFirstFrameAfterNavigation() override;
   void DestroyCompositorForShutdown() override;
   bool SynchronizeVisualProperties(
       const base::Optional<viz::LocalSurfaceId>&

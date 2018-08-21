@@ -193,6 +193,11 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
   frame_evictor_->DiscardedFrame();
 }
 
+void DelegatedFrameHostAndroid::ResetFallbackToFirstNavigationSurface() {
+  content_layer_->SetFallbackSurfaceId(
+      viz::SurfaceId(frame_sink_id_, first_local_surface_id_after_navigation_));
+}
+
 bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
   return content_layer_->primary_surface_id().is_valid();
 }
@@ -385,30 +390,6 @@ void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
     return;
   }
 
-  uint32_t active_parent_sequence_number =
-      surface_info.id().local_surface_id().parent_sequence_number();
-  uint32_t pending_parent_sequence_number =
-      pending_local_surface_id_.parent_sequence_number();
-
-  // If |pending_parent_sequence_number| is less than
-  // |first_parent_sequence_number_after_navigation_|, then the parent id has
-  // wrapped around. Make sure that case is covered.
-  bool sequence_wrapped_around =
-      pending_parent_sequence_number <
-          first_parent_sequence_number_after_navigation_ &&
-      active_parent_sequence_number <= pending_parent_sequence_number;
-
-  if (active_parent_sequence_number >=
-          first_parent_sequence_number_after_navigation_ ||
-      sequence_wrapped_around) {
-    if (!received_frame_after_navigation_) {
-      received_frame_after_navigation_ = true;
-      client_->DidReceiveFirstFrameAfterNavigation();
-    }
-  } else {
-    host_frame_sink_manager_->DropTemporaryReference(surface_info.id());
-  }
-
   // If there's no primary surface, then we don't wish to display content at
   // this time (e.g. the view is hidden) and so we don't need a fallback
   // surface either. Since we won't use the fallback surface, we drop the
@@ -477,8 +458,7 @@ void DelegatedFrameHostAndroid::DidNavigate() {
   if (!enable_surface_synchronization_)
     return;
 
-  first_parent_sequence_number_after_navigation_ =
-      pending_local_surface_id_.parent_sequence_number();
+  first_local_surface_id_after_navigation_ = pending_local_surface_id_;
   received_frame_after_navigation_ = false;
 }
 
