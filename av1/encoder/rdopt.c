@@ -8490,7 +8490,7 @@ static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     av1_merge_rd_stats(rd_stats, rd_stats_y);
 
     rdcosty = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-    rdcosty = AOMMIN(rdcosty, RDCOST(x->rdmult, 0, rd_stats->sse));
+    rdcosty = AOMMIN(rdcosty, RDCOST(x->rdmult, mode_rate, rd_stats->sse));
     if (num_planes > 1) {
       /* clang-format off */
       is_cost_valid_uv =
