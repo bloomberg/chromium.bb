@@ -287,7 +287,7 @@ void LockManager::RequestLock(const std::string& name,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (wait == WaitMode::PREEMPT && mode != LockMode::EXCLUSIVE) {
-    mojo::ReportBadMessage("Invalid option combinaton");
+    mojo::ReportBadMessage("Invalid option combination");
     return;
   }
 
