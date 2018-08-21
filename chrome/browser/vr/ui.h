@@ -230,6 +230,33 @@ class VR_UI_EXPORT Ui : public UiInterface {
   DISALLOW_COPY_AND_ASSIGN(Ui);
 };
 
+#if defined(FEATURE_MODULES)
+
+extern "C" {
+// The factory function obtained from the UI module library via dlsym() when
+// preparing to instantiate a UI instance.
+VR_UI_EXPORT Ui* CreateUi(
+    UiBrowserInterface* browser,
+    PlatformInputHandler* content_input_forwarder,
+    std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+    std::unique_ptr<TextInputDelegate> text_input_delegate,
+    std::unique_ptr<AudioDelegate> audio_delegate,
+    const UiInitialState& ui_initial_state);
+}
+
+// After obtaining a void pointer to CreateUi() via dlsym, the resulting pointer
+// should be cast to this type.  Hence, the arguments to this type must exactly
+// match the method above.
+typedef Ui* CreateUiFunction(
+    UiBrowserInterface* browser,
+    PlatformInputHandler* content_input_forwarder,
+    std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+    std::unique_ptr<TextInputDelegate> text_input_delegate,
+    std::unique_ptr<AudioDelegate> audio_delegate,
+    const UiInitialState& ui_initial_state);
+
+#endif  // defined(FEATURE_MODULES)
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_UI_H_

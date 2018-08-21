@@ -63,7 +63,9 @@ void VrGLThread::SetInputConnection(VrInputConnection* input_connection) {
 }
 
 void VrGLThread::Init() {
-  vr_shell_gl_ = RenderLoopFactory::Create(this, std::move(factory_params_));
+  ui_factory_ = std::make_unique<UiFactory>();
+  vr_shell_gl_ = RenderLoopFactory::Create(this, ui_factory_.get(),
+                                           std::move(factory_params_));
   weak_browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
 }
 
