@@ -75,8 +75,12 @@ v8::Local<v8::Object> DOMArrayBuffer::Wrap(
   DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));
 
   const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();
-  v8::Local<v8::Object> wrapper =
-      v8::ArrayBuffer::New(isolate, Data(), ByteLength());
+
+  v8::Local<v8::Object> wrapper;
+  {
+    v8::Context::Scope context_scope(creation_context->CreationContext());
+    wrapper = v8::ArrayBuffer::New(isolate, Data(), ByteLength());
+  }
 
   return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
 }
