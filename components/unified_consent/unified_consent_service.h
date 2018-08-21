@@ -37,6 +37,8 @@ enum class MigrationState : int {
   kCompleted = 10,
 };
 
+// Used in histograms. Do not change existing values, append new values at the
+// end.
 enum class ConsentBumpSuppressReason {
   kNone,
   kNotSignedIn,
@@ -45,7 +47,22 @@ enum class ConsentBumpSuppressReason {
   kSettingsOptIn,
   kUserSignedOut,
   kSyncPaused,
+
   kMaxValue = kSyncPaused
+};
+
+// Google services that can be toggled in user settings.
+// Used in histograms. Do not change existing values, append new values at the
+// end.
+enum class SettingsHistogramValue {
+  kNone = 0,
+  kUnifiedConsentGiven = 1,
+  kUserEvents = 2,
+  kUrlKeyedAnonymizedDataCollection = 3,
+  kSafeBrowsingExtendedReporting = 4,
+  kSpellCheck = 5,
+
+  kMaxValue = kSpellCheck
 };
 
 // A browser-context keyed service that is used to manage the user consent
@@ -131,6 +148,10 @@ class UnifiedConsentService : public KeyedService,
   // Helper that checks whether it's okay to call
   // |SyncService::OnUserChoseDatatypes|.
   bool IsSyncConfigurable();
+
+  // Records a sample for each bucket enabled by the user (except kNone).
+  // kNone is recorded when none of the other buckets are recorded.
+  void RecordSettingsHistogram();
 
   std::unique_ptr<UnifiedConsentServiceClient> service_client_;
   PrefService* pref_service_;
