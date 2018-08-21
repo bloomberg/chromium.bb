@@ -101,7 +101,8 @@ float FromLinear(ColorSpace::TransferID id, float v) {
       float c1 = 3424.0f / 4096.0f;
       float c2 = (2413.0f / 4096.0f) * 32.0f;
       float c3 = (2392.0f / 4096.0f) * 32.0f;
-      return pow((c1 + c2 * pow(v, m1)) / (1.0f + c3 * pow(v, m1)), m2);
+      float p = powf(v, m1);
+      return powf((c1 + c2 * p) / (1.0f + c3 * p), m2);
     }
 
     // Spec: http://www.arib.or.jp/english/html/overview/doc/2-STD-B67v1_0.pdf
@@ -168,8 +169,8 @@ float ToLinear(ColorSpace::TransferID id, float v) {
       float c1 = 3424.0f / 4096.0f;
       float c2 = (2413.0f / 4096.0f) * 32.0f;
       float c3 = (2392.0f / 4096.0f) * 32.0f;
-      v = pow(max(pow(v, 1.0f / m2) - c1, 0.0f) / (c2 - c3 * pow(v, 1.0f / m2)),
-              1.0f / m1);
+      float p = pow(v, 1.0f / m2);
+      v = powf(max(p - c1, 0.0f) / (c2 - c3 * p), 1.0f / m1);
       // This matches the scRGB definition that 1.0 means 80 nits.
       // TODO(hubbe): It would be *nice* if 1.0 meant more than that, but
       // that might be difficult to do right now.
