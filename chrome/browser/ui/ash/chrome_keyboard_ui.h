@@ -51,11 +51,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   explicit ChromeKeyboardUI(content::BrowserContext* context);
   ~ChromeKeyboardUI() override;
 
-  // Requests the audio input from microphone for speech input.
-  void RequestAudioInput(content::WebContents* web_contents,
-                         const content::MediaStreamRequest& request,
-                         content::MediaResponseCallback callback);
-
   // Called when a window being observed changes bounds, to update its insets.
   void UpdateInsetsForWindow(aura::Window* window);
 
@@ -80,16 +75,15 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
 
   const aura::Window* GetKeyboardRootWindow() const;
 
-  virtual std::unique_ptr<content::WebContents> CreateWebContents();
-
  private:
-  friend class TestApi;
+  std::unique_ptr<content::WebContents> CreateWebContents();
 
   // Loads the web contents for the given |url|.
   void LoadContents(const GURL& url);
 
-  // Gets the virtual keyboard URL (either the default URL or IME override URL).
-  const GURL& GetVirtualKeyboardUrl();
+  // Gets the virtual keyboard URL, either the default keyboard URL or the IME
+  // override URL.
+  GURL GetVirtualKeyboardUrl();
 
   // Determines whether a particular window should have insets for overscroll.
   bool ShouldEnableInsets(aura::Window* window);
@@ -126,8 +120,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   // The BrowserContext to use for creating the WebContents hosting the
   // keyboard.
   content::BrowserContext* const browser_context_;
-
-  const GURL default_url_;
 
   std::unique_ptr<content::WebContents> keyboard_contents_;
   std::unique_ptr<ui::Shadow> shadow_;

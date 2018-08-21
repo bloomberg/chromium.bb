@@ -106,8 +106,8 @@ class WindowBoundsChangeObserver : public aura::WindowObserver {
 class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
                                        public content::WebContentsObserver {
  public:
-  explicit ChromeKeyboardContentsDelegate(ChromeKeyboardUI* ui) : ui_(ui) {}
-  ~ChromeKeyboardContentsDelegate() override {}
+  ChromeKeyboardContentsDelegate() = default;
+  ~ChromeKeyboardContentsDelegate() override = default;
 
  private:
   // content::WebContentsDelegate:
@@ -144,15 +144,15 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
 
   void SetContentsBounds(content::WebContents* source,
                          const gfx::Rect& bounds) override {
-    aura::Window* keyboard = ui_->GetKeyboardWindow();
+    aura::Window* keyboard_window = source->GetNativeView();
     // keyboard window must have been added to keyboard container window at this
     // point. Otherwise, wrong keyboard bounds is used and may cause problem as
     // described in crbug.com/367788.
-    DCHECK(keyboard->parent());
+    DCHECK(keyboard_window->parent());
     // keyboard window bounds may not set to |pos| after this call. If keyboard
     // is in FULL_WIDTH mode, only the height of keyboard window will be
     // changed.
-    keyboard->SetBounds(bounds);
+    keyboard_window->SetBounds(bounds);
   }
 
   // content::WebContentsDelegate:
@@ -160,7 +160,16 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       content::MediaResponseCallback callback) override {
-    ui_->RequestAudioInput(web_contents, request, std::move(callback));
+    const extensions::Extension* extension = nullptr;
+    GURL origin(request.security_origin);
+    if (origin.SchemeIs(extensions::kExtensionScheme)) {
+      const extensions::ExtensionRegistry* registry =
+          extensions::ExtensionRegistry::Get(web_contents->GetBrowserContext());
+      extension = registry->enabled_extensions().GetByID(origin.host());
+      DCHECK(extension);
+    }
+    MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
+        web_contents, request, std::move(callback), extension);
   }
 
   // content::WebContentsDelegate:
@@ -184,8 +193,6 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
 
   // content::WebContentsObserver:
   void WebContentsDestroyed() override { delete this; }
-
-  ChromeKeyboardUI* const ui_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeKeyboardContentsDelegate);
 };
@@ -258,30 +265,12 @@ void ChromeKeyboardUI::TestApi::SetOverrideVirtualKeyboardUrl(const GURL& url) {
 
 ChromeKeyboardUI::ChromeKeyboardUI(content::BrowserContext* context)
     : browser_context_(context),
-      default_url_(keyboard::kKeyboardURL),
       window_bounds_observer_(
           std::make_unique<WindowBoundsChangeObserver>(this)) {}
 
 ChromeKeyboardUI::~ChromeKeyboardUI() {
   ResetInsets();
   DCHECK(!keyboard_controller());
-}
-
-void ChromeKeyboardUI::RequestAudioInput(
-    content::WebContents* web_contents,
-    const content::MediaStreamRequest& request,
-    content::MediaResponseCallback callback) {
-  const extensions::Extension* extension = nullptr;
-  GURL origin(request.security_origin);
-  if (origin.SchemeIs(extensions::kExtensionScheme)) {
-    const extensions::ExtensionRegistry* registry =
-        extensions::ExtensionRegistry::Get(browser_context());
-    extension = registry->enabled_extensions().GetByID(origin.host());
-    DCHECK(extension);
-  }
-
-  MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
-      web_contents, request, std::move(callback), extension);
 }
 
 void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
@@ -308,10 +297,14 @@ void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
 
 aura::Window* ChromeKeyboardUI::GetKeyboardWindow() {
   if (!keyboard_contents_) {
-    keyboard_contents_ = CreateWebContents();
-    keyboard_contents_->SetDelegate(new ChromeKeyboardContentsDelegate(this));
+    GURL keyboard_url = GetVirtualKeyboardUrl();
+    content::WebContents::CreateParams web_contents_params(
+        browser_context(),
+        content::SiteInstance::CreateForURL(browser_context(), keyboard_url));
+    keyboard_contents_ = content::WebContents::Create(web_contents_params);
+    keyboard_contents_->SetDelegate(new ChromeKeyboardContentsDelegate());
     SetupWebContents(keyboard_contents_.get());
-    LoadContents(GetVirtualKeyboardUrl());
+    LoadContents(keyboard_url);
     keyboard_contents_->GetNativeView()->AddObserver(this);
     keyboard_contents_->GetNativeView()->set_owned_by_parent(false);
     content::RenderWidgetHostView* view =
@@ -364,9 +357,9 @@ bool ChromeKeyboardUI::ShouldWindowOverscroll(aura::Window* window) const {
 
 void ChromeKeyboardUI::ReloadKeyboardIfNeeded() {
   DCHECK(keyboard_contents_);
-  if (keyboard_contents_->GetURL() != GetVirtualKeyboardUrl()) {
-    if (keyboard_contents_->GetURL().GetOrigin() !=
-        GetVirtualKeyboardUrl().GetOrigin()) {
+  GURL keyboard_url = GetVirtualKeyboardUrl();
+  if (keyboard_contents_->GetURL() != keyboard_url) {
+    if (keyboard_contents_->GetURL().GetOrigin() != keyboard_url.GetOrigin()) {
       // Sets keyboard window rectangle to 0 and close current page before
       // navigate to a keyboard in a different extension. This keeps the UX the
       // same as Android. Note we need to explicitly close current page as it
@@ -375,7 +368,7 @@ void ChromeKeyboardUI::ReloadKeyboardIfNeeded() {
       GetKeyboardWindow()->SetBounds(gfx::Rect());
       keyboard_contents_->ClosePage();
     }
-    LoadContents(GetVirtualKeyboardUrl());
+    LoadContents(keyboard_url);
   }
 }
 
@@ -446,13 +439,6 @@ const aura::Window* ChromeKeyboardUI::GetKeyboardRootWindow() const {
              : nullptr;
 }
 
-std::unique_ptr<content::WebContents> ChromeKeyboardUI::CreateWebContents() {
-  content::BrowserContext* context = browser_context();
-  return content::WebContents::Create(content::WebContents::CreateParams(
-      context,
-      content::SiteInstance::CreateForURL(context, GetVirtualKeyboardUrl())));
-}
-
 void ChromeKeyboardUI::LoadContents(const GURL& url) {
   if (keyboard_contents_) {
     TRACE_EVENT0("vk", "LoadContents");
@@ -463,20 +449,25 @@ void ChromeKeyboardUI::LoadContents(const GURL& url) {
   }
 }
 
-const GURL& ChromeKeyboardUI::GetVirtualKeyboardUrl() {
+GURL ChromeKeyboardUI::GetVirtualKeyboardUrl() {
   const GURL& override_url = GetOverrideVirtualKeyboardUrl();
   if (!override_url.is_empty())
     return override_url;
 
+  if (!keyboard::IsInputViewEnabled())
+    return GURL(keyboard::kKeyboardURL);
+
   chromeos::input_method::InputMethodManager* ime_manager =
       chromeos::input_method::InputMethodManager::Get();
-  if (!keyboard::IsInputViewEnabled() || !ime_manager ||
-      !ime_manager->GetActiveIMEState())
-    return default_url_;
+  if (!ime_manager || !ime_manager->GetActiveIMEState())
+    return GURL(keyboard::kKeyboardURL);
 
   const GURL& input_view_url =
       ime_manager->GetActiveIMEState()->GetInputViewUrl();
-  return input_view_url.is_valid() ? input_view_url : default_url_;
+  if (!input_view_url.is_valid())
+    return GURL(keyboard::kKeyboardURL);
+
+  return input_view_url;
 }
 
 bool ChromeKeyboardUI::ShouldEnableInsets(aura::Window* window) {
