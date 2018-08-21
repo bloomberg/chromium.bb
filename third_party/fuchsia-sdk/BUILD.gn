@@ -84,30 +84,19 @@ fuchsia_sdk_pkg("fidl") {
 fuchsia_sdk_pkg("fidl_cpp") {
   public_deps = [
     ":fidl",
+    ":fidl_cpp_sync",
     ":fit",
     ":zx",
   ]
   sources = [
     "clone.cc",
-    "coding_traits.cc",
-    "decoder.cc",
-    "encoder.cc",
-    "include/lib/fidl/cpp/array.h",
     "include/lib/fidl/cpp/binding.h",
     "include/lib/fidl/cpp/binding_set.h",
     "include/lib/fidl/cpp/clone.h",
-    "include/lib/fidl/cpp/coding_traits.h",
-    "include/lib/fidl/cpp/comparison.h",
-    "include/lib/fidl/cpp/decoder.h",
-    "include/lib/fidl/cpp/encoder.h",
-    "include/lib/fidl/cpp/interface_handle.h",
     "include/lib/fidl/cpp/interface_ptr.h",
     "include/lib/fidl/cpp/interface_ptr_set.h",
-    "include/lib/fidl/cpp/interface_request.h",
-    "include/lib/fidl/cpp/internal",
     "include/lib/fidl/cpp/internal/header.h",
     "include/lib/fidl/cpp/internal/implementation.h",
-    "include/lib/fidl/cpp/internal/logging.h",
     "include/lib/fidl/cpp/internal/message_handler.h",
     "include/lib/fidl/cpp/internal/message_reader.h",
     "include/lib/fidl/cpp/internal/pending_response.h",
@@ -115,16 +104,10 @@ fuchsia_sdk_pkg("fidl_cpp") {
     "include/lib/fidl/cpp/internal/proxy_controller.h",
     "include/lib/fidl/cpp/internal/stub.h",
     "include/lib/fidl/cpp/internal/stub_controller.h",
-    "include/lib/fidl/cpp/internal/synchronous_proxy.h",
     "include/lib/fidl/cpp/internal/weak_stub_controller.h",
     "include/lib/fidl/cpp/optional.h",
     "include/lib/fidl/cpp/string.h",
-    "include/lib/fidl/cpp/synchronous_interface_ptr.h",
     "include/lib/fidl/cpp/thread_safe_binding_set.h",
-    "include/lib/fidl/cpp/traits.h",
-    "include/lib/fidl/cpp/vector.h",
-    "internal",
-    "internal/logging.cc",
     "internal/message_handler.cc",
     "internal/message_reader.cc",
     "internal/pending_response.cc",
@@ -132,9 +115,35 @@ fuchsia_sdk_pkg("fidl_cpp") {
     "internal/proxy_controller.cc",
     "internal/stub.cc",
     "internal/stub_controller.cc",
-    "internal/synchronous_proxy.cc",
     "internal/weak_stub_controller.cc",
     "string.cc",
+  ]
+}
+
+fuchsia_sdk_pkg("fidl_cpp_sync") {
+  public_deps = [
+    ":fidl",
+    ":fit",
+    ":zx",
+  ]
+  sources = [
+    "coding_traits.cc",
+    "decoder.cc",
+    "encoder.cc",
+    "include/lib/fidl/cpp/array.h",
+    "include/lib/fidl/cpp/coding_traits.h",
+    "include/lib/fidl/cpp/comparison.h",
+    "include/lib/fidl/cpp/decoder.h",
+    "include/lib/fidl/cpp/encoder.h",
+    "include/lib/fidl/cpp/interface_handle.h",
+    "include/lib/fidl/cpp/interface_request.h",
+    "include/lib/fidl/cpp/internal/logging.h",
+    "include/lib/fidl/cpp/internal/synchronous_proxy.h",
+    "include/lib/fidl/cpp/synchronous_interface_ptr.h",
+    "include/lib/fidl/cpp/traits.h",
+    "include/lib/fidl/cpp/vector.h",
+    "internal/logging.cc",
+    "internal/synchronous_proxy.cc",
   ]
 }
 
