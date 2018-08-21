@@ -203,6 +203,21 @@ void PageSchedulerImpl::SetPageVisible(bool page_visible) {
 }
 
 void PageSchedulerImpl::SetPageFrozen(bool frozen) {
+  // Only transitions from HIDDEN to FROZEN are allowed for pages (see
+  // https://github.com/WICG/page-lifecycle).
+  // This is the page freezing path we expose via WebView, which is how
+  // embedders freeze pages. Visibility is also controlled by the embedder,
+  // through [WebView|WebViewFrameWidget]::SetVisibilityState(). The following
+  // happens if the embedder attempts to freeze a page that it set to visible.
+  // We check for this illegal state transition later on this code path in page
+  // scheduler and frame scheduler when computing the new lifecycle state, but
+  // it is desirable to reject the page freeze to prevent the scheduler from
+  // being put in a bad state. See https://crbug.com/873214 for context of how
+  // this can happen on the browser side.
+  if (frozen && IsPageVisible()) {
+    DCHECK(false);
+    return;
+  }
   SetPageFrozenImpl(frozen, NotificationPolicy::kNotifyFrames);
 }
 
