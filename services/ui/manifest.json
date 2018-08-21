@@ -20,9 +20,6 @@
         "arc_manager" : [
           "ui.mojom.Arc"
         ],
-        "video_detector": [
-          "ui.mojom.VideoDetector"
-        ],
         // Interfaces provided by mus-gpu for mus-ws.
         "ozone": [
           "ui.ozone.mojom.DeviceCursor",
