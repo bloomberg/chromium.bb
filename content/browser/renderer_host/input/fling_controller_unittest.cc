@@ -282,8 +282,10 @@ TEST_F(FlingControllerTest,
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType());
 }
 
+// TDOO(http://crbug.com/875777): We should do use better comparison method for
+// floating point numbers.
 TEST_F(FlingControllerTest,
-       EarlyTouchpadFlingCancelationOnInertialGSUAckNotConsumed) {
+       DISABLED_EarlyTouchpadFlingCancelationOnInertialGSUAckNotConsumed) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
