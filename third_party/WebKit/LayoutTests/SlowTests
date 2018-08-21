@@ -405,6 +405,7 @@ crbug.com/864887 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [
 
 crbug.com/865262 [ Mac ] media/controls/text-track-menu-pointer-selection.html [ Slow ]
 crbug.com/865262 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/text-track-menu-pointer-selection.html [ Slow ]
+crbug.com/876050 [ Mac ] virtual/video-surface-layer/media/controls/text-track-menu-pointer-selection.html [ Slow ]
 
 ### virtual/gpu/fast/canvas/ blending layout tests are slow
 crbug.com/866850 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blend-image.html [ Slow ]
