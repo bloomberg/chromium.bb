@@ -79,8 +79,10 @@ class ConsentBumpActivator : public BrowserListObserver,
             signin_manager->GetAuthenticatedAccountId())) {
       unified_consent::UnifiedConsentService* consent_service =
           UnifiedConsentServiceFactory::GetForProfile(profile_);
-      consent_service->RecordConsentBumpSuppressReason(
-          unified_consent::ConsentBumpSuppressReason::kSyncPaused);
+      if (consent_service->ShouldShowConsentBump()) {
+        consent_service->RecordConsentBumpSuppressReason(
+            unified_consent::ConsentBumpSuppressReason::kSyncPaused);
+      }
       return;
     }
 
