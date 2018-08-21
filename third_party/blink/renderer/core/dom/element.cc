@@ -2577,7 +2577,7 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
       RebuildChildrenLayoutTrees(*child_attacher);
     RebuildPseudoElementLayoutTree(kPseudoIdBefore, *child_attacher);
     RebuildPseudoElementLayoutTree(kPseudoIdBackdrop, *child_attacher);
-    RebuildPseudoElementLayoutTree(kPseudoIdFirstLetter, *child_attacher);
+    RebuildFirstLetterLayoutTree();
     ClearChildNeedsReattachLayoutTree();
   }
   DCHECK(!NeedsStyleRecalc());
@@ -2598,24 +2598,30 @@ void Element::RebuildShadowRootLayoutTree(
 void Element::RebuildPseudoElementLayoutTree(
     PseudoId pseudo_id,
     WhitespaceAttacher& whitespace_attacher) {
-  if (pseudo_id == kPseudoIdFirstLetter) {
-    // Need to create a ::first-letter element here for the following case:
-    //
-    // <style>#outer::first-letter {...}</style>
-    // <div id=outer><div id=inner style="display:none">Text</div></div>
-    // <script> outer.offsetTop; inner.style.display = "block" </script>
-    //
-    // The creation of FirstLetterPseudoElement relies on the layout tree of the
-    // block contents. In this case, the ::first-letter element is not created
-    // initially since the #inner div is not displayed. On RecalcStyle it's not
-    // created since the layout tree is still not built, and AttachLayoutTree
-    // for #inner will not update the ::first-letter of outer. However, we end
-    // up here for #outer after AttachLayoutTree is called on #inner at which
-    // point the layout sub-tree is available for deciding on creating the
-    // ::first-letter.
-    UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRebuildLayoutTree);
-  }
   if (PseudoElement* element = GetPseudoElement(pseudo_id)) {
+    if (element->NeedsRebuildLayoutTree(whitespace_attacher))
+      element->RebuildLayoutTree(whitespace_attacher);
+  }
+}
+
+void Element::RebuildFirstLetterLayoutTree() {
+  // Need to create a ::first-letter element here for the following case:
+  //
+  // <style>#outer::first-letter {...}</style>
+  // <div id=outer><div id=inner style="display:none">Text</div></div>
+  // <script> outer.offsetTop; inner.style.display = "block" </script>
+  //
+  // The creation of FirstLetterPseudoElement relies on the layout tree of the
+  // block contents. In this case, the ::first-letter element is not created
+  // initially since the #inner div is not displayed. On RecalcStyle it's not
+  // created since the layout tree is still not built, and AttachLayoutTree
+  // for #inner will not update the ::first-letter of outer. However, we end
+  // up here for #outer after AttachLayoutTree is called on #inner at which
+  // point the layout sub-tree is available for deciding on creating the
+  // ::first-letter.
+  UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRebuildLayoutTree);
+  if (PseudoElement* element = GetPseudoElement(kPseudoIdFirstLetter)) {
+    WhitespaceAttacher whitespace_attacher;
     if (element->NeedsRebuildLayoutTree(whitespace_attacher))
       element->RebuildLayoutTree(whitespace_attacher);
   }
