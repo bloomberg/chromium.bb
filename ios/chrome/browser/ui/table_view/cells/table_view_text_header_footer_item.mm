@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,6 +36,8 @@
   header.textLabel.text = self.text;
   header.subtitleLabel.text = self.subtitleText;
   header.accessibilityLabel = self.text;
+  if (styler.cellHighlightColor)
+    header.highlightColor = styler.cellHighlightColor;
 }
 
 @end
@@ -48,6 +51,7 @@
 
 @implementation TableViewTextHeaderFooterView
 @synthesize cellAnimator = _cellAnimator;
+@synthesize highlightColor = _highlightColor;
 @synthesize subtitleLabel = _subtitleLabel;
 @synthesize textLabel = _textLabel;
 
@@ -132,9 +136,7 @@
       initWithDuration:kTableViewCellSelectionAnimationDuration
                  curve:UIViewAnimationCurveLinear
             animations:^{
-              self.contentView.backgroundColor =
-                  UIColorFromRGB(kTableViewHighlightedCellColor,
-                                 kTableViewHighlightedCellColorAlpha);
+              self.contentView.backgroundColor = self.highlightColor;
             }];
   __weak TableViewTextHeaderFooterView* weakSelf = self;
   [self.cellAnimator addCompletion:^(UIViewAnimatingPosition finalPosition) {

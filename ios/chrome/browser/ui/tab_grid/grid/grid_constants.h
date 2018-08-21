@@ -68,6 +68,7 @@ extern const int kGridDarkThemeCellTitleColor;
 extern const int kGridDarkThemeCellHeaderColor;
 extern const int kGridDarkThemeCellSelectionColor;
 extern const int kGridDarkThemeCellCloseButtonTintColor;
+extern const CGFloat kGridDarkThemeCellHighlightColorAlpha;
 
 // GridCell dimensions.
 extern const CGSize kGridCellSizeSmall;

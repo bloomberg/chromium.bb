@@ -49,6 +49,8 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
   [header setInitialDirection:direction];
   if (styler.headerFooterTitleColor)
     header.titleLabel.textColor = styler.headerFooterTitleColor;
+  if (styler.cellHighlightColor)
+    header.highlightColor = styler.cellHighlightColor;
 }
 
 - (CGFloat)headerHeightForWidth:(CGFloat)width {
@@ -82,6 +84,7 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
 @synthesize cellAnimator = _cellAnimator;
 @synthesize disclosureDirection = disclosureDirection;
 @synthesize disclosureImageView = _disclosureImageView;
+@synthesize highlightColor = _highlightColor;
 @synthesize subtitleLabel = _subtitleLabel;
 @synthesize titleLabel = _titleLabel;
 
@@ -208,9 +211,7 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
       initWithDuration:kTableViewCellSelectionAnimationDuration
                  curve:UIViewAnimationCurveLinear
             animations:^{
-              self.contentView.backgroundColor =
-                  UIColorFromRGB(kTableViewHighlightedCellColor,
-                                 kTableViewHighlightedCellColorAlpha);
+              self.contentView.backgroundColor = self.highlightColor;
             }];
   __weak TableViewDisclosureHeaderFooterView* weakSelf = self;
   [self.cellAnimator addCompletion:^(UIViewAnimatingPosition finalPosition) {

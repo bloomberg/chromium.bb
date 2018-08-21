@@ -20,6 +20,8 @@
 // Text colors.
 @property(nonatomic, readwrite, strong) UIColor* cellTitleColor;
 @property(nonatomic, readwrite, strong) UIColor* headerFooterTitleColor;
+// Cell highlight color.
+@property(nonatomic, readwrite, strong) UIColor* cellHighlightColor;
 
 @end
 
