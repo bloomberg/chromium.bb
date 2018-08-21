@@ -420,6 +420,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=793055)
 
     # Passthrough command decoder / Linux / OpenGL / Intel
+    self.Flaky('conformance/extensions/webgl-compressed-texture-s3tc.html',
+        ['linux', 'passthrough', 'opengl', 'intel'], bug=872302)
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-depth-renderbuffer-initialization.html',
         ['linux', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
