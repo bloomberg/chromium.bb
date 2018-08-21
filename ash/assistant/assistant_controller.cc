@@ -15,6 +15,7 @@
 #include "ash/new_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/utility/screenshot_controller.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
@@ -182,12 +183,22 @@ void AssistantController::OnDeepLinkReceived(
       // UI and behavior for Assistant.
       Shell::Get()->new_window_controller()->OpenFeedbackPage();
       break;
+    case DeepLinkType::kScreenshot:
+      // TODO(dmblack): The user probably doesn't want their screenshot to
+      // include Assistant so we may want to hide it before calling this API.
+      // Unfortunately, hiding our UI immediately beforehand doesn't resolve the
+      // issue, so we may need to introduce a delay or visibility change
+      // callback to remedy this. For now, keeping Assistant UI open since it
+      // will be included in the screenshot anyway.
+      Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
+      break;
     case DeepLinkType::kUnsupported:
     case DeepLinkType::kExplore:
     case DeepLinkType::kOnboarding:
     case DeepLinkType::kQuery:
     case DeepLinkType::kReminders:
     case DeepLinkType::kSettings:
+    case DeepLinkType::kWhatsOnMyScreen:
       // No action needed.
       break;
   }

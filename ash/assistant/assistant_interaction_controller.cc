@@ -5,6 +5,7 @@
 #include "ash/assistant/assistant_interaction_controller.h"
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query.h"
@@ -70,6 +71,12 @@ void AssistantInteractionController::OnDeepLinkReceived(
     const std::map<std::string, std::string>& params) {
   using namespace assistant::util;
 
+  if (type == DeepLinkType::kWhatsOnMyScreen) {
+    // Start a screen context interaction using the entire screen region.
+    StartScreenContextInteraction(/*region=*/gfx::Rect());
+    return;
+  }
+
   if (type != DeepLinkType::kQuery)
     return;
 
@@ -126,6 +133,12 @@ void AssistantInteractionController::OnHighlighterEnabledChanged(
       // unintended consequence of stopping the active interaction.
       break;
   }
+}
+
+void AssistantInteractionController::OnHighlighterSelectionRecognized(
+    const gfx::Rect& rect) {
+  // Start a screen context interaction using the selected region.
+  StartScreenContextInteraction(rect);
 }
 
 void AssistantInteractionController::OnInteractionStateChanged(
@@ -379,6 +392,23 @@ void AssistantInteractionController::OnDialogPlateContentsCommitted(
     const std::string& text) {
   DCHECK(!text.empty());
   StartTextInteraction(text);
+}
+
+void AssistantInteractionController::StartScreenContextInteraction(
+    const gfx::Rect& region) {
+  StopActiveInteraction();
+
+  assistant_interaction_model_.SetPendingQuery(
+      std::make_unique<AssistantTextQuery>(
+          l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN)));
+
+  // Screen context interactions are explicitly started by the user, either via
+  // suggestion chip or stylus selection, so we initiate a new request to ensure
+  // we have the freshest context possible. Because we specify |from_user| as
+  // being true, an interaction will be started to return contextual results
+  // from the server.
+  assistant_controller_->screen_context_controller()->RequestScreenContext(
+      region, /*from_user=*/true);
 }
 
 void AssistantInteractionController::StartTextInteraction(

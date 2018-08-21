@@ -70,6 +70,7 @@ class AssistantInteractionController
 
   // HighlighterController::Observer:
   void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;
+  void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;
 
   // chromeos::assistant::mojom::AssistantInteractionSubscriber:
   void OnInteractionStarted(bool is_voice_interaction) override;
@@ -97,6 +98,7 @@ class AssistantInteractionController
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion);
 
  private:
+  void StartScreenContextInteraction(const gfx::Rect& region);
   void StartTextInteraction(const std::string text);
   void StartVoiceInteraction();
   void StopActiveInteraction();

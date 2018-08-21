@@ -30,7 +30,11 @@ constexpr char kAssistantFeedbackPrefix[] = "googleassistant://send-feedback";
 constexpr char kAssistantOnboardingPrefix[] = "googleassistant://onboarding";
 constexpr char kAssistantQueryPrefix[] = "googleassistant://send-query";
 constexpr char kAssistantRemindersPrefix[] = "googleassistant://reminders";
+constexpr char kAssistantScreenshotPrefix[] =
+    "googleassistant://take-screenshot";
 constexpr char kAssistantSettingsPrefix[] = "googleassistant://settings";
+constexpr char kAssistantWhatsOnMyScreenPrefix[] =
+    "googleassistant://whats-on-my-screen";
 
 // TODO(dmblack): Maybe don't hard code this URL. Use a finch flag?
 constexpr char kAssistantExploreWebUrl[] =
@@ -63,7 +67,9 @@ const std::map<DeepLinkType, std::string> kSupportedDeepLinks = {
     {DeepLinkType::kOnboarding, kAssistantOnboardingPrefix},
     {DeepLinkType::kQuery, kAssistantQueryPrefix},
     {DeepLinkType::kReminders, kAssistantRemindersPrefix},
-    {DeepLinkType::kSettings, kAssistantSettingsPrefix}};
+    {DeepLinkType::kScreenshot, kAssistantScreenshotPrefix},
+    {DeepLinkType::kSettings, kAssistantSettingsPrefix},
+    {DeepLinkType::kWhatsOnMyScreen, kAssistantWhatsOnMyScreenPrefix}};
 
 // Map of supported deep link params to their keys.
 const std::map<DeepLinkParam, std::string> kDeepLinkParamKeys = {
@@ -78,6 +84,10 @@ const std::set<DeepLinkType> kWebDeepLinks = {
 
 GURL CreateAssistantSettingsDeepLink() {
   return GURL(kAssistantSettingsPrefix);
+}
+
+GURL CreateWhatsOnMyScreenDeepLink() {
+  return GURL(kAssistantWhatsOnMyScreenPrefix);
 }
 
 std::map<std::string, std::string> GetDeepLinkParams(const GURL& deep_link) {
@@ -164,6 +174,8 @@ base::Optional<GURL> GetWebUrl(DeepLinkType type) {
     case DeepLinkType::kFeedback:
     case DeepLinkType::kOnboarding:
     case DeepLinkType::kQuery:
+    case DeepLinkType::kScreenshot:
+    case DeepLinkType::kWhatsOnMyScreen:
       NOTREACHED();
       return base::nullopt;
   }

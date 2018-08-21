@@ -25,7 +25,9 @@ enum class DeepLinkType {
   kOnboarding,
   kQuery,
   kReminders,
+  kScreenshot,
   kSettings,
+  kWhatsOnMyScreen,
 };
 
 // Enumeration of deep link parameters.
@@ -36,6 +38,9 @@ enum class DeepLinkParam {
 
 // Returns a deep link to top level Assistant Settings.
 ASH_EXPORT GURL CreateAssistantSettingsDeepLink();
+
+// Returns a deep link to initiate a screen context interaction.
+ASH_EXPORT GURL CreateWhatsOnMyScreenDeepLink();
 
 // Returns the parsed parameters for the specified |deep_link|. If the supplied
 // argument is not a supported deep link or if no parameters are found, an empty

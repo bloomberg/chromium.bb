@@ -131,11 +131,9 @@ AssistantScreenContextController::AssistantScreenContextController(
     : assistant_controller_(assistant_controller),
       screen_context_request_factory_(this) {
   assistant_controller_->AddObserver(this);
-  Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 AssistantScreenContextController::~AssistantScreenContextController() {
-  Shell::Get()->highlighter_controller()->RemoveObserver(this);
   assistant_controller_->RemoveObserver(this);
 }
 
@@ -227,12 +225,6 @@ void AssistantScreenContextController::OnUiVisibilityChanged(
 
   // Request screen context for the entire screen.
   RequestScreenContext(gfx::Rect(), /*from_user=*/false);
-}
-
-void AssistantScreenContextController::OnHighlighterSelectionRecognized(
-    const gfx::Rect& rect) {
-  // Request screen context for the selected region.
-  RequestScreenContext(rect, /*from_user=*/true);
 }
 
 void AssistantScreenContextController::OnScreenContextRequestFinished() {
