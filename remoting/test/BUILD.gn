@@ -70,6 +70,7 @@ static_library("test_support") {
 
   public_deps = [
     "//base",
+    "//mojo/core/embedder",
     "//net",
     "//remoting/base",
     "//remoting/client",

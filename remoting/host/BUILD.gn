@@ -598,6 +598,7 @@ if (enable_remoting_host) {
 
       deps += [
         "//google_apis",
+        "//mojo/core/embedder",
         "//net",
         "//remoting/host/setup",
       ]
