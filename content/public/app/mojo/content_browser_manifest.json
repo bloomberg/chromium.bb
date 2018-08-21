@@ -42,7 +42,6 @@
           "blink.mojom.EmbeddedFrameSinkProvider",
           "blink.mojom.FileUtilitiesHost",
           "blink.mojom.FileSystemManager",
-          "blink.mojom.LockManager",
           "blink.mojom.Hyphenation",
           "blink.mojom.MimeRegistry",
           "blink.mojom.PluginRegistry",
