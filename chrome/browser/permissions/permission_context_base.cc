@@ -391,12 +391,6 @@ void PermissionContextBase::UpdateContentSetting(
 
 bool PermissionContextBase::PermissionAllowedByFeaturePolicy(
     content::RenderFrameHost* rfh) const {
-  if (!base::FeatureList::IsEnabled(
-          features::kUseFeaturePolicyForPermissions)) {
-    // Default to ignoring the feature policy.
-    return true;
-  }
-
   // Some features don't have an associated feature policy yet. Allow those.
   if (feature_policy_feature_ == blink::mojom::FeaturePolicyFeature::kNotFound)
     return true;

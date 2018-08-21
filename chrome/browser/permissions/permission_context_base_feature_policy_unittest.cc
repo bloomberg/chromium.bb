@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/media/midi_permission_context.h"
@@ -14,7 +13,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
@@ -34,8 +32,6 @@ class PermissionContextBaseFeaturePolicyTest
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    feature_list_.InitAndEnableFeature(
-        features::kUseFeaturePolicyForPermissions);
   }
 
  protected:
@@ -112,30 +108,7 @@ class PermissionContextBaseFeaturePolicyTest
 
   ContentSetting last_request_result_;
   int request_id_;
-  base::test::ScopedFeatureList feature_list_;
 };
-
-// Feature policy should be ignored when the kUseFeaturePolicyForPermissions
-// feature is disabled.
-TEST_F(PermissionContextBaseFeaturePolicyTest, FeatureDisabled) {
-  // Disable the feature.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kUseFeaturePolicyForPermissions);
-
-  content::RenderFrameHost* parent = GetMainRFH(kOrigin1);
-
-  RefreshPageAndSetHeaderPolicy(
-      &parent, blink::mojom::FeaturePolicyFeature::kMidiFeature,
-      std::vector<std::string>());
-  MidiPermissionContext midi(profile());
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, GetPermissionForFrame(&midi, parent));
-
-  RefreshPageAndSetHeaderPolicy(
-      &parent, blink::mojom::FeaturePolicyFeature::kGeolocation,
-      std::vector<std::string>());
-  GeolocationPermissionContext geolocation(profile());
-  EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&geolocation, parent));
-}
 
 TEST_F(PermissionContextBaseFeaturePolicyTest, DefaultPolicy) {
   content::RenderFrameHost* parent = GetMainRFH(kOrigin1);

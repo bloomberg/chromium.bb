@@ -448,11 +448,6 @@ const base::Feature kTopDocumentIsolation{"top-document-isolation",
 const base::Feature kTouchpadAsyncPinchEvents{
     "TouchpadAsyncPinchEvents", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use Feature Policy to gate the use of permission features like midi,
-// geolocation, camera, microphone, etc.
-const base::Feature kUseFeaturePolicyForPermissions{
-    "UseFeaturePolicyForPermissions", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // An experimental simple user-activation model where the user gesture state is
 // tracked through a frame-based state instead of the gesture tokens we use
 // today.

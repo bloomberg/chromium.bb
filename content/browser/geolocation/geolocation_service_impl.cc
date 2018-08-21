@@ -7,7 +7,6 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/content_features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 namespace content {
@@ -72,8 +71,7 @@ void GeolocationServiceImpl::Bind(
 void GeolocationServiceImpl::CreateGeolocation(
     mojo::InterfaceRequest<device::mojom::Geolocation> request,
     bool user_gesture) {
-  if (base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions) &&
-      !render_frame_host_->IsFeatureEnabled(
+  if (!render_frame_host_->IsFeatureEnabled(
           blink::mojom::FeaturePolicyFeature::kGeolocation)) {
     return;
   }

@@ -9,10 +9,8 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/test/test_render_frame_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -403,8 +401,6 @@ class MediaStreamUIProxyFeaturePolicyTest
 };
 
 TEST_F(MediaStreamUIProxyFeaturePolicyTest, FeaturePolicy) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kUseFeaturePolicyForPermissions);
   MediaStreamDevices devices;
   MediaStreamRequestResult result;
 
@@ -448,19 +444,6 @@ TEST_F(MediaStreamUIProxyFeaturePolicyTest, FeaturePolicy) {
       &devices, &result);
   EXPECT_EQ(MEDIA_DEVICE_PERMISSION_DENIED, result);
   ASSERT_EQ(0u, devices.size());
-
-  // Ensure that the policy is ignored if kUseFeaturePolicyForPermissions is
-  // disabled.
-  base::test::ScopedFeatureList empty_feature_list;
-  empty_feature_list.InitAndDisableFeature(
-      features::kUseFeaturePolicyForPermissions);
-  GetResultForRequest(CreateRequest(main_rfh(), MEDIA_DEVICE_AUDIO_CAPTURE,
-                                    MEDIA_DEVICE_VIDEO_CAPTURE),
-                      &devices, &result);
-  EXPECT_EQ(MEDIA_DEVICE_OK, result);
-  ASSERT_EQ(2u, devices.size());
-  EXPECT_EQ(MEDIA_DEVICE_AUDIO_CAPTURE, devices[0].type);
-  EXPECT_EQ(MEDIA_DEVICE_VIDEO_CAPTURE, devices[1].type);
 }
 
 }  // namespace content
