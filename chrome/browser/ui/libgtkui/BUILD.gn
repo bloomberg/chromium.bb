@@ -86,6 +86,7 @@ template("libgtkui") {
 
     deps = invoker.deps + [
              "//chrome/browser/ui/views",
+             "//chrome/common:constants",
              "//base",
              "//base:i18n",
              "//base/third_party/dynamic_annotations",
@@ -96,6 +97,7 @@ template("libgtkui") {
              "//chrome:strings",
              "//chrome/app:command_ids",
              "//chrome/app/theme:theme_resources",
+             "//components/prefs",
              "//components/resources",
              "//content/public/browser",
              "//printing",

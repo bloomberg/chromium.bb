@@ -24,12 +24,13 @@ typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
 
 namespace libgtkui {
+using ColorMap = std::map<int, SkColor>;
+
 class Gtk2KeyBindingsHandler;
 class DeviceScaleFactorObserver;
 class SettingsProvider;
 
-// Interface to GTK2 desktop features.
-//
+// Interface to GTK desktop features.
 class GtkUi : public views::LinuxUI {
  public:
   GtkUi();
@@ -71,7 +72,9 @@ class GtkUi : public views::LinuxUI {
   // views::LinuxUI:
   void Initialize() override;
   bool GetTint(int id, color_utils::HSL* tint) const override;
-  bool GetColor(int id, SkColor* color) const override;
+  bool GetColor(int id,
+                SkColor* color,
+                PrefService* pref_service) const override;
   SkColor GetFocusRingColor() const override;
   SkColor GetThumbActiveColor() const override;
   SkColor GetThumbInactiveColor() const override;
@@ -119,8 +122,7 @@ class GtkUi : public views::LinuxUI {
                   std::vector<ui::TextEditCommandAuraLinux>* commands) override;
 
  private:
-  typedef std::map<int, SkColor> ColorMap;
-  typedef std::map<int, color_utils::HSL> TintMap;
+  using TintMap = std::map<int, color_utils::HSL>;
 
   CHROMEG_CALLBACK_1(GtkUi,
                      void,
@@ -158,6 +160,14 @@ class GtkUi : public views::LinuxUI {
   // Colors calculated by LoadGtkValues() that are given to the
   // caller while |use_gtk_| is true.
   ColorMap colors_;
+
+  // Frame colors (and colors that depend on frame colors) when using
+  // Chrome-rendered borders and titlebar.
+  ColorMap custom_frame_colors_;
+
+  // Frame colors (and colors that depend on frame colors) when using
+  // system-rendered borders and titlebar.
+  ColorMap native_frame_colors_;
 
   // Colors that we pass to WebKit. These are generated each time the theme
   // changes.
