@@ -3475,6 +3475,12 @@ const char kUseMonitorColorSpaceDescription[] =
     "Enables Chrome to use the  color space information provided by the monitor"
     " instead of the default sRGB color space.";
 
+const char kVaapiJpegImageDecodeAccelerationName[] =
+    "VA-API JPEG decode acceleration for images";
+const char kVaapiJpegImageDecodeAccelerationDescription[] =
+    "Enable or disable decode acceleration of JPEG images (as opposed to camera"
+    " captures) using the VA-API.";
+
 const char kVideoPlayerChromecastSupportName[] =
     "Experimental Chromecast support for Video Player";
 const char kVideoPlayerChromecastSupportDescription[] =

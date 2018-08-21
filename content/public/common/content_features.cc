@@ -475,6 +475,13 @@ const base::Feature kV8Orinoco{"V8Orinoco", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls the decode acceleration of JPEG images (as opposed to camera
+// captures) in Chrome OS using the VA-API.
+// TODO(andrescj): remove or enable by default in Chrome OS once
+// https://crbug.com/868400 is resolved.
+const base::Feature kVaapiJpegImageDecodeAcceleration{
+    "VaapiJpegImageDecodeAcceleration", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable WebAssembly structured cloning.
 // http://webassembly.org/
 const base::Feature kWebAssembly{"WebAssembly",

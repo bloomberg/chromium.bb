@@ -2115,6 +2115,9 @@ extern const char kUseMashDescription[];
 extern const char kUseMonitorColorSpaceName[];
 extern const char kUseMonitorColorSpaceDescription[];
 
+extern const char kVaapiJpegImageDecodeAccelerationName[];
+extern const char kVaapiJpegImageDecodeAccelerationDescription[];
+
 extern const char kVideoPlayerChromecastSupportName[];
 extern const char kVideoPlayerChromecastSupportDescription[];
 

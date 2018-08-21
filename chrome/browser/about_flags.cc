@@ -4364,6 +4364,13 @@ const FeatureEntry kFeatureEntries[] = {
                                     "AutofillDropdownLayout")},
 #endif  // OS_ANDROID
 
+#if defined(OS_CHROMEOS)
+    {"enable-vaapi-jpeg-image-decode-acceleration",
+     flag_descriptions::kVaapiJpegImageDecodeAccelerationName,
+     flag_descriptions::kVaapiJpegImageDecodeAccelerationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kVaapiJpegImageDecodeAcceleration)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
