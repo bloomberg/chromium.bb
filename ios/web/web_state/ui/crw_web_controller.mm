@@ -4649,12 +4649,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   DCHECK_EQ(_webView, webView);
   _certVerificationErrors->Clear();
 
-  // This is the point where the document's URL has actually changed, and
-  // pending navigation information should be applied to state information.
-  [self setDocumentURL:webViewURL];
-
   // Update HTTP response headers.
-  _webStateImpl->UpdateHttpResponseHeaders(_documentURL);
+  _webStateImpl->UpdateHttpResponseHeaders(webViewURL);
 
   if (@available(iOS 11.3, *)) {
     // On iOS 11.3 didReceiveServerRedirectForProvisionalNavigation: is not
@@ -4749,9 +4745,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
       [self.sessionController goToItemAtIndex:itemIndex
                      discardNonCommittedItems:NO];
     }
+  }
 
-    if (context)
-      self.webStateImpl->OnNavigationFinished(context);
+  // This is the point where the document's URL has actually changed.
+  [self setDocumentURL:webViewURL];
+
+  if (!committedNavigation && context) {
+    self.webStateImpl->OnNavigationFinished(context);
   }
 
   // Do not update the HTML5 history state or states of the last committed item
