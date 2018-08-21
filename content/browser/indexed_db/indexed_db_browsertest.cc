@@ -420,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
   base::FilePath log_file_path =
       GetContext()->data_path().Append(leveldb_dir).Append(log_file);
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verification;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     int64_t size;
     EXPECT_TRUE(base::GetFileSize(log_file_path, &size));
     EXPECT_GT(size, 0);

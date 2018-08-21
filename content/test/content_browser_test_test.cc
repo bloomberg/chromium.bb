@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_RendererCrash) {
 
 // Tests that browser tests print the callstack when a child process crashes.
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::CommandLine new_test =
@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_BrowserCrash) {
 
 // Tests that browser tests print the callstack on asserts.
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, BrowserCrashCallStack) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::CommandLine new_test =

@@ -677,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   std::string original_contents;
   {
     // Read original contents for later comparison.
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verifications;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(base::ReadFileToString(xml_file_path, &original_contents));
   }
 
@@ -703,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
   std::string original_contents;
   {
     // Read original contents for later comparison .
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verifications;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(base::ReadFileToString(page_file_path, &original_contents));
   }
 

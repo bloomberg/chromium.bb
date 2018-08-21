@@ -422,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
       shell()->web_contents()->GetMainFrame());
 
   // Prepare a file for the upload form.
-  base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   base::FilePath file_path;
   std::string file_content("test-file-content");

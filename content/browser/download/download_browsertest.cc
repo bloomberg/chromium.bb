@@ -869,7 +869,7 @@ class DownloadContentTest : public ContentBrowserTest {
     std::string file_contents;
 
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io_during_test_verification;
+      base::ScopedAllowBlockingForTesting allow_blocking;
       bool read = base::ReadFileToString(path, &file_contents);
       EXPECT_TRUE(read) << "Failed reading file: " << path.value() << std::endl;
       if (!read)
@@ -906,14 +906,14 @@ class DownloadContentTest : public ContentBrowserTest {
   }
 
   static bool PathExists(const base::FilePath& path) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_during_test_verification;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     return base::PathExists(path);
   }
 
   static void ReadAndVerifyFileContents(int seed,
                                         int64_t expected_size,
                                         const base::FilePath& path) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_during_test_verification;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     ASSERT_TRUE(file.IsValid());
     int64_t file_length = file.GetLength();
@@ -1812,7 +1812,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoPartialFile) {
 
   // Delete the intermediate file.
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_testing;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(PathExists(download->GetFullPath()));
     ASSERT_TRUE(base::DeleteFile(download->GetFullPath(), false));
   }
@@ -2360,7 +2360,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
   std::string output = TestDownloadHttpResponse::GetPatternBytes(
       parameters.pattern_generator_seed, 0, kIntermediateSize);
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_EQ(kIntermediateSize, base::WriteFile(intermediate_file_path,
                                                  output.data(), output.size()));
   }
@@ -2413,7 +2413,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   std::string output = TestDownloadHttpResponse::GetPatternBytes(
       parameters.pattern_generator_seed + 1, 0, kIntermediateSize);
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_EQ(kIntermediateSize, base::WriteFile(intermediate_file_path,
                                                  output.data(), output.size()));
   }
@@ -2467,7 +2467,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   std::string output = TestDownloadHttpResponse::GetPatternBytes(
       parameters.pattern_generator_seed, 0, kIntermediateSize);
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_EQ(kIntermediateSize, base::WriteFile(intermediate_file_path,
                                                  output.data(), output.size()));
   }
@@ -2532,7 +2532,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
   const int kIntermediateSize = 1331;
   std::vector<char> buffer(kIntermediateSize);
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_EQ(kIntermediateSize, base::WriteFile(intermediate_file_path,
                                                  buffer.data(), buffer.size()));
   }
@@ -2614,7 +2614,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
   std::string output = TestDownloadHttpResponse::GetPatternBytes(
       parameters.pattern_generator_seed, 0, kIntermediateSize - 100);
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_EQ(
         kIntermediateSize - 100,
         base::WriteFile(intermediate_file_path, output.data(), output.size()));
@@ -2687,7 +2687,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
   std::string output = TestDownloadHttpResponse::GetPatternBytes(
       parameters.pattern_generator_seed, 0, kIntermediateSize + 100);
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_EQ(
         kIntermediateSize + 100,
         base::WriteFile(intermediate_file_path, output.data(), output.size()));
@@ -3189,7 +3189,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTestWithMojoBlobURLs,
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameSiteCookie) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io_during_test;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   net::EmbeddedTestServer test_server;
   ASSERT_TRUE(test_server.InitializeAndListen());
 

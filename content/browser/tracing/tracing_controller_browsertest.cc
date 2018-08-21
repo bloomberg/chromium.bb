@@ -162,7 +162,7 @@ class TracingControllerTest : public ContentBrowserTest {
                                             const base::FilePath& file_path) {
     disable_recording_done_callback_count_++;
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verifications;
+      base::ScopedAllowBlockingForTesting allow_blocking;
       EXPECT_TRUE(PathExists(file_path));
       int64_t file_size;
       base::GetFileSize(file_path, &file_size);
@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
                        MAYBE_EnableAndStopTracingWithFilePath) {
   base::FilePath file_path;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_creating_test_file;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::CreateTemporaryFile(&file_path);
   }
   TestStartAndStopTracingFile(file_path);

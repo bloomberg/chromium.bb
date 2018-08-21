@@ -288,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, PostWithFileData) {
   EXPECT_TRUE(NavigateToURL(shell(), form_url));
 
   // Prepare a file to upload.
-  base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   base::FilePath file_path;
   std::string file_content("test-file-content");
@@ -381,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, MaliciousPostWithFileData) {
             form_contents->GetMainFrame()->GetProcess()->GetID());
 
   // Prepare a file to upload.
-  base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   base::FilePath file_path;
   std::string file_content("test-file-content");

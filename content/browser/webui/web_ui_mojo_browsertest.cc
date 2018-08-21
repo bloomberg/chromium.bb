@@ -45,7 +45,7 @@ namespace {
 bool g_got_message = false;
 
 base::FilePath GetFilePathForJSResource(const std::string& path) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io_from_test_callbacks;
+  base::ScopedAllowBlockingForTesting allow_blocking;
 
   std::string binding_path = "gen/" + path;
 #if defined(OS_WIN)
@@ -60,7 +60,7 @@ base::FilePath GetFilePathForJSResource(const std::string& path) {
 // up the generated file from disk and returns it.
 bool GetResource(const std::string& id,
                  const WebUIDataSource::GotDataCallback& callback) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io_from_test_callbacks;
+  base::ScopedAllowBlockingForTesting allow_blocking;
 
   std::string contents;
   if (base::EndsWith(id, ".mojom.js", base::CompareCase::SENSITIVE)) {
@@ -274,7 +274,7 @@ bool IsGeneratedResourceAvailable(const std::string& resource_path) {
   // files. If the bindings file doesn't exist assume we're on such a bot and
   // pass.
   // TODO(sky): remove this conditional when isolates support copying from gen.
-  base::ThreadRestrictions::ScopedAllowIO allow_io_for_file_existence_check;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   const base::FilePath test_file_path(GetFilePathForJSResource(resource_path));
   if (base::PathExists(test_file_path))
     return true;
