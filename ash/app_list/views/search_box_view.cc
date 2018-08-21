@@ -368,12 +368,14 @@ void SearchBoxView::ProcessAutocomplete() {
   // Current non-autocompleted text.
   const base::string16& user_typed_text =
       search_box()->text().substr(0, highlight_range_.start());
-  if (last_key_pressed_ == ui::VKEY_BACK ||
+  if (last_key_pressed_ == ui::VKEY_BACK || last_key_pressed_ == ui::VKEY_UP ||
+      last_key_pressed_ == ui::VKEY_DOWN ||
+      last_key_pressed_ == ui::VKEY_LEFT ||
+      last_key_pressed_ == ui::VKEY_RIGHT ||
       search_model_->results()->item_count() == 0 ||
       user_typed_text.length() < kMinimumLengthToAutocomplete) {
-    // Backspace was pressed, or no results exist, or current text is too short
-    // for a confident autocomplete suggestion.
-    ClearAutocompleteText();
+    // Backspace or arrow keys were pressed, no results exist, or current text
+    // is too short for a confident autocomplete suggestion.
     return;
   }
 
@@ -493,14 +495,15 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     // If the search box has no text in it currently, autocomplete should not
     // work.
     last_key_pressed_ = key_event.key_code();
-    if (key_event.type() == ui::ET_KEY_PRESSED &&
-        key_event.key_code() != ui::VKEY_BACK) {
-      if (key_event.key_code() == ui::VKEY_RIGHT ||
-          key_event.key_code() == ui::VKEY_LEFT ||
-          key_event.key_code() == ui::VKEY_DOWN ||
-          key_event.key_code() == ui::VKEY_UP ||
-          key_event.key_code() == ui::VKEY_TAB) {
+    if (key_event.type() == ui::ET_KEY_PRESSED) {
+      if (key_event.key_code() == ui::VKEY_TAB) {
         AcceptAutocompleteText();
+      } else if (key_event.key_code() == ui::VKEY_UP ||
+                 key_event.key_code() == ui::VKEY_DOWN ||
+                 key_event.key_code() == ui::VKEY_LEFT ||
+                 key_event.key_code() == ui::VKEY_RIGHT ||
+                 key_event.key_code() == ui::VKEY_BACK) {
+        ClearAutocompleteText();
       } else {
         const base::string16 pending_text = search_box()->GetSelectedText();
         // Hitting the next key in the autocompete suggestion continues
