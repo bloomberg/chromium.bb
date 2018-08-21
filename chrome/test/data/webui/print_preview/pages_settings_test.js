@@ -7,6 +7,7 @@ cr.define('pages_settings_test', function() {
   const TestNames = {
     ValidPageRanges: 'valid page ranges',
     InvalidPageRanges: 'invalid page ranges',
+    NupChangesPages: 'nup changes pages',
   };
 
   const suiteName = 'PagesSettingsTest';
@@ -35,6 +36,13 @@ cr.define('pages_settings_test', function() {
         ranges: {
           value: [],
           unavailableValue: [],
+          valid: true,
+          available: true,
+          key: '',
+        },
+        pagesPerSheet: {
+          value: 1,
+          unavailableValue: 1,
           valid: true,
           available: true,
           key: '',
@@ -73,18 +81,18 @@ cr.define('pages_settings_test', function() {
       return test_util.eventToPromise('input-change', pagesSection);
     }
 
+    /** @param {!Array<number>} expectedPages The expected pages value. */
+    function validateState(expectedPages) {
+      const pagesValue = pagesSection.getSettingValue('pages');
+      assertEquals(expectedPages.length, pagesValue.length);
+      expectedPages.forEach((page, index) => {
+        assertEquals(page, pagesValue[index]);
+      });
+      assertTrue(pagesSection.$$('.hint').hidden);
+    }
+
     // Tests that the page ranges set are valid for different user inputs.
     test(assert(TestNames.ValidPageRanges), function() {
-      /** @param {!Array<number>} expectedPages The expected pages value. */
-      const validateState = function(expectedPages) {
-        const pagesValue = pagesSection.getSettingValue('pages');
-        assertEquals(expectedPages.length, pagesValue.length);
-        expectedPages.forEach((page, index) => {
-          assertEquals(page, pagesValue[index]);
-        });
-        assertTrue(pagesSection.$$('.hint').hidden);
-      };
-
       const oneToHundred = Array.from({length: 100}, (x, i) => i + 1);
       const tenToHundred = Array.from({length: 91}, (x, i) => i + 10);
 
@@ -126,7 +134,7 @@ cr.define('pages_settings_test', function() {
       const syntaxError = 'Invalid page range, use e.g. 1-5, 8, 11-13';
 
       /** @param {string} expectedMessage The expected error message. */
-      const validateState = function(expectedMessage) {
+      const validateErrorState = function(expectedMessage) {
         assertFalse(pagesSection.$$('.hint').hidden);
         assertEquals(
             expectedMessage, pagesSection.$$('.hint').textContent.trim());
@@ -134,35 +142,84 @@ cr.define('pages_settings_test', function() {
 
       return setupInput('10-100000', 100)
           .then(function() {
-            validateState(limitError + '100');
+            validateErrorState(limitError + '100');
             return setupInput('1, 100000', 100);
           })
           .then(function() {
-            validateState(limitError + '100');
+            validateErrorState(limitError + '100');
             return setupInput('1, 2, 0, 56', 100);
           })
           .then(function() {
-            validateState(syntaxError);
+            validateErrorState(syntaxError);
             return setupInput('-1, 1, 2,, 56', 100);
           })
           .then(function() {
-            validateState(syntaxError);
+            validateErrorState(syntaxError);
             return setupInput('1,2,56-40', 100);
           })
           .then(function() {
-            validateState(syntaxError);
+            validateErrorState(syntaxError);
             return setupInput('101-110', 100);
           })
           .then(function() {
-            validateState(limitError + '100');
+            validateErrorState(limitError + '100');
             return setupInput('1\u30012\u30010\u300156', 100);
           })
           .then(function() {
-            validateState(syntaxError);
+            validateErrorState(syntaxError);
             return setupInput('-1,1,2\u3001\u300156', 100);
           })
           .then(function() {
-            validateState(syntaxError);
+            validateErrorState(syntaxError);
+          });
+    });
+
+    // Tests that the pages are set correctly for different values of pages per
+    // sheet, and that ranges remain fixed (since they are used for generating
+    // the print preview ticket).
+    test(assert(TestNames.NupChangesPages), function() {
+      /**
+       * @param {string} rangesValue The desired stringified ranges setting
+       *     value.
+       */
+      const validateRanges = function(rangesValue) {
+        assertEquals(
+            rangesValue,
+            JSON.stringify(pagesSection.getSettingValue('ranges')));
+      };
+      return setupInput('1, 2, 3, 1, 56', 100)
+          .then(function() {
+            const rangesValue =
+                JSON.stringify(pagesSection.getSettingValue('ranges'));
+            validateState([1, 2, 3, 56]);
+            pagesSection.setSetting('pagesPerSheet', 2);
+            validateRanges(rangesValue);
+            validateState([1, 2]);
+            pagesSection.setSetting('pagesPerSheet', 4);
+            validateRanges(rangesValue);
+            validateState([1]);
+            pagesSection.setSetting('pagesPerSheet', 1);
+            return setupInput('1-3, 6-9, 6-10', 100);
+          })
+          .then(function() {
+            const rangesValue =
+                JSON.stringify(pagesSection.getSettingValue('ranges'));
+            validateState([1, 2, 3, 6, 7, 8, 9, 10]);
+            pagesSection.setSetting('pagesPerSheet', 2);
+            validateRanges(rangesValue);
+            validateState([1, 2, 3, 4]);
+            pagesSection.setSetting('pagesPerSheet', 3);
+            validateRanges(rangesValue);
+            validateState([1, 2, 3]);
+            return setupInput('1-3', 100);
+          })
+          .then(function() {
+            const rangesValue =
+                JSON.stringify(pagesSection.getSettingValue('ranges'));
+            validateState([1]);
+            pagesSection.setSetting('pagesPerSheet', 1);
+            validateRanges(rangesValue);
+            validateState([1, 2, 3]);
           });
     });
   });

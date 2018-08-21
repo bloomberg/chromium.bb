@@ -110,6 +110,7 @@ cr.define('preview_generation_test', function() {
       return initialize()
           .then(function(args) {
             const originalTicket = JSON.parse(args.printTicket);
+            assertEquals(0, originalTicket.requestID);
             assertEquals(initialTicketValue, originalTicket[ticketKey]);
             nativeLayer.resetResolver('getPreview');
             assertEquals(
@@ -122,7 +123,7 @@ cr.define('preview_generation_test', function() {
                 updatedSettingValue, page.getSettingValue(settingName));
             const ticket = JSON.parse(args.printTicket);
             assertEquals(updatedTicketValue, ticket[ticketKey]);
-            assertEquals(2, ticket.requestID);
+            assertEquals(1, ticket.requestID);
           });
     }
 
@@ -183,6 +184,7 @@ cr.define('preview_generation_test', function() {
             assertEquals(
                 letterOption.height_microns,
                 originalTicket.mediaSize.height_microns);
+            assertEquals(0, originalTicket.requestID);
             nativeLayer.resetResolver('getPreview');
             const mediaSizeSetting = page.getSettingValue('mediaSize');
             assertEquals(
@@ -206,7 +208,7 @@ cr.define('preview_generation_test', function() {
             assertEquals(
                 squareOption.height_microns, ticket.mediaSize.height_microns);
             nativeLayer.resetResolver('getPreview');
-            assertEquals(2, ticket.requestID);
+            assertEquals(1, ticket.requestID);
           });
     });
 

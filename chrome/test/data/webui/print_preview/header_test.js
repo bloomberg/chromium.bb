@@ -42,13 +42,6 @@ cr.define('header_test', function() {
           available: true,
           key: '',
         },
-        pagesPerSheet: {
-          value: 1,
-          unavailableValue: 1,
-          valid: true,
-          available: true,
-          key: '',
-        },
       };
 
       PolymerTest.clearBody();
@@ -112,30 +105,6 @@ cr.define('header_test', function() {
       assertEquals('Total: 4 sheets of paper', summary.textContent);
       header.setSetting('duplex', false);
       assertEquals('Total: 8 sheets of paper', summary.textContent);
-    });
-
-    // Tests that the message is correctly adjusted for N-up.
-    test(assert(TestNames.HeaderWithNup), function() {
-      const summary = header.$$('.summary');
-      assertEquals('Total: 1 sheet of paper', summary.textContent);
-      header.setSetting('pagesPerSheet', 4);
-      assertEquals('Total: 1 sheet of paper', summary.textContent);
-      header.setSetting('pages', [1, 2, 3, 4, 5, 6]);
-      assertEquals('Total: 2 sheets of paper', summary.textContent);
-      header.setSetting('duplex', true);
-      assertEquals('Total: 1 sheet of paper', summary.textContent);
-      header.setSetting('pagesPerSheet', 2);
-      assertEquals('Total: 2 sheets of paper', summary.textContent);
-      header.setSetting('pagesPerSheet', 3);
-      assertEquals('Total: 1 sheet of paper', summary.textContent);
-      header.setSetting('copies', 2);
-      assertEquals('Total: 2 sheets of paper', summary.textContent);
-
-      // Check PDF destination
-      header.setSetting('copies', 1);
-      header.setSetting('duplex', false);
-      setPdfDestination();
-      assertEquals('Total: 2 pages', summary.textContent);
     });
 
     // Tests that the correct message is shown for non-READY states, and that
