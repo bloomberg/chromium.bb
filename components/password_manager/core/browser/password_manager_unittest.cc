@@ -1884,7 +1884,7 @@ TEST_F(PasswordManagerTest,
   PasswordFormManager* form_manager =
       manager()->pending_login_managers().front().get();
 
-  EXPECT_FALSE(form_manager->has_generated_password());
+  EXPECT_FALSE(form_manager->HasGeneratedPassword());
 }
 
 TEST_F(PasswordManagerTest, ForceSavingPasswords) {

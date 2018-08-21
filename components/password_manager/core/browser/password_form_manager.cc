@@ -859,6 +859,10 @@ void PasswordFormManager::OnPasswordsRevealed() {
   votes_uploader_.set_has_passwords_revealed_vote(true);
 }
 
+bool PasswordFormManager::HasGeneratedPassword() const {
+  return has_generated_password_;
+}
+
 void PasswordFormManager::SetHasGeneratedPassword(bool generated_password) {
   has_generated_password_ = generated_password;
   votes_uploader_.set_has_generated_password(generated_password);
@@ -880,6 +884,10 @@ void PasswordFormManager::SetGenerationPopupWasShown(
                                                      is_manual_generation);
 }
 
+bool PasswordFormManager::RetryPasswordFormPasswordUpdate() const {
+  return retry_password_form_password_update_;
+}
+
 void PasswordFormManager::LogSubmitPassed() {
   metrics_recorder_->LogSubmitPassed();
 }
@@ -890,6 +898,10 @@ void PasswordFormManager::LogSubmitFailed() {
 
 void PasswordFormManager::MarkGenerationAvailable() {
   metrics_recorder_->MarkGenerationAvailable();
+}
+
+bool PasswordFormManager::IsPossibleChangePasswordFormWithoutUsername() const {
+  return is_possible_change_password_form_without_username_;
 }
 
 FormFetcher* PasswordFormManager::GetFormFetcher() {

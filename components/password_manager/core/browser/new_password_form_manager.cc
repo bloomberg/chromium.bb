@@ -187,6 +187,27 @@ void NewPasswordFormManager::OnNoInteraction(bool is_update) {}
 void NewPasswordFormManager::PermanentlyBlacklist() {}
 void NewPasswordFormManager::OnPasswordsRevealed() {}
 
+bool NewPasswordFormManager::IsNewLogin() const {
+  return is_new_login_;
+}
+
+bool NewPasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
+  return pending_credentials_.is_public_suffix_match;
+}
+
+bool NewPasswordFormManager::HasGeneratedPassword() const {
+  return has_generated_password_;
+}
+bool NewPasswordFormManager::IsPossibleChangePasswordFormWithoutUsername()
+    const {
+  // TODO(https://crbug.com/831123): Implement as in PasswordFormManager.
+  return false;
+}
+bool NewPasswordFormManager::RetryPasswordFormPasswordUpdate() const {
+  // TODO(https://crbug.com/831123): Implement as in PasswordFormManager.
+  return false;
+}
+
 void NewPasswordFormManager::ProcessMatches(
     const std::vector<const PasswordForm*>& non_federated,
     size_t filtered_count) {

@@ -35,7 +35,7 @@ class PasswordManagerDriver;
 // stored information about it. It is aimed to replace PasswordFormManager and
 // to be renamed in new Password Manager design. Details
 // go/new-cpm-design-refactoring.
-class NewPasswordFormManager : public PasswordFormManagerForUI,
+class NewPasswordFormManager : public PasswordFormManagerInterface,
                                public FormFetcher::Consumer {
  public:
   // TODO(crbug.com/621355): So far, |form_fetcher| can be null. In that case
@@ -104,6 +104,13 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   void OnNoInteraction(bool is_update) override;
   void PermanentlyBlacklist() override;
   void OnPasswordsRevealed() override;
+
+  // PasswordFormManagerInterface:
+  bool IsNewLogin() const override;
+  bool IsPendingCredentialsPublicSuffixMatch() const override;
+  bool HasGeneratedPassword() const override;
+  bool IsPossibleChangePasswordFormWithoutUsername() const override;
+  bool RetryPasswordFormPasswordUpdate() const override;
 
 #if defined(UNIT_TEST)
   static void set_wait_for_server_predictions_for_filling(bool value) {
