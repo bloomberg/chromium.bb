@@ -101,6 +101,31 @@ class PasswordFormManagerForUI {
   virtual void OnPasswordsRevealed() = 0;
 };
 
+// This is a temporary class for unification of processing of old an new
+// PasswordFormManager in PasswordManager.
+// TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
+// gone.
+class PasswordFormManagerInterface : public PasswordFormManagerForUI {
+  // Returns whether it is a new (i.e. not saved yet) credentials.
+  virtual bool IsNewLogin() const = 0;
+
+  // Returns true if the current pending credentials were found using
+  // origin matching of the public suffix, instead of the signon realm of the
+  // form.
+  virtual bool IsPendingCredentialsPublicSuffixMatch() const = 0;
+
+  // Returns if the password was generated.
+  virtual bool HasGeneratedPassword() const = 0;
+
+  // True if we consider this form to be a change password form without username
+  // field. We use only client heuristics, so it could include signup forms.
+  virtual bool IsPossibleChangePasswordFormWithoutUsername() const = 0;
+
+  // A form is considered to be "retry" password if it has only one field which
+  // is a current password field.
+  virtual bool RetryPasswordFormPasswordUpdate() const = 0;
+};
+
 }  // namespace  password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_MANAGER_FOR_UI_H_

@@ -540,8 +540,7 @@ class PasswordFormManagerTest : public testing::Test {
     // Successful login. The PasswordManager would instruct PasswordFormManager
     // to update.
     EXPECT_FALSE(form_manager.IsNewLogin());
-    EXPECT_FALSE(
-        form_manager.is_possible_change_password_form_without_username());
+    EXPECT_FALSE(form_manager.IsPossibleChangePasswordFormWithoutUsername());
 
     // By now, the PasswordFormManager should have promoted the new password
     // value already to be the current password, and should no longer maintain
@@ -2192,8 +2191,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
   // to save, and since this is an update, it should know not to save as a new
   // login.
   EXPECT_FALSE(form_manager.IsNewLogin());
-  EXPECT_FALSE(
-      form_manager.is_possible_change_password_form_without_username());
+  EXPECT_FALSE(form_manager.IsPossibleChangePasswordFormWithoutUsername());
 
   // By now, the PasswordFormManager should have promoted the new password value
   // already to be the current password, and should no longer maintain any info
@@ -2248,7 +2246,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateNoUsernameTextfieldPresent) {
   // to save, and since this is an update, it should know not to save as a new
   // login.
   EXPECT_FALSE(form_manager.IsNewLogin());
-  EXPECT_TRUE(form_manager.is_possible_change_password_form_without_username());
+  EXPECT_TRUE(form_manager.IsPossibleChangePasswordFormWithoutUsername());
 
   // By now, the PasswordFormManager should have promoted the new password value
   // already to be the current password, and should no longer maintain any info
@@ -3173,7 +3171,7 @@ TEST_F(PasswordFormManagerTest,
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to update.
   EXPECT_FALSE(form_manager.IsNewLogin());
-  EXPECT_TRUE(form_manager.is_possible_change_password_form_without_username());
+  EXPECT_TRUE(form_manager.IsPossibleChangePasswordFormWithoutUsername());
 
   // By now, the PasswordFormManager should have promoted the new password
   // value already to be the current password, and should no longer maintain
@@ -3258,7 +3256,7 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPasswordAndRemoveIt) {
   EXPECT_CALL(MockFormSaver::Get(form_manager()),
               PresaveGeneratedPassword(credentials));
   form_manager()->PresaveGeneratedPassword(credentials);
-  EXPECT_TRUE(form_manager()->has_generated_password());
+  EXPECT_TRUE(form_manager()->HasGeneratedPassword());
   EXPECT_FALSE(form_manager()->generated_password_changed());
 
   // Simulate the user changed the presaved password.
@@ -3266,7 +3264,7 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPasswordAndRemoveIt) {
   EXPECT_CALL(MockFormSaver::Get(form_manager()),
               PresaveGeneratedPassword(credentials));
   form_manager()->PresaveGeneratedPassword(credentials);
-  EXPECT_TRUE(form_manager()->has_generated_password());
+  EXPECT_TRUE(form_manager()->HasGeneratedPassword());
   EXPECT_TRUE(form_manager()->generated_password_changed());
 
   // Simulate the user removed the presaved password.

@@ -184,9 +184,9 @@ bool AreAllFieldsEmpty(const PasswordForm& form) {
 bool IsPasswordUpdate(const PasswordFormManager& provisional_save_manager) {
   return (!provisional_save_manager.GetBestMatches().empty() &&
           provisional_save_manager
-              .is_possible_change_password_form_without_username()) ||
+              .IsPossibleChangePasswordFormWithoutUsername()) ||
          provisional_save_manager.IsPasswordOverridden() ||
-         provisional_save_manager.retry_password_form_password_update();
+         provisional_save_manager.RetryPasswordFormPasswordUpdate();
 }
 
 // Finds the matched form manager for |form| in |pending_login_managers|.
@@ -266,7 +266,7 @@ bool ShouldPromptUserToSavePassword(const PasswordFormManager& manager) {
   if (manager.IsPendingCredentialsPublicSuffixMatch())
     return false;
 
-  if (manager.has_generated_password())
+  if (manager.HasGeneratedPassword())
     return false;
 
   return manager.IsNewLogin();
@@ -571,7 +571,7 @@ void PasswordManager::ShowManualFallbackForSaving(
   manager->ProvisionallySave(form);
 
   // Show the fallback if a prompt or a confirmation bubble should be available.
-  bool has_generated_password = manager->has_generated_password();
+  bool has_generated_password = manager->HasGeneratedPassword();
   if (ShouldPromptUserToSavePassword(*manager) || has_generated_password) {
     bool is_update = IsPasswordUpdate(*manager);
     client_->ShowManualFallbackForSaving(std::move(manager),
@@ -847,10 +847,10 @@ bool PasswordManager::ShouldBlockPasswordForSameOriginButDifferentScheme(
 bool PasswordManager::ShouldPromptUserToSavePasswordOld() const {
   return (provisional_save_manager_->IsNewLogin() ||
           provisional_save_manager_
-              ->is_possible_change_password_form_without_username() ||
-          provisional_save_manager_->retry_password_form_password_update() ||
+              ->IsPossibleChangePasswordFormWithoutUsername() ||
+          provisional_save_manager_->RetryPasswordFormPasswordUpdate() ||
           provisional_save_manager_->IsPasswordOverridden()) &&
-         !(provisional_save_manager_->has_generated_password() &&
+         !(provisional_save_manager_->HasGeneratedPassword() &&
            provisional_save_manager_->IsNewLogin()) &&
          !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
 }
@@ -898,9 +898,10 @@ void PasswordManager::OnPasswordFormsRendered(
         if (IsPasswordFormReappeared(
                 form, provisional_save_manager_->GetPendingCredentials())) {
           if (provisional_save_manager_
-                  ->is_possible_change_password_form_without_username() &&
-              AreAllFieldsEmpty(form))
+                  ->IsPossibleChangePasswordFormWithoutUsername() &&
+              AreAllFieldsEmpty(form)) {
             continue;
+          }
           provisional_save_manager_->LogSubmitFailed();
           if (logger) {
             logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
@@ -996,7 +997,7 @@ void PasswordManager::OnLoginSuccessful() {
           provisional_save_manager_->GetPendingCredentials());
     }
 
-    if (provisional_save_manager_->has_generated_password()) {
+    if (provisional_save_manager_->HasGeneratedPassword()) {
       client_->AutomaticPasswordSave(std::move(provisional_save_manager_));
     } else {
       provisional_save_manager_.reset();
