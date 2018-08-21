@@ -46,12 +46,21 @@ class PageLoadMetricsTestWaiter
   // Add aggregate received resource bytes expectation
   void AddMinimumResourceBytesExpectation(int expected_minimum_resource_bytes);
 
+  // Add a data use expectation
+  void AddMinimumPageLoadDataUseExpectation(
+      int expected_minimum_page_load_data_use);
+
   // Whether the given TimingField was observed in the page.
   bool DidObserveInPage(TimingField field) const;
 
-  // Waits for PageLoadMetrics events that match the fields set by the add
-  // expectation methods. All matching fields must be set to end this wait.
+  // Waits for PageLoadMetrics events that match the fields set by
+  // |AddPageExpectation| and |AddSubFrameExpectation|. All matching fields
+  // must be set to end this wait.
   void Wait();
+
+  int64_t current_page_load_data_use() const {
+    return current_page_load_data_use_;
+  }
 
   int64_t current_resource_bytes() const { return current_resource_bytes_; }
 
@@ -74,6 +83,9 @@ class PageLoadMetricsTestWaiter
 
     void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                               extra_request_complete_info) override;
+
+    void OnDataUseObserved(int64_t received_data_length,
+                           int64_t data_reduction_proxy_bytes_saved) override;
 
     void OnResourceDataUseObserved(
         const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
@@ -133,6 +145,12 @@ class PageLoadMetricsTestWaiter
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_complete_info);
 
+  // Updates data counters when data use is seen by the
+  // MetricsWebContentsObserver. Stops waiting if expectations are satsfied
+  // after update.
+  void OnDataUseObserved(int64_t received_data_length,
+                         int64_t data_reduction_proxy_bytes_saved);
+
   // Updates resource map and associated data counters as updates are received
   // from a resource load. Stops waiting if expectations are satisfied after
   // update.
@@ -146,6 +164,8 @@ class PageLoadMetricsTestWaiter
 
   bool ResourceUseExpectationsSatisfied() const;
 
+  bool DataUseExpectationsSatisfied() const;
+
   virtual bool ExpectationsSatisfied() const;
 
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -155,6 +175,8 @@ class PageLoadMetricsTestWaiter
 
   TimingFieldBitSet observed_page_fields_;
 
+  int64_t expected_minimum_page_load_data_use_ = 0;
+  int64_t current_page_load_data_use_ = 0;
   int current_complete_resources_ = 0;
   int64_t current_resource_bytes_ = 0;
   int expected_num_complete_resources_ = 0;

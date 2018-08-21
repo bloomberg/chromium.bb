@@ -18,6 +18,7 @@ class PageTimingSender {
       const mojom::PageLoadTimingPtr& timing,
       const mojom::PageLoadMetadataPtr& metadata,
       mojom::PageLoadFeaturesPtr new_features,
+      mojom::PageLoadDataUsePtr new_data_use,
       std::vector<mojom::ResourceDataUpdatePtr> resources) = 0;
 };
 

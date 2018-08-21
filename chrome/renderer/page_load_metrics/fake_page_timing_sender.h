@@ -72,6 +72,7 @@ class FakePageTimingSender : public PageTimingSender {
         const mojom::PageLoadTimingPtr& timing,
         const mojom::PageLoadMetadataPtr& metadata,
         const mojom::PageLoadFeaturesPtr& new_features,
+        const mojom::PageLoadDataUsePtr& new_data_use,
         const std::vector<mojom::ResourceDataUpdatePtr>& resources);
 
    private:
@@ -89,6 +90,7 @@ class FakePageTimingSender : public PageTimingSender {
   void SendTiming(const mojom::PageLoadTimingPtr& timing,
                   const mojom::PageLoadMetadataPtr& metadata,
                   mojom::PageLoadFeaturesPtr new_features,
+                  mojom::PageLoadDataUsePtr new_data_use,
                   std::vector<mojom::ResourceDataUpdatePtr> resources) override;
 
  private:

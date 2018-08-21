@@ -32,17 +32,26 @@ void PageResourceDataUse::DidStartResponse(
 }
 
 void PageResourceDataUse::DidReceiveTransferSizeUpdate(
-    int received_data_length) {
+    int received_data_length,
+    mojom::PageLoadDataUse* delta_data_use) {
+  delta_data_use->received_data_length += received_data_length;
+  delta_data_use->data_reduction_proxy_bytes_saved +=
+      received_data_length *
+      (data_reduction_proxy_compression_ratio_estimate_ - 1.0);
   total_received_bytes_ += received_data_length;
 }
 
 bool PageResourceDataUse::DidCompleteResponse(
-    const network::URLLoaderCompletionStatus& status) {
+    const network::URLLoaderCompletionStatus& status,
+    mojom::PageLoadDataUse* delta_data_use) {
   // Report the difference in received bytes.
   is_complete_ = true;
   int64_t delta_bytes = status.encoded_data_length - total_received_bytes_;
   if (delta_bytes > 0) {
     total_received_bytes_ += delta_bytes;
+    delta_data_use->received_data_length += delta_bytes;
+    delta_data_use->data_reduction_proxy_bytes_saved +=
+        delta_bytes * (data_reduction_proxy_compression_ratio_estimate_ - 1.0);
     return true;
   }
   return false;
@@ -70,8 +79,6 @@ mojom::ResourceDataUpdatePtr PageResourceDataUse::GetResourceDataUpdate() {
   resource_data_update->received_data_length = total_received_bytes_;
   resource_data_update->delta_bytes = CalculateNewlyReceivedBytes();
   resource_data_update->is_complete = is_complete_;
-  resource_data_update->data_reduction_proxy_compression_ratio_estimate =
-      data_reduction_proxy_compression_ratio_estimate_;
   return resource_data_update;
 }
 }  // namespace page_load_metrics

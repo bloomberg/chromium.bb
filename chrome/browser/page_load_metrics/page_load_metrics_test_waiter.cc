@@ -48,6 +48,11 @@ void PageLoadMetricsTestWaiter::AddMinimumResourceBytesExpectation(
   expected_minimum_resource_bytes_ = expected_minimum_resource_bytes;
 }
 
+void PageLoadMetricsTestWaiter::AddMinimumPageLoadDataUseExpectation(
+    int expected_minimum_page_load_data_use) {
+  expected_minimum_page_load_data_use_ = expected_minimum_page_load_data_use;
+}
+
 bool PageLoadMetricsTestWaiter::DidObserveInPage(TimingField field) const {
   return observed_page_fields_.IsSet(field);
 }
@@ -102,6 +107,14 @@ void PageLoadMetricsTestWaiter::OnLoadedResource(
     observed_page_fields_.Set(TimingField::kLoadTimingInfo);
   }
 
+  if (ExpectationsSatisfied() && run_loop_)
+    run_loop_->Quit();
+}
+
+void PageLoadMetricsTestWaiter::OnDataUseObserved(
+    int64_t received_data_length,
+    int64_t data_reduction_proxy_bytes_saved) {
+  current_page_load_data_use_ += received_data_length;
   if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
 }
@@ -190,9 +203,14 @@ bool PageLoadMetricsTestWaiter::ResourceUseExpectationsSatisfied() const {
           current_resource_bytes_ >= expected_minimum_resource_bytes_);
 }
 
+bool PageLoadMetricsTestWaiter::DataUseExpectationsSatisfied() const {
+  return (expected_minimum_page_load_data_use_ == 0 ||
+          current_page_load_data_use_ >= expected_minimum_page_load_data_use_);
+}
+
 bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
   return subframe_expected_fields_.Empty() && page_expected_fields_.Empty() &&
-         ResourceUseExpectationsSatisfied();
+         DataUseExpectationsSatisfied() && ResourceUseExpectationsSatisfied();
 }
 
 PageLoadMetricsTestWaiter::WaiterMetricsObserver::~WaiterMetricsObserver() {}
@@ -214,6 +232,15 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnLoadedResource(
         extra_request_complete_info) {
   if (waiter_)
     waiter_->OnLoadedResource(extra_request_complete_info);
+}
+
+void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnDataUseObserved(
+    int64_t received_data_length,
+    int64_t data_reduction_proxy_bytes_saved) {
+  if (waiter_) {
+    waiter_->OnDataUseObserved(received_data_length,
+                               data_reduction_proxy_bytes_saved);
+  }
 }
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
