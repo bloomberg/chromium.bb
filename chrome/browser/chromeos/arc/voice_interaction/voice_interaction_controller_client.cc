@@ -16,6 +16,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -195,6 +196,11 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
       prefs::kVoiceInteractionNotificationEnabled,
       base::BindRepeating(
           &VoiceInteractionControllerClient::NotifyNotificationEnabled,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      language::prefs::kApplicationLocale,
+      base::BindRepeating(
+          &VoiceInteractionControllerClient::NotifyFeatureAllowed,
           base::Unretained(this)));
 
   NotifySetupCompleted();

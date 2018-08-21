@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
@@ -35,10 +36,12 @@
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "third_party/icu/source/common/unicode/locid.h"
 
 namespace arc {
 
@@ -617,6 +620,30 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
 
     if (!IsArcAllowedForProfile(profile))
       return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED;
+  }
+
+  if (chromeos::switches::IsAssistantEnabled()) {
+    const std::string kAllowedLocales[] = {ULOC_US, ULOC_UK, ULOC_CANADA,
+                                           ULOC_CANADA_FRENCH};
+
+    const PrefService* prefs = profile->GetPrefs();
+    std::string pref_locale =
+        prefs->GetString(language::prefs::kApplicationLocale);
+
+    if (!pref_locale.empty()) {
+      base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
+      bool disallowed = std::end(kAllowedLocales) ==
+                        std::find(std::begin(kAllowedLocales),
+                                  std::end(kAllowedLocales), pref_locale);
+
+      if (disallowed &&
+          base::CommandLine::ForCurrentProcess()
+                  ->GetSwitchValueASCII(
+                      chromeos::switches::kVoiceInteractionLocales)
+                  .find(pref_locale) == std::string::npos) {
+        return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
+      }
+    }
   }
 
   return ash::mojom::AssistantAllowedState::ALLOWED;
