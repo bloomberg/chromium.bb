@@ -19,7 +19,6 @@
 #include "ui/base/resource/scale_factor.h"
 
 class Profile;
-class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -174,8 +173,6 @@ class CrostiniRegistryService : public KeyedService {
   void SetCurrentTime(base::Value* dictionary, const char* key) const;
 
   void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
-
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   // Run start up tasks for the registry (e.g. recording metrics).
