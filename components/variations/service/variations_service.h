@@ -147,7 +147,9 @@ class VariationsService
       PrefService* local_state,
       metrics::MetricsStateManager* state_manager,
       const char* disable_network_switch,
-      const UIStringOverrider& ui_string_overrider);
+      const UIStringOverrider& ui_string_overrider,
+      web_resource::ResourceRequestAllowedNotifier::
+          NetworkConnectionTrackerGetter network_connection_tracker_getter);
 
   // Enables fetching the seed for testing, even for unofficial builds. This
   // should be used along with overriding |DoActualFetch| or using
