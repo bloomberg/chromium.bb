@@ -43,7 +43,9 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
       return base::TimeDelta::FromMilliseconds(kFadeInMs);
     case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
       return base::TimeDelta::FromMilliseconds(kFadeOutMs);
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
+    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER:
+    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW:
+    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_EXIT:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO:
       return base::TimeDelta::FromMilliseconds(kTransitionMs);
@@ -112,14 +114,16 @@ ui::AnimationMetricsReporter* GetMetricsReporter(
     OverviewAnimationType animation_type) {
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
+    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW:
       return nullptr;
     case OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN:
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
+    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER:
     case OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER:
       return g_reporter_enter.Pointer();
     case OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO:
+    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_EXIT:
     case OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER:
       return g_reporter_exit.Pointer();
     case OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM:
@@ -155,7 +159,9 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
       break;
-    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS:
+    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER:
+    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW:
+    case OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_EXIT:
     case OVERVIEW_ANIMATION_RESTORE_WINDOW:
       animation_settings_->SetTweenType(gfx::Tween::EASE_OUT);
       animation_settings_->SetPreemptionStrategy(

@@ -106,9 +106,9 @@ bool IsOverviewSwipeToCloseEnabled() {
   return base::FeatureList::IsEnabled(features::kOverviewSwipeToClose);
 }
 
-void FadeOutWidgetAndMaybeSlideOnEnter(views::Widget* widget,
-                                       OverviewAnimationType animation_type,
-                                       bool slide) {
+void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
+                                      OverviewAnimationType animation_type,
+                                      bool slide) {
   aura::Window* window = widget->GetNativeWindow();
   if (window->layer()->GetTargetOpacity() == 1.f && !slide)
     return;
