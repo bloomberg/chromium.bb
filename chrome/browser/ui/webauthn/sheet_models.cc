@@ -172,6 +172,33 @@ base::string16 AuthenticatorTimeoutErrorModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_TIMEOUT_DESCRIPTION);
 }
 
+// AuthenticatorNoAvailableTransportsErrorModel -------------------------------
+
+bool AuthenticatorNoAvailableTransportsErrorModel::IsBackButtonVisible() const {
+  return false;
+}
+
+base::string16
+AuthenticatorNoAvailableTransportsErrorModel::GetCancelButtonLabel() const {
+  return l10n_util::GetStringUTF16(IDS_CLOSE);
+}
+
+gfx::ImageSkia*
+AuthenticatorNoAvailableTransportsErrorModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_TIMEOUT_1X);
+}
+
+base::string16 AuthenticatorNoAvailableTransportsErrorModel::GetStepTitle()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_NO_TRANSPORTS_TITLE);
+}
+
+base::string16
+AuthenticatorNoAvailableTransportsErrorModel::GetStepDescription() const {
+  return l10n_util::GetStringUTF16(
+      IDS_WEBAUTHN_ERROR_NO_TRANSPORTS_DESCRIPTION);
+}
+
 // AuthenticatorBlePowerOnManualSheetModel ------------------------------------
 
 gfx::ImageSkia* AuthenticatorBlePowerOnManualSheetModel::GetStepIllustration()

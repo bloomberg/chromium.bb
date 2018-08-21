@@ -41,6 +41,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "activate_usb") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate);
+    } else if (name == "no_available_transports") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kErrorNoAvailableTransports);
     } else if (name == "timeout") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kErrorTimedOut);
@@ -100,6 +103,11 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_activate_usb) {
 }
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_timeout) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_no_available_transports) {
   ShowAndVerifyUi();
 }
 
