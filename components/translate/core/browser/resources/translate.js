@@ -102,28 +102,14 @@ cr.googleTranslate = (function() {
    */
   var endTime = 0.0;
 
-  /**
-   * Callback invoked when Translate Element's ready state is known.
-   * @type {Function}
-   */
-  var readyCallback;
-
-  /**
-   * Callback invoked when Translate Element's translation result is known.
-   * @type {Function}
-   */
-  var resultCallback;
-
   function checkLibReady() {
     if (lib.isAvailable()) {
       readyTime = performance.now();
       libReady = true;
-      invokeReadyCallback();
       return;
     }
     if (checkReadyCount++ > 5) {
       errorCode = ERROR['TRANSLATION_TIMEOUT'];
-      invokeReadyCallback();
       return;
     }
     setTimeout(checkLibReady, 100);
@@ -137,52 +123,16 @@ cr.googleTranslate = (function() {
       errorCode = ERROR['TRANSLATION_ERROR'];
       // We failed to translate, restore so the page is in a consistent state.
       lib.restore();
-      invokeResultCallback();
     } else if (typeof opt_error == 'number' && opt_error != 0) {
       errorCode = TRANSLATE_ERROR_TO_ERROR_CODE_MAP[opt_error];
       lib.restore();
-      invokeResultCallback();
     }
-    if (finished) {
+    if (finished)
       endTime = performance.now();
-      invokeResultCallback();
-    }
-  }
-
-  function invokeReadyCallback() {
-    if (readyCallback) {
-      readyCallback();
-    }
-  }
-
-  function invokeResultCallback() {
-    if (resultCallback) {
-      resultCallback();
-    }
   }
 
   // Public API.
   return {
-    /**
-     * Setter for readyCallback. No op if already set.
-     * @param {Function} callback The function to be invoked.
-     */
-    set readyCallback(callback) {
-      if (!readyCallback) {
-        readyCallback = callback;
-      }
-    },
-
-    /**
-     * Setter for resultCallback. No op if already set.
-     * @param {Function} callback The function to be invoked.
-     */
-    set resultCallback(callback) {
-      if (!resultCallback) {
-        resultCallback = callback;
-      }
-    },
-
     /**
      * Whether the library is ready.
      * The translate function should only be called when |libReady| is true.
@@ -285,7 +235,6 @@ cr.googleTranslate = (function() {
       } catch (err) {
         console.error('Translate: ' + err);
         errorCode = ERROR['UNEXPECTED_SCRIPT_ERROR'];
-        invokeResultCallback();
         return false;
       }
       return true;
@@ -321,7 +270,6 @@ cr.googleTranslate = (function() {
         translateApiKey = undefined;
         serverParams = undefined;
         gtTimeInfo = undefined;
-        invokeReadyCallback();
         return;
       }
       // The TranslateService is not available immediately as it needs to start

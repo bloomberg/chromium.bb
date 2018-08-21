@@ -47,6 +47,16 @@
   _translationScript = [script copy];
 }
 
+- (void)injectWaitUntilTranslateReadyScript {
+  [self.receiver executeJavaScript:@"__gCrWeb.translate.checkTranslateReady()"
+                 completionHandler:nil];
+}
+
+- (void)injectTranslateStatusScript {
+  [self.receiver executeJavaScript:@"__gCrWeb.translate.checkTranslateStatus()"
+                 completionHandler:nil];
+}
+
 - (void)startTranslationFrom:(const std::string&)source
                           to:(const std::string&)target {
   NSString* script =
