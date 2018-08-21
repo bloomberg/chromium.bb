@@ -450,9 +450,9 @@ void AXTreeSourceArc::SerializeNode(AXNodeInfoData* node,
   // - Root node must exist.
   // - Window where this tree is attached to need to be focused.
   if (root_id_ != -1 && wm_helper) {
-    aura::Window* focused_window =
-        is_notification_ ? nullptr : wm_helper->GetFocusedWindow();
-    const gfx::Rect& local_bounds = GetBounds(node, focused_window);
+    aura::Window* active_window =
+        is_notification_ ? nullptr : wm_helper->GetActiveWindow();
+    const gfx::Rect& local_bounds = GetBounds(node, active_window);
     out_data->location.SetRect(local_bounds.x(), local_bounds.y(),
                                local_bounds.width(), local_bounds.height());
   }
@@ -504,18 +504,18 @@ void AXTreeSourceArc::SerializeNode(AXNodeInfoData* node,
 }
 
 const gfx::Rect AXTreeSourceArc::GetBounds(AXNodeInfoData* node,
-                                           aura::Window* focused_window) const {
+                                           aura::Window* active_window) const {
   DCHECK_NE(root_id_, -1);
 
   gfx::Rect node_bounds = node->bounds_in_screen;
 
-  if (focused_window && node->id == root_id_) {
+  if (active_window && node->id == root_id_) {
     // Top level window returns its bounds in dip.
-    aura::Window* toplevel_window = focused_window->GetToplevelWindow();
+    aura::Window* toplevel_window = active_window->GetToplevelWindow();
     float scale = toplevel_window->layer()->device_scale_factor();
 
     views::Widget* widget =
-        views::Widget::GetWidgetForNativeView(focused_window);
+        views::Widget::GetWidgetForNativeView(active_window);
     DCHECK(widget);
     DCHECK(widget->widget_delegate());
     DCHECK(widget->widget_delegate()->GetContentsView());
