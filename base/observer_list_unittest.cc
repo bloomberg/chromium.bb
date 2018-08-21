@@ -13,17 +13,48 @@
 namespace base {
 namespace {
 
-class Foo {
+class CheckedBase : public CheckedObserver {
  public:
   virtual void Observe(int x) = 0;
-  virtual ~Foo() = default;
+  ~CheckedBase() override = default;
   virtual int GetValue() const { return 0; }
 };
 
-class Adder : public Foo {
+class UncheckedBase {
  public:
-  explicit Adder(int scaler) : total(0), scaler_(scaler) {}
-  ~Adder() override = default;
+  virtual void Observe(int x) = 0;
+  virtual ~UncheckedBase() = default;
+  virtual int GetValue() const { return 0; }
+};
+
+// Helper for TYPED_TEST_CASE machinery to pick the ObserverList under test.
+// Keyed off the observer type since ObserverList has too many template args and
+// it gets ugly.
+template <class Foo>
+struct PickObserverList {};
+template <>
+struct PickObserverList<CheckedBase> {
+  template <class TypeParam,
+            bool check_empty = false,
+            bool allow_reentrancy = true>
+  using ObserverListType =
+      ObserverList<TypeParam, check_empty, allow_reentrancy>;
+};
+template <>
+struct PickObserverList<UncheckedBase> {
+  template <class TypeParam,
+            bool check_empty = false,
+            bool allow_reentrancy = true>
+  using ObserverListType = typename ObserverList<TypeParam,
+                                                 check_empty,
+                                                 allow_reentrancy>::Unchecked;
+};
+
+template <class Foo>
+class AdderT : public Foo {
+ public:
+  explicit AdderT(int scaler) : total(0), scaler_(scaler) {}
+  ~AdderT() override = default;
 
   void Observe(int x) override { total += x * scaler_; }
   int GetValue() const override { return total; }
@@ -34,16 +65,18 @@ class Adder : public Foo {
   int scaler_;
 };
 
-class Disrupter : public Foo {
+template <class ObserverListType,
+          class Foo = typename ObserverListType::value_type>
+class DisrupterT : public Foo {
  public:
-  Disrupter(ObserverList<Foo>* list, Foo* doomed, bool remove_self)
+  DisrupterT(ObserverListType* list, Foo* doomed, bool remove_self)
       : list_(list), doomed_(doomed), remove_self_(remove_self) {}
-  Disrupter(ObserverList<Foo>* list, Foo* doomed)
-      : Disrupter(list, doomed, false) {}
-  Disrupter(ObserverList<Foo>* list, bool remove_self)
-      : Disrupter(list, nullptr, remove_self) {}
+  DisrupterT(ObserverListType* list, Foo* doomed)
+      : DisrupterT(list, doomed, false) {}
+  DisrupterT(ObserverListType* list, bool remove_self)
+      : DisrupterT(list, nullptr, remove_self) {}
 
-  ~Disrupter() override = default;
+  ~DisrupterT() override = default;
 
   void Observe(int x) override {
     if (remove_self_)
@@ -55,14 +88,16 @@ class Disrupter : public Foo {
   void SetDoomed(Foo* doomed) { doomed_ = doomed; }
 
  private:
-  ObserverList<Foo>* list_;
+  ObserverListType* list_;
   Foo* doomed_;
   bool remove_self_;
 };
 
+template <class ObserverListType,
+          class Foo = typename ObserverListType::value_type>
 class AddInObserve : public Foo {
  public:
-  explicit AddInObserve(ObserverList<Foo>* observer_list)
+  explicit AddInObserve(ObserverListType* observer_list)
       : observer_list(observer_list), to_add_() {}
 
   void SetToAdd(Foo* to_add) { to_add_ = to_add; }
@@ -74,24 +109,89 @@ class AddInObserve : public Foo {
     }
   }
 
-  ObserverList<Foo>* observer_list;
+  ObserverListType* observer_list;
   Foo* to_add_;
 };
 
 }  // namespace
 
-TEST(ObserverListTest, BasicTest) {
-  ObserverList<Foo> observer_list;
-  const ObserverList<Foo>& const_observer_list = observer_list;
+class ObserverListTestBase {
+ public:
+  ObserverListTestBase() {}
+
+  template <class T>
+  const decltype(T::list_) list(const T& iter) {
+    return iter.list_;
+  }
+
+  template <class T>
+  typename T::value_type* GetCurrent(T* iter) {
+    return iter->GetCurrent();
+  }
+
+  // Override GetCurrent() for CheckedObserver. When StdIteratorRemoveFront
+  // tries to simulate a sequence to see if it "would" crash, CheckedObservers
+  // do, actually, crash with a DCHECK(). Note this check is different to the
+  // check during an observer _iteration_. Hence, DCHECK(), not CHECK().
+  CheckedBase* GetCurrent(ObserverList<CheckedBase>::iterator* iter) {
+    EXPECT_DCHECK_DEATH(return iter->GetCurrent());
+    return nullptr;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ObserverListTestBase);
+};
+
+// Templatized test fixture that can pick between CheckedBase and UncheckedBase.
+template <class ObserverType>
+class ObserverListTest : public ObserverListTestBase, public ::testing::Test {
+ public:
+  template <class T>
+  using ObserverList =
+      typename PickObserverList<ObserverType>::template ObserverListType<T>;
+
+  using iterator = typename ObserverList<ObserverType>::iterator;
+  using const_iterator = typename ObserverList<ObserverType>::const_iterator;
+
+  ObserverListTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ObserverListTest);
+};
+
+using ObserverTypes = ::testing::Types<CheckedBase, UncheckedBase>;
+TYPED_TEST_CASE(ObserverListTest, ObserverTypes);
+
+// TYPED_TEST causes the test parent class to be a template parameter, which
+// makes the syntax for referring to the types awkward. Create aliases in local
+// scope with clearer names. Unfortunately, we also need some trailing cruft to
+// avoid "unused local type alias" warnings.
+#define DECLARE_TYPES                                                       \
+  using Foo = TypeParam;                                                    \
+  using ObserverListFoo =                                                   \
+      typename PickObserverList<TypeParam>::template ObserverListType<Foo>; \
+  using Adder = AdderT<Foo>;                                                \
+  using Disrupter = DisrupterT<ObserverListFoo>;                            \
+  using const_iterator = typename TestFixture::const_iterator;              \
+  using iterator = typename TestFixture::iterator;                          \
+  (void)(Disrupter*)(0);                                                    \
+  (void)(Adder*)(0);                                                        \
+  (void)(const_iterator*)(0);                                               \
+  (void)(iterator*)(0);
+
+TYPED_TEST(ObserverListTest, BasicTest) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
+  const ObserverListFoo& const_observer_list = observer_list;
 
   {
-    const ObserverList<Foo>::const_iterator it1 = const_observer_list.begin();
+    const const_iterator it1 = const_observer_list.begin();
     EXPECT_EQ(it1, const_observer_list.end());
     // Iterator copy.
-    const ObserverList<Foo>::const_iterator it2 = it1;
+    const const_iterator it2 = it1;
     EXPECT_EQ(it2, it1);
     // Iterator assignment.
-    ObserverList<Foo>::const_iterator it3;
+    const_iterator it3;
     it3 = it2;
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
@@ -102,13 +202,13 @@ TEST(ObserverListTest, BasicTest) {
   }
 
   {
-    const ObserverList<Foo>::iterator it1 = observer_list.begin();
+    const iterator it1 = observer_list.begin();
     EXPECT_EQ(it1, observer_list.end());
     // Iterator copy.
-    const ObserverList<Foo>::iterator it2 = it1;
+    const iterator it2 = it1;
     EXPECT_EQ(it2, it1);
     // Iterator assignment.
-    ObserverList<Foo>::iterator it3;
+    iterator it3;
     it3 = it2;
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
@@ -128,14 +228,14 @@ TEST(ObserverListTest, BasicTest) {
   EXPECT_FALSE(const_observer_list.HasObserver(&c));
 
   {
-    const ObserverList<Foo>::const_iterator it1 = const_observer_list.begin();
+    const const_iterator it1 = const_observer_list.begin();
     EXPECT_NE(it1, const_observer_list.end());
     // Iterator copy.
-    const ObserverList<Foo>::const_iterator it2 = it1;
+    const const_iterator it2 = it1;
     EXPECT_EQ(it2, it1);
     EXPECT_NE(it2, const_observer_list.end());
     // Iterator assignment.
-    ObserverList<Foo>::const_iterator it3;
+    const_iterator it3;
     it3 = it2;
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
@@ -144,21 +244,21 @@ TEST(ObserverListTest, BasicTest) {
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
     // Iterator post increment.
-    ObserverList<Foo>::const_iterator it4 = it3++;
+    const_iterator it4 = it3++;
     EXPECT_EQ(it4, it1);
     EXPECT_EQ(it4, it2);
     EXPECT_NE(it4, it3);
   }
 
   {
-    const ObserverList<Foo>::iterator it1 = observer_list.begin();
+    const iterator it1 = observer_list.begin();
     EXPECT_NE(it1, observer_list.end());
     // Iterator copy.
-    const ObserverList<Foo>::iterator it2 = it1;
+    const iterator it2 = it1;
     EXPECT_EQ(it2, it1);
     EXPECT_NE(it2, observer_list.end());
     // Iterator assignment.
-    ObserverList<Foo>::iterator it3;
+    iterator it3;
     it3 = it2;
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
@@ -167,7 +267,7 @@ TEST(ObserverListTest, BasicTest) {
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
     // Iterator post increment.
-    ObserverList<Foo>::iterator it4 = it3++;
+    iterator it4 = it3++;
     EXPECT_EQ(it4, it1);
     EXPECT_EQ(it4, it2);
     EXPECT_NE(it4, it3);
@@ -193,9 +293,13 @@ TEST(ObserverListTest, BasicTest) {
   EXPECT_EQ(0, e.total);
 }
 
-TEST(ObserverListTest, CompactsWhenNoActiveIterator) {
-  ObserverList<const Foo> ol;
-  const ObserverList<const Foo>& col = ol;
+TYPED_TEST(ObserverListTest, CompactsWhenNoActiveIterator) {
+  DECLARE_TYPES;
+  using ObserverListConstFoo =
+      typename TestFixture::template ObserverList<const Foo>;
+
+  ObserverListConstFoo ol;
+  const ObserverListConstFoo& col = ol;
 
   const Adder a(1);
   const Adder b(2);
@@ -209,7 +313,7 @@ TEST(ObserverListTest, CompactsWhenNoActiveIterator) {
 
   EXPECT_TRUE(col.might_have_observers());
 
-  using It = ObserverList<const Foo>::const_iterator;
+  using It = typename ObserverListConstFoo::const_iterator;
 
   {
     It it = col.begin();
@@ -263,8 +367,9 @@ TEST(ObserverListTest, CompactsWhenNoActiveIterator) {
   EXPECT_FALSE(col.might_have_observers());
 }
 
-TEST(ObserverListTest, DisruptSelf) {
-  ObserverList<Foo> observer_list;
+TYPED_TEST(ObserverListTest, DisruptSelf) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1), c(1), d(-1);
   Disrupter evil(&observer_list, true);
 
@@ -287,8 +392,9 @@ TEST(ObserverListTest, DisruptSelf) {
   EXPECT_EQ(-10, d.total);
 }
 
-TEST(ObserverListTest, DisruptBefore) {
-  ObserverList<Foo> observer_list;
+TYPED_TEST(ObserverListTest, DisruptBefore) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1), c(1), d(-1);
   Disrupter evil(&observer_list, &b);
 
@@ -309,10 +415,11 @@ TEST(ObserverListTest, DisruptBefore) {
   EXPECT_EQ(-20, d.total);
 }
 
-TEST(ObserverListTest, Existing) {
-  ObserverList<Foo> observer_list(ObserverListPolicy::EXISTING_ONLY);
+TYPED_TEST(ObserverListTest, Existing) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list(ObserverListPolicy::EXISTING_ONLY);
   Adder a(1);
-  AddInObserve b(&observer_list);
+  AddInObserve<ObserverListFoo> b(&observer_list);
   Adder c(1);
   b.SetToAdd(&c);
 
@@ -333,9 +440,11 @@ TEST(ObserverListTest, Existing) {
   EXPECT_EQ(1, c.total);
 }
 
+template <class ObserverListType,
+          class Foo = typename ObserverListType::value_type>
 class AddInClearObserve : public Foo {
  public:
-  explicit AddInClearObserve(ObserverList<Foo>* list)
+  explicit AddInClearObserve(ObserverListType* list)
       : list_(list), added_(false), adder_(1) {}
 
   void Observe(int /* x */) override {
@@ -345,18 +454,19 @@ class AddInClearObserve : public Foo {
   }
 
   bool added() const { return added_; }
-  const Adder& adder() const { return adder_; }
+  const AdderT<Foo>& adder() const { return adder_; }
 
  private:
-  ObserverList<Foo>* const list_;
+  ObserverListType* const list_;
 
   bool added_;
-  Adder adder_;
+  AdderT<Foo> adder_;
 };
 
-TEST(ObserverListTest, ClearNotifyAll) {
-  ObserverList<Foo> observer_list;
-  AddInClearObserve a(&observer_list);
+TYPED_TEST(ObserverListTest, ClearNotifyAll) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
+  AddInClearObserve<ObserverListFoo> a(&observer_list);
 
   observer_list.AddObserver(&a);
 
@@ -367,9 +477,10 @@ TEST(ObserverListTest, ClearNotifyAll) {
       << "Adder should observe once and have sum of 1.";
 }
 
-TEST(ObserverListTest, ClearNotifyExistingOnly) {
-  ObserverList<Foo> observer_list(ObserverListPolicy::EXISTING_ONLY);
-  AddInClearObserve a(&observer_list);
+TYPED_TEST(ObserverListTest, ClearNotifyExistingOnly) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list(ObserverListPolicy::EXISTING_ONLY);
+  AddInClearObserve<ObserverListFoo> a(&observer_list);
 
   observer_list.AddObserver(&a);
 
@@ -380,21 +491,23 @@ TEST(ObserverListTest, ClearNotifyExistingOnly) {
       << "Adder should not observe, so sum should still be 0.";
 }
 
+template <class ObserverListType,
+          class Foo = typename ObserverListType::value_type>
 class ListDestructor : public Foo {
  public:
-  explicit ListDestructor(ObserverList<Foo>* list) : list_(list) {}
+  explicit ListDestructor(ObserverListType* list) : list_(list) {}
   ~ListDestructor() override = default;
 
   void Observe(int x) override { delete list_; }
 
  private:
-  ObserverList<Foo>* list_;
+  ObserverListType* list_;
 };
 
-
-TEST(ObserverListTest, IteratorOutlivesList) {
-  ObserverList<Foo>* observer_list = new ObserverList<Foo>;
-  ListDestructor a(observer_list);
+TYPED_TEST(ObserverListTest, IteratorOutlivesList) {
+  DECLARE_TYPES;
+  ObserverListFoo* observer_list = new ObserverListFoo;
+  ListDestructor<ObserverListFoo> a(observer_list);
   observer_list->AddObserver(&a);
 
   for (auto& observer : *observer_list)
@@ -405,14 +518,14 @@ TEST(ObserverListTest, IteratorOutlivesList) {
   // this test has failed.  See http://crbug.com/85296.
 }
 
-TEST(ObserverListTest, BasicStdIterator) {
-  using FooList = ObserverList<Foo>;
-  FooList observer_list;
+TYPED_TEST(ObserverListTest, BasicStdIterator) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
 
   // An optimization: begin() and end() do not involve weak pointers on
   // empty list.
-  EXPECT_FALSE(observer_list.begin().list_);
-  EXPECT_FALSE(observer_list.end().list_);
+  EXPECT_FALSE(this->list(observer_list.begin()));
+  EXPECT_FALSE(this->list(observer_list.end()));
 
   // Iterate over empty list: no effect, no crash.
   for (auto& i : observer_list)
@@ -425,8 +538,7 @@ TEST(ObserverListTest, BasicStdIterator) {
   observer_list.AddObserver(&c);
   observer_list.AddObserver(&d);
 
-  for (FooList::iterator i = observer_list.begin(), e = observer_list.end();
-       i != e; ++i)
+  for (iterator i = observer_list.begin(), e = observer_list.end(); i != e; ++i)
     i->Observe(1);
 
   EXPECT_EQ(1, a.total);
@@ -435,9 +547,9 @@ TEST(ObserverListTest, BasicStdIterator) {
   EXPECT_EQ(-1, d.total);
 
   // Check an iteration over a 'const view' for a given container.
-  const FooList& const_list = observer_list;
-  for (FooList::const_iterator i = const_list.begin(), e = const_list.end();
-       i != e; ++i) {
+  const ObserverListFoo& const_list = observer_list;
+  for (const_iterator i = const_list.begin(), e = const_list.end(); i != e;
+       ++i) {
     EXPECT_EQ(1, std::abs(i->GetValue()));
   }
 
@@ -445,8 +557,9 @@ TEST(ObserverListTest, BasicStdIterator) {
     EXPECT_EQ(1, std::abs(o.GetValue()));
 }
 
-TEST(ObserverListTest, StdIteratorRemoveItself) {
-  ObserverList<Foo> observer_list;
+TYPED_TEST(ObserverListTest, StdIteratorRemoveItself) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1), c(1), d(-1);
   Disrupter disrupter(&observer_list, true);
 
@@ -468,8 +581,9 @@ TEST(ObserverListTest, StdIteratorRemoveItself) {
   EXPECT_EQ(-11, d.total);
 }
 
-TEST(ObserverListTest, StdIteratorRemoveBefore) {
-  ObserverList<Foo> observer_list;
+TYPED_TEST(ObserverListTest, StdIteratorRemoveBefore) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1), c(1), d(-1);
   Disrupter disrupter(&observer_list, &b);
 
@@ -491,8 +605,9 @@ TEST(ObserverListTest, StdIteratorRemoveBefore) {
   EXPECT_EQ(-11, d.total);
 }
 
-TEST(ObserverListTest, StdIteratorRemoveAfter) {
-  ObserverList<Foo> observer_list;
+TYPED_TEST(ObserverListTest, StdIteratorRemoveAfter) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1), c(1), d(-1);
   Disrupter disrupter(&observer_list, &c);
 
@@ -514,8 +629,9 @@ TEST(ObserverListTest, StdIteratorRemoveAfter) {
   EXPECT_EQ(-11, d.total);
 }
 
-TEST(ObserverListTest, StdIteratorRemoveAfterFront) {
-  ObserverList<Foo> observer_list;
+TYPED_TEST(ObserverListTest, StdIteratorRemoveAfterFront) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1), c(1), d(-1);
   Disrupter disrupter(&observer_list, &a);
 
@@ -537,8 +653,9 @@ TEST(ObserverListTest, StdIteratorRemoveAfterFront) {
   EXPECT_EQ(-11, d.total);
 }
 
-TEST(ObserverListTest, StdIteratorRemoveBeforeBack) {
-  ObserverList<Foo> observer_list;
+TYPED_TEST(ObserverListTest, StdIteratorRemoveBeforeBack) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1), c(1), d(-1);
   Disrupter disrupter(&observer_list, &d);
 
@@ -560,9 +677,10 @@ TEST(ObserverListTest, StdIteratorRemoveBeforeBack) {
   EXPECT_EQ(0, d.total);
 }
 
-TEST(ObserverListTest, StdIteratorRemoveFront) {
-  using FooList = ObserverList<Foo>;
-  FooList observer_list;
+TYPED_TEST(ObserverListTest, StdIteratorRemoveFront) {
+  DECLARE_TYPES;
+  using iterator = typename TestFixture::iterator;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1), c(1), d(-1);
   Disrupter disrupter(&observer_list, true);
 
@@ -573,12 +691,12 @@ TEST(ObserverListTest, StdIteratorRemoveFront) {
   observer_list.AddObserver(&d);
 
   bool test_disruptor = true;
-  for (FooList::iterator i = observer_list.begin(), e = observer_list.end();
-       i != e; ++i) {
+  for (iterator i = observer_list.begin(), e = observer_list.end(); i != e;
+       ++i) {
     i->Observe(1);
     // Check that second call to i->Observe() would crash here.
     if (test_disruptor) {
-      EXPECT_FALSE(i.GetCurrent());
+      EXPECT_FALSE(this->GetCurrent(&i));
       test_disruptor = false;
     }
   }
@@ -592,8 +710,9 @@ TEST(ObserverListTest, StdIteratorRemoveFront) {
   EXPECT_EQ(-11, d.total);
 }
 
-TEST(ObserverListTest, StdIteratorRemoveBack) {
-  ObserverList<Foo> observer_list;
+TYPED_TEST(ObserverListTest, StdIteratorRemoveBack) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1), c(1), d(-1);
   Disrupter disrupter(&observer_list, true);
 
@@ -615,8 +734,9 @@ TEST(ObserverListTest, StdIteratorRemoveBack) {
   EXPECT_EQ(-11, d.total);
 }
 
-TEST(ObserverListTest, NestedLoop) {
-  ObserverList<Foo> observer_list;
+TYPED_TEST(ObserverListTest, NestedLoop) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1), c(1), d(-1);
   Disrupter disrupter(&observer_list, true);
 
@@ -639,8 +759,9 @@ TEST(ObserverListTest, NestedLoop) {
   EXPECT_EQ(-15, d.total);
 }
 
-TEST(ObserverListTest, NonCompactList) {
-  ObserverList<Foo> observer_list;
+TYPED_TEST(ObserverListTest, NonCompactList) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1);
 
   Disrupter disrupter1(&observer_list, true);
@@ -667,8 +788,9 @@ TEST(ObserverListTest, NonCompactList) {
   EXPECT_EQ(-13, b.total);
 }
 
-TEST(ObserverListTest, BecomesEmptyThanNonEmpty) {
-  ObserverList<Foo> observer_list;
+TYPED_TEST(ObserverListTest, BecomesEmptyThanNonEmpty) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
   Adder a(1), b(-1);
 
   Disrupter disrupter1(&observer_list, true);
@@ -699,9 +821,11 @@ TEST(ObserverListTest, BecomesEmptyThanNonEmpty) {
   EXPECT_EQ(-12, b.total);
 }
 
-TEST(ObserverListTest, AddObserverInTheLastObserve) {
-  ObserverList<Foo> observer_list;
-  AddInObserve a(&observer_list);
+TYPED_TEST(ObserverListTest, AddObserverInTheLastObserve) {
+  DECLARE_TYPES;
+  ObserverListFoo observer_list;
+
+  AddInObserve<ObserverListFoo> a(&observer_list);
   Adder b(-1);
 
   a.SetToAdd(&b);
@@ -731,11 +855,12 @@ class MockLogAssertHandler {
 };
 
 #if DCHECK_IS_ON()
-TEST(ObserverListTest, NonReentrantObserverList) {
-  using ::testing::_;
-
-  ObserverList<Foo, /*check_empty=*/false, /*allow_reentrancy=*/false>
-      non_reentrant_observer_list;
+TYPED_TEST(ObserverListTest, NonReentrantObserverList) {
+  DECLARE_TYPES;
+  using NonReentrantObserverListFoo = typename PickObserverList<
+      Foo>::template ObserverListType<Foo, /*check_empty=*/false,
+                                      /*allow_reentrancy=*/false>;
+  NonReentrantObserverListFoo non_reentrant_observer_list;
   Adder a(1);
   non_reentrant_observer_list.AddObserver(&a);
 
@@ -749,10 +874,12 @@ TEST(ObserverListTest, NonReentrantObserverList) {
   });
 }
 
-TEST(ObserverListTest, ReentrantObserverList) {
-  using ::testing::_;
-
-  ReentrantObserverList<Foo> reentrant_observer_list;
+TYPED_TEST(ObserverListTest, ReentrantObserverList) {
+  DECLARE_TYPES;
+  using ReentrantObserverListFoo = typename PickObserverList<
+      Foo>::template ObserverListType<Foo, /*check_empty=*/false,
+                                      /*allow_reentrancy=*/true>;
+  ReentrantObserverListFoo reentrant_observer_list;
   Adder a(1);
   reentrant_observer_list.AddObserver(&a);
   bool passed = false;
@@ -766,5 +893,120 @@ TEST(ObserverListTest, ReentrantObserverList) {
   EXPECT_TRUE(passed);
 }
 #endif
+
+class TestCheckedObserver : public CheckedObserver {
+ public:
+  explicit TestCheckedObserver(int* count) : count_(count) {}
+
+  void Observe() { ++(*count_); }
+
+ private:
+  int* count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCheckedObserver);
+};
+
+// A second, identical observer, used to test multiple inheritance.
+class TestCheckedObserver2 : public CheckedObserver {
+ public:
+  explicit TestCheckedObserver2(int* count) : count_(count) {}
+
+  void Observe() { ++(*count_); }
+
+ private:
+  int* count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCheckedObserver2);
+};
+
+using CheckedObserverListTest = ::testing::Test;
+
+// Test Observers that CHECK() when a UAF might otherwise occur.
+TEST_F(CheckedObserverListTest, CheckedObserver) {
+  // See comments below about why this is unique_ptr.
+  auto list = std::make_unique<ObserverList<TestCheckedObserver>>();
+  int count1 = 0;
+  int count2 = 0;
+  TestCheckedObserver l1(&count1);
+  list->AddObserver(&l1);
+  {
+    TestCheckedObserver l2(&count2);
+    list->AddObserver(&l2);
+    for (auto& observer : *list)
+      observer.Observe();
+    EXPECT_EQ(1, count1);
+    EXPECT_EQ(1, count2);
+  }
+  {
+    auto it = list->begin();
+    it->Observe();
+    // For CheckedObservers, a CHECK() occurs when advancing the iterator. (On
+    // calling the observer method would be too late since the pointer would
+    // already be null by then).
+    EXPECT_CHECK_DEATH(it++);
+
+    // On the non-death fork, no UAF occurs since the deleted observer is never
+    // notified, but also the observer list still has |l2| in it. Check that.
+    list->RemoveObserver(&l1);
+    EXPECT_TRUE(list->might_have_observers());
+
+    // Now (in the non-death fork()) there's a problem. To delete |it|, we need
+    // to compact the list, but that needs to iterate, which would CHECK again.
+    // We can't remove |l2| (it's null). But we can delete |list|, which makes
+    // the weak pointer in the iterator itself null.
+    list.reset();
+  }
+  EXPECT_EQ(2, count1);
+  EXPECT_EQ(1, count2);
+}
+
+class MultiObserver : public TestCheckedObserver,
+                      public TestCheckedObserver2,
+                      public AdderT<UncheckedBase> {
+ public:
+  MultiObserver(int* checked_count, int* two_count)
+      : TestCheckedObserver(checked_count),
+        TestCheckedObserver2(two_count),
+        AdderT(1) {}
+};
+
+// Test that observers behave as expected when observing multiple interfaces
+// with different traits.
+TEST_F(CheckedObserverListTest, MultiObserver) {
+  // Observe two checked observer lists. This is to ensure the WeakPtrFactory
+  // in CheckedObserver can correctly service multiple ObserverLists.
+  ObserverList<TestCheckedObserver> checked_list;
+  ObserverList<TestCheckedObserver2> two_list;
+
+  ObserverList<UncheckedBase>::Unchecked unsafe_list;
+
+  int counts[2] = {};
+
+  auto observer = std::make_unique<MultiObserver>(&counts[0], &counts[1]);
+  two_list.AddObserver(observer.get());
+  checked_list.AddObserver(observer.get());
+  unsafe_list.AddObserver(observer.get());
+
+  auto iterate_over = [](auto* list) {
+    for (auto& observer : *list)
+      observer.Observe();
+  };
+  iterate_over(&two_list);
+  iterate_over(&checked_list);
+  for (auto& observer : unsafe_list)
+    observer.Observe(10);
+
+  EXPECT_EQ(10, observer->GetValue());
+  for (const auto& count : counts)
+    EXPECT_EQ(1, count);
+
+  unsafe_list.RemoveObserver(observer.get());  // Avoid a use-after-free.
+
+  observer.reset();
+  EXPECT_CHECK_DEATH(iterate_over(&checked_list));
+
+  for (const auto& count : counts)
+    EXPECT_EQ(1, count);
+}
 
 }  // namespace base

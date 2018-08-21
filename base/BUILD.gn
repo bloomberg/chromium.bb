@@ -294,6 +294,10 @@ jumbo_component("base") {
     "cpu.h",
     "critical_closure.h",
     "critical_closure_internal_ios.mm",
+    "observer_list_internal.cc",
+    "observer_list_internal.h",
+    "observer_list_types.cc",
+    "observer_list_types.h",
 
     # This file depends on files from the "debug/allocator" target,
     # but this target does not depend on "debug/allocator".
@@ -2792,6 +2796,7 @@ if (enable_nocompile_tests) {
       "memory/weak_ptr_unittest.nc",
       "metrics/field_trial_params_unittest.nc",
       "metrics/histogram_unittest.nc",
+      "observer_list_unittest.nc",
       "optional_unittest.nc",
       "strings/string16_unittest.nc",
       "task/task_traits_extension_unittest.nc",

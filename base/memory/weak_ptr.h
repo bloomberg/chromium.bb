@@ -268,6 +268,11 @@ class WeakPtr : public internal::WeakPtrBase {
   // instance isn't being re-assigned or reset() racily with this call.
   bool MaybeValid() const { return ref_.MaybeValid(); }
 
+  // Returns whether the object |this| points to has been invalidated. This can
+  // be used to distinguish a WeakPtr to a destroyed object from one that has
+  // been explicitly set to null. A null WeakPtr is always valid.
+  bool WasInvalidated() const { return ptr_ && !ref_.IsValid(); }
+
  private:
   friend class internal::SupportsWeakPtrBase;
   template <typename U> friend class WeakPtr;

@@ -41,6 +41,29 @@
 #endif
 // DCHECK_IS_ON() && defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
+// As above, but for CHECK().
+#if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
+
+// Official builds will CHECK, but also eat stream parameters. So match "".
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
+#define EXPECT_CHECK_DEATH(statement) EXPECT_DEATH(statement, "")
+#define ASSERT_CHECK_DEATH(statement) ASSERT_DEATH(statement, "")
+#else
+#define EXPECT_CHECK_DEATH(statement) EXPECT_DEATH(statement, "Check failed")
+#define ASSERT_CHECK_DEATH(statement) ASSERT_DEATH(statement, "Check failed")
+#endif  // defined(OFFICIAL_BUILD) && defined(NDEBUG)
+
+#else  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
+
+// Note GTEST_UNSUPPORTED_DEATH_TEST takes a |regex| only to see whether it is a
+// valid regex. It is never evaluated.
+#define EXPECT_CHECK_DEATH(statement) \
+  GTEST_UNSUPPORTED_DEATH_TEST(statement, "", )
+#define ASSERT_CHECK_DEATH(statement) \
+  GTEST_UNSUPPORTED_DEATH_TEST(statement, "", return )
+
+#endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
+
 namespace base {
 
 class FilePath;
