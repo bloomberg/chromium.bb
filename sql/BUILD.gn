@@ -21,6 +21,8 @@ component("sql") {
     "recovery.cc",
     "recovery.h",
     "sql_export.h",
+    "sql_features.cc",
+    "sql_features.h",
     "sql_memory_dump_provider.cc",
     "sql_memory_dump_provider.h",
     "statement.cc",
