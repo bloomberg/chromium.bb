@@ -326,10 +326,20 @@ TEST_F(NativeFileUtilTest, MoveFile) {
                 Path("nonexists"), Path("file"),
                 FileSystemOperation::OPTION_NONE, move));
 
-  // Source is not a file.
-  EXPECT_EQ(base::File::FILE_ERROR_NOT_A_FILE,
+  base::FilePath dir2 = Path("dir2");
+  ASSERT_EQ(base::File::FILE_OK,
+            NativeFileUtil::CreateDirectory(dir2, false, false));
+  ASSERT_TRUE(base::DirectoryExists(dir2));
+  // Source is a directory, destination is a file.
+  EXPECT_EQ(base::File::FILE_ERROR_INVALID_OPERATION,
             NativeFileUtil::CopyOrMoveFile(
-                dir, Path("file"), FileSystemOperation::OPTION_NONE, move));
+                dir, to_file, FileSystemOperation::OPTION_NONE, move));
+
+  // Source is a directory, destination is a directory.
+  EXPECT_EQ(base::File::FILE_ERROR_INVALID_OPERATION,
+            NativeFileUtil::CopyOrMoveFile(
+                dir, dir2, FileSystemOperation::OPTION_NONE, move));
+
   ASSERT_EQ(base::File::FILE_OK,
             NativeFileUtil::EnsureFileExists(from_file, &created));
   ASSERT_TRUE(FileExists(from_file));
@@ -351,6 +361,35 @@ TEST_F(NativeFileUtilTest, MoveFile) {
             NativeFileUtil::CopyOrMoveFile(
                 from_file, Path("tofile1").AppendASCII("file"),
                 FileSystemOperation::OPTION_NONE, move));
+}
+
+TEST_F(NativeFileUtilTest, MoveFile_Directory) {
+  base::FilePath from_directory = Path("fromdirectory");
+  base::FilePath to_directory = Path("todirectory");
+  base::FilePath from_file = from_directory.AppendASCII("fromfile");
+  base::FilePath to_file = to_directory.AppendASCII("fromfile");
+  ASSERT_TRUE(base::CreateDirectory(from_directory));
+  const NativeFileUtil::CopyOrMoveMode move = NativeFileUtil::MOVE;
+  bool created = false;
+  ASSERT_EQ(base::File::FILE_OK,
+            NativeFileUtil::EnsureFileExists(
+                from_directory.AppendASCII("fromfile"), &created));
+  ASSERT_TRUE(created);
+
+  ASSERT_EQ(base::File::FILE_OK, NativeFileUtil::Truncate(from_file, 1020));
+
+  EXPECT_TRUE(FileExists(from_file));
+  EXPECT_EQ(1020, GetSize(from_file));
+
+  ASSERT_EQ(base::File::FILE_OK, NativeFileUtil::CopyOrMoveFile(
+                                     from_directory, to_directory,
+                                     FileSystemOperation::OPTION_NONE, move));
+
+  EXPECT_FALSE(base::DirectoryExists(from_directory));
+  EXPECT_FALSE(FileExists(from_file));
+  EXPECT_TRUE(base::DirectoryExists(to_directory));
+  EXPECT_TRUE(FileExists(to_file));
+  EXPECT_EQ(1020, GetSize(to_file));
 }
 
 TEST_F(NativeFileUtilTest, PreserveLastModified) {

@@ -253,15 +253,16 @@ base::File::Error NativeFileUtil::CopyOrMoveFile(
   base::File::Error error = NativeFileUtil::GetFileInfo(src_path, &info);
   if (error != base::File::FILE_OK)
     return error;
-  if (info.is_directory)
+  if (info.is_directory && mode != MOVE)
     return base::File::FILE_ERROR_NOT_A_FILE;
+  bool src_is_directory = info.is_directory;
   base::Time last_modified = info.last_modified;
 
   error = NativeFileUtil::GetFileInfo(dest_path, &info);
   if (error != base::File::FILE_OK &&
       error != base::File::FILE_ERROR_NOT_FOUND)
     return error;
-  if (info.is_directory)
+  if (error == base::File::FILE_OK && (info.is_directory || src_is_directory))
     return base::File::FILE_ERROR_INVALID_OPERATION;
   if (error == base::File::FILE_ERROR_NOT_FOUND) {
     error = NativeFileUtil::GetFileInfo(dest_path.DirName(), &info);
