@@ -53,8 +53,12 @@ console.error(null)`)
     }
   ]);
 
-  function createSnippetPromise(content) {
-    return Snippets.scriptSnippetModel._project.createFile('', null, content);
+  async function createSnippetPromise(content) {
+    const projects = Workspace.workspace.projectsForType(Workspace.projectTypes.FileSystem);
+    const snippetsProject = projects.find(project => Persistence.FileSystemWorkspaceBinding.fileSystemType(project) === 'snippets');
+    const uiSourceCode = await snippetsProject.createFile('');
+    uiSourceCode.setContent(content);
+    return uiSourceCode;
   }
 
   function renameSourceCodePromise(newName, uiSourceCode) {

@@ -4,64 +4,23 @@
 
 (async function() {
   TestRunner.addResult(`Tests script snippet model.\n`);
+  await TestRunner.loadModule('console_test_runner');
   await TestRunner.loadModule('sources_test_runner');
+
   await TestRunner.showPanel('sources');
   await TestRunner.loadHTML('<p></p>');
 
-  function evaluateSnippetAndDumpEvaluationDetails(
-      uiSourceCode, context, callback) {
-    TestRunner.addSniffer(
-        Snippets.ScriptSnippetModel.prototype, '_printRunScriptResult',
-        dumpResult);
-    Snippets.scriptSnippetModel.evaluateScriptSnippet(context, uiSourceCode);
-    var target = context.target();
-    var mapping = Snippets.scriptSnippetModel._mappingForDebuggerModel.get(
-        target.model(SDK.DebuggerModel));
-    var evaluationSourceURL = mapping._evaluationSourceURL(uiSourceCode);
-    var snippetId =
-        Snippets.scriptSnippetModel._snippetIdForUISourceCode.get(uiSourceCode);
-    TestRunner.addResult(
-        'Last evaluation source url for snippet: ' + evaluationSourceURL);
-    TestRunner.assertEquals(
-        snippetId,
-        Snippets.scriptSnippetModel._snippetIdForSourceURL(evaluationSourceURL),
-        'Snippet can not be identified by its evaluation sourceURL.');
-
-
-    function dumpResult(target, result) {
-      TestRunner.addResult('Snippet execution result: ' + result.description);
-      callback();
-    }
-  }
-
-  function resetSnippetsSettings() {
-    Snippets.scriptSnippetModel._snippetStorage._lastSnippetIdentifierSetting
-        .set(0);
-    Snippets.scriptSnippetModel._snippetStorage._snippetsSetting.set([]);
-    Snippets.scriptSnippetModel._lastSnippetEvaluationIndexSetting.set(0);
-    Snippets.scriptSnippetModel._project.removeProject();
-    Snippets.scriptSnippetModel =
-        new Snippets.ScriptSnippetModel(Workspace.workspace);
-  }
-
-  var workspace = Workspace.workspace;
+  const workspace = Workspace.workspace;
   SourcesTestRunner.runDebuggerTestSuite([
-    function testCreateEditRenameRemove(next) {
-      var uiSourceCode1;
-
-      function filterSnippet(uiSourceCode) {
-        return uiSourceCode.project().type() ===
-            Workspace.projectTypes.Snippets;
-      }
-
+    async function testCreateEditRenameRemove(next) {
       function uiSourceCodeAdded(event) {
         var uiSourceCode = event.data;
-        TestRunner.addResult('UISourceCodeAdded: ' + uiSourceCode.name());
+        TestRunner.addResult('UISourceCodeAdded: ' + uiSourceCode.displayName());
       }
 
       function uiSourceCodeRemoved(event) {
         var uiSourceCode = event.data;
-        TestRunner.addResult('UISourceCodeRemoved: ' + uiSourceCode.name());
+        TestRunner.addResult('UISourceCodeRemoved: ' + uiSourceCode.displayName());
       }
 
       workspace.addEventListener(
@@ -69,268 +28,167 @@
       workspace.addEventListener(
           Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
 
-      async function renameSnippetAndCheckWorkspace(uiSourceCode, snippetName) {
-        TestRunner.addResult('Renaming snippet to \'' + snippetName + '\' ...');
-        await uiSourceCode.rename(snippetName)
-            .then(success => renameCallback(success));
+      const uiSourceCode1 = await Snippets.project.createFile('', null, '');
+      TestRunner.addResult('Snippet content:');
+      TestRunner.addResult(await uiSourceCode1.requestContent());
+      TestRunner.addResult('Snippet1 created.');
+      const uiSourceCode2 = await Snippets.project.createFile('', null, '');
+      TestRunner.addResult('Snippet content:');
+      TestRunner.addResult(await uiSourceCode2.requestContent());
+      TestRunner.addResult('Snippet2 created.');
 
-        function renameCallback(success) {
-          if (success)
-            TestRunner.addResult('Snippet renamed successfully.');
-          else
-            TestRunner.addResult('Snippet was not renamed.');
-        }
-        TestRunner.addResult(
-            'UISourceCode name is \'' + uiSourceCode.name() + '\' now.');
-        TestRunner.addResult(
-            'Number of uiSourceCodes in workspace: ' +
-            workspace.uiSourceCodes().filter(filterSnippet).length);
-        var storageSnippetsCount =
-            Snippets.scriptSnippetModel._snippetStorage.snippets().length;
-        TestRunner.addResult(
-            'Number of snippets in the storage: ' + storageSnippetsCount);
-      }
+      await rename(uiSourceCode1, 'foo');
+      await rename(uiSourceCode1, '   ');
+      await rename(uiSourceCode1, ' bar ');
+      await rename(uiSourceCode1, 'foo');
+      await rename(uiSourceCode2, 'bar');
+      await rename(uiSourceCode2, 'foo');
 
-      function contentCallback(content) {
-        TestRunner.addResult('Snippet content: ' + content);
-      }
+      TestRunner.addResult('Content of first snippet:');
+      TestRunner.addResult(await uiSourceCode1.requestContent());
+      TestRunner.addResult('Content of second snippet:');
+      TestRunner.addResult(await uiSourceCode2.requestContent());
 
-      resetSnippetsSettings();
+      TestRunner.addResult('Delete snippets..');
+      await uiSourceCode1.project().deleteFile(uiSourceCode1);
+      await uiSourceCode2.project().deleteFile(uiSourceCode2);
+      TestRunner.addResult(
+          'Number of uiSourceCodes in workspace: ' +
+          workspace.uiSourceCodes().filter(uiSourceCode => uiSourceCode.url().startsWith('snippet://')).length);
 
-      Snippets.scriptSnippetModel.project()
-          .createFile('', null, '')
-          .then(step2.bind(this));
+      TestRunner.addResult('Add third..');
+      const uiSourceCode3 = await Snippets.project.createFile('', null, '');
+      TestRunner.addResult('Content of third snippet:');
+      TestRunner.addResult(await uiSourceCode3.requestContent());
+      TestRunner.addResult(
+          'Number of uiSourceCodes in workspace: ' +
+          workspace.uiSourceCodes().filter(uiSourceCode => uiSourceCode.url().startsWith('snippet://')).length);
+      TestRunner.addResult('Delete third..');
+      await uiSourceCode3.project().deleteFile(uiSourceCode3);
+      TestRunner.addResult(
+          'Number of uiSourceCodes in workspace: ' +
+          workspace.uiSourceCodes().filter(uiSourceCode => uiSourceCode.url().startsWith('snippet://')).length);
+      workspace.removeEventListener(
+          Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+      workspace.removeEventListener(
+          Workspace.Workspace.Events.UISourceCodeRemoved,
+          uiSourceCodeRemoved);
+      next();
 
-      function step2(uiSourceCode) {
-        uiSourceCode1 = uiSourceCode;
-
-        uiSourceCode1.requestContent()
-            .then(contentCallback)
-            .then(contentDumped1);
-
-        function contentDumped1() {
-          uiSourceCode1.addRevision('<snippet content>');
-          TestRunner.addResult('Snippet content set.');
-          uiSourceCode1._requestContentPromise = null;
-          uiSourceCode1.contentLoaded = false;
-          uiSourceCode1.requestContent()
-              .then(contentCallback)
-              .then(contentDumped2);
-        }
-
-        function contentDumped2() {
-          TestRunner.addResult('Snippet1 created.');
-          Snippets.scriptSnippetModel.project()
-              .createFile('', null, '')
-              .then(step3.bind(this));
-        }
-      }
-
-      async function step3(uiSourceCode) {
-        var uiSourceCode2 = uiSourceCode;
-        TestRunner.addResult('Snippet2 created.');
-        await renameSnippetAndCheckWorkspace(uiSourceCode1, 'foo');
-        await renameSnippetAndCheckWorkspace(uiSourceCode1, '   ');
-        await renameSnippetAndCheckWorkspace(uiSourceCode1, ' bar ');
-        await renameSnippetAndCheckWorkspace(uiSourceCode1, 'foo');
-        await renameSnippetAndCheckWorkspace(uiSourceCode2, 'bar');
-        await renameSnippetAndCheckWorkspace(uiSourceCode2, 'foo');
-        uiSourceCode1._requestContentPromise = null;
-        uiSourceCode1.contentLoaded = false;
-        uiSourceCode1.requestContent()
-            .then(contentCallback)
-            .then(onContentDumped);
-
-        function onContentDumped() {
-          Snippets.scriptSnippetModel.project().deleteFile(uiSourceCode1);
-          Snippets.scriptSnippetModel.project().deleteFile(uiSourceCode2);
-          Snippets.scriptSnippetModel.project()
-              .createFile('', null, '')
-              .then(step4.bind(this));
-        }
-      }
-
-      function step4(uiSourceCode) {
-        var uiSourceCode3 = uiSourceCode;
-        TestRunner.addResult('Snippet3 created.');
-        Snippets.scriptSnippetModel.project().deleteFile(uiSourceCode3);
-        TestRunner.addResult('Snippet3 deleted.');
-
+      async function rename(uiSourceCode, newName) {
+        TestRunner.addResult(`Renaming snippet to '${newName}' ...`)
+        const success = await uiSourceCode.rename(newName);
+        TestRunner.addResult(success ? 'Snippet renamed successfully.' : 'Snippet was not renamed.');
+        TestRunner.addResult(`UISourceCode name is '${uiSourceCode.name()}' now.`);
         TestRunner.addResult(
             'Number of uiSourceCodes in workspace: ' +
-            workspace.uiSourceCodes().filter(filterSnippet).length);
-        var storageSnippetsCount =
-            Snippets.scriptSnippetModel._snippetStorage.snippets().length;
-        TestRunner.addResult(
-            'Number of snippets in the storage: ' + storageSnippetsCount);
-
-        workspace.removeEventListener(
-            Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
-        workspace.removeEventListener(
-            Workspace.Workspace.Events.UISourceCodeRemoved,
-            uiSourceCodeRemoved);
-
-        next();
+            workspace.uiSourceCodes().filter(uiSourceCode => uiSourceCode.url().startsWith('snippet://')).length);
       }
     },
 
-    function testEvaluate(next) {
-      var uiSourceCode1;
-      var uiSourceCode2;
-      var uiSourceCode3;
-      var context = UI.context.flavor(SDK.ExecutionContext);
+    async function testEvaluate(next) {
+      const uiSourceCode1 = await Snippets.project.createFile('', null, '');
+      await uiSourceCode1.rename('Snippet1');
+      uiSourceCode1.setWorkingCopy('// This snippet does nothing.\nvar i=2+2;\n');
 
-      resetSnippetsSettings();
-      var snippetScriptMapping =
-          Snippets.scriptSnippetModel.snippetScriptMapping(
-              SDK.targetManager.models(SDK.DebuggerModel)[0]);
+      const uiSourceCode2 = await Snippets.project.createFile('', null, '');
+      await uiSourceCode2.rename('Snippet2');
+      uiSourceCode2.setWorkingCopy(`// This snippet creates a function that does nothing and returns it.
+function doesNothing() {
+  var i = 2+2;
+};
+doesNothing;
+`);
 
-      Snippets.scriptSnippetModel.project()
-          .createFile('', null, '')
-          .then(step2.bind(this));
+      const uiSourceCode3 = await Snippets.project.createFile('', null, '');
+      uiSourceCode3.rename('Snippet3');
+      uiSourceCode3.setWorkingCopy('// This snippet uses Command Line API.\n$$("p").length');
 
-      function step2(uiSourceCode) {
-        uiSourceCode1 = uiSourceCode;
-        uiSourceCode1.rename('Snippet1');
-        var content = '';
-        content += '// This snippet does nothing.\n';
-        content += 'var i = 2+2;\n';
-        uiSourceCode1.setWorkingCopy(content);
-        Snippets.scriptSnippetModel.project()
-            .createFile('', null, '')
-            .then(step3.bind(this));
-      }
+      TestRunner.addResult('Run Snippet1..');
+      Snippets.evaluateScriptSnippet(uiSourceCode1);
+      await ConsoleTestRunner.waitUntilMessageReceivedPromise();
+      ConsoleTestRunner.dumpConsoleMessages();
 
-      function step3(uiSourceCode) {
-        uiSourceCode2 = uiSourceCode;
-        uiSourceCode2.rename('Snippet2');
-        content = '';
-        content +=
-            '// This snippet creates a function that does nothing and returns it.\n';
-        content += 'function doesNothing() {\n';
-        content += '    var  i = 2+2;\n';
-        content += '};\n';
-        content += 'doesNothing;\n';
-        uiSourceCode2.setWorkingCopy(content);
-        Snippets.scriptSnippetModel.project()
-            .createFile('', null, '')
-            .then(step4.bind(this));
-      }
+      TestRunner.addResult('Run Snippet2..');
+      Snippets.evaluateScriptSnippet(uiSourceCode2);
+      await ConsoleTestRunner.waitUntilMessageReceivedPromise();
+      ConsoleTestRunner.dumpConsoleMessages();
 
-      function step4(uiSourceCode) {
-        uiSourceCode3 = uiSourceCode;
-        uiSourceCode3.rename('Snippet3');
-        content = '';
-        content += '// This snippet uses Command Line API.\n';
-        content += '$$("p").length';
-        uiSourceCode3.setWorkingCopy(content);
-        evaluateSnippetAndDumpEvaluationDetails(uiSourceCode1, context, step5);
-      }
+      TestRunner.addResult('Run Snippet1..');
+      Snippets.evaluateScriptSnippet(uiSourceCode1);
+      await ConsoleTestRunner.waitUntilMessageReceivedPromise();
+      ConsoleTestRunner.dumpConsoleMessages();
 
-      function step5() {
-        evaluateSnippetAndDumpEvaluationDetails(uiSourceCode2, context, step6);
-      }
+      TestRunner.addResult('Run Snippet3..');
+      Snippets.evaluateScriptSnippet(uiSourceCode3);
+      await ConsoleTestRunner.waitUntilMessageReceivedPromise();
+      ConsoleTestRunner.dumpConsoleMessages();
 
-      function step6() {
-        evaluateSnippetAndDumpEvaluationDetails(uiSourceCode1, context, step7);
-      }
+      await uiSourceCode1.project().deleteFile(uiSourceCode1);
+      await uiSourceCode2.project().deleteFile(uiSourceCode2);
+      await uiSourceCode3.project().deleteFile(uiSourceCode3);
 
-      function step7() {
-        evaluateSnippetAndDumpEvaluationDetails(uiSourceCode3, context, next);
-      }
+      await TestRunner.evaluateInPagePromise('console.clear()');
+
+      next();
     },
 
-    function testEvaluateEditReload(next) {
-      function evaluateSnippetAndReloadPage(uiSourceCode, callback) {
-        TestRunner.addSniffer(
-            Snippets.ScriptSnippetModel.prototype, '_printRunScriptResult',
-            snippetFinished);
-        Snippets.scriptSnippetModel.evaluateScriptSnippet(
-            UI.context.flavor(SDK.ExecutionContext), uiSourceCode);
+    async function testEvaluateEditReload(next) {
+      const uiSourceCode1 = await Snippets.project.createFile('', null, '');
+      await uiSourceCode1.rename('Snippet1');
+      uiSourceCode1.setWorkingCopy('// This snippet does nothing.\nvar i=2+2;\n');
 
-        function snippetFinished(result) {
-          var script =
-              snippetScriptMapping._scriptForUISourceCode.get(uiSourceCode);
-          TestRunner.addResult(
-              'Snippet execution result: ' + result.description);
+      TestRunner.addResult('Run Snippet1..');
+      Snippets.evaluateScriptSnippet(uiSourceCode1);
+      await ConsoleTestRunner.waitUntilMessageReceivedPromise();
+      ConsoleTestRunner.dumpConsoleMessages();
 
-          TestRunner.reloadPage(callback);
-        }
-      }
+      await TestRunner.reloadPagePromise();
 
-      resetSnippetsSettings();
-      var snippetScriptMapping =
-          Snippets.scriptSnippetModel.snippetScriptMapping(
-              SDK.targetManager.models(SDK.DebuggerModel)[0]);
-
-      Snippets.scriptSnippetModel.project()
-          .createFile('', null, '')
-          .then(step3.bind(this));
-
-      function step3(uiSourceCode) {
-        var uiSourceCode1 = uiSourceCode;
-        uiSourceCode1.rename('Snippet1');
-        var content = '';
-        content += '// This snippet does nothing.\n';
-        content += 'var i = 2+2;\n';
-        uiSourceCode1.setWorkingCopy(content);
-
-        evaluateSnippetAndReloadPage(uiSourceCode1, next);
-      }
+      await uiSourceCode1.project().deleteFile(uiSourceCode1);
+      next();
     },
 
-    function testEvaluateInWorker(next) {
-      var context;
-
+    async function testEvaluateWithWorker(next) {
       TestRunner.addSniffer(
           SDK.RuntimeModel.prototype, '_executionContextCreated',
           contextCreated);
       TestRunner.evaluateInPagePromise(`
           var workerScript = "postMessage('Done.');";
-          var blob = new Blob([workerScript], { type: "text/javascript" });
+          var blob = new Blob([workerScript], { type: 'text/javascript' });
           var worker = new Worker(URL.createObjectURL(blob));
       `);
 
-      function contextCreated() {
+      async function contextCreated() {
         // Take the only execution context from the worker's RuntimeModel.
-        context = this.executionContexts()[0];
+        UI.context.setFlavor(SDK.ExecutionContext, this.executionContexts()[0]);
 
-        resetSnippetsSettings();
-        Snippets.scriptSnippetModel.project()
-            .createFile('', null, '')
-            .then(step2.bind(this));
-      }
+        const uiSourceCode1 = await Snippets.project.createFile('', null, '');
+        await uiSourceCode1.rename('Snippet1');
+        uiSourceCode1.setWorkingCopy('2 + 2');
 
-      function step2(uiSourceCode) {
-        uiSourceCode.rename('Snippet1');
-        var content = '2+2;\n';
-        uiSourceCode.setWorkingCopy(content);
-        evaluateSnippetAndDumpEvaluationDetails(uiSourceCode, context, next);
+        TestRunner.addResult('Run Snippet1..');
+        Snippets.evaluateScriptSnippet(uiSourceCode1);
+        await ConsoleTestRunner.waitUntilMessageReceivedPromise();
+        ConsoleTestRunner.dumpConsoleMessages();
+
+        await uiSourceCode1.project().deleteFile(uiSourceCode1);
+        next();
       }
     },
 
-    function testDangerousNames(next) {
-      resetSnippetsSettings();
+    async function testDangerousNames(next) {
+      const uiSourceCode1 = await Snippets.project.createFile('', null, '');
+      await uiSourceCode1.rename('toString');
+      await SourcesTestRunner.showUISourceCodePromise(uiSourceCode1);
 
-      Snippets.scriptSnippetModel.project()
-          .createFile('', null, '')
-          .then(step2.bind(this));
+      const uiSourceCode2 = await Snippets.project.createFile('', null, '');
+      await uiSourceCode2.rename('myfile.toString');
+      await SourcesTestRunner.showUISourceCodePromise(uiSourceCode2);
 
-      function step2(uiSourceCode) {
-        uiSourceCode.rename('toString');
-        SourcesTestRunner.showUISourceCode(uiSourceCode, step3.bind(this));
-      }
-
-      function step3() {
-        Snippets.scriptSnippetModel.project()
-            .createFile('', null, '')
-            .then(step4.bind(this));
-      }
-
-      function step4(uiSourceCode) {
-        uiSourceCode.rename('myfile.toString');
-        SourcesTestRunner.showUISourceCode(uiSourceCode, next);
-      }
+      await uiSourceCode1.project().deleteFile(uiSourceCode1);
+      await uiSourceCode2.project().deleteFile(uiSourceCode2);
+      next();
     }
   ]);
 })();
