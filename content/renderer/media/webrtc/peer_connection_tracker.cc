@@ -48,10 +48,16 @@ static const char* SerializeBoolean(bool value) {
 static std::string SerializeServers(
     const std::vector<webrtc::PeerConnectionInterface::IceServer>& servers) {
   std::string result = "[";
-  for (size_t i = 0; i < servers.size(); ++i) {
-    result += servers[i].uri;
-    if (i != servers.size() - 1)
-      result += ", ";
+  bool following = false;
+  for (const auto& server : servers) {
+    for (const auto& url : server.urls) {
+      if (following)
+        result += ", ";
+      else
+        following = true;
+
+      result += url;
+    }
   }
   result += "]";
   return result;
