@@ -5,7 +5,9 @@
 module blink.mojom;
 
 import "skia/public/interfaces/bitmap.mojom";
+import "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom";
 import "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom";
+import "third_party/blink/public/mojom/fetch/fetch_api_response.mojom";
 import "third_party/blink/public/mojom/manifest/manifest.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -17,6 +19,13 @@ enum BackgroundFetchError {
   STORAGE_ERROR,
   SERVICE_WORKER_UNAVAILABLE,
   QUOTA_EXCEEDED
+};
+
+// Struct representing completed Background Fetch requests, along with their
+// responses.
+struct BackgroundFetchSettledFetch {
+  FetchAPIRequest request;
+  FetchAPIResponse? response;
 };
 
 enum BackgroundFetchState {
@@ -107,6 +116,18 @@ interface BackgroundFetchService {
   // Gets size of the icon to display with the Background Fetch UI.
   GetIconDisplaySize()
       => (gfx.mojom.Size icon_size_pixels);
+
+  // Gets matching {request, response} pairs for the completed fetches associated
+  // with |service_worker_registration_id|, |developer_id|, and |unique_id|.
+  // TODO(crbug.com/866874): Create a mojo interface for
+  // BackgroundFetchRegistrationId, so we can avoid having to pass the first
+  // three arguments in multiple methods.
+  MatchRequests(int64 service_worker_registration_id,
+                string developer_id,
+                string unique_id,
+                FetchAPIRequest? request_to_match,
+                QueryParams cache_query_params,
+                bool match_all) => (array<BackgroundFetchSettledFetch> fetches);
 
   // Registers the |observer| to receive events for the given registration
   // that is identified by the |unique_id|.

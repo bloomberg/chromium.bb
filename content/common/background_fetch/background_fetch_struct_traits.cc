@@ -43,9 +43,9 @@ bool StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
 }
 
 // static
-bool StructTraits<content::mojom::BackgroundFetchSettledFetchDataView,
+bool StructTraits<blink::mojom::BackgroundFetchSettledFetchDataView,
                   content::BackgroundFetchSettledFetch>::
-    Read(content::mojom::BackgroundFetchSettledFetchDataView data,
+    Read(blink::mojom::BackgroundFetchSettledFetchDataView data,
          content::BackgroundFetchSettledFetch* fetch) {
   return data.ReadRequest(&fetch->request) &&
          data.ReadResponse(&fetch->response);

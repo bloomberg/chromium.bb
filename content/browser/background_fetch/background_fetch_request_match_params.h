@@ -13,12 +13,11 @@ namespace content {
 
 class CONTENT_EXPORT BackgroundFetchRequestMatchParams {
  public:
-  // TODO(crbug.com/863852): Add boolean to differentiate between match vs
-  // matchAll.
   BackgroundFetchRequestMatchParams();
   BackgroundFetchRequestMatchParams(
       base::Optional<ServiceWorkerFetchRequest> request_to_match,
-      blink::mojom::QueryParamsPtr cache_query_params);
+      blink::mojom::QueryParamsPtr cache_query_params,
+      bool match_all);
   ~BackgroundFetchRequestMatchParams();
 
   bool FilterByRequest() const {
@@ -37,6 +36,8 @@ class CONTENT_EXPORT BackgroundFetchRequestMatchParams {
     return cache_query_params_->Clone();
   }
 
+  bool match_all() const { return match_all_; }
+
  private:
   // If |request_to_match| is present, we get response(s) only for this request.
   // If not present, response(s) for all requests (contained in the fetch) will
@@ -45,6 +46,9 @@ class CONTENT_EXPORT BackgroundFetchRequestMatchParams {
 
   // When nullptr, this has no effect on the response(s) returned.
   blink::mojom::QueryParamsPtr cache_query_params_;
+
+  // Whether to return all matching responses from the cache storage.
+  bool match_all_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchRequestMatchParams);
 };

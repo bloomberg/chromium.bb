@@ -7,9 +7,11 @@
 #include <memory>
 
 #include "base/guid.h"
+#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_metrics.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
+#include "content/browser/background_fetch/background_fetch_request_match_params.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -128,6 +130,27 @@ void BackgroundFetchServiceImpl::GetIconDisplaySize(
     blink::mojom::BackgroundFetchService::GetIconDisplaySizeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   background_fetch_context_->GetIconDisplaySize(std::move(callback));
+}
+
+void BackgroundFetchServiceImpl::MatchRequests(
+    int64_t service_worker_registration_id,
+    const std::string& developer_id,
+    const std::string& unique_id,
+    const base::Optional<ServiceWorkerFetchRequest>& request_to_match,
+    blink::mojom::QueryParamsPtr cache_query_params,
+    bool match_all,
+    MatchRequestsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  BackgroundFetchRegistrationId registration_id(
+      service_worker_registration_id, origin_, developer_id, unique_id);
+
+  // Create BackgroundFetchMatchRequestParams.
+  auto match_params = std::make_unique<BackgroundFetchRequestMatchParams>(
+      request_to_match, std::move(cache_query_params), match_all);
+
+  background_fetch_context_->MatchRequests(
+      registration_id, std::move(match_params), std::move(callback));
 }
 
 void BackgroundFetchServiceImpl::UpdateUI(

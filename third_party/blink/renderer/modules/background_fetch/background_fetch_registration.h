@@ -16,9 +16,11 @@
 
 namespace blink {
 
+class CacheQueryOptions;
 class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
+class RequestOrUSVString;
 
 // Represents an individual Background Fetch registration. Gives developers
 // access to its properties, options, and enables them to abort the fetch.
@@ -52,6 +54,16 @@ class BackgroundFetchRegistration final
   // Web Exposed attribute defined in the IDL file. Corresponds to the
   // |developer_id| used elsewhere in the codebase.
   String id() const;
+  ScriptPromise match(ScriptState* script_state,
+                      const RequestOrUSVString& request,
+                      const CacheQueryOptions& options,
+                      ExceptionState& exception_state);
+  ScriptPromise matchAll(ScriptState* scrip_state,
+                         ExceptionState& exception_state);
+  ScriptPromise matchAll(ScriptState* script_state,
+                         const RequestOrUSVString& request,
+                         const CacheQueryOptions& options,
+                         ExceptionState& exception_state);
 
   unsigned long long uploadTotal() const;
   unsigned long long uploaded() const;
@@ -76,6 +88,15 @@ class BackgroundFetchRegistration final
  private:
   void DidAbort(ScriptPromiseResolver* resolver,
                 mojom::blink::BackgroundFetchError error);
+  ScriptPromise MatchImpl(ScriptState* script_state,
+                          base::Optional<RequestOrUSVString> request,
+                          mojom::blink::QueryParamsPtr cache_query_params,
+                          ExceptionState& exception_state,
+                          bool match_all);
+  void DidGetMatchingRequests(
+      ScriptPromiseResolver* resolver,
+      bool return_all,
+      Vector<mojom::blink::BackgroundFetchSettledFetchPtr> settled_fetches);
 
   Member<ServiceWorkerRegistration> registration_;
 

@@ -52,6 +52,14 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
              const SkBitmap& icon,
              FetchCallback callback) override;
   void GetIconDisplaySize(GetIconDisplaySizeCallback callback) override;
+  void MatchRequests(
+      int64_t service_worker_registration_id,
+      const std::string& developer_id,
+      const std::string& unique_id,
+      const base::Optional<ServiceWorkerFetchRequest>& request_to_match,
+      blink::mojom::QueryParamsPtr cache_query_params,
+      bool match_all,
+      MatchRequestsCallback callback) override;
   void UpdateUI(int64_t service_worker_registration_id,
                 const std::string& developer_id,
                 const std::string& unique_id,

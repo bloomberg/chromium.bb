@@ -15,10 +15,13 @@ enum BackgroundFetchState { "pending", "success", "failure" };
     readonly attribute unsigned long long downloadTotal;
     readonly attribute unsigned long long downloaded;
     readonly attribute BackgroundFetchState state;
-    // TODO(crbug.com/699957): Implement the `activeFetches` attribute.
 
     attribute EventHandler onprogress;
 
     [CallWith=ScriptState] Promise<boolean> abort();
-    // TODO(crbug.com/863016): Add match() and matchAll().
+    
+    // TODO(crbug.com/875201): Change to (Window,Worker) once we support
+    // match() and matchAll() for active fetches.
+    [CallWith=ScriptState, Exposed=ServiceWorker, RaisesException] Promise<BackgroundFetchRecord> match(RequestInfo request, optional CacheQueryOptions options);
+    [CallWith=ScriptState, Exposed=ServiceWorker, RaisesException] Promise<sequence<BackgroundFetchRecord>> matchAll(optional RequestInfo request, optional CacheQueryOptions options);
 };
