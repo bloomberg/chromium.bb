@@ -36,13 +36,13 @@ inlineAbsoluteChildContainer: #document scrolling (13, 392, 262, 12)
 inlineAbsoluteChildContainer: #document scrolling (320, 393, 252, 12)
 
 list: #document scrolling (13, 413, 290, 14)
-list: #document scrolling (341, 414, 261, 12)
+list: #document scrolling (354, 414, 248, 12)
 
 styleModified: #document scrolling (13, 437, 290, 22)
 
 containsSvg: #document scrolling (13, 464, 290, 16)
 
-svgline: #document scrolling (13, 485, 100, 10)
+svgline: #document scrolling (13, 489, 22, 3)
 
 tablecell: #document scrolling (45, 518, 32, 11)
 
