@@ -15,13 +15,12 @@
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/geolocation/geoposition.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace chromeos {
 
@@ -58,7 +57,7 @@ CHROMEOS_EXPORT GURL DefaultTimezoneProviderURL();
 // Request is owned and destroyed by caller (usually TimeZoneProvider).
 // If request is destroyed while callback has not beed called yet, request
 // is silently cancelled.
-class CHROMEOS_EXPORT TimeZoneRequest : private net::URLFetcherDelegate {
+class CHROMEOS_EXPORT TimeZoneRequest {
  public:
   // Called when a new geo timezone information is available.
   // The second argument indicates whether there was a server error or not.
@@ -72,12 +71,12 @@ class CHROMEOS_EXPORT TimeZoneRequest : private net::URLFetcherDelegate {
   // |url| is the server address to which the request wil be sent.
   // |geoposition| is the location to query timezone for.
   // |retry_timeout| retry request on error until timeout.
-  TimeZoneRequest(net::URLRequestContextGetter* url_context_getter,
+  TimeZoneRequest(scoped_refptr<network::SharedURLLoaderFactory> factory,
                   const GURL& service_url,
                   const Geoposition& geoposition,
                   base::TimeDelta retry_timeout);
 
-  ~TimeZoneRequest() override;
+  ~TimeZoneRequest();
 
   // Initiates request.
   // Note: if request object is destroyed before callback is called,
@@ -95,8 +94,7 @@ class CHROMEOS_EXPORT TimeZoneRequest : private net::URLFetcherDelegate {
   }
 
  private:
-  // net::URLFetcherDelegate
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Start new request.
   void StartRequest();
@@ -104,14 +102,14 @@ class CHROMEOS_EXPORT TimeZoneRequest : private net::URLFetcherDelegate {
   // Schedules retry.
   void Retry(bool server_error);
 
-  scoped_refptr<net::URLRequestContextGetter> url_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   const GURL service_url_;
   Geoposition geoposition_;
 
   TimeZoneResponseCallback callback_;
 
   GURL request_url_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // When request was actually started.
   base::Time request_started_at_;

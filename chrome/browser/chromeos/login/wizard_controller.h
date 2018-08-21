@@ -160,6 +160,9 @@ class WizardController : public BaseScreenDelegate,
   // Set the current screen. For Test use only.
   void SetCurrentScreenForTesting(BaseScreen* screen);
 
+  void SetSharedURLLoaderFactoryForTesting(
+      scoped_refptr<network::SharedURLLoaderFactory> factory);
+
  private:
   // Show specific screen.
   void ShowWelcomeScreen();

@@ -118,6 +118,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/service_manager_connection.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -268,6 +269,9 @@ chromeos::OobeUI* GetOobeUI() {
   auto* host = chromeos::LoginDisplayHost::default_host();
   return host ? host->GetOobeUI() : nullptr;
 }
+
+scoped_refptr<network::SharedURLLoaderFactory>
+    g_shared_url_loader_factory_for_testing = nullptr;
 
 }  // namespace
 
@@ -506,6 +510,11 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
 
 void WizardController::SetCurrentScreenForTesting(BaseScreen* screen) {
   current_screen_ = screen;
+}
+
+void WizardController::SetSharedURLLoaderFactoryForTesting(
+    scoped_refptr<network::SharedURLLoaderFactory> factory) {
+  g_shared_url_loader_factory_for_testing = std::move(factory);
 }
 
 void WizardController::ShowWelcomeScreen() {
@@ -1227,7 +1236,9 @@ void WizardController::StartTimezoneResolve() {
     return;
 
   geolocation_provider_.reset(new SimpleGeolocationProvider(
-      g_browser_process->system_request_context(),
+      g_shared_url_loader_factory_for_testing
+          ? g_shared_url_loader_factory_for_testing
+          : g_browser_process->shared_url_loader_factory(),
       SimpleGeolocationProvider::DefaultGeolocationProviderURL()));
   geolocation_provider_->RequestGeolocation(
       base::TimeDelta::FromSeconds(kResolveTimeZoneTimeoutSeconds),
@@ -1867,9 +1878,11 @@ void WizardController::OnTimezoneResolved(
 
 TimeZoneProvider* WizardController::GetTimezoneProvider() {
   if (!timezone_provider_) {
-    timezone_provider_.reset(
-        new TimeZoneProvider(g_browser_process->system_request_context(),
-                             DefaultTimezoneProviderURL()));
+    timezone_provider_.reset(new TimeZoneProvider(
+        g_shared_url_loader_factory_for_testing
+            ? g_shared_url_loader_factory_for_testing
+            : g_browser_process->shared_url_loader_factory(),
+        DefaultTimezoneProviderURL()));
   }
   return timezone_provider_.get();
 }

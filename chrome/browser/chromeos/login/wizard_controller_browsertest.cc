@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
@@ -85,7 +86,8 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_impl.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/locid.h"
@@ -508,36 +510,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, VolumeIsAdjustedForChromeVox) {
             cras->GetOutputVolumePercent());
 }
 
-class WizardControllerTestURLFetcherFactory
-    : public net::TestURLFetcherFactory {
- public:
-  std::unique_ptr<net::URLFetcher> CreateURLFetcher(
-      int id,
-      const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* d,
-      net::NetworkTrafficAnnotationTag traffic_annotation) override {
-    if (base::StartsWith(
-            url.spec(),
-            SimpleGeolocationProvider::DefaultGeolocationProviderURL().spec(),
-            base::CompareCase::SENSITIVE)) {
-      return std::unique_ptr<net::URLFetcher>(new net::FakeURLFetcher(
-          url, d, std::string(kGeolocationResponseBody), net::HTTP_OK,
-          net::URLRequestStatus::SUCCESS));
-    }
-    if (base::StartsWith(url.spec(),
-                         chromeos::DefaultTimezoneProviderURL().spec(),
-                         base::CompareCase::SENSITIVE)) {
-      return std::unique_ptr<net::URLFetcher>(new net::FakeURLFetcher(
-          url, d, std::string(kTimezoneResponseBody), net::HTTP_OK,
-          net::URLRequestStatus::SUCCESS));
-    }
-    return net::TestURLFetcherFactory::CreateURLFetcher(id, url, request_type,
-                                                        d, traffic_annotation);
-  }
-  ~WizardControllerTestURLFetcherFactory() override {}
-};
-
 class TimeZoneTestRunner {
  public:
   void OnResolved() { loop_.Quit(); }
@@ -558,6 +530,9 @@ class WizardControllerFlowTest : public WizardControllerTest {
     WizardController* wizard_controller =
         WizardController::default_controller();
     wizard_controller->is_official_build_ = true;
+    wizard_controller->SetSharedURLLoaderFactoryForTesting(
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory));
 
     // Clear portal list (as it is by default in OOBE).
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
@@ -614,23 +589,11 @@ class WizardControllerFlowTest : public WizardControllerTest {
   void TearDownOnMainThread() override {
     mock_welcome_screen_ = nullptr;
     device_disabled_screen_view_.reset();
+    test_url_loader_factory.ClearResponses();
     WizardControllerTest::TearDownOnMainThread();
   }
 
-  void TearDown() override {
-    if (fallback_fetcher_factory_) {
-      fetcher_factory_.reset();
-      net::URLFetcherImpl::set_factory(fallback_fetcher_factory_.get());
-      fallback_fetcher_factory_.reset();
-    }
-  }
-
   void InitTimezoneResolver() {
-    fallback_fetcher_factory_.reset(new WizardControllerTestURLFetcherFactory);
-    net::URLFetcherImpl::set_factory(NULL);
-    fetcher_factory_.reset(
-        new net::FakeURLFetcherFactory(fallback_fetcher_factory_.get()));
-
     network_portal_detector_ = new NetworkPortalDetectorTestImpl();
     network_portal_detector::InitializeForTesting(network_portal_detector_);
 
@@ -677,6 +640,24 @@ class WizardControllerFlowTest : public WizardControllerTest {
     CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
 
     WaitUntilJSIsReady();
+
+    test_url_loader_factory.SetInterceptor(base::BindLambdaForTesting(
+        [&](const network::ResourceRequest& request) {
+          if (base::StartsWith(
+                  request.url.spec(),
+                  SimpleGeolocationProvider::DefaultGeolocationProviderURL()
+                      .spec(),
+                  base::CompareCase::SENSITIVE)) {
+            test_url_loader_factory.AddResponse(request.url.spec(),
+                                                kGeolocationResponseBody);
+          } else if (base::StartsWith(
+                         request.url.spec(),
+                         chromeos::DefaultTimezoneProviderURL().spec(),
+                         base::CompareCase::SENSITIVE)) {
+            test_url_loader_factory.AddResponse(request.url.spec(),
+                                                kTimezoneResponseBody);
+          }
+        }));
 
     // Check visibility of the header bar.
     ASSERT_FALSE(JSExecuteBooleanExpression("$('login-header-bar').hidden"));
@@ -752,11 +733,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
  private:
   NetworkPortalDetectorTestImpl* network_portal_detector_;
 
-  // Use a test factory as a fallback so we don't have to deal with other
-  // requests.
-  std::unique_ptr<WizardControllerTestURLFetcherFactory>
-      fallback_fetcher_factory_;
-  std::unique_ptr<net::FakeURLFetcherFactory> fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerFlowTest);
 };

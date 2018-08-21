@@ -9,6 +9,7 @@
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

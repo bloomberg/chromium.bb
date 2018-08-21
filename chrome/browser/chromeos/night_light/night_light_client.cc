@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/time/clock.h"
 #include "content/public/common/service_manager_connection.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
@@ -30,9 +31,9 @@ constexpr base::TimeDelta kNextRequestDelayAfterSuccess =
 }  // namespace
 
 NightLightClient::NightLightClient(
-    net::URLRequestContextGetter* url_context_getter)
+    scoped_refptr<network::SharedURLLoaderFactory> factory)
     : provider_(
-          url_context_getter,
+          std::move(factory),
           chromeos::SimpleGeolocationProvider::DefaultGeolocationProviderURL()),
       binding_(this),
       backoff_delay_(kMinimumDelayAfterFailure),

@@ -18,15 +18,16 @@ namespace base {
 class Clock;
 }  // namespace base
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 // Periodically requests the IP-based geolocation and provides it to the
 // NightLightController running in ash.
 class NightLightClient : public ash::mojom::NightLightClient {
  public:
-  explicit NightLightClient(net::URLRequestContextGetter* url_context_getter);
+  explicit NightLightClient(
+      scoped_refptr<network::SharedURLLoaderFactory> factory);
   ~NightLightClient() override;
 
   // Starts watching changes in the Night Light schedule type in order to begin

@@ -16,8 +16,8 @@
 #include "chromeos/timezone/timezone_request.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace chromeos {
@@ -30,7 +30,7 @@ struct Geoposition;
 // But as it is used only from WizardController, it can be owned by it for now.
 class CHROMEOS_EXPORT TimeZoneProvider {
  public:
-  TimeZoneProvider(net::URLRequestContextGetter* url_context_getter,
+  TimeZoneProvider(scoped_refptr<network::SharedURLLoaderFactory> factory,
                    const GURL& url);
   virtual ~TimeZoneProvider();
 
@@ -40,7 +40,7 @@ class CHROMEOS_EXPORT TimeZoneProvider {
                        TimeZoneRequest::TimeZoneResponseCallback callback);
 
  private:
-  friend class TestTimeZoneAPIURLFetcherCallback;
+  friend class TestTimeZoneAPILoaderFactory;
 
   // Deletes request from requests_.
   void OnTimezoneResponse(TimeZoneRequest* request,
@@ -48,7 +48,7 @@ class CHROMEOS_EXPORT TimeZoneProvider {
                           std::unique_ptr<TimeZoneResponseData> timezone,
                           bool server_error);
 
-  scoped_refptr<net::URLRequestContextGetter> url_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   const GURL url_;
 
   // Requests in progress.
