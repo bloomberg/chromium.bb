@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DBUS_FINCH_FEATURES_SERVICE_PROVIDER_DELEGATE_H_
 
 #include "base/macros.h"
-#include "chromeos/dbus/services/chrome_features_service_provider.h"
+#include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 
 namespace chromeos {
 

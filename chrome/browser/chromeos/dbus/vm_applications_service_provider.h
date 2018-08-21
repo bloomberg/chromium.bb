@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_SERVICES_VM_APPLICATIONS_SERVICE_PROVIDER_H_
-#define CHROMEOS_DBUS_SERVICES_VM_APPLICATIONS_SERVICE_PROVIDER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DBUS_VM_APPLICATIONS_SERVICE_PROVIDER_H_
+#define CHROME_BROWSER_CHROMEOS_DBUS_VM_APPLICATIONS_SERVICE_PROVIDER_H_
 
 #include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
@@ -29,11 +28,12 @@ namespace chromeos {
 
 // This class exports D-Bus methods for functions that we want to be available
 // to the Crostini container.
-class CHROMEOS_EXPORT VmApplicationsServiceProvider
+class VmApplicationsServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
   // Delegate interface providing additional resources to
   // VmApplicationsServiceProvider.
+  // TODO(derat): Move the delegate into this class.
   class Delegate {
    public:
     Delegate() = default;
@@ -77,4 +77,4 @@ class CHROMEOS_EXPORT VmApplicationsServiceProvider
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_SERVICES_VM_APPLICATIONS_SERVICE_PROVIDER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DBUS_VM_APPLICATIONS_SERVICE_PROVIDER_H_

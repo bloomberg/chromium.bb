@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/services/proxy_resolution_service_provider.h"
+#include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 
 #include <memory>
 
@@ -147,7 +147,8 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
 
  private:
   // Helper method for the constructor that initializes
-  // |proxy_resolution_service_| and injects it into |context_getter_|'s context.
+  // |proxy_resolution_service_| and injects it into |context_getter_|'s
+  // context.
   void CreateProxyResolutionServiceOnNetworkThread() {
     CHECK(context_getter_->GetNetworkTaskRunner()->BelongsToCurrentThread());
 

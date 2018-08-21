@@ -21,7 +21,6 @@ namespace chromeos {
 // update_engine calls to get the required platform version of the
 // kiosk app that is configured to auto launch.
 // See http://crbug.com/577783 for details.
-//
 class KioskInfoService : public CrosDBusService::ServiceProviderInterface {
  public:
   KioskInfoService();

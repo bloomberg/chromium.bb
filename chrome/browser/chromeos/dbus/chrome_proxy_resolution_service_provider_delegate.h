@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DBUS_CHROME_PROXY_RESOLUTION_SERVICE_PROVIDER_DELEGATE_H_
 
 #include "base/macros.h"
-#include "chromeos/dbus/services/proxy_resolution_service_provider.h"
+#include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 
 namespace chromeos {
 

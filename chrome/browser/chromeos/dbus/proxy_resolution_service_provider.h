@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_SERVICES_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
-#define CHROMEOS_DBUS_SERVICES_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DBUS_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
+#define CHROME_BROWSER_CHROMEOS_DBUS_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 #include "net/base/completion_callback.h"
@@ -54,11 +53,12 @@ namespace chromeos {
 //       org.chromium.NetworkProxyServiceInterface.ResolveProxy
 //       string:https://www.google.com/
 //
-class CHROMEOS_EXPORT ProxyResolutionServiceProvider
+class ProxyResolutionServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
   // Delegate interface providing additional resources to
   // ProxyResolutionServiceProvider.
+  // TODO(derat): Move the delegate into this class.
   class CHROMEOS_EXPORT Delegate {
    public:
     virtual ~Delegate() {}
@@ -128,4 +128,4 @@ class CHROMEOS_EXPORT ProxyResolutionServiceProvider
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_SERVICES_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DBUS_PROXY_RESOLUTION_SERVICE_PROVIDER_H_
