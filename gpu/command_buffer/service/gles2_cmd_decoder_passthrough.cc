@@ -895,13 +895,17 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
 void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
   if (have_context) {
     FlushErrors();
-
-    // Destroy all pending read pixels operations
-    for (const PendingReadPixels& pending_read_pixels : pending_read_pixels_) {
-      api()->glDeleteBuffersARBFn(1, &pending_read_pixels.buffer_service_id);
-    }
-    pending_read_pixels_.clear();
   }
+
+  // Destroy all pending read pixels operations
+  for (PendingReadPixels& pending_read_pixels : pending_read_pixels_) {
+    if (have_context) {
+      api()->glDeleteBuffersARBFn(1, &pending_read_pixels.buffer_service_id);
+    } else {
+      pending_read_pixels.fence->Invalidate();
+    }
+  }
+  pending_read_pixels_.clear();
 
   for (auto& bound_texture_type : bound_textures_) {
     for (auto& bound_texture : bound_texture_type) {
