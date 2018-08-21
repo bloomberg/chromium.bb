@@ -10,37 +10,33 @@
 
 namespace feed {
 
-ContentOperation::ContentOperation(const ContentOperation& operation)
-    : type_(operation.type_),
-      key_(operation.key_),
-      value_(operation.value_),
-      prefix_(operation.prefix_) {}
-
-ContentOperation::ContentOperation(ContentOperation&& operation)
-    : type_(operation.type_),
-      key_(std::move(operation.key_)),
-      value_(std::move(operation.value_)),
-      prefix_(std::move(operation.prefix_)) {}
-
+// static
 ContentOperation ContentOperation::CreateDeleteOperation(std::string key) {
-  return ContentOperation(CONTENT_DELETE, key, std::string(), std::string());
+  return ContentOperation(CONTENT_DELETE, std::move(key), std::string(),
+                          std::string());
 }
 
+// static
 ContentOperation ContentOperation::CreateDeleteAllOperation() {
   return ContentOperation(CONTENT_DELETE_ALL, std::string(), std::string(),
                           std::string());
 }
 
+// static
 ContentOperation ContentOperation::CreateDeleteByPrefixOperation(
     std::string prefix) {
   return ContentOperation(CONTENT_DELETE_BY_PREFIX, std::string(),
-                          std::string(), prefix);
+                          std::string(), std::move(prefix));
 }
 
+// static
 ContentOperation ContentOperation::CreateUpsertOperation(std::string key,
                                                          std::string value) {
-  return ContentOperation(CONTENT_UPSERT, key, value, std::string());
+  return ContentOperation(CONTENT_UPSERT, std::move(key), std::move(value),
+                          std::string());
 }
+
+ContentOperation::ContentOperation(ContentOperation&& operation) = default;
 
 ContentOperation::Type ContentOperation::type() {
   return type_;
@@ -65,6 +61,9 @@ ContentOperation::ContentOperation(Type type,
                                    std::string key,
                                    std::string value,
                                    std::string prefix)
-    : type_(type), key_(key), value_(value), prefix_(prefix) {}
+    : type_(type),
+      key_(std::move(key)),
+      value_(std::move(value)),
+      prefix_(std::move(prefix)) {}
 
 }  // namespace feed

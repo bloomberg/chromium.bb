@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_FEED_CORE_FEED_CONTENT_OPERATION_H_
 #define COMPONENTS_FEED_CORE_FEED_CONTENT_OPERATION_H_
 
-#include <list>
 #include <string>
+
+#include "base/macros.h"
 
 namespace feed {
 
@@ -26,10 +27,6 @@ class ContentOperation {
   static ContentOperation CreateUpsertOperation(std::string key,
                                                 std::string value);
 
-  // Copy constructor
-  explicit ContentOperation(const ContentOperation& operation);
-
-  // Move constructor
   ContentOperation(ContentOperation&& operation);
 
   Type type();
@@ -47,6 +44,8 @@ class ContentOperation {
   const std::string key_;
   const std::string value_;
   const std::string prefix_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentOperation);
 };
 
 }  // namespace feed
