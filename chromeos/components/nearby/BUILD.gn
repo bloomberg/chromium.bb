@@ -31,11 +31,11 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "atomic_boolean_impl_unittests.cc",
-    "atomic_reference_impl_unittests.cc",
-    "count_down_latch_impl_unittests.cc",
-    "hash_utils_impl_unittests.cc",
-    "settable_future_impl_unittests.cc",
+    "atomic_boolean_impl_unittest.cc",
+    "atomic_reference_impl_unittest.cc",
+    "count_down_latch_impl_unittest.cc",
+    "hash_utils_impl_unittest.cc",
+    "settable_future_impl_unittest.cc",
   ]
 
   deps = [
