@@ -67,6 +67,16 @@ class VIEWS_EXPORT BridgedNativeWidgetPublic {
   virtual void SetBounds(const gfx::Rect& new_bounds,
                          const gfx::Size& minimum_content_size) = 0;
 
+  // Called by NativeWidgetMac to initiate a transition to the specified target
+  // fullscreen state.
+  virtual void SetFullscreen(bool fullscreen) = 0;
+
+  // Called by NativeWidgetMac when the window size constraints change.
+  virtual void SetSizeConstraints(const gfx::Size& min_size,
+                                  const gfx::Size& max_size,
+                                  bool is_resizable,
+                                  bool is_maximizable) = 0;
+
   // Specify the content to draw in the NSView.
   virtual void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) = 0;
 
@@ -184,17 +194,9 @@ class VIEWS_EXPORT BridgedNativeWidget
   // Called by the NSWindowDelegate when the window becomes or resigns key.
   void OnWindowKeyStatusChangedTo(bool is_key);
 
-  // Called by NativeWidgetMac when the window size constraints change.
-  void OnSizeConstraintsChanged();
-
   // Called by the window show animation when it completes and wants to destroy
   // itself.
   void OnShowAnimationComplete();
-
-  // The restored bounds will be derived from the current NSWindow frame unless
-  // fullscreen or transitioning between fullscreen states.
-  gfx::Rect GetRestoredBounds() const;
-
 
   // Updates |associated_views_| on NativeViewHost::Attach()/Detach().
   void SetAssociationForView(const views::View* view, NSView* native_view);
@@ -260,6 +262,11 @@ class VIEWS_EXPORT BridgedNativeWidget
                         const gfx::Vector2d& parent_offset) override;
   void SetBounds(const gfx::Rect& new_bounds,
                  const gfx::Size& minimum_content_size) override;
+  void SetFullscreen(bool fullscreen) override;
+  void SetSizeConstraints(const gfx::Size& min_size,
+                          const gfx::Size& max_size,
+                          bool is_resizable,
+                          bool is_maximizable) override;
   void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) override;
   void ClearTouchBar() override;
 
@@ -323,7 +330,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   Widget::InitParams::Type widget_type_;
   bool is_translucent_window_ = false;
 
-  BridgedNativeWidgetOwner* parent_;  // Weak. If non-null, owns this.
+  BridgedNativeWidgetOwner* parent_ = nullptr;  // Weak. If non-null, owns this.
   std::vector<BridgedNativeWidget*> child_windows_;
 
   // The size of the content area of the window most recently sent to |host_|
@@ -349,19 +356,19 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Whether this window wants to be fullscreen. If a fullscreen animation is in
   // progress then it might not be actually fullscreen.
-  bool target_fullscreen_state_;
+  bool target_fullscreen_state_ = false;
 
   // Whether this window is in a fullscreen transition, and the fullscreen state
   // can not currently be changed.
-  bool in_fullscreen_transition_;
+  bool in_fullscreen_transition_ = false;
 
   // Stores the value last read from -[NSWindow isVisible], to detect visibility
   // changes.
-  bool window_visible_;
+  bool window_visible_ = false;
 
   // If true, the window is either visible, or wants to be visible but is
   // currently hidden due to having a hidden parent.
-  bool wants_to_be_visible_;
+  bool wants_to_be_visible_ = false;
 
   // If true, then ignore interactions with CATransactionCoordinator until the
   // first frame arrives.

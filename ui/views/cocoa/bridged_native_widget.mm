@@ -207,12 +207,7 @@ BridgedNativeWidget::BridgedNativeWidget(BridgedNativeWidgetHost* host,
                                          NativeWidgetMac* parent)
     : host_(host),
       native_widget_mac_(parent),
-      widget_type_(Widget::InitParams::TYPE_WINDOW),  // Updated in Init().
-      parent_(nullptr),
-      target_fullscreen_state_(false),
-      in_fullscreen_transition_(false),
-      window_visible_(false),
-      wants_to_be_visible_(false) {
+      widget_type_(Widget::InitParams::TYPE_WINDOW) {  // Updated in Init().
   DCHECK(parent);
   window_delegate_.reset(
       [[ViewsNSWindowDelegate alloc] initWithBridgedNativeWidget:this]);
@@ -613,12 +608,7 @@ void BridgedNativeWidget::OnFullscreenTransitionStart(
   target_fullscreen_state_ = target_fullscreen_state;
   in_fullscreen_transition_ = true;
 
-  // If going into fullscreen, store an answer for GetRestoredBounds().
-  if (target_fullscreen_state)
-    bounds_before_fullscreen_ = gfx::ScreenRectFromNSRect([window_ frame]);
-
-  // Notify that fullscreen state changed.
-  native_widget_mac_->OnWindowFullscreenStateChange();
+  host_->OnWindowFullscreenTransitionStart(target_fullscreen_state);
 }
 
 void BridgedNativeWidget::OnFullscreenTransitionComplete(
@@ -626,8 +616,7 @@ void BridgedNativeWidget::OnFullscreenTransitionComplete(
   in_fullscreen_transition_ = false;
 
   if (target_fullscreen_state_ == actual_fullscreen_state) {
-    // Ensure constraints are re-applied when completing a transition.
-    OnSizeConstraintsChanged();
+    host_->OnWindowFullscreenTransitionComplete(actual_fullscreen_state);
     return;
   }
 
@@ -762,21 +751,19 @@ void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
   }
 }
 
-void BridgedNativeWidget::OnSizeConstraintsChanged() {
+void BridgedNativeWidget::SetSizeConstraints(const gfx::Size& min_size,
+                                             const gfx::Size& max_size,
+                                             bool is_resizable,
+                                             bool is_maximizable) {
   // Don't modify the size constraints or fullscreen collection behavior while
   // in fullscreen or during a transition. OnFullscreenTransitionComplete will
   // reset these after leaving fullscreen.
   if (target_fullscreen_state_ || in_fullscreen_transition_)
     return;
 
-  Widget* widget = native_widget_mac()->GetWidget();
-  gfx::Size min_size = widget->GetMinimumSize();
-  gfx::Size max_size = widget->GetMaximumSize();
-  bool is_resizable = widget->widget_delegate()->CanResize();
   bool shows_resize_controls =
       is_resizable && (min_size.IsEmpty() || min_size != max_size);
-  bool shows_fullscreen_controls =
-      is_resizable && widget->widget_delegate()->CanMaximize();
+  bool shows_fullscreen_controls = is_resizable && is_maximizable;
 
   gfx::ApplyNSWindowSizeConstraints(window_, min_size, max_size,
                                     shows_resize_controls,
@@ -785,13 +772,6 @@ void BridgedNativeWidget::OnSizeConstraintsChanged() {
 
 void BridgedNativeWidget::OnShowAnimationComplete() {
   show_animation_.reset();
-}
-
-gfx::Rect BridgedNativeWidget::GetRestoredBounds() const {
-  if (target_fullscreen_state_ || in_fullscreen_transition_)
-    return bounds_before_fullscreen_;
-
-  return gfx::ScreenRectFromNSRect([window_ frame]);
 }
 
 void BridgedNativeWidget::InitCompositorView() {
@@ -966,6 +946,12 @@ NSWindow* BridgedNativeWidget::GetWindow() const {
 ////////////////////////////////////////////////////////////////////////////////
 // TODO(ccameron): Update class names to:
 // BridgedNativeWidgetImpl, BridgedNativeWidget:
+
+void BridgedNativeWidget::SetFullscreen(bool fullscreen) {
+  if (fullscreen == target_fullscreen_state_)
+    return;
+  ToggleDesiredFullscreenState();
+}
 
 void BridgedNativeWidget::SetCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {

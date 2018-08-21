@@ -320,7 +320,7 @@ gfx::Rect NativeWidgetMac::GetClientAreaBoundsInScreen() const {
 }
 
 gfx::Rect NativeWidgetMac::GetRestoredBounds() const {
-  return bridge() ? bridge()->GetRestoredBounds() : gfx::Rect();
+  return bridge_host_ ? bridge_host_->GetRestoredBounds() : gfx::Rect();
 }
 
 std::string NativeWidgetMac::GetWorkspace() const {
@@ -531,14 +531,13 @@ void NativeWidgetMac::Restore() {
 }
 
 void NativeWidgetMac::SetFullscreen(bool fullscreen) {
-  if (!bridge() || fullscreen == IsFullscreen())
+  if (!bridge_host_)
     return;
-
-  bridge()->ToggleDesiredFullscreenState();
+  bridge_host_->SetFullscreen(fullscreen);
 }
 
 bool NativeWidgetMac::IsFullscreen() const {
-  return bridge() && bridge()->target_fullscreen_state();
+  return bridge_host_ && bridge_host_->target_fullscreen_state();
 }
 
 void NativeWidgetMac::SetOpacity(float opacity) {
@@ -640,7 +639,11 @@ bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
 }
 
 void NativeWidgetMac::OnSizeConstraintsChanged() {
-  bridge()->OnSizeConstraintsChanged();
+  Widget* widget = GetWidget();
+  bridge()->SetSizeConstraints(widget->GetMinimumSize(),
+                               widget->GetMaximumSize(),
+                               widget->widget_delegate()->CanResize(),
+                               widget->widget_delegate()->CanMaximize());
 }
 
 void NativeWidgetMac::RepostNativeEvent(gfx::NativeEvent native_event) {
