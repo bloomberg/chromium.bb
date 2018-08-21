@@ -282,7 +282,7 @@ GEN('#if defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for
- * chrome/browser/resources/settings/people_page/password_prompt_dialog.html.
+ * chrome/browser/resources/settings/people_page/lock_screen_password_prompt_dialog.html.
  * This is ChromeOS only.
  * @constructor
  * @extends {CrSettingsBrowserTest}
@@ -293,7 +293,8 @@ CrSettingsPeoplePageQuickUnlockAuthenticateTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/people_page/password_prompt_dialog.html',
+  browsePreload:
+      'chrome://settings/people_page/lock_screen_password_prompt_dialog.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([

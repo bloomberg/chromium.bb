@@ -52,7 +52,7 @@ Polymer({
     },
 
     /**
-     * Authentication token provided by password-prompt-dialog.
+     * Authentication token provided by lock-screen-password-prompt-dialog.
      * @private
      */
     authToken_: String,

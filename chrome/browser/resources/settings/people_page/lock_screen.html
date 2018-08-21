@@ -13,7 +13,7 @@
 <link rel="import" href="fingerprint_browser_proxy.html">
 <link rel="import" href="lock_screen_constants.html">
 <link rel="import" href="lock_state_behavior.html">
-<link rel="import" href="password_prompt_dialog.html">
+<link rel="import" href="lock_screen_password_prompt_dialog.html">
 <link rel="import" href="setup_pin_dialog.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
@@ -229,10 +229,11 @@
       </template>
 
       <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
-        <settings-password-prompt-dialog id="passwordPrompt"
+        <settings-lock-screen-password-prompt-dialog
+            id="lockScreenPasswordPrompt"
             on-close="onPasswordPromptDialogClose_" set-modes="{{setModes_}}"
             auth-token="{{authToken_}}">
-        </settings-password-prompt-dialog>
+        </settings-lock-screen-password-prompt-dialog>
       </template>
 
       <template is="dom-if" if="[[showSetupPinDialog_]]" restamp>
