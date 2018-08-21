@@ -57,7 +57,8 @@ class CC_EXPORT RenderFrameMetadata {
   // The device scale factor used to generate a CompositorFrame.
   float device_scale_factor = 1.f;
 
-  // The size of the viewport used to generate a CompositorFrame.
+  // The size of the viewport used to generate a CompositorFrame. Equivalent to
+  // the size of the root render pass.
   gfx::Size viewport_size_in_pixels;
 
   // The last viz::LocalSurfaceId used to submit a CompositorFrame.
