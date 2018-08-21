@@ -59,6 +59,7 @@
       'android-cronet-asan-arm-rel': 'android_cronet_release_bot_minimal_symbols_arm_no_neon_clang_asan',
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86',
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86',
+      'android-incremental-dbg': 'android_incremental_debug_bot',
       'android-kitkat-arm-rel': 'android_release_bot_minimal_symbols',
       'android-marshmallow-arm64-rel': 'android_release_bot_minimal_symbols_arm64',
     },
@@ -842,6 +843,10 @@
 
     'android_debug_trybot_java_coverage': [
       'android', 'debug_trybot', 'java_coverage', 'strip_debug_info',
+    ],
+
+    'android_incremental_debug_bot': [
+      'android', 'incremental', 'debug_bot',
     ],
 
     'android_ndk_next_release_bot_minimal_symbols': [
@@ -1822,6 +1827,10 @@
       'gn_args': 'ffmpeg_branding="ChromeOS"',
     },
 
+    'fuchsia': {
+      'gn_args': 'target_os="fuchsia"',
+    },
+
     'full_symbols': {
       'gn_args': 'symbol_level=2',
     },
@@ -1866,6 +1875,10 @@
 
     'include_vr_data': {
       'gn_args': 'include_vr_data=true',
+    },
+
+    'incremental': {
+      'gn_args': 'disable_incremental_isolated_processes=true incremental_apk_by_default=true',
     },
 
     'internal_gles_conform_tests': {
@@ -1962,10 +1975,6 @@
 
     'ozone_platform_headless': {
       'gn_args': 'ozone_platform_headless=true',
-    },
-
-    'fuchsia': {
-      'gn_args': 'target_os="fuchsia"',
     },
 
     'pdf_xfa': {

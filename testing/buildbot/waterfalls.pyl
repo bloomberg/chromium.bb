@@ -282,6 +282,21 @@
           'net_unittests',
         ],
       },
+      'android-incremental-dbg': {
+        'test_suites': {
+          'gtest_tests': 'android_incremental_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
       'android-kitkat-arm-rel': {
         'additional_compile_targets': [
           'cronet_test_instrumentation_apk',
