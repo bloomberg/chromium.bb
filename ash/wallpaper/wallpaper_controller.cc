@@ -515,15 +515,10 @@ gfx::Size WallpaperController::GetMaxDisplaySizeInNative() {
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     // Use the native size, not ManagedDisplayInfo::size_in_pixel or
     // Display::size.
-    // TODO(msw): Avoid using Display::size here; see http://crbug.com/613657.
-    gfx::Size size = display.size();
-    if (Shell::HasInstance()) {
-      display::ManagedDisplayInfo info =
-          Shell::Get()->display_manager()->GetDisplayInfo(display.id());
-      // TODO(mash): Mash returns a fake ManagedDisplayInfo. crbug.com/622480
-      if (info.id() == display.id())
-        size = info.bounds_in_native().size();
-    }
+    display::ManagedDisplayInfo info =
+        Shell::Get()->display_manager()->GetDisplayInfo(display.id());
+    DCHECK_EQ(display.id(), info.id());
+    gfx::Size size = info.bounds_in_native().size();
     if (display.rotation() == display::Display::ROTATE_90 ||
         display.rotation() == display::Display::ROTATE_270) {
       size = gfx::Size(size.height(), size.width());
