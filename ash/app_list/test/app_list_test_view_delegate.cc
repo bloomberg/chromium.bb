@@ -82,6 +82,12 @@ void AppListTestViewDelegate::GetContextMenuModel(
   std::move(callback).Run(ash::menu_utils::GetMojoMenuItemsFromModel(menu));
 }
 
+void AppListTestViewDelegate::ShowWallpaperContextMenu(
+    const gfx::Point& onscreen_location,
+    ui::MenuSourceType source_type) {
+  ++show_wallpaper_context_menu_count_;
+}
+
 void AppListTestViewDelegate::GetSearchResultContextMenuModel(
     const std::string& result_id,
     GetContextMenuModelCallback callback) {

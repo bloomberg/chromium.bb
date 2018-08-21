@@ -209,6 +209,20 @@ class AppListViewTest : public views::ViewsTestBase,
     return contents_view()->GetAppsContainerView()->apps_grid_view();
   }
 
+  gfx::Point GetPointBetweenTwoApps() {
+    const views::ViewModelT<AppListItemView>* view_model =
+        apps_grid_view()->view_model();
+    const gfx::Rect bounds_1 = view_model->view_at(0)->GetBoundsInScreen();
+    const gfx::Rect bounds_2 = view_model->view_at(1)->GetBoundsInScreen();
+
+    return gfx::Point(bounds_1.right() + (bounds_2.x() - bounds_1.right()) / 2,
+                      bounds_1.y());
+  }
+
+  int show_wallpaper_context_menu_count() {
+    return delegate_->show_wallpaper_context_menu_count();
+  }
+
   AppListView* view_ = nullptr;  // Owned by native widget.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
   std::unique_ptr<AppsGridViewTestApi> test_api_;
@@ -2021,6 +2035,60 @@ TEST_F(AppListViewTest, DISABLED_MultiplePagesReinitializeOnInputPage) {
   Show();
 
   ASSERT_EQ(1, view_->GetAppsPaginationModel()->selected_page());
+}
+
+// Tests that a context menu can be shown between app icons in tablet mode.
+TEST_F(AppListViewTest, ShowContextMenuBetweenAppsInTabletMode) {
+  Initialize(0, true /* enable tablet mode */, false);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+
+  // Tap between two apps in tablet mode.
+  const gfx::Point middle = GetPointBetweenTwoApps();
+  ui::GestureEvent tap(middle.x(), middle.y(), 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TWO_FINGER_TAP));
+  view_->OnGestureEvent(&tap);
+
+  // The wallpaper context menu should show.
+  EXPECT_EQ(1, show_wallpaper_context_menu_count());
+  EXPECT_TRUE(view_->GetWidget()->IsVisible());
+
+  // Click between two apps in tablet mode.
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, middle, middle,
+                             ui::EventTimeForNow(), ui::EF_RIGHT_MOUSE_BUTTON,
+                             ui::EF_RIGHT_MOUSE_BUTTON);
+  view_->OnMouseEvent(&mouse_event);
+
+  // The wallpaper context menu should show.
+  EXPECT_EQ(2, show_wallpaper_context_menu_count());
+  EXPECT_TRUE(view_->GetWidget()->IsVisible());
+}
+
+// Tests that context menus are not shown between app icons in clamshell mode.
+TEST_F(AppListViewTest, DontShowContextMenuBetweenAppsInClamshellMode) {
+  Initialize(0, false /* disable tablet mode */, false);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+
+  // Tap between two apps in clamshell mode.
+  const gfx::Point middle = GetPointBetweenTwoApps();
+  ui::GestureEvent tap(middle.x(), middle.y(), 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TWO_FINGER_TAP));
+  view_->OnGestureEvent(&tap);
+
+  // The wallpaper menu should not show.
+  EXPECT_EQ(0, show_wallpaper_context_menu_count());
+  EXPECT_TRUE(view_->GetWidget()->IsVisible());
+
+  // Right click between two apps in clamshell mode.
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, middle, middle,
+                             ui::EventTimeForNow(), ui::EF_RIGHT_MOUSE_BUTTON,
+                             ui::EF_RIGHT_MOUSE_BUTTON);
+  view_->OnMouseEvent(&mouse_event);
+
+  // The wallpaper menu should not show.
+  EXPECT_EQ(0, show_wallpaper_context_menu_count());
+  EXPECT_TRUE(view_->GetWidget()->IsVisible());
 }
 
 // Tests that pressing escape when in tablet mode closes the app list.

@@ -611,13 +611,6 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
   // Clear focus if the located event is not handled by any child view.
   GetFocusManager()->ClearFocus();
 
-  // No-op if app list is on fullscreen all apps state and the event location is
-  // near an app.
-  if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS &&
-      GetRootAppsGridView()->IsEventNearAppIcon(*event)) {
-    return;
-  }
-
   if (GetAppsContainerView()->IsInFolderView()) {
     // Close the folder if it is opened.
     GetAppsContainerView()->app_list_folder_view()->CloseFolderPage();
@@ -630,6 +623,7 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
         event->AsGestureEvent()->type() == ui::ET_GESTURE_TWO_FINGER_TAP)) ||
       (event->IsMouseEvent() &&
        event->AsMouseEvent()->IsOnlyRightMouseButton())) {
+    // Don't show menus on empty areas of the AppListView in clamshell mode.
     if (!IsHomeLauncherEnabledInTabletMode())
       return;
 
@@ -640,6 +634,13 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
     delegate_->ShowWallpaperContextMenu(
         onscreen_location, event->IsGestureEvent() ? ui::MENU_SOURCE_TOUCH
                                                    : ui::MENU_SOURCE_MOUSE);
+    return;
+  }
+
+  // No-op if app list is on fullscreen all apps state and the event location is
+  // near an app.
+  if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS &&
+      GetRootAppsGridView()->IsEventNearAppIcon(*event)) {
     return;
   }
 
