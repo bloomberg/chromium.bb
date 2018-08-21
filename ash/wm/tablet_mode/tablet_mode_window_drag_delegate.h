@@ -11,6 +11,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace ash {
 
@@ -96,6 +97,10 @@ class TabletModeWindowDragDelegate {
 
   // The backdrop should be disabled during dragging and resumed after dragging.
   BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAuto;
+
+  // The dragged window should have the active window shadow elevation during
+  // dragging.
+  int original_shadow_elevation_ = ::wm::kShadowElevationDefault;
 
   gfx::Point initial_location_in_screen_;
 

@@ -36,31 +36,6 @@ namespace wm {
 
 namespace {
 
-int GetDefaultShadowElevationForWindow(aura::Window* window) {
-  switch (window->type()) {
-    case aura::client::WINDOW_TYPE_NORMAL:
-    case aura::client::WINDOW_TYPE_PANEL:
-      return kShadowElevationInactiveWindow;
-
-    case aura::client::WINDOW_TYPE_MENU:
-    case aura::client::WINDOW_TYPE_TOOLTIP:
-      return kShadowElevationMenuOrTooltip;
-
-    default:
-      break;
-  }
-  return kShadowElevationNone;
-}
-
-// Returns the shadow elevation for |window|, converting
-// |kShadowElevationDefault| to the appropriate value.
-int GetShadowElevationConvertDefault(aura::Window* window) {
-  int elevation = window->GetProperty(kShadowElevationKey);
-  return elevation == kShadowElevationDefault
-             ? GetDefaultShadowElevationForWindow(window)
-             : elevation;
-}
-
 int GetShadowElevationForActiveState(aura::Window* window) {
   int elevation = window->GetProperty(kShadowElevationKey);
   if (elevation != kShadowElevationDefault)
@@ -258,8 +233,12 @@ void ShadowController::Impl::OnWindowActivated(ActivationReason reason,
 
 bool ShadowController::Impl::ShouldShowShadowForWindow(
     aura::Window* window) const {
-  if (delegate_ && !delegate_->ShouldShowShadowForWindow(window))
-    return false;
+  if (delegate_) {
+    const bool should_show = delegate_->ShouldShowShadowForWindow(window);
+    if (should_show)
+      DCHECK(GetShadowElevationConvertDefault(window) > 0);
+    return should_show;
+  }
 
   ui::WindowShowState show_state =
       window->GetProperty(aura::client::kShowStateKey);
