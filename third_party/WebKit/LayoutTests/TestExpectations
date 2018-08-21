@@ -5005,3 +5005,6 @@ crbug.com/872535 external/wpt/wake-lock/wakelock-state-is-global.https.html [ Pa
 
 # Sheriff 2018-08-20
 crbug.com/862589 [ Linux Mac Win ] virtual/threaded/fast/idle-callback/long_idle_periods.html [ Timeout Pass ]
+
+# Sheriff 2018-08-21
+crbug.com/873829 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-iframe-no-scrolling.html [ Timeout Pass ]
