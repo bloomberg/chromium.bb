@@ -142,8 +142,7 @@ void FakeDiskMountManager::RenameMountedDevice(const std::string& mount_path,
 
 void FakeDiskMountManager::UnmountDeviceRecursively(
     const std::string& device_path,
-    const UnmountDeviceRecursivelyCallbackType& callback) {
-}
+    UnmountDeviceRecursivelyCallbackType callback) {}
 
 bool FakeDiskMountManager::AddDiskForTest(
     std::unique_ptr<chromeos::disks::Disk> disk) {

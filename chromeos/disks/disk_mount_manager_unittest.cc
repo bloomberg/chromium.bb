@@ -26,6 +26,7 @@ using chromeos::disks::DiskMountManager;
 using chromeos::CrosDisksClient;
 using chromeos::DBusThreadManager;
 using chromeos::FakeCrosDisksClient;
+using chromeos::MountError;
 using chromeos::MountType;
 using chromeos::disks::MountCondition;
 
@@ -554,7 +555,7 @@ class DiskMountManagerTest : public testing::Test {
   }
 
   // Adds a new mount point to the disk mount manager.
-  // If the moutn point is a device mount point, disk with its source path
+  // If the mount point is a device mount point, disk with its source path
   // should already be added to the disk mount manager.
   void AddTestMountPoint(const TestMountPointInfo& mount_point) {
     EXPECT_TRUE(DiskMountManager::GetInstance()->AddMountPointForTest(
@@ -1390,6 +1391,141 @@ TEST_F(DiskMountManagerTest, Rename_ConsecutiveRenameCalls) {
   EXPECT_EQ(1U, observer_->CountMountEvents(DiskMountManager::MOUNTING,
                                             chromeos::MOUNT_ERROR_NONE,
                                             kDevice1MountPath));
+}
+
+void SaveUnmountResult(MountError* save_error,
+                       base::OnceClosure done_callback,
+                       MountError error_code) {
+  *save_error = error_code;
+  std::move(done_callback).Run();
+}
+
+TEST_F(DiskMountManagerTest, UnmountDeviceRecursively) {
+  base::RunLoop run_loop;
+
+  auto disk_sda =
+      Disk::Builder().SetDevicePath("/dev/sda").SetIsParent(true).Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda)));
+
+  auto disk_sda1 = Disk::Builder()
+                       .SetDevicePath("/dev/sda1")
+                       .SetMountPath("/mount/path1")
+                       .Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda1)));
+
+  auto disk_sda2 = Disk::Builder()
+                       .SetDevicePath("/dev/sda2")
+                       .SetMountPath("/mount/path2")
+                       .Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda2)));
+
+  MountError error_code = chromeos::MOUNT_ERROR_UNKNOWN;
+  DiskMountManager::GetInstance()->UnmountDeviceRecursively(
+      "/dev/sda",
+      base::BindOnce(&SaveUnmountResult, base::Unretained(&error_code),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
+            fake_cros_disks_client_->last_unmount_options());
+  EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, error_code);
+}
+
+TEST_F(DiskMountManagerTest, UnmountDeviceRecursively_NoMounted) {
+  base::RunLoop run_loop;
+
+  auto disk_sda =
+      Disk::Builder().SetDevicePath("/dev/sda").SetIsParent(true).Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda)));
+
+  auto disk_sda1 = Disk::Builder().SetDevicePath("/dev/sda1").Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda1)));
+
+  MountError error_code = chromeos::MOUNT_ERROR_UNKNOWN;
+  DiskMountManager::GetInstance()->UnmountDeviceRecursively(
+      "/dev/sda",
+      base::BindOnce(&SaveUnmountResult, base::Unretained(&error_code),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(0, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, error_code);
+}
+
+TEST_F(DiskMountManagerTest, UnmountDeviceRecursively_NoDisk) {
+  base::RunLoop run_loop;
+
+  auto disk_sda =
+      Disk::Builder().SetDevicePath("/dev/sda").SetIsParent(true).Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda)));
+
+  auto disk_sda1 = Disk::Builder().SetDevicePath("/dev/sda1").Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda1)));
+
+  MountError error_code = chromeos::MOUNT_ERROR_UNKNOWN;
+  // Unmount sdB instead of sdA.
+  DiskMountManager::GetInstance()->UnmountDeviceRecursively(
+      "/dev/sdb",
+      base::BindOnce(&SaveUnmountResult, base::Unretained(&error_code),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(0, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(chromeos::MOUNT_ERROR_INVALID_DEVICE_PATH, error_code);
+}
+
+void SetUnmountError(FakeCrosDisksClient* client, MountError error_code) {
+  client->MakeUnmountFail(error_code);
+}
+
+TEST_F(DiskMountManagerTest, UnmountDeviceRecursively_FailFirst) {
+  base::RunLoop run_loop;
+
+  auto disk_sda =
+      Disk::Builder().SetDevicePath("/dev/sda").SetIsParent(true).Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda)));
+
+  auto disk_sda1 = Disk::Builder()
+                       .SetDevicePath("/dev/sda1")
+                       .SetMountPath("/mount/path1")
+                       .Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda1)));
+
+  auto disk_sda2 = Disk::Builder()
+                       .SetDevicePath("/dev/sda2")
+                       .SetMountPath("/mount/path2")
+                       .Build();
+  EXPECT_TRUE(
+      DiskMountManager::GetInstance()->AddDiskForTest(std::move(disk_sda2)));
+
+  // Fail the first unmount, but make the second succeed.
+  fake_cros_disks_client_->MakeUnmountFail(
+      chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS);
+  fake_cros_disks_client_->set_unmount_listener(
+      base::Bind(&SetUnmountError, base::Unretained(fake_cros_disks_client_),
+                 chromeos::MOUNT_ERROR_NONE));
+
+  MountError error_code = chromeos::MOUNT_ERROR_UNKNOWN;
+  DiskMountManager::GetInstance()->UnmountDeviceRecursively(
+      "/dev/sda",
+      base::BindOnce(&SaveUnmountResult, base::Unretained(&error_code),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
+            fake_cros_disks_client_->last_unmount_options());
+  EXPECT_EQ(chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS, error_code);
 }
 
 }  // namespace

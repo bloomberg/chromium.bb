@@ -98,7 +98,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
                            const std::string& volume_name) override;
   void UnmountDeviceRecursively(
       const std::string& device_path,
-      const UnmountDeviceRecursivelyCallbackType& callback) override;
+      UnmountDeviceRecursivelyCallbackType callback) override;
 
   bool AddDiskForTest(std::unique_ptr<chromeos::disks::Disk> disk) override;
   bool AddMountPointForTest(const MountPointInfo& mount_point) override;

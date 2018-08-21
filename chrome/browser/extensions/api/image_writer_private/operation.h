@@ -22,6 +22,10 @@
 #include "chrome/common/extensions/api/image_writer_private.h"
 #include "extensions/common/extension_id.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/disks/disk_mount_manager.h"
+#endif
+
 namespace image_writer_api = extensions::api::image_writer_private;
 
 namespace base {
@@ -183,7 +187,8 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
   // Unmounts all volumes on |device_path_|.
   void UnmountVolumes(const base::Closure& continuation);
   // Starts the write after unmounting.
-  void UnmountVolumesCallback(const base::Closure& continuation, bool success);
+  void UnmountVolumesCallback(const base::Closure& continuation,
+                              chromeos::MountError error_code);
   // Starts the ImageBurner write.  Note that target_path is the file path of
   // the device where device_path has been a system device path.
   void StartWriteOnUIThread(const std::string& target_path,
