@@ -136,6 +136,8 @@ static_library("tether") {
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/components/tether/proto",
     "//chromeos/services/device_sync/public/cpp",
+    "//chromeos/services/multidevice_setup/public/cpp:cpp",
+    "//chromeos/services/multidevice_setup/public/mojom:mojom",
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/services/secure_channel/public/mojom",
 
@@ -303,6 +305,8 @@ source_set("unit_tests") {
     # TODO(hansberry): Remove //chromeos/services/secure_channel dependency when
     # SecureChannelClient migration is complete.
     "//chromeos/services/device_sync/public/mojom",
+    "//chromeos/services/multidevice_setup/public/cpp:test_support",
+    "//chromeos/services/multidevice_setup/public/mojom:mojom",
     "//chromeos/services/secure_channel",
     "//chromeos/services/secure_channel:test_support",
     "//chromeos/services/secure_channel/public/cpp/client:test_support",
