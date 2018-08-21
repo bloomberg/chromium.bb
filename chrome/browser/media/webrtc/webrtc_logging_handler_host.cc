@@ -454,6 +454,16 @@ void WebRtcLoggingHandlerHost::StoreLogInDirectory(
     const GenericDoneCallback& done_callback,
     const base::FilePath& directory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (text_log_handler_->GetState() != WebRtcTextLogHandler::STOPPED &&
+      text_log_handler_->GetState() != WebRtcTextLogHandler::CHANNEL_CLOSING) {
+    BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(done_callback, false,
+                       "Logging not stopped or no log open."));
+    return;
+  }
+
   log_paths->log_path = directory;
 
   std::unique_ptr<WebRtcLogBuffer> log_buffer;
