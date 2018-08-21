@@ -81,7 +81,9 @@ std::unique_ptr<net::DnsClient> CreateMockDnsClientForHosts() {
 
 class MockHostResolverProc : public net::HostResolverProc {
  public:
-  MockHostResolverProc() : HostResolverProc(nullptr) {}
+  // |result| is the net error code to return from resolution attempts.
+  MockHostResolverProc(int result)
+      : HostResolverProc(nullptr), result_(result) {}
 
   int Resolve(const std::string& hostname,
               net::AddressFamily address_family,
@@ -89,11 +91,15 @@ class MockHostResolverProc : public net::HostResolverProc {
               net::AddressList* address_list,
               int* os_error) override {
     *address_list = MakeAddressList(kNetworkAddress);
-    return net::OK;
+    return result_;
   }
 
  protected:
   ~MockHostResolverProc() override {}
+
+ private:
+  // Result code to return from Resolve().
+  const int result_;
 };
 
 class StaleHostResolverTest : public testing::Test {
@@ -101,7 +107,7 @@ class StaleHostResolverTest : public testing::Test {
   StaleHostResolverTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        mock_proc_(new MockHostResolverProc()),
+        mock_proc_(new MockHostResolverProc(net::OK)),
         resolver_(nullptr),
         resolve_pending_(false),
         resolve_complete_(false) {
@@ -117,6 +123,12 @@ class StaleHostResolverTest : public testing::Test {
     options_.delay = base::TimeDelta::FromSeconds(stale_delay_sec);
   }
 
+  void SetUseStaleOnNameNotResolved() {
+    DCHECK(!resolver_);
+
+    options_.use_stale_on_name_not_resolved = true;
+  }
+
   void SetStaleUsability(int max_expired_time_sec,
                          int max_stale_uses,
                          bool allow_other_network) {
@@ -126,6 +138,12 @@ class StaleHostResolverTest : public testing::Test {
         base::TimeDelta::FromSeconds(max_expired_time_sec);
     options_.max_stale_uses = max_stale_uses;
     options_.allow_other_network = allow_other_network;
+  }
+
+  void SetNetResult(int result) {
+    DCHECK(!resolver_);
+
+    mock_proc_ = new MockHostResolverProc(result);
   }
 
   std::unique_ptr<net::HostResolverImpl> CreateMockInnerResolverWithDnsClient(
@@ -374,6 +392,39 @@ TEST_F(StaleHostResolverTest, MAYBE_StaleCache) {
   EXPECT_EQ(net::OK, resolve_error());
   EXPECT_EQ(1u, resolve_addresses().size());
   EXPECT_EQ(kCacheAddress, resolve_addresses()[0].ToStringWithoutPort());
+}
+
+// Ensure that |use_stale_on_name_not_resolved| causes stale results to be
+// returned when ERR_NAME_NOT_RESOLVED is returned from network resolution.
+TEST_F(StaleHostResolverTest, StaleCacheNameNotResolvedEnabled) {
+  SetStaleDelay(kLongStaleDelaySec);
+  SetUseStaleOnNameNotResolved();
+  SetNetResult(net::ERR_NAME_NOT_RESOLVED);
+  CreateResolver();
+  CreateCacheEntry(kAgeExpiredSec, net::OK);
+
+  Resolve();
+  WaitForResolve();
+
+  EXPECT_TRUE(resolve_complete());
+  EXPECT_EQ(net::OK, resolve_error());
+  EXPECT_EQ(1u, resolve_addresses().size());
+  EXPECT_EQ(kCacheAddress, resolve_addresses()[0].ToStringWithoutPort());
+}
+
+// Ensure that without |use_stale_on_name_not_resolved| network resolution
+// failing causes StaleHostResolver jobs to fail with the same error code.
+TEST_F(StaleHostResolverTest, StaleCacheNameNotResolvedDisabled) {
+  SetStaleDelay(kLongStaleDelaySec);
+  SetNetResult(net::ERR_NAME_NOT_RESOLVED);
+  CreateResolver();
+  CreateCacheEntry(kAgeExpiredSec, net::OK);
+
+  Resolve();
+  WaitForResolve();
+
+  EXPECT_TRUE(resolve_complete());
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, resolve_error());
 }
 
 TEST_F(StaleHostResolverTest, NetworkWithStaleCache) {
