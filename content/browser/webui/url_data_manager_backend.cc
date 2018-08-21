@@ -267,12 +267,23 @@ std::unique_ptr<net::SourceStream> URLRequestChromeJob::SetUpSourceStream() {
 
 void URLRequestChromeJob::MimeTypeAvailable(const std::string& mime_type) {
   mime_type_ = mime_type;
-  NotifyHeadersComplete();
 }
 
 void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
   TRACE_EVENT_ASYNC_END0("browser", "DataManager:Request", this);
   DCHECK(!data_);
+
+  if (bytes)
+    set_expected_content_size(bytes->size());
+
+  // We notify headers are complete unusually late for these jobs, because we
+  // need to have |bytes| first to report an accurate expected content size.
+  // Otherwise, we cannot support <video> streaming.
+  NotifyHeadersComplete();
+
+  // The job can be cancelled after sending the headers.
+  if (is_done())
+    return;
 
   // All further requests will be satisfied from the passed-in data.
   data_ = bytes;
@@ -500,7 +511,6 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   if (mime_type == "text/html")
     job->SetSource(source);
 
-  // Also notifies that the headers are complete.
   job->MimeTypeAvailable(mime_type);
 
   // Look up additional request info to pass down.
