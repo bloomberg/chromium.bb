@@ -55,8 +55,10 @@ class AssistantNotificationDelegate
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override {
     // Open the action url if it is valid.
-    if (notification_->action_url.is_valid() && assistant_controller_)
+    if (notification_->action_url.is_valid() && assistant_controller_) {
       assistant_controller_->OpenUrl(notification_->action_url);
+      return;
+    }
 
     if (notification_controller_) {
       // TODO(wutao): support buttons with different |action_index|.
