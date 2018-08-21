@@ -181,7 +181,8 @@ void SearchBoxView::UpdateSearchIcon() {
 }
 
 void SearchBoxView::UpdateSearchBoxBorder() {
-  if (search_box()->HasFocus() && !is_search_box_active()) {
+  if (search_box()->HasFocus() && !is_search_box_active() &&
+      !is_tablet_mode()) {
     // Show a gray ring around search box to indicate that the search box is
     // selected. Do not show it when search box is active, because blinking
     // cursor already indicates that.
