@@ -1104,12 +1104,9 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   if ([self.tableViewModel sectionIsCollapsed:SectionIdentifierOtherDevices]) {
     return;
   }
-  // If the section is not collapsed and the identity has changed, reload the
-  // Cell.
-  if (identityChanged) {
-    [self.tableView reloadRowsAtIndexPaths:@[ indexPath ]
-                          withRowAnimation:UITableViewRowAnimationNone];
-  }
+  // After setting the new configurator to the item, reload the item's Cell.
+  [self reloadCellsForItems:@[ signInItem ]
+           withRowAnimation:UITableViewRowAnimationNone];
 }
 
 - (void)signinDidFinish {
