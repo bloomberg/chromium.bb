@@ -40,8 +40,8 @@ namespace {
 namespace dnr_api = extensions::api::declarative_net_request;
 
 // Returns the checksum of the given serialized |data|.
-int GetChecksum(const FlatRulesetIndexer::SerializedData& data) {
-  uint32_t hash = base::PersistentHash(data.first, data.second);
+int GetChecksum(base::span<const uint8_t> data) {
+  uint32_t hash = base::PersistentHash(data.data(), data.size());
 
   // Strip off the sign bit since this needs to be persisted in preferences
   // which don't support unsigned ints.
@@ -50,7 +50,7 @@ int GetChecksum(const FlatRulesetIndexer::SerializedData& data) {
 
 // Helper function to persist the indexed ruleset |data| for |extension|.
 bool PersistRuleset(const Extension& extension,
-                    const FlatRulesetIndexer::SerializedData& data,
+                    base::span<const uint8_t> data,
                     int* ruleset_checksum) {
   DCHECK(ruleset_checksum);
 
@@ -59,10 +59,12 @@ bool PersistRuleset(const Extension& extension,
 
   // Create the directory corresponding to |path| if it does not exist and then
   // persist the ruleset.
-  const int data_size = base::checked_cast<int>(data.second);
+  if (!base::IsValueInRangeForNumericType<int>(data.size()))
+    return false;
+  const int data_size = static_cast<int>(data.size());
   const bool success =
       base::CreateDirectory(path.DirName()) &&
-      base::WriteFile(path, reinterpret_cast<const char*>(data.first),
+      base::WriteFile(path, reinterpret_cast<const char*>(data.data()),
                       data_size) == data_size;
 
   if (success)
@@ -130,9 +132,7 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
   indexer.Finish();
   UMA_HISTOGRAM_TIMES(kIndexRulesTimeHistogram, timer.Elapsed());
 
-  // The actual data buffer is still owned by |indexer|.
-  const FlatRulesetIndexer::SerializedData data = indexer.GetData();
-  if (!PersistRuleset(extension, data, ruleset_checksum))
+  if (!PersistRuleset(extension, indexer.GetData(), ruleset_checksum))
     return ParseInfo(ParseResult::ERROR_PERSISTING_RULESET);
 
   if (!all_rules_parsed) {
@@ -268,12 +268,9 @@ void IndexAndPersistRules(service_manager::Connector* connector,
   }
 }
 
-bool IsValidRulesetData(const uint8_t* data,
-                        size_t size,
-                        int expected_checksum) {
-  flatbuffers::Verifier verifier(data, size);
-  FlatRulesetIndexer::SerializedData serialized_data(data, size);
-  return expected_checksum == GetChecksum(serialized_data) &&
+bool IsValidRulesetData(base::span<const uint8_t> data, int expected_checksum) {
+  flatbuffers::Verifier verifier(data.data(), data.size());
+  return expected_checksum == GetChecksum(data) &&
          flat::VerifyExtensionIndexedRulesetBuffer(verifier);
 }
 

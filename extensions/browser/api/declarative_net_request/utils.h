@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
 
@@ -76,11 +77,9 @@ void IndexAndPersistRules(service_manager::Connector* connector,
                           const Extension& extension,
                           IndexAndPersistRulesCallback callback);
 
-// Returns true if |data| and |size| represent a valid data buffer containing
-// indexed ruleset data with |expected_checksum|.
-bool IsValidRulesetData(const uint8_t* data,
-                        size_t size,
-                        int expected_checksum);
+// Returns true if |data| represents a valid data buffer containing indexed
+// ruleset data with |expected_checksum|.
+bool IsValidRulesetData(base::span<const uint8_t> data, int expected_checksum);
 
 }  // namespace declarative_net_request
 }  // namespace extensions
