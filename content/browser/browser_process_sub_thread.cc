@@ -161,10 +161,8 @@ void BrowserProcessSubThread::CompleteInitializationOnBrowserThread() {
   }
 }
 
-// We disable optimizations for Run specifications so the compiler doesn't merge
-// them all together.
-MSVC_DISABLE_OPTIMIZE()
-MSVC_PUSH_DISABLE_WARNING(4748)
+// Mark following two functions as NOINLINE so the compiler doesn't merge
+// them together.
 
 NOINLINE void BrowserProcessSubThread::UIThreadRun(base::RunLoop* run_loop) {
   const int line_number = __LINE__;
@@ -177,9 +175,6 @@ NOINLINE void BrowserProcessSubThread::IOThreadRun(base::RunLoop* run_loop) {
   Thread::Run(run_loop);
   base::debug::Alias(&line_number);
 }
-
-MSVC_POP_WARNING()
-MSVC_ENABLE_OPTIMIZE();
 
 void BrowserProcessSubThread::IOThreadCleanUp() {
   DCHECK_CALLED_ON_VALID_THREAD(browser_thread_checker_);

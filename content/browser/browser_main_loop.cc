@@ -298,21 +298,14 @@ void OnStoppedStartupTracing(const base::FilePath& trace_file) {
   VLOG(0) << "Completed startup tracing to " << trace_file.value();
 }
 
-// Disable optimizations for this block of functions so the compiler doesn't
-// merge them all together. This makes it possible to tell what thread was
-// unresponsive by inspecting the callstack.
-MSVC_DISABLE_OPTIMIZE()
-MSVC_PUSH_DISABLE_WARNING(4748)
-
+// Tell compiler not to inline this function so it's possible to tell what
+// thread was unresponsive by inspecting the callstack.
 NOINLINE void ResetThread_IO(
     std::unique_ptr<BrowserProcessSubThread> io_thread) {
   const int line_number = __LINE__;
   io_thread.reset();
   base::debug::Alias(&line_number);
 }
-
-MSVC_POP_WARNING()
-MSVC_ENABLE_OPTIMIZE();
 
 #if defined(OS_WIN)
 // Creates a memory pressure monitor using automatic thresholds, or those
