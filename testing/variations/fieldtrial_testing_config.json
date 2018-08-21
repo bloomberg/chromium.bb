@@ -4273,10 +4273,27 @@
         {
             "platforms": [
                 "chromeos",
-                "ios",
                 "linux",
-                "mac",
                 "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "launch_20180628_model_20170329_with_blacklist_override_default",
+                    "params": {
+                        "translate-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/translate/2017/03/translate_ranker_model_20170329.pb.bin"
+                    },
+                    "enable_features": [
+                        "TranslateRankerAutoBlacklistOverride",
+                        "TranslateRankerEnforcement",
+                        "TranslateRankerQuery"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "ios",
+                "mac"
             ],
             "experiments": [
                 {
