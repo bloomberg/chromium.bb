@@ -4,24 +4,25 @@
 
 #include "components/printing/browser/print_manager_utils.h"
 
-#include "base/command_line.h"
 #include "components/printing/browser/features.h"
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/site_isolation_policy.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "printing/print_settings.h"
 
 namespace printing {
 
+namespace {
+
 // A temporary flag which makes supporting both paths for OOPIF and non-OOPIF
 // printing easier.
-static bool g_oopif_enabled = false;
+bool g_oopif_enabled = false;
 
 void SetOopifEnabled() {
   g_oopif_enabled = true;
 }
+
+}  // namespace
 
 bool IsOopifEnabled() {
   return g_oopif_enabled;
@@ -36,7 +37,7 @@ void CreateCompositeClientIfNeeded(content::WebContents* web_contents) {
   // compositor service by default for printing.
   if (content::SiteIsolationPolicy::ShouldPdfCompositorBeEnabledForOopifs() ||
       base::FeatureList::IsEnabled(
-          printing::features::kUsePdfCompositorServiceForPrint)) {
+          features::kUsePdfCompositorServiceForPrint)) {
     PrintCompositeClient::CreateForWebContents(web_contents);
     SetOopifEnabled();
   }

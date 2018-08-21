@@ -29,7 +29,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "components/guest_view/browser/guest_view_base.h"
-#include "components/printing/browser/print_manager_utils.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_controller.h"
@@ -377,7 +376,6 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
   content::HostZoomMap::Get(preview_dialog->GetSiteInstance())
       ->SetZoomLevelForHostAndScheme(print_url.scheme(), print_url.host(), 0);
   PrintViewManager::CreateForWebContents(preview_dialog);
-  CreateCompositeClientIfNeeded(preview_dialog);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       preview_dialog);
 
