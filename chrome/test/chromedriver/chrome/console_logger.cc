@@ -197,28 +197,39 @@ Status ConsoleLogger::OnRuntimeConsoleApiCalled(
     }
   }
 
-  // TODO(samuong): Handle the case where args.GetSize() > 1. This happens when
-  // the first arg is a printf-style format string. We currently return the
-  // format string to the test client. For details, see
-  // https://bugs.chromium.org/p/chromedriver/issues/detail?id=669
   std::string text;
   const base::ListValue* args = nullptr;
-  const base::DictionaryValue* first_arg = nullptr;
-  if (!params.GetList("args", &args) || args->GetSize() < 1 ||
-      !args->GetDictionary(0, &first_arg)) {
-    return Status(kUnknownError, "missing or invalid args");
-  }
 
   std::string arg_type;
-  if (first_arg->GetString("type", &arg_type) && arg_type == "undefined") {
-    text = "undefined";
-  } else if (!first_arg->GetString("description", &text)) {
-    const base::Value* value = nullptr;
-    if (!first_arg->Get("value", &value))
-      return Status(kUnknownError, "missing or invalid arg value");
-    if (!base::JSONWriter::Write(*value, &text))
-      return Status(kUnknownError, "failed to convert value to text");
+  if (!params.GetList("args", &args) || args->GetSize() < 1) {
+       return Status(kUnknownError, "missing or invalid args");
   }
+
+  int arg_count = args->GetSize();
+  const base::DictionaryValue* current_arg = nullptr;
+  for (int i = 0; i < arg_count; i++) {
+    if (!args->GetDictionary(i, &current_arg)) {
+      std::string error_message = base::StringPrintf("Argument %d is missing or invalid", i);
+      return Status(kUnknownError, error_message );
+    }
+    std::string temp_text;
+    std::string arg_type;
+    if (current_arg->GetString("type", &arg_type) && arg_type == "undefined") {
+      temp_text = "undefined";
+    } else if (!current_arg->GetString("description", &temp_text)) {
+      const base::Value* value = nullptr;
+      if (!current_arg->Get("value", &value)) {
+        return Status(kUnknownError, "missing or invalid arg value");
+      }
+      if (!base::JSONWriter::Write(*value, &temp_text)) {
+        return Status(kUnknownError, "failed to convert value to text");
+      }
+    }
+    // add spaces between the arguments
+    if (i != 0)
+      text += " ";
+    text += temp_text;
+   }
 
   log_->AddEntry(level, "console-api", base::StringPrintf("%s %s %s",
                                                           origin.c_str(),

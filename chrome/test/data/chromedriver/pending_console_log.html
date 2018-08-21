@@ -3,10 +3,10 @@
   <body>
     <script>
       window.onload = function() {
-        console.error("InitialError");
+        console.error("InitialError", 2018, "Third");
         window.setTimeout(function() {
-          console.error("RepeatedError");
-        }, 10000);
+          console.error("RepeatedError", "Second", "Third");
+        }, 5000);
      };
     </script>
   </body>
