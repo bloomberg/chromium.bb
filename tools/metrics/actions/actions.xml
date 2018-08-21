@@ -5754,8 +5754,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="HistoryPage_RemoveSelected">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Action indicating that the selected history entries were deleted from the
+    history list.
+  </description>
 </action>
 
 <action name="HistoryPage_Search">
@@ -10481,6 +10484,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileBookmarkManagerEntryDeleted">
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Action indicating that a bookmark was deleted from the bookmark manager.
+  </description>
+</action>
+
 <action name="MobileBookmarkManagerEntryOpened">
   <owner>ianwen@chromium.org</owner>
   <description>
@@ -10504,6 +10514,14 @@ should be able to be added at any place in this file.
     Action indictating the bookmark manager is created as a Native Page. The
     porpuse of this action is to tell how many users on phones are able to get
     access to bookmark manager inside of a tab.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerRemoveSelected">
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Action indicating that the selected bookmark entries were deleted from the
+    bookmark manager.
   </description>
 </action>
 

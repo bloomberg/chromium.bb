@@ -484,6 +484,7 @@ const CGFloat kAlphaForDisabledSearchBar = 0.5;
     [self configureViewsForNonEditModeWithAnimation:YES];
     [self.tableView endUpdates];
   }
+  base::RecordAction(base::UserMetricsAction("HistoryPage_RemoveSelected"));
 }
 
 #pragma mark - UITableViewDelegate
