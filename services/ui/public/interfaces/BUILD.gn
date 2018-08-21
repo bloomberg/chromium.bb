@@ -13,7 +13,6 @@ mojom("interfaces") {
     "remoting_event_injector.mojom",
     "screen_provider_observer.mojom",
     "user_activity_monitor.mojom",
-    "video_detector.mojom",
     "window_manager.mojom",
     "window_manager_constants.mojom",
     "window_server_test.mojom",

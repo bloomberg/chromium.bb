@@ -75,7 +75,6 @@
         "ui": [
           "display_dev",
           "ozone",
-          "video_detector",
           "window_manager"
         ],
         "data_decoder": [ "image_decoder" ]
