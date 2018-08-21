@@ -85,7 +85,7 @@
             },
             {
                 "domain": "Tracing",
-                "async": ["start", "getCategories", "requestMemoryDump"]
+                "async": ["start", "end", "getCategories", "requestMemoryDump"]
             }
         ]
     },
