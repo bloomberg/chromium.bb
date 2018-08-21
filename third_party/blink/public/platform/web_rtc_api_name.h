@@ -19,6 +19,7 @@ enum class WebRTCAPIName {
   kMediaStreamRecorder,
   kCanvasCaptureStream,
   kVideoCaptureStream,
+  kGetDisplayMedia,
   kInvalidName
 };
 

@@ -50273,6 +50273,7 @@ Full version information for the fingerprint enum values:
   <int value="5" label="MediaStreamRecorder"/>
   <int value="6" label="CanvasCaptureStream"/>
   <int value="7" label="VideoCaptureStream"/>
+  <int value="8" label="GetDisplayMedia"/>
 </enum>
 
 <enum name="WebRtcAudioCodecs">

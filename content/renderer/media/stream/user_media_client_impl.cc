@@ -33,6 +33,21 @@ namespace {
 
 static int g_next_request_id = 0;
 
+// The histogram counts the number of calls to the JS API
+// getUserMedia or getDisplayMedia().
+void UpdateAPICount(blink::WebUserMediaRequest::MediaType media_type) {
+  blink::WebRTCAPIName api_name = blink::WebRTCAPIName::kGetUserMedia;
+  switch (media_type) {
+    case blink::WebUserMediaRequest::MediaType::kUserMedia:
+      api_name = blink::WebRTCAPIName::kGetUserMedia;
+      break;
+    case blink::WebUserMediaRequest::MediaType::kDisplayMedia:
+      api_name = blink::WebRTCAPIName::kGetDisplayMedia;
+      break;
+  }
+  UpdateWebRTCMethodCount(api_name);
+}
+
 }  // namespace
 
 UserMediaClientImpl::Request::Request(std::unique_ptr<UserMediaRequest> request)
@@ -124,10 +139,6 @@ UserMediaClientImpl::~UserMediaClientImpl() {
 
 void UserMediaClientImpl::RequestUserMedia(
     const blink::WebUserMediaRequest& web_request) {
-  // Save histogram data so we can see how much GetUserMedia is used.
-  // The histogram counts the number of calls to the JS API
-  // webGetUserMedia.
-  UpdateWebRTCMethodCount(blink::WebRTCAPIName::kGetUserMedia);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!web_request.IsNull());
   DCHECK(web_request.Audio() || web_request.Video());
@@ -137,6 +148,9 @@ void UserMediaClientImpl::RequestUserMedia(
          render_frame()->GetWebFrame() ==
              static_cast<blink::WebFrame*>(
                  web_request.OwnerDocument().GetFrame()));
+
+  // Save histogram data so we can see how much GetUserMedia is used.
+  UpdateAPICount(web_request.MediaRequestType());
 
   if (RenderThreadImpl::current()) {
     RenderThreadImpl::current()->peer_connection_tracker()->TrackGetUserMedia(
