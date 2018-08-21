@@ -246,8 +246,6 @@ Bug(none) fast/clip/overflow-border-radius-composited.html [ Failure ]
 crbug.com/874675 compositing/overflow/mixed-composited-nested-sticky-overflow-scroller.html [ Failure ]
 crbug.com/874675 fast/css/sticky/sticky-clip-rel-child.html [ Failure ]
 
-crbug.com/874672 images/cross-fade-invalidation.html [ Failure ]
-
 # Something wrong with vertical-rl scrollbars
 crbug.com/853945 fast/block/positioning/vertical-rl/002.html [ Failure ]
 crbug.com/853945 fast/block/positioning/vertical-rl/fixed-positioning.html [ Failure ]
