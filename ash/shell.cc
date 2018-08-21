@@ -792,10 +792,11 @@ Shell::~Shell() {
   // the former may use the latter before destruction.
   app_list_controller_.reset();
 
-  // Shutdown |assistant_controller_| to properly remove observer on
-  // |tablet_mode_controller_|.
+  // Destroy |assistant_controller_| earlier than |tablet_mode_controller_| so
+  // that the former will destroy the Assistant view hierarchy which has a
+  // dependency on the latter.
   if (chromeos::switches::IsAssistantEnabled())
-    assistant_controller_->ShutDown();
+    assistant_controller_.reset();
 
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
@@ -860,7 +861,6 @@ Shell::~Shell() {
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
   // Alphabetical. TODO(oshima): sort.
-  assistant_controller_.reset();
   magnification_controller_.reset();
   tooltip_controller_.reset();
   event_client_.reset();

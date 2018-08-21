@@ -14,7 +14,6 @@
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/optional.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -45,16 +44,12 @@ AssistantUiController::AssistantUiController(
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
-  Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
 AssistantUiController::~AssistantUiController() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
   assistant_controller_->RemoveObserver(this);
   RemoveModelObserver(this);
-
-  if (container_view_)
-    container_view_->GetWidget()->RemoveObserver(this);
 }
 
 void AssistantUiController::SetAssistant(
@@ -91,16 +86,6 @@ void AssistantUiController::OnWidgetDestroying(views::Widget* widget) {
 
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
-}
-
-void AssistantUiController::OnAssistantControllerConstructed() {
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
-  assistant_controller_->screen_context_controller()->AddModelObserver(this);
-}
-
-void AssistantUiController::OnAssistantControllerDestroying() {
-  assistant_controller_->screen_context_controller()->RemoveModelObserver(this);
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
 void AssistantUiController::OnInputModalityChanged(
@@ -188,6 +173,22 @@ void AssistantUiController::OnHighlighterEnabledChanged(
   }
 }
 
+void AssistantUiController::OnAssistantControllerConstructed() {
+  assistant_controller_->interaction_controller()->AddModelObserver(this);
+  assistant_controller_->screen_context_controller()->AddModelObserver(this);
+}
+
+void AssistantUiController::OnAssistantControllerDestroying() {
+  assistant_controller_->screen_context_controller()->RemoveModelObserver(this);
+  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+
+  if (container_view_) {
+    // Our view hierarchy should not outlive our controllers.
+    container_view_->GetWidget()->CloseNow();
+    DCHECK_EQ(nullptr, container_view_);
+  }
+}
+
 void AssistantUiController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
@@ -263,20 +264,6 @@ void AssistantUiController::ToggleUi(AssistantSource source) {
     HideUi(source);
   else
     ShowUi(source);
-}
-
-void AssistantUiController::OnTabletModeStarted() {
-  if (container_view_)
-    container_view_->OnTabletModeChanged();
-}
-
-void AssistantUiController::OnTabletModeEnded() {
-  if (container_view_)
-    container_view_->OnTabletModeChanged();
-}
-
-void AssistantUiController::ShutDown() {
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 }
 
 void AssistantUiController::UpdateUiMode(

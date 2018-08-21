@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_UI_ASSISTANT_CONTAINER_VIEW_H_
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -29,7 +30,8 @@ class AssistantWebView;
 class AssistantContainerView : public views::BubbleDialogDelegateView,
                                public AssistantUiModelObserver,
                                public display::DisplayObserver,
-                               public gfx::AnimationDelegate {
+                               public gfx::AnimationDelegate,
+                               public TabletModeObserver {
  public:
   explicit AssistantContainerView(AssistantController* assistant_controller);
   ~AssistantContainerView() override;
@@ -57,14 +59,12 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   void AnimationProgressed(const gfx::Animation* animation) override;
 
   // display::DisplayObserver:
-  void OnWillProcessDisplayChanges() override {}
-  void OnDidProcessDisplayChanges() override {}
-  void OnDisplayAdded(const display::Display& new_display) override {}
-  void OnDisplayRemoved(const display::Display& old_display) override {}
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
-  void OnTabletModeChanged();
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
  private:
   // Sets anchor rect to |root_window|. If it's null,

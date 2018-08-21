@@ -15,7 +15,6 @@
 #include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/highlighter/highlighter_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -45,8 +44,7 @@ class ASH_EXPORT AssistantUiController
       public AssistantMiniViewDelegate,
       public CaptionBarDelegate,
       public DialogPlateObserver,
-      public HighlighterController::Observer,
-      public TabletModeObserver {
+      public HighlighterController::Observer {
  public:
   explicit AssistantUiController(AssistantController* assistant_controller);
   ~AssistantUiController() override;
@@ -101,13 +99,6 @@ class ASH_EXPORT AssistantUiController
   void ShowUi(AssistantSource source);
   void HideUi(AssistantSource source);
   void ToggleUi(AssistantSource source);
-
-  // TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
-
-  // Called before dtor to clean up service dependencies.
-  void ShutDown();
 
   AssistantContainerView* GetViewForTest();
 
