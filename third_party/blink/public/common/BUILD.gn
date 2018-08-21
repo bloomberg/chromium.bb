@@ -58,6 +58,7 @@ source_set("headers") {
     "message_port/string_message_codec.h",
     "message_port/transferable_message.h",
     "mime_util/mime_util.h",
+    "oom_intervention/oom_intervention_types.h",
     "origin_policy/origin_policy.h",
     "origin_trials/origin_trial_policy.h",
     "origin_trials/trial_token.h",

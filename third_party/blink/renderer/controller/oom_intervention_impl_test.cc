@@ -10,7 +10,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/common/oom_intervention/oom_intervention_types.h"
+#include "third_party/blink/public/common/oom_intervention/oom_intervention_types.h"
+#include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -58,7 +59,7 @@ class MockOomInterventionImpl : public OomInterventionImpl {
   OomInterventionMetrics GetCurrentMemoryMetrics() override {
     if (metrics_)
       return *metrics_;
-    return OomInterventionImpl::GetCurrentMemoryMetrics();
+    return CrashMemoryMetricsReporterImpl::Instance().GetCurrentMemoryMetrics();
   }
 
   std::unique_ptr<OomInterventionMetrics> metrics_;
@@ -78,8 +79,6 @@ class OomInterventionImplTest : public testing::Test {
     EXPECT_FALSE(page->Paused());
     mojom::blink::OomInterventionHostPtr host_ptr;
     MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
-    base::UnsafeSharedMemoryRegion shm =
-        base::UnsafeSharedMemoryRegion::Create(sizeof(OomInterventionMetrics));
 
     mojom::blink::DetectionArgsPtr args(mojom::blink::DetectionArgs::New());
     args->blink_workload_threshold = kTestBlinkThreshold;
@@ -87,8 +86,7 @@ class OomInterventionImplTest : public testing::Test {
     args->swap_threshold = kTestSwapThreshold;
     args->virtual_memory_thresold = kTestVmSizeThreshold;
 
-    intervention_->StartDetection(std::move(host_ptr), std::move(shm),
-                                  std::move(args),
+    intervention_->StartDetection(std::move(host_ptr), std::move(args),
                                   true /*trigger_intervention*/);
     test::RunDelayedTasks(TimeDelta::FromSeconds(1));
     return page;
@@ -227,21 +225,28 @@ TEST_F(OomInterventionImplTest, CalculateProcessFootprint) {
   base::File status_file(status_path,
                          base::File::FLAG_OPEN | base::File::FLAG_READ);
 
-  intervention_->statm_fd_.reset(statm_file.TakePlatformFile());
-  intervention_->status_fd_.reset(status_file.TakePlatformFile());
+  CrashMemoryMetricsReporterImpl::Instance().statm_fd_.reset(
+      statm_file.TakePlatformFile());
+  CrashMemoryMetricsReporterImpl::Instance().status_fd_.reset(
+      status_file.TakePlatformFile());
 
   mojom::blink::OomInterventionHostPtr host_ptr;
   MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
+  mojom::blink::DetectionArgsPtr args(mojom::blink::DetectionArgs::New());
+  intervention_->StartDetection(std::move(host_ptr), std::move(args),
+                                false /*trigger_intervention*/);
+  // Create unsafe shared memory region to write metrics in reporter.
   base::UnsafeSharedMemoryRegion shm =
       base::UnsafeSharedMemoryRegion::Create(sizeof(OomInterventionMetrics));
-  mojom::blink::DetectionArgsPtr args(mojom::blink::DetectionArgs::New());
-  intervention_->StartDetection(std::move(host_ptr), std::move(shm),
-                                std::move(args),
-                                false /*trigger_intervention*/);
+  CrashMemoryMetricsReporterImpl::Instance().shared_metrics_mapping_ =
+      shm.Map();
+  EXPECT_TRUE(CrashMemoryMetricsReporterImpl::Instance()
+                  .shared_metrics_mapping_.IsValid());
 
   intervention_->Check(nullptr);
   OomInterventionMetrics* metrics = static_cast<OomInterventionMetrics*>(
-      intervention_->shared_metrics_buffer_.memory());
+      CrashMemoryMetricsReporterImpl::Instance()
+          .shared_metrics_mapping_.memory());
   EXPECT_EQ(expected_private_footprint_kb,
             metrics->current_private_footprint_kb);
   EXPECT_EQ(expected_swap_kb, metrics->current_swap_kb);

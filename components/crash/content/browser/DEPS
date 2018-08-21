@@ -3,4 +3,7 @@ include_rules = [
   "+content/public/common",
   "+content/public/test",
   "+jni",
+  "+mojo/public/cpp/bindings/binding.h",
+  "+third_party/blink/public/mojom/crash/crash_memory_metrics_reporter.mojom.h",
+  "+third_party/blink/public/common/oom_intervention"
 ]

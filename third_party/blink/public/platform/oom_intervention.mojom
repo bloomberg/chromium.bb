@@ -46,11 +46,8 @@ interface OomIntervention {
   // Starts monitoring memory usage in renderer side. When the renderer's
   // memory usage exceeds |memory_workload_threshold| (in bytes) the renderer
   // calls host->OnHighMemoryUsage(). The renderer also triggers OOM
-  // intervention when |trigger_intervention| is true. |shared_metrics_buffer|
-  // stores the OomInterventionMetrics struct in shared memory. The buffer is
-  // expected to be upated very often with memory metrics.
+  // intervention when |trigger_intervention| is true.
   StartDetection(OomInterventionHost host,
-                 mojo_base.mojom.UnsafeSharedMemoryRegion shared_metrics_buffer,
                  DetectionArgs detection_args,
                  bool trigger_intervention);
 };

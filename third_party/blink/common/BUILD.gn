@@ -44,7 +44,6 @@ jumbo_source_set("common") {
     "message_port/transferable_message_struct_traits.cc",
     "message_port/transferable_message_struct_traits.h",
     "mime_util/mime_util.cc",
-    "oom_intervention/oom_intervention_types.h",
     "origin_policy/origin_policy.cc",
     "origin_policy/origin_policy_parser.cc",
     "origin_policy/origin_policy_parser.h",
