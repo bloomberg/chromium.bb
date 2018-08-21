@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -20,6 +19,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -30,7 +30,7 @@ namespace {
 // Mash returns the dialog type for normal windows without shelf item types.
 // TODO(msw): Extend this Mash behavior to all Ash configs.
 ShelfItemType GetShelfItemType(aura::Window* window) {
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED &&
+  if ((features::IsMultiProcessMash() || features::IsSingleProcessMash()) &&
       window->GetProperty(kShelfItemTypeKey) == TYPE_UNDEFINED &&
       window->type() == aura::client::WINDOW_TYPE_NORMAL &&
       !wm::GetWindowState(window)->ignored_by_shelf()) {
@@ -43,7 +43,7 @@ ShelfItemType GetShelfItemType(aura::Window* window) {
 // Mash sets and returns an initial default shelf id for unidentified windows.
 // TODO(msw): Extend this Mash behavior to all Ash configs.
 ShelfID GetShelfID(aura::Window* window) {
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED &&
+  if ((features::IsMultiProcessMash() || features::IsSingleProcessMash()) &&
       !window->GetProperty(kShelfIDKey) &&
       !wm::GetWindowState(window)->ignored_by_shelf()) {
     static int id = 0;
@@ -118,7 +118,8 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
     intptr_t old) {
   // ShelfIDs should never change except when replacing Mash temporary defaults.
   // TODO(msw): Extend this Mash behavior to all Ash configs.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED && key == kShelfIDKey &&
+  if ((features::IsMultiProcessMash() || features::IsSingleProcessMash()) &&
+      key == kShelfIDKey &&
       window_watcher_->user_windows_with_items_.count(window) > 0) {
     ShelfID old_id = ShelfID::Deserialize(reinterpret_cast<std::string*>(old));
     ShelfID new_id = ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
