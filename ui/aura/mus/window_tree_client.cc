@@ -668,10 +668,12 @@ void WindowTreeClient::SetWindowBoundsFromServer(
     // scale factor set on the display. It's the call to
     // SetBoundsFromServerInPixels() that is responsible for updating the scale
     // factor in the Compositor.
+    // Do not use ConvertRectToPixel, enclosing rects cause problems.
     const float dsf = ui::GetScaleFactorForNativeView(window->GetWindow());
+    const gfx::Rect rect(gfx::ScaleToFlooredPoint(revert_bounds.origin(), dsf),
+                         gfx::ScaleToCeiledSize(revert_bounds.size(), dsf));
     GetWindowTreeHostMus(window)->SetBoundsFromServerInPixels(
-        gfx::ConvertRectToPixel(dsf, revert_bounds),
-        local_surface_id ? *local_surface_id : viz::LocalSurfaceId());
+        rect, local_surface_id ? *local_surface_id : viz::LocalSurfaceId());
     return;
   }
 
@@ -710,9 +712,10 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
   base::Optional<viz::LocalSurfaceId> local_surface_id;
   if (window->window_mus_type() == WindowMusType::EMBED_IN_OWNER ||
       window->HasLocalLayerTreeFrameSink()) {
-    local_surface_id = window->GetOrAllocateLocalSurfaceId(
-        gfx::ConvertRectToPixel(window->GetDeviceScaleFactor(), new_bounds)
-            .size());
+    // Do not use ConvertRectToPixel, enclosing rects cause problems.
+    const gfx::Size size = gfx::ScaleToCeiledSize(
+        new_bounds.size(), window->GetDeviceScaleFactor());
+    local_surface_id = window->GetOrAllocateLocalSurfaceId(size);
     // |window_tree_host| may be null if this is called during creation of
     // the window associated with the WindowTreeHostMus.
     WindowTreeHost* window_tree_host = window->GetWindow()->GetHost();
