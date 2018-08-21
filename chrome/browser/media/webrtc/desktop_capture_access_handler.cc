@@ -144,7 +144,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
       content::MEDIA_DEVICE_INVALID_STATE;
 
 #if defined(OS_CHROMEOS)
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsMultiProcessMash()) {
     // TODO(crbug.com/806366): Screen capture support for mash.
     NOTIMPLEMENTED() << "Screen capture not yet implemented in --mash";
     screen_capture_enabled = false;

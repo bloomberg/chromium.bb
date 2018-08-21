@@ -124,7 +124,7 @@ void TestBrowserDialog::UpdateWidgets() {
   // Under mash, GetAllWidgets() uses MusClient to get the list of root windows.
   // Otherwise, GetAllWidgets() relies on AuraTestHelper to get the root window,
   // but that is not available in browser_tests, so use ash::Shell directly.
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsUsingWindowService()) {
     widgets_ = views::test::WidgetTest::GetAllWidgets();
   } else {
     for (aura::Window* root_window : ash::Shell::GetAllRootWindows())

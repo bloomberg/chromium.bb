@@ -44,7 +44,7 @@ class SearchAnswerWebView : public views::WebView {
  public:
   explicit SearchAnswerWebView(content::BrowserContext* browser_context)
       : WebView(browser_context) {
-    DCHECK(::features::IsAshInBrowserProcess());
+    DCHECK(!::features::IsUsingWindowService());
     holder()->set_can_process_events_within_subtree(false);
   }
 

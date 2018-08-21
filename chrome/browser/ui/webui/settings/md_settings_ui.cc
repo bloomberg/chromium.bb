@@ -332,8 +332,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("androidAppsVisible", androidAppsVisible);
   html_source->AddBoolean("havePlayStoreApp", arc::IsPlayStoreAvailable());
 
-  // TODO(mash): Support Chrome power settings in Mash. crbug.com/644348
-  bool enable_power_settings = features::IsAshInBrowserProcess();
+  // TODO(mash): Support Chrome power settings in Mash. https://crbug.com/644348
+  bool enable_power_settings = !features::IsMultiProcessMash();
   html_source->AddBoolean("enablePowerSettings", enable_power_settings);
   if (enable_power_settings) {
     AddSettingsPageUIHandler(std::make_unique<chromeos::settings::PowerHandler>(

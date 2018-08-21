@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/power/ml/user_activity_controller.h"
 
+#include "ash/shell.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/devicetype.h"
@@ -21,9 +22,11 @@ namespace ml {
 UserActivityController::UserActivityController() {
   // TODO(jiameng): video detector below doesn't work with MASH. Temporary
   // solution is to disable logging if we're under MASH env.
+  // https://crbug.com/871914
   if (chromeos::GetDeviceType() != chromeos::DeviceType::kChromebook ||
-      !features::IsAshInBrowserProcess())
+      features::IsMultiProcessMash()) {
     return;
+  }
 
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
@@ -41,7 +44,8 @@ UserActivityController::UserActivityController() {
   idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
       power_manager_client, detector,
       mojo::MakeRequest(&video_observer_idle_notifier));
-  aura::Env::GetInstance()
+  ash::Shell::Get()
+      ->aura_env()
       ->context_factory_private()
       ->GetHostFrameSinkManager()
       ->AddVideoDetectorObserver(std::move(video_observer_idle_notifier));
@@ -52,7 +56,8 @@ UserActivityController::UserActivityController() {
       power_manager_client, session_manager,
       mojo::MakeRequest(&video_observer_user_logger),
       chromeos::ChromeUserManager::Get(), &smart_dim_model_);
-  aura::Env::GetInstance()
+  ash::Shell::Get()
+      ->aura_env()
       ->context_factory_private()
       ->GetHostFrameSinkManager()
       ->AddVideoDetectorObserver(std::move(video_observer_user_logger));

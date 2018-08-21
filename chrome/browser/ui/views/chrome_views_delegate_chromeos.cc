@@ -29,7 +29,7 @@ ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
   DCHECK(base::MessageLoopForUI::IsCurrent());
 
   // Early return because mash chrome does not have access to ash::Shell
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsMultiProcessMash())
     return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
 
   ash::AcceleratorController* accelerator_controller =
@@ -81,7 +81,7 @@ views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
   // Classic ash requires a parent or a context that it can use to look up a
   // root window to find a WindowParentingClient. Mash handles window parenting
   // inside ash, see ash::CreateAndParentTopLevelWindow().
-  if (features::IsAshInBrowserProcess() && !params->parent && !params->context)
+  if (!features::IsUsingWindowService() && !params->parent && !params->context)
     params->context = ash::Shell::GetRootWindowForNewWindows();
 
   // By returning null Widget creates the default NativeWidget implementation,
