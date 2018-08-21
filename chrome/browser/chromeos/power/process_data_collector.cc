@@ -34,6 +34,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/system/procfs_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -95,53 +96,6 @@ base::Optional<pid_t> GetAndroidInitPid(
   return android_pid;
 }
 
-// Calculates the total CPU time used in jiffies.
-base::Optional<int64_t> ComputeCpuTimeJiffies(const base::FilePath& stat_file) {
-  // This function does I/O and must be done on a blocking thread.
-  base::AssertBlockingAllowed();
-
-  std::string stat_contents;
-  if (!base::ReadFileToString(stat_file, &stat_contents))
-    return base::nullopt;
-
-  // This file looks like:
-  // cpu <num1> <num2> ...
-  // cpu0 <num1> <num2> ...
-  // cpu1 <num1> <num2> ...
-  // ...
-  // Where each number represents the amount of time in jiffies a certain CPU is
-  // in some state. The first line presents the total amount of time in jiffies
-  // the system is in some state across all CPUs. The first line beginning with
-  // "cpu " needs to be singled out and all the numbers on that line need to be
-  // summed to obtain the total amount of time in jiffies the system has been
-  // running across all states.
-  std::vector<std::string> stat_lines = base::SplitString(
-      stat_contents, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  for (const auto& line : stat_lines) {
-    // Find the line that starts with "cpu " and sum everything on that line to
-    // get the total amount of jiffies used.
-    if (base::StartsWith(line, "cpu ", base::CompareCase::SENSITIVE)) {
-      std::vector<std::string> cpu_info_parts = base::SplitString(
-          line, " \t", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-      if (cpu_info_parts.size() <= 1)
-        return base::nullopt;
-
-      int64_t total_time = 0;
-      // Start from cpu_info_parts.begin() + 1 to skip the "cpu " prefix and
-      // start from the second column.
-      for (auto iter = cpu_info_parts.begin() + 1; iter != cpu_info_parts.end();
-           iter++) {
-        int64_t curr;
-        if (!base::StringToInt64(*iter, &curr))
-          return base::nullopt;
-        total_time += curr;
-      }
-      return total_time;
-    }
-  }
-  return base::nullopt;
-}
-
 // Calculates the total CPU time used by a single process in jiffies and its
 // PPID.
 base::Optional<ProcCpuUsageAndPpid> ComputeProcCpuTimeJiffiesAndPpid(
@@ -149,58 +103,13 @@ base::Optional<ProcCpuUsageAndPpid> ComputeProcCpuTimeJiffiesAndPpid(
   // This function does I/O and must be done on a blocking thread.
   base::AssertBlockingAllowed();
 
-  std::string proc_stat_contents;
-  if (!base::ReadFileToString(proc_stat_file, &proc_stat_contents))
+  base::Optional<system::SingleProcStat> stat =
+      system::GetSingleProcStat(proc_stat_file);
+  if (!stat.has_value())
     return base::nullopt;
 
-  // This file looks like:
-  // <num1> (<str>) <char> <num2> <num3> ...
-  // Where each of the numbers represent the amount of CPU time in jiffies a
-  // process was in a state. The entries at 0-based indices 13 and 14 represent
-  // the amount of time the process was in user mode and kernel mode. By
-  // isolating and summing those two numbers, the total amount of CPU time in
-  // jiffies the process has used can be approximated. Additionally the entry at
-  // index 3, represents the PPID of the process. However, the entry at index 1
-  // represents a filename, which can have an arbitrary number of spaces, so
-  // skip it by finding the last parenthesis.
-
-  // Skip PID and comm fields.
-  const auto last_parenthesis = proc_stat_contents.find_last_of(')');
-  if (last_parenthesis == std::string::npos ||
-      last_parenthesis + 1 > proc_stat_contents.length())
-    return base::nullopt;
-
-  // Skip the parenthesis itself.
-  const std::string truncated_proc_stat_contents =
-      proc_stat_contents.substr(last_parenthesis + 1);
-
-  std::vector<std::string> proc_stat_split =
-      base::SplitString(truncated_proc_stat_contents, " \t\n",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  // The first 2 entries of the file were removed earlier, so all the indices
-  // for the entries will be shifted by 2.
-  if (proc_stat_split.size() < 12)
-    return base::nullopt;
-
-  int64_t user_time;
-  // These two entries contain the total time this process spent in user mode
-  // and kernel mode. This is roughly the total CPU time that the process has
-  // used.
-  if (!base::StringToInt64(proc_stat_split[11], &user_time))
-    return base::nullopt;
-
-  int64_t kernel_time;
-  if (!base::StringToInt64(proc_stat_split[12], &kernel_time))
-    return base::nullopt;
-
-  int64_t proc_cpu_time = user_time + kernel_time;
-
-  uint64_t ppid;
-  if (!base::StringToUint64(proc_stat_split[1], &ppid))
-    return base::nullopt;
-
-  return std::make_pair(proc_cpu_time, ppid);
+  return std::make_pair(stat.value().utime + stat.value().stime,
+                        stat.value().ppid);
 }
 
 // Reads a process' name from |comm_file|, a file like "/proc/%u/comm".
@@ -506,7 +415,7 @@ ProcessDataCollector::ProcessSampleMap ProcessDataCollector::ComputeSample(
   // different types of processes can be classified; this is needed to classify
   // ARC process for example.
   base::Optional<int64_t> total_cpu_time =
-      ComputeCpuTimeJiffies(config.total_cpu_time_path);
+      system::GetCpuTimeJiffies(config.total_cpu_time_path);
   // If this can't be read, then the average CPU usage over this interval can't
   // be calculated. Ignore these samples.
   if (!total_cpu_time.value()) {

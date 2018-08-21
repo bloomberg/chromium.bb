@@ -984,6 +984,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   demo_mode_resources_remover_ = DemoModeResourcesRemover::CreateIfNeeded(
       g_browser_process->local_state());
+  // Start measuring crosvm processes resource usage.
+  crosvm_metrics_ = std::make_unique<crostini::CrosvmMetrics>();
+  crosvm_metrics_->Start();
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }
@@ -1190,6 +1193,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
+  // Destroy crosvm_metrics_ after threads are stopped so that no weak_ptr is
+  // held by any task.
+  crosvm_metrics_.reset();
+
   // Destroy DBus services immediately after threads are stopped.
   dbus_services_.reset();
 

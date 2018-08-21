@@ -169,7 +169,7 @@ void SetUpProcfs(const base::FilePath& root_dir,
   std::string stat_file_contents =
       "cpu " + std::to_string(kJiffiesPerIteration * (iteration + 1)) +
       // Pad some zeros.
-      " 0 0 0 0 0 0 0\n";
+      " 0 0 0 0 0 0 0 0 0\n";
 
   WriteStringToFile(base::FilePath(base::StringPrintf(
                         "%s/%s", root_dir.value().c_str(), kCustomCpuTimeFile)),
