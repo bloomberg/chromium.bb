@@ -12,6 +12,7 @@
 
 #include "base/observer_list_threadsafe.h"
 #include "base/single_thread_task_runner.h"
+#include "base/timer/timer.h"
 #include "chromecast/device/bluetooth/le/gatt_client_manager.h"
 #include "chromecast/device/bluetooth/shlib/gatt_client.h"
 
@@ -24,6 +25,11 @@ class GattClientManagerImpl
     : public GattClientManager,
       public bluetooth_v2_shlib::Gatt::Client::Delegate {
  public:
+  // If a Connect request takes longer than this amount of time, we will treat
+  // it as a Connect failure.
+  static constexpr base::TimeDelta kConnectTimeout =
+      base::TimeDelta::FromSeconds(40);
+
   explicit GattClientManagerImpl(bluetooth_v2_shlib::GattClient* gatt_client);
   ~GattClientManagerImpl() override;
 
@@ -95,6 +101,8 @@ class GattClientManagerImpl
   void RunQueuedConnectRequest();
   void RunQueuedReadRemoteRssiRequest();
 
+  void OnConnectTimeout(const bluetooth_v2_shlib::Addr& addr);
+
   static void FinalizeOnIoThread(
       std::unique_ptr<base::WeakPtrFactory<GattClientManagerImpl>>
           weak_factory);
@@ -111,6 +119,10 @@ class GattClientManagerImpl
   std::map<bluetooth_v2_shlib::Addr, scoped_refptr<RemoteDeviceImpl>>
       addr_to_device_;
   std::set<bluetooth_v2_shlib::Addr> connected_devices_;
+
+  // Timer for pending Connect requests. If any Connect request times out, we
+  // will treat it as a Connect failure.
+  base::OneShotTimer connect_timeout_timer_;
 
   // Queue for concurrent Connect requests.
   std::deque<bluetooth_v2_shlib::Addr> pending_connect_requests_;

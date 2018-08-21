@@ -305,6 +305,50 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnectConcurrent) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(GattClientManagerTest, ConnectTimeout) {
+  scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+
+  // Issue a Connect request
+  EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(true));
+  device->Connect(cb_.Get());
+
+  // Let Connect request timeout
+  base::TestMockTimeTaskRunner::ScopedContext context(fake_task_runner_);
+  // We should expect to receive Connect failure message
+  EXPECT_CALL(cb_, Run(false));
+  fake_task_runner_->FastForwardBy(GattClientManagerImpl::kConnectTimeout);
+  EXPECT_FALSE(device->IsConnected());
+}
+
+TEST_F(GattClientManagerTest, GetServicesTimeout) {
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+
+  scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+
+  // Issue a Connect request and let Connect succeed
+  EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(true));
+  device->Connect(cb_.Get());
+  EXPECT_CALL(*gatt_client_, GetServices(kTestAddr1)).WillOnce(Return(true));
+  delegate->OnConnectChanged(kTestAddr1, true /* status */,
+                             true /* connected */);
+
+  // Let GetServices request timeout
+  base::TestMockTimeTaskRunner::ScopedContext context(fake_task_runner_);
+  // We should request a disconnect.
+  EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr1)).WillOnce(Return(true));
+  fake_task_runner_->FastForwardBy(GattClientManagerImpl::kConnectTimeout);
+
+  // Make sure we issued a disconnect.
+  testing::Mock::VerifyAndClearExpectations(gatt_client_.get());
+
+  EXPECT_CALL(cb_, Run(false));
+  delegate->OnConnectChanged(kTestAddr1, true /* status */,
+                             false /* connected */);
+
+  EXPECT_FALSE(device->IsConnected());
+}
+
 TEST_F(GattClientManagerTest, RemoteDeviceReadRssi) {
   static const int kRssi = -34;
 
