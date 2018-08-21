@@ -275,7 +275,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   MinMaxSize sizes;
   // If we're orthogonal, we have to run layout to compute the sizes. However,
   // if we're outside of layout, we can't do that. This can happen on Mac.
-  if (!CanUseNewLayout() ||
+  if ((!CanUseNewLayout() && !is_orthogonal_flow_root) ||
       (is_orthogonal_flow_root && !box_->GetFrameView()->IsInPerformLayout())) {
     return ComputeMinMaxSizeFromLegacy();
   }
@@ -292,7 +292,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     constraint_space = zero_constraint_space.get();
   }
 
-  if (is_orthogonal_flow_root) {
+  if (is_orthogonal_flow_root || !CanUseNewLayout()) {
     scoped_refptr<NGLayoutResult> layout_result = Layout(*constraint_space);
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
     NGBoxFragment fragment(
