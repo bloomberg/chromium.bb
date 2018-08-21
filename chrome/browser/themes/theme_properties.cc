@@ -194,7 +194,6 @@ base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
       return base::nullopt;
   }
 }
-
 }  // namespace
 
 // static
@@ -398,4 +397,36 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
   }
 
   return gfx::kPlaceholderColor;
+}
+
+// static
+SkColor ThemeProperties::GetDefaultColor(PropertyLookupPair lookup_pair) {
+  return GetDefaultColor(lookup_pair.property_id, lookup_pair.is_incognito);
+}
+
+// static
+ThemeProperties::PropertyLookupPair ThemeProperties::GetLookupID(int input_id) {
+  // Mapping of incognito property ids to their corresponding non-incognito
+  // property ids.
+  base::flat_map<int, int> incognito_property_map({
+      {ThemeProperties::COLOR_FRAME_INCOGNITO, ThemeProperties::COLOR_FRAME},
+      {ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE,
+       ThemeProperties::COLOR_FRAME_INACTIVE},
+      {ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO,
+       ThemeProperties::COLOR_BACKGROUND_TAB},
+      {ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
+       ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE},
+      {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
+       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT},
+      {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
+       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
+      {ThemeProperties::TINT_FRAME_INCOGNITO, ThemeProperties::TINT_FRAME},
+      {ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE,
+       ThemeProperties::TINT_FRAME_INACTIVE},
+  });
+
+  auto found_entry = incognito_property_map.find(input_id);
+  if (found_entry != incognito_property_map.end())
+    return {found_entry->second, true};
+  return {input_id, false};
 }

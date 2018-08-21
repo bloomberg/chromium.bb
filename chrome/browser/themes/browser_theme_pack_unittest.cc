@@ -64,6 +64,8 @@ class BrowserThemePackTest : public ::testing::Test {
   static void BuildFromUnpackedExtension(const base::FilePath& extension_path,
                                          scoped_refptr<BrowserThemePack>* pack);
 
+  static base::FilePath GetTestExtensionThemePath(
+      base::StringPiece theme_folder);
   static base::FilePath GetStarGazingPath();
   static base::FilePath GetHiDpiThemePath();
 
@@ -73,6 +75,12 @@ class BrowserThemePackTest : public ::testing::Test {
   static void VerifyStarGazing(BrowserThemePack* pack);
 
   static void VerifyHiDpiTheme(BrowserThemePack* pack);
+
+  // Verify that the colors in the theme for |color_id_a| and |color_id_b| are
+  // the same.
+  static void VerifyColorsMatch(BrowserThemePack* pack,
+                                TP::OverwritableByUserThemeProperty color_id_a,
+                                TP::OverwritableByUserThemeProperty color_id_b);
 
   const BrowserThemePack& theme_pack() const { return *theme_pack_; }
 
@@ -212,6 +220,18 @@ void BrowserThemePackTest::BuildFromUnpackedExtension(
   *pack = new BrowserThemePack;
   BrowserThemePack::BuildFromExtension(extension.get(), *pack);
   ASSERT_TRUE((*pack)->is_valid());
+}
+
+// static
+base::FilePath BrowserThemePackTest::GetTestExtensionThemePath(
+    base::StringPiece theme_folder) {
+  base::FilePath test_path;
+  const bool result = base::PathService::Get(chrome::DIR_TEST_DATA, &test_path);
+  DCHECK(result);
+
+  test_path = test_path.AppendASCII("extensions");
+  test_path = test_path.AppendASCII(theme_folder);
+  return base::FilePath(test_path);
 }
 
 // static
@@ -413,6 +433,26 @@ void BrowserThemePackTest::VerifyHiDpiTheme(BrowserThemePack* pack) {
 }
 
 // static
+void BrowserThemePackTest::VerifyColorsMatch(
+    BrowserThemePack* pack,
+    TP::OverwritableByUserThemeProperty color_id_a,
+    TP::OverwritableByUserThemeProperty color_id_b) {
+  SkColor color_a;
+  SkColor color_b;
+
+  bool color_a_set = pack->GetColor(color_id_a, &color_a);
+  bool color_b_set = pack->GetColor(color_id_b, &color_b);
+
+  SCOPED_TRACE(testing::Message()
+               << "Color A: " << std::hex << color_a << " (ID: " << std::dec
+               << color_id_a << "), Color B: " << std::hex << color_b
+               << " (ID: " << std::dec << color_id_b << ")");
+  EXPECT_TRUE(color_a_set);
+  EXPECT_TRUE(color_b_set);
+  EXPECT_EQ(color_a, color_b);
+}
+
+// static
 SkColor BrowserThemePackTest::BuildThirdOpacity(SkColor color_link) {
   return SkColorSetA(color_link, SkColorGetA(color_link) / 3);
 }
@@ -490,12 +530,6 @@ TEST_F(BrowserThemePackTest, SupportsAlpha) {
   colors[TP::COLOR_TOOLBAR] = SkColorSetARGB(255, 0, 20, 40);
   colors[TP::COLOR_TAB_TEXT] = SkColorSetARGB(255, 60, 80, 100);
   colors[TP::COLOR_BACKGROUND_TAB_TEXT] = SkColorSetARGB(0, 120, 140, 160);
-  colors[TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE] =
-      colors[TP::COLOR_BACKGROUND_TAB_TEXT];
-  colors[TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO] =
-      colors[TP::COLOR_BACKGROUND_TAB_TEXT];
-  colors[TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE] =
-      colors[TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO];
   colors[TP::COLOR_BOOKMARK_TEXT] = SkColorSetARGB(255, 180, 200, 220);
   colors[TP::COLOR_NTP_TEXT] = SkColorSetARGB(128, 240, 255, 0);
   VerifyColorMap(colors);
@@ -702,4 +736,89 @@ TEST_F(BrowserThemePackTest, HiDpiThemeTest) {
     ASSERT_TRUE(pack.get());
     VerifyHiDpiTheme(pack.get());
   }
+}
+
+// Ensure that, given a theme that specifies background tab/text colors which
+// are too similar, the importing process modifies the text color so that it
+// maintains a minimum readable contrast ratio with the background.
+TEST_F(BrowserThemePackTest, TestBackgroundTabTextMinimumContrast) {
+  // Build a theme from test file (theme_tabcontrast).
+  base::FilePath contrast_theme_path =
+      GetTestExtensionThemePath("theme_tabcontrast");
+  scoped_refptr<BrowserThemePack> pack;
+  BuildFromUnpackedExtension(contrast_theme_path, &pack);
+
+  // Check the contrast ratio of text/tab color pairs to make sure that they
+  // meet the minimum criteria for readable contrast ratio.
+  struct TabColorPair {
+    TP::OverwritableByUserThemeProperty tab_color_id;
+    TP::OverwritableByUserThemeProperty text_color_id;
+  };
+  const TabColorPair color_pairs_to_check[] = {
+      {TP::COLOR_BACKGROUND_TAB, TP::COLOR_BACKGROUND_TAB_TEXT},
+      {TP::COLOR_BACKGROUND_TAB_INACTIVE,
+       TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
+      {TP::COLOR_BACKGROUND_TAB_INCOGNITO,
+       TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO},
+      {TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
+       TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE},
+  };
+
+  for (const TabColorPair& current_pair : color_pairs_to_check) {
+    SkColor cur_tab_color;
+    SkColor cur_text_color;
+
+    pack->GetColor(current_pair.tab_color_id, &cur_tab_color);
+    pack->GetColor(current_pair.text_color_id, &cur_text_color);
+
+    float contrast_ratio =
+        color_utils::GetContrastRatio(cur_tab_color, cur_text_color);
+
+    EXPECT_GE(contrast_ratio, color_utils::kMinimumReadableContrastRatio);
+  }
+}
+
+// Ensure that, given a theme which only specifies a color for
+// COLOR_BACKGROUND_TAB_TEXT, that color is used for the other variants of
+// background tab text (inactive, incognito, and incognito+inactive).
+TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign) {
+  // Build a theme from the test file (theme_testinherittextcolor)
+  // This theme specifies a color for background_tab_text, but none of its
+  // variants.
+  base::FilePath contrast_theme_path =
+      GetTestExtensionThemePath("theme_testinherittextcolor");
+  scoped_refptr<BrowserThemePack> pack;
+  BuildFromUnpackedExtension(contrast_theme_path, &pack);
+
+  // Verify that all background tab text colors match the color for background
+  // tab text.
+  BrowserThemePack* pack_ptr = pack.get();
+  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
+                    TP::COLOR_BACKGROUND_TAB_TEXT);
+  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
+                    TP::COLOR_BACKGROUND_TAB_TEXT);
+  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
+                    TP::COLOR_BACKGROUND_TAB_TEXT);
+}
+
+// Ensure that, given a theme which only specifies colors for
+// COLOR_BACKGROUND_TAB_TEXT and COLOR_BACKGROUND_TAB_TEXT_INCOGNITO, those
+// colors are also used for their respective inactive variants.
+TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign_WithIncognito) {
+  // Build a theme from the test file (theme_testinherittextcolor_withincog)
+  // This theme specifies a color for background_tab_text and
+  // background_tab_text_incognito, but neither of their inactive variants.
+  base::FilePath contrast_theme_path =
+      GetTestExtensionThemePath("theme_testinherittextcolor_withincog");
+  scoped_refptr<BrowserThemePack> pack;
+  BuildFromUnpackedExtension(contrast_theme_path, &pack);
+
+  // Verify that background_inactive is getting its color from background, and
+  // background_incognito_inactive is getting its color from
+  // background_incognito.
+  BrowserThemePack* pack_ptr = pack.get();
+  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
+                    TP::COLOR_BACKGROUND_TAB_TEXT);
+  VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
+                    TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO);
 }
