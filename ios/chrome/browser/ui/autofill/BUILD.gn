@@ -92,3 +92,24 @@ source_set("autofill_ui") {
   ]
   libs = [ "UIKit.framework" ]
 }
+
+source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "save_card_infobar_egtest.mm",
+  ]
+  deps = [
+    ":autofill_ui",
+    "//components/autofill/core/browser",
+    "//components/autofill/ios/browser:test_support",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/web/public/test/http_server",
+    "//services/network:test_support",
+  ]
+  libs = [
+    "UIKit.framework",
+    "XCTest.framework",
+  ]
+}

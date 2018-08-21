@@ -38,6 +38,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
 
   ~AutofillSaveCardInfoBarDelegateMobile() override;
 
+  bool upload() const { return upload_; }
   int issuer_icon_id() const { return issuer_icon_id_; }
   const base::string16& card_label() const { return card_label_; }
   const base::string16& card_sub_label() const { return card_sub_label_; }

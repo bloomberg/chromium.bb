@@ -7,6 +7,9 @@
 
 #import "ios/chrome/browser/infobars/infobar_controller.h"
 
+extern NSString* const kSaveCardInfobarViewLocalAccessibilityID;
+extern NSString* const kSaveCardInfobarViewUploadAccessibilityID;
+
 namespace autofill {
 class AutofillSaveCardInfoBarDelegateMobile;
 }  // namespace autofill

@@ -25,6 +25,11 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kSaveCardInfobarViewLocalAccessibilityID =
+    @"SaveCardInfobarViewLocalAccessibilityID";
+NSString* const kSaveCardInfobarViewUploadAccessibilityID =
+    @"SaveCardInfobarViewUploadAccessibilityID";
+
 namespace {
 
 // Returns whether the UI Refresh Infobar will be used.
@@ -77,6 +82,10 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
   SaveCardInfoBarView* infoBarView =
       [[SaveCardInfoBarView alloc] initWithFrame:frame];
   self.infoBarView = infoBarView;
+  self.infoBarView.accessibilityIdentifier =
+      self.saveCardInfobarDelegate->upload()
+          ? kSaveCardInfobarViewUploadAccessibilityID
+          : kSaveCardInfobarViewLocalAccessibilityID;
   self.infoBarView.delegate = self;
 
   // Close button.

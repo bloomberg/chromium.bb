@@ -142,6 +142,7 @@ class FormDataImporter {
   friend class FormDataImporterTest;
   friend class FormDataImporterTestBase;
   friend class SaveCardBubbleViewsBrowserTestBase;
+  friend class SaveCardInfobarEGTestHelper;
   FRIEND_TEST_ALL_PREFIXES(AutofillMergeTest, MergeProfiles);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            AllowDuplicateMaskedServerCardIfFlagEnabled);
