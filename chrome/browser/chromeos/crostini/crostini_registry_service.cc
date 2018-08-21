@@ -16,6 +16,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
@@ -37,7 +38,6 @@ constexpr char kCrostiniWindowAppIdPrefix[] = "org.chromium.termina.";
 // This comes after kCrostiniWindowAppIdPrefix
 constexpr char kWMClassPrefix[] = "wmclass.";
 
-constexpr char kCrostiniRegistryPref[] = "crostini.registry";
 constexpr char kCrostiniIconFolder[] = "crostini.icons";
 
 // Keys for the Dictionary stored in prefs for each app.
@@ -369,7 +369,7 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
     const std::string* window_app_id,
     const std::string* window_startup_id) {
   const base::DictionaryValue* apps =
-      prefs_->GetDictionary(kCrostiniRegistryPref);
+      prefs_->GetDictionary(prefs::kCrostiniRegistry);
   std::string app_id;
 
   if (window_startup_id) {
@@ -443,13 +443,13 @@ bool CrostiniRegistryService::IsCrostiniShelfAppId(
   // TODO(timloh): We need to handle desktop files that have been removed.
   // For example, running windows with a no-longer-valid app id will try to
   // use the ExtensionContextMenuModel.
-  return prefs_->GetDictionary(kCrostiniRegistryPref)->FindKey(shelf_app_id) !=
-         nullptr;
+  return prefs_->GetDictionary(prefs::kCrostiniRegistry)
+             ->FindKey(shelf_app_id) != nullptr;
 }
 
 std::vector<std::string> CrostiniRegistryService::GetRegisteredAppIds() const {
   const base::DictionaryValue* apps =
-      prefs_->GetDictionary(kCrostiniRegistryPref);
+      prefs_->GetDictionary(prefs::kCrostiniRegistry);
   std::vector<std::string> result;
   for (const auto& item : apps->DictItems())
     result.push_back(item.first);
@@ -461,7 +461,7 @@ std::vector<std::string> CrostiniRegistryService::GetRegisteredAppIds() const {
 base::Optional<CrostiniRegistryService::Registration>
 CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
   const base::DictionaryValue* apps =
-      prefs_->GetDictionary(kCrostiniRegistryPref);
+      prefs_->GetDictionary(prefs::kCrostiniRegistry);
   const base::Value* pref_registration =
       apps->FindKeyOfType(app_id, base::Value::Type::DICTIONARY);
 
@@ -475,7 +475,7 @@ CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
 
 void CrostiniRegistryService::RecordStartupMetrics() {
   const base::DictionaryValue* apps =
-      prefs_->GetDictionary(kCrostiniRegistryPref);
+      prefs_->GetDictionary(prefs::kCrostiniRegistry);
 
   if (!IsCrostiniEnabled(profile_))
     return;
@@ -556,7 +556,7 @@ void CrostiniRegistryService::ClearApplicationList(
   std::vector<std::string> removed_apps;
   // The DictionaryPrefUpdate should be destructed before calling the observer.
   {
-    DictionaryPrefUpdate update(prefs_, kCrostiniRegistryPref);
+    DictionaryPrefUpdate update(prefs_, prefs::kCrostiniRegistry);
     base::DictionaryValue* apps = update.Get();
 
     for (const auto& item : apps->DictItems()) {
@@ -603,7 +603,7 @@ void CrostiniRegistryService::UpdateApplicationList(
 
   // The DictionaryPrefUpdate should be destructed before calling the observer.
   {
-    DictionaryPrefUpdate update(prefs_, kCrostiniRegistryPref);
+    DictionaryPrefUpdate update(prefs_, prefs::kCrostiniRegistry);
     base::DictionaryValue* apps = update.Get();
     for (const App& app : app_list.apps()) {
       if (app.desktop_file_id().empty()) {
@@ -723,7 +723,7 @@ void CrostiniRegistryService::RemoveObserver(Observer* observer) {
 }
 
 void CrostiniRegistryService::AppLaunched(const std::string& app_id) {
-  DictionaryPrefUpdate update(prefs_, kCrostiniRegistryPref);
+  DictionaryPrefUpdate update(prefs_, prefs::kCrostiniRegistry);
   base::DictionaryValue* apps = update.Get();
 
   base::Value* app = apps->FindKey(app_id);
@@ -743,12 +743,6 @@ void CrostiniRegistryService::SetCurrentTime(base::Value* dictionary,
   DCHECK(dictionary);
   int64_t time = clock_->Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
   dictionary->SetKey(key, base::Value(base::Int64ToString(time)));
-}
-
-// static
-void CrostiniRegistryService::RegisterProfilePrefs(
-    PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kCrostiniRegistryPref);
 }
 
 void CrostiniRegistryService::RequestIcon(const std::string& app_id,
