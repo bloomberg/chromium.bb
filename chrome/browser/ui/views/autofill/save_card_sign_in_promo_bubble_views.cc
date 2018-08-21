@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/autofill/save_card_sign_in_promo_bubble_views.h"
 
+#include <memory>
+
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
@@ -49,7 +51,8 @@ SaveCardSignInPromoBubbleViews::CreateMainContentView() {
   Profile* profile = controller()->GetProfile();
   sync_promo_delegate_ =
       std::make_unique<SaveCardSignInPromoBubbleViews::SyncPromoDelegate>(
-          controller());
+          controller(),
+          signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE);
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     view->AddChildView(new DiceBubbleSyncPromoView(

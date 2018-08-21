@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_BUBBLE_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_BUBBLE_VIEWS_H_
 
+#include <memory>
+
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
+#include "components/signin/core/browser/signin_metrics.h"
 
 namespace content {
 class WebContents;
@@ -61,7 +64,8 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   // consistency is enabled.
   class SyncPromoDelegate : public BubbleSyncPromoDelegate {
    public:
-    explicit SyncPromoDelegate(SaveCardBubbleController* controller);
+    SyncPromoDelegate(SaveCardBubbleController* controller,
+                      signin_metrics::AccessPoint access_point);
 
     // BubbleSyncPromoDelegate:
     void OnEnableSync(const AccountInfo& account,
@@ -69,6 +73,8 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
 
    private:
     SaveCardBubbleController* controller_;
+
+    signin_metrics::AccessPoint access_point_;
 
     DISALLOW_COPY_AND_ASSIGN(SyncPromoDelegate);
   };
@@ -82,7 +88,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
 
   SaveCardBubbleController* controller() {
     return controller_;
-  };  // Weak reference.
+  }  // Weak reference.
 
   // Attributes IDs to the DialogClientView and its buttons.
   void AssignIdsToDialogClientView();

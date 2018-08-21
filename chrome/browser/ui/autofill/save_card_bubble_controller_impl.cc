@@ -256,14 +256,13 @@ bool SaveCardBubbleControllerImpl::CanAnimate() const {
 
 void SaveCardBubbleControllerImpl::OnSyncPromoAccepted(
     const AccountInfo& account,
+    signin_metrics::AccessPoint access_point,
     bool is_default_promo_account) {
   DCHECK(current_bubble_type_ == BubbleType::SIGN_IN_PROMO ||
          current_bubble_type_ == BubbleType::MANAGE_CARDS);
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  signin_ui_util::EnableSyncFromPromo(
-      browser, account,
-      signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
-      is_default_promo_account);
+  signin_ui_util::EnableSyncFromPromo(browser, account, access_point,
+                                      is_default_promo_account);
 }
 
 void SaveCardBubbleControllerImpl::OnSaveButton(

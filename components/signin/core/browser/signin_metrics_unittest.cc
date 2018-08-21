@@ -33,7 +33,8 @@ const AccessPoint kAccessPointsThatSupportImpression[] = {
     AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS,
     AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR,
     AccessPoint::ACCESS_POINT_TAB_SWITCHER,
-    AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE};
+    AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
+    AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE};
 
 const AccessPoint kAccessPointsThatSupportPersonalizedPromos[] = {
     AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER,
@@ -45,7 +46,8 @@ const AccessPoint kAccessPointsThatSupportPersonalizedPromos[] = {
     AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE,
     AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
     AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS,
-    AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE};
+    AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
+    AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE};
 
 class SigninMetricsTest : public ::testing::Test {
  public:
@@ -101,6 +103,8 @@ class SigninMetricsTest : public ::testing::Test {
         return "ForceSigninWarning";
       case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
         return "SaveCardBubble";
+      case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
+        return "ManageCardsBubble";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";

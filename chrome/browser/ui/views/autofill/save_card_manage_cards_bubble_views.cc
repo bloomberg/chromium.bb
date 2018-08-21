@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/autofill/save_card_manage_cards_bubble_views.h"
 
+#include <memory>
+
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
@@ -38,12 +40,13 @@ views::View* SaveCardManageCardsBubbleViews::CreateFootnoteView() {
   Profile* profile = controller()->GetProfile();
   sync_promo_delegate_ =
       std::make_unique<SaveCardManageCardsBubbleViews::SyncPromoDelegate>(
-          controller());
+          controller(),
+          signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE);
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     footnote_view_ = new DiceBubbleSyncPromoView(
         profile, sync_promo_delegate_.get(),
-        signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
+        signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE,
         IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE, IDS_AUTOFILL_SYNC_PROMO_MESSAGE,
         /*prominent=*/false, ChromeTextStyle::STYLE_SECONDARY);
 #else
@@ -52,7 +55,7 @@ views::View* SaveCardManageCardsBubbleViews::CreateFootnoteView() {
   } else {
     footnote_view_ = new BubbleSyncPromoView(
         sync_promo_delegate_.get(),
-        signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
+        signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE,
         IDS_AUTOFILL_SIGNIN_PROMO_LINK_DICE_DISABLED,
         IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE_DICE_DISABLED);
   }

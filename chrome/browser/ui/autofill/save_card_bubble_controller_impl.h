@@ -88,6 +88,7 @@ class SaveCardBubbleControllerImpl
   bool ShouldShowSignInPromo() const override;
   bool CanAnimate() const override;
   void OnSyncPromoAccepted(const AccountInfo& account,
+                           signin_metrics::AccessPoint access_point,
                            bool is_default_promo_account) override;
   void OnSaveButton(
       const base::string16& cardholder_name = base::string16()) override;

@@ -43926,6 +43926,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="21" label="Re-signin infobar"/>
   <int value="22" label="Tab switcher"/>
   <int value="23" label="Force signin warning"/>
+  <int value="24" label="Save card bubble"/>
+  <int value="25" label="Manage cards bubble"/>
 </enum>
 
 <enum name="SigninAccountEquality">

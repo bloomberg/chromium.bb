@@ -16431,6 +16431,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Impression_FromManageCardsBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the manage cards bubble.
+  </description>
+</action>
+
 <action name="Signin_Impression_FromMenu">
   <owner>gogerald@chromium.org</owner>
   <description>Recorded when showing sign in entry in the menu.</description>
@@ -16545,6 +16554,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_ImpressionWithAccount_FromManageCardsBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with an account in the
+    manage cards bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE).
+  </description>
+</action>
+
 <action name="Signin_ImpressionWithAccount_FromNTPContentSuggestions">
   <owner>bsazonov@chromium.org</owner>
   <description>
@@ -16557,7 +16577,7 @@ should be able to be added at any place in this file.
 <action name="Signin_ImpressionWithAccount_FromPasswordBubble">
   <owner>msarda@chromium.org</owner>
   <description>
-    Recorded when the personalized sign-in promo is shown with no account in the
+    Recorded when the personalized sign-in promo is shown with an account in the
     password saved bubble.
     (signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE).
   </description>
@@ -16576,7 +16596,7 @@ should be able to be added at any place in this file.
   <owner>jsaul@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <description>
-    Recorded when the personalized sign-in promo is shown with no account in the
+    Recorded when the personalized sign-in promo is shown with an account in the
     save card bubble.
     (signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE).
   </description>
@@ -16631,6 +16651,17 @@ should be able to be added at any place in this file.
     Recorded when the personalized sign-in promo is shown with no account in the
     extension install bubble.
     (signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithNoAccount_FromManageCardsBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with no account in the
+    manage cards bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE).
   </description>
 </action>
 
@@ -16803,6 +16834,16 @@ should be able to be added at any place in this file.
   <description>
     Record when a user signs in again from the force sign in auth error warning
     modal dialog.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromManageCardsBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE.
   </description>
 </action>
 
@@ -17106,6 +17147,19 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninNewAccountExistingAccount_FromManageCardsBubble">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>manasverma@google.com</owner>
+  <owner>msarda@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE, with a new
+    account, while Chrome already has other accounts.
+  </description>
+</action>
+
 <action name="Signin_SigninNewAccountExistingAccount_FromNTPContentSuggestions">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -17211,6 +17265,20 @@ should be able to be added at any place in this file.
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE, with a
     new account, while Chrome does not have other accounts.
+  </description>
+</action>
+
+<action name="Signin_SigninNewAccountNoExistingAccount_FromManageCardsBubble">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>manasverma@google.com</owner>
+  <owner>msarda@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE, with a new
+    account, while Chrome does not have other accounts, while Chrome does not
+    have other accounts.
   </description>
 </action>
 
@@ -17323,6 +17391,19 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_SigninNewAccountPreDice_FromManageCardsBubble">
+  <owner>bsazonov@chromium.org</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>manasverma@google.com</owner>
+  <owner>msarda@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE, with a new
+    account, while Chrome does not have other accounts, on desktop pre-Dice.
+  </description>
+</action>
+
 <action name="Signin_SigninNewAccountPreDice_FromNTPContentSuggestions">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -17427,6 +17508,17 @@ should be able to be added at any place in this file.
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE, using
     another account than the default one.
+  </description>
+</action>
+
+<action name="Signin_SigninNotDefault_FromManageCardsBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE, using another
+    account than the default one.
   </description>
 </action>
 
@@ -17544,6 +17636,17 @@ should be able to be added at any place in this file.
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE, using
     the default account.
+  </description>
+</action>
+
+<action name="Signin_SigninWithDefault_FromManageCardsBubble">
+  <owner>manasverma@google.com</owner>
+  <owner>jsaul@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE, using the
+    default account.
   </description>
 </action>
 
