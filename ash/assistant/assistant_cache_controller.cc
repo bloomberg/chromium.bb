@@ -6,18 +6,32 @@
 
 #include <vector>
 
+#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
+#include "base/rand_util.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
 
-AssistantCacheController::AssistantCacheController()
-    : voice_interaction_binding_(this) {
+namespace {
+
+// Conversation starters.
+constexpr int kNumOfConversationStarters = 3;
+
+}  // namespace
+
+AssistantCacheController::AssistantCacheController(
+    AssistantController* assistant_controller)
+    : assistant_controller_(assistant_controller),
+      voice_interaction_binding_(this) {
   UpdateConversationStarters();
+
+  assistant_controller_->AddObserver(this);
 
   // Bind to observe changes to screen context preference.
   mojom::VoiceInteractionObserverPtr ptr;
@@ -25,7 +39,9 @@ AssistantCacheController::AssistantCacheController()
   Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
 }
 
-AssistantCacheController::~AssistantCacheController() = default;
+AssistantCacheController::~AssistantCacheController() {
+  assistant_controller_->RemoveObserver(this);
+}
 
 void AssistantCacheController::AddModelObserver(
     AssistantCacheModelObserver* observer) {
@@ -35,6 +51,22 @@ void AssistantCacheController::AddModelObserver(
 void AssistantCacheController::RemoveModelObserver(
     AssistantCacheModelObserver* observer) {
   model_.RemoveObserver(observer);
+}
+
+void AssistantCacheController::OnAssistantControllerConstructed() {
+  assistant_controller_->ui_controller()->AddModelObserver(this);
+}
+
+void AssistantCacheController::OnAssistantControllerDestroying() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
+}
+
+void AssistantCacheController::OnUiVisibilityChanged(bool visible,
+                                                     AssistantSource source) {
+  // When hiding the UI we update our cache of conversation starters so that
+  // they're fresh for the next session.
+  if (!visible)
+    UpdateConversationStarters();
 }
 
 void AssistantCacheController::OnVoiceInteractionContextEnabled(bool enabled) {
@@ -56,22 +88,34 @@ void AssistantCacheController::UpdateConversationStarters() {
     conversation_starters.push_back(std::move(starter));
   };
 
+  // Always show the "What can you do?" conversation starter.
   AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHAT_CAN_YOU_DO);
 
+  // Always show the "What's on my screen?" conversation starter (if enabled).
   if (Shell::Get()->voice_interaction_controller()->context_enabled()) {
     AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN,
                            assistant::util::CreateWhatsOnMyScreenDeepLink());
   }
 
-  AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_CALENDAR);
+  // The rest of the conversation starters will be shuffled...
+  int shuffled_message_ids[] = {
+      IDS_ASH_ASSISTANT_CHIP_IM_BORED,
+      IDS_ASH_ASSISTANT_CHIP_OPEN_FILES,
+      IDS_ASH_ASSISTANT_CHIP_PLAY_MUSIC,
+      IDS_ASH_ASSISTANT_CHIP_SEND_AN_EMAIL,
+      IDS_ASH_ASSISTANT_CHIP_SET_A_REMINDER,
+      IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_CALENDAR,
+      IDS_ASH_ASSISTANT_CHIP_WHATS_THE_WEATHER,
+  };
 
-  // TODO(dmblack): Shuffle these chips and limit our total chip count to four.
-  AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_PLAY_MUSIC);
-  AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_SEND_AN_EMAIL);
-  AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_THE_WEATHER);
-  AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_IM_BORED);
-  AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_OPEN_FILES);
-  AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_SET_A_REMINDER);
+  base::RandomShuffle(std::begin(shuffled_message_ids),
+                      std::end(shuffled_message_ids));
+
+  // ...and will be added until we reach |kNumOfConversationStarters|.
+  for (int i = 0; conversation_starters.size() < kNumOfConversationStarters;
+       ++i) {
+    AddConversationStarter(shuffled_message_ids[i]);
+  }
 
   model_.SetConversationStarters(std::move(conversation_starters));
 }

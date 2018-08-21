@@ -55,18 +55,25 @@ int SuggestionContainerView::GetHeightForWidth(int width) const {
 
 void SuggestionContainerView::OnContentsPreferredSizeChanged(
     views::View* content_view) {
-  const int preferred_width = content_view->GetPreferredSize().width();
-  content_view->SetSize(gfx::Size(preferred_width, kPreferredHeightDip));
+  // Our contents should never be smaller than our container width because when
+  // showing conversation starters we will be center aligned.
+  const int width =
+      std::max(content_view->GetPreferredSize().width(), this->width());
+  content_view->SetSize(gfx::Size(width, kPreferredHeightDip));
 }
 
 void SuggestionContainerView::InitLayout() {
-  views::BoxLayout* layout_manager =
+  layout_manager_ =
       content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
           gfx::Insets(0, kPaddingDip), kSpacingDip));
 
-  layout_manager->set_cross_axis_alignment(
+  layout_manager_->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_END);
+
+  // We center align when showing conversation starters.
+  layout_manager_->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
 }
 
 void SuggestionContainerView::OnConversationStartersChanged(
@@ -81,6 +88,11 @@ void SuggestionContainerView::OnResponseChanged(
   has_received_response_ = true;
 
   OnSuggestionsCleared();
+
+  // When no longer showing conversation starters, we start align our content.
+  layout_manager_->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_START);
+
   OnSuggestionsChanged(response.GetSuggestions());
 }
 
@@ -183,6 +195,11 @@ void SuggestionContainerView::OnUiVisibilityChanged(bool visible,
   } else {
     // Reset view state.
     has_received_response_ = false;
+
+    // When we become visible again we will be showing conversation starters so
+    // we need to center align our content.
+    layout_manager_->set_main_axis_alignment(
+        views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
   }
 }
 

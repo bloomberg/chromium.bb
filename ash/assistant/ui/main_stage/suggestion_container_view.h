@@ -16,6 +16,10 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/views/controls/scroll_view.h"
 
+namespace views {
+class BoxLayout;
+}  // namespace views
+
 namespace ash {
 
 class AssistantController;
@@ -67,6 +71,8 @@ class SuggestionContainerView : public AssistantScrollView,
   void OnSuggestionChipIconDownloaded(int id, const gfx::ImageSkia& icon);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
+
+  views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
 
   // Cache of suggestion chip views owned by the view hierarchy. The key for the
   // map is the unique identifier by which the Assistant interaction model

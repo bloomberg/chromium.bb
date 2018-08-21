@@ -25,7 +25,8 @@ namespace ash {
 
 AssistantController::AssistantController()
     : assistant_volume_control_binding_(this),
-      assistant_cache_controller_(std::make_unique<AssistantCacheController>()),
+      assistant_cache_controller_(
+          std::make_unique<AssistantCacheController>(this)),
       assistant_interaction_controller_(
           std::make_unique<AssistantInteractionController>(this)),
       assistant_notification_controller_(
