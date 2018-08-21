@@ -123,9 +123,6 @@ class ASH_EXPORT AssistantController
   // TODO(dmblack): Support opening specific URLs in the Assistant container.
   void OpenUrl(const GURL& url);
 
-  // Called before dtor to deregister services and avoid life cycle issues.
-  void ShutDown();
-
   AssistantCacheController* cache_controller() {
     DCHECK(assistant_cache_controller_);
     return assistant_cache_controller_.get();

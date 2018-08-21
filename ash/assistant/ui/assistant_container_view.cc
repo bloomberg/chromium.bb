@@ -32,12 +32,11 @@ namespace ash {
 
 namespace {
 
-constexpr int kClamshellMarginBottomDip = 8;  // Margin in clamshell mode.
-constexpr int kTabletMarginTopDip = 24;       // Margin in tablet mode.
-
 // Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 constexpr int kCornerRadiusDip = 20;
+constexpr int kClamshellMarginBottomDip = 8;  // Margin in clamshell mode.
+constexpr int kTabletMarginTopDip = 24;       // Margin in tablet mode.
 
 // Animation.
 constexpr int kResizeAnimationDurationMs = 250;
@@ -163,9 +162,11 @@ AssistantContainerView::AssistantContainerView(
   // AssistantContainerView belongs so is guaranteed to outlive it.
   assistant_controller_->ui_controller()->AddModelObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
 AssistantContainerView::~AssistantContainerView() {
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
@@ -281,9 +282,12 @@ void AssistantContainerView::RequestFocus() {
 }
 
 void AssistantContainerView::SetAnchor(aura::Window* root_window) {
+  // If |root_window| is not specified, we'll use the root window corresponding
+  // to where new windows will be opened.
   if (!root_window)
     root_window = Shell::Get()->GetRootWindowForNewWindows();
-  // Anchor to the display matching where new windows will be opened.
+
+  // Anchor to the display matching |root_window|.
   display::Display display = display::Screen::GetScreen()->GetDisplayMatching(
       root_window->GetBoundsInScreen());
 
@@ -291,7 +295,8 @@ void AssistantContainerView::SetAnchor(aura::Window* root_window) {
                          ->tablet_mode_controller()
                          ->IsTabletModeWindowManagerEnabled();
 
-  // Anchor to the bottom center of the work area.
+  // Align to the horizontal center of the work area. We are top aligned in
+  // tablet mode, bottom aligned in clamshell.
   gfx::Rect work_area = display.work_area();
   gfx::Rect anchor =
       gfx::Rect(work_area.x(),
@@ -335,8 +340,9 @@ void AssistantContainerView::AnimationProgressed(
   // Retrieve current bounds.
   gfx::Rect bounds = GetWidget()->GetWindowBoundsInScreen();
 
-  // Our view is horizontally centered and bottom aligned. As such, we should
-  // retain the same |bottom| and |center_x| position after resizing.
+  // Our view is horizontally centered. As such, we should retain the same
+  // |center_x| position after resizing. In clamshell mode, we are bottom
+  // aligned so we cache |bottom| position here as well.
   const int bottom = bounds.bottom();
   const int center_x = bounds.CenterPoint().x();
 
@@ -350,19 +356,15 @@ void AssistantContainerView::AnimationProgressed(
   if (!Shell::Get()
            ->tablet_mode_controller()
            ->IsTabletModeWindowManagerEnabled()) {
-    // Maintain our original |bottom| positions in clamshell mode. In tablet
-    // mode, they should grow downwards, which is the default behavior.
+    // Maintain our original |bottom| position in clamshell mode. In tablet
+    // mode we grow downwards which is the default behavior.
     bounds.set_y(bottom - bounds.height());
   }
+
   // Maintain |center_x| position.
   bounds.set_x(center_x - (bounds.width() / 2));
 
   GetWidget()->SetBounds(bounds);
-}
-
-void AssistantContainerView::OnTabletModeChanged() {
-  DCHECK(GetWidget());
-  SetAnchor(GetWidget()->GetNativeWindow()->GetRootWindow());
 }
 
 void AssistantContainerView::OnDisplayMetricsChanged(
@@ -371,6 +373,16 @@ void AssistantContainerView::OnDisplayMetricsChanged(
   aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
   if (root_window == Shell::Get()->GetRootWindowForDisplayId(display.id()))
     SetAnchor(root_window);
+}
+
+void AssistantContainerView::OnTabletModeStarted() {
+  DCHECK(GetWidget());
+  SetAnchor(GetWidget()->GetNativeWindow()->GetRootWindow());
+}
+
+void AssistantContainerView::OnTabletModeEnded() {
+  DCHECK(GetWidget());
+  SetAnchor(GetWidget()->GetNativeWindow()->GetRootWindow());
 }
 
 }  // namespace ash
