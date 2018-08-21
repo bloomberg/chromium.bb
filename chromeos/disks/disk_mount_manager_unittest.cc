@@ -68,7 +68,7 @@ struct TestMountPointInfo {
   chromeos::disks::MountCondition mount_condition;
 };
 
-// List of disks held in DiskMountManager at the begining of the test.
+// List of disks held in DiskMountManager at the beginning of the test.
 const TestDiskInfo kTestDisks[] = {
     {
         kDevice1SourcePath,
@@ -126,7 +126,7 @@ const TestDiskInfo kTestDisks[] = {
     },
 };
 
-// List of mount points  held in DiskMountManager at the begining of the test.
+// List of mount points held in DiskMountManager at the beginning of the test.
 const TestMountPointInfo kTestMountPoints[] = {
   {
     "/archive/source_path",
@@ -493,7 +493,7 @@ class DiskMountManagerTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
   ~DiskMountManagerTest() override = default;
 
-  // Sets up test dbus tread manager and disks mount manager.
+  // Sets up test dbus thread manager and disks mount manager.
   // Initializes disk mount manager disks and mount points.
   // Adds a test observer to the disk mount manager.
   void SetUp() override {
@@ -510,7 +510,7 @@ class DiskMountManagerTest : public testing::Test {
     DiskMountManager::GetInstance()->AddObserver(observer_.get());
   }
 
-  // Shuts down dbus thread manager and disk moutn manager used in the test.
+  // Shuts down dbus thread manager and disk mount manager used in the test.
   void TearDown() override {
     DiskMountManager::GetInstance()->RemoveObserver(observer_.get());
     DiskMountManager::Shutdown();
@@ -518,7 +518,7 @@ class DiskMountManagerTest : public testing::Test {
   }
 
  protected:
-  // Checks if disk mount manager contains a mount point with specified moutn
+  // Checks if disk mount manager contains a mount point with specified mount
   // path.
   bool HasMountPoint(const std::string& mount_path) {
     const DiskMountManager::MountPointMap& mount_points =

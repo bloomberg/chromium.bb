@@ -334,7 +334,7 @@ class DiskMountManagerImpl : public DiskMountManager,
     const std::string& mount_path = disk.mount_path();
     MountPointMap::const_iterator mount_point = mount_points_.find(mount_path);
     if (mount_point == mount_points_.end()) {
-      // Not in mount_points_. This happens when the mount_points ans disks_ are
+      // Not in mount_points_. This happens when the mount_points and disks_ are
       // inconsistent.
       LOG(ERROR) << "Mount point with path \"" << mount_path << "\" not found.";
       OnMountCompleted(
