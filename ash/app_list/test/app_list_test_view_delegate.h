@@ -32,10 +32,13 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   AppListTestViewDelegate();
   ~AppListTestViewDelegate() override;
 
-  int dismiss_count() { return dismiss_count_; }
-  int open_search_result_count() { return open_search_result_count_; }
+  int dismiss_count() const { return dismiss_count_; }
+  int open_search_result_count() const { return open_search_result_count_; }
   std::map<size_t, int>& open_search_result_counts() {
     return open_search_result_counts_;
+  }
+  int show_wallpaper_context_menu_count() const {
+    return show_wallpaper_context_menu_count_;
   }
 
   // Sets the number of apps that the model will be created with the next time
@@ -72,7 +75,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                                int command_id,
                                int event_flags) override {}
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
-                                ui::MenuSourceType source_type) override {}
+                                ui::MenuSourceType source_type) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);
@@ -89,6 +92,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   int dismiss_count_ = 0;
   int open_search_result_count_ = 0;
   int next_profile_app_count_ = 0;
+  int show_wallpaper_context_menu_count_ = 0;
   std::map<size_t, int> open_search_result_counts_;
   std::unique_ptr<AppListTestModel> model_;
   std::unique_ptr<SearchModel> search_model_;
