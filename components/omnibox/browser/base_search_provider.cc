@@ -496,9 +496,6 @@ bool BaseSearchProvider::ParseSuggestResults(
           default_result_relevance, is_keyword_result, results))
     return false;
 
-  for (const GURL& url : results->prefetch_image_urls)
-    client_->PrefetchImage(url);
-
   field_trial_triggered_ |= results->field_trial_triggered;
   field_trial_triggered_in_session_ |= results->field_trial_triggered;
   return true;

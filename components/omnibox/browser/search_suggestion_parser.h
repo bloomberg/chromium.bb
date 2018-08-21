@@ -275,7 +275,9 @@ class SearchSuggestionParser {
     // server-provided scores.
     bool HasServerProvidedScores() const;
 
-    // Query suggestions sorted by relevance score.
+    // Query suggestions sorted by relevance score, descending. This order is
+    // normally provided by server and is guaranteed after search provider
+    // calls SortResults, so order always holds except possibly while parsing.
     SuggestResults suggest_results;
 
     // Navigational suggestions sorted by relevance score.
@@ -294,9 +296,6 @@ class SearchSuggestionParser {
 
     // If the relevance values of the results are from the server.
     bool relevances_from_server;
-
-    // URLs of any images in results that should be prefetched into the cache.
-    SuggestionAnswer::URLs prefetch_image_urls;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Results);

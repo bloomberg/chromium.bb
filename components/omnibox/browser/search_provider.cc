@@ -428,8 +428,10 @@ void SearchProvider::OnURLLoadComplete(
       SearchSuggestionParser::Results* results =
           is_keyword ? &keyword_results_ : &default_results_;
       results_updated = ParseSuggestResults(*data, -1, is_keyword, results);
-      if (results_updated)
+      if (results_updated) {
         SortResults(is_keyword, results);
+        PrefetchImages(results);
+      }
     }
   }
 
@@ -1593,4 +1595,31 @@ AnswersQueryData SearchProvider::FindAnswersPrefetchData() {
     return answers_cache_.GetTopAnswerEntry(matches[0].contents);
 
   return AnswersQueryData();
+}
+
+void SearchProvider::PrefetchImages(SearchSuggestionParser::Results* results) {
+  // The server sends back as many as 20 suggestions that may have
+  // images but only a few of these will end up getting shown.  Limit the images
+  // prefetched to those for most relevant results that will get shown.  This
+  // will prevent blasting the cache, causing reloads & flicker.  The results
+  // are processed in descending order of relevance so the first suggestions are
+  // the ones to be shown; prefetching images for the rest would be wasteful.
+  std::vector<GURL> prefetch_image_urls;
+  int prefetch_limit = AutocompleteResult::GetMaxMatches();
+  for (const auto& suggestion : results->suggest_results) {
+    if (prefetch_limit <= 0)
+      break;
+    prefetch_limit--;
+
+    const auto& image_url = suggestion.image_url();
+    if (!image_url.empty())
+      prefetch_image_urls.push_back(GURL(image_url));
+
+    const SuggestionAnswer* answer = suggestion.answer();
+    if (answer)
+      answer->AddImageURLsTo(&prefetch_image_urls);
+  }
+
+  for (const GURL& url : prefetch_image_urls)
+    client()->PrefetchImage(url);
 }

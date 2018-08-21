@@ -486,7 +486,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
   // Clear the previous results now that new results are available.
   results->suggest_results.clear();
   results->navigation_results.clear();
-  results->prefetch_image_urls.clear();
 
   base::string16 suggestion;
   std::string type;
@@ -575,10 +574,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
           suggestion_detail->GetString("i", &image_url);
           suggestion_detail->GetString("q", &suggest_query_params);
 
-          if (!image_url.empty()) {
-            results->prefetch_image_urls.push_back(GURL(image_url));
-          }
-
           // Extract the Answer, if provided.
           const base::DictionaryValue* answer_json = nullptr;
           if (suggestion_detail->GetDictionary("ansa", &answer_json) &&
@@ -591,7 +586,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
               answer_parsed_successfully = true;
 
               answer->set_type(answer_type);
-              answer->AddImageURLsTo(&results->prefetch_image_urls);
 
               std::string contents;
               base::JSONWriter::Write(*answer_json, &contents);
