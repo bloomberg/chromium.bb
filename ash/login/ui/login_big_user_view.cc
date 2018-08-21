@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/login/ui/login_big_user_view.h"
+#include "ash/public/cpp/login_constants.h"
+#include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {
@@ -29,6 +33,11 @@ LoginBigUserView::LoginBigUserView(
       public_account_callbacks_(public_account_callbacks) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   CreateChildView(user);
+
+  observer_.Add(Shell::Get()->wallpaper_controller());
+  // Adding the observer will not run OnWallpaperBlurChanged; run it now to set
+  // the initial state.
+  OnWallpaperBlurChanged();
 }
 
 LoginBigUserView::~LoginBigUserView() = default;
@@ -80,6 +89,21 @@ void LoginBigUserView::RequestFocus() {
   if (public_account_)
     return public_account_->RequestFocus();
   return auth_user_->RequestFocus();
+}
+
+void LoginBigUserView::OnWallpaperBlurChanged() {
+  if (Shell::Get()->wallpaper_controller()->IsWallpaperBlurred()) {
+    SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
+    SetBackground(nullptr);
+  } else {
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+    SetBackground(views::CreateBackgroundFromPainter(
+        views::Painter::CreateSolidRoundRectPainter(
+            SkColorSetA(login_constants::kDefaultBaseColor,
+                        login_constants::kNonBlurredWallpaperBackgroundAlpha),
+            login_constants::kNonBlurredWallpaperBackgroundRadiusDp)));
+  }
 }
 
 void LoginBigUserView::CreateAuthUser(const mojom::LoginUserInfoPtr& user) {

@@ -141,7 +141,7 @@ class SelectionButtonView : public LoginButton {
   ~SelectionButtonView() override = default;
 
   // Return the preferred height of this view. This overrides the default
-  // behavior in FillLayout::GetPreferredHeightForWidth which caluculates the
+  // behavior in FillLayout::GetPreferredHeightForWidth which calculates the
   // height based on its child height.
   int GetHeightForWidth(int w) const override {
     return GetPreferredSize().height();

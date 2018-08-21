@@ -19,7 +19,7 @@ class LoginUserView;
 class RightPaneView;
 class PublicAccountWarningDialog;
 
-// Implements an expanded view for the public acount user to select language
+// Implements an expanded view for the public account user to select language
 // and keyboard options.
 class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
  public:

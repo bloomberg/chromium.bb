@@ -11,14 +11,18 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/interfaces/user_info.mojom.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 
 namespace ash {
+
+class WallpaperController;
 
 // Displays the big user view in the login screen. This is a container view
 // which has one of the following views as its only child:
 //  - LoginAuthUserView: for regular user.
 //  - LoginPublicAccountUserView: for public account user.
-class ASH_EXPORT LoginBigUserView : public NonAccessibleView {
+class ASH_EXPORT LoginBigUserView : public NonAccessibleView,
+                                    public WallpaperControllerObserver {
  public:
   LoginBigUserView(
       const mojom::LoginUserInfoPtr& user,
@@ -43,6 +47,9 @@ class ASH_EXPORT LoginBigUserView : public NonAccessibleView {
   // views::View:
   void RequestFocus() override;
 
+  // WallpaperControllerObserver:
+  void OnWallpaperBlurChanged() override;
+
  private:
   // Create LoginAuthUserView and add it as child view.
   // |public_account_| will be deleted if exists to ensure the single child.
@@ -58,6 +65,8 @@ class ASH_EXPORT LoginBigUserView : public NonAccessibleView {
 
   LoginAuthUserView::Callbacks auth_user_callbacks_;
   LoginPublicAccountUserView::Callbacks public_account_callbacks_;
+
+  ScopedObserver<WallpaperController, LoginBigUserView> observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginBigUserView);
 };
