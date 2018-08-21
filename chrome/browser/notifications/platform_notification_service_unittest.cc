@@ -21,22 +21,18 @@
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/test_history_database.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
-#include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
@@ -47,8 +43,6 @@
 #include "extensions/common/value_builder.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-using ::testing::_;
-using ::testing::Return;
 using content::NotificationResources;
 using content::PlatformNotificationData;
 using content::NotificationDatabaseData;
@@ -73,35 +67,6 @@ const char kRequireInteraction[] = "RequireInteraction";
 const char kTimeUntilCloseMillis[] = "TimeUntilClose";
 const char kTimeUntilFirstClickMillis[] = "TimeUntilFirstClick";
 const char kTimeUntilLastClickMillis[] = "TimeUntilLastClick";
-
-class TestingProfileWithPermissionManager : public TestingProfile {
- public:
-  TestingProfileWithPermissionManager()
-      : permission_manager_(
-            std::make_unique<
-                testing::NiceMock<content::MockPermissionManager>>()) {}
-
-  ~TestingProfileWithPermissionManager() override = default;
-
-  // Sets the notification permission status to |permission_status|.
-  void SetNotificationPermissionStatus(
-      blink::mojom::PermissionStatus permission_status) {
-    ON_CALL(*permission_manager_,
-            GetPermissionStatus(content::PermissionType::NOTIFICATIONS, _, _))
-        .WillByDefault(Return(permission_status));
-  }
-
-  // TestingProfile overrides:
-  content::PermissionControllerDelegate* GetPermissionControllerDelegate()
-      override {
-    return permission_manager_.get();
-  }
-
- private:
-  std::unique_ptr<content::MockPermissionManager> permission_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingProfileWithPermissionManager);
-};
 
 }  // namespace
 
@@ -144,8 +109,7 @@ class PlatformNotificationServiceTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-
-  TestingProfileWithPermissionManager profile_;
+  TestingProfile profile_;
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
 
@@ -197,43 +161,6 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentThenClose) {
   service()->ClosePersistentNotification(&profile_, kNotificationId);
   EXPECT_EQ(0u, GetNotificationCountForType(
                     NotificationHandler::Type::WEB_PERSISTENT));
-}
-
-TEST_F(PlatformNotificationServiceTest, OnPersistentNotificationClick) {
-  EXPECT_CALL(*mock_logger_, LogPersistentNotificationClickWithoutPermission());
-  profile_.SetNotificationPermissionStatus(
-      blink::mojom::PermissionStatus::DENIED);
-
-  NotificationHandler* handler =
-      NotificationDisplayServiceImpl::GetForProfile(&profile_)
-          ->GetNotificationHandler(NotificationHandler::Type::WEB_PERSISTENT);
-
-  handler->OnClick(&profile_, GURL("https://example.com/"),
-                   "fake_notification_id", base::nullopt /* action_index */,
-                   base::nullopt /* reply */, base::DoNothing());
-}
-
-TEST_F(PlatformNotificationServiceTest, OnPersistentNotificationClosedByUser) {
-  EXPECT_CALL(*mock_logger_, LogPersistentNotificationClosedByUser());
-  NotificationHandler* handler =
-      NotificationDisplayServiceImpl::GetForProfile(&profile_)
-          ->GetNotificationHandler(NotificationHandler::Type::WEB_PERSISTENT);
-
-  handler->OnClose(&profile_, GURL("https://example.com/"),
-                   "fake_notification_id", true /* by_user */,
-                   base::DoNothing());
-}
-
-TEST_F(PlatformNotificationServiceTest,
-       OnPersistentNotificationClosedProgrammatically) {
-  EXPECT_CALL(*mock_logger_, LogPersistentNotificationClosedProgrammatically());
-  NotificationHandler* handler =
-      NotificationDisplayServiceImpl::GetForProfile(&profile_)
-          ->GetNotificationHandler(NotificationHandler::Type::WEB_PERSISTENT);
-
-  handler->OnClose(&profile_, GURL("https://example.com/"),
-                   "fake_notification_id", false /* by_user */,
-                   base::DoNothing());
 }
 
 TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
