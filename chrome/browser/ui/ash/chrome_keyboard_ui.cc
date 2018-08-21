@@ -60,6 +60,8 @@ namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
 
 namespace {
 
+const int kShadowElevationVirtualKeyboard = 2;
+
 GURL& GetOverrideVirtualKeyboardUrl() {
   static base::NoDestructor<GURL> url;
   return *url;
@@ -488,7 +490,7 @@ void ChromeKeyboardUI::SetShadowAroundKeyboard() {
   aura::Window* contents_window = keyboard_contents_->GetNativeView();
   if (!shadow_) {
     shadow_ = std::make_unique<ui::Shadow>();
-    shadow_->Init(wm::kShadowElevationActiveWindow);
+    shadow_->Init(kShadowElevationVirtualKeyboard);
     shadow_->layer()->SetVisible(true);
     contents_window->layer()->Add(shadow_->layer());
   }
