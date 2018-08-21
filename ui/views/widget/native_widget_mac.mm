@@ -144,7 +144,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   DCHECK(GetWidget()->GetRootView());
   bridge_host_->SetRootView(GetWidget()->GetRootView());
   if (auto* focus_manager = GetWidget()->GetFocusManager()) {
-    [window makeFirstResponder:bridge()->ns_view()];
+    bridge()->MakeFirstResponder();
     bridge_host_->SetFocusManager(focus_manager);
   }
 
@@ -279,14 +279,9 @@ void NativeWidgetMac::GetWindowPlacement(
 }
 
 bool NativeWidgetMac::SetWindowTitle(const base::string16& title) {
-  NSWindow* window = GetNativeWindow();
-  NSString* current_title = [window title];
-  NSString* new_title = base::SysUTF16ToNSString(title);
-  if ([current_title isEqualToString:new_title])
+  if (!bridge_host_)
     return false;
-
-  [window setTitle:new_title];
-  return true;
+  return bridge_host_->SetWindowTitle(title);
 }
 
 void NativeWidgetMac::SetWindowIcons(const gfx::ImageSkia& window_icon,
@@ -451,8 +446,8 @@ void NativeWidgetMac::Show(ui::WindowShowState show_state,
   }
   bridge()->SetVisibilityState(
       show_state == ui::SHOW_STATE_INACTIVE
-          ? BridgedNativeWidget::SHOW_INACTIVE
-          : BridgedNativeWidget::SHOW_AND_ACTIVATE_WINDOW);
+          ? BridgedNativeWidgetPublic::SHOW_INACTIVE
+          : BridgedNativeWidgetPublic::SHOW_AND_ACTIVATE_WINDOW);
 
   // Ignore the SetInitialFocus() result. BridgedContentView should get
   // firstResponder status regardless.
@@ -462,19 +457,18 @@ void NativeWidgetMac::Show(ui::WindowShowState show_state,
 void NativeWidgetMac::Hide() {
   if (!bridge())
     return;
-
-  bridge()->SetVisibilityState(BridgedNativeWidget::HIDE_WINDOW);
+  bridge()->SetVisibilityState(BridgedNativeWidgetPublic::HIDE_WINDOW);
 }
 
 bool NativeWidgetMac::IsVisible() const {
-  return bridge() && bridge()->window_visible();
+  return bridge_host_ && bridge_host_->IsVisible();
 }
 
 void NativeWidgetMac::Activate() {
   if (!bridge())
     return;
-
-  bridge()->SetVisibilityState(BridgedNativeWidget::SHOW_AND_ACTIVATE_WINDOW);
+  bridge()->SetVisibilityState(
+      BridgedNativeWidgetPublic::SHOW_AND_ACTIVATE_WINDOW);
 }
 
 void NativeWidgetMac::Deactivate() {
@@ -482,7 +476,7 @@ void NativeWidgetMac::Deactivate() {
 }
 
 bool NativeWidgetMac::IsActive() const {
-  return [GetNativeWindow() isKeyWindow];
+  return bridge_host_ ? bridge_host_->IsWindowKey() : false;
 }
 
 void NativeWidgetMac::SetAlwaysOnTop(bool always_on_top) {
@@ -494,7 +488,9 @@ bool NativeWidgetMac::IsAlwaysOnTop() const {
 }
 
 void NativeWidgetMac::SetVisibleOnAllWorkspaces(bool always_visible) {
-  gfx::SetNSWindowVisibleOnAllWorkspaces(GetNativeWindow(), always_visible);
+  if (!bridge())
+    return;
+  bridge()->SetVisibleOnAllSpaces(always_visible);
 }
 
 bool NativeWidgetMac::IsVisibleOnAllWorkspaces() const {
@@ -506,13 +502,9 @@ void NativeWidgetMac::Maximize() {
 }
 
 void NativeWidgetMac::Minimize() {
-  NSWindow* window = GetNativeWindow();
-  // Calling performMiniaturize: will momentarily highlight the button, but
-  // AppKit will reject it if there is no miniaturize button.
-  if ([window styleMask] & NSMiniaturizableWindowMask)
-    [window performMiniaturize:nil];
-  else
-    [window miniaturize:nil];
+  if (!bridge())
+    return;
+  bridge()->SetMiniaturized(true);
 }
 
 bool NativeWidgetMac::IsMaximized() const {
@@ -522,12 +514,16 @@ bool NativeWidgetMac::IsMaximized() const {
 }
 
 bool NativeWidgetMac::IsMinimized() const {
-  return [GetNativeWindow() isMiniaturized];
+  if (!bridge_host_)
+    return false;
+  return bridge_host_->IsMiniaturized();
 }
 
 void NativeWidgetMac::Restore() {
-  SetFullscreen(false);
-  [GetNativeWindow() deminiaturize:nil];
+  if (!bridge())
+    return;
+  bridge()->SetFullscreen(false);
+  bridge()->SetMiniaturized(false);
 }
 
 void NativeWidgetMac::SetFullscreen(bool fullscreen) {
@@ -541,12 +537,15 @@ bool NativeWidgetMac::IsFullscreen() const {
 }
 
 void NativeWidgetMac::SetOpacity(float opacity) {
-  [GetNativeWindow() setAlphaValue:opacity];
+  if (!bridge())
+    return;
+  bridge()->SetOpacity(opacity);
 }
 
 void NativeWidgetMac::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
-  [GetNativeWindow() setContentAspectRatio:NSMakeSize(aspect_ratio.width(),
-                                                      aspect_ratio.height())];
+  if (!bridge())
+    return;
+  bridge()->SetContentAspectRatio(aspect_ratio);
 }
 
 void NativeWidgetMac::FlashFrame(bool flash_frame) {
@@ -595,7 +594,9 @@ void NativeWidgetMac::ClearNativeFocus() {
   // To quote DesktopWindowTreeHostX11, "This method is weird and misnamed."
   // The goal is to set focus to the content window, thereby removing focus from
   // any NSView in the window that doesn't belong to toolkit-views.
-  [GetNativeWindow() makeFirstResponder:GetNativeView()];
+  if (!bridge())
+    return;
+  bridge()->MakeFirstResponder();
 }
 
 gfx::Rect NativeWidgetMac::GetWorkAreaBoundsInScreen() const {

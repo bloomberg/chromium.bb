@@ -46,6 +46,14 @@ class View;
 // BridgedNativeWidget to BridgedNativeWidgetImpl.
 class VIEWS_EXPORT BridgedNativeWidgetPublic {
  public:
+  // Ways of changing the visibility of the bridged NSWindow.
+  enum WindowVisibilityState {
+    HIDE_WINDOW,               // Hides with -[NSWindow orderOut:].
+    SHOW_AND_ACTIVATE_WINDOW,  // Shows with -[NSWindow makeKeyAndOrderFront:].
+    SHOW_INACTIVE,             // Shows with -[NSWindow orderWindow:..]. Orders
+                               // the window above its parent if it has one.
+  };
+
   // Initialize the view to display compositor output. This will send the
   // current visibility and dimensions (and any future updates) to the
   // BridgedNativeWidgetHost.
@@ -67,9 +75,20 @@ class VIEWS_EXPORT BridgedNativeWidgetPublic {
   virtual void SetBounds(const gfx::Rect& new_bounds,
                          const gfx::Size& minimum_content_size) = 0;
 
+  // Sets the desired visibility of the window and updates the visibility of
+  // descendant windows where necessary.
+  virtual void SetVisibilityState(WindowVisibilityState new_state) = 0;
+
+  // Sets the collection behavior so that the window will or will not be visible
+  // on all spaces.
+  virtual void SetVisibleOnAllSpaces(bool always_visible) = 0;
+
   // Called by NativeWidgetMac to initiate a transition to the specified target
   // fullscreen state.
   virtual void SetFullscreen(bool fullscreen) = 0;
+
+  // Miniaturize or deminiaturize the window.
+  virtual void SetMiniaturized(bool miniaturized) = 0;
 
   // Called by NativeWidgetMac when the window size constraints change.
   virtual void SetSizeConstraints(const gfx::Size& min_size,
@@ -77,8 +96,20 @@ class VIEWS_EXPORT BridgedNativeWidgetPublic {
                                   bool is_resizable,
                                   bool is_maximizable) = 0;
 
+  // Set the opacity of the NSWindow.
+  virtual void SetOpacity(float opacity) = 0;
+
+  // Set the content aspect ratio of the NSWindow.
+  virtual void SetContentAspectRatio(const gfx::SizeF& aspect_ratio) = 0;
+
   // Specify the content to draw in the NSView.
   virtual void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) = 0;
+
+  // Set the NSWindow's title text.
+  virtual void SetWindowTitle(const base::string16& title) = 0;
+
+  // Make the content view be the first responder for the NSWindow.
+  virtual void MakeFirstResponder() = 0;
 
   // Clear the touchbar.
   virtual void ClearTouchBar() = 0;
@@ -96,14 +127,6 @@ class VIEWS_EXPORT BridgedNativeWidget
  public:
   // Contains NativeViewHost->gfx::NativeView associations.
   using AssociatedViews = std::map<const views::View*, NSView*>;
-
-  // Ways of changing the visibility of the bridged NSWindow.
-  enum WindowVisibilityState {
-    HIDE_WINDOW,               // Hides with -[NSWindow orderOut:].
-    SHOW_AND_ACTIVATE_WINDOW,  // Shows with -[NSWindow makeKeyAndOrderFront:].
-    SHOW_INACTIVE,             // Shows with -[NSWindow orderWindow:..]. Orders
-                               // the window above its parent if it has one.
-  };
 
   // Return the size that |window| will take for the given client area |size|,
   // based on its current style mask.
@@ -133,10 +156,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   // Set or clears the views::View bridged by the content view. This does NOT
   // take ownership of |view|.
   void SetRootView(views::View* view);
-
-  // Sets the desired visibility of the window and updates the visibility of
-  // descendant windows where necessary.
-  void SetVisibilityState(WindowVisibilityState new_state);
 
   // Acquiring mouse capture first steals capture from any existing
   // CocoaMouseCaptureDelegate, then captures all mouse events until released.
@@ -262,12 +281,19 @@ class VIEWS_EXPORT BridgedNativeWidget
                         const gfx::Vector2d& parent_offset) override;
   void SetBounds(const gfx::Rect& new_bounds,
                  const gfx::Size& minimum_content_size) override;
+  void SetVisibilityState(WindowVisibilityState new_state) override;
+  void SetVisibleOnAllSpaces(bool always_visible) override;
   void SetFullscreen(bool fullscreen) override;
+  void SetMiniaturized(bool miniaturized) override;
   void SetSizeConstraints(const gfx::Size& min_size,
                           const gfx::Size& max_size,
                           bool is_resizable,
                           bool is_maximizable) override;
+  void SetOpacity(float opacity) override;
+  void SetContentAspectRatio(const gfx::SizeF& aspect_ratio) override;
   void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) override;
+  void SetWindowTitle(const base::string16& title) override;
+  void MakeFirstResponder() override;
   void ClearTouchBar() override;
 
   // TODO(ccameron): This method exists temporarily as we move all direct access
@@ -311,11 +337,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   gfx::Vector2d GetChildWindowOffset() const override;
   bool IsVisibleParent() const override;
   void RemoveChildWindow(BridgedNativeWidget* child) override;
-
-  // Set |layer()| to be visible or not visible based on |window_visible_|. If
-  // the layer is not visible, then lock the compositor, so we don't draw any
-  // new frames.
-  void UpdateCompositorVisibility();
 
   BridgedNativeWidgetHost* const host_;       // Weak. Owns this.
   NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |host_|.

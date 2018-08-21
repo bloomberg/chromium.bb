@@ -76,6 +76,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // This does NOT take ownership of |focus_manager|.
   void SetFocusManager(FocusManager* focus_manager);
 
+  // Set the window's title, returning true if the title has changed.
+  bool SetWindowTitle(const base::string16& title);
+
   // Called when the owning Widget's Init method has completed.
   void OnWidgetInitDone();
 
@@ -102,12 +105,17 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // fullscreen or transitioning between fullscreen states.
   gfx::Rect GetRestoredBounds() const;
 
+  bool IsVisible() const { return is_visible_; }
+  bool IsMiniaturized() const { return is_miniaturized_; }
+  bool IsWindowKey() const { return is_window_key_; }
+
  private:
   gfx::Vector2d GetBoundsOffsetForParent() const;
+  void UpdateCompositorProperties();
   void DestroyCompositor();
 
   // views::BridgedNativeWidgetHost:
-  void SetCompositorVisibility(bool visible) override;
+  void OnVisibilityChanged(bool visible) override;
   void SetViewSize(const gfx::Size& new_size) override;
   void SetKeyboardAccessible(bool enabled) override;
   void SetIsFirstResponder(bool is_first_responder) override;
@@ -128,9 +136,13 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void OnWindowFullscreenTransitionStart(bool target_fullscreen_state) override;
   void OnWindowFullscreenTransitionComplete(
       bool target_fullscreen_state) override;
+  void OnWindowMiniaturizedChanged(bool miniaturized) override;
   void OnWindowDisplayChanged(const display::Display& display) override;
   void OnWindowWillClose() override;
   void OnWindowHasClosed() override;
+  void OnWindowKeyStatusChanged(bool is_key,
+                                bool is_content_first_responder,
+                                bool full_keyboard_access_enabled) override;
 
   // DialogObserver:
   void OnDialogModelChanged() override;
@@ -164,6 +176,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   std::unique_ptr<ui::InputMethod> input_method_;
   FocusManager* focus_manager_ = nullptr;  // Weak. Owned by our Widget.
 
+  base::string16 window_title_;
+
   // The display that the window is currently on.
   display::Display display_;
 
@@ -171,8 +185,11 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   bool has_received_window_geometry_ = false;
   gfx::Rect window_bounds_in_screen_;
   gfx::Rect content_bounds_in_screen_;
+  bool is_visible_ = false;
   bool target_fullscreen_state_ = false;
   bool in_fullscreen_transition_ = false;
+  bool is_miniaturized_ = false;
+  bool is_window_key_ = false;
   gfx::Rect window_bounds_before_fullscreen_;
 
   std::unique_ptr<ui::RecyclableCompositorMac> compositor_;

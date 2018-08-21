@@ -19,8 +19,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHost {
  public:
   virtual ~BridgedNativeWidgetHost() = default;
 
-  // Update the ui::Compositor and ui::Layer's visibility.
-  virtual void SetCompositorVisibility(bool visible) = 0;
+  // Update the views::Widget, ui::Compositor and ui::Layer's visibility.
+  virtual void OnVisibilityChanged(bool visible) = 0;
 
   // Resize the underlying views::View to |new_size|. Note that this will not
   // necessarily match the content bounds from OnWindowGeometryChanged.
@@ -69,6 +69,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHost {
   // then this will only be called when all transitions have competed.
   virtual void OnWindowFullscreenTransitionComplete(bool is_fullscreen) = 0;
 
+  // Called when the window is miniaturized or deminiaturized.
+  virtual void OnWindowMiniaturizedChanged(bool miniaturized) = 0;
+
   // Called when the current display or the properties of the current display
   // change.
   virtual void OnWindowDisplayChanged(const display::Display& display) = 0;
@@ -78,6 +81,15 @@ class VIEWS_EXPORT BridgedNativeWidgetHost {
 
   // Called after the NSWindow has been closed and destroyed.
   virtual void OnWindowHasClosed() = 0;
+
+  // Called when the NSWindow becomes key or resigns from being key. Additional
+  // state required for the transition include whether or not the content NSView
+  // is the first responder for the NSWindow in |is_content_first_responder| and
+  // whether or not the NSApp's full keyboard access is enabled in
+  // |full_keyboard_access_enabled|.
+  virtual void OnWindowKeyStatusChanged(bool is_key,
+                                        bool is_content_first_responder,
+                                        bool full_keyboard_access_enabled) = 0;
 };
 
 }  // namespace views
