@@ -3786,8 +3786,6 @@ static int32_t Pnacl_M33_PPB_Flash_DRM_MonitorIsExternal(PP_Resource drm, PP_Boo
 
 /* Not generating wrapper methods for PPB_Flash_FontFile_0_2 */
 
-/* Not generating wrapper methods for PPB_FlashFullscreen_0_1 */
-
 /* Not generating wrapper methods for PPB_FlashFullscreen_1_0 */
 
 /* Begin wrapper methods for PPB_Flash_Menu_0_2 */
@@ -5583,8 +5581,6 @@ static const struct PPB_Flash_DRM_1_1 Pnacl_Wrappers_PPB_Flash_DRM_1_1 = {
 /* Not generating wrapper interface for PPB_Flash_FontFile_0_1 */
 
 /* Not generating wrapper interface for PPB_Flash_FontFile_0_2 */
-
-/* Not generating wrapper interface for PPB_FlashFullscreen_0_1 */
 
 /* Not generating wrapper interface for PPB_FlashFullscreen_1_0 */
 

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_fullscreen.idl modified Tue Sep 11 13:52:24 2012. */
+/* From private/ppb_flash_fullscreen.idl modified Thu Jul 26 06:15:01 2018. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_FULLSCREEN_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_FULLSCREEN_H_
@@ -14,7 +14,6 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_FLASHFULLSCREEN_INTERFACE_0_1 "PPB_FlashFullscreen;0.1"
 #define PPB_FLASHFULLSCREEN_INTERFACE_1_0 "PPB_FlashFullscreen;1.0"
 #define PPB_FLASHFULLSCREEN_INTERFACE PPB_FLASHFULLSCREEN_INTERFACE_1_0
 
@@ -53,12 +52,6 @@ struct PPB_FlashFullscreen_1_0 {
 };
 
 typedef struct PPB_FlashFullscreen_1_0 PPB_FlashFullscreen;
-
-struct PPB_FlashFullscreen_0_1 {
-  PP_Bool (*IsFullscreen)(PP_Instance instance);
-  PP_Bool (*SetFullscreen)(PP_Instance instance, PP_Bool fullscreen);
-  PP_Bool (*GetScreenSize)(PP_Instance instance, struct PP_Size* size);
-};
 /**
  * @}
  */

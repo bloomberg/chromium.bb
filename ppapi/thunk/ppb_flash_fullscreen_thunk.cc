@@ -38,15 +38,12 @@ PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) {
   return enter.functions()->GetScreenSize(instance, size);
 }
 
-const PPB_FlashFullscreen_0_1 g_ppb_flash_fullscreen_thunk = {
-  &IsFullscreen,
-  &SetFullscreen,
-  &GetScreenSize
-};
+const PPB_FlashFullscreen_1_0 g_ppb_flash_fullscreen_thunk = {
+    &IsFullscreen, &SetFullscreen, &GetScreenSize};
 
 }  // namespace
 
-const PPB_FlashFullscreen_0_1* GetPPB_FlashFullscreen_0_1_Thunk() {
+const PPB_FlashFullscreen_1_0* GetPPB_FlashFullscreen_1_0_Thunk() {
   return &g_ppb_flash_fullscreen_thunk;
 }
 
