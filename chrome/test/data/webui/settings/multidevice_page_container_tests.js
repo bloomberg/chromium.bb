@@ -129,7 +129,7 @@ suite('Multidevice', function() {
   });
 
   test(
-      'pageContentData_ property passes to multidevice page if present',
+      'pageContentData property passes to multidevice page if present',
       function() {
         return setInitialHostStatus(
                    settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS)
@@ -140,7 +140,7 @@ suite('Multidevice', function() {
                   assertEquals(getMultidevicePage(), null);
                 else
                   assertDeepEquals(
-                      multidevicePageContainer.pageContentData_,
+                      multidevicePageContainer.pageContentData,
                       getMultidevicePage().pageContentData);
               }
             });

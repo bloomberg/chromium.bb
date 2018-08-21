@@ -15,9 +15,6 @@ Polymer({
   is: 'settings-multidevice-tether-item',
 
   properties: {
-    /** @private {string} */
-    titleText_: String,
-
     /**
      * Interface for networkingPrivate calls.
      * @private {!NetworkingPrivate}

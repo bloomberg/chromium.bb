@@ -12,7 +12,11 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-subpage',
 
-  behaviors: [I18nBehavior, PrefsBehavior, CrNetworkListenerBehavior],
+  behaviors: [
+    MultiDeviceFeatureBehavior,
+    CrNetworkListenerBehavior,
+    PrefsBehavior,
+  ],
 
   properties: {
     /** @type {?SettingsRoutes} */
@@ -38,9 +42,6 @@ Polymer({
       type: Array,
       value: () => ['settings-multidevice-tether-item'],
     },
-
-    /** @type {MultiDevicePageContentData} */
-    pageContentData: Object,
 
     // TODO(jordynass): Set this variable once the information can be retrieved
     // by whatever implementation we use (possibly an IPC or from prefs).

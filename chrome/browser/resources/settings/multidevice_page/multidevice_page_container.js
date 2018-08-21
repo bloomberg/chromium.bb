@@ -18,7 +18,7 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-page-container',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [MultiDeviceFeatureBehavior, WebUIListenerBehavior],
 
   properties: {
     /** SettingsPrefsElement 'prefs' Object reference. See prefs.js. */
@@ -34,12 +34,9 @@ Polymer({
      */
     doesPotentialConnectedPhoneExist: {
       type: Boolean,
-      computed: 'computeDoesPotentialConnectedPhoneExist(pageContentData_)',
+      computed: 'computeDoesPotentialConnectedPhoneExist(pageContentData)',
       notify: true,
     },
-
-    /** @private {MultiDevicePageContentData} */
-    pageContentData_: Object,
   },
 
   /** @private {?settings.MultiDeviceBrowserProxy} */
@@ -66,7 +63,7 @@ Polymer({
       console.error('Invalid status change');
       return;
     }
-    this.pageContentData_ = newData;
+    this.pageContentData = newData;
   },
 
   /**
@@ -89,8 +86,8 @@ Polymer({
    * @private
    */
   computeDoesPotentialConnectedPhoneExist: function() {
-    return !!this.pageContentData_ &&
-        this.pageContentData_.mode !=
+    return !!this.pageContentData &&
+        this.pageContentData.mode !=
         settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS;
   },
 });

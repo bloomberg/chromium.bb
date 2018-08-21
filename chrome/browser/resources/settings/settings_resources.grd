@@ -1330,6 +1330,12 @@
         <structure name="IDR_SETTINGS_MULTIDEVICE_CONSTANTS_JS"
                    file="multidevice_page/multidevice_constants.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_FEATURE_BEHAVIOR_HTML"
+                   file="multidevice_page/multidevice_feature_behavior.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_FEATURE_BEHAVIOR_JS"
+                   file="multidevice_page/multidevice_feature_behavior.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_MULTIDEVICE_FEATURE_ITEM_HTML"
                    file="multidevice_page/multidevice_feature_item.html"
                    type="chrome_html" />

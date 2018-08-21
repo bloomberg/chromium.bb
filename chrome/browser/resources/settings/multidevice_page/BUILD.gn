@@ -8,7 +8,9 @@ js_type_check("closure_compile") {
   deps = [
     ":multidevice_browser_proxy",
     ":multidevice_constants",
+    ":multidevice_feature_behavior",
     ":multidevice_feature_item",
+    ":multidevice_feature_toggle",
     ":multidevice_page",
     ":multidevice_page_container",
     ":multidevice_subpage",
@@ -18,6 +20,7 @@ js_type_check("closure_compile") {
 
 js_library("multidevice_browser_proxy") {
   deps = [
+    ":multidevice_constants",
     "//ui/webui/resources/js:cr",
   ]
 }
@@ -28,8 +31,17 @@ js_library("multidevice_constants") {
   ]
 }
 
+js_library("multidevice_feature_behavior") {
+  deps = [
+    ":multidevice_constants",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
 js_library("multidevice_feature_item") {
   deps = [
+    ":multidevice_feature_behavior",
     "..:route",
     "//ui/webui/resources/js:cr",
   ]
@@ -45,16 +57,17 @@ js_library("multidevice_page") {
   deps = [
     ":multidevice_browser_proxy",
     ":multidevice_constants",
+    ":multidevice_feature_behavior",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 
 js_library("multidevice_page_container") {
   deps = [
+    ":multidevice_browser_proxy",
     ":multidevice_constants",
-    ":multidevice_page",
+    ":multidevice_feature_behavior",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
@@ -63,10 +76,10 @@ js_library("multidevice_page_container") {
 js_library("multidevice_subpage") {
   deps = [
     ":multidevice_constants",
+    ":multidevice_feature_behavior",
     "..:route",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
   ]
   externs_list = [ "$externs_path/networking_private.js" ]
   extra_sources = [ "$interfaces_path/networking_private_interface.js" ]

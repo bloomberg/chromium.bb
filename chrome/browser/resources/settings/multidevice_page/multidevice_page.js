@@ -11,12 +11,9 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-page',
 
-  behaviors: [I18nBehavior, PrefsBehavior],
+  behaviors: [MultiDeviceFeatureBehavior, PrefsBehavior],
 
   properties: {
-    /** @type {MultiDevicePageContentData} */
-    pageContentData: Object,
-
     /**
      * A Map specifying which element should be focused when exiting a subpage.
      * The key of the map holds a settings.Route path, and the value holds a

@@ -7,10 +7,9 @@ suite('Multidevice', function() {
   /** @type {!settings.Route} */
   let initialRoute;
 
-  const FAKE_NAME = 'TelePhone';
-  const FAKE_SUMMARY_HTML =
-      'Teleports your phone to your ChromeBook. <a href="link">Learn more.</a>';
-  const FAKE_ICON_NAME = 'settings:tele-phone';
+  // Fake MultiDeviceFeature enum value
+  const FAKE_MULTIDEVICE_FEATURE = -1;
+  const FAKE_SUMMARY_HTML = 'Gives you candy <a href="link">Learn more.</a>';
 
   /**
    * Verifies that the current route is not initialRoute and then navigates
@@ -26,16 +25,14 @@ suite('Multidevice', function() {
   setup(function() {
     PolymerTest.clearBody();
     featureItem = document.createElement('settings-multidevice-feature-item');
-    assertTrue(!!featureItem);
+
+    featureItem.getFeatureSummaryHtml = () => FAKE_SUMMARY_HTML;
+    featureItem.feature = FAKE_MULTIDEVICE_FEATURE;
 
     initialRoute = settings.routes.MULTIDEVICE_FEATURES;
-    settings.routes.TELE_PHONE =
-        settings.routes.BASIC.createSection('/telePhone');
-
-    featureItem.featureName = FAKE_NAME;
-    featureItem.featureSummaryHtml = FAKE_SUMMARY_HTML;
-    featureItem.iconName = FAKE_ICON_NAME;
-    featureItem.subpageRoute = settings.routes.TELE_PHONE;
+    settings.routes.FREE_CANDY =
+        settings.routes.BASIC.createSection('/freeCandy');
+    featureItem.subpageRoute = settings.routes.FREE_CANDY;
 
     settings.navigateTo(initialRoute);
 
