@@ -6,9 +6,8 @@
 
 #include <string>
 
-#include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "extensions/browser/api/declarative_net_request/utils.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
@@ -26,14 +25,10 @@ bool HasValidIndexedRuleset(const Extension& extension,
     return false;
   }
 
-  std::string data;
-  if (!base::ReadFileToString(
-          file_util::GetIndexedRulesetPath(extension.path()), &data)) {
-    return false;
-  }
-
-  return IsValidRulesetData(reinterpret_cast<const uint8_t*>(data.c_str()),
-                            data.size(), expected_checksum);
+  std::unique_ptr<RulesetMatcher> matcher;
+  return RulesetMatcher::CreateVerifiedMatcher(
+             file_util::GetIndexedRulesetPath(extension.path()),
+             expected_checksum, &matcher) == RulesetMatcher::kLoadSuccess;
 }
 
 }  // namespace declarative_net_request
