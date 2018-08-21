@@ -93,21 +93,7 @@ void VRServiceImpl::MaybeReturnDevice() {
   }
 }
 
-void VRServiceImpl::ConnectRuntime(BrowserXRRuntime* runtime) {
-  // device_ is initialized on IntializationComplete.  Devices may be added
-  // before that, but they'll be picked up during device_'s constructor.
-  // We just need to notify device_ when new capabilities were added after
-  // initialization.
-  if (device_) {
-    device_->RuntimesChanged();
-  }
-
-  if (client_) {
-    client_->OnDeviceChanged();
-  }
-}
-
-void VRServiceImpl::RemoveRuntime(BrowserXRRuntime* runtime) {
+void VRServiceImpl::RuntimesChanged() {
   if (device_) {
     device_->RuntimesChanged();
   }

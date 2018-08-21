@@ -120,11 +120,7 @@ void XRDeviceImpl::RequestSession(
     return;
   }
 
-  BrowserXRRuntime* presenting_runtime =
-      XRRuntimeManager::GetInstance()->GetImmersiveRuntime();
-  if (presenting_runtime &&
-      presenting_runtime->GetPresentingRendererDevice() != this &&
-      presenting_runtime->GetPresentingRendererDevice() != nullptr) {
+  if (XRRuntimeManager::GetInstance()->IsOtherDevicePresenting(this)) {
     // Can't create sessions while an immersive session exists.
     std::move(callback).Run(nullptr);
     return;
@@ -237,7 +233,6 @@ void XRDeviceImpl::RuntimesChanged() {
         });
   }
 }
-
 
 void XRDeviceImpl::OnExitPresent() {
   session_clients_.ForAllPtrs(
