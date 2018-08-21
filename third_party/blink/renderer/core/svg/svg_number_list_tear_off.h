@@ -43,23 +43,19 @@ class SVGNumberListTearOff final
  public:
   static SVGNumberListTearOff* Create(
       SVGNumberList* target,
-      SVGElement* context_element,
-      PropertyIsAnimValType property_is_anim_val,
-      const QualifiedName& attribute_name) {
-    return new SVGNumberListTearOff(target, context_element,
-                                    property_is_anim_val, attribute_name);
+      SVGAnimatedPropertyBase* binding,
+      PropertyIsAnimValType property_is_anim_val) {
+    return new SVGNumberListTearOff(target, binding, property_is_anim_val);
   }
 
  private:
   SVGNumberListTearOff(SVGNumberList* target,
-                       SVGElement* context_element,
-                       PropertyIsAnimValType property_is_anim_val,
-                       const QualifiedName& attribute_name)
+                       SVGAnimatedPropertyBase* binding,
+                       PropertyIsAnimValType property_is_anim_val)
       : SVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>(
             target,
-            context_element,
-            property_is_anim_val,
-            attribute_name) {}
+            binding,
+            property_is_anim_val) {}
 };
 
 }  // namespace blink

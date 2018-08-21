@@ -46,8 +46,7 @@ class ListItemPropertyTraits {
 
   static ItemPropertyType* GetValueForInsertionFromTearOff(
       ItemTearOffType* new_item,
-      SVGElement* context_element,
-      const QualifiedName& attribute_name) {
+      SVGAnimatedPropertyBase* binding) {
     // |newItem| is immutable, OR
     // |newItem| belongs to a SVGElement, but it does not belong to an animated
     // list, e.g. "textElement.x.baseVal.appendItem(rectElement.width.baseVal)"
@@ -67,17 +66,15 @@ class ListItemPropertyTraits {
       return new_item->Target()->Clone();
     }
 
-    new_item->AttachToSVGElementAttribute(context_element, attribute_name);
+    new_item->Bind(binding);
     return new_item->Target();
   }
 
   static ItemTearOffType* CreateTearOff(
       ItemPropertyType* value,
-      SVGElement* context_element,
-      PropertyIsAnimValType property_is_anim_val,
-      const QualifiedName& attribute_name) {
-    return ItemTearOffType::Create(value, context_element, property_is_anim_val,
-                                   attribute_name);
+      SVGAnimatedPropertyBase* binding,
+      PropertyIsAnimValType property_is_anim_val) {
+    return ItemTearOffType::Create(value, binding, property_is_anim_val);
   }
 };
 
@@ -183,32 +180,27 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
   }
 
  protected:
-  SVGListPropertyTearOffHelper(
-      ListPropertyType* target,
-      SVGElement* context_element,
-      PropertyIsAnimValType property_is_anim_val,
-      const QualifiedName& attribute_name = QualifiedName::Null())
+  SVGListPropertyTearOffHelper(ListPropertyType* target,
+                               SVGAnimatedPropertyBase* binding,
+                               PropertyIsAnimValType property_is_anim_val)
       : SVGPropertyTearOff<ListPropertyType>(target,
-                                             context_element,
-                                             property_is_anim_val,
-                                             attribute_name) {}
+                                             binding,
+                                             property_is_anim_val) {}
 
   ItemPropertyType* GetValueForInsertionFromTearOff(ItemTearOffType* new_item) {
     return ItemTraits::GetValueForInsertionFromTearOff(
-        new_item, ToDerived()->ContextElement(), ToDerived()->AttributeName());
+        new_item, ToDerived()->GetBinding());
   }
 
   ItemTearOffType* CreateItemTearOff(ItemPropertyType* value) {
     if (!value)
       return nullptr;
 
-    if (value->OwnerList() == ToDerived()->Target())
-      return ItemTraits::CreateTearOff(value, ToDerived()->ContextElement(),
-                                       ToDerived()->PropertyIsAnimVal(),
-                                       ToDerived()->AttributeName());
-
-    return ItemTraits::CreateTearOff(value, nullptr, kPropertyIsNotAnimVal,
-                                     QualifiedName::Null());
+    if (value->OwnerList() == ToDerived()->Target()) {
+      return ItemTraits::CreateTearOff(value, ToDerived()->GetBinding(),
+                                       ToDerived()->PropertyIsAnimVal());
+    }
+    return ItemTraits::CreateTearOff(value, nullptr, kPropertyIsNotAnimVal);
   }
 
  private:

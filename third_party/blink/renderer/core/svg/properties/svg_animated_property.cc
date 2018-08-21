@@ -54,6 +54,10 @@ SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(
 
 SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase() = default;
 
+void SVGAnimatedPropertyBase::Trace(Visitor* visitor) {
+  visitor->Trace(context_element_);
+}
+
 void SVGAnimatedPropertyBase::AnimationEnded() {
   SynchronizeAttribute();
 }
@@ -61,6 +65,18 @@ void SVGAnimatedPropertyBase::AnimationEnded() {
 void SVGAnimatedPropertyBase::SynchronizeAttribute() {
   AtomicString value(CurrentValueBase()->ValueAsString());
   context_element_->SetSynchronizedLazyAttribute(attribute_name_, value);
+}
+
+void SVGAnimatedPropertyBase::BaseValueChanged() {
+  DCHECK(context_element_);
+  DCHECK(attribute_name_ != QualifiedName::Null());
+  context_element_->InvalidateSVGAttributes();
+  context_element_->SvgAttributeBaseValChanged(attribute_name_);
+}
+
+void SVGAnimatedPropertyBase::EnsureAnimValUpdated() {
+  DCHECK(context_element_);
+  context_element_->EnsureAttributeAnimValUpdated();
 }
 
 bool SVGAnimatedPropertyBase::IsSpecified() const {

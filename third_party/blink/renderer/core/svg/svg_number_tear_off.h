@@ -41,11 +41,9 @@ class SVGNumberTearOff : public SVGPropertyTearOff<SVGNumber> {
 
  public:
   static SVGNumberTearOff* Create(SVGNumber* target,
-                                  SVGElement* context_element,
-                                  PropertyIsAnimValType property_is_anim_val,
-                                  const QualifiedName& attribute_name) {
-    return new SVGNumberTearOff(target, context_element, property_is_anim_val,
-                                attribute_name);
+                                  SVGAnimatedPropertyBase* binding,
+                                  PropertyIsAnimValType property_is_anim_val) {
+    return new SVGNumberTearOff(target, binding, property_is_anim_val);
   }
   static SVGNumberTearOff* CreateDetached();
 
@@ -54,9 +52,8 @@ class SVGNumberTearOff : public SVGPropertyTearOff<SVGNumber> {
 
  protected:
   SVGNumberTearOff(SVGNumber*,
-                   SVGElement* context_element,
-                   PropertyIsAnimValType,
-                   const QualifiedName& attribute_name);
+                   SVGAnimatedPropertyBase* binding,
+                   PropertyIsAnimValType);
 };
 
 }  // namespace blink

@@ -30,18 +30,12 @@
 
 #include "third_party/blink/renderer/core/svg/svg_number_tear_off.h"
 
-#include "third_party/blink/renderer/core/svg/svg_element.h"
-
 namespace blink {
 
 SVGNumberTearOff::SVGNumberTearOff(SVGNumber* target,
-                                   SVGElement* context_element,
-                                   PropertyIsAnimValType property_is_anim_val,
-                                   const QualifiedName& attribute_name)
-    : SVGPropertyTearOff<SVGNumber>(target,
-                                    context_element,
-                                    property_is_anim_val,
-                                    attribute_name) {}
+                                   SVGAnimatedPropertyBase* binding,
+                                   PropertyIsAnimValType property_is_anim_val)
+    : SVGPropertyTearOff<SVGNumber>(target, binding, property_is_anim_val) {}
 
 void SVGNumberTearOff::setValue(float f, ExceptionState& exception_state) {
   if (IsImmutable()) {
@@ -53,8 +47,7 @@ void SVGNumberTearOff::setValue(float f, ExceptionState& exception_state) {
 }
 
 SVGNumberTearOff* SVGNumberTearOff::CreateDetached() {
-  return Create(SVGNumber::Create(), nullptr, kPropertyIsNotAnimVal,
-                QualifiedName::Null());
+  return Create(SVGNumber::Create(), nullptr, kPropertyIsNotAnimVal);
 }
 
 }  // namespace blink
