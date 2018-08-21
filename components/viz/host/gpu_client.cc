@@ -4,6 +4,7 @@
 
 #include "components/viz/host/gpu_client.h"
 
+#include "base/numerics/checked_math.h"
 #include "components/viz/host/host_gpu_memory_buffer_manager.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
@@ -11,6 +12,13 @@
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
 namespace viz {
+namespace {
+bool IsSizeValid(const gfx::Size& size) {
+  base::CheckedNumeric<int> bytes = size.width();
+  bytes *= size.height();
+  return bytes.IsValid();
+}
+}  // namespace
 
 GpuClient::GpuClient(std::unique_ptr<GpuClientDelegate> delegate,
                      int client_id,
@@ -159,11 +167,8 @@ void GpuClient::CreateGpuMemoryBuffer(
     gfx::BufferUsage usage,
     ui::mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback) {
   auto* gpu_memory_buffer_manager = delegate_->GetGpuMemoryBufferManager();
-  DCHECK(gpu_memory_buffer_manager);
 
-  base::CheckedNumeric<int> bytes = size.width();
-  bytes *= size.height();
-  if (!bytes.IsValid()) {
+  if (!gpu_memory_buffer_manager || !IsSizeValid(size)) {
     OnCreateGpuMemoryBuffer(std::move(callback), gfx::GpuMemoryBufferHandle());
     return;
   }
