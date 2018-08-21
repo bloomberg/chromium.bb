@@ -15,10 +15,9 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.content.browser.test.RenderFrameHostTestExt;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.browser.test.util.WebContentsUtils;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
@@ -346,12 +345,12 @@ public abstract class XrTestFramework {
 
     private static String runJavaScriptInFrameInternal(
             String js, int timeout, final WebContents webContents, boolean failOnTimeout) {
-        RenderFrameHostTestExt rfh = ThreadUtils.runOnUiThreadBlockingNoException(
-                () -> new RenderFrameHostTestExt(WebContentsUtils.getFocusedFrame(webContents)));
-        Assert.assertTrue("Did not get a focused frame", rfh != null);
+        final AtomicReference<RenderFrameHost> rfh = new AtomicReference<RenderFrameHost>();
+        ThreadUtils.runOnUiThreadBlocking(() -> { rfh.set(webContents.getFocusedFrame()); });
+        Assert.assertTrue("Did not get a focused frame", rfh.get() != null);
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<String> result = new AtomicReference<String>();
-        rfh.executeJavaScriptForTests(js, (String r) -> {
+        rfh.get().executeJavaScriptForTests(js, (String r) -> {
             result.set(r);
             latch.countDown();
         });

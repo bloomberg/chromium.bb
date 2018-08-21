@@ -60,10 +60,6 @@ public class RenderFrameHostImpl implements RenderFrameHost {
         return mDelegate;
     }
 
-    public long getNativePtr() {
-        return mNativeRenderFrameHostAndroid;
-    }
-
     @Override
     public String getLastCommittedURL() {
         if (mNativeRenderFrameHostAndroid == 0) return null;
@@ -99,6 +95,11 @@ public class RenderFrameHostImpl implements RenderFrameHost {
         nativeNotifyUserActivation(mNativeRenderFrameHostAndroid);
     }
 
+    @Override
+    public void executeJavaScriptForTests(String script, Callback<String> callback) {
+        nativeExecuteJavaScriptForTests(mNativeRenderFrameHostAndroid, script, callback);
+    }
+
     /**
      * Return the AndroidOverlay routing token for this RenderFrameHostImpl.
      */
@@ -113,4 +114,6 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     private native UnguessableToken nativeGetAndroidOverlayRoutingToken(
             long nativeRenderFrameHostAndroid);
     private native void nativeNotifyUserActivation(long nativeRenderFrameHostAndroid);
+    private native void nativeExecuteJavaScriptForTests(
+            long nativeRenderFrameHostAndroid, String script, Callback<String> callback);
 }

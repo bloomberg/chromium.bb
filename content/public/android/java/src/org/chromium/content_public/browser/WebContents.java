@@ -131,6 +131,11 @@ public interface WebContents extends Parcelable {
     RenderFrameHost getMainFrame();
 
     /**
+     * @return The focused frame in this WebContents.
+     */
+    RenderFrameHost getFocusedFrame();
+
+    /**
      * @return The title for the current visible page.
      */
     String getTitle();
