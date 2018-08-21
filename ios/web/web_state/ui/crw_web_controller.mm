@@ -4020,6 +4020,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
                        sameDocumentNavigation:NO
                                hasUserGesture:true];
   }
+  context->SetLoadingHtmlString(true);
   [_navigationStates setContext:std::move(context) forNavigation:navigation];
 }
 
