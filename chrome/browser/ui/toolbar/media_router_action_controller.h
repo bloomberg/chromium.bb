@@ -133,7 +133,7 @@ class MediaRouterActionController : public media_router::IssuesObserver,
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<MediaRouterActionController> weak_factory_;
 
