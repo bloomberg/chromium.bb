@@ -358,6 +358,13 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       media::mojom::MirrorServiceRemotingSourceRequest source_request) override;
   void GetMediaSinkServiceStatus(
       mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override;
+  void GetMirroringServiceHostForTab(
+      int32_t target_tab_id,
+      mirroring::mojom::MirroringServiceHostRequest request) override;
+  void GetMirroringServiceHostForDesktop(
+      int32_t initiator_tab_id,
+      const std::string& desktop_stream_id,
+      mirroring::mojom::MirroringServiceHostRequest request) override;
 
   // Result callback when Mojo TerminateRoute is invoked.
   // |route_id|: ID of MediaRoute passed to the TerminateRoute request.
