@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_static_string_list.h"
 
-#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_string_list_tear_off.h"
 
 namespace blink {
@@ -84,8 +83,8 @@ bool SVGStaticStringList::NeedsSynchronizeAttribute() {
 
 SVGStringListTearOff* SVGStaticStringList::TearOff() {
   if (!tear_off_) {
-    tear_off_ = SVGStringListTearOff::Create(
-        value_, ContextElement(), kPropertyIsNotAnimVal, AttributeName());
+    tear_off_ =
+        SVGStringListTearOff::Create(value_, this, kPropertyIsNotAnimVal);
   }
   return tear_off_.Get();
 }

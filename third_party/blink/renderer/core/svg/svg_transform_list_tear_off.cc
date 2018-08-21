@@ -36,14 +36,12 @@ namespace blink {
 
 SVGTransformListTearOff::SVGTransformListTearOff(
     SVGTransformList* target,
-    SVGElement* context_element,
-    PropertyIsAnimValType property_is_anim_val,
-    const QualifiedName& attribute_name = QualifiedName::Null())
+    SVGAnimatedPropertyBase* binding,
+    PropertyIsAnimValType property_is_anim_val)
     : SVGListPropertyTearOffHelper<SVGTransformListTearOff, SVGTransformList>(
           target,
-          context_element,
-          property_is_anim_val,
-          attribute_name) {}
+          binding,
+          property_is_anim_val) {}
 
 SVGTransformListTearOff::~SVGTransformListTearOff() = default;
 

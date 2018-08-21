@@ -128,10 +128,7 @@ class SVGCurrentTranslateTearOff : public SVGPointTearOff {
 
  private:
   SVGCurrentTranslateTearOff(SVGSVGElement* context_element)
-      : SVGPointTearOff(context_element->translation_,
-                        context_element,
-                        kPropertyIsNotAnimVal,
-                        QualifiedName::Null()) {}
+      : SVGPointTearOff(context_element->translation_, context_element) {}
 };
 
 SVGPointTearOff* SVGSVGElement::currentTranslateFromJavascript() {

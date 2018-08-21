@@ -30,19 +30,16 @@
 
 #include "third_party/blink/renderer/core/svg/svg_angle_tear_off.h"
 
-#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
 SVGAngleTearOff::SVGAngleTearOff(SVGAngle* target_property,
-                                 SVGElement* context_element,
-                                 PropertyIsAnimValType property_is_anim_val,
-                                 const QualifiedName& attribute_name)
+                                 SVGAnimatedPropertyBase* binding,
+                                 PropertyIsAnimValType property_is_anim_val)
     : SVGPropertyTearOff<SVGAngle>(target_property,
-                                   context_element,
-                                   property_is_anim_val,
-                                   attribute_name) {}
+                                   binding,
+                                   property_is_anim_val) {}
 
 SVGAngleTearOff::~SVGAngleTearOff() = default;
 
@@ -133,8 +130,7 @@ void SVGAngleTearOff::setValueAsString(const String& value,
 }
 
 SVGAngleTearOff* SVGAngleTearOff::CreateDetached() {
-  return Create(SVGAngle::Create(), nullptr, kPropertyIsNotAnimVal,
-                QualifiedName::Null());
+  return Create(SVGAngle::Create(), nullptr, kPropertyIsNotAnimVal);
 }
 
 }  // namespace blink

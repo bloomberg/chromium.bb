@@ -41,24 +41,21 @@ class SVGPointListTearOff final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGPointListTearOff* Create(SVGPointList* target,
-                                     SVGElement* context_element,
-                                     PropertyIsAnimValType property_is_anim_val,
-                                     const QualifiedName& attribute_name) {
-    return new SVGPointListTearOff(target, context_element,
-                                   property_is_anim_val, attribute_name);
+  static SVGPointListTearOff* Create(
+      SVGPointList* target,
+      SVGAnimatedPropertyBase* binding,
+      PropertyIsAnimValType property_is_anim_val) {
+    return new SVGPointListTearOff(target, binding, property_is_anim_val);
   }
 
  private:
   SVGPointListTearOff(SVGPointList* target,
-                      SVGElement* context_element,
-                      PropertyIsAnimValType property_is_anim_val,
-                      const QualifiedName& attribute_name)
+                      SVGAnimatedPropertyBase* binding,
+                      PropertyIsAnimValType property_is_anim_val)
       : SVGListPropertyTearOffHelper<SVGPointListTearOff, SVGPointList>(
             target,
-            context_element,
-            property_is_anim_val,
-            attribute_name) {}
+            binding,
+            property_is_anim_val) {}
 };
 
 }  // namespace blink

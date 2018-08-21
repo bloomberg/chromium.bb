@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio_tear_off.h"
 
-#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
@@ -72,12 +71,10 @@ void SVGPreserveAspectRatioTearOff::setMeetOrSlice(
 
 SVGPreserveAspectRatioTearOff::SVGPreserveAspectRatioTearOff(
     SVGPreserveAspectRatio* target,
-    SVGElement* context_element,
-    PropertyIsAnimValType property_is_anim_val,
-    const QualifiedName& attribute_name)
+    SVGAnimatedPropertyBase* binding,
+    PropertyIsAnimValType property_is_anim_val)
     : SVGPropertyTearOff<SVGPreserveAspectRatio>(target,
-                                                 context_element,
-                                                 property_is_anim_val,
-                                                 attribute_name) {}
+                                                 binding,
+                                                 property_is_anim_val) {}
 
 }  // namespace blink

@@ -52,12 +52,11 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform> {
     kSvgTransformSkewy = blink::kSvgTransformSkewy,
   };
 
-  static SVGTransformTearOff* Create(SVGTransform* target,
-                                     SVGElement* context_element,
-                                     PropertyIsAnimValType property_is_anim_val,
-                                     const QualifiedName& attribute_name) {
-    return new SVGTransformTearOff(target, context_element,
-                                   property_is_anim_val, attribute_name);
+  static SVGTransformTearOff* Create(
+      SVGTransform* target,
+      SVGAnimatedPropertyBase* binding,
+      PropertyIsAnimValType property_is_anim_val) {
+    return new SVGTransformTearOff(target, binding, property_is_anim_val);
   }
   static SVGTransformTearOff* CreateDetached();
   static SVGTransformTearOff* Create(SVGMatrixTearOff*);
@@ -79,9 +78,8 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform> {
 
  private:
   SVGTransformTearOff(SVGTransform*,
-                      SVGElement* context_element,
-                      PropertyIsAnimValType,
-                      const QualifiedName& attribute_name);
+                      SVGAnimatedPropertyBase* binding,
+                      PropertyIsAnimValType);
 
   Member<SVGMatrixTearOff> matrix_tearoff_;
 };

@@ -42,11 +42,9 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList> {
  public:
   static SVGStringListTearOff* Create(
       SVGStringList* target,
-      SVGElement* context_element,
-      PropertyIsAnimValType property_is_anim_val,
-      const QualifiedName& attribute_name) {
-    return new SVGStringListTearOff(target, context_element,
-                                    property_is_anim_val, attribute_name);
+      SVGAnimatedPropertyBase* binding,
+      PropertyIsAnimValType property_is_anim_val) {
+    return new SVGStringListTearOff(target, binding, property_is_anim_val);
   }
 
   // SVGStringList DOM interface:
@@ -130,9 +128,8 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList> {
 
  protected:
   SVGStringListTearOff(SVGStringList*,
-                       SVGElement*,
-                       PropertyIsAnimValType,
-                       const QualifiedName&);
+                       SVGAnimatedPropertyBase* binding,
+                       PropertyIsAnimValType);
 };
 
 }  // namespace blink

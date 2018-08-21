@@ -30,18 +30,13 @@
 
 #include "third_party/blink/renderer/core/svg/svg_string_list_tear_off.h"
 
-#include "third_party/blink/renderer/core/svg/svg_element.h"
-
 namespace blink {
 
 SVGStringListTearOff::SVGStringListTearOff(
     SVGStringList* target,
-    SVGElement* context_element,
-    PropertyIsAnimValType property_is_anim_val,
-    const QualifiedName& attribute_name)
-    : SVGPropertyTearOff<SVGStringList>(target,
-                                        context_element,
-                                        property_is_anim_val,
-                                        attribute_name) {}
+    SVGAnimatedPropertyBase* binding,
+    PropertyIsAnimValType property_is_anim_val)
+    : SVGPropertyTearOff<SVGStringList>(target, binding, property_is_anim_val) {
+}
 
 }  // namespace blink

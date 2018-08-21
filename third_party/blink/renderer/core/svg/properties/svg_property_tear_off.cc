@@ -30,11 +30,30 @@
 
 #include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
 
+#include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
+
+SVGPropertyTearOffBase::SVGPropertyTearOffBase(
+    SVGAnimatedPropertyBase* binding,
+    PropertyIsAnimValType property_is_anim_val)
+    : context_element_(binding ? binding->ContextElement() : nullptr),
+      binding_(binding),
+      property_is_anim_val_(property_is_anim_val) {}
+
+SVGPropertyTearOffBase::SVGPropertyTearOffBase(SVGElement* context_element)
+    : context_element_(context_element),
+      binding_(nullptr),
+      property_is_anim_val_(kPropertyIsNotAnimVal) {}
+
+void SVGPropertyTearOffBase::Trace(Visitor* visitor) {
+  visitor->Trace(context_element_);
+  visitor->Trace(binding_);
+  ScriptWrappable::Trace(visitor);
+}
 
 void SVGPropertyTearOffBase::ThrowReadOnly(ExceptionState& exception_state) {
   exception_state.ThrowDOMException(
@@ -42,13 +61,31 @@ void SVGPropertyTearOffBase::ThrowReadOnly(ExceptionState& exception_state) {
       ExceptionMessages::ReadOnly());
 }
 
-void SVGPropertyTearOffBase::CommitChange() {
+void SVGPropertyTearOffBase::Bind(SVGAnimatedPropertyBase* binding) {
   DCHECK(!IsImmutable());
-  if (!ContextElement() || IsAnimVal())
+  DCHECK(binding);
+  DCHECK(binding->ContextElement());
+  context_element_ = binding->ContextElement();
+  // Requires SVGPropertyTearOffBase to be the left-most class in the
+  // inheritance hierarchy.
+  ScriptWrappableMarkingVisitor::WriteBarrier(context_element_.Get());
+  binding_ = binding;
+}
+
+void SVGPropertyTearOffBase::CommitChange() {
+  // Immutable (or animVal) objects should never mutate, so this hook should
+  // never be called in those cases.
+  DCHECK(!IsImmutable());
+  DCHECK(!IsAnimVal());
+  if (!binding_)
     return;
-  DCHECK(attribute_name_ != QualifiedName::Null());
-  ContextElement()->InvalidateSVGAttributes();
-  ContextElement()->SvgAttributeBaseValChanged(attribute_name_);
+  binding_->BaseValueChanged();
+}
+
+void SVGPropertyTearOffBase::EnsureAnimValUpdated() {
+  DCHECK(IsImmutable());
+  DCHECK(binding_);
+  binding_->EnsureAnimValUpdated();
 }
 
 }  // namespace blink

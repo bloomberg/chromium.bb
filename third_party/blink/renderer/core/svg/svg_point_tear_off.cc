@@ -30,19 +30,17 @@
 
 #include "third_party/blink/renderer/core/svg/svg_point_tear_off.h"
 
-#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_matrix_tear_off.h"
 
 namespace blink {
 
 SVGPointTearOff::SVGPointTearOff(SVGPoint* target,
-                                 SVGElement* context_element,
-                                 PropertyIsAnimValType property_is_anim_val,
-                                 const QualifiedName& attribute_name)
-    : SVGPropertyTearOff<SVGPoint>(target,
-                                   context_element,
-                                   property_is_anim_val,
-                                   attribute_name) {}
+                                 SVGAnimatedPropertyBase* binding,
+                                 PropertyIsAnimValType property_is_anim_val)
+    : SVGPropertyTearOff<SVGPoint>(target, binding, property_is_anim_val) {}
+
+SVGPointTearOff::SVGPointTearOff(SVGPoint* target, SVGElement* context_element)
+    : SVGPropertyTearOff<SVGPoint>(target, context_element) {}
 
 void SVGPointTearOff::setX(float f, ExceptionState& exception_state) {
   if (IsImmutable()) {
@@ -68,8 +66,7 @@ SVGPointTearOff* SVGPointTearOff::matrixTransform(SVGMatrixTearOff* matrix) {
 }
 
 SVGPointTearOff* SVGPointTearOff::CreateDetached(const FloatPoint& point) {
-  return Create(SVGPoint::Create(point), nullptr, kPropertyIsNotAnimVal,
-                QualifiedName::Null());
+  return Create(SVGPoint::Create(point), nullptr, kPropertyIsNotAnimVal);
 }
 
 }  // namespace blink

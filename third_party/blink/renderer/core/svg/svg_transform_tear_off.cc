@@ -37,13 +37,9 @@ namespace blink {
 
 SVGTransformTearOff::SVGTransformTearOff(
     SVGTransform* target,
-    SVGElement* context_element,
-    PropertyIsAnimValType property_is_anim_val,
-    const QualifiedName& attribute_name)
-    : SVGPropertyTearOff<SVGTransform>(target,
-                                       context_element,
-                                       property_is_anim_val,
-                                       attribute_name) {}
+    SVGAnimatedPropertyBase* binding,
+    PropertyIsAnimValType property_is_anim_val)
+    : SVGPropertyTearOff<SVGTransform>(target, binding, property_is_anim_val) {}
 
 SVGTransformTearOff::~SVGTransformTearOff() = default;
 
@@ -54,12 +50,12 @@ void SVGTransformTearOff::Trace(blink::Visitor* visitor) {
 
 SVGTransformTearOff* SVGTransformTearOff::CreateDetached() {
   return Create(SVGTransform::Create(blink::kSvgTransformMatrix), nullptr,
-                kPropertyIsNotAnimVal, QualifiedName::Null());
+                kPropertyIsNotAnimVal);
 }
 
 SVGTransformTearOff* SVGTransformTearOff::Create(SVGMatrixTearOff* matrix) {
   return Create(SVGTransform::Create(matrix->Value()), nullptr,
-                kPropertyIsNotAnimVal, QualifiedName::Null());
+                kPropertyIsNotAnimVal);
 }
 
 SVGMatrixTearOff* SVGTransformTearOff::matrix() {

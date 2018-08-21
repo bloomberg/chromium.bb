@@ -30,18 +30,12 @@
 
 #include "third_party/blink/renderer/core/svg/svg_rect_tear_off.h"
 
-#include "third_party/blink/renderer/core/svg/svg_element.h"
-
 namespace blink {
 
 SVGRectTearOff::SVGRectTearOff(SVGRect* target,
-                               SVGElement* context_element,
-                               PropertyIsAnimValType property_is_anim_val,
-                               const QualifiedName& attribute_name)
-    : SVGPropertyTearOff<SVGRect>(target,
-                                  context_element,
-                                  property_is_anim_val,
-                                  attribute_name) {}
+                               SVGAnimatedPropertyBase* binding,
+                               PropertyIsAnimValType property_is_anim_val)
+    : SVGPropertyTearOff<SVGRect>(target, binding, property_is_anim_val) {}
 
 void SVGRectTearOff::setX(float f, ExceptionState& exception_state) {
   if (IsImmutable()) {
@@ -80,8 +74,7 @@ void SVGRectTearOff::setHeight(float f, ExceptionState& exception_state) {
 }
 
 SVGRectTearOff* SVGRectTearOff::CreateDetached(const FloatRect& rect) {
-  return Create(SVGRect::Create(rect), nullptr, kPropertyIsNotAnimVal,
-                QualifiedName::Null());
+  return Create(SVGRect::Create(rect), nullptr, kPropertyIsNotAnimVal);
 }
 
 }  // namespace blink

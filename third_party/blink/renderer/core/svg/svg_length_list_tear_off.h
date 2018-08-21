@@ -43,24 +43,19 @@ class SVGLengthListTearOff final
  public:
   static SVGLengthListTearOff* Create(
       SVGLengthList* target,
-      SVGElement* context_element,
-      PropertyIsAnimValType property_is_anim_val,
-      const QualifiedName& attribute_name = QualifiedName::Null()) {
-    return new SVGLengthListTearOff(target, context_element,
-                                    property_is_anim_val, attribute_name);
+      SVGAnimatedPropertyBase* binding,
+      PropertyIsAnimValType property_is_anim_val) {
+    return new SVGLengthListTearOff(target, binding, property_is_anim_val);
   }
 
  private:
-  SVGLengthListTearOff(
-      SVGLengthList* target,
-      SVGElement* context_element,
-      PropertyIsAnimValType property_is_anim_val,
-      const QualifiedName& attribute_name = QualifiedName::Null())
+  SVGLengthListTearOff(SVGLengthList* target,
+                       SVGAnimatedPropertyBase* binding,
+                       PropertyIsAnimValType property_is_anim_val)
       : SVGListPropertyTearOffHelper<SVGLengthListTearOff, SVGLengthList>(
             target,
-            context_element,
-            property_is_anim_val,
-            attribute_name) {}
+            binding,
+            property_is_anim_val) {}
 };
 
 }  // namespace blink

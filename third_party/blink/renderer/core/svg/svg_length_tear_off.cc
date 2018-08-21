@@ -238,17 +238,12 @@ void SVGLengthTearOff::convertToSpecifiedUnits(
 }
 
 SVGLengthTearOff::SVGLengthTearOff(SVGLength* target,
-                                   SVGElement* context_element,
-                                   PropertyIsAnimValType property_is_anim_val,
-                                   const QualifiedName& attribute_name)
-    : SVGPropertyTearOff<SVGLength>(target,
-                                    context_element,
-                                    property_is_anim_val,
-                                    attribute_name) {}
+                                   SVGAnimatedPropertyBase* binding,
+                                   PropertyIsAnimValType property_is_anim_val)
+    : SVGPropertyTearOff<SVGLength>(target, binding, property_is_anim_val) {}
 
 SVGLengthTearOff* SVGLengthTearOff::CreateDetached() {
-  return Create(SVGLength::Create(), nullptr, kPropertyIsNotAnimVal,
-                QualifiedName::Null());
+  return Create(SVGLength::Create(), nullptr, kPropertyIsNotAnimVal);
 }
 
 }  // namespace blink
