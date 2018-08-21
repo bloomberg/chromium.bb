@@ -6293,6 +6293,7 @@ interface SourceBuffer : EventTarget
     getter updating
     method abort
     method appendBuffer
+    method changeType
     method constructor
     method remove
     setter appendWindowEnd
