@@ -82,7 +82,7 @@ const char kDefaultTranslateRankerModelURL[] =
 #elif defined(USE_AURA)
 const char kDefaultTranslateRankerModelURL[] =
     "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/"
-    "translate/translate_ranker_20180123.model";
+    "translate/2017/03/translate_ranker_model_20170329.pb.bin";
 #else
 const char kDefaultTranslateRankerModelURL[] =
     "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/"
