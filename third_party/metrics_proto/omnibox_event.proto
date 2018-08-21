@@ -150,6 +150,10 @@ message OmniboxEventProto {
     // This omnibox interaction started with the user tapping the search button.
     SEARCH_BUTTON_AS_STARTING_FOCUS = 13;
 
+    // This interaction started with the user focusing or typing in the search
+    // box of the ChromeOS app list (a.k.a., launcher).
+    CHROMEOS_APP_LIST = 14;
+
     // When adding new classifications, please consider adding them in
     // chromium's chrome/browser/resources/omnibox/omnibox.html
     // so that these new options are displayed on about:omnibox.

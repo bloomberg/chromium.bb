@@ -47,9 +47,24 @@ message CastLogsProto {
     // Hardware information stored in factory partition.
     message HardwareInfo {
       optional string color = 1;
+
       optional string mic = 2;
+
       optional string memory = 3;
+
       optional string nand = 4;
+
+      optional string mfg_date = 5;
+
+      optional string build_name = 6;
+
+      optional string config = 7;
+
+      optional string emmc = 8;
+
+      optional string display = 9;
+
+      optional string amp = 10;
     }
     optional HardwareInfo hardware_info = 6;
   }

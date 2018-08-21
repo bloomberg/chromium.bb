@@ -52,7 +52,8 @@ TEST_F(CallStackProfileStructTraitsTest, SampledProfile) {
 
   CallStackProfile* proto_profile = input_proto.mutable_call_stack_profile();
 
-  CallStackProfile::Sample* proto_sample = proto_profile->add_sample();
+  CallStackProfile::Sample* proto_sample =
+      proto_profile->add_deprecated_sample();
   proto_sample->set_count(1);
   CallStackProfile::Location* location = proto_sample->add_frame();
   location->set_address(0x10ULL);
@@ -73,14 +74,14 @@ TEST_F(CallStackProfileStructTraitsTest, SampledProfile) {
 
   const CallStackProfile& out_profile = output_proto.call_stack_profile();
 
-  ASSERT_EQ(1, out_profile.sample_size());
-  ASSERT_EQ(1, out_profile.sample(0).frame_size());
+  ASSERT_EQ(1, out_profile.deprecated_sample_size());
+  ASSERT_EQ(1, out_profile.deprecated_sample(0).frame_size());
 
-  ASSERT_TRUE(out_profile.sample(0).frame(0).has_address());
-  EXPECT_EQ(0x10ULL, out_profile.sample(0).frame(0).address());
+  ASSERT_TRUE(out_profile.deprecated_sample(0).frame(0).has_address());
+  EXPECT_EQ(0x10ULL, out_profile.deprecated_sample(0).frame(0).address());
 
-  ASSERT_TRUE(out_profile.sample(0).frame(0).has_module_id_index());
-  EXPECT_EQ(0, out_profile.sample(0).frame(0).module_id_index());
+  ASSERT_TRUE(out_profile.deprecated_sample(0).frame(0).has_module_id_index());
+  EXPECT_EQ(0, out_profile.deprecated_sample(0).frame(0).module_id_index());
 
   ASSERT_EQ(1, out_profile.module_id().size());
 
