@@ -531,6 +531,7 @@ void V4LocalDatabaseManager::DatabaseReadyForChecks(
   // The following check is needed because it is possible that by the time the
   // database is ready, StopOnIOThread has been called.
   if (enabled_) {
+    V4Database::Destroy(std::move(v4_database_));
     v4_database_ = std::move(v4_database);
 
     v4_database_->RecordFileSizeHistograms();
