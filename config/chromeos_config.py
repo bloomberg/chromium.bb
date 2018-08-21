@@ -3168,6 +3168,19 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
+      'amd64-generic-ubsan-fuzzer',
+      site_config.templates.fuzzer,
+      boards=['amd64-generic'],
+      profile='ubsan-fuzzer',
+      description='Build for fuzzing testing',
+      gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-ubsan',
+      disk_layout='4gb-rootfs',
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      # Every 3 hours.
+      schedule='0 */3 * * *'
+  )
+
+  site_config.Add(
       'amd64-generic-goma-canary-chromium-pfq-informational',
       site_config.templates.chromium_pfq_informational,
       site_config.templates.no_hwtest_builder,
