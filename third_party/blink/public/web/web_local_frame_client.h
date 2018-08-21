@@ -350,6 +350,7 @@ class BLINK_EXPORT WebLocalFrameClient {
     WebContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy;
     mojo::ScopedMessagePipeHandle blob_url_token;
+    base::TimeTicks input_start;
 
     // Specify whether or not a MHTML Archive can be used to load a subframe
     // resource instead of doing a network request.
@@ -406,7 +407,8 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // A new provisional load has been started.
   virtual void DidStartProvisionalLoad(WebDocumentLoader* document_loader,
-                                       WebURLRequest& request) {}
+                                       WebURLRequest& request,
+                                       const base::TimeTicks& input_start) {}
 
   // The provisional load failed. The WebHistoryCommitType is the commit type
   // that would have been used had the load succeeded.

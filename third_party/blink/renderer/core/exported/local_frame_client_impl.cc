@@ -418,11 +418,13 @@ void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
 
 void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
     DocumentLoader* loader,
-    ResourceRequest& request) {
+    ResourceRequest& request,
+    const base::TimeTicks& input_start) {
   if (web_frame_->Client()) {
     WrappedResourceRequest wrapped_request(request);
     web_frame_->Client()->DidStartProvisionalLoad(
-        WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request);
+        WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request,
+        input_start);
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidStartProvisionalLoad(web_frame_->GetFrame());
@@ -750,7 +752,8 @@ DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
   document_loader->SetExtraData(std::move(extra_data));
   document_loader->UpdateNavigationTimings(
       navigation_timings.navigation_start, navigation_timings.redirect_start,
-      navigation_timings.redirect_end, navigation_timings.fetch_start);
+      navigation_timings.redirect_end, navigation_timings.fetch_start,
+      navigation_timings.input_start);
   if (web_frame_->Client())
     web_frame_->Client()->DidCreateDocumentLoader(document_loader);
   return document_loader;

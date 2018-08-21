@@ -63,6 +63,7 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   }
 
   unsigned long long navigationStart() const;
+  unsigned long long inputStart() const;
   unsigned long long unloadEventStart() const;
   unsigned long long unloadEventEnd() const;
   unsigned long long redirectStart() const;

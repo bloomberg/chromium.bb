@@ -97,8 +97,10 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                                        WebHistoryCommitType,
                                        bool content_initiated) override;
   void DispatchWillCommitProvisionalLoad() override;
-  void DispatchDidStartProvisionalLoad(DocumentLoader*,
-                                       ResourceRequest&) override;
+  void DispatchDidStartProvisionalLoad(
+      DocumentLoader*,
+      ResourceRequest&,
+      const base::TimeTicks& input_start) override;
   void DispatchDidReceiveTitle(const String&) override;
   void DispatchDidChangeIcons(IconType) override;
   void DispatchDidCommitLoad(HistoryItem*,

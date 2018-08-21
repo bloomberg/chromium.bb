@@ -693,7 +693,8 @@ void NavigationRequest::CreateNavigationHandle() {
                                        common_params_.referrer),
           common_params_.has_user_gesture, common_params_.transition,
           is_external_protocol, begin_params_->request_context_type,
-          begin_params_->mixed_content_context_type);
+          begin_params_->mixed_content_context_type,
+          common_params_.input_start);
 
   if (!frame_tree_node->navigation_request()) {
     // A callback could have cancelled this request synchronously in which case

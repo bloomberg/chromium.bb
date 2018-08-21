@@ -64,6 +64,7 @@ class WebPerformance {
   BLINK_EXPORT WebNavigationType GetNavigationType() const;
 
   // These functions return time in seconds (not milliseconds) since the epoch.
+  BLINK_EXPORT double InputForNavigationStart() const;
   BLINK_EXPORT double NavigationStart() const;
   BLINK_EXPORT double UnloadEventEnd() const;
   BLINK_EXPORT double RedirectStart() const;

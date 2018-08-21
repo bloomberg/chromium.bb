@@ -65,6 +65,10 @@ double WebPerformance::NavigationStart() const {
   return MillisecondsToSeconds(private_->timing()->navigationStart());
 }
 
+double WebPerformance::InputForNavigationStart() const {
+  return MillisecondsToSeconds(private_->timing()->inputStart());
+}
+
 double WebPerformance::UnloadEventEnd() const {
   return MillisecondsToSeconds(private_->timing()->unloadEventEnd());
 }

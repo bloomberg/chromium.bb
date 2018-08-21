@@ -229,6 +229,19 @@ const char kHistogramNetworkCompletedResources[] =
 const char kHistogramCacheCompletedResources[] =
     "PageLoad.Experimental.CompletedResources.Cache";
 
+const char kHistogramInputToNavigation[] =
+    "PageLoad.Experimental.InputTiming.InputToNavigationStart";
+const char kBackgroundHistogramInputToNavigation[] =
+    "PageLoad.Experimental.InputTiming.InputToNavigationStart.Background";
+const char kHistogramInputToFirstPaint[] =
+    "PageLoad.Experimental.PaintTiming.InputToFirstPaint";
+const char kBackgroundHistogramInputToFirstPaint[] =
+    "PageLoad.Experimental.PaintTiming.InputToFirstPaint.Background";
+const char kHistogramInputToFirstContentfulPaint[] =
+    "PageLoad.Experimental.PaintTiming.InputToFirstContentfulPaint";
+const char kBackgroundHistogramInputToFirstContentfulPaint[] =
+    "PageLoad.Experimental.PaintTiming.InputToFirstContentfulPaint.Background";
+
 }  // namespace internal
 
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
@@ -315,9 +328,19 @@ void CorePageLoadMetricsObserver::OnFirstPaintInPage(
           timing.paint_timing->first_paint, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstPaint,
                         timing.paint_timing->first_paint.value());
+    if (timing.input_to_navigation_start) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramInputToFirstPaint,
+                          timing.input_to_navigation_start.value() +
+                              timing.paint_timing->first_paint.value());
+    }
   } else {
     PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramFirstPaint,
                         timing.paint_timing->first_paint.value());
+    if (timing.input_to_navigation_start) {
+      PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramInputToFirstPaint,
+                          timing.input_to_navigation_start.value() +
+                              timing.paint_timing->first_paint.value());
+    }
   }
 
   if (WasStartedInBackgroundOptionalEventInForeground(
@@ -378,6 +401,15 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
                           timing.paint_timing->first_contentful_paint.value());
     }
 
+    if (timing.input_to_navigation_start) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramInputToNavigation,
+                          timing.input_to_navigation_start.value());
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramInputToFirstContentfulPaint,
+          timing.input_to_navigation_start.value() +
+              timing.paint_timing->first_contentful_paint.value());
+    }
+
     switch (GetPageLoadType(transition_)) {
       case LOAD_TYPE_RELOAD:
         PAGE_LOAD_HISTOGRAM(
@@ -419,6 +451,14 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
         internal::kBackgroundHistogramParseStartToFirstContentfulPaint,
         timing.paint_timing->first_contentful_paint.value() -
             timing.parse_timing->parse_start.value());
+    if (timing.input_to_navigation_start) {
+      PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramInputToNavigation,
+                          timing.input_to_navigation_start.value());
+      PAGE_LOAD_HISTOGRAM(
+          internal::kBackgroundHistogramInputToFirstContentfulPaint,
+          timing.input_to_navigation_start.value() +
+              timing.paint_timing->first_contentful_paint.value());
+    }
   }
 
   if (WasStartedInBackgroundOptionalEventInForeground(

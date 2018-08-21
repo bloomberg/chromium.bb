@@ -1851,3 +1851,28 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ReceivedCompleteResources) {
   waiter->AddMinimumResourceBytesExpectation(4000);
   waiter->Wait();
 }
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForClick) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
+  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
+                                              "/page_load_metrics/link.html"));
+  waiter->Wait();
+  content::SimulateMouseClickAt(
+      browser()->tab_strip_model()->GetActiveWebContents(), 0,
+      blink::WebMouseEvent::Button::kLeft, gfx::Point(100, 100));
+  waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
+  waiter->Wait();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramInputToNavigation, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramInputToFirstContentfulPaint, 1);
+}

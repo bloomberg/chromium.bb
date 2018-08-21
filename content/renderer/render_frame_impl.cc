@@ -488,7 +488,8 @@ WebURLRequest CreateURLRequestForNavigation(
 
 CommonNavigationParams MakeCommonNavigationParams(
     const blink::WebLocalFrameClient::NavigationPolicyInfo& info,
-    int load_flags) {
+    int load_flags,
+    const base::TimeTicks& input_start) {
   Referrer referrer(
       GURL(info.url_request.HttpHeaderField(WebString::FromUTF8("Referer"))
                .Latin1()),
@@ -536,7 +537,8 @@ CommonNavigationParams MakeCommonNavigationParams(
       info.url_request.GetNavigationCSP().self_source.has_value()
           ? base::Optional<CSPSource>(BuildCSPSource(
                 info.url_request.GetNavigationCSP().self_source.value()))
-          : base::nullopt);
+          : base::nullopt,
+      input_start);
 }
 
 WebFrameLoadType NavigationTypeToLoadType(
@@ -913,7 +915,8 @@ void ApplyFilePathAlias(blink::WebURLRequest* request) {
 // format, blink::WebNavigationTimings.
 blink::WebNavigationTimings BuildNavigationTimings(
     const base::TimeTicks& navigation_start,
-    const NavigationTiming& browser_navigation_timings) {
+    const NavigationTiming& browser_navigation_timings,
+    const base::TimeTicks& input_start) {
   blink::WebNavigationTimings renderer_navigation_timings;
 
   // Sanitizes the navigation_start timestamp for browser-initiated navigations,
@@ -934,6 +937,8 @@ blink::WebNavigationTimings BuildNavigationTimings(
       browser_navigation_timings.redirect_end;
   renderer_navigation_timings.fetch_start =
       browser_navigation_timings.fetch_start;
+
+  renderer_navigation_timings.input_start = input_start;
 
   return renderer_navigation_timings;
 }
@@ -3153,7 +3158,8 @@ void RenderFrameImpl::CommitNavigation(
           request, load_type, item_for_history_navigation, is_client_redirect,
           devtools_navigation_token, std::move(document_state),
           BuildNavigationTimings(common_params.navigation_start,
-                                 request_params.navigation_timing));
+                                 request_params.navigation_timing,
+                                 common_params.input_start));
       // The commit can result in this frame being removed. Use a
       // WeakPtr as an easy way to detect whether this has occured. If so, this
       // method should return immediately and not touch any part of the object,
@@ -4098,7 +4104,8 @@ void RenderFrameImpl::DidCreateDocumentLoader(
 
 void RenderFrameImpl::DidStartProvisionalLoad(
     blink::WebDocumentLoader* document_loader,
-    blink::WebURLRequest& request) {
+    blink::WebURLRequest& request,
+    const base::TimeTicks& input_start) {
   // In fast/loader/stop-provisional-loads.html, we abort the load before this
   // callback is invoked.
   if (!document_loader)
@@ -4126,6 +4133,7 @@ void RenderFrameImpl::DidStartProvisionalLoad(
         pending_navigation_info_->devtools_initiator_info;
     info.blob_url_token =
         pending_navigation_info_->blob_url_token.PassInterface().PassHandle();
+    info.input_start = input_start;
 
     pending_navigation_info_.reset(nullptr);
     BeginNavigation(info);
@@ -6819,10 +6827,10 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
     BindNavigationClient(mojo::MakeRequest(&navigation_client_info));
     navigation_state->set_navigation_client(std::move(navigation_client_impl_));
   }
-  GetFrameHost()->BeginNavigation(MakeCommonNavigationParams(info, load_flags),
-                                  std::move(begin_navigation_params),
-                                  std::move(blob_url_token),
-                                  std::move(navigation_client_info));
+  GetFrameHost()->BeginNavigation(
+      MakeCommonNavigationParams(info, load_flags, info.input_start),
+      std::move(begin_navigation_params), std::move(blob_url_token),
+      std::move(navigation_client_info));
 }
 
 void RenderFrameImpl::LoadDataURL(
@@ -6865,7 +6873,8 @@ void RenderFrameImpl::LoadDataURL(
         item_for_history_navigation, is_client_redirect,
         std::move(navigation_data),
         BuildNavigationTimings(params.navigation_start,
-                               request_params.navigation_timing));
+                               request_params.navigation_timing,
+                               params.input_start));
   } else {
     CHECK(false) << "Invalid URL passed: "
                  << params.url.possibly_invalid_spec();

@@ -391,7 +391,8 @@ void WebFrameTestClient::LoadErrorPage(int reason) {
 
 void WebFrameTestClient::DidStartProvisionalLoad(
     blink::WebDocumentLoader* document_loader,
-    blink::WebURLRequest& request) {
+    blink::WebURLRequest& request,
+    const base::TimeTicks& input_start) {
   // PlzNavigate
   // A provisional load notification is received when a frame navigation is
   // sent to the browser. We don't want to log it again during commit.

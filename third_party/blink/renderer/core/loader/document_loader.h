@@ -276,7 +276,8 @@ class CORE_EXPORT DocumentLoader
   void UpdateNavigationTimings(base::TimeTicks navigation_start_time,
                                base::TimeTicks redirect_start_time,
                                base::TimeTicks redirect_end_time,
-                               base::TimeTicks fetch_start_time);
+                               base::TimeTicks fetch_start_time,
+                               base::TimeTicks input_start_time);
   UseCounter& GetUseCounter() { return use_counter_; }
 
  protected:

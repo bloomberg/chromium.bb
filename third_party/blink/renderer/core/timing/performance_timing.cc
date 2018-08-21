@@ -66,6 +66,14 @@ unsigned long long PerformanceTiming::navigationStart() const {
   return MonotonicTimeToIntegerMilliseconds(timing->NavigationStart());
 }
 
+unsigned long long PerformanceTiming::inputStart() const {
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
+  if (!timing)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(timing->InputStart());
+}
+
 unsigned long long PerformanceTiming::unloadEventStart() const {
   DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)

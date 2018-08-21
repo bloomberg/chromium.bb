@@ -759,7 +759,8 @@ static WebURLRequest::RequestContext DetermineRequestContextFromNavigationType(
 
 void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                   WebFrameLoadType frame_load_type,
-                                  NavigationPolicy policy) {
+                                  NavigationPolicy policy,
+                                  const base::TimeTicks& input_start) {
   CHECK(!passed_request.GetSubstituteData().IsValid());
   CHECK(!IsBackForwardLoadType(frame_load_type));
   DCHECK(passed_request.TriggeringEventInfo() !=
@@ -933,7 +934,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   // We should get rid of the dependency on the DocumentLoader in consumers of
   // the DidStartProvisionalLoad() notification.
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
-                                            resource_request);
+                                            resource_request, input_start);
   DCHECK(provisional_document_loader_);
 
   // TODO(csharrison): In M70 when UserActivation v2 should ship, we can remove
@@ -1041,7 +1042,8 @@ void FrameLoader::CommitNavigation(
 
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
-                                            resource_request);
+                                            resource_request,
+                                            /*input_start=*/base::TimeTicks());
 
   provisional_document_loader_->StartLoading();
   probe::frameClearedScheduledClientNavigation(frame_);

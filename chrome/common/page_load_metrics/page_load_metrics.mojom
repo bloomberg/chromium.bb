@@ -130,6 +130,10 @@ struct PageLoadTiming {
   InteractiveTiming interactive_timing;
   PaintTiming paint_timing;
   ParseTiming parse_timing;
+  // Time between user input and navigation start. This is set for navigations
+  // where the input start timing is known; currently when the navigation is
+  // initiated by a link click in the renderer.
+  mojo_base.mojom.TimeDelta? input_to_navigation_start;
 
   // If you add additional members, also be sure to update page_load_timing.h.
 };
