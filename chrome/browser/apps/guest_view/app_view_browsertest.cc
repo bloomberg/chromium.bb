@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
@@ -161,7 +162,14 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewWithUndefinedDataShouldSucceed) {
 }
 
 // Tests that <appview> correctly processes parameters passed on connect.
-IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewRefusedDataShouldFail) {
+// Flaky on Windows, Linux and Mac. See https://crbug.com/875908
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_TestAppViewRefusedDataShouldFail \
+  DISABLED_TestAppViewRefusedDataShouldFail
+#else
+#define MAYBE_TestAppViewRefusedDataShouldFail TestAppViewRefusedDataShouldFail
+#endif
+IN_PROC_BROWSER_TEST_F(AppViewTest, MAYBE_TestAppViewRefusedDataShouldFail) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewRefusedDataShouldFail",
