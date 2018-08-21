@@ -158,6 +158,14 @@ void NavigationContextImpl::SetLoadingErrorPage(bool is_loading_error_page) {
   is_loading_error_page_ = is_loading_error_page;
 }
 
+bool NavigationContextImpl::IsLoadingHtmlString() const {
+  return is_loading_html_string_;
+}
+
+void NavigationContextImpl::SetLoadingHtmlString(bool is_loading_html_string) {
+  is_loading_html_string_ = is_loading_html_string;
+}
+
 bool NavigationContextImpl::IsNativeContentPresented() const {
   return is_native_content_presented_;
 }
