@@ -135,7 +135,7 @@ static int
 passDoAction(const TranslationTableHeader *table, const InString **input,
 		OutString *output, int *posMapping, int transOpcode,
 		const TranslationTableRule **transRule, int passCharDots,
-		const widechar *passInstructions, int *passIC, int *pos, PassRuleMatch match,
+		const widechar *passInstructions, int passIC, int *pos, PassRuleMatch match,
 		int *cursorPosition, int *cursorStatus, TranslationTableRule *groupingRule,
 		widechar groupingOp);
 
@@ -311,7 +311,7 @@ makeCorrections(const TranslationTableHeader *table, const InString *input,
 			if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
 				appliedRules[appliedRulesCount++] = transRule;
 			if (!passDoAction(table, &input, output, posMapping, transOpcode, &transRule,
-						passCharDots, passInstructions, &passIC, &pos, patternMatch,
+						passCharDots, passInstructions, passIC, &pos, patternMatch,
 						cursorPosition, cursorStatus, groupingRule, groupingOp))
 				goto failure;
 			if (input->bufferIndex != inputBefore->bufferIndex &&
@@ -884,7 +884,7 @@ static int
 passDoAction(const TranslationTableHeader *table, const InString **input,
 		OutString *output, int *posMapping, int transOpcode,
 		const TranslationTableRule **transRule, int passCharDots,
-		const widechar *passInstructions, int *passIC, int *pos, PassRuleMatch match,
+		const widechar *passInstructions, int passIC, int *pos, PassRuleMatch match,
 		int *cursorPosition, int *cursorStatus, TranslationTableRule *groupingRule,
 		widechar groupingOp) {
 	int k;
@@ -899,53 +899,53 @@ passDoAction(const TranslationTableHeader *table, const InString **input,
 		return 0;
 	destStartReplace = output->length;
 
-	while (*passIC < (*transRule)->dotslen) switch (passInstructions[*passIC]) {
+	while (passIC < (*transRule)->dotslen) switch (passInstructions[passIC]) {
 		case pass_string:
 		case pass_dots:
-			if ((output->length + passInstructions[*passIC + 1]) > output->maxlength)
+			if ((output->length + passInstructions[passIC + 1]) > output->maxlength)
 				return 0;
-			for (k = 0; k < passInstructions[*passIC + 1]; ++k)
+			for (k = 0; k < passInstructions[passIC + 1]; ++k)
 				posMapping[output->length + k] = match.startReplace;
-			memcpy(&output->chars[output->length], &passInstructions[*passIC + 2],
-					passInstructions[*passIC + 1] * CHARSIZE);
-			output->length += passInstructions[*passIC + 1];
-			*passIC += passInstructions[*passIC + 1] + 2;
+			memcpy(&output->chars[output->length], &passInstructions[passIC + 2],
+					passInstructions[passIC + 1] * CHARSIZE);
+			output->length += passInstructions[passIC + 1];
+			passIC += passInstructions[passIC + 1] + 2;
 			break;
 		case pass_groupstart:
 			ruleOffset =
-					(passInstructions[*passIC + 1] << 16) | passInstructions[*passIC + 2];
+					(passInstructions[passIC + 1] << 16) | passInstructions[passIC + 2];
 			rule = (TranslationTableRule *)&table->ruleArea[ruleOffset];
 			posMapping[output->length] = match.startMatch;
 			output->chars[output->length++] = rule->charsdots[2 * passCharDots];
-			*passIC += 3;
+			passIC += 3;
 			break;
 		case pass_groupend:
 			ruleOffset =
-					(passInstructions[*passIC + 1] << 16) | passInstructions[*passIC + 2];
+					(passInstructions[passIC + 1] << 16) | passInstructions[passIC + 2];
 			rule = (TranslationTableRule *)&table->ruleArea[ruleOffset];
 			posMapping[output->length] = match.startMatch;
 			output->chars[output->length++] = rule->charsdots[2 * passCharDots + 1];
-			*passIC += 3;
+			passIC += 3;
 			break;
 		case pass_swap:
 			if (!swapReplace(match.startReplace, match.endReplace, table, *input, output,
-						posMapping, passInstructions, *passIC))
+						posMapping, passInstructions, passIC))
 				return 0;
-			*passIC += 3;
+			passIC += 3;
 			break;
 		case pass_groupreplace:
 			if (!groupingRule ||
 					!replaceGrouping(table, input, output, transOpcode, passCharDots,
-							passInstructions, *passIC, match.startReplace, groupingRule,
+							passInstructions, passIC, match.startReplace, groupingRule,
 							groupingOp))
 				return 0;
-			*passIC += 3;
+			passIC += 3;
 			break;
 		case pass_omit:
 			if (groupingRule)
 				removeGrouping(input, output, passCharDots, match.startReplace,
 						groupingRule, groupingOp);
-			(*passIC)++;
+			passIC++;
 			break;
 		case pass_copy: {
 			int count = destStartReplace - destStartMatch;
@@ -961,10 +961,10 @@ passDoAction(const TranslationTableHeader *table, const InString **input,
 						output, posMapping, transOpcode, cursorPosition, cursorStatus))
 				return 0;
 			newPos = match.endMatch;
-			(*passIC)++;
+			passIC++;
 			break;
 		default:
-			if (_lou_handlePassVariableAction(passInstructions, passIC)) break;
+			if (_lou_handlePassVariableAction(passInstructions, &passIC)) break;
 			return 0;
 		}
 	*pos = newPos;
@@ -1017,7 +1017,7 @@ translatePass(const TranslationTableHeader *table, int currentPass, const InStri
 			if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
 				appliedRules[appliedRulesCount++] = transRule;
 			if (!passDoAction(table, &input, output, posMapping, transOpcode, &transRule,
-						passCharDots, passInstructions, &passIC, &pos, patternMatch,
+						passCharDots, passInstructions, passIC, &pos, patternMatch,
 						cursorPosition, cursorStatus, groupingRule, groupingOp))
 				goto failure;
 			if (input->bufferIndex != inputBefore->bufferIndex &&
@@ -3401,7 +3401,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 				if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
 					appliedRules[appliedRulesCount++] = transRule;
 				if (!passDoAction(table, &input, output, posMapping, transOpcode,
-							&transRule, passCharDots, passInstructions, &passIC, &pos,
+							&transRule, passCharDots, passInstructions, passIC, &pos,
 							patternMatch, cursorPosition, cursorStatus, groupingRule,
 							groupingOp))
 					goto failure;
