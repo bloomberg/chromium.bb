@@ -72,11 +72,6 @@
                 "include": ["getDOMCounters", "startSampling", "stopSampling", "getSamplingProfile", "getAllTimeSamplingProfile"]
             },
             {
-                "domain": "Tracing",
-                "include": ["start", "end"],
-                "async": ["start", "end"]
-            },
-            {
                 "domain": "Page",
                 "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
                             "getAppManifest", "requestAppBanner", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState"],
