@@ -21,12 +21,12 @@ class XRView final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum Eye { kEyeLeft = 0, kEyeRight = 1 };
+  enum XREye { kEyeLeft = 0, kEyeRight = 1 };
 
-  XRView(XRSession*, Eye);
+  XRView(XRSession*, XREye);
 
   const String& eye() const { return eye_string_; }
-  Eye EyeValue() const { return eye_; }
+  XREye EyeValue() const { return eye_; }
 
   XRSession* session() const;
   DOMFloat32Array* projectionMatrix() const { return projection_matrix_; }
@@ -60,7 +60,7 @@ class XRView final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  const Eye eye_;
+  const XREye eye_;
   String eye_string_;
   Member<XRSession> session_;
   Member<DOMFloat32Array> projection_matrix_;

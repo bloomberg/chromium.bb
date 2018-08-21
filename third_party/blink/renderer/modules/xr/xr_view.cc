@@ -10,7 +10,7 @@
 
 namespace blink {
 
-XRView::XRView(XRSession* session, Eye eye)
+XRView::XRView(XRSession* session, XREye eye)
     : eye_(eye),
       session_(session),
       projection_matrix_(DOMFloat32Array::Create(16)) {
