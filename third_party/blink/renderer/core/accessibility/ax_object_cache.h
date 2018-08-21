@@ -102,6 +102,7 @@ class CORE_EXPORT AXObjectCache
   virtual void HandleLoadComplete(Document*) = 0;
   virtual void HandleLayoutComplete(Document*) = 0;
   virtual void HandleClicked(Node*) = 0;
+  virtual void HandleAutofillStateChanged(Element*, bool) = 0;
 
   // Changes to virtual Accessibility Object Model nodes.
   virtual void HandleAttributeChanged(const QualifiedName& attr_name,

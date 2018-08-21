@@ -1002,6 +1002,12 @@ void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
     PostNotification(element, AXObjectCacheImpl::kAXAriaAttributeChanged);
 }
 
+void AXObjectCacheImpl::HandleAutofillStateChanged(Element* elem,
+                                                   bool is_available) {
+  if (AXObject* obj = Get(elem))
+    obj->HandleAutofillStateChanged(is_available);
+}
+
 void AXObjectCacheImpl::LabelChanged(Element* element) {
   TextChanged(ToHTMLLabelElement(element)->control());
 }

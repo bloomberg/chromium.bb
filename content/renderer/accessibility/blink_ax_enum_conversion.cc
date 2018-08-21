@@ -25,6 +25,9 @@ void AXStateFromBlink(const blink::WebAXObject& o, ui::AXNodeData* dst) {
   else if (o.Role() == blink::kWebAXRolePopUpButton)
     dst->SetHasPopup(ax::mojom::HasPopup::kMenu);
 
+  if (o.IsAutofillAvailable())
+    dst->AddState(ax::mojom::State::kAutofillAvailable);
+
   if (o.IsHovered())
     dst->AddState(ax::mojom::State::kHovered);
 

@@ -237,6 +237,13 @@ bool WebAXObject::IsAnchor() const {
   return private_->IsAnchor();
 }
 
+bool WebAXObject::IsAutofillAvailable() const {
+  if (IsDetached())
+    return false;
+
+  return private_->IsAutofillAvailable();
+}
+
 WebString WebAXObject::AriaAutoComplete() const {
   if (IsDetached())
     return WebString();

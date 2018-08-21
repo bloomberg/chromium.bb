@@ -93,6 +93,7 @@ void AXPlatformNode::OnInputSuggestionsUnavailable() {
 }
 
 // static
+// TODO(crbug.com/865101) Remove this once the autofill state works.
 bool AXPlatformNode::HasInputSuggestions() {
   return has_input_suggestions_;
 }

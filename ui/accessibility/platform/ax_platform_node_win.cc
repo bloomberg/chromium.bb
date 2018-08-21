@@ -4036,6 +4036,9 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
     ia2_state |= IA2_STATE_SELECTABLE_TEXT;
   }
 
+  // TODO(crbug.com/865101) Use
+  // data.HasState(ax::mojom::State::kAutofillAvailable) instead of
+  // IsFocusedInputWithSuggestions()
   if (!GetStringAttribute(ax::mojom::StringAttribute::kAutoComplete).empty() ||
       IsFocusedInputWithSuggestions()) {
     ia2_state |= IA2_STATE_SUPPORTS_AUTOCOMPLETION;
@@ -4802,7 +4805,9 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
   StateToUIAAriaProperty(properties, ax::mojom::State::kExpanded, "expanded");
   HtmlAttributeToUIAAriaProperty(properties, "aria-grabbed", "grabbed");
 
-  // TODO(suproteem) check if autofill check is necessary
+  // TODO(crbug.com/865101) Use
+  // data.HasState(ax::mojom::State::kAutofillAvailable) instead of
+  // IsFocusedInputWithSuggestions()
   if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup)) {
     properties.push_back(L"haspopup=true");
   }
@@ -5492,8 +5497,11 @@ int AXPlatformNodeWin::MSAAState() {
   if (ShouldNodeHaveFocusableState(data))
     msaa_state |= STATE_SYSTEM_FOCUSABLE;
 
-  // Note: suggestions are special-cased here because there is no way
-  // for the browser to know when a suggestion popup is available.
+  // TODO(crbug.com/865101) Use
+  // data.HasState(ax::mojom::State::kAutofillAvailable) instead of
+  // IsFocusedInputWithSuggestions() and rmove the below comment: Note:
+  // suggestions are special-cased here because there is no way for the browser
+  // to know when a suggestion popup is available.
   if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup) ||
       IsFocusedInputWithSuggestions())
     msaa_state |= STATE_SYSTEM_HASPOPUP;

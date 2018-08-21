@@ -278,6 +278,7 @@ enum Role {
 
 enum State {
   kNone,
+  kAutofillAvailable,
   kCollapsed,
   kDefault,
   kEditable,

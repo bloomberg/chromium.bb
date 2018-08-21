@@ -516,6 +516,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool IsWebArea() const { return RoleValue() == kWebAreaRole; }
 
   // Check object state.
+  virtual bool IsAutofillAvailable() { return false; }
   virtual bool IsClickable() const;
   virtual bool IsCollapsed() const { return false; }
   virtual AccessibilityExpanded IsExpanded() const {
@@ -952,6 +953,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Notifications that this object may have changed.
   virtual void ChildrenChanged() {}
   virtual void HandleActiveDescendantChanged() {}
+  virtual void HandleAutofillStateChanged(bool) {}
   virtual void HandleAriaExpandedChanged() {}
   virtual void SelectionChanged();
   virtual void TextChanged() {}
