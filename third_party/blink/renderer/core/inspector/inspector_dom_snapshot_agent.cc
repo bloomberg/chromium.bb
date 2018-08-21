@@ -540,6 +540,7 @@ void InspectorDOMSnapshotAgent::VisitDocument2(Document* document) {
                   .setBounds(protocol::Array<protocol::Array<double>>::create())
                   .setText(protocol::Array<int>::create())
                   .setStyles(protocol::Array<protocol::Array<int>>::create())
+                  .setStackingContexts(BooleanData())
                   .build())
           .setTextBoxes(
               protocol::DOMSnapshot::TextBoxSnapshot::create()
@@ -813,6 +814,9 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
   if (style_index != -1)
     layout_tree_node->setStyleIndex(style_index);
 
+  if (layout_object->Style() && layout_object->Style()->IsStacked())
+    layout_tree_node->setIsStackingContext(true);
+
   if (paint_order_map_) {
     PaintLayer* paint_layer = layout_object->EnclosingLayer();
 
@@ -865,6 +869,9 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   layout_tree_snapshot->getStyles()->addItem(BuildStylesForNode(node));
   layout_tree_snapshot->getBounds()->addItem(BuildRectForFloatRect2(
       FloatRect(layout_object->AbsoluteBoundingBoxRect())));
+
+  if (layout_object->Style() && layout_object->Style()->IsStacked())
+    SetRare(layout_tree_snapshot->getStackingContexts(), layout_index);
 
   String text = layout_object->IsText() ? ToLayoutText(layout_object)->GetText()
                                         : String();
