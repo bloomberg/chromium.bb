@@ -240,6 +240,27 @@ void DestructingTestViewsDelegate::ReleaseRef() {
     release_ref_callback_.Run();
 }
 
+// View which cancels the menu it belongs to on mouse press.
+class CancelMenuOnMousePressView : public View {
+ public:
+  explicit CancelMenuOnMousePressView(MenuController* controller)
+      : controller_(controller) {}
+
+  // View:
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    controller_->CancelAll();
+    return true;
+  }
+
+  // This is needed to prevent the view from being "squashed" to zero height
+  // when the menu which owns it is shown. In such state the logic which
+  // determines if the menu contains the mouse press location doesn't work.
+  gfx::Size CalculatePreferredSize() const override { return size(); }
+
+ private:
+  MenuController* controller_;
+};
+
 }  // namespace
 
 class TestMenuItemViewShown : public MenuItemView {
@@ -1848,6 +1869,36 @@ TEST_F(MenuControllerTest, DragFromViewIntoMenuAndExit) {
 }
 
 #endif  // defined(USE_AURA)
+
+// Tests that having the MenuController deleted during OnMousePressed does not
+// cause a crash. ASAN bots should not detect use-after-free in MenuController.
+TEST_F(MenuControllerTest, NoUseAfterFreeWhenMenuCanceledOnMousePress) {
+  MenuController* controller = menu_controller();
+  DestroyMenuControllerOnMenuClosed(menu_controller_delegate());
+
+  // Creating own MenuItem for a minimal test environment.
+  auto item = std::make_unique<TestMenuItemViewNotShown>(menu_delegate());
+  item->SetController(controller);
+  item->SetBounds(0, 0, 50, 50);
+
+  SubmenuView* sub_menu = item->CreateSubmenu();
+  auto* canceling_view = new CancelMenuOnMousePressView(controller);
+  sub_menu->AddChildView(canceling_view);
+  canceling_view->SetBoundsRect(item->bounds());
+
+  controller->Run(owner(), nullptr, item.get(), item->bounds(),
+                  MENU_ANCHOR_TOPLEFT, false, false);
+  sub_menu->ShowAt(owner(), item->bounds(), true);
+
+  // Simulate a mouse press in the middle of the |closing_widget|.
+  gfx::Point location(canceling_view->bounds().CenterPoint());
+  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, location, location,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+  EXPECT_TRUE(controller->OnMousePressed(sub_menu, event));
+
+  // Close to remove observers before test TearDown.
+  sub_menu->Close();
+}
 
 }  // namespace test
 }  // namespace views

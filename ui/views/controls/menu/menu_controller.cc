@@ -585,7 +585,13 @@ bool MenuController::OnMousePressed(SubmenuView* source,
 
     // Empty menu items are always handled by the menu controller.
     if (!view || view->id() != MenuItemView::kEmptyMenuItemViewID) {
+      base::WeakPtr<MenuController> this_ref = AsWeakPtr();
       bool processed = forward_to_root->ProcessMousePressed(event_for_root);
+      // This object may be destroyed as a result of a mouse press event (some
+      // item may close the menu).
+      if (!this_ref)
+        return true;
+
       // If the event was processed, the root view becomes our current mouse
       // handler...
       if (processed && !current_mouse_event_target_) {
