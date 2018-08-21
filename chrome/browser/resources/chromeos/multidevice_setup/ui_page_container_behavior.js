@@ -50,12 +50,6 @@ const UiPageContainerBehaviorImpl = {
     },
 
     /**
-     * Whether the forward button should be disabled.
-     * @type {boolean}
-     */
-    forwardButtonDisabled: {type: Boolean, value: false},
-
-    /**
      * Translated text to display on the backward-naviation button.
      *
      * Undefined if the visible page has no backward-navigation button.

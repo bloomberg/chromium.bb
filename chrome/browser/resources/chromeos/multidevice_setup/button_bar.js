@@ -15,7 +15,10 @@ Polymer({
      * the visible page has no forward-navigation button.
      * @type {string|undefined}
      */
-    forwardButtonText: String,
+    forwardButtonText: {
+      type: String,
+      value: '',
+    },
 
     /**
      * Whether the forward button should be disabled.
@@ -28,7 +31,10 @@ Polymer({
      * the visible page has no backward-navigation button.
      * @type {string|undefined}
      */
-    backwardButtonText: String,
+    backwardButtonText: {
+      type: String,
+      value: '',
+    },
   },
 
   /** @private */

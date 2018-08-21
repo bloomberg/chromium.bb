@@ -103,8 +103,7 @@ cr.define('multidevice_setup', () => {
           done => {
             multiDeviceSetupElement.addEventListener(
                 'visible-page-name_-changed', () => {
-                  if (multiDeviceSetupElement.$$('iron-pages > .iron-selected')
-                          .is == SUCCESS)
+                  if (multiDeviceSetupElement.visiblePageName_ == SUCCESS)
                     done();
                 });
 
