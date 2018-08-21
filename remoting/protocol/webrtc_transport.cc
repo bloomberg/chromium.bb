@@ -35,6 +35,7 @@
 #include "third_party/webrtc/api/audio_codecs/opus/audio_decoder_opus.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_encoder_opus.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
+#include "third_party/webrtc/api/video_codecs/builtin_video_decoder_factory.h"
 
 using buzz::QName;
 using buzz::XmlElement;
@@ -213,17 +214,22 @@ class WebrtcTransport::PeerConnectionWrapper
  public:
   PeerConnectionWrapper(
       rtc::Thread* worker_thread,
-      std::unique_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory,
+      std::unique_ptr<webrtc::VideoEncoderFactory> encoder_factory,
       std::unique_ptr<cricket::PortAllocator> port_allocator,
       base::WeakPtr<WebrtcTransport> transport)
       : transport_(transport) {
     audio_module_ = new rtc::RefCountedObject<WebrtcAudioModule>();
 
     peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
-        worker_thread, rtc::Thread::Current(), audio_module_.get(),
+        worker_thread,  // network_thread
+        worker_thread,
+        rtc::Thread::Current(),  // signaling_thread
+        audio_module_,
         webrtc::CreateAudioEncoderFactory<webrtc::AudioEncoderOpus>(),
         webrtc::CreateAudioDecoderFactory<webrtc::AudioDecoderOpus>(),
-        encoder_factory.release(), nullptr);
+        std::move(encoder_factory), webrtc::CreateBuiltinVideoDecoderFactory(),
+        nullptr,   // audio_mixer
+        nullptr);  // audio_processing
 
     webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
     rtc_config.enable_dtls_srtp = true;
@@ -305,7 +311,7 @@ class WebrtcTransport::PeerConnectionWrapper
   }
 
  private:
-  scoped_refptr<WebrtcAudioModule> audio_module_;
+  rtc::scoped_refptr<WebrtcAudioModule> audio_module_;
   scoped_refptr<webrtc::PeerConnectionFactoryInterface>
       peer_connection_factory_;
   scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
