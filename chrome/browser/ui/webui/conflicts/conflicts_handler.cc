@@ -34,19 +34,10 @@ namespace {
 constexpr char kNotLoaded[] = "Not loaded";
 constexpr char kAllowedInputMethodEditor[] = "Allowed - Input method editor";
 constexpr char kAllowedMatchingCertificate[] = "Allowed - Matching certificate";
+constexpr char kAllowedSameDirectory[] =
+    "Allowed - In executable directory (dev builds only)";
 constexpr char kAllowedMicrosoftModule[] = "Allowed - Microsoft module";
 constexpr char kAllowedWhitelisted[] = "Allowed - Whitelisted";
-constexpr char kAllowedSameDirectory[] =
-#if defined(OFFICIAL_BUILD)
-    // In official builds, modules in the Chrome directory are blocked but they
-    // won't cause a warning because the warning would blame Chrome itself.
-    "Tolerated - In executable directory";
-#else  // !defined(OFFICIAL_BUILD)
-    // In developer builds, DLLs that are part of Chrome are not signed and thus
-    // the easy way to identify them is to check that they are in the same
-    // directory (or child folder) as the main exe.
-    "Allowed - In executable directory (dev builds only)";
-#endif
 
 void AppendString(base::StringPiece input, std::string* output) {
   if (!output->empty())
