@@ -581,11 +581,18 @@ void AppListFolderView::UpdatePreferredBounds() {
   gfx::Rect icon_bounds_in_container = gfx::ToEnclosingRect(rect);
 
   // The opened folder view's center should try to overlap with the folder
-  // item's center while it must fit within the bounds of AppsContainerView.
+  // item's center while it must fit within the bounds of AppsContainerView and
+  // below the search box.
   preferred_bounds_ = gfx::Rect(GetPreferredSize());
   preferred_bounds_ += (icon_bounds_in_container.CenterPoint() -
                         preferred_bounds_.CenterPoint());
-  preferred_bounds_.AdjustToFit(container_view_->apps_grid_view()->bounds());
+  gfx::Rect container_bounds = container_view_->GetContentsBounds();
+  container_bounds.Inset(
+      0,
+      AppListConfig::instance().search_box_fullscreen_top_padding() +
+          search_box::kSearchBoxPreferredHeight,
+      0, 0);
+  preferred_bounds_.AdjustToFit(container_bounds);
 
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
   if (keyboard_controller->enabled()) {
