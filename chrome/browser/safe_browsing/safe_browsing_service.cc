@@ -24,7 +24,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/net/default_network_context_params.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
@@ -540,7 +540,8 @@ void SafeBrowsingService::CreateURLLoaderFactoryForIO(
 
 network::mojom::NetworkContextParamsPtr
 SafeBrowsingService::CreateNetworkContextParams() {
-  auto params = CreateDefaultNetworkContextParams();
+  auto params = g_browser_process->system_network_context_manager()
+                    ->CreateDefaultNetworkContextParams();
   if (!proxy_config_monitor_)
     proxy_config_monitor_ = std::make_unique<ProxyConfigMonitor>();
   proxy_config_monitor_->AddToNetworkContextParams(params.get());

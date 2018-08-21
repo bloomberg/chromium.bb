@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -118,6 +117,11 @@ struct TestCase {
   NetworkServiceState network_service_state;
   NetworkContextType network_context_type;
 };
+
+network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
+  return g_browser_process->system_network_context_manager()
+      ->CreateDefaultNetworkContextParams();
+}
 
 // Tests the system, profile, and incognito profile NetworkContexts.
 class NetworkContextConfigurationBrowserTest

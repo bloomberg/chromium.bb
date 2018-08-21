@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/net/chrome_accept_language_settings.h"
-#include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -205,7 +204,8 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     path = path.Append(relative_partition_path);
 
   network::mojom::NetworkContextParamsPtr network_context_params =
-      CreateDefaultNetworkContextParams();
+      g_browser_process->system_network_context_manager()
+          ->CreateDefaultNetworkContextParams();
 
   network_context_params->context_name = std::string("main");
 
