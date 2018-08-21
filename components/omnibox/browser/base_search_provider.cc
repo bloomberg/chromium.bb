@@ -158,21 +158,8 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   // mode.  They also assume the caller knows what it's doing and we set
   // this match to look as if it was received/created synchronously.
   SearchSuggestionParser::SuggestResult suggest_result(
-      suggestion, type,
-      /*subtype_identifier=*/0,
-      /*match_contents=*/suggestion,
-      /*match_contents_prefix=*/base::string16(),
-      /*annotation=*/base::string16(),
-      /*answer_contents=*/base::string16(),
-      /*answer_type=*/base::string16(),
-      /*answer=*/nullptr,
-      /*suggest_query_params=*/std::string(),
-      /*deletion_url=*/std::string(),
-      /*image_dominant_color=*/std::string(),
-      /*image_url=*/std::string(), from_keyword_provider,
-      /*relevance=*/0,
-      /*relevance_from_server=*/false,
-      /*should_prefetch=*/false,
+      suggestion, type, /*subtype_identifier=*/0, from_keyword_provider,
+      /*relevance=*/0, /*relevance_from_server=*/false,
       /*input_text=*/base::string16());
   suggest_result.set_received_after_last_keystroke(false);
   return CreateSearchSuggestion(nullptr, AutocompleteInput(),

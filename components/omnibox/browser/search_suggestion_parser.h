@@ -124,12 +124,16 @@ class SearchSuggestionParser {
     SuggestResult(const base::string16& suggestion,
                   AutocompleteMatchType::Type type,
                   int subtype_identifier,
+                  bool from_keyword_provider,
+                  int relevance,
+                  bool relevance_from_server,
+                  const base::string16& input_text);
+    SuggestResult(const base::string16& suggestion,
+                  AutocompleteMatchType::Type type,
+                  int subtype_identifier,
                   const base::string16& match_contents,
                   const base::string16& match_contents_prefix,
                   const base::string16& annotation,
-                  const base::string16& answer_contents,
-                  const base::string16& answer_type,
-                  std::unique_ptr<SuggestionAnswer> answer,
                   const std::string& suggest_query_params,
                   const std::string& deletion_url,
                   const std::string& image_dominant_color,
@@ -153,6 +157,9 @@ class SearchSuggestionParser {
       return suggest_query_params_;
     }
 
+    void SetAnswer(const base::string16& answer_contents,
+                   const base::string16& answer_type,
+                   std::unique_ptr<SuggestionAnswer> answer);
     const base::string16& answer_contents() const { return answer_contents_; }
     const base::string16& answer_type() const { return answer_type_; }
     const SuggestionAnswer* answer() const { return answer_.get(); }

@@ -109,21 +109,8 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
 
   SearchSuggestionParser::SuggestResult more_relevant(
       query, AutocompleteMatchType::SEARCH_HISTORY,
-      /*subtype_identifier=*/0,
-      /*match_contents=*/query,
-      /*match_contents_prefix=*/base::string16(),
-      /*annotation=*/base::string16(),
-      /*answer_contents=*/base::string16(),
-      /*answer_type=*/base::string16(),
-      /*answer=*/nullptr,
-      /*suggest_query_params=*/std::string(),
-      /*deletion_url=*/std::string(),
-      /*image_dominant_color=*/std::string(),
-      /*image_url=*/std::string(),
-      /*from_keyword_provider=*/false,
-      /*relevance=*/1300,
-      /*relevance_from_server=*/true,
-      /*should_prefetch=*/false,
+      /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
+      /*relevance=*/1300, /*relevance_from_server=*/true,
       /*input_text=*/query);
   provider_->AddMatchToMap(
       more_relevant, std::string(), TemplateURLRef::NO_SUGGESTION_CHOSEN,
@@ -131,20 +118,11 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
 
   SearchSuggestionParser::SuggestResult less_relevant(
       query, AutocompleteMatchType::SEARCH_SUGGEST,
-      /*subtype_identifier=*/0,
-      /*match_contents=*/query,
-      /*match_contents_prefix=*/base::string16(),
-      /*annotation=*/base::string16(), answer_contents, answer_type,
-      SuggestionAnswer::copy(answer.get()),
-      /*suggest_query_params=*/std::string(),
-      /*deletion_url=*/std::string(),
-      /*image_dominant_color=*/std::string(),
-      /*image_url=*/std::string(),
-      /*from_keyword_provider=*/false,
-      /*relevance=*/850,
-      /*relevance_from_server=*/true,
-      /*should_prefetch=*/false,
+      /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
+      /*relevance=*/850, /*relevance_from_server=*/true,
       /*input_text=*/query);
+  less_relevant.SetAnswer(answer_contents, answer_type,
+                          SuggestionAnswer::copy(answer.get()));
   provider_->AddMatchToMap(
       less_relevant, std::string(), TemplateURLRef::NO_SUGGESTION_CHOSEN,
       false, false, &map);
@@ -174,20 +152,11 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   answer2->set_type(8242);
   more_relevant = SearchSuggestionParser::SuggestResult(
       query, AutocompleteMatchType::SEARCH_HISTORY,
-      /*subtype_identifier=*/0,
-      /*match_contents_prefix=*/query,
-      /*annotation=*/base::string16(),
-      /*answer_contents=*/base::string16(), answer_contents2, answer_type2,
-      SuggestionAnswer::copy(answer2.get()),
-      /*suggest_query_params=*/std::string(),
-      /*deletion_url=*/std::string(),
-      /*image_dominant_color=*/std::string(),
-      /*image_url=*/std::string(),
-      /*from_keyword_provider=*/false,
-      /*relevance=*/1300,
-      /*relevance_from_server=*/true,
-      /*should_prefetch=*/false,
+      /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
+      /*relevance=*/1300, /*relevance_from_server=*/true,
       /*input_text=*/query);
+  more_relevant.SetAnswer(answer_contents2, answer_type2,
+                          SuggestionAnswer::copy(answer2.get()));
   provider_->AddMatchToMap(
       more_relevant, std::string(), TemplateURLRef::NO_SUGGESTION_CHOSEN,
       false, false, &map);
@@ -234,9 +203,6 @@ TEST_F(BaseSearchProviderTest, MatchTailSuggestionProperly) {
       /*match_contents=*/query,
       /*match_contents_prefix=*/base::ASCIIToUTF16("..."),
       /*annotation=*/base::string16(),
-      /*answer_contents=*/base::string16(),
-      /*answer_type=*/base::string16(),
-      /*answer=*/nullptr,
       /*suggest_query_params=*/std::string(),
       /*deletion_url=*/std::string(),
       /*image_dominant_color=*/std::string(),

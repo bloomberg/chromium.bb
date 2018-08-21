@@ -1006,17 +1006,10 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     SearchSuggestionParser::SuggestResult verbatim(
         /*suggestion=*/trimmed_verbatim,
         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-        /*subtype_identifier=*/0,
-        /*match_contents=*/trimmed_verbatim,
-        /*match_contents_prefix=*/base::string16(),
-        /*annotation=*/base::string16(), answer_contents, answer_type,
-        std::move(answer), /*suggest_query_params=*/std::string(),
-        /*deletion_url=*/std::string(),
-        /*image_dominant_color=*/std::string(),
-        /*image_url=*/std::string(),
-        /*from_keyword_provider=*/false, verbatim_relevance,
-        relevance_from_server, /*should_prefetch=*/false,
+        /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
+        verbatim_relevance, relevance_from_server,
         /*input_text=*/trimmed_verbatim);
+    verbatim.SetAnswer(answer_contents, answer_type, std::move(answer));
     AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
                   false, keyword_url != nullptr, &map);
   }
@@ -1038,20 +1031,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         SearchSuggestionParser::SuggestResult verbatim(
             /*suggestion=*/trimmed_verbatim,
             AutocompleteMatchType::SEARCH_OTHER_ENGINE,
-            /*subtype_identifier=*/0,
-            /*match_contents=*/trimmed_verbatim,
-            /*match_contents_prefix=*/base::string16(),
-            /*annotation=*/base::string16(),
-            /*answer_contents=*/base::string16(),
-            /*answer_type=*/base::string16(),
-            /*answer=*/nullptr,
-            /*suggest_query_params=*/std::string(),
-            /*deletion_url=*/std::string(),
-            /*image_dominant_color=*/std::string(),
-            /*image_url=*/std::string(),
-            /*from_keyword_provider=*/true, keyword_verbatim_relevance,
-            keyword_relevance_from_server,
-            /*should_prefetch=*/false,
+            /*subtype_identifier=*/0, /*from_keyword_provider=*/true,
+            keyword_verbatim_relevance, keyword_relevance_from_server,
             /*input_text=*/trimmed_verbatim);
         AddMatchToMap(verbatim, std::string(),
                       did_not_accept_keyword_suggestion, false, true, &map);
@@ -1234,19 +1215,8 @@ SearchProvider::ScoreHistoryResultsHelper(const HistoryResults& results,
     SearchSuggestionParser::SuggestResult history_suggestion(
         /*suggestion=*/trimmed_suggestion,
         AutocompleteMatchType::SEARCH_HISTORY,
-        /*subtype_identifier=*/0,
-        /*match_contents=*/trimmed_suggestion,
-        /*match_contents_prefix=*/base::string16(),
-        /*annotation=*/base::string16(),
-        /*answer_contents=*/base::string16(),
-        /*answer_type=*/base::string16(),
-        /*answer=*/nullptr,
-        /*suggest_query_params=*/std::string(),
-        /*deletion_url=*/std::string(),
-        /*image_dominant_color=*/std::string(),
-        /*image_url=*/std::string(), is_keyword, relevance,
-        /*relevance_from_server=*/false,
-        /*should_prefetch=*/false, /*input_text=*/trimmed_input);
+        /*subtype_identifier=*/0, is_keyword, relevance,
+        /*relevance_from_server=*/false, /*input_text=*/trimmed_input);
     // History results are synchronous; they are received on the last keystroke.
     history_suggestion.set_received_after_last_keystroke(false);
     scored_results.insert(insertion_position, history_suggestion);
