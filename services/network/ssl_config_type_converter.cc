@@ -13,6 +13,8 @@ net::TLS13Variant MojoTLS13VariantToNetTLS13Variant(
       return net::kTLS13VariantDraft23;
     case network::mojom::TLS13Variant::kDraft28:
       return net::kTLS13VariantDraft28;
+    case network::mojom::TLS13Variant::kFinal:
+      return net::kTLS13VariantFinal;
   }
   NOTREACHED();
   return net::kTLS13VariantDraft23;

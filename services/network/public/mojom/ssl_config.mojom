@@ -15,6 +15,7 @@ enum SSLVersion {
 enum TLS13Variant {
   kDraft23,
   kDraft28,
+  kFinal,
 };
 
 // This contains the subset of net::SSLConfig members that are managed by the
