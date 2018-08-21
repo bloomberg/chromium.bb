@@ -155,7 +155,7 @@ void DumpAccessibilityEventsTest::RunEventTest(
   base::FilePath test_path = GetTestFilePath("accessibility", "event");
 
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_verification;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
   }
 

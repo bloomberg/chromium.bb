@@ -67,7 +67,7 @@ void PPAPITestBase::SetUpCommandLine(base::CommandLine* command_line) {
 GURL PPAPITestBase::GetTestFileUrl(const std::string& test_case) {
   base::FilePath test_path;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    base::ScopedAllowBlockingForTesting allow_blocking;
 
     EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_path));
     test_path = test_path.Append(FILE_PATH_LITERAL("ppapi"));

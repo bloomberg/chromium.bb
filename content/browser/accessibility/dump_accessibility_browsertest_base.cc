@@ -213,7 +213,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   base::FilePath expected_file;
   std::string expected_contents_raw;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::ReadFileToString(file_path, &html_contents);
 
     // Read the expected file.

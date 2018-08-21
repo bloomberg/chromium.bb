@@ -77,7 +77,7 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   void RunAriaTest(const base::FilePath::CharType* file_path) {
     base::FilePath test_path = GetTestFilePath("accessibility", "aria");
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+      base::ScopedAllowBlockingForTesting allow_blocking;
       ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
     }
     base::FilePath aria_file = test_path.Append(base::FilePath(file_path));
@@ -88,7 +88,7 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   void RunAomTest(const base::FilePath::CharType* file_path) {
     base::FilePath test_path = GetTestFilePath("accessibility", "aom");
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+      base::ScopedAllowBlockingForTesting allow_blocking;
       ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
     }
     base::FilePath aom_file = test_path.Append(base::FilePath(file_path));
@@ -99,7 +99,7 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   void RunCSSTest(const base::FilePath::CharType* file_path) {
     base::FilePath test_path = GetTestFilePath("accessibility", "css");
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+      base::ScopedAllowBlockingForTesting allow_blocking;
       ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
     }
     base::FilePath css_file = test_path.Append(base::FilePath(file_path));
@@ -110,7 +110,7 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   void RunHtmlTest(const base::FilePath::CharType* file_path) {
     base::FilePath test_path = GetTestFilePath("accessibility", "html");
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+      base::ScopedAllowBlockingForTesting allow_blocking;
       ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
     }
     base::FilePath html_file = test_path.Append(base::FilePath(file_path));

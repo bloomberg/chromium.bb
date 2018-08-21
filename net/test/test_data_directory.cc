@@ -25,7 +25,7 @@ const base::FilePath::CharType kCertificateDataSubPath[] =
 base::FilePath GetTestNetDataDirectory() {
   base::FilePath src_root;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io_for_path_service;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
   }
 

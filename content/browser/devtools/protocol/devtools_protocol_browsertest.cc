@@ -2438,7 +2438,7 @@ class DevToolsDownloadContentTest : public DevToolsProtocolTest {
     std::string file_contents;
 
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io_during_test_verification;
+      base::ScopedAllowBlockingForTesting allow_blocking;
       bool read = base::ReadFileToString(path, &file_contents);
       EXPECT_TRUE(read) << "Failed reading file: " << path.value() << std::endl;
       if (!read)
