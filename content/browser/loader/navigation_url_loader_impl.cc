@@ -800,11 +800,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       DCHECK(!interceptors_.empty());
       DCHECK(default_request_handler_factory_);
-      // The only way to come here is to enable ServiceWorkerServicification
-      // without NetworkService. We know that the service worker's request
-      // interceptor has already intercepted and decided not to handle the
+      // The only way to come here is to enable ServiceWorkerServicification or
+      // SignedExchange without NetworkService. We know that their request
+      // interceptors have already intercepted and decided not to handle the
       // request.
-      DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
+      DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled() ||
+             signed_exchange_utils::IsSignedExchangeHandlingEnabled());
       default_loader_used_ = true;
       // Update |request_info_| when following a redirect.
       if (url_chain_.size() > 0) {
@@ -1212,6 +1213,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       if (interceptor->MaybeCreateLoaderForResponse(
               response, &response_url_loader_, &response_client_request,
               url_loader_.get())) {
+        if (response_loader_binding_.is_bound())
+          response_loader_binding_.Close();
         response_loader_binding_.Bind(std::move(response_client_request));
         default_loader_used_ = false;
         url_loader_.reset();

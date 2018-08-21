@@ -28,7 +28,7 @@ gen-certurl  \
 
 # Generate the signed exchange file.
 gen-signedexchange \
-  -uri https://127.0.0.1:8443/test.html \
+  -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
   -status 200 \
   -content sxg-location.html \
   -certificate $certs_dir/127.0.0.1.sxg.pem \
@@ -42,7 +42,7 @@ gen-signedexchange \
 
 # Generate the signed exchange file which certificate file is not available.
 gen-signedexchange \
-  -uri https://127.0.0.1:8443/not_found_cert.html \
+  -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
   -status 200 \
   -content sxg-location.html \
   -certificate $certs_dir/127.0.0.1.sxg.pem \
@@ -57,7 +57,7 @@ gen-signedexchange \
 # Generate the signed exchange file which validity URL is different origin from
 # request URL.
 gen-signedexchange \
-  -uri https://127.0.0.1:8443/test.html \
+  -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
   -status 200 \
   -content sxg-location.html \
   -certificate $certs_dir/127.0.0.1.sxg.pem \
@@ -67,6 +67,21 @@ gen-signedexchange \
   -date 2018-04-01T00:00:00Z \
   -expire 168h \
   -o sxg-invalid-validity-url.sxg \
+  -miRecordSize 100
+
+# Generate the signed exchange whose certUrl is 404 and fallback URL is another
+# signed exchange.
+gen-signedexchange \
+  -uri https://127.0.0.1:8443/loading/sxg/resources/sxg-location.sxg \
+  -status 200 \
+  -content failure.html \
+  -certificate $certs_dir/127.0.0.1.sxg.pem \
+  -certUrl https://127.0.0.1:8443/loading/sxg/resources/not_found_cert.pem.cbor \
+  -validityUrl https://127.0.0.1:8443/loading/sxg/resources/not_found_cert.validity.msg \
+  -privateKey $certs_dir/127.0.0.1.sxg.key \
+  -date 2018-04-01T00:00:00Z \
+  -expire 168h \
+  -o fallback-to-another-sxg.sxg \
   -miRecordSize 100
 
 rm -fr $tmpdir

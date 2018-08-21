@@ -255,17 +255,17 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   InstallUrlInterceptor(GURL("https://cert.example.org/cert.msg"),
                         "content/test/data/sxg/404.msg");
+  InstallUrlInterceptor(GURL("https://test.example.org/test/"),
+                        "content/test/data/sxg/fallback.html");
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
 
-  NavigationFailureObserver failure_observer(shell()->web_contents());
+  base::string16 title = base::ASCIIToUTF16("Fallback URL response");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), url);
-  EXPECT_TRUE(failure_observer.did_fail());
-  NavigationEntry* entry =
-      shell()->web_contents()->GetController().GetVisibleEntry();
-  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -304,6 +304,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallUrlInterceptor(GURL("https://test.example.org/test/"),
+                        "content/test/data/sxg/fallback.html");
 
   // Use "real" CertVerifier.
   SignedExchangeHandler::SetCertVerifierForTesting(nullptr);
@@ -330,12 +332,10 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
                                                     "*OCSP*");
   shell()->web_contents()->SetDelegate(&console_observer);
 
-  NavigationFailureObserver failure_observer(shell()->web_contents());
+  base::string16 title = base::ASCIIToUTF16("Fallback URL response");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), url);
-  EXPECT_TRUE(failure_observer.did_fail());
-  NavigationEntry* entry =
-      shell()->web_contents()->GetController().GetVisibleEntry();
-  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 
   // Verify that it failed at the OCSP check step.
   // TODO(https://crbug.com/803774): Find a better way than matching against the

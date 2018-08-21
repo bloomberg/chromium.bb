@@ -66,6 +66,11 @@ void SignedExchangeRequestHandler::MaybeCreateLoader(
     std::move(callback).Run({});
     return;
   }
+  if (signed_exchange_loader_->HasRedirectedToFallbackURL()) {
+    signed_exchange_loader_ = nullptr;
+    std::move(callback).Run({});
+    return;
+  }
 
   std::move(callback).Run(
       base::BindOnce(&SignedExchangeRequestHandler::StartResponse,
@@ -77,6 +82,7 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
     ThrottlingURLLoader* url_loader) {
+  DCHECK(!signed_exchange_loader_);
   if (!signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
           request_initiator_.GetURL(), response)) {
     return false;
@@ -92,14 +98,14 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
   // this is fine.
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       url_, response, std::move(client), url_loader->Unbind(),
-      std::move(request_initiator_), url_loader_options_, load_flags_,
-      throttling_profile_id_,
+      request_initiator_, url_loader_options_, load_flags_,
+      true /* should_redirect_to_fallback */, throttling_profile_id_,
       std::make_unique<SignedExchangeDevToolsProxy>(
           url_, response,
           base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
-          std::move(devtools_navigation_token_), report_raw_headers_),
-      std::move(url_loader_factory_), std::move(url_loader_throttles_getter_),
-      std::move(request_context_getter_));
+          devtools_navigation_token_, report_raw_headers_),
+      url_loader_factory_, url_loader_throttles_getter_,
+      request_context_getter_);
   return true;
 }
 
