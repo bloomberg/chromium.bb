@@ -36,15 +36,17 @@ public class AutofillDropdownAdapter extends ArrayAdapter<DropdownItem> {
     private final Set<Integer> mSeparators;
     private final boolean mAreAllItemsEnabled;
     private final int mLabelMargin;
+    private final boolean mIsRefresh;
 
     /**
      * Creates an {@code ArrayAdapter} with specified parameters.
      * @param context Application context.
      * @param items List of labels and icons to display.
      * @param separators Set of positions that separate {@code items}.
+     * @param isRefresh Whether or not the dropdown should be presented using refreshed styling.
      */
-    public AutofillDropdownAdapter(
-            Context context, List<? extends DropdownItem> items, Set<Integer> separators) {
+    public AutofillDropdownAdapter(Context context, List<? extends DropdownItem> items,
+            Set<Integer> separators, boolean isRefresh) {
         super(context, R.layout.autofill_dropdown_item);
         mContext = context;
         addAll(items);
@@ -52,6 +54,7 @@ public class AutofillDropdownAdapter extends ArrayAdapter<DropdownItem> {
         mAreAllItemsEnabled = checkAreAllItemsEnabled();
         mLabelMargin = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_dropdown_item_label_margin);
+        mIsRefresh = isRefresh;
     }
 
     private boolean checkAreAllItemsEnabled() {
@@ -72,26 +75,27 @@ public class AutofillDropdownAdapter extends ArrayAdapter<DropdownItem> {
             layout = inflater.inflate(R.layout.autofill_dropdown_item, null);
             layout.setBackground(new DropdownDividerDrawable(/*backgroundColor=*/null));
         }
-        DropdownDividerDrawable divider = (DropdownDividerDrawable) layout.getBackground();
         int height = mContext.getResources().getDimensionPixelSize(
                 R.dimen.autofill_dropdown_item_height);
-
-        if (position == 0) {
-            divider.setDividerColor(Color.TRANSPARENT);
-        } else {
-            int dividerHeight = mContext.getResources().getDimensionPixelSize(
-                    R.dimen.autofill_dropdown_item_divider_height);
-            height += dividerHeight;
-            divider.setHeight(dividerHeight);
-            int dividerColor;
-            if (mSeparators != null && mSeparators.contains(position)) {
-                dividerColor = ApiCompatibilityUtils.getColor(
-                        mContext.getResources(), R.color.dropdown_dark_divider_color);
+        if (!mIsRefresh) {
+            DropdownDividerDrawable divider = (DropdownDividerDrawable) layout.getBackground();
+            if (position == 0) {
+                divider.setDividerColor(Color.TRANSPARENT);
             } else {
-                dividerColor = ApiCompatibilityUtils.getColor(
-                        mContext.getResources(), R.color.dropdown_divider_color);
+                int dividerHeight = mContext.getResources().getDimensionPixelSize(
+                        R.dimen.autofill_dropdown_item_divider_height);
+                height += dividerHeight;
+                divider.setHeight(dividerHeight);
+                int dividerColor;
+                if (mSeparators != null && mSeparators.contains(position)) {
+                    dividerColor = ApiCompatibilityUtils.getColor(
+                            mContext.getResources(), R.color.dropdown_dark_divider_color);
+                } else {
+                    dividerColor = ApiCompatibilityUtils.getColor(
+                            mContext.getResources(), R.color.dropdown_divider_color);
+                }
+                divider.setDividerColor(dividerColor);
             }
-            divider.setDividerColor(dividerColor);
         }
 
         DropdownItem item = getItem(position);
