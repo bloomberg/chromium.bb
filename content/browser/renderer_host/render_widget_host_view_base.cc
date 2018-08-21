@@ -352,6 +352,11 @@ void RenderWidgetHostViewBase::ForwardTouchpadPinchIfNecessary(
   }
 }
 
+bool RenderWidgetHostViewBase::HasFallbackSurface() const {
+  NOTREACHED();
+  return false;
+}
+
 void RenderWidgetHostViewBase::SetPopupType(blink::WebPopupType popup_type) {
   popup_type_ = popup_type;
 }

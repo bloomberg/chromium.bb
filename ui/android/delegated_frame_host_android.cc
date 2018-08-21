@@ -450,6 +450,11 @@ viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
              : viz::SurfaceId();
 }
 
+bool DelegatedFrameHostAndroid::HasFallbackSurface() const {
+  return content_layer_->fallback_surface_id() &&
+         content_layer_->fallback_surface_id()->is_valid();
+}
+
 void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
     DelegatedFrameHostAndroid* other) {
   if ((content_layer_->fallback_surface_id() &&

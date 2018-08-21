@@ -1222,6 +1222,10 @@ bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpaceLegacy(
   return true;
 }
 
+bool RenderWidgetHostViewMac::HasFallbackSurface() const {
+  return browser_compositor_->GetDelegatedFrameHost()->HasFallbackSurface();
+}
+
 bool RenderWidgetHostViewMac::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
@@ -1232,9 +1236,10 @@ bool RenderWidgetHostViewMac::TransformPointToCoordSpaceForView(
     return true;
   }
 
-  return browser_compositor_->GetDelegatedFrameHost()
-      ->TransformPointToCoordSpaceForView(point, target_view, transformed_point,
-                                          source);
+  if (!HasFallbackSurface())
+    return false;
+  return target_view->TransformPointToLocalCoordSpace(
+      point, GetCurrentSurfaceId(), transformed_point, source);
 }
 
 viz::FrameSinkId RenderWidgetHostViewMac::GetRootFrameSinkId() {

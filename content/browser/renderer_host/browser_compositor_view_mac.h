@@ -13,10 +13,12 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
+#include "content/public/common/screen_info.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/display/display.h"
+#include "ui/gfx/ca_layer_params.h"
 
 namespace ui {
 class AcceleratedWidgetMacNSView;

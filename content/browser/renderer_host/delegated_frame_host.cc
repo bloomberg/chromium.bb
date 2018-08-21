@@ -168,19 +168,6 @@ bool DelegatedFrameHost::TransformPointToLocalCoordSpaceLegacy(
                                                transformed_point);
 }
 
-bool DelegatedFrameHost::TransformPointToCoordSpaceForView(
-    const gfx::PointF& point,
-    RenderWidgetHostViewBase* target_view,
-    gfx::PointF* transformed_point,
-    viz::EventSource source) {
-  if (!HasFallbackSurface())
-    return false;
-
-  return target_view->TransformPointToLocalCoordSpace(
-      point, viz::SurfaceId(frame_sink_id_, active_local_surface_id_),
-      transformed_point, source);
-}
-
 void DelegatedFrameHost::SetNeedsBeginFrames(bool needs_begin_frames) {
   if (enable_viz_) {
     NOTIMPLEMENTED();

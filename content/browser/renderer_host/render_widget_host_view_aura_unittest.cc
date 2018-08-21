@@ -296,7 +296,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return GetDelegatedFrameHost()->HasPrimarySurface();
   }
 
-  bool HasFallbackSurface() const {
+  bool HasFallbackSurface() const override {
     return GetDelegatedFrameHost()->HasFallbackSurface();
   }
 
