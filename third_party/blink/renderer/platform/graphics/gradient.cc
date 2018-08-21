@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/graphics/gradient.h"
 
 #include <algorithm>
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
@@ -35,7 +36,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "third_party/skia/include/core/SkTLazy.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
 namespace blink {
@@ -233,13 +233,15 @@ class RadialGradient final : public Gradient {
                                   uint32_t flags,
                                   const SkMatrix& local_matrix,
                                   SkColor fallback_color) const override {
-    SkTCopyOnFirstWrite<SkMatrix> adjusted_local_matrix(local_matrix);
+    const SkMatrix* matrix = &local_matrix;
+    base::Optional<SkMatrix> adjusted_local_matrix;
     if (aspect_ratio_ != 1) {
       // CSS3 elliptical gradients: apply the elliptical scaling at the
       // gradient center point.
       DCHECK(p0_ == p1_);
-      adjusted_local_matrix.writable()->preScale(1, 1 / aspect_ratio_, p0_.X(),
-                                                 p0_.Y());
+      adjusted_local_matrix.emplace(local_matrix);
+      adjusted_local_matrix->preScale(1, 1 / aspect_ratio_, p0_.X(), p0_.Y());
+      matrix = &*adjusted_local_matrix;
     }
 
     // The radii we give to Skia must be positive. If we're given a
@@ -249,7 +251,7 @@ class RadialGradient final : public Gradient {
     return PaintShader::MakeTwoPointConicalGradient(
         FloatPointToSkPoint(p0_), radius0, FloatPointToSkPoint(p1_), radius1,
         colors.data(), pos.data(), static_cast<int>(colors.size()), tile_mode,
-        flags, adjusted_local_matrix, fallback_color);
+        flags, matrix, fallback_color);
   }
 
  private:
@@ -283,16 +285,19 @@ class ConicGradient final : public Gradient {
                                   SkColor fallback_color) const override {
     // Skia's sweep gradient angles are relative to the x-axis, not the y-axis.
     const float skia_rotation = rotation_ - 90;
-    SkTCopyOnFirstWrite<SkMatrix> adjusted_local_matrix(local_matrix);
+    const SkMatrix* matrix = &local_matrix;
+    base::Optional<SkMatrix> adjusted_local_matrix;
     if (skia_rotation) {
-      adjusted_local_matrix.writable()->preRotate(skia_rotation, position_.X(),
-                                                  position_.Y());
+      adjusted_local_matrix.emplace(local_matrix);
+      adjusted_local_matrix->preRotate(skia_rotation, position_.X(),
+                                       position_.Y());
+      matrix = &*adjusted_local_matrix;
     }
 
     return PaintShader::MakeSweepGradient(
         position_.X(), position_.Y(), colors.data(), pos.data(),
         static_cast<int>(colors.size()), tile_mode, start_angle_, end_angle_,
-        flags, adjusted_local_matrix, fallback_color);
+        flags, matrix, fallback_color);
   }
 
  private:
