@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -92,6 +93,62 @@ MockExternalPolicyProviderVisitor::MockExternalPolicyProviderVisitor() {
 
 MockExternalPolicyProviderVisitor::~MockExternalPolicyProviderVisitor() {
 }
+
+// A simple wrapper around a SingleThreadTaskRunner. When a task is posted
+// through it, increments a counter which is decremented when the task is run.
+class TrackingProxyTaskRunner : public base::SingleThreadTaskRunner {
+ public:
+  TrackingProxyTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : wrapped_task_runner_(std::move(task_runner)) {}
+
+  bool PostDelayedTask(const base::Location& from_here,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    ++pending_task_count_;
+    return wrapped_task_runner_->PostDelayedTask(
+        from_here,
+        base::BindOnce(&TrackingProxyTaskRunner::RunTask, this,
+                       std::move(task)),
+        delay);
+  }
+
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    ++pending_task_count_;
+    return wrapped_task_runner_->PostNonNestableDelayedTask(
+        from_here,
+        base::BindOnce(&TrackingProxyTaskRunner::RunTask, this,
+                       std::move(task)),
+        delay);
+  }
+
+  bool RunsTasksInCurrentSequence() const override {
+    return wrapped_task_runner_->RunsTasksInCurrentSequence();
+  }
+
+  bool has_pending_tasks() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return pending_task_count_ != 0;
+  }
+
+ private:
+  ~TrackingProxyTaskRunner() override = default;
+
+  void RunTask(base::OnceClosure task) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_GT(pending_task_count_, 0);
+    --pending_task_count_;
+    std::move(task).Run();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> wrapped_task_runner_;
+  SEQUENCE_CHECKER(sequence_checker_);
+  int pending_task_count_ = 0;
+};
 
 }  // namespace
 
@@ -233,16 +290,15 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListEmpty) {
 // Verifies that when a force-install list policy referencing an extension is
 // set and the cache is started, the loader downloads, caches and serves the
 // extension.
-// https://crbug.com/865453: Sometimes the last EXPECT fails because there are
-// some irrelevant tasks still pending.
-TEST_F(DeviceLocalAccountExternalPolicyLoaderTest,
-       DISABLED_ForceInstallListSet) {
+TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
   // Set a force-install list policy that contains an invalid entry (which
   // should be ignored) and a valid reference to an extension.
   SetForceInstallListPolicy();
 
   // Start the cache.
-  loader_->StartCache(base::ThreadTaskRunnerHandle::Get());
+  auto cache_task_runner = base::MakeRefCounted<TrackingProxyTaskRunner>(
+      base::ThreadTaskRunnerHandle::Get());
+  loader_->StartCache(cache_task_runner);
 
   // Spin the loop, allowing the loader to process the force-install list.
   // Verify that the loader announces an empty extension list.
@@ -305,7 +361,7 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest,
   // Spin the loop until the cache shutdown callback is invoked. Verify that at
   // that point, no further file I/O tasks are pending.
   shutdown_run_loop.Run();
-  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
+  EXPECT_FALSE(cache_task_runner->has_pending_tasks());
 }
 
 }  // namespace chromeos
