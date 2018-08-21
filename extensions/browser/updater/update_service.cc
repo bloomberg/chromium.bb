@@ -41,17 +41,31 @@ void ReportUpdateCheckResult(ExtensionUpdaterUpdateResult update_result,
   UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionUpdaterUpdateResults",
                             update_result,
                             ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+
   // This UMA histogram measures update check results of the unified extension
   // updater.
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnifiedExtensionUpdaterUpdateResults",
                             update_result,
                             ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
-  if (update_result == ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR)
-    base::UmaHistogramSparse(
-        "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors", error_code);
-  else if (update_result == ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR)
-    base::UmaHistogramSparse("Extensions.UnifiedExtensionUpdaterDownloadErrors",
-                             error_code);
+
+  switch (update_result) {
+    case ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR:
+      base::UmaHistogramSparse(
+          "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors", error_code);
+      break;
+    case ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR:
+      base::UmaHistogramSparse(
+          "Extensions.UnifiedExtensionUpdaterDownloadErrors", error_code);
+      break;
+    case ExtensionUpdaterUpdateResult::UPDATE_SERVICE_ERROR:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.UnifiedExtensionUpdaterUpdateServiceErrors",
+          static_cast<update_client::Error>(error_code),
+          update_client::Error::MAX_VALUE);
+      break;
+    default:
+      break;
+  }
 }
 
 }  // namespace
@@ -135,65 +149,16 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
     case Events::COMPONENT_UPDATE_ERROR:
       complete_event = true;
       finish_delayed_installation = true;
-      {
-        update_client::ErrorCategory error_category =
-            update_client::ErrorCategory::kNone;
-        update_client::CrxUpdateItem update_item;
-        if (update_client_->GetCrxUpdateState(extension_id, &update_item)) {
-          // When update_client_->GetCrxUpdateState(...) returns false, it means
-          // that |update_client_| can't find any information about this
-          // |extension_id|. It could be possible that |extension_id| was
-          // uninstalled when |update_client_| was checking for updates.
-          // (see bug http://crbug.com/869663).
-          error_category = update_item.error_category;
-        }
-        switch (error_category) {
-          case update_client::ErrorCategory::kUpdateCheck:
-            ReportUpdateCheckResult(
-                ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
-                update_item.error_code);
-            break;
-          case update_client::ErrorCategory::kDownload:
-            ReportUpdateCheckResult(
-                ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR,
-                update_item.error_code);
-            break;
-          case update_client::ErrorCategory::kUnpack:
-          case update_client::ErrorCategory::kInstall:
-            ReportUpdateCheckResult(
-                ExtensionUpdaterUpdateResult::UPDATE_INSTALL_ERROR, 0);
-            break;
-          case update_client::ErrorCategory::kNone:
-          case update_client::ErrorCategory::kService:
-            ReportUpdateCheckResult(
-                ExtensionUpdaterUpdateResult::UPDATE_SERVICE_ERROR, 0);
-            break;
-        }
-      }
+      HandleComponentUpdateErrorEvent(extension_id);
       break;
     case Events::COMPONENT_NOT_UPDATED:
       complete_event = true;
       finish_delayed_installation = true;
       ReportUpdateCheckResult(ExtensionUpdaterUpdateResult::NO_UPDATE, 0);
       break;
-    case Events::COMPONENT_UPDATE_FOUND: {
-      UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateFoundCount",
-                               1);
-      {
-        update_client::CrxUpdateItem update_item;
-        if (update_client_->GetCrxUpdateState(extension_id, &update_item)) {
-          VLOG(3) << "UpdateService::OnEvent COMPONENT_UPDATE_FOUND: "
-                  << extension_id << " "
-                  << update_item.next_version.GetString();
-          UpdateDetails update_info(extension_id, update_item.next_version);
-          content::NotificationService::current()->Notify(
-              extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
-              content::NotificationService::AllBrowserContextsAndSources(),
-              content::Details<UpdateDetails>(&update_info));
-        }
-      }
+    case Events::COMPONENT_UPDATE_FOUND:
+      HandleComponentUpdateFoundEvent(extension_id);
       break;
-    }
     case Events::COMPONENT_CHECKING_FOR_UPDATES:
     case Events::COMPONENT_WAIT:
     case Events::COMPONENT_UPDATE_READY:
@@ -358,6 +323,57 @@ void UpdateService::RemoveUpdateClientObserver(
     update_client::UpdateClient::Observer* observer) {
   if (update_client_)
     update_client_->RemoveObserver(observer);
+}
+
+void UpdateService::HandleComponentUpdateErrorEvent(
+    const std::string& extension_id) const {
+  update_client::ErrorCategory error_category =
+      update_client::ErrorCategory::kNone;
+  int error_code = 0;
+  update_client::CrxUpdateItem update_item;
+  if (update_client_->GetCrxUpdateState(extension_id, &update_item)) {
+    error_category = update_item.error_category;
+    error_code = update_item.error_code;
+  }
+
+  switch (error_category) {
+    case update_client::ErrorCategory::kUpdateCheck:
+      ReportUpdateCheckResult(ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
+                              error_code);
+      break;
+    case update_client::ErrorCategory::kDownload:
+      ReportUpdateCheckResult(
+          ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR, error_code);
+      break;
+    case update_client::ErrorCategory::kUnpack:
+    case update_client::ErrorCategory::kInstall:
+      ReportUpdateCheckResult(
+          ExtensionUpdaterUpdateResult::UPDATE_INSTALL_ERROR, 0);
+      break;
+    case update_client::ErrorCategory::kNone:
+    case update_client::ErrorCategory::kService:
+      ReportUpdateCheckResult(
+          ExtensionUpdaterUpdateResult::UPDATE_SERVICE_ERROR, error_code);
+      break;
+  }
+}
+
+void UpdateService::HandleComponentUpdateFoundEvent(
+    const std::string& extension_id) const {
+  UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateFoundCount", 1);
+
+  update_client::CrxUpdateItem update_item;
+  if (!update_client_->GetCrxUpdateState(extension_id, &update_item)) {
+    return;
+  }
+
+  VLOG(3) << "UpdateService::OnEvent COMPONENT_UPDATE_FOUND: " << extension_id
+          << " " << update_item.next_version.GetString();
+  UpdateDetails update_info(extension_id, update_item.next_version);
+  content::NotificationService::current()->Notify(
+      extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
+      content::NotificationService::AllBrowserContextsAndSources(),
+      content::Details<UpdateDetails>(&update_info));
 }
 
 }  // namespace extensions
