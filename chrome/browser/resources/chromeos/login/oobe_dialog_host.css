@@ -14,9 +14,9 @@
   border-radius: unset;
   box-shadow: unset;
   flex-direction: column;
-  min-height: 640px;
-  min-width: 768px;
+  height: 640px;
   position: relative;
+  width: 768px;
 }
 
 :host(:not([not-a-dialog]):not([full-screen-dialog])) {

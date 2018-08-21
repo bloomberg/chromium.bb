@@ -65,9 +65,9 @@ Polymer({
   },
 
   onBeforeShow: function() {
-    var isOobe = Oobe && Oobe.getInstance() &&
+    var isOobe = window.hasOwnProperty('Oobe') && Oobe.getInstance() &&
         Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE;
-    if (isOobe || document.documentElement.getAttribute('full-screen-dialog'))
+    if (isOobe || document.documentElement.hasAttribute('full-screen-dialog'))
       this.fullScreenDialog = true;
   },
 
