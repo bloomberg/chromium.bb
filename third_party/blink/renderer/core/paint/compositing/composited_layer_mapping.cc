@@ -3432,11 +3432,7 @@ void CompositedLayerMapping::PaintContents(
       graphics_layer == scrolling_contents_layer_.get() ||
       graphics_layer == decoration_outline_layer_.get() ||
       graphics_layer == ancestor_clipping_mask_layer_.get()) {
-    bool paint_root_background_onto_scrolling_contents_layer =
-        background_paints_onto_scrolling_contents_layer_;
-    DCHECK(!paint_root_background_onto_scrolling_contents_layer ||
-           !foreground_layer_);
-    if (paint_root_background_onto_scrolling_contents_layer) {
+    if (background_paints_onto_scrolling_contents_layer_) {
       if (graphics_layer == scrolling_contents_layer_.get())
         paint_layer_flags &= ~kPaintLayerPaintingSkipRootBackground;
       else if (!background_paints_onto_graphics_layer_)
