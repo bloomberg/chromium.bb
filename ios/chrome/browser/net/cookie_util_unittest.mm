@@ -94,7 +94,8 @@ TEST_F(CookieUtilTest, CreateCookieStoreInIOS11) {
       cookie_util::CookieStoreConfig::CookieStoreType::COOKIE_STORE_IOS,
       nullptr);
   std::unique_ptr<net::CookieStore> cookie_store =
-      cookie_util::CreateCookieStore(config, std::move(system_cookie_store));
+      cookie_util::CreateCookieStore(config, std::move(system_cookie_store),
+                                     nullptr /* net_log */);
 
   net::CookieOptions options;
   options.set_include_httponly();

@@ -30,6 +30,7 @@
 #import "net/base/mac/url_conversions.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
+#include "net/log/net_log.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -222,13 +223,20 @@ CookieStoreIOS::CookieChangeDispatcherIOS::AddCallbackForAllChanges(
 #pragma mark CookieStoreIOS
 
 CookieStoreIOS::CookieStoreIOS(
-    std::unique_ptr<SystemCookieStore> system_cookie_store)
+    std::unique_ptr<SystemCookieStore> system_cookie_store,
+    NetLog* net_log)
     : CookieStoreIOS(/*persistent_store=*/nullptr,
-                     std::move(system_cookie_store)) {}
+                     std::move(system_cookie_store),
+                     net_log) {}
 
 CookieStoreIOS::CookieStoreIOS(NSHTTPCookieStorage* ns_cookie_store)
-    : CookieStoreIOS(
-          std::make_unique<NSHTTPSystemCookieStore>(ns_cookie_store)) {}
+    : CookieStoreIOS(std::make_unique<NSHTTPSystemCookieStore>(ns_cookie_store),
+                     nullptr /* net_log */) {}
+
+CookieStoreIOS::CookieStoreIOS(NSHTTPCookieStorage* ns_cookie_store,
+                               NetLog* net_log)
+    : CookieStoreIOS(std::make_unique<NSHTTPSystemCookieStore>(ns_cookie_store),
+                     net_log) {}
 
 CookieStoreIOS::~CookieStoreIOS() {
   NotificationTrampoline::GetInstance()->RemoveObserver(this);
@@ -476,11 +484,11 @@ void CookieStoreIOS::FlushStore(base::OnceClosure closure) {
 
 CookieStoreIOS::CookieStoreIOS(
     net::CookieMonster::PersistentCookieStore* persistent_store,
-    std::unique_ptr<SystemCookieStore> system_store)
-    :  // TODO(crbug.com/801910): hook up logging by using a non-null netlog.
-      cookie_monster_(new net::CookieMonster(persistent_store,
+    std::unique_ptr<SystemCookieStore> system_store,
+    NetLog* net_log)
+    : cookie_monster_(new net::CookieMonster(persistent_store,
                                              nullptr /* channel_id_service */,
-                                             nullptr /* netlog */)),
+                                             net_log)),
       system_store_(std::move(system_store)),
       metrics_enabled_(false),
       cookie_cache_(new CookieCache()),
