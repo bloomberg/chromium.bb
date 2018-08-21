@@ -16,10 +16,6 @@
 # These tests use URLFetchers directly.
 # https://crbug.com/853798
 -ProfileBrowserTest.SeparateMediaCache
--ProfileBrowserTest.URLFetcherUsingMainContextDuringIncognitoTeardown
--ProfileBrowserTest.URLFetcherUsingMainContextDuringShutdown
--ProfileBrowserTest.URLFetcherUsingMediaContextDuringShutdown
--ProfileWithoutMediaCacheBrowserTest.NoSeparateMediaCache
 
 # about:net-internals should be largely removed before shipping the network
 # service.
