@@ -84,6 +84,7 @@ class _MobileStartupSharedState(story_module.SharedState):
     # TODO(crbug.com/811244): Determine whether this ensures the page cache is
     # cleared after |FlushOsPageCaches()| returns.
     self._possible_browser.FlushOsPageCaches()
+    self.platform.WaitForBatteryTemperature(35)
     self.platform.StartActivity(
         intent.Intent(package=self._possible_browser.settings.package,
                       activity=self._possible_browser.settings.activity,
