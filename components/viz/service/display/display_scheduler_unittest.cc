@@ -48,7 +48,8 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
 
   bool SurfaceDamaged(const SurfaceId& surface_id,
                       const BeginFrameAck& ack) override {
-    return false;
+    undrawn_surfaces_.insert(surface_id);
+    return true;
   }
 
   void SurfaceDiscarded(const SurfaceId& surface_id) override {}
@@ -61,16 +62,13 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
 
   void SetNextDrawAndSwapFails() { next_draw_and_swap_fails_ = true; }
 
-  void SurfaceDamaged(const SurfaceId& surface_id) {
-    undrawn_surfaces_.insert(surface_id);
-  }
-
   const BeginFrameAck& last_begin_frame_ack() { return last_begin_frame_ack_; }
 
  protected:
   int draw_and_swap_count_;
   bool next_draw_and_swap_fails_;
   std::set<SurfaceId> undrawn_surfaces_;
+  std::set<SurfaceId> non_damaging_surfaces_;
   BeginFrameAck last_begin_frame_ack_;
 };
 
@@ -114,6 +112,8 @@ class TestDisplayScheduler : public DisplayScheduler {
 
   bool has_pending_surfaces() { return has_pending_surfaces_; }
 
+  bool is_visible() const { return visible_; }
+
  protected:
   int scheduler_begin_frame_deadline_count_;
 };
@@ -152,9 +152,11 @@ class DisplaySchedulerTest : public testing::Test {
   }
 
   void SurfaceDamaged(const SurfaceId& surface_id) {
-    client_.SurfaceDamaged(surface_id);
-    scheduler_.ProcessSurfaceDamage(surface_id, AckForCurrentBeginFrame(),
-                                    true);
+    // While our fake client always returns true for damage, OnSurfaceDamaged
+    // should only return true if we are visible.
+    EXPECT_EQ(
+        scheduler_.is_visible(),
+        scheduler_.OnSurfaceDamaged(surface_id, AckForCurrentBeginFrame()));
   }
 
  protected:
