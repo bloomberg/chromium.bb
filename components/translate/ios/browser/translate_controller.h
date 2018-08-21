@@ -62,6 +62,10 @@ class TranslateController : public web::WebStateObserver {
   void StartTranslation(const std::string& source_language,
                         const std::string& target_language);
 
+  // Checks the translation status and calls the observer when it is done.
+  // This method must be called after StartTranslation().
+  void CheckTranslateStatus();
+
   // Changes the JsTranslateManager used by this TranslateController.
   // Only used for testing.
   void SetJsTranslateManagerForTesting(JsTranslateManager* manager);

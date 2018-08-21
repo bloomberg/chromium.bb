@@ -24,6 +24,14 @@
 // after the injection.
 @property(nonatomic, copy) NSString* script;
 
+// Injects JS to constantly check if the translate script is ready and informs
+// the Obj-C side when it is.
+- (void)injectWaitUntilTranslateReadyScript;
+
+// After a translation has been initiated, injects JS to check if the
+// translation has finished/failed and informs the Obj-C when it is.
+- (void)injectTranslateStatusScript;
+
 // Starts translation of the page from |source| language to |target| language.
 // Equivalent to TranslateHelper::StartTranslation().
 - (void)startTranslationFrom:(const std::string&)source
