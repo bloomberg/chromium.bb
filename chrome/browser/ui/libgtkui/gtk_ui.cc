@@ -41,6 +41,8 @@
 #include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
 #include "chrome/browser/ui/libgtkui/unity_service.h"
 #include "chrome/browser/ui/libgtkui/x11_input_method_context_impl_gtk.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -362,6 +364,12 @@ views::LinuxUI::NonClientWindowFrameAction GetDefaultMiddleClickAction() {
 }
 
 #if GTK_MAJOR_VERSION > 2
+using GdkSetAllowedBackendsFn = void (*)(const gchar*);
+// Place this function pointer in read-only memory after being resolved to
+// prevent it being tampered with. See https://crbug.com/771365 for details.
+PROTECTED_MEMORY_SECTION base::ProtectedMemory<GdkSetAllowedBackendsFn>
+    g_gdk_set_allowed_backends;
+
 // COLOR_TOOLBAR_TOP_SEPARATOR represents the border between tabs and the
 // frame, as well as the border between tabs and the toolbar.  For this
 // reason, it is difficult to calculate the One True Color that works well on
@@ -412,14 +420,6 @@ SkColor GetToolbarTopSeparatorColor(SkColor header_fg,
   border.l = l;
   return HSLToSkColor(border, a * 0xff);
 }
-#endif
-
-#if GTK_MAJOR_VERSION > 2
-using GdkSetAllowedBackendsFn = void (*)(const gchar*);
-// Place this function pointers in read-only memory after being resolved to
-// prevent it being tampered with. See crbug.com/771365 for details.
-PROTECTED_MEMORY_SECTION base::ProtectedMemory<GdkSetAllowedBackendsFn>
-    g_gdk_set_allowed_backends;
 #endif
 
 }  // namespace
@@ -526,11 +526,16 @@ bool GtkUi::GetTint(int id, color_utils::HSL* tint) const {
   return false;
 }
 
-bool GtkUi::GetColor(int id, SkColor* color) const {
-  ColorMap::const_iterator it = colors_.find(id);
-  if (it != colors_.end()) {
-    *color = it->second;
-    return true;
+bool GtkUi::GetColor(int id, SkColor* color, PrefService* pref_service) const {
+  for (const ColorMap& color_map :
+       {colors_, pref_service->GetBoolean(prefs::kUseCustomChromeFrame)
+                     ? custom_frame_colors_
+                     : native_frame_colors_}) {
+    ColorMap::const_iterator it = color_map.find(id);
+    if (it != color_map.end()) {
+      *color = it->second;
+      return true;
+    }
   }
 
   return false;
@@ -994,18 +999,6 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_NTP_HEADER] =
       colors_[ThemeProperties::COLOR_FRAME];
 #else
-  std::string header_selector = GtkVersionCheck(3, 10)
-                                    ? "#headerbar.header-bar.titlebar"
-                                    : "GtkMenuBar#menubar";
-  SkColor frame_color = GetBgColor(header_selector);
-  SkColor frame_color_inactive = GetBgColor(header_selector + ":backdrop");
-  colors_[ThemeProperties::COLOR_FRAME] = frame_color;
-  colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = frame_color_inactive;
-  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] =
-      color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
-  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] =
-      color_utils::HSLShift(frame_color_inactive, kDefaultTintFrameIncognito);
-
   SkColor tab_color = GetBgColor("");
   SkColor tab_text_color = GetFgColor("GtkLabel");
 
@@ -1013,10 +1006,6 @@ void GtkUi::LoadGtkValues() {
 
   colors_[ThemeProperties::COLOR_TAB_TEXT] = tab_text_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = tab_text_color;
-  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-      ui::MaterialDesignController::IsRefreshUi()
-          ? GetFgColor(header_selector + " GtkLabel")
-          : color_utils::BlendTowardOppositeLuma(tab_text_color, 50);
 
   SkColor location_bar_border = GetBorderColor("GtkEntry#entry");
   if (SkColorGetA(location_bar_border))
@@ -1042,30 +1031,6 @@ void GtkUi::LoadGtkValues() {
   // Separates the detached bookmark bar from the NTP.
   colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR] = tab_border;
 
-  // These colors represent the border drawn around tabs and between
-  // the tabstrip and toolbar.
-  SkColor toolbar_top_separator =
-      GetBorderColor(header_selector + " GtkButton#button");
-  SkColor toolbar_top_separator_inactive =
-      GetBorderColor(header_selector + ":backdrop GtkButton#button");
-  if (!ui::MaterialDesignController::IsRefreshUi()) {
-    toolbar_top_separator = GetToolbarTopSeparatorColor(
-        toolbar_top_separator, frame_color, tab_border, tab_color);
-    toolbar_top_separator_inactive = GetToolbarTopSeparatorColor(
-        toolbar_top_separator_inactive, frame_color_inactive, tab_border,
-        tab_color);
-  }
-
-  // Unlike with toolbars, we always want a border around tabs, so let
-  // ThemeService choose the border color if the theme doesn't provide one.
-  if (SkColorGetA(toolbar_top_separator) &&
-      SkColorGetA(toolbar_top_separator_inactive)) {
-    colors_[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR] =
-        toolbar_top_separator;
-    colors_[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE] =
-        toolbar_top_separator_inactive;
-  }
-
   colors_[ThemeProperties::COLOR_NTP_BACKGROUND] =
       native_theme_->GetSystemColor(
           ui::NativeTheme::kColorId_TextfieldDefaultBackground);
@@ -1073,6 +1038,52 @@ void GtkUi::LoadGtkValues() {
       ui::NativeTheme::kColorId_TextfieldDefaultColor);
   colors_[ThemeProperties::COLOR_NTP_HEADER] =
       GetBorderColor("GtkButton#button");
+
+  for (bool custom_frame : {false, true}) {
+    ColorMap& color_map =
+        custom_frame ? custom_frame_colors_ : native_frame_colors_;
+    const std::string header_selector = custom_frame && GtkVersionCheck(3, 10)
+                                            ? "#headerbar.header-bar.titlebar"
+                                            : "GtkMenuBar#menubar";
+    const SkColor frame_color = GetBgColor(header_selector);
+    const SkColor frame_color_inactive =
+        GetBgColor(header_selector + ":backdrop");
+
+    color_map[ThemeProperties::COLOR_FRAME] = frame_color;
+    color_map[ThemeProperties::COLOR_FRAME_INACTIVE] = frame_color_inactive;
+    color_map[ThemeProperties::COLOR_FRAME_INCOGNITO] =
+        color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
+    color_map[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] =
+        color_utils::HSLShift(frame_color_inactive, kDefaultTintFrameIncognito);
+    color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
+        ui::MaterialDesignController::IsRefreshUi()
+            ? GetFgColor(header_selector + " GtkLabel")
+            : color_utils::BlendTowardOppositeLuma(tab_text_color, 50);
+
+    // These colors represent the border drawn around tabs and between
+    // the tabstrip and toolbar.
+    SkColor toolbar_top_separator =
+        GetBorderColor(header_selector + " GtkButton#button");
+    SkColor toolbar_top_separator_inactive =
+        GetBorderColor(header_selector + ":backdrop GtkButton#button");
+    if (!ui::MaterialDesignController::IsRefreshUi()) {
+      toolbar_top_separator = GetToolbarTopSeparatorColor(
+          toolbar_top_separator, frame_color, tab_border, tab_color);
+      toolbar_top_separator_inactive = GetToolbarTopSeparatorColor(
+          toolbar_top_separator_inactive, frame_color_inactive, tab_border,
+          tab_color);
+    }
+
+    // Unlike with toolbars, we always want a border around tabs, so let
+    // ThemeService choose the border color if the theme doesn't provide one.
+    if (SkColorGetA(toolbar_top_separator) &&
+        SkColorGetA(toolbar_top_separator_inactive)) {
+      color_map[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR] =
+          toolbar_top_separator;
+      color_map[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE] =
+          toolbar_top_separator_inactive;
+    }
+  }
 #endif
 
   colors_[ThemeProperties::COLOR_TOOLBAR] = tab_color;
