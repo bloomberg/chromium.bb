@@ -52,6 +52,9 @@ class VR_EXPORT XRRuntimeManager {
   device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo(XRDeviceImpl* device);
   void OnRendererDeviceRemoved(XRDeviceImpl* device);
 
+  // Returns true if another device is presenting. Returns false if this device
+  // is presenting, or if nobody is presenting.
+  bool IsOtherDevicePresenting(XRDeviceImpl* device);
   bool HasAnyRuntime();
 
   void SupportsSession(

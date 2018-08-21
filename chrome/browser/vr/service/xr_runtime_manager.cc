@@ -152,6 +152,12 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
   return nullptr;
 }
 
+bool XRRuntimeManager::IsOtherDevicePresenting(XRDeviceImpl* device) {
+  auto* runtime = GetImmersiveRuntime();
+  return runtime && runtime->GetPresentingRendererDevice() &&
+         runtime->GetPresentingRendererDevice() != device;
+}
+
 device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
     XRDeviceImpl* device) {
   // Get an immersive_runtime device if there is one.
@@ -269,7 +275,7 @@ void XRRuntimeManager::AddRuntime(device::mojom::XRDeviceId id,
   runtimes_[id] =
       std::make_unique<BrowserXRRuntime>(std::move(runtime), std::move(info));
   for (VRServiceImpl* service : services_)
-    service->ConnectRuntime(runtimes_[id].get());
+    service->RuntimesChanged();
 }
 
 void XRRuntimeManager::RemoveRuntime(device::mojom::XRDeviceId id) {
@@ -283,7 +289,7 @@ void XRRuntimeManager::RemoveRuntime(device::mojom::XRDeviceId id) {
   runtimes_.erase(it);
 
   for (VRServiceImpl* service : services_)
-    service->RemoveRuntime(removed_device.get());
+    service->RuntimesChanged();
 }
 
 void XRRuntimeManager::RecordVrStartupHistograms() {
