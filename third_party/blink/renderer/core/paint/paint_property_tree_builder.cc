@@ -1553,13 +1553,27 @@ static bool IsRepeatingTableSection(const LayoutObject& object) {
 static LayoutRect BoundingBoxInPaginationContainer(
     const LayoutObject& object,
     const PaintLayer& enclosing_pagination_layer) {
-  // Non-boxes that have no layer paint in the space of their containing block.
-  if (!object.IsBox() && !object.HasLayer()) {
+  // The special path for fragmented layers ensures that the bounding box also
+  // covers contents visual overflow, so that the fragments will cover all
+  // fragments of contents except for self-painting layers, because we initiate
+  // fragment painting of contents from the layer.
+  if (object.HasLayer() &&
+      ToLayoutBoxModelObject(object)
+          .Layer()
+          ->ShouldFragmentCompositedBounds() &&
+      // Table section may repeat, and doesn't need the special layer path
+      // because it doesn't have contents visual overflow.
+      !object.IsTableSection()) {
+    return ToLayoutBoxModelObject(object).Layer()->PhysicalBoundingBox(
+        &enclosing_pagination_layer);
+  }
+
+  // Non-boxes paint in the space of their containing block.
+  if (!object.IsBox()) {
     const LayoutBox& containining_block = *object.ContainingBlock();
     LayoutRect bounds_rect;
-    // For non-SVG we can get a more accurate result
-    // with LocalVisualRect, instead of falling back to the bounds of the
-    // enclosing block.
+    // For non-SVG we can get a more accurate result with LocalVisualRect,
+    // instead of falling back to the bounds of the enclosing block.
     if (!object.IsSVG()) {
       bounds_rect = object.LocalVisualRect();
       containining_block.FlipForWritingMode(bounds_rect);
@@ -1569,17 +1583,6 @@ static LayoutRect BoundingBoxInPaginationContainer(
 
     return MapLocalRectToAncestorLayer(containining_block, bounds_rect,
                                        enclosing_pagination_layer);
-  }
-
-  // The special path for layers ensures that the bounding box also covers
-  // contents visual overflow, so that the fragments will cover all fragments of
-  // contents except for self-painting layers, because we initiate fragment
-  // painting of contents from the layer.
-  // Table section may repeat, and doesn't need the special layer path because
-  // it doesn't have contents visual overflow.
-  if (object.HasLayer() && !object.IsTableSection()) {
-    return ToLayoutBoxModelObject(object).Layer()->PhysicalBoundingBox(
-        &enclosing_pagination_layer);
   }
 
   // Compute the bounding box without transforms.
@@ -1991,6 +1994,7 @@ void PaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
   // under the pagination layer. SPv1* doesn't fragment composited layers,
   // but we still need to set correct pagination offset for correct paint
   // offset calculation.
+  DCHECK(!context_.painting_layer->ShouldFragmentCompositedBounds());
   FragmentData& first_fragment =
       object_.GetMutableForPainting().FirstFragment();
   bool is_paint_invalidation_container = object_.IsPaintInvalidationContainer();
