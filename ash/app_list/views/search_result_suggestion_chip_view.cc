@@ -10,9 +10,12 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace app_list {
 
@@ -97,14 +100,20 @@ void SearchResultSuggestionChipView::UpdateSuggestionChipView() {
   if (suggestion_chip_view_) {
     suggestion_chip_view_->SetIcon(item_->icon());
     suggestion_chip_view_->SetText(item_->title());
-    return;
+  } else {
+    app_list::SuggestionChipView::Params params;
+    params.text = item_->title();
+    params.icon = item_->icon();
+    suggestion_chip_view_ = new SuggestionChipView(params, /* listener */ this);
+    AddChildView(suggestion_chip_view_);
   }
 
-  app_list::SuggestionChipView::Params params;
-  params.text = item_->title();
-  params.icon = item_->icon();
-  suggestion_chip_view_ = new SuggestionChipView(params, /* listener */ this);
-  AddChildView(suggestion_chip_view_);
+  base::string16 accessible_name = item_->title();
+  if (item_->id() == app_list::kInternalAppIdContinueReading) {
+    accessible_name = l10n_util::GetStringFUTF16(
+        IDS_APP_LIST_CONTINUE_READING_ACCESSIBILE_NAME, accessible_name);
+  }
+  suggestion_chip_view_->SetAccessibleName(accessible_name);
 }
 
 }  // namespace app_list
