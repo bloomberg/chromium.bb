@@ -94,13 +94,13 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
           SkSurface::kRetain_ContentChangeMode);
     }
 
-    sk_sp<SkImage> skia_image = GetSkSurface()->makeImageSnapshot();
-    if (!skia_image)
+    auto paint_image = MakeImageSnapshot();
+    if (!paint_image)
       return nullptr;
-    DCHECK(skia_image->isTextureBacked());
+    DCHECK(paint_image.GetSkImage()->isTextureBacked());
 
-    scoped_refptr<StaticBitmapImage> image =
-        StaticBitmapImage::Create(skia_image, ContextProviderWrapper());
+    scoped_refptr<StaticBitmapImage> image = StaticBitmapImage::Create(
+        paint_image.GetSkImage(), ContextProviderWrapper());
 
     scoped_refptr<CanvasResource> resource = CanvasResourceBitmap::Create(
         image, CreateWeakPtr(), FilterQuality(), ColorParams());
@@ -190,12 +190,13 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
       return CanvasResourceProviderTexture::ProduceFrame();
     }
 
-    sk_sp<SkImage> image = GetSkSurface()->makeImageSnapshot();
-    if (!image)
+    auto paint_image = MakeImageSnapshot();
+    if (!paint_image)
       return nullptr;
-    DCHECK(image->isTextureBacked());
+    DCHECK(paint_image.GetSkImage()->isTextureBacked());
 
-    GrBackendTexture backend_texture = image->getBackendTexture(true);
+    GrBackendTexture backend_texture =
+        paint_image.GetSkImage()->getBackendTexture(true);
     DCHECK(backend_texture.isValid());
 
     GrGLTextureInfo info;
@@ -299,12 +300,12 @@ class CanvasResourceProviderRamGpuMemoryBuffer final
       return nullptr;
     }
 
-    sk_sp<SkImage> image = GetSkSurface()->makeImageSnapshot();
-    if (!image)
+    auto paint_image = MakeImageSnapshot();
+    if (!paint_image)
       return nullptr;
-    DCHECK(!image->isTextureBacked());
+    DCHECK(!paint_image.GetSkImage()->isTextureBacked());
 
-    output_resource->TakeSkImage(std::move(image));
+    output_resource->TakeSkImage(paint_image.GetSkImage());
 
     return output_resource;
   }
@@ -353,12 +354,12 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
       return nullptr;
     }
 
-    sk_sp<SkImage> image = GetSkSurface()->makeImageSnapshot();
-    if (!image)
+    auto paint_image = MakeImageSnapshot();
+    if (!paint_image)
       return nullptr;
-    DCHECK(!image->isTextureBacked());
+    DCHECK(!paint_image.GetSkImage()->isTextureBacked());
 
-    output_resource->TakeSkImage(std::move(image));
+    output_resource->TakeSkImage(paint_image.GetSkImage());
 
     return output_resource;
   }
@@ -633,14 +634,21 @@ scoped_refptr<StaticBitmapImage> CanvasResourceProvider::Snapshot() {
   if (!IsValid())
     return nullptr;
 
-  auto sk_image = GetSkSurface()->makeImageSnapshot();
-  auto last_snapshot_sk_image_id = snapshot_sk_image_id_;
-  snapshot_sk_image_id_ = sk_image->uniqueID();
-
-  if (ContextProviderWrapper()) {
-    return StaticBitmapImage::Create(std::move(sk_image),
+  auto paint_image = MakeImageSnapshot();
+  if (paint_image.GetSkImage()->isTextureBacked() && ContextProviderWrapper()) {
+    return StaticBitmapImage::Create(paint_image.GetSkImage(),
                                      ContextProviderWrapper());
   }
+  return StaticBitmapImage::Create(std::move(paint_image));
+}
+
+cc::PaintImage CanvasResourceProvider::MakeImageSnapshot() {
+  auto sk_image = GetSkSurface()->makeImageSnapshot();
+  if (!sk_image)
+    return cc::PaintImage();
+
+  auto last_snapshot_sk_image_id = snapshot_sk_image_id_;
+  snapshot_sk_image_id_ = sk_image->uniqueID();
 
   // Ensure that a new PaintImage::ContentId is used only when the underlying
   // SkImage changes. This is necessary to ensure that the same image results
@@ -650,12 +658,10 @@ scoped_refptr<StaticBitmapImage> CanvasResourceProvider::Snapshot() {
     snapshot_paint_image_content_id_ = PaintImage::GetNextContentId();
   }
 
-  auto paint_image =
-      PaintImageBuilder::WithDefault()
-          .set_id(snapshot_paint_image_id_)
-          .set_image(std::move(sk_image), snapshot_paint_image_content_id_)
-          .TakePaintImage();
-  return StaticBitmapImage::Create(std::move(paint_image));
+  return PaintImageBuilder::WithDefault()
+      .set_id(snapshot_paint_image_id_)
+      .set_image(std::move(sk_image), snapshot_paint_image_content_id_)
+      .TakePaintImage();
 }
 
 gpu::gles2::GLES2Interface* CanvasResourceProvider::ContextGL() const {
