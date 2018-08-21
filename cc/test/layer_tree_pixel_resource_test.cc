@@ -110,6 +110,12 @@ void LayerTreeHostPixelResourceTest::RunPixelResourceTest(
   RunPixelTest(test_type_, content_root, file_name);
 }
 
+void LayerTreeHostPixelResourceTest::RunPixelResourceTest(
+    scoped_refptr<Layer> content_root,
+    const SkBitmap& expected_bitmap) {
+  RunPixelTest(test_type_, content_root, expected_bitmap);
+}
+
 ParameterizedPixelResourceTest::ParameterizedPixelResourceTest()
     : LayerTreeHostPixelResourceTest(::testing::get<0>(GetParam()),
                                      ::testing::get<1>(GetParam())) {}
