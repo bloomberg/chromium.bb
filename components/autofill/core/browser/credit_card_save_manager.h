@@ -112,6 +112,7 @@ class CreditCardSaveManager {
                                const std::string& server_id);
 
  private:
+  friend class CreditCardSaveManagerTestObserverBridge;
   friend class SaveCardBubbleViewsBrowserTestBase;
 
   // Returns the legal message retrieved from Payments. On failure or not
