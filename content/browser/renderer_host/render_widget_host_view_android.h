@@ -340,6 +340,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
  protected:
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;
+  bool HasFallbackSurface() const override;
 
  private:
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;

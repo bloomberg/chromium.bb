@@ -490,6 +490,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;
+  bool HasFallbackSurface() const override;
 
   // Gets a textual view of the page's contents, and passes it to the callback
   // provided.

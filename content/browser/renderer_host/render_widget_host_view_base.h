@@ -373,9 +373,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       const gfx::PointF& point,
       const viz::SurfaceId& original_surface,
       gfx::PointF* transformed_point);
-
-  // Transform a point that is in the coordinate space for the current
-  // RenderWidgetHostView to the coordinate space of the target_view.
+  // Given a RenderWidgetHostViewBase that renders to a Surface that is
+  // contained within this class' Surface, find the relative transform between
+  // the Surfaces and apply it to a point. Returns false if a Surface has not
+  // yet been created or if |target_view| is not a descendant RWHV from our
+  // client.
   virtual bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
@@ -601,6 +603,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void ForwardTouchpadPinchIfNecessary(
       const blink::WebGestureEvent& event,
       InputEventAckState ack_result);
+
+  virtual bool HasFallbackSurface() const;
 
   // The model object. Members will become private when
   // RenderWidgetHostViewGuest is removed.

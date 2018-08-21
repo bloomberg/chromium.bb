@@ -878,6 +878,10 @@ void RenderWidgetHostViewAndroid::UpdateBackgroundColor() {
   view_.OnBackgroundColorChanged(color);
 }
 
+bool RenderWidgetHostViewAndroid::HasFallbackSurface() const {
+  return delegated_frame_host_ && delegated_frame_host_->HasFallbackSurface();
+}
+
 void RenderWidgetHostViewAndroid::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,

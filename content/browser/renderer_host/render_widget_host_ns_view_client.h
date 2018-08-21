@@ -13,6 +13,7 @@ namespace blink {
 class WebGestureEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
+class WebTouchEvent;
 }  // namespace blink
 
 namespace ui {
