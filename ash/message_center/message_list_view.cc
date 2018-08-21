@@ -427,12 +427,11 @@ int MessageListView::GetMarginBetweenItems() const {
 }
 
 bool MessageListView::IsValidChild(const views::View* child) const {
-  return child->visible() &&
-         deleting_views_.find(const_cast<views::View*>(child)) ==
+  return deleting_views_.find(const_cast<views::View*>(child)) ==
              deleting_views_.end() &&
          deleted_when_done_.find(const_cast<views::View*>(child)) ==
              deleted_when_done_.end() &&
-         !base::ContainsValue(clearing_all_views_, child);
+         !base::ContainsValue(clearing_all_views_, child) && child->visible();
 }
 
 void MessageListView::DoUpdateIfPossible() {
