@@ -17,6 +17,7 @@ class AuthenticatorRequestSheetModel;
 // Defines the basic structure of sheets shown in the authenticator request
 // dialog. Each sheet corresponds to a given step of the authentication flow,
 // and encapsulates the controls above the Ok/Cancel buttons, namely:
+//  -- an optional progress-bar-style activity indicator (at the top),
 //  -- an optional `back icon`,
 //  -- a pretty illustration in the top half of the dialog,
 //  -- the title of the current step,
@@ -25,7 +26,7 @@ class AuthenticatorRequestSheetModel;
 //     the rest of the space.
 //
 // +-------------------------------------------------+
-// |. . . . . . . . . . . . . . . . . . . . . . . . .|
+// |*************************************************|
 // |. (<-). . . . . . . . . . . . . . . . . . . . . .|
 // |. . . . I L L U S T R A T I O N   H E R E . . . .|
 // |. . . . . . . . . . . . . . . . . . . . . . . . .|
@@ -70,7 +71,8 @@ class AuthenticatorRequestSheetView : public views::View,
 
  private:
   // Creates the upper half of the sheet, consisting of a pretty illustration
-  // overlayed with absolutely positioned controls rendered on top.
+  // overlayed with absolutely positioned controls (the activity indicator and
+  // the back button) rendered on top.
   std::unique_ptr<views::View> CreateIllustrationWithOverlays();
 
   // Creates the lower half of the sheet, consisting of the title, description,
