@@ -34,14 +34,13 @@ using content::BrowserThread;
 
 namespace {
 
-void ForwardGetPrintersResult(
-    const CloudPrintProxyService::PrintersCallback& callback,
-    const std::vector<std::string>& printers) {
+void ForwardGetPrintersResult(CloudPrintProxyService::PrintersCallback callback,
+                              const std::vector<std::string>& printers) {
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             ServiceProcessControl::SERVICE_PRINTERS_REPLY,
                             ServiceProcessControl::SERVICE_EVENT_MAX);
   UMA_HISTOGRAM_COUNTS_10000("CloudPrint.AvailablePrinters", printers.size());
-  callback.Run(printers);
+  std::move(callback).Run(printers);
 }
 
 std::string ReadCloudPrintSetupProxyList(const base::FilePath& path) {
@@ -140,11 +139,12 @@ bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
   return true;
 }
 
-void CloudPrintProxyService::GetPrinters(const PrintersCallback& callback) {
+void CloudPrintProxyService::GetPrinters(PrintersCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!profile_->GetPrefs()->GetBoolean(prefs::kCloudPrintProxyEnabled)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, std::vector<std::string>()));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), std::vector<std::string>()));
     return;
   }
 
@@ -154,7 +154,7 @@ void CloudPrintProxyService::GetPrinters(const PrintersCallback& callback) {
   if (list_path.empty()) {
     InvokeServiceTask(
         base::BindOnce(&CloudPrintProxyService::GetCloudPrintProxyPrinters,
-                       weak_factory_.GetWeakPtr(), callback));
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
 
@@ -162,11 +162,11 @@ void CloudPrintProxyService::GetPrinters(const PrintersCallback& callback) {
       extensions::GetExtensionFileTaskRunner().get(), FROM_HERE,
       base::BindOnce(&ReadCloudPrintSetupProxyList, list_path),
       base::BindOnce(&CloudPrintProxyService::OnReadCloudPrintSetupProxyList,
-                     weak_factory_.GetWeakPtr(), callback));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void CloudPrintProxyService::GetCloudPrintProxyPrinters(
-    const PrintersCallback& callback) {
+    PrintersCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             ServiceProcessControl::SERVICE_PRINTERS_REQUEST,
@@ -174,7 +174,7 @@ void CloudPrintProxyService::GetCloudPrintProxyPrinters(
   ServiceProcessControl* process_control = GetServiceProcessControl();
   DCHECK(process_control->IsConnected());
   GetCloudPrintProxy().GetPrinters(
-      base::BindOnce(&ForwardGetPrintersResult, callback));
+      base::BindOnce(&ForwardGetPrintersResult, std::move(callback)));
 }
 
 void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
@@ -241,7 +241,7 @@ cloud_print::mojom::CloudPrint& CloudPrintProxyService::GetCloudPrintProxy() {
 }
 
 void CloudPrintProxyService::OnReadCloudPrintSetupProxyList(
-    const PrintersCallback& callback,
+    PrintersCallback callback,
     const std::string& printers_json) {
   std::unique_ptr<base::Value> list_value =
       base::ListValue::From(base::JSONReader::Read(printers_json));
@@ -255,5 +255,5 @@ void CloudPrintProxyService::OnReadCloudPrintSetupProxyList(
   UMA_HISTOGRAM_COUNTS_10000("CloudPrint.AvailablePrintersList",
                              printers.size());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, printers));
+      FROM_HERE, base::BindOnce(std::move(callback), printers));
 }
