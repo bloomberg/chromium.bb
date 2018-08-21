@@ -14,7 +14,9 @@ import static org.mockito.Mockito.verify;
 
 import android.content.Intent;
 import android.media.AudioManager;
+import android.view.WindowManager;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,7 +47,7 @@ public class CastWebContentsActivityTest {
 
     private static Intent defaultIntentForCastWebContentsActivity(WebContents webContents) {
         return CastWebContentsIntentUtils.requestStartCastActivity(
-                RuntimeEnvironment.application, webContents, true, "0");
+                RuntimeEnvironment.application, webContents, true, true, "0");
     }
 
     @Before
@@ -91,7 +93,7 @@ public class CastWebContentsActivityTest {
         CastWebContentsSurfaceHelper surfaceHelper = mock(CastWebContentsSurfaceHelper.class);
         WebContents newWebContents = mock(WebContents.class);
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
-                RuntimeEnvironment.application, newWebContents, true, null);
+                RuntimeEnvironment.application, newWebContents, true, true, null);
         intent.removeExtra(CastWebContentsIntentUtils.INTENT_EXTRA_URI);
         mActivity.setSurfaceHelperForTesting(surfaceHelper);
         mActivityLifecycle.create();
@@ -104,7 +106,7 @@ public class CastWebContentsActivityTest {
     public void testDropsIntentWithoutWebContents() {
         CastWebContentsSurfaceHelper surfaceHelper = mock(CastWebContentsSurfaceHelper.class);
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
-                RuntimeEnvironment.application, null, true, "1");
+                RuntimeEnvironment.application, null, true, true, "1");
         mActivity.setSurfaceHelperForTesting(surfaceHelper);
         mActivityLifecycle.create();
         reset(surfaceHelper);
@@ -117,7 +119,7 @@ public class CastWebContentsActivityTest {
         CastWebContentsSurfaceHelper surfaceHelper = mock(CastWebContentsSurfaceHelper.class);
         WebContents newWebContents = mock(WebContents.class);
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
-                RuntimeEnvironment.application, newWebContents, true, "2");
+                RuntimeEnvironment.application, newWebContents, true, true, "2");
         mActivity.setSurfaceHelperForTesting(surfaceHelper);
         mActivityLifecycle.create();
         reset(surfaceHelper);
@@ -137,5 +139,40 @@ public class CastWebContentsActivityTest {
         Intent intent = defaultIntentForCastWebContentsActivity(mWebContents);
         mActivityLifecycle.newIntent(intent);
         verify(surfaceHelper, never()).onNewStartParams(anyObject());
+    }
+
+    @Test
+    public void testTurnsScreenOnIfTurnOnScreen() {
+        mActivityLifecycle = Robolectric.buildActivity(CastWebContentsActivity.class,
+                CastWebContentsIntentUtils.requestStartCastActivity(
+                        RuntimeEnvironment.application, mWebContents, true, true, "0"));
+        mActivity = mActivityLifecycle.get();
+        mActivity.testingModeForTesting();
+        mShadowActivity = Shadows.shadowOf(mActivity);
+        mActivityLifecycle.create();
+
+        Assert.assertTrue(Shadows.shadowOf(mShadowActivity.getWindow())
+                                  .getFlag(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON));
+    }
+
+    @Test
+    public void testDoesNotTurnScreenOnIfNotTurnOnScreen() {
+        mActivityLifecycle = Robolectric.buildActivity(CastWebContentsActivity.class,
+                CastWebContentsIntentUtils.requestStartCastActivity(
+                        RuntimeEnvironment.application, mWebContents, true, false, "0"));
+        mActivity = mActivityLifecycle.get();
+        mActivity.testingModeForTesting();
+        mShadowActivity = Shadows.shadowOf(mActivity);
+        mActivityLifecycle.create();
+
+        Assert.assertFalse(Shadows.shadowOf(mShadowActivity.getWindow())
+                                   .getFlag(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON));
+    }
+
+    @Test
+    public void testSetsKeepScreenOnFlag() {
+        mActivityLifecycle.create();
+        Assert.assertTrue(Shadows.shadowOf(mShadowActivity.getWindow())
+                                  .getFlag(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
     }
 }

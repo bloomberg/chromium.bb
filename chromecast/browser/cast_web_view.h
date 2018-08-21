@@ -104,6 +104,9 @@ class CastWebView {
     // Whether this CastWebView should be managed by web ui window manager.
     bool managed = true;
 
+    // True if this app should turn on the screen.
+    bool turn_on_screen = true;
+
     CreateParams();
   };
 

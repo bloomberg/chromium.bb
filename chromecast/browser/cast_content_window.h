@@ -126,6 +126,9 @@ class CastContentWindow {
     // True if this CastContentWindow is for running a remote control app.
     bool is_remote_control_mode = false;
 
+    // True if this app should turn on the screen.
+    bool turn_on_screen = true;
+
     CreateParams();
   };
 

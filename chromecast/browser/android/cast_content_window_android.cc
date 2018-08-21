@@ -27,11 +27,12 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
     jlong native_window,
     bool is_headless,
     bool enable_touch_input,
-    bool is_remote_control_mode) {
+    bool is_remote_control_mode,
+    bool turn_on_screen) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_CastContentWindowAndroid_create(env, native_window, is_headless,
-                                              enable_touch_input,
-                                              is_remote_control_mode);
+  return Java_CastContentWindowAndroid_create(
+      env, native_window, is_headless, enable_touch_input,
+      is_remote_control_mode, turn_on_screen);
 }
 
 }  // namespace
@@ -48,7 +49,8 @@ CastContentWindowAndroid::CastContentWindowAndroid(
       java_window_(CreateJavaWindow(reinterpret_cast<jlong>(this),
                                     params.is_headless,
                                     params.enable_touch_input,
-                                    params.is_remote_control_mode)) {
+                                    params.is_remote_control_mode,
+                                    params.turn_on_screen)) {
   DCHECK(delegate_);
 }
 

@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -77,12 +78,6 @@ public class CastWebContentsActivity extends Activity {
                 mIsFinishingState.set("Failed to initialize browser");
             }
 
-            // Set flags to both exit sleep mode when this activity starts and
-            // avoid entering sleep mode while playing media. We cannot distinguish
-            // between video and audio so this applies to both.
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
             setContentView(R.layout.cast_web_contents_activity);
 
             mSurfaceHelper = new CastWebContentsSurfaceHelper(this, /* hostActivity */
@@ -92,6 +87,17 @@ public class CastWebContentsActivity extends Activity {
                                     CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK)),
                     (Uri uri) -> mIsFinishingState.set("Delayed teardown for URI: " + uri));
         }));
+
+        mCreatedState.map(x -> getWindow())
+                .and(mGotIntentState)
+                .watch(Observers.onEnter(Both.adapt((Window window, Intent intent) -> {
+                    // Set flags to both exit sleep mode when this activity starts and
+                    // avoid entering sleep mode while playing media. If an app that shouldn't turn
+                    // on the screen is launching, we don't add TURN_SCREEN_ON.
+                    if (CastWebContentsIntentUtils.shouldTurnOnScreen(intent))
+                        window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                })));
 
         // Initialize the audio manager in onCreate() if tests haven't already.
         mCreatedState.and(Observable.not(mAudioManagerState)).watch(Observers.onEnter(() -> {
