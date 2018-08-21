@@ -14,13 +14,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "remoting/codec/webrtc_video_encoder.h"
-#include "third_party/webrtc/media/engine/webrtcvideoencoderfactory.h"
+#include "third_party/webrtc/api/video_codecs/video_encoder_factory.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 
 namespace remoting {
 namespace protocol {
 
 class VideoChannelStateObserver;
+class WebrtcDummyVideoEncoderFactory;
 
 // WebrtcDummyVideoEncoder implements webrtc::VideoEncoder interface for WebRTC.
 // It's responsible for getting  feedback on network bandwidth, latency & RTT
@@ -35,7 +36,8 @@ class WebrtcDummyVideoEncoder : public webrtc::VideoEncoder {
 
   WebrtcDummyVideoEncoder(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer);
+      base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer,
+      WebrtcDummyVideoEncoderFactory* factory);
   ~WebrtcDummyVideoEncoder() override;
 
   // webrtc::VideoEncoder overrides.
@@ -66,23 +68,26 @@ class WebrtcDummyVideoEncoder : public webrtc::VideoEncoder {
   webrtc::EncodedImageCallback* encoded_callback_ = nullptr;
 
   base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer_;
+
+  // Holds a reference to the creating factory, if any. Will be notified
+  // when this instance is released, so it can stop delivering frames.
+  WebrtcDummyVideoEncoderFactory* factory_ = nullptr;
 };
 
-// This is the external encoder factory implementation that is passed to
-// WebRTC at the time of creation of peer connection. The external encoder
-// factory primarily manages creation and destruction of encoder.
-class WebrtcDummyVideoEncoderFactory
-    : public cricket::WebRtcVideoEncoderFactory {
+// This is the encoder factory implementation that is passed to
+// WebRTC at the time of creation of peer connection. The encoder
+// factory primarily manages creation of encoder.
+class WebrtcDummyVideoEncoderFactory : public webrtc::VideoEncoderFactory {
  public:
   WebrtcDummyVideoEncoderFactory();
   ~WebrtcDummyVideoEncoderFactory() override;
 
-  // cricket::WebRtcVideoEncoderFactory interface.
-  webrtc::VideoEncoder* CreateVideoEncoder(
-      const cricket::VideoCodec& codec) override;
-  const std::vector<cricket::VideoCodec>& supported_codecs() const override;
-  bool EncoderTypeHasInternalSource(webrtc::VideoCodecType type) const override;
-  void DestroyVideoEncoder(webrtc::VideoEncoder* encoder) override;
+  // webrtc::VideoEncoderFactory interface.
+  std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(
+      const webrtc::SdpVideoFormat& format) override;
+  std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override;
+  CodecInfo QueryVideoEncoder(
+      const webrtc::SdpVideoFormat& format) const override;
 
   webrtc::EncodedImageCallback::Result SendEncodedFrame(
       const WebrtcVideoEncoder::EncodedFrame& packet,
@@ -102,15 +107,17 @@ class WebrtcDummyVideoEncoderFactory
     return video_channel_state_observer_;
   }
 
+  void EncoderDestroyed(WebrtcDummyVideoEncoder* encoder);
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  std::vector<cricket::VideoCodec> codecs_;
+  std::vector<webrtc::SdpVideoFormat> formats_;
 
   // Protects |video_channel_state_observer_| and |encoders_|.
   base::Lock lock_;
   base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer_;
-  std::vector<std::unique_ptr<WebrtcDummyVideoEncoder>> encoders_;
+  std::vector<WebrtcDummyVideoEncoder*> encoders_;
   base::Callback<void(webrtc::VideoCodecType)> encoder_created_callback_;
 };
 
