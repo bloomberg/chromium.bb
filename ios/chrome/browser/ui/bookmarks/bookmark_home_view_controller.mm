@@ -1262,6 +1262,8 @@ const CGFloat kShadowRadius = 12.0f;
     case BookmarksContextBarMixedSelection:
       // Delete clicked.
       [self deleteNodes:nodes];
+      base::RecordAction(
+          base::UserMetricsAction("MobileBookmarkManagerRemoveSelected"));
       break;
     case BookmarksContextBarNone:
     default:
@@ -1824,6 +1826,8 @@ const CGFloat kShadowRadius = 12.0f;
     std::set<const BookmarkNode*> nodes;
     nodes.insert(node);
     [self handleSelectNodesForDeletion:nodes];
+    base::RecordAction(
+        base::UserMetricsAction("MobileBookmarkManagerEntryDeleted"));
   }
 }
 
