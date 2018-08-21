@@ -338,17 +338,9 @@ class DeclarativeNetRequestBrowserTest
     }
 
     ASSERT_TRUE(extension);
-    EXPECT_TRUE(HasValidIndexedRuleset(*extension, profile()));
 
     // Ensure the ruleset is also loaded on the IO thread.
     content::RunAllTasksUntilIdle();
-
-    // Wait for the background page to load if needed.
-    if (has_background_script_)
-      WaitForBackgroundScriptToLoad(extension->id());
-
-    // Ensure no load errors were reported.
-    EXPECT_TRUE(LoadErrorReporter::GetInstance()->GetErrors()->empty());
 
     tester.ExpectTotalCount(kIndexRulesTimeHistogram, 1);
     tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram, 1);
@@ -359,6 +351,15 @@ class DeclarativeNetRequestBrowserTest
     tester.ExpectUniqueSample(
         "Extensions.DeclarativeNetRequest.LoadRulesetResult",
         RulesetMatcher::kLoadSuccess /*sample*/, 1 /*count*/);
+
+    EXPECT_TRUE(HasValidIndexedRuleset(*extension, profile()));
+
+    // Wait for the background page to load if needed.
+    if (has_background_script_)
+      WaitForBackgroundScriptToLoad(extension->id());
+
+    // Ensure no load errors were reported.
+    EXPECT_TRUE(LoadErrorReporter::GetInstance()->GetErrors()->empty());
   }
 
   void LoadExtensionWithRules(const std::vector<TestRule>& rules) {
