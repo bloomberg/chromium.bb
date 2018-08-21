@@ -237,11 +237,12 @@ class CoverageReportPostProcessor(object):
                summary_data,
                no_component_view,
                no_file_view,
-               component_mappings={}):
+               component_mappings={},
+               path_equivalence=None):
     """Initializes CoverageReportPostProcessor object."""
     # Caller provided parameters.
     self.output_dir = output_dir
-    self.src_root_dir = src_root_dir
+    self.src_root_dir = src_root_dir.rstrip(os.sep)
     self.summary_data = json.loads(summary_data)
     assert len(self.summary_data['data']) == 1
     self.no_component_view = no_component_view
@@ -267,6 +268,19 @@ class CoverageReportPostProcessor(object):
     # Path to the main HTML index file.
     self.html_index_path = GetHtmlIndexPath(self.output_dir)
 
+    self.path_map = None
+    if path_equivalence:
+
+      def _PreparePath(path):
+        path = os.path.normpath(path)
+        if not path.endswith(os.sep):
+          # A normalized path does not end with '/', unless it is a root dir.
+          path += os.sep
+        return path
+
+      self.path_map = [_PreparePath(p) for p in path_equivalence.split(',')]
+      assert len(self.path_map) == 2, 'Path equivalence argument is incorrect.'
+
   def _ExtractComponentToDirectoriesMapping(self, component_mappings):
     """Initializes a mapping from components to directories."""
     directory_to_component = component_mappings['dir-to-component']
@@ -285,6 +299,12 @@ class CoverageReportPostProcessor(object):
 
       if not found_parent_directory:
         self.component_to_directories[component].append(directory)
+
+  def _MapToLocal(self, path):
+    """Maps a path from the coverage data to a local path."""
+    if not self.path_map:
+      return path
+    return path.replace(self.path_map[0], self.path_map[1], 1)
 
   def CalculatePerDirectoryCoverageSummary(self, per_file_coverage_summary):
     """Calculates per directory coverage summary."""
@@ -388,7 +408,8 @@ class CoverageReportPostProcessor(object):
 
   def GetCoverageHtmlReportPathForDirectory(self, dir_path):
     """Given a directory path, returns the corresponding html report path."""
-    assert os.path.isdir(dir_path), '"%s" is not a directory.' % dir_path
+    assert os.path.isdir(
+        self._MapToLocal(dir_path)), '"%s" is not a directory.' % dir_path
     html_report_path = os.path.join(
         GetFullPath(dir_path), DIRECTORY_COVERAGE_HTML_REPORT_NAME)
 
@@ -399,7 +420,8 @@ class CoverageReportPostProcessor(object):
 
   def GetCoverageHtmlReportPathForFile(self, file_path):
     """Given a file path, returns the corresponding html report path."""
-    assert os.path.isfile(file_path), '"%s" is not a file.' % file_path
+    assert os.path.isfile(
+        self._MapToLocal(file_path)), '"%s" is not a file.' % file_path
     html_report_path = os.extsep.join([GetFullPath(file_path), 'html'])
 
     # '+' is used instead of os.path.join because both of them are absolute
@@ -418,7 +440,6 @@ class CoverageReportPostProcessor(object):
 
     for file_path in per_file_coverage_summary:
       totals_coverage_summary.AddSummary(per_file_coverage_summary[file_path])
-
       html_generator.AddLinkToAnotherReport(
           self.GetCoverageHtmlReportPathForFile(file_path),
           os.path.relpath(file_path, self.src_root_dir),
@@ -473,7 +494,7 @@ class CoverageReportPostProcessor(object):
         self.output_dir, self.GetCoverageHtmlReportPathForDirectory(dir_path),
         'Path')
 
-    for entry_name in os.listdir(dir_path):
+    for entry_name in os.listdir(self._MapToLocal(dir_path)):
       entry_path = os.path.normpath(os.path.join(dir_path, entry_name))
 
       if entry_path in per_file_coverage_summary:
@@ -747,7 +768,8 @@ def _CmdPostProcess(args):
       args.src_root_dir,
       summary_data,
       no_component_view=True,
-      no_file_view=False)
+      no_file_view=False,
+      path_equivalence=args.path_equivalence)
   processor.PrepareHtmlReport()
 
 
@@ -764,18 +786,26 @@ def Main():
 
   shared_libs_parser = subparsers.add_parser(
       'shared_libs', help='Detect shared libraries.')
-  shared_libs_parser.add_argument('-build-dir', help='Path to the build dir.')
   shared_libs_parser.add_argument(
-      '-object', action='append', help='Path to the binary using shared libs.')
+      '-build-dir', help='Path to the build dir.', required=True)
+  shared_libs_parser.add_argument(
+      '-object',
+      action='append',
+      help='Path to the binary using shared libs.',
+      required=True)
 
   post_processing_parser = subparsers.add_parser(
       'post_process', help='Post process a report.')
   post_processing_parser.add_argument(
-      '-output-dir', help='Path to the report dir.')
+      '-output-dir', help='Path to the report dir.', required=True)
   post_processing_parser.add_argument(
-      '-src-root-dir', help='Path to the src root dir.')
+      '-src-root-dir', help='Path to the src root dir.', required=True)
   post_processing_parser.add_argument(
-      '-summary-file', help='Path to the summary file.')
+      '-summary-file', help='Path to the summary file.', required=True)
+  post_processing_parser.add_argument(
+      '-path-equivalence',
+      help='Map the paths in the coverage data to local '
+      'source files path (=<from>,<to>)')
 
   args = parser.parse_args()
   ConfigureLogging(args.verbose)
@@ -784,6 +814,8 @@ def Main():
     return _CmdSharedLibraries(args)
   elif args.command == 'post_process':
     return _CmdPostProcess(args)
+  else:
+    parser.print_help(sys.stderr)
 
 
 if __name__ == '__main__':
