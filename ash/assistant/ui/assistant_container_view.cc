@@ -15,7 +15,6 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/shell.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -35,8 +34,7 @@ namespace {
 // Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 constexpr int kCornerRadiusDip = 20;
-constexpr int kClamshellMarginBottomDip = 8;  // Margin in clamshell mode.
-constexpr int kTabletMarginTopDip = 24;       // Margin in tablet mode.
+constexpr int kMarginBottomDip = 8;
 
 // Animation.
 constexpr int kResizeAnimationDurationMs = 250;
@@ -162,11 +160,9 @@ AssistantContainerView::AssistantContainerView(
   // AssistantContainerView belongs so is guaranteed to outlive it.
   assistant_controller_->ui_controller()->AddModelObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
-  Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
 AssistantContainerView::~AssistantContainerView() {
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
@@ -291,22 +287,14 @@ void AssistantContainerView::SetAnchor(aura::Window* root_window) {
   display::Display display = display::Screen::GetScreen()->GetDisplayMatching(
       root_window->GetBoundsInScreen());
 
-  bool tablet_mode = Shell::Get()
-                         ->tablet_mode_controller()
-                         ->IsTabletModeWindowManagerEnabled();
-
-  // Align to the horizontal center of the work area. We are top aligned in
-  // tablet mode, bottom aligned in clamshell.
+  // Align to the bottom, horizontal center of the work area.
   gfx::Rect work_area = display.work_area();
   gfx::Rect anchor =
-      gfx::Rect(work_area.x(),
-                tablet_mode ? kTabletMarginTopDip
-                            : work_area.bottom() - kClamshellMarginBottomDip,
+      gfx::Rect(work_area.x(), work_area.bottom() - kMarginBottomDip,
                 work_area.width(), 0);
 
   SetAnchorRect(anchor);
-  set_arrow(tablet_mode ? views::BubbleBorder::Arrow::TOP_CENTER
-                        : views::BubbleBorder::Arrow::BOTTOM_CENTER);
+  set_arrow(views::BubbleBorder::Arrow::BOTTOM_CENTER);
 }
 
 void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {
@@ -340,9 +328,8 @@ void AssistantContainerView::AnimationProgressed(
   // Retrieve current bounds.
   gfx::Rect bounds = GetWidget()->GetWindowBoundsInScreen();
 
-  // Our view is horizontally centered. As such, we should retain the same
-  // |center_x| position after resizing. In clamshell mode, we are bottom
-  // aligned so we cache |bottom| position here as well.
+  // Our view is horizontally centered and bottom aligned. As such, we should
+  // retain the same |center_x| and |bottom| positions after resizing.
   const int bottom = bounds.bottom();
   const int center_x = bounds.CenterPoint().x();
 
@@ -353,16 +340,9 @@ void AssistantContainerView::AnimationProgressed(
   // Use our interpolated size.
   bounds.set_size(gfx::Size(size.width(), size.height()));
 
-  if (!Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled()) {
-    // Maintain our original |bottom| position in clamshell mode. In tablet
-    // mode we grow downwards which is the default behavior.
-    bounds.set_y(bottom - bounds.height());
-  }
-
-  // Maintain |center_x| position.
+  // Maintain original |center_x| and |bottom| positions.
   bounds.set_x(center_x - (bounds.width() / 2));
+  bounds.set_y(bottom - bounds.height());
 
   GetWidget()->SetBounds(bounds);
 }
@@ -373,16 +353,6 @@ void AssistantContainerView::OnDisplayMetricsChanged(
   aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
   if (root_window == Shell::Get()->GetRootWindowForDisplayId(display.id()))
     SetAnchor(root_window);
-}
-
-void AssistantContainerView::OnTabletModeStarted() {
-  DCHECK(GetWidget());
-  SetAnchor(GetWidget()->GetNativeWindow()->GetRootWindow());
-}
-
-void AssistantContainerView::OnTabletModeEnded() {
-  DCHECK(GetWidget());
-  SetAnchor(GetWidget()->GetNativeWindow()->GetRootWindow());
 }
 
 }  // namespace ash
