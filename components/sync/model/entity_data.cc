@@ -76,6 +76,15 @@ EntityDataPtr EntityData::UpdateId(const std::string& new_id) const {
   return target;
 }
 
+EntityDataPtr EntityData::UpdateClientTagHash(
+    const std::string& new_client_tag_hash) const {
+  EntityData entity_data(*this);
+  entity_data.client_tag_hash = new_client_tag_hash;
+  EntityDataPtr target;
+  target.swap_value(&entity_data);
+  return target;
+}
+
 EntityDataPtr EntityData::UpdateSpecifics(
     const sync_pb::EntitySpecifics& new_specifics) const {
   EntityData entity_data(*this);

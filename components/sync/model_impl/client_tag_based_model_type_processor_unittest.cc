@@ -71,16 +71,17 @@ void CaptureStatusCounters(StatusCounters* dst,
 
 class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
  public:
-  explicit TestModelTypeSyncBridge(bool commit_only)
+  explicit TestModelTypeSyncBridge(bool commit_only, ModelType model_type)
       : FakeModelTypeSyncBridge(
             std::make_unique<ClientTagBasedModelTypeProcessor>(
-                PREFERENCES,
+                model_type,
                 /*dump_stack=*/base::RepeatingClosure(),
                 commit_only)) {}
 
   TestModelTypeSyncBridge(std::unique_ptr<TestModelTypeSyncBridge> other,
-                          bool commit_only)
-      : TestModelTypeSyncBridge(commit_only) {
+                          bool commit_only,
+                          ModelType model_type)
+      : TestModelTypeSyncBridge(commit_only, model_type) {
     std::swap(db_, other->db_);
   }
 
@@ -185,7 +186,8 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   ~ClientTagBasedModelTypeProcessorTest() override { CheckPostConditions(); }
 
   void SetUp() override {
-    bridge_ = std::make_unique<TestModelTypeSyncBridge>(IsCommitOnly());
+    bridge_ = std::make_unique<TestModelTypeSyncBridge>(IsCommitOnly(),
+                                                        GetModelType());
   }
 
   void InitializeToMetadataLoaded() {
@@ -251,15 +253,17 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   }
 
   void ResetState(bool keep_db) {
-    bridge_ = keep_db
-                  ? std::make_unique<TestModelTypeSyncBridge>(
-                        std::move(bridge_), IsCommitOnly())
-                  : std::make_unique<TestModelTypeSyncBridge>(IsCommitOnly());
+    bridge_ = keep_db ? std::make_unique<TestModelTypeSyncBridge>(
+                            std::move(bridge_), IsCommitOnly(), GetModelType())
+                      : std::make_unique<TestModelTypeSyncBridge>(
+                            IsCommitOnly(), GetModelType());
     worker_ = nullptr;
     CheckPostConditions();
   }
 
   virtual bool IsCommitOnly() { return false; }
+
+  virtual ModelType GetModelType() { return PREFERENCES; }
 
   // Wipes existing DB and simulates a pending update of a server-known item.
   EntitySpecifics ResetStateWriteItem(const std::string& name,
@@ -1429,6 +1433,46 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, IgnoreLocalEncryption) {
 
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue2));
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
+}
+
+// Tests that updates without client tags get dropped.
+TEST_F(ClientTagBasedModelTypeProcessorTest, DropsClientTags) {
+  InitializeToReadyState();
+  UpdateResponseDataList updates;
+  updates.push_back(worker()->GenerateUpdateData(
+      /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
+
+  worker()->UpdateFromServer(updates);
+
+  // Verify that the data wasn't actually stored.
+  EXPECT_EQ(0U, db().metadata_count());
+  EXPECT_EQ(0U, db().data_count());
+}
+
+class WalletDataClientTagBasedModelTypeProcessorTest
+    : public ClientTagBasedModelTypeProcessorTest {
+ protected:
+  ModelType GetModelType() override { return AUTOFILL_WALLET_DATA; }
+};
+
+// Tests that updates for Wallet data without client tags get client tags
+// assigned, and not dropped.
+// TODO(crbug.com/874001): Remove this feature-specific logic when the right
+// solution for Wallet data has been decided.
+TEST_F(WalletDataClientTagBasedModelTypeProcessorTest,
+       CreatesClientTagsForWallet) {
+  InitializeToReadyState();
+
+  // Commit an item.
+  UpdateResponseDataList updates;
+  updates.push_back(worker()->GenerateUpdateData(
+      /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
+  worker()->UpdateFromServer(updates);
+
+  // Verify that the data was stored.
+  EXPECT_EQ(1U, db().metadata_count());
+  EXPECT_EQ(1U, db().data_count());
+  EXPECT_FALSE(db().GetMetadata(kKey1).client_tag_hash().empty());
 }
 
 // Tests that a real local change wins over a remote encryption-only change.

@@ -129,6 +129,12 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void RecommitAllForEncryption(std::unordered_set<std::string> already_updated,
                                 MetadataChangeList* metadata_changes);
 
+  // Does the actual handling of updates, without changing client tags.
+  // TODO(crbug.com/874001): Merge this back into OnUpdateReceived when the
+  // right solution for Wallet data has been decided.
+  void OnUpdateReceivedInternal(const sync_pb::ModelTypeState& type_state,
+                                const UpdateResponseDataList& updates);
+
   // Handle the first update received from the server after being enabled.
   void OnInitialUpdateReceived(const sync_pb::ModelTypeState& type_state,
                                const UpdateResponseDataList& updates);
