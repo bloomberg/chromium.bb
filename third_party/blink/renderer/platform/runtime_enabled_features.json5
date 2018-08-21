@@ -1255,6 +1255,11 @@
       status: "experimental",
     },
     {
+      name: "WebAssemblyThreads",
+      origin_trial_feature_name: "WebAssemblyThreads",
+      status: "experimental",
+    },
+    {
       name: "WebAuth",
       status: "experimental",
     },
