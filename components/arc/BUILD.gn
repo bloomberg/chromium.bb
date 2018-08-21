@@ -237,6 +237,8 @@ static_library("arc_test_support") {
     "test/fake_file_system_instance.h",
     "test/fake_intent_helper_instance.cc",
     "test/fake_intent_helper_instance.h",
+    "test/fake_pip_instance.cc",
+    "test/fake_pip_instance.h",
     "test/fake_policy_instance.cc",
     "test/fake_policy_instance.h",
     "test/fake_power_instance.cc",

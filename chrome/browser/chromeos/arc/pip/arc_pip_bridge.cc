@@ -4,10 +4,16 @@
 
 #include "chrome/browser/chromeos/arc/pip/arc_pip_bridge.h"
 
+#include <utility>
+
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/chromeos/arc/pip/arc_picture_in_picture_window_controller_impl.h"
+#include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "content/public/browser/picture_in_picture_window_controller.h"
 
 namespace arc {
 
@@ -65,12 +71,32 @@ void ArcPipBridge::OnConnectionClosed() {
 
 void ArcPipBridge::OnPipEvent(arc::mojom::ArcPipEvent event) {
   DVLOG(1) << "ArcPipBridge::OnPipEvent";
-  // TODO: Implement.
+
+  switch (event) {
+    case mojom::ArcPipEvent::ENTER: {
+      auto pip_window_controller =
+          std::make_unique<ArcPictureInPictureWindowControllerImpl>(this);
+      // Make sure not to close PIP if we are replacing an existing Android PIP.
+      base::AutoReset<bool> auto_prevent_closing_pip(&prevent_closing_pip_,
+                                                     true);
+      PictureInPictureWindowManager::GetInstance()
+          ->EnterPictureInPictureWithController(pip_window_controller.get());
+      pip_window_controller_ = std::move(pip_window_controller);
+      break;
+    }
+  }
 }
 
 void ArcPipBridge::ClosePip() {
   DVLOG(1) << "ArcPipBridge::ClosePip";
-  // TODO: Implement.
+
+  auto* instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->pip(), ClosePip);
+  if (!instance)
+    return;
+
+  if (!prevent_closing_pip_)
+    instance->ClosePip();
 }
 
 }  // namespace arc
