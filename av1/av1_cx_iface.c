@@ -692,6 +692,21 @@ static aom_codec_err_t set_encoder_config(
 
   oxcf->frame_periodic_boost = extra_cfg->frame_periodic_boost;
   oxcf->motion_vector_unit_test = extra_cfg->motion_vector_unit_test;
+
+#if CONFIG_REDUCED_ENCODER_BORDER
+  if (oxcf->superres_mode != SUPERRES_NONE ||
+      oxcf->resize_mode != RESIZE_NONE) {
+    warn(
+        "Superres / resize cannot be used with CONFIG_REDUCED_ENCODER_BORDER. "
+        "Disabling superres/resize.\n");
+    // return AOM_CODEC_INVALID_PARAM;
+    disable_superres(oxcf);
+    oxcf->resize_mode = RESIZE_NONE;
+    oxcf->resize_scale_denominator = SCALE_NUMERATOR;
+    oxcf->resize_kf_scale_denominator = SCALE_NUMERATOR;
+  }
+#endif  // CONFIG_REDUCED_ENCODER_BORDER
+
   return AOM_CODEC_OK;
 }
 
