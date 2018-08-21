@@ -342,11 +342,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public RenderFrameHost getFocusedFrame() {
-        return nativeGetFocusedFrame(mNativeWebContentsAndroid);
-    }
-
-    @Override
     public String getTitle() {
         return nativeGetTitle(mNativeWebContentsAndroid);
     }
@@ -900,7 +895,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private native void nativeSetTopLevelNativeWindow(
             long nativeWebContentsAndroid, WindowAndroid windowAndroid);
     private native RenderFrameHost nativeGetMainFrame(long nativeWebContentsAndroid);
-    private native RenderFrameHost nativeGetFocusedFrame(long nativeWebContentsAndroid);
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
     private native String nativeGetEncoding(long nativeWebContentsAndroid);
