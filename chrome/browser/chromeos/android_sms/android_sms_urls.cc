@@ -19,7 +19,7 @@ namespace {
 
 // NOTE: Using internal staging server until changes roll out to prod.
 const char kDefaultAndroidMessagesUrl[] =
-    "https://android-messages-web.corp.google.com";
+    "https://android-messages.sandbox.google.com/";
 
 // NOTE: Using experiment mods until changes roll out to prod.
 const char kExperimentUrlParams[] =
@@ -28,15 +28,14 @@ const char kExperimentUrlParams[] =
 GURL GetURLInternal(bool with_experiments) {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  GURL android_messages_url(command_line->GetSwitchValueASCII(
-      switches::kAlternateAndroidMessagesUrl));
-  if (android_messages_url.is_empty()) {
-    std::string url_string = std::string(kDefaultAndroidMessagesUrl);
-    if (with_experiments)
-      url_string += std::string(kExperimentUrlParams);
-    android_messages_url = GURL(url_string);
-  }
-  return android_messages_url;
+  std::string url_string =
+      command_line->GetSwitchValueASCII(switches::kAlternateAndroidMessagesUrl);
+
+  if (url_string.empty())
+    url_string = std::string(kDefaultAndroidMessagesUrl);
+  if (with_experiments)
+    url_string += std::string(kExperimentUrlParams);
+  return GURL(url_string);
 }
 
 }  // namespace
