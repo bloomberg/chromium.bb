@@ -2722,6 +2722,7 @@ crbug.com/870526 external/wpt/push-api/idlharness.https.any.serviceworker.html [
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/tasks.window.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-transitions/event-dispatch.tentative.html [ Timeout ]
 crbug.com/875411 external/wpt/svg/text/reftests/text-complex-002.svg [ Failure ]
