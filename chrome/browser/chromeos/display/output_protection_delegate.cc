@@ -99,7 +99,7 @@ bool OutputProtectionDelegate::InitializeControllerIfNecessary() {
   if (!window)
     return false;
 
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsMultiProcessMash())
     controller_ = std::make_unique<OutputProtectionControllerMus>();
   else
     controller_ = std::make_unique<OutputProtectionControllerAsh>();

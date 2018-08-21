@@ -190,7 +190,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   // TODO(sergeyu): The notification bar must be shown on the monitor that's
   // being captured. Make sure it's always the case. Currently we always capture
   // the primary monitor.
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     params.context = ash::Shell::GetPrimaryRootWindow();
   } else {
     const display::Display primary_display =

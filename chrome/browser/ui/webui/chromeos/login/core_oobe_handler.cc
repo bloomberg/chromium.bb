@@ -479,7 +479,7 @@ void CoreOobeHandler::UpdateA11yState() {
                        AccessibilityManager::Get()->IsLargeCursorEnabled());
   a11y_info.SetBoolean("spokenFeedbackEnabled",
                        AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsMultiProcessMash()) {
     DCHECK(MagnificationManager::Get());
     a11y_info.SetBoolean("screenMagnifierEnabled",
                          MagnificationManager::Get()->IsMagnifierEnabled());
@@ -549,9 +549,9 @@ void CoreOobeHandler::UpdateDeviceRequisition() {
 }
 
 void CoreOobeHandler::UpdateKeyboardState() {
-  // TODO(mash): Support virtual keyboard under MASH. There is no
+  // TODO(crbug.com/646565): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled()) {
       const bool is_keyboard_shown = keyboard_controller->IsKeyboardVisible();

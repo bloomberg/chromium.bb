@@ -321,7 +321,7 @@ void AppLaunchController::OnProfileLoaded(Profile* profile) {
   profile_->InitChromeOSPreferences();
 
   // Reset virtual keyboard to use IME engines in app profile early.
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     if (keyboard::IsKeyboardEnabled())
       ash::Shell::Get()->EnableKeyboard();
   } else {

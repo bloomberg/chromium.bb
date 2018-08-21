@@ -91,7 +91,8 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
   views::AXAuraObjCache::GetInstance()->SetDelegate(this);
 
 #if defined(OS_CHROMEOS)
-  if (features::IsAshInBrowserProcess()) {
+  // TODO(crbug.com/756054): Support SingleProcessMash and MultiProcessMash.
+  if (!features::IsUsingWindowService()) {
     aura::Window* active_window = ash::wm::GetActiveWindow();
     if (active_window) {
       views::AXAuraObjWrapper* focus =

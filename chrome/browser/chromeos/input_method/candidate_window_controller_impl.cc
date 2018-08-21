@@ -40,7 +40,9 @@ void CandidateWindowControllerImpl::InitCandidateWindowView() {
     return;
 
   gfx::NativeView parent = nullptr;
-  if (features::IsAshInBrowserProcess()) {
+  // TODO(crbug.com/756059): Mash support. Candidate window might appear on the
+  // wrong display in SingleProcessMash.
+  if (!features::IsUsingWindowService()) {
     aura::Window* active_window = ash::wm::GetActiveWindow();
     parent = ash::Shell::GetContainer(
         active_window ? active_window->GetRootWindow()

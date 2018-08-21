@@ -12,8 +12,8 @@ using AccessibilityPrivateApiTest = ExtensionApiTest;
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, SendSyntheticKeyEvent) {
-  // Not yet supported on mash.
-  if (!features::IsAshInBrowserProcess())
+  // TODO(crbug.com/876043): Mash support.
+  if (features::IsUsingWindowService())
     return;
 
   ASSERT_TRUE(RunExtensionSubtest("accessibility_private/",
