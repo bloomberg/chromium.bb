@@ -147,7 +147,7 @@ public class CastWebContentsIntentUtilsTest {
     @Test
     public void testRequestStartCastActivity() {
         Intent in = CastWebContentsIntentUtils.requestStartCastActivity(
-                mActivity, mWebContents, true, INSTANCE_ID);
+                mActivity, mWebContents, true, true, INSTANCE_ID);
         Assert.assertNull(in.getData());
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
@@ -161,7 +161,7 @@ public class CastWebContentsIntentUtilsTest {
     @Test
     public void testRequestStartCastFragment() {
         Intent in = CastWebContentsIntentUtils.requestStartCastFragment(
-                mWebContents, APP_ID, 3, true, INSTANCE_ID, true);
+                mWebContents, APP_ID, 3, true, INSTANCE_ID, true, true);
         Assert.assertNull(in.getData());
         String uri = CastWebContentsIntentUtils.getUriString(in);
         Assert.assertNotNull(uri);
@@ -216,6 +216,34 @@ public class CastWebContentsIntentUtilsTest {
     }
 
     @Test
+    public void testShouldTurnOnScreenActivityTrue() {
+        Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
+                mActivity, mWebContents, true, true, INSTANCE_ID);
+        Assert.assertTrue(CastWebContentsIntentUtils.shouldTurnOnScreen(intent));
+    }
+
+    @Test
+    public void testShouldTurnOnScreenActivityFalse() {
+        Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
+                mActivity, mWebContents, true, false, INSTANCE_ID);
+        Assert.assertFalse(CastWebContentsIntentUtils.shouldTurnOnScreen(intent));
+    }
+
+    @Test
+    public void testShouldTurnOnScreenFragmentTrue() {
+        Intent intent = CastWebContentsIntentUtils.requestStartCastFragment(
+                mWebContents, APP_ID, 3, true, INSTANCE_ID, true, true);
+        Assert.assertTrue(CastWebContentsIntentUtils.shouldTurnOnScreen(intent));
+    }
+
+    @Test
+    public void testShouldTurnOnScreenFragmentFalse() {
+        Intent intent = CastWebContentsIntentUtils.requestStartCastFragment(
+                mWebContents, APP_ID, 3, true, INSTANCE_ID, true, false);
+        Assert.assertFalse(CastWebContentsIntentUtils.shouldTurnOnScreen(intent));
+    }
+
+    @Test
     public void testOnWebContentStopped() {
         Intent in = CastWebContentsIntentUtils.onWebContentStopped(Uri.parse(EXPECTED_URI));
         String uri = CastWebContentsIntentUtils.getUriString(in);
@@ -226,14 +254,14 @@ public class CastWebContentsIntentUtilsTest {
     @Test
     public void testIsRemoteControlModeTrue() {
         Intent in = CastWebContentsIntentUtils.requestStartCastFragment(
-                mWebContents, APP_ID, 3, true, INSTANCE_ID, true);
+                mWebContents, APP_ID, 3, true, INSTANCE_ID, true, true);
         Assert.assertTrue(CastWebContentsIntentUtils.isRemoteControlMode(in));
     }
 
     @Test
     public void testIsRemoteControlModeFalse() {
         Intent in = CastWebContentsIntentUtils.requestStartCastFragment(
-                mWebContents, APP_ID, 3, false, INSTANCE_ID, false);
+                mWebContents, APP_ID, 3, false, INSTANCE_ID, false, true);
         Assert.assertFalse(CastWebContentsIntentUtils.isRemoteControlMode(in));
     }
 }

@@ -58,6 +58,7 @@ shell::CastContentWindow::CreateParams CreateWindowParams(
   window_params.enable_touch_input = params.enable_touch_input;
   window_params.is_headless = params.is_headless;
   window_params.is_remote_control_mode = params.is_remote_control_mode;
+  window_params.turn_on_screen = params.turn_on_screen;
   return window_params;
 }
 
