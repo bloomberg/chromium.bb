@@ -2279,6 +2279,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return base::SysUTF16ToNSString(owner_->GetValue());
 }
 
+// TODO(crbug.com/865101) Remove this once the autofill state works.
 - (BOOL)isFocusedInputWithSuggestions {
   if (!owner_->IsPlainTextField())
     return false;
@@ -2291,6 +2292,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)valueAutofillAvailable {
   if (![self instanceActive])
     return nil;
+  // TODO(crbug.com/865101) Use this instead:
+  // return owner_->HasState(ax::mojom::State::kAutofillAvailable) ? @YES : @NO;
   return [self isFocusedInputWithSuggestions] ? @YES : @NO;
 }
 

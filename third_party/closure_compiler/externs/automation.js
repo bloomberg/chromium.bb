@@ -260,6 +260,7 @@ chrome.automation.RoleType = {
  * @see https://developer.chrome.com/extensions/automation#type-StateType
  */
 chrome.automation.StateType = {
+  AUTOFILL_AVAILABLE: 'autofillAvailable',
   COLLAPSED: 'collapsed',
   DEFAULT: 'default',
   EDITABLE: 'editable',

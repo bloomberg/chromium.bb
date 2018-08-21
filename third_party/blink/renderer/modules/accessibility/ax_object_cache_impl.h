@@ -138,6 +138,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void HandleAttributeChanged(const QualifiedName& attr_name,
                               Element*) override;
+  void HandleAutofillStateChanged(Element*, bool) override;
   void HandleFocusedUIElementChanged(Node* old_focused_node,
                                      Node* new_focused_node) override;
   void HandleInitialFocus() override;

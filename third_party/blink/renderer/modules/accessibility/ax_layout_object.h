@@ -80,6 +80,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool IsAXLayoutObject() const override { return true; }
 
   // Check object role or purpose.
+  bool IsAutofillAvailable() override { return is_autofill_available_; }
   bool IsEditable() const override;
   bool IsRichlyEditable() const override;
   bool IsLinked() const override;
@@ -179,6 +180,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // Notifications that this object may have changed.
   void HandleActiveDescendantChanged() override;
   void HandleAriaExpandedChanged() override;
+  // Called when autofill becomes available/unavailable on a form control.
+  void HandleAutofillStateChanged(bool) override;
   void TextChanged() override;
 
   // Text metrics. Most of these should be deprecated, needs major cleanup.
@@ -233,6 +236,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool CanIgnoreTextAsEmpty() const;
   bool CanIgnoreSpaceNextTo(LayoutObject*, bool is_after) const;
   bool HasAriaCellRole(Element*) const;
+
+  bool is_autofill_available_;
 
   DISALLOW_COPY_AND_ASSIGN(AXLayoutObject);
 };

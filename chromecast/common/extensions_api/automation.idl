@@ -256,6 +256,7 @@
 
   // Describes characteristics of an $(ref:automation.AutomationNode).
   enum StateType {
+    autofillAvailable,
     collapsed,
     default,
     editable,

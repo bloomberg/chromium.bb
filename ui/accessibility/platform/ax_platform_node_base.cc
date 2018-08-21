@@ -270,6 +270,7 @@ bool AXPlatformNodeBase::IsTextOnlyObject() const {
          GetData().role == ax::mojom::Role::kInlineTextBox;
 }
 
+// TODO(crbug.com/865101) Remove this once the autofill state works.
 bool AXPlatformNodeBase::IsFocusedInputWithSuggestions() {
   return HasInputSuggestions() && IsPlainTextField() &&
          delegate_->GetFocus() == GetNativeViewAccessible();
@@ -595,6 +596,9 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
                      attributes);
   if (!HasStringAttribute(ax::mojom::StringAttribute::kAutoComplete) &&
       IsFocusedInputWithSuggestions()) {
+    // TODO(crbug.com/865101) Use
+    // GetData().HasState(ax::mojom::State::kAutofillAvailable) instead of
+    // IsFocusedInputWithSuggestions()
     AddAttributeToList("autocomplete", "list", attributes);
   }
 
@@ -666,6 +670,10 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
         break;
     }
   } else if (IsFocusedInputWithSuggestions()) {
+    // TODO(crbug.com/865101) Use
+    // GetData().HasState(ax::mojom::State::kAutofillAvailable) instead of
+    // IsFocusedInputWithSuggestions()
+    // TODO(crbug.com/865101) Remove this comment:
     // Note: suggestions are special-cased here because there is no way
     // for the browser to know when a suggestion popup is available.
     AddAttributeToList("haspopup", "menu", attributes);

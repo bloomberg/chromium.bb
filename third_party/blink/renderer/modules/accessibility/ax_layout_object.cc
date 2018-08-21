@@ -212,7 +212,9 @@ static LayoutBoxModelObject* NextContinuation(LayoutObject* layout_object) {
 AXLayoutObject::AXLayoutObject(LayoutObject* layout_object,
                                AXObjectCacheImpl& ax_object_cache)
     : AXNodeObject(layout_object->GetNode(), ax_object_cache),
-      layout_object_(layout_object) {
+      layout_object_(layout_object),
+      is_autofill_available_(false) {
+// TODO(aleventhal) Get correct current state of autofill.
 #if DCHECK_IS_ON()
   layout_object_->SetHasAXObject(true);
 #endif
@@ -2446,6 +2448,16 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
   } else {
     AXObjectCache().PostNotification(this,
                                      AXObjectCacheImpl::kAXExpandedChanged);
+  }
+}
+
+void AXLayoutObject::HandleAutofillStateChanged(bool is_available) {
+  if (is_autofill_available_ != is_available) {
+    is_autofill_available_ = is_available;
+    // Reusing the value change event in order to invalidate, even though the
+    // value did not necessarily change.
+    // TODO(dmazzoni) change to using a MarkDirty() API.
+    AXObjectCache().PostNotification(this, AXObjectCacheImpl::kAXValueChanged);
   }
 }
 

@@ -848,6 +848,8 @@ const char* ToString(ax::mojom::State state) {
   switch (state) {
     case ax::mojom::State::kNone:
       return "none";
+    case ax::mojom::State::kAutofillAvailable:
+      return "autofillAvailable";
     case ax::mojom::State::kCollapsed:
       return "collapsed";
     case ax::mojom::State::kDefault:
@@ -890,6 +892,8 @@ const char* ToString(ax::mojom::State state) {
 ax::mojom::State ParseState(const char* state) {
   if (0 == strcmp(state, "none"))
     return ax::mojom::State::kNone;
+  if (0 == strcmp(state, "autofillAvailable"))
+    return ax::mojom::State::kAutofillAvailable;
   if (0 == strcmp(state, "collapsed"))
     return ax::mojom::State::kCollapsed;
   if (0 == strcmp(state, "default"))

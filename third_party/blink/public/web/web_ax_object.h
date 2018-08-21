@@ -131,6 +131,7 @@ class WebAXObject {
   BLINK_EXPORT void GetSparseAXAttributes(WebAXSparseAttributeClient&) const;
 
   BLINK_EXPORT bool IsAnchor() const;
+  BLINK_EXPORT bool IsAutofillAvailable() const;
   BLINK_EXPORT WebAXCheckedState CheckedState() const;
   BLINK_EXPORT bool IsCheckable() const;
   BLINK_EXPORT bool IsClickable() const;

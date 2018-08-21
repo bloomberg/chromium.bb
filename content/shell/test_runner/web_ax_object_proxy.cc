@@ -671,6 +671,8 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("selectionEndLineNumber",
                    &WebAXObjectProxy::SelectionEndLineNumber)
       .SetProperty("isAtomic", &WebAXObjectProxy::IsAtomic)
+      .SetProperty("isAutofillAvailable",
+                   &WebAXObjectProxy::IsAutofillAvailable)
       .SetProperty("isBusy", &WebAXObjectProxy::IsBusy)
       .SetProperty("isRequired", &WebAXObjectProxy::IsRequired)
       .SetProperty("isEditable", &WebAXObjectProxy::IsEditable)
@@ -1062,6 +1064,11 @@ int WebAXObjectProxy::SelectionEndLineNumber() {
 bool WebAXObjectProxy::IsAtomic() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   return accessibility_object_.LiveRegionAtomic();
+}
+
+bool WebAXObjectProxy::IsAutofillAvailable() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  return accessibility_object_.IsAutofillAvailable();
 }
 
 bool WebAXObjectProxy::IsBusy() {

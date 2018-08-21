@@ -1299,6 +1299,9 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kSearchBox:
       if (GetData().HasState(ax::mojom::State::kProtected))
         return ATK_ROLE_PASSWORD_TEXT;
+      // TODO(crbug.com/865101) Use
+      // GetData().HasState(ax::mojom::State::kAutofillAvailable) instead of
+      // IsFocusedInputWithSuggestions()
       if (!GetStringAttribute(ax::mojom::StringAttribute::kAutoComplete)
                .empty() ||
           IsFocusedInputWithSuggestions()) {
@@ -1406,6 +1409,9 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
       atk_state_set_add_state(atk_state_set, ATK_STATE_SINGLE_LINE);
   }
 
+  // TODO(crbug.com/865101) Use
+  // GetData().HasState(ax::mojom::State::kAutofillAvailable) instead of
+  // IsFocusedInputWithSuggestions()
   if (!GetStringAttribute(ax::mojom::StringAttribute::kAutoComplete).empty() ||
       IsFocusedInputWithSuggestions())
     atk_state_set_add_state(atk_state_set, ATK_STATE_SUPPORTS_AUTOCOMPLETION);
