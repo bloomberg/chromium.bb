@@ -1794,7 +1794,7 @@
                  'sebsg+autofillwatch@chromium.org',
                  'tmartino+autofillwatch@chromium.org',
                  'vabr+watchlistautofill@chromium.org'],
-    'autofill_assistant': ['gogerald+autofillassistantwatch@chromium.org'],
+    'autofill_assistant': ['autofill_assistant+watch@google.com'],
     'autofill_credit_cards': ['jsaul+autofillwatch@google.com'],
     'background_fetch': ['peter@chromium.org',
                          'rayankans+watch@chromium.org',
