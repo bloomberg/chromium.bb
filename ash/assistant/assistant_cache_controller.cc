@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/assistant/util/deep_link_util.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
@@ -47,18 +48,20 @@ void AssistantCacheController::UpdateConversationStarters() {
 
   std::vector<AssistantSuggestionPtr> conversation_starters;
 
-  auto AddConversationStarter = [&conversation_starters](int message_id) {
+  auto AddConversationStarter = [&conversation_starters](
+                                    int message_id, GURL action_url = GURL()) {
     AssistantSuggestionPtr starter = AssistantSuggestion::New();
     starter->text = l10n_util::GetStringUTF8(message_id);
+    starter->action_url = action_url;
     conversation_starters.push_back(std::move(starter));
   };
 
   AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHAT_CAN_YOU_DO);
 
-  // TODO(dmblack): Add a deep link for this chip to start a screen context
-  // query to receive back contextual cards.
-  if (Shell::Get()->voice_interaction_controller()->context_enabled())
-    AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN);
+  if (Shell::Get()->voice_interaction_controller()->context_enabled()) {
+    AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN,
+                           assistant::util::CreateWhatsOnMyScreenDeepLink());
+  }
 
   AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_CALENDAR);
 
@@ -68,6 +71,7 @@ void AssistantCacheController::UpdateConversationStarters() {
   AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_THE_WEATHER);
   AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_IM_BORED);
   AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_OPEN_FILES);
+  AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_SET_A_REMINDER);
 
   model_.SetConversationStarters(std::move(conversation_starters));
 }

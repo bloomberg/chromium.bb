@@ -11,7 +11,6 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_screen_context_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
@@ -27,8 +26,7 @@ class AssistantScreenContextModelObserver;
 
 class ASH_EXPORT AssistantScreenContextController
     : public AssistantControllerObserver,
-      public AssistantUiModelObserver,
-      public HighlighterController::Observer {
+      public AssistantUiModelObserver {
  public:
   explicit AssistantScreenContextController(
       AssistantController* assistant_controller);
@@ -46,6 +44,11 @@ class ASH_EXPORT AssistantScreenContextController
   void AddModelObserver(AssistantScreenContextModelObserver* observer);
   void RemoveModelObserver(AssistantScreenContextModelObserver* observer);
 
+  // Requests screen context for the region defined by |rect| (given in DP). If
+  // an empty rect is supplied, the entire screen is captured. If |from_user| is
+  // true, contextual cards will be returned as part of an interaction flow.
+  void RequestScreenContext(const gfx::Rect& rect, bool from_user);
+
   // Requests a screenshot for the region defined by |rect| (given in DP). If
   // an empty rect is supplied, the entire screen is captured. Upon screenshot
   // completion, the specified |callback| is run.
@@ -60,17 +63,12 @@ class ASH_EXPORT AssistantScreenContextController
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
 
-  // HighlighterController::Observer:
-  void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;
-
   // Invoked on screen context request finished event.
   void OnScreenContextRequestFinished();
 
   std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshotForTest();
 
  private:
-  void RequestScreenContext(const gfx::Rect& rect, bool from_user);
-
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   // Owned by AssistantController.
