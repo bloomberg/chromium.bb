@@ -117,36 +117,35 @@ void FeedContentDatabase::CommitContentMutation(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(content_mutation);
 
-  PerformNextOperation(content_mutation->TakeOperations(), std::move(callback));
+  PerformNextOperation(std::move(content_mutation), std::move(callback));
 }
 
 void FeedContentDatabase::PerformNextOperation(
-    ContentOperationList operations_list,
+    std::unique_ptr<ContentMutation> content_mutation,
     ConfirmationCallback callback) {
-  DCHECK(!operations_list.empty());
+  DCHECK(!content_mutation->Empty());
 
-  ContentOperation operation(operations_list.front());
-  operations_list.pop_front();
+  ContentOperation operation = content_mutation->TakeFristOperation();
 
   switch (operation.type()) {
     case ContentOperation::CONTENT_DELETE:
       // TODO(gangwu): If deletes are continuous, we should combine them into
       // one commit.
-      DeleteContent(std::move(operation), std::move(operations_list),
+      DeleteContent(std::move(operation), std::move(content_mutation),
                     std::move(callback));
       break;
     case ContentOperation::CONTENT_DELETE_BY_PREFIX:
-      DeleteContentByPrefix(std::move(operation), std::move(operations_list),
+      DeleteContentByPrefix(std::move(operation), std::move(content_mutation),
                             std::move(callback));
       break;
     case ContentOperation::CONTENT_UPSERT:
       // TODO(gangwu): If upserts are continuous, we should combine them into
       // one commit.
-      UpsertContent(std::move(operation), std::move(operations_list),
+      UpsertContent(std::move(operation), std::move(content_mutation),
                     std::move(callback));
       break;
     case ContentOperation::CONTENT_DELETE_ALL:
-      DeleteAllContent(std::move(operation), std::move(operations_list),
+      DeleteAllContent(std::move(operation), std::move(content_mutation),
                        std::move(callback));
       break;
     default:
@@ -156,9 +155,10 @@ void FeedContentDatabase::PerformNextOperation(
   }
 }
 
-void FeedContentDatabase::UpsertContent(ContentOperation operation,
-                                        ContentOperationList operations_list,
-                                        ConfirmationCallback callback) {
+void FeedContentDatabase::UpsertContent(
+    ContentOperation operation,
+    std::unique_ptr<ContentMutation> content_mutation,
+    ConfirmationCallback callback) {
   DCHECK_EQ(operation.type(), ContentOperation::CONTENT_UPSERT);
 
   auto contents_to_save = std::make_unique<StorageEntryVector>();
@@ -170,13 +170,14 @@ void FeedContentDatabase::UpsertContent(ContentOperation operation,
   storage_database_->UpdateEntries(
       std::move(contents_to_save), std::make_unique<std::vector<std::string>>(),
       base::BindOnce(&FeedContentDatabase::OnOperationCommitted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(operations_list),
-                     std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(content_mutation), std::move(callback)));
 }
 
-void FeedContentDatabase::DeleteContent(ContentOperation operation,
-                                        ContentOperationList operations_list,
-                                        ConfirmationCallback callback) {
+void FeedContentDatabase::DeleteContent(
+    ContentOperation operation,
+    std::unique_ptr<ContentMutation> content_mutation,
+    ConfirmationCallback callback) {
   DCHECK_EQ(operation.type(), ContentOperation::CONTENT_DELETE);
 
   auto content_to_delete = std::make_unique<std::vector<std::string>>(
@@ -185,13 +186,13 @@ void FeedContentDatabase::DeleteContent(ContentOperation operation,
   storage_database_->UpdateEntries(
       std::make_unique<StorageEntryVector>(), std::move(content_to_delete),
       base::BindOnce(&FeedContentDatabase::OnOperationCommitted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(operations_list),
-                     std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(content_mutation), std::move(callback)));
 }
 
 void FeedContentDatabase::DeleteContentByPrefix(
     ContentOperation operation,
-    ContentOperationList operations_list,
+    std::unique_ptr<ContentMutation> content_mutation,
     ConfirmationCallback callback) {
   DCHECK_EQ(operation.type(), ContentOperation::CONTENT_DELETE_BY_PREFIX);
 
@@ -199,13 +200,14 @@ void FeedContentDatabase::DeleteContentByPrefix(
       std::make_unique<StorageEntryVector>(),
       base::BindRepeating(&DatabasePrefixFilter, operation.prefix()),
       base::BindOnce(&FeedContentDatabase::OnOperationCommitted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(operations_list),
-                     std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(content_mutation), std::move(callback)));
 }
 
-void FeedContentDatabase::DeleteAllContent(ContentOperation operation,
-                                           ContentOperationList operations_list,
-                                           ConfirmationCallback callback) {
+void FeedContentDatabase::DeleteAllContent(
+    ContentOperation operation,
+    std::unique_ptr<ContentMutation> content_mutation,
+    ConfirmationCallback callback) {
   DCHECK_EQ(operation.type(), ContentOperation::CONTENT_DELETE_ALL);
 
   std::string key_prefix = "";
@@ -213,8 +215,8 @@ void FeedContentDatabase::DeleteAllContent(ContentOperation operation,
       std::make_unique<StorageEntryVector>(),
       base::BindRepeating(&DatabasePrefixFilter, std::move(key_prefix)),
       base::BindOnce(&FeedContentDatabase::OnOperationCommitted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(operations_list),
-                     std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(content_mutation), std::move(callback)));
 }
 
 void FeedContentDatabase::OnDatabaseInitialized(bool success) {
@@ -268,7 +270,7 @@ void FeedContentDatabase::OnLoadKeysForLoadAllContentKeys(
 }
 
 void FeedContentDatabase::OnOperationCommitted(
-    ContentOperationList operations_list,
+    std::unique_ptr<ContentMutation> content_mutation,
     ConfirmationCallback callback,
     bool success) {
   // Commit is unsuccessful, skip processing the other operations since
@@ -281,12 +283,12 @@ void FeedContentDatabase::OnOperationCommitted(
   }
 
   // All operations were committed successfully, call |callback|.
-  if (operations_list.empty()) {
+  if (content_mutation->Empty()) {
     std::move(callback).Run(success);
     return;
   }
 
-  PerformNextOperation(std::move(operations_list), std::move(callback));
+  PerformNextOperation(std::move(content_mutation), std::move(callback));
 }
 
 }  // namespace feed

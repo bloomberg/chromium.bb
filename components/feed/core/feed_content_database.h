@@ -85,19 +85,19 @@ class FeedContentDatabase {
   // These methods work with |CommitContentMutation|. They process
   // |ContentOperation| in |ContentMutation| which is passed to
   // |PerformNextOperation| by |CommitContentMutation|.
-  void PerformNextOperation(ContentOperationList operations_list,
+  void PerformNextOperation(std::unique_ptr<ContentMutation> content_mutation,
                             ConfirmationCallback callback);
   void UpsertContent(ContentOperation operation,
-                     ContentOperationList operations_list,
+                     std::unique_ptr<ContentMutation> content_mutation,
                      ConfirmationCallback callback);
   void DeleteContent(ContentOperation operation,
-                     ContentOperationList operations_list,
+                     std::unique_ptr<ContentMutation> content_mutation,
                      ConfirmationCallback callback);
   void DeleteContentByPrefix(ContentOperation operation,
-                             ContentOperationList operations_list,
+                             std::unique_ptr<ContentMutation> content_mutation,
                              ConfirmationCallback callback);
   void DeleteAllContent(ContentOperation operation,
-                        ContentOperationList operations_list,
+                        std::unique_ptr<ContentMutation> content_mutation,
                         ConfirmationCallback callback);
 
   // Callback methods given to |storage_database_| for async responses.
@@ -110,7 +110,7 @@ class FeedContentDatabase {
       ContentKeyCallback callback,
       bool success,
       std::unique_ptr<std::vector<std::string>> keys);
-  void OnOperationCommitted(ContentOperationList operations_list,
+  void OnOperationCommitted(std::unique_ptr<ContentMutation> content_mutation,
                             ConfirmationCallback callback,
                             bool success);
 

@@ -13,7 +13,6 @@
 namespace feed {
 
 class ContentOperation;
-using ContentOperationList = std::list<ContentOperation>;
 
 // Native counterpart of ContentMutation.java.
 // To commit a set of ContentOperation into FeedContentDatabase, user need to
@@ -25,16 +24,20 @@ class ContentMutation {
   ContentMutation();
   ~ContentMutation();
 
-  void AppendDeleteOperation(const std::string& key);
+  void AppendDeleteOperation(std::string key);
   void AppendDeleteAllOperation();
-  void AppendDeleteByPrefixOperation(const std::string& prefix);
-  void AppendUpsertOperation(const std::string& key, const std::string& value);
+  void AppendDeleteByPrefixOperation(std::string prefix);
+  void AppendUpsertOperation(std::string key, std::string value);
 
-  // This will std::move the |operations_list_| out.
-  ContentOperationList TakeOperations();
+  // Check if mutation has ContentOperation left.
+  bool Empty();
+
+  // This will remove the first ContentOperation in |operations_list_| and
+  // return it to caller.
+  ContentOperation TakeFristOperation();
 
  private:
-  ContentOperationList operations_list_;
+  std::list<ContentOperation> operations_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentMutation);
 };

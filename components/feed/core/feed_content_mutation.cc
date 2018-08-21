@@ -6,35 +6,43 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "components/feed/core/feed_content_operation.h"
 
 namespace feed {
 
-ContentMutation::ContentMutation() {}
+ContentMutation::ContentMutation() = default;
 
-ContentMutation::~ContentMutation() {}
+ContentMutation::~ContentMutation() = default;
 
-void ContentMutation::AppendDeleteOperation(const std::string& key) {
-  operations_list_.emplace_back(ContentOperation::CreateDeleteOperation(key));
+void ContentMutation::AppendDeleteOperation(std::string key) {
+  operations_list_.emplace_back(
+      ContentOperation::CreateDeleteOperation(std::move(key)));
 }
 
 void ContentMutation::AppendDeleteAllOperation() {
   operations_list_.emplace_back(ContentOperation::CreateDeleteAllOperation());
 }
 
-void ContentMutation::AppendDeleteByPrefixOperation(const std::string& prefix) {
+void ContentMutation::AppendDeleteByPrefixOperation(std::string prefix) {
   operations_list_.emplace_back(
-      ContentOperation::CreateDeleteByPrefixOperation(prefix));
+      ContentOperation::CreateDeleteByPrefixOperation(std::move(prefix)));
 }
 
-void ContentMutation::AppendUpsertOperation(const std::string& key,
-                                            const std::string& value) {
-  operations_list_.emplace_back(
-      ContentOperation::CreateUpsertOperation(key, value));
+void ContentMutation::AppendUpsertOperation(std::string key,
+                                            std::string value) {
+  operations_list_.emplace_back(ContentOperation::CreateUpsertOperation(
+      std::move(key), std::move(value)));
 }
 
-ContentOperationList ContentMutation::TakeOperations() {
-  return std::move(operations_list_);
+bool ContentMutation::Empty() {
+  return operations_list_.empty();
+}
+
+ContentOperation ContentMutation::TakeFristOperation() {
+  ContentOperation operation = std::move(operations_list_.front());
+  operations_list_.pop_front();
+  return operation;
 }
 
 }  // namespace feed
