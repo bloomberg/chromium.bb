@@ -162,11 +162,6 @@ void SuggestionChipView::OnBlur() {
   SchedulePaint();
 }
 
-void SuggestionChipView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kButton;
-  node_data->SetName(GetText());
-}
-
 std::unique_ptr<views::InkDrop> SuggestionChipView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       Button::CreateDefaultInkDropImpl();
