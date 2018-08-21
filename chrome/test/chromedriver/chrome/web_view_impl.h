@@ -154,6 +154,8 @@ class WebViewImpl : public WebView {
 
   Status InitProfileInternal();
   Status StopProfileInternal();
+  Status DispatchTouchEventsForMouseEvents(const std::list<MouseEvent>& events,
+                                           const std::string& frame);
 
   std::string id_;
   bool w3c_compliant_;

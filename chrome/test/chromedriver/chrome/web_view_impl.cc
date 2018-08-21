@@ -401,8 +401,57 @@ Status WebViewImpl::GetFrameByFunction(const std::string& frame,
   return dom_tracker_->GetFrameIdForNode(node_id, out_frame);
 }
 
+Status WebViewImpl::DispatchTouchEventsForMouseEvents(
+    const std::list<MouseEvent>& events,
+    const std::string& frame) {
+  // Touch events are filtered by the compositor if there are no touch listeners
+  // on the page. Wait two frames for the compositor to sync with the main
+  // thread to get consistent behavior.
+  base::DictionaryValue params;
+  params.SetString("expression",
+                   "new Promise(x => setTimeout(() => setTimeout(x, 20), 20)");
+  params.SetBoolean("awaitPromise", true);
+  client_->SendCommand("Runtime.evaluate", params);
+  for (std::list<MouseEvent>::const_iterator it = events.begin();
+       it != events.end(); ++it) {
+    base::DictionaryValue params;
+
+    switch (it->type) {
+      case kPressedMouseEventType:
+        params.SetString("type", "touchStart");
+        break;
+      case kReleasedMouseEventType:
+        params.SetString("type", "touchEnd");
+        break;
+      case kMovedMouseEventType:
+        if (it->button == kNoneMouseButton)
+          continue;
+        params.SetString("type", "touchMove");
+        break;
+    }
+
+    std::unique_ptr<base::ListValue> touchPoints(new base::ListValue);
+    if (it->type != kReleasedMouseEventType) {
+      std::unique_ptr<base::DictionaryValue> touchPoint(
+          new base::DictionaryValue);
+      touchPoint->SetInteger("x", it->x);
+      touchPoint->SetInteger("y", it->y);
+      touchPoints->Append(std::move(touchPoint));
+    }
+    params.SetList("touchPoints", std::move(touchPoints));
+    params.SetInteger("modifiers", it->modifiers);
+    Status status = client_->SendCommand("Input.dispatchTouchEvent", params);
+    if (status.IsError())
+      return status;
+  }
+  return Status(kOk);
+}
+
 Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
                                         const std::string& frame) {
+  if (mobile_emulation_override_manager_->IsEmulatingTouch())
+    return DispatchTouchEventsForMouseEvents(events, frame);
+
   double page_scale_factor = 1.0;
   for (std::list<MouseEvent>::const_iterator it = events.begin();
        it != events.end(); ++it) {
