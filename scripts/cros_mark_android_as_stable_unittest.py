@@ -78,6 +78,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.arm_acl_data = '-g google.com:READ'
     self.x86_acl_data = '-g google.com:WRITE'
     self.cts_acl_data = '-g google.com:WRITE'
+    self.ndk_acl_data = '-g google.com:WRITE'
     self.arm_acl = os.path.join(self.mock_android_dir,
                                 'googlestorage_arm_acl.txt')
     self.x86_acl = os.path.join(self.mock_android_dir,
@@ -86,14 +87,16 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                      'googlestorage_internal_acl.txt')
     self.cts_acl = os.path.join(self.mock_android_dir,
                                 'googlestorage_cts_acl.txt')
+    self.ndk_acl = os.path.join(self.mock_android_dir,
+                                'googlestorage_ndk_acl.txt')
     self.acls = {
         'ARM': self.arm_acl,
         'X86': self.x86_acl,
-        'X86_NDK_TRANSLATION': self.internal_acl,
+        'X86_NDK_TRANSLATION': self.ndk_acl,
         'X86_INTERNAL': self.internal_acl,
         'X86_64': self.x86_acl,
         'X86_USERDEBUG': self.x86_acl,
-        'X86_NDK_TRANSLATION_USERDEBUG': self.internal_acl,
+        'X86_NDK_TRANSLATION_USERDEBUG': self.ndk_acl,
         'X86_64_USERDEBUG': self.x86_acl,
         'AOSP_X86_USERDEBUG': self.x86_acl,
         'SDK_GOOGLE_X86_USERDEBUG': self.x86_acl,
@@ -105,6 +108,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     osutils.WriteFile(self.x86_acl, self.x86_acl_data, makedirs=True)
     osutils.WriteFile(self.cts_acl, self.cts_acl_data, makedirs=True)
     osutils.WriteFile(self.internal_acl, self.internal_acl_data, makedirs=True)
+    osutils.WriteFile(self.ndk_acl, self.ndk_acl_data, makedirs=True)
 
     self.bucket_url = 'gs://u'
     self.build_branch = constants.ANDROID_NYC_BUILD_BRANCH
@@ -507,10 +511,10 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                    'googlestorage_acl_internal.txt'))
     self.assertEquals(acls['X86_NDK_TRANSLATION'],
                       os.path.join(self.mock_android_dir,
-                                   'googlestorage_acl_internal.txt'))
+                                   'googlestorage_acl_ndk.txt'))
     self.assertEquals(acls['X86_NDK_TRANSLATION_USERDEBUG'],
                       os.path.join(self.mock_android_dir,
-                                   'googlestorage_acl_internal.txt'))
+                                   'googlestorage_acl_ndk.txt'))
     # Test that all MST targets have their ACLs set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
         constants.ANDROID_MST_BUILD_BRANCH).keys():

@@ -395,11 +395,11 @@ ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
 ARC_BUCKET_ACLS = {
     'ARM': 'googlestorage_acl_arm.txt',
     'X86': 'googlestorage_acl_x86.txt',
-    'X86_NDK_TRANSLATION': 'googlestorage_acl_internal.txt',
+    'X86_NDK_TRANSLATION': 'googlestorage_acl_ndk.txt',
     'X86_64': 'googlestorage_acl_x86.txt',
     'ARM_USERDEBUG': 'googlestorage_acl_arm.txt',
     'X86_USERDEBUG': 'googlestorage_acl_x86.txt',
-    'X86_NDK_TRANSLATION_USERDEBUG': 'googlestorage_acl_internal.txt',
+    'X86_NDK_TRANSLATION_USERDEBUG': 'googlestorage_acl_ndk.txt',
     'X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
     'AOSP_ARM_USERDEBUG': 'googlestorage_acl_arm.txt',
     'AOSP_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
