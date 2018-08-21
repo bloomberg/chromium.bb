@@ -319,30 +319,6 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
 
 void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  // If this is the first Surface created after navigation, notify |client_|.
-  // If the Surface was created before navigation, drop it.
-  uint32_t parent_sequence_number =
-      surface_info.id().local_surface_id().parent_sequence_number();
-  uint32_t latest_parent_sequence_number =
-      pending_local_surface_id_.parent_sequence_number();
-  // If |latest_parent_sequence_number| is less than
-  // |first_parent_sequence_number_after_navigation_|, then the parent id has
-  // wrapped around. Make sure that case is covered.
-  if (parent_sequence_number >=
-          first_parent_sequence_number_after_navigation_ ||
-      (latest_parent_sequence_number <
-           first_parent_sequence_number_after_navigation_ &&
-       parent_sequence_number <= latest_parent_sequence_number)) {
-    if (!received_frame_after_navigation_) {
-      received_frame_after_navigation_ = true;
-      client_->DidReceiveFirstFrameAfterNavigation();
-    }
-  } else {
-    DCHECK(host_frame_sink_manager_);
-    host_frame_sink_manager_->DropTemporaryReference(surface_info.id());
-    return;
-  }
-
   // If there's no primary surface, then we don't wish to display content at
   // this time (e.g. the view is hidden) and so we don't need a fallback
   // surface either. Since we won't use the fallback surface, we drop the
@@ -380,6 +356,13 @@ void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
   if (renderer_compositor_frame_sink_)
     renderer_compositor_frame_sink_->OnBeginFrame(args);
   client_->OnBeginFrame(args.frame_time);
+}
+
+void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
+  if (HasFallbackSurface()) {
+    client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(viz::SurfaceId(
+        frame_sink_id_, first_local_surface_id_after_navigation_));
+  }
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
@@ -502,8 +485,7 @@ void DelegatedFrameHost::ResetCompositorFrameSinkSupport() {
 }
 
 void DelegatedFrameHost::DidNavigate() {
-  first_parent_sequence_number_after_navigation_ =
-      pending_local_surface_id_.parent_sequence_number();
+  first_local_surface_id_after_navigation_ = pending_local_surface_id_;
   received_frame_after_navigation_ = false;
 }
 

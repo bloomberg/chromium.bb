@@ -51,7 +51,6 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
       const viz::SurfaceInfo& surface_info) = 0;
   virtual void OnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
-  virtual void DidReceiveFirstFrameAfterNavigation() = 0;
 };
 
 // The DelegatedFrameHost is used to host all of the RenderWidgetHostView state
@@ -89,6 +88,8 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // FrameEvictorClient implementation.
   void EvictDelegatedFrame() override;
+
+  void ResetFallbackToFirstNavigationSurface();
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -237,7 +238,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 
-  uint32_t first_parent_sequence_number_after_navigation_ = 0;
+  viz::LocalSurfaceId first_local_surface_id_after_navigation_;
   bool received_frame_after_navigation_ = false;
 
   std::vector<std::unique_ptr<viz::CopyOutputRequest>>

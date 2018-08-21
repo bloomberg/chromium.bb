@@ -2119,8 +2119,12 @@ void RenderWidgetHostImpl::RendererIsResponsive() {
 
 void RenderWidgetHostImpl::ClearDisplayedGraphics() {
   NotifyNewContentRenderingTimeoutForTesting();
-  if (view_)
-    view_->ClearCompositorFrame();
+  if (view_) {
+    if (enable_surface_synchronization_)
+      view_->ResetFallbackToFirstNavigationSurface();
+    else
+      view_->ClearCompositorFrame();
+  }
 }
 
 void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
@@ -3056,16 +3060,6 @@ void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
 void RenderWidgetHostImpl::ProgressFlingIfNeeded(TimeTicks current_time) {
   browser_fling_needs_begin_frame_ = false;
   fling_scheduler_->ProgressFlingOnBeginFrameIfneeded(current_time);
-}
-
-void RenderWidgetHostImpl::DidReceiveFirstFrameAfterNavigation() {
-  DCHECK(enable_surface_synchronization_);
-  did_receive_first_frame_after_navigation_ = true;
-  if (!new_content_rendering_timeout_ ||
-      !new_content_rendering_timeout_->IsRunning()) {
-    return;
-  }
-  new_content_rendering_timeout_->Stop();
 }
 
 void RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout() {

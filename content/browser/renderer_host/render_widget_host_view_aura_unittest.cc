@@ -5938,22 +5938,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   }
   EXPECT_TRUE(widget_host_->new_content_rendering_timeout_fired());
   widget_host_->reset_new_content_rendering_timeout_fired();
-
-  // Start the timer again. A new LocalSurfaceId should be allocated.
-  widget_host_->DidNavigate(10);
-  viz::LocalSurfaceId id3 = view_->GetLocalSurfaceId();
-  EXPECT_LT(id2.parent_sequence_number(), id3.parent_sequence_number());
-
-  // Submit to |id3|. Timer should not fire.
-  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
-      viz::SurfaceId(view_->GetFrameSinkId(), id3), 1, gfx::Size(20, 20)));
-  {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), 2 * kTimeout);
-    run_loop.Run();
-  }
-  EXPECT_FALSE(widget_host_->new_content_rendering_timeout_fired());
 }
 
 // If a tab is evicted, allocate a new LocalSurfaceId next time it's shown.

@@ -51,7 +51,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     virtual void ReclaimResources(
         const std::vector<viz::ReturnedResource>& resources) = 0;
     virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
-    virtual void DidReceiveFirstFrameAfterNavigation() = 0;
   };
 
   DelegatedFrameHostAndroid(ViewAndroid* view,
@@ -90,6 +89,11 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   // FrameEvictorClient implementation.
   void EvictDelegatedFrame() override;
+
+  // Advances the fallback surface to the first surface after navigation. This
+  // ensures that stale surfaces are not presented to the user for an indefinite
+  // period of time.
+  void ResetFallbackToFirstNavigationSurface();
 
   bool HasDelegatedContent() const;
 
@@ -192,7 +196,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   // Whether we've received a frame from the renderer since navigating.
   // Only used when surface synchronization is on.
-  uint32_t first_parent_sequence_number_after_navigation_ = 0;
+  viz::LocalSurfaceId first_local_surface_id_after_navigation_;
   bool received_frame_after_navigation_ = false;
 
   // The local surface id as of the most recent call to

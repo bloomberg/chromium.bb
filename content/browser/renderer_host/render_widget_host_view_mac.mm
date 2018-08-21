@@ -91,10 +91,6 @@ void RenderWidgetHostViewMac::OnFrameTokenChanged(uint32_t frame_token) {
   OnFrameTokenChangedForView(frame_token);
 }
 
-void RenderWidgetHostViewMac::DidReceiveFirstFrameAfterNavigation() {
-  host()->DidReceiveFirstFrameAfterNavigation();
-}
-
 void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
   // When RenderWidgetHostViewMac was owned by an NSView, this function was
   // necessary to ensure that the ui::Compositor did not outlive the
@@ -1038,6 +1034,11 @@ void RenderWidgetHostViewMac::OnDidNotProduceFrame(
 
 void RenderWidgetHostViewMac::ClearCompositorFrame() {
   browser_compositor_->ClearCompositorFrame();
+}
+
+void RenderWidgetHostViewMac::ResetFallbackToFirstNavigationSurface() {
+  browser_compositor_->GetDelegatedFrameHost()
+      ->ResetFallbackToFirstNavigationSurface();
 }
 
 bool RenderWidgetHostViewMac::RequestRepaintForTesting() {
