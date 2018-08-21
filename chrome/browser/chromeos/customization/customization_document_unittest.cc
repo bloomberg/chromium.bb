@@ -34,6 +34,8 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -159,29 +161,15 @@ TEST(StartupCustomizationDocumentTest, BadManifest) {
   EXPECT_FALSE(customization.IsReady());
 }
 
-class TestURLFetcherCallback {
+class TestURLLoaderFactoryInterceptor {
  public:
-  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
-      const GURL& url,
-      net::URLFetcherDelegate* d,
-      const std::string& response_data,
-      net::HttpStatusCode response_code,
-      net::URLRequestStatus::Status status) {
-    std::unique_ptr<net::FakeURLFetcher> fetcher(
-        new net::FakeURLFetcher(url, d, response_data, response_code, status));
-    OnRequestCreate(url, fetcher.get());
-    return fetcher;
+  explicit TestURLLoaderFactoryInterceptor(
+      network::TestURLLoaderFactory& factory) {
+    factory.SetInterceptor(base::BindRepeating(
+        &TestURLLoaderFactoryInterceptor::Intercept, base::Unretained(this)));
   }
-  MOCK_METHOD2(OnRequestCreate,
-               void(const GURL&, net::FakeURLFetcher*));
+  MOCK_METHOD1(Intercept, void(const network::ResourceRequest&));
 };
-
-void AddMimeHeader(const GURL& url, net::FakeURLFetcher* fetcher) {
-  scoped_refptr<net::HttpResponseHeaders> download_headers =
-      new net::HttpResponseHeaders("");
-  download_headers->AddHeader("Content-Type: application/json");
-  fetcher->set_response_headers(download_headers);
-}
 
 class MockExternalProviderVisitor
     : public extensions::ExternalProviderInterface::VisitorInterface {
@@ -203,14 +191,13 @@ class MockExternalProviderVisitor
 
 class ServicesCustomizationDocumentTest : public testing::Test {
  protected:
-  ServicesCustomizationDocumentTest()
-      : factory_(nullptr,
-                 base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                            base::Unretained(&url_callback_))) {}
+  ServicesCustomizationDocumentTest() = default;
 
   // testing::Test:
   void SetUp() override {
-    ServicesCustomizationDocument::InitializeForTesting();
+    ServicesCustomizationDocument::InitializeForTesting(
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &loader_factory_));
 
     DBusThreadManager::Initialize();
     NetworkHandler::Initialize();
@@ -234,6 +221,9 @@ class ServicesCustomizationDocumentTest : public testing::Test {
 
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     RegisterLocalState(local_state_.registry());
+
+    interceptor_ =
+        std::make_unique<TestURLLoaderFactoryInterceptor>(loader_factory_);
   }
 
   void TearDown() override {
@@ -241,6 +231,8 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
     network_portal_detector::InitializeForTesting(nullptr);
+    loader_factory_.ClearResponses();
+    interceptor_.reset();
 
     ServicesCustomizationDocument::ShutdownForTesting();
   }
@@ -258,25 +250,26 @@ class ServicesCustomizationDocumentTest : public testing::Test {
                            const std::string& manifest) {
     GURL url(base::StringPrintf(ServicesCustomizationDocument::kManifestUrl,
                                 id.c_str()));
-    factory_.SetFakeResponse(url,
-                             manifest,
-                             net::HTTP_OK,
-                             net::URLRequestStatus::SUCCESS);
-    EXPECT_CALL(url_callback_, OnRequestCreate(url, _))
-      .Times(Exactly(1))
-      .WillRepeatedly(Invoke(AddMimeHeader));
+
+    network::ResourceResponseHead response_head;
+    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    response_head.headers->AddHeader("Content-Type: application/json");
+    loader_factory_.AddResponse(url, response_head, manifest,
+                                network::URLLoaderCompletionStatus(net::OK));
+    EXPECT_CALL(*interceptor_, Intercept).Times(Exactly(1));
   }
 
   void AddManifestNotFound(const std::string& id) {
     GURL url(base::StringPrintf(ServicesCustomizationDocument::kManifestUrl,
                                 id.c_str()));
-    factory_.SetFakeResponse(url,
-                             std::string(),
-                             net::HTTP_NOT_FOUND,
-                             net::URLRequestStatus::SUCCESS);
-    EXPECT_CALL(url_callback_, OnRequestCreate(url, _))
-      .Times(Exactly(1))
-      .WillRepeatedly(Invoke(AddMimeHeader));
+
+    network::ResourceResponseHead response_head;
+    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    response_head.headers->AddHeader("Content-Type: application/json");
+    response_head.headers->ReplaceStatusLine("HTTP/1.1 404 Not found");
+    loader_factory_.AddResponse(url, response_head, std::string(),
+                                network::URLLoaderCompletionStatus(net::OK));
+    EXPECT_CALL(*interceptor_, Intercept).Times(Exactly(1));
   }
 
   std::unique_ptr<TestingProfile> CreateProfile() {
@@ -300,8 +293,8 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   ScopedCrosSettingsTestHelper scoped_cros_settings_test_helper_;
   TestingPrefServiceSimple local_state_;
-  TestURLFetcherCallback url_callback_;
-  net::FakeURLFetcherFactory factory_;
+  network::TestURLLoaderFactory loader_factory_;
+  std::unique_ptr<TestURLLoaderFactoryInterceptor> interceptor_;
   NetworkPortalDetectorTestImpl network_portal_detector_;
 };
 
