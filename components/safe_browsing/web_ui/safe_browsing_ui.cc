@@ -151,6 +151,21 @@ void WebUIInfoSingleton::ClearPGPings() {
   std::map<int, LoginReputationClientResponse>().swap(pg_responses_);
 }
 
+void WebUIInfoSingleton::LogMessage(const std::string& message) {
+  if (webui_instances_.empty())
+    return;
+
+  base::Time timestamp = base::Time::Now();
+  log_messages_.push_back(std::make_pair(timestamp, message));
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyLogMessageJsListener(timestamp, message);
+}
+
+void WebUIInfoSingleton::ClearLogMessages() {
+  std::vector<std::pair<base::Time, std::string>>().swap(log_messages_);
+}
+
 void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   webui_instances_.push_back(webui);
 }
@@ -163,6 +178,8 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
     ClearCSBRRsSent();
     ClearClientDownloadRequestsSent();
     ClearPGEvents();
+    ClearPGPings();
+    ClearLogMessages();
   }
 }
 
@@ -853,6 +870,14 @@ std::string SerializePGResponse(const LoginReputationClientResponse& response) {
   return response_serialized;
 }
 
+base::Value SerializeLogMessage(const base::Time& timestamp,
+                                const std::string& message) {
+  base::DictionaryValue result;
+  result.SetDouble("time", timestamp.ToJsTime());
+  result.SetString("message", message);
+  return std::move(result);
+}
+
 }  // namespace
 
 SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
@@ -1098,6 +1123,22 @@ void SafeBrowsingUIHandler::GetReferrerChain(const base::ListValue* args) {
                             base::Value(referrer_chain_serialized));
 }
 
+void SafeBrowsingUIHandler::GetLogMessages(const base::ListValue* args) {
+  const std::vector<std::pair<base::Time, std::string>>& log_messages =
+      WebUIInfoSingleton::GetInstance()->log_messages();
+
+  base::ListValue messages_received;
+  for (const auto& message : log_messages) {
+    messages_received.GetList().push_back(
+        base::Value(SerializeLogMessage(message.first, message.second)));
+  }
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), messages_received);
+}
+
 void SafeBrowsingUIHandler::NotifyClientDownloadRequestJsListener(
     ClientDownloadRequest* client_download_request) {
   AllowJavascript();
@@ -1148,6 +1189,14 @@ void SafeBrowsingUIHandler::NotifyPGResponseJsListener(
   FireWebUIListener("pg-responses-update", response_list);
 }
 
+void SafeBrowsingUIHandler::NotifyLogMessageJsListener(
+    const base::Time& timestamp,
+    const std::string& message) {
+  AllowJavascript();
+  FireWebUIListener("log-messages-update",
+                    base::Value(SerializeLogMessage(timestamp, message)));
+}
+
 void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getExperiments",
@@ -1188,9 +1237,19 @@ void SafeBrowsingUIHandler::RegisterMessages() {
       base::BindRepeating(&SafeBrowsingUIHandler::GetPGResponses,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "getLogMessages",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetLogMessages,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getReferrerChain",
       base::BindRepeating(&SafeBrowsingUIHandler::GetReferrerChain,
                           base::Unretained(this)));
+}
+
+CrSBLogMessage::CrSBLogMessage() {}
+
+CrSBLogMessage::~CrSBLogMessage() {
+  WebUIInfoSingleton::GetInstance()->LogMessage(stream_.str());
 }
 
 }  // namespace safe_browsing
