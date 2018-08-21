@@ -45,6 +45,8 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
 
+  // If |should_redirect_on_failure| is true, verification failure causes a
+  // redirect to the fallback URL.
   SignedExchangeLoader(
       const GURL& outer_request_url,
       const network::ResourceResponseHead& outer_response,
@@ -53,12 +55,17 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
       url::Origin request_initiator,
       uint32_t url_loader_options,
       int load_flags,
+      bool should_redirect_on_failure,
       const base::Optional<base::UnguessableToken>& throttling_profile_id,
       std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   ~SignedExchangeLoader() override;
+
+  bool HasRedirectedToFallbackURL() const {
+    return has_redirected_to_fallback_url_;
+  }
 
   // network::mojom::URLLoaderClient implementation
   // Only OnStartLoadingResponseBody() and OnComplete() are called.
@@ -139,6 +146,8 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
   url::Origin request_initiator_;
   const uint32_t url_loader_options_;
   const int load_flags_;
+  const bool should_redirect_on_failure_;
+  bool has_redirected_to_fallback_url_ = false;
   const base::Optional<base::UnguessableToken> throttling_profile_id_;
   std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

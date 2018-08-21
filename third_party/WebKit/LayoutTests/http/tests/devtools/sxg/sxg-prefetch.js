@@ -17,7 +17,7 @@
     TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFinished', loadingFinished, true);
     function loadingFinished(requestId, finishTime, encodedDataLength) {
       var request = SDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
-      if (/test\.html/.exec(request.url()))
+      if (/inner-url\.html/.exec(request.url()))
         resolve();
     }
   });

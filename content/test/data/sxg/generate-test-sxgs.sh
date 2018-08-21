@@ -63,7 +63,7 @@ gen-signedexchange \
   -content test.html \
   -certificate prime256v1-sha256.public.pem \
   -certUrl https://cert.example.org/cert.msg \
-  -validityUrl https://test.example.org/resource.validity.msg \
+  -validityUrl https://test.example.com/resource.validity.msg \
   -privateKey prime256v1.key \
   -date 2018-03-12T05:53:20Z \
   -o test.example.com_invalid_test.sxg \

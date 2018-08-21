@@ -23,7 +23,8 @@ promise_test(async (t) => {
     frame.contentWindow.postMessage(
         {port: channel.port2}, '*', [channel.port2]);
   });
-  assert_equals(event.data.location, 'https://127.0.0.1:8443/test.html#fragment');
+  assert_equals(event.data.location, 'https://127.0.0.1:8443/loading/sxg/resources/inner-url.html#fragment');
+  assert_false(event.data.is_fallback);
 }, 'Navigating to a Signed Exchange should preserve URL fragment');
 
 </script>

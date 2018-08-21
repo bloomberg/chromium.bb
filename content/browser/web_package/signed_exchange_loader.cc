@@ -96,6 +96,7 @@ SignedExchangeLoader::SignedExchangeLoader(
     url::Origin request_initiator,
     uint32_t url_loader_options,
     int load_flags,
+    bool should_redirect_on_failure,
     const base::Optional<base::UnguessableToken>& throttling_profile_id,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -110,6 +111,7 @@ SignedExchangeLoader::SignedExchangeLoader(
       request_initiator_(request_initiator),
       url_loader_options_(url_loader_options),
       load_flags_(load_flags),
+      should_redirect_on_failure_(should_redirect_on_failure),
       throttling_profile_id_(throttling_profile_id),
       devtools_proxy_(std::move(devtools_proxy)),
       url_loader_factory_(std::move(url_loader_factory)),
@@ -291,8 +293,21 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     const network::ResourceResponseHead& resource_response,
     std::unique_ptr<net::SourceStream> payload_stream) {
   if (error) {
-    // This will eventually delete |this|.
-    forwarding_client_->OnComplete(network::URLLoaderCompletionStatus(error));
+    if (error != net::ERR_INVALID_SIGNED_EXCHANGE ||
+        !should_redirect_on_failure_ || request_url.is_empty()) {
+      // Let the request fail.
+      // This will eventually delete |this|.
+      forwarding_client_->OnComplete(network::URLLoaderCompletionStatus(error));
+      return;
+    }
+    // Make a fallback redirect to |request_url|.
+    DCHECK(!has_redirected_to_fallback_url_);
+    has_redirected_to_fallback_url_ = true;
+    DCHECK(outer_response_timing_info_);
+    forwarding_client_->OnReceiveRedirect(
+        CreateRedirectInfo(request_url, outer_request_url_),
+        std::move(outer_response_timing_info_)->CreateRedirectResponseHead());
+    forwarding_client_.reset();
     return;
   }
 

@@ -98,6 +98,7 @@ SignedExchangeHandler::SignedExchangeHandler(
   if (!SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
           content_type, &version_) ||
       version_ != SignedExchangeVersion::kB1) {
+    // TODO(https://crbug.com/874323): Extract and redirect to the fallback URL.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SignedExchangeHandler::RunErrorCallback,
                                   weak_factory_.GetWeakPtr(),
@@ -264,8 +265,8 @@ void SignedExchangeHandler::RunErrorCallback(net::Error error) {
         nullptr);
   }
   std::move(headers_callback_)
-      .Run(error, GURL(), std::string(), network::ResourceResponseHead(),
-           nullptr);
+      .Run(error, envelope_ ? envelope_->request_url() : GURL(), std::string(),
+           network::ResourceResponseHead(), nullptr);
   state_ = State::kHeadersCallbackCalled;
 }
 
