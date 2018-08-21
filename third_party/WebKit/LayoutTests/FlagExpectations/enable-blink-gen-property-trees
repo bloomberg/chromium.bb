@@ -253,10 +253,6 @@ crbug.com/853945 fast/block/positioning/vertical-rl/002.html [ Failure ]
 crbug.com/853945 fast/block/positioning/vertical-rl/fixed-positioning.html [ Failure ]
 crbug.com/853945 fast/block/positioning/rtl-fixed-positioning.html [ Failure ]
 
-# Composited multicolumn paints differently.
-crbug.com/854192 fast/multicol/composited-layer-nested.html [ Failure ]
-crbug.com/854192 fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ Failure ]
-
 Bug(none) fast/dom/scroll-reveal-left-overflow.html [ Failure ]
 Bug(none) fast/dom/scroll-reveal-top-overflow.html [ Failure ]
 Bug(none) virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-hidden.html [ Failure ]
