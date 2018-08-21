@@ -545,9 +545,11 @@ void SplitViewController::ShowAppCannotSnapToast() {
   ash::Shell::Get()->toast_manager()->Show(toast);
 }
 
-void SplitViewController::EndSplitView() {
+void SplitViewController::EndSplitView(EndReason end_reason) {
   if (!IsSplitViewModeActive())
     return;
+
+  end_reason_ = end_reason;
 
   // If we are currently in a resize but split view is ending, make sure to end
   // the resize. This can happen, for example, on the transition back to

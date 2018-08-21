@@ -1568,6 +1568,31 @@ TEST_F(SplitViewControllerTest, OverviewExitAnimationTest) {
   EXPECT_FALSE(overview_observer->overview_animate_when_exiting());
 }
 
+// Test the window state is normally maximized on splitview end, except when we
+// end it from home launcher.
+TEST_F(SplitViewControllerTest, WindowStateOnExit) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  using svc = SplitViewController;
+  // Tests that normally, window will maximize on splitview ended.
+  split_view_controller()->SnapWindow(window1.get(), svc::LEFT);
+  split_view_controller()->SnapWindow(window2.get(), svc::RIGHT);
+  split_view_controller()->EndSplitView();
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMaximized());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMaximized());
+
+  // Tests that if we end splitview from home launcher, the windows do not get
+  // maximized.
+  split_view_controller()->SnapWindow(window1.get(), svc::LEFT);
+  split_view_controller()->SnapWindow(window2.get(), svc::RIGHT);
+  split_view_controller()->EndSplitView(
+      SplitViewController::EndReason::kHomeLauncherPressed);
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsMaximized());
+  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsMaximized());
+}
+
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
 // dragged out of a window and then put in split view mode or merge into another
 // window.
