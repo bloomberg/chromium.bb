@@ -111,6 +111,7 @@ CONTENT_EXPORT extern const base::Feature kV8ContextSnapshot;
 CONTENT_EXPORT extern const base::Feature kV8LowMemoryModeForSubframes;
 CONTENT_EXPORT extern const base::Feature kV8Orinoco;
 CONTENT_EXPORT extern const base::Feature kV8VmFuture;
+CONTENT_EXPORT extern const base::Feature kVaapiJpegImageDecodeAcceleration;
 CONTENT_EXPORT extern const base::Feature kWebAssembly;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyStreaming;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyBaseline;
