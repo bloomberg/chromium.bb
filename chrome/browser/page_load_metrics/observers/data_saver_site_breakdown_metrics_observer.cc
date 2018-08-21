@@ -40,9 +40,9 @@ DataSaverSiteBreakdownMetricsObserver::OnCommit(
   return CONTINUE_OBSERVING;
 }
 
-void DataSaverSiteBreakdownMetricsObserver::OnDataUseObserved(
-    int64_t received_data_length,
-    int64_t data_reduction_proxy_bytes_saved) {
+void DataSaverSiteBreakdownMetricsObserver::OnResourceDataUseObserved(
+    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+        resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   data_reduction_proxy::DataReductionProxySettings*
       data_reduction_proxy_settings =
@@ -51,6 +51,14 @@ void DataSaverSiteBreakdownMetricsObserver::OnDataUseObserved(
   if (data_reduction_proxy_settings &&
       data_reduction_proxy_settings->data_reduction_proxy_service()) {
     DCHECK(!committed_host_.empty());
+    int64_t received_data_length = 0;
+    int64_t data_reduction_proxy_bytes_saved = 0;
+    for (auto const& resource : resources) {
+      received_data_length += resource->delta_bytes;
+      data_reduction_proxy_bytes_saved +=
+          resource->delta_bytes *
+          (resource->data_reduction_proxy_compression_ratio_estimate - 1.0);
+    }
     data_reduction_proxy_settings->data_reduction_proxy_service()
         ->UpdateDataUseForHost(
             received_data_length,

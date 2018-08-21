@@ -25,14 +25,11 @@ class PageResourceDataUse {
   void DidStartResponse(int resource_id,
                         const network::ResourceResponseHead& response_head);
 
-  // Updates any additional bytes of data use to |delta_data_use|.
-  void DidReceiveTransferSizeUpdate(int received_data_length,
-                                    mojom::PageLoadDataUse* delta_data_use);
+  // Updates received bytes.
+  void DidReceiveTransferSizeUpdate(int received_data_length);
 
-  // Updates additional bytes to |delta_data_use| and returns whether it was
-  // updated.
-  bool DidCompleteResponse(const network::URLLoaderCompletionStatus& status,
-                           mojom::PageLoadDataUse* delta_data_use);
+  // Updates received bytes from encoded length, returns whether it was updated.
+  bool DidCompleteResponse(const network::URLLoaderCompletionStatus& status);
 
   // Flags the resource as canceled.
   void DidCancelResponse();

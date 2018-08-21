@@ -73,7 +73,6 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
   // information from ongoing resource requests on the previous page (or right
   // before this page loads in a new renderer).
   std::unique_ptr<PageResourceDataUse> provisional_frame_resource_data_use_;
-  mojom::PageLoadDataUsePtr provisional_delta_data_use_;
 
   // Will be null when we're not actively sending metrics.
   std::unique_ptr<PageTimingMetricsSender> page_timing_metrics_sender_;
