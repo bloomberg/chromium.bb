@@ -87,9 +87,11 @@ embedder.test.fail = function() {
   chrome.test.sendMessage('TEST_FAILED');
 };
 
-embedder.test.assertEq = function(a, b) {
+embedder.test.assertEq = function(a, b, message) {
   if (a != b) {
-    console.log('assertion failed: ' + a + ' != ' + b);
+    console.log(
+        'assertion failed: ' + a + ' != ' + b +
+        (message ? (': ' + message) : ''));
     embedder.test.fail();
   }
 };
@@ -363,25 +365,49 @@ function testAutosizeRemoveAttributes() {
 }
 
 function testAPIMethodExistence() {
-  var apiMethodsToCheck = [
+  // See public-facing API functions in web_view_api_methods.js
+  var WEB_VIEW_API_METHODS = [
+    'addContentScripts',
     'back',
     'canGoBack',
     'canGoForward',
+    'captureVisibleRegion',
+    'clearData',
+    'executeScript',
+    'find',
     'forward',
+    'getAudioState',
     'getProcessId',
+    'getUserAgent',
+    'getZoom',
+    'getZoomMode',
     'go',
+    'insertCSS',
+    'isAudioMuted',
+    'isUserAgentOverridden',
+    'loadDataWithBaseUrl',
+    'print',
+    'removeContentScripts',
     'reload',
+    'setAudioMuted',
+    'setUserAgentOverride',
+    'setZoom',
+    'setZoomMode',
     'stop',
+    'stopFinding',
     'terminate'
   ];
+
   var webview = document.createElement('webview');
+
+  for (var methodName of WEB_VIEW_API_METHODS) {
+    embedder.test.assertEq(
+        'function', typeof webview[methodName],
+        methodName + ' should be defined');
+  }
+
   webview.setAttribute('partition', arguments.callee.name);
   webview.addEventListener('loadstop', function(e) {
-    for (var i = 0; i < apiMethodsToCheck.length; ++i) {
-      embedder.test.assertEq('function',
-                           typeof webview[apiMethodsToCheck[i]]);
-    }
-
     // Check contentWindow.
     embedder.test.assertEq('object', typeof webview.contentWindow);
     embedder.test.assertEq('function',
@@ -390,6 +416,32 @@ function testAPIMethodExistence() {
   });
   webview.setAttribute('src', 'data:text/html,webview check api');
   document.body.appendChild(webview);
+}
+
+function testCustomElementCallbacksInaccessible() {
+  var CUSTOM_ELEMENT_CALLBACKS = [
+    // Custom Elements V0
+    // TODO(867831): Once we migrate to V1, we'll no longer need to check
+    // the V0 callbacks.
+    'createdCallback',
+    'attachedCallback',
+    'detachedCallback',
+    'attributeChangedCallback',
+
+    // Custom Elements V1
+    'connectedCallback',
+    'disconnectedCallback',
+    'attributeChangedCallback',
+    'adoptedCallback'
+  ];
+
+  var webview = document.createElement('webview');
+  for (var callbackName of CUSTOM_ELEMENT_CALLBACKS) {
+    embedder.test.assertEq(
+        'undefined', typeof webview[callbackName],
+        callbackName + ' should not be accessible');
+  }
+  embedder.test.succeed();
 }
 
 // This test verifies that the loadstop event fires when loading a webview
@@ -3209,6 +3261,8 @@ embedder.test.testList = {
   'testAutosizeRemoveAttributes': testAutosizeRemoveAttributes,
   'testAutosizeWithPartialAttributes': testAutosizeWithPartialAttributes,
   'testAPIMethodExistence': testAPIMethodExistence,
+  'testCustomElementCallbacksInaccessible':
+      testCustomElementCallbacksInaccessible,
   'testChromeExtensionURL': testChromeExtensionURL,
   'testChromeExtensionRelativePath': testChromeExtensionRelativePath,
   'testDisplayNoneWebviewLoad': testDisplayNoneWebviewLoad,

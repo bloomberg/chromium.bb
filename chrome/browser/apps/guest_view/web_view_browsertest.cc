@@ -1239,6 +1239,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAPIMethodExistence) {
   TestHelper("testAPIMethodExistence", "web_view/shim", NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       Shim_TestCustomElementCallbacksInaccessible) {
+  TestHelper("testCustomElementCallbacksInaccessible", "web_view/shim",
+             NO_TEST_SERVER);
+}
+
 // Tests the existence of WebRequest API event objects on the request
 // object, on the webview element, and hanging directly off webview.
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIExistence) {
