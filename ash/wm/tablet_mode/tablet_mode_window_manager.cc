@@ -94,6 +94,13 @@ void TabletModeWindowManager::OnOverviewModeEnded() {
 }
 
 void TabletModeWindowManager::OnSplitViewModeEnded() {
+  // The home launcher will minimize the snapped windows after ending splitview,
+  // so avoid maximizing them here.
+  if (Shell::Get()->split_view_controller()->end_reason() ==
+      SplitViewController::EndReason::kHomeLauncherPressed) {
+    return;
+  }
+
   // Maximize all snapped windows upon exiting split view mode. Note the snapped
   // window might not be tracked in our |window_state_map_|.
   MruWindowTracker::WindowList windows =

@@ -51,7 +51,8 @@ void AppListShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
 
   // End split view mode.
   if (Shell::Get()->split_view_controller()->IsSplitViewModeActive()) {
-    Shell::Get()->split_view_controller()->EndSplitView();
+    Shell::Get()->split_view_controller()->EndSplitView(
+        SplitViewController::EndReason::kHomeLauncherPressed);
     back_action = false;
   }
 

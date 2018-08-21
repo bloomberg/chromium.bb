@@ -57,6 +57,13 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // top of the screen.
   enum SnapPosition { NONE, LEFT, RIGHT };
 
+  // Why splitview was ended. For now, all reasons will be kNormal except when
+  // the home launcher button is pressed.
+  enum class EndReason {
+    kNormal = 0,
+    kHomeLauncherPressed,
+  };
+
   class Observer {
    public:
     // Called when split view state changed from |previous_state| to |state|.
@@ -138,7 +145,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   void ShowAppCannotSnapToast();
 
   // Ends the split view mode.
-  void EndSplitView();
+  void EndSplitView(EndReason end_reason = EndReason::kNormal);
 
   // Called when a window (either it's browser window or an app window) start/
   // end being dragged.
@@ -190,6 +197,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   SnapPosition default_snap_position() const { return default_snap_position_; }
   SplitViewDivider* split_view_divider() { return split_view_divider_.get(); }
   bool is_resizing() const { return is_resizing_; }
+  EndReason end_reason() const { return end_reason_; }
 
  private:
   friend class SplitViewControllerTest;
@@ -390,6 +398,9 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   // If the divider is currently being dragging.
   bool is_resizing_ = false;
+
+  // Stores the reason which cause splitview to end.
+  EndReason end_reason_ = EndReason::kNormal;
 
   // The time when splitview starts. Used for metric collection purpose.
   base::Time splitview_start_time_;
