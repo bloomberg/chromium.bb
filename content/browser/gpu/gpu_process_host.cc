@@ -735,7 +735,7 @@ GpuProcessHost::~GpuProcessHost() {
   if (in_process_gpu_thread_)
     DCHECK(process_);
 
-  OnConnectionError();
+  SendOutstandingReplies();
 
 #if defined(OS_MACOSX)
   if (ca_transaction_gpu_coordinator_) {
@@ -941,8 +941,6 @@ bool GpuProcessHost::Init() {
       mojo::MakeRequest(&gpu_service_ptr_), std::move(host_proxy),
       std::move(discardable_manager_ptr), activity_flags_.CloneHandle(),
       GetFontRenderParamsOnIO().params.subpixel_rendering);
-  gpu_service_ptr_.set_connection_error_handler(base::BindOnce(
-      &GpuProcessHost::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 
 #if defined(USE_OZONE)
   InitOzone();
@@ -962,14 +960,14 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
     return true;
   }
 
-  return process_->Send(msg);
-}
-
-void GpuProcessHost::OnConnectionError() {
-  SendOutstandingReplies();
-  for (auto& handler : connection_error_handlers_)
-    std::move(handler).Run();
-  connection_error_handlers_.clear();
+  bool result = process_->Send(msg);
+  if (!result) {
+    // Channel is hosed, but we may not get destroyed for a while. Send
+    // outstanding channel creation failures now so that the caller can restart
+    // with a new process/channel without waiting.
+    SendOutstandingReplies();
+  }
+  return result;
 }
 
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
@@ -1146,6 +1144,8 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
           cache_key.first, base::Time(), base::Time::Max(), base::Bind([] {}));
     }
   }
+
+  SendOutstandingReplies();
 
   ChildProcessTerminationInfo info =
       process_->GetTerminationInfo(true /* known_dead */);
@@ -1433,6 +1433,10 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
 void GpuProcessHost::SendOutstandingReplies() {
   valid_ = false;
+
+  for (auto& handler : connection_error_handlers_)
+    std::move(handler).Run();
+  connection_error_handlers_.clear();
 
   // First send empty channel handles for all EstablishChannel requests.
   while (!channel_requests_.empty()) {

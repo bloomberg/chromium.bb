@@ -185,9 +185,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void InitOzone();
 #endif  // defined(USE_OZONE)
 
-  // Called when GpuService connection is lost.
-  void OnConnectionError();
-
   // BrowserChildProcessHostDelegate implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
