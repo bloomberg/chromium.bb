@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
@@ -25,7 +24,6 @@ constexpr char kRelaunchParamKey[] = "relaunch";
 
 // Supported deep link prefixes. These values must be kept in sync with the
 // server. See more details at go/cros-assistant-deeplink.
-constexpr char kAssistantExplorePrefix[] = "googleassistant://explore";
 constexpr char kAssistantFeedbackPrefix[] = "googleassistant://send-feedback";
 constexpr char kAssistantOnboardingPrefix[] = "googleassistant://onboarding";
 constexpr char kAssistantQueryPrefix[] = "googleassistant://send-query";
@@ -35,10 +33,6 @@ constexpr char kAssistantScreenshotPrefix[] =
 constexpr char kAssistantSettingsPrefix[] = "googleassistant://settings";
 constexpr char kAssistantWhatsOnMyScreenPrefix[] =
     "googleassistant://whats-on-my-screen";
-
-// TODO(dmblack): Maybe don't hard code this URL. Use a finch flag?
-constexpr char kAssistantExploreWebUrl[] =
-    "https://assistant.google.com/explore?hl=";
 
 // TODO(dmblack): Wire up actual Assistant Reminders URL.
 constexpr char kAssistantRemindersWebUrl[] = R"(data:text/html,
@@ -62,7 +56,6 @@ constexpr char kAssistantSettingsWebUrl[] = R"(data:text/html,
 
 // Map of supported deep link types to their prefixes.
 const std::map<DeepLinkType, std::string> kSupportedDeepLinks = {
-    {DeepLinkType::kExplore, kAssistantExplorePrefix},
     {DeepLinkType::kFeedback, kAssistantFeedbackPrefix},
     {DeepLinkType::kOnboarding, kAssistantOnboardingPrefix},
     {DeepLinkType::kQuery, kAssistantQueryPrefix},
@@ -77,8 +70,8 @@ const std::map<DeepLinkParam, std::string> kDeepLinkParamKeys = {
     {DeepLinkParam::kRelaunch, kRelaunchParamKey}};
 
 // Set of deep link types which open web contents in the Assistant UI.
-const std::set<DeepLinkType> kWebDeepLinks = {
-    DeepLinkType::kExplore, DeepLinkType::kReminders, DeepLinkType::kSettings};
+const std::set<DeepLinkType> kWebDeepLinks = {DeepLinkType::kReminders,
+                                              DeepLinkType::kSettings};
 
 }  // namespace
 
@@ -164,8 +157,6 @@ base::Optional<GURL> GetWebUrl(DeepLinkType type) {
     return base::nullopt;
 
   switch (type) {
-    case DeepLinkType::kExplore:
-      return GURL(kAssistantExploreWebUrl + base::i18n::GetConfiguredLocale());
     case DeepLinkType::kReminders:
       return GURL(kAssistantRemindersWebUrl);
     case DeepLinkType::kSettings:

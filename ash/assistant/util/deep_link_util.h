@@ -20,7 +20,6 @@ namespace util {
 // Enumeration of deep link types.
 enum class DeepLinkType {
   kUnsupported,
-  kExplore,
   kFeedback,
   kOnboarding,
   kQuery,
