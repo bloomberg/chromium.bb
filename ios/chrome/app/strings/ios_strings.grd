@@ -276,6 +276,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_AUTOFILL_FULLNAME" desc="Title of the field of a profile address representing the full name of the addressee. [Length: 15em] [iOS only]">
         Full Name
       </message>
+      <message name="IDS_IOS_AUTOFILL_INPUT_BAR_DONE" desc="The title for the button above the keyboard used to dismiss it. [6em]">
+        Done
+      </message>
       <message name="IDS_IOS_AUTOFILL_PHONE" desc="Title of the field of a profile address representing the phone number of the addressee. [Length: 15em] [iOS only]">
         Phone
       </message>
@@ -857,6 +860,15 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_MANAGED_SWITCH_TITLE" desc="The title of the Switch from a managed account dialog. [40em]">
         Sign out of managed account
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_NO_USERNAME" desc="The title for disabled buttons on the manual fallback passwords UI when a credential doesn't contains a username. [30em]">
+        No Username
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD" desc="The title for the manual fallback UI with all passwords without filter. [30em]">
+        Use Other Password
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS" desc="The title for the button at the end of the manual fallback passwords UI. The button is used to open a new screen with the list of all the user credentials. [30em]">
+        Use Other Password...
       </message>
       <message name="IDS_IOS_MICROPHONE_USAGE_DESCRIPTION" desc="Specifies the reason for accessing the user's microphone while the app is in use [Length: unlimited] [iOS only].">
         This lets you search faster using your voice.
