@@ -25,7 +25,7 @@ class StackAnimationPortrait extends StackAnimation {
 
     @Override
     protected ChromeAnimation<?> createEnterStackAnimatorSet(
-            StackTab[] tabs, int focusIndex, int spacing) {
+            Stack stack, StackTab[] tabs, int focusIndex, int spacing) {
         ChromeAnimation<Animatable> set = new ChromeAnimation<Animatable>();
         final float initialScrollOffset = mStack.screenToScroll(0);
 
@@ -87,7 +87,7 @@ class StackAnimationPortrait extends StackAnimation {
 
     @Override
     protected ChromeAnimation<?> createTabFocusedAnimatorSet(
-            StackTab[] tabs, int focusIndex, int spacing) {
+            Stack stack, StackTab[] tabs, int focusIndex, int spacing) {
         ChromeAnimation<Animatable> set = new ChromeAnimation<Animatable>();
         for (int i = 0; i < tabs.length; ++i) {
             StackTab tab = tabs[i];

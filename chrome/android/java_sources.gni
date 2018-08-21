@@ -245,6 +245,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/compositor/layouts/phone/stack/Stack.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/phone/stack/StackAnimation.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/phone/stack/StackAnimationLandscape.java",
+  "java/src/org/chromium/chrome/browser/compositor/layouts/phone/stack/StackAnimationLandscapeNonOverlapping.java",
+  "java/src/org/chromium/chrome/browser/compositor/layouts/phone/stack/StackAnimationLandscapeOverlapping.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/phone/stack/StackAnimationPortrait.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/phone/stack/StackScroller.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/phone/stack/StackTab.java",

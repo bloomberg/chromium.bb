@@ -134,9 +134,15 @@ public abstract class StackAnimation {
         StackAnimation factory = null;
         switch (orientation) {
             case Orientation.LANDSCAPE:
-                factory = new StackAnimationLandscape(stack, width, height,
-                        topBrowserControlsHeight, borderFramePaddingTop,
-                        borderFramePaddingTopOpaque, borderFramePaddingLeft);
+                if (isHorizontalTabSwitcherFlagEnabled()) {
+                    factory = new StackAnimationLandscapeNonOverlapping(stack, width, height,
+                            topBrowserControlsHeight, borderFramePaddingTop,
+                            borderFramePaddingTopOpaque, borderFramePaddingLeft);
+                } else {
+                    factory = new StackAnimationLandscapeOverlapping(stack, width, height,
+                            topBrowserControlsHeight, borderFramePaddingTop,
+                            borderFramePaddingTopOpaque, borderFramePaddingLeft);
+                }
                 break;
             case Orientation.PORTRAIT:
             default:
@@ -168,9 +174,9 @@ public abstract class StackAnimation {
         if (tabs == null) return null;
         switch (type) {
             case OverviewAnimationType.ENTER_STACK:
-                return createEnterStackAnimatorSet(tabs, focusIndex, spacing);
+                return createEnterStackAnimatorSet(stack, tabs, focusIndex, spacing);
             case OverviewAnimationType.TAB_FOCUSED:
-                return createTabFocusedAnimatorSet(tabs, focusIndex, spacing);
+                return createTabFocusedAnimatorSet(stack, tabs, focusIndex, spacing);
             case OverviewAnimationType.VIEW_MORE:
                 return createViewMoreAnimatorSet(tabs, sourceIndex);
             case OverviewAnimationType.REACH_TOP:
@@ -200,7 +206,7 @@ public abstract class StackAnimation {
             ChromeAnimation<Animatable> set, LayoutTab tab, float end, int duration, int startTime);
 
     // If this flag is enabled, we're using the non-overlapping tab switcher.
-    protected boolean isHorizontalTabSwitcherFlagEnabled() {
+    protected static boolean isHorizontalTabSwitcherFlagEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
     }
 
@@ -217,7 +223,7 @@ public abstract class StackAnimation {
      *                   tabs to create the appropriate animation.
      */
     protected abstract ChromeAnimation<?> createEnterStackAnimatorSet(
-            StackTab[] tabs, int focusIndex, int spacing);
+            Stack stack, StackTab[] tabs, int focusIndex, int spacing);
 
     /**
      * Responsible for generating the animations that shows a tab being
@@ -232,7 +238,7 @@ public abstract class StackAnimation {
      *                   tabs to create the appropriate animation.
      */
     protected abstract ChromeAnimation<?> createTabFocusedAnimatorSet(
-            StackTab[] tabs, int focusIndex, int spacing);
+            Stack stack, StackTab[] tabs, int focusIndex, int spacing);
 
     /**
      * Responsible for generating the animations that Shows more of the selected tab.
