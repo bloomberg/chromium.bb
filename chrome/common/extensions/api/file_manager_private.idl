@@ -910,10 +910,6 @@ interface Functions {
   static void cancelFileTransfers([instanceof=Entry] object[] entries,
                                   SimpleCallback callback);
 
-  // Cancels all ongoing file transfers.
-  // |callback| Completion callback of the cancel.
-  static void cancelAllFileTransfers(SimpleCallback callback);
-
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.
   // |entry| Entry of the source entry to be copied.

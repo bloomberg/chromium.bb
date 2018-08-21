@@ -175,7 +175,6 @@ DriveSyncHandler.prototype.updateItem_ = function(status) {
           } else {
             this.item_.message = strf('SYNC_FILE_NAME', entry.name);
           }
-          this.item_.cancelCallback = this.requestCancel_.bind(this);
           this.item_.progressValue = status.processed || 0;
           this.item_.progressMax = status.total || 0;
           this.progressCenter_.updateItem(this.item_);
@@ -203,14 +202,6 @@ DriveSyncHandler.prototype.removeItem_ = function(status) {
     this.dispatchEvent(new Event(DriveSyncHandler.COMPLETED_EVENT));
     callback();
   }.bind(this));
-};
-
-/**
- * Requests to cancel for the given files' drive sync.
- * @private
- */
-DriveSyncHandler.prototype.requestCancel_ = function() {
-  chrome.fileManagerPrivate.cancelAllFileTransfers(util.checkAPIError);
 };
 
 /**

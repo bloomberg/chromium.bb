@@ -1062,25 +1062,6 @@ bool FileManagerPrivateInternalCancelFileTransfersFunction::RunAsync() {
   return true;
 }
 
-bool FileManagerPrivateCancelAllFileTransfersFunction::RunAsync() {
-  drive::DriveIntegrationService* const integration_service =
-      drive::DriveIntegrationServiceFactory::FindForProfile(GetProfile());
-  if (!integration_service || !integration_service->IsMounted())
-    return false;
-
-  drive::JobListInterface* const job_list = integration_service->job_list();
-  DCHECK(job_list);
-  const std::vector<drive::JobInfo> jobs = job_list->GetJobInfoList();
-
-  for (size_t i = 0; i < jobs.size(); ++i) {
-    if (drive::IsActiveFileTransferJobInfo(jobs[i]))
-      job_list->CancelJob(jobs[i].job_id);
-  }
-
-  SendResponse(true);
-  return true;
-}
-
 bool FileManagerPrivateSearchDriveFunction::RunAsync() {
   using extensions::api::file_manager_private::SearchDrive::Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));

@@ -660,12 +660,6 @@ chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {};
 chrome.fileManagerPrivate.cancelFileTransfers = function(entries, callback) {};
 
 /**
- * Cancels all ongoing file transfers.
- * @param {function()} callback
- */
-chrome.fileManagerPrivate.cancelAllFileTransfers = function(callback) {};
-
-/**
  * Starts to copy an entry. If the source is a directory, the copy is done
  * recursively. |entry| Entry of the source entry to be copied. |parent| Entry
  * of the destination directory. |newName| Name of the new entry. It must not
