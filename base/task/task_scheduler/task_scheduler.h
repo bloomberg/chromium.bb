@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
+#include "base/task/task_executor.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
@@ -35,7 +36,6 @@ class BrowserMainLoopTest_CreateThreadsInSingleProcess_Test;
 namespace base {
 
 class HistogramBase;
-class Location;
 class SchedulerWorkerObserver;
 
 // Interface for a task scheduler and static methods to manage the instance used
@@ -49,7 +49,7 @@ class SchedulerWorkerObserver;
 // Note: All TaskScheduler users should go through base/task/post_task.h instead
 // of this interface except for the one callsite per process which manages the
 // process's instance.
-class BASE_EXPORT TaskScheduler {
+class BASE_EXPORT TaskScheduler : public TaskExecutor {
  public:
   struct BASE_EXPORT InitParams {
     enum class SharedWorkerPoolEnvironment {
@@ -82,7 +82,7 @@ class BASE_EXPORT TaskScheduler {
   // Destroying a TaskScheduler is not allowed in production; it is always
   // leaked. In tests, it should only be destroyed after JoinForTesting() has
   // returned.
-  virtual ~TaskScheduler() = default;
+  ~TaskScheduler() override = default;
 
   // Allows the task scheduler to create threads and run tasks following the
   // |init_params| specification.
@@ -95,46 +95,6 @@ class BASE_EXPORT TaskScheduler {
   virtual void Start(
       const InitParams& init_params,
       SchedulerWorkerObserver* scheduler_worker_observer = nullptr) = 0;
-
-  // Posts |task| with a |delay| and specific |traits|. |delay| can be zero.
-  // For one off tasks that don't require a TaskRunner.
-  virtual void PostDelayedTaskWithTraits(const Location& from_here,
-                                         const TaskTraits& traits,
-                                         OnceClosure task,
-                                         TimeDelta delay) = 0;
-
-  // Returns a TaskRunner whose PostTask invocations result in scheduling tasks
-  // using |traits|. Tasks may run in any order and in parallel.
-  virtual scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
-      const TaskTraits& traits) = 0;
-
-  // Returns a SequencedTaskRunner whose PostTask invocations result in
-  // scheduling tasks using |traits|. Tasks run one at a time in posting order.
-  virtual scoped_refptr<SequencedTaskRunner>
-  CreateSequencedTaskRunnerWithTraits(const TaskTraits& traits) = 0;
-
-  // Returns a SingleThreadTaskRunner whose PostTask invocations result in
-  // scheduling tasks using |traits|. Tasks run on a single thread in posting
-  // order.
-  virtual scoped_refptr<SingleThreadTaskRunner>
-  CreateSingleThreadTaskRunnerWithTraits(
-      const TaskTraits& traits,
-      SingleThreadTaskRunnerThreadMode thread_mode) = 0;
-
-#if defined(OS_WIN)
-  // Returns a SingleThreadTaskRunner whose PostTask invocations result in
-  // scheduling tasks using |traits| in a COM Single-Threaded Apartment. Tasks
-  // run in the same Single-Threaded Apartment in posting order for the returned
-  // SingleThreadTaskRunner. There is not necessarily a one-to-one
-  // correspondence between SingleThreadTaskRunners and Single-Threaded
-  // Apartments. The implementation is free to share apartments or create new
-  // apartments as necessary. In either case, care should be taken to make sure
-  // COM pointers are not smuggled across apartments.
-  virtual scoped_refptr<SingleThreadTaskRunner>
-  CreateCOMSTATaskRunnerWithTraits(
-      const TaskTraits& traits,
-      SingleThreadTaskRunnerThreadMode thread_mode) = 0;
-#endif  // defined(OS_WIN)
 
   // Returns a vector of all histograms available in this task scheduler.
   virtual std::vector<const HistogramBase*> GetHistograms() const = 0;

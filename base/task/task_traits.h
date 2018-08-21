@@ -156,20 +156,20 @@ class BASE_EXPORT TaskTraits {
             class CheckArgumentsAreValidBaseTraits = std::enable_if_t<
                 trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   constexpr TaskTraits(ArgTypes... args)
-      : priority_set_explicitly_(
-            trait_helpers::HasArgOfType<TaskPriority, ArgTypes...>::value),
-        priority_(trait_helpers::GetValueFromArgList(
+      : priority_(trait_helpers::GetValueFromArgList(
             trait_helpers::EnumArgGetter<TaskPriority,
                                          TaskPriority::USER_VISIBLE>(),
             args...)),
-        shutdown_behavior_set_explicitly_(
-            trait_helpers::HasArgOfType<TaskShutdownBehavior,
-                                        ArgTypes...>::value),
         shutdown_behavior_(trait_helpers::GetValueFromArgList(
             trait_helpers::EnumArgGetter<
                 TaskShutdownBehavior,
                 TaskShutdownBehavior::SKIP_ON_SHUTDOWN>(),
             args...)),
+        priority_set_explicitly_(
+            trait_helpers::HasArgOfType<TaskPriority, ArgTypes...>::value),
+        shutdown_behavior_set_explicitly_(
+            trait_helpers::HasArgOfType<TaskShutdownBehavior,
+                                        ArgTypes...>::value),
         may_block_(trait_helpers::GetValueFromArgList(
             trait_helpers::BooleanArgGetter<MayBlock>(),
             args...)),
@@ -199,6 +199,20 @@ class BASE_EXPORT TaskTraits {
 
   constexpr TaskTraits(const TaskTraits& other) = default;
   TaskTraits& operator=(const TaskTraits& other) = default;
+
+  // TODO(eseckler): Default the comparison operator once C++20 arrives.
+  bool operator==(const TaskTraits& other) const {
+    static_assert(24 == sizeof(TaskTraits),
+                  "Update comparison operator when TaskTraits change");
+    return priority_set_explicitly_ == other.priority_set_explicitly_ &&
+           priority_ == other.priority_ &&
+           shutdown_behavior_set_explicitly_ ==
+               other.shutdown_behavior_set_explicitly_ &&
+           shutdown_behavior_ == other.shutdown_behavior_ &&
+           may_block_ == other.may_block_ &&
+           with_base_sync_primitives_ == other.with_base_sync_primitives_ &&
+           extension_ == other.extension_;
+  }
 
   // Returns TaskTraits constructed by combining |left| and |right|. If a trait
   // is specified in both |left| and |right|, the returned TaskTraits will have
@@ -248,23 +262,23 @@ class BASE_EXPORT TaskTraits {
 
  private:
   constexpr TaskTraits(const TaskTraits& left, const TaskTraits& right)
-      : priority_set_explicitly_(left.priority_set_explicitly_ ||
-                                 right.priority_set_explicitly_),
+      : extension_(right.extension_.extension_id !=
+                           TaskTraitsExtensionStorage::kInvalidExtensionId
+                       ? right.extension_
+                       : left.extension_),
         priority_(right.priority_set_explicitly_ ? right.priority_
                                                  : left.priority_),
-        shutdown_behavior_set_explicitly_(
-            left.shutdown_behavior_set_explicitly_ ||
-            right.shutdown_behavior_set_explicitly_),
         shutdown_behavior_(right.shutdown_behavior_set_explicitly_
                                ? right.shutdown_behavior_
                                : left.shutdown_behavior_),
+        priority_set_explicitly_(left.priority_set_explicitly_ ||
+                                 right.priority_set_explicitly_),
+        shutdown_behavior_set_explicitly_(
+            left.shutdown_behavior_set_explicitly_ ||
+            right.shutdown_behavior_set_explicitly_),
         may_block_(left.may_block_ || right.may_block_),
         with_base_sync_primitives_(left.with_base_sync_primitives_ ||
-                                   right.with_base_sync_primitives_),
-        extension_(right.extension_.extension_id !=
-                           TaskTraitsExtensionStorage::kInvalidExtensionId
-                       ? right.extension_
-                       : left.extension_) {}
+                                   right.with_base_sync_primitives_) {}
 
   // Helper constructor which selects those arguments from |args| that are
   // indicated by the index_sequence and forwards them to the public
@@ -276,14 +290,14 @@ class BASE_EXPORT TaskTraits {
             std::get<Indices>(std::forward<std::tuple<ArgTypes...>>(args))...) {
   }
 
-  bool priority_set_explicitly_;
+  // Ordered for packing.
+  TaskTraitsExtensionStorage extension_;
   TaskPriority priority_;
-  bool shutdown_behavior_set_explicitly_;
   TaskShutdownBehavior shutdown_behavior_;
+  bool priority_set_explicitly_;
+  bool shutdown_behavior_set_explicitly_;
   bool may_block_;
   bool with_base_sync_primitives_;
-
-  TaskTraitsExtensionStorage extension_;
 };
 
 // Returns string literals for the enums defined in this file. These methods

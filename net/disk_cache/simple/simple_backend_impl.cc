@@ -263,11 +263,10 @@ void SimpleBackendImpl::SetWorkerPoolForTesting(
 }
 
 int SimpleBackendImpl::Init(CompletionOnceCallback completion_callback) {
-  auto worker_pool =
-      base::TaskScheduler::GetInstance()->CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::WithBaseSyncPrimitives(),
-           base::TaskPriority::USER_BLOCKING,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+  auto worker_pool = base::CreateTaskRunnerWithTraits(
+      {base::MayBlock(), base::WithBaseSyncPrimitives(),
+       base::TaskPriority::USER_BLOCKING,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   prioritized_task_runner_ =
       base::MakeRefCounted<net::PrioritizedTaskRunner>(worker_pool);

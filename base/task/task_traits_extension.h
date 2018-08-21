@@ -134,11 +134,15 @@ struct BASE_EXPORT TaskTraitsExtensionStorage {
   inline TaskTraitsExtensionStorage& operator=(
       const TaskTraitsExtensionStorage& other) = default;
 
+  inline bool operator==(const TaskTraitsExtensionStorage& other) const;
+
   enum ExtensionId : uint8_t {
     kInvalidExtensionId = 0,
     // The embedder is responsible for assigning the remaining values uniquely.
     kFirstEmbedderExtensionId = 1,
-    kMaxExtensionId = 255
+    // Maximum number of extension types is artificially limited to support
+    // super efficient TaskExecutor lookup in post_task.cc.
+    kMaxExtensionId = 4
   };
 
   // Identifies the type of extension. See ExtensionId enum above.
@@ -166,6 +170,15 @@ inline constexpr TaskTraitsExtensionStorage::TaskTraitsExtensionStorage(
 
 inline constexpr TaskTraitsExtensionStorage::TaskTraitsExtensionStorage(
     const TaskTraitsExtensionStorage& other) = default;
+
+// TODO(eseckler): Default the comparison operator once C++20 arrives.
+inline bool TaskTraitsExtensionStorage::operator==(
+    const TaskTraitsExtensionStorage& other) const {
+  static_assert(
+      9 == sizeof(TaskTraitsExtensionStorage),
+      "Update comparison operator when TaskTraitsExtensionStorage changes");
+  return extension_id == other.extension_id && data == other.data;
+}
 
 // Default implementation of MakeTaskTraitsExtension template function, which
 // doesn't accept any traits and does not create an extension.

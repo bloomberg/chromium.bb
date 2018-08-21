@@ -64,7 +64,16 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   // TaskScheduler:
   void Start(const TaskScheduler::InitParams& init_params,
              SchedulerWorkerObserver* scheduler_worker_observer) override;
-  void PostDelayedTaskWithTraits(const Location& from_here,
+  std::vector<const HistogramBase*> GetHistograms() const override;
+  int GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
+      const TaskTraits& traits) const override;
+  void Shutdown() override;
+  void FlushForTesting() override;
+  void FlushAsyncForTesting(OnceClosure flush_callback) override;
+  void JoinForTesting() override;
+
+  // TaskExecutor:
+  bool PostDelayedTaskWithTraits(const Location& from_here,
                                  const TaskTraits& traits,
                                  OnceClosure task,
                                  TimeDelta delay) override;
@@ -80,13 +89,6 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)
-  std::vector<const HistogramBase*> GetHistograms() const override;
-  int GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
-      const TaskTraits& traits) const override;
-  void Shutdown() override;
-  void FlushForTesting() override;
-  void FlushAsyncForTesting(OnceClosure flush_callback) override;
-  void JoinForTesting() override;
 
  private:
   // Returns the worker pool that runs Tasks with |traits|.
