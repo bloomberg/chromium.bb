@@ -26,7 +26,7 @@ MojoResult NetToMojoPendingBuffer::BeginWrite(
     mojo::ScopedDataPipeProducerHandle* handle,
     scoped_refptr<NetToMojoPendingBuffer>* pending,
     uint32_t* num_bytes) {
-  void* buf;
+  void* buf = nullptr;
   *num_bytes = 0;
   MojoResult result =
       (*handle)->BeginWriteData(&buf, num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
@@ -41,7 +41,7 @@ MojoResult NetToMojoPendingBuffer::BeginWrite(
 mojo::ScopedDataPipeProducerHandle NetToMojoPendingBuffer::Complete(
     uint32_t num_bytes) {
   handle_->EndWriteData(num_bytes);
-  buffer_ = NULL;
+  buffer_ = nullptr;
   return std::move(handle_);
 }
 
@@ -64,7 +64,7 @@ MojoResult MojoToNetPendingBuffer::BeginRead(
     mojo::ScopedDataPipeConsumerHandle* handle,
     scoped_refptr<MojoToNetPendingBuffer>* pending,
     uint32_t* num_bytes) {
-  const void* buffer = NULL;
+  const void* buffer = nullptr;
   *num_bytes = 0;
   MojoResult result =
       (*handle)->BeginReadData(&buffer, num_bytes, MOJO_READ_DATA_FLAG_NONE);
@@ -75,7 +75,7 @@ MojoResult MojoToNetPendingBuffer::BeginRead(
 
 void MojoToNetPendingBuffer::CompleteRead(uint32_t num_bytes) {
   handle_->EndReadData(num_bytes);
-  buffer_ = NULL;
+  buffer_ = nullptr;
 }
 
 mojo::ScopedDataPipeConsumerHandle MojoToNetPendingBuffer::ReleaseHandle() {
