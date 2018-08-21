@@ -178,9 +178,24 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
 
 // OmniboxViewViewsTest -------------------------------------------------------
 
-class OmniboxViewViewsTest : public ChromeViewsTestBase {
+// Base class that ensures ScopedFeatureList is initialized first.
+class OmniboxViewViewsTestBase : public ChromeViewsTestBase {
  public:
-  OmniboxViewViewsTest();
+  explicit OmniboxViewViewsTestBase(
+      const std::vector<base::Feature>& enabled_features) {
+    scoped_feature_list_.InitWithFeatures(enabled_features, {});
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
+ public:
+  explicit OmniboxViewViewsTest(
+      const std::vector<base::Feature>& enabled_features);
+
+  OmniboxViewViewsTest() : OmniboxViewViewsTest(std::vector<base::Feature>()) {}
 
   TestToolbarModel* toolbar_model() { return &toolbar_model_; }
   TestingOmniboxView* omnibox_view() const { return omnibox_view_; }
@@ -226,8 +241,10 @@ class OmniboxViewViewsTest : public ChromeViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViewsTest);
 };
 
-OmniboxViewViewsTest::OmniboxViewViewsTest()
-    : util_(&profile_),
+OmniboxViewViewsTest::OmniboxViewViewsTest(
+    const std::vector<base::Feature>& enabled_features)
+    : OmniboxViewViewsTestBase(enabled_features),
+      util_(&profile_),
       command_updater_(nullptr),
       omnibox_edit_controller_(&command_updater_, &toolbar_model_) {}
 
@@ -446,14 +463,16 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
 }
 
 class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
+ public:
+  OmniboxViewViewsSteadyStateElisionsTest()
+      : OmniboxViewViewsTest(
+            {omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains}) {}
+
  protected:
   const int kCharacterWidth = 10;
   const base::string16 kFullUrl = base::ASCIIToUTF16("https://www.example.com");
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains);
-
     OmniboxViewViewsTest::SetUp();
 
     // Advance 5 seconds from epoch so the time is not considered null.
@@ -524,7 +543,6 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
 
  private:
   test::ScopedMacViewsBrowserMode views_mode_{true};
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::SimpleTestTickClock clock_;
 };
 

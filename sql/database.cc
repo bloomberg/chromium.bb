@@ -33,6 +33,7 @@
 #include "sql/database_memory_dump_provider.h"
 #include "sql/initialization.h"
 #include "sql/meta_table.h"
+#include "sql/sql_features.h"
 #include "sql/statement.h"
 #include "sql/vfs_wrapper.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -1674,6 +1675,12 @@ bool Database::OpenInternal(const std::string& file_name,
     ignore_result(Execute("PRAGMA locking_mode=EXCLUSIVE"));
   }
 
+  if (base::FeatureList::IsEnabled(features::kSqlTempStoreMemory)) {
+    err = ExecuteAndReturnErrorCode("PRAGMA temp_store=MEMORY");
+    // This operates on in-memory configuration, so it should not fail.
+    DCHECK_EQ(err, SQLITE_OK) << "Failed switching to in-RAM temporary storage";
+  }
+
   // http://www.sqlite.org/pragma.html#pragma_journal_mode
   // DELETE (default) - delete -journal file to commit.
   // TRUNCATE - truncate -journal file to commit.
@@ -1681,7 +1688,7 @@ bool Database::OpenInternal(const std::string& file_name,
   // TRUNCATE should be faster than DELETE because it won't need directory
   // changes for each transaction.  PERSIST may break the spirit of using
   // secure_delete.
-  ignore_result(Execute("PRAGMA journal_mode = TRUNCATE"));
+  ignore_result(Execute("PRAGMA journal_mode=TRUNCATE"));
 
   const base::TimeDelta kBusyTimeout =
       base::TimeDelta::FromSeconds(kBusyTimeoutSeconds);
@@ -1728,7 +1735,7 @@ bool Database::OpenInternal(const std::string& file_name,
   // 64-bit platforms.
   size_t mmap_size = mmap_disabled_ ? 0 : GetAppropriateMmapSize();
   std::string mmap_sql =
-      base::StringPrintf("PRAGMA mmap_size = %" PRIuS, mmap_size);
+      base::StringPrintf("PRAGMA mmap_size=%" PRIuS, mmap_size);
   ignore_result(Execute(mmap_sql.c_str()));
 
   // Determine if memory-mapping has actually been enabled.  The Execute() above
@@ -1889,7 +1896,7 @@ bool Database::IntegrityCheckHelper(const char* pragma_sql,
   // allows SQLite to process through certain cases of corruption.
   // Failing to set this pragma probably means that the database is
   // beyond recovery.
-  static const char kWritableSchemaSql[] = "PRAGMA writable_schema = ON";
+  static const char kWritableSchemaSql[] = "PRAGMA writable_schema=ON";
   if (!Execute(kWritableSchemaSql))
     return false;
 
@@ -1909,7 +1916,7 @@ bool Database::IntegrityCheckHelper(const char* pragma_sql,
   }
 
   // Best effort to put things back as they were before.
-  static const char kNoWritableSchemaSql[] = "PRAGMA writable_schema = OFF";
+  static const char kNoWritableSchemaSql[] = "PRAGMA writable_schema=OFF";
   ignore_result(Execute(kNoWritableSchemaSql));
 
   return ret;
