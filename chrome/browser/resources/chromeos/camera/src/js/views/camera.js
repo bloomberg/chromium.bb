@@ -467,10 +467,9 @@ camera.views.Camera.prototype.createRecordingBlob_ = function() {
  * @private
  */
 camera.views.Camera.prototype.createPhotoBlob_ = function() {
-  // Since the takePhoto() API has not been implemented on CrOS until 68, use
-  // canvas-drawing as a fallback for older Chrome versions.
-  // TODO(shenghao): Remove canvas-drawing after min-chrome-version is above 68.
-  if (camera.util.isChromeVersionAbove(68)) {
+  // Enable using image-capture to take photo only on ChromeOS after M68.
+  // TODO(yuli): Remove this restriction if no longer applicable.
+  if (camera.util.isChromeOS() && camera.util.isChromeVersionAbove(68)) {
     var getPhotoCapabilities = () => {
       if (this.photoCapabilities_ == null) {
         this.photoCapabilities_ = this.imageCapture_.getPhotoCapabilities();
