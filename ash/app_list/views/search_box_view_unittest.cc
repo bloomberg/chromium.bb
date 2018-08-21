@@ -311,11 +311,11 @@ class SearchBoxViewAutocompleteTest
 
 INSTANTIATE_TEST_CASE_P(,
                         SearchBoxViewAutocompleteTest,
-                        ::testing::Values(ui::VKEY_TAB,
-                                          ui::VKEY_LEFT,
+                        ::testing::Values(ui::VKEY_LEFT,
                                           ui::VKEY_RIGHT,
                                           ui::VKEY_UP,
-                                          ui::VKEY_DOWN));
+                                          ui::VKEY_DOWN,
+                                          ui::VKEY_BACK));
 
 // Tests that autocomplete suggestions are consistent with top SearchResult list
 // titles.
@@ -426,7 +426,7 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesAcceptsNextChar) {
   view()->ProcessAutocomplete();
   // Forward the next key in the autocomplete suggestion to HandleKeyEvent(). We
   // use HandleKeyEvent() because KeyPress() will replace the existing
-  // highlighted text.
+  // highlighted text and add a repeat character.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_L, ui::EF_NONE);
   static_cast<views::TextfieldController*>(view())->HandleKeyEvent(
       view()->search_box(), event);
@@ -437,32 +437,34 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesAcceptsNextChar) {
   EXPECT_EQ(base::ASCIIToUTF16("lo world!"), selected_text);
 }
 
-// Tests that only the autocomplete suggestion text is deleted after hitting
-// backspace.
-TEST_F(SearchBoxViewAutocompleteTest,
-       SearchBoxDeletesAutocompleteTextOnlyAfterBackspace) {
+// Tests that autocomplete suggestion is accepted and displayed in SearchModel
+// after hitting certain control keys.
+TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAcceptsAutocompleteForTab) {
   // Add a search result with a non-empty title field.
   CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
                      base::ASCIIToUTF16("hello world!"), base::string16());
 
-  // Send H, E to the SearchBoxView textfield, trigger an autocomplete, then hit
-  // backspace.
+  // Send H, E to the SearchBoxView textfield, then trigger an autocomplete.
   KeyPress(ui::VKEY_H);
   KeyPress(ui::VKEY_E);
   view()->ProcessAutocomplete();
-  KeyPress(ui::VKEY_BACK);
-  // The autocomplete suggestion should be deleted.
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("he"));
-  // Don't autocomplete because the last pressed key was backspace.
-  view()->ProcessAutocomplete();
-  // The autocomplete suggestion should still not be present.
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("he"));
+  // Forward the tab key to HandleKeyEvent(). We use HandleKeyEvent()
+  // because KeyPress() will replace the existing highlighted text and add
+  // a repeat character.
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
+  static_cast<views::TextfieldController*>(view())->HandleKeyEvent(
+      view()->search_box(), event);
+  // Search box autocomplete suggestion is accepted and is reflected in
+  // SearchModel.
+  EXPECT_EQ(view()->search_box()->text(),
+            view_delegate()->GetSearchModel()->search_box()->text());
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello world!"));
 }
 
-// Tests that autocomplete suggestion is accepted and displayed in SearchModel
-// after hitting certain control keys.
+// Tests that only the autocomplete suggestion text is deleted after hitting up,
+// down, left, right, or backspace.
 TEST_P(SearchBoxViewAutocompleteTest,
-       SearchBoxAcceptsAutocompleteForLeftRightUpDownTab) {
+       SearchBoxDeletesAutocompleteTextOnlyAfterUpDownLeftRightBackspace) {
   // Add a search result with a non-empty title field.
   CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
                      base::ASCIIToUTF16("hello world!"), base::string16());
@@ -476,11 +478,15 @@ TEST_P(SearchBoxViewAutocompleteTest,
   ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code(), ui::EF_NONE);
   static_cast<views::TextfieldController*>(view())->HandleKeyEvent(
       view()->search_box(), event);
-  // Search box autocomplete suggestion is accepted and is reflected in
+  // Search box autocomplete suggestion is removed and is reflected in
   // SearchModel.
   EXPECT_EQ(view()->search_box()->text(),
             view_delegate()->GetSearchModel()->search_box()->text());
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello world!"));
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("he"));
+  // ProcessAutocomplete should be a no-op.
+  view()->ProcessAutocomplete();
+  // The autocomplete suggestion should still not be present.
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("he"));
 }
 
 }  // namespace test
