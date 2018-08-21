@@ -62,7 +62,7 @@ class XRWebGLLayer final : public XRLayer,
 
   static double getNativeFramebufferScaleFactor(XRSession* session);
 
-  XRViewport* GetViewportForEye(XRView::Eye);
+  XRViewport* GetViewportForEye(XRView::XREye);
 
   void UpdateViewports();
 

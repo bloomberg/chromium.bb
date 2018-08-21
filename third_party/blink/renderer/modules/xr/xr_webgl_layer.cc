@@ -157,7 +157,7 @@ XRViewport* XRWebGLLayer::getViewport(XRView* view) {
   return GetViewportForEye(view->EyeValue());
 }
 
-XRViewport* XRWebGLLayer::GetViewportForEye(XRView::Eye eye) {
+XRViewport* XRWebGLLayer::GetViewportForEye(XRView::XREye eye) {
   if (viewports_dirty_)
     UpdateViewports();
 

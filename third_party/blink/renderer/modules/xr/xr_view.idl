@@ -3,11 +3,16 @@
 // found in the LICENSE file.
 
 // https://immersive-web.github.io/webxr/#xrview-interface
+enum XREye {
+  "left",
+  "right"
+};
+
 [
     SecureContext,
     Exposed=Window,
     OriginTrialEnabled=WebXR
 ] interface XRView {
-  readonly attribute VREye? eye;
+  readonly attribute XREye eye;
   readonly attribute Float32Array projectionMatrix;
 };
