@@ -189,7 +189,8 @@ Emulating device: 600x600x1
         "y": 0,
         "width": 300,
         "height": 300
-      }
+      },
+      "isStackingContext": true
     },
     {
       "domNodeIndex": 3,
@@ -198,7 +199,8 @@ Emulating device: 600x600x1
         "y": 0,
         "width": 300,
         "height": 0
-      }
+      },
+      "isStackingContext": true
     },
     {
       "domNodeIndex": 15,
@@ -216,7 +218,8 @@ Emulating device: 600x600x1
         "y": 100,
         "width": 100,
         "height": 100
-      }
+      },
+      "isStackingContext": true
     },
     {
       "domNodeIndex": 17,
@@ -238,7 +241,8 @@ Emulating device: 600x600x1
           "startCharacterIndex": 0,
           "numCharacters": 6
         }
-      ]
+      ],
+      "isStackingContext": true
     }
   ],
   "computedStyles": []
