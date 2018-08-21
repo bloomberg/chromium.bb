@@ -49,7 +49,8 @@ LoginDisplayHostCommon::LoginDisplayHostCommon() : weak_factory_(this) {
 
   // Disable Drag'n'Drop for the login session.
   // ash::Shell may be null in tests.
-  if (ash::Shell::HasInstance() && features::IsAshInBrowserProcess()) {
+  // TODO(crbug.com/854328): Mash support.
+  if (ash::Shell::HasInstance() && !features::IsUsingWindowService()) {
     scoped_drag_drop_disabler_.reset(
         new wm::ScopedDragDropDisabler(ash::Shell::GetPrimaryRootWindow()));
   } else {

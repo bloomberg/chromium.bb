@@ -57,7 +57,12 @@ UI_BASE_EXPORT bool IsUsingWindowService();
 
 // Returns true if ash is in process (the default). A value of false means ash
 // is running in a separate process (and is hosting the UI Service and Viz).
+// DEPRECATED: Use !IsMultiProcessMash() or !IsUsingWindowService().
 UI_BASE_EXPORT bool IsAshInBrowserProcess();
+
+// Returns true if ash in running in a separate process (and is hosting the UI
+// service and Viz graphics).
+UI_BASE_EXPORT bool IsMultiProcessMash();
 
 // Returns true if code outside of ash is using the WindowService. In this mode
 // there are two aura::Envs. Ash uses one with Env::Mode::LOCAL. Non-ash code

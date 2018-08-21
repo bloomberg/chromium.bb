@@ -78,7 +78,7 @@ AccessibilityPanel::AccessibilityPanel(content::BrowserContext* browser_context,
   // TODO(jamescook|fsamuel): Fix this. It causes a white flash when opening the
   // window. The underlying problem is FrameToken plumbing, see
   // ui::ws::ServerWindow::OnFrameTokenChanged. https://crbug.com/771331
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsMultiProcessMash())
     widget_->Show();
 }
 

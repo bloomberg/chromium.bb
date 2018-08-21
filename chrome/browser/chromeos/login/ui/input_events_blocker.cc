@@ -12,9 +12,8 @@
 namespace chromeos {
 
 InputEventsBlocker::InputEventsBlocker() {
-  // TODO(mash): Implement a mash version. This will probably need to talk to
-  // the window server.
-  if (features::IsAshInBrowserProcess()) {
+  // TODO(crbug.com/854323): Mash support. Needs mojo API, or to move to ash.
+  if (!features::IsMultiProcessMash()) {
     ash::Shell::Get()->AddPreTargetHandler(this,
                                            ui::EventTarget::Priority::kSystem);
     VLOG(1) << "InputEventsBlocker " << this << " created.";
@@ -24,7 +23,7 @@ InputEventsBlocker::InputEventsBlocker() {
 }
 
 InputEventsBlocker::~InputEventsBlocker() {
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsMultiProcessMash()) {
     ash::Shell::Get()->RemovePreTargetHandler(this);
     VLOG(1) << "InputEventsBlocker " << this << " destroyed.";
   } else {
