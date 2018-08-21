@@ -77,7 +77,7 @@ bool WebUIScreenLocker::ShouldPreloadLockScreen() {
   // Bail for mash because IdleDetector/UserActivityDetector does not work
   // properly there.
   // TODO(xiyuan): Revisit after http://crbug.com/626899.
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsMultiProcessMash())
     return false;
 
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(

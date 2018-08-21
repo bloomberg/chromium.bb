@@ -67,7 +67,7 @@ void RegisterOutOfProcessServices(
     ContentBrowserClient::OutOfProcessServiceMap* services) {
   RegisterOutOfProcessServicesImpl(kCommonServices, base::size(kCommonServices),
                                    services);
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsMultiProcessMash()) {
     RegisterOutOfProcessServicesImpl(kMashServices, base::size(kMashServices),
                                      services);
   }
@@ -97,7 +97,7 @@ void RegisterInProcessServices(
     (*services)[ax::mojom::kAXHostServiceName] = info;
   }
 
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsMultiProcessMash())
     return;
 
   (*services)[ash::mojom::kServiceName] =

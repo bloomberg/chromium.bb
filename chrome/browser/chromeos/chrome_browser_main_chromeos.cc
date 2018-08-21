@@ -322,7 +322,7 @@ class DBusServices {
         DBusThreadManager::Get()->GetSystemBus(),
         chromeos::DBusThreadManager::Get()->IsUsingFakes());
 
-    if (features::IsAshInBrowserProcess()) {
+    if (!features::IsMultiProcessMash()) {
       // In Mash, power policy is sent to powerd by ash.
       PowerPolicyController::Initialize(
           DBusThreadManager::Get()->GetPowerManagerClient());
@@ -424,7 +424,7 @@ class DBusServices {
     drive_file_stream_service_.reset();
     ProcessDataCollector::Shutdown();
     PowerDataCollector::Shutdown();
-    if (features::IsAshInBrowserProcess())
+    if (!features::IsMultiProcessMash())
       PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
     bluez::BluezDBusManager::Shutdown();
@@ -752,13 +752,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   AccessibilityManager::Initialize();
 
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsMultiProcessMash()) {
     // Initialize magnification manager before ash tray is created. And this
     // must be placed after UserManager::SessionStarted();
-    // TODO(sad): These components expects the ash::Shell instance to be
-    // created. However, when running as a mus-client, an ash::Shell instance is
-    // not created. These accessibility services should instead be exposed as
-    // separate services. crbug.com/557401
+    // TODO(crbug.com/821551): Mash support.
     MagnificationManager::Initialize();
   }
 
@@ -1027,7 +1024,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   spoken_feedback_event_rewriter_delegate_ =
       std::make_unique<SpokenFeedbackEventRewriterDelegate>();
 
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsMultiProcessMash()) {
     // TODO(mash): Support EventRewriterController; see crbug.com/647781
     ash::EventRewriterController* event_rewriter_controller =
         ash::Shell::Get()->event_rewriter_controller();
@@ -1117,7 +1114,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();
 
-  if (features::IsAshInBrowserProcess())
+  if (!features::IsMultiProcessMash())
     MagnificationManager::Shutdown();
 
   media::SoundsManager::Shutdown();
@@ -1165,7 +1162,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun().
   arc_service_launcher_.reset();
 
-  if (features::IsAshInBrowserProcess())
+  // TODO(crbug.com/594887): Mash support.
+  if (!features::IsMultiProcessMash())
     AccessibilityManager::Shutdown();
 
   input_method::Shutdown();

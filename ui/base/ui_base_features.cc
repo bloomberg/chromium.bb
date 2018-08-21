@@ -133,11 +133,15 @@ const base::Feature kSingleProcessMash = {"SingleProcessMash",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsUsingWindowService() {
-  return IsSingleProcessMash() || !IsAshInBrowserProcess();
+  return IsSingleProcessMash() || IsMultiProcessMash();
 }
 
 bool IsAshInBrowserProcess() {
   return !base::FeatureList::IsEnabled(features::kMash);
+}
+
+bool IsMultiProcessMash() {
+  return base::FeatureList::IsEnabled(features::kMash);
 }
 
 bool IsSingleProcessMash() {

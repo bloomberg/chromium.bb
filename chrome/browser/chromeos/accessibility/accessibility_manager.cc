@@ -333,7 +333,7 @@ void AccessibilityManager::UpdateAlwaysShowMenuFromPref() {
     return;
 
   // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsMultiProcessMash())
     return;
 
   // Update system tray menu visibility.
@@ -881,8 +881,8 @@ void AccessibilityManager::InputMethodChanged(
     Profile* /* profile */,
     bool show_message) {
   // Sticky keys is implemented only in ash.
-  // TODO(dpolukhin): support Athena, crbug.com/408733.
-  if (features::IsAshInBrowserProcess()) {
+  // TODO(crbug.com/678820): Mash support.
+  if (!features::IsMultiProcessMash()) {
     ash::Shell::Get()->sticky_keys_controller()->SetModifiersEnabled(
         manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
         manager->IsAltGrUsedByCurrentInputMethod());
@@ -1043,7 +1043,7 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   callback_list_.Notify(details);
 
   // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsMultiProcessMash())
     return;
 
   if (details.notification_type == ACCESSIBILITY_TOGGLE_DICTATION) {

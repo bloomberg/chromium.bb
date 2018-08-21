@@ -408,7 +408,7 @@ class LoginDisplayHostWebUI::LoginWidgetDelegate
     // * Ash crash at the login screen on mustash
     // In the latter case the mash root process will trigger a clean restart
     // of content_browser.
-    if (!features::IsAshInBrowserProcess() && login_display_host_)
+    if (features::IsUsingWindowService() && login_display_host_)
       login_display_host_->ResetLoginWindowAndView();
   }
   void DeleteDelegate() override { delete this; }
@@ -431,7 +431,7 @@ class LoginDisplayHostWebUI::LoginWidgetDelegate
 LoginDisplayHostWebUI::LoginDisplayHostWebUI()
     : oobe_startup_sound_played_(StartupUtils::IsOobeCompleted()),
       weak_factory_(this) {
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsUsingWindowService()) {
     // Animation, and initializing hidden, are not currently supported for Mash.
     finalize_animation_type_ = ANIMATION_NONE;
     initialize_webui_hidden_ = false;
@@ -450,19 +450,19 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
 
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
   // Mash always runs login screen with zero delay
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsUsingWindowService())
     zero_delay_enabled = true;
 
   waiting_for_wallpaper_load_ = !zero_delay_enabled;
 
   // Initializing hidden is not supported in Mash
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     initialize_webui_hidden_ =
         kHiddenWebUIInitializationDefault && !zero_delay_enabled;
   }
 
   // Check if WebUI init type is overriden. Not supported in Mash.
-  if (features::IsAshInBrowserProcess() &&
+  if (!features::IsUsingWindowService() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshWebUIInit)) {
     const std::string override_type =
@@ -632,7 +632,7 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
 
   restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
   // Animation is not supported in Mash
-  if (features::IsAshInBrowserProcess())
+  if (!features::IsUsingWindowService())
     finalize_animation_type_ = ANIMATION_ADD_USER;
   // Observe the user switch animation and defer the deletion of itself only
   // after the animation is finished.
@@ -648,7 +648,7 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   // We should emit this signal only at login screen (after reboot or sign out).
   login_view_->set_should_emit_login_prompt_visible(false);
 
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     // Lock container can be transparent after lock screen animation.
     aura::Window* lock_container = ash::Shell::GetContainer(
         ash::Shell::GetPrimaryRootWindow(),
@@ -689,7 +689,7 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
   restore_path_ = RESTORE_SIGN_IN;
   is_showing_login_ = true;
   // Animation is not supported in Mash
-  if (features::IsAshInBrowserProcess())
+  if (!features::IsUsingWindowService())
     finalize_animation_type_ = ANIMATION_WORKSPACE;
 
   if (waiting_for_wallpaper_load_ && !initialize_webui_hidden_) {
@@ -738,7 +738,7 @@ void LoginDisplayHostWebUI::OnPreferencesChanged() {
 
 void LoginDisplayHostWebUI::OnStartAppLaunch() {
   // Animation is not supported in Mash.
-  if (features::IsAshInBrowserProcess())
+  if (!features::IsUsingWindowService())
     finalize_animation_type_ = ANIMATION_FADE_OUT;
   if (!login_window_)
     LoadURL(GURL(kAppLaunchSplashURL));
@@ -748,7 +748,7 @@ void LoginDisplayHostWebUI::OnStartAppLaunch() {
 
 void LoginDisplayHostWebUI::OnStartArcKiosk() {
   // Animation is not supported in Mash.
-  if (features::IsAshInBrowserProcess())
+  if (!features::IsUsingWindowService())
     finalize_animation_type_ = ANIMATION_FADE_OUT;
   if (!login_window_) {
     LoadURL(GURL(kAppLaunchSplashURL));
@@ -925,7 +925,7 @@ void LoginDisplayHostWebUI::OnUserSwitchAnimationFinished() {
 // LoginDisplayHostWebUI, private
 
 void LoginDisplayHostWebUI::ScheduleWorkspaceAnimation() {
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsUsingWindowService()) {
     NOTIMPLEMENTED();
     return;
   }
@@ -1036,7 +1036,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
                                      ? ash::kShellWindowId_AlwaysOnTopContainer
                                      : ash::kShellWindowId_LockScreenContainer;
   // The ash::Shell containers are not available in Mash
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     params.parent =
         ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(), container);
   } else {
@@ -1056,7 +1056,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
 
   // Animations are not available in Mash.
   // For voice interaction OOBE, we do not want the animation here.
-  if (features::IsAshInBrowserProcess() && !is_voice_interaction_oobe_) {
+  if (!features::IsUsingWindowService() && !is_voice_interaction_oobe_) {
     login_window_->SetVisibilityAnimationDuration(
         base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
     login_window_->SetVisibilityAnimationTransition(
@@ -1089,7 +1089,7 @@ void LoginDisplayHostWebUI::ResetLoginWindowAndView() {
   }
 
   if (login_window_) {
-    if (!features::IsAshInBrowserProcess()) {
+    if (features::IsUsingWindowService()) {
       login_window_->Close();
     } else {
       login_window_->Hide();

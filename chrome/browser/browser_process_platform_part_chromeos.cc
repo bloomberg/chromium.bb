@@ -208,7 +208,7 @@ void BrowserProcessPlatformPart::DestroySystemClock() {
 ui::InputDeviceControllerClient*
 BrowserProcessPlatformPart::GetInputDeviceControllerClient() {
   if (!input_device_controller_client_) {
-    const std::string service_name = features::IsAshInBrowserProcess()
+    const std::string service_name = !features::IsMultiProcessMash()
                                          ? chromeos::kChromeServiceName
                                          : ui::mojom::kServiceName;
     input_device_controller_client_ =

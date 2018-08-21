@@ -40,7 +40,7 @@ void SetupWidgetInitParamsForContainer(views::Widget::InitParams* params,
   DCHECK_GE(container_id, ash::kShellWindowId_MinContainer);
   DCHECK_LE(container_id, ash::kShellWindowId_MaxContainer);
 
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsUsingWindowService()) {
     using ui::mojom::WindowManager;
     params->mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(container_id);
