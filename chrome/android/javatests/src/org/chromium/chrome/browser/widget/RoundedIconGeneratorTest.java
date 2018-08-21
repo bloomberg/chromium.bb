@@ -4,14 +4,19 @@
 
 package org.chromium.chrome.browser.widget;
 
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -22,6 +27,13 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 public class RoundedIconGeneratorTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
+
+    private Context mContext;
+
+    @Before
+    public void setUp() throws Exception {
+        mContext = InstrumentationRegistry.getTargetContext();
+    }
 
     private String getIconTextForUrl(String url, boolean includePrivateRegistries) {
         return RoundedIconGenerator.getIconTextForUrl(url, includePrivateRegistries);
@@ -57,5 +69,28 @@ public class RoundedIconGeneratorTest {
         Assert.assertEquals("file:///home/chrome/test.html",
                 getIconTextForUrl("file:///home/chrome/test.html", false));
         Assert.assertEquals("data:image", getIconTextForUrl("data:image", false));
+    }
+
+    /**
+     * Verifies that asking for more letters than can be served does not crash.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Browser", "RoundedIconGenerator"})
+    public void testGenerateIconForText() {
+        final int iconSizeDp = 32;
+        final int iconCornerRadiusDp = 20;
+        final int iconTextSizeDp = 12;
+
+        int iconColor = ApiCompatibilityUtils.getColor(
+                mContext.getResources(), R.color.default_favicon_background_color);
+        RoundedIconGenerator generator = new RoundedIconGenerator(mContext.getResources(),
+                iconSizeDp, iconSizeDp, iconCornerRadiusDp, iconColor, iconTextSizeDp);
+
+        Assert.assertTrue(generator.generateIconForText("", 0) != null);
+        Assert.assertTrue(generator.generateIconForText("", 1) != null);
+        Assert.assertTrue(generator.generateIconForText("A", 0) != null);
+        Assert.assertTrue(generator.generateIconForText("A", 1) != null);
+        Assert.assertTrue(generator.generateIconForText("A", 2) != null);
     }
 }
