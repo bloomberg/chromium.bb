@@ -13,7 +13,7 @@ std::string LocalSurfaceId::ToString() const {
                                 ? embed_token_.ToString()
                                 : embed_token_.ToString().substr(0, 4) + "...";
 
-  return base::StringPrintf("LocalSurfaceId(%d, %d, %s)",
+  return base::StringPrintf("LocalSurfaceId(%u, %u, %s)",
                             parent_sequence_number_, child_sequence_number_,
                             embed_token.c_str());
 }
