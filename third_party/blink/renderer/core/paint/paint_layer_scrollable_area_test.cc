@@ -154,9 +154,9 @@ TEST_F(PaintLayerScrollableAreaTest,
     </div>
   )HTML");
 
-  // #scroller1 cannot paint background into scrolling contents layer because it
-  // has a negative z-index child.
-  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
+  // #scroller1 can paint background into scrolling contents layer even with a
+  // negative z-index child.
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
             GetBackgroundPaintLocation("scroller1"));
 
   // #scroller2 cannot paint background into scrolling contents layer because it
