@@ -79,6 +79,14 @@ cr.define('safe_browsing', function() {
       addPGResponse(result);
     });
 
+    cr.sendWithPromise('getLogMessages', [])
+        .then((logMessages) => { logMessages.forEach(function (message) {
+          addLogMessage(message);
+        })});
+    cr.addWebUIListener('log-messages-update', function(message) {
+      addLogMessage(message);
+    });
+
     $('get-referrer-chain-form').addEventListener('submit', addReferrerChain);
   }
 
@@ -188,6 +196,13 @@ cr.define('safe_browsing', function() {
 
     var cell = $('pg-ping-list-'+token).cells[1];
     appendChildWithInnerText(cell, response);
+  }
+
+  function addLogMessage(result) {
+    var logDiv = $('log-messages');
+    var eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
+        "] " + result['message'];
+    appendChildWithInnerText(logDiv, eventFormatted);
   }
 
   function appendChildWithInnerText(logDiv, text) {

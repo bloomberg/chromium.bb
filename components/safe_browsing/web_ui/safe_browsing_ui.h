@@ -69,6 +69,10 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // Get the current referrer chain for a given URL.
   void GetReferrerChain(const base::ListValue* args);
 
+  // Get the list of log messages that have been received since the oldest
+  // currently open chrome://safe-browsing tab was opened.
+  void GetLogMessages(const base::ListValue* args);
+
   // Register callbacks for WebUI messages.
   void RegisterMessages() override;
 
@@ -103,6 +107,11 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   void NotifyPGResponseJsListener(
       int token,
       const LoginReputationClientResponse& response);
+
+  // Called when any new log messages are received while one or more WebUI tabs
+  // are open.
+  void NotifyLogMessageJsListener(const base::Time& timestamp,
+                                  const std::string& message);
 
   content::BrowserContext* browser_context_;
 
@@ -171,6 +180,12 @@ class WebUIInfoSingleton {
   // Clear the list of sent PhishGuard pings and responses.
   void ClearPGPings();
 
+  // Log an arbitrary message. Frequently used for debugging.
+  void LogMessage(const std::string& message);
+
+  // Clear the log messages.
+  void ClearLogMessages();
+
   // Register the new WebUI listener object.
   void RegisterWebUIInstance(SafeBrowsingUIHandler* webui);
 
@@ -230,6 +245,10 @@ class WebUIInfoSingleton {
     referrer_chain_provider_ = provider;
   }
 
+  const std::vector<std::pair<base::Time, std::string>>& log_messages() {
+    return log_messages_;
+  }
+
  private:
   WebUIInfoSingleton();
   ~WebUIInfoSingleton();
@@ -273,11 +292,28 @@ class WebUIInfoSingleton {
   // marked const.
   std::vector<SafeBrowsingUIHandler*> webui_instances_;
 
+  // List of messages logged since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  std::vector<std::pair<base::Time, std::string>> log_messages_;
+
   // The current referrer chain provider, if any. Can be nullptr.
   ReferrerChainProvider* referrer_chain_provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIInfoSingleton);
 };
+
+class CrSBLogMessage {
+ public:
+  CrSBLogMessage();
+  ~CrSBLogMessage();
+
+  std::ostream& stream() { return stream_; }
+
+ private:
+  std::ostringstream stream_;
+};
+
+#define CRSBLOG CrSBLogMessage().stream()
 
 }  // namespace safe_browsing
 
