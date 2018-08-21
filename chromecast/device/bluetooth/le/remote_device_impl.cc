@@ -79,6 +79,8 @@ void RemoteDeviceImpl::Connect(StatusCallback cb) {
 
 bool RemoteDeviceImpl::ConnectSync() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+  LOG(INFO) << "Connect(" << util::AddrLastByteString(addr_) << ")";
+
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     return false;
@@ -108,6 +110,7 @@ void RemoteDeviceImpl::Disconnect(StatusCallback cb) {
 
 bool RemoteDeviceImpl::DisconnectSync() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+  LOG(INFO) << "Disconnect(" << util::AddrLastByteString(addr_) << ")";
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     return false;
@@ -146,6 +149,8 @@ void RemoteDeviceImpl::ReadRemoteRssi(RssiCallback cb) {
 
 void RemoteDeviceImpl::RequestMtu(int mtu, StatusCallback cb) {
   MAKE_SURE_IO_THREAD(RequestMtu, mtu, BindToCurrentSequence(std::move(cb)));
+  LOG(INFO) << "RequestMtu(" << util::AddrLastByteString(addr_) << ", " << mtu
+            << ")";
   DCHECK(cb);
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
@@ -164,6 +169,9 @@ void RemoteDeviceImpl::ConnectionParameterUpdate(int min_interval,
                                                  StatusCallback cb) {
   MAKE_SURE_IO_THREAD(ConnectionParameterUpdate, min_interval, max_interval,
                       latency, timeout, BindToCurrentSequence(std::move(cb)));
+  LOG(INFO) << "ConnectionParameterUpdate(" << util::AddrLastByteString(addr_)
+            << ", " << min_interval << ", " << max_interval << ", " << latency
+            << ", " << timeout << ")";
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(cb, false);
@@ -645,11 +653,7 @@ void RemoteDeviceImpl::ClearServices() {
 
 void RemoteDeviceImpl::OnCommandTimeout(const std::string& name) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  // Get the last byte because whole address is PII.
-  std::string addr_str = util::AddrToString(addr_);
-  addr_str = addr_str.substr(addr_str.size() - 2);
-
-  LOG(ERROR) << name << "(" << addr_str << ")"
+  LOG(ERROR) << name << "(" << util::AddrLastByteString(addr_) << ")"
              << " timed out. Disconnecting";
   Disconnect(base::DoNothing());
 }

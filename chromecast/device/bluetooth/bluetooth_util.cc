@@ -39,6 +39,10 @@ std::string AddrToString(const bluetooth_v2_shlib::Addr& addr) {
                             addr[1], addr[0]);
 }
 
+std::string AddrLastByteString(const bluetooth_v2_shlib::Addr& addr) {
+  return base::StringPrintf("%02hhx", addr[0]);
+}
+
 bool ParseAddr(const std::string& str, bluetooth_v2_shlib::Addr* addr) {
   // sscanf will incorrectly succeed if all characters except the last one are
   // correct.
