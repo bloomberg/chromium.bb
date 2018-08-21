@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "components/crash/content/browser/crash_memory_metrics_collector_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_termination_info.h"
@@ -188,6 +189,17 @@ void ChildExitObserver::Observe(int type,
   info.app_state = base::android::APPLICATION_STATE_UNKNOWN;
   info.renderer_has_visible_clients = rph->VisibleClientCount() > 0;
   info.renderer_was_subframe = rph->GetFrameDepth() > 0u;
+  CrashMemoryMetricsCollector* collector =
+      CrashMemoryMetricsCollector::GetFromRenderProcessHost(rph);
+
+  // CrashMemoryMetircsCollector is created in chrome_content_browser_client,
+  // and does not exist in non-chrome platforms such as android webview /
+  // chromecast.
+  if (collector) {
+    // SharedMemory creation / Map() might fail.
+    DCHECK(collector->MemoryMetrics());
+    info.blink_oom_metrics = *collector->MemoryMetrics();
+  }
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       // NOTIFICATION_RENDERER_PROCESS_TERMINATED is sent when the renderer

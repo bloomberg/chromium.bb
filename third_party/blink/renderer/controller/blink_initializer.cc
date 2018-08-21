@@ -57,6 +57,7 @@
 #include "v8/include/v8.h"
 
 #if defined(OS_ANDROID)
+#include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 #endif
 
@@ -165,6 +166,10 @@ void BlinkInitializer::RegisterInterfaces(
   registry.AddInterface(
       ConvertToBaseCallback(CrossThreadBind(&OomInterventionImpl::Create)),
       main_thread->GetTaskRunner());
+
+  registry.AddInterface(ConvertToBaseCallback(CrossThreadBind(
+                            &CrashMemoryMetricsReporterImpl::Bind)),
+                        main_thread->GetTaskRunner());
 #endif
 
   registry.AddInterface(

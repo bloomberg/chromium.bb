@@ -355,6 +355,7 @@
 #include "chrome/common/descriptors_android.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
+#include "components/crash/content/browser/crash_memory_metrics_collector_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/java_interfaces.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"
@@ -1285,6 +1286,11 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   // Data cannot be persisted if the profile is off the record.
   host->AddFilter(
       new cdm::CdmMessageFilterAndroid(!profile->IsOffTheRecord(), false));
+
+  // Register CrashMemoryMetricsCollector to report oom related metrics.
+  host->SetUserData(
+      CrashMemoryMetricsCollector::kCrashMemoryMetricsCollectorKey,
+      std::make_unique<CrashMemoryMetricsCollector>(host));
 #endif
 
   Profile* original_profile = profile->GetOriginalProfile();

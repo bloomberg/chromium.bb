@@ -13,7 +13,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/common/oom_intervention/oom_intervention_types.h"
+#include "third_party/blink/public/common/oom_intervention/oom_intervention_types.h"
 
 namespace {
 
@@ -71,10 +71,6 @@ OomInterventionTabHelper::OomInterventionTabHelper(
       scoped_observer_(this),
       weak_ptr_factory_(this) {
   scoped_observer_.Add(crash_reporter::CrashMetricsReporter::GetInstance());
-  shared_metrics_buffer_ = base::UnsafeSharedMemoryRegion::Create(
-      sizeof(blink::OomInterventionMetrics));
-  metrics_mapping_ = shared_metrics_buffer_.Map();
-  memset(metrics_mapping_.memory(), 0, sizeof(blink::OomInterventionMetrics));
 }
 
 OomInterventionTabHelper::~OomInterventionTabHelper() = default;
@@ -233,22 +229,6 @@ void OomInterventionTabHelper::OnCrashDumpProcessed(
         NearOomDetectionEndReason::OOM_PROTECTED_CRASH);
   }
 
-  blink::OomInterventionMetrics* metrics =
-      static_cast<blink::OomInterventionMetrics*>(metrics_mapping_.memory());
-
-  UMA_HISTOGRAM_MEMORY_LARGE_MB(
-      "Memory.Experimental.OomIntervention.RendererPrivateMemoryFootprintAtOOM",
-      metrics->current_private_footprint_kb / 1024);
-  UMA_HISTOGRAM_MEMORY_MB(
-      "Memory.Experimental.OomIntervention.RendererSwapFootprintAtOOM",
-      metrics->current_swap_kb / 1024);
-  UMA_HISTOGRAM_MEMORY_MB(
-      "Memory.Experimental.OomIntervention.RendererBlinkUsageAtOOM",
-      metrics->current_blink_usage_kb / 1024);
-  UMA_HISTOGRAM_MEMORY_LARGE_MB(
-      "Memory.Experimental.OomIntervention.RendererVmSizeAtOOMLarge",
-      metrics->current_vm_size_kb / 1024);
-
   base::TimeDelta time_since_last_navigation;
   if (!last_navigation_timestamp_.is_null()) {
     time_since_last_navigation =
@@ -316,9 +296,8 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
   binding_.Bind(mojo::MakeRequest(&host));
   blink::mojom::DetectionArgsPtr detection_args =
       config->GetRendererOomDetectionArgs();
-  intervention_->StartDetection(
-      std::move(host), shared_metrics_buffer_.Duplicate(),
-      std::move(detection_args), trigger_intervention);
+  intervention_->StartDetection(std::move(host), std::move(detection_args),
+                                trigger_intervention);
 }
 
 void OomInterventionTabHelper::OnNearOomDetected() {

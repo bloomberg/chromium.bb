@@ -1055,6 +1055,9 @@ uploading your change for review.  These are checked by presubmit scripts.
              killed"/>
   <int value="14"
       label="Invisible renderer in foreground app with moderate binding oom"/>
+  <int value="15"
+      label="Visible renderer in foreground app virtual memory oom"/>
+  <int value="16" label="All renderer virtual memory oom"/>
 </enum>
 
 <enum name="AndroidResourceExtractionStatus">

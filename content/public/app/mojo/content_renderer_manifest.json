@@ -5,6 +5,7 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
+          "blink.mojom.CrashMemoryMetricsReporter",
           "blink.mojom.LeakDetector",
           "blink.mojom.OomIntervention",
           "blink.mojom.WebDatabase",

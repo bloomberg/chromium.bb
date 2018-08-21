@@ -17,6 +17,8 @@ source_set("browser") {
     "child_process_crash_observer_android.h",
     "crash_dump_manager_android.cc",
     "crash_dump_manager_android.h",
+    "crash_memory_metrics_collector_android.cc",
+    "crash_memory_metrics_collector_android.h",
     "crash_metrics_reporter_android.cc",
     "crash_metrics_reporter_android.h",
   ]

@@ -62,6 +62,16 @@ class CrashMetricsReporterTest : public testing::Test {
   }
 
  protected:
+  blink::OomInterventionMetrics InterventionMetrics(bool virtual_oom) {
+    blink::OomInterventionMetrics metrics;
+    metrics.virtual_memory_oom = virtual_oom;
+    metrics.current_private_footprint_kb = 100;
+    metrics.current_swap_kb = 0;
+    metrics.current_vm_size_kb = 0;
+    metrics.current_blink_usage_kb = 0;
+    return metrics;
+  }
+
   void TestOomCrashProcessing(
       const ChildExitObserver::TerminationInfo& termination_info,
       CrashMetricsReporter::ReportedCrashTypeSet expected_crash_types,
@@ -102,6 +112,7 @@ TEST_F(CrashMetricsReporterTest, RendereMainFrameOOM) {
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.was_oom_protected_status = true;
   termination_info.renderer_has_visible_clients = true;
+  termination_info.blink_oom_metrics = InterventionMetrics(false);
   TestOomCrashProcessing(termination_info,
                          {CrashMetricsReporter::ProcessedCrashCounts::
                               kRendererForegroundVisibleOom},
@@ -120,6 +131,7 @@ TEST_F(CrashMetricsReporterTest, GpuProcessOOM) {
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.was_oom_protected_status = true;
   termination_info.renderer_has_visible_clients = true;
+  termination_info.blink_oom_metrics = InterventionMetrics(false);
   TestOomCrashProcessing(
       termination_info,
       {CrashMetricsReporter::ProcessedCrashCounts::kGpuForegroundOom},
@@ -139,6 +151,7 @@ TEST_F(CrashMetricsReporterTest, RendererSubframeOOM) {
   termination_info.was_oom_protected_status = true;
   termination_info.renderer_has_visible_clients = true;
   termination_info.renderer_was_subframe = true;
+  termination_info.blink_oom_metrics = InterventionMetrics(false);
   TestOomCrashProcessing(termination_info,
                          {CrashMetricsReporter::ProcessedCrashCounts::
                               kRendererForegroundVisibleSubframeOom},
@@ -157,6 +170,7 @@ TEST_F(CrashMetricsReporterTest, RendererNonVisibleStrongOOM) {
   termination_info.was_oom_protected_status = true;
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.renderer_has_visible_clients = false;
+  termination_info.blink_oom_metrics = InterventionMetrics(false);
   TestOomCrashProcessing(termination_info,
                          {CrashMetricsReporter::ProcessedCrashCounts::
                               kRendererForegroundInvisibleWithStrongBindingOom},
@@ -175,10 +189,34 @@ TEST_F(CrashMetricsReporterTest, RendererNonVisibleModerateOOM) {
   termination_info.was_oom_protected_status = true;
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.renderer_has_visible_clients = false;
+  termination_info.blink_oom_metrics = InterventionMetrics(false);
   TestOomCrashProcessing(
       termination_info,
       {CrashMetricsReporter::ProcessedCrashCounts::
            kRendererForegroundInvisibleWithModerateBindingOom},
+      "Tab.RendererDetailedExitStatus");
+}
+
+TEST_F(CrashMetricsReporterTest, RendererForegroundVisibleVirtualOOM) {
+  ChildExitObserver::TerminationInfo termination_info;
+  termination_info.process_host_id = 1;
+  termination_info.pid = base::kNullProcessHandle;
+  termination_info.process_type = content::PROCESS_TYPE_RENDERER;
+  termination_info.app_state =
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
+  termination_info.normal_termination = false;
+  termination_info.binding_state = base::android::ChildBindingState::MODERATE;
+  termination_info.was_oom_protected_status = true;
+  termination_info.was_killed_intentionally_by_browser = false;
+  termination_info.renderer_has_visible_clients = true;
+  termination_info.blink_oom_metrics = InterventionMetrics(true);
+  TestOomCrashProcessing(
+      termination_info,
+      {CrashMetricsReporter::ProcessedCrashCounts::
+           kRendererForegroundVisibleVirtualMemoryOom,
+       CrashMetricsReporter::ProcessedCrashCounts::kRendererVirtualMemoryOomAll,
+       CrashMetricsReporter::ProcessedCrashCounts::
+           kRendererForegroundVisibleOom},
       "Tab.RendererDetailedExitStatus");
 }
 
@@ -194,6 +232,7 @@ TEST_F(CrashMetricsReporterTest, IntentionalKillIsNotOOM) {
   termination_info.was_killed_intentionally_by_browser = true;
   termination_info.was_oom_protected_status = true;
   termination_info.renderer_has_visible_clients = true;
+  termination_info.blink_oom_metrics = InterventionMetrics(false);
   TestOomCrashProcessing(
       termination_info,
       {CrashMetricsReporter::ProcessedCrashCounts::
@@ -215,6 +254,7 @@ TEST_F(CrashMetricsReporterTest, NormalTerminationIsNotOOM) {
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.was_oom_protected_status = true;
   termination_info.renderer_has_visible_clients = true;
+  termination_info.blink_oom_metrics = InterventionMetrics(false);
   TestOomCrashProcessing(termination_info,
                          {CrashMetricsReporter::ProcessedCrashCounts::
                               kRendererForegroundVisibleNormalTermNoMinidump},

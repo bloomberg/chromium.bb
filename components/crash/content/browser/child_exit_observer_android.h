@@ -23,6 +23,7 @@
 #include "content/public/browser/posix_file_descriptor_info.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/process_type.h"
+#include "third_party/blink/public/common/oom_intervention/oom_intervention_types.h"
 
 namespace content {
 struct ChildProcessTerminationInfo;
@@ -88,6 +89,11 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
     // edge cases, eg if an invisible main frame and a visible sub frame from
     // different tabs are sharing the same renderer, then this is false.
     bool renderer_was_subframe = false;
+
+    // Applies to renderer process only. This metrics contains the information
+    // about virtual address space OOM situation, private memory footprint,
+    // swap size, vm size and the estimation of blink memory usage.
+    blink::OomInterventionMetrics blink_oom_metrics;
   };
 
   // ChildExitObserver client interface.

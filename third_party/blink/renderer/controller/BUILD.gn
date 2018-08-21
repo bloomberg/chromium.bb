@@ -47,6 +47,8 @@ component("controller") {
 
   if (is_android) {
     sources += [
+      "crash_memory_metrics_reporter_impl.cc",
+      "crash_memory_metrics_reporter_impl.h",
       "oom_intervention_impl.cc",
       "oom_intervention_impl.h",
     ]
