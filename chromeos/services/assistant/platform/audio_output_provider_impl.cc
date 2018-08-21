@@ -286,20 +286,21 @@ int AudioDeviceOwner::Render(base::TimeDelta delay,
 
   int available_frames = audio_fifo_->GetAvailableFrames();
   if (available_frames < dest->frames()) {
-    // audio_fifo_->Consume() returns a whole audio bus. In our case,
-    // bus->frames() == dest->frames(). If there aren't enough frames to fill
-    // the bus, the rest of it would be garbage data. In such case,
-    // audio_fifo_->GetAvailableFrames() < dest->frames(). We use
-    // bus->CopyPartialFrames() to only copy the valid frames and zero out
-    // the rest to avoid playing the garbage.
-    const media::AudioBus* bus = audio_fifo_->Consume();
+    // In our setting, dest->frames() == frames per block in |audio_fifo_|.
+    DCHECK(audio_fifo_->available_blocks() == 0);
 
-    DCHECK(available_frames <= bus->frames());
+    int frames_to_fill = audio_param_.frames_per_buffer() - available_frames;
 
-    bus->CopyPartialFramesTo(0, available_frames, 0, dest);
-  } else {
-    audio_fifo_->Consume()->CopyTo(dest);
+    DCHECK(frames_to_fill >= 0);
+
+    // Fill up to one block with zero data so that |audio_fifo_| has 1 block
+    // to consume. This avoids DCHECK in audio_fifo_->Consume() and also
+    // prevents garbage data being copied to |dest| in production.
+    audio_fifo_->PushSilence(frames_to_fill);
   }
+
+  audio_fifo_->Consume()->CopyTo(dest);
+
   ScheduleFillLocked(base::TimeTicks::Now());
   return dest->frames();
 }
