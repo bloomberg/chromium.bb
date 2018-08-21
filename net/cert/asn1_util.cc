@@ -147,28 +147,47 @@ bool SeekToExtensions(der::Input in,
   return true;
 }
 
-bool HasExtensionWithOID(base::StringPiece cert, der::Input extension_oid) {
-  bool present;
-  der::Parser extensions_parser;
-  if (!SeekToExtensions(der::Input(cert), &present, &extensions_parser))
+// Parse a DER-encoded, X.509 certificate in |cert| and find an extension with
+// the given OID. Returns false on parse error or true if the parse was
+// successful. |*out_extension_present| will be true iff the extension was
+// found. In the case where it was found, |*out_extension| will describe the
+// extension, or is undefined on parse error or if the extension is missing.
+bool ExtractExtensionWithOID(base::StringPiece cert,
+                             der::Input extension_oid,
+                             bool* out_extension_present,
+                             ParsedExtension* out_extension) {
+  der::Parser extensions;
+  bool extensions_present;
+  if (!SeekToExtensions(der::Input(cert), &extensions_present, &extensions))
     return false;
-  if (!present)
-    return false;
-
-  while (extensions_parser.HasMore()) {
-    der::Parser extension_parser;
-    if (!extensions_parser.ReadSequence(&extension_parser))
-      return false;
-
-    der::Input oid;
-    if (!extension_parser.ReadTag(der::kOid, &oid))
-      return false;
-
-    if (oid == extension_oid)
-      return true;
+  if (!extensions_present) {
+    *out_extension_present = false;
+    return true;
   }
 
-  return false;
+  while (extensions.HasMore()) {
+    der::Input extension_tlv;
+    if (!extensions.ReadRawTLV(&extension_tlv) ||
+        !ParseExtension(extension_tlv, out_extension)) {
+      return false;
+    }
+
+    if (out_extension->oid == extension_oid) {
+      *out_extension_present = true;
+      return true;
+    }
+  }
+
+  *out_extension_present = false;
+  return true;
+}
+
+bool HasExtensionWithOID(base::StringPiece cert, der::Input extension_oid) {
+  bool extension_present;
+  ParsedExtension extension;
+  return ExtractExtensionWithOID(cert, extension_oid, &extension_present,
+                                 &extension) &&
+         extension_present;
 }
 
 }  // namespace
@@ -294,6 +313,27 @@ bool ExtractSignatureAlgorithmsFromDERCert(
 
   *cert_signature_algorithm_sequence = cert_algorithm.AsStringPiece();
   *tbs_signature_algorithm_sequence = tbs_algorithm.AsStringPiece();
+  return true;
+}
+
+bool ExtractExtensionFromDERCert(base::StringPiece cert,
+                                 base::StringPiece extension_oid,
+                                 bool* out_extension_present,
+                                 bool* out_extension_critical,
+                                 base::StringPiece* out_contents) {
+  *out_extension_present = false;
+  *out_extension_critical = false;
+  out_contents->clear();
+
+  ParsedExtension extension;
+  if (!ExtractExtensionWithOID(cert, der::Input(extension_oid),
+                               out_extension_present, &extension))
+    return false;
+  if (!*out_extension_present)
+    return true;
+
+  *out_extension_critical = extension.critical;
+  *out_contents = extension.value.AsStringPiece();
   return true;
 }
 

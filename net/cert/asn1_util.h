@@ -65,6 +65,20 @@ NET_EXPORT_PRIVATE bool ExtractSignatureAlgorithmsFromDERCert(
     base::StringPiece* cert_signature_algorithm_sequence,
     base::StringPiece* tbs_signature_algorithm_sequence);
 
+// Extracts the contents of the extension (if any) with OID |extension_oid| from
+// the DER-encoded, X.509 certificate in |cert|.
+//
+// Returns false on parse error or true if the parse was successful. Sets
+// |*out_extension_present| to whether or not the extension was found. If found,
+// sets |*out_extension_critical| to match the extension's "critical" flag, and
+// sets |*out_contents| to the contents of the extension (after unwrapping the
+// OCTET STRING).
+NET_EXPORT bool ExtractExtensionFromDERCert(base::StringPiece cert,
+                                            base::StringPiece extension_oid,
+                                            bool* out_extension_present,
+                                            bool* out_extension_critical,
+                                            base::StringPiece* out_contents);
+
 } // namespace asn1
 
 } // namespace net
