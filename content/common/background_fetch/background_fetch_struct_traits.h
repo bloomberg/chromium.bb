@@ -14,12 +14,6 @@
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
-namespace content {
-namespace mojom {
-class BackgroundFetchSettledFetchDataView;
-}
-}
-
 namespace mojo {
 
 template <>
@@ -77,7 +71,7 @@ struct CONTENT_EXPORT
 
 template <>
 struct CONTENT_EXPORT
-    StructTraits<content::mojom::BackgroundFetchSettledFetchDataView,
+    StructTraits<blink::mojom::BackgroundFetchSettledFetchDataView,
                  content::BackgroundFetchSettledFetch> {
   static const content::ServiceWorkerFetchRequest& request(
       const content::BackgroundFetchSettledFetch& fetch) {
@@ -89,7 +83,7 @@ struct CONTENT_EXPORT
         fetch.response);
   }
 
-  static bool Read(content::mojom::BackgroundFetchSettledFetchDataView data,
+  static bool Read(blink::mojom::BackgroundFetchSettledFetchDataView data,
                    content::BackgroundFetchSettledFetch* definition);
 };
 

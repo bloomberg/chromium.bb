@@ -497,6 +497,34 @@ void BackgroundFetchContext::DispatchClickEvent(const std::string& unique_id) {
       blink::mojom::BackgroundFetchState::PENDING, base::DoNothing());
 }
 
+void BackgroundFetchContext::MatchRequests(
+    const BackgroundFetchRegistrationId& registration_id,
+    std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
+    blink::mojom::BackgroundFetchService::MatchRequestsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  data_manager_->GetSettledFetchesForRegistration(
+      registration_id, std::move(match_params),
+      base::BindOnce(&BackgroundFetchContext::DidGetMatchingRequests,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void BackgroundFetchContext::DidGetMatchingRequests(
+    blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
+    blink::mojom::BackgroundFetchError error,
+    bool background_fetch_succeeded,
+    std::vector<BackgroundFetchSettledFetch> settled_fetches,
+    std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // TODO(crbug.com/863016): Update to 0u once we've stopped sending an
+  // uncached response.
+  if (error != blink::mojom::BackgroundFetchError::NONE)
+    DCHECK_EQ(settled_fetches.size(), 1u);
+
+  std::move(callback).Run(std::move(settled_fetches));
+}
+
 void BackgroundFetchContext::LastObserverGarbageCollected(
     const BackgroundFetchRegistrationId& registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

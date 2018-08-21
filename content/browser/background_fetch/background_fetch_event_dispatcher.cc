@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {

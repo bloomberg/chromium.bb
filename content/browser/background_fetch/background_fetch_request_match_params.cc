@@ -8,9 +8,11 @@ namespace content {
 
 BackgroundFetchRequestMatchParams::BackgroundFetchRequestMatchParams(
     base::Optional<ServiceWorkerFetchRequest> request_to_match,
-    blink::mojom::QueryParamsPtr cache_query_params)
+    blink::mojom::QueryParamsPtr cache_query_params,
+    bool match_all)
     : request_to_match_(std::move(request_to_match)),
-      cache_query_params_(std::move(cache_query_params)) {}
+      cache_query_params_(std::move(cache_query_params)),
+      match_all_(match_all) {}
 
 BackgroundFetchRequestMatchParams::BackgroundFetchRequestMatchParams() =
     default;

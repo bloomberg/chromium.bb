@@ -35,6 +35,7 @@ class BackgroundFetchDataManager;
 struct BackgroundFetchOptions;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRegistrationNotifier;
+class BackgroundFetchRequestMatchParams;
 class BackgroundFetchRequestInfo;
 class BackgroundFetchScheduler;
 class BrowserContext;
@@ -95,6 +96,12 @@ class CONTENT_EXPORT BackgroundFetchContext
   void GetIconDisplaySize(
       blink::mojom::BackgroundFetchService::GetIconDisplaySizeCallback
           callback);
+
+  // Matches Background Fetch requests from the cache and returns responses.
+  void MatchRequests(
+      const BackgroundFetchRegistrationId& registration_id,
+      std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
+      blink::mojom::BackgroundFetchService::MatchRequestsCallback callback);
 
   // Aborts the Background Fetch for the |registration_id|. The callback will be
   // invoked with INVALID_ID if the registration has already completed or
@@ -197,6 +204,16 @@ class CONTENT_EXPORT BackgroundFetchContext
   // retrieved from storage, and the Service Worker event can be invoked.
   void DidGetSettledFetches(
       const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchError error,
+      bool background_fetch_succeeded,
+      std::vector<BackgroundFetchSettledFetch> settled_fetches,
+      std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles);
+
+  // Called when the sequence of matching settled fetches have been received
+  // from storage, and |callback| can be invoked to pass these on to the
+  // renderer.
+  void DidGetMatchingRequests(
+      blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
       blink::mojom::BackgroundFetchError error,
       bool background_fetch_succeeded,
       std::vector<BackgroundFetchSettledFetch> settled_fetches,

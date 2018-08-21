@@ -4,9 +4,17 @@
 
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 
+#include "base/optional.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_record.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_fetch.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache_query_options.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/manifest/image_resource.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
@@ -106,15 +114,109 @@ ScriptPromise BackgroundFetchRegistration::abort(ScriptState* script_state) {
   return promise;
 }
 
+ScriptPromise BackgroundFetchRegistration::match(
+    ScriptState* script_state,
+    const RequestOrUSVString& request,
+    const CacheQueryOptions& options,
+    ExceptionState& exception_state) {
+  return MatchImpl(
+      script_state, base::make_optional<RequestOrUSVString>(request),
+      Cache::ToQueryParams(options), exception_state, /* match_all = */ false);
+}
+
+ScriptPromise BackgroundFetchRegistration::matchAll(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  return MatchImpl(script_state, /* request = */ base::nullopt,
+                   /* cache_query_options = */ nullptr, exception_state,
+                   /* match_all = */ true);
+}
+
+ScriptPromise BackgroundFetchRegistration::matchAll(
+    ScriptState* script_state,
+    const RequestOrUSVString& request,
+    const CacheQueryOptions& options,
+    ExceptionState& exception_state) {
+  return MatchImpl(
+      script_state, base::make_optional<RequestOrUSVString>(request),
+      Cache::ToQueryParams(options), exception_state, /* match_all = */ true);
+}
+
+ScriptPromise BackgroundFetchRegistration::MatchImpl(
+    ScriptState* script_state,
+    base::Optional<RequestOrUSVString> request,
+    mojom::blink::QueryParamsPtr cache_query_params,
+    ExceptionState& exception_state,
+    bool match_all) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  // Convert |request| to WebServiceWorkerRequest.
+  base::Optional<WebServiceWorkerRequest> request_to_match;
+  if (request.has_value()) {
+    if (request->IsRequest()) {
+      request->GetAsRequest()->PopulateWebServiceWorkerRequest(
+          request_to_match.value());
+    } else {
+      Request* new_request = Request::Create(
+          script_state, request->GetAsUSVString(), exception_state);
+      if (exception_state.HadException())
+        return ScriptPromise();
+      new_request->PopulateWebServiceWorkerRequest(request_to_match.value());
+    }
+  }
+
+  DCHECK(registration_);
+
+  BackgroundFetchBridge::From(registration_)
+      ->MatchRequests(
+          developer_id_, unique_id_, request_to_match,
+          std::move(cache_query_params), match_all,
+          WTF::Bind(&BackgroundFetchRegistration::DidGetMatchingRequests,
+                    WrapPersistent(this), WrapPersistent(resolver), match_all));
+  return promise;
+}
+
+void BackgroundFetchRegistration::DidGetMatchingRequests(
+    ScriptPromiseResolver* resolver,
+    bool return_all,
+    Vector<mojom::blink::BackgroundFetchSettledFetchPtr> settled_fetches) {
+  ScriptState* script_state = resolver->GetScriptState();
+  // Do not remove this, |scope| is needed for calling ToV8()
+  ScriptState::Scope scope(script_state);
+  HeapVector<Member<BackgroundFetchRecord>> to_return;
+  to_return.ReserveInitialCapacity(settled_fetches.size());
+  for (const auto& fetch : settled_fetches) {
+    if (fetch->response->response_type ==
+        network::mojom::FetchResponseType::kError) {
+      // Resolve with undefined.
+      resolver->Resolve();
+      return;
+    }
+    BackgroundFetchRecord* record = new BackgroundFetchRecord(
+        Request::Create(script_state, fetch->request),
+        Response::Create(script_state, *fetch->response));
+    to_return.push_back(record);
+  }
+
+  if (!return_all) {
+    DCHECK_EQ(settled_fetches.size(), 1u);
+    DCHECK_EQ(to_return.size(), 1u);
+    resolver->Resolve(to_return[0]);
+    return;
+  }
+  resolver->Resolve(to_return);
+}
+
 void BackgroundFetchRegistration::DidAbort(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundFetchError error) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
-      resolver->Resolve(true /* success */);
+      resolver->Resolve(/* success = */ true);
       return;
     case mojom::blink::BackgroundFetchError::INVALID_ID:
-      resolver->Resolve(false /* success */);
+      resolver->Resolve(/* success = */ false);
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
       resolver->Reject(DOMException::Create(

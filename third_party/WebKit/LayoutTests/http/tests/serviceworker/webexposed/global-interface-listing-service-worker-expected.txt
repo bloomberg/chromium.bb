@@ -44,6 +44,8 @@ interface BackgroundFetchRegistration : EventTarget
     getter uploaded
     method abort
     method constructor
+    method match
+    method matchAll
     setter onprogress
 interface BackgroundFetchSettledFetch : BackgroundFetchFetch
     attribute @@toStringTag
