@@ -245,7 +245,9 @@ class FakeTetherHostFetcherFactory
   // chromeos::tether::TetherHostFetcherImpl::Factory :
   std::unique_ptr<chromeos::tether::TetherHostFetcher> BuildInstance(
       cryptauth::RemoteDeviceProvider* remote_device_provider,
-      chromeos::device_sync::DeviceSyncClient* device_sync_client) override {
+      chromeos::device_sync::DeviceSyncClient* device_sync_client,
+      chromeos::multidevice_setup::MultiDeviceSetupClient*
+          multidevice_setup_client) override {
     last_created_ =
         new chromeos::tether::FakeTetherHostFetcher(initial_devices_);
     return base::WrapUnique(last_created_);

@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/cryptauth/remote_device_provider.h"
 #include "components/cryptauth/remote_device_ref.h"
 
@@ -18,6 +20,10 @@ class RemoteDeviceProvider;
 }  // namespace cryptauth
 
 namespace chromeos {
+
+namespace multidevice_setup {
+class MultiDeviceSetupClient;
+}  // namespace multidevice_setup
 
 namespace tether {
 
@@ -39,14 +45,18 @@ class TetherHostFetcherImpl : public TetherHostFetcher,
    public:
     static std::unique_ptr<TetherHostFetcher> NewInstance(
         cryptauth::RemoteDeviceProvider* remote_device_provider,
-        device_sync::DeviceSyncClient* device_sync_client);
+        device_sync::DeviceSyncClient* device_sync_client,
+        chromeos::multidevice_setup::MultiDeviceSetupClient*
+            multidevice_setup_client);
 
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
     virtual std::unique_ptr<TetherHostFetcher> BuildInstance(
         cryptauth::RemoteDeviceProvider* remote_device_provider,
-        device_sync::DeviceSyncClient* device_sync_client);
+        device_sync::DeviceSyncClient* device_sync_client,
+        chromeos::multidevice_setup::MultiDeviceSetupClient*
+            multidevice_setup_client);
 
    private:
     static Factory* factory_instance_;
@@ -70,15 +80,23 @@ class TetherHostFetcherImpl : public TetherHostFetcher,
   // TODO(crbug.com/848956): Remove RemoteDeviceProvider once all clients have
   // migrated to the DeviceSync Mojo API.
   TetherHostFetcherImpl(cryptauth::RemoteDeviceProvider* remote_device_provider,
-                        device_sync::DeviceSyncClient* device_sync_client);
+                        device_sync::DeviceSyncClient* device_sync_client,
+                        chromeos::multidevice_setup::MultiDeviceSetupClient*
+                            multidevice_setup_client_);
 
  private:
   void CacheCurrentTetherHosts();
+  void OnHostStatusFetched(
+      chromeos::multidevice_setup::mojom::HostStatus host_status,
+      const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
 
   cryptauth::RemoteDeviceProvider* remote_device_provider_;
   device_sync::DeviceSyncClient* device_sync_client_;
+  chromeos::multidevice_setup::MultiDeviceSetupClient*
+      multidevice_setup_client_;
 
   cryptauth::RemoteDeviceRefList current_remote_device_list_;
+  base::WeakPtrFactory<TetherHostFetcherImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TetherHostFetcherImpl);
 };
