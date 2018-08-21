@@ -32,57 +32,20 @@ using autofill::PasswordForm;
 namespace password_manager_util {
 namespace {
 
-// Clears username/password on the blacklisted credentials and delete
-// blacklisted duplicates.
-class BlacklistedCredentialsCleaner
+// This class is responsible for deleting blacklisted duplicates.
+class BlacklistedDuplicatesCleaner
     : public password_manager::PasswordStoreConsumer {
  public:
-  BlacklistedCredentialsCleaner(password_manager::PasswordStore* store,
-                                PrefService* prefs)
+  BlacklistedDuplicatesCleaner(password_manager::PasswordStore* store,
+                               PrefService* prefs)
       : store_(store), prefs_(prefs) {
     store_->GetBlacklistLogins(this);
   }
-  ~BlacklistedCredentialsCleaner() override = default;
+  ~BlacklistedDuplicatesCleaner() override = default;
 
+  // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override {
-    if (!prefs_->GetBoolean(
-            password_manager::prefs::kBlacklistedCredentialsStripped))
-      RemoveUsernameAndPassword(results);
-
-    if (!prefs_->GetBoolean(
-            password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved))
-      RemoveDuplicates(results);
-    delete this;
-  }
-
- private:
-  // TODO(https://crbug.com/817754): remove the code once majority of the users
-  // executed it.
-  void RemoveUsernameAndPassword(
-      const std::vector<std::unique_ptr<PasswordForm>>& results) {
-    bool cleaned_something = false;
-    for (const auto& form : results) {
-      DCHECK(form->blacklisted_by_user);
-      if (!form->username_value.empty() || !form->password_value.empty()) {
-        cleaned_something = true;
-        store_->RemoveLogin(*form);
-        form->username_value.clear();
-        form->password_value.clear();
-        store_->AddLogin(*form);
-      }
-    }
-
-    // Update the pref if no forms were handled. The password store is async,
-    // therefore, one can't be sure that the changes applied cleanly.
-    if (!cleaned_something) {
-      prefs_->SetBoolean(
-          password_manager::prefs::kBlacklistedCredentialsStripped, true);
-    }
-  }
-
-  void RemoveDuplicates(
-      const std::vector<std::unique_ptr<PasswordForm>>& results) {
     std::set<std::string> signon_realms;
     for (const auto& form : results) {
       DCHECK(form->blacklisted_by_user);
@@ -97,19 +60,21 @@ class BlacklistedCredentialsCleaner
           password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved,
           true);
     }
+    delete this;
   }
 
+ private:
   password_manager::PasswordStore* store_;
   PrefService* prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlacklistedCredentialsCleaner);
+  DISALLOW_COPY_AND_ASSIGN(BlacklistedDuplicatesCleaner);
 };
 
-void StartCleaningBlacklisted(
+void StartDeletingBlacklistedDuplicates(
     const scoped_refptr<password_manager::PasswordStore>& store,
     PrefService* prefs) {
   // The object will delete itself once the credentials are retrieved.
-  new BlacklistedCredentialsCleaner(store.get(), prefs);
+  new BlacklistedDuplicatesCleaner(store.get(), prefs);
 }
 
 // Return true if
@@ -383,23 +348,19 @@ void UserTriggeredManualGenerationFromContextMenu(
       autofill::password_generation::PASSWORD_GENERATION_CONTEXT_MENU_PRESSED);
 }
 
-void CleanBlacklistedCredentials(password_manager::PasswordStore* store,
+void DeleteBlacklistedDuplicates(password_manager::PasswordStore* store,
                                  PrefService* prefs,
                                  int delay_in_seconds) {
-  const bool need_to_stripe_username = !prefs->GetBoolean(
-      password_manager::prefs::kBlacklistedCredentialsStripped);
-  base::UmaHistogramBoolean("PasswordManager.BlacklistedSites.NeedToBeCleaned",
-                            need_to_stripe_username);
   const bool need_to_remove_blacklisted_duplicates = !prefs->GetBoolean(
       password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved);
   base::UmaHistogramBoolean(
       "PasswordManager.BlacklistedSites.NeedRemoveBlacklistDuplicates",
       need_to_remove_blacklisted_duplicates);
-  if (need_to_stripe_username || need_to_remove_blacklisted_duplicates)
+  if (need_to_remove_blacklisted_duplicates)
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&StartCleaningBlacklisted, base::WrapRefCounted(store),
-                       prefs),
+        base::BindOnce(&StartDeletingBlacklistedDuplicates,
+                       base::WrapRefCounted(store), prefs),
         base::TimeDelta::FromSeconds(delay_in_seconds));
 }
 
