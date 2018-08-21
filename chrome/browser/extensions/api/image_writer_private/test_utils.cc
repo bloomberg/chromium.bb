@@ -74,9 +74,10 @@ FakeDiskMountManager::~FakeDiskMountManager() {}
 
 void FakeDiskMountManager::UnmountDeviceRecursively(
     const std::string& device_path,
-    const UnmountDeviceRecursivelyCallbackType& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::BindOnce(callback, true));
+    UnmountDeviceRecursivelyCallbackType callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), chromeos::MOUNT_ERROR_NONE));
 }
 #endif
 

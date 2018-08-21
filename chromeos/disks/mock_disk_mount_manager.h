@@ -50,10 +50,9 @@ class MockDiskMountManager : public DiskMountManager {
   MOCK_METHOD1(FormatMountedDevice, void(const std::string&));
   MOCK_METHOD2(RenameMountedDevice,
                void(const std::string&, const std::string&));
-  MOCK_METHOD2(
-      UnmountDeviceRecursively,
-      void(const std::string&,
-           const DiskMountManager::UnmountDeviceRecursivelyCallbackType&));
+  MOCK_METHOD2(UnmountDeviceRecursively,
+               void(const std::string&,
+                    DiskMountManager::UnmountDeviceRecursivelyCallbackType));
 
   // Invokes fake device insert events.
   void NotifyDeviceInsertEvents();

@@ -70,7 +70,7 @@ class FakeDiskMountManager : public chromeos::disks::MockDiskMountManager {
 
   void UnmountDeviceRecursively(
       const std::string& device_path,
-      const UnmountDeviceRecursivelyCallbackType& callback) override;
+      UnmountDeviceRecursivelyCallbackType callback) override;
 
  private:
   DiskMap disks_;

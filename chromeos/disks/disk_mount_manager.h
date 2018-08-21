@@ -85,7 +85,8 @@ class CHROMEOS_EXPORT DiskMountManager {
 
   // A callback function type which is called after UnmountDeviceRecursively
   // finishes.
-  typedef base::Callback<void(bool)> UnmountDeviceRecursivelyCallbackType;
+  typedef base::OnceCallback<void(MountError error_code)>
+      UnmountDeviceRecursivelyCallbackType;
 
   // A callback type for UnmountPath method.
   typedef base::Callback<void(MountError error_code)> UnmountPathCallback;
@@ -186,7 +187,7 @@ class CHROMEOS_EXPORT DiskMountManager {
   // Unmounts device_path and all of its known children.
   virtual void UnmountDeviceRecursively(
       const std::string& device_path,
-      const UnmountDeviceRecursivelyCallbackType& callback) = 0;
+      UnmountDeviceRecursivelyCallbackType callback) = 0;
 
   // Used in tests to initialize the manager's disk and mount point sets.
   // Default implementation does noting. It just fails.

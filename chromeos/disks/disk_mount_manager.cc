@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -34,6 +35,20 @@ constexpr char kDefaultFormattedDeviceName[] = "UNTITLED";
 constexpr char kDefaultFormatVFAT[] = "vfat";
 constexpr char kDeviceNotFound[] = "Device could not be found";
 DiskMountManager* g_disk_mount_manager = NULL;
+
+struct UnmountDeviceRecursivelyCallbackData {
+  UnmountDeviceRecursivelyCallbackData(
+      DiskMountManager::UnmountDeviceRecursivelyCallbackType in_callback)
+      : callback(std::move(in_callback)) {}
+
+  DiskMountManager::UnmountDeviceRecursivelyCallbackType callback;
+  MountError error_code = MOUNT_ERROR_NONE;
+};
+
+void OnAllUnmountDeviceRecursively(
+    std::unique_ptr<UnmountDeviceRecursivelyCallbackData> cb_data) {
+  std::move(cb_data->callback).Run(cb_data->error_code);
+}
 
 // The DiskMountManager implementation.
 class DiskMountManagerImpl : public DiskMountManager,
@@ -179,7 +194,7 @@ class DiskMountManagerImpl : public DiskMountManager,
   // DiskMountManager override.
   void UnmountDeviceRecursively(
       const std::string& device_path,
-      const UnmountDeviceRecursivelyCallbackType& callback) override {
+      UnmountDeviceRecursivelyCallbackType callback) override {
     std::vector<std::string> devices_to_unmount;
 
     // Get list of all devices to unmount.
@@ -197,38 +212,29 @@ class DiskMountManagerImpl : public DiskMountManager,
       if (disks_.find(device_path) == disks_.end()) {
         LOG(WARNING) << "Unmount recursive request failed for device "
                      << device_path << ", with error: " << kDeviceNotFound;
-        callback.Run(false);
+        std::move(callback).Run(MOUNT_ERROR_INVALID_DEVICE_PATH);
         return;
       }
 
       // Nothing to unmount.
-      callback.Run(true);
+      std::move(callback).Run(MOUNT_ERROR_NONE);
       return;
     }
 
-    // We will send the same callback data object to all Unmount calls and use
-    // it to synchronize callbacks.
-    // Note: this implementation has a potential memory leak issue. For
-    // example if this instance is destructed before all the callbacks for
-    // Unmount are invoked, the memory pointed by |cb_data| will be leaked.
-    // It is because the UnmountDeviceRecursivelyCallbackData keeps how
-    // many times OnUnmountDeviceRecursively callback is called and when
-    // all the callbacks are called, |cb_data| will be deleted in the method.
-    // However destructing the instance before all callback invocations will
-    // cancel all pending callbacks, so that the |cb_data| would never be
-    // deleted.
-    // Fortunately, in the real scenario, the instance will be destructed
-    // only for ShutDown. So, probably the memory would rarely be leaked.
-    // TODO(hidehiko): Fix the issue.
-    UnmountDeviceRecursivelyCallbackData* cb_data =
-        new UnmountDeviceRecursivelyCallbackData(
-            callback, devices_to_unmount.size());
+    std::unique_ptr<UnmountDeviceRecursivelyCallbackData> cb_data =
+        std::make_unique<UnmountDeviceRecursivelyCallbackData>(
+            std::move(callback));
+    UnmountDeviceRecursivelyCallbackData* raw_cb_data = cb_data.get();
+    base::RepeatingClosure done_callback = base::BarrierClosure(
+        devices_to_unmount.size(),
+        base::BindOnce(&OnAllUnmountDeviceRecursively, std::move(cb_data)));
+
     for (size_t i = 0; i < devices_to_unmount.size(); ++i) {
       cros_disks_client_->Unmount(
           devices_to_unmount[i], UNMOUNT_OPTIONS_NONE,
           base::BindOnce(&DiskMountManagerImpl::OnUnmountDeviceRecursively,
-                         weak_ptr_factory_.GetWeakPtr(), cb_data,
-                         devices_to_unmount[i]));
+                         weak_ptr_factory_.GetWeakPtr(), raw_cb_data,
+                         devices_to_unmount[i], done_callback));
     }
   }
 
@@ -312,18 +318,6 @@ class DiskMountManagerImpl : public DiskMountManager,
   // device_path and the value is new volume_name.
   std::map<std::string, std::string> pending_rename_changes_;
 
-  struct UnmountDeviceRecursivelyCallbackData {
-    UnmountDeviceRecursivelyCallbackData(
-        const UnmountDeviceRecursivelyCallbackType& in_callback,
-        int in_num_pending_callbacks)
-        : callback(in_callback),
-          num_pending_callbacks(in_num_pending_callbacks) {
-    }
-
-    const UnmountDeviceRecursivelyCallbackType callback;
-    size_t num_pending_callbacks;
-  };
-
   // Called on D-Bus CrosDisksClient::Mount() is done.
   void OnMount(const std::string& source_path, MountType type, bool result) {
     // When succeeds, OnMountCompleted will be called by "MountCompleted",
@@ -388,24 +382,20 @@ class DiskMountManagerImpl : public DiskMountManager,
   // Callback for UnmountDeviceRecursively.
   void OnUnmountDeviceRecursively(UnmountDeviceRecursivelyCallbackData* cb_data,
                                   const std::string& mount_path,
+                                  base::OnceClosure done_callback,
                                   MountError error_code) {
-    bool success = error_code == MOUNT_ERROR_NONE;
-    if (success) {
+    if (error_code == MOUNT_ERROR_NONE) {
       // Do standard processing for Unmount event.
       OnUnmountPath(UnmountPathCallback(), mount_path, MOUNT_ERROR_NONE);
       VLOG(1) << mount_path <<  " unmounted.";
+    } else {
+      // This causes the last non-success error to be reported.
+      // TODO(amistry): We could ignore certain errors such as
+      // MOUNT_ERROR_PATH_NOT_MOUNTED, or prioritise more important ones.
+      cb_data->error_code = error_code;
     }
-    // This is safe as long as all callbacks are called on the same thread as
-    // UnmountDeviceRecursively.
-    cb_data->num_pending_callbacks--;
 
-    if (cb_data->num_pending_callbacks == 0) {
-      // This code has a problem that the |success| status used here is for the
-      // last "unmount" callback, but not whether all unmounting is succeeded.
-      // TODO(hidehiko): Fix the issue.
-      cb_data->callback.Run(success);
-      delete cb_data;
-    }
+    std::move(done_callback).Run();
   }
 
   // CrosDisksClient::Observer override.
