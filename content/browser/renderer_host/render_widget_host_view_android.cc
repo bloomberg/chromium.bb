@@ -420,6 +420,7 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
   page_scale_ = metadata.page_scale_factor;
   min_page_scale_ = metadata.min_page_scale_factor;
   max_page_scale_ = metadata.max_page_scale_factor;
+  current_surface_size_ = metadata.viewport_size_in_pixels;
 }
 
 void RenderWidgetHostViewAndroid::Focus() {
@@ -1365,6 +1366,9 @@ void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                               metadata.local_surface_id);
+  // We've just processed new RenderFrameMetadata and potentially embedded a
+  // new surface for that data. Check if we need to evict it.
+  EvictFrameIfNecessary();
 }
 
 void RenderWidgetHostViewAndroid::ShowInternal() {
