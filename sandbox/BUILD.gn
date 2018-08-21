@@ -30,6 +30,7 @@ group("sandbox") {
     public_deps = [
       "//sandbox/mac:seatbelt",
       "//sandbox/mac:seatbelt_extension",
+      "//sandbox/mac:system_services",
       "//sandbox/mac/mojom",
     ]
   } else if (is_linux || is_android) {

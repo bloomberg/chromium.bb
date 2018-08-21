@@ -20,15 +20,12 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "sandbox/mac/seatbelt.h"
+#include "sandbox/mac/system_services.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
 
 extern "C" {
 void CGSSetDenyWindowServerConnections(bool);
 void CGSShutdownServerConnections();
-OSStatus SetApplicationIsDaemon(Boolean isDaemon);
-void _LSSetApplicationLaunchServicesServerConnectionStatus(
-    uint64_t flags,
-    bool (^connection_allowed)(CFDictionaryRef));
 };
 
 namespace content {
@@ -44,16 +41,8 @@ void DisconnectWindowServer() {
   // messages to be printed to the system logger on certain OS versions.
   CGSSetDenyWindowServerConnections(true);
   CGSShutdownServerConnections();
-  // Allow the process to continue without a LaunchServices ASN. The
-  // INIT_Process function in HIServices will abort if it cannot connect to
-  // launchservicesd to get an ASN. By setting this flag, HIServices skips
-  // that.
-  SetApplicationIsDaemon(true);
-  // Tell LaunchServices no connections are ever allowed.
-  _LSSetApplicationLaunchServicesServerConnectionStatus(
-      0, ^bool(CFDictionaryRef options) {
-        return false;
-      });
+
+  sandbox::DisableLaunchServices();
 }
 
 // You are about to read a pretty disgusting hack. In a static initializer,

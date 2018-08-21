@@ -49,6 +49,22 @@ component("seatbelt_extension") {
   defines = [ "SEATBELT_IMPLEMENTATION" ]
 }
 
+component("system_services") {
+  sources = [
+    "seatbelt_export.h",
+    "system_services.cc",
+    "system_services.h",
+  ]
+  libs = [
+    "Carbon.framework",
+    "CoreFoundation.framework",
+  ]
+  public_deps = [
+    "//base",
+  ]
+  defines = [ "SEATBELT_IMPLEMENTATION" ]
+}
+
 test("sandbox_mac_unittests") {
   sources = [
     "mojom/struct_traits_unittest.cc",
