@@ -1261,19 +1261,23 @@ void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
 
 mojom::LayoutTestControl* BlinkTestController::GetLayoutTestControlPtr(
     RenderFrameHost* frame) {
-  if (layout_test_control_map_.find(frame) == layout_test_control_map_.end()) {
-    frame->GetRemoteAssociatedInterfaces()->GetInterface(
-        &layout_test_control_map_[frame]);
-    layout_test_control_map_[frame].set_connection_error_handler(
+  auto key = std::make_pair<int, int>(frame->GetProcess()->GetID(),
+                                      frame->GetRoutingID());
+  if (layout_test_control_map_.find(key) == layout_test_control_map_.end()) {
+    mojom::LayoutTestControlAssociatedPtr& new_ptr =
+        layout_test_control_map_[key];
+    frame->GetRemoteAssociatedInterfaces()->GetInterface(&new_ptr);
+    new_ptr.set_connection_error_handler(
         base::BindOnce(&BlinkTestController::HandleLayoutTestControlError,
-                       weak_factory_.GetWeakPtr(), frame));
+                       weak_factory_.GetWeakPtr(), key));
   }
-  DCHECK(layout_test_control_map_[frame].get());
-  return layout_test_control_map_[frame].get();
+  DCHECK(layout_test_control_map_[key].get());
+  return layout_test_control_map_[key].get();
 }
 
-void BlinkTestController::HandleLayoutTestControlError(RenderFrameHost* frame) {
-  layout_test_control_map_.erase(frame);
+void BlinkTestController::HandleLayoutTestControlError(
+    const std::pair<int, int>& key) {
+  layout_test_control_map_.erase(key);
 }
 
 BlinkTestController::Node::Node() = default;
