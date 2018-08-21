@@ -253,10 +253,12 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
     animation_settings->push_back(std::move(settings));
   }
 
-  if (animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS &&
-      animation_settings->size() > 0u) {
+  const bool is_layout_animation =
+      animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER ||
+      animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW ||
+      animation_type == OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_EXIT;
+  if (is_layout_animation && animation_settings->size() > 0u)
     animation_settings->front()->AddObserver(this);
-  }
 }
 
 bool ScopedTransformOverviewWindow::Contains(const aura::Window* target) const {
@@ -590,7 +592,7 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   minimized_widget_->SetBounds(bounds);
   minimized_widget_->Show();
 
-  FadeOutWidgetAndMaybeSlideOnEnter(
+  FadeInWidgetAndMaybeSlideOnEnter(
       minimized_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
       /*slide=*/false);
 }

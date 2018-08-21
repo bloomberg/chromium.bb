@@ -18,7 +18,9 @@ enum OverviewAnimationType {
   OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT,
   // Used to position windows when entering/exiting overview mode and when a
   // window is closed while overview mode is active.
-  OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
+  OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER,
+  OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW,
+  OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_EXIT,
   // Used to restore windows to their original position when exiting overview
   // mode.
   OVERVIEW_ANIMATION_RESTORE_WINDOW,

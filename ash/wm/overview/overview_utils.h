@@ -30,9 +30,9 @@ bool IsOverviewSwipeToCloseEnabled();
 // Fades |widget| to opacity one with the enter overview settings. Additionally
 // place |widget| closer to the top of screen and slide it down if |slide| is
 // true.
-void FadeOutWidgetAndMaybeSlideOnEnter(views::Widget* widget,
-                                       OverviewAnimationType animation_type,
-                                       bool slide);
+void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
+                                      OverviewAnimationType animation_type,
+                                      bool slide);
 
 // Fades |widget| to opacity zero with animation settings depending on
 // |animation_type|. Used by several classes which need to be destroyed on

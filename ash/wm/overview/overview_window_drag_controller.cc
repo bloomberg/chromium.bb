@@ -169,7 +169,8 @@ void OverviewWindowDragController::CompleteDrag(
 
 void OverviewWindowDragController::StartSplitViewDragMode(
     const gfx::Point& location_in_screen) {
-  item_->ScaleUpSelectedItem(OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS);
+  item_->ScaleUpSelectedItem(
+      OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW);
 
   did_move_ = true;
   current_drag_behavior_ = DragBehavior::kDragToSnap;

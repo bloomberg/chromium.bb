@@ -545,12 +545,12 @@ void WindowSelectorItem::SlideWindowIn() {
   DCHECK(item_widget_);
   DCHECK(transform_window_.minimized_widget());
 
-  FadeOutWidgetAndMaybeSlideOnEnter(item_widget_.get(),
-                                    OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
-                                    /*slide=*/true);
-  FadeOutWidgetAndMaybeSlideOnEnter(transform_window_.minimized_widget(),
-                                    OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
-                                    /*slide=*/true);
+  FadeInWidgetAndMaybeSlideOnEnter(item_widget_.get(),
+                                   OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
+                                   /*slide=*/true);
+  FadeInWidgetAndMaybeSlideOnEnter(transform_window_.minimized_widget(),
+                                   OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
+                                   /*slide=*/true);
 }
 
 float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
@@ -628,8 +628,8 @@ void WindowSelectorItem::AnimateAndCloseWindow(bool up) {
 
   auto animate_window = [this](aura::Window* window,
                                const gfx::Transform& transform, bool observe) {
-    ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_RESTORE_WINDOW,
-                                             window);
+    ScopedOverviewAnimationSettings settings(
+        OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM, window);
     gfx::Transform original_transform = window->transform();
     original_transform.ConcatTransform(transform);
     window->SetTransform(original_transform);
@@ -637,7 +637,7 @@ void WindowSelectorItem::AnimateAndCloseWindow(bool up) {
       settings.AddObserver(this);
   };
 
-  AnimateOpacity(0.0, OVERVIEW_ANIMATION_RESTORE_WINDOW);
+  AnimateOpacity(0.0, OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM);
   animate_window(item_widget_->GetNativeWindow(), transform, false);
   animate_window(GetWindowForStacking(), transform, true);
 }
@@ -646,13 +646,11 @@ void WindowSelectorItem::CloseWindow() {
   gfx::Rect inset_bounds(target_bounds_);
   inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
                      target_bounds_.height() * kPreCloseScale);
-  OverviewAnimationType animation_type =
-      OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM;
   // Scale down both the window and label.
-  SetBounds(inset_bounds, animation_type);
+  SetBounds(inset_bounds, OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM);
   // First animate opacity to an intermediate value concurrently with the
   // scaling animation.
-  AnimateOpacity(kClosingItemOpacity, animation_type);
+  AnimateOpacity(kClosingItemOpacity, OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM);
 
   // Fade out the window and the label, effectively hiding them.
   AnimateOpacity(0.0, OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM);
@@ -947,7 +945,7 @@ float WindowSelectorItem::GetOpacity() {
 
 OverviewAnimationType WindowSelectorItem::GetExitOverviewAnimationType() {
   return should_animate_when_exiting_
-             ? OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
+             ? OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_EXIT
              : OVERVIEW_ANIMATION_NONE;
 }
 
@@ -1051,10 +1049,12 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   UpdateCannotSnapWarningVisibility();
 
   item_widget_->SetContentsView(caption_container_view_);
-  label_view_->SetVisible(false);
-  item_widget_->SetOpacity(0);
   item_widget_->Show();
+  item_widget_->SetOpacity(0);
   item_widget_->GetLayer()->SetMasksToBounds(false);
+  FadeInWidgetAndMaybeSlideOnEnter(
+      item_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+      /*slide=*/false);
 }
 
 void WindowSelectorItem::UpdateHeaderLayout(
@@ -1073,13 +1073,6 @@ void WindowSelectorItem::UpdateHeaderLayout(
       (mode != HeaderFadeInMode::kEnter || transform_window_.GetTopInset())
           ? -label_rect.height()
           : 0);
-
-  if (!label_view_->visible()) {
-    label_view_->SetVisible(true);
-    FadeOutWidgetAndMaybeSlideOnEnter(
-        item_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-        false);
-  }
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   // For the first update, place the widget at its destination.

@@ -392,6 +392,10 @@ void WindowGrid::PositionWindows(
   // Position the windows centering the left-aligned rows vertically. Do not
   // position |ignored_item| if it is not nullptr and matches a item in
   // |window_list_|.
+  OverviewAnimationType animation_type =
+      transition == WindowSelector::OverviewTransition::kEnter
+          ? OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_ON_ENTER
+          : OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW;
   for (size_t i = 0; i < window_list_.size(); ++i) {
     WindowSelectorItem* window_item = window_list_[i].get();
     if (window_item->animating_to_close() ||
@@ -410,10 +414,9 @@ void WindowGrid::PositionWindows(
     if (IsNewSelectorItemWindow(window_item->GetWindow()))
       should_animate_item = false;
 
-    window_item->SetBounds(rects[i],
-                           should_animate_item
-                               ? OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
-                               : OVERVIEW_ANIMATION_NONE);
+    window_item->SetBounds(rects[i], should_animate_item
+                                         ? animation_type
+                                         : OVERVIEW_ANIMATION_NONE);
   }
 
   // If the selection widget is active, reposition it without any animation.
