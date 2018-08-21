@@ -116,6 +116,7 @@
 <translation id="5358375970380395591">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Atualizando o Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Há uma nova versão do Chromium disponível.</translation>
+<translation id="5416696090975899932">O Chromium não pode mostrar a visualização de impressão sem o visualizador de PDF integrado.</translation>
 <translation id="5427571867875391349">Definir o Chromium como seu navegador padrão</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" />: Chromium Beta</translation>
 <translation id="5466153949126434691">O Chromium é atualizado automaticamente para que você sempre tenha a versão mais recente. Quando o download estiver concluído, o Chromium será reiniciado e você estará pronto.</translation>

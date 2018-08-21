@@ -116,6 +116,7 @@
 <translation id="5358375970380395591">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium güncelleniyor (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromium'un yeni bir sürümü çıktı.</translation>
+<translation id="5416696090975899932">Chromium, dahili PDF görüntüleyici yokken baskı önizlemeyi gösteremez.</translation>
 <translation id="5427571867875391349">Chromium'u varsayılan tarayıcım olarak ayarla</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium otomatik olarak güncellenerek her zaman en yeni sürüme sahip olmanızı sağlar. Bu indirme işlemi tamamlandığında Chromium yeniden başlatılacak ve yolunuza devam edeceksiniz.</translation>

@@ -33,6 +33,17 @@
           Dacă această setare este dezactivată sau nu este configurată, gazda asistenței la distanță va rula în contextul utilizatorului, iar utilizatorii la distanță nu vor putea să interacționeze cu ferestrele cu privilegii superioare de pe computer.</translation>
 <translation id="1096105751829466145">Furnizor de căutare prestabilit</translation>
 <translation id="1099282607296956954">Activează Izolarea pentru fiecare site</translation>
+<translation id="1100570158310952027">
+      Politica specifică o listă de origini (adrese URL) sau modele de nume de gazdă (precum „*.example.com”) pentru care restricțiile de securitate cu privire la originile nesigure nu se vor aplica.
+
+Scopul este să permită organizațiilor să seteze origini din lista albă pentru aplicațiile vechi care nu pot implementa TLS sau să configureze un server de simulare pentru dezvoltările web interne, astfel încât dezvoltatorii lor să testeze funcții care necesită contexte sigure fără a trebui să implementeze TLS pe serverul de simulare. În plus, politica va împiedica etichetarea originii drept „Nesigură” în caseta polivalentă.
+
+Configurarea unei liste de adrese URL în această politică are același efect precum configurarea semnalizatorului de linie de comandă „--unsafely-treat-insecure-origin-as-secure” într-o listă cu aceleași adrese URL separate prin virgulă. Dacă politica este activată, ea va anula semnalizatorul de linie de comandă. 
+
+Această politică va înlocui UnsafelyTreatInsecureOriginAsSecure dacă este prezentă.
+
+Pentru mai multe informații despre contextele sigure, accesează https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Handlerele de protocol stabilite prin această politică nu sunt folosite pentru gestionarea intențiilor Android.</translation>
 <translation id="1118093128235245168">Permite site-urilor să-i solicite utilizatorului să acorde accesul la un dispozitiv USB conectat</translation>
 <translation id="1128903365609589950">Configurează directorul pe care <ph name="PRODUCT_NAME" /> îl va folosi pentru a stoca fișierele din memoria cache pe disc.
@@ -80,6 +91,7 @@
       Dacă această politică nu este configurată sau dacă este dezactivată, suitele de codificare RC4 din TLS nu vor fi activate. În caz contrar, politica poate fi activată pentru a se menține compatibilitatea cu un server învechit. Aceasta este o măsură temporară, iar serverul trebuie să fie reconfigurat.</translation>
 <translation id="1297182715641689552">Utilizează un script .pac pentru proxy</translation>
 <translation id="1304973015437969093">ID-uri pentru extensii/aplicații și adrese URL pentru actualizări de instalat în fundal</translation>
+<translation id="1307454923744766368">Origini sau modele de nume de gazdă pentru care nu se aplică restricțiile cu privire la originile nesigure</translation>
 <translation id="1313457536529613143">Specifică procentul de ajustare a intervalului până la reducerea luminozității ecranului atunci când se înregistrează activități ale utilizatorului în timp ce luminozitatea ecranului este redusă sau la scurt timp după ce ecranul a fost oprit.
 
           Dacă această politică este configurată, ea specifică procentul cu care este ajustat intervalul până la reducerea luminozității ecranului când se înregistrează activități ale utilizatorului în timp ce luminozitatea ecranului este redusă sau la scurt timp după ce ecranul a fost oprit. Dacă intervalul până la reducerea luminozității este ajustat, intervalele până la oprirea ecranului, blocarea ecranului sau trecerea la modul inactiv sunt modificate pentru a se păstra aceleași distanțe configurate inițial față de intervalul până la reducerea luminozității ecranului.
@@ -91,6 +103,11 @@
 <translation id="1327466551276625742">Activați solicitarea privind configurația rețelei, în modul offline</translation>
 <translation id="1330145147221172764">Activați tastatura pe ecran</translation>
 <translation id="13356285923490863">Numele politicii</translation>
+<translation id="1352174694615491349">Această politică permite fuzionarea conexiunilor HTTP/2 atunci când se folosesc certificatele client. Pentru a fuziona, numele de gazdă al potențialei conexiuni noi și cel al conexiunii existente trebuie să corespundă măcar unuia dintre tiparele descrise de această politică. Politica este o listă de gazde ce folosesc formatul de filtru URLBlacklist: „example.com” se potrivește cu „example.com” și toate subdomeniile (precum „sub.example.com”), în vreme ce „.example.net” se potrivește exact cu „example.net”.
+
+Solicitările de fuzionare pentru diferite gazde din conexiuni ce folosesc certificate client pot crea probleme de securitate și confidențialitate, deoarece autoritatea ambientală va fi transmisă tuturor solicitărilor, chiar dacă utilizatorul nu a aprobat explicit acest lucru. Această politică este temporară și va fi eliminată într-o versiune ulterioară. Accesează https://crbug.com/855690.
+
+Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu permite fuzionarea conexiunilor HTTP/2 pentru conexiunile care folosesc certificate client.</translation>
 <translation id="1353966721814789986">Pagini de pornire</translation>
 <translation id="1359553908012294236">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va permite conectările ca invitat. Conectările ca invitat sunt profiluri <ph name="PRODUCT_NAME" /> în care toate ferestrele sunt în modul incognito.
 
@@ -183,6 +200,7 @@
 <translation id="1583248206450240930">Utilizează <ph name="PRODUCT_FRAME_NAME" /> în mod prestabilit</translation>
 <translation id="1599424828227887013">Activează Izolarea site-ului pentru originile specificate pe dispozitive Android</translation>
 <translation id="1608755754295374538">Adresele URL cărora li se va acorda acces automat la dispozitivele de capturare a conținutului audio</translation>
+<translation id="1615221548356595305">Permite fuzionarea conexiunilor HTTP/2 pentru aceste gazde, chiar și atunci când se folosesc certificate client</translation>
 <translation id="1617235075406854669">Permite ștergerea istoricului browserului și a istoricului descărcărilor</translation>
 <translation id="163200210584085447">Șabloanele din această listă vor fi comparate cu
       originea de securitate a adresei URL solicitante. Dacă este identificată o potrivire, accesul la dispozitivele de capturare a
@@ -1165,7 +1183,6 @@
       Dacă politica nu este configurată, colectarea datelor anonimizate cu cheie URL va fi activă, dar utilizatorul o va putea modifica.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4261820385751181068">Limba de pe ecranul de conectare al dispozitivului</translation>
-<translation id="4264607809747169568">Controlează funcția Dispozitive de stocare în rețea pentru disponibilitatea sistemului de operare Chrome</translation>
 <translation id="427220754384423013">Specifică imprimantele pe care le poate folosi un utilizator.
 
       Această politică este folosită numai dacă opțiunea <ph name="PRINTERS_WHITELIST" /> este aleasă pentru <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1316,6 +1333,7 @@
       Dacă această politică este activată, site-urile vor avea permisiunea să navigheze și să deschidă ferestre/file noi în același timp.
       Dacă această politică este dezactivată sau nu este configurată, site-urile nu vor avea permisiunea să navigheze și să deschidă o fereastră/filă nouă în același timp.</translation>
 <translation id="4680961954980851756">Activează completarea automată</translation>
+<translation id="4703402283970867140">Activează modelul inteligent de reducere a luminozității pentru a extinde timpul până la întunecarea ecranului</translation>
 <translation id="4722122254122249791">Activează Izolarea site-ului pentru originile specificate</translation>
 <translation id="4722399051042571387">Dacă este dezactivată, utilizatorii nu vor putea configura coduri PIN slabe sau ușor de ghicit.
 
@@ -1531,13 +1549,6 @@
 <translation id="5370279767682621504">Activează compatibilitatea cu HTTP/0.9 pentru porturile care nu sunt prestabilite</translation>
 <translation id="5378985487213287085">Vă permite să setați dacă site-urile web au permisiunea de a afișa notificări pe desktop. Afișarea notificărilor pe desktop poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web vrea să afișeze notificări pe desktop. Dacă această politică nu este setată, va fi utilizată politica „AskNotifications”, iar utilizatorul va putea să o schimbe.</translation>
 <translation id="538108065117008131">Permite <ph name="PRODUCT_FRAME_NAME" /> să gestioneze următoarele tipuri de conținut.</translation>
-<translation id="5391363090783552279">Dacă această politică este activată, <ph name="PRODUCT_NAME" /> se va conecta la dispozitivele Google Cast folosind toate adresele IP, nu numai adresele private RFC1918/RFC4913.
-
-          Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> se va conecta la dispozitivele Google Cast folosind numai adresele private RFC1918/RFC4913.
-
-          Dacă această politică nu este configurată, <ph name="PRODUCT_NAME" /> se va conecta la dispozitivele Google Cast folosind numai adresele private RFC1918/RFC4913, cu excepția cazului în care este activată funcția CastAllowAllIPs.
-
-          Dacă politica „EnableMediaRouter” este dezactivată, valoarea acestei politici nu va avea niciun efect.</translation>
 <translation id="5392172595902933844">Informațiile despre starea Android sunt trimise la
       server.
 
@@ -2090,6 +2101,10 @@
 <translation id="6943577887654905793">Nume preferință Mac/Linux:</translation>
 <translation id="69525503251220566">Parametru care pune la dispoziție funcția Căutare după imagine pentru furnizorul de căutare prestabilit</translation>
 <translation id="6956272732789158625">Nu permite niciunui site să folosească generarea cheilor</translation>
+<translation id="6965859329738616662">Specifică dacă un model inteligent de reducere a luminozității poate extinde timpul până la întunecarea ecranului
+
+Atunci când ecranul este pe cale să se întunece, modelul inteligent de reducere a luminozității evaluează dacă reducerea luminozității trebuie amânată. Dacă modelul inteligent de reducere a luminozității amână acest eveniment, el extinde practic timpul până când ecranul se întunecă. În acest caz, duratele până la închiderea ecranului, blocarea acestuia și dezactivare se ajustează pentru a păstra același distanțe față de configurația inițială de întunecare a ecranului.
+Dacă politica este setată la True sau nu este setată, modelul inteligent de reducere a luminozității va fi activat și va putea extinde timpul până la întunecarea ecranului. Dacă politica este setată la False, modelul inteligent de reducere a luminozității nu va influența întunecarea ecranului.</translation>
 <translation id="6982028490425791294">
       Dacă politica este activată, <ph name="PRODUCT_NAME" /> poate să colecteze jurnale de evenimente WebRTC din serviciile Google (de exemplu, Google Meet) și să le încarce pe Google.
 
@@ -2513,6 +2528,13 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7980227303582973781">Fără restricții speciale</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotește ecranul la 0 grade</translation>
+<translation id="8033913082323846868">În M70 s-a renunțat la dezvoltarea acestei politici; folosește AutofillAddressEnabled și AutofillCreditCardEnabled.
+
+      Activează funcția de Completare automată din <ph name="PRODUCT_NAME" /> și permite utilizatorilor să completeze automat formularele web folosind informațiile stocate anterior, cum ar fi adresa fizică sau informațiile cardului de credit.
+
+      Dacă dezactivezi această setare, Completarea automată va fi inaccesibilă pentru utilizatori.
+
+      Dacă activezi această setare sau nu configurezi o valoare, Completarea automată va rămâne sub controlul utilizatorului. Acest lucru va permite utilizatorilor să configureze profiluri pentru Completarea automată și să activeze sau să dezactiveze funcția Completare automată după cum doresc.</translation>
 <translation id="8044493735196713914">Raportați modul de pornire al dispozitivului</translation>
 <translation id="8050080920415773384">Printare nativă</translation>
 <translation id="8059164285174960932">Adresa URL de unde clienții cu acces la distanță își pot obține indicativul de autentificare</translation>
@@ -2835,6 +2857,18 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
       Indică politica privind accesul care este folosită pentru configurarea imprimantelor în bloc. Dacă se selectează <ph name="PRINTERS_ALLOW_ALL" />, toate imprimantele sunt afișate. Dacă se selectează <ph name="PRINTERS_BLACKLIST" />, se va folosi <ph name="DEVICE_PRINTERS_BLACKLIST" /> pentru a se restricționa accesul la imprimantele specificate. Dacă se selectează <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> indică numai acele imprimante care se pot selecta.
 
       Dacă politica nu este configurată, se va folosi <ph name="PRINTERS_ALLOW_ALL" /> în mod prestabilit.
+      </translation>
+<translation id="8938932171964587769">În M69 s-a renunțat la dezvoltarea acestei politici. Folosește OverrideSecurityRestrictionsOnInsecureOrigin.
+
+Politica specifică o listă de origini (adrese URL) sau modele de nume de gazdă (precum „*.example.com”) pentru care restricțiile de securitate cu privire la originile nesigure nu se vor aplica.
+
+Scopul este să permită organizațiilor să seteze origini din lista albă pentru aplicațiile vechi care nu pot implementa TLS sau să configureze un server de simulare pentru dezvoltările web interne, astfel încât dezvoltatorii lor să testeze funcții care necesită contexte sigure fără a trebui să implementeze TLS pe serverul de simulare. În plus, politica va împiedica etichetarea originii drept „Nesigură” în caseta polivalentă.
+
+Configurarea unei liste de adrese URL în această politică are același efect precum configurarea semnalizatorului de linie de comandă „--unsafely-treat-insecure-origin-as-secure” într-o listă cu aceleași adrese URL separate prin virgulă. Dacă politica este activată, ea va anula semnalizatorul de linie de comandă.
+
+În M69 s-a renunțat la dezvoltarea acestei politici în favoarea OverrideSecurityRestrictionsOnInsecureOrigin. Dacă ambele politici sunt prezente, OverrideSecurityRestrictionsOnInsecureOrigin va înlocui această politică.
+
+Pentru mai multe informații despre contextele sigure, accesează https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Această politică gestionează dacă utilizatorul poate vedea Consimțământul de sincronizare la prima conectare. Ea trebuie setată la false dacă Consimțământul de sincronizare nu este niciodată necesar pentru utilizator.
       Dacă este setată la false, Consimțământul de sincronizare nu se va afișa.

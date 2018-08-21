@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Načine vnosa konfigurira skrbnik.</translation>
 <translation id="1747827819627189109">Zaslonska tipkovnica omogočena</translation>
 <translation id="1761222317188459878">Preklop omrežne povezave. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Kaj je na zaslonu?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Pomočnik (nalaganje ...)</translation>
 <translation id="1841545962859478868">Skrbnik naprave morda nadzira naslednje:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Dodaj povezavo</translation>
 <translation id="2961963223658824723">Prišlo je do napake. Poskusite znova čez nekaj sekund.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Pokaži vso vsebino obvestil</translation>
 <translation id="2995447421581609334">Prikaz naprav za predvajanje.</translation>
 <translation id="2996462380875591307">Zasidrana lupa je omogočena. Če jo želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + D.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> je javna seja, ki jo upravlja <ph name="DOMAIN" /></translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">Naprave</translation>
 <translation id="4659419629803378708">Omogočen je ChromeVox</translation>
 <translation id="4734965478015604180">Vodoravno</translation>
+<translation id="476166673298332917">Skrbnik te naprave ima dostop do vse dejavnosti, vključno z gesli in komunikacijami.</translation>
 <translation id="4776917500594043016">Geslo za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Prekini povezavo</translation>
 <translation id="4849058404725798627">Označitev predmeta s fokusom na tipkovnici</translation>
 <translation id="4872237917498892622">Alt + iskanje ali Shift</translation>
 <translation id="4890187583552566966">Skrbnik je onemogočil Pomočnika Google.</translation>
+<translation id="4893522937062257019">Na zaklenjenem zaslonu</translation>
 <translation id="4895488851634969361">Akumulator je poln.</translation>
 <translation id="490375751687810070">Navpično</translation>
 <translation id="4905614135390995787">Bližnjica za preklop na visokokontrastni način se je spremenila. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">Nastavitve funkcij za ljudi s posebnimi potrebami</translation>
 <translation id="5313326810920013265">Nastavitve za Bluetooth</translation>
 <translation id="5331975486040154427">Naprava USB-C (vrata levo zadaj)</translation>
+<translation id="5379115545237091094">Preveč poskusov</translation>
 <translation id="5397578532367286026">Upravitelj (<ph name="MANAGER_EMAIL" />) lahko na chrome.com pregleduje uporabo in zgodovino tega uporabnika.</translation>
 <translation id="5430931332414098647">Takojšnja povezava z internetom prek mobilnega telefona</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">Znova zaženi</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5911533659001334206">Pregledovalnik bližnjic</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="592343074608792716">Ta Chromebook in telefon se bosta samodejno povezala</translation>
 <translation id="5947494881799873997">Razveljavi</translation>
@@ -331,6 +337,7 @@
 <translation id="6972754398087986839">Začnite</translation>
 <translation id="6981982820502123353">Dostopnost</translation>
 <translation id="698231206551913481">Vse datoteke in lokalni podatki, povezani s tem uporabnikom, bodo trajno izbrisani, ko odstranite uporabnika.</translation>
+<translation id="7007100238996585961">Odgovor bo podan v drugi napravi</translation>
 <translation id="7015766095477679451">Vrnite se ob <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Zapusti sejo</translation>
 <translation id="7037152028959403492">Pritisnili ste bližnjico za visoki kontrast. Ali ga želite vklopiti?</translation>
@@ -352,6 +359,7 @@
 <translation id="7398254312354928459">Preklopljena omrežna povezava</translation>
 <translation id="742594950370306541">Kamera je v uporabi.</translation>
 <translation id="743058460480092004">Kamera in mikrofon sta v uporabi.</translation>
+<translation id="7497767806359279797">Izbira jezika in tipkovnice</translation>
 <translation id="7510334386202674593">Ctrl + Shift + L</translation>
 <translation id="7526573455193969409">Omrežje je morda nadzorovano</translation>
 <translation id="7536035074519304529">Naslov IP: <ph name="ADDRESS" /></translation>
@@ -361,6 +369,7 @@
 <translation id="7569509451529460200">Omogočena sta braillova pisava in ChromeVox</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
 <translation id="7604942372593434070">Dostop do dejavnosti brskanja</translation>
+<translation id="7642778300616172920">Skrij občutljivo vsebino</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (lastnik)</translation>
 <translation id="7647488630410863958">Če si želite ogledati obvestila, odklenite napravo</translation>
 <translation id="7649070708921625228">Pomoč</translation>
@@ -376,6 +385,7 @@
 <translation id="7842211907556571265">Vzpostavljanje povezave z omrežjem <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Opozorilo: poskusna funkcija</translation>
 <translation id="7846634333498149051">Tipkovnica</translation>
+<translation id="7886277072580235377">Seja interneta bo počiščena, ko se odjavite. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Upravljajte nastavitve zasebnosti</translation>
 <translation id="7904094684485781019">Skrbnik tega računa je onemogočil prijavo z več računi.</translation>
 <translation id="7933084174919150729">Pomočnik Google je na voljo samo za primarni profil.</translation>
@@ -416,6 +426,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Vnovično vzpostavljanje povezave ...</translation>
 <translation id="8513108775083588393">Samodejni zasuk</translation>
 <translation id="8517041960877371778">Akumulator naprave <ph name="DEVICE_TYPE" /> se morda ne bo polnil, medtem ko je naprava vklopljena.</translation>
+<translation id="8592141010104017453">Ne prikazuj obvestil</translation>
 <translation id="8627191004499078455">Vzpostavljena povezava z napravo <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931">Še <ph name="PERCENTAGE" /> %</translation>
 <translation id="8649101189709089199">Izberite in poslušajte</translation>

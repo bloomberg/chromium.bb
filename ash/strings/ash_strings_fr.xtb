@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Les modes de saisie sont configurés par votre administrateur.</translation>
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="1761222317188459878">Activer/Désactiver la connexion réseau. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Éléments affichés à l'écran</translation>
 <translation id="1823873187264960516">Ethernet : <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (chargement…)</translation>
 <translation id="1841545962859478868">L'administrateur de cet appareil peut contrôler les éléments suivants :</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Ajouter une connexion</translation>
 <translation id="2961963223658824723">Une erreur s'est produite. Veuillez réessayer dans quelques secondes.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Afficher tout le contenu des notifications</translation>
 <translation id="2995447421581609334">Afficher les appareils Cast.</translation>
 <translation id="2996462380875591307">Le mode Loupe ancrée est activé. Appuyez de nouveau sur Ctrl+Recherche+D pour le désactiver.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> est une session publique gérée par <ph name="DOMAIN" /></translation>
@@ -211,12 +213,14 @@
 <translation id="4628757576491864469">Appareils</translation>
 <translation id="4659419629803378708">ChromeVox activé</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">L'administrateur de cet appareil a accès à toute l'activité, y compris aux mots de passe et aux communications.</translation>
 <translation id="4776917500594043016">Mot de passe de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">rechercher</translation>
 <translation id="4804818685124855865">Se déconnecter</translation>
 <translation id="4849058404725798627">Mettre l'objet sélectionné au clavier en surbrillance</translation>
 <translation id="4872237917498892622">Alt + Recherche ou Maj</translation>
 <translation id="4890187583552566966">L'administrateur a désactivé l'Assistant Google.</translation>
+<translation id="4893522937062257019">Sur l'écran de verrouillage</translation>
 <translation id="4895488851634969361">La batterie est pleine.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">Le raccourci permettant d'activer ou de désactiver le mode Contraste élevé a été modifié. Veuillez utiliser "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
@@ -232,6 +236,7 @@
 <translation id="523505283826916779">Paramètres d'accessibilité</translation>
 <translation id="5313326810920013265">Paramètres Bluetooth</translation>
 <translation id="5331975486040154427">Appareil USB de type C (port situé sur la gauche de l'appareil, à l'arrière)</translation>
+<translation id="5379115545237091094">Trop de tentatives</translation>
 <translation id="5397578532367286026">Le gestionnaire (<ph name="MANAGER_EMAIL" />) peut consulter les actions effectuées cet utilisateur, ainsi que son historique, sur chrome.com.</translation>
 <translation id="5430931332414098647">Partage de connexion instantané</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -263,6 +268,7 @@
 <translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5901316534475909376">Maj+Échap</translation>
 <translation id="5911533659001334206">Visionneuse de raccourcis</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Activé</translation>
 <translation id="592343074608792716">Ce Chromebook et votre téléphone seront associés automatiquement</translation>
 <translation id="5947494881799873997">Rétablir</translation>
@@ -332,6 +338,7 @@
 <translation id="6972754398087986839">Démarrer</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="698231206551913481">L'ensemble des données locales et des fichiers associés à cet utilisateur seront définitivement supprimés en même temps que ce dernier.</translation>
+<translation id="7007100238996585961">Réponse sur un autre appareil…</translation>
 <translation id="7015766095477679451">Revenez à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Quitter la session</translation>
 <translation id="7037152028959403492">Vous avez utilisé le raccourci du contraste élevé. Voulez-vous l'activer ?</translation>
@@ -353,6 +360,7 @@
 <translation id="7398254312354928459">La connexion réseau a été établie</translation>
 <translation id="742594950370306541">La caméra est en cours d'utilisation.</translation>
 <translation id="743058460480092004">La caméra et le micro sont en cours d'utilisation.</translation>
+<translation id="7497767806359279797">Choisir la langue et le clavier</translation>
 <translation id="7510334386202674593">Ctrl+Maj+L</translation>
 <translation id="7526573455193969409">Il est possible que le réseau soit surveillé</translation>
 <translation id="7536035074519304529">Adresse IP : <ph name="ADDRESS" /></translation>
@@ -362,6 +370,7 @@
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
 <translation id="7604942372593434070">Accède à votre activité de navigation</translation>
+<translation id="7642778300616172920">Masquer le contenu sensible</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propriétaire)</translation>
 <translation id="7647488630410863958">Déverrouiller l'appareil pour consulter vos notifications</translation>
 <translation id="7649070708921625228">Aide</translation>
@@ -377,6 +386,7 @@
 <translation id="7842211907556571265">Connexion à <ph name="NETWORK_NAME" />…</translation>
 <translation id="7842569679327885685">Avertissement : Fonctionnalité expérimentale</translation>
 <translation id="7846634333498149051">Clavier</translation>
+<translation id="7886277072580235377">Votre session Internet est effacée lorsque vous vous déconnectez. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Modifier les paramètres de confidentialité</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="7933084174919150729">L'Assistant Google n'est disponible que pour le profil principal.</translation>
@@ -417,6 +427,7 @@
 <translation id="8484916590211895857"><ph name="NAME" /> : reconnexion…</translation>
 <translation id="8513108775083588393">Rotation automatique</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
+<translation id="8592141010104017453">N'afficher aucune notification</translation>
 <translation id="8627191004499078455">Connecté à <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restant(s)</translation>
 <translation id="8649101189709089199">Sélectionner pour prononcer</translation>

@@ -33,6 +33,30 @@
           Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, hos bantuan jauh akan dijalankan dalam konteks pengguna dan pengguna jauh tidak boleh berinteraksi dengan tetingkap ternaik pada desktop.</translation>
 <translation id="1096105751829466145">Pembekal carian lalai</translation>
 <translation id="1099282607296956954">Dayakan Pengasingan Tapak untuk setiap tapak</translation>
+<translation id="1100570158310952027">
+      Dasar ini menentukan senarai asalan (URL) atau corak nama hos (seperti
+      "*.contoh.com") yang baginya sekatan keselamatan terhadap
+      asalan yang tidak selamat tidak dikenakan.
+
+      Tujuannya adalah untuk membenarkan organisasi menetapkan asalan
+      senarai putih bagi aplikasi lama yang tidak dapat mengerah tugas TLS
+      atau menyediakan pelayan pemeringkatan untuk pembangunan web
+      dalaman agar pembangunnya boleh menguji ciri yang memerlukan
+      konteks selamat tanpa perlu mengerah tugas TLS pada pelayan.
+      pemeringkatan. Dasar ini juga menghalang asalan daripada dilabelkan
+      sebagai "Tidak Selamat" dalam kotak omni.
+
+      Menetapkan senarai URL dalam dasar ini mempunyai kesan yang
+      sama seperti menetapkan bendera baris perintah
+      '--unsafely-treat-insecure-origin-as-secure' kepada senarai dipisahkan
+      koma bagi URL yang sama. Jika dasar ini ditetapkan,
+      dasar ini akan mengatasi bendera baris perintah.
+
+      Dasar ini akan mengatasi UnsafelyTreatInsecureOriginAsSecure, jika ada.
+
+      Untuk mendapatkan maklumat lanjut tentang konteks selamat, lihat
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Pengendali protokol yang ditetapkan melalui dasar ini tidak digunakan semasa mengendalikan niat Android.</translation>
 <translation id="1118093128235245168">Benarkan tapak meminta pengguna memberikan akses kepada peranti USB yang disambungkan</translation>
 <translation id="1128903365609589950">Mengkonfigurasi direktori yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk menyimpan fail cache pada cakera.
@@ -80,6 +104,8 @@
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka suit sifer RC4 dalam TLS tidak akan didayakan. Jika tidak, dasar mungkin ditetapkan kepada benar untuk mengekalkan keserasian dengan pelayan yang sudah lapuk. Ini adalah langkah sementara dan pelayan harus dikonfigurasi semula.</translation>
 <translation id="1297182715641689552">Gunakan skrip proksi .pac</translation>
 <translation id="1304973015437969093">ID Sambungan/Apl dan URL kemas kini untuk dipasang secara senyap</translation>
+<translation id="1307454923744766368">Asalan atau corak nama hos yang baginya sekatan
+      terhadap asalan yang tidak selamat tidak dikenakan</translation>
 <translation id="1313457536529613143">Menentukan peratusan yang akan digunakan untuk menskala kelewatan pemalapan skrin apabila aktiviti pengguna diperhatikan semasa skrin dimalapkan atau tidak lama selepas skrin telah dimatikan. 
 
           Jika dasar ini ditetapkan, dasar ini menetapkan peratusan yang akan menskalakan kelewatan pemalapan skrin apabila aktiviti pengguna diperhatikan semasa skrin dimalapkan atau tidak lama selepas skrin telah dimatikan. Apabila kelewatan pemalapan diskalakan, kelewatan matikan skrin, kunci skrin dan melahu akan dilaraskan untuk mengekalkan jarak yang sama dari kelewatan pemalapan skrin seperti konfigurasi asal.
@@ -91,6 +117,11 @@
 <translation id="1327466551276625742">Dayakan gesaan konfigurasi rangkaian apabila di luar talian</translation>
 <translation id="1330145147221172764">Dayakan papan kekunci pada skrin</translation>
 <translation id="13356285923490863">Nama Dasar</translation>
+<translation id="1352174694615491349">Dasar ini membenarkan sambungan HTTP/2 bertaut apabila sijil pelanggan sedang digunakan. Untuk bertaut, nama hos bakal sambungan baharu dan juga nama hos sambungan yang sedia ada mesti sepadan dengan satu atau beberapa corak yang dihuraikan oleh dasar ini. Dasar ini ialah senarai hos yang menggunakan format penapis URLBlacklist: "contoh.com" sepadan dengan "contoh.com" dan semua subdomain (mis. "sub.contoh.com"), manakala ".contoh.net" benar-benar sepadan dengan "contoh.net".
+
+      Permintaan pertautan kepada hos yang berlainan melalui sambungan yang menggunakan sijil pelanggan boleh menimbulkan isu keselamatan dan privasi kerana keizinan ambien akan disampaikan kepada semua permintaan, walaupun pengguna tidak memberikan keizinan dengan jelas. Dasar ini bersifat sementara dan akan dialih keluar dalam keluaran yang akan datang. Lihat https://crbug.com/855690.
+
+      Jika dasar ini dibiarkan tidak ditetapkan, maka gelagat lalai yang tidak membenarkan mana-mana sambungan HTTP/2 bertaut pada sambungan yang menggunakan sijil pelanggan akan digunakan.</translation>
 <translation id="1353966721814789986">Halaman permulaan</translation>
 <translation id="1359553908012294236">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu merupakan profil <ph name="PRODUCT_NAME" /> yang semua tetingkapnya dalam mod inkognito.
 
@@ -184,6 +215,7 @@
 <translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME" /> secara lalai</translation>
 <translation id="1599424828227887013">Dayakan Pengasingan Tapak untuk asal yang ditentukan pada peranti Android</translation>
 <translation id="1608755754295374538">URL yang akan diberikan akses kepada peranti tangkapan audio tanpa gesaan</translation>
+<translation id="1615221548356595305">Benarkan pertautan sambungan HTTP/2 bagi hos ini walaupun sijil pelanggan sedang digunakan</translation>
 <translation id="1617235075406854669">Dayakan pemadaman sejarah penyemak imbas dan muat turun</translation>
 <translation id="163200210584085447">Corak dalam senarai ini akan dipadankan dengan keselamatan
       asal URL yang meminta.  Jika padanan ditemui, akses kepada peranti
@@ -1193,7 +1225,6 @@
       Jika dasar ini dibiarkan tanpa ditetapkan, pengumpulan data awanama termasuk URL akan didayakan, tetapi pengguna akan dapat menukarnya.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4261820385751181068">Tempat peristiwa skrin log masuk peranti</translation>
-<translation id="4264607809747169568">Mengawal Perkongsian Fail Rangkaian untuk ketersediaan OS Chrome</translation>
 <translation id="427220754384423013">Menentukan pencetak yang boleh digunakan oleh pengguna.
 
       Dasar ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1352,6 +1383,7 @@
       Jika dasar ini didayakan, tapak akan dibenarkan menavigasi dan membuka tetingkap/tab baharu secara serentak.
       Jika dasar ini dilumpuhkan atau tidak ditetapkan, tapak tidak dibenarkan menavigasi dan membuka tetingkap/tab baharu secara serentak.</translation>
 <translation id="4680961954980851756">Dayakan Auto Isi</translation>
+<translation id="4703402283970867140">Dayakan model pemalapan pintar untuk melanjutkan masa sehingga skrin dimalapkan</translation>
 <translation id="4722122254122249791">Dayakan Pengasingan Tapak untuk asal yang ditentukan</translation>
 <translation id="4722399051042571387">Jika palsu, pengguna tidak akan dapat menetapkan PIN yang lemah dan mudah diteka.
 
@@ -1578,13 +1610,6 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'AskNotifications' akan digunakan dan pengguna akan boleh mengubahnya.</translation>
 <translation id="538108065117008131">Benarkan <ph name="PRODUCT_FRAME_NAME" /> untuk menguruskan jenis kandungan berikut.</translation>
-<translation id="5391363090783552279">Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_NAME" /> akan menyambung ke peranti Cast pada semua alamat IP, bukan alamat peribadi RFC1918/RFC4913 semata-mata.
-
-          Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> akan menyambung ke peranti Cast pada alamat peribadi RFC1918/RFC4913 sahaja.
-
-          Jika dasar ini tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan menyambung ke peranti Cast pada alamat peribadi RFC1918/RFC4913 sahaja, melainkan ciri CastAllowAllIPs didayakan.
-
-          Jika dasar "EnableMediaRouter" ditetapkan kepada palsu, maka nilai dasar ini tidak memberikan sebarang kesan.</translation>
 <translation id="5392172595902933844">Maklumat tentang status Android dihantar kembali ke
       pelayan.
 
@@ -2156,6 +2181,10 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6943577887654905793">Nama keutamaan Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter yang menyediakan ciri cari melalui imej untuk penyedia carian lalai</translation>
 <translation id="6956272732789158625">Jangan benarkan mana-mana tapak untuk menggunakan penghasilan kunci</translation>
+<translation id="6965859329738616662">Menentukan sama ada model pemalapan pintar dibenarkan untuk melanjutkan masa sehingga skrin dimalapkan.
+
+      Apabila skrin hendak dimalapkan, model pemalapan pintar akan menilai sama ada pemalapan skrin harus ditunda. Jika model pemalapan pintar menunda pemalapan skrin, model itu melanjutkan masa sehingga skrin dimalapkan. Dalam kes ini, skrin dimatikan, kunci skrin dan kelengahan melahu dilaraskan untuk mengekalkan jarak yang sama dari kelengahan pemalapan skrin seperti yang dikonfigurasi pada asalnya.
+      Jika dasar ini ditetapkan kepada Benar atau dibiarkan tidak ditetapkan, model pemalapan pintar akan didayakan dan dibenarkan melanjutkan masa sehingga skrin dimalapkan. Jika dasar ini ditetapkan kepada Palsu, model pemalapan pintar tidak akan mempengaruhi pemalapan skrin.</translation>
 <translation id="6982028490425791294">
       Jika dasar ditetapkan kepada benar, <ph name="PRODUCT_NAME" /> dibenarkan mengumpulkan log peristiwa WebRTC daripada perkhidmatan Google (mis. Google Meet) dan memuat naik log tersebut ke Google.
 
@@ -2608,6 +2637,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7980227303582973781">Tiada sekatan khas</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Putar skrin 0 darjah</translation>
+<translation id="8033913082323846868">Dasar ini dimansuhkan dalam M70. Sebagai ganti, sila gunakan AutofillAddressEnabled dan AutofillCreditCardEnabled.
+
+      Mendayakan ciri Autolengkap <ph name="PRODUCT_NAME" /> dan membolehkan pengguna melengkapkan borang web secara automatik dengan menggunakan maklumat yang disimpan sebelum ini seperti alamat atau maklumat kad kredit.
+
+      Jika anda melumpuhkan tetapan ini, Autolengkap tidak akan dapat diakses oleh pengguna.
+
+      Jika anda mendayakan tetapan ini atau tidak menetapkan nilai, Autolengkap akan kekal di bawah kawalan pengguna. Perkara ini akan membenarkan mereka mengkonfigurasi profil Autolengkap dan menghidupkan atau mematikan Autolengkap mengikut budi bicara mereka sendiri.</translation>
 <translation id="8044493735196713914">Laporkan mod but peranti</translation>
 <translation id="8050080920415773384">Pencetakan Natif</translation>
 <translation id="8059164285174960932">URL di mana pelanggan akses jauh harus mendapatkan token pengesahan mereka</translation>
@@ -2940,6 +2976,35 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Menetapkan dasar akses yang digunakan untuk konfigurasi pencetak pukal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua pencetak akan dipaparkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="DEVICE_PRINTERS_BLACKLIST" /> akan digunakan untuk mengehadkan akses kepada pencetak yang ditetapkan. Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="DEVICE_PRINTERS_WHITELIST" /> akan menetapkan pencetak yang boleh dipilih sahaja.
 
       Jika dasar ini tidak ditetapkan, <ph name="PRINTERS_ALLOW_ALL" /> akan digunakan.
+      </translation>
+<translation id="8938932171964587769">Dimansuhkan dalam M69. Sebagai ganti, gunakan
+      OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Dasar ini menentukan senarai asalan (URL) atau corak nama hos
+      (seperti "*.contoh.com") yang baginya sekatan keselamatan
+      terhadap asalan yang tidak selamat tidak dikenakan.
+
+      Tujuannya adalah untuk membenarkan organisasi menetapkan asalan
+      senarai putih bagi aplikasi lama yang tidak dapat mengerah tugas TLS
+      atau menyediakan pelayan pemeringkatan untuk pembangunan web
+      dalaman agar pembangunnya boleh menguji ciri yang memerlukan
+      konteks selamat tanpa perlu mengerah tugas TLS pada pelayan
+      pemeringkatan. Dasar ini juga akan menghalang asalan daripada
+      dilabelkan sebagai "Tidak Selamat" dalam kotak omni.
+
+      Menetapkan senarai URL dalam dasar ini mempunyai kesan yang
+      sama seperti menetapkan bendera baris perintah
+      '--unsafely-treat-insecure-origin-as-secure' kepada senarai dipisahkan
+      koma bagi URL yang sama. Jika dasar ini ditetapkan,
+      dasar ini akan mengatasi bendera baris perintah.
+
+      Dasar ini dimansuhkan dalam M69 dan digantikan dengan
+      OverrideSecurityRestrictionsOnInsecureOrigin. Jika kedua-dua dasar
+      ada, OverrideSecurityRestrictionsOnInsecureOrigin akan mengatasi
+      dasar ini.
+
+      Untuk mendapatkan maklumat lanjut tentang konteks selamat, lihat
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Dasar ini mengawal sama ada Persetujuan Penyegerakan boleh ditunjukkan kepada pengguna semasa log masuk pertama. Dasar ini harus ditetapkan kepada palsu jika Persetujuan Penyegerakan tidak diperlukan untuk pengguna.
       Jika ditetapkan kepada palsu, Persetujuan Penyegerakan tidak akan dipaparkan.

@@ -33,6 +33,17 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, køres den eksterne hjælpehost i brugerens kontekst, og eksterne brugere kan ikke interagere med vinduer med administratorrettigheder på skrivebordet.</translation>
 <translation id="1096105751829466145">Standardsøgemaskine</translation>
 <translation id="1099282607296956954">Aktivér isolering af websites for alle websites</translation>
+<translation id="1100570158310952027">
+      Denne politik angiver en liste over kilder (webadresser) eller mønstre (f.eks. "*example.com") for hostnames, hvor sikkerhedsbegrænsninger på usikre kilder ikke anvendes.
+
+Hensigten er at give organisationer mulighed for at angive hvidlistekilder for forældede apps, der ikke kan implementere TLS, eller konfigurere en testserver til intern webudvikling, så deres udviklere kan teste funktioner, der kræver sikre kontekster, uden at skulle anvende TLS på testserveren. Denne politik forhindrer desuden, at kilden mærkes som "Ikke sikker" i omnifeltet.
+
+Angivelse af en liste over webadresser i denne politik har den samme effekt som indstilling af kommandolinjemarkeringen "--unsafely-treat-insecure-origin-as-secure" på en kommasepareret liste over de samme webadresser. Hvis politikken er angivet, tilsidesætter den kommandolinjemarkeringen.
+
+Denne politik tilsidesætter UnsafelyTreatInsecureOriginAsSecure, hvis den er til stede.
+
+Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">De protokolhandlere, der er angivet via denne politik, bruges ikke til håndtering af Android-formål.</translation>
 <translation id="1118093128235245168">Tillad, at websites anmoder en bruger om adgang til en tilsluttet USB-enhed i nærheden.</translation>
 <translation id="1128903365609589950">Konfigurerer det indeks, som <ph name="PRODUCT_NAME" /> anvender til at gemme cachelagrede filer på disken.
@@ -80,6 +91,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
       Hvis politikken ikke er angivet eller er angivet til Falsk, aktiveres RC4-krypteringsprogrammer i TLS ikke. Alternativt kan den angives til Sandt for at bevare kompatibiliteten med en forældet server. Dette er en midlertidig løsning, og serveren bør rekonfigureres.</translation>
 <translation id="1297182715641689552">Brug et .pac-proxyscript</translation>
 <translation id="1304973015437969093">Udvidelses-/app-id'er og opdateringswebadresser skal installeres ubemærket</translation>
+<translation id="1307454923744766368">Kilder eller mønstre for hostname, hvor begrænsninger på usikre kilder ikke bør anvendes</translation>
 <translation id="1313457536529613143">Angiver den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når der observeres brugeraktivitet, mens skærmen er nedtonet, eller umiddelbart efter skærmen slukkes.
 
           Hvis denne politik indstilles, angiver den den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når der observeres brugeraktivitet, mens skærmen er nedtonet, eller umiddelbart efter skærmen slukkes. Når nedtoningsforsinkelsen skaleres, tilpasses forsinkelsen for skærmsluk, skærmlås og inaktivitet for at bibeholde samme afstande fra nedtoningsforsinkelsen på skærmen som i den oprindelige konfiguration.
@@ -91,6 +103,11 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1327466551276625742">Aktivér meddelelse om netværkskonfiguration, når du er offline</translation>
 <translation id="1330145147221172764">Aktivér skærmtastatur</translation>
 <translation id="13356285923490863">Navn på politik</translation>
+<translation id="1352174694615491349">Denne politik tillader sammenkædning af HTTP/2-forbindelser, når klientcertifikater er i brug. Både den potentielle nye forbindelses hostname og en eksisterende forbindelses hostname skal matche et eller flere mønstre, der beskrives i denne politik, for at kunne sammenkædes. Politikken er en liste over hosts, der bruger filterformatet URLBlacklist: "example.com" matcher "example.com" og alle underdomæner (f.eks. "under.example.com"), mens ".example.net" nøjagtigt matcher "example.net".
+
+Anmodninger om sammenkædning til forskellige hosts via forbindelser, der bruger klientcertifikater, kan medføre problemer med sikkerhed og fortrolighed, da ambient authority overføres til alle anmodninger, selv om brugeren ikke specifikt har godkendt dette. Denne politik er midlertidig og fjernes i en fremtidig udgivelse. Se https://crbug.com/855690.
+
+Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-forbindelser får tilladelse til sammenkædning med forbindelser ved hjælp af klientcertifikater.</translation>
 <translation id="1353966721814789986">Startsider</translation>
 <translation id="1359553908012294236">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_NAME" /> gæstelogins. Gæstelogins er <ph name="PRODUCT_NAME" />-profiler, hvor alle vinduer er i inkognitotilstand.
 
@@ -182,6 +199,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1583248206450240930">Brug <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1599424828227887013">Aktivér isolering af websites for bestemte websites på Android-enheder</translation>
 <translation id="1608755754295374538">Webadresser, der får adgang til lydoptagelsesenheder, uden at du skal give tilladelse hertil</translation>
+<translation id="1615221548356595305">Tillad sammenkædning af HTTP/2-forbindelser for disse hosts, selv når der anvendes klientcertifikater</translation>
 <translation id="1617235075406854669">Aktivér sletning af browser- og downloadhistorik</translation>
 <translation id="163200210584085447">Mønstre på denne liste sammenlignes med sikkerhedskilden
       for den anmodede webadresse.  Hvis der findes et match, gives der
@@ -1162,7 +1180,6 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Hvis politikken ikke konfigureres, aktiveres den anonyme dataindsamling fra indtastede webadresser, men brugeren kan ændre den.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4261820385751181068">Landestandard for loginskærme på enheder</translation>
-<translation id="4264607809747169568">Styrer tilgængelighed af fildeling via netværk for Chrome OS</translation>
 <translation id="427220754384423013">Angiver, hvilke printere en bruger kan anvende.
 
       Denne politik anvendes kun, hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1313,6 +1330,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       Hvis politikken er aktiveret, kan websites navigere og åbne nye vinduer/faner samtidigt.
       Hvis politikken er deaktiveret eller ikke er angivet, kan websites ikke navigere eller åbne nye vinduer/faner samtidigt.</translation>
 <translation id="4680961954980851756">Aktiver AutoFyld</translation>
+<translation id="4703402283970867140">Aktivér smart nedtoningsmodel for at forlænge den tid, der går, inden skærmen nedtones</translation>
 <translation id="4722122254122249791">Aktivér isolering af websites for bestemte websites</translation>
 <translation id="4722399051042571387">Hvis den er angivet til falsk, kan brugerne ikke angive pinkoder, der er svage og nemme at gætte.
 
@@ -1523,13 +1541,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5370279767682621504">Aktivér understøttelse af HTTP/0.9 på ikke-standard-porte</translation>
 <translation id="5378985487213287085">Giver dig mulighed for at angive, om websites må vise underretninger på skrivebordet. Visning af underretninger på skrivebordet kan tillades som standard, nægtes som standard, eller brugeren kan blive spurgt, hver gang et website ønsker at vise underretninger på skrivebordet. Hvis denne politik ikke angives, anvendes "AskNotifications", og brugeren vil kunne ændre det.</translation>
 <translation id="538108065117008131">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> håndterer følgende indholdstyper.</translation>
-<translation id="5391363090783552279">Hvis politikken er angivet som Sand, opretter <ph name="PRODUCT_NAME" /> forbindelse til Cast-enheder på alle IP-adresser og ikke kun på private adresser af typen RFC1918/RFC4913.
-
-          Hvis politikken er angivet som Falsk, opretter <ph name="PRODUCT_NAME" /> kun forbindelse til Cast-enheder på private adresser af typen RFC1918/RFC4913.
-
-          Hvis politikken ikke er angivet, opretter <ph name="PRODUCT_NAME" /> kun forbindelse til Cast-enheder på private adresser af typen RFC1918/RFC4913, medmindre funktionen CastAllowAllIPs er aktiveret.
-
-          Hvis politikken "EnableMediaRouter" er angivet som Falsk, har værdien for denne politik ingen virkning.</translation>
 <translation id="5392172595902933844">Der sendes oplysninger om status for Android tilbage til
       serveren.
 
@@ -2076,6 +2087,10 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6943577887654905793">Præferencenavn for Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter, der leverer funktion til billedsøgning i standardsøgemaskinen</translation>
 <translation id="6956272732789158625">Tillad ikke, at websites anvender nøglegenerering</translation>
+<translation id="6965859329738616662">Angiver, om det er tilladt at bruge en smart nedtoningsmodel for at forlænge den tid, der går, inden skærmen nedtones.
+
+Når skærmen er ved at blive nedtonet, vurderer den smarte nedtoningsmodel, om nedtoningen af skærmen skal udskydes. Hvis den smarte nedtoningsmodel udskyder nedtoningen af skærmen, forlænges den tid, der går, inden skærmen nedtones. I dette tilfælde justeres skærmlåsen og inaktivitetsforsinkelsen, så de bevarer den samme afstand til skærmnedtoningsforsinkelsen som oprindeligt konfigureret.
+Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte nedtoningsmodel, som får tilladelse til at forlænge den tid, der går, inden skærmen nedtones. Hvis denne politik er angivet som falsk, har den smarte nedtoningsmodel ikke indflydelse på skærmnedtoning.</translation>
 <translation id="6982028490425791294">
       Hvis politikken er angivet som sand, har <ph name="PRODUCT_NAME" /> tilladelse til at indsamle WebRTC-hændelseslogfiler fra Google-tjenester (f.eks. Google Meet) og uploade de pågældende logfiler til Google.
 
@@ -2501,6 +2516,13 @@ BEMÆRK! Op til version 45 var denne funktion kun understøttet i terminaltilsta
 <translation id="7980227303582973781">Ingen særlige begrænsninger</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Roter skærmen 0 grader</translation>
+<translation id="8033913082323846868">Denne politik er udfaset i M70. Brug AutofillAddressEnabled og AutofillCreditCardEnabled i stedet for.
+
+Aktiverer funktionen AutoFyld i <ph name="PRODUCT_NAME" /> og giver brugerne mulighed for automatisk at udfylde webformularer med oplysninger, der tidligere er gemt, såsom oplysninger om adresser og kreditkort.
+
+Hvis du deaktiverer denne indstilling, er AutoFyld ikke tilgængelig for brugerne.
+
+Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver AutoFyld under brugerens kontrol. Dette giver brugerne mulighed for at konfigurere AutoFyld-profiler og for at aktivere og deaktivere AutoFyld efter eget valg.</translation>
 <translation id="8044493735196713914">Rapportér genstart på enheden</translation>
 <translation id="8050080920415773384">Indbygget udskrivning</translation>
 <translation id="8059164285174960932">Den webadresse, hvor klienten til fjernadgang skal hente deres godkendelsestoken</translation>
@@ -2817,6 +2839,18 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
       Angiver, hvilken adgangspolitik der anvendes til konfiguration af flere printere. Hvis <ph name="PRINTERS_ALLOW_ALL" /> er valgt, vises alle printere. Hvis <ph name="PRINTERS_BLACKLIST" /> er valgt, anvendes <ph name="DEVICE_PRINTERS_BLACKLIST" /> til at begrænse adgangen til de angivne printere. Hvis <ph name="PRINTERS_WHITELIST" /> er valgt, angiver <ph name="DEVICE_PRINTERS_WHITELIST" /> kun de printere, der kan vælges.
 
       Hvis politikken ikke angives, anvendes <ph name="PRINTERS_ALLOW_ALL" /> som standard.
+      </translation>
+<translation id="8938932171964587769">Udfaset i M69. Brug OverrideSecurityRestrictionsOnInsecureOrigin i stedet for.
+
+Denne politik angiver en liste over kilder (webadresser) eller mønstre (f.eks. "*example.com") for hostnames, hvor sikkerhedsbegrænsninger på usikre kilder ikke anvendes.
+
+Hensigten er at give organisationer mulighed for at angive hvidlistekilder for forældede apps, der ikke kan implementere TLS, eller konfigurere en testserver til intern webudvikling, så deres udviklere kan teste funktioner, der kræver sikre kontekster, uden at skulle anvende TLS på testserveren. Denne politik forhindrer desuden, at kilden mærkes som "Ikke sikker" i omnifeltet.
+
+Angivelse af en liste over webadresser i denne politik har den samme effekt som indstilling af kommandolinjemarkeringen "--unsafely-treat-insecure-origin-as-secure" på en kommasepareret liste over de samme webadresser. Hvis politikken er angivet, tilsidesætter den kommandolinjemarkeringen.
+
+Denne politik er udfaset i M69 til fordel for OverrideSecurityRestrictionsOnInsecureOrigin. Hvis begge politikker er til stede, tilsidesættes denne politik af OverrideSecurityRestrictionsOnInsecureOrigin.
+
+Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Denne politik styrer, hvorvidt samtykke til synkronisering kan vises til brugeren ved første login. Den bør angives som falsk, hvis brugeren aldrig behøver at bruge samtykke til synkronisering.
       Hvis den angives som falsk, vises samtykke til synkronisering ikke.

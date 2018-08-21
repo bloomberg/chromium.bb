@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Metody wprowadzania zostały skonfigurowane przez administratora.</translation>
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
 <translation id="1761222317188459878">Włącz lub wyłącz połączenie sieciowe. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Co widać na moim ekranie?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asystent (ładuję…)</translation>
 <translation id="1841545962859478868">Administrator urządzenia może monitorować te zdarzenia:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Dodaj połączenie</translation>
 <translation id="2961963223658824723">Coś poszło nie tak. Spróbuj ponownie za kilka sekund.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Pokazuj wszystkie powiadomienia</translation>
 <translation id="2995447421581609334">Pokaż urządzenia przesyłające.</translation>
 <translation id="2996462380875591307">Lupa zadokowana została włączona. Aby ją wyłączyć, naciśnij ponownie Ctrl+Search+D.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> jest publiczną sesją zarządzaną przez <ph name="DOMAIN" /></translation>
@@ -211,12 +213,14 @@
 <translation id="4628757576491864469">Urządzenia</translation>
 <translation id="4659419629803378708">Włączono ChromeVox</translation>
 <translation id="4734965478015604180">Orientacja pozioma</translation>
+<translation id="476166673298332917">Administrator tego urządzenia ma dostęp do wszystkiego, co robisz, w tym do haseł i komunikacji.</translation>
 <translation id="4776917500594043016">Hasło dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
 <translation id="4849058404725798627">Podświetlaj obiekt wybrany za pomocą klawiatury</translation>
 <translation id="4872237917498892622">Alt+Szukaj lub Shift</translation>
 <translation id="4890187583552566966">Asystenta Google wyłączył administrator.</translation>
+<translation id="4893522937062257019">Na ekranie blokady</translation>
 <translation id="4895488851634969361">Bateria jest pełna.</translation>
 <translation id="490375751687810070">Orientacja pionowa</translation>
 <translation id="4905614135390995787">Zmieniliśmy skrót, który włącza i wyłącza tryb wysokiego kontrastu. Użyj <ph name="NEW_SHORTCUT" /> zamiast <ph name="OLD_SHORTCUT" />.</translation>
@@ -232,6 +236,7 @@
 <translation id="523505283826916779">Ustawienia ułatwień dostępu</translation>
 <translation id="5313326810920013265">Ustawienia Bluetooth</translation>
 <translation id="5331975486040154427">Urządzenie USB-C (tylny port na lewym boku)</translation>
+<translation id="5379115545237091094">Zbyt wiele prób</translation>
 <translation id="5397578532367286026">Działania i historia tego użytkownika mogą być sprawdzane przez menedżera (<ph name="MANAGER_EMAIL" />) na chrome.com.</translation>
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -263,6 +268,7 @@
 <translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">Przeglądarka skrótów</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="592343074608792716">Ten Chromebook i Twój telefon będą się łączyć automatycznie</translation>
 <translation id="5947494881799873997">Przywróć</translation>
@@ -332,6 +338,7 @@
 <translation id="6972754398087986839">Rozpocznij</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="698231206551913481">Usunięcie tego użytkownika spowoduje trwałe usunięcie wszystkich związanych z nim plików i danych lokalnych.</translation>
+<translation id="7007100238996585961">Odpowiem na innym urządzeniu</translation>
 <translation id="7015766095477679451">Możesz wrócić o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
 <translation id="7037152028959403492">Naciśnięto skrót wysokiego kontrastu. Czy chcesz go włączyć?</translation>
@@ -353,6 +360,7 @@
 <translation id="7398254312354928459">Przełączono połączenie sieciowe</translation>
 <translation id="742594950370306541">Aparat jest używany.</translation>
 <translation id="743058460480092004">Aparat i mikrofon są używane.</translation>
+<translation id="7497767806359279797">Wybierz język i klawiaturę</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Sieć może być monitorowana</translation>
 <translation id="7536035074519304529">Adres IP: <ph name="ADDRESS" /></translation>
@@ -362,6 +370,7 @@
 <translation id="7569509451529460200">Włączono Braille'a i ChromeVox</translation>
 <translation id="7593891976182323525">Szukaj lub Shift</translation>
 <translation id="7604942372593434070">Uzyskaj dostęp do swojej aktywności związanej z przeglądaniem</translation>
+<translation id="7642778300616172920">Ukryj informacje poufne</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (właściciel)</translation>
 <translation id="7647488630410863958">Odblokuj urządzenie, by zobaczyć swoje powiadomienia</translation>
 <translation id="7649070708921625228">Pomoc</translation>
@@ -377,6 +386,7 @@
 <translation id="7842211907556571265">Łączę z siecią <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Ostrzeżenie: funkcja eksperymentalna</translation>
 <translation id="7846634333498149051">Klawiatura</translation>
+<translation id="7886277072580235377">Twoja sesja internetowa zostanie wyczyszczona, gdy się wylogujesz. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Manipulować ustawieniami ochrony prywatności</translation>
 <translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>
 <translation id="7933084174919150729">Asystent Google jest dostępny tylko na profilu głównym.</translation>
@@ -417,6 +427,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: ponownie łączę...</translation>
 <translation id="8513108775083588393">Autoobracanie</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
+<translation id="8592141010104017453">Nie pokazuj żadnych powiadomień</translation>
 <translation id="8627191004499078455">Połączono z urządzeniem <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931">Pozostało <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Przeczytaj na głos</translation>

@@ -120,6 +120,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5358375970380395591">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Chromium-profil. Dina uppgifter i Chromium, t.ex. dina appar, bokmärken, din historik, ditt lösenord och andra inställningar, kopplas då permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dem till något annat konto. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium uppdateras (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Det finns en ny version av Chromium.</translation>
+<translation id="5416696090975899932">Chromium kan inte visa förhandsgranskning av en utskrift när det inbyggda PDF-visningsprogrammet saknas.</translation>
 <translation id="5427571867875391349">Använd Chromium som standardwebbläsare</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium uppdateras automatiskt så att du alltid har den senaste versionen. När den här nedladdningen är klar startas Chromium om och sedan är du igång.</translation>

@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">入力方法は管理者によって設定されています。</translation>
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="1761222317188459878">ネットワーク接続を切り替えます。<ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">画面上のアイテムを検索します</translation>
 <translation id="1823873187264960516">イーサネット: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">アシスタント（読み込み中...）</translation>
 <translation id="1841545962859478868">デバイス管理者が次の情報を監視している可能性があります。</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">接続を追加</translation>
 <translation id="2961963223658824723">エラーが発生しました。数秒後にもう一度お試しください。</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">すべての通知内容を表示する</translation>
 <translation id="2995447421581609334">キャスト デバイスを表示します。</translation>
 <translation id="2996462380875591307">拡大鏡（ドッキング）がオンになっています。オフにするには Ctrl+検索+D キーをもう一度押します。</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> は <ph name="DOMAIN" /> が管理する公開セッションです</translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">デバイス</translation>
 <translation id="4659419629803378708">ChromeVox を有効にしました</translation>
 <translation id="4734965478015604180">横</translation>
+<translation id="476166673298332917">この端末の管理者は、パスワードや通信内容を含むすべてのアクティビティにアクセスできます。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> のパスワード</translation>
 <translation id="479989351350248267">検索</translation>
 <translation id="4804818685124855865">切断</translation>
 <translation id="4849058404725798627">キーボードのフォーカスがある項目をハイライト表示する</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
 <translation id="4890187583552566966">Google アシスタントは管理者によって無効にされています。</translation>
+<translation id="4893522937062257019">ロック画面</translation>
 <translation id="4895488851634969361">バッテリー残量: 満。</translation>
 <translation id="490375751687810070">縦</translation>
 <translation id="4905614135390995787">ハイ コントラスト モードを切り替えるショートカットが変わりました。これまでの <ph name="OLD_SHORTCUT" /> キーではなく <ph name="NEW_SHORTCUT" /> キーを使用してください。</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">ユーザー補助の設定</translation>
 <translation id="5313326810920013265">Bluetooth 設定</translation>
 <translation id="5331975486040154427">USB-C デバイス（左奥のポート）</translation>
+<translation id="5379115545237091094">試行回数が上限を超えました</translation>
 <translation id="5397578532367286026">このユーザーの利用状況や履歴は、chrome.com で管理者（<ph name="MANAGER_EMAIL" />）によって確認されます。</translation>
 <translation id="5430931332414098647">インスタント テザリング</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">再起動</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">ショートカット ビューア</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" />（<ph name="MAIL" />）</translation>
 <translation id="5916664084637901428">オン</translation>
 <translation id="592343074608792716">この Chromebook とお使いのスマートフォンは自動的に接続されます</translation>
 <translation id="5947494881799873997">元に戻す</translation>
@@ -331,6 +337,7 @@
 <translation id="6972754398087986839">開始する</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="698231206551913481">このユーザーを削除すると、このユーザーに関連付けられているファイルとローカルデータもすべて完全に削除されます。</translation>
+<translation id="7007100238996585961">別の端末で応答があります</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> になったら利用を再開できます。</translation>
 <translation id="7029814467594812963">セッションを終了</translation>
 <translation id="7037152028959403492">ハイ コントラストのショートカットを押しました。この機能をオンにしますか？</translation>
@@ -353,6 +360,7 @@
 <translation id="7398254312354928459">ネットワーク接続が切り替えられました</translation>
 <translation id="742594950370306541">カメラが使用中です。</translation>
 <translation id="743058460480092004">カメラとマイクが使用中です。</translation>
+<translation id="7497767806359279797">言語とキーボードを選択</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">ネットワークが監視されている可能性があります</translation>
 <translation id="7536035074519304529">IP アドレス: <ph name="ADDRESS" /></translation>
@@ -362,6 +370,7 @@
 <translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7604942372593434070">閲覧アクティビティへのアクセス</translation>
+<translation id="7642778300616172920">プライベートな内容を表示しない</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
 <translation id="7647488630410863958">デバイスのロックを解除して通知を確認してください</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
@@ -377,6 +386,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> に接続しています</translation>
 <translation id="7842569679327885685">警告: 試験運用版の機能</translation>
 <translation id="7846634333498149051">キーボード</translation>
+<translation id="7886277072580235377">ログアウトするとインターネット セッションは終了します。<ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">プライバシー関連設定を操作する</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
 <translation id="7933084174919150729">Google アシスタントはメインのプロフィールでのみご利用いただけます。</translation>
@@ -417,6 +427,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: 再接続しています...</translation>
 <translation id="8513108775083588393">自動回転</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> は電源がオンのままでは充電できない可能性があります。</translation>
+<translation id="8592141010104017453">通知を一切表示しない</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> と接続しました</translation>
 <translation id="8639760480004882931">バッテリー残量: <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">選択して読み上げ</translation>

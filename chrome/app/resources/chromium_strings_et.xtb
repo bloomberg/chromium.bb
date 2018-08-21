@@ -118,6 +118,7 @@
 <translation id="5358375970380395591">Logite sisse hallatud kontoga ja annate selle administraatorile üle Chromiumi profiili juhtimise. Teie Chromiumi andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromiumi värskendamine (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromiumi uus versioon on saadaval.</translation>
+<translation id="5416696090975899932">Chromium ei saa printimise eelvaadet kuvada, kui sisseehitatud PDF-vaatur puudub.</translation>
 <translation id="5427571867875391349">Määra Chromium vaikebrauseriks</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromiumi beetaversioon</translation>
 <translation id="5466153949126434691">Chromium teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni. Kui allalaadimine on lõppenud, siis Chrome taaskäivitub ja võite alustada kasutamist.</translation>

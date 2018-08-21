@@ -120,6 +120,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="1891331835972267886">A aplicação <ph name="APP_NAME" /> será aberta no Chrome. Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="189172778771606813">Fechar a gaveta de navegação</translation>
 <translation id="1919345977826869612">Anúncios</translation>
+<translation id="1919950603503897840">Selecionar contactos</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Separador selecionado</translation>
 <translation id="1938981467853765413">Fornecer comentário</translation>
@@ -291,6 +292,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
 <translation id="32895400574683172">As notificações são permitidas.</translation>
 <translation id="3295602654194328831">Ocultar informações</translation>
+<translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Pretende transferir o conteúdo?</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3341058695485821946">Veja a quantidade de dados que poupou.</translation>
@@ -855,6 +857,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7810647596859435254">Abrir com…</translation>
+<translation id="7821588508402923572">A sua poupança de dados é apresentada aqui</translation>
 <translation id="7832327313660264358">Os dados que sincroniza com o Google e as funcionalidades que utiliza não serão alterados.</translation>
 <translation id="7837721118676387834">Permitir a reprodução automática dos vídeos ignorados para um site específico.</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>

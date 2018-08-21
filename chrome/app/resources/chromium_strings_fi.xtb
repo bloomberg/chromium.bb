@@ -118,6 +118,7 @@
 <translation id="5358375970380395591">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Chromium-profiiliasi. Chromium-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME" />. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Päivitetään Chromiumia (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromiumista on saatavilla uusi versio.</translation>
+<translation id="5416696090975899932">Chromium ei voi näyttää tulostusesikatselua, koska PDF-katseluohjelma puuttuu.</translation>
 <translation id="5427571867875391349">Aseta Chromium oletusselaimeksi</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium päivittyy automaattisesti, joten käytössäsi on aina uusin versio. Kun lataus on valmis, Chromium käynnistyy uudelleen ja voit aloittaa käytön.</translation>

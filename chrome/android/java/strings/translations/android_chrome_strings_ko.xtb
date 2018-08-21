@@ -120,6 +120,7 @@
 <translation id="1891331835972267886"><ph name="APP_NAME" />이(가) Chrome에서 열립니다. 계속하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" />에 동의하는 것으로 간주됩니다.</translation>
 <translation id="189172778771606813">탐색 창 닫기</translation>
 <translation id="1919345977826869612">광고</translation>
+<translation id="1919950603503897840">연락처 선택</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">선택된 탭</translation>
 <translation id="1938981467853765413">의견 보내기</translation>
@@ -291,6 +292,7 @@
 <translation id="3282568296779691940">Chrome에 로그인</translation>
 <translation id="32895400574683172">알림이 허용되었습니다</translation>
 <translation id="3295602654194328831">정보 숨기기</translation>
+<translation id="3298243779924642547">라이트</translation>
 <translation id="3303414029551471755">콘텐츠를 다운로드하시겠습니까?</translation>
 <translation id="3328801116991980348">사이트 정보</translation>
 <translation id="3341058695485821946">저장한 데이터의 양 보기</translation>
@@ -855,6 +857,7 @@
 <translation id="7791543448312431591">추가</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7810647596859435254">연결 프로그램...</translation>
+<translation id="7821588508402923572">절약한 데이터 양이 여기에 표시됩니다</translation>
 <translation id="7832327313660264358">Google에 동기화하는 데이터 및 사용하는 기능은 변경되지 않습니다.</translation>
 <translation id="7837721118676387834">특정 사이트에서만 음소거된 동영상이 자동재생되도록 허용합니다.</translation>
 <translation id="7846076177841592234">선택 취소</translation>

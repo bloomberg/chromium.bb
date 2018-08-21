@@ -33,6 +33,17 @@
           Ja šis iestatījums ir atspējots vai nav konfigurēts, attālās palīdzības saimniekdators darbosies lietotāja kontekstā un attālie lietotāji nevarēs veikt darbības ar privileģētajiem logiem darbvirsmā.</translation>
 <translation id="1096105751829466145">Noklusējuma meklētājprogramma</translation>
 <translation id="1099282607296956954">Iespējot izolāciju visām vietnēm</translation>
+<translation id="1100570158310952027">
+      Šī politika nosaka avotu sarakstu (vietrāži URL) vai saimniekdatora nosaukumu modeļus (piemēram, “*.example.com”), kuriem nelieto nedrošu avotu drošības ierobežojumus.
+
+      Mērķis ir organizācijām atļaut iestatīt baltā saraksta avotus mantotajām lietojumprogrammām, kurās nevar izvietot TLS, vai iestatīt pakāpeniskās izlaišanas serveri iekšējai tīmekļa izstrādei, lai izstrādātāji varētu testēt funkcijas, kurām nepieciešama droša vide, neizvietojot TLS pakāpeniskās izlaišanas serverī. Ja tiks izmantota šī politika, universālajā lodziņā avots netiks apzīmēts kā “Nav droši”.
+
+      Iestatot vietrāžu URL sarakstu šajā politikā, iegūtie rezultāti būs tādi paši kā tad, ja komandrindas karodziņam “--unsafely-treat-insecure-origin-as-secure” iestatīsiet komatatdalītu sarakstu ar tiem pašiem vietrāžiem URL. Ja politika tiks iestatīta, komandrindas karodziņš tiks ignorēts.
+
+      Šī politika ignorēs politiku “UnsafelyTreatInsecureOriginAsSecure”, ja tā tiks izmantota.
+
+      Plašāku informāciju par drošu vidi skatiet vietnē https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Protokolu apdarinātāji, kas iestatīti, izmantojot šo politiku, netiek lietoti, kad tiek apstrādāti Android nolūki.</translation>
 <translation id="1118093128235245168">Atļaut vietnēm pieprasīt, lai lietotājs piešķirtu piekļuvi pievienotajai USB ierīcei</translation>
 <translation id="1128903365609589950">Konfigurē direktoriju, kuru <ph name="PRODUCT_NAME" /> izmantos kešatmiņā ievietoto failu glabāšanai diskā.
@@ -80,6 +91,7 @@
       Ja politika nav iestatīta vai ir iestatīta vērtība Nepatiesa, RC4 šifra komplekti standartā TLS netiks iespējoti. Politikai var iestatīt vērtību Patiesa, lai saglabātu saderību ar novecojušu serveri. Tas ir pagaidu risinājums, un serveris ir jākonfigurē atkārtoti.</translation>
 <translation id="1297182715641689552">Izmantot .pac starpniekservera skriptu</translation>
 <translation id="1304973015437969093">Paplašinājumu/lietotņu ID un atjauninājumu vietrāži URL instalēšanai klusajā režīmā</translation>
+<translation id="1307454923744766368">Avoti vai saimniekdatoru nosaukumu modeļi, kuriem nelieto nedrošu avotu ierobežojumus</translation>
 <translation id="1313457536529613143">Norāda aizkavi (procentos) līdz ekrāna aptumšošanai, kad tiek novērota lietotāja darbība, kamēr ekrāns ir aptumšots vai drīz pēc ekrāna izslēgšanas.
 
           Ja šī politika ir iestatīta, tā norāda aizkavi (procentos) līdz ekrāna aptumšošanai, kad tiek novērota lietotāja darbība, kamēr ekrāns ir aptumšots vai drīz pēc ekrāna izslēgšanas. Ja aptumšošanas aizkave ir mainīta, ekrāna izslēgšanas, ekrāna bloķēšanas un gaidstāves aizkaves tiek pielāgotas, lai nodrošinātu tādu pašu starplaiku no ekrāna aptumšošanas aizkaves, kāds bija sākotnēji konfigurēts.
@@ -91,6 +103,11 @@
 <translation id="1327466551276625742">Iespējot tīkla konfigurācijas uzvedni, kad dators darbojas bezsaistes režīmā</translation>
 <translation id="1330145147221172764">Iespējot ekrāna tastatūru</translation>
 <translation id="13356285923490863">Politikas nosaukums</translation>
+<translation id="1352174694615491349">Šī politika atļauj HTTP/2 savienojuma saaudzēšanu, kad tiek izmantoti klientu sertifikāti. Lai veiktu saaudzēšanu, gan potenciālā jaunā savienojuma saimniekdatora nosaukumam, gan esošā savienojuma saimniekdatora nosaukumam ir jāatbilst vienam vai vairākiem modeļiem, kas aprakstīti šajā politikā. Politika ir saimniekdatoru saraksts, kas izmanto politikas “URLBlacklist” filtra formātu: vienumam “example.com” atbilst “example.com” un visi apakšdomēni (piemēram, “sub.example.com”), savukārt vienumam “.example.net” precīzi atbilst “example.net”.
+
+      Saaudzēšanas pieprasījumi dažādiem saimniekdatoriem savienojumos, kuros tiek izmantoti klientu sertifikāti, var radīt drošības un konfidencialitātes problēmas, jo esošais pilnvarojums tiks piemērots visiem pieprasījumiem, pat ja lietotājs tos nebūs tieši atļāvis. Šī politika tiek izmantota īslaicīgi un tiks noņemta kādā no nākamajiem laidieniem. Plašāku informāciju skatiet vietnē https://crbug.com/855690.
+
+      Ja šī politika netiks iestatīta, tiks izmantots noklusējuma iestatījums: netiks atļauta nekāda HTTP/2 savienojuma saaudzēšana savienojumos, kuros tiek izmantoti klientu sertifikāti.</translation>
 <translation id="1353966721814789986">Sākumlapas</translation>
 <translation id="1359553908012294236">Ja šai politikai ir iestatīta vērtība Patiesa vai ja politika nav konfigurēta, pārlūkā <ph name="PRODUCT_NAME" /> tiek iespējota pieteikšanās viesa režīmā. Piesakoties viesa režīmā, tiek izveidoti <ph name="PRODUCT_NAME" /> profili, kuros visi logi ir inkognito režīmā.
 
@@ -184,6 +201,7 @@
 <translation id="1583248206450240930">Pēc noklusējuma lietot <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">Vietnes izolācijas iespējošana norādītiem sākumpunktiem Android ierīcēs</translation>
 <translation id="1608755754295374538">Vietrāži URL, kuriem tiks nodrošināta piekļuve audio tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
+<translation id="1615221548356595305">Atļaut HTTP/2 savienojumu saaudzēšanu šiem saimniekdatoriem, pat ja tiek izmantoti klientu sertifikāti</translation>
 <translation id="1617235075406854669">Iespējot pārlūka un lejupielādes vēstures dzēšanu</translation>
 <translation id="163200210584085447">Šajā sarakstā pieejamajiem šabloniem tiks meklēta atbilstība
       pieprasītā URL drošības avotam. Ja tiks atrasta atbilstība, piekļuve video
@@ -1190,7 +1208,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika nav iestatīta, uz vietrāžiem URL balstīta anonimizētu datu apkopošana ir iespējota, taču lietotājs to varēs mainīt.</translation>
 <translation id="4250680216510889253">Nē</translation>
 <translation id="4261820385751181068">Ierīces pierakstīšanās ekrāna lokalizācija</translation>
-<translation id="4264607809747169568">Kontrolē tīkla failu kopīgošanas ierīces ChromeOS pieejamībai</translation>
 <translation id="427220754384423013">Norāda printerus, ko lietotājs var izmantot.
 
       Šī politika tiek izmantota tikai tad, ja parametram <ph name="BULK_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_WHITELIST" />.
@@ -1349,6 +1366,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika ir iespējota, vietnēs drīkst vienlaikus pārvietoties un atvērt jaunus logus/cilnes.
       Ja šī politika ir atspējota, vietnēs nedrīkst vienlaikus pārvietoties un atvērt jaunus logus/cilnes.</translation>
 <translation id="4680961954980851756">Iespējo automātisko aizpildi</translation>
+<translation id="4703402283970867140">Iespējot viedās aptumšošanas modeli, lai paildzinātu laiku līdz ekrāna aptumšošanai</translation>
 <translation id="4722122254122249791">Iespējot izolāciju noteiktām vietnēm</translation>
 <translation id="4722399051042571387">Ja ir konfigurēta vērtība “false”, tiek novērsta nedrošu un viegli uzminamu PIN iestatīšana.
 
@@ -1580,13 +1598,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Ja šī politika nav iestatīta, tiks lietota politika AskNotifications un lietotājs to varēs mainīt.</translation>
 <translation id="538108065117008131">Atļauj produktam <ph name="PRODUCT_FRAME_NAME" /> apstrādāt tālāk minētos satura veidus.</translation>
-<translation id="5391363090783552279">Ja šai politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_NAME" /> izveidos savienojumu ar Cast ierīcēm visās IP adresēs, ne tikai RFC1918/RFC4913 privātajās adresēs.
-
-          Ja šai politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_NAME" /> izveidos savienojumu ar Cast ierīcēm tikai RFC1918/RFC4913 privātajās adresēs.
-
-          Ja šī politika nav iestatīta, <ph name="PRODUCT_NAME" /> izveidos savienojumu ar Cast ierīcēm tikai RFC1918/RFC4913 privātajās adresēs, izņemot gadījumus, kad ir iespējota funkcija “CastAllowAllIPs”.
-
-          Ja politikai “EnableMediaRouter” ir iestatīta vērtība “False”, šīs politikas vērtība nebūs spēkā.</translation>
 <translation id="5392172595902933844">Informācija par Android statusu tiek nosūtīta atpakaļ uz
       serveri.
 
@@ -2155,6 +2166,10 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6943577887654905793">Mac/Linux preferences nosaukums:</translation>
 <translation id="69525503251220566">Parametrs, kas noklusējuma meklēšanas pakalpojumu sniedzējam nodrošina funkciju Meklēšana pēc attēla</translation>
 <translation id="6956272732789158625">Neatļaut izmantot atslēgu ģenerēšanu nevienā vietnē</translation>
+<translation id="6965859329738616662">Norāda, vai viedās aptumšošanas modelis var paildzināt laiku, līdz ekrāns ir aptumšots.
+
+      Pirms ekrāna aptumšošanas viedās aptumšošanas modelis izvērtē, vai ekrāna aptumšošana ir jāaizkavē. Ja viedās aptumšošanas modelis aizkavē ekrāna aptumšošanu, faktiski tiek paildzināts laiks līdz ekrāna aptumšošanai. Šādā gadījumā ekrāna izslēgšanas, ekrāna bloķēšanas un dīkstāves aizkaves tiek pielāgotas, lai nodrošinātu tādu pašu laiku kopš ekrāna aptumšošanas aizkaves, kā sākotnēji konfigurēts.
+      Ja politikai ir iestatīta vērtība “True” vai tā nav iestatīta, viedās aptumšošanas modelis tiek iespējots un var paildzināt laiku līdz ekrāna aptumšošanai. Ja politikai ir iestatīta vērtība “False”, viedās aptumšošanas modelis neietekmē ekrāna aptumšošanu.</translation>
 <translation id="6982028490425791294">
       Ja šai politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_NAME" /> ir atļauts apkopot WebRTC notikumu žurnālus no Google pakalpojumiem (piem., Google Meet) un augšupielādēt šos žurnālus Google.
 
@@ -2607,6 +2622,13 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7980227303582973781">Nav specifisku ierobežojumu</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Pagriezt ekrānu par 0 grādiem</translation>
+<translation id="8033913082323846868">Šī politika laidienā M70 vairs netiek izmantota, lūdzu, tās vietā izmantojiet “AutofillAddressEnabled” un “AutofillCreditCardEnabled”.
+
+      Iespējo <ph name="PRODUCT_NAME" /> funkciju Automātiskā aizpilde un ļauj lietotājiem automātiski aizpildīt tīmekļa veidlapas, izmantojot iepriekš saglabātos datus, piemēram, informāciju par adresi vai kredītkarti.
+
+      Ja šis iestatījums ir atspējots, lietotāji nevarēs piekļūt funkcijai Automātiskā aizpilde.
+
+      Ja šis iestatījums ir iespējots vai tam nav iestatīta vērtība, lietotāji varēs pārvaldīt funkcijas Automātiskā aizpilde lietošanu. Tādējādi lietotāji varēs konfigurēt funkcijas Automātiskā aizpilde profilus un pēc saviem ieskatiem ieslēgt/izslēgt funkciju Automātiskā aizpilde.</translation>
 <translation id="8044493735196713914">Ziņot par ierīces sāknēšanas režīmu</translation>
 <translation id="8050080920415773384">Vietējā drukāšana</translation>
 <translation id="8059164285174960932">URL, kurā attālās piekļuves klientiem ir jāiegūst autentifikācijas pilnvara</translation>
@@ -2936,6 +2958,19 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Norāda, kura piekļuves politika tiek izmantota printeru lielapjoma konfigurācijai. Ja ir atlasīta vērtība <ph name="PRINTERS_ALLOW_ALL" />, tiek rādīti visi printeri. Ja ir atlasīta vērtība <ph name="PRINTERS_BLACKLIST" />, tiek izmantota politika <ph name="DEVICE_PRINTERS_BLACKLIST" />, lai ierobežotu piekļuvi norādītajiem printeriem. Ja ir atlasīta vērtība <ph name="PRINTERS_WHITELIST" />, politika <ph name="DEVICE_PRINTERS_WHITELIST" /> nosaka piekļuvi tikai tiem printeriem, kurus var atlasīt.
 
       Ja šī politika nav iestatīta, tiek izmantota vērtība <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Netiek izmantota laidienā M69. Tās vietā izmantojiet politiku “OverrideSecurityRestrictionsOnInsecureOrigin”.
+
+      Šī politika nosaka avotu sarakstu (vietrāži URL) vai saimniekdatora nosaukumu modeļus (piemēram, “*.example.com”), kuriem nelietos nedrošu avotu drošības ierobežojumi.
+
+      Mērķis ir organizācijām atļaut iestatīt baltā saraksta avotus mantotajām lietojumprogrammām, kurās nevar izvietot TLS, vai iestatīt pakāpeniskās izlaišanas serveri iekšējai tīmekļa izstrādei, lai izstrādātāji varētu testēt funkcijas, kurām nepieciešama droša vide, neizvietojot TLS pakāpeniskās izlaišanas serverī. Ja tiks izmantota šī politika, universālajā lodziņā avots netiks apzīmēts kā “Nav droši”.
+
+      Iestatot vietrāžu URL sarakstu šajā politikā, iegūtie rezultāti būs tādi paši kā tad, ja komandrindas karodziņam “--unsafely-treat-insecure-origin-as-secure” iestatīsiet komatatdalītu sarakstu ar tiem pašiem vietrāžiem URL. Ja politika tiks iestatīta, komandrindas karodziņš tiks ignorēts.
+.
+
+      Šī politika laidienā M69 vairs netiek izmantota; tās vietā lietojiet politiku “OverrideSecurityRestrictionsOnInsecureOrigin”. Ja ir pieejamas abas politikas, “OverrideSecurityRestrictionsOnInsecureOrigin” ignorēs šo politiku.
+
+      Plašāku informāciju par drošu vidi skatiet vietnē https://www.w3.org/TR/secure-contexts/.
       </translation>
 <translation id="8942616385591203339">Šī politika nosaka, vai lietotājam pirmajā pierakstīšanās reizē tiek rādīts dialoglodziņš sinhronizācijas atļaušanai. Ja lietotājam nekad nav nepieciešams rādīt dialoglodziņu sinhronizācijas atļaušanai, politikai jāiestata vērtība “False”.
       Ja ir iestatīta vērtība “False”, dialoglodziņš sinhronizācijas atļaušanai netiks rādīts.

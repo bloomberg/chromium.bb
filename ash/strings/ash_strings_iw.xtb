@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">מנהל המערכת שלך מגדיר את שיטות הקלט.</translation>
 <translation id="1747827819627189109">המקלדת שמופיעה במסך מופעלת</translation>
 <translation id="1761222317188459878">הפעלה או השבתה של החיבור לרשת. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">מה מופיע במסך שלי?</translation>
 <translation id="1823873187264960516">אתרנט: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">‏Assistant (בטעינה...)</translation>
 <translation id="1841545962859478868">ייתכן שמנהל המכשיר עוקב אחרי:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">הוסף חיבור</translation>
 <translation id="2961963223658824723">משהו השתבש. אפשר לנסות שוב בעוד כמה שניות.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">הצגת כל תוכן ההודעות</translation>
 <translation id="2995447421581609334">‏צפייה במכשירי Cast.</translation>
 <translation id="2996462380875591307">‏הזכוכית המגדלת במצב עגינה הופעלה. כדי לכבות אותה, יש להקיש שוב על Ctrl+Search+D.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> היא הפעלה ציבורית המנוהלת על ידי <ph name="DOMAIN" /></translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">מכשירים</translation>
 <translation id="4659419629803378708">‏ChromeVox הופעל</translation>
 <translation id="4734965478015604180">אופקי</translation>
+<translation id="476166673298332917">למנהל המכשיר הזה יש גישה אל כל הפעילות, כולל סיסמאות ותקשורת.</translation>
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">נתק</translation>
 <translation id="4849058404725798627">הדגשה של האובייקט במיקוד המקלדת</translation>
 <translation id="4872237917498892622">‏Alt + חיפוש או Shift</translation>
 <translation id="4890187583552566966">‏Google Assistant הושבת על-ידי מנהל המערכת.</translation>
+<translation id="4893522937062257019">במסך הנעילה</translation>
 <translation id="4895488851634969361">הסוללה טעונה במלואה.</translation>
 <translation id="490375751687810070">אנכי</translation>
 <translation id="4905614135390995787">מקש הקיצור להפעלה או כיבוי של מצב ניגודיות גבוהה השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">הגדרות נגישות</translation>
 <translation id="5313326810920013265">‏הגדרות Bluetooth</translation>
 <translation id="5331975486040154427">‏מכשיר עם יציאת USB-C (יציאה שמאלית-אחורית)</translation>
+<translation id="5379115545237091094">יותר מדי ניסיונות</translation>
 <translation id="5397578532367286026">‏המנהל (<ph name="MANAGER_EMAIL" />) יכול לבדוק את השימוש וההיסטוריה של משתמש זה ב-chrome.com.</translation>
 <translation id="5430931332414098647">שיתוף אינטרנט מיידי בין ניידים</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">מציג קיצורי הדרך</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">פועל</translation>
 <translation id="592343074608792716">‏ה-Chromebook הזה והטלפון שלך יתחברו באופן אוטומטי</translation>
 <translation id="5947494881799873997">חזרה לגרסה הקודמת</translation>
@@ -331,6 +337,7 @@
 <translation id="6972754398087986839">תחילת העבודה</translation>
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="698231206551913481">כל הקבצים והנתונים המשויכים למשתמש זה יימחקו לצמיתות ברגע שהמשתמש יוסר.</translation>
+<translation id="7007100238996585961">מענה במכשיר אחר</translation>
 <translation id="7015766095477679451">אפשר לחזור בשעה <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">צא מההפעלה</translation>
 <translation id="7037152028959403492">לחצת על מקש הקיצור של ניגודיות גבוהה. להפעיל אותה?</translation>
@@ -352,6 +359,7 @@
 <translation id="7398254312354928459">חיבור הרשת הוחלף</translation>
 <translation id="742594950370306541">המצלמה נמצאת בשימוש.</translation>
 <translation id="743058460480092004">המצלמה והמיקרופון נמצאים בשימוש.</translation>
+<translation id="7497767806359279797">בחירת שפה ומקלדת</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">ייתכן שהרשת מנוטרת</translation>
 <translation id="7536035074519304529">‏כתובת IP: <ph name="ADDRESS" /></translation>
@@ -363,6 +371,7 @@
 <translation id="7569509451529460200">‏כתב ברייל ו-ChromeVox מופעלים</translation>
 <translation id="7593891976182323525">‏חיפוש או Shift</translation>
 <translation id="7604942372593434070">כניסה לפעילות הגלישה שלך</translation>
+<translation id="7642778300616172920">הסתרה של תוכן רגיש</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (בעלים)</translation>
 <translation id="7647488630410863958">בטל את נעילת המכשיר כדי להציג את ההודעות</translation>
 <translation id="7649070708921625228">עזרה</translation>
@@ -378,6 +387,7 @@
 <translation id="7842211907556571265">המערכת מתחברת אל <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">אזהרה: תכונה ניסיונית</translation>
 <translation id="7846634333498149051">מקלדת</translation>
+<translation id="7886277072580235377">סשן הגלישה שלך יימחק אחרי היציאה. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">לשנות הגדרות הקשורות לפרטיות</translation>
 <translation id="7904094684485781019">מנהל החשבון הזה אסר על כניסה עם מספר חשבונות.</translation>
 <translation id="7933084174919150729">‏Google Assistant זמין רק לפרופיל ראשי.</translation>
@@ -418,6 +428,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: מתחבר מחדש...</translation>
 <translation id="8513108775083588393">סיבוב אוטומטי</translation>
 <translation id="8517041960877371778">ייתכן שה-<ph name="DEVICE_TYPE" /> לא ייטען כשהוא פועל.</translation>
+<translation id="8592141010104017453">לא להציג הודעות</translation>
 <translation id="8627191004499078455">יש חיבור אל <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931">שיעור טעינה נותר - <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">הקראה</translation>

@@ -120,6 +120,7 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="1891331835972267886">Programa „<ph name="APP_NAME" />“ bus atidaryta naršyklėje „Chrome“. Tęsdami sutinkate su „Chrome“ <ph name="BEGIN_LINK1" />paslaugų teikimo sąlygomis<ph name="END_LINK1" /> ir <ph name="BEGIN_LINK2" />privatumo pranešimu<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Uždaryti naršymo skydelį</translation>
 <translation id="1919345977826869612">Skelbimai</translation>
+<translation id="1919950603503897840">Kontaktų pasirinkimas</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> iš <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Pasirinktas skirtukas</translation>
 <translation id="1938981467853765413">Pateikti atsiliepimą</translation>
@@ -291,6 +292,7 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="3282568296779691940">Prisijungti prie „Chrome“</translation>
 <translation id="32895400574683172">Pranešimai leidžiami</translation>
 <translation id="3295602654194328831">Slėpti informaciją</translation>
+<translation id="3298243779924642547">Supapr.</translation>
 <translation id="3303414029551471755">Tęsti turinio atsisiuntimo procesą?</translation>
 <translation id="3328801116991980348">Svetainės informacija</translation>
 <translation id="3341058695485821946">Žr., kiek duomenų sutaupėte</translation>
@@ -855,6 +857,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7791543448312431591">Pridėti</translation>
 <translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="7810647596859435254">Atidaryti naudojant...</translation>
+<translation id="7821588508402923572">Čia bus rodoma informacija apie sutaupytus duomenis</translation>
 <translation id="7832327313660264358">Su „Google“ sinchronizuojami duomenys ir naudojamos funkcijos nepasikeis</translation>
 <translation id="7837721118676387834">Leisti automatiškai paleisti nutildytus vaizdo įrašus konkrečioje svetainėje</translation>
 <translation id="7846076177841592234">Atšaukti pasirinkimą</translation>

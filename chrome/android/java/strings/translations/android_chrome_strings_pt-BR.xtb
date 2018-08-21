@@ -120,6 +120,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="1891331835972267886">O app <ph name="APP_NAME" /> será aberto no Chrome. Ao continuar, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="189172778771606813">Fechar gaveta de navegação</translation>
 <translation id="1919345977826869612">Anúncios</translation>
+<translation id="1919950603503897840">Selecionar contatos</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Guia selecionada</translation>
 <translation id="1938981467853765413">Enviar feedback</translation>
@@ -291,6 +292,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="32895400574683172">Notificações são permitidas</translation>
 <translation id="3295602654194328831">Ocultar informações</translation>
+<translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Continuar com o download do conteúdo?</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3341058695485821946">Veja a quantidade de dados que você salvou</translation>
@@ -855,6 +857,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="780301667611848630">Não</translation>
 <translation id="7810647596859435254">Abrir com…</translation>
+<translation id="7821588508402923572">Sua economia de dados será exibida aqui</translation>
 <translation id="7832327313660264358">Os dados sincronizados com o Google e os recursos usados não serão alterados</translation>
 <translation id="7837721118676387834">Permite a reprodução automática de vídeos silenciados de um site específico.</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>

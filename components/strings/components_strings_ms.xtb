@@ -99,6 +99,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Sambungan peribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak boleh diwujudkan kerana tarikh dan masa peranti anda (<ph name="DATE_AND_TIME" />) tidak betul.&lt;/p&gt;
 
           &lt;p&gt;Sila laraskan tarikh dan masa daripada bahagian &lt;strong&gt;Umum&lt;/strong&gt; bagi apl &lt;strong&gt;Tetapan&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Kesilapan berlaku semasa memaparkan halaman web ini.</translation>
 <translation id="1592005682883173041">Akses Data Setempat</translation>
 <translation id="1594030484168838125">Pilih</translation>
@@ -138,6 +139,7 @@
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak sah</translation>
 <translation id="1826516787628120939">Menyemak</translation>
 <translation id="1834321415901700177">Tapak ini mengandungi atur cara berbahaya</translation>
+<translation id="1839551713262164453">Pengesahan nilai dasar gagal dengan ralat</translation>
 <translation id="1840414022444569775">Nombor kad ini sudah digunakan</translation>
 <translation id="1842969606798536927">Bayar</translation>
 <translation id="1871208020102129563">Proksi ditetapkan untuk menggunakan pelayan proksi tetap, bukannya URL skrip .pac.</translation>
@@ -208,6 +210,7 @@
 <translation id="2356070529366658676">Tanya</translation>
 <translation id="2359629602545592467">Berbilang</translation>
 <translation id="2359808026110333948">Teruskan</translation>
+<translation id="2360873523816792727">Untuk menggunakan kad anda pada semua peranti, hidupkan penyegerakan.</translation>
 <translation id="2365563543831475020">Laporan ranap sistem yang dirakam pada <ph name="CRASH_TIME" /> tidak dimuat naik</translation>
 <translation id="2367567093518048410">Tahap</translation>
 <translation id="2378238891085281592">Anda menggunakan mod peribadi</translation>
@@ -351,11 +354,13 @@
           <ph name="LIST_ITEM" />Kuki dan data tapak
           <ph name="LIST_ITEM" />Maklumat yang dimasukkan dalam borang
         <ph name="END_LIST" /></translation>
+<translation id="3366477098757335611">Lihat kad</translation>
 <translation id="3369192424181595722">Ralat Jam</translation>
 <translation id="337363190475750230">Nyahperuntukkan</translation>
 <translation id="3377188786107721145">Ralat menghuraikan dasar</translation>
 <translation id="3380365263193509176">Ralat tidak diketahui</translation>
 <translation id="3380864720620200369">ID Pelanggan:</translation>
+<translation id="3387261909427947069">Kaedah Pembayaran</translation>
 <translation id="3391030046425686457">Alamat penghantaran</translation>
 <translation id="3395827396354264108">Kaedah pengambilan</translation>
 <translation id="3399952811970034796">Alamat Penghantaran</translation>
@@ -453,6 +458,7 @@
 <translation id="4110652170750985508">Semak pembayaran anda</translation>
 <translation id="4116663294526079822">Sentiasa benarkan di tapak ini</translation>
 <translation id="4117700440116928470">Skop dasar tidak disokong.</translation>
+<translation id="4119109454650683048">Sila semak maklumat di bawah dan betulkan sebarang ralat, jika perlu</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 yang lain}other{# yang lain}}</translation>
 <translation id="4130226655945681476">Memeriksa kabel rangkaian, modem dan penghala</translation>
 <translation id="413544239732274901">Ketahui lebih lanjut</translation>
@@ -558,6 +564,7 @@
 <translation id="4854362297993841467">Kaedah penghantaran ini tidak tersedia. Cuba kaedah lain.</translation>
 <translation id="4858792381671956233">Anda telah bertanya kepada ibu bapa anda sama ada OK untuk melawat tapak ini</translation>
 <translation id="4876305945144899064">Tiada nama pengguna</translation>
+<translation id="4879491255372875719">Automatik (lalai)</translation>
 <translation id="4880827082731008257">Sejarah carian</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -623,6 +630,7 @@
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Tunjukkan semua kata laluan yang disimpan</translation>
 <translation id="5287240709317226393">Tunjukkan kuki</translation>
+<translation id="5288108484102287882">Pengesahan nilai dasar telah menimbulkan amaran</translation>
 <translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
 <translation id="5308380583665731573">Sambung</translation>
 <translation id="5308689395849655368">Pelaporan nahas dilumpuhkan.</translation>
@@ -635,6 +643,7 @@
 <translation id="536296301121032821">Gagal menyimpan tetapan dasar</translation>
 <translation id="5371425731340848620">Kemas kini kad</translation>
 <translation id="5377026284221673050">"Jam anda lambat" atau "Jam anda cepat" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5384855140246857529">Untuk menggunakan kad anda pada semua peranti, log masuk dan hidupkan penyegerakan.</translation>
 <translation id="5386426401304769735">Rantaian sijil untuk tapak ini mengandungi sijil yang ditandatangani menggunakan SHA-1.</translation>
 <translation id="5387961145478138773">Dapatkan akses pantas ke Google Apps kegemaran anda</translation>
 <translation id="540969355065856584">Pelayan ini tidak dapat membuktikan bahawa pelayan adalah <ph name="DOMAIN" />; sijil keselamatan pelayan tidak sah pada masa ini. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang memintas sambungan anda.</translation>
@@ -710,6 +719,7 @@
 <translation id="5893752035575986141">Kad kredit diterima.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (disegerakkan)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 sedang digunakan}other{# sedang digunakan}}</translation>
+<translation id="5922853866070715753">Hampir selesai</translation>
 <translation id="5939518447894949180">Tetapkan semula</translation>
 <translation id="5967592137238574583">Edit Maklumat Hubungan</translation>
 <translation id="5967867314010545767">Buang daripada sejarah</translation>
@@ -730,6 +740,7 @@
 <translation id="6051221802930200923">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana tapak web ini menggunakan penyematan sijil. Ralat dan serangan rangkaian biasanya bersifat sementara. Oleh sebab itu, halaman ini mungkin akan berfungsi semula kemudian.</translation>
 <translation id="6059925163896151826">Peranti USB</translation>
 <translation id="6071091556643036997">Jenis dasar tidak sah.</translation>
+<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Kad ini akan disimpan ke Akaun Google anda untuk mempercepatkan proses pembayaran pada semua peranti.}other{Kad ini akan disimpan ke Akaun Google anda untuk mempercepatkan proses pembayaran pada semua peranti.}}</translation>
 <translation id="6080696365213338172">Anda telah mengakses kandungan menggunakan perakuan yang disediakan oleh pentadbir. Data yang anda berikan kepada <ph name="DOMAIN" /> boleh dipintas oleh pentadbir anda.</translation>
 <translation id="610911394827799129">Akaun Google anda mungkin mempunyai bentuk sejarah penyemakan imbas yang lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Tiada}=1{1 kata laluan (disegerakkan)}other{# kata laluan (disegerakkan)}}</translation>
@@ -832,6 +843,7 @@
 <translation id="6965978654500191972">Peranti</translation>
 <translation id="6970216967273061347">Daerah</translation>
 <translation id="6973656660372572881">Pelayan proksi tetap dan juga URL skrip .pac tidak ditetapkan.</translation>
+<translation id="6979440798594660689">Redam (lalai)</translation>
 <translation id="6984479912851154518">Meninggalkan mod peribadi untuk membayar melalui aplikasi luar. Teruskan?</translation>
 <translation id="6989763994942163495">Paparkan tetapan lanjutan...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -852,6 +864,7 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lagi}other{<ph name="PAYMENT_METHOD_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lagi}}</translation>
 <translation id="717330890047184534">ID Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lagi}other{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lagi}}</translation>
+<translation id="7179323680825933600">Simpan dan Lengkapkan Kaedah Pembayaran</translation>
 <translation id="7180611975245234373">Muat semula</translation>
 <translation id="7182878459783632708">Tiada dasar ditetapkan</translation>
 <translation id="7186367841673660872">Halaman ini telah diterjemahkan dari<ph name="ORIGINAL_LANGUAGE" />ke<ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -863,6 +876,9 @@
 <translation id="7220786058474068424">Memproses</translation>
 <translation id="724691107663265825">Tapak di hadapan mengandungi perisian hasad</translation>
 <translation id="724975217298816891">Masukkan tarikh tamat tempoh dan CVC untuk <ph name="CREDIT_CARD" /> bagi mengemas kini butiran kad anda. Setelah anda mengesahkan, butiran kad anda akan dikongsi dengan tapak ini.</translation>
+<translation id="7251437084390964440">Konfigurasi rangkaian tidak mematuhi standard ONC. Sebahagian konfigurasi tidak boleh diimport.
+Butiran tambahan:
+<ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Sambungan peribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak boleh diwujudkan kerana tarikh dan masa komputer anda (<ph name="DATE_AND_TIME" />) tidak betul.</translation>
 <translation id="7260504762447901703">Batalkan akses</translation>
 <translation id="7271803869921933038">Kad Prabayar yang Diterima</translation>
@@ -1040,6 +1056,9 @@
 <translation id="8398259832188219207">Laporan ranap sistem dimuat naik pada <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Nahas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Anda mesti memasukkan frasa laluan yang sama dua kali.</translation>
+<translation id="8416694386774425977">Konfigurasi rangkaian tidak sah dan tidak boleh diimport.
+Butiran tambahan:
+<ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8433057134996913067">Pemadaman ini akan membuatkan anda dilog keluar daripada kebanyakan tapak web.</translation>
@@ -1072,13 +1091,16 @@
 <translation id="8725066075913043281">Cuba lagi</translation>
 <translation id="8728672262656704056">Anda menggunakan mod inkognito</translation>
 <translation id="8730621377337864115">Selesai</translation>
+<translation id="8733831205558190772">Semua kad anda di satu tempat</translation>
 <translation id="8738058698779197622">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Ini kerana sijil yang digunakan oleh tapak web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Chromium tidak boleh mengesahkan sijil-sijil ini.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Alamat DNS&lt;/abbr&gt; <ph name="HOST_NAME" /> tidak ditemui. Masalah sedang didiagnosis.</translation>
 <translation id="874846938927089722">Kad Kredit dan Prabayar yang Diterima</translation>
 <translation id="8759274551635299824">Kad ini telah tamat tempoh</translation>
 <translation id="8761567432415473239">Penyemakan Imbas Selamat Google baru-baru ini <ph name="BEGIN_LINK" />menemui atur cara berbahaya<ph name="END_LINK" /> pada <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Peranti USB</translation>
+<translation id="8768895707659403558">Untuk menggunakan kad pada semua peranti anda, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Buat semula pemadaman</translation>
+<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Kad ini telah ditambahkan pada Akaun Google anda. Kini anda boleh menggunakannya daripada mana-mana peranti yang dilog masuk.}other{Kad ini telah ditambahkan pada Akaun Google anda. Kini anda boleh menggunakannya daripada mana-mana peranti yang dilog masuk.}}</translation>
 <translation id="8792621596287649091">Anda boleh kehilangan akses kepada akaun <ph name="ORG_NAME" /> anda atau mengalami kecurian identiti. Chromium mengesyorkan supaya kata laluan anda ditukar sekarang.</translation>
 <translation id="8800988563907321413">Cadangan berdekatan anda dipaparkan di sini</translation>
 <translation id="8820817407110198400">Penanda buku</translation>

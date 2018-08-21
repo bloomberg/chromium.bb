@@ -120,6 +120,7 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="1891331835972267886">Aplikacija <ph name="APP_NAME" /> se bo odprla v Chromu. Če nadaljujete, se strinjate s Chromovimi <ph name="BEGIN_LINK1" />pogoji storitve<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Zapri predal za krmarjenje</translation>
 <translation id="1919345977826869612">Oglasi</translation>
+<translation id="1919950603503897840">Izbira stikov</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Izbrani zavihek</translation>
 <translation id="1938981467853765413">Povratne informacije</translation>
@@ -291,6 +292,7 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="3282568296779691940">Prijava v Google Chrome</translation>
 <translation id="32895400574683172">Obvestila so dovoljena</translation>
 <translation id="3295602654194328831">Skrij informacije</translation>
+<translation id="3298243779924642547">Osn. način</translation>
 <translation id="3303414029551471755">Ali želite prenesti vsebino?</translation>
 <translation id="3328801116991980348">Podatki o mestu</translation>
 <translation id="3341058695485821946">Oglejte si, koliko prenosa podatkov ste prihranili</translation>
@@ -855,6 +857,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7810647596859435254">Odpiranje z aplikacijo …</translation>
+<translation id="7821588508402923572">Prihranek pri količini prenesenih podatkov bo prikazan tukaj</translation>
 <translation id="7832327313660264358">Podatki, ki jih sinhronizirate z Googlom, in funkcije, ki jih uporabljate, se ne bodo spremenili</translation>
 <translation id="7837721118676387834">Dovoli samodejno predvajanje videoposnetkov z izklopljenim zvokom za določeno spletno mesto.</translation>
 <translation id="7846076177841592234">Prekliči izbor</translation>

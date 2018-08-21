@@ -54,6 +54,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="1690731385917361335">Keine Elemente</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ausgewählt</translation>
 <translation id="1740468249224277719">Tippen Sie hier doppelt, um die Installation zu starten.</translation>
+<translation id="1746815479209538200">Fügen Sie einen neuen Tab hinzu, um im Web zu surfen.</translation>
 <translation id="17513872634828108">Geöffnete Tabs</translation>
 <translation id="1752547299766512813">Passwörter speichern</translation>
 <translation id="1753905327828125965">Meistbesucht</translation>
@@ -392,12 +393,15 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7638584964844754484">Falsche Passphrase</translation>
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
+<translation id="766891008101699113">Fügen Sie einen neuen Tab hinzu, um privat im Web zu surfen.</translation>
 <translation id="7671141431838911305">Installieren</translation>
 <translation id="7765158879357617694">Verschieben</translation>
 <translation id="7769602470925380267">Akzeptieren und abmelden</translation>
 <translation id="7772032839648071052">Passphrase bestätigen</translation>
+<translation id="7781829728241885113">Gestern</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7830720446622801252">Nicht-personalisierte Dienste</translation>
+<translation id="7840771868269352570">Die ausgewählten Elemente werden entfernt.</translation>
 <translation id="7856733331829174190">Fehler beim Download</translation>
 <translation id="7859704718976024901">Browserverlauf</translation>
 <translation id="7918293828610777738">Ihre Leseliste ist offline verfügbar. Sie können eine Seite Ihrer Leseliste hinzufügen, indem Sie auf <ph name="SHARE_OPENING_ICON" /> &gt; <ph name="READ_LATER_TEXT" /> tippen.</translation>

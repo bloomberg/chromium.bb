@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Os métodos de introdução são configurados pelo gestor.</translation>
 <translation id="1747827819627189109">Teclado no ecrã ativado</translation>
 <translation id="1761222317188459878">Ativar/desativar ligação de rede. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">O que está no meu ecrã?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (a carregar...)</translation>
 <translation id="1841545962859478868">O gestor do dispositivo pode monitorizar o seguinte:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Adicionar ligação</translation>
 <translation id="2961963223658824723">Ocorreu um erro. Tente novamente dentro de alguns segundos.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Mostrar todo o conteúdo das notificações</translation>
 <translation id="2995447421581609334">Mostrar dispositivos de transmissão.</translation>
 <translation id="2996462380875591307">Lupa ancorada ativada. Prima Ctrl + Pesquisa + D novamente para a desativar.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> é uma sessão pública gerida por <ph name="DOMAIN" /></translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4659419629803378708">ChromeVox ativado</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">O administrador deste dispositivo tem acesso a toda a atividade, incluindo palavras-passe e comunicações.</translation>
 <translation id="4776917500594043016">Palavra-passe para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desligar</translation>
 <translation id="4849058404725798627">Realçar objeto com foco do teclado</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
 <translation id="4890187583552566966">O Assistente Google foi desativado pelo administrador.</translation>
+<translation id="4893522937062257019">No ecrã de bloqueio</translation>
 <translation id="4895488851634969361">A bateria está carregada.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">O atalho para ativar/desativar o Modo de alto contraste foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">Definições de acessibilidade</translation>
 <translation id="5313326810920013265">Definições de Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira do lado esquerdo)</translation>
+<translation id="5379115545237091094">Demasiadas tentativas</translation>
 <translation id="5397578532367286026">A utilização e o histórico deste utilizador podem ser consultados pelo gestor (<ph name="MANAGER_EMAIL" />) em chrome.com.</translation>
 <translation id="5430931332414098647">Ligação via telemóvel instantânea</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">Visualizador de atalhos</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="592343074608792716">O Chromebook e o telemóvel serão associados automaticamente.</translation>
 <translation id="5947494881799873997">Reverter</translation>
@@ -331,6 +337,7 @@
 <translation id="6972754398087986839">Começar</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="698231206551913481">Todos os ficheiros e dados locais associados a este utilizador são permanentemente eliminados assim que este utilizador é removido.</translation>
+<translation id="7007100238996585961">Responder noutro dispositivo</translation>
 <translation id="7015766095477679451">Volte à(s) <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
 <translation id="7037152028959403492">Premiu o atalho de alto contraste. Pretende ativá-lo?</translation>
@@ -352,6 +359,7 @@
 <translation id="7398254312354928459">Ligação de rede alterada</translation>
 <translation id="742594950370306541">A câmara está a ser utilizada.</translation>
 <translation id="743058460480092004">A câmara e o microfone estão a ser utilizados.</translation>
+<translation id="7497767806359279797">Escolher idioma e teclado</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">A rede pode ser monitorizada</translation>
 <translation id="7536035074519304529">Endereço IP: <ph name="ADDRESS" /></translation>
@@ -361,6 +369,7 @@
 <translation id="7569509451529460200">O braille e o ChromeVox estão ativados</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7604942372593434070">Acesso à sua atividade de navegação</translation>
+<translation id="7642778300616172920">Ocultar conteúdo sensível</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietário)</translation>
 <translation id="7647488630410863958">Desbloquear o dispositivo para ver as notificações</translation>
 <translation id="7649070708921625228">Ajuda</translation>
@@ -376,6 +385,7 @@
 <translation id="7842211907556571265">A ligar a <ph name="NETWORK_NAME" />…</translation>
 <translation id="7842569679327885685">Aviso: funcionalidade experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
+<translation id="7886277072580235377">Quando terminar sessão, a sua sessão de Internet será apagada. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Manipular as definições relacionadas com privacidade</translation>
 <translation id="7904094684485781019">O gestor desta conta removeu a permissão de início de sessão integrado.</translation>
 <translation id="7933084174919150729">O Assistente Google está disponível apenas no perfil principal.</translation>
@@ -416,6 +426,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: a restabelecer ligação...</translation>
 <translation id="8513108775083588393">Rotação automática</translation>
 <translation id="8517041960877371778">O <ph name="DEVICE_TYPE" /> pode não carregar enquanto estiver ligado.</translation>
+<translation id="8592141010104017453">Não mostrar qualquer notificação</translation>
 <translation id="8627191004499078455">Ligado a <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
 <translation id="8649101189709089199">Selecionar para falar</translation>
@@ -445,7 +456,7 @@
 <translation id="899350903320462459">Desbloqueie o dispositivo como <ph name="LOGIN_ID" /> para realizar a ação de notificação.</translation>
 <translation id="8995603266996330174">Gerido por <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Atualização do Adobe Flash Player disponível</translation>
-<translation id="9056839673611986238">O dispositivo vai ser revertido</translation>
+<translation id="9056839673611986238">O dispositivo voltará à versão anterior</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">O microfone está a ser utilizado.</translation>

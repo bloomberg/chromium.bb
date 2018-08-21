@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Адміністратор налаштував методи введення.</translation>
 <translation id="1747827819627189109">Екранну клавіатуру ввімкнено</translation>
 <translation id="1761222317188459878">Увімкнути/вимкнути з’єднання з мережею. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Що на моєму екрані?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Асистент (завантаження…)</translation>
 <translation id="1841545962859478868">Адміністратор пристрою може відстежувати таку інформацію:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Додати з’єднання</translation>
 <translation id="2961963223658824723">Сталася помилка. Повторіть спробу за кілька секунд.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Показувати весь вміст сповіщень</translation>
 <translation id="2995447421581609334">Показати пристрої для трансляції</translation>
 <translation id="2996462380875591307">Увімкнено закріплену лупу. Щоб вимкнути її, знову натисніть комбінацію Ctrl + клавіша пошуку + D.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> – загальнодоступний сеанс, керований доменом <ph name="DOMAIN" /></translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">Пристрої</translation>
 <translation id="4659419629803378708">ChromeVox увімкнено</translation>
 <translation id="4734965478015604180">Горизонтально</translation>
+<translation id="476166673298332917">Адміністратор цього пристрою має доступ до всієї активності, зокрема паролів і взаємодій.</translation>
 <translation id="4776917500594043016">Пароль користувача  <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">пошук</translation>
 <translation id="4804818685124855865">Від'єднатися</translation>
 <translation id="4849058404725798627">Підсвічувати об’єкт, вибраний на клавіатурі</translation>
 <translation id="4872237917498892622">Alt+клавіша пошуку або Shift</translation>
 <translation id="4890187583552566966">Ваш адміністратор вимкнув Google Асистент.</translation>
+<translation id="4893522937062257019">На екрані блокування</translation>
 <translation id="4895488851634969361">Акумулятор заряджений.</translation>
 <translation id="490375751687810070">Вертикально</translation>
 <translation id="4905614135390995787">Комбінація клавіш для керування режимом високого контрасту змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">Налаштування доступності</translation>
 <translation id="5313326810920013265">Налаштування Bluetooth</translation>
 <translation id="5331975486040154427">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
+<translation id="5379115545237091094">Забагато спроб</translation>
 <translation id="5397578532367286026">Менеджер (<ph name="MANAGER_EMAIL" />) може переглядати дії й історію цього користувача на chrome.com.</translation>
 <translation id="5430931332414098647">Миттєва точка доступу</translation>
 <translation id="5431825016875453137">OpenVPN або L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">Перезапустити</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">Засіб перегляду комбінацій клавіш</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Увімкнути</translation>
 <translation id="592343074608792716">Цей комп’ютер Chromebook і телефон підключатимуться автоматично</translation>
 <translation id="5947494881799873997">Повернути</translation>
@@ -331,6 +337,7 @@
 <translation id="6972754398087986839">Почати</translation>
 <translation id="6981982820502123353">Доступність</translation>
 <translation id="698231206551913481">Якщо видалити цього користувача, усі файли та локальні дані, зв’язані з ним, буде видалено назавжди.</translation>
+<translation id="7007100238996585961">Відповідь на іншому пристрої</translation>
 <translation id="7015766095477679451">Поверніться о <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Завершити сеанс</translation>
 <translation id="7037152028959403492">Ви натиснули комбінацію клавіш для високого контрасту. Увімкнути?</translation>
@@ -352,6 +359,7 @@
 <translation id="7398254312354928459">З’єднання з мережею змінено</translation>
 <translation id="742594950370306541">Камера використовується.</translation>
 <translation id="743058460480092004">Камера та мікрофон використовуються.</translation>
+<translation id="7497767806359279797">Вибрати мову та клавіатуру</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Мережевий трафік може відстежуватися</translation>
 <translation id="7536035074519304529">ІР-адреса: <ph name="ADDRESS" /></translation>
@@ -361,6 +369,7 @@
 <translation id="7569509451529460200">Шрифт Брайля та ChromeVox увімкнено</translation>
 <translation id="7593891976182323525">Клавіша пошуку або Shift</translation>
 <translation id="7604942372593434070">Доступ до даних веб-перегляду</translation>
+<translation id="7642778300616172920">Ховати конфіденційний вміст</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (власник)</translation>
 <translation id="7647488630410863958">Розблокуйте пристрій, щоб переглянути сповіщення</translation>
 <translation id="7649070708921625228">Довідка</translation>
@@ -376,6 +385,7 @@
 <translation id="7842211907556571265">Під’єднання до мережі: <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Попередження. Експериментальна функція</translation>
 <translation id="7846634333498149051">Клавіатура</translation>
+<translation id="7886277072580235377">Коли ви вийдете з облікового запису, дані інтернет-сеансу буде стерто. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Керувати налаштуваннями, пов’язаними з конфіденційністю</translation>
 <translation id="7904094684485781019">Адміністратор цього облікового запису заборонив паралельний вхід.</translation>
 <translation id="7933084174919150729">Google Асистент доступний лише в основному профілі.</translation>
@@ -416,6 +426,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: під’єднання…</translation>
 <translation id="8513108775083588393">Автообертання</translation>
 <translation id="8517041960877371778">Пристрій <ph name="DEVICE_TYPE" /> може не заряджатися, коли він увімкнений.</translation>
+<translation id="8592141010104017453">Узагалі не показувати сповіщення</translation>
 <translation id="8627191004499078455">Під’єднано до пристрою: <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931">Залишилося <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Читання з екрана</translation>

@@ -120,6 +120,7 @@
 <translation id="1891331835972267886">Η εφαρμογή <ph name="APP_NAME" /> θα ανοίξει στο Chrome. Εάν συνεχίσετε, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση απορρήτου<ph name="END_LINK2" /> του Chrome.</translation>
 <translation id="189172778771606813">Κλείσιμο συρταριού πλοήγησης</translation>
 <translation id="1919345977826869612">Διαφημίσεις</translation>
+<translation id="1919950603503897840">Επιλογή επαφών</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Επιλεγμένη καρτέλα</translation>
 <translation id="1938981467853765413">Στείλτε τα σχόλιά σας</translation>
@@ -291,6 +292,7 @@
 <translation id="3282568296779691940">Σύνδεση στο Chrome</translation>
 <translation id="32895400574683172">Οι ειδοποιήσεις επιτρέπονται</translation>
 <translation id="3295602654194328831">Απόκρυψη πληροφοριών</translation>
+<translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Συνέχεια για λήψη του περιεχομένου;</translation>
 <translation id="3328801116991980348">Πληροφορίες ιστοτόπου</translation>
 <translation id="3341058695485821946">Δείτε πόσα δεδομένα έχετε αποθηκεύσει</translation>
@@ -855,6 +857,7 @@
 <translation id="7791543448312431591">Προσθήκη</translation>
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
 <translation id="7810647596859435254">Άνοιγμα με…</translation>
+<translation id="7821588508402923572">Η εξοικονόμηση δεδομένων σας θα εμφανίζεται εδώ</translation>
 <translation id="7832327313660264358">Τα δεδομένα που συγχρονίζετε στο Google και οι λειτουργίες που χρησιμοποιείτε δεν θα αλλάξουν</translation>
 <translation id="7837721118676387834">Να επιτρέπεται η αυτόματη αναπαραγωγή βίντεο που έχουν τεθεί σε σίγαση για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="7846076177841592234">Ακύρωση επιλογής</translation>

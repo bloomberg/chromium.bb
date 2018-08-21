@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">입력 방법은 관리자가 설정합니다.</translation>
 <translation id="1747827819627189109">터치 키보드 사용 설정됨</translation>
 <translation id="1761222317188459878">네트워크 연결을 전환합니다. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">화면에 표시된 내용 찾아보기</translation>
 <translation id="1823873187264960516">이더넷: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">어시스턴트(로드 중...)</translation>
 <translation id="1841545962859478868">기기 관리자가 다음을 모니터링할 수 있습니다.</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">연결 추가</translation>
 <translation id="2961963223658824723">문제가 발생했습니다. 잠시 후 다시 시도해 주세요.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">모든 알림 내용 표시</translation>
 <translation id="2995447421581609334">전송 기기를 표시합니다.</translation>
 <translation id="2996462380875591307">고정 돋보기가 사용 설정되었습니다. 사용 중지하려면 다시 Ctrl+Search+D를 누르세요.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" />은(는) <ph name="DOMAIN" />에서 관리하는 공개 세션입니다.</translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">기기</translation>
 <translation id="4659419629803378708">ChromeVox가 사용 설정됨</translation>
 <translation id="4734965478015604180">가로</translation>
+<translation id="476166673298332917">이 기기의 관리자가 비밀번호 및 커뮤니케이션을 비롯한 모든 활동에 액세스할 수 있습니다.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />의 비밀번호</translation>
 <translation id="479989351350248267">검색</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="4849058404725798627">키보드 포커스로 개체 강조표시</translation>
 <translation id="4872237917498892622">Alt+검색 또는 Shift 키</translation>
 <translation id="4890187583552566966">관리자가 Google 어시스턴트를 사용 중지했습니다.</translation>
+<translation id="4893522937062257019">잠금 화면에서</translation>
 <translation id="4895488851634969361">배터리 충전이 완료되었습니다.</translation>
 <translation id="490375751687810070">세로</translation>
 <translation id="4905614135390995787">고대비 모드 전환 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">접근성 설정</translation>
 <translation id="5313326810920013265">블루투스 설정</translation>
 <translation id="5331975486040154427">USB-C 기기(좌측 후면 포트)</translation>
+<translation id="5379115545237091094">시도 횟수가 너무 많음</translation>
 <translation id="5397578532367286026">관리자(<ph name="MANAGER_EMAIL" />)는 chrome.com에서 해당 사용자의 사용 및 방문 기록을 검토할 수 있습니다.</translation>
 <translation id="5430931332414098647">인스턴트 테더링</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">다시 시작</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">바로가기 뷰어</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" />(<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">사용</translation>
 <translation id="592343074608792716">Chromebook과 휴대전화가 자동으로 연결됩니다.</translation>
 <translation id="5947494881799873997">되돌리기</translation>
@@ -331,6 +337,7 @@
 <translation id="6972754398087986839">시작하기</translation>
 <translation id="6981982820502123353">접근성</translation>
 <translation id="698231206551913481">이 사용자를 제거하면 해당 사용자와 연결되어 있는 모든 파일 및 로컬 데이터가 영구적으로 삭제됩니다.</translation>
+<translation id="7007100238996585961">다른 기기에서 응답 중</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />에 다시 사용해 주세요.</translation>
 <translation id="7029814467594812963">세션 종료</translation>
 <translation id="7037152028959403492">고대비 단축키를 누르셨습니다. 사용 설정할까요?</translation>
@@ -352,6 +359,7 @@
 <translation id="7398254312354928459">네트워크 연결 전환됨</translation>
 <translation id="742594950370306541">카메라가 사용 중입니다.</translation>
 <translation id="743058460480092004">카메라와 마이크가 사용 중입니다.</translation>
+<translation id="7497767806359279797">언어 및 키보드 선택</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">네트워크가 모니터링될 수 있음</translation>
 <translation id="7536035074519304529">IP 주소: <ph name="ADDRESS" /></translation>
@@ -361,6 +369,7 @@
 <translation id="7569509451529460200">점자와 ChromeVox가 사용 설정되었습니다.</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7604942372593434070">탐색 활동에 액세스</translation>
+<translation id="7642778300616172920">민감한 내용 숨기기</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />(소유자)</translation>
 <translation id="7647488630410863958">기기를 잠금 해제하여 알림 보기</translation>
 <translation id="7649070708921625228">도움말</translation>
@@ -376,6 +385,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" />에 연결 중</translation>
 <translation id="7842569679327885685">경고: 실험 기능</translation>
 <translation id="7846634333498149051">키보드</translation>
+<translation id="7886277072580235377">로그아웃하면 인터넷 세션이 삭제됩니다. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">개인정보 보호 관련 설정 조정</translation>
 <translation id="7904094684485781019">이 계정의 관리자가 멀티 로그인을 허용하지 않습니다.</translation>
 <translation id="7933084174919150729">Google 어시스턴트는 기본 프로필에서만 사용할 수 있습니다.</translation>
@@ -416,6 +426,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: 다시 연결하는 중...</translation>
 <translation id="8513108775083588393">자동 회전</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
+<translation id="8592141010104017453">알림 표시 안함</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" />에 연결됨</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> 남음</translation>
 <translation id="8649101189709089199">텍스트 읽어주기</translation>

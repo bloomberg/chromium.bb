@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Įvesties metodus konfigūruoja jūsų administratorius.</translation>
 <translation id="1747827819627189109">Ekrano klaviatūra įgalinta</translation>
 <translation id="1761222317188459878">Perjungti tinklo ryšį. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Kas mano ekrane?</translation>
 <translation id="1823873187264960516">Eternetas: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Padėjėjas (įkeliama...)</translation>
 <translation id="1841545962859478868">Įrenginio administratorius gali stebėti:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Pridėti ryšį</translation>
 <translation id="2961963223658824723">Deja, įvyko klaida. Bandykite dar kartą po kelių sekundžių.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Rodyti visą pranešimo turinį</translation>
 <translation id="2995447421581609334">Rodyti perdavimo įrenginius.</translation>
 <translation id="2996462380875591307">Prie doko prijungtas didintuvas įgalintas. Dar kartą paspauskite „Ctrl“ + paieškos klavišą + D, kad išjungtumėte režimą.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> yra vieša sesija, valdoma <ph name="DOMAIN" /></translation>
@@ -211,12 +213,14 @@
 <translation id="4628757576491864469">Įrenginiai</translation>
 <translation id="4659419629803378708">„ChromeVox“ įgalinta</translation>
 <translation id="4734965478015604180">Horizontaliai</translation>
+<translation id="476166673298332917">Šio įrenginio administratorius gali pasiekti visą veiklą, įskaitant slaptažodžius ir pranešimus.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> slaptažodis</translation>
 <translation id="479989351350248267">ieškoti</translation>
 <translation id="4804818685124855865">Atsijungti</translation>
 <translation id="4849058404725798627">Paryškinti objektą jį suaktyvinus klaviatūra</translation>
 <translation id="4872237917498892622">„Alt“ + paieškos arba antrojo lygio klavišas</translation>
 <translation id="4890187583552566966">„Google“ padėjėją išjungė administratorius.</translation>
+<translation id="4893522937062257019">Užrakinimo ekrane</translation>
 <translation id="4895488851634969361">Akumuliatorius visiškai įkrautas.</translation>
 <translation id="490375751687810070">Vertikaliai</translation>
 <translation id="4905614135390995787">Spartusis klavišas, kurį naudojant perjungiamas didelio kontrasto režimas, pakeistas. Naudokite <ph name="NEW_SHORTCUT" /> vietoj <ph name="OLD_SHORTCUT" />.</translation>
@@ -232,6 +236,7 @@
 <translation id="523505283826916779">Pasiekiamumo nustatymai</translation>
 <translation id="5313326810920013265">„Bluetooth“ nustatymai</translation>
 <translation id="5331975486040154427">USB-C įrenginys (prievadas kairėje, užpakalinėje dalyje)</translation>
+<translation id="5379115545237091094">Per daug bandymų</translation>
 <translation id="5397578532367286026">Šio naudotojo naudojimo duomenis ir istoriją valdytojas (<ph name="MANAGER_EMAIL" />) gali peržiūrėti adresu chrome.com.</translation>
 <translation id="5430931332414098647">Momentinis įrenginio kaip modemo naudojimas</translation>
 <translation id="5431825016875453137">„OpenVPN“ / L2TP</translation>
@@ -263,6 +268,7 @@
 <translation id="5895138241574237353">Paleisti iš naujo</translation>
 <translation id="5901316534475909376">„Shift“ + „Esc“</translation>
 <translation id="5911533659001334206">Sparčiųjų klavišų peržiūros programa</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Įjungta</translation>
 <translation id="592343074608792716">Šis „Chromebook“ ir telefonas bus susieti automatiškai</translation>
 <translation id="5947494881799873997">Grąžinti</translation>
@@ -332,6 +338,7 @@
 <translation id="6972754398087986839">Darbo pradžia</translation>
 <translation id="6981982820502123353">Pritaikymas neįgaliesiems</translation>
 <translation id="698231206551913481">Visi failai ir su šiuo naudotoju susiję duomenys bus ištrinti visam laikui, kai šis naudotojas bus pašalintas.</translation>
+<translation id="7007100238996585961">Atsakoma naudojant kitą įrenginį</translation>
 <translation id="7015766095477679451">Grįžkite <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Išeiti iš sesijos</translation>
 <translation id="7037152028959403492">Paspaudėte didelio kontrasto spartųjį klavišą. Ar norite jį įjungti?</translation>
@@ -353,6 +360,7 @@
 <translation id="7398254312354928459">Perjungtas tinklo ryšys</translation>
 <translation id="742594950370306541">Kamera naudojama.</translation>
 <translation id="743058460480092004">Kamera ir mikrofonas naudojami.</translation>
+<translation id="7497767806359279797">Pasirinkti kalbą ir klaviatūros išdėstymą</translation>
 <translation id="7510334386202674593">„Ctrl“ + „Shift“ + L</translation>
 <translation id="7526573455193969409">Tinklas gali būti stebimas</translation>
 <translation id="7536035074519304529">IP adresas: <ph name="ADDRESS" /></translation>
@@ -362,6 +370,7 @@
 <translation id="7569509451529460200">Brailio rašmenys ir „ChromeVox“ įgalinti</translation>
 <translation id="7593891976182323525">Paieškos arba antrojo lygio klavišas</translation>
 <translation id="7604942372593434070">Prieiga prie jūsų naršymo veiklos</translation>
+<translation id="7642778300616172920">Slėpti neskelbtiną turinį</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (savininkas)</translation>
 <translation id="7647488630410863958">Atrakinkite įrenginį, kad galėtumėte peržiūrėti pranešimus</translation>
 <translation id="7649070708921625228">Žinynas</translation>
@@ -377,6 +386,7 @@
 <translation id="7842211907556571265">Prisijungiama prie „<ph name="NETWORK_NAME" />“</translation>
 <translation id="7842569679327885685">Įspėjimas: eksperimentinė funkcija</translation>
 <translation id="7846634333498149051">Klaviatūra</translation>
+<translation id="7886277072580235377">Interneto sesijos duomenys bus išvalyti, kai atsijungsite. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Keisti privatumo nustatymus</translation>
 <translation id="7904094684485781019">Šios paskyros administratorius neleidžia naudoti kelių paskyrų.</translation>
 <translation id="7933084174919150729">„Google“ padėjėjas pasiekiamas tik pagrindiniame profilyje.</translation>
@@ -417,6 +427,7 @@
 <translation id="8484916590211895857">„<ph name="NAME" />“: prisijungiama iš naujo...</translation>
 <translation id="8513108775083588393">Automatiškai pasukti</translation>
 <translation id="8517041960877371778">„<ph name="DEVICE_TYPE" />“ gali nebūti kraunamas, kai yra įjungtas.</translation>
+<translation id="8592141010104017453">Visiškai nerodyti pranešimų</translation>
 <translation id="8627191004499078455">Prisijungta prie „<ph name="DEVICE_NAME" />“</translation>
 <translation id="8639760480004882931">Liko <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Teksto ištarimas</translation>

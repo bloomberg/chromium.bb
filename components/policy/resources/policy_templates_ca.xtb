@@ -33,6 +33,17 @@
           Si es desactiva o no es configura, l'amfitrió d'assistència remota s'executarà al context de l'usuari i els usuaris remots no podran interaccionar amb les finestres amb privilegis restringits a l'ordinador.</translation>
 <translation id="1096105751829466145">Proveïdor de cerca predeterminat</translation>
 <translation id="1099282607296956954">Activa l'aïllament de tots els llocs web</translation>
+<translation id="1100570158310952027">
+      La política especifica una llista d'orígens (URL) o de patrons de nom d'amfitrió (com ara "*.example.com") en què no s'aplicaran les restriccions de seguretat sobre orígens no segurs.
+
+      La intenció és permetre que les organitzacions elaborin una llista blanca d'orígens per a les aplicacions heretades que no poden implementar TLS, o bé que configurin un servidor de fases per als desenvolupaments web interns, de manera que els desenvolupadors puguin provar funcions que requereixin contexts segurs sense haver d'implementar TLS al servidor de fases. Aquesta política també impedirà que l'origen s'etiqueti com a "No segur" a l'omnibox.
+
+      Definir una llista d'URL d'aquesta política té el mateix efecte que assignar la marca de la línia d'ordres "--unsafely-treat-insecure-origin-as-secure" a una llista dels mateixos URL separats per comes. Si la política es defineix, substituirà la marca de la línia d'ordres.
+
+      Aquesta política substituirà UnsafelyTreatInsecureOriginAsSecure, si està present.
+
+      Per obtenir més informació sobre els contexts segurs, consulta https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Els gestors de protocols establerts a través d'aquesta política no s'utilitzen quan es gestionen els intents d'Android.</translation>
 <translation id="1118093128235245168">Permet que els llocs web demanin a l'usuari que garanteixi accés a un dispositiu USB connectat</translation>
 <translation id="1128903365609589950">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers a la memòria cau del disc.
@@ -80,6 +91,7 @@
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge RC4 de TLS no s'activaran. En cas contrari, es pot establir en "true" per conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.</translation>
 <translation id="1297182715641689552">Fes servir un script de servidor intermediari .pac</translation>
 <translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran en silenci</translation>
+<translation id="1307454923744766368">Orígens o patrons de nom d'amfitrió en què no s'han d'aplicar les restriccions sobre orígens no segurs.</translation>
 <translation id="1313457536529613143">Especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la.
 
          Si s'estableix aquesta política, s'especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la. Quan s'ajusta el temps d'espera d'inactivitat de la pantalla, s'ajusten els retards de desconnexió, bloqueig i desactivació de la pantalla per mantenir les mateixes distàncies del temps d'espera d'inactivitat de la pantalla que la configuració original.
@@ -91,6 +103,11 @@
 <translation id="1327466551276625742">Activeu la sol·licitud de configuració de la xarxa quan estigueu fora de línia.</translation>
 <translation id="1330145147221172764">Activa el teclat en pantalla</translation>
 <translation id="13356285923490863">Nom de la política</translation>
+<translation id="1352174694615491349">Aquesta política permet la coalescència de connexions HTTP/2 quan s'utilitzen certificats de client. Perquè es doni la coalescència, tant el nom d'amfitrió de la possible connexió nova com el d'una connexió existent han de coincidir amb un o més patrons descrits en aquesta política. La política és una llista d'amfitrions que fan servir el format del filtre URLBlacklist: "example.com" coincideix amb "example.com" i tots els seus subdominis (per exemple, "sub.example.com"), mentre que ".example.net" coincideix exactament amb "example.net".
+
+      La coalescència de sol·licituds amb diferents amfitrions en connexions que utilitzen certificats de client pot generar problemes de seguretat i privadesa, ja que l'autoritat d'ambient es comunicarà a totes les sol·licituds, fins i tot si l'usuari no ho ha autoritzat explícitament. Aquesta política és temporal i se suprimirà en una versió posterior. Consulta https://crbug.com/855690.
+
+      Si aquesta política es deixa sense definir, s'utilitzarà el comportament predeterminat de no permetre cap coalescència de connexions HTTP/2 en el cas de les connexions que fan servir certificats de client.</translation>
 <translation id="1353966721814789986">Pàgines d'inici</translation>
 <translation id="1359553908012294236">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà els inicis de sessió en mode de convidat. Aquests inicis són perfils de <ph name="PRODUCT_NAME" /> on totes les finestres utilitzen el mode d'incògnit.
 
@@ -178,6 +195,7 @@
 <translation id="1583248206450240930">Fes servir <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
 <translation id="1599424828227887013">Activa l'aïllament de llocs web per a orígens especificats en dispositius Android</translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
+<translation id="1615221548356595305">Permet la coalescència de connexions HTTP/2 per a aquests amfitrions fins i tot quan s'utilitzen certificats de client</translation>
 <translation id="1617235075406854669">Activa la supressió de l'historial de baixades i del navegador</translation>
 <translation id="163200210584085447">Els patrons d'aquesta llista es compararan amb l'origen de la seguretat de l'URL sol·licitant. Si es troba alguna coincidència, l'URL obtindrà permís per accedir a dispositius de captura de vídeo en pàgines d'inici de sessió amb SAML. Si no es troba cap coincidència, l'accés es denegarà automàticament. Els patrons comodí no es permeten.</translation>
 <translation id="1634989431648355062">Permet el connector <ph name="FLASH_PLUGIN_NAME" /> en aquests llocs</translation>
@@ -1133,18 +1151,17 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
 <translation id="4239720644496144453">La memòria cau no s'utilitza a les aplicacions per a Android. Si diversos usuaris instal·len la mateixa aplicació per a Android, es baixarà de nou en cada cas.</translation>
-<translation id="4243336580717651045">Activa la recopilació de dades anònimes amb URL a <ph name="PRODUCT_NAME" /> impedeix que els usuaris puguin canviar aquesta opció.
+<translation id="4243336580717651045">Activa la recollida de dades anònimes amb URL a <ph name="PRODUCT_NAME" /> impedeix que els usuaris puguin canviar aquesta opció.
 
-      La recopilació de dades anònimes amb URL envia a Google els URL de pàgines que l'usuari visita per millorar les cerques i la navegació.
+      La recollida de dades anònimes amb URL envia a Google els URL de pàgines que l'usuari visita per millorar les cerques i la navegació.
 
-      Si actives aquesta política, la recopilació de dades anònimes amb URL estarà sempre activa.
+      Si actives aquesta política, la recollida de dades anònimes amb URL estarà sempre activa.
 
-      Si desactives aquesta política, la recopilació de dades anònimes amb URL no estarà mai activa.
+      Si desactives aquesta política, la recollida de dades anònimes amb URL no estarà mai activa.
 
-      Si aquesta política es deixa sense definir, la recopilació de dades anònimes amb URL s'activarà però l'usuari podrà canviar aquesta opció.</translation>
+      Si aquesta política es deixa sense definir, la recollida de dades anònimes amb URL s'activarà però l'usuari podrà canviar aquesta opció.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuració regional de la pantalla d'inici de sessió del dispositiu</translation>
-<translation id="4264607809747169568">Controla si la funció Ús compartit dels fitxers de la xarxa estarà disponible per a Chrome OS</translation>
 <translation id="427220754384423013">Especifica les impressores que un usuari pot fer servir.
 
       Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_WHITELIST" /> per a <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1295,6 +1312,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política està activada, els llocs web podran navegar i obrir finestres o pestanyes noves simultàniament.
       Si aquesta política està desactivada o no s'estableix, els llocs web no podran navegar i obrir finestres o pestanyes noves simultàniament.</translation>
 <translation id="4680961954980851756">Activa Emplenament automàtic</translation>
+<translation id="4703402283970867140">Permet que el model d'atenuació intel·ligent ampliï el temps fins que s'atenua la pantalla</translation>
 <translation id="4722122254122249791">Activa l'aïllament de llocs web per a orígens especificats</translation>
 <translation id="4722399051042571387">Si s'estableix com a "false", els usuaris no podran definir codis PIN poc segurs i fàcils d'esbrinar.
 
@@ -1504,13 +1522,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="5370279767682621504">Activa la compatibilitat amb HTTP/0.9 als ports no predeterminats</translation>
 <translation id="5378985487213287085">Us permet definir si els llocs web poden mostrar notificacions d'escriptori. La visualització de notificacions d'escriptori es pot autoritzar o denegar de manera predeterminada o bé es pot demanar cada vegada a l'usuari si vol que es mostrin notificacions d'escriptori. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AskNotifications" i l'usuari podrà canviar-lo.</translation>
 <translation id="538108065117008131">Permet que <ph name="PRODUCT_FRAME_NAME" /> gestioni els tipus de contingut següents.</translation>
-<translation id="5391363090783552279">Si aquesta política s'estableix en "true", <ph name="PRODUCT_NAME" /> es connectarà a dispositius d'emissió en totes les adreces IP, no només en adreces privades de les normes RFC 1918 i RFC 4913.
-
-          Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> es connectarà a dispositius d'emissió només en adreces privades de les normes RFC 1918 i RFC 4913.
-
-          Si aquesta política no s'estableix, <ph name="PRODUCT_NAME" /> es connectarà a dispositius d'emissió només en adreces privades de les normes RFC 1918 i RFC 4913, tret que la funció CastAllowAllIPs estigui activada.
-
-          Si la política EnableMediaRouter s'estableix en "false", el valor d'aquesta política no tindrà cap efecte.</translation>
 <translation id="5392172595902933844">Envia al servidor informació sobre l'estat d'Android.
 
       Si la política s'estableix en "false" o es deixa sense establir, no s'envia informació d'estat.
@@ -1772,12 +1783,12 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Per bloquejar la pantalla en mode inactiu, us recomanem que activeu el bloqueig de pantalla en mode de suspensió i que configureu <ph name="PRODUCT_OS_NAME" /> perquè se suspengui després del temps d'inactivitat. Aquesta política només s'ha d'utilitzar quan el bloqueig de pantalla s'hagi de produir molt abans que la suspensió o quan no vulgueu emprar la suspensió en mode inactiu.
 
           El valor de la política s'ha d'especificar en mil·lisegons. Els valors es fixen perquè siguin inferiors al temps d'inactivitat.</translation>
-<translation id="6097601282776163274">Activa la recopilació de dades anònimes amb URL</translation>
+<translation id="6097601282776163274">Activa la recollida de dades anònimes amb URL</translation>
 <translation id="6111936128861357925">Permet el joc sorpresa del dinosaure</translation>
 <translation id="6114416803310251055">obsolet</translation>
 <translation id="6133088669883929098">Permet que tots els llocs utilitzin la generació de claus</translation>
 <translation id="6145799962557135888">Us permet definir una llista de patrons d'URL que especifiquen els llocs que no poden executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultJavaScriptSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
-<translation id="614662973812186053">Aquesta política també controla la recopilació de dades d'ús i de diagnòstic d'Android.</translation>
+<translation id="614662973812186053">Aquesta política també controla la recollida de dades d'ús i de diagnòstic d'Android.</translation>
 <translation id="6155936611791017817">Defineix l'estat predeterminat del cursor gran a la pàgina d'inici de sessió</translation>
 <translation id="6157537876488211233">Llista de regles d'evitació de servidors intermediaris separada per comes</translation>
 <translation id="6158324314836466367">Nom de la botiga web de l'empresa (obsolet)</translation>
@@ -2054,6 +2065,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6943577887654905793">Nom de la preferència de Mac/Linux:</translation>
 <translation id="69525503251220566">Paràmetre que proporciona la funció de cerca per imatge per al proveïdor de cerca predeterminat</translation>
 <translation id="6956272732789158625">No permetis que cap lloc utilitzi la generació de claus</translation>
+<translation id="6965859329738616662">Especifica si es permet que un model d'atenuació intel·ligent ampliï el temps fins que s'atenua la pantalla.
+
+      Quan la pantalla està a punt d'atenuar-se, el model d'atenuació intel·ligent avalua si cal ajornar l'atenuació de la pantalla. Si l'ajorna, amplia el temps que passa fins que s'atenua la pantalla. En aquest cas, els retards per desactivar la pantalla, bloquejar-la i considerar-la inactiva s'ajusten per mantenir les mateixes distàncies amb el retard per atenuar la pantalla que es van configurar en un principi.
+
+      Si aquesta política es defineix en "true" o es deixa sense definir, s'activarà el model d'atenuació intel·ligent i es permetrà que ampliï els temps fins que s'atenua la pantalla. Si aquesta política es defineix en "false", el model d'atenuació intel·ligent no tindrà cap efecte sobre l'atenuació de la pantalla.</translation>
 <translation id="6982028490425791294">
       Si aquesta política s'estableix en "true", <ph name="PRODUCT_NAME" /> pot col·leccionar registres d'esdeveniments WebRTC dels serveis de Google (p. ex. Google Meet) i pujar-los a Google.
 
@@ -2474,6 +2490,13 @@ NOTA: a Android, l'aïllament de llocs web és experimental. Amb el temps se'n m
 <translation id="7980227303582973781">Sense restriccions especials</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Gira la pantalla 0 graus</translation>
+<translation id="8033913082323846868">Aquesta política es considera obsoleta a M70; en lloc seu, utilitza AutofillAddressEnabled i AutofillCreditCardEnabled.
+
+      Activa la funció Emplenament automàtic de <ph name="PRODUCT_NAME" /> i permet que els usuaris emplenin formularis web automàticament amb dades emmagatzemades anteriorment, com ara la informació de targetes de crèdit o d'adreces.
+
+      Si desactives aquesta opció de configuració, els usuaris no podran accedir a Emplenament automàtic.
+
+      Si actives aquesta opció de configuració o no hi estableixes cap valor, els usuaris podran continuar controlant Emplenament automàtic. D'aquesta manera, podran configurar perfils d'Emplenament automàtic i activar o desactivar Emplenament automàtic segons el seu criteri.</translation>
 <translation id="8044493735196713914">Informa del mode d'inici del dispositiu</translation>
 <translation id="8050080920415773384">Impressió nativa</translation>
 <translation id="8059164285174960932">URL on els clients d'accés remot han d'obtenir el testimoni d'autenticació</translation>
@@ -2796,6 +2819,19 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
       Determina quina política d'accés s'utilitza per a la configuració massiva d'impressores. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, es mostren totes les impressores. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, s'utilitza <ph name="DEVICE_PRINTERS_BLACKLIST" /> per restringir l'accés a les impressores especificades. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> només mostra les impressores disponibles.
 
       Si aquesta política no es defineix, es pressuposa que s'aplica <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Aquesta política es considera obsoleta a M69. Substitueix-la per OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      La política especifica una llista d'orígens (URL) o de patrons de nom d'amfitrió (com ara "*.example.com") en què no s'aplicaran les restriccions de seguretat sobre orígens no segurs.
+
+      La intenció és permetre que les organitzacions elaborin una llista blanca d'orígens per a les aplicacions heretades que no poden implementar TLS, o bé que configurin un servidor de fases per als desenvolupaments web interns, de manera que els desenvolupadors puguin provar funcions que requereixin contexts segurs sense haver d'implementar TLS al servidor de fases. Aquesta política també impedirà que l'origen s'etiqueti com a "No segur" a l'omnibox.
+
+      Definir una llista d'URL d'aquesta política té el mateix efecte que assignar la marca de la línia d'ordres "--unsafely-treat-insecure-origin-as-secure" a una llista dels mateixos URL separats per comes. Si la política es defineix, substituirà la marca de la línia d'ordres.
+
+      Aquesta política es considera obsoleta a M69 
+per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes dues polítiques estan presents, OverrideSecurityRestrictionsOnInsecureOrigin substituirà aquesta.
+
+      Per obtenir més informació sobre els contexts segurs, consulta https://www.w3.org/TR/secure-contexts/.
       </translation>
 <translation id="8942616385591203339">Aquesta política controla si es pot mostrar el consentiment de sincronització quan s'inicia la sessió per primera vegada. Si mai no es necessitarà el consentiment de sincronització per a l'usuari, s'ha d'establir en "false".
       Si s'estableix en "false", no es mostrarà el consentiment de sincronització.

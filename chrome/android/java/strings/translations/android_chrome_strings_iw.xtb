@@ -120,6 +120,7 @@
 <translation id="1891331835972267886">‏האפליקציה <ph name="APP_NAME" /> תיפתח ב-Chrome. המשך השימוש מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
 <translation id="189172778771606813">סגור את חלונית ההזזה לניווט</translation>
 <translation id="1919345977826869612">מודעות</translation>
+<translation id="1919950603503897840">בחירת אנשי קשר</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">הכרטיסייה שנבחרה</translation>
 <translation id="1938981467853765413"> שליחת משוב</translation>
@@ -291,6 +292,7 @@
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>
 <translation id="32895400574683172">יש הרשאה להצגת הודעות</translation>
 <translation id="3295602654194328831">הסתר פרטים</translation>
+<translation id="3298243779924642547">‏מצב Lite</translation>
 <translation id="3303414029551471755">האם להוריד את התוכן?</translation>
 <translation id="3328801116991980348">פרטי אתר</translation>
 <translation id="3341058695485821946">בדיקת החיסכון בצריכת נתונים</translation>
@@ -855,6 +857,7 @@
 <translation id="7791543448312431591">הוסף</translation>
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7810647596859435254">פתח באמצעות...</translation>
+<translation id="7821588508402923572">ערכי החיסכון בנתונים יופיעו כאן</translation>
 <translation id="7832327313660264358">‏הנתונים המסונכרנים עם Google והתכונות שבהן בחרת להשתמש לא ישתנו</translation>
 <translation id="7837721118676387834">אפשר הפעלה אוטומטית של סרטונים מושתקים באתר ספציפי.</translation>
 <translation id="7846076177841592234">בטל את הבחירה</translation>

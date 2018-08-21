@@ -33,6 +33,28 @@
           Si ce paramètre est désactivé ou non configuré, l'hôte d'assistance à distance est exécuté dans le contexte de l'utilisateur et les utilisateurs distants ne peuvent pas interagir avec des fenêtres élevées sur le Bureau.</translation>
 <translation id="1096105751829466145">Moteur de recherche par défaut</translation>
 <translation id="1099282607296956954">Activer l'isolation des sites pour tous les sites</translation>
+<translation id="1100570158310952027">
+      Cette règle répertorie les origines (URL) ou les modèles de nom d'hôte (par exemple,
+      "*.example.com") non soumis aux restrictions de sécurité applicables
+      aux origines non sécurisées.
+
+      L'objectif est de permettre aux organisations d'établir une liste blanche des origines
+      pour les anciennes applications qui ne peuvent pas déployer TLS, ou de configurer un serveur
+      de test pour les développements Web internes. Cela permet aux développeurs de tester
+      les fonctionnalités nécessitant des contextes sécurisés sans avoir à déployer TLS
+      sur le serveur de test. Cette règle empêche également que la mention "Non sécurisé"
+      soit attribuée à une origine dans l'omnibox.
+
+      Définir une liste d'URL dans cette règle a le même effet qu'utiliser
+      l'indicateur de ligne de commande "--unsafely-treat-insecure-origin-as-secure"
+      avec une liste des URL en question séparées par une virgule. Si la règle est définie,
+      elle remplace l'indicateur de ligne de commande.
+
+      Cette règle remplace l'indicateur UnsafelyTreatInsecureOriginAsSecure, si celui-ci est spécifié.
+
+      Pour en savoir plus sur les contextes sécurisés, consultez
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Les gestionnaires de protocoles définis par cette règle ne sont pas utilisés pour gérer les intents Android.</translation>
 <translation id="1118093128235245168">Autoriser les sites à demander à l'utilisateur d'accorder l'accès à un appareil USB connecté</translation>
 <translation id="1128903365609589950">Cette règle permet de configurer le répertoire utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers mis en cache sur le disque.
@@ -80,6 +102,8 @@
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", les suites de chiffrement RC4 dans TLS ne seront pas activées. La règle peut être définie sur "True" pour assurer la compatibilité avec un serveur obsolète. Il s'agit là d'une solution provisoire, et le serveur devrait être reconfiguré.</translation>
 <translation id="1297182715641689552">Utiliser un script de proxy .pac</translation>
 <translation id="1304973015437969093">Identifiants d'extension ou d'application et URL de mise à jour à installer en arrière-plan</translation>
+<translation id="1307454923744766368">Origines ou modèles de nom d'hôte non soumis aux restrictions
+      applicables aux origines non sécurisées</translation>
 <translation id="1313457536529613143">Indique le pourcentage d'adaptation du délai d'assombrissement de l'écran en cas d'activité de l'utilisateur lors de la réduction de la luminosité ou peu de temps après la désactivation de l'écran.
 
           Si vous définissez cette règle, elle indique le pourcentage d'adaptation du délai de réduction de la luminosité de l'écran en cas d'activité de l'utilisateur lors de la réduction de la luminosité ou peu de temps après la désactivation de l'écran. En cas d'adaptation de ce délai, les délais de désactivation, de verrouillage et d'inactivité de l'écran sont ajustés pour maintenir le même décalage par rapport au délai d'assombrissement de l'écran initialement configuré.
@@ -91,6 +115,11 @@
 <translation id="1327466551276625742">Activer l'invite de configuration réseau lorsque l'utilisateur n'est pas connecté</translation>
 <translation id="1330145147221172764">Activer le clavier à l'écran</translation>
 <translation id="13356285923490863">Nom de stratégie</translation>
+<translation id="1352174694615491349">Cette règle permet de procéder au multiplexage des connexions HTTP/2 lorsque des certificats client sont utilisés. Pour ce faire, le nom d'hôte de la nouvelle connexion potentielle et le nom d'une connexion existante doivent correspondre à un ou plusieurs modèles définis par la règle. Celle-ci permet d'établir une liste des hôtes selon le format de filtrage URLBlacklist, où une correspondance est établie entre "example.com" et "example.com" et tous les sous-domaines (par exemple, "sub.example.com"), tandis que ".example.net" correspond exactement à "example.net".
+
+      Les demandes de multiplexage vers différents hôtes via des connexions utilisant des certificats client peuvent poser des problèmes de sécurité et de confidentialité. En effet, l'autorité diffuse est accordée à toutes les demandes, sans l'autorisation expresse de l'utilisateur. Cette règle est provisoire et sera supprimée dans une version ultérieure. Pour en savoir plus, consultez la page https://crbug.com/855690.
+
+      Si cette règle n'est pas configurée, le multiplexage des connexions HTTP/2 utilisant des certificats client n'est pas autorisé par défaut.</translation>
 <translation id="1353966721814789986">Pages d'accueil</translation>
 <translation id="1359553908012294236">Si cette règle est définie sur "True" ou n'est pas définie, <ph name="PRODUCT_NAME" /> autorisera les connexions en tant qu'invité. Les connexions en tant qu'invité correspondent à des profils <ph name="PRODUCT_NAME" /> où toutes les fenêtres s'ouvrent en mode navigation privée.
 
@@ -185,6 +214,7 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <translation id="1583248206450240930">Utiliser <ph name="PRODUCT_FRAME_NAME" /> par défaut</translation>
 <translation id="1599424828227887013">Activer l'isolation des sites pour des origines définies sur les appareils Android</translation>
 <translation id="1608755754295374538">URL autorisées à accéder aux appareils de capture audio sans avis préalable</translation>
+<translation id="1615221548356595305">Autoriser le multiplexage des connexions HTTP/2 pour les hôtes qui utilisent des certificats client</translation>
 <translation id="1617235075406854669">Activer la suppression de l'historique du navigateur et de l'historique des téléchargements</translation>
 <translation id="163200210584085447">Les formats de cette liste seront mis en correspondance avec la source
       de sécurité de l'URL à l'origine de la demande. En cas de correspondance,
@@ -1205,7 +1235,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       Si vous ne configurez pas cette règle, la collecte des données anonymes incluant les URL est activée, mais l'utilisateur pourra la modifier.</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="4261820385751181068">Paramètres régionaux de l'écran de connexion de l'appareil</translation>
-<translation id="4264607809747169568">Vérifie la disponibilité de la fonctionnalité Partages de fichiers en réseau pour Chrome OS</translation>
 <translation id="427220754384423013">Indique les imprimantes auxquelles un utilisateur a accès.
 
       Cette règle est utilisée uniquement si <ph name="PRINTERS_WHITELIST" /> est sélectionné pour <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1363,6 +1392,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si cette règle est activée, les sites sont autorisés à parcourir et à ouvrir de nouvelles fenêtres ou de nouveaux onglets simultanément.
       Si cette règle est désactivée ou n'est pas définie, les sites ne sont pas autorisés à parcourir et à ouvrir une nouvelle fenêtre ou un nouvel onglet simultanément.</translation>
 <translation id="4680961954980851756">Activer la saisie automatique</translation>
+<translation id="4703402283970867140">Activer le modèle de réduction intelligente de la luminosité pour augmenter le délai d'assombrissement de l'écran</translation>
 <translation id="4722122254122249791">Activer l'isolation des sites pour des origines définies</translation>
 <translation id="4722399051042571387">Si la règle est configurée sur "false", les utilisateurs ne pourront pas définir un code faible et facile à deviner.
 
@@ -1594,13 +1624,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
 Si cette règle n'est pas configurée, le paramètre "AskNotifications" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="538108065117008131">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenus suivants.</translation>
-<translation id="5391363090783552279">Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> se connecte aux appareils Cast sur toutes les adresses IP, et pas seulement sur les adresses privées décrites dans la RFC 1918 ou la RFC 4913.
-
-          Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> ne se connecte aux appareils Cast que sur les adresses privées décrites dans la RFC 1918 ou la RFC 4913.
-
-          Si cette règle n'est pas définie, <ph name="PRODUCT_NAME" /> ne se connecte aux appareils Cast que sur les adresses privées décrites dans la RFC 1918 ou la RFC 4913, sauf si la fonctionnalité "CastAllowAllIPs" est activée.
-
-          Si la règle "EnableMediaRouter" est définie sur "False", la valeur de la règle "MediaRouterCastAllowAIIIPs" n'a aucune incidence.</translation>
 <translation id="5392172595902933844">Cette règle renvoie au serveur des informations sur l'état d'Android.
 
       Si cette règle est définie sur "False" ou si elle n'est pas configurée, les informations sur l'état ne sont pas transmises.
@@ -2175,6 +2198,10 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
 <translation id="6943577887654905793">Nom de préférence Mac/Linux :</translation>
 <translation id="69525503251220566">Paramètre qui active la fonctionnalité de recherche par image pour le moteur de recherche par défaut</translation>
 <translation id="6956272732789158625">Interdire à tous les sites d'utiliser la génération de clé</translation>
+<translation id="6965859329738616662">Détermine si un modèle de réduction intelligente de la luminosité peut augmenter le délai d'assombrissement de l'écran.
+
+      Lorsque la luminosité de l'écran est sur le point de baisser, le modèle de réduction intelligente de la luminosité évalue s'il convient ou non de différer le moment où l'écran s'assombrit. Si oui, la période de réduction de la luminosité est effectivement allongée, décalant d'autant le moment où l'écran s'éteint, se verrouille et se met en veille, ceci afin de maintenir l'intervalle initialement configuré.
+      Si cette règle est définie sur "True" ou n'est pas configurée, le modèle de réduction intelligente de la luminosité est activé et autorisé à allonger la période de réduction de la luminosité de l'écran. Si cette règle est définie sur "False", le modèle n'a pas d'incidence sur la manière dont l'écran baisse en luminosité.</translation>
 <translation id="6982028490425791294">
       Si la règle est définie sur "True", <ph name="PRODUCT_NAME" /> est autorisé à collecter les journaux d'événements WebRTC à partir des services Google (Google Meet, par exemple) et à les transférer vers Google.
 
@@ -2626,6 +2653,13 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 <translation id="7980227303582973781">Aucune restriction particulière</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Faire pivoter l'écran de 0 degré</translation>
+<translation id="8033913082323846868">Cette règle a été abandonnée dans la version M70. Veuillez utiliser les règles AutofillAddressEnabled et AutofillCreditCardEnabled à la place.
+
+      Active la fonctionnalité de saisie automatique de <ph name="PRODUCT_NAME" />, qui permet à l'utilisateur de remplir automatiquement des formulaires Web à partir de données stockées précédemment, telles qu'une adresse et des informations relatives à sa carte de crédit.
+
+      Si vous désactivez ce paramètre, la fonctionnalité de saisie automatique n'est pas accessible aux utilisateurs.
+
+      Si vous activez ce paramètre ou ne configurez pas de valeur, la fonctionnalité de saisie automatique peut être contrôlée par les utilisateurs. Ces derniers peuvent ainsi configurer des profils de saisie automatique, et activer ou désactiver la fonctionnalité de saisie automatique à leur guise.</translation>
 <translation id="8044493735196713914">Indiquer le mode de démarrage de l'appareil</translation>
 <translation id="8050080920415773384">Impression en mode natif</translation>
 <translation id="8059164285174960932">URL où les clients d'accès à distance doivent obtenir leur jeton d'authentification</translation>
@@ -2959,6 +2993,33 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 indique uniquement les imprimantes qui peuvent être choisies.
 
       Si cette règle n'est pas définie, <ph name="PRINTERS_ALLOW_ALL" /> est supposé s'appliquer.
+      </translation>
+<translation id="8938932171964587769">Cette règle a été abandonnée dans la version M69. Veuillez utiliser la règle
+      OverrideSecurityRestrictionsOnInsecureOrigin à la place.
+
+      Cette règle répertorie les origines (URL) ou les modèles de nom d'hôte (par exemple,
+      "*.example.com") non soumis aux restrictions de sécurité applicables
+      aux origines non sécurisées.
+
+      L'objectif est de permettre aux organisations d'établir une liste blanche des origines
+      pour les anciennes applications qui ne peuvent pas déployer TLS, ou de configurer
+      un serveur de test pour les développements Web internes. Cela permet aux développeurs de tester
+      les fonctionnalités nécessitant des contextes sécurisés sans avoir à déployer TLS
+      sur le serveur de test. Cette règle empêche également que la mention "Non sécurisé"
+      soit attribuée à une origine dans l'omnibox.
+
+      Définir une liste d'URL dans cette règle a le même effet qu'utiliser
+      l'indicateur de ligne de commande "--unsafely-treat-insecure-origin-as-secure"
+      avec une liste des URL en question séparées par une virgule. Si la règle est définie,
+      elle remplace l'indicateur de ligne de commande.
+
+      Cette règle a été abandonnée dans la version M69, au profit de la règle
+      OverrideSecurityRestrictionsOnInsecureOrigin. Elle est remplacée par
+      OverrideSecurityRestrictionsOnInsecureOrigin lorsque les deux règles
+      coexistent.
+
+      Pour en savoir plus sur les contextes sécurisés, consultez
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Permet d'activer l'affichage de l'autorisation de synchronisation lors de la première connexion de l'utilisateur. Si cette autorisation n'a jamais besoin d'être montrée à l'utilisateur, cette règle doit être définie sur False.
       Si cette règle est définie sur False, l'autorisation de synchronisation n'est pas affichée.

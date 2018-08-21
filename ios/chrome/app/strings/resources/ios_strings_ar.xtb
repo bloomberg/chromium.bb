@@ -54,6 +54,7 @@
 <translation id="1690731385917361335">لا توجد عناصر</translation>
 <translation id="1700629756560807968">تم تحديد <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">انقر مرّتين للتثبيت.</translation>
+<translation id="1746815479209538200">لتصفُّح الويب، يمكنك إضافة علامة تبويب جديدة.</translation>
 <translation id="17513872634828108">علامات التبويب المفتوحة</translation>
 <translation id="1752547299766512813">حفظ كلمات المرور</translation>
 <translation id="1753905327828125965">الأكثر زيارة</translation>
@@ -392,12 +393,15 @@
 <translation id="7638584964844754484">عبارة مرور غير صحيحة</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7658239707568436148">إلغاء</translation>
+<translation id="766891008101699113">لتصفُّح الويب بشكلٍ خاص، يمكنك إضافة علامة تبويب جديدة.</translation>
 <translation id="7671141431838911305">تثبيت</translation>
 <translation id="7765158879357617694">نقل</translation>
 <translation id="7769602470925380267">قبول وتسجيل الخروج</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
+<translation id="7781829728241885113">أمس</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7830720446622801252">الخدمات غير المُخصّصة</translation>
+<translation id="7840771868269352570">ستتم إزالة العناصر التي اخترتها.</translation>
 <translation id="7856733331829174190">تعذّر التنزيل.</translation>
 <translation id="7859704718976024901">سجل التصفح</translation>
 <translation id="7918293828610777738">قائمة القراءة متاحة بلا اتصال بالإنترنت. لإضافة صفحة إلى قائمة القراءة، انقر على  <ph name="SHARE_OPENING_ICON" />  ثم <ph name="READ_LATER_TEXT" />.</translation>

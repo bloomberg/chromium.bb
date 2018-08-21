@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Indtastningsmetoder konfigureres af din administrator.</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="1761222317188459878">Slå netværksforbindelse til eller fra. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Hvad vises der på min skærm?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (indlæser...)</translation>
 <translation id="1841545962859478868">Administratoren af enheden kan overvåge følgende:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Tilføj forbindelse</translation>
 <translation id="2961963223658824723">Der opstod en fejl. Prøv igen om et par sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Vis alt indhold i underretninger</translation>
 <translation id="2995447421581609334">Vis Cast-enheder.</translation>
 <translation id="2996462380875591307">Fastgjort lupvindue er aktiveret. Tryk på Ctrl+Søg+D igen for at deaktivere tilstanden.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> er en offentlig session administreret af <ph name="DOMAIN" /></translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">Enheder</translation>
 <translation id="4659419629803378708">ChromeVox er aktiveret</translation>
 <translation id="4734965478015604180">Vandret</translation>
+<translation id="476166673298332917">Administratoren af denne enhed har adgang til al aktivitet, herunder adgangskoder og kommunikation.</translation>
 <translation id="4776917500594043016">Adgangskode for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">søg</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="4849058404725798627">Fremhæv element med tastaturfokus</translation>
 <translation id="4872237917498892622">Alt+Søg eller Shift</translation>
 <translation id="4890187583552566966">Google Assistent er deaktiveret af din administrator.</translation>
+<translation id="4893522937062257019">På låseskærmen</translation>
 <translation id="4895488851634969361">Batteriet er helt opladet.</translation>
 <translation id="490375751687810070">Lodret</translation>
 <translation id="4905614135390995787">Genvejen til at aktivere eller deaktivere tilstanden Høj kontrast er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">Indstillinger for hjælpefunktioner</translation>
 <translation id="5313326810920013265">Indstillinger for Bluetooth</translation>
 <translation id="5331975486040154427">USB-C-enhed (porten bagpå i venstre side)</translation>
+<translation id="5379115545237091094">For mange forsøg</translation>
 <translation id="5397578532367286026">Denne brugers forbrug og historik kan ses af administratoren (<ph name="MANAGER_EMAIL" />) på chrome.com.</translation>
 <translation id="5430931332414098647">Øjeblikkelig netdeling</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">Genstart</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">Genvejsviser</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Til</translation>
 <translation id="592343074608792716">Denne Chromebook og din telefon forbindes automatisk</translation>
 <translation id="5947494881799873997">Fortryd</translation>
@@ -332,6 +338,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6972754398087986839">Kom godt i gang</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="698231206551913481">Alle filer og lokale data, der er knyttet til denne bruger, slettes permanent, når brugeren fjernes.</translation>
+<translation id="7007100238996585961">Svarer på en anden enhed</translation>
 <translation id="7015766095477679451">Vend tilbage kl. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Afslut session</translation>
 <translation id="7037152028959403492">Du trykkede på genvejen for høj kontrast. Vil du aktivere indstillingen?</translation>
@@ -353,6 +360,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7398254312354928459">Der blev skiftet netværksforbindelse</translation>
 <translation id="742594950370306541">Kameraet er i brug.</translation>
 <translation id="743058460480092004">Kamera og mikrofon er i brug.</translation>
+<translation id="7497767806359279797">Vælg sprog og tastatur</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">Netværket kan være overvåget</translation>
 <translation id="7536035074519304529">IP-adresse: <ph name="ADDRESS" /></translation>
@@ -362,6 +370,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7569509451529460200">Braille og ChromeVox er aktiveret</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7604942372593434070">Adgang til din browseraktivitet</translation>
+<translation id="7642778300616172920">Skjul følsomt indhold</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ejer)</translation>
 <translation id="7647488630410863958">Lås enheden op for at se dine underretninger</translation>
 <translation id="7649070708921625228">Hjælp</translation>
@@ -377,6 +386,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7842211907556571265">Opretter forbindelse til <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advarsel! Eksperimentel funktion</translation>
 <translation id="7846634333498149051">Tastatur</translation>
+<translation id="7886277072580235377">Din internetsession ryddes, når du logger ud. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Manipulere indstillinger til beskyttelse af personlige oplysninger</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
 <translation id="7933084174919150729">Google Assistent kan kun bruges via den primære profil.</translation>
@@ -417,6 +427,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8484916590211895857"><ph name="NAME" />: Genopretter forbindelsen...</translation>
 <translation id="8513108775083588393">Roter automatisk</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> kan muligvis ikke oplades, mens den er tændt.</translation>
+<translation id="8592141010104017453">Vis slet ingen underretninger</translation>
 <translation id="8627191004499078455">Forbundet til <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> tilbage</translation>
 <translation id="8649101189709089199">Tekstoplæsning</translation>

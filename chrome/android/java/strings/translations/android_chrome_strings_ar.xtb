@@ -120,6 +120,7 @@
 <translation id="1891331835972267886">‏سيتم فتح <ph name="APP_NAME" /> في Chrome. بالمتابعة، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> في Chrome.</translation>
 <translation id="189172778771606813">إغلاق لائحة التنقل</translation>
 <translation id="1919345977826869612">إعلانات</translation>
+<translation id="1919950603503897840">اختيار جهات الاتصال</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">علامة تبويب محددة</translation>
 <translation id="1938981467853765413">تقديم تعليقات</translation>
@@ -291,6 +292,7 @@
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="32895400574683172">مسموح بالإشعارات</translation>
 <translation id="3295602654194328831">إخفاء المعلومات</translation>
+<translation id="3298243779924642547">الوضع البسيط</translation>
 <translation id="3303414029551471755">هل ترغب في الاستمرار في تنزيل المحتوى؟</translation>
 <translation id="3328801116991980348">معلومات موقع الويب</translation>
 <translation id="3341058695485821946">الاطّلاع على مقدار البيانات التي حفظتها</translation>
@@ -856,6 +858,7 @@
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7810647596859435254">فتح باستخدام...</translation>
+<translation id="7821588508402923572">ظهور توفير البيانات هنا</translation>
 <translation id="7832327313660264358">‏لن تتغير البيانات التي تزامنها مع Google والميزات التي تستخدمها.</translation>
 <translation id="7837721118676387834">السماح بالتشغيل التلقائي للفيديوهات المكتومة الصوت لموقع معين.</translation>
 <translation id="7846076177841592234">إلغاء التحديد</translation>

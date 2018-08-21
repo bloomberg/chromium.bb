@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Методите на въвеждане са конфигурирани от администратора ви.</translation>
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
 <translation id="1761222317188459878">Превключване на връзката с мрежа. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Какво има на екрана ми?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Асистент (зарежда се...)</translation>
 <translation id="1841545962859478868">Администраторът на устройството може да наблюдава следното:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Добавяне на връзка</translation>
 <translation id="2961963223658824723">Нещо се обърка. Опитайте отново след няколко секунди.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Показване на цялото съдържание от известията</translation>
 <translation id="2995447421581609334">Показване на устройствата за предаване.</translation>
 <translation id="2996462380875591307">Лупата в прикрепен режим е активирана. За да я изключите, натиснете отново Ctrl + клавиш „Търсене“ + D.</translation>
 <translation id="2999742336789313416">„<ph name="DISPLAY_NAME" />“ е обществена сесия, управлявана от <ph name="DOMAIN" /></translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">Устройства</translation>
 <translation id="4659419629803378708">Активирахте ChromeVox</translation>
 <translation id="4734965478015604180">Хоризонтална ориентация</translation>
+<translation id="476166673298332917">Администраторът на това устройство има достъп до цялата активност, включително паролите и комуникациите.</translation>
 <translation id="4776917500594043016">Парола за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Изключване</translation>
 <translation id="4849058404725798627">Открояване на обекта, върху който е фокусът от клавиатурата</translation>
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
 <translation id="4890187583552566966">Администраторът ви е деактивирал Google Асистент.</translation>
+<translation id="4893522937062257019">На заключения екран</translation>
 <translation id="4895488851634969361">Батерията е пълна.</translation>
 <translation id="490375751687810070">Вертикална ориентация</translation>
 <translation id="4905614135390995787">Клавишната комбинация за превключване на режима на висок контраст е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">Настройки за достъпност</translation>
 <translation id="5313326810920013265">Настройки за Bluetooth</translation>
 <translation id="5331975486040154427">Устройство с USB-C (задният ляв порт)</translation>
+<translation id="5379115545237091094">Твърде много опити</translation>
 <translation id="5397578532367286026">Данните за употребата и историята на този потребител могат да се преглеждат от мениджъра (<ph name="MANAGER_EMAIL" />) на адрес chrome.com.</translation>
 <translation id="5430931332414098647">Незабавен тетъринг</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">Рестартиране</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5911533659001334206">Визуализатор на клавишните комбинации</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Включено</translation>
 <translation id="592343074608792716">Този Chromebook и телефонът ви ще се свържат автоматично</translation>
 <translation id="5947494881799873997">Възстановяване</translation>
@@ -331,6 +337,7 @@
 <translation id="6972754398087986839">Първи стъпки</translation>
 <translation id="6981982820502123353">Достъпност</translation>
 <translation id="698231206551913481">След като този потребител бъде премахнат, всички свързани с него файлове и локални данни ще се изтрият за постоянно.</translation>
+<translation id="7007100238996585961">Отговаря се на друго устройство</translation>
 <translation id="7015766095477679451">Ще бъда отново на ваше разположение в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Изход от сесията</translation>
 <translation id="7037152028959403492">Използвахте клавишната комбинация за режима на висок контраст. Искате ли да го включите?</translation>
@@ -352,6 +359,7 @@
 <translation id="7398254312354928459">Преминахте към друга мрежа</translation>
 <translation id="742594950370306541">Камерата се използва.</translation>
 <translation id="743058460480092004">Камерата и микрофонът се използват.</translation>
+<translation id="7497767806359279797">Избор на език и клавиатура</translation>
 <translation id="7510334386202674593">Ctrl + Shift + L</translation>
 <translation id="7526573455193969409">Мрежата може да е под наблюдение</translation>
 <translation id="7536035074519304529">IP адрес: <ph name="ADDRESS" /></translation>
@@ -361,6 +369,7 @@
 <translation id="7569509451529460200">Активирахте функцията за брайлово писмо и ChromeVox</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
 <translation id="7604942372593434070">Достъп до активността ви при сърфиране</translation>
+<translation id="7642778300616172920">Скриване на поверителното съдържание</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (собственик)</translation>
 <translation id="7647488630410863958">Отключете устройството, за да прегледате известията си</translation>
 <translation id="7649070708921625228">Помощ</translation>
@@ -376,6 +385,7 @@
 <translation id="7842211907556571265">Установява се връзка (<ph name="NETWORK_NAME" />)</translation>
 <translation id="7842569679327885685">Предупреждение: Експериментална функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
+<translation id="7886277072580235377">Сесията ви за интернет ще бъде изчистена, когато излезете от профила си. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Манипулиране на свързаните с поверителността настройки</translation>
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
 <translation id="7933084174919150729">Google Асистент е налице само за основния потребителски профил.</translation>
@@ -416,6 +426,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Установява се повторна връзка...</translation>
 <translation id="8513108775083588393">Автоматична ориентация</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
+<translation id="8592141010104017453">Известията въобще да не се показват</translation>
 <translation id="8627191004499078455">Установена е връзка (<ph name="DEVICE_NAME" />)</translation>
 <translation id="8639760480004882931">Батерия: <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Прочитане на глас</translation>

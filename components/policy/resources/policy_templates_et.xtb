@@ -33,6 +33,30 @@
           Kui seade on keelatud või seadistamata, käitatakse kaugabi hosti kasutaja kontekstis ja kaugkasutajad ei saa töölaual suhelda administraatoriõigusi nõudvate akendega.</translation>
 <translation id="1096105751829466145">Vaikeotsingupakkuja</translation>
 <translation id="1099282607296956954">Saidi isoleerimise lubamine igal saidil</translation>
+<translation id="1100570158310952027">
+      Reegel määrab loendi lähtekohtadest (URL-id) või hostinimemustritest (nt
+      „*.example.com”), mille puhul ei kehti ebaturvaliste lähtekohtade
+      turvapiirangud.
+
+      Selle eesmärk on võimaldada organisatsioonidel seadistada lubatud 
+      lähtekohad pärandrakenduste jaoks, kus ei saa TLS-i juurutada, või
+      seadistada kontrollserver sisemise veebiarenduse jaoks,
+      mis võimaldab arendajatel testida turvakontekste nõudvaid funktsioone,
+      ilma et kontrollserveris oleks vaja juurutada TLS-i.
+      Reegel takistab ka omnikastikeses päritolule märke
+      „Ebaturvaline” lisamist.
+
+      Reeglis URL-ide loendi määramisel on sama mõju mis käsurea märgistuse
+
+      „--unsafely-treat-insecure-origin-as-secure” lisamisel samade URL-ide
+      komaeraldusega loendile. Kui reegel on määratud, alistab see
+      käsurea märgistuse.
+
+      Reegel alistab reegli UnsafelyTreatInsecureOriginAsSecure, kui see on määratud.
+
+      Vaadake lisateavet turvaliste kontekstide kohta aadressilt
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Selle reegliga määratud protokollitöötlejaid Androidi kavatsuste käsitlemisel ei kasutata.</translation>
 <translation id="1118093128235245168">Luba saitidel küsida kasutajalt luba ühendatud USB-seadmetele juurdepääsemisks</translation>
 <translation id="1128903365609589950">Seadistab kataloogi, mida <ph name="PRODUCT_NAME" /> kasutab vahemälus olevate failide kettale salvestamiseks.
@@ -80,6 +104,8 @@
       Kui reegel on määramata või selle väärtuseks on määratud Väär, siis ei ole RC4 šifreerimiskomplektid TLS-is lubatud. Selle väärtuseks võib olla määratud ka Tõene, et säilitada ühilduvus aegunud serveriga. See on ajutine meede ja server tuleks ümber seadistada.</translation>
 <translation id="1297182715641689552">Kasuta puhverserveri pac-skripti</translation>
 <translation id="1304973015437969093">Taustal installitavate laienduste/rakenduste ID-d ja värskenduste URL-id</translation>
+<translation id="1307454923744766368">Lähtekohad või hostinimede mustrid, mille puhul ei kehti
+      ebaturvaliste lähtekohtade piirangud</translation>
 <translation id="1313457536529613143">Määratleb ekraani tumenduse viivituse skaleerimismäära protsentides, kui täheldatakse kasutaja tegevust ekraani tumendamise ajal või peagi pärast ekraani väljalülitumist.
 
           Reegel määratleb ekraani tumenduse viivituse skaleerimismäära protsentides, kui täheldatakse kasutaja tegevust ekraani tumendamise ajal või peagi pärast ekraani väljalülitumist. Tumenduse viivituse skaleerimisel reguleeritakse ekraani väljalülitumise, ekraaniluku ja tegevusetu oleku viivitusi, et säilitada ekraanitumenduse viivitusest samu kaugusi mis algselt seadistatud.
@@ -91,6 +117,11 @@
 <translation id="1327466551276625742">Võrguseadistuse viiba lubamine, kui seade on võrguühenduseta</translation>
 <translation id="1330145147221172764">Luba ekraanil kuvatav klaviatuur</translation>
 <translation id="13356285923490863">Reegli nimi</translation>
+<translation id="1352174694615491349">See reegel lubab HTTP/2 ühenduse liitmise, kui kliendisertifikaadid on kasutuses. Liitmiseks peab nii potentsiaalse uue ühenduse hostinimi kui ka olemasoleva ühenduse hostinimi kattuma vähemalt ühe reeglis kirjeldatud mustriga. Reegel on hostide loend, mis põhineb filtri URLBlacklist vormingul: „example.com” vastendab domeeni „example.com” ja kõik alamdomeenid (nt „sub.example.com”), samas kui „.example.net” vastendab ainult domeeni „example.net”.
+
+      Kliendisertifikaate kasutatavatele eri hostidele edastatavad liitmistaotlused võivad põhjustada turva- ja privaatsusprobleeme, kuna üldine sertifitseerimisorgan edastatakse kõigile taotlustele, isegi kui kasutaja seda ei volitanud. Reegel on ajutine ja see eemaldatakse tulevases versioonis. Vt https://crbug.com/855690.
+
+      Kui reegel jäetakse määramata, kasutatakse vaikekäitumist, mille puhul ei lubata HTTP/2 ühenduse liitmist kliendisertifikaatidel põhinevate ühenduste korral.</translation>
 <translation id="1353966721814789986">Käivitamisel avatavad lehed</translation>
 <translation id="1359553908012294236">Kui selle reegli väärtuseks määratakse Tõene või seda ei seadistata, lubab teenus <ph name="PRODUCT_NAME" /> külaliste sisselogimise. Külaliste sisselogimised on teenuse <ph name="PRODUCT_NAME" /> profiilid, kus kõik aknad on inkognito režiimis.
 
@@ -184,6 +215,7 @@
 <translation id="1583248206450240930">Kasuta vaikimisi rakendust <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">Android-seadmetes saidi isoleerimise lubamine konkreetsete lähtekohtade puhul</translation>
 <translation id="1608755754295374538">URL-id, millele antakse ilma küsimata juurdepääs helijäädvustusseadmetele</translation>
+<translation id="1615221548356595305">Nende hostide puhul HTTP/2 ühenduste liitmise lubamine isegi kliendisertifikaatide kasutamisel</translation>
 <translation id="1617235075406854669">Brauseri ja allalaadimiste ajaloo kustutamise lubamine</translation>
 <translation id="163200210584085447">Selles loendis olevaid mustreid võrreldakse taotleva URL-i
       algse turvalisusega. Vaste leidmisel antakse SAML-i
@@ -1184,7 +1216,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui jätate selle reegli määramata, on URL-i võtmetega anonüümsete andmete kogumine lubatud, kuid kasutaja saab seda muuta.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4261820385751181068">Seadme sisselogimisekraani lokaat</translation>
-<translation id="4264607809747169568">Juhib failide võrguhoidlate saadavalolekut Chrome OS-is</translation>
 <translation id="427220754384423013">Määrab printerid, mida kasutaja saab kasutada.
 
       Seda reeglit kasutatakse ainult siis, kui režiimis <ph name="BULK_PRINTERS_ACCESS_MODE" /> on valitud väärtus <ph name="PRINTERS_WHITELIST" />.
@@ -1343,6 +1374,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui reegel on lubatud, tohivad saidid samal ajal navigeerida ja uusi aknaid/vahelehti avada.
       Kui reegel on keelatud või määramata, ei ole saitidel lubatud samal ajal navigeerida ja uusi aknaid/vahelehti avada.</translation>
 <translation id="4680961954980851756">Luba automaatne täitmine</translation>
+<translation id="4703402283970867140">Nutika hämardamismudeli lubamine, et pikendada ekraani hämardamise viiteaega</translation>
 <translation id="4722122254122249791">Saidi isoleerimise lubamine konkreetsete lähtekohtade puhul</translation>
 <translation id="4722399051042571387">Kui see on vale, ei saa kasutajad määrata PIN-koode, mis on nõrgad ja hõlpsalt äraarvatavad.
 
@@ -1571,13 +1603,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
           Kui jätate selle reegli määramata, siis kasutatakse reeglit „AskNotifications” ja kasutaja saab seda muuta.</translation>
 <translation id="538108065117008131">Teenusel <ph name="PRODUCT_FRAME_NAME" /> järgmist tüüpi sisu käsitsemise lubamine.</translation>
-<translation id="5391363090783552279">Kui reegel on seatud väärtusele Tõene, loob <ph name="PRODUCT_NAME" /> ühenduse Casti seadmetega kõigi IP-aadresside, mitte ainult RFC1918/RFC4913 privaatsete aadresside kaudu.
-
-          Kui reegel on seatud väärtusele Väär, loob <ph name="PRODUCT_NAME" /> ühenduse Casti seadmetega ainult RFC1918/RFC4913 privaatsete aadresside kaudu.
-
-          Kui reegel on määramata, loob <ph name="PRODUCT_NAME" /> ühenduse Casti seadmetega ainult RFC1918/RFC4913 privaatsete aadresside kaudu, v.a juhul, kui funktsioon CastAllowAllIPs on lubatud.
-
-          Kui reegel „EnableMediaRouter” on seatud väärtusele Väär, ei ole selle reegli väärtusel mingit mõju.</translation>
 <translation id="5392172595902933844">Androidi olekuteave saadetakse tagasi
       serverisse.
 
@@ -2151,6 +2176,10 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="6943577887654905793">Maci/Linuxi eelistuse nimi:</translation>
 <translation id="69525503251220566">Parameeter otsingu vaikepakkujale pildi järgi otsimise funktsiooni pakkumiseks</translation>
 <translation id="6956272732789158625">Ära luba ühelgi saidil võtmeid luua</translation>
+<translation id="6965859329738616662">Määrab, kas nutikal hämardamismudelil on lubatud ekraani hämardamise aega pikendada.
+
+      Kui ekraani hämardamine algab, uurib nutikas hämardamismudel, kas ekraani hämardamine tuleks edasi lükata. Kui nutikas hämardamismudel lükkab ekraani hämardamise edasi, pikendatakse sisuliselt aega, mille möödudes ekraan hämardatakse. Sel juhul reguleeritakse ka ekraani väljalülitamise, lukustamise ja tegevusetuse viiteaegu, et järgida algselt seadistatud hämardamisviivitust.
+      Kui reegel on määramata või seatud väärtusele Tõene, lubatakse nutikas hämardamismudel ja ekraani hämardamiseni kuluva aja pikendamine. Kui reegel on seatud väärtusele Väär, ei mõjuta nutikas hämardamismudel ekraani hämardamist.</translation>
 <translation id="6982028490425791294">
       Kui reegli väärtuseks määratakse Tõene, võib <ph name="PRODUCT_NAME" /> koguda Google'i teenustest (nt Google Meet) WebRTC sündmuselogisid ja need Google'i serveritesse üles laadida.
 
@@ -2603,6 +2632,13 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="7980227303582973781">Eripiirangud puuduvad</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Ekraani pööramine 0 kraadi</translation>
+<translation id="8033913082323846868">See reegel on versioonist M70 eemaldatud, kasutage selle asemel reegleid AutofillAddressEnabled and AutofillCreditCardEnabled.
+
+Lubab rakenduse <ph name="PRODUCT_NAME" /> automaatse täitmise funktsiooni ja võimaldab kasutajatel varem talletatud teabe, näiteks aadressi ja krediitkaardi andmete, alusel veebivorme automaatselt täita.
+
+      Seade keelamisel ei saa automaatset täitmist kasutada.
+
+      Kui lubate seade või ei määra väärtust, siis saab kasutaja automaatset täitmist juhtida. See võimaldab neil seadistada automaatse täitmise profiile ning automaatse täitmise soovi korral sisse või välja lülitada.</translation>
 <translation id="8044493735196713914">Teabe saatmine seadme käivitusrežiimi kohta</translation>
 <translation id="8050080920415773384">Printimise omaprotsess</translation>
 <translation id="8059164285174960932">URL, kust kaugjuurdepääsuga kliendid peaksid saama autentimismärgi</translation>
@@ -2935,6 +2971,32 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Määrab, millist juurdepääsureeglit kasutatakse printerite hulgiseadistamiseks. Kui valitud on väärtus <ph name="PRINTERS_ALLOW_ALL" />, kuvatakse kõik printerid. Kui valitud on väärtus <ph name="PRINTERS_BLACKLIST" />, kasutatakse määratud printeritele juurdepääsu piiramiseks reeglit <ph name="DEVICE_PRINTERS_BLACKLIST" />. Kui valitud on väärtus <ph name="PRINTERS_WHITELIST" />, määrab reegel <ph name="DEVICE_PRINTERS_WHITELIST" /> ainult need printerid, mida saab valida.
 
       Kui see reegel on määramata, kasutatakse väärtust <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Reegel on versioonist M69 eemaldatud. Kasutage selle asemel reeglit
+      OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Reegel määrab lähtekohtade (URL-id) või hostinimede mustrid (nt
+      „*.example.com”), mille puhul ei kehti ebaturvaliste lähtekohtade
+      turvapiirangud.
+
+      Selle eesmärk on võimaldada organisatsioonidel lisada lubatud loendisse 
+      pärandrakendusi, mis ei saa TLS-i juurutada, või seadistada sisese
+      veebiarenduse jaoks kontrollserveri, et arendajad saaksid testida turvalist
+      konteksti nõudvaid funktsioone ilma kontrollserverisse TLS-i juurutamata.
+      Reegel takistab ka omnikastikeses lähtekohale märke „Ebaturvaline” lisamist.
+
+      Selles reeglis URL-ide loendi määramisel on sama mõju mis samadest
+      URL-idest koosnevale komaeraldusega loendile käsurea märgistuse
+      „--unsafely-treat-insecure-origin-as-secure” määramisel. Kui reegel on
+      määratud, alistab see käsurea märgistuse.
+
+      Reegel on versioonis M69 asendatud reegliga
+      OverrideSecurityRestrictionsOnInsecureOrigin. Kui mõlemad reeglid on
+      kasutusel, alistab OverrideSecurityRestrictionsOnInsecureOrigin selle
+      reegli.
+
+      Turvaliste kontekstide kohta saate lisateavet aadressilt
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Reegel määrab, kas kasutajale võib esimesel sisselogimisel kuvada sünkroonimise nõusoleku. Kui kasutaja ei pea kunagi sünkroonimiseks nõusolekut andma, tuleb reegli väärtuseks määrata Väär.
       Kui reegel on seatud väärtusele Väär, ei kuvata sünkroonimise nõusolekut.

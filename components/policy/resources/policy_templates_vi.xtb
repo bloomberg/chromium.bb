@@ -33,6 +33,28 @@
           Nếu cài đặt này bị tắt hoặc không được định cấu hình, máy chủ hỗ trợ từ xa sẽ chạy trên ngữ cảnh của người dùng và người dùng ở xa không thể tương tác với cửa sổ bật lên trên màn hình.</translation>
 <translation id="1096105751829466145">Nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1099282607296956954">Bật chính sách Cô lập trang web cho mọi trang web</translation>
+<translation id="1100570158310952027">
+      Chính sách này xác định danh sách (các URL) nguồn gốc hoặc mẫu tên máy chủ (chẳng hạn
+      như "*.example.com") mà các hạn chế về bảo mật đối với nguồn gốc không an toàn
+      sẽ không áp dụng.
+
+      Mục đích là nhằm cho phép các tổ chức thiết lập nguồn gốc danh sách cho phép đối với
+      ứng dụng cũ không thể triển khai TLS, hoặc thiết lập một máy chủ theo giai đoạn
+      để phát triển web nội bộ sao cho các nhà phát triển có thể thử nghiệm các tính năng
+      yêu cầu ngữ ảnh an toàn mà không phải triển khai TLS trên máy chủ
+      theo giai đoạn. Ngoài ra, chính sách này sẽ ngăn không cho gắn nhãn nguồn gốc này là
+      "Không bảo mật" trong thanh địa chỉ.
+
+      Việc đặt một danh sách URL trong chính sách này có tác dụng tương tự như đặt
+      cờ dòng lệnh '--unsafely-treat-insecure-origin-as-secure' cho một
+      danh sách được phân tách bằng dấu phẩy gồm các URL tương tự. Nếu bạn đặt chính sách này,
+      thì chính sách này sẽ ghi đè cờ dòng lệnh.
+
+      Chính sách này sẽ ghi đè UnsafelyTreatInsecureOriginAsSecure nếu có.
+
+      Để biết thêm thông tin về ngữ cảnh an toàn, hãy truy cập vào
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Trình xử lý giao thức được đặt qua chính sách này không được sử dụng khi xử lý các cơ chế của Android.</translation>
 <translation id="1118093128235245168">Cho phép các trang web yêu cầu người dùng cấp quyền truy cập vào một thiết bị USB đã kết nối</translation>
 <translation id="1128903365609589950">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ các tệp được lưu trữ trong bộ nhớ đệm trên đĩa.
@@ -80,6 +102,8 @@
       Nếu chính sách này không được đặt hoặc được đặt thành false thì bộ mã hóa RC4 trong TLS sẽ không được bật. Ngoài ra, chính sách có thể được đặt thành true để duy trì khả năng tương thích với máy chủ lỗi thời. Đây là một biện pháp tạm thời và cần phải định cấu hình lại máy chủ.</translation>
 <translation id="1297182715641689552">Sử dụng tập lệnh proxy .pac</translation>
 <translation id="1304973015437969093">Cần ID tiện ích/ứng dụng và URL cập nhật để tự động cài đặt</translation>
+<translation id="1307454923744766368">Các nguồn gốc hoặc mẫu tên máy chủ mà các hạn chế đối với
+      nguồn gốc không an toàn không được áp dụng</translation>
 <translation id="1313457536529613143">Chỉ định tỷ lệ phần trăm theo đó độ trễ mờ màn hình được xác định khi hoạt động của người dùng được quan sát thấy lúc màn hình bị làm mờ hoặc ngay sau khi màn hình tắt.
 
           Nếu chính sách này được đặt, chính sách chỉ định tỷ lệ phần trăm theo đó độ trễ mờ màn hình được xác định khi hoạt động của người dùng được quan sát thấy lúc màn hình bị làm mờ hoặc ngay sau khi màn hình tắt. Khi độ trễ mờ màn hình được xác định tỷ lệ, độ trễ tắt màn hình, độ trễ khóa màn hình và độ trễ khi không hoạt động được điều chỉnh để duy trì cùng khoảng cách với độ trễ mờ màn hình như được định cấu hình ban đầu.
@@ -91,6 +115,11 @@
 <translation id="1327466551276625742">Bật lời nhắc về cấu hình mạng khi ngoại tuyến</translation>
 <translation id="1330145147221172764">Bật bàn phím ảo</translation>
 <translation id="13356285923490863">Tên chính sách</translation>
+<translation id="1352174694615491349">Chính sách này cho phép hợp nhất đường kết nối HTTP/2 khi sử dụng chứng chỉ ứng dụng khách. Để hợp nhất, cả tên miền của đường kết nối tiềm năng mới và tên miền của đường kết nối hiện có phải phù hợp với một hoặc nhiều mẫu như mô tả trong chính sách này. Chính sách này là một danh sách các máy chủ sử dụng định dạng bộ lọc URLBlacklist: "example.com" phù hợp với "example.com" và mọi tên miền phụ (chẳng hạn như "sub.example.com"), trong khi đó, ".example.net" lại hoàn toàn phù hợp với "example.net".
+
+      Yêu cầu hợp nhất gửi tới các máy chủ khác nhau qua đường kết nối dùng chứng chỉ ứng dụng khách có thể gây ra các vấn đề về bảo mật và quyền riêng tư, bởi vì tất cả các yêu cầu đều được cấp phép rộng rãi, kể cả khi người dùng không cho phép rõ ràng. Chính sách này là tạm thời và sẽ bị xóa bỏ trong bản phát hành tương lai. Hãy truy cập vào https://crbug.com/855690 để tìm hiểu thêm.
+
+      Nếu bạn không đặt chính sách này, thì hoạt động mặc định sẽ được sử dụng, trong đó không cho phép hợp nhất đường kết nối HTTP/2 đối với các đường kết nối sử dụng chứng chỉ ứng dụng khách.</translation>
 <translation id="1353966721814789986">Trang khởi động</translation>
 <translation id="1359553908012294236">Nếu chính sách này được đặt thành true hoặc không được định cấu hình, <ph name="PRODUCT_NAME" /> sẽ bật chế độ đăng nhập khách. Chế độ đăng nhập khách là hồ sơ <ph name="PRODUCT_NAME" /> trong đó tất cả cửa sổ đều ở chế độ ẩn danh.
 
@@ -184,6 +213,7 @@
 <translation id="1583248206450240930">Sử dụng <ph name="PRODUCT_FRAME_NAME" /> theo mặc định</translation>
 <translation id="1599424828227887013">Bật tính năng Cách ly trang web cho nguồn gốc đã chỉ định trên thiết bị Android</translation>
 <translation id="1608755754295374538">Các URL sẽ được cấp quyền truy cập thiết bị ghi âm mà không cần phải hiển thị lời nhắc</translation>
+<translation id="1615221548356595305">Cho phép hợp nhất các đường kết nối HTTP/2 đối với những máy chủ này kể cả khi sử dụng chứng chỉ ứng dụng khách</translation>
 <translation id="1617235075406854669">Bật xóa lịch sử trình duyệt và lịch sử tải xuống</translation>
 <translation id="163200210584085447">Các mẫu trong danh sách này sẽ được đối sánh dựa trên nguồn gốc
       bảo mật của URL yêu cầu.  Nếu tìm thấy mẫu phù hợp, quyền
@@ -1187,7 +1217,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn không đặt chính sách này, tính năng thu thập dữ liệu ẩn danh có khóa URL sẽ bật nhưng người dùng có thể thay đổi mục cài đặt này.</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="4261820385751181068">Ngôn ngữ màn hình đăng nhập thiết bị</translation>
-<translation id="4264607809747169568">Kiểm soát tính năng Chia sẻ tệp trong mạng cho hoạt động của ChromeOS</translation>
 <translation id="427220754384423013">Chỉ định các máy in mà người dùng có thể sử dụng.
 
       Chỉ sử dụng chính sách này nếu đã chọn <ph name="PRINTERS_WHITELIST" /> cho <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1346,6 +1375,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đã bật chính sách này, thì các trang web sẽ được phép chuyển tới và mở các cửa sổ/tab mới cùng một lúc.
       Nếu bạn đã tắt hoặc chưa đặt chính sách này, các trang web sẽ không được phép chuyển tới và mở cửa sổ/tab mới cùng một lúc.</translation>
 <translation id="4680961954980851756">Bật Tự động điền</translation>
+<translation id="4703402283970867140">Bật mô hình làm mờ thông minh để kéo dài thời gian cho đến khi màn hình mờ đi</translation>
 <translation id="4722122254122249791">Bật chính sách Cô lập trang web cho các nguồn gốc đã xác định</translation>
 <translation id="4722399051042571387">Nếu đặt thành false, người dùng sẽ không thể đặt các mã PIN yếu và dễ đoán.
 
@@ -1576,13 +1606,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, 'AskNotifications' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="538108065117008131">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung sau.</translation>
-<translation id="5391363090783552279">Nếu bạn đặt chính sách này thành true, <ph name="PRODUCT_NAME" /> sẽ kết nối với Thiết bị truyền trên tất cả các địa chỉ IP chứ không chỉ các địa chỉ riêng RFC1918/RFC4913.
-
-          Nếu bạn đặt chính sách này thành false, <ph name="PRODUCT_NAME" /> sẽ chỉ kết nối với Thiết bị truyền trên các địa chỉ riêng RFC1918/RFC4913.
-
-          Nếu bạn chưa đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ chỉ kết nối với Thiết bị truyền trên các địa chỉ riêng RFC1918/RFC4913, trừ khi tính năng CastAllowAllIPs được bật enabled.
-
-          Nếu bạn đặt chính sách "EnableMediaRouter" thành false, thì khi đó giá trị của chính sách này sẽ không có hiệu lực.</translation>
 <translation id="5392172595902933844">Thông tin về trạng thái của Android được gửi lại cho
       máy chủ.
 
@@ -2154,6 +2177,10 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6943577887654905793">Tên tùy chọn Mac/Linux:</translation>
 <translation id="69525503251220566">Tham số cung cấp tính năng tìm theo hình ảnh cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="6956272732789158625">Không cho phép bất kỳ trang web nào sử dụng tạo khóa</translation>
+<translation id="6965859329738616662">Nêu rõ liệu mô hình làm mờ thông minh có được phép kéo dài thời gian cho đến khi màn hình mờ đi hay không.
+
+      Khi màn hình sắp mờ đi, mô hình làm mờ thông minh sẽ đánh giá xem có nên làm chậm quá trình làm mờ màn hình hay không. Nếu mô hình làm mờ thông minh làm chậm quá trình mờ màn hình, thì có nghĩa mô hình này đã kéo dài được thời gian cho đến khi màn hình mờ đi. Trong trường hợp này, độ trễ tắt màn hình, độ trễ khóa màn hình và độ trễ khi không hoạt động sẽ được điều chỉnh để duy trì cùng khoảng cách với độ trễ mờ màn hình như được định cấu hình ban đầu.
+      Nếu bạn đặt chính sách này là True hoặc không đặt, thì mô hình làm mờ thông minh sẽ bật và được phép kéo dài thời gian cho đến khi màn hình mờ đi. Nếu bạn đặt chính sách này là False, thì mô hình làm mờ thông minh sẽ không ảnh hưởng tới quá trình làm mờ màn hình.</translation>
 <translation id="6982028490425791294">
       Nếu bạn đặt chính sách này là true, thì <ph name="PRODUCT_NAME" /> được phép thu thập nhật ký sự kiện WebRTC từ các dịch vụ của Google (ví dụ: Google Meet), và tải các nhật ký đó lên Google.
 
@@ -2595,6 +2622,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7980227303582973781">Không có hạn chế đặc biệt</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Xoay màn hình 0 độ</translation>
+<translation id="8033913082323846868">Chính sách này không còn được dùng trong M70, thay vào đó, hãy sử dụng AutofillAddressEnabled và AutofillCreditCardEnabled.
+
+      Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> và cho phép người dùng tự động hoàn thành các biểu mẫu web bằng cách sử dụng thông tin đã lưu trữ trước đây, chẳng hạn như địa chỉ và thông tin thẻ tín dụng.
+
+      Nếu bạn tắt tùy chọn cài đặt này, thì người dùng sẽ không sử dụng được tính năng Tự động điền.
+
+      Nếu bạn bật hoặc không đặt giá trị cho tùy chọn cài đặt này, thì người dùng vẫn có quyền kiểm soát đối với tính năng Tự động điền. Điều này sẽ cho phép họ định cấu hình cho hồ sơ Tự động điền và bật hoặc tắt tính năng này theo ý mình.</translation>
 <translation id="8044493735196713914">Báo cáo chế độ khởi động thiết bị</translation>
 <translation id="8050080920415773384">In bản gốc</translation>
 <translation id="8059164285174960932">URL nơi ứng dụng truy cập từ xa sẽ lấy mã thông báo xác thực</translation>
@@ -2924,6 +2958,33 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Chỉ định chính sách truy cập dùng cho cấu hình máy in số lượng lớn. Nếu bạn chọn <ph name="PRINTERS_ALLOW_ALL" />, thì tất cả máy in sẽ hiển thị. Nếu bạn chọn <ph name="PRINTERS_BLACKLIST" />, thì <ph name="DEVICE_PRINTERS_BLACKLIST" /> sẽ dùng để hạn chế truy cập vào các máy in đã chỉ định. Nếu bạn chọn <ph name="PRINTERS_WHITELIST" />, thì <ph name="DEVICE_PRINTERS_WHITELIST" /> sẽ chỉ chỉ định những máy in có thể chọn được.
 
       Nếu bạn chưa đặt chính sách này, thì <ph name="PRINTERS_ALLOW_ALL" /> sẽ là tùy chọn mặc định.
+      </translation>
+<translation id="8938932171964587769">Không còn được dùng trong M69. Thay vào đó, hãy sử dụng
+      OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      Chính sách này xác định danh sách (các URL) nguồn gốc hoặc mẫu tên máy chủ (chẳng hạn
+      như "*.example.com") mà các hạn chế về bảo mật đối với nguồn gốc không an toàn
+      sẽ không áp dụng.
+
+      Mục đích là nhằm cho phép các tổ chức thiết lập các nguồn gốc danh sách cho phép đối với ứng dụng
+      cũ không thể triển khai TLS, hoặc thiết lập một máy chủ theo giai đoạn
+      để phát triển web nội bộ sao cho các nhà phát triển có thể thử nghiệm các tính năng
+      yêu cầu ngữ ảnh an toàn mà không phải triển khai TLS trên máy chủ
+      theo giai đoạn. Ngoài ra, chính sách này sẽ ngăn không cho gắn nhãn nguồn gốc này là
+      "Không bảo mật" trong thanh địa chỉ.
+
+      Việc đặt một danh sách URL trong chính sách này có tác dụng tương tự như đặt
+      cờ dòng lệnh '--unsafely-treat-insecure-origin-as-secure' cho một
+      danh sách được phân tách bằng dấu phẩy gồm các URL tương tự. Nếu bạn đặt chính sách này, thì chính sách này sẽ
+      ghi đè cờ dòng lệnh.
+
+      Chính sách này không còn được dùng trong M69 và thay bằng
+      OverrideSecurityRestrictionsOnInsecureOrigin. Nếu xuất hiện cả hai chính sách,
+      thì OverrideSecurityRestrictionsOnInsecureOrigin sẽ ghi đè
+      chính sách này.
+
+      Để biết thêm thông tin về ngữ cảnh an toàn, hãy truy cập vào
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Chính sách này sẽ kiểm soát liệu màn hình Đồng ý đồng bộ hóa có hiển thị với người dùng trong lần đăng nhập đầu tiên hay không. Bạn nên đặt chính sách này thành false nếu không cần hiển thị màn hình Đồng ý đồng bộ hóa cho người dùng.
       Nếu đặt chính sách thành false, thì màn hình Đồng ý đồng bộ hóa sẽ không hiển thị.

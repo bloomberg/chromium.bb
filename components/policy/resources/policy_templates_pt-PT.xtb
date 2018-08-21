@@ -33,6 +33,32 @@
           Se esta definição estiver desativada ou não estiver configurada, o anfitrião de assistência remota é executado no contexto do utilizador e os utilizadores remotos não conseguem interagir com janelas de prioridade elevada no ambiente de trabalho.</translation>
 <translation id="1096105751829466145">Motor de pesquisa predefinido</translation>
 <translation id="1099282607296956954">Ativar o Isolamento do site para todos os sites.</translation>
+<translation id="1100570158310952027">
+      A política especifica uma lista de origens (URLs) ou padrões de nomes
+      de anfitrião (como "*.example.com") aos quais as restrições de
+      segurança sobre origens inseguras não serão aplicadas.
+
+      A intenção é permitir que as entidades definam origens da lista de
+      autorizações para aplicações antigas que não possam implementar
+      o TLS ou configurem um servidor experimental para programação
+      Web interna, de forma que os respetivos programadores possam
+      testar funcionalidades que requeiram contextos seguros, sem a
+      necessidade de implementar o TLS no servidor experimental. Esta
+      política também evita que a origem tenha a etiqueta "Inseguro" na
+      caixa geral.
+
+      Definir uma lista de URLs nesta política tem o mesmo efeito que
+      definir o sinalizador de linha de comandos
+      "--unsafely-treat-insecure-origin-as-secure" numa lista separada por
+      vírgulas dos mesmos URLs. Se a política estiver definida, substitui o
+      sinalizador de linha de comandos.
+
+      Esta política vai substituir UnsafelyTreatInsecureOriginAsSecure, se
+      existente.
+
+      Para obter mais informações sobre contextos seguros, consulte
+      https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">Os controladores de protocolos definidos através desta política não são utilizados no processamento de intenções do Android.</translation>
 <translation id="1118093128235245168">Permitir que os sites solicitem ao utilizador a concessão de acesso a um dispositivo USB ligado</translation>
 <translation id="1128903365609589950">Configura o diretório que o <ph name="PRODUCT_NAME" /> irá utilizar para armazenar ficheiros em cache no disco.
@@ -80,6 +106,8 @@
       Se a política não for definida ou for definida como falsa, os conjuntos de cifras RC4 no TLS não estão ativados. Caso contrário, pode ser definida como verdadeira para manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária e é necessário voltar a configurar o servidor.</translation>
 <translation id="1297182715641689552">Utilizar um script de proxy .pac</translation>
 <translation id="1304973015437969093">Instalar IDs de extensões/aplicações e URLs de atualização silenciosamente</translation>
+<translation id="1307454923744766368">Origens ou padrões de nomes de anfitrião aos quais as restrições sobre
+      origens inseguras não devem ser aplicadas</translation>
 <translation id="1313457536529613143">Especifica a percentagem que determina a escala do atraso do esbatimento do ecrã quando há atividade da parte do utilizador, enquanto o ecrã é esbatido ou pouco depois de o ecrã ter sido desligado.
 
           Se esta política estiver definida, especifica a percentagem que determina a escala do atraso do esbatimento do ecrã quando há atividade da parte do utilizador, enquanto o ecrã é esbatido ou pouco depois de o ecrã ter sido desligado. Quando se determina a escala do atraso do esbatimento, o bloqueio e a ação de desligar o ecrã e atrasos inativos são ajustados para manter as mesmas distâncias do atraso de esbatimento do ecrã, conforme foi configurado originalmente.
@@ -91,6 +119,11 @@
 <translation id="1327466551276625742">Ativar o pedido de configuração da rede quando estiver offline</translation>
 <translation id="1330145147221172764">Ativar o teclado no ecrã</translation>
 <translation id="13356285923490863">Nome da Política</translation>
+<translation id="1352174694615491349">Esta política permite a união de ligações HTTP/2 quando são utilizados certificados de cliente. Para a união, o nome de anfitrião da potencial nova ligação e o nome de anfitrião de uma ligação existente têm de corresponder a um ou mais padrões descritos por esta política. A política é uma lista de anfitriões que utilizam o formato de filtro URLBlacklist: "example.com" corresponde a "example.com" e a todos os subdomínios (por exemplo, "sub.example.com"), enquanto ".example.net" corresponde exatamente a "example.net".
+
+      A união de pedidos para diferentes anfitriões através de ligações que utilizam certificados de cliente pode criar problemas de segurança e privacidade, uma vez que a autoridade do ambiente será transmitida a todos os pedidos, mesmo que o utilizador não o tenha autorizado explicitamente. Esta política é temporária e será removida numa versão futura. Consulte https://crbug.com/855690.
+
+      Se esta política não for definida, será utilizado o comportamento predefinido de não permitir qualquer união de ligações HTTP/2 para ligações que utilizam certificados de cliente.</translation>
 <translation id="1353966721814789986">Páginas de arranque</translation>
 <translation id="1359553908012294236">Se esta política for definida como verdadeira ou não for configurada, o <ph name="PRODUCT_NAME" /> permite inícios de sessão de convidados. Os inícios de sessão de convidados são perfis do <ph name="PRODUCT_NAME" /> em que todas as janelas estão no modo de navegação anónima.
 
@@ -183,6 +216,7 @@
 <translation id="1583248206450240930">Utilizar o <ph name="PRODUCT_FRAME_NAME" /> por predefinição</translation>
 <translation id="1599424828227887013">Ativar o isolamento de site para origens especificadas em dispositivos Android</translation>
 <translation id="1608755754295374538">URLs aos quais será concedido acesso a dispositivos de captura de áudio imediatamente</translation>
+<translation id="1615221548356595305">Permitir a união de ligações HTTP/2 para estes anfitriões, mesmo quando são utilizados certificados de cliente</translation>
 <translation id="1617235075406854669">Ativar a eliminação do histórico de transferências e do navegador</translation>
 <translation id="163200210584085447">Os padrões nesta lista serão comparados com a origem de
       segurança do URL que faz o pedido. Caso seja encontrada uma correspondência, o acesso a dispositivos de
@@ -704,7 +738,7 @@
 
           |time_window_limit| especifica um intervalo diário durante o qual a sessão do utilizador deve ser bloqueada. Suportamos apenas uma regra para cada dia da semana, pelo que o tamanho da matriz de |entries| pode variar entre 0 e 7. |starts_at| e |ends_at| são o início e o fim do limite do intervalo; se |ends_at| for menor do que |starts_at|, significa que |time_limit_window| termina no dia seguinte. |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
 
-          |time_usage_limit| especifica uma quota de ecrã diária, pelo que, quando o utilizador a atinge, a respetiva sessão é bloqueada. Existe uma propriedade para cada dia da semana e esta deverá ser definida apenas se houver uma quota ativa para esse dia. |usage_quota_mins| é o período de tempo durante o qual o dispositivo gerido pode ser utilizado num dia e |reset_at| é a hora em que a quota de utilização é renovada. O valor predefinido para |reset_at| é meia-noite ({'hour': 0, 'minute': 0}). |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
+          |time_usage_limit| especifica uma quota de ecrã diária, pelo que, quando o utilizador a atinge, a respetiva sessão é bloqueada. Existe uma propriedade para cada dia da semana e esta deverá ser definida apenas se houver uma quota ativa para esse dia. |usage_quota_mins| é o período de tempo durante o qual o dispositivo gerido pode ser utilizado num dia e |reset_at| é a hora em que a quota de utilização é renovada. O valor predefinido para |reset_at| é meia-noite ({"hour": 0, "minute": 0}). |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
 
           |overrides| é fornecido para invalidar temporariamente uma ou mais das regras anteriores.
           * Se time_window_limit e time_usage_limit não estiverem ativos, é possível utilizar |LOCK| para bloquear o dispositivo.
@@ -1163,7 +1197,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não estiver definida, a recolha de dados anónimos com chave de URL é ativada, mas o utilizador pode alterá-la.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4261820385751181068">Local do ecrã de início de sessão do dispositivo</translation>
-<translation id="4264607809747169568">Controla a disponibilidade das Partilhas de ficheiros na rede para o Chrome OS</translation>
 <translation id="427220754384423013">Especifica as impressoras disponíveis para um utilizador.
 
       Esta política é apenas utilizada se <ph name="PRINTERS_WHITELIST" /> for selecionado para <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1314,6 +1347,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver ativada, os sites são autorizados a navegar e a abrir novas janelas/novos separadores em simultâneo.
       Se esta política estiver desativada ou não definida, os sites deixam de ter autorização para navegar e abrir uma nova janela/um novo separador em simultâneo.</translation>
 <translation id="4680961954980851756">Ativar Preenchimento Automático</translation>
+<translation id="4703402283970867140">Ativar o modelo de escurecimento inteligente para prolongar o tempo até ao escurecimento do ecrã</translation>
 <translation id="4722122254122249791">Ativar o Isolamento do site para origens especificadas.</translation>
 <translation id="4722399051042571387">Se esta definição estiver configurada como falsa, os utilizadores não podem definir PINs fracos e fáceis de adivinhar.
 
@@ -1525,13 +1559,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5370279767682621504">Ativar a compatibilidade com HTTP/0.9 em portas não predefinidas</translation>
 <translation id="5378985487213287085">Permite definir se os Web sites estão autorizados a apresentar notificações no ambiente de trabalho. A apresentação de notificações no ambiente de trabalho pode ser permitida por predefinição, negada por predefinição ou o utilizador pode ser questionado sempre que um Web site pretenda apresentar notificações no ambiente de trabalho. Se esta política não for definida, será utilizada a definição "AskNotifications" e o utilizador poderá alterá-la.</translation>
 <translation id="538108065117008131">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> processe os seguintes tipos de conteúdo.</translation>
-<translation id="5391363090783552279">Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_NAME" /> irá ligar-se a dispositivos de transmissão em todos os endereços IP e não apenas nos endereços privados RFC1918/RFC4913.
-
-          Se esta política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> irá ligar-se a dispositivos de transmissão apenas nos endereços privados RFC1918/RFC4913.
-
-          Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> irá ligar-se a dispositivos de transmissão apenas nos endereços privados RFC1918/RFC4913, a menos que a funcionalidade CastAllowAllIPs esteja ativada.
-
-          Se a política "EnableMediaRouter" estiver definida como falsa, o valor desta política não tem efeito.</translation>
 <translation id="5392172595902933844">As informações sobre o estado do Android são enviadas novamente para o
       servidor.
 
@@ -2085,6 +2112,10 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6943577887654905793">Nome de preferência do Mac/Linux</translation>
 <translation id="69525503251220566">Parâmetro que fornece a funcionalidade de pesquisa por imagem ao fornecedor de pesquisas predefinido</translation>
 <translation id="6956272732789158625">Não permitir que os sites utilizem a geração de chaves</translation>
+<translation id="6965859329738616662">Especifica se é permitido que um modelo de escurecimento inteligente prolongue o tempo até ao escurecimento do ecrã.
+
+      Quando o ecrã está prestes a ser escurecido, o modelo de escurecimento inteligente determina se essa ação deve ser adiada. Se o modelo de escurecimento inteligente adiar o escurecimento do ecrã, prolonga efetivamente o tempo até essa ação. Neste caso, os atrasos de desativação, de bloqueio do ecrã e de inatividade são ajustados para manter as mesmas distâncias relativamente ao atraso de escurecimento do ecrã, conforme configurado originalmente.
+      Se esta política não for definida ou estiver definida como verdadeira, o modelo de escurecimento inteligente será ativado para poder prolongar o tempo até ao escurecimento do ecrã. Se estiver definida como falsa, o modelo de escurecimento inteligente não irá influenciar o escurecimento do ecrã.</translation>
 <translation id="6982028490425791294">
       Se definir esta política como verdadeira, o <ph name="PRODUCT_NAME" /> obtém permissão para recolher registos de eventos WebRTC dos serviços Google (por exemplo, o Google Meet) e carregar os mesmos para a Google.
 
@@ -2512,6 +2543,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7980227303582973781">Sem restrições especiais</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rodar o ecrã 0 graus</translation>
+<translation id="8033913082323846868">Esta política foi descontinuada no M70. Em alternativa, utilize AutofillAddressEnabled e AutofillCreditCardEnabled.
+
+      Ativa a funcionalidade Preenchimento automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente formulários Web ao utilizar informações anteriormente armazenadas, como endereços ou informações de cartões de crédito.
+
+      Se desativar esta definição, os utilizadores não podem aceder ao Preenchimento automático.
+
+      Se ativar esta definição ou não definir qualquer valor, os utilizadores podem controlar o Preenchimento automático, o que lhes permitirá configurar perfis de Preenchimento automático e ativar ou desativar esta funcionalidade conforme pretendam.</translation>
 <translation id="8044493735196713914">Comunicar modo de arranque do aparelho</translation>
 <translation id="8050080920415773384">Impressão nativa</translation>
 <translation id="8059164285174960932">URL onde os clientes de acesso remoto devem obter o respetivo símbolo de autenticação</translation>
@@ -2834,6 +2872,36 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Designa a política de acesso utilizada para a configuração de impressoras em massa. Se <ph name="PRINTERS_ALLOW_ALL" /> for selecionado, são apresentadas todas as impressoras. Se <ph name="PRINTERS_BLACKLIST" /> for selecionado, <ph name="DEVICE_PRINTERS_BLACKLIST" /> é utilizado para restringir o acesso às impressoras especificadas. Se <ph name="PRINTERS_WHITELIST" /> for selecionado, <ph name="DEVICE_PRINTERS_WHITELIST" /> designa apenas as impressoras que são selecionáveis.
 
       Se esta política não estiver definida, é assumida a opção <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Descontinuada no M69. Em alternativa,
+      utilize OverrideSecurityRestrictionsOnInsecureOrigin.
+
+      A política especifica uma lista de origens (URLs) ou padrões de
+      nomes de anfitrião (como "*.example.com") aos quais as restrições de
+      segurança não serão aplicadas.
+
+      O objetivo é permitir que as entidades definam origens da lista de
+      autorizações para aplicações antigas que não possam implementar o
+      TLS ou configurem um servidor experimental para programação Web
+      interna, de forma que os respetivos programadores possam testar
+      funcionalidades que requeiram contextos seguros, sem a necessidade 
+      de implementar o TLS no servidor experimental. Esta política 
+      também evita que a origem tenha a etiqueta "Inseguro" na caixa
+      geral.
+
+      Definir uma lista de URLs nesta política tem o mesmo efeito que
+      definir o sinalizador de linha de comandos
+      "--unsafely-treat-insecure-origin-as-secure" numa lista separada por
+      vírgulas dos mesmos URLs. Se a política estiver definida, substitui o
+      sinalizador de linha de comandos.
+
+      Esta política foi descontinuada no M69 e substituída por
+      OverrideSecurityRestrictionsOnInsecureOrigin. Se ambas as políticas
+      estiverem presentes, OverrideSecurityRestrictionsOnInsecureOrigin
+      substitui esta política.
+
+      Para obter mais informações sobre contextos seguros, consulte
+      https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Esta política controla se é possível mostrar o Consentimento de sincronização ao utilizador durante o primeiro início de sessão. Deve estar definida como falsa se o Consentimento de sincronização nunca for necessário para o utilizador.
       Se estiver definida como falsa, o Consentimento de sincronização não é apresentado.

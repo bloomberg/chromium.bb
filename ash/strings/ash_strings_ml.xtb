@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">ഇൻപുട്ട് രീതികൾ കോൺഫിഗർ ചെയ്യുന്നത് നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്ററാണ്.</translation>
 <translation id="1747827819627189109">ഓൺ‌ സ്‌ക്രീൻ കീ‌ബോർഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="1761222317188459878">നെറ്റ്‌വർക്ക് കണക്ഷൻ മാറ്റുക. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">എന്റെ സ്‌ക്രീനിൽ എന്താണുള്ളത്?</translation>
 <translation id="1823873187264960516">ഇതർനെറ്റ്: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">സഹായി (ലോഡുചെയ്യുന്നു...)</translation>
 <translation id="1841545962859478868">ഉപകരണ അഡ്‌മിൻ ഇനിപ്പറയുന്നവ നിരീക്ഷിച്ചേക്കാം:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">കണക്ഷൻ ചേർക്കുക</translation>
 <translation id="2961963223658824723">എന്തോ കുഴപ്പം സംഭവിച്ചു. അൽപ്പസമയത്തിനുള്ളിൽ വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">എല്ലാ അറിയിപ്പിന്റെയും ഉള്ളടക്കം കാണിക്കുക</translation>
 <translation id="2995447421581609334">കാസ്‌റ്റ് ഉപകരണങ്ങൾ കാണിക്കുക.</translation>
 <translation id="2996462380875591307">ഡോക്ക് ചെയ്‌ത മാഗ്നിഫയർ പ്രവർത്തനക്ഷമമാക്കി. ഇത് മാറ്റാൻ, കൺട്രോൾ+തിരയൽ+D വീണ്ടും അമർത്തുക.</translation>
 <translation id="2999742336789313416"><ph name="DOMAIN" /> നിയന്ത്രിക്കുന്ന എല്ലാവർക്കുമുള്ള ഒരു സെഷനാണ് <ph name="DISPLAY_NAME" /></translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">ഉപകരണങ്ങൾ</translation>
 <translation id="4659419629803378708">ChromeVox പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="4734965478015604180">സമാന്തരം</translation>
+<translation id="476166673298332917">പാസ്‌വേഡുകളും ആശയവിനിമയങ്ങളും ഉൾപ്പെടെ, എല്ലാ ആക്‌റ്റിവിറ്റിയിലേക്കും ഈ ഉപകരണത്തിന്റെ അഡ്‌മിന് ആക്‌സസ് ഉണ്ട്.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിനായുള്ള പാസ്‌വേഡ്</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">വിച്ഛേദിക്കുക</translation>
 <translation id="4849058404725798627">കീബോർഡ് ഫോക്കസ് ഉപയോഗിച്ച് ഒബ്‌ജക്‌റ്റിനെ ഹൈലൈറ്റുചെയ്യുക</translation>
 <translation id="4872237917498892622">Alt+തിരയൽ അല്ലെങ്കിൽ Shift</translation>
 <translation id="4890187583552566966">Google സഹായിയെ നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കി.</translation>
+<translation id="4893522937062257019">ലോക്ക് സ്ക്രീനിൽ</translation>
 <translation id="4895488851634969361">ബാറ്ററി ചാർജുചെയ്യൽ പൂർണ്ണമായി.</translation>
 <translation id="490375751687810070">ലംബം</translation>
 <translation id="4905614135390995787">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ് ടോഗിൾ ചെയ്യാനുള്ള ‌കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിനുപകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">ഉപയോഗസഹായി ക്രമീകരണങ്ങൾ</translation>
 <translation id="5313326810920013265">ബ്ലൂടൂത്ത് ക്രമീകരണങ്ങൾ</translation>
 <translation id="5331975486040154427">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
+<translation id="5379115545237091094">നിരവധി ശ്രമങ്ങൾ</translation>
 <translation id="5397578532367286026">ഈ ഉപയോക്താവിന്റെ ഉപയോഗവും ചരിത്രവും chrome.com-ൽ മാനേജർക്ക് (<ph name="MANAGER_EMAIL" />) അവലോകനം ചെയ്യാനാകും.</translation>
 <translation id="5430931332414098647">തൽക്ഷണ ടെതറിംഗ്</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">പുനരാരംഭിക്കുക</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">ഷോട്ട്കട്ട് വ്യൂവർ</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">ഓൺ ചെയ്യുക</translation>
 <translation id="592343074608792716">ഈ Chromebook-ഉം നിങ്ങളുടെ ഫോണും സ്വമേധയാ കണക്റ്റ് ചെയ്യും</translation>
 <translation id="5947494881799873997">പഴയപടിയാക്കുക</translation>
@@ -331,6 +337,7 @@
 <translation id="6972754398087986839">ആരംഭിക്കാം</translation>
 <translation id="6981982820502123353">ഉപയോഗസഹായി</translation>
 <translation id="698231206551913481">ഈ ഉപയോക്താവിനെ നീക്കംചെയ്യുമ്പോൾ അതോടൊപ്പം അയാളുമായി ബന്ധപ്പെട്ട എല്ലാ ഫയലുകളും പ്രാദേശിക വിവരങ്ങളും ശാശ്വതമായി ഇല്ലാതാക്കപ്പെടും.</translation>
+<translation id="7007100238996585961">മറ്റൊരു ഉപകരണത്തിൽ മറുപടി നൽകുന്നു</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />-ന് തിരികെ വരിക.</translation>
 <translation id="7029814467594812963">സെഷനിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
 <translation id="7037152028959403492">നിങ്ങൾ ഉയർന്ന ദൃശ്യ തീവ്രതയ്ക്കുള്ള കുറുക്കുവഴി അമർത്തി. അത് ഓണാക്കണോ?</translation>
@@ -352,6 +359,7 @@
 <translation id="7398254312354928459">നെറ്റ്‌വർക്ക് കണക്ഷൻ മാറ്റി</translation>
 <translation id="742594950370306541">ക്യാമറ ഉപയോഗത്തിലാണ്.</translation>
 <translation id="743058460480092004">ക്യാമറയും മൈക്രോഫോണും ഉപയോഗത്തിലാണ്.</translation>
+<translation id="7497767806359279797">ഭാഷയും കീബോഡും തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">നെറ്റ്‌വർക്ക് നിരീക്ഷിക്കപ്പെടാം</translation>
 <translation id="7536035074519304529">IP വിലാസം: <ph name="ADDRESS" /></translation>
@@ -361,6 +369,7 @@
 <translation id="7569509451529460200">Braille, ChromeVox എന്നിവ പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="7593891976182323525">തിരയൽ അല്ലെങ്കിൽ Shift</translation>
 <translation id="7604942372593434070">നിങ്ങളുടെ ബ്രൗസിംഗ് ആക്‌റ്റിവിറ്റി ആക്‌സസ് ചെയ്യുക</translation>
+<translation id="7642778300616172920">സൂക്ഷ്‌മമായി കൈകാര്യം ചെയ്യേണ്ട ഉള്ളടക്കം അദൃശ്യമാക്കുക</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ഉടമ)</translation>
 <translation id="7647488630410863958">നിങ്ങളുടെ അറിയിപ്പുകൾ കാണാൻ ഉപകരണം അൺലോക്കുചെയ്യുക</translation>
 <translation id="7649070708921625228">സഹായം</translation>
@@ -376,6 +385,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> നെറ്റ്‌വർക്കിലേക്ക് കണക്‌റ്റ് ചെയ്യുന്നു</translation>
 <translation id="7842569679327885685">മുന്നറിയിപ്പ്: പരീക്ഷണാത്മക ഫീച്ചർ</translation>
 <translation id="7846634333498149051">കീബോർഡ്</translation>
+<translation id="7886277072580235377">സൈൻ ഔട്ട് ചെയ്യുമ്പോൾ നിങ്ങളുടെ ഇന്റർനെറ്റ് സെഷൻ മായ്ക്കപ്പെടും. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">സ്വകാര്യത സംബന്ധിയായ ക്രമീകരണങ്ങൾ കൈകാര്യം ചെയ്യുക</translation>
 <translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>
 <translation id="7933084174919150729">പ്രാഥമിക പ്രൊഫൈലിന് മാത്രമേ Google സഹായി ലഭ്യമാകൂ.</translation>
@@ -416,6 +426,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: വീണ്ടും കണക്‌റ്റുചെയ്യുന്നു...</translation>
 <translation id="8513108775083588393">സ്വയം തിരിയുക</translation>
 <translation id="8517041960877371778">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഓണായിരിക്കുമ്പോൾ അത് ചാർജ്ജാകാതിരിക്കാം.</translation>
+<translation id="8592141010104017453">അറിയിപ്പുകൾ ഒന്നും തന്നെ കാണിക്കരുത്</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> ഉപകരണത്തിലേക്ക് കണക്റ്റ് ചെയ്‌തു</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ശേഷിക്കുന്നു</translation>
 <translation id="8649101189709089199">വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക</translation>

@@ -114,7 +114,6 @@
 <translation id="1171135284592304528">ಆಬ್ಜೆಕ್ಟ್ ಬದಲಾದಾಗ ಕೀಬೋರ್ಡ್ ಫೋಕಸ್ ಬಳಸಿಕೊಂಡು ಅದನ್ನು ಹೈಲೈಟ್ ಮಾಡಿ</translation>
 <translation id="1173894706177603556">ಮರುಹೆಸರಿಸು</translation>
 <translation id="1174073918202301297">ಶಾರ್ಟ್‌ಕಟ್ ಸೇರಿಸಲಾಗಿದೆ</translation>
-<translation id="1174808551768282258">ನಿಮ್ಮ ಫೋನ್‌‍ನ ಮೂಲಕ ನಿಮ್ಮ Chromebook ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ. ಇದರ ಬಗ್ಗೆ <ph name="LINK_BEGIN" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ.<ph name="LINK_END" /></translation>
 <translation id="1175364870820465910">&amp;ಮುದ್ರಿಸಿ...</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> ನಕಲಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1177138678118607465">ಹುಡುಕಾಟ, ಜಾಹೀರಾತುಗಳು ಮತ್ತು ಇತರ Google ಸೇವೆಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು Google ಬಳಸಬಹುದು. ನೀವು ಇದನ್ನು myaccount.google.com/activitycontrols/search ನಲ್ಲಿ ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ಬದಲಾಯಿಸಬಹುದು</translation>
@@ -122,7 +121,6 @@
 <translation id="1178581264944972037">ವಿರಾಮ</translation>
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="1183237619868651138"><ph name="EXTERNAL_CRX_FILE" /> ಅನ್ನು ಸ್ಥಳೀಯ ಸಂಗ್ರಹದಲ್ಲಿ ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
-<translation id="1183378459020939734">ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀಯನ್ನು ಜೋಡಿಸಲು ಸಿದ್ಧರಾಗಿರುವಿರಾ?</translation>
 <translation id="1185924365081634987">ಈ ನೆಟ್‌ವರ್ಕ್‌ ದೋಷವನ್ನು ಬಗೆಹರಿಸಲು <ph name="GUEST_SIGNIN_LINK_START" />ಅತಿಥಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡುವುದನ್ನು<ph name="GUEST_SIGNIN_LINK_END" /> ಕೂಡಾ ನೀವು ಪ್ರಯತ್ನಿಸಬಹುದು.</translation>
 <translation id="1186771945450942097">ಹಾನಿಕಾರಕ ಸಾಫ್ಟ್‌ವೇರ್ ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="1187722533808055681">ತಟಸ್ಥದ ಎಚ್ಚರಿಸುವಿಕೆಗಳು</translation>
@@ -539,7 +537,6 @@
 <translation id="1782530111891678861">ಸ್ಪರ್ಶ HUD ಮೋಡ್ ಬದಲಾಯಿಸಿ</translation>
 <translation id="1784849162047402014">ಸಾಧನದ ಡಿಸ್ಕ್ ಸ್ಥಳಾವಕಾಶ ಕಡಿಮೆ ಇದೆ</translation>
 <translation id="1786636458339910689">ತಂಡದ ಡ್ರೈವ್‌ಗಳು</translation>
-<translation id="1792161662640298233">ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀಯನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1792619191750875668">ವಿಸ್ತರಿಸಲಾದ ಪ್ರದರ್ಶನ</translation>
 <translation id="1794791083288629568">ಈ ಸಮಸ್ಯೆಯನ್ನು ಸರಿಪಡಿಸಲು ನಮಗೆ ಸಹಾಯ ಮಾಡುವುದಕ್ಕಾಗಿ ಪ್ರತಿಕ್ರಿಯೆ ಕಳುಹಿಸಿ.</translation>
 <translation id="1795214765651529549">ಕ್ಲಾಸಿಕ್ ಬಳಸಿ</translation>
@@ -622,7 +619,6 @@
 <translation id="1910721550319506122">ಸುಸ್ವಾಗತ!</translation>
 <translation id="1914326953223720820">ಸೇವೆಯನ್ನು ಅನ್ ಜಿಪ್ ಮಾಡಿ</translation>
 <translation id="1915073950770830761">ಕ್ಯಾನರಿ</translation>
-<translation id="1915543339027206592">ನಿಮ್ಮ ಖಾತೆಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಆಧರಿಸಿ, ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್‌ನೊಂದಿಗಿನ ಅನುಭವವು, ವೆಬ್ ಫಲಿತಾಂಶಗಳು, ಜೋಕ್‌ಗಳು ಮತ್ತು ಸ್ಥಳೀಯ ಮಾಹಿತಿಯಂತಹ ಸಂಗತಿಗಳಿಗೆ ಸೀಮಿತವಾಗಿರಬಹುದು.</translation>
 <translation id="1916502483199172559">ಡಿಫಾಲ್ಟ್ ಕೆಂಪು ಅವತಾರ್</translation>
 <translation id="1918141783557917887">&amp;ಚಿಕ್ಕದು</translation>
 <translation id="1919345977826869612">ಜಾಹೀರಾತುಗಳು</translation>
@@ -875,14 +871,12 @@
 <translation id="2307462900900812319">ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರ್ ಮಾಡು</translation>
 <translation id="230927227160767054">ಸೇವೆ ಹ್ಯಾಂಡ್ಲರ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲು ಈ ಪುಟವು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="2309620859903500144">ನಿಮ್ಮ ಚಲನೆಯ ಅಥವಾ ಲೈಟ್‌ ಸೆನ್ಸರ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸದಂತೆ ಈ ಸೈಟ್‌ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
-<translation id="2311075084924370935">ನಿಮ್ಮ ಕ್ಯಾಲೆಂಡರ್, ಜ್ಞಾಪನೆಗಳು, ವಿಮಾನಗಳು ಮತ್ತು ಹೆಚ್ಚಿನವುಗಳನ್ನು ಕುರಿತು ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು, ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್‌ಗೆ ವೆಬ್ ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್ ಚಟುವಟಿಕೆ, ಸಾಧನದ ಮಾಹಿತಿ, ಮತ್ತು ಧ್ವನಿ ಹಾಗೂ ಆಡಿಯೋ ಚಟುವಟಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="2315821125498993513">ಫೋನ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಇದರ ಬಗ್ಗೆ <ph name="LINK_BEGIN" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ.<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">ಬೇಡ, ಧನ್ಯವಾದಗಳು</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" /> % ಮುಗಿದಿದೆ</translation>
 <translation id="2318143611928805047">ಪೇಪರ್ ಗಾತ್ರ</translation>
 <translation id="2318817390901984578">Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಬಳಸಲು, ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಚಾರ್ಜ್ ಮಾಡಿ, ಅಪ್‌ಡೇಟ್ ಮಾಡಿ.</translation>
 <translation id="2318923050469484167">ಪ್ರಸ್ತುತ ಅದೃಶ್ಯ ಸೆಶನ್ (<ph name="EMBEDDING" />)</translation>
-<translation id="2321482478556590128"><ph name="APP_NAME" /> ಜೊತೆಗೆ ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀ ಬಳಸಿ</translation>
 <translation id="2322193970951063277">ಶೀರ್ಷಿಕೆಗಳು ಮತ್ತು ಅಡಿಟಿಪ್ಪಣಿಗಳು</translation>
 <translation id="2325650632570794183">ಈ ಫೈಲ್ ಪ್ರಕಾರವು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಈ ಪ್ರಕಾರ ಫೈಲ್ ತೆರೆಯಬಹುದಾದ ಅಪ್ಲಿಕೇಶನ್ ಹುಡುಕಲು Chrome ವೆಬ್ ಅಂಗಡಿಗೆ ಭೇಟಿ ನೀಡಿ.</translation>
 <translation id="2326931316514688470">ಅಪ್ಲಿಕೇಶನ್ &amp;ಮರುಲೋಡ್ ಮಾಡಿ</translation>
@@ -916,7 +910,6 @@
 <translation id="2367199180085172140">ಫೈಲ್‌ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="2367972762794486313">ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ತೋರಿಸು</translation>
 <translation id="2369536625682139252">ಕುಕೀಗಳನ್ನು ಹೊರತುಪಡಿಸಿ, <ph name="SITE" /> ಸಂಗ್ರಹಣೆ ಮಾಡಿರುವ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಅಳಿಸಲಾಗುವುದು.</translation>
-<translation id="237058345584060620">ನಿಮ್ಮ ಕೀಯನ್ನು ಈ ಸಾಧನಕ್ಕೆ ಜೋಡಿಸುವುದರಿಂದ, ಅದನ್ನು ನಿಮ್ಮ ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಬಳಸಬಹುದು</translation>
 <translation id="2371076942591664043">&amp;ಮುಗಿಸಿದಾಗ ತೆರೆಯಿರಿ</translation>
 <translation id="2377319039870049694">ಪಟ್ಟಿ ವೀಕ್ಷಣೆಗೆ ಬದಲಾಯಿಸಿ</translation>
 <translation id="2377667304966270281">ಹಾರ್ಡ್ ಫಾಲ್ಟ್ಸ್</translation>
@@ -983,7 +976,6 @@
 <translation id="248861575772995840">ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ಪತ್ತೆ ಮಾಡಲಾಗಲಿಲ್ಲ. ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಸಾಧನಗಳಲ್ಲಿ ಬ್ಲೂಟೂತ್ ಆನ್‌ ಆಗಿದೆ ಎಂಬುದನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ. &lt;a&gt;ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ&lt;/a&gt;</translation>
 <translation id="2489918096470125693">&amp;ಫೋಲ್ಡರ್ ಅನ್ನು ಸೇರಿಸಿ...</translation>
 <translation id="249113932447298600">ಕ್ಷಮಿಸಿ, ಈ ಸಮಯದಲ್ಲಿ <ph name="DEVICE_LABEL" /> ಸಾಧನಕ್ಕೆ ಬೆಂಬಲ ದೊರೆಯುತ್ತಿಲ್ಲ.</translation>
-<translation id="2492040222276243256">ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀಯ ಮೇಲಿನ ಬಟನ್ ಅನ್ನು ಕನಿಷ್ಠ 5 ಸೆಕೆಂಡುಗಳವರೆಗೆ ಒತ್ತಿ ಹಿಡಿದುಕೊಳ್ಳಿ</translation>
 <translation id="2493021387995458222">"ಏಕಕಾಲಕ್ಕೆ ಒಂದು ಪದ" ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="249303669840926644">ನೋಂದಣಿ ಪೂರೈಸಲಾಗಲಿಲ್ಲ</translation>
 <translation id="2495777824269688114">ಹೆಚ್ಚಿನ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಶೋಧಿಸಿ ಅಥವಾ ಉತ್ತರಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಿ. ಸಹಾಯಕ್ಕಾಗಿ “?” ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
@@ -1088,7 +1080,6 @@
 <translation id="2633199387167390344">ಡಿಸ್ಕ್ ಸ್ಥಳಾವಕಾಶದಲ್ಲಿ <ph name="USAGE" /> MB ಅನ್ನು <ph name="NAME" /> ಬಳಸಿಕೊಳ್ಳುತ್ತಿದೆ.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" ಅನ್ನು ತೆಗೆದುಹಾಕುವುದೇ?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ಸ್ಥಾಪನೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲಾಗಲಿಲ್ಲ, ಆದರೆ ಇದರ ಡಿಸ್ಕ್ ಇಮೇಜ್‌ನಿಂದ ಚಾಲನೆಗೊಳ್ಳುವುದನ್ನು ಮುಂದುವರಿಸುತ್ತದೆ.</translation>
-<translation id="2633326789677284179">ನಿಮ್ಮ ಕೀಯ ಹಿಂಭಾಗದಲ್ಲಿ ಮುದ್ರಿಸಲಾಗಿರುವ ಹೆಸರನ್ನು ಕಂಡುಕೊಳ್ಳಿ</translation>
 <translation id="2635276683026132559">ಸಹಿ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2636625531157955190">Chrome ಚಿತ್ರವನ್ನು ಪ್ರವೇಶಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="2638087589890736295">ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು ಪಾಸ್‌ಫ್ರೇಸ್ ಅಗತ್ಯವಿದೆ</translation>
@@ -1256,7 +1247,6 @@
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> ಸೇರಿಸಿ...</translation>
 <translation id="2874343608108773609">ನಿಮ್ಮ ಎಲ್ಲ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2875698561019555027">(Chrome ದೋಷ ಪುಟಗಳು)</translation>
-<translation id="2876441201733326392">USB ಸುರಕ್ಷತಾ ಕೀಯನ್ನು ಬಳಸಿ</translation>
 <translation id="288042212351694283">ನಿಮ್ಮ ಯುನಿವರ್ಸಲ್ 2ನೇ ಫ್ಯಾಕ್ಟರ್ ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="2881966438216424900">ಕೊನೆಯ ಬಾರಿ ಪ್ರವೇಶಿಸಿರುವುದು:</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> ಮರು ಪ್ರಾರಂಭವಾಗುತ್ತದೆ ಮತ್ತು ಸ್ವಲ್ಪ ಸಮಯದಲ್ಲಿ ಮರು ಹೊಂದಿಸಲಾಗುತ್ತದೆ</translation>
@@ -1324,7 +1314,6 @@
 <translation id="2982970937345031">ಅನಾಮಧೇಯವಾಗಿ ವರದಿ ಮಾಡಿ</translation>
 <translation id="2984337792991268709">ಇಂದು <ph name="TODAY_DAYTIME" /></translation>
 <translation id="2986010903908656993">MIDI ಸಾಧನಗಳ ಸಂಪೂರ್ಣ ನಿಯಂತ್ರಣ ಪಡೆಯದಿರುವಂತೆ ಈ ಪುಟವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
-<translation id="2988599644347283908">ಗಮನಿಸಿ: ನಿಮಗೆ ವೈಯಕ್ತೀಕರಿಸಿದ ಅನುಭವಗಳು ಮತ್ತು ಉಪಯುಕ್ತ ಜಾಹೀರಾತುಗಳನ್ನು ನೀಡುವುದಕ್ಕಾಗಿ ಈ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಂದ ನಿಯಂತ್ರಿಸಲ್ಪಡುವ ಡೇಟಾವನ್ನು ನೀವು ಸೈನ್ ಇನ್ ಆಗಿರುವ ಯಾವುದೇ Google ಸೇವೆಗಳಲ್ಲಿ ಉಳಿಸಬಹುದು ಮತ್ತು ಬಳಸಬಹುದು. ನೀವು ನಿಮ್ಮ ಡೇಟಾವನ್ನು account.google.com ನಲ್ಲಿ ನೋಡಬಹುದು, ಅಳಿಸಬಹುದು ಮತ್ತು ಬದಲಾಯಿಸಬಹುದು.</translation>
 <translation id="2989474696604907455">ಲಗತ್ತಿಸಿಲ್ಲ</translation>
 <translation id="2989786307324390836">DER-ಎನ್‌ಕೋಡೆಡ್ ಬೈನರಿ, ಏಕ ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="2993517869960930405">ಅಪ್ಲಿಕೇಶನ್ ಮಾಹಿತಿ</translation>
@@ -1377,7 +1366,6 @@
 <translation id="304826556400666995">ಟ್ಯಾಬ್‌ಗಳನ್ನು ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡಿ</translation>
 <translation id="3053013834507634016">ಪ್ರಮಾಣಪತ್ರ ಕೀಲಿ ಬಳಕೆ</translation>
 <translation id="3057861065630527966">ನಿಮ್ಮ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳನ್ನು ಬ್ಯಾಕಪ್ ಮಾಡಿ</translation>
-<translation id="3059313675706898490">Android ಸಂದೇಶಗಳು</translation>
 <translation id="3060379269883947824">ಧ್ವನಿ ಆಯ್ಕೆ ಮಾಡಿ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3061707000357573562">ಪ್ಯಾಚ್ ಸೇವೆ</translation>
 <translation id="3064410671692449875">ಸಾಕಷ್ಟು ಡೇಟಾ ಇಲ್ಲ</translation>
@@ -1406,7 +1394,6 @@
 <translation id="3090819949319990166">ಬಾಹ್ಯ crx ಫೈಲ್ ಅನ್ನು <ph name="TEMP_CRX_FILE" /> ಗೆ ನಕಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" ಜೋಡಿಸಲಾಗಿದೆ</translation>
 <translation id="3101709781009526431">ದಿನಾಂಕ  ಮತ್ತು  ಸಮಯ</translation>
-<translation id="3104900172193317662">ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀಯನ್ನು ಬಳಸಲು ಅನುಮತಿಸಿ</translation>
 <translation id="310671807099593501">ಬ್ಲೂಟೂತ್ ಅನ್ನು ಸೈಟ್‌ ಬಳಸುತ್ತಿದೆ</translation>
 <translation id="3115128645424181617">ನಿಮ್ಮ ಫೋನ್‌ ಹುಡುಕಲು ಸಾಧ್ಯವಿಲ್ಲ. ಅದು ಸುಲಭವಾಗಿ ಲಭ್ಯವಿರುತ್ತದೆಯೇ ಮತ್ತು ಬ್ಲೂಟೂತ್‌ ಆನ್‌ ಮಾಡಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಚಿತಪಡಿಕೊಳ್ಳಿ.</translation>
 <translation id="3115147772012638511">ಕ್ಯಾಶ್‌ಗಾಗಿ ನಿರೀಕ್ಷಿಸುತ್ತಿದೆ...</translation>
@@ -1490,7 +1477,6 @@
 <translation id="3251759466064201842">&lt;ಪ್ರಮಾಣಪತ್ರದ ಭಾಗವಲ್ಲ&gt;</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ಫೈಲ್‌ಗಳಿಗಾಗಿ ಡಿಫಾಲ್ಟ್ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಆರಿಸಿ:</translation>
 <translation id="3254516606912442756">ಸಮಯ ವಲಯವನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಪತ್ತೆಹಚ್ಚುವುದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
-<translation id="3254772308201947812">ಹೌದು, ನಾನು ಒಪ್ಪಿಕೊಳ್ಳುತ್ತೇನೆ</translation>
 <translation id="3264544094376351444">Sans-Serif ಫಾಂಟ್</translation>
 <translation id="3264547943200567728">ನಿಮ್ಮ Chromebox ನ ನೆಟ್‌ವರ್ಕ್ ಹೊಂದಿಸಲು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="3264582393905923483">ಸಂದರ್ಭ</translation>
@@ -1813,7 +1799,6 @@
 <translation id="3735740477244556633">ಈ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ</translation>
 <translation id="3737274407993947948">Linux ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡುತ್ತಿರುವಲ್ಲಿ ದೋಷ ಕಂಡುಬಂದಿದೆ...</translation>
 <translation id="3737536731758327622">ನಿಮ್ಮ ಡೌನ್‌ಲೋಡ್‌ಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>
-<translation id="3738671331307774213">ನಿಮ್ಮ ಗುರುತನ್ನು ಪರಿಶೀಲಿಸುವುದರಿಂದ ನಿಮ್ಮ ಖಾಸಗಿ ಡೇಟಾವನ್ನು ರಕ್ಷಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094"><ph name="APPLICATION" /> ತೆರೆಯುವುದೇ?</translation>
 <translation id="3741158646617793859"><ph name="DEVICE_NAME" /> ಈಗ ನಿರ್ವಹಣೆ ಕನ್ಸೋಲ್‌ನಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ</translation>
@@ -1921,7 +1906,6 @@
 <translation id="3873315167136380065">ಇದನ್ನು ಆನ್ ಮಾಡಲು, ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲು <ph name="BEGIN_LINK" />ಸಿಂಕ್ ಮರುಹೊಂದಿಸಿ<ph name="END_LINK" /></translation>
 <translation id="3878840326289104869">ಮೇಲ್ವಿಚಾರಣೆಯ ಬಳಕೆದಾರರನ್ನು ರಚಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="3879748587602334249">ಡೌನ್‌ಲೋಡ್ ನಿರ್ವಾಹಕ</translation>
-<translation id="3880709822663530586">ನಿಮ್ಮ ಸಾಧನದ ಬ್ಲೂಟೂತ್ ಆನ್ ಇದ್ದಾಗ ಮಾತ್ರ ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀ ಕೆಲಸ ಮಾಡುತ್ತದೆ</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> ಮೂಲಕ ಟಿಪ್ಪಣಿಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳಲಾಗುತ್ತಿದೆ</translation>
 <translation id="3892414795099177503">OpenVPN / L2TP ಸೇರಿಸಿ...</translation>
 <translation id="3893536212201235195">ನಿಮ್ಮ ಪ್ರವೇಶಿಸುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
@@ -2067,6 +2051,7 @@
 <translation id="4096824249111507322">ಸುಭದ್ರ ಮಾಡ್ಯೂಲ್ ಅನ್ನು ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತಿದೆ, ಸ್ವಲ್ಪ ನಿರೀಕ್ಷಿಸಿ (ಇದಕ್ಕೆ ಕೆಲವು ನಿಮಿಷಗಳ ಕಾಲಾವಕಾಶ ಬೇಕಾಗಬಹುದು)...</translation>
 <translation id="4099060993766194518">ಡಿಫಾಲ್ಟ್ ಹುಡುಕಾಟ ಎಂಜಿನ್ ಅನ್ನು ಮರುಸ್ಥಾಪಿಸುವುದೇ?</translation>
 <translation id="4100733287846229632">ಸಾಧನ ಸ್ಥಳಾವಕಾಶ ತೀರಾ ಕಡಿಮೆ ಇದೆ</translation>
+<translation id="4103091233824664032">ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ ಮತ್ತು ಸೈನ್‌ ಇನ್‌ ಮಾಡಿ</translation>
 <translation id="4104163789986725820">ರ&amp;ಫ್ತು...</translation>
 <translation id="4105563239298244027">Google ಡ್ರೈವ್‌ನೊಂದಿಗೆ 1 TB ಉಚಿತ ಪಡೆಯಿರಿ</translation>
 <translation id="4107048419833779140">ಸಂಗ್ರಹಣೆ ಸಾಧನಗಳನ್ನು ಗುರುತಿಸಿ ಮತ್ತು ತೆಗೆದುಹಾಕಿ</translation>
@@ -2087,7 +2072,6 @@
 <translation id="4136203100490971508">ನೈಟ್ ಲೈಟ್ ಸೂರ್ಯೋದಯದ ಸಮಯದಲ್ಲಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಆಫ್ ಆಗುತ್ತದೆ</translation>
 <translation id="4138267921960073861">ಬಳಕೆದಾರಹೆಸರುಗಳು ಮತ್ತು ಫೋಟೋಗಳನ್ನು ಸೈನ್-ಇನ್ ಪರದೆಯಲ್ಲಿ ತೋರಿಸು</translation>
 <translation id="4144218403971135344">ಉತ್ತಮ ಗುಣಮಟ್ಟದ ವೀಡಿಯೊ ಪಡೆಯಿರಿ ಮತ್ತು ಬ್ಯಾಟರಿ ಅವಧಿಯನ್ನು ಉಳಿಸಿ. ವೀಡಿಯೊ, ನಿಮ್ಮ Cast-ಸಕ್ರಿಯಗೊಂಡ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿ ಮಾತ್ರ ಪ್ಲೇ ಆಗುತ್ತದೆ.</translation>
-<translation id="414599683948988413">USB ಜೊತೆಗೆ ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀ ಬಳಸಿ</translation>
 <translation id="4146026355784316281">ಯಾವಾಗಲೂ ಸಿಸ್ಟಂ ವೀಕ್ಷಕದ ಜೊತೆಗೆ ತೆರೆಯಿರಿ</translation>
 <translation id="4146785383423576110">ಮರುಹೊಂದಿಸಿ ಮತ್ತು ಸ್ವಚ್ಛಗೊಳಿಸಿ</translation>
 <translation id="4147897805161313378">Google ಫೋಟೋಗಳು</translation>
@@ -2430,6 +2414,7 @@
 <translation id="474217410105706308">ಟ್ಯಾಬ್ ಮ್ಯೂಟ್ ಮಾಡಿ</translation>
 <translation id="4742746985488890273">ಶೆಲ್ಫ್‌ಗೆ ಪಿನ್‌ ಮಾಡು</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡುವುದು ಹೇಗೆ ಎಂದು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
+<translation id="4746351372139058112">ಸಂದೇಶಗಳು</translation>
 <translation id="4746971725921104503">ಆ ಹೆಸರಿನ ಮೂಲಕ ನೀವು ಈಗಾಗಲೇ ಬಳಕೆದಾರರಂತೆ ನಿರ್ವಹಿಸುತ್ತಿರುವಂತೆ ತೋರುತ್ತಿದೆ. ನೀವು <ph name="LINK_START" />ಈ ಸಾಧನಕ್ಕೆ<ph name="USER_DISPLAY_NAME" /> ಆಮದು ಮಾಡಲು ಬಯಸುವಿರಾ<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Chrome ವೆಬ್ ಅಂಗಡಿಯಿಂದ ವಿಸ್ತರಣೆ ಅಗತ್ಯವಿರುತ್ತದೆ</translation>
 <translation id="4750394297954878236">ಸಲಹೆಗಳು</translation>
@@ -2664,7 +2649,6 @@
 <translation id="5099354524039520280">ಮೇಲಕ್ಕೆ</translation>
 <translation id="5100114659116077956">ನಿಮಗೆ ಇತ್ತೀಚಿನ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ನೀಡುವ ದೃಷ್ಟಿಯಿಂದ, ನಿಮ್ಮ Chromebox ನವೀಕರಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="5101042277149003567">ಎಲ್ಲಾ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
-<translation id="5104546332954397226">ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ಸುರಕ್ಷತಾ ಕೀ ಎಂಬಂತೆ ಬಳಸಿ</translation>
 <translation id="5105855035535475848">ಪಿನ್ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="5108967062857032718">ಸೆಟ್ಟಿಂಗ್‌ಗಳು - Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="5109044022078737958">ಮಿಯಾ</translation>
@@ -2797,7 +2781,6 @@
 <translation id="5288678174502918605">ಮುಚ್ಚಿದ ಟ್ಯಾಬ್ ಮರು&amp;ತೆರೆಯಿರಿ</translation>
 <translation id="52912272896845572">ಖಾಸಗಿ ಕೀಲಿ ಫೈಲ್ ಅಮಾನ್ಯವಾಗಿದೆ.</translation>
 <translation id="529175790091471945">ಈ ಸಾಧನವನ್ನು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಿ</translation>
-<translation id="5292195676005197571">ಹೆಚ್ಚಿನ ಕೀಗಳನ್ನು ಬಳಸಲು, ಕೇವಲ ಬಟನ್ ಅನ್ನು ಒತ್ತಿರಿ</translation>
 <translation id="5293170712604732402">ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಅದರ ಮೂಲ ಡೀಫಾಲ್ಟ್‌ಗಳಿಗೆ ಮರುಸ್ಥಾಪಿಸಿ</translation>
 <translation id="5297082477358294722">ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಲಾಗಿದೆ. ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ <ph name="SAVED_PASSWORDS_STORE" /> ನಲ್ಲಿ ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ.</translation>
 <translation id="5298219193514155779">ಇವರಿಂದ ಥೀಮ್ ರಚಿಸಲಾಗಿದೆ</translation>
@@ -2867,7 +2850,6 @@
 <translation id="5390100381392048184">ಧ್ವನಿಗಳನ್ನು ಪ್ಲೇ ಮಾಡಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸಿ</translation>
 <translation id="5390284375844109566">ಸೂಚ್ಯಂಕಗೊಳಿಸಿದ ಡೇಟಾಬೇಸ್</translation>
 <translation id="5390743329570580756">ಇದಕ್ಕಾಗಿ ಕಳುಹಿಸಿ</translation>
-<translation id="5392327114396848796">ಅಂತರ್ನಿರ್ಮಿತ ಸುರಕ್ಷತಾ ಕೀ ಬಳಸಿ</translation>
 <translation id="5397794290049113714">ನೀವು</translation>
 <translation id="5398572795982417028">ಪರಿಮಿತಿಗಳಿಂದ ಹೊರಗಿರುವ ಪುಟದ ಉಲ್ಲೇಖ, ಮಿತಿ <ph name="MAXIMUM_PAGE" /> ಆಗಿದೆ</translation>
 <translation id="5398772614898833570">ಜಾಹೀರಾತುಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
@@ -3171,7 +3153,6 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - ಕ್ಯಾಮರಾ ಅಥವಾ ಮೈಕ್ರೊಫೋನ್ ರೆಕಾರ್ಡಿಂಗ್</translation>
 <translation id="5835754902560991078">ಅತ್ಯಂತ ಚಿಕ್ಕದು (0.6s)</translation>
 <translation id="5838456317242088717">ಪ್ರಸ್ತುತ ಅದೃಶ್ಯ ಸೆಶನ್</translation>
-<translation id="5842053879378944309"><ph name="APP_NAME" /> ಜೊತೆಗೆ ನಿಮ್ಮ USB ಸುರಕ್ಷತಾ ಕೀ ಬಳಸಿ</translation>
 <translation id="5842497610951477805">ಬ್ಲೂಟೂತ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="5843250171025351504">ನಿಮ್ಮ ನಿರ್ವಾಹಕರ ಮೂಲಕ ನಿರ್ದಿಷ್ಟಪಡಿಸಿದ ಕನಿಷ್ಠ ಕ್ಲೈಂಟ್ ಆವೃತ್ತಿಯೊಂದಿಗೆ ನಿಮ್ಮ ಸಾಧನ ಇನ್ನು ಮುಂದೆ ಅನುವರ್ತಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು ಲಾಗಿನ್‌ ಮಾಡಿ.</translation>
 <translation id="5846929185714966548">ಟ್ಯಾಬ್ 4</translation>
@@ -3489,7 +3470,6 @@
 <translation id="6317318380444133405">ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="6317369057005134371">ಅಪ್ಲಿಕೇಶನ್ ವಿಂಡೋಗಾಗಿ ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="6318407754858604988">ಡೌನ್‌ಲೋಡ್ ಪ್ರಾರಂಭಿಸಲಾಗಿದೆ</translation>
-<translation id="6322653941595359182">ನಿಮ್ಮ Chromebook ನಿಂದ ಪಠ್ಯ ಸಂದೇಶಗಳನ್ನು ಕಳುಹಿಸಿ ಮತ್ತು ಸ್ವೀಕರಿಸಿ</translation>
 <translation id="6324916366299863871">ಶಾರ್ಟ್‌ಕಟ್ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="6325191661371220117">ಸ್ವಯಂ-ಪ್ರಾರಂಭವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="6326175484149238433">Chrome ನಿಂದ ತೆಗೆದುಹಾಕು</translation>
@@ -3558,7 +3538,6 @@
 <translation id="642282551015776456">ಈ ಹೆಸರನ್ನು ಫೋಲ್ಡರ್‌ನ ಫೈಲ್‌ನಂತೆ ಬಳಸಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="642469772702851743">ಈ ಸಾಧನವು (SN: <ph name="SERIAL_NUMBER" />) ಅದರ ಮಾಲೀಕರಿಂದ ಲಾಕ್ ಮಾಡಲ್ಪಟ್ಟಿದೆ.</translation>
 <translation id="6426200009596957090">ChromeVox ಸೆಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
-<translation id="6427415464407526111">ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6429384232893414837">ಅಪ್‌ಡೇಟ್ ದೋಷ</translation>
 <translation id="6430814529589430811">Base64-ಎನ್‌ಕೋಡ್ ಮಾಡಿದ ASCII, ಏಕ ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="6431217872648827691"><ph name="TIME" /> ವರೆಗೆ ನಿಮ್ಮ Google ಪಾಸ್‍ವರ್ಡ್‌ ಜೊತೆ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಎನ್‍ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ</translation>
@@ -3715,7 +3694,6 @@
 <translation id="6655190889273724601">ಡೆವೆಲಪರ್ ಮೋಡ್</translation>
 <translation id="6655458902729017087">ಖಾತೆಗಳನ್ನು ಮರೆಮಾಡು</translation>
 <translation id="6657585470893396449">ಪಾಸ್‌ವರ್ಡ್</translation>
-<translation id="6658023813581644008">ಸೈನ್ ಇನ್‌ಗಾಗಿ Smart Lock ಹೊಂದಿಸಲು, ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ</translation>
 <translation id="6659213950629089752">ಈ ಪುಟವನ್ನು "<ph name="NAME" />" ವಿಸ್ತರಣೆಯಿಂದ  ಝೂಮ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6659594942844771486">ಟ್ಯಾಬ್</translation>
 <translation id="6664237456442406323">ದುರದೃಷ್ಟವಶಾತ್, ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ತಪ್ಪಾಗಿ ರಚಿಸಲಾದ ಹಾರ್ಡ್‌ವೇರ್ ID ಯೊಂದಿಗೆ ಕಾನ್ಫಿಗರ್ ಮಾಡಲಾಗಿದೆ. ಇದು Chrome OS ಅನ್ನು ಇತ್ತೀಚಿನ ಭದ್ರತೆ ಸರಿಪಡಿಸುವಿಕೆಗಳೊಂದಿಗೆ ನವೀಕರಿಸುವುದನ್ನು ತಡೆಯುತ್ತದೆ ಮತ್ತು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ <ph name="BEGIN_BOLD" />ದುರುದ್ದೇಶದ ದಾಳಿಗಳಿಗೆ ಗುರಿಯಾಗುವ ಸಾಧ್ಯತೆಯಿದೆ<ph name="END_BOLD" />.</translation>
@@ -3852,7 +3830,6 @@
 <translation id="6885771755599377173">ಸಿಸ್ಟಂ ಮಾಹಿತಿ ಪೂರ್ವವೀಕ್ಷಣೆ</translation>
 <translation id="6886871292305414135">ಹೊಸ &amp;ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="6892812721183419409">ಲಿಂಕ್ ಅನ್ನು <ph name="USER" /> ರಂತೆ ತೆರೆಯಿರಿ</translation>
-<translation id="6896398788631624004">ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀ ಅನ್ನು ಪ್ಲಗ್-ಇನ್ ಮಾಡಿ ಮತ್ತು ಅದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="6896758677409633944">ನಕಲಿಸು</translation>
 <translation id="6898440773573063262">ಕಿಯೋಸ್ಕ್ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಇದೀಗ ಈ ಸಾಧನದಲ್ಲಿ ಸ್ವಯಂ-ಪ್ರಾರಂಭಿಸಲು ಕಾನ್ಫಿಗರ್ ಮಾಡಬಹುದು.</translation>
 <translation id="6898699227549475383">ಸಂಸ್ಥೆ (O)</translation>
@@ -3891,6 +3868,7 @@
 <translation id="6965382102122355670">ಸರಿ</translation>
 <translation id="6965648386495488594">ಪೋರ್ಟ್</translation>
 <translation id="6965978654500191972">ಸಾಧನ</translation>
+<translation id="6968288415730398122">ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ</translation>
 <translation id="6970480684834282392">ಸ್ಟಾರ್ಟ್ಅಪ್ ಪ್ರಕಾರ</translation>
 <translation id="6970856801391541997">ನಿರ್ದಿಷ್ಟ ಪುಟಗಳನ್ನು ಮುದ್ರಿಸಿ</translation>
 <translation id="6972180789171089114">ಆಡಿಯೋ/ವೀಡಿಯೊ</translation>
@@ -4070,7 +4048,6 @@
 <translation id="7228523857728654909">ಪರದೆ ಲಾಕ್‌ ಮತ್ತು ಸೈನ್‌ ಇನ್‌</translation>
 <translation id="7229570126336867161">EVDO ಅಗತ್ಯವಿದೆ</translation>
 <translation id="7230787553283372882">ನಿಮ್ಮ ಪಠ್ಯ ಗಾತ್ರ ಗ್ರಾಹಕೀಯಗೊಳಿಸಿ</translation>
-<translation id="7231589788477569369">ಈ ಸೆಟ್ಟಿಂಗ್‌ಗಳ ಮೂಲಕ ಸಂಪೂರ್ಣವಾದ ಅಸಿಸ್ಟೆಂಟ್ ಅನುಭವವನ್ನು ಪಡೆದುಕೊಳ್ಳಿ</translation>
 <translation id="7232750842195536390">ಮರುಹೆಸರಿಸುವಿಕೆ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="7234406375359457793">ಹಂಚಿಕೆಯನ್ನು ಅಳವಡಿಸುವಲ್ಲಿ ದೋಷವಿದೆ. ನಿರ್ದಿಷ್ಟಪಡಿಸಿದ ಹಂಚಿಕೆಯನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="7238585580608191973">SHA-256 ಬೆರಳಚ್ಚು</translation>
@@ -4080,7 +4057,6 @@
 <translation id="7243632151880336635">ತೆರವುಗೊಳಿಸು ಮತ್ತು ಸೈನ್ ಔಟ್ ಮಾಡು</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (ಅತ್ಯುತ್ತಮ)</translation>
 <translation id="7246339268451149667">ಬೆರಳಚ್ಚು ಅನ್‌ಲಾಕ್ ಸಕ್ರಿಯಗೊಳಿಸುವುದೇ?</translation>
-<translation id="7246489301073081944">ನಿರ್ಗಮಿಸಲು |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />|+|<ph name="ACCELERATOR3" />| ಒತ್ತಿಹಿಡಿಯಿರಿ</translation>
 <translation id="7246947237293279874">FTP ಪ್ರಾಕ್ಸಿ</translation>
 <translation id="725109152065019550">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಖಾತೆಯಲ್ಲಿರುವ ಬಾಹ್ಯ ಸಂಗ್ರಹಣೆಯನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
 <translation id="7253521419891527137">&amp;ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
@@ -4231,7 +4207,6 @@
 <translation id="7489605380874780575">ಅರ್ಹತೆಯನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="749028671485790643">ವ್ಯಕ್ತಿ <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC ವಿಳಾಸ</translation>
-<translation id="7490950320178383728">ಬ್ಲೂಟೂತ್ ಜೊತೆಗೆ ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀ ಬಳಸಿ</translation>
 <translation id="7491962110804786152">ಟ್ಯಾಬ್</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> ವಿಸ್ತರಣೆಯು ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಸಂಖ್ಯೆಗಳಂತಹ ವೈಯಕ್ತಿಕ ಡೇಟಾ ಒಳಗೊಂಡಂತೆ ನೀವು ಟೈಪ್ ಮಾಡುವ ಎಲ್ಲಾ ಪಠ್ಯವನ್ನು ಸಂಗ್ರಹಿಸಬಹುದು. ಈ ವಿಸ್ತರಣೆಯನ್ನು ಬಳಸಲು ನೀವು ಬಯಸುವಿರಾ?</translation>
 <translation id="7494065396242762445">ವಿಂಡೊಗಳ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
@@ -4476,7 +4451,6 @@
 <translation id="7850851215703745691">ಈ ಡ್ರೈವ್ ಫೈಲ್‌ಗಳನ್ನು ಇನ್ನೂ ಹಂಚಿಕೊಂಡಿಲ್ಲ.</translation>
 <translation id="7851457902707056880">ಮಾಲೀಕನ ಖಾತೆಗೆ ಮಾತ್ರ ಸೈನ್‌-ಇನ್‌ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ರೀಬೂಟ್ ಮಾಡಿ ಮತ್ತು ಮಾಲೀಕರ ಖಾತೆಯೊಂದಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ. ಯಂತ್ರವು 30 ಸೆಕುಂಡುಗಳಲ್ಲಿ ಸ್ವಯಂ ರೀಬೂಟ್ ಆಗುತ್ತದೆ.</translation>
 <translation id="7851716364080026749">ಯಾವಾಗಲೂ ಕ್ಯಾಮರಾ ಹಾಗೂ ಮೈಕ್ರೋಫೋನ್ ಪ್ರವೇಶನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
-<translation id="7851816139220202929">NFC ಜೊತೆಗೆ ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀ ಬಳಸಿ</translation>
 <translation id="7853747251428735">ಇನ್ನಷ್ಟು ಪರಿಕರ&amp;ಗಳು</translation>
 <translation id="7856006446339184955">ಸಿಸ್ಟಂ ಡೇಟಾ ಕಳುಹಿಸಿ. ಈ ಸಾಧನವು ಪ್ರಸ್ತುತ ಡಯಾಗ್ನೋಸ್ಟಿಕ್‌, ಸಾಧನ ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್‌ ಬಳಕೆಯ ಡೇಟಾವನ್ನು Google ಗೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುತ್ತದೆ. ಈ <ph name="BEGIN_LINK1" />ಸೆಟ್ಟಿಂಗ್‌<ph name="END_LINK1" /> ಅನ್ನು ಮಾಲೀಕರು ಜಾರಿಗೊಳಿಸಿದ್ದಾರೆ. ನೀವು ಹೆಚ್ಚುವರಿ ವೆಬ್‌ ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್‌ ಚಟುವಟಿಕೆಯನ್ನು ಆನ್‌ ಮಾಡಿದರೆ, ಈ ಮಾಹಿತಿಯು ನಿಮ್ಮ ಖಾತೆಯೊಂದಿಗೆ ಸಂಗ್ರಹವಾಗುತ್ತದೆ, ಇದರಿಂದಾಗಿ ಅದನ್ನು ನೀವು ನನ್ನ ಚಟುವಟಿಕೆಯಲ್ಲಿ ನಿರ್ವಹಿಸಬಹುದು. <ph name="BEGIN_LINK2" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">ವಿನಾಯಿತಿ ಸೇರಿಸು</translation>
@@ -4607,7 +4581,6 @@
 <translation id="8030656706657716245">ಪ್ರಿಂಟರ್ ಸೇರಿಸಿ</translation>
 <translation id="8032244173881942855">ಟ್ಯಾಬ್‌‌ಗೆ ಬಿತ್ತರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="8033827949643255796">ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="8033958968890501070">ಅವಧಿ ಮೀರಿದೆ</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{&amp;ಅಜ್ಞಾತ ವಿಂಡೋದಲ್ಲಿ ಎಲ್ಲವನ್ನು ತೆರೆಯಿರಿ}=1{&amp;ಅಜ್ಞಾತ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ}one{&amp;ಅಜ್ಞಾತ ವಿಂಡೋದಲ್ಲಿ ಎಲ್ಲಾ (#) ಅನ್ನು ತೆರೆಯಿರಿ}other{&amp;ಅಜ್ಞಾತ ವಿಂಡೋದಲ್ಲಿ ಎಲ್ಲಾ (#) ಅನ್ನು ತೆರೆಯಿರಿ}}</translation>
 <translation id="8037117027592400564">ಸಂಯೋಜನೆ ಗೊಳಿಸಿದ ಧ್ವನಿಯನ್ನು ಬಳಸಿಕೊಂಡು ಮಾತನಾಡುವ ಎಲ್ಲಾ ಪಠ್ಯವನ್ನು ಓದಿ</translation>
 <translation id="8037357227543935929">ಕೇಳು (ಡಿಫಾಲ್ಟ್)</translation>
@@ -4831,7 +4804,6 @@
 <translation id="8425213833346101688">ಬದಲಿಸಿ</translation>
 <translation id="8425492902634685834">ಕಾರ್ಯಪಟ್ಟಿಗೆ ಪಿನ್‌ ಮಾಡು</translation>
 <translation id="8425755597197517046">ಅಂಟಿ&amp;ಸಿ ಮತ್ತು ಹುಡುಕಾಡಿ</translation>
-<translation id="8426117172745886547">ನಿರ್ಗಮಿಸುವ ಮೊದಲು ಎಚ್ಚರಿಸಿ (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="8426713856918551002">ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8427292751741042100">ಯಾವುದೇ ಹೋಸ್ಟ್‌ನಲ್ಲಿ ಎಂಬೆಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
@@ -4921,7 +4893,6 @@
 <translation id="8551388862522347954">ಪರವಾನಗಿಗಳು</translation>
 <translation id="8553342806078037065">ಇತರ ವ್ಯಕ್ತಿಗಳನ್ನು ನಿರ್ವಹಿಸು</translation>
 <translation id="8554899698005018844">ಭಾಷೆ ನಮೂದಿಸಿಲ್ಲ</translation>
-<translation id="8557347704037207368">Android ವೆಬ್ ಸಂದೇಶಗಳಿಂದ 'ನಿಮಗೆ ಕಳುಹಿಸುವ' ಅಧಿಸೂಚನೆಗಳು</translation>
 <translation id="855773602626431402">ಈ ಪುಟದಲ್ಲಿ ಸ್ಯಾಂಡ್‌ಬಾಕ್ಸ್ ರದ್ದುಗೊಳಿಸಿರುವ ಪ್ಲಗ್-ಇನ್ ಅನ್ನು ಚಾಲನೆ ಮಾಡುವುದರಿಂದ ತಡೆಯಲಾಗಿದೆ.</translation>
 <translation id="8557930019681227453">ಮ್ಯಾನಿಫೆಸ್ಟ್</translation>
 <translation id="8559694214572302298">ಚಿತ್ರ ಡಿಕೋಡರ್</translation>
@@ -5197,7 +5168,6 @@
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - ಕ್ರ್ಯಾಶ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8983677657449185470">ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್ ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="8984654317541110628">ಫೈಲ್‌ ಹಂಚಿಕೊಳ್ಳುವ URL</translation>
-<translation id="8984872292925913496">ನಿಮ್ಮ ಕೀಯ ಹಿಂಬದಿಯಲ್ಲಿನ 6-ಅಂಕಿಯ ಪಿನ್ ಅನ್ನು ಕಂಡುಕೊಳ್ಳಿ</translation>
 <translation id="8986362086234534611">ಮರೆತುಹೋಗು</translation>
 <translation id="8986494364107987395">ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳನ್ನು ಮತ್ತು ಕ್ರಾಶ್ ವರದಿಗಳನ್ನು Google ಗೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ರವಾನಿಸು</translation>
 <translation id="8987927404178983737">ತಿಂಗಳು</translation>

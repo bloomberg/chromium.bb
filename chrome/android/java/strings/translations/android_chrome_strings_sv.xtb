@@ -120,6 +120,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="1891331835972267886"><ph name="APP_NAME" /> öppnas i Chrome. Genom att fortsätta godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretesspolicy<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Stäng navigeringspanelen</translation>
 <translation id="1919345977826869612">Annonser</translation>
+<translation id="1919950603503897840">Välj kontakter</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Vald flik</translation>
 <translation id="1938981467853765413">Ge feedback</translation>
@@ -291,6 +292,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="3282568296779691940">Logga in i Chrome</translation>
 <translation id="32895400574683172">Aviseringar tillåts</translation>
 <translation id="3295602654194328831">Dölj info</translation>
+<translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Vill du ladda ned innehållet?</translation>
 <translation id="3328801116991980348">Platsinformation</translation>
 <translation id="3341058695485821946">Se hur mycket data du har sparat</translation>
@@ -855,6 +857,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7791543448312431591">Lägg till</translation>
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7810647596859435254">Öppna med …</translation>
+<translation id="7821588508402923572">Här visas hur mycket data du har sparat</translation>
 <translation id="7832327313660264358">Ingenting ändras i fråga om vilken data som synkroniseras med Google eller vilka funktioner du använder</translation>
 <translation id="7837721118676387834">Tillåt automatisk uppspelning av videor utan ljud för en specifik webbplats.</translation>
 <translation id="7846076177841592234">Rensa val</translation>

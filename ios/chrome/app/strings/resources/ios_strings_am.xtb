@@ -54,6 +54,7 @@
 <translation id="1690731385917361335">ምንም ንጥሎች የሉም</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ተመርጧል</translation>
 <translation id="1740468249224277719">ለመጫን ሁለቴ ነካ ያድርጉ።</translation>
+<translation id="1746815479209538200">ድሩን ለማሰስ አዲስ ትር ያክሉ።</translation>
 <translation id="17513872634828108">ትሮችን ክፈት</translation>
 <translation id="1752547299766512813">የይለፍ ቃላትን አስቀምጥ</translation>
 <translation id="1753905327828125965">በይበልጥ የተጎበኙ</translation>
@@ -392,12 +393,15 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7638584964844754484">ትክክል ያልሆነ የይለፍ ሐረግ</translation>
 <translation id="7649070708921625228">እገዛ</translation>
 <translation id="7658239707568436148">ይቅር</translation>
+<translation id="766891008101699113">ድሩን በግል ለማሰስ አዲስ ትር ያክሉ።</translation>
 <translation id="7671141431838911305">ጫን</translation>
 <translation id="7765158879357617694">ውሰድ</translation>
 <translation id="7769602470925380267">ተቀበልና ዘግተህ ውጣ</translation>
 <translation id="7772032839648071052">የይለፍ ሐረግ ያረጋግጡ</translation>
+<translation id="7781829728241885113">ትናንት</translation>
 <translation id="780301667611848630">አይ፣ አመሰግናለሁ</translation>
 <translation id="7830720446622801252">ግላዊነት ያልተላበሱ አገልግሎቶች</translation>
+<translation id="7840771868269352570">የመረጧቸው ንጥሎች ይወገዳሉ።</translation>
 <translation id="7856733331829174190">ማውረድ አልተቻለም</translation>
 <translation id="7859704718976024901">የአሰሳ ታሪክ</translation>
 <translation id="7918293828610777738">የንባብ ዝርዝርዎ ከመስመር ውጭ ይገኛል። አንድ ገጽ ወደ የንባብ ዝርዝርዎ ለማከል በመጀመሪያ <ph name="SHARE_OPENING_ICON" />ን ከዚያም <ph name="READ_LATER_TEXT" />ን መታ ያድርጉ።</translation>

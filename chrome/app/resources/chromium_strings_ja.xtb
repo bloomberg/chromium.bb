@@ -118,6 +118,7 @@
 <translation id="5358375970380395591">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="5398878173008909840">Chromium の最新バージョンをぜひお試しください。</translation>
+<translation id="5416696090975899932">組み込みの PDF ビューアがない場合、Chromium では印刷プレビューを表示できません。</translation>
 <translation id="5427571867875391349">Chromium をデフォルト ブラウザに設定する</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium は自動的に更新されるため、常に最新版をご利用になれます。このダウンロードが完了すると、Chromium が再起動し、すぐにお使いいただけます。</translation>

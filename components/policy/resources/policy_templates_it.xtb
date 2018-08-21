@@ -33,6 +33,17 @@
           Se l'impostazione viene disattivata o non configurata, l'host dell'assistenza remota viene eseguito nel contesto dell'utente e gli utenti remoti non possono interagire con finestre con privilegi più elevati sul desktop.</translation>
 <translation id="1096105751829466145">Provider di ricerca predefinito</translation>
 <translation id="1099282607296956954">Attiva isolamento sito per ogni sito</translation>
+<translation id="1100570158310952027">
+      Questa norma consente di specificare un elenco di origini (URL) o di schemi di nomi host (ad esempio "*.example.com") a cui non vengono applicate limitazioni di sicurezza sulle origini non sicure.
+
+Lo scopo è consentire alle organizzazioni di configurare le origini della whitelist per le applicazioni precedenti che non possono implementare TLS o configurare un server di gestione temporanea per gli sviluppi web interni, di modo che gli sviluppatori possano testare le funzioni che richiedono contesti sicuri senza dover implementare TLS sul server di gestione temporanea. Questa norma impedisce inoltre che l'origine venga contrassegnata come "Non sicura" nella omnibox.
+
+L'impostazione di un elenco di URL in questa norma ha lo stesso effetto dell'impostazione del flag della riga di comando "--unsafely-treat-insecure-origin-as-secure" su un elenco separato da virgole degli stessi URL. Se viene impostata, questa norma sostituisce il flag della riga di comando.
+
+Questa norma sostituirà UnsafelyTreatInsecureOriginAsSecure, se presente.
+
+Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.org/TR/secure-contexts/.
+      </translation>
 <translation id="1117535567637097036">I gestori di protocollo impostati tramite questa norma non sono utilizzati durante la gestione degli intent di Android.</translation>
 <translation id="1118093128235245168">Consenti ai siti di chiedere all'utente di concedere l'accesso a un dispositivo USB collegato</translation>
 <translation id="1128903365609589950">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per archiviare i file memorizzati nella cache sul disco.
@@ -77,6 +88,7 @@
       Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia RC4 in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.</translation>
 <translation id="1297182715641689552">Utilizza uno script proxy .pac</translation>
 <translation id="1304973015437969093">ID app/estensioni e URL di aggiornamento da installare automaticamente</translation>
+<translation id="1307454923744766368">Origini o schemi di nomi host a cui non dovrebbero essere applicate limitazioni sulle origini non sicure.</translation>
 <translation id="1313457536529613143">Consente di specificare la percentuale di regolazione del ritardo di oscuramento dello schermo quando viene osservata l'attività dell'utente mentre lo schermo è oscurato o subito dopo lo spegnimento dello schermo.
 
 Se questa norma viene impostata, consente di specificare la percentuale di regolazione del ritardo di oscuramento dello schermo quando viene osservata l'attività dell'utente mentre lo schermo è oscurato o subito dopo lo spegnimento dello schermo. Quando il ritardo di oscuramento viene regolato, i ritardi di spegnimento, blocco e inattività dello schermo vengono regolati per mantenere gli stessi distacchi dal ritardo di oscuramento dello schermo configurato in origine.
@@ -88,6 +100,11 @@ Il fattore di regolazione minimo deve essere 100%.</translation>
 <translation id="1327466551276625742">Attivazione richiesta di configurazione della rete offline</translation>
 <translation id="1330145147221172764">Attiva tastiera sullo schermo</translation>
 <translation id="13356285923490863">Nome norma</translation>
+<translation id="1352174694615491349">Questa norma consente l'unione della connessione HTTP/2 quando sono in uso i certificati client. Perché possa verificarsi l'unione, nel nome host della nuova potenziale connessione e in quello della connessione esistente deve esistere una corrispondenza in uno o più schemi descritti da questa norma. La norma è un elenco di host che utilizzano il formato del filtro URLBlacklist: "example.com" corrispondente a "example.com" e tutti i sottodomini (ad esempio "sub.example.com"), mentre ".example.net" corrisponde esattamente a "example.net".
+
+Le richieste di coalescenza rivolte a diversi host tra connessioni che utilizzano certificati client possono creare problemi di privacy o di sicurezza, perché l'ambient authority viene comunicata a tutte le richieste anche se l'utente non ha dato alcuna autorizzazione esplicita. Questa norma è provvisoria e verrà rimossa in una release futura. Consulta il sito: https://crbug.com/855690.
+
+Se questa norma non viene impostata, verrà applicato il comportamento predefinito che non consente l'unione di connessioni HTTP/2 per le connessioni che utilizzano certificati client.</translation>
 <translation id="1353966721814789986">Pagine di avvio</translation>
 <translation id="1359553908012294236">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_NAME" /> verranno attivati gli accessi come ospite, che sono profili <ph name="PRODUCT_NAME" /> in cui tutte le finestre sono in modalità di navigazione in incognito.
 
@@ -175,6 +192,7 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
 <translation id="1583248206450240930">Utilizza <ph name="PRODUCT_FRAME_NAME" /> per impostazione predefinita</translation>
 <translation id="1599424828227887013">Attiva isolamento dei siti per origini specificate su dispositivi Android</translation>
 <translation id="1608755754295374538">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione audio senza richieste</translation>
+<translation id="1615221548356595305">Consenti l'unione di connessioni HTTP/2 per questi host anche quando sono in uso i certificati client</translation>
 <translation id="1617235075406854669">Attiva eliminazione cronologia del browser e dei download</translation>
 <translation id="163200210584085447">I pattern di questo elenco verranno confrontati con l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi di acquisizione video verrà concesso sulle pagine di accesso SAML. In caso contrario, l'accesso verrà automaticamente negato. Non sono consentite sequenze con caratteri jolly.</translation>
 <translation id="1634989431648355062">Consenti il plug-in <ph name="FLASH_PLUGIN_NAME" /> su questi siti</translation>
@@ -1131,7 +1149,6 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
       Se questa norma non viene impostata, la raccolta di dati anonimizzati con chiave URL verrà attivata, ma l'utente potrà modificare l'impostazione.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Lingua della schermata di accesso del dispositivo</translation>
-<translation id="4264607809747169568">Consente di controllare la disponibilità della funzione Condivisioni file di rete per Chrome OS</translation>
 <translation id="427220754384423013">Consente di specificare le stampanti utilizzabili dagli utenti.
 
       Questa norma viene usata soltanto se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" /> per la norma <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -1276,6 +1293,7 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
       Se questa norma viene attivata, ai siti sarà concesso di navigare e aprire nuove finestre/schede contemporaneamente.
       Se questa norma viene disattivata o non viene impostata, ai siti non sarà concesso di navigare e aprire nuove finestre/schede contemporaneamente.</translation>
 <translation id="4680961954980851756">Abilita Compilazione automatica</translation>
+<translation id="4703402283970867140">Attiva il modello di oscuramento smart per ritardare l'oscuramento dello schermo</translation>
 <translation id="4722122254122249791">Attiva isolamento sito per origini specificate</translation>
 <translation id="4722399051042571387">Se questa norma viene impostata su false, gli utenti non potranno impostare PIN non sicuri e facili da intuire.
 
@@ -1485,13 +1503,6 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5370279767682621504">Attiva il supporto HTTP/0.9 sulle porte non predefinite</translation>
 <translation id="5378985487213287085">Permette di stabilire se consentire o meno la visualizzazione di notifiche desktop nei siti web. La visualizzazione di notifiche desktop può essere consentita o negata per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera visualizzare le notifiche desktop. Se questa norma non viene impostata, verrà utilizzato il valore "AskNotifications", che potrà essere modificato dagli utenti.</translation>
 <translation id="538108065117008131">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuto.</translation>
-<translation id="5391363090783552279">Se questa norma è impostata su True, <ph name="PRODUCT_NAME" /> si connetterà ai dispositivi Cast su tutti gli indirizzi IP, non soltanto su indirizzi privati RFC1918/RFC4913.
-
-          Se questa norma è impostata su False, <ph name="PRODUCT_NAME" /> si connetterà ai dispositivi Cast soltanto su indirizzi privati RFC1918/RFC4913.
-
-          Se questa norma non è impostata, <ph name="PRODUCT_NAME" /> si connetterà ai dispositivi Cast soltanto su indirizzi privati RFC1918/RFC4913, a meno che non sia attiva la funzione CastAllowAllIPs.
-
-          Se la norma "EnableMediaRouter" è impostata su False, allora il valore di questa norma non produrrà alcun effetto.</translation>
 <translation id="5392172595902933844">Le informazioni sullo stato di Android vengono rimandate al server.
 
       Se la norma viene impostata su false o non viene del tutto impostata, le informazioni sullo stato non vengono segnalate.
@@ -2032,6 +2043,10 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
 <translation id="6943577887654905793">Nome di preferenza per Mac/Linux:</translation>
 <translation id="69525503251220566">Parametro che fornisce la funzione di ricerca tramite immagine per il provider di ricerca predefinito</translation>
 <translation id="6956272732789158625">Non consentire a nessun sito di utilizzare la generazione di chiavi</translation>
+<translation id="6965859329738616662">Specifica se al modello di oscuramento smart è consentito estendere la quantità di tempo prima che lo schermo venga oscurato.
+
+Quando lo schermo sta per essere oscurato, il modello di oscuramento smart valuta se posticipare l'azione. In tal caso, il tempo prima che lo schermo venga oscurato viene effettivamente prolungato e il ritardo di inattività, la disattivazione dello schermo e il blocco dello schermo vengono regolati in modo da rispettare gli intervalli di tempo rispetto al ritardo oscuramento schermo configurati in precedenza.
+Se questa norma è impostata su vero o non è impostata, il modello di oscuramento smart verrà attivato e la quantità di tempo prima che lo schermo venga oscurato verrà estesa. Se questa norma è impostata su falso, il modello di oscuramento smart non inciderà sull'oscuramento dello schermo.</translation>
 <translation id="6982028490425791294">
       Se questa norma viene impostata su true, <ph name="PRODUCT_NAME" /> è autorizzato a raccogliere log eventi WebRTC dai servizi Google (ad esempio Google Meet) e a caricarli su Google.
 
@@ -2455,6 +2470,13 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="7980227303582973781">Nessuna limitazione speciale</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Ruota lo schermo di 0°</translation>
+<translation id="8033913082323846868">Questa norma è stata ritirata in M70, utilizza le norme AutofillAddressEnabled e AutofillCreditCardEnabled.
+
+Consente di attivare la funzione <ph name="PRODUCT_NAME" /> e permette agli utenti di eseguire il completamento automatico dei moduli web utilizzando informazioni memorizzate in precedenza, come l'indirizzo o i dati della carta di credito.
+
+Se disattivi questa impostazione, gli utenti non potranno utilizzare la funzione Compilazione automatica.
+
+Se attivi questa impostazione o non imposti un valore, la funzione Compilazione automatica potrà essere gestita dagli utenti, che potranno quindi configurare i profili di Compilazione automatica e attivare o disattivare a propria scelta questa funzione.</translation>
 <translation id="8044493735196713914">Indicazione modalità di avvio dispositivo</translation>
 <translation id="8050080920415773384">Stampa nativa</translation>
 <translation id="8059164285174960932">URL su cui i client di accesso remoto dovrebbero ottenere il token di autenticazione</translation>
@@ -2764,6 +2786,19 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Determina quale norma di accesso usare per la configurazione collettiva delle stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_ALLOW_ALL" />, vengono mostrate tutte le stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" />, viene usata la norma <ph name="DEVICE_PRINTERS_BLACKLIST" /> per limitare l'accesso a stampanti specifiche. Se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" />, la norma <ph name="DEVICE_PRINTERS_WHITELIST" /> stabilisce soltanto le stampanti selezionabili.
 
       Se questa norma non viene impostata, viene usata l'opzione <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
+<translation id="8938932171964587769">Ritirata in M69. Utilizza la norma OverrideSecurityRestrictionsOnInsecureOrigin.
+
+Questa norma consente di specificare un elenco di origini (URL) o di schemi di nomi host (ad esempio "*.example.com") a cui non vengono applicate limitazioni di sicurezza sulle origini non sicure.
+
+Lo scopo è consentire alle organizzazioni di configurare le origini della whitelist per le applicazioni precedenti che non possono implementare TLS o di configurare un server di gestione temporanea per gli sviluppi web interni, di modo che gli sviluppatori possano testare le funzioni che richiedono contesti sicuri senza dover implementare TLS sul server di gestione temporanea. Questa norma impedisce inoltre che l'origine venga contrassegnata come "Non sicura" nella omnibox.
+
+L'impostazione di un elenco di URL in questa norma ha lo stesso effetto dell'impostazione del flag della riga di comando "--unsafely-treat-insecure-origin-as-secure" su un elenco separato da virgole degli stessi URL. Se viene impostata, questa norma sostituisce il flag della riga di comando.
+
+Questa norma è stata ritirata in M69 in favore di OverrideSecurityRestrictionsOnInsecureOrigin. Se sono presenti entrambe le norme, verrà utilizzata OverrideSecurityRestrictionsOnInsecureOrigin.
+
+Per ulteriori informazioni sui contesti sicuri, visita il sito
+https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="8942616385591203339">Questa norma consente di controllare se il consenso alla sincronizzazione può essere mostrato all'utente durante il primo accesso. Dovrebbe essere impostata su false se tale consenso non è mai necessario per l'utente.
       Se impostata su false, il consenso alla sincronizzazione non verrà visualizzato.

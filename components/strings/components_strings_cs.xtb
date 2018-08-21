@@ -99,6 +99,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v zařízení nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
 
       &lt;p&gt;Datum a čas upravte v aplikaci &lt;strong&gt;Nastavení&lt;/strong&gt; v sekci &lt;strong&gt;Obecné&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Při zobrazování této webové stránky došlo k chybě.</translation>
 <translation id="1592005682883173041">Přístup k místním datům</translation>
 <translation id="1594030484168838125">Zvolit</translation>
@@ -138,6 +139,7 @@
 <translation id="1821930232296380041">Neplatný požadavek nebo parametry požadavku</translation>
 <translation id="1826516787628120939">Probíhá kontrola</translation>
 <translation id="1834321415901700177">Tento web obsahuje škodlivé programy</translation>
+<translation id="1839551713262164453">Ověření hodnot zásad selhalo s chybami</translation>
 <translation id="1840414022444569775">Toto číslo karty již existuje</translation>
 <translation id="1842969606798536927">Zaplatit</translation>
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
@@ -208,6 +210,7 @@
 <translation id="2356070529366658676">Zeptat se</translation>
 <translation id="2359629602545592467">Několik</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
+<translation id="2360873523816792727">Chcete-li své karty používat na všech zařízeních, zapněte synchronizaci.</translation>
 <translation id="2365563543831475020">Zpráva o selhání pořízená <ph name="CRASH_TIME" /> nebyla nahrána</translation>
 <translation id="2367567093518048410">Úroveň</translation>
 <translation id="2378238891085281592">Jste v soukromém režimu</translation>
@@ -348,11 +351,13 @@
           <ph name="LIST_ITEM" />soubory cookie a data webů,
           <ph name="LIST_ITEM" />údaje zadané do formulářů.
         <ph name="END_LIST" /></translation>
+<translation id="3366477098757335611">Zobrazit karty</translation>
 <translation id="3369192424181595722">Chyba hodin</translation>
 <translation id="337363190475750230">Vyřazeno</translation>
 <translation id="3377188786107721145">Chyba analýzy zásady</translation>
 <translation id="3380365263193509176">Neznámá chyba</translation>
 <translation id="3380864720620200369">Číslo klienta:</translation>
+<translation id="3387261909427947069">Platební metody</translation>
 <translation id="3391030046425686457">Adresa doručení</translation>
 <translation id="3395827396354264108">Způsob vyzvednutí</translation>
 <translation id="3399952811970034796">Adresa doručení</translation>
@@ -448,6 +453,7 @@
 <translation id="4110652170750985508">Kontrola platby</translation>
 <translation id="4116663294526079822">Povolit vždy na tomto webu</translation>
 <translation id="4117700440116928470">Rozsah zásady není podporován.</translation>
+<translation id="4119109454650683048">Zkontrolujte níže uvedené údaje a v případě potřeby opravte chyby</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 další}few{# další}many{# další}other{# dalších}}</translation>
 <translation id="4130226655945681476">Zkontrolovat síťové kabely, modem a směrovač</translation>
 <translation id="413544239732274901">Další informace</translation>
@@ -553,6 +559,7 @@
 <translation id="4854362297993841467">Tento způsob doručení není k dispozici. Zkuste použít jiný způsob.</translation>
 <translation id="4858792381671956233">Požádal(a) jsi rodiče o povolení návštěvy tohoto webu.</translation>
 <translation id="4876305945144899064">Žádné uživatelské jméno</translation>
+<translation id="4879491255372875719">Automatické (výchozí)</translation>
 <translation id="4880827082731008257">Hledat v historii</translation>
 <translation id="4881695831933465202">Otevřít</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -618,6 +625,7 @@
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Zobrazit všechna uložená hesla</translation>
 <translation id="5287240709317226393">Zobrazit soubory cookie</translation>
+<translation id="5288108484102287882">Ověření hodnot zásad vygenerovalo upozornění</translation>
 <translation id="5299298092464848405">Při analýze zásady došlo k chybě</translation>
 <translation id="5308380583665731573">Připojení</translation>
 <translation id="5308689395849655368">Zprávy o selhání jsou zakázány.</translation>
@@ -630,6 +638,7 @@
 <translation id="536296301121032821">Ukládání nastavení zásady se nezdařilo</translation>
 <translation id="5371425731340848620">Aktualizace karty</translation>
 <translation id="5377026284221673050">Vaše hodiny se zpožďují, Vaše hodiny jdou napřed nebo &lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;</translation>
+<translation id="5384855140246857529">Chcete-li své karty používat na všech zařízeních, přihlaste se a zapněte synchronizaci.</translation>
 <translation id="5386426401304769735">Řetězec certifikátů tohoto webu obsahuje certifikát podepsaný algoritmem SHA-1.</translation>
 <translation id="5387961145478138773">Získejte rychlý přístup ke svým oblíbeným aplikacím Google</translation>
 <translation id="540969355065856584">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát v tuto chvíli není platný. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
@@ -705,6 +714,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5893752035575986141">Obchodník přijímá kreditní karty.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronizováno)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Používá se 1}few{Používají se #}many{Používá se #}other{Používá se #}}</translation>
+<translation id="5922853866070715753">Téměř dokončeno</translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="5967592137238574583">Úprava kontaktních údajů</translation>
 <translation id="5967867314010545767">Odstranit z historie</translation>
@@ -725,6 +735,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6051221802930200923">Web <ph name="SITE" /> teď nemůžete navštívit, protože používá připínání certifikátů. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
 <translation id="6059925163896151826">Zařízení USB</translation>
 <translation id="6071091556643036997">Typ zásady je neplatný.</translation>
+<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Tato karta se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}few{Tyto karty se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}many{Tyto karty se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}other{Tyto karty se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}}</translation>
 <translation id="6080696365213338172">Získali jste přístup k obsahu pomocí certifikátu poskytnutého správcem. Údaje poskytovaná doméně <ph name="DOMAIN" /> bude správce moci zachytit.</translation>
 <translation id="610911394827799129">Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Žádné}=1{1 heslo (synchronizováno)}few{# hesla (synchronizováno)}many{# hesla (synchronizováno)}other{# hesel (synchronizováno)}}</translation>
@@ -826,6 +837,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6965978654500191972">Zařízení</translation>
 <translation id="6970216967273061347">Obvod</translation>
 <translation id="6973656660372572881">Určeny jsou pevně dané servery proxy i adresa URL skriptu PAC.</translation>
+<translation id="6979440798594660689">Ztlumit (výchozí)</translation>
 <translation id="6984479912851154518">Chystáte se opustit soukromý režim, abyste mohli zaplatit v externí aplikaci. Chcete pokračovat?</translation>
 <translation id="6989763994942163495">Zobrazit rozšířená nastavení...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -846,6 +858,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}few{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}many{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}other{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> dalších}}</translation>
 <translation id="717330890047184534">ID Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}few{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}many{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> další}other{<ph name="SHIPPING_OPTION_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> dalších}}</translation>
+<translation id="7179323680825933600">Ukládat a vyplňovat platební metody</translation>
 <translation id="7180611975245234373">Obnovit</translation>
 <translation id="7182878459783632708">Nebyly nastaveny žádné zásady</translation>
 <translation id="7186367841673660872">Tato stránka byla přeložena z jazyka<ph name="ORIGINAL_LANGUAGE" />do jazyka<ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -857,6 +870,8 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7220786058474068424">Zpracovávání</translation>
 <translation id="724691107663265825">Webové stránky, které chcete otevřít, obsahují malware</translation>
 <translation id="724975217298816891">Chcete-li aktualizovat údaje o kartě, zadejte datum vypršení platnosti a kód CVC karty <ph name="CREDIT_CARD" />. Po ověření budou údaje o kartě sdíleny s tímto webem.</translation>
+<translation id="7251437084390964440">Konfigurace sítě neodpovídá standardu ONC. Může se stát, že některé části konfigurace nebudou importovány. Další podrobnosti:
+<ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v počítači nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Zrušit přístup</translation>
 <translation id="7271803869921933038">Přijímané předplacené karty</translation>
@@ -1034,6 +1049,9 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8398259832188219207">Zpráva o selhání nahraná <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Selhání (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Stejnou heslovou frázi musíte zadat dvakrát.</translation>
+<translation id="8416694386774425977">Konfigurace sítě je neplatná a nelze ji importovat.
+Další podrobnosti:
+<ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8433057134996913067">Budete odhlášeni z většiny webů.</translation>
@@ -1066,13 +1084,16 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="8728672262656704056">Jste v anonymním režimu</translation>
 <translation id="8730621377337864115">Hotovo</translation>
+<translation id="8733831205558190772">Všechny platební karty na jediném místě</translation>
 <translation id="8738058698779197622">Aby bylo možné navázat zabezpečené spojení, hodiny musejí být nastaveny správně. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro pevně daná období. Jelikož hodiny v zařízení nejsou nastaveny správně, prohlížeč Chromium tyto certifikáty nemůže ověřit.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresu DNS&lt;/abbr&gt; webu <ph name="HOST_NAME" /> nelze najít. Diagnostikování problému…</translation>
 <translation id="874846938927089722">Přijímané kreditní a předplacené karty</translation>
 <translation id="8759274551635299824">Platnost této karty vypršela</translation>
 <translation id="8761567432415473239">Bezpečné prohlížení Google na webu <ph name="SITE" /> nedávno <ph name="BEGIN_LINK" />nalezlo škodlivé programy<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">Zařízení USB</translation>
+<translation id="8768895707659403558">Chcete-li své karty používat na všech zařízeních, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Opakovat smazání</translation>
+<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Tato karta byla přidána do vašeho účtu Google. Můžete ji teď používat ze všech zařízení, v nichž jste přihlášeni.}few{Tyto karty byly přidány do vašeho účtu Google. Můžete je teď používat ze všech zařízení, v nichž jste přihlášeni.}many{Tyto karty byly přidány do vašeho účtu Google. Můžete je teď používat ze všech zařízení, v nichž jste přihlášeni.}other{Tyto karty byly přidány do vašeho účtu Google. Můžete je teď používat ze všech zařízení, v nichž jste přihlášeni.}}</translation>
 <translation id="8792621596287649091">Mohli byste ztratit přístup k účtu <ph name="ORG_NAME" /> nebo by mohlo dojít k odcizení vaší identity. Doporučujeme vám okamžitě změnit heslo.</translation>
 <translation id="8800988563907321413">Zde se zobrazí návrhy funkce Nablízku</translation>
 <translation id="8820817407110198400">Záložky</translation>

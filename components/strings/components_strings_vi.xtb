@@ -99,6 +99,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên thiết bị của bạn không chính xác.&lt;/p&gt;
 
       &lt;p&gt;Hãy điều chỉnh ngày và giờ từ phần &lt;strong&gt;Chung&lt;/strong&gt; của ứng dụng &lt;strong&gt;Cài đặt&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Đã xảy ra lỗi khi hiển thị trang web này.</translation>
 <translation id="1592005682883173041">Quyền truy cập dữ liệu cục bộ</translation>
 <translation id="1594030484168838125">Chọn</translation>
@@ -138,6 +139,7 @@
 <translation id="1821930232296380041">Yêu cầu hoặc tham số yêu cầu không hợp lệ</translation>
 <translation id="1826516787628120939">Đang kiểm tra</translation>
 <translation id="1834321415901700177">Trang web này có chứa các chương trình độc hại</translation>
+<translation id="1839551713262164453">Xác thực các giá trị của chính sách không thành công do xảy ra lỗi</translation>
 <translation id="1840414022444569775">Số thẻ này đã được sử dụng</translation>
 <translation id="1842969606798536927">Thanh toán</translation>
 <translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
@@ -208,6 +210,7 @@
 <translation id="2356070529366658676">Yêu cầu</translation>
 <translation id="2359629602545592467">Nhiều</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
+<translation id="2360873523816792727">Để sử dụng thẻ trên tất cả các thiết bị, hãy bật tính năng đồng bộ hóa.</translation>
 <translation id="2365563543831475020">Báo cáo sự cố được ghi lại vào <ph name="CRASH_TIME" /> chưa được tải lên</translation>
 <translation id="2367567093518048410">Mức độ</translation>
 <translation id="2378238891085281592">Bạn đã chuyển sang chế độ riêng tư</translation>
@@ -351,11 +354,13 @@
           <ph name="LIST_ITEM" />Cookie và dữ liệu trang web
           <ph name="LIST_ITEM" />Thông tin đã nhập trong biểu mẫu
         <ph name="END_LIST" /></translation>
+<translation id="3366477098757335611">Xem thẻ</translation>
 <translation id="3369192424181595722">Lỗi đồng hồ</translation>
 <translation id="337363190475750230">Đã hủy cấp phép</translation>
 <translation id="3377188786107721145">Lỗi phân tích cú pháp chính sách</translation>
 <translation id="3380365263193509176">Lỗi không xác định</translation>
 <translation id="3380864720620200369">ID ứng dụng khách:</translation>
+<translation id="3387261909427947069">Phương thức thanh toán</translation>
 <translation id="3391030046425686457">Địa chỉ giao hàng</translation>
 <translation id="3395827396354264108">Phương thức nhận hàng</translation>
 <translation id="3399952811970034796">Địa chỉ giao hàng</translation>
@@ -452,6 +457,7 @@
 <translation id="4110652170750985508">Xem xét thanh toán của bạn</translation>
 <translation id="4116663294526079822">Luôn cho phép trên trang web này</translation>
 <translation id="4117700440116928470">Phạm vi chính sách không được hỗ trợ.</translation>
+<translation id="4119109454650683048">Vui lòng kiểm tra thông tin bên dưới và sửa lỗi nếu cần thiết</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 mục khác}other{# mục khác}}</translation>
 <translation id="4130226655945681476">Kiểm tra cáp mạng, modem và bộ định tuyến</translation>
 <translation id="413544239732274901">Tìm hiểu thêm</translation>
@@ -557,6 +563,7 @@
 <translation id="4854362297993841467">Phương thức phân phối này không có sẵn. Hãy thử một phương thức khác.</translation>
 <translation id="4858792381671956233">Bạn đã hỏi cha mẹ mình xem có thể truy cập vào trang này hay không</translation>
 <translation id="4876305945144899064">Không có tên người dùng</translation>
+<translation id="4879491255372875719">Tự động (mặc định)</translation>
 <translation id="4880827082731008257">Lịch sử tìm kiếm</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -622,6 +629,7 @@
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Hiển thị tất cả mật khẩu đã lưu</translation>
 <translation id="5287240709317226393">Hiển thị cookie</translation>
+<translation id="5288108484102287882">Xuất hiện cảnh báo khi xác thực các giá trị của chính sách</translation>
 <translation id="5299298092464848405">Lỗi phân tích cú pháp chính sách</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="5308689395849655368">Báo cáo sự cố bị tắt.</translation>
@@ -634,6 +642,7 @@
 <translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
 <translation id="5371425731340848620">Cập nhật thẻ</translation>
 <translation id="5377026284221673050">"Đồng hồ của bạn chạy chậm" hoặc "Đồng hồ của bạn chạy nhanh" hay "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5384855140246857529">Để sử dụng thẻ trên tất cả các thiết bị, hãy đăng nhập và bật tính năng đồng bộ hóa.</translation>
 <translation id="5386426401304769735">Chuỗi chứng chỉ cho trang web này có chứa một chứng chỉ đã ký bằng SHA-1.</translation>
 <translation id="5387961145478138773">Truy cập nhanh vào Google Apps ưa thích của bạn</translation>
 <translation id="540969355065856584">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không hợp lệ tại thời điểm này. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
@@ -709,6 +718,7 @@
 <translation id="5893752035575986141">Thẻ tín dụng được chấp nhận.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (được đồng bộ hóa)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Đang sử dụng 1 cookie}other{Đang sử dụng # cookie}}</translation>
+<translation id="5922853866070715753">Sắp hoàn tất</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5967592137238574583">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="5967867314010545767">Xóa khỏi lịch sử</translation>
@@ -729,6 +739,7 @@
 <translation id="6051221802930200923">Bạn không thể truy cập vào <ph name="SITE" /> ngay bây giờ do trang web sử dụng tính năng ghim chứng chỉ. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời nên trang này có thể sẽ hoạt động lại sau.</translation>
 <translation id="6059925163896151826">Thiết bị USB</translation>
 <translation id="6071091556643036997">Loại chính sách là không hợp lệ.</translation>
+<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Thẻ này sẽ được lưu vào Tài khoản Google của bạn để thanh toán nhanh hơn trên các thiết bị.}other{Các thẻ này sẽ được lưu vào Tài khoản Google của bạn để thanh toán nhanh hơn trên các thiết bị.}}</translation>
 <translation id="6080696365213338172">Bạn đã truy cập nội dung bằng chứng chỉ do quản trị viên cấp. Dữ liệu mà bạn cung cấp cho <ph name="DOMAIN" /> có thể bị quản trị viên của bạn chặn.</translation>
 <translation id="610911394827799129">Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Không có}=1{1 mật khẩu (đã đồng bộ hóa)}other{# mật khẩu (đã đồng bộ hóa)}}</translation>
@@ -831,6 +842,7 @@
 <translation id="6965978654500191972">Thiết bị</translation>
 <translation id="6970216967273061347">Quận</translation>
 <translation id="6973656660372572881">Cả hai máy chủ proxy cố định và URL tập lệnh .pac đều được chỉ định.</translation>
+<translation id="6979440798594660689">Tắt tiếng (mặc định)</translation>
 <translation id="6984479912851154518">Đang rời khỏi chế độ riêng tư để thanh toán qua một ứng dụng bên ngoài. Bạn có muốn tiếp tục không?</translation>
 <translation id="6989763994942163495">Hiển thị cài đặt nâng cao...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -851,6 +863,7 @@
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> phương thức thanh toán khác}other{<ph name="PAYMENT_METHOD_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> phương thức thanh toán khác}}</translation>
 <translation id="717330890047184534">ID Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn giao hàng khác}other{<ph name="SHIPPING_OPTION_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn giao hàng khác}}</translation>
+<translation id="7179323680825933600">Lưu và điền phương thức thanh toán</translation>
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="7182878459783632708">Không có chính sách nào được đặt</translation>
 <translation id="7186367841673660872">Trang này đã được dịch từ<ph name="ORIGINAL_LANGUAGE" />sang<ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -862,6 +875,9 @@
 <translation id="7220786058474068424">Đang xử lý</translation>
 <translation id="724691107663265825">Trang web bạn sắp truy cập chứa phần mềm độc hại</translation>
 <translation id="724975217298816891">Nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /> để cập nhật chi tiết thẻ của bạn. Sau khi bạn xác nhận, chi tiết thẻ của bạn sẽ được chia sẻ với trang web này.</translation>
+<translation id="7251437084390964440">Cấu hình mạng này không tuân thủ tiêu chuẩn ONC. Một số phần của cấu hình có thể không nhập được.
+Thông tin chi tiết bổ sung:
+<ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên máy tính của bạn không đúng.</translation>
 <translation id="7260504762447901703">Thu hồi quyền truy cập</translation>
 <translation id="7271803869921933038">Thẻ trả trước được chấp nhận</translation>
@@ -1039,6 +1055,9 @@
 <translation id="8398259832188219207">Báo cáo sự cố được tải lên vào <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Sự cố (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Bạn phải nhập cùng một cụm mật khẩu hai lần.</translation>
+<translation id="8416694386774425977">Cấu hình mạng này là không hợp lệ và không thể nhập được.
+Thông tin chi tiết bổ sung:
+<ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433057134996913067">Thao tác này sẽ đăng xuất bạn khỏi hầu hết các trang web.</translation>
@@ -1071,13 +1090,16 @@
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8728672262656704056">Bạn đã chuyển sang chế độ ẩn danh</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>
+<translation id="8733831205558190772">Tất cả thẻ của bạn ở cùng một nơi</translation>
 <translation id="8738058698779197622">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chromium không thể xác minh các chứng chỉ này.</translation>
 <translation id="8740359287975076522">Không thể tìm thấy &lt;abbr id="dnsDefinition"&gt;địa chỉ DNS&lt;/abbr&gt; của <ph name="HOST_NAME" />. Đang chẩn đoán sự cố.</translation>
 <translation id="874846938927089722">Thẻ tín dụng và thẻ trả trước được chấp nhận</translation>
 <translation id="8759274551635299824">Thẻ này đã hết hạn</translation>
 <translation id="8761567432415473239">Gần đây, Duyệt web an toàn của Google <ph name="BEGIN_LINK" />tìm thấy chương trình độc hại<ph name="END_LINK" /> trên trang <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Thiết bị USB</translation>
+<translation id="8768895707659403558">Để sử dụng thẻ trên tất cả các thiết bị, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Làm lại xóa</translation>
+<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Đã thêm thẻ này vào Tài khoản Google của bạn. Bây giờ, bạn có thể sử dụng thẻ này trên mọi thiết bị đã đăng nhập.}other{Đã thêm các thẻ này vào Tài khoản Google của bạn. Bây giờ, bạn có thể sử dụng các thẻ này trên mọi thiết bị đã đăng nhập.}}</translation>
 <translation id="8792621596287649091">Bạn có thể mất quyền truy cập vào tài khoản <ph name="ORG_NAME" /> của mình hoặc bị đánh cắp danh tính. Chromium khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
 <translation id="8800988563907321413">Đề xuất ở gần bạn xuất hiện ở đây</translation>
 <translation id="8820817407110198400">Dấu trang</translation>

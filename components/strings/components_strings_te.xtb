@@ -210,6 +210,7 @@
 <translation id="2359808026110333948">కొనసాగు</translation>
 <translation id="2365563543831475020"><ph name="CRASH_TIME" />కి సంగ్రహించిన క్రాష్ నివేదిక అప్‌లోడ్ కాలేదు</translation>
 <translation id="2367567093518048410">స్థాయి</translation>
+<translation id="2378238891085281592">మీరు ప్రైవేట్ మోడ్‌లోకి వెళ్లారు</translation>
 <translation id="2384307209577226199">ఎంటర్‌ప్రైజ్ డిఫాల్ట్</translation>
 <translation id="2386255080630008482">సర్వర్ ప్రమాణపత్రం రద్దు చెయ్యబడింది.</translation>
 <translation id="2392959068659972793">విలువ సెట్ చేయని విధానాలను చూపు</translation>
@@ -517,6 +518,7 @@
 <translation id="450710068430902550">నిర్వాహకుడితో భాగస్వామ్యం</translation>
 <translation id="4515275063822566619">కార్డ్‌లు మరియు చిరునామాలు Chrome మరియు మీ Google ఖాతా (<ph name="ACCOUNT_EMAIL" />) నుండి పొందినవి. మీరు <ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో వాటిని నిర్వహించవచ్చు.</translation>
 <translation id="4522570452068850558">వివరాలు</translation>
+<translation id="4524805452350978254">కార్డ్‌లను నిర్వహించండి</translation>
 <translation id="4552089082226364758">ఫ్లాష్</translation>
 <translation id="4558551763791394412">మీ పొడిగింపులను నిలిపివేయడం ప్రయత్నించండి.</translation>
 <translation id="457875822857220463">బట్వాడా</translation>
@@ -703,6 +705,7 @@
 <translation id="5866257070973731571">ఫోన్ నంబర్‌ను జోడించండి</translation>
 <translation id="5869405914158311789">ఈ సైట్‌ను చేరుకోలేకపోయాము</translation>
 <translation id="5869522115854928033">సేవ్  చేసిన పాస్‌వర్డ్‌లు</translation>
+<translation id="5887400589839399685">కార్డ్ సేవ్ చేయబడింది</translation>
 <translation id="5893752035575986141">క్రెడిట్ కార్డ్‌లు ఆమోదించబడతాయి.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (సమకాలీకరించబడింది)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 వినియోగంలో ఉంది}other{# వినియోగంలో ఉన్నాయి}}</translation>
@@ -822,11 +825,13 @@
 <translation id="6948701128805548767">పికప్ పద్ధతులు మరియు అవసరాలను చూడాలంటే, చిరునామాని ఎంచుకోండి</translation>
 <translation id="6949872517221025916">పాస్‌వర్డ్‌ను రీసెట్ చేయండి</translation>
 <translation id="6950684638814147129">JSON విలువను అన్వయిస్తుండగా ఎర్రర్ ఏర్పడింది: <ph name="ERROR" /></translation>
+<translation id="6957624206566198865">కొత్త ప్రైవేట్ ట్యాబ్‌లో పేజీని తెరవండి</translation>
 <translation id="6957887021205513506">సర్వర్ ధృవీకరణ పత్రం చెల్లదు.</translation>
 <translation id="6965382102122355670">సరే</translation>
 <translation id="6965978654500191972">పరికరం</translation>
 <translation id="6970216967273061347">జిల్లా</translation>
 <translation id="6973656660372572881">రెండు స్థిర ప్రాక్సీ సర్వర్లు మరియు ఒక .pac స్క్రిప్ట్ URL పేర్కొనబడ్డాయి.</translation>
+<translation id="6984479912851154518">బాహ్య అప్లికేషన్ ద్వారా చెల్లించడానికి ప్రైవేట్ మోడ్ నుండి నిష్క్రమిస్తోంది. కొనసాగించాలా?</translation>
 <translation id="6989763994942163495">అధునాతన సెట్టింగ్‌లను చూపించు...</translation>
 <translation id="7012363358306927923">చైనా యూనియన్ పే</translation>
 <translation id="7016992613359344582">ఈ ఛార్జ్‌లు ఒకే సారి చెల్లించేవి లేదా పునరావృతంగా చెల్లించాల్సినవి కావచ్చు మరియు స్పష్టంగా పేర్కొనబడకపోవచ్చు.</translation>
@@ -1078,6 +1083,7 @@
 <translation id="8820817407110198400">బుక్‌మార్క్‌లు</translation>
 <translation id="883848425547221593">ఇతర బుక్‌మార్క్‌లు:</translation>
 <translation id="884264119367021077">షిప్పింగ్ చిరునామా</translation>
+<translation id="8846319957959474018">బుక్‌మార్క్‌లతో సులభంగా యాప్‌లను తెరవండి</translation>
 <translation id="884923133447025588">ఏ రద్దు విధానం కనుగొనబడలేదు.</translation>
 <translation id="885730110891505394">Googleతో భాగస్వామ్యం</translation>
 <translation id="8858065207712248076">మీరు మీ <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> పాస్‌వర్డ్‌ని ఇతర సైట్‌లలో తిరిగి ఉపయోగించినట్లయితే దీనిని రీసెట్ చేయాల్సిందిగా Chrome సిఫార్సు చేస్తోంది.</translation>

@@ -120,6 +120,7 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="1891331835972267886">A(z) <ph name="APP_NAME" /> a Chrome-ban nyílik meg. A folytatással elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />Adatvédelmi közleményét<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Navigációs fiók bezárása</translation>
 <translation id="1919345977826869612">Hirdetések</translation>
+<translation id="1919950603503897840">Névjegyek kiválasztása</translation>
 <translation id="1923695749281512248"><ph name="FILE_SIZE_WITH_UNITS" /> / <ph name="BYTES_DOWNLOADED_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Kiválasztott lap</translation>
 <translation id="1938981467853765413">Visszajelzés küldése</translation>
@@ -291,6 +292,7 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="3282568296779691940">Bejelentkezés a Chrome-ba</translation>
 <translation id="32895400574683172">Értesítések engedélyezve</translation>
 <translation id="3295602654194328831">Információk elrejtése…</translation>
+<translation id="3298243779924642547">Egyszerű</translation>
 <translation id="3303414029551471755">Biztosan letölti a tartalmat?</translation>
 <translation id="3328801116991980348">Webhelyadatok</translation>
 <translation id="3341058695485821946">Megnézheti, mennyi adatot takarított meg</translation>
@@ -855,6 +857,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7791543448312431591">Hozzáadás</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7810647596859435254">Megnyitás ezzel:</translation>
+<translation id="7821588508402923572">Itt látható a megtakarított adatmennyiség</translation>
 <translation id="7832327313660264358">A Google-lal szinkronizált adatok köre és a használt funkciók nem fognak megváltozni</translation>
 <translation id="7837721118676387834">A némított videók automatikus lejátszásának engedélyezése az adott webhelyen.</translation>
 <translation id="7846076177841592234">Kijelölés törlése</translation>

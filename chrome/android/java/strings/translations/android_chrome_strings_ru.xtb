@@ -120,6 +120,7 @@
 <translation id="1891331835972267886">Приложение "<ph name="APP_NAME" />" откроется в Chrome. Продолжая, вы соглашаетесь с <ph name="BEGIN_LINK1" />Условиями использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечанием о конфиденциальности<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="189172778771606813">Закрыть панель навигации</translation>
 <translation id="1919345977826869612">Реклама</translation>
+<translation id="1919950603503897840">Выбрать контакты</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> из <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Выбранная вкладка</translation>
 <translation id="1938981467853765413">Оставить отзыв</translation>
@@ -291,6 +292,7 @@
 <translation id="3282568296779691940">Войдите в Chrome</translation>
 <translation id="32895400574683172">Может отправлять уведомления</translation>
 <translation id="3295602654194328831">Скрыть информацию</translation>
+<translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Скачать?</translation>
 <translation id="3328801116991980348">Информация о сайте</translation>
 <translation id="3341058695485821946">Узнайте, сколько трафика вы сэкономили</translation>
@@ -855,6 +857,7 @@
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7810647596859435254">Открыть с помощью...</translation>
+<translation id="7821588508402923572">Здесь появятся данные об экономии трафика</translation>
 <translation id="7832327313660264358">Данные, которые синхронизируются с серверами Google, и используемые вами функции останутся без изменений</translation>
 <translation id="7837721118676387834">Разрешить определенному сайту автоматически воспроизводить видео без звука.</translation>
 <translation id="7846076177841592234">Отменить выбор</translation>

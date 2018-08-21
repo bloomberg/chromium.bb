@@ -120,6 +120,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5358375970380395591">Vas a iniciar sesión con una cuenta gestionada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Chromium. Tus datos de Chromium como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Actualizando Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Hay una nueva versión de Chromium disponible.</translation>
+<translation id="5416696090975899932">Chromium no puede mostrar la vista previa de impresión si falta el visor de PDF integrado.</translation>
 <translation id="5427571867875391349">Establecer Chromium como navegador predeterminado</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> ‑ Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium se actualiza automáticamente para que siempre dispongas de la última versión. Cuando se complete la descarga, Chromium se reiniciará automáticamente.</translation>

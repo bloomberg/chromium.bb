@@ -1187,7 +1187,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo ponecháte nenastavené, anonymizované zhromažďovanie dát prostredníctvom kódovaných webových adries sa povolí, no používateľ ho bude môcť zmeniť.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4261820385751181068">Jazyk prihlasovacej obrazovky zariadenia</translation>
-<translation id="4264607809747169568">Riadi dostupnosť zdieľania súborov v sieti pre Chrome OS</translation>
 <translation id="427220754384423013">Umožňuje určiť tlačiarne, ktoré má používateľ k dispozícii.
 
       Toto pravidlo sa používa iba vtedy, keď je pre <ph name="BULK_PRINTERS_ACCESS_MODE" /> vybraná možnosť <ph name="PRINTERS_WHITELIST" />.
@@ -1575,13 +1574,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Ak bude toto nastavenie ponechané nenastavené, použije sa pravidlo „AskNotifications“ a používateľ ho bude môcť zmeniť.</translation>
 <translation id="538108065117008131">Povoliť doplnku <ph name="PRODUCT_FRAME_NAME" /> spracovávať tieto typy obsahu.</translation>
-<translation id="5391363090783552279">Ak toto pravidlo nastavíte na hodnotu True, <ph name="PRODUCT_NAME" /> sa pripojí k zariadeniam Cast na všetkých adresách IP, nie iba na súkromných adresách RFC1918/RFC4913.
-
-          Ak toto pravidlo nastavíte na hodnotu False, <ph name="PRODUCT_NAME" /> sa pripojí k zariadeniam Cast iba na súkromných adresách RFC1918/RFC4913.
-
-          Ak toto pravidlo nenastavíte, <ph name="PRODUCT_NAME" /> sa pripojí k zariadeniam Cast iba na súkromných adresách RFC1918/RFC4913, pokiaľ nie je povolená funkcia CastAllowAllIPs.
-
-          Ak je pravidlo EnableMediaRouter nastavené na hodnotu False, nebude mať hodnota tohto pravidla žiadny účinok.</translation>
 <translation id="5392172595902933844">Informácie o stave Androidu sa odosielajú späť na
       server.
 

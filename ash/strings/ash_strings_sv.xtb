@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">Inmatningsmetoderna konfigureras av administratören.</translation>
 <translation id="1747827819627189109">Skärmen på tangentbordet har aktiverats</translation>
 <translation id="1761222317188459878">Aktivera och inaktivera nätverksanslutning. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">Vad visas på skärmen?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (läses in …)</translation>
 <translation id="1841545962859478868">Enhetsadministratören kan övervaka följande:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">Lägg till anslutning</translation>
 <translation id="2961963223658824723">Ett fel har uppstått. Försök igen om några sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">Visa allt aviseringsinnehåll</translation>
 <translation id="2995447421581609334">Visa cast-enheter</translation>
 <translation id="2996462380875591307">Dockad skärmförstoring har aktiverats. Tryck på Ctrl + Sök + D igen om du vill inaktivera funktionen.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> är en offentlig session som hanteras av <ph name="DOMAIN" /></translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox har aktiverats</translation>
 <translation id="4734965478015604180">Horisontell</translation>
+<translation id="476166673298332917">Enhetens administratör har tillgång till all aktivitet, inklusive lösenord och kommunikation.</translation>
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">sök</translation>
 <translation id="4804818685124855865">Koppla från</translation>
 <translation id="4849058404725798627">Markera objekt med tangentbordsfokus</translation>
 <translation id="4872237917498892622">Alt + Sök eller Skift</translation>
 <translation id="4890187583552566966">Administratören har inaktiverat Google Assistent.</translation>
+<translation id="4893522937062257019">På låsskärmen</translation>
 <translation id="4895488851634969361">Batteriet är fullt.</translation>
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Kortkommandot för att aktivera och inaktivera högkontrastläget har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
 <translation id="5313326810920013265">Bluetooth-inställningar</translation>
 <translation id="5331975486040154427">USB-C-enhet (bakre porten på vänster sida)</translation>
+<translation id="5379115545237091094">För många försök</translation>
 <translation id="5397578532367286026">Användning och historik för den här användaren kan granskas av den ansvarige (<ph name="MANAGER_EMAIL" />) på chrome.com.</translation>
 <translation id="5430931332414098647">Direktinternetdelning</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">Starta om</translation>
 <translation id="5901316534475909376">Skift+Escape</translation>
 <translation id="5911533659001334206">Kortkommandovisare</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="592343074608792716">Denna Chromebook ansluts automatiskt till din mobil</translation>
 <translation id="5947494881799873997">Återgå</translation>
@@ -331,6 +337,7 @@
 <translation id="6972754398087986839">Komma igång</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="698231206551913481">Alla filer inklusive lokal data som tillhör den här användaren tas bort permanent när användaren tas bort.</translation>
+<translation id="7007100238996585961">Svarar på en annan enhet</translation>
 <translation id="7015766095477679451">Prova igen klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Avsluta session</translation>
 <translation id="7037152028959403492">Du tryckte på kortkommandot för högkontrastläge. Vill du aktivera funktionen?</translation>
@@ -352,6 +359,7 @@
 <translation id="7398254312354928459">Bytte nätverksanslutning</translation>
 <translation id="742594950370306541">Kameran används.</translation>
 <translation id="743058460480092004">Kameran och mikrofonen används.</translation>
+<translation id="7497767806359279797">Välj språk och tangentbord</translation>
 <translation id="7510334386202674593">Ctrl+Skift+L</translation>
 <translation id="7526573455193969409">Nätverket kan vara övervakat</translation>
 <translation id="7536035074519304529">IP-adress: <ph name="ADDRESS" /></translation>
@@ -361,6 +369,7 @@
 <translation id="7569509451529460200">Punktskrift och ChromeVox har aktiverats</translation>
 <translation id="7593891976182323525">Sök eller Skift</translation>
 <translation id="7604942372593434070">Få tillgång till webbaktiviteten</translation>
+<translation id="7642778300616172920">Dölj känsligt innehåll</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ägare)</translation>
 <translation id="7647488630410863958">Lås upp enheten om du vill visa aviseringarna</translation>
 <translation id="7649070708921625228">Hjälp</translation>
@@ -376,6 +385,7 @@
 <translation id="7842211907556571265">Ansluter till <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Varning: Experimentfunktion</translation>
 <translation id="7846634333498149051">Tangentbord</translation>
+<translation id="7886277072580235377">Internetsessionen rensas när du loggar ut. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">Ändra sekretessrelaterade inställningar</translation>
 <translation id="7904094684485781019">Administratören för kontot tillåter inte multiinloggning.</translation>
 <translation id="7933084174919150729">Endast den primära profilen har tillgång till Google Assistent.</translation>
@@ -416,6 +426,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: återansluter …</translation>
 <translation id="8513108775083588393">Rotera automatiskt</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> laddas eventuellt inte så länge den är på.</translation>
+<translation id="8592141010104017453">Visa inga aviseringar alls</translation>
 <translation id="8627191004499078455">Ansluten till <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> återstår</translation>
 <translation id="8649101189709089199">Textuppläsning</translation>

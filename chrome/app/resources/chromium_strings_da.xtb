@@ -118,6 +118,7 @@
 <translation id="5358375970380395591">Du er ved at logge ind med en administreret konto og giver dens administrator kontrol over din profil i Chromium. Dine Chromium-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Opdaterer Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Der er en ny version af Chromium til rådighed.</translation>
+<translation id="5416696090975899932">Chromium kan ikke vise udskrifter, når den indbyggede PDF-fremviser mangler.</translation>
 <translation id="5427571867875391349">Angiv Chromium som din standardbrowser</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium beta</translation>
 <translation id="5466153949126434691">Chromium opdateres automatisk, så du altid har den nyeste version. Når downloaden er fuldført, genstartes Chromium, og så er du godt på vej.</translation>
