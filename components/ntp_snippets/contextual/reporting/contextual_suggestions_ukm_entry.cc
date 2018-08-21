@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/contextual/contextual_suggestions_ukm_entry.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_ukm_entry.h"
 
 #include <algorithm>
 
 #include "base/timer/elapsed_timer.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_metrics_reporter.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 

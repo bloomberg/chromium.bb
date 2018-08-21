@@ -22,11 +22,12 @@
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_metrics_reporter.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/ukm/content/source_url_recorder.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContextualSuggestionsBridge_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -38,6 +39,13 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+
+namespace {
+// Keep this in sync with CHROME_CONTEXTUAL_SUGGESTIONS_REFERRER. They should
+// together.
+const char kContextualSuggestionsReferrerURL[] =
+    "https://goto.google.com/explore-on-content-viewer";
+}  // namespace
 
 namespace contextual_suggestions {
 
@@ -158,8 +166,16 @@ void ContextualSuggestionsBridge::ReportEvent(
       static_cast<contextual_suggestions::ContextualSuggestionsEvent>(
           j_event_id);
 
-  service_proxy_->ReportEvent(
-      ukm_source_id, web_contents->GetLastCommittedURL().spec(), event);
+  const std::string& referrer_url =
+      web_contents->GetController().GetActiveEntry()->GetReferrer().url.spec();
+  ArticleSource article_source = ArticleSource::OTHER;
+  if (referrer_url == kContextualSuggestionsReferrerURL) {
+    article_source = ArticleSource::CONTEXTUAL_SUGGESTIONS;
+  }
+
+  service_proxy_->ReportEvent(ukm_source_id,
+                              web_contents->GetLastCommittedURL().spec(),
+                              article_source, event);
 }
 
 void ContextualSuggestionsBridge::OnSuggestionsAvailable(

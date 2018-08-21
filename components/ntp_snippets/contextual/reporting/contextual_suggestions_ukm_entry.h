@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_UKM_ENTRY_H_
-#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_UKM_ENTRY_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_SUGGESTIONS_UKM_ENTRY_H_
+#define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_SUGGESTIONS_UKM_ENTRY_H_
 
 #include "base/gtest_prod_util.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_metrics_reporter.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace base {
@@ -85,4 +85,4 @@ class ContextualSuggestionsUkmEntry {
 
 }  // namespace contextual_suggestions
 
-#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_UKM_ENTRY_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_REPORTING_CONTEXTUAL_SUGGESTIONS_UKM_ENTRY_H_

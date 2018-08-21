@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/contextual/contextual_suggestions_composite_reporter.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_composite_reporter.h"
 
-#include "components/ntp_snippets/contextual/contextual_suggestions_ukm_entry.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_ukm_entry.h"
 
 namespace contextual_suggestions {
 
@@ -16,9 +16,10 @@ ContextualSuggestionsCompositeReporter::
 
 void ContextualSuggestionsCompositeReporter::SetupForPage(
     const std::string& url,
+    ArticleSource article_source,
     ukm::SourceId source_id) {
   for (ContextualSuggestionsReporter* reporter : raw_reporters_)
-    reporter->SetupForPage(url, source_id);
+    reporter->SetupForPage(url, article_source, source_id);
 }
 
 void ContextualSuggestionsCompositeReporter::RecordEvent(

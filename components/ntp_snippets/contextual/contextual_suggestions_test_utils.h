@@ -6,8 +6,8 @@
 #define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_TEST_UTILS_H_
 
 #include "base/bind.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_result.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_metrics_reporter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace contextual_suggestions {

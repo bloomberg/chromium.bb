@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_test_utils.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_metrics_reporter.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "testing/gmock/include/gmock/gmock.h"

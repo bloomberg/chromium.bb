@@ -46,7 +46,8 @@ void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestions(
           weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
       base::BindRepeating(
           &ContextualContentSuggestionsServiceProxy::ReportEvent,
-          weak_ptr_factory_.GetWeakPtr(), last_ukm_source_id_, url.spec()));
+          weak_ptr_factory_.GetWeakPtr(), last_ukm_source_id_, url.spec(),
+          ArticleSource::CONTEXTUAL_SUGGESTIONS));
 }
 
 void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestionImage(
@@ -89,6 +90,7 @@ void ContextualContentSuggestionsServiceProxy::ClearState() {
 void ContextualContentSuggestionsServiceProxy::ReportEvent(
     ukm::SourceId ukm_source_id,
     const std::string& url,
+    ArticleSource article_source,
     ContextualSuggestionsEvent event) {
   // TODO(pnoland): investigate how we can get into this state(one known
   // example is if we switch tabs and there's no committed navigation in the new
@@ -103,7 +105,7 @@ void ContextualContentSuggestionsServiceProxy::ReportEvent(
     if (last_ukm_source_id_ != ukm::kInvalidSourceId)
       reporter_->Flush();
     last_ukm_source_id_ = ukm_source_id;
-    reporter_->SetupForPage(url, ukm_source_id);
+    reporter_->SetupForPage(url, article_source, ukm_source_id);
   }
 
   reporter_->RecordEvent(event);

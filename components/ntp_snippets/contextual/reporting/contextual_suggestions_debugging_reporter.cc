@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/contextual/contextual_suggestions_debugging_reporter.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_debugging_reporter.h"
 
 #include <algorithm>
 
@@ -29,6 +29,7 @@ void ContextualSuggestionsDebuggingReporter::ClearEvents() {
 
 void ContextualSuggestionsDebuggingReporter::SetupForPage(
     const std::string& url,
+    ArticleSource article_source,
     ukm::SourceId source_id) {
   current_event_ = ContextualSuggestionsDebuggingEvent();
   current_event_.url = url;
@@ -44,7 +45,6 @@ void ContextualSuggestionsDebuggingReporter::RecordEvent(
     case FETCH_BELOW_THRESHOLD:
     case FETCH_EMPTY:
     case FETCH_COMPLETED:
-      return;
     case UI_PEEK_REVERSE_SCROLL:
       current_event_.sheet_peeked = true;
       return;

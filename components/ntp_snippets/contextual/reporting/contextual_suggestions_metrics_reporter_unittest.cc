@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_metrics_reporter.h"
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_ukm_entry.h"
+#include "components/ntp_snippets/contextual/reporting/contextual_suggestions_ukm_entry.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,7 +73,8 @@ ukm::SourceId ContextualSuggestionsMetricsReporterTest::GetSourceId() {
 
 TEST_F(ContextualSuggestionsMetricsReporterTest, BaseTest) {
   base::HistogramTester histogram_tester;
-  GetReporter().SetupForPage(kTestNavigationUrl, GetSourceId());
+  GetReporter().SetupForPage(
+      kTestNavigationUrl, ArticleSource::CONTEXTUAL_SUGGESTIONS, GetSourceId());
   GetReporter().RecordEvent(FETCH_REQUESTED);
   GetReporter().RecordEvent(FETCH_COMPLETED);
   GetReporter().RecordEvent(UI_PEEK_REVERSE_SCROLL);
@@ -123,7 +124,8 @@ void ContextualSuggestionsMetricsReporterTest::ExpectMultipleEventsCountOnce(
     ContextualSuggestionsEvent event) {
   std::unique_ptr<base::HistogramTester> histogram_tester =
       std::make_unique<base::HistogramTester>();
-  GetReporter().SetupForPage(kTestNavigationUrl, GetSourceId());
+  GetReporter().SetupForPage(
+      kTestNavigationUrl, ArticleSource::CONTEXTUAL_SUGGESTIONS, GetSourceId());
   // Always report a single FETCH_DELAYED event so we ensure there's a
   // histogram (otherwise the ExpectBucketCount may crash).
   GetReporter().RecordEvent(FETCH_DELAYED);
@@ -166,7 +168,8 @@ TEST_F(ContextualSuggestionsMetricsReporterTest, SuggestionClickedTest) {
 TEST_F(ContextualSuggestionsMetricsReporterTest, MultipleEventsTest) {
   std::unique_ptr<base::HistogramTester> histogram_tester =
       std::make_unique<base::HistogramTester>();
-  GetReporter().SetupForPage(kTestNavigationUrl, GetSourceId());
+  GetReporter().SetupForPage(
+      kTestNavigationUrl, ArticleSource::CONTEXTUAL_SUGGESTIONS, GetSourceId());
   // Test multiple cycles of FETCH_REQUESTED, FETCH_COMPLETED.
   GetReporter().RecordEvent(FETCH_REQUESTED);
   histogram_tester->ExpectBucketCount(kEventsHistogramName, kFetchRequested, 1);
@@ -187,7 +190,8 @@ TEST_F(ContextualSuggestionsMetricsReporterTest, MultipleEventsTest) {
 TEST_F(ContextualSuggestionsMetricsReporterTest, EnumNotReorderedTest) {
   std::unique_ptr<base::HistogramTester> histogram_tester =
       std::make_unique<base::HistogramTester>();
-  GetReporter().SetupForPage(kTestNavigationUrl, GetSourceId());
+  GetReporter().SetupForPage(
+      kTestNavigationUrl, ArticleSource::CONTEXTUAL_SUGGESTIONS, GetSourceId());
   // Peek the UI, which starts the timer, expected by all the other UI or
   // suggestion events.
   GetReporter().RecordEvent(UI_PEEK_REVERSE_SCROLL);
@@ -200,7 +204,8 @@ TEST_F(ContextualSuggestionsMetricsReporterTest, EnumNotReorderedTest) {
 
 TEST_F(ContextualSuggestionsMetricsReporterTest, ButtonTest) {
   base::HistogramTester histogram_tester;
-  GetReporter().SetupForPage(kTestNavigationUrl, GetSourceId());
+  GetReporter().SetupForPage(
+      kTestNavigationUrl, ArticleSource::CONTEXTUAL_SUGGESTIONS, GetSourceId());
   GetReporter().RecordEvent(FETCH_REQUESTED);
   GetReporter().RecordEvent(FETCH_COMPLETED);
   GetReporter().RecordEvent(UI_BUTTON_SHOWN);
