@@ -103,8 +103,7 @@ std::pair<int, int> GetTargetColorAlphaValues(
     case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
       target_shelf_color_alpha =
           login_constants::kNonBlurredWallpaperBackgroundAlpha;
-      target_item_color_alpha =
-          login_constants::kNonBlurredWallpaperBackgroundAlpha;
+      target_item_color_alpha = SK_AlphaTRANSPARENT;
       break;
   }
   return std::pair<int, int>(target_shelf_color_alpha, target_item_color_alpha);

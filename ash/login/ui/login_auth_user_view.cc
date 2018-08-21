@@ -35,7 +35,6 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -487,10 +486,6 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   // Update authentication UI.
   SetAuthMethods(auth_methods_, false /*can_use_pin*/);
   user_view_->UpdateForUser(user, false /*animate*/);
-
-  observer_.Add(Shell::Get()->wallpaper_controller());
-  // Ensure initial blur state is set correctly.
-  OnWallpaperBlurChanged();
 }
 
 LoginAuthUserView::~LoginAuthUserView() = default;
@@ -725,21 +720,6 @@ void LoginAuthUserView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   DCHECK_EQ(online_sign_in_message_, sender);
   OnOnlineSignInMessageTap();
-}
-
-void LoginAuthUserView::OnWallpaperBlurChanged() {
-  if (Shell::Get()->wallpaper_controller()->IsWallpaperBlurred()) {
-    SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
-    SetBackground(nullptr);
-  } else {
-    SetPaintToLayer();
-    layer()->SetFillsBoundsOpaquely(false);
-    SetBackground(views::CreateBackgroundFromPainter(
-        views::Painter::CreateSolidRoundRectPainter(
-            SkColorSetA(login_constants::kDefaultBaseColor,
-                        login_constants::kNonBlurredWallpaperBackgroundAlpha),
-            login_constants::kNonBlurredWallpaperBackgroundRadiusDp)));
-  }
 }
 
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
