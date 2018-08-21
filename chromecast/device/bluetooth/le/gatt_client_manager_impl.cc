@@ -4,12 +4,15 @@
 
 #include "chromecast/device/bluetooth/le/gatt_client_manager_impl.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "chromecast/base/bind_to_task_runner.h"
+#include "chromecast/device/bluetooth/bluetooth_util.h"
 #include "chromecast/device/bluetooth/le/remote_characteristic_impl.h"
 #include "chromecast/device/bluetooth/le/remote_descriptor_impl.h"
 #include "chromecast/device/bluetooth/le/remote_device_impl.h"
@@ -41,6 +44,9 @@ namespace {
   } while (0)
 
 }  // namespace
+
+// static
+constexpr base::TimeDelta GattClientManagerImpl::kConnectTimeout;
 
 GattClientManagerImpl::GattClientManagerImpl(
     bluetooth_v2_shlib::GattClient* gatt_client)
@@ -162,12 +168,15 @@ void GattClientManagerImpl::OnConnectChanged(
 
   it->second->SetConnected(connected);
   if (connected) {
+    // We won't declare the device connected until service discovery completes,
+    // so we won't start next Connect request until then.
     connected_devices_.insert(addr);
   } else {
     connected_devices_.erase(addr);
     if (!pending_connect_requests_.empty() &&
         addr == pending_connect_requests_.front()) {
       pending_connect_requests_.pop_front();
+      connect_timeout_timer_.Stop();
       RunQueuedConnectRequest();
     } else {
       base::Erase(pending_connect_requests_, addr);
@@ -300,6 +309,7 @@ void GattClientManagerImpl::OnGetServices(
   }
 
   pending_connect_requests_.pop_front();
+  connect_timeout_timer_.Stop();
   // Try to run the next Connect request
   RunQueuedConnectRequest();
 }
@@ -351,6 +361,11 @@ void GattClientManagerImpl::RunQueuedConnectRequest() {
 
     addr = pending_connect_requests_.front();
   }
+
+  connect_timeout_timer_.Start(
+      FROM_HERE, kConnectTimeout,
+      base::BindRepeating(&GattClientManagerImpl::OnConnectTimeout, weak_this_,
+                          addr));
 }
 
 void GattClientManagerImpl::RunQueuedReadRemoteRssiRequest() {
@@ -375,6 +390,26 @@ void GattClientManagerImpl::RunQueuedReadRemoteRssiRequest() {
     }
 
     addr = pending_read_remote_rssi_requests_.front();
+  }
+}
+
+void GattClientManagerImpl::OnConnectTimeout(
+    const bluetooth_v2_shlib::Addr& addr) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  // Get the last byte because whole address is PII.
+  std::string addr_str = util::AddrToString(addr);
+  addr_str = addr_str.substr(addr_str.size() - 2);
+
+  LOG(ERROR) << "Connect (" << addr_str << ")"
+             << " timed out. Disconnecting";
+
+  if (connected_devices_.find(addr) != connected_devices_.end()) {
+    // Connect times out before OnGetServices is received.
+    gatt_client_->Disconnect(addr);
+  } else {
+    // Connect times out before OnConnectChanged is received.
+    RUN_ON_IO_THREAD(OnConnectChanged, addr, false /* status */,
+                     false /* connected */);
   }
 }
 
