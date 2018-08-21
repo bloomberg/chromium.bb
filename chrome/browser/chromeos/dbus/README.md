@@ -1,4 +1,5 @@
-This directory contains shared code used to implement D-Bus services.
+This directory contains implementations of D-Bus services that are owned by
+Chrome (because they depend on functionality located within `//chrome`).
 
 Please see [Chrome OS D-Bus Usage in Chrome] for information about adding D-Bus
 services.
