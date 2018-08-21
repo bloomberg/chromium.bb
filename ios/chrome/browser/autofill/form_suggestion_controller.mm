@@ -265,7 +265,10 @@ AutofillSuggestionState::AutofillSuggestionState(
 }
 
 - (void)onNoSuggestionsAvailable {
-  DCHECK(accessoryViewUpdateBlock_);
+  // Check the update block hasn't been reset while waiting for suggestions.
+  if (!accessoryViewUpdateBlock_) {
+    return;
+  }
   BOOL isManualFillEnabled =
       base::FeatureList::IsEnabled(autofill::features::kAutofillManualFallback);
   if (isManualFillEnabled) {
