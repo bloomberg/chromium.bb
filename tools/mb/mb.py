@@ -145,6 +145,15 @@ class MetaBuildWrapper(object):
                       help='path to generate build into')
     subp.set_defaults(func=self.CmdGen)
 
+    subp = subps.add_parser('isolate-everything',
+                            help='generates a .isolate for all targets. '
+                                 'Requires that mb.py gen has already been '
+                                 'run.')
+    AddCommonOptions(subp)
+    subp.set_defaults(func=self.CmdIsolateEverything)
+    subp.add_argument('path',
+                      help='path build was generated into')
+
     subp = subps.add_parser('isolate',
                             help='generate the .isolate files for a given'
                                  'binary')
@@ -298,6 +307,10 @@ class MetaBuildWrapper(object):
   def CmdGen(self):
     vals = self.Lookup()
     return self.RunGNGen(vals)
+
+  def CmdIsolateEverything(self):
+    vals = self.Lookup()
+    return self.RunGNGenAllIsolates(vals)
 
   def CmdHelp(self):
     if self.args.subcommand:
@@ -753,7 +766,6 @@ class MetaBuildWrapper(object):
     gn_args_path = self.ToAbsPath(build_dir, 'args.gn')
     self.WriteFile(gn_args_path, gn_args, force_verbose=True)
 
-    swarming_targets = []
     if getattr(self.args, 'swarming_targets_file', None):
       # We need GN to generate the list of runtime dependencies for
       # the compile targets listed (one per line) in the file so
@@ -764,10 +776,10 @@ class MetaBuildWrapper(object):
         self.WriteFailureAndRaise('"%s" does not exist' % path,
                                   output_path=None)
       contents = self.ReadFile(path)
-      swarming_targets = set(contents.splitlines())
+      isolate_targets = set(contents.splitlines())
 
       isolate_map = self.ReadIsolateMap()
-      err, labels = self.MapTargetsToLabels(isolate_map, swarming_targets)
+      err, labels = self.MapTargetsToLabels(isolate_map, isolate_targets)
       if err:
           raise MBErr(err)
 
@@ -782,11 +794,85 @@ class MetaBuildWrapper(object):
         self.Print('GN gen failed: %d' % ret)
         return ret
 
+    if getattr(self.args, 'swarming_targets_file', None):
+      return self.GenerateIsolates(vals, isolate_targets, isolate_map,
+                                   build_dir)
+
+    return 0
+
+  def RunGNGenAllIsolates(self, vals):
+    """
+    This command generates all .isolate files.
+
+    This command assumes that "mb.py gen" has already been run, as it relies on
+    "gn ls" to fetch all gn targets. If uses that output, combined with the
+    isolate_map, to determine all isolates that can be generated for the current
+    gn configuration.
+    """
+    build_dir = self.args.path
+    ret, output, _ = self.Run(self.GNCmd('ls', build_dir),
+                              force_verbose=False)
+    if ret:
+        # If `gn ls` failed, we should exit early rather than trying to
+        # generate isolates.
+        self.Print('GN ls failed: %d' % ret)
+        return ret
+
+    # Create a reverse map from isolate label to isolate dict.
+    isolate_map = self.ReadIsolateMap()
+    isolate_dict_map = {}
+    for key, isolate_dict in isolate_map.iteritems():
+      isolate_dict_map[isolate_dict['label']] = isolate_dict
+      isolate_dict_map[isolate_dict['label']]['isolate_key'] = key
+
+    runtime_deps = []
+
+    isolate_targets = []
+    # For every GN target, look up the isolate dict.
+    for line in output.splitlines():
+      target = line.strip()
+      if target in isolate_dict_map:
+        if isolate_dict_map[target]['type'] == 'additional_compile_target':
+          # By definition, additional_compile_targets are not tests, so we
+          # shouldn't generate isolates for them.
+          continue
+
+        isolate_targets.append(isolate_dict_map[target]['isolate_key'])
+        runtime_deps.append(target)
+
+    # Now we need to run "gn gen" again with --runtime-deps-list-file
+    gn_runtime_deps_path = self.ToAbsPath(build_dir, 'runtime_deps')
+    self.WriteFile(gn_runtime_deps_path, '\n'.join(runtime_deps) + '\n')
+    cmd = self.GNCmd('gen', build_dir)
+    cmd.append('--runtime-deps-list-file=%s' % gn_runtime_deps_path)
+    self.Run(cmd)
+
+    return self.GenerateIsolates(vals, isolate_targets, isolate_map, build_dir)
+
+  def GenerateIsolates(self, vals, ninja_targets, isolate_map, build_dir):
+    """
+    Generates isolates for a list of ninja targets.
+
+    Ninja targets are transformed to GN targets via isolate_map.
+
+    This function assumes that a previous invocation of "mb.py gen" has
+    generated runtime deps for all targets.
+    """
     android = 'target_os="android"' in vals['gn_args']
     fuchsia = 'target_os="fuchsia"' in vals['gn_args']
     win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
-    for target in swarming_targets:
-      if android:
+    for target in ninja_targets:
+      # TODO(https://crbug.com/876065): 'official_tests' use
+      # type='additional_compile_target' to isolate tests. This is not the
+      # intended use for 'additional_compile_target'.
+      if (isolate_map[target]['type'] == 'additional_compile_target' and
+          target != 'official_tests'):
+        # By definition, additional_compile_targets are not tests, so we
+        # shouldn't generate isolates for them.
+        self.Print('Cannot generate isolate for %s since it is an '
+                   'additional_compile_target.' % target)
+        return 1
+      elif android:
         # Android targets may be either android_apk or executable. The former
         # will result in runtime_deps associated with the stamp file, while the
         # latter will result in runtime_deps associated with the executable.
@@ -826,10 +912,10 @@ class MetaBuildWrapper(object):
                     ', '.join(runtime_deps_targets))
 
       command, extra_files = self.GetIsolateCommand(target, vals)
-
       runtime_deps = self.ReadFile(runtime_deps_path).splitlines()
 
-      self.WriteIsolateFiles(build_dir, command, target, runtime_deps,
+      canonical_target = target.replace(':','_').replace('/','_')
+      self.WriteIsolateFiles(build_dir, command, canonical_target, runtime_deps,
                              extra_files)
 
     return 0
