@@ -89,7 +89,10 @@ class CloudPrintProxyService : public KeyedService {
   // Virtual for testing.
   virtual ServiceProcessControl* GetServiceProcessControl();
 
-  Profile* profile_;
+  void OnReadCloudPrintSetupProxyList(const PrintersCallback& callback,
+                                      const std::string& printers_json);
+
+  Profile* const profile_;
   std::string proxy_id_;
 
   // For watching for connector policy changes.
