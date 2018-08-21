@@ -787,9 +787,11 @@ void DriveInternalsWebUIHandler::UpdatePathConfigurationsSection() {
   AppendKeyValue(
       &paths, "Downloads",
       file_manager::util::GetDownloadsFolderForProfile(profile).AsUTF8Unsafe());
-  AppendKeyValue(
-      &paths, "Drive",
-      drive::util::GetDriveMountPointPath(profile).AsUTF8Unsafe());
+  const auto* integration_service = GetIntegrationService();
+  if (integration_service && integration_service->IsMounted()) {
+    AppendKeyValue(&paths, "Drive",
+                   integration_service->GetMountPointPath().AsUTF8Unsafe());
+  }
 
   const char* kPathPreferences[] = {
     prefs::kSelectFileLastDirectory,
