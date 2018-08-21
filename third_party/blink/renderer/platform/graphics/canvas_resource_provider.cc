@@ -544,13 +544,19 @@ void CanvasResourceProvider::CanvasImageProvider::ReleaseLockedImages() {
 
 void CanvasResourceProvider::CanvasImageProvider::CanUnlockImage(
     ScopedDecodedDrawImage image) {
-  if (locked_images_.empty()) {
+  if (!cleanup_task_pending_) {
+    cleanup_task_pending_ = true;
     Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&CanvasImageProvider::ReleaseLockedImages,
+        FROM_HERE, base::BindOnce(&CanvasImageProvider::CleanupLockedImages,
                                   weak_factory_.GetWeakPtr()));
   }
 
   locked_images_.push_back(std::move(image));
+}
+
+void CanvasResourceProvider::CanvasImageProvider::CleanupLockedImages() {
+  cleanup_task_pending_ = false;
+  ReleaseLockedImages();
 }
 
 CanvasResourceProvider::CanvasResourceProvider(

@@ -185,7 +185,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
    private:
     void CanUnlockImage(ScopedDecodedDrawImage);
+    void CleanupLockedImages();
 
+    bool cleanup_task_pending_ = false;
     std::vector<ScopedDecodedDrawImage> locked_images_;
     cc::PlaybackImageProvider playback_image_provider_;
 
