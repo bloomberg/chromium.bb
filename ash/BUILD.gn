@@ -2046,6 +2046,7 @@ test("ash_unittests") {
     "//ui/chromeos/events",
     "//ui/compositor",
     "//ui/compositor:test_support",
+    "//ui/compositor_extra:compositor_extra",
     "//ui/display",
     "//ui/display:test_support",
     "//ui/display/types",

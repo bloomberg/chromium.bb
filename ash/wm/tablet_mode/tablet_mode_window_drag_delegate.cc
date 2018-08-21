@@ -121,6 +121,12 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
 
   bounds_of_selected_new_selector_item_ =
       GetBoundsOfSelectedNewSelectorItem(dragged_window_);
+
+  // Update the dragged window's shadow. It should have the active window
+  // shadow during dragging.
+  original_shadow_elevation_ =
+      ::wm::GetShadowElevationConvertDefault(dragged_window_);
+  ::wm::SetShadowElevation(dragged_window_, ::wm::kShadowElevationActiveWindow);
 }
 
 void TabletModeWindowDragDelegate::ContinueWindowDrag(
@@ -197,6 +203,9 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
        !GetWindowSelector()->IsWindowInOverview(dragged_window_))) {
     SetTransform(dragged_window_, gfx::Transform());
   }
+
+  // Reset the dragged window's window shadow elevation.
+  ::wm::SetShadowElevation(dragged_window_, original_shadow_elevation_);
 
   dragged_window_ = nullptr;
   did_move_ = false;

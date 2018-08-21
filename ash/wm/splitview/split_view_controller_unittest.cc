@@ -41,10 +41,12 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor_extra/shadow.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -2504,6 +2506,47 @@ TEST_F(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
   EXPECT_TRUE(window_selector->IsWindowInOverview(window1.get()));
   // |wiindow1|'s bounds should have been updated to its tablet mode bounds.
   EXPECT_EQ(tablet_mode_bounds, window1->bounds());
+}
+
+// Tests that a dragged window should have the active window shadow during
+// dragging.
+TEST_F(SplitViewTabDraggingTest, DraggedWindowShouldHaveActiveWindowShadow) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
+  window1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+
+  // 1) Start dragging |window2|. |window2| is the source window.
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(window2.get(), window2.get());
+  // |window2| should have the active window shadow.
+  ::wm::ShadowController* shadow_controller = Shell::Get()->shadow_controller();
+  ui::Shadow* shadow = shadow_controller->GetShadowForWindow(window2.get());
+  ASSERT_TRUE(shadow);
+  EXPECT_EQ(shadow->desired_elevation(), ::wm::kShadowElevationActiveWindow);
+  EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window2.get()));
+
+  CompleteDrag(std::move(resizer));
+  Shell::Get()->shadow_controller()->UpdateShadowForWindow(window2.get());
+  shadow = shadow_controller->GetShadowForWindow(window2.get());
+  ASSERT_TRUE(shadow);
+  EXPECT_FALSE(shadow_controller->IsShadowVisibleForWindow(window2.get()));
+
+  // 2) Start dragging |window2|, but |window2| is not the source window.
+  resizer = StartDrag(window2.get(), window1.get());
+  shadow = shadow_controller->GetShadowForWindow(window2.get());
+  ASSERT_TRUE(shadow);
+  EXPECT_EQ(shadow->desired_elevation(), ::wm::kShadowElevationActiveWindow);
+  EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window2.get()));
+
+  CompleteDrag(std::move(resizer));
+  Shell::Get()->shadow_controller()->UpdateShadowForWindow(window2.get());
+  shadow = shadow_controller->GetShadowForWindow(window2.get());
+  ASSERT_TRUE(shadow);
+  EXPECT_FALSE(shadow_controller->IsShadowVisibleForWindow(window2.get()));
 }
 
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {

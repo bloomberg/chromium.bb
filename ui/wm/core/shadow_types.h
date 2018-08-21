@@ -27,6 +27,14 @@ constexpr int kShadowElevationActiveWindow = 24;
 
 WM_CORE_EXPORT void SetShadowElevation(aura::Window* window, int elevation);
 
+// Returns the default shadow elevaltion value for |window|.
+WM_CORE_EXPORT int GetDefaultShadowElevationForWindow(
+    const aura::Window* window);
+
+// Returns the shadow elevation property value for |window|, converting
+// |kShadowElevationDefault| to the appropriate value.
+WM_CORE_EXPORT int GetShadowElevationConvertDefault(const aura::Window* window);
+
 // A property key describing the drop shadow that should be displayed under the
 // window. A null value is interpreted as using the default.
 WM_CORE_EXPORT extern const aura::WindowProperty<int>* const
