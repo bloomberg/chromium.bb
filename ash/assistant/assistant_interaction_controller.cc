@@ -234,10 +234,8 @@ void AssistantInteractionController::OnHtmlResponse(
       std::make_unique<AssistantCardElement>(response));
 }
 
-void AssistantInteractionController::OnSuggestionChipPressed(int id) {
-  const AssistantSuggestion* suggestion =
-      assistant_interaction_model_.response()->GetSuggestionById(id);
-
+void AssistantInteractionController::OnSuggestionChipPressed(
+    const AssistantSuggestion* suggestion) {
   // If the suggestion contains a non-empty action url, we will handle the
   // suggestion chip pressed event by launching the action url in the browser.
   if (!suggestion->action_url.is_empty()) {
