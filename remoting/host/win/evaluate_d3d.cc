@@ -13,6 +13,7 @@
 #include "remoting/host/evaluate_capability.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/switches.h"
+#include "remoting/host/win/evaluate_3d_display_mode.h"
 #include "third_party/webrtc/modules/desktop_capture/win/dxgi_duplicator_controller.h"
 #include "third_party/webrtc/modules/desktop_capture/win/screen_capturer_win_directx.h"
 
@@ -57,26 +58,55 @@ int EvaluateD3D() {
   return kSuccessExitCode;
 }
 
-bool GetD3DCapability(std::vector<std::string>* result /* = nullptr */) {
-  std::string d3d_info;
-  if (EvaluateCapability(kEvaluateD3D, &d3d_info) != kSuccessExitCode) {
-    if (result) {
-      result->push_back(kNoDirectXCapturer);
-    }
+bool BlockD3DCheck() {
+  DWORD console_session = WTSGetActiveConsoleSessionId();
+  DWORD current_session = 0;
+  if (!ProcessIdToSessionId(GetCurrentProcessId(), &current_session)) {
+    PLOG(WARNING) << "ProcessIdToSessionId failed: ";
+  }
+
+  // Session 0 is not curtained as it does not have an interactive desktop.
+  bool is_curtained_session =
+      current_session != 0 && current_session != console_session;
+
+  // Skip D3D checks if we are in a curtained session and 3D Display mode is
+  // enabled.  Attempting to create a D3D device in this scenario takes a long
+  // time which often results in the user being disconnected due to timeouts.
+  // After digging in, it looks like the call to D3D11CreateDevice() is spinning
+  // while enumerating the display drivers.  There isn't a simple fix for this
+  // so instead we should skip the D3D caps check and any other D3D related
+  // calls.  This will mean falling back to the GDI capturer.
+  return is_curtained_session && Get3dDisplayModeEnabled();
+}
+
+bool GetD3DCapabilities(std::vector<std::string>* result) {
+  if (BlockD3DCheck()) {
+    result->push_back(kNoDirectXCapturer);
     return false;
   }
 
-  if (result) {
-    auto capabilities = base::SplitString(
-        d3d_info,
-        base::kWhitespaceASCII,
-        base::TRIM_WHITESPACE,
-        base::SPLIT_WANT_NONEMPTY);
-    for (const auto& capability : capabilities) {
-      result->push_back(capability);
-    }
+  std::string d3d_info;
+  if (EvaluateCapability(kEvaluateD3D, &d3d_info) != kSuccessExitCode) {
+    result->push_back(kNoDirectXCapturer);
+    return false;
   }
+
+  auto capabilities =
+      base::SplitString(d3d_info, base::kWhitespaceASCII, base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  for (const auto& capability : capabilities) {
+    result->push_back(capability);
+  }
+
   return true;
+}
+
+bool IsD3DAvailable() {
+  if (BlockD3DCheck())
+    return false;
+
+  std::string unused;
+  return (EvaluateCapability(kEvaluateD3D, &unused) == kSuccessExitCode);
 }
 
 }  // namespace remoting

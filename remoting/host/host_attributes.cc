@@ -19,6 +19,7 @@
 #include "base/win/windows_version.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
+#include "remoting/host/win/evaluate_3d_display_mode.h"
 #include "remoting/host/win/evaluate_d3d.h"
 #endif
 
@@ -103,7 +104,7 @@ std::string GetHostAttributes() {
   }
 #if defined(OS_WIN)
   {
-    GetD3DCapability(&result);
+    GetD3DCapabilities(&result);
 
     auto version = base::win::GetVersion();
     if (version >= base::win::VERSION_WIN8) {
