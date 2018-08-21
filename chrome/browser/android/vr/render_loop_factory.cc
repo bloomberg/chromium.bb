@@ -38,6 +38,7 @@ RenderLoopFactory::Params::~Params() = default;
 
 std::unique_ptr<VrShellGl> RenderLoopFactory::Create(
     VrGLThread* vr_gl_thread,
+    UiFactory* ui_factory,
     std::unique_ptr<Params> params) {
   DCHECK(params);
   auto keyboard_delegate = GvrKeyboardDelegate::Create();
@@ -50,7 +51,7 @@ std::unique_ptr<VrShellGl> RenderLoopFactory::Create(
                             base::Unretained(keyboard_delegate.get())));
   }
   auto audio_delegate = std::make_unique<SoundsManagerAudioDelegate>();
-  auto ui = UiFactory::Create(
+  auto ui = ui_factory->Create(
       vr_gl_thread, vr_gl_thread, std::move(keyboard_delegate),
       std::move(text_input_delegate), std::move(audio_delegate),
       params->ui_initial_state);

@@ -22,6 +22,7 @@ class WaitableEvent;
 
 namespace vr {
 
+class UiFactory;
 class VrGLThread;
 class VrShellGl;
 
@@ -49,6 +50,7 @@ class VR_EXPORT RenderLoopFactory {
 
   // TODO(acondor): Build an instance of RenderLoop owning VrShellGl.
   static std::unique_ptr<VrShellGl> Create(VrGLThread* vr_gl_thread,
+                                           UiFactory* ui_factory,
                                            std::unique_ptr<Params> params);
 };
 

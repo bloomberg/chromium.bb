@@ -169,6 +169,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   // Created on GL thread.
+  std::unique_ptr<UiFactory> ui_factory_;
   std::unique_ptr<VrShellGl> vr_shell_gl_;
   std::unique_ptr<gvr::GvrApi> gvr_api_;
 

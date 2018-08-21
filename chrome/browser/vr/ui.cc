@@ -830,4 +830,21 @@ Ui::FovRectangle Ui::GetMinimalFov(
                           top_degrees};
 }
 
+#if defined(FEATURE_MODULES)
+
+extern "C" {
+Ui* CreateUi(UiBrowserInterface* browser,
+             PlatformInputHandler* content_input_forwarder,
+             std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+             std::unique_ptr<TextInputDelegate> text_input_delegate,
+             std::unique_ptr<AudioDelegate> audio_delegate,
+             const UiInitialState& ui_initial_state) {
+  return new Ui(browser, content_input_forwarder, std::move(keyboard_delegate),
+                std::move(text_input_delegate), std::move(audio_delegate),
+                ui_initial_state);
+}
+}
+
+#endif  // defined(FEATURE_MODULES)
+
 }  // namespace vr

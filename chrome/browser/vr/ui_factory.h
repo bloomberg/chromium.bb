@@ -21,13 +21,20 @@ struct UiInitialState;
 
 class VR_EXPORT UiFactory {
  public:
-  static std::unique_ptr<UiInterface> Create(
+  ~UiFactory();
+
+  std::unique_ptr<UiInterface> Create(
       UiBrowserInterface* browser,
       PlatformInputHandler* content_input_forwarder,
       std::unique_ptr<KeyboardDelegate> keyboard_delegate,
       std::unique_ptr<TextInputDelegate> text_input_delegate,
       std::unique_ptr<AudioDelegate> audio_delegate,
       const UiInitialState& ui_initial_state);
+
+ private:
+#if defined(FEATURE_MODULES)
+  void* ui_library_handle_ = nullptr;
+#endif
 };
 
 }  // namespace vr
