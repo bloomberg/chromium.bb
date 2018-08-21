@@ -1045,20 +1045,100 @@ void GtkUi::LoadGtkValues() {
     const std::string header_selector = custom_frame && GtkVersionCheck(3, 10)
                                             ? "#headerbar.header-bar.titlebar"
                                             : "GtkMenuBar#menubar";
+    const std::string header_selector_inactive = header_selector + ":backdrop";
     const SkColor frame_color = GetBgColor(header_selector);
-    const SkColor frame_color_inactive =
-        GetBgColor(header_selector + ":backdrop");
+    const SkColor frame_color_incognito =
+        color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
+    const SkColor frame_color_inactive = GetBgColor(header_selector_inactive);
+    const SkColor frame_color_incognito_inactive =
+        color_utils::HSLShift(frame_color_inactive, kDefaultTintFrameIncognito);
 
     color_map[ThemeProperties::COLOR_FRAME] = frame_color;
     color_map[ThemeProperties::COLOR_FRAME_INACTIVE] = frame_color_inactive;
-    color_map[ThemeProperties::COLOR_FRAME_INCOGNITO] =
-        color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
+    color_map[ThemeProperties::COLOR_FRAME_INCOGNITO] = frame_color_incognito;
     color_map[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] =
-        color_utils::HSLShift(frame_color_inactive, kDefaultTintFrameIncognito);
-    color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-        ui::MaterialDesignController::IsRefreshUi()
-            ? GetFgColor(header_selector + " GtkLabel")
-            : color_utils::BlendTowardOppositeLuma(tab_text_color, 50);
+        frame_color_incognito_inactive;
+
+    if (ui::MaterialDesignController::IsRefreshUi()) {
+      colors_[ThemeProperties::COLOR_BACKGROUND_TAB] = SK_ColorTRANSPARENT;
+      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE] =
+          SK_ColorTRANSPARENT;
+      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
+          SK_ColorTRANSPARENT;
+      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE] =
+          SK_ColorTRANSPARENT;
+
+      const SkColor background_tab_text_color =
+          GetFgColor(header_selector + " GtkLabel");
+      const SkColor background_tab_text_color_inactive =
+          GetFgColor(header_selector_inactive + " GtkLabel");
+
+      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
+          background_tab_text_color;
+      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO] =
+          color_utils::GetColorWithMinimumContrast(
+              color_utils::HSLShift(background_tab_text_color,
+                                    kDefaultTintFrameIncognito),
+              frame_color_incognito);
+      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE] =
+          background_tab_text_color_inactive;
+      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE] =
+          color_utils::GetColorWithMinimumContrast(
+              color_utils::HSLShift(background_tab_text_color_inactive,
+                                    kDefaultTintFrameIncognito),
+              frame_color_incognito_inactive);
+    } else {
+      color_utils::HSL frame_hsl;
+      color_utils::SkColorToHSL(frame_color, &frame_hsl);
+      color_utils::HSL frame_hsl_inactive;
+      color_utils::SkColorToHSL(frame_color_inactive, &frame_hsl_inactive);
+      const color_utils::HSL inactive_shift =
+          color_utils::HSL{-1, (frame_hsl_inactive.s - frame_hsl.s + 1) / 2,
+                           (frame_hsl_inactive.l - frame_hsl.l + 1) / 2};
+
+      const SkColor background_tab_color =
+          color_utils::HSLShift(tab_color, kDefaultTintBackgroundTab);
+      const SkColor background_tab_color_inactive =
+          color_utils::HSLShift(background_tab_color, inactive_shift);
+      const SkColor background_tab_color_incognito =
+          color_utils::HSLShift(tab_color, kDefaultTintBackgroundTabIncognito);
+      const SkColor background_tab_color_incognito_inactive =
+          color_utils::HSLShift(background_tab_color_incognito, inactive_shift);
+
+      colors_[ThemeProperties::COLOR_BACKGROUND_TAB] = background_tab_color;
+      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE] =
+          background_tab_color_inactive;
+      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
+          background_tab_color_incognito;
+      colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE] =
+          background_tab_color_incognito_inactive;
+
+      const SkColor background_tab_text_color =
+          color_utils::BlendTowardOppositeLuma(tab_text_color, 50);
+      const SkColor background_tab_text_color_incognito = color_utils::HSLShift(
+          background_tab_text_color, kDefaultTintFrameIncognito);
+      const SkColor background_tab_text_color_inactive =
+          color_utils::HSLShift(background_tab_text_color, inactive_shift);
+      const SkColor background_tab_text_color_incognito_inactive =
+          color_utils::HSLShift(background_tab_text_color_incognito,
+                                inactive_shift);
+
+      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
+          color_utils::GetColorWithMinimumContrast(background_tab_text_color,
+                                                   background_tab_color);
+      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO] =
+          color_utils::GetColorWithMinimumContrast(
+              background_tab_text_color_incognito,
+              background_tab_color_incognito);
+      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE] =
+          color_utils::GetColorWithMinimumContrast(
+              background_tab_text_color_inactive,
+              background_tab_color_inactive);
+      color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE] =
+          color_utils::GetColorWithMinimumContrast(
+              background_tab_text_color_incognito_inactive,
+              background_tab_color_incognito_inactive);
+    }
 
     // These colors represent the border drawn around tabs and between
     // the tabstrip and toolbar.
@@ -1088,17 +1168,6 @@ void GtkUi::LoadGtkValues() {
 
   colors_[ThemeProperties::COLOR_TOOLBAR] = tab_color;
   colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = tab_color;
-
-  if (ui::MaterialDesignController::IsRefreshUi()) {
-    colors_[ThemeProperties::COLOR_BACKGROUND_TAB] = SK_ColorTRANSPARENT;
-    colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
-        SK_ColorTRANSPARENT;
-  } else {
-    colors_[ThemeProperties::COLOR_BACKGROUND_TAB] =
-        color_utils::HSLShift(tab_color, kDefaultTintBackgroundTab);
-    colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO] =
-        color_utils::HSLShift(tab_color, kDefaultTintBackgroundTabIncognito);
-  }
 
   colors_[ThemeProperties::COLOR_NTP_LINK] = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
