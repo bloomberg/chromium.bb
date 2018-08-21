@@ -276,6 +276,7 @@ class ManualFillingMediator
     }
 
     private AccessoryState getOrCreateAccessoryState(Tab tab) {
+        assert tab != null : "Accessory state was requested without providing a non-null tab!";
         AccessoryState state = mModel.get(tab);
         if (state != null) return state;
         state = new AccessoryState();
@@ -287,6 +288,7 @@ class ManualFillingMediator
     private void restoreCachedState(Tab browserTab) {
         mKeyboardAccessory.dismiss();
         clearTabs();
+        if (browserTab == null) return; // If there is no tab, exit after cleaning everything.
         AccessoryState state = getOrCreateAccessoryState(browserTab);
         if (state.mPasswordAccessorySheet != null) {
             addTab(state.mPasswordAccessorySheet.getTab());
@@ -328,6 +330,7 @@ class ManualFillingMediator
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)) {
             return null;
         }
+        if (mActiveBrowserTab == null) return null; // No need for a sheet if there is no tab.
         AccessoryState state = getOrCreateAccessoryState(mActiveBrowserTab);
         if (state.mPasswordAccessorySheet == null) {
             state.mPasswordAccessorySheet = new PasswordAccessorySheetCoordinator(mActivity);

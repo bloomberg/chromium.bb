@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -57,7 +59,7 @@ import java.util.Map;
  * Controller tests for the root controller for interactions with the manual filling UI.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 @EnableFeatures(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)
 @DisableFeatures(ChromeFeatureList.EXPERIMENTAL_UI)
 public class ManualFillingControllerTest {
@@ -78,6 +80,8 @@ public class ManualFillingControllerTest {
     private ChromeFullscreenManager mFullScreenManager;
     @Mock
     private Drawable mMockIcon;
+    @Mock
+    private android.content.res.Resources mMockResources;
 
     @Rule
     public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
@@ -86,12 +90,15 @@ public class ManualFillingControllerTest {
 
     @Before
     public void setUp() {
+        ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         when(mMockViewStub.inflate()).thenReturn(mMockView);
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
         when(mMockActivity.getTabModelSelector()).thenReturn(mMockTabModelSelector);
         mFullScreenManager = new ChromeFullscreenManager(mMockActivity, 0);
         when(mMockActivity.getFullscreenManager()).thenReturn(mFullScreenManager);
+        when(mMockActivity.getResources()).thenReturn(mMockResources);
+        when(mMockResources.getDimensionPixelSize(anyInt())).thenReturn(48);
         PasswordAccessorySheetCoordinator.IconProvider.getInstance().setIconForTesting(mMockIcon);
         mController = new ManualFillingCoordinator(mMockWindow, mMockViewStub, mMockViewStub);
     }
@@ -390,6 +397,35 @@ public class ManualFillingControllerTest {
         if (oldState.mPasswordAccessorySheet == null)
             return; // Having no password sheet is fine - it would be completely destroyed then.
         assertThat(oldState.mPasswordAccessorySheet.getModelForTesting().size(), is(0));
+    }
+
+    @Test
+    public void testResumingWithoutActiveTabClearsStateAndHidesKeyboard() {
+        ManualFillingMediator mediator = mController.getMediatorForTesting();
+
+        // Show the accessory bar to make sure it would be dismissed.
+        mediator.getKeyboardAccessory().addTab(
+                new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
+        mediator.getKeyboardAccessory().requestShowing();
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
+
+        // No active tab was added - still we request a resume. This should just clear everything.
+        mController.onResume();
+
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(false));
+        // |getPasswordAccessorySheet| creates a sheet if the state allows it. Here, it shouldn't.
+        assertThat(mediator.getPasswordAccessorySheet(), is(nullValue()));
+    }
+
+    @Test
+    public void testClosingTabDoesntAffectUnitializedComponents() {
+        ManualFillingMediator mediator = mController.getMediatorForTesting();
+
+        // A leftover tab is closed before the filling component could pick up the active tab.
+        closeTab(mediator, mock(Tab.class), null);
+
+        // Without any tab, there should be no state that would allow creating a sheet.
+        assertThat(mediator.getPasswordAccessorySheet(), is(nullValue()));
     }
 
     /**
