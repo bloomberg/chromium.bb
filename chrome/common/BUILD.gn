@@ -549,10 +549,34 @@ static_library("non_code_constants") {
   ]
 }
 
-static_library("constants") {
+component("chrome_features") {
+  defines = [ "IS_CHROME_FEATURES_IMPL" ]
+
   sources = [
     "chrome_features.cc",
     "chrome_features.h",
+  ]
+
+  deps = [
+    ":buildflags",
+    ":non_code_constants",
+    "//base",
+    "//components/offline_pages/buildflags",
+    "//device/vr/buildflags",
+    "//extensions/buildflags",
+    "//media:media_buildflags",
+    "//ppapi/buildflags",
+    "//printing/buildflags",
+    "//rlz/buildflags",
+  ]
+
+  public_deps = [
+    "//ui/base:ui_features",
+  ]
+}
+
+static_library("constants") {
+  sources = [
     "chrome_paths.cc",
     "chrome_paths.h",
     "chrome_paths_android.cc",
@@ -569,13 +593,12 @@ static_library("constants") {
 
   public_deps = [
     ":buildflags",
+    ":chrome_features",
     ":non_code_constants",
     "//content/public/common:result_codes",
-    "//extensions/buildflags",
-    "//printing/buildflags",
     "//rlz/buildflags",
-    "//ui/base:ui_features",
   ]
+
   deps = [
     ":channel_info",
     ":version_header",
@@ -584,10 +607,10 @@ static_library("constants") {
     "//components/bookmarks/common",
     "//components/nacl/common:switches",
     "//components/offline_pages/buildflags",
-    "//device/vr/buildflags",
-    "//media:media_buildflags",
+    "//extensions/buildflags",
     "//media/cdm:cdm_paths",  # Needed by chrome_paths.cc.
     "//ppapi/buildflags",
+    "//printing/buildflags",
     "//third_party/widevine/cdm:headers",
   ]
 
