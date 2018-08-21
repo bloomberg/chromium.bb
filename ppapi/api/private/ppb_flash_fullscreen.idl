@@ -9,7 +9,6 @@
  */
 
 label Chrome {
-  M16 = 0.1,
   M23 = 1.0
 };
 
@@ -19,15 +18,6 @@ interface PPB_FlashFullscreen {
    */
   PP_Bool IsFullscreen(
       [in] PP_Instance instance);
-
-  /*
-   * This older version required that graphics contexts be recreated after the
-   * transition.
-   */
-  [version=0.1, deprecate=1.0]
-  PP_Bool SetFullscreen(
-      [in] PP_Instance instance,
-      [in] PP_Bool fullscreen);
 
   /**
    * Switches the plugin instance to/from fullscreen mode. Returns PP_TRUE on
@@ -40,7 +30,6 @@ interface PPB_FlashFullscreen {
    * transition ends at the next DidChangeView when going into fullscreen mode.
    * The transition out of fullscreen mode is synchronous.
    */
-  [version=1.0]
   PP_Bool SetFullscreen(
       [in] PP_Instance instance,
       [in] PP_Bool fullscreen);
