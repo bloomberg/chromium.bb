@@ -8071,7 +8071,8 @@ static INLINE int64_t interpolation_filter_rd(
         model_rd_fn[MODELRD_TYPE_INTERP_FILTER](
             cpi, bsize, x, xd, plane, plane, mi_row, mi_col, &tmp_rate_uv,
             &tmp_dist_uv, &tmp_skip_sb_uv, &tmp_skip_sse_uv, NULL, NULL, NULL);
-        tmp_rate[1] += tmp_rate_uv;
+        tmp_rate[1] =
+            (int)AOMMIN(((int64_t)tmp_rate[1] + (int64_t)tmp_rate_uv), INT_MAX);
         tmp_dist[1] += tmp_dist_uv;
         tmp_skip_sb[1] &= tmp_skip_sb_uv;
         tmp_skip_sse[1] += tmp_skip_sse_uv;
