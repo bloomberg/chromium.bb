@@ -167,6 +167,9 @@ extern const char kSettingsSearchHelpURL[];
 
 extern const char kSmartLockHelpPage[];
 
+// The URL for the Learn More page about Sync and Google services.
+extern const char kSyncAndGoogleServicesLearnMoreURL[];
+
 // The URL for the "Learn more" page on sync encryption.
 extern const char kSyncEncryptionHelpURL[];
 

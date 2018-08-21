@@ -199,6 +199,9 @@ const char kSettingsSearchHelpURL[] =
 const char kSmartLockHelpPage[] =
     "https://support.google.com/accounts/answer/6197437";
 
+const char kSyncAndGoogleServicesLearnMoreURL[] =
+    "https://support.google.com/chrome?p=syncgoogleservices";
+
 const char kSyncEncryptionHelpURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=settings_encryption";
