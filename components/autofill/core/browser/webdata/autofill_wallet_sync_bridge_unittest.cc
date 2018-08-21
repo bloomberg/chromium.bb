@@ -34,6 +34,7 @@
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/test/test_matchers.h"
 #include "components/webdata/common/web_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,13 +43,17 @@ namespace {
 
 using base::ScopedTempDir;
 using sync_pb::AutofillWalletSpecifics;
+using sync_pb::EntityMetadata;
+using sync_pb::ModelTypeState;
 using syncer::DataBatch;
 using syncer::EntityChange;
 using syncer::EntityData;
 using syncer::EntityDataPtr;
+using syncer::HasInitialSyncDone;
 using syncer::KeyAndData;
 using syncer::MockModelTypeChangeProcessor;
 using syncer::ModelType;
+using testing::SizeIs;
 using testing::UnorderedElementsAre;
 
 // Base64 encodings of the server IDs, used as ids in WalletMetadataSpecifics
@@ -531,6 +536,21 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   EXPECT_FALSE(card.billing_address_id().empty());
   EXPECT_NE(CreditCard::CARD_TYPE_UNKNOWN, card.card_type());
   EXPECT_FALSE(card.bank_name().empty());
+}
+
+TEST_F(AutofillWalletSyncBridgeTest, LoadMetadataCalled) {
+  ModelTypeState model_type_state;
+  model_type_state.set_initial_sync_done(true);
+  EXPECT_TRUE(table()->UpdateModelTypeState(syncer::AUTOFILL_WALLET_DATA,
+                                            model_type_state));
+  EXPECT_TRUE(table()->UpdateSyncMetadata(syncer::AUTOFILL_WALLET_DATA, "key",
+                                          EntityMetadata()));
+
+  ResetProcessor();
+  EXPECT_CALL(mock_processor(), ModelReadyToSync(MetadataBatchContains(
+                                    /*state=*/HasInitialSyncDone(),
+                                    /*entities=*/SizeIs(1))));
+  ResetBridge();
 }
 
 }  // namespace autofill
