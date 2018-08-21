@@ -18,7 +18,6 @@
 
 namespace {
 const CGFloat kImageSize = 28;
-const CGFloat kImageTintColor = 0x1A73E8;
 const CGFloat kMaxScale = 1.3;
 const CGFloat kMinScale = 0.7;
 CGFloat kRotationAngleInRadians = 20.0 / 180 * M_PI;
@@ -107,7 +106,7 @@ CGFloat kRotationAngleInRadians = 20.0 / 180 * M_PI;
             [[UIImage imageNamed:@"open_new_tab_background"]
                 imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     linkImage.translatesAutoresizingMaskIntoConstraints = NO;
-    linkImage.tintColor = UIColorFromRGB(kImageTintColor);
+    linkImage.tintColor = [UIColor colorWithWhite:0.4 alpha:1];
 
     [self addSubview:linkImage];
 

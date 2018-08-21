@@ -5433,6 +5433,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)animateNewTabInBackgroundFromPoint:(CGPoint)originPoint
                             withCompletion:(ProceduralBlock)completion {
   self.inNewTabAnimation = YES;
+
+  // Exit fullscreen if needed.
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(_browserState)
+      ->ResetModel();
   const CGFloat kAnimatedViewSize = 50;
   BackgroundTabAnimationView* animatedView = [[BackgroundTabAnimationView alloc]
       initWithFrame:CGRectMake(0, 0, kAnimatedViewSize, kAnimatedViewSize)];

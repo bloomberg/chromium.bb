@@ -31,7 +31,7 @@
 namespace {
 const CGFloat kRotationInRadians = 5.0 / 180 * M_PI;
 // Scale factor for the animation, must be < 1.
-const CGFloat kScaleFactorDiff = 0.25;
+const CGFloat kScaleFactorDiff = 0.50;
 const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 }  // namespace
 
