@@ -777,7 +777,9 @@ UIImage* InfoBarCloseImage() {
                        action:(SEL)action {
   DCHECK(!closeButton_);
   UIImage* image = InfoBarCloseImage();
-  closeButton_ = [UIButton buttonWithType:UIButtonTypeCustom];
+  closeButton_ =
+      [UIButton buttonWithType:IsRefreshInfobarEnabled() ? UIButtonTypeSystem
+                                                         : UIButtonTypeCustom];
   [closeButton_ setExclusiveTouch:YES];
   [closeButton_ setImage:image forState:UIControlStateNormal];
   [closeButton_ addTarget:target
