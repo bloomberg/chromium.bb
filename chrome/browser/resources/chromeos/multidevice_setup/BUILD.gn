@@ -49,6 +49,7 @@ js_library("multidevice_setup") {
     ":button_bar",
     ":fake_mojo_service",
     ":mojo_api_behavior",
+    ":password_page",
     ":setup_failed_page",
     ":setup_succeeded_page",
     ":start_setup_page",
@@ -76,6 +77,16 @@ js_library("multidevice_setup_dialog") {
     ":ui_mode",
     "//ui/webui/resources/js:util",
   ]
+}
+
+js_library("password_page") {
+  deps = [
+    ":ui_page_container_behavior",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/quick_unlock_private.js" ]
+  extra_sources = [ "$interfaces_path/quick_unlock_private_interface.js" ]
 }
 
 js_library("setup_failed_page") {

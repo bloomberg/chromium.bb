@@ -668,6 +668,7 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      "chrome://multidevice-setup/*",
       "chrome://settings/*"
     ],
     "platforms": ["chromeos"]

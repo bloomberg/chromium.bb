@@ -144,6 +144,15 @@
   <message name="IDS_MULTIDEVICE_SETUP_TRY_AGAIN_LABEL" desc="Label for button to retry setup upon failure.">
     Try again
   </message>
+  <message name="IDS_MULTIDEVICE_SETUP_PASSWORD_PAGE_HEADER" desc="Header for the first page in the multi-device setup flow; the page displays a field in which the user must enter their password to continue.">
+    Set up Better Together
+  </message>
+  <message name="IDS_MULTIDEVICE_SETUP_PASSWORD_PAGE_ENTER_PASSWORD_LABEL" desc="Message displayed in the multi-device setup flow which asks the user to enter their password.">
+    Enter password
+  </message>
+  <message name="IDS_MULTIDEVICE_SETUP_PASSWORD_PAGE_WRONG_PASSWORD_LABEL" desc="Message displayed in the multi-device setup flow when the user has entered an incorrect password.">
+    Wrong password
+  </message>
   <message name="IDS_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_HEADER" desc="Header for failed setup page.">
     Better Together setup couldn't complete
   </message>
