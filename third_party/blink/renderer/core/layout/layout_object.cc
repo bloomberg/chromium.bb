@@ -2082,14 +2082,12 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
   // apply to them, hence the !isText() check. If property nodes are added or
   // removed as a result of these style changes, PaintPropertyTreeBuilder will
   // call SetNeedsRepaint to cause re-generation of PaintChunks.
-  if (!IsText() && (diff.TransformChanged() || diff.OpacityChanged() ||
-                    diff.ZIndexChanged() || diff.FilterChanged() ||
-                    diff.BackdropFilterChanged() || diff.CssClipChanged() ||
-                    diff.BlendModeChanged() || diff.MaskChanged())) {
+  if (!IsText() && !HasLayer() &&
+      (diff.TransformChanged() || diff.OpacityChanged() ||
+       diff.ZIndexChanged() || diff.FilterChanged() ||
+       diff.BackdropFilterChanged() || diff.CssClipChanged() ||
+       diff.BlendModeChanged() || diff.MaskChanged())) {
     SetNeedsPaintPropertyUpdate();
-    if (HasLayer() && IsBoxModelObject()) {
-      ToLayoutBoxModelObject(this)->Layer()->SetNeedsCompositingInputsUpdate();
-    }
   }
 }
 
