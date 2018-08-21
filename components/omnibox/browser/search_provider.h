@@ -371,6 +371,9 @@ class SearchProvider : public BaseSearchProvider,
   // AnswersQueryData.
   AnswersQueryData FindAnswersPrefetchData();
 
+  // Finds image URLs in most relevant results and uses client to prefetch them.
+  void PrefetchImages(SearchSuggestionParser::Results* results);
+
   AutocompleteProviderListener* listener_;
 
   // Maintains the TemplateURLs used.
