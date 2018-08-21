@@ -1844,12 +1844,6 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
       .SetBfcOffset(child_data.bfc_offset_estimate)
       .SetMarginStrut(child_data.margin_strut);
 
-  if (!is_new_fc) {
-    space_builder.SetExclusionSpace(*exclusion_space_);
-    space_builder.SetAdjoiningFloatTypes(
-        container_builder_.AdjoiningFloatTypes());
-  }
-
   if (!container_builder_.BfcBlockOffset() &&
       ConstraintSpace().FloatsBfcBlockOffset()) {
     space_builder.SetFloatsBfcBlockOffset(
@@ -1883,6 +1877,12 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   space_builder.SetClearanceOffset(clearance_offset);
   if (child_data.force_clearance)
     space_builder.SetShouldForceClearance(true);
+
+  if (!is_new_fc) {
+    space_builder.SetExclusionSpace(*exclusion_space_);
+    space_builder.SetAdjoiningFloatTypes(
+        container_builder_.AdjoiningFloatTypes());
+  }
 
   LayoutUnit space_available;
   if (ConstraintSpace().HasBlockFragmentation()) {
