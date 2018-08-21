@@ -306,8 +306,8 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
         // and return true (reparenting was found).
         *out_lca = LeastCommonAncestor(*out_lca, client_child);
         result = true;
-      } else {
-        // This child is already in the client tree, we won't
+      } else if (!client_child->invalid) {
+        // This child is already in the client tree and valid, we won't
         // recursively serialize it so we don't need to check this
         // subtree recursively for reparenting.
         continue;
