@@ -2018,8 +2018,8 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
 #if defined(OS_CHROMEOS)
   // TODO(erg): Temporarily disable getting location from the gesture
   // recognizer in mash until the mus side/window manager side RunMoveLoop() is
-  // fixed to understand routing touch events. crbug.com/769507
-  if (features::IsAshInBrowserProcess() &&
+  // fixed to understand routing touch events. https://crbug.com/867074
+  if (!features::IsUsingWindowService() &&
       event_source_ == EVENT_SOURCE_TOUCH && env_->is_touch_down()) {
     views::Widget* widget = GetAttachedBrowserWidget();
     DCHECK(widget);

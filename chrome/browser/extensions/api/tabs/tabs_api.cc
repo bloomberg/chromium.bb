@@ -280,7 +280,7 @@ void SetLockedFullscreenState(Browser* browser, bool locked) {
   // Disallow screenshots in locked fullscreen mode.
   // TODO(isandrk, 816900): ChromeScreenshotGrabber isn't implemented in Mash
   // yet, remove this conditional when it becomes available.
-  if (features::IsAshInBrowserProcess())
+  if (!features::IsMultiProcessMash())
     ChromeScreenshotGrabber::Get()->set_screenshots_allowed(!locked);
 
   // Reset the clipboard and kill dev tools when entering or exiting locked

@@ -27,10 +27,10 @@ class WindowFinderClassic : public WindowFinder {
   DISALLOW_COPY_AND_ASSIGN(WindowFinderClassic);
 };
 
-class WindowFinderMash : public WindowFinder {
+class WindowFinderMus : public WindowFinder {
  public:
-  WindowFinderMash(TabDragController::EventSource event_source,
-                   gfx::NativeWindow window) {
+  WindowFinderMus(TabDragController::EventSource event_source,
+                  gfx::NativeWindow window) {
     ui::mojom::MoveLoopSource source =
         (event_source == TabDragController::EVENT_SOURCE_MOUSE)
             ? ui::mojom::MoveLoopSource::MOUSE
@@ -57,7 +57,7 @@ class WindowFinderMash : public WindowFinder {
  private:
   std::unique_ptr<aura::TopmostWindowTracker> tracker_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowFinderMash);
+  DISALLOW_COPY_AND_ASSIGN(WindowFinderMus);
 };
 
 }  // namespace
@@ -65,9 +65,9 @@ class WindowFinderMash : public WindowFinder {
 std::unique_ptr<WindowFinder> WindowFinder::Create(
     TabDragController::EventSource source,
     gfx::NativeWindow window) {
-  if (features::IsAshInBrowserProcess())
-    return std::make_unique<WindowFinderClassic>();
-  return std::make_unique<WindowFinderMash>(source, window);
+  if (features::IsUsingWindowService())
+    return std::make_unique<WindowFinderMus>(source, window);
+  return std::make_unique<WindowFinderClassic>();
 }
 
 gfx::NativeWindow WindowFinder::GetLocalProcessWindowAtPoint(

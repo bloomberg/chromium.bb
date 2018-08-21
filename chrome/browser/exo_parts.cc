@@ -106,7 +106,7 @@ class ChromeFileHelper : public exo::FileHelper {
 // static
 std::unique_ptr<ExoParts> ExoParts::CreateIfNecessary() {
   // For mash, exosphere will not run in the browser process.
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsMultiProcessMash())
     return nullptr;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kAshEnableWaylandServer)) {
@@ -121,7 +121,7 @@ ExoParts::~ExoParts() {
 }
 
 ExoParts::ExoParts() {
-  DCHECK(features::IsAshInBrowserProcess());
+  DCHECK(!features::IsMultiProcessMash());
   std::unique_ptr<ChromeFileHelper> file_helper =
       std::make_unique<ChromeFileHelper>();
   ash::Shell::Get()->InitWaylandServer(std::move(file_helper));

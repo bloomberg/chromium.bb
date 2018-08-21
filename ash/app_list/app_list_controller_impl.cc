@@ -27,6 +27,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "extensions/common/constants.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 
 namespace {
@@ -49,7 +50,7 @@ AppListControllerImpl::AppListControllerImpl()
 
   // Create only for non-mash. Mash uses window tree embed API to get a
   // token to map answer card contents.
-  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED) {
+  if (!::features::IsUsingWindowService()) {
     answer_card_contents_registry_ =
         std::make_unique<app_list::AnswerCardContentsRegistry>();
   }
