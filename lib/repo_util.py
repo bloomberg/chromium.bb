@@ -8,19 +8,22 @@
 from __future__ import print_function
 
 import collections
-import logging
+import contextlib
 import os
 import re
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import osutils
 
 
 # Match `repo` error: "error: project <name> not found"
 PROJECT_NOT_FOUND_RE = re.compile(r'^error: project (?P<name>[^ ]+) not found$',
                                   re.MULTILINE)
 
+PROJECT_OBJECTS_PATH_FORMAT = os.path.join(
+    '.repo', 'project-objects', '%s.git', 'objects')
 
 # ProjectInfo represents the information returned by `repo list`.
 ProjectInfo = collections.namedtuple('ProjectInfo', ('name', 'path'))
@@ -104,17 +107,10 @@ class Repository(object):
     if repo_url is not None:
       cmd += ['--repo-url', repo_url]
 
-    try:
+    repo_dir = os.path.join(root, '.repo')
+    warning_msg = 'Removing %r due to `repo init` failures.' % repo_dir
+    with _RmDirOnError(repo_dir, msg=warning_msg):
       cros_build_lib.RunCommand(cmd, cwd=root)
-    except cros_build_lib.RunCommandError as e:
-      repo_dir = os.path.join(root, '.repo')
-      if os.path.exists(repo_dir):
-        logging.warning('Removing %r due to `repo init` failures.', repo_dir)
-        try:
-          cros_build_lib.RunCommand(['rm', '-rf', repo_dir])
-        except cros_build_lib.RunCommandError, rm_err:
-          logging.warning('Error removing repo dir: %s', rm_err)
-      raise e
     return cls(root)
 
   @classmethod
@@ -172,11 +168,13 @@ class Repository(object):
                                      capture_output=capture_output,
                                      debug_level=logging.DEBUG)
 
-  def Sync(self, projects=None, current_branch=False, jobs=None, cwd=None):
+  def Sync(self, projects=None, local_only=False, current_branch=False,
+           jobs=None, cwd=None):
     """Run `repo sync`.
 
     Args:
       projects: A list of project names to sync.
+      local_only: Only update working tree; don't fetch.
       current_branch: Fetch only the current branch.
       jobs: Number of projects to sync in parallel.
       cwd: The path to run the command in. Defaults to Repository root.
@@ -186,6 +184,8 @@ class Repository(object):
       RunCommandError: if the command failed.
     """
     args = _ListArg(projects)
+    if local_only:
+      args += ['--local-only']
     if current_branch:
       args += ['--current-branch']
     if jobs is not None:
@@ -241,6 +241,58 @@ class Repository(object):
       infos.append(ProjectInfo(name=name, path=path))
     return infos
 
+  def Copy(self, dest_root):
+    """Efficiently `cp` the .repo directory, using hardlinks if possible.
+
+    Args:
+      dest_root: Path to copy the .repo directory into. Must exist and must
+        not already contain a .repo directory.
+
+    Returns:
+      A Repository pointing at dest_root.
+
+    Raises:
+      Error: if dest_root already contained a .repo subdir.
+      RunCommandError: if `cp` failed.
+    """
+    existing_root = git.FindRepoCheckoutRoot(dest_root)
+    if existing_root is not None:
+      raise Error('cannot copy into existing repo %r' % existing_root)
+
+    dest_path = os.path.abspath(dest_root)
+
+    with _RmDirOnError(os.path.join(dest_root, '.repo')):
+      # First, try to hard link project objects to dest_dir; this may fail if
+      # e.g. the src and dest are on different mounts.
+      for project in self.List():
+        objects_dir = PROJECT_OBJECTS_PATH_FORMAT % project.name
+        try:
+          cros_build_lib.RunCommand(
+              ['cp', '--archive', '--link', '--parents', objects_dir,
+               dest_path],
+              extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
+        except cros_build_lib.RunCommandError as e:
+          if 'Invalid cross-device link' in e.result.error:
+            logging.warning("Can't hard link across devices; aborting linking.")
+            break
+          logging.warning('Copy linking failed: %s', e.result.error)
+
+      # Copy everything that wasn't created by the hard linking above.
+      try:
+        cros_build_lib.RunCommand(
+            ['cp', '--archive', '--no-clobber', '.repo', dest_path],
+            cwd=self.root, extra_env={'LC_MESSAGES': 'C'})
+      except cros_build_lib.RunCommandError as e:
+        # Despite the --no-clobber, `cp` still complains when trying to copy a
+        # file to its existing hard link. Filter these errors from the output
+        # to see if there were any real failures.
+        errors = e.result.error.splitlines()
+        real_errors = [x for x in errors if 'are the same file' not in x]
+        if real_errors:
+          e.result.error = '\n'.join(real_errors)
+          raise e
+      return Repository(dest_root)
+
 
 def _ListArg(arg):
   """Return a new list from arg.
@@ -257,3 +309,19 @@ def _ListArg(arg):
   if arg is None:
     return []
   return list(arg)
+
+
+@contextlib.contextmanager
+def _RmDirOnError(path, msg=None):
+  """Context that will RmDir(path) if its block throws an exception."""
+  try:
+    yield
+  except:
+    if os.path.exists(path):
+      if msg:
+        logging.warning(msg)
+      try:
+        osutils.RmDir(path, ignore_missing=True)
+      except StandardError as e:
+        logging.warning('Failed to clean up %r: %s', path, e)
+    raise

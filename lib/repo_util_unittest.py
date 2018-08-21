@@ -7,13 +7,14 @@
 
 from __future__ import print_function
 
-import logging
 import os
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import git
+from chromite.lib import osutils
 from chromite.lib import repo_util
 
 
@@ -102,10 +103,11 @@ class RepositoryTest(cros_test_lib.RunCommandTempDirTestCase):
     expected_cmd = ['repo', 'init', '--manifest-url', self.MANIFEST_URL]
     self.rc.AddCmdResult(expected_cmd, returncode=99,
                          side_effect=RepoInitSideEffects)
+    rmdir = self.PatchObject(osutils, 'RmDir')
     with self.assertRaises(cros_build_lib.RunCommandError):
       repo_util.Repository.Initialize(self.empty_root, self.MANIFEST_URL)
     repo_dir = os.path.join(self.empty_root, '.repo')
-    self.assertCommandCalled(['rm', '-rf', repo_dir])
+    rmdir.assert_any_call(repo_dir, ignore_missing=True)
 
   def testFind(self):
     """Test Repository.Find finds repo from subdir."""
@@ -183,9 +185,10 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
   def testSyncComplex(self):
     """Test Repository.Sync complex call."""
     self.repo.Sync(
-        projects=['p1', 'p2'], current_branch=True, jobs=9, cwd=self.subdir)
+        projects=['p1', 'p2'], local_only=True, current_branch=True, jobs=9,
+        cwd=self.subdir)
     self.AssertRepoCalled(
-        ['sync', 'p1', 'p2', '--current-branch', '--jobs', '9'],
+        ['sync', 'p1', 'p2', '--local-only', '--current-branch', '--jobs', '9'],
         cwd=self.subdir)
 
   def testStartBranchSimple(self):
@@ -224,6 +227,29 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
     with self.assertRaises(repo_util.ProjectNotFoundError):
       self.repo.List(['foobar'])
 
+  def testCopy(self):
+    """Test Repository.Copy."""
+    copy_root = os.path.join(self.tempdir, 'copy')
+    os.mkdir(copy_root)
+    def mkdirDestRepo(*_args, **_kwargs):
+      os.mkdir(os.path.join(copy_root, '.repo'))
+
+    output = 'src/p1 : p1\nother : other/project\n'
+    self.AddRepoResult(['list'], output=output, side_effect=mkdirDestRepo)
+    copy = self.repo.Copy(copy_root)
+    self.assertEqual(copy.root, copy_root)
+    self.assertCommandCalled([
+        'cp', '--archive', '--link', '--parents',
+        '.repo/project-objects/p1.git/objects', copy_root,
+    ], cwd=self.root, extra_env={'LC_MESSAGES': 'C'})
+    self.assertCommandCalled([
+        'cp', '--archive', '--link', '--parents',
+        '.repo/project-objects/other/project.git/objects', copy_root,
+    ], cwd=self.root, extra_env={'LC_MESSAGES': 'C'})
+    self.assertCommandCalled([
+        'cp', '--archive', '--no-clobber', '.repo', copy_root,
+    ], cwd=self.root, extra_env={'LC_MESSAGES': 'C'})
+
 
 @cros_test_lib.NetworkTest()
 class RepositoryIntegrationTest(cros_test_lib.TempDirTestCase):
@@ -238,7 +264,9 @@ class RepositoryIntegrationTest(cros_test_lib.TempDirTestCase):
   PROJECT = 'chromiumos/chromite'
   PROJECT_DIR = 'chromite'
 
+  root = None
   repo = None
+  copy = None
   project_path = None
 
   tests = []
@@ -250,28 +278,30 @@ class RepositoryIntegrationTest(cros_test_lib.TempDirTestCase):
   @tests.append
   def testInitialize(self):
     """Test Repository.Initialize creates a .repo dir."""
+    self.root = os.path.join(self.tempdir, 'root')
+    os.mkdir(self.root)
     # Try to use the current repo as a --reference.
     reference = repo_util.Repository.Find(constants.SOURCE_ROOT)
     self.repo = repo_util.Repository.Initialize(
-        self.tempdir,
+        self.root,
         manifest_url=self.MANIFEST_URL,
         reference=reference,
         depth=1,
         repo_url=self.REPO_URL)
-    self.assertExists(os.path.join(self.tempdir, '.repo'))
+    self.assertExists(os.path.join(self.root, '.repo'))
 
   @tests.append
   def testSync(self):
     """Test Repository.Sync creates a project checkout dir."""
     self.repo.Sync([self.PROJECT], current_branch=True)
-    self.project_path = os.path.join(self.tempdir, self.PROJECT_DIR)
+    self.project_path = os.path.join(self.root, self.PROJECT_DIR)
     self.assertExists(self.project_path)
 
   @tests.append
   def testMustFind(self):
     """Test Repository.MustFind finds the Repository from a subdir."""
     repo = repo_util.Repository.MustFind(self.project_path)
-    self.assertEqual(repo.root, self.tempdir)
+    self.assertEqual(repo.root, self.root)
 
   @tests.append
   def testList(self):
@@ -286,3 +316,24 @@ class RepositoryIntegrationTest(cros_test_lib.TempDirTestCase):
     self.repo.StartBranch('my-branch')
     project_branch = git.GetCurrentBranch(self.project_path)
     self.assertEqual(project_branch, 'my-branch')
+
+  @tests.append
+  def testCopy(self):
+    """Test Repository.Copy creates a working copy."""
+    copy_root = os.path.join(self.tempdir, 'copy')
+    os.mkdir(copy_root)
+    copy = self.repo.Copy(copy_root)
+    self.assertEqual(copy.root, copy_root)
+    copy.Sync([self.PROJECT], local_only=True)
+    self.assertExists(os.path.join(copy_root, self.PROJECT_DIR))
+    # Check for hardlinking; any object file will do.
+    objects_path = repo_util.PROJECT_OBJECTS_PATH_FORMAT % self.PROJECT
+    for dirname, _, files in os.walk(os.path.join(self.root, objects_path)):
+      if files:
+        object_file = os.path.join(dirname, files[0])
+        break
+    else:
+      self.fail('no object file found')
+    self.assertTrue(os.path.samefile(
+        os.path.join(self.root, object_file),
+        os.path.join(copy_root, object_file)))
