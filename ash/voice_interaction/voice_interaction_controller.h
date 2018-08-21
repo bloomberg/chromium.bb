@@ -44,6 +44,8 @@ class ASH_EXPORT VoiceInteractionController
 
   bool setup_completed() const { return setup_completed_; }
 
+  bool context_enabled() const { return context_enabled_; }
+
   mojom::AssistantAllowedState allowed_state() const { return allowed_state_; }
 
   bool notification_enabled() const { return notification_enabled_; }

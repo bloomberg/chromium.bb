@@ -6,8 +6,10 @@
 
 #include <memory>
 
+#include "ash/assistant/assistant_cache_controller.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,11 +34,15 @@ SuggestionContainerView::SuggestionContainerView(
 
   // The Assistant controller indirectly owns the view hierarchy to which
   // SuggestionContainerView belongs so is guaranteed to outlive it.
+  assistant_controller_->cache_controller()->AddModelObserver(this);
   assistant_controller_->interaction_controller()->AddModelObserver(this);
+  assistant_controller_->ui_controller()->AddModelObserver(this);
 }
 
 SuggestionContainerView::~SuggestionContainerView() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+  assistant_controller_->cache_controller()->RemoveModelObserver(this);
 }
 
 gfx::Size SuggestionContainerView::CalculatePreferredSize() const {
@@ -63,13 +69,33 @@ void SuggestionContainerView::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_END);
 }
 
+void SuggestionContainerView::OnConversationStartersChanged(
+    const std::map<int, const AssistantSuggestion*>& conversation_starters) {
+  // TODO(dmblack): If UI is visible, we may want to animate this transition.
+  OnSuggestionsCleared();
+  OnSuggestionsChanged(conversation_starters);
+}
+
 void SuggestionContainerView::OnResponseChanged(
     const AssistantResponse& response) {
-  OnResponseCleared();
+  has_received_response_ = true;
 
+  OnSuggestionsCleared();
+  OnSuggestionsChanged(response.GetSuggestions());
+}
+
+void SuggestionContainerView::OnResponseCleared() {
+  // Note that we don't reset |has_received_response_| here because that refers
+  // to whether we've received a response during the current Assistant UI
+  // session, not whether we are currently displaying a response.
+  OnSuggestionsCleared();
+}
+
+void SuggestionContainerView::OnSuggestionsChanged(
+    const std::map<int, const AssistantSuggestion*>& suggestions) {
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   for (const std::pair<int, const AssistantSuggestion*>& suggestion :
-       response.GetSuggestions()) {
+       suggestions) {
     // We will use the same identifier by which the Assistant interaction model
     // uniquely identifies a suggestion to uniquely identify its corresponding
     // suggestion chip view.
@@ -108,7 +134,7 @@ void SuggestionContainerView::OnResponseChanged(
   }
 }
 
-void SuggestionContainerView::OnResponseCleared() {
+void SuggestionContainerView::OnSuggestionsCleared() {
   // Abort any download requests in progress.
   download_request_weak_factory_.InvalidateWeakPtrs();
 
@@ -126,8 +152,38 @@ void SuggestionContainerView::OnSuggestionChipIconDownloaded(
 
 void SuggestionContainerView::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
+  const AssistantSuggestion* suggestion = nullptr;
+
+  // If we haven't yet received a query response, the suggestion chip that was
+  // pressed was a conversation starter.
+  if (!has_received_response_) {
+    suggestion = assistant_controller_->cache_controller()
+                     ->model()
+                     ->GetConversationStarterById(sender->id());
+  } else {
+    // Otherwise, the suggestion chip belonged to the interaction response.
+    suggestion = assistant_controller_->interaction_controller()
+                     ->model()
+                     ->response()
+                     ->GetSuggestionById(sender->id());
+  }
+
+  // TODO(dmblack): Use a delegate pattern here similar to CaptionBar.
   assistant_controller_->interaction_controller()->OnSuggestionChipPressed(
-      static_cast<app_list::SuggestionChipView*>(sender)->id());
+      suggestion);
+}
+
+void SuggestionContainerView::OnUiVisibilityChanged(bool visible,
+                                                    AssistantSource source) {
+  if (visible) {
+    // Show conversation starters at the beginning of an Assistant session.
+    OnConversationStartersChanged(assistant_controller_->cache_controller()
+                                      ->model()
+                                      ->GetConversationStarters());
+  } else {
+    // Reset view state.
+    has_received_response_ = false;
+  }
 }
 
 }  // namespace ash

@@ -37,8 +37,7 @@ class AssistantResponse {
   // interaction.
   void AddSuggestions(std::vector<AssistantSuggestionPtr> suggestions);
 
-  // Returns the suggestion uniquely identified by |id|, or |nullptr| if no
-  // matching suggestion exists.
+  // Returns the suggestion uniquely identified by |id|.
   const AssistantSuggestion* GetSuggestionById(int id) const;
 
   // Returns all suggestions belongs to the response, mapped to a unique id.

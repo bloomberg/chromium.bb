@@ -94,7 +94,7 @@ class AssistantInteractionController
   void OnDialogPlateContentsCommitted(const std::string& text) override;
 
   // Invoked on suggestion chip pressed event.
-  void OnSuggestionChipPressed(int id);
+  void OnSuggestionChipPressed(const AssistantSuggestion* suggestion);
 
  private:
   void StartTextInteraction(const std::string text);

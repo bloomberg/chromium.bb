@@ -32,6 +32,7 @@ class UnguessableToken;
 
 namespace ash {
 
+class AssistantCacheController;
 class AssistantInteractionController;
 class AssistantNotificationController;
 class AssistantScreenContextController;
@@ -125,6 +126,11 @@ class ASH_EXPORT AssistantController
   // Called before dtor to deregister services and avoid life cycle issues.
   void ShutDown();
 
+  AssistantCacheController* cache_controller() {
+    DCHECK(assistant_cache_controller_);
+    return assistant_cache_controller_.get();
+  }
+
   AssistantInteractionController* interaction_controller() {
     DCHECK(assistant_interaction_controller_);
     return assistant_interaction_controller_.get();
@@ -188,6 +194,8 @@ class ASH_EXPORT AssistantController
   mojom::AssistantSetupPtr assistant_setup_;
 
   mojom::WebContentsManagerPtr web_contents_manager_;
+
+  std::unique_ptr<AssistantCacheController> assistant_cache_controller_;
 
   std::unique_ptr<AssistantInteractionController>
       assistant_interaction_controller_;

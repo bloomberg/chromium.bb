@@ -4,6 +4,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 
+#include "ash/assistant/assistant_cache_controller.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
@@ -23,6 +24,7 @@ namespace ash {
 
 AssistantController::AssistantController()
     : assistant_volume_control_binding_(this),
+      assistant_cache_controller_(std::make_unique<AssistantCacheController>()),
       assistant_interaction_controller_(
           std::make_unique<AssistantInteractionController>(this)),
       assistant_notification_controller_(
