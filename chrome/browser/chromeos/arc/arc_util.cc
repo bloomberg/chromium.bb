@@ -608,6 +608,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (profile->IsLegacySupervised())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER;
 
+  if (profile->IsChild())
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_CHILD_USER;
+
   if (chromeos::switches::IsVoiceInteractionFlagsEnabled()) {
     if (!chromeos::switches::IsVoiceInteractionLocalesSupported())
       return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;

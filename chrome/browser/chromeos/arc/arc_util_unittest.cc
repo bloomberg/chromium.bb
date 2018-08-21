@@ -27,6 +27,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -582,6 +583,18 @@ TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_SupervisedUser) {
                         profile()->GetProfileUserName(), kTestGaiaId));
   profile()->SetSupervisedUserId("foo");
   EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER,
+            IsAssistantAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_ChildUser) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported",
+       "--enable-voice-interaction"});
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  profile()->SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_CHILD_USER,
             IsAssistantAllowedForProfile(profile()));
 }
 

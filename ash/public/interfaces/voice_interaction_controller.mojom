@@ -39,6 +39,8 @@ enum AssistantAllowedState {
   DISALLOWED_BY_NONPRIMARY_USER,
   // Disallowed because current user is supervised user.
   DISALLOWED_BY_SUPERVISED_USER,
+  // Disallowed because current user is child user.
+  DISALLOWED_BY_CHILD_USER,
   // Disallowed because incognito mode.
   DISALLOWED_BY_INCOGNITO
 };
