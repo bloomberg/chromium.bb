@@ -31,7 +31,6 @@ namespace {
 constexpr char kTestAndroidRealm[] = "android://hash@com.example.beta.android";
 constexpr char kTestFederationURL[] = "https://google.com/";
 constexpr char kTestURL[] = "https://example.com/";
-constexpr char kTestUsernameElement[] = "username_element";
 constexpr char kTestUsername[] = "Username";
 constexpr char kTestUsername2[] = "Username2";
 constexpr char kTestPassword[] = "12345";
@@ -85,57 +84,6 @@ TEST(PasswordManagerUtil, TrimUsernameOnlyCredentials) {
   EXPECT_THAT(forms, UnorderedPasswordFormElementsAre(&expected_forms));
 }
 
-TEST(PasswordManagerUtil, CleanBlacklistedUsernamePassword) {
-  autofill::PasswordForm blacklisted;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.signon_realm = kTestURL;
-  blacklisted.origin = GURL(kTestURL);
-
-  autofill::PasswordForm blacklisted_with_username = blacklisted;
-  blacklisted_with_username.username_value = base::ASCIIToUTF16(kTestUsername);
-
-  autofill::PasswordForm blacklisted_with_password = blacklisted;
-  blacklisted_with_password.password_value = base::ASCIIToUTF16(kTestPassword);
-
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-  TestingPrefServiceSimple prefs;
-  prefs.registry()->RegisterBooleanPref(
-      password_manager::prefs::kBlacklistedCredentialsStripped, false);
-  // Prevent cleaning of duplicated blacklist entries.
-  prefs.registry()->RegisterBooleanPref(
-      password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved, true);
-  auto password_store = base::MakeRefCounted<
-      testing::StrictMock<password_manager::MockPasswordStore>>();
-  ASSERT_TRUE(
-      password_store->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
-
-  EXPECT_CALL(*password_store, FillBlacklistLogins(_))
-      .WillOnce(DoAll(AppendForm(blacklisted),
-                      AppendForm(blacklisted_with_username),
-                      AppendForm(blacklisted_with_password), Return(true)));
-  // Wrong credentials are to be cleaned.
-  EXPECT_CALL(*password_store, RemoveLogin(blacklisted_with_username));
-  EXPECT_CALL(*password_store, RemoveLogin(blacklisted_with_password));
-  EXPECT_CALL(*password_store, AddLogin(blacklisted)).Times(2);
-
-  CleanBlacklistedCredentials(password_store.get(), &prefs, 0);
-  scoped_task_environment.RunUntilIdle();
-
-  EXPECT_FALSE(prefs.GetBoolean(
-      password_manager::prefs::kBlacklistedCredentialsStripped));
-
-  // Clean up with no credentials to be updated.
-  EXPECT_CALL(*password_store, FillBlacklistLogins(_))
-      .WillOnce(DoAll(AppendForm(blacklisted), Return(true)));
-  CleanBlacklistedCredentials(password_store.get(), &prefs, 0);
-  scoped_task_environment.RunUntilIdle();
-
-  EXPECT_TRUE(prefs.GetBoolean(
-      password_manager::prefs::kBlacklistedCredentialsStripped));
-
-  password_store->ShutdownOnUIThread();
-}
-
 TEST(PasswordManagerUtil, RemoveBlacklistedDuplicates) {
   autofill::PasswordForm blacklisted;
   blacklisted.blacklisted_by_user = true;
@@ -150,12 +98,6 @@ TEST(PasswordManagerUtil, RemoveBlacklistedDuplicates) {
 
   base::test::ScopedTaskEnvironment scoped_task_environment;
   TestingPrefServiceSimple prefs;
-
-  // In this test we are explicitly only testing the clean up of duplicated
-  // credentials and setting this true will prevent making other unrelated
-  // clean-up.
-  prefs.registry()->RegisterBooleanPref(
-      password_manager::prefs::kBlacklistedCredentialsStripped, true);
 
   prefs.registry()->RegisterBooleanPref(
       password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved, false);
@@ -173,54 +115,9 @@ TEST(PasswordManagerUtil, RemoveBlacklistedDuplicates) {
 
   // Duplicated credentials are to be deleted.
   EXPECT_CALL(*password_store, RemoveLogin(blacklisted_first_example));
-  CleanBlacklistedCredentials(password_store.get(), &prefs, 0);
+  DeleteBlacklistedDuplicates(password_store.get(), &prefs, 0);
   scoped_task_environment.RunUntilIdle();
   password_store->ShutdownOnUIThread();
-}
-
-TEST(PasswordManagerUtil, RemoveBlacklistedDuplicatesWithCredentials) {
-  autofill::PasswordForm blacklisted;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.signon_realm = kTestURL;
-  blacklisted.origin = GURL(kTestURL);
-
-  autofill::PasswordForm blacklisted_with_username_and_password = blacklisted;
-  blacklisted_with_username_and_password.username_element =
-      base::ASCIIToUTF16(kTestUsernameElement);
-  blacklisted_with_username_and_password.username_value =
-      base::ASCIIToUTF16(kTestUsername);
-  blacklisted_with_username_and_password.password_value =
-      base::ASCIIToUTF16(kTestPassword);
-
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-  TestingPrefServiceSimple prefs;
-
-  // Here we test the behavior when the Password Store contains blacklisted
-  // entries with password or username values that have to be cleared and
-  // blacklisted duplicates, too.
-  prefs.registry()->RegisterBooleanPref(
-      password_manager::prefs::kBlacklistedCredentialsStripped, false);
-
-  prefs.registry()->RegisterBooleanPref(
-      password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved, false);
-
-  auto password_store =
-      base::MakeRefCounted<password_manager::TestPasswordStore>();
-  ASSERT_TRUE(
-      password_store->Init(syncer::SyncableService::StartSyncFlare(), nullptr));
-
-  password_store->AddLogin(blacklisted);
-  password_store->AddLogin(blacklisted_with_username_and_password);
-  scoped_task_environment.RunUntilIdle();
-
-  CleanBlacklistedCredentials(password_store.get(), &prefs, 0);
-  scoped_task_environment.RunUntilIdle();
-
-  EXPECT_EQ(password_store->stored_passwords(),
-            password_manager::TestPasswordStore::PasswordMap(
-                {{blacklisted.signon_realm, {{blacklisted}}}}));
-  password_store->ShutdownOnUIThread();
-  scoped_task_environment.RunUntilIdle();
 }
 
 #if !defined(OS_IOS)

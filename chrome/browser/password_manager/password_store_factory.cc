@@ -288,7 +288,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   ps->PreparePasswordHashData(GetSyncUsername(profile));
 #endif
 
-  password_manager_util::CleanBlacklistedCredentials(ps.get(),
+  password_manager_util::DeleteBlacklistedDuplicates(ps.get(),
                                                      profile->GetPrefs(), 60);
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,

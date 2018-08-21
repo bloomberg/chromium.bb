@@ -89,10 +89,9 @@ void UserTriggeredShowAllSavedPasswordsFromContextMenu(
 void UserTriggeredManualGenerationFromContextMenu(
     password_manager::PasswordManagerClient* password_manager_client);
 
-// Clean up the blacklisted entries in the password store. Those shouldn't
-// contain username/password pair (https://crbug.com/817754) and delete
-// blacklisted duplicates.
-void CleanBlacklistedCredentials(password_manager::PasswordStore* store,
+// Two blacklisted forms are considered equal if they have the same
+// signon_realm.
+void DeleteBlacklistedDuplicates(password_manager::PasswordStore* store,
                                  PrefService* prefs,
                                  int delay_in_seconds);
 
