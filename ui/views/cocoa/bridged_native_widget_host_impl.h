@@ -59,6 +59,13 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // views::GetAuraWindowTypeForWidgetType does not consider a "popup" type.
   void SetBounds(const gfx::Rect& bounds);
 
+  // Tell the window to transition to being fullscreen or not-fullscreen.
+  void SetFullscreen(bool fullscreen);
+
+  // The ultimate fullscreen state that is being targeted (irrespective of any
+  // active transitions).
+  bool target_fullscreen_state() const { return target_fullscreen_state_; }
+
   // Set the root view (set during initialization and un-set during teardown).
   void SetRootView(views::View* root_view);
 
@@ -91,6 +98,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // The display that the window is currently on (or best guess thereof).
   const display::Display& GetCurrentDisplay() const { return display_; }
 
+  // The restored bounds will be derived from the current NSWindow frame unless
+  // fullscreen or transitioning between fullscreen states.
+  gfx::Rect GetRestoredBounds() const;
+
  private:
   gfx::Vector2d GetBoundsOffsetForParent() const;
   void DestroyCompositor();
@@ -114,6 +125,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void OnWindowGeometryChanged(
       const gfx::Rect& window_bounds_in_screen_dips,
       const gfx::Rect& content_bounds_in_screen_dips) override;
+  void OnWindowFullscreenTransitionStart(bool target_fullscreen_state) override;
+  void OnWindowFullscreenTransitionComplete(
+      bool target_fullscreen_state) override;
   void OnWindowDisplayChanged(const display::Display& display) override;
   void OnWindowWillClose() override;
   void OnWindowHasClosed() override;
@@ -157,6 +171,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   bool has_received_window_geometry_ = false;
   gfx::Rect window_bounds_in_screen_;
   gfx::Rect content_bounds_in_screen_;
+  bool target_fullscreen_state_ = false;
+  bool in_fullscreen_transition_ = false;
+  gfx::Rect window_bounds_before_fullscreen_;
 
   std::unique_ptr<ui::RecyclableCompositorMac> compositor_;
 

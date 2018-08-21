@@ -89,6 +89,16 @@ gfx::Vector2d BridgedNativeWidgetHostImpl::GetBoundsOffsetForParent() const {
   return offset;
 }
 
+void BridgedNativeWidgetHostImpl::SetFullscreen(bool fullscreen) {
+  // Note that when the NSWindow begins a fullscreen transition, the value of
+  // |target_fullscreen_state_| updates via OnWindowFullscreenTransitionStart.
+  // The update here is necessary for the case where we are currently in
+  // transition (and therefore OnWindowFullscreenTransitionStart will not be
+  // called until the current transition completes).
+  target_fullscreen_state_ = fullscreen;
+  bridge()->SetFullscreen(target_fullscreen_state_);
+}
+
 void BridgedNativeWidgetHostImpl::SetRootView(views::View* root_view) {
   root_view_ = root_view;
   // TODO(ccameron): The BridgedNativeWidget should not need to know its root
@@ -183,6 +193,12 @@ ui::InputMethod* BridgedNativeWidgetHostImpl::GetInputMethod() {
     input_method_->OnFocus();
   }
   return input_method_.get();
+}
+
+gfx::Rect BridgedNativeWidgetHostImpl::GetRestoredBounds() const {
+  if (target_fullscreen_state_ || in_fullscreen_transition_)
+    return window_bounds_before_fullscreen_;
+  return window_bounds_in_screen_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -316,6 +332,27 @@ void BridgedNativeWidgetHostImpl::OnWindowGeometryChanged(
         ConvertSizeToPixel(display_.device_scale_factor(), surface_size_in_dip),
         display_.device_scale_factor());
   }
+}
+
+void BridgedNativeWidgetHostImpl::OnWindowFullscreenTransitionStart(
+    bool target_fullscreen_state) {
+  target_fullscreen_state_ = target_fullscreen_state;
+  in_fullscreen_transition_ = true;
+
+  // If going into fullscreen, store an answer for GetRestoredBounds().
+  if (target_fullscreen_state)
+    window_bounds_before_fullscreen_ = window_bounds_in_screen_;
+
+  // Notify that fullscreen state changed.
+  native_widget_mac_->OnWindowFullscreenStateChange();
+}
+
+void BridgedNativeWidgetHostImpl::OnWindowFullscreenTransitionComplete(
+    bool actual_fullscreen_state) {
+  in_fullscreen_transition_ = false;
+
+  // Ensure constraints are re-applied when completing a transition.
+  native_widget_mac_->OnSizeConstraintsChanged();
 }
 
 void BridgedNativeWidgetHostImpl::OnWindowDisplayChanged(

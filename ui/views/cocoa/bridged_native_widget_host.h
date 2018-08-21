@@ -59,6 +59,16 @@ class VIEWS_EXPORT BridgedNativeWidgetHost {
       const gfx::Rect& window_bounds_in_screen_dips,
       const gfx::Rect& content_bounds_in_screen_dips) = 0;
 
+  // Called when the window begins transitioning to or from being fullscreen.
+  virtual void OnWindowFullscreenTransitionStart(
+      bool target_fullscreen_state) = 0;
+
+  // Called when the window has completed its transition to or from being
+  // fullscreen. Note that if there are multiple consecutive transitions
+  // (because a new transition was initiated before the previous one completed)
+  // then this will only be called when all transitions have competed.
+  virtual void OnWindowFullscreenTransitionComplete(bool is_fullscreen) = 0;
+
   // Called when the current display or the properties of the current display
   // change.
   virtual void OnWindowDisplayChanged(const display::Display& display) = 0;
