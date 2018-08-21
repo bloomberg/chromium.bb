@@ -986,8 +986,8 @@ passSelectRule(const TranslationTableHeader *table, int pos, int currentPass,
 
 static int
 translatePass(const TranslationTableHeader *table, int currentPass, const InString *input,
-		OutString *output, int *posMapping, int *posIncremented, int *cursorPosition,
-		int *cursorStatus) {
+		OutString *output, int *posMapping, int *realInlen, int *posIncremented,
+		int *cursorPosition, int *cursorStatus) {
 	int pos;
 	int transOpcode;
 	const TranslationTableRule *transRule;
@@ -1035,12 +1035,12 @@ translatePass(const TranslationTableHeader *table, int currentPass, const InStri
 			goto failure;
 		}
 	}
-	posMapping[output->length] = pos;
 failure:
 	if (pos < input->length) {
 		while (checkAttr(input->chars[pos], CTC_Space, 1, table))
 			if (++pos == input->length) break;
 	}
+	*realInlen = pos;
 	if (input->bufferIndex != origInput->bufferIndex)
 		releaseStringBuffer(input->bufferIndex);
 	return 1;
@@ -1113,7 +1113,6 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 	int compbrlEnd = -1;
 	int k;
 	int goodTrans = 1;
-	int realInlen;
 	int posIncremented;
 	if (tableList == NULL || inbufx == NULL || inlen == NULL || outbuf == NULL ||
 			outlen == NULL)
@@ -1217,27 +1216,25 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 	int currentPass = table->corrections ? 0 : 1;
 	int *passPosMapping = posMapping;
 	while (1) {
+		int realInlen;
 		switch (currentPass) {
 		case 0:
 			goodTrans = makeCorrections(table, input, &output, passPosMapping, typebuf,
 					&realInlen, &posIncremented, &cursorPosition, &cursorStatus);
 			break;
 		case 1: {
-			// if table->corrections, realInlen is set by makeCorrections
-			int *pRealInlen;
-			pRealInlen = table->corrections ? NULL : &realInlen;
 			goodTrans = translateString(table, mode, currentPass, input, &output,
 					passPosMapping, typebuf, srcSpacing, destSpacing, wordBuffer,
-					emphasisBuffer, haveEmphasis, pRealInlen, &posIncremented,
+					emphasisBuffer, haveEmphasis, &realInlen, &posIncremented,
 					&cursorPosition, &cursorStatus, compbrlStart, compbrlEnd);
 			break;
 		}
 		default:
 			goodTrans = translatePass(table, currentPass, input, &output, passPosMapping,
-					&posIncremented, &cursorPosition, &cursorStatus);
+					&realInlen, &posIncremented, &cursorPosition, &cursorStatus);
 			break;
 		}
-		passPosMapping[output.length] = input->length;
+		passPosMapping[output.length] = realInlen;
 		if (passPosMapping == posMapping) {
 			passPosMapping = posMapping2;
 		} else {
@@ -1281,7 +1278,7 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 			} else
 				outbuf[k] = _lou_getCharFromDots(output.chars[k]);
 		}
-		*inlen = realInlen;
+		*inlen = posMapping[output.length];
 		*outlen = output.length;
 		// Compute inputPos and outputPos from posMapping. The value at the last index of
 		// posMapping is currectly not used.
@@ -3615,7 +3612,7 @@ failure:
 		while (checkAttr(input->chars[pos], CTC_Space, 0, table))
 			if (++pos == input->length) break;
 	}
-	if (realInlen) *realInlen = pos;
+	*realInlen = pos;
 	if (input->bufferIndex != origInput->bufferIndex)
 		releaseStringBuffer(input->bufferIndex);
 	return 1;
