@@ -37,14 +37,43 @@ const ParamPassingTestVideo kAV1ParamPassingTestVector = {
 
 struct EncodeParameters {
   int32_t lossless;
+  aom_color_primaries_t color_primaries;
+  aom_transfer_characteristics_t transfer_characteristics;
+  aom_matrix_coefficients_t matrix_coefficients;
+  aom_color_range_t color_range;
+  aom_chroma_sample_position_t chroma_sample_position;
   int32_t render_size[2];
 };
 
 const EncodeParameters kAV1EncodeParameterSet[] = {
-  { 1, { 0, 0 } },
-  { 0, { 0, 0 } },
-  { 1, { 0, 0 } },
-  { 0, { 640, 480 } },
+  { 1,
+    AOM_CICP_CP_BT_709,
+    AOM_CICP_TC_BT_709,
+    AOM_CICP_MC_BT_709,
+    AOM_CR_STUDIO_RANGE,
+    AOM_CSP_UNKNOWN,
+    { 0, 0 } },
+  { 0,
+    AOM_CICP_CP_BT_470_M,
+    AOM_CICP_TC_BT_470_M,
+    AOM_CICP_MC_BT_470_B_G,
+    AOM_CR_FULL_RANGE,
+    AOM_CSP_VERTICAL,
+    { 0, 0 } },
+  { 1,
+    AOM_CICP_CP_BT_601,
+    AOM_CICP_TC_BT_601,
+    AOM_CICP_MC_BT_601,
+    AOM_CR_STUDIO_RANGE,
+    AOM_CSP_COLOCATED,
+    { 0, 0 } },
+  { 0,
+    AOM_CICP_CP_BT_2020,
+    AOM_CICP_TC_BT_2020_10_BIT,
+    AOM_CICP_MC_BT_2020_NCL,
+    AOM_CR_FULL_RANGE,
+    AOM_CSP_RESERVED,
+    { 640, 480 } },
 };
 
 class AVxEncoderParmsGetToDecoder
@@ -67,6 +96,14 @@ class AVxEncoderParmsGetToDecoder
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 1) {
+      encoder->Control(AV1E_SET_COLOR_PRIMARIES, encode_parms.color_primaries);
+      encoder->Control(AV1E_SET_TRANSFER_CHARACTERISTICS,
+                       encode_parms.transfer_characteristics);
+      encoder->Control(AV1E_SET_MATRIX_COEFFICIENTS,
+                       encode_parms.matrix_coefficients);
+      encoder->Control(AV1E_SET_COLOR_RANGE, encode_parms.color_range);
+      encoder->Control(AV1E_SET_CHROMA_SAMPLE_POSITION,
+                       encode_parms.chroma_sample_position);
       encoder->Control(AV1E_SET_LOSSLESS, encode_parms.lossless);
       if (encode_parms.render_size[0] > 0 && encode_parms.render_size[1] > 0) {
         encoder->Control(AV1E_SET_RENDER_SIZE, encode_parms.render_size);
@@ -81,6 +118,11 @@ class AVxEncoderParmsGetToDecoder
       EXPECT_EQ(encode_parms.render_size[0], (int)img.r_w);
       EXPECT_EQ(encode_parms.render_size[1], (int)img.r_h);
     }
+    EXPECT_EQ(encode_parms.color_primaries, img.cp);
+    EXPECT_EQ(encode_parms.transfer_characteristics, img.tc);
+    EXPECT_EQ(encode_parms.matrix_coefficients, img.mc);
+    EXPECT_EQ(encode_parms.color_range, img.range);
+    EXPECT_EQ(encode_parms.chroma_sample_position, img.csp);
   }
 
   virtual void PSNRPktHook(const aom_codec_cx_pkt_t *pkt) {
