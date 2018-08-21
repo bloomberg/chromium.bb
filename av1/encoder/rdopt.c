@@ -112,7 +112,7 @@ static model_rd_for_sb_type model_rd_fn[MODELRD_TYPES] = {
 // 2: Surface fit model
 // 3: DNN regression model
 // 4: Full rd model
-#define MODELRD_TYPE_INTERP_FILTER 0
+#define MODELRD_TYPE_INTERP_FILTER 1
 #define MODELRD_TYPE_TX_SEARCH_PRUNE 1
 
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
@@ -9550,16 +9550,16 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         restore_dst_buf(xd, orig_dst, num_planes);
         continue;
       } else if (cpi->sf.model_based_post_interp_filter_breakout &&
-                 ref_best_rd != INT64_MAX && (rd / 6 > ref_best_rd)) {
+                 ref_best_rd != INT64_MAX && (rd >> 3) * 3 > ref_best_rd) {
         restore_dst_buf(xd, orig_dst, num_planes);
-        if ((rd >> 4) > ref_best_rd) break;
+        if ((rd >> 3) * 2 > ref_best_rd) break;
         continue;
       }
 
       if (search_jnt_comp) {
         // if 1/2 model rd is larger than best_rd in jnt_comp mode,
         // use jnt_comp mode, save additional search
-        if ((rd >> 1) > best_rd) {
+        if ((rd >> 3) * 5 > best_rd) {
           restore_dst_buf(xd, orig_dst, num_planes);
           continue;
         }
