@@ -1400,7 +1400,7 @@ PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
     }
     // Dirty the z-order list in which we are contained.
     PaintLayerStackingNode::DirtyStackingContextZOrderLists(old_child);
-    MarkAncestorChainForDescendantDependentFlagsUpdate();
+    SetNeedsCompositingInputsUpdate();
   }
 
   if (GetLayoutObject().StyleRef().Visibility() != EVisibility::kVisible)
@@ -3115,8 +3115,12 @@ bool PaintLayer::AttemptDirectCompositingUpdate(
 void PaintLayer::StyleDidChange(StyleDifference diff,
                                 const ComputedStyle* old_style) {
   UpdateScrollableArea();
-  if (AttemptDirectCompositingUpdate(diff, old_style))
+
+  if (AttemptDirectCompositingUpdate(diff, old_style)) {
+    if (diff.HasDifference())
+      GetLayoutObject().SetNeedsPaintPropertyUpdate();
     return;
+  }
 
   if (PaintLayerStackingNode::StyleDidChange(this, old_style))
     MarkAncestorChainForDescendantDependentFlagsUpdate();
@@ -3154,6 +3158,14 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   // screens.
   if (GetScrollableArea() && GetScrollableArea()->ScrollsOverflow() &&
       diff.HasDifference()) {
+    SetNeedsCompositingInputsUpdate();
+  }
+
+  if (diff.TransformChanged() || diff.OpacityChanged() ||
+      diff.ZIndexChanged() || diff.FilterChanged() ||
+      diff.BackdropFilterChanged() || diff.CssClipChanged() ||
+      diff.BlendModeChanged() || diff.MaskChanged()) {
+    GetLayoutObject().SetNeedsPaintPropertyUpdate();
     SetNeedsCompositingInputsUpdate();
   }
 
