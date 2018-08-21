@@ -188,8 +188,7 @@ void MediaSinkInternal::InternalCleanup() {
 
 DialSinkExtraData::DialSinkExtraData() = default;
 DialSinkExtraData::DialSinkExtraData(const DialSinkExtraData& other) = default;
-DialSinkExtraData::DialSinkExtraData(DialSinkExtraData&& other) noexcept =
-    default;
+DialSinkExtraData::DialSinkExtraData(DialSinkExtraData&& other) = default;
 DialSinkExtraData::~DialSinkExtraData() = default;
 
 bool DialSinkExtraData::operator==(const DialSinkExtraData& other) const {
@@ -199,8 +198,7 @@ bool DialSinkExtraData::operator==(const DialSinkExtraData& other) const {
 
 CastSinkExtraData::CastSinkExtraData() = default;
 CastSinkExtraData::CastSinkExtraData(const CastSinkExtraData& other) = default;
-CastSinkExtraData::CastSinkExtraData(CastSinkExtraData&& other) noexcept =
-    default;
+CastSinkExtraData::CastSinkExtraData(CastSinkExtraData&& other) = default;
 CastSinkExtraData::~CastSinkExtraData() = default;
 
 bool CastSinkExtraData::operator==(const CastSinkExtraData& other) const {

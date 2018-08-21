@@ -26,7 +26,7 @@ struct DialSinkExtraData {
 
   DialSinkExtraData();
   DialSinkExtraData(const DialSinkExtraData& other);
-  DialSinkExtraData(DialSinkExtraData&& other) noexcept;
+  DialSinkExtraData(DialSinkExtraData&& other);
   ~DialSinkExtraData();
 
   bool operator==(const DialSinkExtraData& other) const;
@@ -55,7 +55,7 @@ struct CastSinkExtraData {
 
   CastSinkExtraData();
   CastSinkExtraData(const CastSinkExtraData& other);
-  CastSinkExtraData(CastSinkExtraData&& other) noexcept;
+  CastSinkExtraData(CastSinkExtraData&& other);
   ~CastSinkExtraData();
 
   bool operator==(const CastSinkExtraData& other) const;
