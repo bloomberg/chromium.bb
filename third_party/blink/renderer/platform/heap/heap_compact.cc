@@ -163,13 +163,12 @@ class HeapCompact::MovableObjectFixups final {
       // moved backing store.
       interior_fixups_.Set(slot, fixup);
 
-      // If the |slot|'s content is pointing into the region [from, from + size[
+      // If the |slot|'s content is pointing into the region [from, from + size)
       // we are dealing with an interior pointer that does not point to a valid
       // HeapObjectHeader. Such references need to be fixed up immediately.
-      Address slot_contents = reinterpret_cast<Address>(*slot);
-      if (slot_contents > from && slot_contents < (from + size)) {
-        size_t delta_contents = slot_contents - from;
-        *reinterpret_cast<Address*>(to + offset) = to + delta_contents;
+      Address fixup_contents = *reinterpret_cast<Address*>(fixup);
+      if (fixup_contents > from && fixup_contents < (from + size)) {
+        *reinterpret_cast<Address*>(fixup) = fixup_contents - from + to;
         continue;
       }
     }
