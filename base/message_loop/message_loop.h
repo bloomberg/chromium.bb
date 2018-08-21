@@ -179,6 +179,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
 
   // These functions can only be called on the same thread that |this| is
   // running on.
+  // These functions must not be called from a TaskObserver callback.
   void AddTaskObserver(TaskObserver* task_observer);
   void RemoveTaskObserver(TaskObserver* task_observer);
 
@@ -303,7 +304,10 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // if type_ is TYPE_CUSTOM and pump_ is null.
   MessagePumpFactoryCallback pump_factory_;
 
-  ObserverList<TaskObserver>::Unchecked task_observers_;
+  //  Using an ObserverList adds significant overhead. We use a raw vector and
+  //  require that callers do not attempt to mutate the list during a callback.
+  //  https://crbug.com/859155#c12
+  std::vector<TaskObserver*> task_observers_;
 
   // Pointer to this MessageLoop's Controller, valid throughout this
   // MessageLoop's lifetime (until |underlying_task_runner_| is released at the

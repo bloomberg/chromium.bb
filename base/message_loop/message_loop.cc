@@ -264,12 +264,15 @@ bool MessageLoop::IsType(Type type) const {
 // implementation detail. http://crbug.com/703346
 void MessageLoop::AddTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
-  task_observers_.AddObserver(task_observer);
+  task_observers_.push_back(task_observer);
 }
 
 void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
-  task_observers_.RemoveObserver(task_observer);
+  auto it =
+      std::find(task_observers_.begin(), task_observers_.end(), task_observer);
+  DCHECK(it != task_observers_.end());
+  task_observers_.erase(it);
 }
 
 void MessageLoop::SetAddQueueTimeToTasks(bool enable) {
@@ -426,12 +429,12 @@ void MessageLoop::RunTask(PendingTask* pending_task) {
 
   TRACE_TASK_EXECUTION("MessageLoop::RunTask", *pending_task);
 
-  for (auto& observer : task_observers_)
-    observer.WillProcessTask(*pending_task);
+  for (TaskObserver* task_observer : task_observers_)
+    task_observer->WillProcessTask(*pending_task);
   message_loop_controller_->task_annotator().RunTask("MessageLoop::PostTask",
                                                      pending_task);
-  for (auto& observer : task_observers_)
-    observer.DidProcessTask(*pending_task);
+  for (TaskObserver* task_observer : task_observers_)
+    task_observer->DidProcessTask(*pending_task);
 
   task_execution_allowed_ = true;
 }
