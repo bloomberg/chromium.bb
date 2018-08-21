@@ -533,6 +533,69 @@ TEST(connection_marshal_demarshal)
 	release_marshal_data(&data);
 }
 
+static void
+expected_fail_demarshal(struct marshal_data *data, const char *format,
+                        const uint32_t *msg, int expected_error)
+{
+	struct wl_message message = { "test", format, NULL };
+	struct wl_closure *closure;
+	struct wl_map objects;
+	int size = (msg[1] >> 16);
+
+	assert(write(data->s[1], msg, size) == size);
+	assert(wl_connection_read(data->read_connection) == size);
+
+	wl_map_init(&objects, WL_MAP_SERVER_SIDE);
+	closure = wl_connection_demarshal(data->read_connection,
+					    size, &objects, &message);
+
+	assert(closure == NULL);
+	assert(errno == expected_error);
+}
+
+/* These tests are verifying that the demarshaling code will gracefuly handle
+ * clients lying about string and array lengths and giving values near
+ * UINT32_MAX. Before fixes f7fdface and f5b9e3b9 this test would crash on
+ * 32bit systems.
+ */
+TEST(connection_demarshal_failures)
+{
+	struct marshal_data data;
+	unsigned int i;
+	uint32_t msg[3];
+
+	const uint32_t overflowing_values[] = {
+		/* Values very close to UINT32_MAX. Before f5b9e3b9 these
+		 * would cause integer overflow in DIV_ROUNDUP. */
+		0xffffffff, 0xfffffffe, 0xfffffffd, 0xfffffffc,
+
+		/* Values at various offsets from UINT32_MAX. Before f7fdface
+		 * these would overflow the "p" pointer on 32bit systems,
+		 * effectively subtracting the offset from it. It had good
+		 * chance to cause crash depending on what was stored at that
+		 * offset before "p". */
+		0xfffff000, 0xffffd000, 0xffffc000, 0xffffb000
+	};
+
+	setup_marshal_data(&data);
+
+	/* sender_id, does not matter */
+	msg[0] = 0;
+
+	/* (size << 16 | opcode), opcode is 0, does not matter */
+	msg[1] = sizeof(msg) << 16;
+
+	for (i = 0; i < ARRAY_LENGTH(overflowing_values); i++) {
+		/* length of the string or array */
+		msg[2] = overflowing_values[i];
+
+		expected_fail_demarshal(&data, "s", msg, EINVAL);
+		expected_fail_demarshal(&data, "a", msg, EINVAL);
+	}
+
+	release_marshal_data(&data);
+}
+
 TEST(connection_marshal_alot)
 {
 	struct marshal_data data;
