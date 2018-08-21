@@ -31,6 +31,12 @@ bool MatchesPNGFile(const SkBitmap& gen_bmp,
                     base::FilePath ref_img_path,
                     const PixelComparator& comparator);
 
+// Compares two bitmaps using the given PixelComparator, and returns true if the
+// comparator returns a match.
+bool MatchesBitmap(const SkBitmap& gen_bmp,
+                   const SkBitmap& ref_bmp,
+                   const PixelComparator& comparator);
+
 }  // namespace cc
 
 #endif  // CC_TEST_PIXEL_TEST_UTILS_H_

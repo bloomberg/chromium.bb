@@ -70,6 +70,9 @@ class LayerTreePixelTest : public LayerTreeTest {
   void RunPixelTest(PixelTestType type,
                     scoped_refptr<Layer> content_root,
                     base::FilePath file_name);
+  void RunPixelTest(PixelTestType type,
+                    scoped_refptr<Layer> content_root,
+                    const SkBitmap& expected_bitmap);
 
   void RunSingleThreadedPixelTest(PixelTestType test_type,
                                   scoped_refptr<Layer> content_root,
@@ -105,6 +108,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   scoped_refptr<Layer> content_root_;
   Layer* readback_target_;
   base::FilePath ref_file_;
+  SkBitmap expected_bitmap_;
   std::unique_ptr<SkBitmap> result_bitmap_;
   std::vector<scoped_refptr<TextureLayer>> texture_layers_;
   int pending_texture_mailbox_callbacks_;

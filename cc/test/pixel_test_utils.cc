@@ -49,14 +49,9 @@ bool ReadPNGFile(const base::FilePath& file_path, SkBitmap* bitmap) {
                                bitmap);
 }
 
-bool MatchesPNGFile(const SkBitmap& gen_bmp, base::FilePath ref_img_path,
-                    const PixelComparator& comparator) {
-  SkBitmap ref_bmp;
-  if (!ReadPNGFile(ref_img_path, &ref_bmp)) {
-    LOG(ERROR) << "Cannot read reference image: " << ref_img_path.value();
-    return false;
-  }
-
+bool MatchesBitmap(const SkBitmap& gen_bmp,
+                   const SkBitmap& ref_bmp,
+                   const PixelComparator& comparator) {
   // Check if images size matches
   if (gen_bmp.width() != ref_bmp.width() ||
       gen_bmp.height() != ref_bmp.height()) {
@@ -81,6 +76,18 @@ bool MatchesPNGFile(const SkBitmap& gen_bmp, base::FilePath ref_img_path,
     LOG(ERROR) << "Expected: " << ref_bmp_data_url;
   }
   return compare;
+}
+
+bool MatchesPNGFile(const SkBitmap& gen_bmp,
+                    base::FilePath ref_img_path,
+                    const PixelComparator& comparator) {
+  SkBitmap ref_bmp;
+  if (!ReadPNGFile(ref_img_path, &ref_bmp)) {
+    LOG(ERROR) << "Cannot read reference image: " << ref_img_path.value();
+    return false;
+  }
+
+  return MatchesBitmap(gen_bmp, ref_bmp, comparator);
 }
 
 }  // namespace cc
