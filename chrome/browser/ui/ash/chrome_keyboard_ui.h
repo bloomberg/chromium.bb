@@ -15,23 +15,23 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_ui.h"
 
-namespace {
-class WindowBoundsChangeObserver;
-}
 namespace aura {
 class Window;
 }
+
 namespace gfx {
 class Rect;
 }
+
 namespace content {
 class BrowserContext;
 class WebContents;
 }  // namespace content
+
 namespace ui {
 class InputMethod;
 class Shadow;
-}
+}  // namespace ui
 
 // Subclass of KeyboardUI. It is used by KeyboardController to get
 // access to the virtual keyboard window and setup Chrome extension functions.
@@ -57,11 +57,12 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   // Overridden from KeyboardUI:
   aura::Window* GetKeyboardWindow() override;
   bool HasKeyboardWindow() const override;
+  ui::InputMethod* GetInputMethod() override;
+  void SetController(keyboard::KeyboardController* controller) override;
   void ReloadKeyboardIfNeeded() override;
   void InitInsets(const gfx::Rect& new_bounds) override;
   void ResetInsets() override;
 
- protected:
   // aura::WindowObserver overrides:
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
@@ -71,11 +72,9 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   void OnWindowParentChanged(aura::Window* window,
                              aura::Window* parent) override;
 
-  content::BrowserContext* browser_context() { return browser_context_; }
-
-  const aura::Window* GetKeyboardRootWindow() const;
-
  private:
+  class WindowBoundsChangeObserver;
+
   std::unique_ptr<content::WebContents> CreateWebContents();
 
   // Loads the web contents for the given |url|.
@@ -91,7 +90,7 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   // Whether this window should do an overscroll to avoid occlusion by the
   // virtual keyboard. IME windows and virtual keyboard windows should always
   // avoid overscroll.
-  bool ShouldWindowOverscroll(aura::Window* window) const;
+  bool ShouldWindowOverscroll(aura::Window* window);
 
   // Adds an observer for tracking changes to a window size or
   // position while the keyboard is displayed. Any window repositioning
@@ -107,10 +106,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   // SetupWebContents() is called right after creating the WebContents, before
   // loading the keyboard page.
   void SetupWebContents(content::WebContents* contents);
-
-  // Overridden from KeyboardUI:
-  ui::InputMethod* GetInputMethod() override;
-  void SetController(keyboard::KeyboardController* controller) override;
 
   // content::WebContentsObserver overrides
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
