@@ -33,6 +33,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -43,6 +44,7 @@
 
 using content::BrowserThread;
 using extensions::Extension;
+using TP = ThemeProperties;
 
 namespace {
 
@@ -56,7 +58,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 57;
+const int kThemePackVersion = 58;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -214,57 +216,52 @@ std::string GetScaleFactorsAsString(
 
 struct StringToIntTable {
   const char* key;
-  ThemeProperties::OverwritableByUserThemeProperty id;
+  TP::OverwritableByUserThemeProperty id;
 };
 
 // Strings used by themes to identify tints in the JSON.
 const StringToIntTable kTintTable[] = {
-  { "buttons", ThemeProperties::TINT_BUTTONS },
-  { "frame", ThemeProperties::TINT_FRAME },
-  { "frame_inactive", ThemeProperties::TINT_FRAME_INACTIVE },
-  { "frame_incognito", ThemeProperties::TINT_FRAME_INCOGNITO },
-  { "frame_incognito_inactive",
-    ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE },
-  { "background_tab", ThemeProperties::TINT_BACKGROUND_TAB },
+    {"buttons", TP::TINT_BUTTONS},
+    {"frame", TP::TINT_FRAME},
+    {"frame_inactive", TP::TINT_FRAME_INACTIVE},
+    {"frame_incognito", TP::TINT_FRAME_INCOGNITO},
+    {"frame_incognito_inactive", TP::TINT_FRAME_INCOGNITO_INACTIVE},
+    {"background_tab", TP::TINT_BACKGROUND_TAB},
 };
 const size_t kTintTableLength = arraysize(kTintTable);
 
 // Strings used by themes to identify colors in the JSON.
 const StringToIntTable kColorTable[] = {
-  { "frame", ThemeProperties::COLOR_FRAME },
-  { "frame_inactive", ThemeProperties::COLOR_FRAME_INACTIVE },
-  { "frame_incognito", ThemeProperties::COLOR_FRAME_INCOGNITO },
-  { "frame_incognito_inactive",
-    ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE },
-  { "background_tab", ThemeProperties::COLOR_BACKGROUND_TAB },
-  { "background_tab_inactive", ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE },
-  { "background_tab_incognito", ThemeProperties::COLOR_BACKGROUND_TAB },
-  { "background_tab_incognito_inactive",
-    ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE },
-  { "toolbar", ThemeProperties::COLOR_TOOLBAR },
-  { "tab_text", ThemeProperties::COLOR_TAB_TEXT },
-  { "tab_background_text", ThemeProperties::COLOR_BACKGROUND_TAB_TEXT },
-  { "tab_background_text_inactive",
-    ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE },
-  { "tab_background_text_incognito",
-    ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO },
-  { "tab_background_text_incognito_inactive",
-    ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE },
-  { "bookmark_text", ThemeProperties::COLOR_BOOKMARK_TEXT },
-  { "ntp_background", ThemeProperties::COLOR_NTP_BACKGROUND },
-  { "ntp_text", ThemeProperties::COLOR_NTP_TEXT },
-  { "ntp_link", ThemeProperties::COLOR_NTP_LINK },
-  { "ntp_header", ThemeProperties::COLOR_NTP_HEADER },
-  { "button_background", ThemeProperties::COLOR_BUTTON_BACKGROUND },
+    {"frame", TP::COLOR_FRAME},
+    {"frame_inactive", TP::COLOR_FRAME_INACTIVE},
+    {"frame_incognito", TP::COLOR_FRAME_INCOGNITO},
+    {"frame_incognito_inactive", TP::COLOR_FRAME_INCOGNITO_INACTIVE},
+    {"background_tab", TP::COLOR_BACKGROUND_TAB},
+    {"background_tab_inactive", TP::COLOR_BACKGROUND_TAB_INACTIVE},
+    {"background_tab_incognito", TP::COLOR_BACKGROUND_TAB_INCOGNITO},
+    {"background_tab_incognito_inactive",
+     TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE},
+    {"toolbar", TP::COLOR_TOOLBAR},
+    {"tab_text", TP::COLOR_TAB_TEXT},
+    {"tab_background_text", TP::COLOR_BACKGROUND_TAB_TEXT},
+    {"tab_background_text_inactive", TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
+    {"tab_background_text_incognito", TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO},
+    {"tab_background_text_incognito_inactive",
+     TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE},
+    {"bookmark_text", TP::COLOR_BOOKMARK_TEXT},
+    {"ntp_background", TP::COLOR_NTP_BACKGROUND},
+    {"ntp_text", TP::COLOR_NTP_TEXT},
+    {"ntp_link", TP::COLOR_NTP_LINK},
+    {"ntp_header", TP::COLOR_NTP_HEADER},
+    {"button_background", TP::COLOR_BUTTON_BACKGROUND},
 };
 const size_t kColorTableLength = arraysize(kColorTable);
 
 // Strings used by themes to identify display properties keys in JSON.
 const StringToIntTable kDisplayProperties[] = {
-  { "ntp_background_alignment",
-    ThemeProperties::NTP_BACKGROUND_ALIGNMENT },
-  { "ntp_background_repeat", ThemeProperties::NTP_BACKGROUND_TILING },
-  { "ntp_logo_alternate", ThemeProperties::NTP_LOGO_ALTERNATE },
+    {"ntp_background_alignment", TP::NTP_BACKGROUND_ALIGNMENT},
+    {"ntp_background_repeat", TP::NTP_BACKGROUND_TILING},
+    {"ntp_logo_alternate", TP::NTP_LOGO_ALTERNATE},
 };
 const size_t kDisplayPropertiesSize = arraysize(kDisplayProperties);
 
@@ -603,6 +600,11 @@ void BrowserThemePack::BuildFromExtension(
   // creating these.
   pack->CreateTabBackgroundImagesAndColors(&pack->images_);
 
+  // Generate any missing text colors.  This must be done after generating frame
+  // and tab colors, as generated text colors will try to appropriately contrast
+  // with the frame/tab behind them.
+  pack->GenerateMissingTextColors();
+
   // Make sure the |images_on_file_thread_| has bitmaps for supported
   // scale factors before passing to FILE thread.
   pack->images_on_file_thread_ = pack->images_;
@@ -775,27 +777,24 @@ bool BrowserThemePack::GetTint(int id, color_utils::HSL* hsl) const {
 
 bool BrowserThemePack::GetColor(int id, SkColor* color) const {
   static const base::NoDestructor<
-      base::flat_set<ThemeProperties::OverwritableByUserThemeProperty>>
+      base::flat_set<TP::OverwritableByUserThemeProperty>>
       kOpaqueColors(
           // Explicitly creating a base::flat_set here is not strictly
           // necessary according to C++, but we do so to work around
           // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84849.
-          base::flat_set<ThemeProperties::OverwritableByUserThemeProperty>({
+          base::flat_set<TP::OverwritableByUserThemeProperty>({
               // Background tabs must be opaque since the tabstrip expects to be
               // able to render text opaquely atop them.
-              ThemeProperties::COLOR_BACKGROUND_TAB,
-              ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE,
-              ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO,
-              ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
+              TP::COLOR_BACKGROUND_TAB, TP::COLOR_BACKGROUND_TAB_INACTIVE,
+              TP::COLOR_BACKGROUND_TAB_INCOGNITO,
+              TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
               // The frame colors will be used for background tabs when not
               // otherwise overridden and thus must be opaque as well.
-              ThemeProperties::COLOR_FRAME,
-              ThemeProperties::COLOR_FRAME_INACTIVE,
-              ThemeProperties::COLOR_FRAME_INCOGNITO,
-              ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE,
+              TP::COLOR_FRAME, TP::COLOR_FRAME_INACTIVE,
+              TP::COLOR_FRAME_INCOGNITO, TP::COLOR_FRAME_INCOGNITO_INACTIVE,
               // The toolbar is used as the foreground tab color, so it must be
               // opaque just like background tabs.
-              ThemeProperties::COLOR_TOOLBAR,
+              TP::COLOR_TOOLBAR,
           }));
 
   if (colors_) {
@@ -894,15 +893,15 @@ void BrowserThemePack::BuildHeader(const Extension* extension) {
   header_ = new BrowserThemePackHeader;
   header_->version = kThemePackVersion;
 
-  // TODO(erg): Need to make this endian safe on other computers. Prerequisite
-  // is that ui::DataPack removes this same check.
+// TODO(erg): Need to make this endian safe on other computers. Prerequisite
+// is that ui::DataPack removes this same check.
 #if defined(__BYTE_ORDER)
   // Linux check
   static_assert(__BYTE_ORDER == __LITTLE_ENDIAN,
                 "datapack assumes little endian");
 #elif defined(__BIG_ENDIAN__)
-  // Mac check
-  #error DataPack assumes little endian
+// Mac check
+#error DataPack assumes little endian
 #endif
   header_->little_endian = 1;
 
@@ -969,23 +968,6 @@ void BrowserThemePack::BuildColorsFromJSON(
   if (colors_value)
     ReadColorsFromJSON(colors_value, &temp_colors);
 
-  // Generate inactive background tab text colors if active colors were
-  // specified.
-  static constexpr int kColorsToCopy[][2] = {
-      {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT,
-       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
-      {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT,
-       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO},
-      {ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
-       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE},
-  };
-  for (const int* text_colors : kColorsToCopy) {
-    const auto src_it = temp_colors.find(text_colors[0]);
-    if (src_it != temp_colors.end() &&
-        !base::ContainsKey(temp_colors, text_colors[1]))
-      temp_colors[text_colors[1]] = src_it->second;
-  }
-
   // Copy data from the intermediary data structure to the array.
   size_t count = 0;
   for (std::map<int, SkColor>::const_iterator it = temp_colors.begin();
@@ -1029,8 +1011,8 @@ void BrowserThemePack::ReadColorsFromJSON(
           // We no longer use ntp_section, but to support legacy
           // themes we still need to use it as a fallback for
           // ntp_header.
-          if (!temp_colors->count(ThemeProperties::COLOR_NTP_HEADER))
-            (*temp_colors)[ThemeProperties::COLOR_NTP_HEADER] = color;
+          if (!temp_colors->count(TP::COLOR_NTP_HEADER))
+            (*temp_colors)[TP::COLOR_NTP_HEADER] = color;
         } else {
           int id = GetIntForString(iter.key(), kColorTable, kColorTableLength);
           if (id != -1)
@@ -1058,26 +1040,25 @@ void BrowserThemePack::BuildDisplayPropertiesFromJSON(
     int property_id = GetIntForString(iter.key(), kDisplayProperties,
                                       kDisplayPropertiesSize);
     switch (property_id) {
-      case ThemeProperties::NTP_BACKGROUND_ALIGNMENT: {
+      case TP::NTP_BACKGROUND_ALIGNMENT: {
         std::string val;
         if (iter.value().GetAsString(&val)) {
-          temp_properties[ThemeProperties::NTP_BACKGROUND_ALIGNMENT] =
-              ThemeProperties::StringToAlignment(val);
+          temp_properties[TP::NTP_BACKGROUND_ALIGNMENT] =
+              TP::StringToAlignment(val);
         }
         break;
       }
-      case ThemeProperties::NTP_BACKGROUND_TILING: {
+      case TP::NTP_BACKGROUND_TILING: {
         std::string val;
         if (iter.value().GetAsString(&val)) {
-          temp_properties[ThemeProperties::NTP_BACKGROUND_TILING] =
-              ThemeProperties::StringToTiling(val);
+          temp_properties[TP::NTP_BACKGROUND_TILING] = TP::StringToTiling(val);
         }
         break;
       }
-      case ThemeProperties::NTP_LOGO_ALTERNATE: {
+      case TP::NTP_LOGO_ALTERNATE: {
         int val = 0;
         if (iter.value().GetAsInteger(&val))
-          temp_properties[ThemeProperties::NTP_LOGO_ALTERNATE] = val;
+          temp_properties[TP::NTP_LOGO_ALTERNATE] = val;
         break;
       }
     }
@@ -1240,18 +1221,16 @@ void BrowserThemePack::CreateFrameImagesAndColors(ImageCache* images) {
     int tint_id;
     base::Optional<int> color_id;
   } kFrameValues[] = {
-      {PRS_THEME_FRAME, ThemeProperties::TINT_FRAME,
-       ThemeProperties::COLOR_FRAME},
-      {PRS_THEME_FRAME_INACTIVE, ThemeProperties::TINT_FRAME_INACTIVE,
-       ThemeProperties::COLOR_FRAME_INACTIVE},
-      {PRS_THEME_FRAME_OVERLAY, ThemeProperties::TINT_FRAME, base::nullopt},
-      {PRS_THEME_FRAME_OVERLAY_INACTIVE, ThemeProperties::TINT_FRAME_INACTIVE,
+      {PRS_THEME_FRAME, TP::TINT_FRAME, TP::COLOR_FRAME},
+      {PRS_THEME_FRAME_INACTIVE, TP::TINT_FRAME_INACTIVE,
+       TP::COLOR_FRAME_INACTIVE},
+      {PRS_THEME_FRAME_OVERLAY, TP::TINT_FRAME, base::nullopt},
+      {PRS_THEME_FRAME_OVERLAY_INACTIVE, TP::TINT_FRAME_INACTIVE,
        base::nullopt},
-      {PRS_THEME_FRAME_INCOGNITO, ThemeProperties::TINT_FRAME_INCOGNITO,
-       ThemeProperties::COLOR_FRAME_INCOGNITO},
-      {PRS_THEME_FRAME_INCOGNITO_INACTIVE,
-       ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE,
-       ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE},
+      {PRS_THEME_FRAME_INCOGNITO, TP::TINT_FRAME_INCOGNITO,
+       TP::COLOR_FRAME_INCOGNITO},
+      {PRS_THEME_FRAME_INCOGNITO_INACTIVE, TP::TINT_FRAME_INCOGNITO_INACTIVE,
+       TP::COLOR_FRAME_INCOGNITO_INACTIVE},
   };
 
   // Create all the output images in a separate cache and move them back into
@@ -1298,33 +1277,27 @@ void BrowserThemePack::CreateFrameImagesAndColors(ImageCache* images) {
 }
 
 void BrowserThemePack::GenerateFrameColors() {
-  using TP = ThemeProperties;
-
   SkColor frame;
   if (!GetColor(TP::COLOR_FRAME, &frame)) {
-    frame = ThemeProperties::GetDefaultColor(TP::COLOR_FRAME, false);
-    SetColor(TP::COLOR_FRAME,
-             HSLShift(frame, GetTintInternal(ThemeProperties::TINT_FRAME)));
+    frame = TP::GetDefaultColor(TP::COLOR_FRAME, false);
+    SetColor(TP::COLOR_FRAME, HSLShift(frame, GetTintInternal(TP::TINT_FRAME)));
   }
 
   SkColor temp;
   if (!GetColor(TP::COLOR_FRAME_INACTIVE, &temp)) {
-    SetColor(
-        TP::COLOR_FRAME_INACTIVE,
-        HSLShift(frame, GetTintInternal(ThemeProperties::TINT_FRAME_INACTIVE)));
+    SetColor(TP::COLOR_FRAME_INACTIVE,
+             HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INACTIVE)));
   }
 
   if (!GetColor(TP::COLOR_FRAME_INCOGNITO, &temp)) {
     SetColor(TP::COLOR_FRAME_INCOGNITO,
-             HSLShift(frame,
-                      GetTintInternal(ThemeProperties::TINT_FRAME_INCOGNITO)));
+             HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO)));
   }
 
   if (!GetColor(TP::COLOR_FRAME_INCOGNITO_INACTIVE, &temp)) {
     SetColor(
         TP::COLOR_FRAME_INCOGNITO_INACTIVE,
-        HSLShift(frame, GetTintInternal(
-                            ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE)));
+        HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO_INACTIVE)));
   }
 }
 
@@ -1348,17 +1321,17 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
     int color_id;
   } kTabBackgroundMap[] = {
       {PRS_THEME_TAB_BACKGROUND, base::nullopt, PRS_THEME_FRAME,
-       ThemeProperties::COLOR_FRAME, ThemeProperties::COLOR_BACKGROUND_TAB},
+       TP::COLOR_FRAME, TP::COLOR_BACKGROUND_TAB},
       {PRS_THEME_TAB_BACKGROUND_INACTIVE, PRS_THEME_TAB_BACKGROUND,
-       PRS_THEME_FRAME_INACTIVE, ThemeProperties::COLOR_FRAME_INACTIVE,
-       ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE},
+       PRS_THEME_FRAME_INACTIVE, TP::COLOR_FRAME_INACTIVE,
+       TP::COLOR_BACKGROUND_TAB_INACTIVE},
       {PRS_THEME_TAB_BACKGROUND_INCOGNITO, base::nullopt,
-       PRS_THEME_FRAME_INCOGNITO, ThemeProperties::COLOR_FRAME_INCOGNITO,
-       ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO},
+       PRS_THEME_FRAME_INCOGNITO, TP::COLOR_FRAME_INCOGNITO,
+       TP::COLOR_BACKGROUND_TAB_INCOGNITO},
       {PRS_THEME_TAB_BACKGROUND_INCOGNITO_INACTIVE,
        PRS_THEME_TAB_BACKGROUND_INCOGNITO, PRS_THEME_FRAME_INCOGNITO_INACTIVE,
-       ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE,
-       ThemeProperties::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE},
+       TP::COLOR_FRAME_INCOGNITO_INACTIVE,
+       TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE},
   };
 
   ImageCache temp_output;
@@ -1392,8 +1365,7 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
 
       auto source = std::make_unique<TabBackgroundImageSource>(
           frame_color, image_to_tint, overlay,
-          GetTintInternal(ThemeProperties::TINT_BACKGROUND_TAB),
-          ThemeProperties::kFrameHeightAboveTabs);
+          GetTintInternal(TP::TINT_BACKGROUND_TAB), TP::kFrameHeightAboveTabs);
       gfx::Size dest_size = image_to_tint.size();
       dest_size.SetToMax(gfx::Size(0, kTallestTabHeight));
       const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
@@ -1404,6 +1376,67 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
     }
   }
   MergeImageCaches(temp_output, images);
+}
+
+void BrowserThemePack::GenerateMissingTextColors() {
+  // Background Tab
+  constexpr int kDefaultSourceTextColorId = TP::COLOR_BACKGROUND_TAB_TEXT;
+  GenerateMissingTextColorForID(TP::COLOR_BACKGROUND_TAB_TEXT,
+                                TP::COLOR_BACKGROUND_TAB,
+                                kDefaultSourceTextColorId);
+
+  // Background Tab - Inactive
+  GenerateMissingTextColorForID(TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
+                                TP::COLOR_BACKGROUND_TAB_INACTIVE,
+                                kDefaultSourceTextColorId);
+
+  // Incognito
+  GenerateMissingTextColorForID(TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
+                                TP::COLOR_BACKGROUND_TAB_INCOGNITO,
+                                kDefaultSourceTextColorId);
+
+  // Incognito - Inactive
+  GenerateMissingTextColorForID(
+      TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
+      TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
+      TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO);
+}
+
+void BrowserThemePack::GenerateMissingTextColorForID(int text_color_id,
+                                                     int tab_color_id,
+                                                     int source_color_id) {
+  SkColor text_color, tab_color;
+  const bool has_text_color = GetColor(text_color_id, &text_color);
+  const bool has_tab_color = GetColor(tab_color_id, &tab_color);
+
+  // If neither the text color nor the tab color has been set by the theme,
+  // do nothing.
+  if (!has_text_color && !has_tab_color)
+    return;
+
+  // Determine the text color to start with, in order of preference:
+  // 1) The color specified by the theme (if it exists)
+  // 2) The color passed in to use as a source function (if it exists)
+  // 3) The default color for the text property
+  SkColor blend_source_color;
+  if (has_text_color) {
+    blend_source_color = text_color;
+  } else {
+    SkColor source_text_color;
+    if (GetColor(source_color_id, &source_text_color)) {
+      blend_source_color = source_text_color;
+    } else {
+      // GetDefaultColor() requires incognito-aware lookup, so we first have to
+      // get the appropriate lookup ID information
+      TP::PropertyLookupPair lookup_pair = TP::GetLookupID(text_color_id);
+
+      blend_source_color = TP::GetDefaultColor(lookup_pair);
+    }
+  }
+
+  const SkColor result_color =
+      color_utils::GetColorWithMinimumContrast(blend_source_color, tab_color);
+  SetColor(text_color_id, result_color);
 }
 
 void BrowserThemePack::RepackImages(const ImageCache& images,
@@ -1457,12 +1490,12 @@ color_utils::HSL BrowserThemePack::GetTintInternal(int id) const {
     return hsl;
 
   int original_id = id;
-  if (id == ThemeProperties::TINT_FRAME_INCOGNITO)
-    original_id = ThemeProperties::TINT_FRAME;
-  else if (id == ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE)
-    original_id = ThemeProperties::TINT_FRAME_INACTIVE;
+  if (id == TP::TINT_FRAME_INCOGNITO)
+    original_id = TP::TINT_FRAME;
+  else if (id == TP::TINT_FRAME_INCOGNITO_INACTIVE)
+    original_id = TP::TINT_FRAME_INACTIVE;
 
-  return ThemeProperties::GetDefaultTint(original_id, original_id != id);
+  return TP::GetDefaultTint(original_id, original_id != id);
 }
 
 int BrowserThemePack::GetRawIDByPersistentID(
