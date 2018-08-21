@@ -97,6 +97,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -145,6 +146,10 @@
 #if BUILDFLAG(ENABLE_RLZ)
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "components/rlz/rlz_tracker.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #endif
 
 namespace chromeos {
@@ -1536,6 +1541,13 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   ProfileHelper::Get()->ProfileStartup(profile);
 
   if (start_session_type_ == PRIMARY_USER_SESSION) {
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+    // Initialize Assistant early to be used in post login Oobe steps.
+    if (chromeos::switches::IsAssistantEnabled()) {
+      AssistantClient::Get()->MaybeInit(
+          content::BrowserContext::GetConnectorFor(profile));
+    }
+#endif
     UserFlow* user_flow = ChromeUserManager::Get()->GetCurrentUserFlow();
     WizardController* oobe_controller = WizardController::default_controller();
     base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();

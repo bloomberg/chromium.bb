@@ -56,6 +56,7 @@ class AssistantOptInDialog : public SystemWebDialogDelegate {
   ~AssistantOptInDialog() override;
 
   // ui::WebDialogDelegate
+  ui::ModalType GetDialogModalType() const override;
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
   bool ShouldShowDialogTitle() const override;
@@ -64,6 +65,9 @@ class AssistantOptInDialog : public SystemWebDialogDelegate {
  private:
   // Callback to run if the flow is completed.
   ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback_;
+
+  // Type of modality applied to the dialog window.
+  ui::ModalType modal_type_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInDialog);
 };
