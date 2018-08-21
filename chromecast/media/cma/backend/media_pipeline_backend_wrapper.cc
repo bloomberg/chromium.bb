@@ -36,7 +36,7 @@ MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {
     backend_manager_->DecrementDecoderCount(
         IsSfx() ? DecoderType::SFX_DECODER : DecoderType::AUDIO_DECODER);
     if (playing_) {
-      backend_manager_->UpdatePlayingAudioCount(IsSfx(), -1);
+      backend_manager_->UpdatePlayingAudioCount(IsSfx(), content_type_, -1);
     }
   }
   if (video_decoder_) {
@@ -139,7 +139,8 @@ void MediaPipelineBackendWrapper::SetPlaying(bool playing) {
   }
   playing_ = playing;
   if (audio_decoder_) {
-    backend_manager_->UpdatePlayingAudioCount(IsSfx(), (playing_ ? 1 : -1));
+    backend_manager_->UpdatePlayingAudioCount(IsSfx(), content_type_,
+                                              (playing_ ? 1 : -1));
   }
 }
 

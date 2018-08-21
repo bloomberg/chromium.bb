@@ -103,8 +103,8 @@ class MediaPipelineBackendManager {
   // CmaBackend instance (for example, direct audio output using
   // CastMediaShlib::AddDirectAudioSource()). |sfx| indicates whether or not
   // the stream is a sound effects stream (has no effect on volume feedback).
-  void AddExtraPlayingStream(bool sfx);
-  void RemoveExtraPlayingStream(bool sfx);
+  void AddExtraPlayingStream(bool sfx, const AudioContentType type);
+  void RemoveExtraPlayingStream(bool sfx, const AudioContentType type);
 
   // Sets a global multiplier for output volume for streams of the given |type|.
   // The multiplier may be any value >= 0; if the resulting volume for an
@@ -119,6 +119,8 @@ class MediaPipelineBackendManager {
 
   BufferDelegate* buffer_delegate() const { return buffer_delegate_; }
 
+  bool IsPlaying(bool include_sfx, AudioContentType type);
+
  private:
   friend class MediaPipelineBackendWrapper;
   friend class AudioDecoderWrapper;
@@ -132,7 +134,11 @@ class MediaPipelineBackendManager {
   void DecrementDecoderCount(DecoderType type);
 
   // Update the count of playing non-effects audio streams.
-  void UpdatePlayingAudioCount(bool sfx, int change);
+  void UpdatePlayingAudioCount(bool sfx,
+                               const AudioContentType type,
+                               int change);
+  int TotalPlayingAudioStreamsCount();
+  int TotalPlayingNoneffectsAudioStreamsCount();
 
   void EnterPowerSaveMode();
 
@@ -142,10 +148,10 @@ class MediaPipelineBackendManager {
   int decoder_count_[NUM_DECODER_TYPES];
 
   // Total number of playing audio streams.
-  int playing_audio_streams_count_;
+  base::flat_map<AudioContentType, int> playing_audio_streams_count_;
 
   // Total number of playing non-effects streams.
-  int playing_noneffects_audio_streams_count_;
+  base::flat_map<AudioContentType, int> playing_noneffects_audio_streams_count_;
 
   scoped_refptr<base::ObserverListThreadSafe<AllowVolumeFeedbackObserver>>
       allow_volume_feedback_observers_;
