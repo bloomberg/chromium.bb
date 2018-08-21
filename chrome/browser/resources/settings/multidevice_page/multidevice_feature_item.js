@@ -15,26 +15,11 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-feature-item',
 
+  behaviors: [MultiDeviceFeatureBehavior],
+
   properties: {
-    /**
-     * The localized string representing the name of the feature.
-     * @type {string}
-     */
-    featureName: String,
-
-    /**
-     * The localized string providing a description or useful status information
-     * concertning the feature.
-     * @type {string}
-     */
-    featureSummaryHtml: String,
-
-    /**
-     * The full icon name used provided by the containing iron-iconset-svg
-     * (i.e. [iron-iconset-svg name]:[SVG <g> tag id]).
-     * @type {string}
-     */
-    iconName: String,
+    /** @type {!settings.MultiDeviceFeature} */
+    feature: Number,
 
     /**
      * If it is non-null, the item should be actionable and clicking on it

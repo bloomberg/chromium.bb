@@ -8,6 +8,8 @@
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
+<link rel="import" href="multidevice_constants.html">
+<link rel="import" href="multidevice_feature_behavior.html">
 
 <dom-module id="settings-multidevice-feature-item">
   <template>
@@ -26,17 +28,17 @@
         class="settings-box two-line"
         on-click="handleItemClick_"
         actionable$="[[hasSubpageClickHandler_(subpageRoute)]]">
-      <iron-icon icon="[[iconName]]"></iron-icon>
+      <iron-icon icon="[[getIconName(feature)]]"></iron-icon>
       <div id="item-text-container" class="middle">
-        [[featureName]]
+        [[getFeatureName(feature)]]
         <div class="secondary"
             id="featureSecondary"
-            inner-h-t-m-l="[[featureSummaryHtml]]">
+            inner-h-t-m-l="[[getFeatureSummaryHtml(feature)]]">
         </div>
       </div>
       <template is="dom-if" if="[[hasSubpageClickHandler_(subpageRoute)]]">
         <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="[[featureName]]"
+          <button aria-label="[[getFeatureName(feature)]]"
               aria-describedby="featureSecondary"></button>
         </paper-icon-button-light>
         <div class="separator"></div>

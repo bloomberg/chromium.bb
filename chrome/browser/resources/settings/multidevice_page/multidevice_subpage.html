@@ -11,6 +11,7 @@
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
 <link rel="import" href="multidevice_constants.html">
+<link rel="import" href="multidevice_feature_behavior.html">
 <link rel="import" href="multidevice_feature_item.html">
 <link rel="import" href="multidevice_feature_toggle.html">
 <link rel="import" href="multidevice_tether_item.html">
@@ -58,10 +59,9 @@
         restamp>
       <div id="feature-items-container">
         <settings-multidevice-feature-item id="smart-lock-item"
-            icon-name="settings:smart-lock"
-            subpage-route="[[routes.LOCK_SCREEN]]"
-            feature-name="$i18n{multideviceSmartLockItemTitle}"
-            feature-summary-html="$i18n{multideviceSmartLockItemSummary}">
+            feature="[[MultiDeviceFeature.SMART_LOCK]]"
+            page-content-data="[[pageContentData]]"
+            subpage-route="[[routes.LOCK_SCREEN]]">
           <div slot="feature-controller">
             <!-- TODO (jordynass): Change the pref property to the pref
                  controlling Easy Unlock and make sure it's effectively
@@ -71,13 +71,11 @@
             </settings-multidevice-feature-toggle>
           </div>
         </settings-multidevice-feature-item>
-        <settings-multidevice-tether-item
-            label="$i18n{multideviceInstantTetheringItemTitle}">
+        <settings-multidevice-tether-item>
         </settings-multidevice-tether-item>
         <settings-multidevice-feature-item id="android-messages-item"
-            icon-name="settings:sms-connect"
-            feature-name="$i18n{multideviceAndroidMessagesItemTitle}"
-            feature-summary-html="$i18n{multideviceAndroidMessagesItemSummary}">
+            feature="[[MultiDeviceFeature.MESSAGES]]"
+            page-content-data="[[pageContentData]]">
           <div slot="feature-controller">
             <template is="dom-if"
                 if="[[androidMessagesRequiresSetup_]]"
