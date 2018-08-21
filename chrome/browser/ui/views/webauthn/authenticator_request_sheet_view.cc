@@ -138,6 +138,7 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
   auto title_label = std::make_unique<views::Label>(
       model()->GetStepTitle(), views::style::CONTEXT_DIALOG_TITLE,
       views::style::STYLE_PRIMARY);
+  title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   contents->AddChildView(title_label.release());
 
