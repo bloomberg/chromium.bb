@@ -180,14 +180,10 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     const std::string& device_id,
     const LogCallback& log_callback) {
   CHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(params.IsValid());
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kFailAudioStreamCreation)) {
-    return nullptr;
-  }
-
-  if (!params.IsValid()) {
-    DLOG(ERROR) << "Audio parameters are invalid";
     return nullptr;
   }
 

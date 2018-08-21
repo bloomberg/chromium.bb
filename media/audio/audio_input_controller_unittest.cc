@@ -196,17 +196,6 @@ TEST_P(AudioInputControllerTest, CreateRecordAndClose) {
   CloseAudioController();
 }
 
-// Test that AudioInputController rejects insanely large packet sizes.
-TEST_P(AudioInputControllerTest, SamplesPerPacketTooLarge) {
-  // Create an audio device with a very large packet size.
-  params_.set_frames_per_buffer(kSamplesPerPacket * 1000);
-
-  // OnCreated() shall not be called in this test.
-  EXPECT_CALL(event_handler_, OnCreated(_)).Times(Exactly(0));
-  CreateAudioController();
-  ASSERT_FALSE(controller_.get());
-}
-
 TEST_P(AudioInputControllerTest, CloseTwice) {
   EXPECT_CALL(event_handler_, OnCreated(_));
   CreateAudioController();
