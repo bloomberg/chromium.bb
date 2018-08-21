@@ -25,8 +25,10 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
     return device::FidoTransportProtocol::kInternal;
   }
 
-  // If the |last_used_transport| is available, use that.
-  if (last_used_transport &&
+  // For GetAssertion call, if the |last_used_transport| is available, use that.
+  if (transport_availability.request_type ==
+          device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
+      last_used_transport &&
       base::ContainsKey(transport_availability.available_transports,
                         *last_used_transport)) {
     return *last_used_transport;

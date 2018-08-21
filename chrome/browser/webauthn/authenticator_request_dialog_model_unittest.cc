@@ -4,6 +4,8 @@
 
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 
+#include <utility>
+
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -34,71 +36,103 @@ class AuthenticatorRequestDialogModelTest : public ::testing::Test {
 TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
   using FidoTransportProtocol = ::device::FidoTransportProtocol;
   using Step = AuthenticatorRequestDialogModel::Step;
+  using RequestType = ::device::FidoRequestHandlerBase::RequestType;
 
   const struct {
+    RequestType request_type;
     base::flat_set<FidoTransportProtocol> available_transports;
     base::Optional<FidoTransportProtocol> last_used_transport;
     bool has_touch_id_credential;
     Step expected_first_step;
   } kTestCases[] = {
       // Only a single transport is available.
-      {{FidoTransportProtocol::kUsbHumanInterfaceDevice},
+      {RequestType::kGetAssertion,
+       {FidoTransportProtocol::kUsbHumanInterfaceDevice},
        base::nullopt,
        false,
        Step::kUsbInsertAndActivate},
-      {{FidoTransportProtocol::kNearFieldCommunication},
+      {RequestType::kGetAssertion,
+       {FidoTransportProtocol::kNearFieldCommunication},
        base::nullopt,
        false,
        Step::kTransportSelection},
-      {{FidoTransportProtocol::kBluetoothLowEnergy},
+      {RequestType::kGetAssertion,
+       {FidoTransportProtocol::kBluetoothLowEnergy},
        base::nullopt,
        false,
        Step::kBleActivate},
-      {{FidoTransportProtocol::kInternal},
+      {RequestType::kGetAssertion,
+       {FidoTransportProtocol::kInternal},
        base::nullopt,
        false,
        Step::kTouchId},
-      {{FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy},
+      {RequestType::kGetAssertion,
+       {FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy},
        base::nullopt,
        false,
        Step::kCableActivate},
 
       // The last used transport is available.
-      {kAllTransports, FidoTransportProtocol::kUsbHumanInterfaceDevice, false,
+      {RequestType::kGetAssertion, kAllTransports,
+       FidoTransportProtocol::kUsbHumanInterfaceDevice, false,
        Step::kUsbInsertAndActivate},
 
       // The last used transport is not available.
-      {{FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+      {RequestType::kGetAssertion,
+       {FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
         FidoTransportProtocol::kUsbHumanInterfaceDevice},
        FidoTransportProtocol::kNearFieldCommunication,
        false,
        Step::kTransportSelection},
 
       // The KeyChain contains an allowed Touch ID credential.
-      {kAllTransports, FidoTransportProtocol::kUsbHumanInterfaceDevice, true,
-       Step::kTouchId},
+      {RequestType::kGetAssertion, kAllTransports,
+       FidoTransportProtocol::kUsbHumanInterfaceDevice, true, Step::kTouchId},
 
       // The KeyChain contains an allowed Touch ID credential, but Touch ID is
       // not enabled by the relying party.
-      {{FidoTransportProtocol::kUsbHumanInterfaceDevice},
+      {RequestType::kGetAssertion,
+       {FidoTransportProtocol::kUsbHumanInterfaceDevice},
        base::nullopt,
        true,
        Step::kUsbInsertAndActivate},
-      {{FidoTransportProtocol::kUsbHumanInterfaceDevice,
+      {RequestType::kGetAssertion,
+       {FidoTransportProtocol::kUsbHumanInterfaceDevice,
         FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy},
        base::nullopt,
        true,
        Step::kTransportSelection},
 
       // No transports available.
-      {{},
+      {RequestType::kGetAssertion,
+       {},
        FidoTransportProtocol::kNearFieldCommunication,
        false,
        Step::kErrorNoAvailableTransports},
+
+      // Even when last transport used is available, we default to transport
+      // selection modal for MakeCredential.
+      {RequestType::kMakeCredential, kAllTransports,
+       FidoTransportProtocol::kUsbHumanInterfaceDevice, false,
+       Step::kTransportSelection},
+
+      // When only one transport is available, we still want to skip transport
+      // selection view for MakeCredential call.
+      {RequestType::kMakeCredential,
+       {FidoTransportProtocol::kUsbHumanInterfaceDevice},
+       FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
+       false,
+       Step::kUsbInsertAndActivate},
+      {RequestType::kMakeCredential,
+       {FidoTransportProtocol::kUsbHumanInterfaceDevice},
+       FidoTransportProtocol::kUsbHumanInterfaceDevice,
+       false,
+       Step::kUsbInsertAndActivate},
   };
 
   for (const auto& test_case : kTestCases) {
     ::device::FidoRequestHandlerBase::TransportAvailabilityInfo transports_info;
+    transports_info.request_type = test_case.request_type;
     transports_info.available_transports = test_case.available_transports;
     transports_info.has_recognized_mac_touch_id_credential =
         test_case.has_touch_id_credential;
