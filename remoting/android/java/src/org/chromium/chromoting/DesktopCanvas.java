@@ -174,8 +174,7 @@ public class DesktopCanvas {
         }
 
         float widthRatio = getSafeScreenWidth() / mRenderData.imageWidth;
-        float heightRatio =
-                calculateSafeScreenHeight(mRenderData.screenHeight) / mRenderData.imageHeight;
+        float heightRatio = getSafeScreenHeight() / mRenderData.imageHeight;
         float screenToImageScale = Math.max(widthRatio, heightRatio);
 
         // If the image is smaller than the screen in either dimension, then we want to scale it
@@ -216,12 +215,11 @@ public class DesktopCanvas {
         float[] imageSize = {mRenderData.imageWidth, mRenderData.imageHeight};
         mRenderData.transform.mapVectors(imageSize);
 
-        if (imageSize[0] < getSafeScreenWidth()
-                && imageSize[1] < calculateSafeScreenHeight(mRenderData.screenHeight)) {
+        if (imageSize[0] < getSafeScreenWidth() && imageSize[1] < getSafeScreenHeight()) {
             // Displayed image is too small in both directions, so apply the minimum zoom
             // level needed to fit either the width or height.
             float scale = Math.min(getSafeScreenWidth() / mRenderData.imageWidth,
-                    calculateSafeScreenHeight(mRenderData.screenHeight) / mRenderData.imageHeight);
+                    getSafeScreenHeight() / mRenderData.imageHeight);
             mRenderData.transform.setScale(scale, scale);
         }
 
@@ -230,7 +228,7 @@ public class DesktopCanvas {
         } else {
             // Find the new screen center (it probably changed during the zoom operation) and update
             // the viewport to smoothly track the zoom gesture.
-            PointF safeScreenCenter = calculateSafeScreenCenterPoint(mRenderData.screenHeight);
+            PointF safeScreenCenter = getSafeScreenCenterPoint();
             float[] mappedPoints = {
                     safeScreenCenter.x - mViewportOffset.x, safeScreenCenter.y - mViewportOffset.y};
             Matrix screenToImage = new Matrix();
@@ -264,7 +262,7 @@ public class DesktopCanvas {
             // Find the center point of the viewport on the screen.
             adjustedScreenHeight = mSystemUiScreenRect.bottom;
         } else {
-            adjustedScreenHeight = ((float) mRenderData.screenHeight);
+            adjustedScreenHeight = getSafeScreenHeight();
         }
 
         return adjustedScreenHeight;
@@ -275,7 +273,7 @@ public class DesktopCanvas {
      * account.
      */
     private PointF getViewportScreenCenter() {
-        return calculateSafeScreenCenterPoint(getAdjustedScreenHeight());
+        return getAdjustedScreenCenterPoint();
     }
 
     /**
@@ -332,21 +330,18 @@ public class DesktopCanvas {
         Matrix screenToImage = new Matrix();
         mRenderData.transform.invert(screenToImage);
 
-        PointF viewportCenter = getViewportScreenCenter();
-        float[] screenVectors = {viewportCenter.x, viewportCenter.y};
+        float[] screenVectors = {getSafeScreenWidth() / 2, getAdjustedScreenHeight() / 2};
         screenToImage.mapVectors(screenVectors);
 
-        RectF letterboxPadding = getLetterboxPadding();
-        float[] letterboxPaddingLeftTop = {letterboxPadding.left, letterboxPadding.top};
-        float[] letterboxPaddingRightBottom = {letterboxPadding.right, letterboxPadding.bottom};
-        screenToImage.mapVectors(letterboxPaddingLeftTop);
-        screenToImage.mapVectors(letterboxPaddingRightBottom);
+        PointF letterboxPadding = getLetterboxPadding();
+        float[] letterboxPaddingVectors = {letterboxPadding.x, letterboxPadding.y};
+        screenToImage.mapVectors(letterboxPaddingVectors);
 
+        // screenCenter values are 1/2 of a particular screen dimension mapped to image space.
+        float screenCenterX = screenVectors[0] - letterboxPaddingVectors[0];
+        float screenCenterY = screenVectors[1] - letterboxPaddingVectors[1];
         RectF imageBounds = getImageBounds();
-        imageBounds.left += screenVectors[0] - letterboxPaddingLeftTop[0];
-        imageBounds.top += screenVectors[1] - letterboxPaddingLeftTop[1];
-        imageBounds.right -= screenVectors[0] - letterboxPaddingRightBottom[0];
-        imageBounds.bottom -= screenVectors[1] - letterboxPaddingRightBottom[1];
+        imageBounds.inset(screenCenterX, screenCenterY);
         return imageBounds;
     }
 
@@ -373,25 +368,18 @@ public class DesktopCanvas {
     }
 
     /**
-     * Provides the amount of padding needed to center the image content on the screen. Safe insets
-     * are fixed constant letterbox padding that exist even when the image is not smaller than the
-     * screen.
+     * Provides the amount of padding needed to center the image content on the screen.
      */
-    private RectF getLetterboxPadding() {
+    private PointF getLetterboxPadding() {
         float[] imageVectors = {mRenderData.imageWidth, mRenderData.imageHeight};
         mRenderData.transform.mapVectors(imageVectors);
 
         // We want to letterbox when the image is smaller than the screen in a specific dimension.
         // Since we center the image, split the difference so it is equally distributed.
         float widthAdjust = Math.max((getSafeScreenWidth() - imageVectors[0]) / 2, 0);
-        float heightAdjust = Math.max(
-                (calculateSafeScreenHeight(getAdjustedScreenHeight()) - imageVectors[1]) / 2, 0);
+        float heightAdjust = Math.max((getAdjustedScreenHeight() - imageVectors[1]) / 2, 0);
 
-        // Add the safe insets.
-        RectF padding = new RectF(widthAdjust + mSafeInsets.left, heightAdjust + mSafeInsets.top,
-                widthAdjust + mSafeInsets.right, heightAdjust + mSafeInsets.bottom);
-
-        return padding;
+        return new PointF(widthAdjust, heightAdjust);
     }
 
     /**
@@ -408,14 +396,12 @@ public class DesktopCanvas {
         // between the System UI and the remote desktop image.
         // Note: Ignore negative padding (clamp to 0) since that means no overlap exists.
         float adjustedScreenHeight = getAdjustedScreenHeight();
-        RectF letterboxPadding = getLetterboxPadding();
-        return new RectF(Math.max(mSystemUiScreenRect.left - letterboxPadding.left, 0.0f),
-                Math.max(mSystemUiScreenRect.top - letterboxPadding.top, 0.0f),
-                Math.max(mRenderData.screenWidth - mSystemUiScreenRect.right
-                                - letterboxPadding.right,
+        PointF letterboxPadding = getLetterboxPadding();
+        return new RectF(Math.max(mSystemUiScreenRect.left - letterboxPadding.x, 0.0f),
+                Math.max(mSystemUiScreenRect.top - letterboxPadding.y, 0.0f),
+                Math.max(mRenderData.screenWidth - mSystemUiScreenRect.right - letterboxPadding.x,
                         0.0f),
-                Math.max(
-                        adjustedScreenHeight - mSystemUiScreenRect.bottom - letterboxPadding.bottom,
+                Math.max(adjustedScreenHeight - mSystemUiScreenRect.bottom - letterboxPadding.y,
                         0.0f));
     }
 
@@ -501,29 +487,47 @@ public class DesktopCanvas {
     }
 
     /**
-     * @return Screen width inset by {@link #mSafeInsets}.
+     * @return Screen width inset by {@link #mSafeInsets} if {@link #mSystemUiScreenRect} is empty,
+     * otherwise just the screen width.
      */
     private float getSafeScreenWidth() {
+        if (!mSystemUiScreenRect.isEmpty()) {
+            return mRenderData.screenWidth;
+        }
         return mRenderData.screenWidth - mSafeInsets.left - mSafeInsets.right;
     }
 
     /**
-     * @param height The height to be used to calculate the safe screen height. Generally either
-     * {@link #getAdjustedScreenHeight()} or mRenderData.screenHeight.
-     * @return Screen height inset by {@link #mSafeInsets}.
+     * @return Screen height inset by {@link #mSafeInsets} if {@link #mSystemUiScreenRect} is empty,
+     * otherwise just the screen height.
      */
-    private float calculateSafeScreenHeight(float height) {
-        return height - mSafeInsets.top - mSafeInsets.bottom;
+    private float getSafeScreenHeight() {
+        if (!mSystemUiScreenRect.isEmpty()) {
+            return mRenderData.screenHeight;
+        }
+        return mRenderData.screenHeight - mSafeInsets.top - mSafeInsets.bottom;
     }
 
     /**
-     * @param height The height to be used to calculate the safe screen height. Generally either
-     * {@link #getAdjustedScreenHeight()} or mRenderData.screenHeight.
-     * @return Center of the safe area on the screen inset by {@link #mSafeInsets}.
+     * @return Center point of the screen area inset by {@link #mSafeInsets} if {@link
+     * #mSystemUiScreenRect} is empty, otherwise just the center of the screen.
      */
-    private PointF calculateSafeScreenCenterPoint(float height) {
-        return new PointF(
-                (float) mRenderData.screenWidth / 2 + mSafeInsets.left - mSafeInsets.right,
-                height / 2 + mSafeInsets.top - mSafeInsets.bottom);
+    private PointF getSafeScreenCenterPoint() {
+        if (!mSystemUiScreenRect.isEmpty()) {
+            return new PointF(mRenderData.screenWidth / 2.f, mRenderData.screenHeight / 2.f);
+        }
+        return new PointF((mRenderData.screenWidth + mSafeInsets.left - mSafeInsets.right) / 2.f,
+                (mRenderData.screenHeight + mSafeInsets.top - mSafeInsets.bottom) / 2.f);
+    }
+
+    /**
+     * @return Same as {@link #getSafeScreenCenterPoint()} if {@link #mSystemUiScreenRect} is empty,
+     * otherwise return (screenWidth / 2, adjustedScreenHeight / 2).
+     */
+    private PointF getAdjustedScreenCenterPoint() {
+        if (mSystemUiScreenRect.isEmpty()) {
+            return getSafeScreenCenterPoint();
+        }
+        return new PointF(mRenderData.screenWidth / 2.f, getAdjustedScreenHeight() / 2.f);
     }
 }
