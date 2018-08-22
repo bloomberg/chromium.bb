@@ -53,7 +53,6 @@ struct LayoutGeometryMapStep {
       : layout_object_(o.layout_object_),
         offset_(o.offset_),
         offset_for_fixed_position_(o.offset_for_fixed_position_),
-        offset_for_sticky_position_(o.offset_for_sticky_position_),
         flags_(o.flags_) {
     DCHECK(!o.transform_);
   }
@@ -64,11 +63,7 @@ struct LayoutGeometryMapStep {
   LayoutSize offset_;
   std::unique_ptr<TransformationMatrix>
       transform_;  // Includes offset if non-null.
-  // If m_offsetForFixedPosition could only apply to the fixed position steps,
-  // we may be able to merge with m_offsetForStickyPosition and simplify
-  // mapping.
   LayoutSize offset_for_fixed_position_;
-  LayoutSize offset_for_sticky_position_;
   GeometryInfoFlags flags_;
 };
 
