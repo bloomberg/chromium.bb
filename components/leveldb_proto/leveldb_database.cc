@@ -56,6 +56,13 @@ LevelDB::~LevelDB() {
 
 bool LevelDB::Init(const base::FilePath& database_dir,
                    const leveldb_env::Options& options) {
+  auto status = Init(database_dir, options, true /* destroy_on_corruption */);
+  return status.ok();
+}
+
+leveldb::Status LevelDB::Init(const base::FilePath& database_dir,
+                              const leveldb_env::Options& options,
+                              bool destroy_on_corruption) {
   DFAKE_SCOPED_LOCK(thread_checker_);
   database_dir_ = database_dir;
   open_options_ = options;
@@ -71,9 +78,9 @@ bool LevelDB::Init(const base::FilePath& database_dir,
   leveldb::Status status = leveldb_env::OpenDB(open_options_, path, &db_);
   if (open_histogram_)
     open_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(status));
-  if (status.IsCorruption()) {
+  if (destroy_on_corruption && status.IsCorruption()) {
     if (!Destroy())
-      return false;
+      return status;
     status = leveldb_env::OpenDB(open_options_, path, &db_);
     // Intentionally do not log the status of the second open. Doing so destroys
     // the meaning of corruptions/open which is an important statistic.
@@ -91,12 +98,11 @@ bool LevelDB::Init(const base::FilePath& database_dir,
         approx_mem_histogram_->Add(approx_mem);
       }
     }
-    return true;
+  } else {
+    LOG(WARNING) << "Unable to open " << database_dir.value() << ": "
+                 << status.ToString();
   }
-
-  LOG(WARNING) << "Unable to open " << database_dir.value() << ": "
-               << status.ToString();
-  return false;
+  return status;
 }
 
 bool LevelDB::Save(const base::StringPairs& entries_to_save,
