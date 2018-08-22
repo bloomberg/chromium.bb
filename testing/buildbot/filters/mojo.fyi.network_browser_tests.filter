@@ -73,7 +73,6 @@
 
 # https://crbug.com/816684 Track Page Load Metrics.
 -PageLoadMetricsBrowserTest.LoadingMetricsFailed
--PageLoadMetricsBrowserTest.ReceivedCompleteResources
 
 # https://crbug.com/810329 DnsProbe browsertests that rely on delaying requests:
 -DnsProbeBrowserTest.NxdomainProbeResultWithWorkingSlowCorrections
