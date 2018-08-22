@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Fill the "canvas" element with some color.
+var ctx = document.getElementById("canvas").getContext('2d');
+ctx.fillStyle = "#FF0000";
+ctx.fillRect(0, 0, 42, 42);
+
 var canvas = document.getElementById("canvas").getContext('2d').getImageData(
     0, 0, 21, 21);
 var canvasHD = document.getElementById("canvas").getContext('2d').getImageData(
