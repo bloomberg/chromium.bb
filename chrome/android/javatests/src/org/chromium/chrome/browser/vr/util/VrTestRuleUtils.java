@@ -12,6 +12,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.test.params.ParameterSet;
+import org.chromium.chrome.browser.vr.VrFeedbackStatus;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.rules.CustomTabActivityVrTestRule;
 import org.chromium.chrome.browser.vr.rules.VrTestRule;
@@ -55,6 +56,17 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
         // Must be called after Chrome is started, as otherwise startService fails with an
         // IllegalStateException for being used from a backgrounded app.
         VrSettingsServiceUtils.checkForAndApplyVrSettingsFileAnnotation(desc, rule);
+
+        // Reset the VR feedback shared preferences if they're not currently the default because
+        // otherwise we can run into issues with VrFeedbackInfoBarTest#* erroneously failing due to
+        // tests being non-hermetic. Only set if not the default instead of unconditionally in order
+        // to avoid unnecessary disk writes.
+        if (VrFeedbackStatus.getFeedbackOptOut()) {
+            VrFeedbackStatus.setFeedbackOptOut(false);
+        }
+        if (VrFeedbackStatus.getUserExitedAndEntered2DCount() != 0) {
+            VrFeedbackStatus.setUserExitedAndEntered2DCount(0);
+        }
 
         try {
             base.evaluate();
