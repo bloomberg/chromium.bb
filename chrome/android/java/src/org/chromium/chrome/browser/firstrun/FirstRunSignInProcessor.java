@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
+import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
@@ -86,6 +87,9 @@ public final class FirstRunSignInProcessor {
         signinManager.signIn(accountName, activity, new SignInCallback() {
             @Override
             public void onSignInComplete() {
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+                    UnifiedConsentServiceBridge.setUnifiedConsentGiven(true);
+                }
                 // Show sync settings if user pressed the "Settings" button.
                 if (setUp) {
                     openSignInSettings(activity);

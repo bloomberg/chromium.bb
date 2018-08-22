@@ -10,6 +10,27 @@
 
 using base::android::JavaParamRef;
 
+static jboolean JNI_UnifiedConsentServiceBridge_IsUnifiedConsentGiven(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jobject>& profileAndroid) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(profileAndroid);
+  auto* unifiedConsentService =
+      UnifiedConsentServiceFactory::GetForProfile(profile);
+  return unifiedConsentService->IsUnifiedConsentGiven();
+}
+
+static void JNI_UnifiedConsentServiceBridge_SetUnifiedConsentGiven(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jobject>& profileAndroid,
+    jboolean unifiedConsentGiven) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(profileAndroid);
+  auto* unifiedConsentService =
+      UnifiedConsentServiceFactory::GetForProfile(profile);
+  unifiedConsentService->SetUnifiedConsentGiven(unifiedConsentGiven);
+}
+
 static jboolean JNI_UnifiedConsentServiceBridge_ShouldShowConsentBump(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller,
