@@ -76,6 +76,9 @@
 
 // Button to cancel the edit of the location bar, redefined as readwrite.
 @property(nonatomic, strong, readwrite) UIButton* cancelButton;
+// Button taking the full size of the toolbar. Expands the toolbar when  tapped.
+// Redefined as readwrite.
+@property(nonatomic, strong, readwrite) UIButton* collapsedToolbarButton;
 
 // Constraints for the location bar, redefined as readwrite.
 @property(nonatomic, strong, readwrite)
@@ -112,6 +115,7 @@
 @synthesize bookmarkButton = _bookmarkButton;
 @synthesize toolsMenuButton = _toolsMenuButton;
 @synthesize cancelButton = _cancelButton;
+@synthesize collapsedToolbarButton = _collapsedToolbarButton;
 @synthesize expandedConstraints = _expandedConstraints;
 @synthesize contractedConstraints = _contractedConstraints;
 @synthesize contractedNoMarginConstraints = _contractedNoMarginConstraints;
@@ -143,6 +147,7 @@
   [self setUpCancelButton];
   [self setUpLocationBar];
   [self setUpProgressBar];
+  [self setUpCollapsedToolbarButton];
 
   [self setUpConstraints];
 }
@@ -291,6 +296,14 @@
   [self addSubview:self.progressBar];
 }
 
+// Sets the collapsedToolbarButton up.
+- (void)setUpCollapsedToolbarButton {
+  self.collapsedToolbarButton = [[UIButton alloc] init];
+  self.collapsedToolbarButton.translatesAutoresizingMaskIntoConstraints = NO;
+  self.collapsedToolbarButton.hidden = YES;
+  [self addSubview:self.collapsedToolbarButton];
+}
+
 // Sets the constraints up.
 - (void)setUpConstraints {
   id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self);
@@ -408,6 +421,9 @@
     [self.progressBar.heightAnchor
         constraintEqualToConstant:kProgressBarHeight],
   ]];
+
+  // CollapsedToolbarButton constraints.
+  AddSameConstraints(self, self.collapsedToolbarButton);
 }
 
 #pragma mark - Property accessors

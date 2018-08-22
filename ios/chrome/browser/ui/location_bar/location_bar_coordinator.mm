@@ -264,16 +264,7 @@ const int kLocationAuthorizationStatusCount = 4;
 #pragma mark - LocationBarViewControllerDelegate
 
 - (void)locationBarSteadyViewTapped {
-  FullscreenController* fullscreenController =
-      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-          _browserState);
-  if (fullscreenController->GetProgress() < 1) {
-    // The first tap should exit fullscreen.
-    fullscreenController->ResetModel();
-  } else {
-    // The toolbar is fully visible, focus the omnibox.
-    [self focusOmnibox];
-  }
+  [self focusOmnibox];
 }
 
 - (void)locationBarCopyTapped {

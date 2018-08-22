@@ -47,6 +47,9 @@
 // Button to cancel the edit of the location bar.
 @property(nonatomic, strong, readonly) UIButton* cancelButton;
 
+// Button taking the full size of the toolbar. Expands the toolbar when  tapped.
+@property(nonatomic, strong, readonly) UIButton* collapsedToolbarButton;
+
 // Constraints to be activated when the location bar is expanded and positioned
 // relatively to the cancel button.
 @property(nonatomic, strong, readonly)
