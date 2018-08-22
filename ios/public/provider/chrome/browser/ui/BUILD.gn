@@ -8,6 +8,8 @@ source_set("ui") {
     "app_rating_prompt.h",
     "default_ios_web_view_factory.h",
     "default_ios_web_view_factory.mm",
+    "fullscreen_provider.h",
+    "fullscreen_provider.mm",
     "logo_vendor.h",
     "text_field_styling.h",
   ]

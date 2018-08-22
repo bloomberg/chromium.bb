@@ -115,6 +115,10 @@ ExternalSearchProvider* ChromeBrowserProvider::GetExternalSearchProvider()
   return nullptr;
 }
 
+FullscreenProvider* ChromeBrowserProvider::GetFullscreenProvider() const {
+  return nullptr;
+}
+
 MailtoHandlerProvider* ChromeBrowserProvider::GetMailtoHandlerProvider() const {
   return mailto_handler_provider_.get();
 }
