@@ -7,6 +7,10 @@ function createFrame(url, name) {
   document.body.appendChild(frame);
 }
 
+function windowOpenFromNonAdScript() {
+  window.open();
+}
+
 async function createDocWrittenFrame(name, base_url) {
   let doc_body = await fetch('frame_factory.html');
   let doc_text = await doc_body.text();

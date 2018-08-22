@@ -19,6 +19,8 @@ be describing additional metrics about the same event.
 <ukm-configuration>
 
 <event name="AbusiveExperienceHeuristic">
+  <owner>csharrison@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
   <summary>
     Various metrics recording experiences which are commonly used for abusive
     purposes.
@@ -26,6 +28,16 @@ be describing additional metrics about the same event.
   <metric name="DidTabUnder">
     <summary>
       True if the page attempted a tab-under navigation.
+    </summary>
+  </metric>
+  <metric name="DidWindowOpenFromAdScript">
+    <summary>
+      True if the page called window.open with an ad script in the stack.
+    </summary>
+  </metric>
+  <metric name="DidWindowOpenFromAdSubframe">
+    <summary>
+      True if the page called window.open() from an ad subframe.
     </summary>
   </metric>
 </event>

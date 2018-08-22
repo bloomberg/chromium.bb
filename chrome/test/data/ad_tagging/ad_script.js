@@ -7,6 +7,10 @@ function createAdFrame(url, name) {
   document.body.appendChild(frame);
 }
 
+function windowOpenFromAdScript() {
+  window.open();
+}
+
 async function createDocWrittenAdFrame(name, base_url) {
   let doc_body = await fetch('frame_factory.html');
   let doc_text = await doc_body.text();
