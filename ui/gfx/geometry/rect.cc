@@ -257,6 +257,10 @@ void Rect::ClampToCenteredSize(const Size& size) {
   SetRect(new_x, new_y, new_width, new_height);
 }
 
+void Rect::Transpose() {
+  SetRect(y(), x(), height(), width());
+}
+
 void Rect::SplitVertically(Rect* left_half, Rect* right_half) const {
   DCHECK(left_half);
   DCHECK(right_half);

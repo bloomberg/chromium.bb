@@ -869,6 +869,31 @@ TEST(RectTest, Corners) {
   EXPECT_EQ(PointF(4.2f, 6.2f), f.bottom_right());
 }
 
+TEST(RectTest, Centers) {
+  Rect i(10, 20, 30, 40);
+  EXPECT_EQ(Point(10, 40), i.left_center());
+  EXPECT_EQ(Point(25, 20), i.top_center());
+  EXPECT_EQ(Point(40, 40), i.right_center());
+  EXPECT_EQ(Point(25, 60), i.bottom_center());
+
+  RectF f(10.1f, 20.2f, 30.3f, 40.4f);
+  EXPECT_EQ(PointF(10.1f, 40.4f), f.left_center());
+  EXPECT_EQ(PointF(25.25f, 20.2f), f.top_center());
+  EXPECT_EQ(PointF(40.4f, 40.4f), f.right_center());
+  EXPECT_EQ(25.25f, f.bottom_center().x());
+  EXPECT_NEAR(60.6f, f.bottom_center().y(), 0.001f);
+}
+
+TEST(RectTest, Transpose) {
+  Rect i(10, 20, 30, 40);
+  i.Transpose();
+  EXPECT_EQ(Rect(20, 10, 40, 30), i);
+
+  RectF f(10.1f, 20.2f, 30.3f, 40.4f);
+  f.Transpose();
+  EXPECT_EQ(RectF(20.2f, 10.1f, 40.4f, 30.3f), f);
+}
+
 TEST(RectTest, ManhattanDistanceToPoint) {
   Rect i(1, 2, 3, 4);
   EXPECT_EQ(0, i.ManhattanDistanceToPoint(Point(1, 2)));

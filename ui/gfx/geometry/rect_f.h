@@ -70,6 +70,17 @@ class GFX_EXPORT RectF {
   constexpr PointF bottom_left() const { return PointF(x(), bottom()); }
   constexpr PointF bottom_right() const { return PointF(right(), bottom()); }
 
+  constexpr PointF left_center() const {
+    return PointF(x(), y() + height() / 2);
+  }
+  constexpr PointF top_center() const { return PointF(x() + width() / 2, y()); }
+  constexpr PointF right_center() const {
+    return PointF(right(), y() + height() / 2);
+  }
+  constexpr PointF bottom_center() const {
+    return PointF(x() + width() / 2, bottom());
+  }
+
   Vector2dF OffsetFromOrigin() const { return Vector2dF(x(), y()); }
 
   void SetRect(float x, float y, float width, float height) {
@@ -148,6 +159,9 @@ class GFX_EXPORT RectF {
   // Becomes a rectangle that has the same center point but with a size capped
   // at given |size|.
   void ClampToCenteredSize(const SizeF& size);
+
+  // Transpose x and y axis.
+  void Transpose();
 
   // Splits |this| in two halves, |left_half| and |right_half|.
   void SplitVertically(RectF* left_half, RectF* right_half) const;
