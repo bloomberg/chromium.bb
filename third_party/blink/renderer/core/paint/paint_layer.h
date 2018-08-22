@@ -1103,7 +1103,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool HasOverflowControls() const;
 
   enum UpdateLayerPositionBehavior { AllLayers, OnlyStickyLayers };
-  void UpdateLayerPositionRecursive(UpdateLayerPositionBehavior = AllLayers);
+  void UpdateLayerPositionRecursive(UpdateLayerPositionBehavior = AllLayers,
+                                    bool dirty_compositing_if_needed = true);
 
   void SetNextSibling(PaintLayer* next) { next_ = next; }
   void SetPreviousSibling(PaintLayer* prev) { previous_ = prev; }
